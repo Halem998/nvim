@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Classifier directive + Tier 2 hint update",
+  "started_at": "2026-07-01T18:05:00Z",
+  "last_updated": "2026-07-01T18:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create zotero-export-status.sh classifier (canonical)", "status": "done"},
+    {"id": 2, "description": "Implement four directive tokens with stderr rationale", "status": "done"},
+    {"id": 3, "description": "Accept --orchestrator-mode and --output flags", "status": "done"},
+    {"id": 4, "description": "Resolve path via resolve_library_path() order; document latent inconsistency", "status": "done"},
+    {"id": 5, "description": "Update tier2_search() stderr hint in literature-discover.sh (canonical)", "status": "done"},
+    {"id": 6, "description": "Verify JSON-array stdout contract untouched", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -167,33 +167,39 @@ three fallback paths, non-null citekey synthesis, and a staleness stamp.
 
 ---
 
-### Phase 2: Classifier directive + Tier 2 hint update [NOT STARTED]
+### Phase 2: Classifier directive + Tier 2 hint update [COMPLETED]
 
 **Goal**: Add a stateless classifier that reports whether assisted generation is possible, and
 update the `tier2_search()` stderr hint to point at the generator — without touching discover's
 JSON stdout contract.
 
 **Tasks**:
-- [ ] Create `.claude/extensions/literature/scripts/zotero-export-status.sh` (canonical copy ONLY
+- [x] Create `.claude/extensions/literature/scripts/zotero-export-status.sh` (canonical copy ONLY
       this phase) modeled on `literature-lit-flag-resolve.sh`: NEVER calls AskUserQuestion; prints
-      exactly one directive token on stdout + rationale on stderr.
-- [ ] Directive tokens (research Section 4): `ZOTERO_EXPORT_PRESENT` (file already at resolved
+      exactly one directive token on stdout + rationale on stderr. *(completed)*
+- [x] Directive tokens (research Section 4): `ZOTERO_EXPORT_PRESENT` (file already at resolved
       path), `ZOTERO_EXPORT_MISSING_RUNNING` (missing, Zotero local API reachable — Path 1/2
       viable), `ZOTERO_EXPORT_MISSING_NOT_RUNNING` (missing, Zotero not reachable but
       `~/Zotero/zotero.sqlite` present — Path 3 viable), `ZOTERO_EXPORT_UNAVAILABLE` (missing and
-      no local Zotero data source found).
-- [ ] Accept `--orchestrator-mode true|false` (default `false`) and `--output <path>` mirroring
+      no local Zotero data source found). *(completed; verified 3 of 4 states directly —
+      PRESENT, MISSING_NOT_RUNNING, UNAVAILABLE — MISSING_RUNNING is unverifiable live since no
+      local Zotero API is reachable on this box, consistent with Phase 1's finding)*
+- [x] Accept `--orchestrator-mode true|false` (default `false`) and `--output <path>` mirroring
       the generator; emit visible rationale to stderr for every branch (never silent).
-- [ ] Resolve the target path via the same `resolve_library_path()` order as zotero-search.sh so
+      *(completed)*
+- [x] Resolve the target path via the same `resolve_library_path()` order as zotero-search.sh so
       the classifier and generator agree; note (do not fix) the latent inconsistency that discover
-      only checks `$LITERATURE_DIR/zotero-library.json`.
-- [ ] Update `tier2_search()` missing-export hint in
+      only checks `$LITERATURE_DIR/zotero-library.json`. *(completed; documented inline in the
+      classifier's header comment rather than fixed, per the plan's explicit non-goal)*
+- [x] Update `tier2_search()` missing-export hint in
       `.claude/extensions/literature/scripts/literature-discover.sh` (lines ~349-353, canonical
       copy ONLY this phase): keep the silent/non-fatal `return 0` skip and the existing
       zotero-search.sh-matching manual instructions, and ADD a line pointing at the assisted
       generator entry point (`zotero-generate-export.sh`) and the `/literature` assisted offer.
-- [ ] Do NOT alter discover's tier ordering, `|| true` non-fatal execution, or the final pure
-      JSON-array stdout (line 628).
+      *(completed)*
+- [x] Do NOT alter discover's tier ordering, `|| true` non-fatal execution, or the final pure
+      JSON-array stdout (line 628). *(completed; verified `literature-discover.sh "modal logic"`
+      still emits a pure JSON array on stdout with the new hint appearing only on stderr)*
 
 **Timing**: 1 hour
 
