@@ -11,7 +11,7 @@ next_project_number: 794
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,775,777,778,780,782,783,787,791,793 | -- | agent-system, literature, Terminal UI, ... |
+| 1 | 78,87,772,775,777,778,780,782,783,787,791 | -- | agent-system, literature, Terminal UI, ... |
 | 2 | 773,774,776,779,781,785 | 772,775,778,780 | agent-system, literature |
 | 3 | 786 | 785 | agent-system |
 | 4 | 788 | 786,787 | agent-system |
@@ -37,7 +37,6 @@ next_project_number: 794
 787 [NOT STARTED] — Make multi-task creation declare dependencies based on FILE FOOTP
   └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree (see above)
 791 [PR READY] — Fix the <leader>al 'Load Core' loader so WezTerm lifecycle tab co
-793 [IMPLEMENTING] — Fix incomplete literature extension script packaging so the <lead
 
 ### Literature
 
@@ -56,7 +55,7 @@ next_project_number: 794
 
 ### 793. Fix literature extension script packaging so <leader>al deploys a working extension to all repos
 - **Effort**: 2-4 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None

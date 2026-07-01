@@ -1,7 +1,7 @@
 # Implementation Plan: Task #793
 
 - **Task**: 793 - Fix literature extension script packaging so `<leader>al` deploys a working extension to all repos.
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/793_literature_extension_script_packaging/reports/01_script-packaging-research.md
@@ -347,34 +347,41 @@ flat-deploy model to prevent recurrence.
 
 ---
 
-### Phase 5: Final verification (loader simulation + doc-lint + clean-repo deploy) [NOT STARTED]
+### Phase 5: Final verification (loader simulation + doc-lint + clean-repo deploy) [COMPLETED]
 
 **Goal**: Prove the packaging is correct end-to-end: the manifest carries every referenced script,
 the doc-lint passes, and a clean-repo deploy yields a working `literature-discover.sh`.
 
 **Tasks**:
-- [ ] Manifest completeness check: confirm every `.sh`/`.sql` referenced by literature's
-      commands/skills/agents/docs (excluding core-owned names) is present in
-      `.claude/extensions/literature/manifest.json` `provides.scripts`. This is exactly the new lint
-      rule — run `bash .claude/scripts/check-extension-docs.sh --quiet` and confirm literature PASS.
-- [ ] Flat/canonical parity check: for each of the 8 migrated files, `diff` the
-      `.claude/extensions/literature/scripts/` copy against the `.claude/scripts/` copy — must be
-      identical (no drift from Phases 1-3 edits).
-- [ ] Clean throwaway-repo deploy (dry-run of `loader.copy_scripts` semantics): create a temp target
-      dir (e.g. `mktemp -d`) with a minimal `.claude/` layout, then simulate the loader's flat copy
-      by iterating `manifest.provides.scripts` and copying each named file from
-      `.claude/extensions/literature/scripts/` into `{tmp}/.claude/scripts/`. Confirm all 20 entries
-      copy (including `literature-schema.sql`), the 6 `.sh` are executable, and
-      `{tmp}/.claude/scripts/literature-discover.sh` runs (e.g. `bash -n` syntax check plus a
-      `--help`/no-op invocation) and its `zotero-search.sh` candidate resolution now targets the flat
-      sibling path present in `{tmp}/.claude/scripts/`.
-      - Preferred alternative if feasible: actually invoke the real loader against the temp dir via
-        `nvim --headless` to deploy the literature extension into `{tmp}`, then assert the same.
-- [ ] Confirm `literature-schema.sql` landed in the target `.claude/scripts/` (validates `.sql`
-      packaging via `provides.scripts`).
-- [ ] Confirm no nested `{tmp}/.claude/extensions/literature/scripts/` directory is required for
-      `literature-discover.sh` to resolve `zotero-search.sh` (the previously-broken candidate).
-- [ ] Clean up the temp dir.
+- [x] Manifest completeness check: `bash .claude/scripts/check-extension-docs.sh --quiet` run;
+      `[literature]` PASS with zero FAIL lines. Whole-suite exit code is 1 solely due to a
+      pre-existing, unrelated `[lean]` `routing_hard` failure (confirmed via `git stash` to
+      predate this task). *(completed)*
+- [x] Flat/canonical parity check: diffed all 7 migrated files (`literature-discover.sh`,
+      `literature-ingest.sh`, `literature-search.sh`, `literature-build-index.sh`,
+      `literature-convert.sh`, `literature-chunk.sh`, `literature-schema.sql`) plus
+      `literature-briefing.sh`, `check-extension-docs.sh`, `lifecycle-notify.sh`,
+      `reconcile-artifacts.sh`, and `skill-literature/SKILL.md` (hardlinked) — all identical.
+      *(completed: altered — 7 files not 8, per the count reconciliation from Phase 1)*
+- [x] Clean throwaway-repo deploy (`mktemp -d`): simulated `loader.copy_scripts` by iterating
+      `manifest.provides.scripts` (19 entries) and copying each named file from
+      `.claude/extensions/literature/scripts/` into `{tmp}/.claude/scripts/` with `chmod +x` for
+      `.sh` files. All 19 entries copied (0 missing sources), 6 `.sh` executable,
+      `literature-schema.sql` non-executable. `bash -n` syntax check passed;
+      `{tmp}/.claude/scripts/literature-discover.sh --task 999999` actually ran (failed later on
+      missing `specs/state.json`, an expected throwaway-repo condition, not a path-resolution or
+      missing-file error) confirming the deployed script executes. Isolated resolution-logic test
+      confirmed the `zotero-search.sh` candidate loop resolves to
+      `{tmp}/.claude/scripts/zotero-search.sh` (the flat sibling), not the nested fallback.
+      *(completed: altered — 19 not 20, per the count reconciliation; used the `cp`-based
+      deterministic simulation rather than `nvim --headless`, consistent with Phase 1's approach)*
+- [x] Confirmed `literature-schema.sql` landed in `{tmp}/.claude/scripts/` with byte-identical
+      content and default (non-executable) permissions. *(completed)*
+- [x] Confirmed no `{tmp}/.claude/extensions/` directory existed at all in the throwaway repo
+      (only `{tmp}/.claude/scripts/` was populated), and the `zotero-search.sh` resolution still
+      succeeded via the flat sibling path — proving the previously-broken nested candidate is not
+      required. *(completed)*
+- [x] Cleaned up the temp dir (`rm -rf`; verified removal). *(completed)*
 
 **Timing**: 1 hour
 
@@ -395,16 +402,16 @@ the doc-lint passes, and a clean-repo deploy yields a working `literature-discov
 
 ## Testing & Validation
 
-- [ ] `jq '.provides.scripts | length' .claude/extensions/literature/manifest.json` == 20.
-- [ ] `bash .claude/scripts/check-extension-docs.sh --quiet` exits 0 (literature PASS) post-fix.
-- [ ] New lint rule exits non-zero against a reconstructed pre-fix manifest, naming the 7+1 missing entries.
-- [ ] Whole-suite `check-extension-docs.sh` run shows no unexpected false positives.
-- [ ] All 8 migrated files exist in both `.claude/extensions/literature/scripts/` and `.claude/scripts/`, byte-identical; 6 `.sh` executable.
-- [ ] `grep -n '\.config/nvim' .claude/extensions/literature/scripts/literature-briefing.sh` returns nothing.
-- [ ] No primary nested-`extensions/`-path candidate remains in `literature-discover.sh` / `skill-literature/SKILL.md`.
-- [ ] `grep -n 'already configured' .claude/extensions/literature/EXTENSION.md` returns nothing.
-- [ ] Throwaway-repo deploy: `literature-discover.sh` runnable and resolves `zotero-search.sh` from flat siblings; `literature-schema.sql` present.
-- [ ] This repo's own `/literature` discover path resolves to an existing runnable script (no regression).
+- [x] `jq '.provides.scripts | length' .claude/extensions/literature/manifest.json` == 19 *(deviation: was specified as 20; reconciled to 19 per the 7-file/19-entry count correction — see Phase 1)*.
+- [x] `bash .claude/scripts/check-extension-docs.sh --quiet` exits 0 for `[literature]` (literature PASS) post-fix; whole-suite exit is 1 solely due to a pre-existing, unrelated `[lean]` failure.
+- [x] New lint rule exits non-zero against a reconstructed pre-fix manifest, naming 3 of the 7 missing entries *(deviation: the other 4 are referenced only from sibling scripts, outside the rule's documented extraction scope — see Phase 3)*.
+- [x] Whole-suite `check-extension-docs.sh` run shows no unexpected false positives (3 false-positive classes found and fixed; 2 genuine core bugs found and fixed; 1 pre-existing unrelated lean failure remains, confirmed out of scope).
+- [x] All 7 migrated files exist in both `.claude/extensions/literature/scripts/` and `.claude/scripts/`, byte-identical; 6 `.sh` executable *(deviation: 7 files not 8, per count correction)*.
+- [x] `grep -n '\.config/nvim' .claude/extensions/literature/scripts/literature-briefing.sh` returns nothing.
+- [x] No primary nested-`extensions/`-path candidate remains in `literature-discover.sh` / `skill-literature/SKILL.md`.
+- [x] `grep -n 'already configured' .claude/extensions/literature/EXTENSION.md` returns nothing.
+- [x] Throwaway-repo deploy: `literature-discover.sh` runnable and resolves `zotero-search.sh` from flat siblings; `literature-schema.sql` present.
+- [x] This repo's own `/literature` discover path resolves to an existing runnable script (no regression) — verified in Phase 1 and re-verified in Phase 5.
 
 ## Artifacts & Outputs
 
