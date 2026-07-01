@@ -21,10 +21,11 @@
 #       Better-BibTeX-specific addition).
 #
 #     Path 3 (fallback, Zotero CLOSED -- the sqlite file is locked while Zotero runs):
-#       Direct read of ~/Zotero/zotero.sqlite, reconstructing CSL-JSON from
-#       items/itemData/itemDataValues/fieldsCombined, itemCreators/creators, and
-#       itemAttachments. No citekey table exists in zotero.sqlite (Better BibTeX keeps its
-#       own separate database), so citation-key is always synthesized for Path 3 entries.
+#       Direct read of the resolved Zotero sqlite file (see ZOTERO_SQLITE_PATH below),
+#       reconstructing CSL-JSON from items/itemData/itemDataValues/fieldsCombined,
+#       itemCreators/creators, and itemAttachments. No citekey table exists in zotero.sqlite
+#       (Better BibTeX keeps its own separate database), so citation-key is always
+#       synthesized for Path 3 entries.
 #
 #   Every entry is guaranteed a non-null "citation-key" on output: any item lacking a real
 #   Better-BibTeX citekey gets one synthesized deterministically as
@@ -47,9 +48,11 @@
 #   --orchestrator-mode true|false
 #                                Default false (interactive). When true and no local Zotero
 #                                data source is found at all (API unreachable AND no
-#                                zotero.sqlite present), emits a visible "[zotero:auto]"
-#                                notice and writes an empty-but-valid JSON array rather than
-#                                silently doing nothing or exiting non-zero.
+#                                resolved zotero.sqlite present), emits a visible
+#                                "[zotero:auto]" error notice to stderr and exits 1 -- it
+#                                NEVER writes a silent empty-but-valid JSON array and NEVER
+#                                no-ops silently. The caller is instructed to open Zotero
+#                                (or otherwise make a data source available) and re-run.
 #   --force                      Regenerate even if the output file already exists
 #                                (overwrites the existing snapshot).
 #   -h, --help                   Show this help message.
@@ -57,16 +60,25 @@
 # ENVIRONMENT:
 #   ZOTERO_LIBRARY      Explicit output path override (tier 1 of resolve_library_path()).
 #   LITERATURE_DIR      Global library root (default: ~/Projects/Literature).
-#   ZOTERO_SQLITE_PATH  Override for the Path 3 sqlite file (default: ~/Zotero/zotero.sqlite).
+#   ZOTERO_SQLITE_PATH  Override for the Path 3 sqlite file. If unset, the sqlite path is
+#                       resolved by zotero-resolve-sqlite-path.sh: (1) this env override;
+#                       (2) <dataDir>/zotero.sqlite auto-detected from the default Zotero
+#                       profile's prefs.js when extensions.zotero.useDataDir=true; (3)
+#                       ~/Zotero/zotero.sqlite default.
 #
 # OUTPUT:
 #   stdout: the resolved output path on success (machine-readable).
 #   stderr: all diagnostics, rationale, and the manual-fallback instructions.
 #
 # EXIT CODES:
-#   0  Export written successfully (possibly an empty array).
-#   1  No local Zotero data source found and --orchestrator-mode is not "true"
-#      (manual-fallback instructions printed to stderr).
+#   0  Export written successfully via Path 1 or Path 3 (the item array may legitimately be
+#      empty if the resolved library itself has zero items -- that is NOT the same as "no
+#      data source found").
+#   1  No local Zotero data source found at all (API unreachable AND no resolved
+#      zotero.sqlite present) -- covers BOTH --orchestrator-mode false (manual-fallback
+#      instructions printed to stderr) AND --orchestrator-mode true (loud visible error
+#      printed to stderr instructing the user to open Zotero; no output file is written or
+#      overwritten in either case).
 #   2  Argument error.
 #   3  Output file already exists and --force was not given.
 
@@ -81,7 +93,7 @@ fi
 
 API_BASE="http://127.0.0.1:23119/api/users/0/items"
 BBT_RPC="http://localhost:23119/better-bibtex/json-rpc"
-ZOTERO_SQLITE="${ZOTERO_SQLITE_PATH:-${HOME}/Zotero/zotero.sqlite}"
+ZOTERO_SQLITE="$("$SCRIPT_DIR/zotero-resolve-sqlite-path.sh")"
 
 # ---------------------------------------------------------------------------
 # Argument parsing
@@ -194,8 +206,10 @@ Or set the ZOTERO_LIBRARY environment variable to your export path:
 
 Or, to retry assisted generation instead:
    - Start Zotero (Path 1 pulls your whole library live via the local API), OR
-   - Ensure ~/Zotero/zotero.sqlite exists (Path 3 reconstructs a snapshot while Zotero is
-     closed -- the sqlite file is locked while Zotero is running).
+   - Ensure the resolved Zotero sqlite file ($ZOTERO_SQLITE) exists (Path 3 reconstructs a
+     snapshot while Zotero is closed -- the sqlite file is locked while Zotero is running).
+     If your Zotero uses a custom Data Directory, this is auto-detected from your default
+     profile's prefs.js; set \$ZOTERO_SQLITE_PATH to override the resolved path directly.
    Then re-run: zotero-generate-export.sh --output "$OUTPUT_PATH"
 
 MANUAL
@@ -541,10 +555,14 @@ elif [ -f "$ZOTERO_SQLITE" ] && command -v sqlite3 &>/dev/null; then
   SOURCE_PATH="$ZOTERO_SQLITE"
 else
   if [ "$ORCHESTRATOR_MODE" = "true" ]; then
-    echo "[zotero:auto] Rationale: no local Zotero data source found (API probe returned $API_PROBE and no zotero.sqlite at $ZOTERO_SQLITE); orchestrator mode takes the visible default of writing an empty-but-valid zotero-library.json rather than a silent no-op. Run this generator again once Zotero is installed/running to populate it." >&2
-    ITEMS='[]'
-    SOURCE="none-orchestrator-default"
-    SOURCE_PATH="n/a"
+    # No local Zotero data source found at all. This branch MUST fail loudly and MUST NOT
+    # write an empty (or any) zotero-library.json -- a silent empty-but-valid export was the
+    # task-798 bug: it looks like a legitimate zero-item library to every downstream
+    # consumer, masking the real "no data source" condition. Orchestrator/non-interactive
+    # callers get a visible logged error and a non-zero exit instead, exactly like the
+    # interactive branch below, phrased for an unattended context.
+    echo "[zotero:auto] Error: no local Zotero data source found (API probe returned $API_PROBE at $API_BASE, and no zotero.sqlite at the resolved path $ZOTERO_SQLITE). Orchestrator mode does NOT write a silent empty-but-valid zotero-library.json for this condition -- doing so would be indistinguishable from a genuinely empty library. Open Zotero (Path 1, live API) or ensure the resolved sqlite path exists (Path 3), then re-run: zotero-generate-export.sh --orchestrator-mode true --output \"$OUTPUT_PATH\". If your Zotero uses a custom Data Directory, set \$ZOTERO_SQLITE_PATH to override auto-detection. No output file was written or overwritten." >&2
+    exit 1
   else
     manual_fallback_text
     exit 1

@@ -195,7 +195,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Wire resolver into `zotero-export-status.sh` (classifier) + flat copy [NOT STARTED]
+### Phase 2: Wire resolver into `zotero-export-status.sh` (classifier) + flat copy [COMPLETED]
 
 - **Goal:** Replace the hardcoded default at line 74 with a resolver call, add the missing
   `SCRIPT_DIR`, update doc comments, and re-sync the flat copy — without altering the single-directive
@@ -204,15 +204,15 @@ Phases within the same wave can execute in parallel.
   - `.claude/extensions/literature/scripts/zotero-export-status.sh` (canonical).
   - `.claude/scripts/zotero-export-status.sh` (flat copy).
 - **Tasks:**
-  - [ ] Add `SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"` near the top (after
-        `set -euo pipefail`, ~line 67).
-  - [ ] Replace line 74 `ZOTERO_SQLITE="${ZOTERO_SQLITE_PATH:-${HOME}/Zotero/zotero.sqlite}"` with
-        `ZOTERO_SQLITE="$("$SCRIPT_DIR/zotero-resolve-sqlite-path.sh")"`.
-  - [ ] Update the header/doc comments (lines 24-30 and 53-55) to describe the new 3-tier resolution
-        order instead of the old hardcoded default.
-  - [ ] Leave the Path-3 viability probe (lines 159-163) structurally unchanged — it now `-f`-tests
-        the correctly resolved path.
-  - [ ] `cp -p` canonical -> flat.
+  - [x] Add `SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"` near the top (after
+        `set -euo pipefail`, ~line 67). *(completed)*
+  - [x] Replace line 74 `ZOTERO_SQLITE="${ZOTERO_SQLITE_PATH:-${HOME}/Zotero/zotero.sqlite}"` with
+        `ZOTERO_SQLITE="$("$SCRIPT_DIR/zotero-resolve-sqlite-path.sh")"`. *(completed)*
+  - [x] Update the header/doc comments (lines 24-30 and 53-55) to describe the new 3-tier resolution
+        order instead of the old hardcoded default. *(completed)*
+  - [x] Leave the Path-3 viability probe (lines 159-163) structurally unchanged — it now `-f`-tests
+        the correctly resolved path. *(completed: unchanged)*
+  - [x] `cp -p` canonical -> flat. *(completed)*
 - **Timing:** 0.5 hours
 - **Depends on:** 1
 - **Verification:**
@@ -225,7 +225,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Wire resolver into `zotero-generate-export.sh` (FIX 1) + harden orchestrator else branch (FIX 2d) + flat copy [NOT STARTED]
+### Phase 3: Wire resolver into `zotero-generate-export.sh` (FIX 1) + harden orchestrator else branch (FIX 2d) + flat copy [COMPLETED]
 
 - **Goal:** Replace the hardcoded default at line 84 with the resolver call, update doc comments, and
   convert the silent-empty orchestrator `else` sub-branch (lines 542-551) into a loud, non-zero
@@ -234,20 +234,21 @@ Phases within the same wave can execute in parallel.
   - `.claude/extensions/literature/scripts/zotero-generate-export.sh` (canonical).
   - `.claude/scripts/zotero-generate-export.sh` (flat copy).
 - **Tasks:**
-  - [ ] Replace line 84 with `ZOTERO_SQLITE="$("$SCRIPT_DIR/zotero-resolve-sqlite-path.sh")"`
-        (`SCRIPT_DIR` already exists at line 75 — no plumbing needed).
-  - [ ] Update doc comments referencing `~/Zotero/zotero.sqlite` (lines 24, 60) and the manual-fallback
-        heredoc instruction at line 197 to describe the 3-tier resolution.
-  - [ ] In the Path-selection `else` block (lines 542-551), change the `ORCHESTRATOR_MODE = "true"`
+  - [x] Replace line 84 with `ZOTERO_SQLITE="$("$SCRIPT_DIR/zotero-resolve-sqlite-path.sh")"`
+        (`SCRIPT_DIR` already exists at line 75 — no plumbing needed). *(completed)*
+  - [x] Update doc comments referencing `~/Zotero/zotero.sqlite` (lines 24, 60) and the manual-fallback
+        heredoc instruction at line 197 to describe the 3-tier resolution. *(completed)*
+  - [x] In the Path-selection `else` block (lines 542-551), change the `ORCHESTRATOR_MODE = "true"`
         sub-branch so it no longer sets `ITEMS='[]'` / `SOURCE="none-orchestrator-default"` and no
         longer proceeds to `write_output`. Instead print a visible stderr error (heredoc/echo)
         instructing the user to open Zotero so the live API or a resolved sqlite becomes available,
         then `exit 1`. This mirrors the existing non-orchestrator `manual_fallback_text; exit 1`
-        pattern but phrased for orchestrator context (per Decision D).
-  - [ ] Update the exit-code doc table (lines 66-71) so `exit 1` (or a chosen distinct code) covers the
+        pattern but phrased for orchestrator context (per Decision D). *(completed)*
+  - [x] Update the exit-code doc table (lines 66-71) so `exit 1` (or a chosen distinct code) covers the
         orchestrator-mode "no data source available" loud failure, not only the non-orchestrator case.
-  - [ ] Leave `fetch_path3()` (lines 319-408) unchanged.
-  - [ ] `cp -p` canonical -> flat.
+        *(completed)*
+  - [x] Leave `fetch_path3()` (lines 319-408) unchanged. *(completed: unchanged)*
+  - [x] `cp -p` canonical -> flat. *(completed)*
 - **Timing:** 0.75 hours
 - **Depends on:** 1
 - **Verification:**

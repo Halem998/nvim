@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "Wire resolver into zotero-export-status.sh (classifier) + flat copy",
+  "started_at": "2026-07-01T00:15:00Z",
+  "last_updated": "2026-07-01T00:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add SCRIPT_DIR variable near top", "status": "done"},
+    {"id": 2, "description": "Replace hardcoded ZOTERO_SQLITE default with resolver call", "status": "done"},
+    {"id": 3, "description": "Update header/doc comments to describe 3-tier resolution", "status": "done"},
+    {"id": 4, "description": "cp -p canonical -> flat, verify diff empty", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

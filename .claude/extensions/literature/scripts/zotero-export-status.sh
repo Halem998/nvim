@@ -24,10 +24,10 @@
 #                                   zotero-generate-export.sh are viable.
 #   ZOTERO_EXPORT_MISSING_NOT_RUNNING
 #                                   Export is missing, the Zotero local API is NOT reachable,
-#                                   but ~/Zotero/zotero.sqlite is present -- Path 3
-#                                   (sqlite reconstruction, Zotero closed) is viable. The
-#                                   caller's offer text should also note the user may open
-#                                   Zotero instead for the richer API path.
+#                                   but the resolved Zotero sqlite file (see ZOTERO_SQLITE_PATH
+#                                   below) is present -- Path 3 (sqlite reconstruction, Zotero
+#                                   closed) is viable. The caller's offer text should also note
+#                                   the user may open Zotero instead for the richer API path.
 #   ZOTERO_EXPORT_UNAVAILABLE       Export is missing and no local Zotero data source was
 #                                   found at all (API unreachable AND no zotero.sqlite). No
 #                                   offer; the caller should surface the zotero-search.sh
@@ -50,9 +50,13 @@
 #   LITERATURE_DIR (env)               Path to the global Literature/ repo
 #                                      (default: ~/Projects/Literature).
 #   ZOTERO_LIBRARY (env)               Explicit library path override (tier 1 above).
-#   ZOTERO_SQLITE_PATH (env)           Override for the Path 3 sqlite probe (default:
-#                                      ~/Zotero/zotero.sqlite), mirroring
-#                                      zotero-generate-export.sh.
+#   ZOTERO_SQLITE_PATH (env)           Override for the Path 3 sqlite probe, mirroring
+#                                      zotero-generate-export.sh. If unset, the sqlite path is
+#                                      resolved by zotero-resolve-sqlite-path.sh: (1) this env
+#                                      override; (2) <dataDir>/zotero.sqlite auto-detected from
+#                                      the default Zotero profile's prefs.js when
+#                                      extensions.zotero.useDataDir=true; (3)
+#                                      ~/Zotero/zotero.sqlite default.
 #
 # NOTE (latent inconsistency, not fixed here): literature-discover.sh's tier2_search() only
 # ever checks `$LITERATURE_DIR/zotero-library.json`, not the full resolve_library_path()
@@ -65,13 +69,15 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 if ! command -v jq &>/dev/null; then
   echo "Error: jq is required but not found in PATH" >&2
   exit 1
 fi
 
 API_BASE="http://127.0.0.1:23119/api/users/0/items"
-ZOTERO_SQLITE="${ZOTERO_SQLITE_PATH:-${HOME}/Zotero/zotero.sqlite}"
+ZOTERO_SQLITE="$("$SCRIPT_DIR/zotero-resolve-sqlite-path.sh")"
 
 # --- Argument parsing ---
 output_path=""

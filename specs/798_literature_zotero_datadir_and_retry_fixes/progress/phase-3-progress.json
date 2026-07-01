@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Wire resolver into zotero-generate-export.sh + harden orchestrator else branch + flat copy",
+  "started_at": "2026-07-01T00:30:00Z",
+  "last_updated": "2026-07-01T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace hardcoded ZOTERO_SQLITE default with resolver call", "status": "done"},
+    {"id": 2, "description": "Update doc comments (lines 24, 60, 197 area) for 3-tier resolution", "status": "done"},
+    {"id": 3, "description": "Harden orchestrator else-branch to fail loudly, never write empty file", "status": "done"},
+    {"id": 4, "description": "Update exit-code doc table", "status": "done"},
+    {"id": 5, "description": "cp -p canonical -> flat, verify diff empty", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
