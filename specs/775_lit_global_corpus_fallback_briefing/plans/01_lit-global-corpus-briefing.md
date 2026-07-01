@@ -1,7 +1,7 @@
 # Implementation Plan: Task 775 — `--lit` No-Silent-Fallback + Global-Corpus Briefing
 
 - **Task**: 775 - `--lit` no-silent-fallback interactive briefing with global-corpus option
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None (coordinate doc scope with task 776; see Non-Goals)
 - **Research Inputs**: specs/775_lit_global_corpus_fallback_briefing/reports/01_lit-no-silent-fallback.md
@@ -311,28 +311,28 @@ docs -> integration).
     Interactive Sub-Index Setup Detection section). *(completed)*
   - [x] Task 776 scoping note present. *(completed)*
 
-### Phase 6: Integration verification and mirror-consistency audit [NOT STARTED]
+### Phase 6: Integration verification and mirror-consistency audit [COMPLETED]
 
 - **Goal:** Confirm the end-to-end behavior, mirror integrity, and doc-lint pass across all touched
   files.
 - **Tasks:**
-  - [ ] Run `bash .claude/scripts/check-extension-docs.sh` (doc-lint) and confirm it exits 0.
-  - [ ] Re-run `diff -q` on both mirror pairs (`literature-briefing.sh`,
-    `literature-lit-flag-resolve.sh`) — both identical.
-  - [ ] Simulate the autonomous path: call `literature-lit-flag-resolve.sh --lit-flag true
+  - [x] Run `bash .claude/scripts/check-extension-docs.sh` (doc-lint) and confirm it exits 0. *(deviation: skipped — the script reports FAIL: 2 issues on the unrelated `lean` extension (routing_hard targets `skill-lean-research-hard`/`skill-lean-implementation-hard` not deployed); confirmed via `git stash` that this identical FAIL exists on master before any task-775 changes. The `literature` extension itself reports OK. Fixing the lean extension is out of scope for task 775.)*
+  - [x] Re-run `diff -q` on both mirror pairs (`literature-briefing.sh`,
+    `literature-lit-flag-resolve.sh`) — both identical. *(completed)*
+  - [x] Simulate the autonomous path: call `literature-lit-flag-resolve.sh --lit-flag true
     --orchestrator-mode true --query "sample"` with no sub-index and a present global index; confirm
     `AUTONOMOUS_GLOBAL` and that a subsequent `literature-briefing.sh --global "sample"` produces a
-    footer-terminated block.
-  - [ ] Final grep sweep: all six skills reference the helper and `--global`, contain the three
-    option labels, and read `orchestrator_mode`.
+    footer-terminated block. *(completed)*
+  - [x] Final grep sweep: all six skills reference the helper and `--global`, contain the three
+    option labels, and read `orchestrator_mode`. *(completed: all six skills pass all checks)*
 - **Timing:** ~0.5 hours
 - **Depends on:** 5
 - **Files to modify:** none (verification only; fix-forward into prior phases if a check fails).
 - **Verification:**
-  - [ ] `check-extension-docs.sh` exits 0.
-  - [ ] Both mirror pairs identical.
-  - [ ] Autonomous simulation yields `AUTONOMOUS_GLOBAL` + footer-terminated global briefing.
-  - [ ] Six-skill consistency sweep passes.
+  - [x] `check-extension-docs.sh` exits 0. *(deviation: skipped — pre-existing unrelated lean-extension FAIL; literature extension itself is OK; see task note above)*
+  - [x] Both mirror pairs identical. *(completed)*
+  - [x] Autonomous simulation yields `AUTONOMOUS_GLOBAL` + footer-terminated global briefing. *(completed)*
+  - [x] Six-skill consistency sweep passes. *(completed)*
 
 ## Testing & Validation
 
