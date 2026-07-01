@@ -316,6 +316,78 @@ check_readme_vs_manifest() {
   fi
 }
 
+# Rule E: Scripts referenced in an extension's docs/skills/agents but NOT declared in the
+# extension's own provides.scripts (reverse direction of check_manifest_entries, which only
+# validates that declared entries exist on disk -- this catches the opposite bug: a script that
+# exists and is referenced but was never added to the manifest, so it never gets deployed to a
+# consuming repo). See task 793 (script packaging bug: literature-discover.sh and 6 siblings were
+# referenced but undeclared) for the motivating case.
+check_referenced_scripts_declared() {
+  local ext_path="$1"
+  local manifest="$ext_path/manifest.json"
+
+  # 1. Extract .sh/.sql filename tokens referenced in this extension's docs/skills/agents.
+  # Strip http(s) URLs first so remote install-script references (e.g.
+  # "https://astral.sh/uv/install.sh | sh", "https://elan.lean-lang.org/elan-init.sh") are not
+  # mistaken for local extension scripts. The trailing \b prevents partial-word matches inside
+  # unrelated identifiers that merely start with "sh"/"sql" after a dot (e.g. Python
+  # `df.shape`, `wb.sheetnames`, `slide.shapes`, `vim.opt.shiftwidth`).
+  local referenced
+  referenced=$(
+    {
+      for f in "$ext_path"/commands/*.md "$ext_path"/skills/*/SKILL.md \
+               "$ext_path"/agents/*.md "$ext_path/README.md" "$ext_path/EXTENSION.md"; do
+        [[ -f "$f" ]] || continue
+        sed -E 's#https?://[^[:space:]]+##g' "$f" 2>/dev/null \
+          | grep -oE '[A-Za-z0-9_-]+\.(sh|sql)\b'
+      done
+    } | sort -u
+  )
+  [[ -z "$referenced" ]] && return 0
+
+  # 2. Exclude names already owned/declared by the core extension, in EITHER
+  # provides.scripts or provides.hooks (cross-referenced against core's own manifest) to avoid
+  # false positives on core-owned scripts/hooks that other extensions legitimately mention by
+  # name (e.g. literature-retrieve.sh, generate-todo.sh, lifecycle-notify.sh).
+  local core_manifest="$EXT_DIR/core/manifest.json"
+  local core_declared=""
+  if [[ -f "$core_manifest" ]]; then
+    core_declared=$(jq -r '(.provides.scripts // [])[]?, (.provides.hooks // [])[]?' \
+      "$core_manifest" 2>/dev/null)
+  fi
+
+  # 3. Exclude names declared in ANY extension's provides.scripts (cross-extension
+  # invocation is legitimate -- e.g. core's --lit integration code invokes literature's
+  # already-packaged scripts by name via the shared flat .claude/scripts/ directory).
+  local all_declared_scripts=""
+  local m
+  for m in "$EXT_DIR"/*/manifest.json; do
+    [[ -f "$m" ]] || continue
+    all_declared_scripts+=$'\n'"$(jq -r '.provides.scripts[]? // empty' "$m" 2>/dev/null)"
+  done
+
+  # 4. Exclude names already declared in this extension's own provides.hooks (a script
+  # legitimately mentioned in its own docs need not be in provides.scripts if it is already
+  # tracked as a hook).
+  local own_hooks
+  own_hooks=$(jq -r '.provides.hooks[]? // empty' "$manifest" 2>/dev/null)
+
+  # 5. Verdict: fail on any remaining referenced name not covered by any exclusion set.
+  local name
+  for name in $referenced; do
+    if grep -qxF "$name" <<< "$core_declared"; then
+      continue
+    fi
+    if grep -qxF "$name" <<< "$all_declared_scripts"; then
+      continue
+    fi
+    if grep -qxF "$name" <<< "$own_hooks"; then
+      continue
+    fi
+    fail "script referenced in docs/skills/agents but NOT in provides.scripts: $name"
+  done
+}
+
 echo "Checking .claude/extensions/ documentation..."
 echo
 
@@ -340,6 +412,7 @@ for ext_path in "$EXT_DIR"/*/; do
       check_routing_consistency "$ext_path"
       check_deployed_skill_agents "$ext_path"
       check_readme_vs_manifest "$ext_path"
+      check_referenced_scripts_declared "$ext_path"
     else
       fail "manifest.json is not valid JSON"
     fi

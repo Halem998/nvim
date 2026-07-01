@@ -130,7 +130,9 @@
       "validate-wiring.sh",
       "vault-operation.sh",
       "verify-lean-mcp.sh",
-      "lint/lint-postflight-boundary.sh"
+      "lint/lint-postflight-boundary.sh",
+      "lifecycle-notify.sh",
+      "reconcile-artifacts.sh"
     ],
     "hooks": [
       "claude-stop-notify.sh",

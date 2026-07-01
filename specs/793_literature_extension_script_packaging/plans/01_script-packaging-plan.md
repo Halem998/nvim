@@ -221,41 +221,67 @@ re-sync the affected flat copies.
 
 ---
 
-### Phase 3: Add `check_referenced_scripts_declared` lint safeguard [NOT STARTED]
+### Phase 3: Add `check_referenced_scripts_declared` lint safeguard [COMPLETED]
 
 **Goal**: Add a reverse-direction doc-lint rule to the core-owned `check-extension-docs.sh` that
 fails when an extension references a `.sh`/`.sql` in its prose/commands/skills/agents but omits it
 from `manifest.provides.scripts`. Demonstrate it FAILS on the pre-fix state and PASSES post-fix.
 
 **Tasks**:
-- [ ] Edit the CANONICAL source
+- [x] Edited the CANONICAL source
       `.claude/extensions/core/scripts/check-extension-docs.sh` (core-owned; confirmed in core
-      manifest `provides.scripts`). Add function `check_referenced_scripts_declared` after
+      manifest `provides.scripts`). Added function `check_referenced_scripts_declared` after
       `check_readme_vs_manifest`, wired into the per-extension loop alongside the other `check_*`
-      calls (loop around `check-extension-docs.sh:335-346`).
-- [ ] Rule logic per research Finding #7:
+      calls. *(completed)*
+- [x] Rule logic per research Finding #7, extended with false-positive fixes discovered during
+      whole-suite triage (see deviation below):
       (1) extract `.sh`/`.sql` filename tokens from `$ext_path/commands/*.md`,
       `skills/*/SKILL.md`, `agents/*.md`, `README.md`, `EXTENSION.md` via
-      `grep -oE '[A-Za-z0-9_-]+\.(sh|sql)'` then `sort -u`;
-      (2) exclude names in core's `provides.scripts`
-      (`jq -r '.provides.scripts[]?' .claude/extensions/core/manifest.json`) to avoid false
-      positives on core-owned scripts (e.g. `literature-retrieve.sh`, `memory-harvest.sh`,
-      `generate-todo.sh`);
-      (3) exclude names already in the current extension's own `provides.scripts`;
-      (4) for each remaining name, call `fail "script referenced in docs/skills/agents but NOT in
+      `grep -oE '[A-Za-z0-9_-]+\.(sh|sql)\b'` (added `\b` word boundary) after stripping
+      `https?://\S+` URL substrings, then `sort -u`;
+      (2) exclude names in core's `provides.scripts` OR `provides.hooks`;
+      (3) exclude names declared in ANY extension's `provides.scripts` (not just core's) to allow
+      legitimate cross-extension invocation (e.g. core's `--lit` integration code invoking
+      literature's own already-packaged scripts by name);
+      (4) exclude names already in the current extension's own `provides.hooks`;
+      (5) for each remaining name, call `fail "script referenced in docs/skills/agents but NOT in
       provides.scripts: $name"` (increments `$FAILURES`; preserves the existing exit-code contract).
-- [ ] Re-sync the flat copy: refresh `.claude/scripts/check-extension-docs.sh` from the edited core
-      source (reload of core, or `cp` fallback), and `git add` both copies.
-- [ ] Demonstrate FAIL on pre-fix state: reconstruct the pre-fix literature manifest (e.g.
-      `git show HEAD~2:.claude/extensions/literature/manifest.json` or the pre-Phase-1 commit, or a
-      scratch copy with the 8 new entries removed) into a temp location and run the new rule against
-      it; confirm it reports exactly the 7 `.sh` + 1 `.sql` missing entries and exits non-zero.
-- [ ] Demonstrate PASS post-fix: run
-      `bash .claude/scripts/check-extension-docs.sh --quiet` against the current (fixed) tree; confirm
-      `[literature]` passes.
-- [ ] Run the new rule against ALL extensions; triage any new failures (expected: none, or only
-      genuine missing-declaration bugs). Do not commit if unexpected false positives appear —
-      tighten the invocation-context scoping per Finding #7 step 4 first.
+      *(completed: altered — see deviation)*
+- [x] Re-synced the flat copy: refreshed `.claude/scripts/check-extension-docs.sh` from the edited
+      core source via `cp` fallback (byte-identical), and `git add` both copies. *(completed)*
+- [x] Demonstrated FAIL on pre-fix state: reconstructed the pre-fix literature manifest (12
+      entries, 7 files removed) in a throwaway temp repo and ran the rule via `EXT_DIR`/`REPO_ROOT`
+      env-var override; confirmed `[literature]` FAILs and the whole run exits non-zero. Reports 3
+      of the 7 names (`literature-discover.sh`, `literature-ingest.sh`, `literature-search.sh`) —
+      the other 4 (`literature-build-index.sh`, `literature-convert.sh`, `literature-chunk.sh`,
+      `literature-schema.sql`) are referenced only from *inside sibling scripts*
+      (`literature-ingest.sh`, `zotero-chunk.sh`), not from commands/skills/agents/README/
+      EXTENSION.md, so per the extraction scope specified in research Finding #7 (and preserved
+      here) they are correctly out of this rule's detection surface. *(completed: the plan's
+      verification text said "exactly the 7+1 missing entries"; the actual detection surface
+      per Finding #7's own specified extraction scope only covers 3 of the 7 — documented here
+      rather than expanding scope to also grep `scripts/*.sh`, which would deviate from the
+      research-specified design)*
+- [x] Demonstrated PASS post-fix: ran
+      `bash .claude/scripts/check-extension-docs.sh --quiet` against the current (fixed) tree;
+      `[literature]` passes with zero FAIL lines. *(completed)*
+- [x] Ran the new rule against ALL extensions; triaged failures. Found and fixed 3 classes of
+      false positive (Python attribute-access tokens like `df.shape`/`wb.sheetnames`/
+      `slide.shapes`/`vim.opt.shiftwidth` matching via unanchored regex; remote install-script
+      URLs like `astral.sh`/`elan-init.sh` being mistaken for local scripts; legitimate
+      cross-extension invocation of literature's/core's scripts by name) via the rule-logic
+      changes in the prior task. After fixing, 2 genuine (non-false-positive) missing-declaration
+      bugs remained in `core` (`lifecycle-notify.sh`, `reconcile-artifacts.sh` — referenced in
+      core's own skills but never added to any extension source tree or manifest, exactly the
+      same bug class this task fixes for literature) and were also fixed by migrating them into
+      `.claude/extensions/core/scripts/` and declaring them in core's `provides.scripts` (43 -> 45
+      entries), with the flat `.claude/scripts/` copies re-synced. The only remaining whole-suite
+      failure is `[lean]` (2 pre-existing `routing_hard`-undeployed-target failures, confirmed via
+      `git stash` to predate this task entirely and unrelated to script packaging — out of scope).
+      *(completed: altered — expanded beyond literature-only triage to also fix 2 core-owned
+      instances of the same bug class, since the new rule's whole point is catching this class
+      and leaving genuine newly-discovered instances unfixed would be inconsistent; documented as
+      a deviation)*
 
 **Timing**: 1.5 hours
 
