@@ -1,0 +1,26 @@
+{
+  "phase": 5,
+  "phase_name": "Update CLAUDE.md source-of-truth (interactive-behavior only)",
+  "started_at": "2026-07-01T17:46:00Z",
+  "last_updated": "2026-07-01T17:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite Interactive Sub-Index Setup Detection section", "status": "done"},
+    {"id": 2, "description": "Add task 776 scoping note", "status": "done"},
+    {"id": 3, "description": "Verify What --lit Does section untouched", "status": "done"},
+    {"id": 4, "description": "Attempt CLAUDE.md regeneration", "status": "done", "note": "no generator script found; deferred to regeneration-on-load per plan contingency"}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "search for merge-sources generator script under .claude/scripts and repo root", "result": "not_found", "reason": "no script references 'merge-sources'; CLAUDE.md regeneration mechanism is not a standalone script in this repo checkout"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.4",
+      "description": "Regenerate .claude/CLAUDE.md from merge-sources via the extension merge mechanism",
+      "type": "altered",
+      "reason": "No direct generator script exists on disk; per the plan's Rollback/Contingency note, left claudemd.md edited and relied on regeneration-on-load rather than manually editing the generated .claude/CLAUDE.md.",
+      "annotation": "*(deviation: altered — no merge-source generator script was found on disk; left claudemd.md edited and relying on regeneration-on-load; .claude/CLAUDE.md was NOT manually edited)*"
+    }
+  ]
+}

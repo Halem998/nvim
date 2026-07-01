@@ -282,34 +282,34 @@ docs -> integration).
   - [x] Cross-file consistency: the Stage 4a decision block matches the Phase 3 template across all
     six skills (spot-diff the directive-branch structure). *(completed: programmatic diff confirms the case/esac block is byte-identical across all six SKILL.md files)*
 
-### Phase 5: Update CLAUDE.md source-of-truth (interactive-behavior only) [NOT STARTED]
+### Phase 5: Update CLAUDE.md source-of-truth (interactive-behavior only) [COMPLETED]
 
 - **Goal:** Rewrite the "Interactive Sub-Index Setup Detection" section in
   `.claude/extensions/core/merge-sources/claudemd.md` to describe the new two-live-options +
   explicit-skip flow, the global-corpus briefing, the shared helper, and the autonomous default —
   scoped narrowly to avoid conflict with task 776 (requirement 4 doc portion).
 - **Tasks:**
-  - [ ] Replace lines ~328-350 ("Interactive Sub-Index Setup Detection") with the new flow: options
+  - [x] Replace lines ~328-350 ("Interactive Sub-Index Setup Detection") with the new flow: options
     become "Use global corpus now" / "Create curation task" / "Skip this run"; document the
     `AUTONOMOUS_GLOBAL` default for `/orchestrate` and the `[lit:auto]` visible notice; mention
-    `literature-lit-flag-resolve.sh` and `literature-briefing.sh --global`.
-  - [ ] Add an inline scoping note: the broader `--lit` model description ("What `--lit` Does" /
-    `literature-retrieve.sh`) is owned by task 776 and intentionally left unchanged here.
-  - [ ] Do NOT edit the "What `--lit` Does" or other Literature Mode subsections.
-  - [ ] Regenerate `.claude/CLAUDE.md` from merge-sources via the extension merge mechanism (or, if
+    `literature-lit-flag-resolve.sh` and `literature-briefing.sh --global`. *(completed)*
+  - [x] Add an inline scoping note: the broader `--lit` model description ("What `--lit` Does" /
+    `literature-retrieve.sh`) is owned by task 776 and intentionally left unchanged here. *(completed)*
+  - [x] Do NOT edit the "What `--lit` Does" or other Literature Mode subsections. *(completed: git diff confirms only the Interactive Sub-Index Setup Detection section changed)*
+  - [x] Regenerate `.claude/CLAUDE.md` from merge-sources via the extension merge mechanism (or, if
     no direct generator exists, note that it regenerates on next extension load) and confirm the
-    rendered file reflects the new wording.
+    rendered file reflects the new wording. *(deviation: altered — no merge-source generator script was found on disk (searched .claude/scripts/ and repo root for "merge-sources" references); per the plan's own Rollback/Contingency note, left claudemd.md edited and relying on regeneration-on-load; .claude/CLAUDE.md was NOT manually edited)*
 - **Timing:** ~0.5 hours
 - **Depends on:** 4
 - **Files to modify:**
   - `.claude/extensions/core/merge-sources/claudemd.md` - interactive-behavior section rewrite.
   - `.claude/CLAUDE.md` - regenerated output (if generator available).
 - **Verification:**
-  - [ ] `grep -q "Use global corpus now" .claude/extensions/core/merge-sources/claudemd.md` and the
-    other two option labels present.
-  - [ ] The "What `--lit` Does" subsection is unchanged (`git diff` shows edits confined to the
-    Interactive Sub-Index Setup Detection section).
-  - [ ] Task 776 scoping note present.
+  - [x] `grep -q "Use global corpus now" .claude/extensions/core/merge-sources/claudemd.md` and the
+    other two option labels present. *(completed)*
+  - [x] The "What `--lit` Does" subsection is unchanged (`git diff` shows edits confined to the
+    Interactive Sub-Index Setup Detection section). *(completed)*
+  - [x] Task 776 scoping note present. *(completed)*
 
 ### Phase 6: Integration verification and mirror-consistency audit [NOT STARTED]
 
