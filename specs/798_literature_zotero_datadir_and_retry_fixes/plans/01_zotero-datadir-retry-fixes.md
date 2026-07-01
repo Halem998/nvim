@@ -263,7 +263,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Restructure `literature.md` NOT_RUNNING branch (FIX 2 a/b/c/d) [NOT STARTED]
+### Phase 4: Restructure `literature.md` NOT_RUNNING branch (FIX 2 a/b/c/d) [COMPLETED]
 
 - **Goal:** Split the shared RUNNING/NOT_RUNNING prompt into directive-specific option sets, add the
   bounded "Open Zotero, then retry" primary path with fresh enable-API guidance, keep Path 3 as an
@@ -272,30 +272,36 @@ Phases within the same wave can execute in parallel.
 - **Files to modify (ownership):**
   - `.claude/extensions/literature/commands/literature.md` (canonical only; no mirror to sync).
 - **Tasks:**
-  - [ ] Split the interactive `AskUserQuestion` block (lines 145-185) so `ZOTERO_EXPORT_MISSING_RUNNING`
+  - [x] Split the interactive `AskUserQuestion` block (lines 145-185) so `ZOTERO_EXPORT_MISSING_RUNNING`
         keeps its current two-option prompt ("Generate now" -> Path 1 / "Skip this run"), while
         `ZOTERO_EXPORT_MISSING_NOT_RUNNING` gets three options: (1) "Open Zotero, then retry" (new
         primary); (2) "Generate an offline snapshot without opening Zotero" (existing Path-3 behavior,
-        text preserved, demoted to secondary per requirement (c)); (3) "Skip this run".
-  - [ ] Author the bounded retry loop (Decision C): max 3 attempts; each attempt re-invokes
+        text preserved, demoted to secondary per requirement (c)); (3) "Skip this run". *(completed)*
+  - [x] Author the bounded retry loop (Decision C): max 3 attempts; each attempt re-invokes
         `STATUS_SCRIPT` and inspects the single directive token; on flip to
         `ZOTERO_EXPORT_MISSING_RUNNING` call `GENERATE_SCRIPT` (Path 1) and stop; between attempts use
         one `AskUserQuestion` with ["I've opened Zotero — retry now" / "Generate an offline snapshot
         instead" / "Skip this run"]. Express as numbered prose-pseudocode consistent with step "0."'s
-        existing style; state the cap explicitly (requirement (a)).
-  - [ ] After the retry cap is exhausted (still not RUNNING / API non-200 though user says Zotero is
+        existing style; state the cap explicitly (requirement (a)). *(completed)*
+  - [x] After the retry cap is exhausted (still not RUNNING / API non-200 though user says Zotero is
         open), surface freshly-authored enable-API guidance in the `zotero-search.sh:143-169`
         numbered-heredoc style (requirement (b)): platform-neutral "Settings -> Advanced" +
         "Allow other applications on this computer to communicate with Zotero" + retry instruction.
-        Then offer the secondary Path 3 snapshot and skip.
-  - [ ] Reuse the existing "On 'Generate now'" success/failure handling (lines 176-181) verbatim for
-        the secondary Path 3 option.
-  - [ ] Split the orchestrator-mode paragraph (lines 203-213): RUNNING keeps calling
+        Then offer the secondary Path 3 snapshot and skip. *(completed)*
+  - [x] Reuse the existing "On 'Generate now'" success/failure handling (lines 176-181) verbatim for
+        the secondary Path 3 option. *(completed: reused by explicit cross-reference to "the SAME
+        success/failure handling as 'Generate now' above" rather than literal text duplication, to
+        avoid the two blocks silently drifting apart in a prose-pseudocode spec file)*
+  - [x] Split the orchestrator-mode paragraph (lines 203-213): RUNNING keeps calling
         `GENERATE_SCRIPT --orchestrator-mode true` (Path 1 immediately viable); NOT_RUNNING also calls
         `GENERATE_SCRIPT --orchestrator-mode true` but the prose states it does **not** loop/prompt and
         relies on the generator's hardened `else` branch (Phase 3) for the loud-failure / never-empty
-        guarantee (Decision D). Do not duplicate a data-source pre-check here.
-  - [ ] Leave the `ZOTERO_EXPORT_UNAVAILABLE` branch (lines 187-201) untouched.
+        guarantee (Decision D). Do not duplicate a data-source pre-check here. *(completed)*
+  - [x] Leave the `ZOTERO_EXPORT_UNAVAILABLE` branch (lines 187-201) untouched. *(deviation: altered —
+        one clause changed from the hardcoded "~/Zotero/zotero.sqlite does not exist" to "no
+        zotero.sqlite was found at the resolved sqlite path", since the old hardcoded wording would
+        now misrepresent FIX 1's resolver-driven path; the branch's structure/logic is otherwise
+        unchanged)*
 - **Timing:** 1 hour
 - **Depends on:** 2, 3
 - **Verification:**

@@ -142,10 +142,9 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--validate|--index FILE|--convert [F
          - **`ZOTERO_EXPORT_PRESENT`**: No offer. Proceed directly to step 1 (main discover
            call) as today.
 
-         - **`ZOTERO_EXPORT_MISSING_RUNNING`** or **`ZOTERO_EXPORT_MISSING_NOT_RUNNING`**
-           (interactive context, `orchestrator_mode != true`): Issue `AskUserQuestion`
-           mirroring the three-option precedent style of `literature-lit-flag-resolve.sh`'s
-           `--lit` prompt:
+         - **`ZOTERO_EXPORT_MISSING_RUNNING`** (interactive context, `orchestrator_mode !=
+           true`): Zotero is already running, so its local API is immediately viable (Path 1).
+           Issue `AskUserQuestion` with the two-option prompt:
 
            ```json
            {
@@ -155,7 +154,7 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--validate|--index FILE|--convert [F
              "options": [
                {
                  "label": "Generate now (recommended)",
-                 "description": "{path-specific detail, see below} This writes a ONE-TIME SNAPSHOT (not Zotero's auto-refreshing \"Keep updated\" export) plus a staleness stamp; re-run the generator later to refresh."
+                 "description": "Zotero is running -- pulls your whole library live via its local API (and enriches citation-keys via Better BibTeX if installed). This writes a ONE-TIME SNAPSHOT (not Zotero's auto-refreshing \"Keep updated\" export) plus a staleness stamp; re-run the generator later to refresh."
                },
                {
                  "label": "Skip this run",
@@ -164,14 +163,6 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--validate|--index FILE|--convert [F
              ]
            }
            ```
-
-           Path-specific detail for the first option's description:
-           - If directive is `ZOTERO_EXPORT_MISSING_RUNNING`: "Zotero is running -- pulls your
-             whole library live via its local API (and enriches citation-keys via Better
-             BibTeX if installed)."
-           - If directive is `ZOTERO_EXPORT_MISSING_NOT_RUNNING`: "Zotero is closed, so this
-             reconstructs a snapshot directly from ~/Zotero/zotero.sqlite. For the richer live
-             API path instead, open Zotero first, then re-run `/literature`."
 
            On "Generate now": run `"$GENERATE_SCRIPT" --orchestrator-mode false`, capturing
            stdout (resolved output path) and stderr (progress/rationale, including the
@@ -184,12 +175,91 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--validate|--index FILE|--convert [F
            user choice" notice (non-silent because it is a chosen option, not a default), then
            proceed to step 1.
 
+         - **`ZOTERO_EXPORT_MISSING_NOT_RUNNING`** (interactive context, `orchestrator_mode !=
+           true`): Zotero is closed. Issue `AskUserQuestion` with THREE options. The primary
+           choice is now opening Zotero and retrying via the live API (Path 1 -- richer, and
+           data-dir-agnostic since it never touches the sqlite file directly); the offline
+           sqlite snapshot (Path 3) is kept as an explicit secondary; skip remains:
+
+           ```json
+           {
+             "question": "No Zotero export found at {resolved_path}, and Zotero does not appear to be running. How would you like to proceed?",
+             "header": "Assisted Zotero Export Generation",
+             "multiSelect": false,
+             "options": [
+               {
+                 "label": "Open Zotero, then retry (recommended)",
+                 "description": "Open the Zotero desktop app, then retry here. Once running, this pulls your whole library live via Zotero's local API (and enriches citation-keys via Better BibTeX if installed) -- richer, and works regardless of any custom Zotero Data Directory setting."
+               },
+               {
+                 "label": "Generate an offline snapshot without opening Zotero",
+                 "description": "Reconstructs a ONE-TIME SNAPSHOT directly from your local Zotero sqlite database while Zotero stays closed (plus a staleness stamp; re-run the generator later to refresh)."
+               },
+               {
+                 "label": "Skip this run",
+                 "description": "Continue without a Zotero export; Tier 2 stays skipped for this discovery pass. You can generate it later via zotero-generate-export.sh."
+               }
+             ]
+           }
+           ```
+
+           **On "Open Zotero, then retry"**: enter a bounded retry loop, capped at **3 attempts
+           total** (this explicit cap guarantees the loop cannot run forever if Zotero is never
+           actually opened, or opens with its local API disabled):
+
+           1. Set `attempt = 1`.
+           2. Re-invoke the classifier: `zotero_directive=$("$STATUS_SCRIPT" --orchestrator-mode
+              false 2>/tmp/zotero-status-rationale.txt)`.
+           3. If `zotero_directive` is now `ZOTERO_EXPORT_MISSING_RUNNING`: run
+              `"$GENERATE_SCRIPT" --orchestrator-mode false` (Path 1, live pull), using the SAME
+              success/failure handling as "Generate now" above, then STOP the loop and proceed to
+              step 1.
+           4. Otherwise, if `attempt < 3`: issue `AskUserQuestion` with options
+              `["I've opened Zotero — retry now", "Generate an offline snapshot instead", "Skip
+              this run"]`. On "retry now": increment `attempt` and go back to step 2. On
+              "Generate an offline snapshot instead" or "Skip this run": break out of the loop
+              and fall through to the corresponding handling below.
+           5. Otherwise (`attempt == 3` and still not `ZOTERO_EXPORT_MISSING_RUNNING` -- Zotero
+              was never opened, or is open but its local API stayed unreachable): surface this
+              freshly-authored enable-API guidance, matching the numbered-heredoc style of
+              `zotero-search.sh:143-169`:
+
+              ```
+              Zotero's local API is still not reachable after 3 attempts.
+
+              If Zotero is open but this keeps failing, its local API sharing setting may be
+              disabled:
+
+              1. In Zotero, go to:
+                 Zotero Settings -> Advanced -> API
+              2. Check the box:
+                 "Allow other applications on this computer to communicate with Zotero"
+              3. Retry `/literature` once the box is checked -- no restart of Zotero should be
+                 required.
+              ```
+
+              Then present a final `AskUserQuestion` with `["Generate an offline snapshot
+              instead", "Skip this run"]` and fall through to the corresponding handling below.
+
+           **On "Generate an offline snapshot without opening Zotero"** (whether chosen directly
+           from the initial three-option prompt, or reached after the retry loop above): run
+           `"$GENERATE_SCRIPT" --orchestrator-mode false` (Path 3, sqlite reconstruction against
+           the resolved sqlite path), using the SAME success/failure handling as "Generate now"
+           above (capture stdout/stderr; proceed to step 1 on success with Tier 2 populated; on
+           failure surface the generator's stderr and fall back to step 1 non-fatally, Tier 2
+           stays skipped).
+
+           **On "Skip this run"** (whether chosen directly, or reached after the retry loop):
+           log the same visible, explicit "Zotero export generation skipped by user choice"
+           notice as above, then proceed to step 1.
+
          - **`ZOTERO_EXPORT_UNAVAILABLE`**: No offer. Surface the zotero-search.sh-matching
            manual-setup steps directly (no local Zotero data source exists to generate from):
 
            ```
            No Zotero export found, and no local Zotero installation was detected either
-           (Zotero's local API is unreachable and ~/Zotero/zotero.sqlite does not exist).
+           (Zotero's local API is unreachable and no zotero.sqlite was found at the resolved
+           sqlite path).
 
            To set up Zotero CSL-JSON export manually:
            1. Install the Better BibTeX plugin for Zotero: https://retorque.re/zotero-better-bibtex/
@@ -200,17 +270,27 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--validate|--index FILE|--convert [F
 
            Then proceed to step 1 (Tier 2 stays skipped, non-fatal, as today).
 
-         - **Orchestrator / non-interactive default** (`orchestrator_mode == true`):
-           `AskUserQuestion` cannot prompt a human, so it MUST NOT be called for
-           `ZOTERO_EXPORT_MISSING_RUNNING` / `ZOTERO_EXPORT_MISSING_NOT_RUNNING`. Instead, take
-           the deterministic default "generate now": run
-           `"$GENERATE_SCRIPT" --orchestrator-mode true` and emit a visible `[zotero:auto]`
-           notice (surfacing the generator's own `[zotero:auto]`-prefixed stderr line when the
-           directive was actually `ZOTERO_EXPORT_UNAVAILABLE` and the generator itself found no
-           data source) explaining the autonomous choice -- this is NEVER a silent no-op, and
-           mirrors the `AUTONOMOUS_GLOBAL` precedent from the `--lit` flow (see CLAUDE.md
-           "Literature Mode" section). Then proceed to step 1 regardless of the generation
-           outcome (Tier 2 either becomes populated or stays skipped, non-fatal).
+         - **Orchestrator / non-interactive default, `ZOTERO_EXPORT_MISSING_RUNNING`**
+           (`orchestrator_mode == true`): `AskUserQuestion` cannot prompt a human, so it MUST
+           NOT be called. Zotero's local API is already viable, so take the deterministic
+           default "generate now": run `"$GENERATE_SCRIPT" --orchestrator-mode true` and emit a
+           visible `[zotero:auto]` notice explaining the autonomous choice -- this is NEVER a
+           silent no-op, and mirrors the `AUTONOMOUS_GLOBAL` precedent from the `--lit` flow
+           (see CLAUDE.md "Literature Mode" section). Then proceed to step 1 regardless of the
+           generation outcome (Tier 2 either becomes populated or stays skipped, non-fatal).
+
+         - **Orchestrator / non-interactive default, `ZOTERO_EXPORT_MISSING_NOT_RUNNING`**
+           (`orchestrator_mode == true`): `AskUserQuestion` cannot prompt a human, and there is
+           no human available to open Zotero, so this branch does **not** loop and does **not**
+           prompt (unlike the interactive branch above) -- it does not duplicate a data-source
+           pre-check here either. It still runs `"$GENERATE_SCRIPT" --orchestrator-mode true`
+           directly (a resolved sqlite path is a legitimate non-interactive success path via
+           Path 3, post-FIX-1). The "never write an empty file, fail loudly instead" guarantee
+           for the genuine no-data-source case is concentrated entirely inside the generator's
+           own hardened orchestrator-mode `else` branch (see `zotero-generate-export.sh`) -- this
+           command layer does not re-implement it. Then proceed to step 1 regardless of the
+           generation outcome (Tier 2 either becomes populated or stays skipped, non-fatal; a
+           generator failure here is surfaced via its loud stderr error, never silent).
 
          This offer is a SEPARATE classifier invocation from the main discover call below; it
          never touches `literature-discover.sh`'s pure-JSON-array stdout contract, and it does

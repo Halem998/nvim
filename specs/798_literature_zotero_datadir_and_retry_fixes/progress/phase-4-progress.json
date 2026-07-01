@@ -1,0 +1,25 @@
+{
+  "phase": 4,
+  "phase_name": "Restructure literature.md NOT_RUNNING branch (FIX 2 a/b/c/d)",
+  "started_at": "2026-07-01T01:00:00Z",
+  "last_updated": "2026-07-01T01:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Split AskUserQuestion block: RUNNING keeps 2 options, NOT_RUNNING gets 3", "status": "done"},
+    {"id": 2, "description": "Author bounded retry loop (max 3 attempts)", "status": "done"},
+    {"id": 3, "description": "Author fresh enable-API guidance (zotero-search.sh style)", "status": "done"},
+    {"id": 4, "description": "Reuse existing success/failure handling for secondary Path 3 option", "status": "done", "note": "Reused by cross-reference rather than literal text duplication"},
+    {"id": 5, "description": "Split orchestrator-mode paragraph into RUNNING vs NOT_RUNNING", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.6",
+      "description": "Leave the ZOTERO_EXPORT_UNAVAILABLE branch (lines 187-201) untouched",
+      "type": "altered",
+      "reason": "One clause updated from hardcoded '~/Zotero/zotero.sqlite does not exist' to 'no zotero.sqlite was found at the resolved sqlite path' so the manual-setup text stays accurate after FIX 1's resolver change; branch structure/logic otherwise unchanged.",
+      "annotation": "*(deviation: altered — updated one clause referencing the old hardcoded sqlite path for accuracy post-FIX-1)*"
+    }
+  ]
+}
