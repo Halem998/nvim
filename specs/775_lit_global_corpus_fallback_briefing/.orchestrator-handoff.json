@@ -1,0 +1,87 @@
+{
+  "status": "implemented",
+  "summary": "All 6 phases of the --lit no-silent-fallback + global-corpus briefing plan are complete. literature-briefing.sh gained a --global mode (canonical + mirror, single shared footer-terminated output section); the new literature-lit-flag-resolve.sh shared helper (canonical + mirror) classifies the --lit Stage 4a decision into 5 directives; all six --lit-aware skills (skill-researcher, skill-planner, skill-implementer, and their --hard variants) were rewritten to a non-silent three-option flow (Use global corpus now / Create curation task / Skip this run) with a deterministic, visibly-logged [lit:auto] default for orchestrator_mode==true; claudemd.md's Interactive Sub-Index Setup Detection section was rewritten to match, with an explicit scoping note deferring the broader --lit model rewrite to task 776. Integration audit confirms both mirror pairs byte-identical, the Stage 4a case/esac block byte-identical across all six skills, and an end-to-end autonomous-path simulation producing a footer-terminated global briefing.",
+  "phases_completed": 6,
+  "phases_total": 6,
+  "blockers": [],
+  "continuation_context": null,
+  "artifacts": [
+    {
+      "type": "script",
+      "path": ".claude/extensions/literature/scripts/literature-briefing.sh",
+      "summary": "Added --global \"<query>\" [--top-n N] mode; refactored to a single output section that always appends the How to Use footer for both modes; no-arg per-repo silent-exit regression preserved"
+    },
+    {
+      "type": "script",
+      "path": ".claude/scripts/literature-briefing.sh",
+      "summary": "Byte-identical mirror of the canonical literature-briefing.sh"
+    },
+    {
+      "type": "script",
+      "path": ".claude/extensions/literature/scripts/literature-lit-flag-resolve.sh",
+      "summary": "New shared helper implementing the D1 directive contract (LIT_DISABLED, SUBINDEX_PRESENT, GLOBAL_MISSING, PROMPT_NEEDED, AUTONOMOUS_GLOBAL); directive token on stdout, rationale on stderr"
+    },
+    {
+      "type": "script",
+      "path": ".claude/scripts/literature-lit-flag-resolve.sh",
+      "summary": "Byte-identical mirror of the canonical literature-lit-flag-resolve.sh"
+    },
+    {
+      "type": "skill",
+      "path": ".claude/skills/skill-researcher/SKILL.md",
+      "summary": "Stage 4a rewritten to the D2/D3 non-silent three-option flow via the shared helper (canonical template)"
+    },
+    {
+      "type": "skill",
+      "path": ".claude/skills/skill-planner/SKILL.md",
+      "summary": "Stage 4a rewritten identically to the skill-researcher template"
+    },
+    {
+      "type": "skill",
+      "path": ".claude/skills/skill-implementer/SKILL.md",
+      "summary": "Stage 4a rewritten identically to the skill-researcher template"
+    },
+    {
+      "type": "skill",
+      "path": ".claude/skills/skill-researcher-hard/SKILL.md",
+      "summary": "Stage 4a rewritten identically to the standard-skill template, hard-mode surrounding text preserved"
+    },
+    {
+      "type": "skill",
+      "path": ".claude/skills/skill-planner-hard/SKILL.md",
+      "summary": "Stage 4a rewritten identically to the standard-skill template, hard-mode surrounding text preserved"
+    },
+    {
+      "type": "skill",
+      "path": ".claude/skills/skill-implementer-hard/SKILL.md",
+      "summary": "Stage 4a rewritten identically to the standard-skill template, hard-mode surrounding text preserved"
+    },
+    {
+      "type": "doc",
+      "path": ".claude/extensions/core/merge-sources/claudemd.md",
+      "summary": "Interactive Sub-Index Setup Detection section rewritten to describe the shared helper, three-option flow, and AUTONOMOUS_GLOBAL/[lit:auto] default; task 776 scoping note added; What --lit Does subsection left untouched"
+    },
+    {
+      "type": "plan",
+      "path": "specs/775_lit_global_corpus_fallback_briefing/plans/01_lit-global-corpus-briefing.md",
+      "summary": "All 6 phases marked [COMPLETED] with per-task completion annotations and 2 documented deviations"
+    },
+    {
+      "type": "summary",
+      "path": "specs/775_lit_global_corpus_fallback_briefing/summaries/01_lit-global-corpus-briefing-summary.md",
+      "summary": "Full implementation summary covering all 6 phases, decisions, deviations, and verification results"
+    }
+  ],
+  "deviations": [
+    {
+      "task_id": "5.4",
+      "type": "altered",
+      "reason": "No merge-source-to-.claude/CLAUDE.md generator script exists on disk; per the plan's own Rollback/Contingency note, claudemd.md was left edited and regeneration deferred to next extension load; .claude/CLAUDE.md was not manually edited."
+    },
+    {
+      "task_id": "6.1",
+      "type": "skipped",
+      "reason": "check-extension-docs.sh reports FAIL: 2 issues, both on the unrelated lean extension (routing_hard targets not deployed); confirmed via git stash that this identical failure pre-exists on master before any task-775 changes. The literature extension itself reports OK."
+    }
+  ]
+}
