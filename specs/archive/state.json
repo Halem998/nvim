@@ -30388,6 +30388,110 @@
       "last_updated": "2026-06-24T20:04:01Z",
       "session_id": "sess_1782330680_8c9229",
       "archived": "2026-06-24T20:08:11Z"
+    },
+    {
+      "project_number": 784,
+      "project_name": "pr_command_workflow_selection",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-06-30T17:02:12Z",
+      "last_updated": "2026-06-30T17:29:05Z",
+      "title": "/pr: select among new/stacked/update/amend PR workflows with auto-detection",
+      "description": "[/pr WORKFLOW SELECTION] Add a workflow-determination front-end to the PR-SUBMISSION path of the /pr command (cslib extension, source: .claude/extensions/cslib/commands/pr.md; deployed: .claude/commands/pr.md). Leave the --review path (STEP 0) and the PR-READY review-response posting path (STEP 0.5) UNTOUCHED. Insert a new early step immediately after argument parsing (STEP 1) that resolves WHICH of four workflows applies BEFORE any branch/CI work: (1) NEW branch from upstream/main (default; current STEP 4-5 behavior); (2) STACKED on an upstream PR -- create the feature branch from that PR head ref (gh pr checkout / fetch the PR head) instead of upstream/main, and set gh pr create --base to the PR head branch; (3) UPDATE an existing PR -- checkout the PR head branch, add a commit, push, do NOT call gh pr create; (4) AMEND/SQUASH + force-push -- amend or squash onto the existing PR branch and git push --force-with-lease (no new PR). FLAG SCHEME (3 flags + sensible default, per user decision \"flags, not too many\"): no flag => new (default); --stacked [PR]; --update [PR]; --amend [PR]. PR is an OPTIONAL positional ref accepting either a PR number or a full GitHub PR URL; reuse the existing github_pr URL-parsing logic from STEP 0.1. AUTO-DETECTION + INTERACTIVE FALLBACK (per user decision \"auto-detect, confirm always\"): when a chosen workflow needs a PR ref and none was supplied -- OR when no workflow flag was given at all -- query gh to locate candidate open PRs: git fetch upstream, then gh pr list / gh search prs against leanprover/cslib filtered to head branches that were pushed from the origin fork (benbrastmckie), matching by current branch name and/or task slug. ALWAYS surface findings in an AskUserQuestion for confirmation -- never silently auto-proceed. The interactive question must offer: pick the detected PR (with its number/title/head shown), choose a different workflow, SUPPLY A PR URL MANUALLY (when auto-detection finds nothing or the wrong PR), or fall back to a new branch from upstream. DOWNSTREAM STEP EDITS: STEP 4 (sync) and STEP 5 (branch creation) must branch by workflow (from upstream/main for new; from PR head for stacked; checkout existing PR head for update/amend rather than creating a feat/ branch). STEP 10 (commit/push/create) must: plain push + NO gh pr create for update; git push --force-with-lease for amend; gh pr create --base <pr-head-branch> for stacked; current behavior for new. STEP 5b mathlib cache fetch still applies on any branch switch. DOCS: update the command frontmatter argument-hint, the Options table, the Input Modes / Notes sections, the Output Examples, and add a short workflow-selection overview near the top. Verify manifest keyword_overrides (already lists rebase, cherry-pick) need no change, or extend if a new keyword (stacked, amend, update) improves task-type detection. CONSTRAINTS: respects .claude/rules/pr-prohibition.md -- /pr is user-invoked so its push/PR/force-push operations remain permitted ONLY within this command; agents/skills still must not push. Keep all four workflows behind explicit user approval gates (AskUserQuestion before any push or force-push, especially force-with-lease for amend). This is a meta task: modify the EXTENSION SOURCE at .claude/extensions/cslib/commands/pr.md and re-deploy, never hand-edit only the deployed copy. Lifecycle: /research 784 -> /plan 784 -> /implement 784.",
+      "effort": "4-8 hours",
+      "topic": "cslib",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/784_pr_command_workflow_selection/reports/01_pr-workflow-selection-research.md",
+          "created": "2026-06-30T17:10:55Z"
+        },
+        {
+          "type": "plan",
+          "path": "specs/784_pr_command_workflow_selection/plans/01_pr-workflow-selection-plan.md",
+          "created": "2026-06-30T17:16:19Z"
+        },
+        {
+          "type": "summary",
+          "path": "specs/784_pr_command_workflow_selection/summaries/01_pr-workflow-selection-summary.md",
+          "created": "2026-06-30T17:29:06Z"
+        }
+      ],
+      "session_id": "sess_1782839058_5142be",
+      "completion_summary": "Added a four-workflow selection front-end (new/stacked/update/amend) to the /pr command via new STEP 1b with auto-detect-and-confirm; three flags (--stacked/--update/--amend) plus interactive fallback; conditional branching in STEP 4/5/5b/10 with per-workflow approval gates, dry-run previews, and force-with-lease for amend. --review and PR-READY paths untouched.",
+      "archived": "2026-07-01T01:50:41Z"
+    },
+    {
+      "project_number": 789,
+      "project_name": "pin_sonnet_tier_model",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-07-01T00:40:58Z",
+      "last_updated": "2026-07-01T00:51:05Z",
+      "title": "Pin sonnet tier to Sonnet 5 (1M context) via ANTHROPIC_DEFAULT_SONNET_MODEL",
+      "description": "Pin the `sonnet` model tier to Sonnet 5 with 1M context, mirroring the existing Opus pattern. CONTEXT: model config is version-agnostic -- all ~70 sonnet-tier agents use the symbolic `sonnet` alias, but there is NO `ANTHROPIC_DEFAULT_SONNET_MODEL` set, so `sonnet` resolves to Claude Code's built-in default rather than deterministically Sonnet 5. The Opus tier is already pinned via `ANTHROPIC_DEFAULT_OPUS_MODEL: claude-opus-4-8[1m]`. SCOPE: (1) Add `ANTHROPIC_DEFAULT_SONNET_MODEL` to the `env` block of dotfiles/config/claude/settings.json (/home/benjamin/.dotfiles/config/claude/settings.json), USER-CONFIRMED to the 1M-context variant `claude-sonnet-5[1m]` -- research/verify during /research that the `[1m]` suffix is the correct form for Sonnet 5 (confirm against the Opus `[1m]` precedent and Claude Code env-var conventions). (2) Update the `_MODEL_NOTE` comment to document that BOTH Opus and Sonnet tiers now have a single source of truth here, and to warn against pinning elsewhere. (3) Verify the settings.json activation-script deploy path (modules/home/core/shell.nix copies to ~/.claude/settings.json) still picks up the change. NOTE: this task edits the DOTFILES repo, not the nvim/.claude tree. OUT OF SCOPE: agent frontmatter (untouched -- aliases resolve automatically); tiering-policy re-evaluation (task 790). Goal: sonnet-tier agents deterministically run Sonnet 5 with 1M context.",
+      "effort": "1-2 hours",
+      "topic": "agent-system",
+      "dependencies": [],
+      "artifacts": [],
+      "session_id": "sess_1782866508_55beee",
+      "completion_summary": "Added ANTHROPIC_DEFAULT_SONNET_MODEL=claude-sonnet-5[1m] to dotfiles/config/claude/settings.json (mirrors the Opus pin), updated _MODEL_NOTE to cover both tiers. JSON validated. PENDING USER ACTION: run 'home-manager switch --flake /home/benjamin/.dotfiles' to deploy to ~/.claude/settings.json (system rebuild, not auto-run). Dotfiles change left uncommitted for user review.",
+      "archived": "2026-07-01T01:50:41Z"
+    },
+    {
+      "project_number": 790,
+      "project_name": "reevaluate_model_tiering_sonnet5",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-07-01T00:40:58Z",
+      "last_updated": "2026-07-01T01:13:20Z",
+      "title": "Re-evaluate model tiering for Sonnet 5: re-tier agents, refresh benchmarks, fix neovim-research",
+      "description": "Re-evaluate and update the model tiering policy now that Sonnet 5 is released (and the fleet runs Opus 4.8), then RE-TIER agents where justified. USER-CONFIRMED: re-tiering IS in scope (not docs-only). CONTEXT: the tiering rationale in .claude/docs/reference/standards/agent-frontmatter-standard.md rests on stale benchmarks (\"Sonnet 4.6 achieves 79.6%% on SWE-bench vs Opus 4.6 at 80.8%%\", references \"Opus 4.6\") and a hard constraint that orchestrator commands (/research /plan /implement) MUST be opus solely to receive the 1M-context auto-upgrade via ANTHROPIC_DEFAULT_OPUS_MODEL. SCOPE: (1) Refresh benchmark citations and rationale to current Sonnet 5 / Opus 4.8 reality. (2) Re-examine the orchestrator 1M-context constraint -- with `claude-sonnet-5[1m]` pinned (task 789), determine whether orchestrators / other opus-tier roles can move to sonnet for cost savings without losing 1M context, and apply the moves that hold up. (3) Propose + apply re-tiering of specific opus-tier agents (e.g. domain research agents) to sonnet where Sonnet 5 is now sufficient; keep genuine deep-reasoning roles (planner, meta-builder, reviser, formal-verification) on opus unless research shows otherwise. (4) Fix the confirmed discrepancy: neovim-research is listed as opus in the CLAUDE.md routing table but sonnet in frontmatter -- USER-CONFIRMED it should be SONNET; reconcile the routing table (and any other alias mismatches surfaced) to sonnet. (5) Keep the two synced .claude/ trees (dotfiles and nvim) consistent. DEPENDS ON 789 (needs the concrete Sonnet 5 variant pinned before deciding what can move). Goal: a current, correctly-benchmarked tiering policy with agent assignments actually updated for Sonnet 5.",
+      "effort": "3-5 hours",
+      "topic": "agent-system",
+      "dependencies": [
+        789
+      ],
+      "artifacts": [],
+      "session_id": "sess_1782866508_55beee",
+      "completion_summary": "Docs-hygiene: re-tiering evaluated -> ZERO agent moves warranted (all 16 opus-tier agents legitimately deep-reasoning). Refreshed stale SWE-bench benchmark text to durable qualitative framing; relaxed orchestrator-1M rationale (Sonnet 5 has native 1M, so opus default is now justified on reasoning grounds not context); fixed neovim-research stale prose (opus->sonnet) in 4 sites. Applied across both .claude/ trees (nvim + dotfiles). No model: fields changed. PENDING USER ACTIONS: (1) Neovim-picker 'Load Core' resync to authoritatively regenerate nvim .claude/CLAUDE.md (expected no-op); (2) review/commit 13 nvim-tree files + dotfiles CLAUDE.md (5 dotfiles files were auto-committed as e6590fd by a concurrent checkpoint process).",
+      "archived": "2026-07-01T01:50:41Z"
+    },
+    {
+      "project_number": 792,
+      "project_name": "right_size_command_model_tiers",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-07-01T01:17:07Z",
+      "last_updated": "2026-07-01T01:33:23Z",
+      "title": "Right-size slash-command model: frontmatter (reserve opus for orchestrators/deep-reasoning)",
+      "description": "Right-size the `model:` frontmatter across all slash-commands now that the tiering rationale is refreshed (task 790) and the sonnet tier is pinned to Sonnet 5 with 1M context (task 789). PROBLEM: ~18 of the command files carry `model: opus` indiscriminately, including pure-utility commands that do no deep reasoning -- e.g. /tag, /todo, /refresh, /merge, /fix-it, /errors, /spawn, /task, /project-overview, /pr, /vet -- so they pay Opus cost/latency for what is orchestration glue and direct-execution work. SCOPE: (1) Classify every command in .claude/commands/*.md by whether it needs opus. KEEP-OPUS: the context-accumulating orchestrator commands (/research, /plan, /implement, /orchestrate) which run long multi-subagent sessions and rely on the opus 1M-context auto-upgrade, plus genuine deep-reasoning commands (/meta, /revise) -- confirm against the agent-frontmatter-standard.md policy refreshed in task 790. DOWNGRADE-CANDIDATES: utility/direct-execution and single-shot commands (/tag, /todo, /refresh, /merge, /fix-it, /errors, /spawn, /task, /project-overview, /pr, /vet, /review) -- decide per-command between `model: sonnet` and OMITTING the field entirely (inherit CLAUDE_CODE_SUBAGENT_MODEL / harness default). Prefer omission where the command just delegates to a skill/agent that already declares its own model, so the command frontmatter does not override the agent tier. (2) Apply the changes across BOTH synced .claude/ trees (nvim /home/benjamin/.config/nvim/.claude/ and dotfiles /home/benjamin/.dotfiles/.claude/), respecting the generation caveat: nvim command files may be generated from extension sources -- edit the correct source (extensions/*/commands or merge-sources) and flag the user-run Neovim-picker resync; dotfiles has no generator (hand-edit). (3) Note any command whose frontmatter `model` is load-bearing for a documented reason before downgrading. VERIFICATION: each command still routes correctly; orchestrator commands retain opus; grep confirms the intended per-command tiers in both trees. OUT OF SCOPE: agent frontmatter re-tiering (task 790 settled: zero moves) and changing the orchestrator commands opus default (explicitly kept). Depends on 790 (uses its refreshed rationale) and benefits from 789 (sonnet=Sonnet5 1M). Goal: commands run on the cheapest tier that preserves correctness, with opus reserved for the commands that genuinely need it.",
+      "effort": "2-3 hours",
+      "topic": "agent-system",
+      "dependencies": [
+        790
+      ],
+      "artifacts": [
+        {
+          "path": "specs/792_right_size_command_model_tiers/reports/01_command-model-tier-inventory.md",
+          "type": "report",
+          "summary": "Command model-tier inventory: 6 keep-opus, 6 omit-field, 6 downgrade-sonnet"
+        },
+        {
+          "path": "specs/792_right_size_command_model_tiers/plans/01_right-size-command-model-tiers.md",
+          "type": "plan",
+          "summary": "4-phase plan: 6 omit-field, 6 downgrade-sonnet, meta.md root-cause fix, doc reconciliation, grep verification"
+        },
+        {
+          "path": "specs/792_right_size_command_model_tiers/summaries/01_right-size-command-model-tiers-summary.md",
+          "type": "summary",
+          "summary": "Down-tiered 12 command sources (6 omit, 6 sonnet), fixed meta.md scaffold root-cause, reconciled 2 docs; all grep checks pass"
+        }
+      ],
+      "session_id": "sess_1782868693_adc8b1",
+      "completion_summary": "Right-sized model: frontmatter across 12 slash-command sources: removed the field from 6 pure-delegation commands (fix-it, spawn, project-overview, refresh, tag, vet) and downgraded 6 inline-mechanical commands to sonnet (merge, errors, task, todo, review, pr). Kept opus on the 6 context-accumulating orchestrator/deep-reasoning commands (research, plan, implement, orchestrate, meta, revise). Fixed the root cause: meta.md's embedded command scaffold template no longer hardcodes opus. Reconciled creating-commands.md and command-template.md docs. All grep verifications pass. USER ACTION REQUIRED: run the Neovim extension-picker resync twice (nvim + dotfiles projects) to propagate edits into generated .claude/commands/.",
+      "archived": "2026-07-01T01:50:41Z"
     }
   ],
   "abandoned_projects": []
