@@ -1,0 +1,373 @@
+## Literature authors normalization (DRY RUN)
+
+Index: /home/benjamin/Projects/Literature/index.json
+Entries that would change: 122
+
+- blackburn_2002_book:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch00:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch01_sec01-02:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch01_sec03:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch01_sec04-08:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch02_sec01:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch02_sec02-03:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch02_sec04-05:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch02_sec06:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch02_sec07-08:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch03_sec01-04:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch03_sec05-06:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch03_sec07:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch03_sec08-09:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch04_sec01-02:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch04_sec03-04:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch04_sec05-06:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch04_sec07-08:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch04_sec09-10:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch05_sec01-02:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch05_sec03:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch05_sec04:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch05_sec05:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch05_sec06-07:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch06_sec01-03:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch06_sec04-05:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch06_sec06-07:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch06_sec08-09:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch07_sec01-02:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch07_sec03:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch07_sec04:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch07_sec05:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_ch07_sec06-07:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_app_A:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_app_B-C:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2002_app_D-bib:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- burgess_1982_i:
+    before: "John P. Burgess"
+    after:  ["John P. Burgess"]
+- burgess_1982_ii:
+    before: "John P. Burgess"
+    after:  ["John P. Burgess"]
+- caleiro_2013:
+    before: "Carlos Caleiro, Luca Viganò, Marco Volpe"
+    after:  ["Carlos Caleiro","Luca Viganò","Marco Volpe"]
+- gabbay_1993:
+    before: "Dov Gabbay, Ian Hodkinson, Mark Reynolds"
+    after:  ["Dov Gabbay","Ian Hodkinson","Mark Reynolds"]
+- goldblatt_2003:
+    before: "Robert Goldblatt, Ian Hodkinson, Yde Venema"
+    after:  ["Robert Goldblatt","Ian Hodkinson","Yde Venema"]
+- hodkinson_2006:
+    before: "Ian Hodkinson, Mark Reynolds"
+    after:  ["Ian Hodkinson","Mark Reynolds"]
+- libkin_2004_ch3_ch7:
+    before: "Leonid Libkin"
+    after:  ["Leonid Libkin"]
+- rabinovich_2014:
+    before: "Alexander Rabinovich"
+    after:  ["Alexander Rabinovich"]
+- reynolds_2001:
+    before: "Mark Reynolds"
+    after:  ["Mark Reynolds"]
+- thomas_1997:
+    before: "Wolfgang Thomas"
+    after:  ["Wolfgang Thomas"]
+- venema_1993_anti_axioms:
+    before: "Yde Venema"
+    after:  ["Yde Venema"]
+- venema_1993_since_until:
+    before: "Yde Venema"
+    after:  ["Yde Venema"]
+- blackburn_2001:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch00:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch01_sec01-02:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch01_sec03:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch01_sec04-08:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch02_sec01:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch02_sec02-03:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch02_sec04-05:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch02_sec06:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch02_sec07-08:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch03_sec01-02:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch03_sec03-05:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch03_sec06:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch03_sec07:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch03_sec08-09:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch04_sec01-02:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch04_sec03-04:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch04_sec05-06:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch04_sec07-08:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch04_sec09-10:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch05_sec01-02:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch05_sec03:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch05_sec04:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch05_sec05:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch05_sec06-07:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch06_sec01-03:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch06_sec04-05:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch06_sec06-07:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch06_sec08-09:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch07_sec01:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch07_sec02-03:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch07_sec04:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch07_sec05:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- blackburn_2001_ch07_sec06-07:
+    before: ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]
+    after:  ["Patrick Blackburn","Maarten de Rijke","Yde Venema"]
+- caleiro_2013_sec01:
+    before: ["Carlos Caleiro, Luca Viganò, Marco Volpe"]
+    after:  ["Carlos Caleiro","Luca Viganò","Marco Volpe"]
+- caleiro_2013_sec02:
+    before: ["Carlos Caleiro, Luca Viganò, Marco Volpe"]
+    after:  ["Carlos Caleiro","Luca Viganò","Marco Volpe"]
+- caleiro_2013_sec03:
+    before: ["Carlos Caleiro, Luca Viganò, Marco Volpe"]
+    after:  ["Carlos Caleiro","Luca Viganò","Marco Volpe"]
+- caleiro_2013_sec04:
+    before: ["Carlos Caleiro, Luca Viganò, Marco Volpe"]
+    after:  ["Carlos Caleiro","Luca Viganò","Marco Volpe"]
+- caleiro_2013_sec05:
+    before: ["Carlos Caleiro, Luca Viganò, Marco Volpe"]
+    after:  ["Carlos Caleiro","Luca Viganò","Marco Volpe"]
+- caleiro_2013_sec06:
+    before: ["Carlos Caleiro, Luca Viganò, Marco Volpe"]
+    after:  ["Carlos Caleiro","Luca Viganò","Marco Volpe"]
+- caleiro_2013_sec07:
+    before: ["Carlos Caleiro, Luca Viganò, Marco Volpe"]
+    after:  ["Carlos Caleiro","Luca Viganò","Marco Volpe"]
+- derijke_1995_sec01:
+    before: ["Maarten de Rijke, Yde Venema"]
+    after:  ["Maarten de Rijke","Yde Venema"]
+- derijke_1995_sec02:
+    before: ["Maarten de Rijke, Yde Venema"]
+    after:  ["Maarten de Rijke","Yde Venema"]
+- derijke_1995_sec03:
+    before: ["Maarten de Rijke, Yde Venema"]
+    after:  ["Maarten de Rijke","Yde Venema"]
+- gabbay_1993_sec01:
+    before: ["D. M. Gabbay, I. M. Hodkinson, M. A. Reynolds"]
+    after:  ["D. M. Gabbay","I. M. Hodkinson","M. A. Reynolds"]
+- gabbay_1993_sec02:
+    before: ["D. M. Gabbay, I. M. Hodkinson, M. A. Reynolds"]
+    after:  ["D. M. Gabbay","I. M. Hodkinson","M. A. Reynolds"]
+- gabbay_1993_sec03:
+    before: ["D. M. Gabbay, I. M. Hodkinson, M. A. Reynolds"]
+    after:  ["D. M. Gabbay","I. M. Hodkinson","M. A. Reynolds"]
+- gabbay_1993_sec04:
+    before: ["D. M. Gabbay, I. M. Hodkinson, M. A. Reynolds"]
+    after:  ["D. M. Gabbay","I. M. Hodkinson","M. A. Reynolds"]
+- gabbay_1993_sec05:
+    before: ["D. M. Gabbay, I. M. Hodkinson, M. A. Reynolds"]
+    after:  ["D. M. Gabbay","I. M. Hodkinson","M. A. Reynolds"]
+- gabbay_1994:
+    before: ["Dov M. Gabbay, Ian Hodkinson, Mark Reynolds"]
+    after:  ["Dov M. Gabbay","Ian Hodkinson","Mark Reynolds"]
+- gabbay_1994_ch09_sec01:
+    before: ["Dov M. Gabbay, Ian Hodkinson, Mark Reynolds"]
+    after:  ["Dov M. Gabbay","Ian Hodkinson","Mark Reynolds"]
+- gabbay_1994_ch09_sec02:
+    before: ["Dov M. Gabbay, Ian Hodkinson, Mark Reynolds"]
+    after:  ["Dov M. Gabbay","Ian Hodkinson","Mark Reynolds"]
+- gabbay_1994_ch09_sec03:
+    before: ["Dov M. Gabbay, Ian Hodkinson, Mark Reynolds"]
+    after:  ["Dov M. Gabbay","Ian Hodkinson","Mark Reynolds"]
+- gabbay_1994_ch10_sec01:
+    before: ["Dov M. Gabbay, Ian Hodkinson, Mark Reynolds"]
+    after:  ["Dov M. Gabbay","Ian Hodkinson","Mark Reynolds"]
+- gabbay_1994_ch10_sec02:
+    before: ["Dov M. Gabbay, Ian Hodkinson, Mark Reynolds"]
+    after:  ["Dov M. Gabbay","Ian Hodkinson","Mark Reynolds"]
+- gabbay_1994_ch10_sec03:
+    before: ["Dov M. Gabbay, Ian Hodkinson, Mark Reynolds"]
+    after:  ["Dov M. Gabbay","Ian Hodkinson","Mark Reynolds"]
+- gabbay_1994_ch10_sec04:
+    before: ["Dov M. Gabbay, Ian Hodkinson, Mark Reynolds"]
+    after:  ["Dov M. Gabbay","Ian Hodkinson","Mark Reynolds"]
+- gabbay_1994_ch12_sec01:
+    before: ["Dov M. Gabbay, Ian Hodkinson, Mark Reynolds"]
+    after:  ["Dov M. Gabbay","Ian Hodkinson","Mark Reynolds"]
+- gabbay_1994_ch12_sec02:
+    before: ["Dov M. Gabbay, Ian Hodkinson, Mark Reynolds"]
+    after:  ["Dov M. Gabbay","Ian Hodkinson","Mark Reynolds"]
+- gabbay_1994_ch12_sec03:
+    before: ["Dov M. Gabbay, Ian Hodkinson, Mark Reynolds"]
+    after:  ["Dov M. Gabbay","Ian Hodkinson","Mark Reynolds"]
+- gabbay_1994_ch12_sec04:
+    before: ["Dov M. Gabbay, Ian Hodkinson, Mark Reynolds"]
+    after:  ["Dov M. Gabbay","Ian Hodkinson","Mark Reynolds"]
+- goldblatt_2003_sec01:
+    before: ["Robert Goldblatt, Ian Hodkinson, Yde Venema"]
+    after:  ["Robert Goldblatt","Ian Hodkinson","Yde Venema"]
+- goldblatt_2003_sec02:
+    before: ["Robert Goldblatt, Ian Hodkinson, Yde Venema"]
+    after:  ["Robert Goldblatt","Ian Hodkinson","Yde Venema"]
+- goldblatt_2003_sec03:
+    before: ["Robert Goldblatt, Ian Hodkinson, Yde Venema"]
+    after:  ["Robert Goldblatt","Ian Hodkinson","Yde Venema"]
+- goldblatt_2003_sec04:
+    before: ["Robert Goldblatt, Ian Hodkinson, Yde Venema"]
+    after:  ["Robert Goldblatt","Ian Hodkinson","Yde Venema"]
+- goldblatt_2003_sec05:
+    before: ["Robert Goldblatt, Ian Hodkinson, Yde Venema"]
+    after:  ["Robert Goldblatt","Ian Hodkinson","Yde Venema"]
+- obendrauf_2024_sec01:
+    before: ["Kai Obendrauf, Anne Baanen, Patrick Koopmann, Vera Stebletsova"]
+    after:  ["Kai Obendrauf","Anne Baanen","Patrick Koopmann","Vera Stebletsova"]
+- obendrauf_2024_sec02:
+    before: ["Kai Obendrauf, Anne Baanen, Patrick Koopmann, Vera Stebletsova"]
+    after:  ["Kai Obendrauf","Anne Baanen","Patrick Koopmann","Vera Stebletsova"]
+- obendrauf_2024_sec03:
+    before: ["Kai Obendrauf, Anne Baanen, Patrick Koopmann, Vera Stebletsova"]
+    after:  ["Kai Obendrauf","Anne Baanen","Patrick Koopmann","Vera Stebletsova"]
+- obendrauf_2024_sec04:
+    before: ["Kai Obendrauf, Anne Baanen, Patrick Koopmann, Vera Stebletsova"]
+    after:  ["Kai Obendrauf","Anne Baanen","Patrick Koopmann","Vera Stebletsova"]
+- verbrugge_2004_sec01:
+    before: ["Dick de Jongh, Frank Veltman, Rineke Verbrugge"]
+    after:  ["Dick de Jongh","Frank Veltman","Rineke Verbrugge"]
+- verbrugge_2004_sec02:
+    before: ["Dick de Jongh, Frank Veltman, Rineke Verbrugge"]
+    after:  ["Dick de Jongh","Frank Veltman","Rineke Verbrugge"]
+- verbrugge_2004_sec03:
+    before: ["Dick de Jongh, Frank Veltman, Rineke Verbrugge"]
+    after:  ["Dick de Jongh","Frank Veltman","Rineke Verbrugge"]
+- verbrugge_2004_sec04:
+    before: ["Dick de Jongh, Frank Veltman, Rineke Verbrugge"]
+    after:  ["Dick de Jongh","Frank Veltman","Rineke Verbrugge"]
+
+Dry run only -- no changes written. Re-run with --apply (or --write) to persist.

@@ -1,0 +1,30 @@
+--- a/scripts/migrate-from-repo.sh
++++ b/scripts/migrate-from-repo.sh
+@@ -170,7 +170,8 @@
+       "zotero_key": $zotero_key,
+       "zotero_path": $zotero_path,
+       "project_tags": [$project_tag]
+-    }')
++    }
++    | .authors = (if (.authors | type) == "string" then (.authors | split(", ")) else .authors end)')
+ 
+   # Append to central index
+   tmp=$(mktemp)
+@@ -243,7 +244,7 @@
+         "id": $id,
+         "path": $path,
+         "title": $title,
+-        "authors": (if $authors == null then [] else [$authors] end),
++        "authors": (if $authors == null then [] elif ($authors | type) == "string" then ($authors | split(", ")) else $authors end),
+         "bib_key": $bib_key,
+         "year": ($year | if . == "null" then null else (. | tonumber?) end),
+         "doc_type": "book",
+@@ -298,7 +299,7 @@
+         "id": $id,
+         "path": $path,
+         "title": $title,
+-        "authors": (if $authors == null then [] else [$authors] end),
++        "authors": (if $authors == null then [] elif ($authors | type) == "string" then ($authors | split(", ")) else $authors end),
+         "bib_key": $bib_key,
+         "year": ($year | if . == "null" then null else (. | tonumber?) end),
+         "doc_type": "chapter",

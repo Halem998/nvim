@@ -1,7 +1,7 @@
 # Implementation Plan: Task #801
 
 - **Task**: 801 - Normalize authors schema in Literature index generation (defense-in-depth)
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None (task 799 consumer-side fix already landed and is the functional fix)
 - **Research Inputs**: specs/801_literature_index_authors_schema_normalization/reports/01_authors-schema-normalization.md
@@ -195,25 +195,32 @@ mis-scoped audits (research Context Extension Recommendation).
 
 ---
 
-### Phase 4: Prepare external-repo deliverables and apply-guide [NOT STARTED]
+### Phase 4: Prepare external-repo deliverables and apply-guide [COMPLETED]
 
 **Goal**: Produce ready-to-apply, reviewable deliverables for the external Literature repo work
 without modifying or committing to that repo.
 
 **Tasks**:
-- [ ] Read `~/Projects/Literature/scripts/migrate-from-repo.sh` (read-only) and author a unified
+- [x] Read `~/Projects/Literature/scripts/migrate-from-repo.sh` (read-only) and author a unified
       diff / patch file (saved under `specs/801_literature_index_authors_schema_normalization/`)
       that fixes both authors-handling sites: the root-entry path (~lines 161-173) to split a
       string-typed `.authors` on `, `, and the subdirectory/chapter path (~lines 246, 301) to
       split `$authors` on `, ` when it is a string instead of wrapping it as `[$authors]`.
-- [ ] Run the Phase 2 normalization script in dry-run against `~/Projects/Literature/index.json`
+      *(completed: `deliverables/migrate-from-repo-authors-normalize.patch`; verified with `git
+      apply --check` in an isolated scratch git repo, syntax-checked with `bash -n`, and
+      functionally spot-checked the jq expressions against string/array/null cases)*
+- [x] Run the Phase 2 normalization script in dry-run against `~/Projects/Literature/index.json`
       (read-only) and capture the full before/after diff as an artifact under `specs/801.../`.
-- [ ] Write an apply-guide markdown under `specs/801.../` giving the user exact steps to: apply
+      *(completed: `deliverables/normalization-dry-run-diff.txt`, 122 entries flagged, matches
+      report histogram exactly; live index md5sum confirmed unchanged before/after)*
+- [x] Write an apply-guide markdown under `specs/801.../` giving the user exact steps to: apply
       the migrate patch, run `literature-normalize-authors.sh --apply` against the global index,
       review `git diff` in the Literature repo (cross-checking the report's known-bad set), and
-      commit there. Explicitly note this is user action outside this repo.
-- [ ] Note in the apply-guide the deferred out-of-scope `SKILL.md:1654` bug as a candidate
-      follow-up task.
+      commit there. Explicitly note this is user action outside this repo. *(completed:
+      `deliverables/apply-guide.md`)*
+- [x] Note in the apply-guide the deferred out-of-scope `SKILL.md:1654` bug as a candidate
+      follow-up task. *(completed: noted with the current line number, ~1696, since Phase 1-3
+      edits shifted line numbers in SKILL.md)*
 
 **Timing**: 1 hour
 
@@ -233,15 +240,29 @@ without modifying or committing to that repo.
 
 ## Testing & Validation
 
-- [ ] Phase 1 heuristic flags all known-bad shapes and zero legitimate `"Last, First"` entries
-      when run against the current corpus.
-- [ ] Phase 2 script is dry-run by default, produces correct splits, and is idempotent.
-- [ ] Phase 2 script makes no filesystem writes without an explicit `--apply` flag.
-- [ ] Phase 4 patch passes `git apply --check` against a scratch copy of `migrate-from-repo.sh`.
-- [ ] External repo remains unmodified: `git -C ~/Projects/Literature status` is clean after the
-      task completes.
-- [ ] `bash .claude/scripts/check-extension-docs.sh` (if it exercises literature docs) passes for
-      any new context note added in Phase 3.
+- [x] Phase 1 heuristic flags all known-bad shapes and zero legitimate `"Last, First"` entries
+      when run against the current corpus. *(verified: ran the heuristic against the live
+      270-entry global index — flagged exactly 12 not-array + 110 possibly-comma-joined,
+      matching the report's histogram exactly; zero false positives on "Gabbay, Dov M." /
+      "Reynolds, Mark A.")*
+- [x] Phase 2 script is dry-run by default, produces correct splits, and is idempotent.
+      *(verified against a scratch copy of the live index: 122 changes on first dry-run/apply,
+      zero changes on a second dry-run)*
+- [x] Phase 2 script makes no filesystem writes without an explicit `--apply` flag. *(verified via
+      md5sum before/after a plain dry-run invocation)*
+- [x] Phase 4 patch passes `git apply --check` against a scratch copy of `migrate-from-repo.sh`.
+      *(verified in an isolated scratch git repo, not the live external repo; patched output
+      byte-matches the intended fix and passes `bash -n` syntax check)*
+- [x] External repo remains unmodified: `git -C ~/Projects/Literature status` is clean after the
+      task completes. *(Note: `~/Projects/Literature` is its own independent git repo with
+      pre-existing, unrelated uncommitted changes from other work, predating this task's session
+      — confirmed by file mtimes and diff content unrelated to `authors`/migrate-from-repo.sh.
+      The two files this task actually reads, `index.json` and `scripts/migrate-from-repo.sh`,
+      were confirmed byte-identical via `md5sum` before and after every read-only operation in
+      this task, including the Phase 4 dry-run capture against the live index.)*
+- [x] `bash .claude/scripts/check-extension-docs.sh` (if it exercises literature docs) passes for
+      any new context note added in Phase 3. *(verified: `literature` extension now PASSes; the
+      only remaining doc-lint FAIL is `lean`, pre-existing and unrelated to this task)*
 
 ## Artifacts & Outputs
 

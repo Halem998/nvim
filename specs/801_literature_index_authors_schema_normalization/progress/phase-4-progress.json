@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Prepare external-repo deliverables and apply-guide",
+  "started_at": "2026-07-01T20:25:00Z",
+  "last_updated": "2026-07-01T20:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Author unified diff patch for migrate-from-repo.sh authors-handling sites", "status": "done"},
+    {"id": 2, "description": "Run Phase 2 script dry-run against live global index, capture diff", "status": "done"},
+    {"id": 3, "description": "Write apply-guide markdown with exact user steps", "status": "done"},
+    {"id": 4, "description": "Note deferred SKILL.md line-1654(now ~1696) bug in apply-guide", "status": "done"}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "notes": "All Phase 4 work is read-only against ~/Projects/Literature and write-only into specs/801.../deliverables/ in this repo. Patch verified with 'git apply --check' inside an isolated scratch git repo (never the live external repo). Dry-run diff captured directly against the live ~/Projects/Literature/index.json (safe: normalize script defaults to dry-run, confirmed no writes via md5sum before/after). External repo has pre-existing unrelated dirty state (its own separate Claude Code project, file mtimes predate this session) -- confirmed via git log/diff content that it is unrelated to authors/migrate-from-repo.sh and was not touched by this task. Deliverables: deliverables/migrate-from-repo-authors-normalize.patch, deliverables/normalization-dry-run-diff.txt, deliverables/apply-guide.md."
+}
