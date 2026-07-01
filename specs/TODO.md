@@ -1,5 +1,5 @@
 ---
-next_project_number: 798
+next_project_number: 799
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 798
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,777,778,780,782,783,787,791,795,796 | -- | agent-system, email integration, terminal ui |
+| 1 | 78,87,772,777,778,780,782,783,787,791,795,796,798 | -- | agent-system, email integration, terminal ui |
 | 2 | 773,774,779,781,785 | 772,778,780 | agent-system |
 | 3 | 786 | 785 | agent-system |
 | 4 | 788 | 786,787 | agent-system |
@@ -48,7 +48,26 @@ next_project_number: 798
 
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
+### Uncategorized
+
+798 [NOT STARTED] — Two follow-up fixes to task-797 assisted Zotero export generation
+
 ## Tasks
+
+### 798. Literature zotero datadir and retry fixes
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: None
+
+**Description**: Two follow-up fixes to task-797 assisted Zotero export generation, surfaced by user testing /literature 55 in ~/Projects/Logos/Hardware. PRIMARY FILES (task-793 dual-copy model: edit canonical under .claude/extensions/literature/scripts/, then byte-identical re-sync to .claude/scripts/): zotero-generate-export.sh, zotero-export-status.sh, and the /literature wiring in .claude/extensions/literature/commands/literature.md.
+
+FIX 1 (dataDir auto-detection) -- BUG: both zotero-export-status.sh (classifier, Path 3 viability probe) and zotero-generate-export.sh (Path 3 sqlite reconstruction) hardcode the sqlite default to ${HOME}/Zotero/zotero.sqlite (only overridable via the ZOTERO_SQLITE_PATH env var). On any machine with a custom Zotero data directory this reads the wrong DB. Confirmed on this machine: the real library is /home/benjamin/Documents/Zotero/zotero.sqlite (878 bibliographic items, 92MB, set via extensions.zotero.dataDir + useDataDir=true in ~/.zotero/zotero/*/prefs.js), while the hardcoded ~/Zotero/zotero.sqlite is a stale EMPTY profile (0 items, 1.1MB). Because the empty file EXISTS, the classifier returns ZOTERO_EXPORT_MISSING_NOT_RUNNING and the generator writes a silently-EMPTY zotero-library.json -- no error, useless result. REQUIRED: before falling back to the ${HOME}/Zotero default, auto-detect Zoteros configured data directory by parsing extensions.zotero.dataDir (only when extensions.zotero.useDataDir is true) from the Zotero profile prefs.js (search ~/.zotero/zotero/*/prefs.js and ~/.mozilla/zotero/*/prefs.js; pick the default profile). Resolution order for the Path 3 sqlite: (1) $ZOTERO_SQLITE_PATH explicit override; (2) <dataDir>/zotero.sqlite from prefs.js when useDataDir=true; (3) ${HOME}/Zotero/zotero.sqlite default. Apply the SAME resolution in BOTH scripts (share via a helper function so they cannot drift). Verified working manually: ZOTERO_SQLITE_PATH=/home/benjamin/Documents/Zotero/zotero.sqlite zotero-generate-export.sh produced 1819 valid Better-CSL-JSON entries with synthesized citation-keys -- the reconstruction logic is correct; only the path resolution is wrong.
+
+FIX 2 (open-Zotero-and-retry interactive branch) -- ENHANCEMENT: currently when Zotero is closed (ZOTERO_EXPORT_MISSING_NOT_RUNNING) the /literature offer goes straight to a Path 3 sqlite snapshot. Because Path 1 (live Zotero local API) is data-dir-agnostic and always reads the true open library, the primary interactive choice for the NOT_RUNNING case should instead be "Open Zotero, then retry": on that choice the /literature workflow re-runs zotero-export-status.sh and, once it flips to ZOTERO_EXPORT_MISSING_RUNNING, generates via Path 1. Requirements: (a) cap retries (~2-3) so an unopened/unreachable Zotero does not loop forever; (b) when the API stays non-200 even though the user says Zotero is open, surface the SPECIFIC fix -- enable Settings -> Advanced -> "Allow other applications on this computer to communicate with Zotero" (match zotero-search.sh wording style); (c) KEEP the Path 3 sqlite snapshot as an explicit SECONDARY choice ("generate an offline snapshot without opening Zotero") -- do not remove it (it is now correct once FIX 1 lands); (d) non-interactive/orchestrator-mode: do NOT loop or prompt -- fail with a VISIBLE logged error instructing the user to open Zotero (never write an empty file, never silent no-op). HONEST SCOPE NOTE: this does NOT guarantee success (API-disabled-while-running, genuinely-empty library, and non-interactive contexts still fail) -- the goal is to convert the dangerous silent-empty-snapshot failure into a clear, actionable, retryable error.
+
+VERIFICATION: bash -n on all edited scripts; byte-identical diff between each canonical and flat copy; prefs.js parsing tested against this machine (must resolve to /home/benjamin/Documents/Zotero/zotero.sqlite and reconstruct 1819 entries); classifier must still emit exactly one directive token on stdout with rationale on stderr; literature-discover.sh pure-JSON-array stdout contract unchanged. OUT OF SCOPE: Tier 3 / Semantic Scholar; three-tier pipeline architecture; the literature.md whole-script 2>/dev/null capture; the orphaned zot-CLI subsystem.
+
+---
 
 ### 797. Literature zotero export assisted setup
 - **Status**: [COMPLETED]
