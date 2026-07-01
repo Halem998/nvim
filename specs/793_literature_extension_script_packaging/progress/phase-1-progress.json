@@ -1,0 +1,27 @@
+{
+  "phase": 1,
+  "phase_name": "Migrate scripts to extension source, declare in manifest, repopulate flat copy",
+  "started_at": "2026-07-01T15:43:53Z",
+  "last_updated": "2026-07-01T15:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "git mv 7 files (6 .sh + schema.sql) into extension scripts dir", "status": "done"},
+    {"id": 2, "description": "Add 7 entries to manifest.provides.scripts (12 -> 19)", "status": "done"},
+    {"id": 3, "description": "Confirm executable bits preserved", "status": "done"},
+    {"id": 4, "description": "Repopulate flat .claude/scripts/ copies", "status": "done"},
+    {"id": 5, "description": "git add flat copies, verify local /literature resolution", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "cp fallback instead of nvim --headless loader.reload", "result": "success", "reason": "deterministic and avoids depending on live nvim/plugin runtime inside the agent shell; produces byte-identical result per plan's stated fallback"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.reconcile",
+      "description": "Plan text says 'git mv the 8 files' and manifest '12 entries -> 20', but the enumerated file list is only 6 .sh + literature-schema.sql = 7 files (literature-audit.sh and literature-retrieve.sh explicitly excluded elsewhere in the plan).",
+      "type": "altered",
+      "reason": "Plan has an internal off-by-one miscount; reconciled to the actual referenced set of 7 files / 19 entries per orchestrator instructions and research report Finding #1 table.",
+      "annotation": "*(deviation: altered — reconciled 8/20 miscount to actual 7 files/19 entries)*"
+    }
+  ]
+}

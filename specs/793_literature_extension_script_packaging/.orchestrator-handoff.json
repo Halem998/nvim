@@ -1,0 +1,13 @@
+{
+  "status": "planned",
+  "summary": "Created a 5-phase implementation plan to fix literature extension script packaging: (1) git mv 7 scripts + literature-schema.sql into the extension source and declare all 8 in manifest.provides.scripts (12->20), atomically repopulating the flat .claude/scripts/ so local /literature keeps working; (2) fix 3 genuinely broken path references (two nested-extensions/ candidate lists + one hardcoded absolute path); (3) add check_referenced_scripts_declared to the core-owned check-extension-docs.sh with pre-fix FAIL / post-fix PASS proof; (4) correct EXTENSION.md's false LITERATURE_DIR claim; (5) final verification incl. a throwaway-repo dry-run deploy proving literature-discover.sh works and .sql lands.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/793_literature_extension_script_packaging/plans/01_script-packaging-plan.md",
+      "summary": "5-phase meta plan honoring the flat-deploy correction; waves [[1,4],[2,3],[5]]; ~5 hours; implementation by general-implementation-agent."
+    }
+  ],
+  "phases_total": 5,
+  "next_action_hint": "Run /implement 793 to execute the plan with general-implementation-agent."
+}

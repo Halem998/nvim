@@ -34,7 +34,14 @@
       "zotero-index-remove.sh",
       "literature-briefing.sh",
       "literature-create-setup-task.sh",
-      "test-lit-pipeline.sh"
+      "test-lit-pipeline.sh",
+      "literature-discover.sh",
+      "literature-ingest.sh",
+      "literature-search.sh",
+      "literature-build-index.sh",
+      "literature-convert.sh",
+      "literature-chunk.sh",
+      "literature-schema.sql"
     ]
   },
   "merge_targets": {

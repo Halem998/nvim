@@ -1,5 +1,5 @@
 ---
-next_project_number: 793
+next_project_number: 794
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 793
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,775,777,778,780,782,783,787,791 | -- | agent-system, literature, Terminal UI, ... |
+| 1 | 78,87,772,775,777,778,780,782,783,787,791,793 | -- | agent-system, literature, Terminal UI, ... |
 | 2 | 773,774,776,779,781,785 | 772,775,778,780 | agent-system, literature |
 | 3 | 786 | 785 | agent-system |
 | 4 | 788 | 786,787 | agent-system |
@@ -37,6 +37,7 @@ next_project_number: 793
 787 [NOT STARTED] — Make multi-task creation declare dependencies based on FILE FOOTP
   └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree (see above)
 791 [PR READY] — Fix the <leader>al 'Load Core' loader so WezTerm lifecycle tab co
+793 [IMPLEMENTING] — Fix incomplete literature extension script packaging so the <lead
 
 ### Literature
 
@@ -52,6 +53,19 @@ next_project_number: 793
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
+
+### 793. Fix literature extension script packaging so <leader>al deploys a working extension to all repos
+- **Effort**: 2-4 hours
+- **Status**: [IMPLEMENTING]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+- **Research**: [793_literature_extension_script_packaging/reports/01_script-packaging-research.md]
+- **Plan**: [793_literature_extension_script_packaging/plans/01_script-packaging-plan.md]
+
+**Description**: Fix incomplete literature extension script packaging so the <leader>al "Load Core"/extension loader deploys a fully working literature extension to every repo, not just this source repo. ROOT CAUSE (confirmed): the picker deploys extensions via loader.copy_scripts() (lua/neotex/plugins/ai/shared/extensions/loader.lua:308-342), which copies ONLY the scripts named in manifest.provides.scripts, reading them from the extension's own scripts/ directory, and silently skips any not physically present there (filereadable guard, line 331). The literature extension's command/skill/agent reference several scripts that are NEITHER in manifest.provides.scripts NOR in .claude/extensions/literature/scripts/ -- they live only in this repo's deployed .claude/scripts/. So loading literature into another repo (e.g. ~/Projects/Logos/Hardware) omits them and /literature N fails (missing literature-discover.sh). SCOPE: (1) Migrate the referenced-but-unpackaged scripts into .claude/extensions/literature/scripts/ and add each to manifest.provides.scripts. Candidates (verify each is genuinely referenced by the literature command/skill/agent before packaging): literature-discover.sh (608), literature-ingest.sh (363), literature-search.sh (688), literature-build-index.sh (323), literature-convert.sh (364), literature-chunk.sh (423), literature-audit.sh (417). (2) Package literature-schema.sql (88 lines) correctly -- it is a .sql data file, NOT caught by copy_scripts or the sync *.sh glob; determine the right mechanism (likely manifest.provides.data or a data-copy path). literature-ingest.sh depends on it. (3) Fix inter-script path references broken by relocation -- e.g. literature-discover.sh:341-342 resolves zotero-search.sh via "$SCRIPT_DIR/../extensions/literature/scripts/..." which breaks once the script lives INSIDE the extension; audit all migrated scripts for $SCRIPT_DIR-relative and cross-directory .sh references and correct them for their new colocated location. (4) Resolve source-of-truth duplication with .claude/scripts/: after migration remove the now-orphaned copies from .claude/scripts/ (extension becomes source of truth) while ensuring THIS repo's own /literature still works (re-apply the extension to this repo if needed). Leave core-owned literature-retrieve.sh untouched. (5) Add an automated safeguard to .claude/scripts/check-extension-docs.sh (or a new lint) that flags any .sh referenced by an extension's commands/skills/agents but missing from that extension's manifest.provides.scripts, so this class of packaging bug is caught going forward; must exit non-zero on violation. (6) Document LITERATURE_DIR in the extension README (literature-discover.sh:36 already defaults it to ~/Projects/Literature, so no settings entry is required). VERIFICATION: simulate loader.copy_scripts + manifest against a clean target and confirm every script the literature command references is carried; run check-extension-docs.sh and confirm it passes for literature and would fail if a reference were removed from the manifest. PRIMARY FILES: .claude/extensions/literature/manifest.json, .claude/extensions/literature/scripts/, .claude/scripts/literature-*.sh, .claude/scripts/check-extension-docs.sh, lua/neotex/plugins/ai/shared/extensions/loader.lua (reference only). OUT OF SCOPE: redesigning the discovery pipeline logic; changing LITERATURE_DIR resolution.
+
+---
 
 ### 791. Fix Load Core loader so WezTerm lifecycle tab coloring propagates to all synced repos
 - **Effort**: 3-5 hours
