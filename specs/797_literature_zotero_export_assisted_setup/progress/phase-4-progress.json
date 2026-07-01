@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Dual-copy re-sync, manifest registration, verification",
+  "started_at": "2026-07-01T18:22:00Z",
+  "last_updated": "2026-07-01T18:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-sync zotero-generate-export.sh canonical -> flat", "status": "done"},
+    {"id": 2, "description": "Re-sync zotero-export-status.sh canonical -> flat", "status": "done"},
+    {"id": 3, "description": "Re-sync literature-discover.sh canonical -> flat (Phase 2 hint edit)", "status": "done"},
+    {"id": 4, "description": "Register both new scripts in manifest.json provides.scripts", "status": "done"},
+    {"id": 5, "description": "Preserve executable bits on flat copies", "status": "done"},
+    {"id": 6, "description": "Full verification gate: bash -n, diff, manifest membership, jq empty, end-to-end smoke test", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.verification",
+      "description": "shellcheck clean on the two new scripts",
+      "type": "skipped",
+      "reason": "shellcheck is not installed on this machine (confirmed via command -v shellcheck). bash -n was used as the syntax gate for all scripts instead.",
+      "annotation": "*(DEVIATION: shellcheck is not installed on this machine ... bash -n was used as the syntax gate instead)*"
+    }
+  ]
+}

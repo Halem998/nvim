@@ -1,7 +1,7 @@
 # Implementation Plan: Assisted Zotero Export Generation (Tier 2)
 
 - **Task**: 797 - Upgrade literature-discover.sh Tier 2 to assisted generation of zotero-library.json
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None (parent task 794 research complete)
 - **Research Inputs**: specs/797_literature_zotero_export_assisted_setup/reports/01_zotero-export-assisted-generation.md
@@ -266,22 +266,24 @@ separate classifier invocation before the main discover call, with an orchestrat
 
 ---
 
-### Phase 4: Dual-copy re-sync, manifest registration, verification [NOT STARTED]
+### Phase 4: Dual-copy re-sync, manifest registration, verification [COMPLETED]
 
 **Goal**: Byte-identically re-sync the new scripts and the edited discover copy to
 `.claude/scripts/`, register the two new scripts in `manifest.json`, and run the full verification
 gate.
 
 **Tasks**:
-- [ ] Re-sync `zotero-generate-export.sh` (Phase 1) canonical -> `.claude/scripts/zotero-generate-export.sh`
-      (byte-identical).
-- [ ] Re-sync `zotero-export-status.sh` (Phase 2) canonical -> `.claude/scripts/zotero-export-status.sh`
-      (byte-identical).
-- [ ] Re-sync the edited `literature-discover.sh` canonical -> `.claude/scripts/literature-discover.sh`
-      (byte-identical; the flat copy must pick up the Phase 2 hint edit).
-- [ ] Add `zotero-generate-export.sh` and `zotero-export-status.sh` to
-      `.claude/extensions/literature/manifest.json` `provides.scripts` array.
-- [ ] Preserve executable bits on both new script copies.
+- [x] Re-sync `zotero-generate-export.sh` (Phase 1) canonical -> `.claude/scripts/zotero-generate-export.sh`
+      (byte-identical). *(completed; `diff` empty)*
+- [x] Re-sync `zotero-export-status.sh` (Phase 2) canonical -> `.claude/scripts/zotero-export-status.sh`
+      (byte-identical). *(completed; `diff` empty)*
+- [x] Re-sync the edited `literature-discover.sh` canonical -> `.claude/scripts/literature-discover.sh`
+      (byte-identical; the flat copy must pick up the Phase 2 hint edit). *(completed; `diff`
+      empty, verified the flat copy's stderr output includes the new assisted-generation hint)*
+- [x] Add `zotero-generate-export.sh` and `zotero-export-status.sh` to
+      `.claude/extensions/literature/manifest.json` `provides.scripts` array. *(completed)*
+- [x] Preserve executable bits on both new script copies. *(completed; `-rwxr-xr-x` on both flat
+      copies)*
 
 **Timing**: 0.75 hours
 
@@ -305,19 +307,38 @@ gate.
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on `zotero-generate-export.sh`, `zotero-export-status.sh`, and both
-      `literature-discover.sh` copies (canonical + flat).
-- [ ] `shellcheck` clean on the two new scripts.
-- [ ] Generated `zotero-library.json` passes `jq empty` and matches the Better CSL JSON field shape
-      (research Section 2); `citation-key` is non-null for every entry.
-- [ ] `zotero-search.sh --format=json` parses the generated output without error (consumer smoke).
-- [ ] `literature-discover.sh <query>` still emits a pure JSON array (`jq empty`); new hint on
-      stderr only.
-- [ ] Classifier emits exactly one directive token on stdout for each of the four states.
-- [ ] Byte-identical `diff` for all three canonical/flat script pairs.
-- [ ] `manifest.json` `provides.scripts` includes both new scripts; `jq empty` on manifest passes.
-- [ ] Orchestrator-mode path emits a visible logged default (no silent no-op) — verified by
+- [x] `bash -n` passes on `zotero-generate-export.sh`, `zotero-export-status.sh`, and both
+      `literature-discover.sh` copies (canonical + flat). *(verified: all four pass)*
+- [x] `shellcheck` clean on the two new scripts. *(DEVIATION: `shellcheck` is not installed on
+      this machine — confirmed via `command -v shellcheck`. `bash -n` was used as the syntax
+      gate for all scripts instead; no shellcheck-specific lint was possible in this
+      environment. Recommend running `shellcheck` in a follow-up task/CI environment where it
+      is available.)*
+- [x] Generated `zotero-library.json` passes `jq empty` and matches the Better CSL JSON field shape
+      (research Section 2); `citation-key` is non-null for every entry. *(verified on a
+      synthetic 2-item fixture: both entries got non-null, disambiguated citation-keys
+      `kripke2020modal` / `kripke2020modal-2`; also verified the real on-box empty-sqlite case
+      produces a valid empty array)*
+- [x] `zotero-search.sh --format=json` parses the generated output without error (consumer smoke).
+      *(verified: synthetic-fixture output returned 2 scored results with correct
+      citation_key/title/authors/year; empty on-box output returned `[]` with documented exit
+      code 2 "no results")*
+- [x] `literature-discover.sh <query>` still emits a pure JSON array (`jq empty`); new hint on
+      stderr only. *(verified on both canonical and flat copies)*
+- [x] Classifier emits exactly one directive token on stdout for each of the four states.
+      *(verified 3 of 4 live: ZOTERO_EXPORT_PRESENT, ZOTERO_EXPORT_MISSING_NOT_RUNNING,
+      ZOTERO_EXPORT_UNAVAILABLE. ZOTERO_EXPORT_MISSING_RUNNING is unverifiable on this box since
+      no local Zotero API is reachable here — consistent with the Phase 1 research finding and
+      the plan's own risk-table acknowledgment)*
+- [x] Byte-identical `diff` for all three canonical/flat script pairs. *(verified empty for all
+      three: zotero-generate-export.sh, zotero-export-status.sh, literature-discover.sh)*
+- [x] `manifest.json` `provides.scripts` includes both new scripts; `jq empty` on manifest passes.
+      *(verified both present via `jq -r '.provides.scripts[]'`; manifest is valid JSON)*
+- [x] Orchestrator-mode path emits a visible logged default (no silent no-op) — verified by
       running the classifier/generator with `--orchestrator-mode true` and observing stderr notice.
+      *(verified: generator with `--orchestrator-mode true` and no local Zotero data source
+      emits a `[zotero:auto]`-prefixed notice and writes an empty-but-valid array, exit 0;
+      default mode instead exits 1 with the manual-fallback text)*
 
 ## Artifacts & Outputs
 

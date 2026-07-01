@@ -349,6 +349,7 @@ tier2_search() {
   if [ ! -f "$zotero_library" ]; then
     echo "Tier 2 (Zotero) skipped: no export found at $zotero_library" >&2
     echo "  To enable: in Zotero, File -> Export Library -> format \"Better CSL JSON\", check \"Keep updated\", save to $zotero_library" >&2
+    echo "  Or let /literature generate it for you: it offers assisted generation via zotero-export-status.sh + zotero-generate-export.sh before this discovery pass runs (see /literature discover mode)." >&2
     return 0
   fi
 

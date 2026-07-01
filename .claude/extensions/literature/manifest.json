@@ -24,6 +24,8 @@
     ],
     "scripts": [
       "zotero-search.sh",
+      "zotero-generate-export.sh",
+      "zotero-export-status.sh",
       "cite-extract.sh",
       "zotero-read.sh",
       "zotero-write.sh",
