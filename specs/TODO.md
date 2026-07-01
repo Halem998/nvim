@@ -1,5 +1,5 @@
 ---
-next_project_number: 797
+next_project_number: 798
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 797
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,777,778,780,782,783,787,791,795,796 | -- | agent-system, email integration, terminal ui |
+| 1 | 78,87,772,777,778,780,782,783,787,791,795,796,797 | -- | agent-system, email integration, terminal ui |
 | 2 | 773,774,779,781,785 | 772,778,780 | agent-system |
 | 3 | 786 | 785 | agent-system |
 | 4 | 788 | 786,787 | agent-system |
@@ -48,7 +48,20 @@ next_project_number: 797
 
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
+### Uncategorized
+
+797 [NOT STARTED] — Improve literature-discover.sh tier-failure UX so no tier fails s
+
 ## Tasks
+
+### 797. Literature discover tier failure ux zotero setup
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: None
+
+**Description**: Improve literature-discover.sh tier-failure UX so no tier fails silently and Zotero (Tier 2) setup is interactive+assisted. PRIMARY (Tier 2 / Zotero, supersedes task-794 FIX 2 static hint per user direction "ask the user if they want to set up, and then if they agree, set up zotero for them"): when $LITERATURE_DIR/zotero-library.json is MISSING, do not merely print manual steps. Instead present an INTERACTIVE AskUserQuestion offering to GENERATE the export automatically, then on agreement actually create $LITERATURE_DIR/zotero-library.json (Better CSL JSON shape that tier2_search/zotero-search.sh already consume). Feasibility confirmed on this machine: ~/Zotero/zotero.sqlite exists (1.1MB library present), zotero-library.json absent, Zotero not currently running. Generation paths in preference order: (1) Zotero 7 built-in local API http://127.0.0.1:23119/api/users/0/items?format=csljson (no plugin, direct CSL-JSON) when Zotero is running; (2) Better BibTeX JSON-RPC at localhost:23119/better-bibtex/ when BBT plugin installed + Zotero running; (3) direct read of ~/Zotero/zotero.sqlite reconstructing CSL-JSON as a fallback when Zotero is CLOSED (DB is locked while running). Design must handle: Zotero-not-running detection (prompt user to open it, or use sqlite fallback), and the snapshot-vs-keep-updated tradeoff (a one-time API/sqlite pull is a snapshot, NOT the auto-refreshing manual "Keep updated" export — provide re-pull-on-demand or a staleness note). Keep a non-interactive/orchestrator default (visible logged notice, never silent). Match zotero-search.sh wording for any manual-steps fallback. SECONDARY (Tier 3 / Semantic Scholar loud failure -- same no-silent-fallback theme, direct analogue of 794 FIX 2): tier3_search in literature-discover.sh silently returns 0 at three points -- curl failure/empty body (~line 484), .error present (~line 491), and CRITICALLY a 429 rate-limit whose body uses .message ("Too Many Requests") NOT .error, so it is not even detected and falls through to an empty .data[] iteration returning 0 as if no matches. Add a one-time stderr notice DISTINGUISHING "throttled (429) -- retry later or add an API key" from "no online matches"; detect the .message rate-limit body. Per the 794 FIX 2 lesson, ensure Tier 3 call site does not 2>/dev/null the notice away. TERTIARY (query dilution, the limitation flagged in 794 research): for the --task N form, a long task .description (e.g. task 55 in ~/Projects/Logos/Hardware is 1842 chars) becomes dozens of filtered terms joined into one giant Semantic Scholar query string, hurting SS relevance and likely aggravating the 429. Consider capping/ranking FILTERED_TERMS to a top-N subset for the Tier 3 online query specifically (Tier 1 local FTS can keep the full set). CONTEXT: surfaced by user testing /literature 55 after tasks 793/794; the two 794 fixes (slug->description query, loud Tier 2 hint) verified working -- this task upgrades the Tier 2 hint to assisted-generation and closes the Tier 3 silent gap. PRIMARY FILES: .claude/extensions/literature/scripts/literature-discover.sh (canonical) + .claude/scripts/literature-discover.sh (byte-identical flat re-sync, task-793 dual-copy model); reference .claude/extensions/literature/scripts/zotero-search.sh for wording and CSL-JSON shape. OUT OF SCOPE: changing the three-tier pipeline architecture; obtaining a Semantic Scholar API key (user declined); the literature.md whole-script 2>/dev/null capture (separate follow-up).
+
+---
 
 ### 796. Mandatory topic assignment
 - **Status**: [NOT STARTED]
@@ -241,6 +254,7 @@ next_project_number: 797
 - **Dependencies**: Task 775
 - **Research**: [776_lit_adhoc_dispatch_navigation_doc_sync/reports/01_lit-adhoc-dispatch-doc-sync.md]
 - **Plan**: [776_lit_adhoc_dispatch_navigation_doc_sync/plans/01_lit-adhoc-navigation-doc-sync.md]
+- **Summary**: [776_lit_adhoc_dispatch_navigation_doc_sync/summaries/01_lit-adhoc-navigation-doc-sync-summary.md]
 
 **Description**: Two coupled fixes so --lit works outside the formal /research N --lit command path and is documented accurately. (1) Ad-hoc dispatch directive: create a reusable 'literature navigation directive' that the primary/orchestrator agent injects when the user asks for --lit conversationally (not via skill Stage 4a). When no per-repo sub-index exists, this path must surface the SAME interactive question defined in task 775 (create curation task vs use global now) -- it must NOT silently inject nothing and must NOT silently auto-search. Once a path is chosen, the dispatched agent receives the <literature-briefing> navigation instructions (run literature-search.sh against the chosen corpus, Read the relevant segmented chunk files). Reference how Stage 4a generates lit_context. (2) CLAUDE.md doc sync: the 'Literature Mode (--lit)' section still describes the DEPRECATED static-dump model (literature-retrieve.sh, <literature-context>, 'reads all .md and .txt files from specs/literature/', TOKEN_BUDGET=4000/MAX_FILES=10). Rewrite the 'What --lit Does' and 'Interactive Sub-Index Setup Detection' subsections to describe (i) the live navigate-on-demand briefing (literature-briefing.sh -> <literature-briefing>) against the global segmented corpus, and (ii) the interactive no-silent-fallback behavior from task 775 (create-curation-task vs use-global-now). Reconcile the token-budget drift (literature-retrieve.sh header 8000, CLAUDE.md 4000, global index.json 8000). Root causes: G3 (navigation reachable only from skill Stage 4a), G4 (stale CLAUDE.md misdocuments --lit). Depends on task 775 (documents the interactive behavior 775 implements).
 
