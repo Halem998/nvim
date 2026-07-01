@@ -1,5 +1,5 @@
 ---
-next_project_number: 802
+next_project_number: 803
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 802
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,777,778,780,782,783,787,791,795,796 | -- | agent-system, email integration, terminal ui |
+| 1 | 78,87,772,777,778,780,782,783,787,791,795,796,802 | -- | agent-system, literature, email integration, ... |
 | 2 | 773,774,779,781,785 | 772,778,780 | agent-system |
 | 3 | 786 | 785 | agent-system |
 | 4 | 788 | 786,787 | agent-system |
@@ -40,6 +40,10 @@ next_project_number: 802
 795 [NOT STARTED] — Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-
 796 [NOT STARTED] — Make topic assignment mandatory across ALL task-creation paths so
 
+### Literature
+
+802 [NOT STARTED] — [LITERATURE AUTHORS RESOLVER TRUNCATION -- latent footgun, follow
+
 ### Terminal Ui
 
 87 [RESEARCHED] — Investigate why the terminal working directory changes to a proje
@@ -49,6 +53,17 @@ next_project_number: 802
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
+
+### 802. Guard skill-literature authors resolver against string-to-first-char truncation
+- **Effort**: 30 minutes
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: [LITERATURE AUTHORS RESOLVER TRUNCATION -- latent footgun, follow-up to task 801] In .claude/skills/skill-literature/SKILL.md at line ~1696 (per-repo sub-index Resolve operation), the authors resolver uses `(.authors // []) | first // "?"`. Because jq `first` on a JSON STRING returns its first CHARACTER (e.g. `"Yde Venema" | first` -> `"Y"`) rather than erroring, a string-typed `.authors` value is silently truncated to a single character instead of yielding the author name. `.authors // []` only substitutes on null/false, not on a string, so it does not protect this path. This is a DIFFERENT code path from the one task 799 fixed in literature-briefing.sh. The global corpus is currently normalized to arrays (task 801, ~/Projects/Literature commit c6eccfb), so this will not trigger in practice today, but any string-typed authors reaching this line (a source that bypasses migrate-from-repo.sh, or a not-yet-normalized index) would silently corrupt output. FIX: make the resolver type-aware, e.g. `if (.authors|type)=="array" then (.authors|first) elif (.authors|type)=="string" then .authors else "?" end`. Scope: single line in .claude/skills/skill-literature/SKILL.md; small, self-contained. CONTEXT: flagged during task 801 research (report 01_authors-schema-normalization.md) and deferred as out-of-scope.
+
+---
 
 ### 801. Normalize authors schema in Literature index generation (defense-in-depth)
 - **Effort**: 3-6 hours

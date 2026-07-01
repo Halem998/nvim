@@ -1,7 +1,22 @@
 {
   "version": "1.1.0",
-  "next_project_number": 802,
+  "next_project_number": 803,
   "active_projects": [
+    {
+      "project_number": 802,
+      "project_name": "literature_authors_first_char_truncation_guard",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-07-01T00:00:00Z",
+      "last_updated": "2026-07-01T00:00:00Z",
+      "title": "Guard skill-literature authors resolver against string-to-first-char truncation",
+      "description": "[LITERATURE AUTHORS RESOLVER TRUNCATION -- latent footgun, follow-up to task 801] In .claude/skills/skill-literature/SKILL.md at line ~1696 (per-repo sub-index Resolve operation), the authors resolver uses `(.authors // []) | first // \"?\"`. Because jq `first` on a JSON STRING returns its first CHARACTER (e.g. `\"Yde Venema\" | first` -> `\"Y\"`) rather than erroring, a string-typed `.authors` value is silently truncated to a single character instead of yielding the author name. `.authors // []` only substitutes on null/false, not on a string, so it does not protect this path. This is a DIFFERENT code path from the one task 799 fixed in literature-briefing.sh. The global corpus is currently normalized to arrays (task 801, ~/Projects/Literature commit c6eccfb), so this will not trigger in practice today, but any string-typed authors reaching this line (a source that bypasses migrate-from-repo.sh, or a not-yet-normalized index) would silently corrupt output. FIX: make the resolver type-aware, e.g. `if (.authors|type)==\"array\" then (.authors|first) elif (.authors|type)==\"string\" then .authors else \"?\" end`. Scope: single line in .claude/skills/skill-literature/SKILL.md; small, self-contained. CONTEXT: flagged during task 801 research (report 01_authors-schema-normalization.md) and deferred as out-of-scope.",
+      "effort": "30 minutes",
+      "topic": "literature",
+      "dependencies": [],
+      "artifacts": [],
+      "parent_task": 801
+    },
     {
       "project_number": 775,
       "project_name": "lit_global_corpus_fallback_briefing",
