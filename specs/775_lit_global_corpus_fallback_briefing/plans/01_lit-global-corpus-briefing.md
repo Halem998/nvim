@@ -228,24 +228,24 @@ docs -> integration).
   - [x] stdout contains only the directive token (no extra lines); rationale goes to stderr. *(completed)*
   - [x] `diff -q` on the two copies reports identical. *(completed)*
 
-### Phase 3: Rewrite Stage 4a in the three standard skills (template) [NOT STARTED]
+### Phase 3: Rewrite Stage 4a in the three standard skills (template) [COMPLETED]
 
 - **Goal:** Replace the pseudocode 3-option block with the D2/D3 live flow in `skill-researcher`,
   `skill-planner`, and `skill-implementer`, establishing the canonical template on
   `skill-researcher` first, then applying it to the other two.
 - **Tasks:**
-  - [ ] Rewrite `skill-researcher` Stage 4a (approx lines 167-251): call
+  - [x] Rewrite `skill-researcher` Stage 4a (approx lines 167-251): call
     `literature-lit-flag-resolve.sh`, branch on the directive; `PROMPT_NEEDED` issues the D2
     three-option `AskUserQuestion` (Use global corpus now / Create curation task / Skip this run);
     `AUTONOMOUS_GLOBAL` takes the D3 default with `[lit:auto]` visible notice; `SUBINDEX_PRESENT`
-    calls no-arg briefing; `GLOBAL_MISSING` emits visible notice + empty; `LIT_DISABLED` no-op.
-  - [ ] Ensure the "Use global corpus now" and `AUTONOMOUS_GLOBAL` branches call
-    `literature-briefing.sh --global "$description"` and capture into `lit_context`.
-  - [ ] Preserve the reusable Stage 4a-fork machinery for the "Create curation task" run-now
-    modifier.
-  - [ ] Verify NO branch sets `lit_context=""` without a visible notice or explicit user skip.
-  - [ ] Apply the identical template to `skill-planner` (approx 157-267) and `skill-implementer`
-    (approx 139-249), adjusting only surrounding line offsets.
+    calls no-arg briefing; `GLOBAL_MISSING` emits visible notice + empty; `LIT_DISABLED` no-op. *(completed)*
+  - [x] Ensure the "Use global corpus now" and `AUTONOMOUS_GLOBAL` branches call
+    `literature-briefing.sh --global "$description"` and capture into `lit_context`. *(completed: verified live with a runnable-extract test — AUTONOMOUS_GLOBAL produced a real global briefing)*
+  - [x] Preserve the reusable Stage 4a-fork machinery for the "Create curation task" run-now
+    modifier. *(completed: fork section retained, retitled to "Create curation task")*
+  - [x] Verify NO branch sets `lit_context=""` without a visible notice or explicit user skip. *(completed: LIT_DISABLED is the sole exception, exempt because --lit was never requested)*
+  - [x] Apply the identical template to `skill-planner` (approx 157-267) and `skill-implementer`
+    (approx 139-249), adjusting only surrounding line offsets. *(completed)*
 - **Timing:** ~1 hour
 - **Depends on:** 2
 - **Files to modify:**
@@ -253,12 +253,12 @@ docs -> integration).
   - `.claude/skills/skill-planner/SKILL.md` - Stage 4a rewrite.
   - `.claude/skills/skill-implementer/SKILL.md` - Stage 4a rewrite.
 - **Verification:**
-  - [ ] `grep -c orchestrator_mode` >= 1 in each of the three files (previously zero).
-  - [ ] Each file contains the three option labels "Use global corpus now", "Create curation task",
-    "Skip this run".
-  - [ ] No occurrence of an unannotated silent-empty default (manual read of each branch confirms a
-    notice or explicit user choice precedes every empty `lit_context`).
-  - [ ] `literature-briefing.sh --global` referenced in each file.
+  - [x] `grep -c orchestrator_mode` >= 1 in each of the three files (previously zero). *(completed: count=4 in each)*
+  - [x] Each file contains the three option labels "Use global corpus now", "Create curation task",
+    "Skip this run". *(completed)*
+  - [x] No occurrence of an unannotated silent-empty default (manual read of each branch confirms a
+    notice or explicit user choice precedes every empty `lit_context`). *(completed)*
+  - [x] `literature-briefing.sh --global` referenced in each file. *(completed)*
 
 ### Phase 4: Rewrite Stage 4a in the three hard-mode skills [NOT STARTED]
 

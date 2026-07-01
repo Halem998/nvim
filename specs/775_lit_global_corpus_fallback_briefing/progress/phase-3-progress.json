@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Rewrite Stage 4a in the three standard skills",
+  "started_at": "2026-07-01T17:16:00Z",
+  "last_updated": "2026-07-01T17:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite skill-researcher Stage 4a (template)", "status": "done"},
+    {"id": 2, "description": "Apply template to skill-planner", "status": "done"},
+    {"id": 3, "description": "Apply template to skill-implementer", "status": "done"},
+    {"id": 4, "description": "Verify grep/label checks across all three", "status": "done"},
+    {"id": 5, "description": "Runtime-verify the extracted bash block (LIT_DISABLED and AUTONOMOUS_GLOBAL)", "status": "done"}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
