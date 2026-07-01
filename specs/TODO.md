@@ -1,5 +1,5 @@
 ---
-next_project_number: 795
+next_project_number: 797
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 795
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,775,777,778,780,782,783,787,791,794 | -- | agent-system, literature, email integration, ... |
+| 1 | 78,87,772,775,777,778,780,782,783,787,791,794,795,796 | -- | agent-system, literature, email integration, ... |
 | 2 | 773,774,776,779,781,785 | 772,775,778,780 | agent-system, literature |
 | 3 | 786 | 785 | agent-system |
 | 4 | 788 | 786,787 | agent-system |
@@ -37,12 +37,14 @@ next_project_number: 795
 787 [NOT STARTED] — Make multi-task creation declare dependencies based on FILE FOOTP
   └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree (see above)
 791 [PR READY] — Fix the <leader>al 'Load Core' loader so WezTerm lifecycle tab co
+795 [NOT STARTED] — Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-
+796 [NOT STARTED] — Make topic assignment mandatory across ALL task-creation paths so
 
 ### Literature
 
-775 [NOT STARTED] — [--lit, NO SILENT FALLBACK] When --lit is used but no per-repo sp
+775 [PLANNED] — [--lit, NO SILENT FALLBACK] When --lit is used but no per-repo sp
   └─ 776 [NOT STARTED] — Two coupled fixes so --lit works outside the formal /research N -
-794 [NOT STARTED] — Improve /literature N source discovery quality by fixing two issu
+794 [PLANNED] — Improve /literature N source discovery quality by fixing two issu
 
 ### Terminal Ui
 
@@ -54,12 +56,34 @@ next_project_number: 795
 
 ## Tasks
 
+### 796. Mandatory topic assignment
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Make topic assignment mandatory across ALL task-creation paths so tasks never land in Uncategorized. Root problem: three escape hatches produce topicless tasks — (1) the one-click Skip (no topic) option in Mode A pickers (/meta, /task create, /project-overview); (2) Mode B silent no-op when a parent task has no topic (topic-assignment-pattern.md:113 says no fallback, but /spawn, --expand, --review implementations DO have fallbacks — doc/impl divergence); (3) Mode C silent no-op when the /review and /fix-it path heuristic hits the other branch (:134). Plus /task --recover has zero topic handling and the meta-builder path can be bypassed entirely. FIX (source tree /home/benjamin/.config/nvim/.claude/, redeployed via <leader>al): rewrite canonical context/patterns/topic-assignment-pattern.md to drop Skip and make Mode A the universal fallback whenever no obvious topic exists (parent none / heuristic miss / batch null), keeping New topic always available; then update all callers to remove Skip and wire the fallback: agents/meta-builder-agent.md Stage 4.5, commands/task.md (create, --expand, --review, --recover which currently has none), commands/review.md and skills/skill-fix-it (Mode C other -> prompt), skills/skill-spawn, skills/skill-project-overview (errors.md inherits via /task). Reconcile the pattern-doc-vs-implementation divergence on Mode B fallback. Research/plan decisions: (a) remove Skip entirely vs keep a hard-to-reach explicit skip; (b) whether to add a defense-in-depth gate (generate-task-order.sh warns on topicless active tasks, or a validation check) so bypasses surface loudly. Out of scope: backfilling existing topicless tasks (/task --sync already does that).
+
+---
+
+### 795. Pr ready guard type pr
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-lifecycle leak where cslib implementation tasks reach [PR READY] instead of [COMPLETED]. Three coordinated source-tree edits in /home/benjamin/.config/nvim/.claude/: (1) runtime guard in .claude/scripts/update-task-status.sh — reject preflight:pr_ready and postflight:pr_ready unless task_type==pr; (2) skill-cslib-implementation Stage 6 (extensions/cslib/skills/skill-cslib-implementation/SKILL.md) — spell out explicit postflight implement -> COMPLETED call mirroring skill-pr-implementation:95; (3) doc reconciliation in extensions/core/merge-sources/claudemd.md:36-37 — mark [PR READY] as type=pr-only, not the universal implementation terminus. Design decision for research/plan: guard in core update-task-status.sh (keyed on task_type==pr) vs pushing pr_ready/PR READY fully into the cslib extension; core doc must end up consistent with the choice. Out of scope: repairing the 5 already-mislabeled deployed tasks (447/404/407/438/453) in /home/benjamin/Projects/cslib/ state.json — separate manual data-repair after redeploy via <leader>al.
+
+---
+
 ### 794. Fix /literature N discovery to query task description+title instead of the slug, and hint on missing Zotero export
 - **Effort**: 1-2 hours
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [794_literature_discover_query_from_description/reports/01_discover-query-fix.md]
+- **Plan**: [794_literature_discover_query_from_description/plans/01_discover-query-fix.md]
 
 **Description**: Improve /literature N source discovery quality by fixing two issues in literature-discover.sh (both surfaced by testing /literature 55 in ~/Projects/Logos/Hardware/ after task 793). Both changes edit the CANONICAL extension source .claude/extensions/literature/scripts/literature-discover.sh AND must re-sync the flat deployed copy .claude/scripts/literature-discover.sh to byte-identical (follow the task-793 dual-copy / provides.scripts flat-deploy model; do NOT touch other repos). FIX 1 (PRIMARY DEFECT -- useless slug query): For the --task N form, literature-discover.sh:105-132 builds the search query ONLY from .project_name (the task slug), converting underscores/hyphens to spaces (line 112-118). The slug describes the task ("collect_literature_sources_task_54" -> "collect literature sources task") not the subject matter, so Tier 1/3 match nothing and discovery returns []. FIX: derive query terms from the task .description AND .title fields in specs/state.json (read both via jq), apply stopword filtering and drop terms under 3 chars (reuse/extend the existing FILTERED_TERMS logic around line 454), and DROP the slug/.project_name entirely from the query (user decision: description+title only, slug is noise). Preserve the existing "--task N \"extra terms\"" behavior (extra terms still append). Keep graceful fallback if description is empty (then title; if both empty, error clearly). Confirm the /literature "free text query" path is unaffected. FIX 2 (UX GAP -- silent missing Zotero export): tier2_search (literature-discover.sh:334-336) silently returns 0 when $LITERATURE_DIR/zotero-library.json is absent, so the user never learns Tier 2 is disabled or how to enable it. FIX: when the export file is missing, print (once per run, to stderr so it does not corrupt the JSON results on stdout) a concise one-time setup hint: in Zotero, File -> Export Library -> format "Better CSL JSON" -> check "Keep updated" -> save to ~/Projects/Literature/zotero-library.json (or $LITERATURE_DIR/zotero-library.json). Do not error or change exit status; Tier 2 still no-ops. Match the wording already used by zotero-search.sh (which prints setup instructions on exit code 1) for consistency. VERIFICATION: (a) with a real task that has a topical description, /literature N now yields a query containing subject-matter terms (not "collect/literature/sources/task") and returns hits where the free-text form does; (b) confirm the missing-zotero-library.json hint prints to stderr and JSON stdout stays valid; (c) assert flat/canonical byte parity for literature-discover.sh; (d) run check-extension-docs.sh (must still PASS). OUT OF SCOPE: creating the zotero-library.json export (user action); changing the three-tier pipeline architecture; Semantic Scholar API behavior. PRIMARY FILES: .claude/extensions/literature/scripts/literature-discover.sh (canonical), .claude/scripts/literature-discover.sh (flat re-sync).
 
@@ -227,10 +251,12 @@ next_project_number: 795
 
 ### 775. --lit: interactive prompt when no per-repo sub-index (no silent fallback)
 - **Effort**: 3-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [775_lit_global_corpus_fallback_briefing/reports/01_lit-no-silent-fallback.md]
+- **Plan**: [775_lit_global_corpus_fallback_briefing/plans/01_lit-global-corpus-briefing.md]
 
 **Description**: [--lit, NO SILENT FALLBACK] When --lit is used but no per-repo specs/literature-index.json sub-index exists, the system MUST present an INTERACTIVE question (AskUserQuestion) -- never silently do nothing, and never silently auto-search. The question asks the user to choose between: (a) CREATE A TASK to curate a per-repo sub-index (so future --lit runs use a focused, repo-specific selection from the global corpus), or (b) POINT TO THE GLOBAL corpus now (run a relevance search against the global ~/Projects/Literature FTS5 index via literature-search.sh, keyed by the task description, and build a <literature-briefing> from the top-N matching segments for this run). (1) literature-briefing.sh must accept the task description/query (it currently takes no arguments) and support a global-corpus briefing mode used by option (b). (2) Wire the interactive prompt into the skill Stage 4a callers (skill-researcher, skill-researcher-hard, skill-planner, skill-planner-hard, skill-implementer, skill-implementer-hard) -- reconcile with / replace the existing 3-option Stage 4a flow (Skip / Create setup task / Create+run) so the choice is clearly 'create curation task' vs 'use global now', and NO branch silently yields an empty briefing. (3) Either briefing path always carries the 'How to Use' footer directing the agent to run literature-search.sh and Read the relevant segmented chunk files. (4) DESIGN QUESTION to resolve during /plan: define the default for autonomous contexts (e.g. /orchestrate) where AskUserQuestion cannot prompt -- it must be a VISIBLE, logged choice (e.g. default to global with a logged notice, or create-and-defer), never a silent no-op. Root causes: G1 (hard gate + silent empty exit), G2 (no global-corpus option). SUPERSEDES the earlier non-interactive auto-fallback design per user direction: 'I don't like fallbacks which are silent.' CONTEXT: transcript .claude/output/lit.md -- no sub-index existed, briefing silently exited empty, the agent got nothing from --lit and fell back to web/training knowledge; the segmented global corpus (222 entries + queryable FTS5 .literature.db via literature-search.sh) was never explored.
 
