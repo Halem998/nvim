@@ -11,7 +11,7 @@ next_project_number: 799
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,777,778,780,782,783,787,791,795,796,798 | -- | agent-system, email integration, terminal ui |
+| 1 | 78,87,772,777,778,780,782,783,787,791,795,796 | -- | agent-system, email integration, terminal ui |
 | 2 | 773,774,779,781,785 | 772,778,780 | agent-system |
 | 3 | 786 | 785 | agent-system |
 | 4 | 788 | 786,787 | agent-system |
@@ -48,16 +48,14 @@ next_project_number: 799
 
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
-### Uncategorized
-
-798 [NOT STARTED] — Two follow-up fixes to task-797 assisted Zotero export generation
-
 ## Tasks
 
 ### 798. Literature zotero datadir and retry fixes
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: None
+- **Research**: [798_literature_zotero_datadir_and_retry_fixes/reports/01_zotero-datadir-retry-fixes.md]
+- **Plan**: [798_literature_zotero_datadir_and_retry_fixes/plans/01_zotero-datadir-retry-fixes.md]
 
 **Description**: Two follow-up fixes to task-797 assisted Zotero export generation, surfaced by user testing /literature 55 in ~/Projects/Logos/Hardware. PRIMARY FILES (task-793 dual-copy model: edit canonical under .claude/extensions/literature/scripts/, then byte-identical re-sync to .claude/scripts/): zotero-generate-export.sh, zotero-export-status.sh, and the /literature wiring in .claude/extensions/literature/commands/literature.md.
 
