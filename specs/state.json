@@ -368,6 +368,11 @@
           "path": "specs/793_literature_extension_script_packaging/plans/01_script-packaging-plan.md",
           "type": "plan",
           "summary": "Script packaging plan"
+        },
+        {
+          "path": "specs/793_literature_extension_script_packaging/summaries/01_script-packaging-summary.md",
+          "type": "summary",
+          "summary": "Script packaging summary"
         }
       ],
       "session_id": "sess_1782919568_e31bb9",
