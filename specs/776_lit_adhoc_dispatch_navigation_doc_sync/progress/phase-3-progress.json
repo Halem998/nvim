@@ -1,0 +1,25 @@
+{
+  "phase": 3,
+  "phase_name": "Sync the CLAUDE.md merge-source Literature Mode section",
+  "started_at": "2026-07-01T00:09:00Z",
+  "last_updated": "2026-07-01T00:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite Literature Mode preamble (lines 315-317)", "status": "done"},
+    {"id": 2, "description": "Rewrite What --lit Does (lines 319-327) to live briefing model", "status": "done"},
+    {"id": 3, "description": "Delete orphaned scoping note (lines 330-333)", "status": "done"},
+    {"id": 4, "description": "Add Ad-Hoc / Conversational Literature Requests pointer subsection", "status": "done"},
+    {"id": 5, "description": "Consistency sweep of remaining Literature Mode subsections in this file", "status": "done", "note": "Memory Extension 'Literature-Augmented Research' paragraph is in a different merge-source file (.claude/extensions/memory/EXTENSION.md), not claudemd.md; left untouched per explicit out-of-scope instruction to edit only claudemd.md."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.5",
+      "description": "Consistency sweep should include the Memory Extension 'Literature-Augmented Research' paragraph",
+      "type": "altered",
+      "reason": "That paragraph resides in .claude/extensions/memory/EXTENSION.md, a different merge-source file, not in claudemd.md. The orchestrator's explicit instruction and the plan's own caveat ('do not expand into other files') scope this task to claudemd.md only, so the paragraph was left unedited.",
+      "annotation": "*(deviation: altered — swept only claudemd.md content per explicit single-file scope)*"
+    }
+  ]
+}

@@ -176,22 +176,22 @@ reusing the two task-775 scripts.
 
 ---
 
-### Phase 2: Register the new file in the literature index-entries.json [NOT STARTED]
+### Phase 2: Register the new file in the literature index-entries.json [COMPLETED]
 
 **Goal**: Make the new pattern file loadable for skill/agent/command context discovery, matching
 the shape of the existing `agent-exploration.md` entry.
 
 **Tasks**:
-- [ ] Read the existing `agent-exploration.md` entry in
-  `.claude/extensions/literature/index-entries.json` as the template.
-- [ ] Add a sibling entry for
+- [x] Read the existing `agent-exploration.md` entry in
+  `.claude/extensions/literature/index-entries.json` as the template. *(completed)*
+- [x] Add a sibling entry for
   `project/literature/patterns/adhoc-navigation-directive.md` with the same `domain`/`subdomain`
   (`project`/`literature`), appropriate `topics`/`keywords` (e.g. `adhoc`, `conversational`,
   `navigation`, `directive`, `briefing`, `primary-session`), a one-line `summary`, the actual
   `line_count` of the file written in Phase 1, and the same `load_when` blocks
   (agents: literature-agent, general-research-agent, general-implementation-agent, planner-agent;
   skills: skill-literature, skill-researcher, skill-implementer, skill-planner; commands:
-  /literature, /research, /plan, /implement).
+  /literature, /research, /plan, /implement). *(completed: line_count=92, verified against wc -l)*
 
 **Timing**: 0.5 hours
 
@@ -207,7 +207,7 @@ the shape of the existing `agent-exploration.md` entry.
 
 ---
 
-### Phase 3: Sync the CLAUDE.md merge-source Literature Mode section [NOT STARTED]
+### Phase 3: Sync the CLAUDE.md merge-source Literature Mode section [COMPLETED]
 
 **Goal**: Rewrite the stale static-dump documentation to the live briefing model, delete the
 orphaned scoping note, drop the token-budget claim, and add the ad-hoc directive pointer — all in
@@ -215,10 +215,10 @@ the single merge-source `.claude/extensions/core/merge-sources/claudemd.md`. Do 
 deployed `.claude/CLAUDE.md`.
 
 **Tasks**:
-- [ ] Rewrite the Literature Mode section preamble (lines 315-317) so it no longer claims `--lit`
+- [x] Rewrite the Literature Mode section preamble (lines 315-317) so it no longer claims `--lit`
   "injects reference files from `specs/literature/` as `<literature-context>`"; describe the live
-  navigate-on-demand briefing instead.
-- [ ] Rewrite "What `--lit` Does" (lines 319-327) to describe the live model:
+  navigate-on-demand briefing instead. *(completed)*
+- [x] Rewrite "What `--lit` Does" (lines 319-327) to describe the live model: *(completed)*
   - `--lit` triggers a live, navigate-on-demand `<literature-briefing>` (never a static content
     dump) against a corpus of pre-segmented literature chunks.
   - Two source modes matching `literature-briefing.sh`: per-repo mode (sourced from
@@ -237,22 +237,25 @@ deployed `.claude/CLAUDE.md`.
     decision flow (avoid duplicating 775's correct text).
   - **Drop** `TOKEN_BUDGET`/`MAX_FILES` entirely; if a numeric limit is stated, cite `--top-n`
     (default 8 chunks) for global-corpus mode only.
-- [ ] Delete the orphaned scoping note at lines 330-333 (the `> **Scoping note**: ...` block inside
+- [x] Delete the orphaned scoping note at lines 330-333 (the `> **Scoping note**: ...` block inside
   "Interactive Sub-Index Setup Detection"). Make no other change to that subsection (lines 335-379
-  are already correct per 775).
-- [ ] Add a new short subsection to the Literature Mode section titled e.g. "Ad-Hoc /
+  are already correct per 775). *(completed)*
+- [x] Add a new short subsection to the Literature Mode section titled e.g. "Ad-Hoc /
   Conversational Literature Requests" that names the new file
   (`.claude/context/project/literature/patterns/adhoc-navigation-directive.md`) and states its
   one-line contract: when a user requests `--lit`-like behavior conversationally (outside a skill
   Stage 4a dispatch), the primary session runs `literature-lit-flag-resolve.sh
   --orchestrator-mode false` and surfaces the SAME three-option interactive question as Stage 4a —
-  never silently injecting nothing and never silently auto-searching.
-- [ ] Consistency sweep: scan the remaining Literature Mode subsections in this file (including
+  never silently injecting nothing and never silently auto-searching. *(completed)*
+- [x] Consistency sweep: scan the remaining Literature Mode subsections in this file (including
   "specs/literature/ Directory Convention" and the Memory Extension "Literature-Augmented Research"
   paragraph) and reconcile any surviving `<literature-context>` / `literature-retrieve.sh` /
   `TOKEN_BUDGET` references that would contradict the rewritten section. Limit edits to what is
   needed for internal consistency of this file's Literature Mode content; do not expand into other
-  files.
+  files. *(completed: swept "specs/literature/ Directory Convention" — no stale references found;
+  the Memory Extension "Literature-Augmented Research" paragraph lives in a separate merge-source
+  file (.claude/extensions/memory/EXTENSION.md), out of scope per "do not expand into other files"
+  and per the explicit task-776 scope boundary limiting edits to claudemd.md only)*
 
 **Timing**: 1 hour
 

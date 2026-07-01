@@ -1,0 +1,14 @@
+{
+  "phase": 2,
+  "phase_name": "Register the new file in the literature index-entries.json",
+  "started_at": "2026-07-01T00:06:00Z",
+  "last_updated": "2026-07-01T00:08:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read the existing agent-exploration.md entry as template", "status": "done"},
+    {"id": 2, "description": "Add sibling entry for adhoc-navigation-directive.md", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

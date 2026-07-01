@@ -312,25 +312,44 @@ explicitly pass `--hard` to activate hard mode.
 
 ## Literature Mode (`--lit`)
 
-Literature mode injects reference files from `specs/literature/` as `<literature-context>` into
-agent prompts. Use this when a task involves implementing from a paper, specification, or
-reference document.
+Literature mode produces a live, navigate-on-demand `<literature-briefing>` block for agent
+prompts — never a static content dump. Use this when a task involves implementing from a paper,
+specification, or reference document.
 
 ### What `--lit` Does
 
 When `--lit` is passed to `/research`, `/plan`, `/implement`, or `/orchestrate`:
-- `literature-retrieve.sh` reads all `.md` and `.txt` files from `specs/literature/`
-- Files are included up to TOKEN_BUDGET=4000 tokens (MAX_FILES=10)
-- A `<literature-context>` block is injected after `<memory-context>` (if any) and before
-  task-specific instructions
-- If `specs/literature/` does not exist or is empty, the flag is silently ignored (no error)
+- `--lit` triggers `literature-briefing.sh` to build a live `<literature-briefing>` block against
+  a corpus of pre-segmented literature chunks — the agent navigates on demand rather than
+  receiving injected file content.
+- Two source modes, matching `literature-briefing.sh`:
+  - **Per-repo mode** (default, no args): sourced from the per-repo sub-index
+    `specs/literature-index.json`, resolved against the global `$LITERATURE_DIR/index.json`.
+  - **Global-corpus mode** (`literature-briefing.sh --global "<query>"`): a live relevance search
+    over the global Literature corpus, used when no per-repo sub-index exists (see "Interactive
+    Sub-Index Setup Detection" below for when this mode is selected).
+- Both modes emit a single `<literature-briefing>` block containing document/chunk metadata plus
+  a "How to Use" footer instructing the agent to run `literature-search.sh` and `Read` specific
+  chunks on demand — no full-file content is ever injected.
+- The block is injected after `<memory-context>` (if any) and before task-specific instructions.
+- If `--lit` is not passed (`LIT_DISABLED`), nothing is injected. If a per-repo sub-index and the
+  global index are both absent (`GLOBAL_MISSING`), the skill emits a visible notice that no
+  literature is available and continues without a briefing — this is never a silent no-op (see
+  "Interactive Sub-Index Setup Detection" for the full missing-sub-index decision flow).
+- The only numeric limiter on any live path is `--top-n` (default 8 chunks), which applies to
+  global-corpus mode only.
+
+### Ad-Hoc / Conversational Literature Requests
+
+Stage 4a (below) only runs inside a `/research|/plan|/implement|/orchestrate --lit` dispatch. When
+a user instead asks conversationally — outside any such dispatch — to consult "the literature", a
+paper, or otherwise invoke `--lit`-like behavior, the primary/root session follows
+`.claude/context/project/literature/patterns/adhoc-navigation-directive.md`: it runs
+`literature-lit-flag-resolve.sh --orchestrator-mode false` and surfaces the SAME three-option
+interactive question as Stage 4a ("Use global corpus now" / "Create curation task" / "Skip this
+run") — never silently injecting nothing and never silently auto-searching.
 
 ### Interactive Sub-Index Setup Detection
-
-> **Scoping note**: This section describes only the interactive decision flow for a missing
-> per-repo sub-index. The broader `--lit` model description above ("What `--lit` Does" /
-> `literature-retrieve.sh` narrative) is owned by task 776 and is intentionally left unchanged
-> here.
 
 When `--lit` is used, each skill (skill-researcher, skill-planner, skill-implementer, and their
 `--hard` variants) resolves the situation via the shared helper

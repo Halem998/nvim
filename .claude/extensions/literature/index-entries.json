@@ -27,6 +27,20 @@
         "skills": ["skill-literature", "skill-researcher", "skill-implementer", "skill-planner"],
         "commands": ["/literature", "/research", "/plan", "/implement"]
       }
+    },
+    {
+      "path": "project/literature/patterns/adhoc-navigation-directive.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "topics": ["literature", "adhoc", "conversational", "navigation", "directive", "briefing", "primary-session"],
+      "keywords": ["adhoc", "conversational", "navigation", "directive", "briefing", "primary-session", "orchestrator-mode"],
+      "summary": "How the primary/root session reproduces skill Stage 4a's --lit navigation conversationally by reusing literature-lit-flag-resolve.sh and literature-briefing.sh with --orchestrator-mode false",
+      "line_count": 92,
+      "load_when": {
+        "agents": ["literature-agent", "general-research-agent", "general-implementation-agent", "planner-agent"],
+        "skills": ["skill-literature", "skill-researcher", "skill-implementer", "skill-planner"],
+        "commands": ["/literature", "/research", "/plan", "/implement"]
+      }
     }
   ]
 }
