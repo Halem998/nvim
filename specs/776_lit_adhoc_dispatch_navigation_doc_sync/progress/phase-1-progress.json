@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Create the ad-hoc navigation directive pattern file",
+  "started_at": "2026-07-01T00:00:00Z",
+  "last_updated": "2026-07-01T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read the two reference sources (Stage 4a lines 146-278, agent-exploration.md)", "status": "done"},
+    {"id": 2, "description": "Create canonical adhoc-navigation-directive.md", "status": "done"},
+    {"id": 3, "description": "Copy canonical verbatim to mirror", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
