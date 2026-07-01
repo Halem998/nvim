@@ -199,34 +199,34 @@ docs -> integration).
     still prints nothing and exits 0 (regression). *(completed)*
   - [x] `diff -q .claude/scripts/literature-briefing.sh .claude/extensions/literature/scripts/literature-briefing.sh` reports identical. *(completed)*
 
-### Phase 2: Create `literature-lit-flag-resolve.sh` shared helper [NOT STARTED]
+### Phase 2: Create `literature-lit-flag-resolve.sh` shared helper [COMPLETED]
 
 - **Goal:** Implement the D1 directive contract in one helper (canonical + mirror) so all six
   Stage 4a blocks share the deterministic decision logic, including the D3 autonomous default
   branch.
 - **Tasks:**
-  - [ ] Create `.claude/extensions/literature/scripts/literature-lit-flag-resolve.sh` accepting
-    `--lit-flag`, `--orchestrator-mode`, `--query`, honoring `LITERATURE_DIR`.
-  - [ ] Implement classification returning exactly one directive on stdout: `LIT_DISABLED`,
-    `SUBINDEX_PRESENT`, `GLOBAL_MISSING`, `PROMPT_NEEDED`, `AUTONOMOUS_GLOBAL` (per D1/D3).
-  - [ ] Emit human-readable rationale to stderr (never stdout) so the skill can surface a visible
-    notice; keep stdout to the single directive token for clean capture.
-  - [ ] Add a usage header documenting inputs, directives, and that `AskUserQuestion` remains the
-    caller's responsibility.
-  - [ ] Mirror verbatim to `.claude/scripts/literature-lit-flag-resolve.sh`.
+  - [x] Create `.claude/extensions/literature/scripts/literature-lit-flag-resolve.sh` accepting
+    `--lit-flag`, `--orchestrator-mode`, `--query`, honoring `LITERATURE_DIR`. *(completed)*
+  - [x] Implement classification returning exactly one directive on stdout: `LIT_DISABLED`,
+    `SUBINDEX_PRESENT`, `GLOBAL_MISSING`, `PROMPT_NEEDED`, `AUTONOMOUS_GLOBAL` (per D1/D3). *(completed)*
+  - [x] Emit human-readable rationale to stderr (never stdout) so the skill can surface a visible
+    notice; keep stdout to the single directive token for clean capture. *(completed)*
+  - [x] Add a usage header documenting inputs, directives, and that `AskUserQuestion` remains the
+    caller's responsibility. *(completed)*
+  - [x] Mirror verbatim to `.claude/scripts/literature-lit-flag-resolve.sh`. *(completed)*
 - **Timing:** ~1 hour
 - **Depends on:** 1
 - **Files to modify:**
   - `.claude/extensions/literature/scripts/literature-lit-flag-resolve.sh` - new helper.
   - `.claude/scripts/literature-lit-flag-resolve.sh` - mirror.
 - **Verification:**
-  - [ ] `bash -n` passes on both copies.
-  - [ ] Directive matrix verified with fixtures: `--lit-flag false` -> `LIT_DISABLED`; sub-index
+  - [x] `bash -n` passes on both copies. *(completed)*
+  - [x] Directive matrix verified with fixtures: `--lit-flag false` -> `LIT_DISABLED`; sub-index
     present -> `SUBINDEX_PRESENT`; sub-index+global absent -> `GLOBAL_MISSING`; sub-index absent,
     global present, `--orchestrator-mode false` -> `PROMPT_NEEDED`; same with
-    `--orchestrator-mode true` -> `AUTONOMOUS_GLOBAL`.
-  - [ ] stdout contains only the directive token (no extra lines); rationale goes to stderr.
-  - [ ] `diff -q` on the two copies reports identical.
+    `--orchestrator-mode true` -> `AUTONOMOUS_GLOBAL`. *(completed: all 5 fixtures verified)*
+  - [x] stdout contains only the directive token (no extra lines); rationale goes to stderr. *(completed)*
+  - [x] `diff -q` on the two copies reports identical. *(completed)*
 
 ### Phase 3: Rewrite Stage 4a in the three standard skills (template) [NOT STARTED]
 
