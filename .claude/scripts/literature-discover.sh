@@ -104,18 +104,33 @@ done
 
 # Resolve task description if --task given
 if [ -n "$TASK_NUM" ]; then
-  # Try to get task name from state.json
+  # Try to get task description/title from state.json
   git_root=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
   state_file="$git_root/specs/state.json"
 
   if [ -f "$state_file" ]; then
-    task_name=$(jq -r --arg n "$TASK_NUM" '
-      .active_projects[] | select(.project_number == ($n | tonumber)) | .project_name
-    ' "$state_file" 2>/dev/null || echo "")
+    task_found=$(jq -r --arg n "$TASK_NUM" \
+      '[.active_projects[] | select(.project_number == ($n|tonumber))] | length' \
+      "$state_file" 2>/dev/null || echo "0")
 
-    if [ -n "$task_name" ] && [ "$task_name" != "null" ]; then
-      # Convert slug to search terms (replace underscores/hyphens with spaces)
-      task_terms=$(echo "$task_name" | tr '_-' '  ')
+    if [ "$task_found" -gt 0 ]; then
+      task_description=$(jq -r --arg n "$TASK_NUM" \
+        '.active_projects[] | select(.project_number == ($n|tonumber)) | .description // ""' \
+        "$state_file" 2>/dev/null)
+      task_title=$(jq -r --arg n "$TASK_NUM" \
+        '.active_projects[] | select(.project_number == ($n|tonumber)) | .title // ""' \
+        "$state_file" 2>/dev/null)
+
+      task_terms=""
+      [ -n "$task_description" ] && [ "$task_description" != "null" ] && task_terms="$task_description"
+      [ -n "$task_title" ] && [ "$task_title" != "null" ] && task_terms="$task_terms $task_title"
+      task_terms=$(echo "$task_terms" | sed -E 's/^ +| +$//g')
+
+      if [ -z "$task_terms" ]; then
+        echo "Error: Task $TASK_NUM has no description or title in specs/state.json to build a search query from" >&2
+        exit 2
+      fi
+
       if [ -n "$SEARCH_TERMS" ]; then
         SEARCH_TERMS="$task_terms $SEARCH_TERMS"
       else
@@ -332,6 +347,8 @@ tier2_search() {
   local zotero_library="$LITERATURE_DIR/zotero-library.json"
 
   if [ ! -f "$zotero_library" ]; then
+    echo "Tier 2 (Zotero) skipped: no export found at $zotero_library" >&2
+    echo "  To enable: in Zotero, File -> Export Library -> format \"Better CSL JSON\", check \"Keep updated\", save to $zotero_library" >&2
     return 0
   fi
 
@@ -405,9 +422,9 @@ import sys, json
 raw = sys.stdin.read().strip()
 parts = [p.strip() for p in raw.split(';') if p.strip()]
 print(json.dumps(parts))
-")
+" 2>/dev/null)
     elif [ -n "$authors" ]; then
-      authors_arr=$(python3 -c "import json, sys; print(json.dumps([sys.argv[1]]))" "$authors")
+      authors_arr=$(python3 -c "import json, sys; print(json.dumps([sys.argv[1]]))" "$authors" 2>/dev/null)
     else
       authors_arr='[]'
     fi
@@ -592,7 +609,7 @@ tier3_search() {
 tier1_search 2>/dev/null || true
 
 # Tier 2: Zotero
-tier2_search 2>/dev/null || true
+tier2_search || true
 
 # Tier 3: Online APIs (only if we have fewer than limit results)
 tier3_search 2>/dev/null || true

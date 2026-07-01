@@ -1,7 +1,7 @@
 # Implementation Plan: Task #776
 
 - **Task**: 776 - Make --lit navigation work for ad-hoc dispatch and sync stale CLAUDE.md docs
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: 775 (completed — provides the two reusable scripts and the already-correct "Interactive Sub-Index Setup Detection" text this plan builds on)
 - **Research Inputs**: specs/776_lit_adhoc_dispatch_navigation_doc_sync/reports/01_lit-adhoc-dispatch-doc-sync.md

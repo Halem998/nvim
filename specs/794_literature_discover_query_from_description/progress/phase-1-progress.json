@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "FIX 1 -- derive query from description+title",
+  "started_at": "2026-07-01T00:00:00Z",
+  "last_updated": "2026-07-01T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read literature-discover.sh lines 105-132 to confirm current --task block", "status": "done"},
+    {"id": 2, "description": "Replace block with description+title derivation via jq with null guards", "status": "done"},
+    {"id": 3, "description": "Preserve --task N \"extra terms\" append behavior", "status": "done"},
+    {"id": 4, "description": "Confirm free-text path unaffected", "status": "done"},
+    {"id": 5, "description": "Confirm no changes to filter_terms()/FILTERED_TERMS", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

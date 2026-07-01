@@ -1,0 +1,30 @@
+{
+  "status": "implemented",
+  "summary": "Fixed literature-discover.sh: --task N queries now derive from task description+title (jq) instead of the project_name slug (FIX 1), and a stderr setup hint prints when zotero-library.json is missing with the outer stderr swallow removed at the tier2_search call site (FIX 2). Canonical extension source and flat deployed copy edited and re-synced byte-identical. All 4 verification checks (query content, Zotero hint + valid JSON stdout, byte parity, check-extension-docs.sh literature=PASS) passed.",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "blockers": [],
+  "continuation_context": null,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/794_literature_discover_query_from_description/plans/01_discover-query-fix.md"
+    },
+    {
+      "type": "summary",
+      "path": "specs/794_literature_discover_query_from_description/summaries/01_discover-query-fix-summary.md"
+    },
+    {
+      "type": "handoff",
+      "path": "specs/794_literature_discover_query_from_description/handoffs/phase-4-handoff-20260701T165216Z.md"
+    },
+    {
+      "type": "code",
+      "path": ".claude/extensions/literature/scripts/literature-discover.sh"
+    },
+    {
+      "type": "code",
+      "path": ".claude/scripts/literature-discover.sh"
+    }
+  ]
+}

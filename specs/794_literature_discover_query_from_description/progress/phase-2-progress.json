@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "FIX 2 -- Zotero missing-export hint + clear swallow points",
+  "started_at": "2026-07-01T00:10:00Z",
+  "last_updated": "2026-07-01T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add stderr setup hint in tier2_search when zotero-library.json missing", "status": "done"},
+    {"id": 2, "description": "Remove outer 2>/dev/null swallow at tier2_search call site", "status": "done"},
+    {"id": 3, "description": "Add 2>/dev/null parity to two unredirected python3 calls", "status": "done"},
+    {"id": 4, "description": "Cross-check hint wording against zotero-search.sh", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -1,0 +1,14 @@
+{
+  "phase": 3,
+  "phase_name": "Re-sync flat deployed copy",
+  "started_at": "2026-07-01T00:25:00Z",
+  "last_updated": "2026-07-01T00:26:00Z",
+  "objectives": [
+    {"id": 1, "description": "Copy canonical over flat", "status": "done"},
+    {"id": 2, "description": "Ensure executable bit preserved", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

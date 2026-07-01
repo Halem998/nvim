@@ -5,10 +5,10 @@
     {
       "project_number": 775,
       "project_name": "lit_global_corpus_fallback_briefing",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-06-24T22:01:31Z",
-      "last_updated": "2026-07-01T16:47:11Z",
+      "last_updated": "2026-07-01T17:05:12Z",
       "title": "--lit: interactive prompt when no per-repo sub-index (no silent fallback)",
       "description": "[--lit, NO SILENT FALLBACK] When --lit is used but no per-repo specs/literature-index.json sub-index exists, the system MUST present an INTERACTIVE question (AskUserQuestion) -- never silently do nothing, and never silently auto-search. The question asks the user to choose between: (a) CREATE A TASK to curate a per-repo sub-index (so future --lit runs use a focused, repo-specific selection from the global corpus), or (b) POINT TO THE GLOBAL corpus now (run a relevance search against the global ~/Projects/Literature FTS5 index via literature-search.sh, keyed by the task description, and build a <literature-briefing> from the top-N matching segments for this run). (1) literature-briefing.sh must accept the task description/query (it currently takes no arguments) and support a global-corpus briefing mode used by option (b). (2) Wire the interactive prompt into the skill Stage 4a callers (skill-researcher, skill-researcher-hard, skill-planner, skill-planner-hard, skill-implementer, skill-implementer-hard) -- reconcile with / replace the existing 3-option Stage 4a flow (Skip / Create setup task / Create+run) so the choice is clearly 'create curation task' vs 'use global now', and NO branch silently yields an empty briefing. (3) Either briefing path always carries the 'How to Use' footer directing the agent to run literature-search.sh and Read the relevant segmented chunk files. (4) DESIGN QUESTION to resolve during /plan: define the default for autonomous contexts (e.g. /orchestrate) where AskUserQuestion cannot prompt -- it must be a VISIBLE, logged choice (e.g. default to global with a logged notice, or create-and-defer), never a silent no-op. Root causes: G1 (hard gate + silent empty exit), G2 (no global-corpus option). SUPERSEDES the earlier non-interactive auto-fallback design per user direction: 'I don't like fallbacks which are silent.' CONTEXT: transcript .claude/output/lit.md -- no sub-index existed, briefing silently exited empty, the agent got nothing from --lit and fell back to web/training knowledge; the segmented global corpus (222 entries + queryable FTS5 .literature.db via literature-search.sh) was never explored.",
       "effort": "3-6 hours",
@@ -24,17 +24,23 @@
           "type": "plan",
           "path": "specs/775_lit_global_corpus_fallback_briefing/plans/01_lit-global-corpus-briefing.md",
           "summary": "6-phase plan: global-briefing mode, shared resolve helper, Stage 4a rewrite x6, doc sync"
+        },
+        {
+          "type": "summary",
+          "path": "specs/775_lit_global_corpus_fallback_briefing/summaries/01_lit-global-corpus-briefing-summary.md",
+          "summary": "6/6 phases implemented"
         }
       ],
-      "session_id": "sess_1782923730_e38a8e_775"
+      "session_id": "sess_1782923730_e38a8e_775",
+      "completion_summary": "Implemented no-silent-fallback interactive --lit briefing: added literature-briefing.sh --global mode, shared literature-lit-flag-resolve.sh helper, rewrote Stage 4a in all 6 skills to two live outcomes + explicit skip, resolved autonomous default (orchestrator_mode bypasses prompt, defaults to global with [lit:auto] notice), scoped claudemd.md doc update."
     },
     {
       "project_number": 776,
       "project_name": "lit_adhoc_dispatch_navigation_doc_sync",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-06-24T22:01:31Z",
-      "last_updated": "2026-06-24T22:23:57Z",
+      "last_updated": "2026-07-01T17:32:00Z",
       "title": "Make --lit navigation work for ad-hoc dispatch and sync stale CLAUDE.md docs",
       "description": "Two coupled fixes so --lit works outside the formal /research N --lit command path and is documented accurately. (1) Ad-hoc dispatch directive: create a reusable 'literature navigation directive' that the primary/orchestrator agent injects when the user asks for --lit conversationally (not via skill Stage 4a). When no per-repo sub-index exists, this path must surface the SAME interactive question defined in task 775 (create curation task vs use global now) -- it must NOT silently inject nothing and must NOT silently auto-search. Once a path is chosen, the dispatched agent receives the <literature-briefing> navigation instructions (run literature-search.sh against the chosen corpus, Read the relevant segmented chunk files). Reference how Stage 4a generates lit_context. (2) CLAUDE.md doc sync: the 'Literature Mode (--lit)' section still describes the DEPRECATED static-dump model (literature-retrieve.sh, <literature-context>, 'reads all .md and .txt files from specs/literature/', TOKEN_BUDGET=4000/MAX_FILES=10). Rewrite the 'What --lit Does' and 'Interactive Sub-Index Setup Detection' subsections to describe (i) the live navigate-on-demand briefing (literature-briefing.sh -> <literature-briefing>) against the global segmented corpus, and (ii) the interactive no-silent-fallback behavior from task 775 (create-curation-task vs use-global-now). Reconcile the token-budget drift (literature-retrieve.sh header 8000, CLAUDE.md 4000, global index.json 8000). Root causes: G3 (navigation reachable only from skill Stage 4a), G4 (stale CLAUDE.md misdocuments --lit). Depends on task 775 (documents the interactive behavior 775 implements).",
       "effort": "3-6 hours",
@@ -42,7 +48,25 @@
       "dependencies": [
         775
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/776_lit_adhoc_dispatch_navigation_doc_sync/reports/01_lit-adhoc-dispatch-doc-sync.md",
+          "summary": "Research: ad-hoc --lit dispatch directive + CLAUDE.md doc sync (post-775)"
+        },
+        {
+          "type": "plan",
+          "path": "specs/776_lit_adhoc_dispatch_navigation_doc_sync/plans/01_lit-adhoc-navigation-doc-sync.md",
+          "summary": "4-phase plan: greenfield ad-hoc navigation directive + CLAUDE.md doc sync"
+        },
+        {
+          "type": "summary",
+          "path": "specs/776_lit_adhoc_dispatch_navigation_doc_sync/summaries/01_lit-adhoc-navigation-doc-sync-summary.md",
+          "summary": "4/4 phases implemented"
+        }
+      ],
+      "session_id": "sess_1782923730_e38a8e_776",
+      "completion_summary": "Created ad-hoc/conversational --lit navigation directive pattern file (canonical+mirror) reusing 775 primitives, registered in index-entries.json, and doc-synced claudemd.md Literature Mode (live briefing model, dropped stale TOKEN_BUDGET/MAX_FILES, added ad-hoc pointer)."
     },
     {
       "project_number": 772,
@@ -393,10 +417,10 @@
     {
       "project_number": 794,
       "project_name": "literature_discover_query_from_description",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-07-01T16:19:32Z",
-      "last_updated": "2026-07-01T16:47:12Z",
+      "last_updated": "2026-07-01T17:05:13Z",
       "title": "Fix /literature N discovery to query task description+title instead of the slug, and hint on missing Zotero export",
       "description": "Improve /literature N source discovery quality by fixing two issues in literature-discover.sh (both surfaced by testing /literature 55 in ~/Projects/Logos/Hardware/ after task 793). Both changes edit the CANONICAL extension source .claude/extensions/literature/scripts/literature-discover.sh AND must re-sync the flat deployed copy .claude/scripts/literature-discover.sh to byte-identical (follow the task-793 dual-copy / provides.scripts flat-deploy model; do NOT touch other repos). FIX 1 (PRIMARY DEFECT -- useless slug query): For the --task N form, literature-discover.sh:105-132 builds the search query ONLY from .project_name (the task slug), converting underscores/hyphens to spaces (line 112-118). The slug describes the task (\"collect_literature_sources_task_54\" -> \"collect literature sources task\") not the subject matter, so Tier 1/3 match nothing and discovery returns []. FIX: derive query terms from the task .description AND .title fields in specs/state.json (read both via jq), apply stopword filtering and drop terms under 3 chars (reuse/extend the existing FILTERED_TERMS logic around line 454), and DROP the slug/.project_name entirely from the query (user decision: description+title only, slug is noise). Preserve the existing \"--task N \\\"extra terms\\\"\" behavior (extra terms still append). Keep graceful fallback if description is empty (then title; if both empty, error clearly). Confirm the /literature \"free text query\" path is unaffected. FIX 2 (UX GAP -- silent missing Zotero export): tier2_search (literature-discover.sh:334-336) silently returns 0 when $LITERATURE_DIR/zotero-library.json is absent, so the user never learns Tier 2 is disabled or how to enable it. FIX: when the export file is missing, print (once per run, to stderr so it does not corrupt the JSON results on stdout) a concise one-time setup hint: in Zotero, File -> Export Library -> format \"Better CSL JSON\" -> check \"Keep updated\" -> save to ~/Projects/Literature/zotero-library.json (or $LITERATURE_DIR/zotero-library.json). Do not error or change exit status; Tier 2 still no-ops. Match the wording already used by zotero-search.sh (which prints setup instructions on exit code 1) for consistency. VERIFICATION: (a) with a real task that has a topical description, /literature N now yields a query containing subject-matter terms (not \"collect/literature/sources/task\") and returns hits where the free-text form does; (b) confirm the missing-zotero-library.json hint prints to stderr and JSON stdout stays valid; (c) assert flat/canonical byte parity for literature-discover.sh; (d) run check-extension-docs.sh (must still PASS). OUT OF SCOPE: creating the zotero-library.json export (user action); changing the three-tier pipeline architecture; Semantic Scholar API behavior. PRIMARY FILES: .claude/extensions/literature/scripts/literature-discover.sh (canonical), .claude/scripts/literature-discover.sh (flat re-sync).",
       "effort": "1-2 hours",
@@ -412,9 +436,15 @@
           "type": "plan",
           "path": "specs/794_literature_discover_query_from_description/plans/01_discover-query-fix.md",
           "summary": "4-phase plan: description/title query, Zotero hint, flat re-sync, verification"
+        },
+        {
+          "type": "summary",
+          "path": "specs/794_literature_discover_query_from_description/summaries/01_discover-query-fix-summary.md",
+          "summary": "4/4 phases implemented"
         }
       ],
-      "session_id": "sess_1782923730_e38a8e_794"
+      "session_id": "sess_1782923730_e38a8e_794",
+      "completion_summary": "Fixed literature-discover.sh --task N query to derive from description+title (dropped useless slug), added missing-Zotero-export stderr setup hint with swallow-point fixes, re-synced flat copy byte-identical. Verified query quality, stderr hint, byte parity, and literature-section check-docs PASS."
     },
     {
       "project_number": 795,
