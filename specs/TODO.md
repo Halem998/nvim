@@ -11,7 +11,7 @@ next_project_number: 798
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,777,778,780,782,783,787,791,795,796,797 | -- | agent-system, email integration, terminal ui |
+| 1 | 78,87,772,777,778,780,782,783,787,791,795,796 | -- | agent-system, email integration, terminal ui |
 | 2 | 773,774,779,781,785 | 772,778,780 | agent-system |
 | 3 | 786 | 785 | agent-system |
 | 4 | 788 | 786,787 | agent-system |
@@ -48,16 +48,15 @@ next_project_number: 798
 
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
-### Uncategorized
-
-797 [NOT STARTED] — PRIMARY GOAL (assisted Zotero export generation, supersedes task-
-
 ## Tasks
 
 ### 797. Literature zotero export assisted setup
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: None
+- **Research**: [797_literature_zotero_export_assisted_setup/reports/01_zotero-export-assisted-generation.md]
+- **Plan**: [797_literature_zotero_export_assisted_setup/plans/01_assisted-zotero-export-generation.md]
+- **Summary**: [797_literature_zotero_export_assisted_setup/summaries/01_assisted-zotero-export-generation-summary.md]
 
 **Description**: PRIMARY GOAL (assisted Zotero export generation, supersedes task-794 FIX 2 print-only hint per user direction "actually generate the zotero-library.json"): when $LITERATURE_DIR/zotero-library.json is MISSING, literature-discover.sh Tier 2 must present an INTERACTIVE AskUserQuestion offering to GENERATE the export automatically, and on agreement ACTUALLY create $LITERATURE_DIR/zotero-library.json in the Better CSL JSON shape that tier2_search / zotero-search.sh already consume. Feasibility confirmed on this machine: ~/Zotero/zotero.sqlite exists (1.1MB library), zotero-library.json absent, Zotero not running at check time. Generation paths use LOCAL Zotero only (these are the user's own Zotero on localhost -- NOT a remote/third-party API), in preference order: (1) Zotero 7 built-in local API http://127.0.0.1:23119/api/users/0/items?format=csljson when Zotero is running (no plugin, returns CSL-JSON directly); (2) Better BibTeX JSON-RPC at localhost:23119/better-bibtex/ when the BBT plugin is installed + Zotero running; (3) direct read of ~/Zotero/zotero.sqlite reconstructing CSL-JSON as a fallback when Zotero is CLOSED (the DB is locked while Zotero runs). Design must handle: Zotero-not-running detection (prompt the user to open Zotero, or use the sqlite fallback), and the snapshot-vs-keep-updated tradeoff (a one-time API/sqlite pull is a snapshot, NOT the auto-refreshing manual "Keep updated" export -- provide re-pull-on-demand or a clear staleness note). Non-interactive/orchestrator contexts: take a visible logged default, never a silent no-op. Match zotero-search.sh wording for any manual-steps fallback text. TIER 3 SCOPE LIMIT (per explicit user direction "I do not want to assume API access or anything more than web search for Tier 3; nothing fancy"): DO NOT build API-dependent Tier 3 handling. Specifically DROPPED from the earlier draft of this task: the Semantic Scholar 429/.message loud-failure detection and the top-N query-term-capping-for-Semantic-Scholar item -- both are out of scope. Do not assume Semantic Scholar (or any online) API access; Tier 3 should rely on nothing beyond web search. Leave existing Tier 3 behavior as-is unless a trivial web-search-only adjustment is warranted; invest no effort in SS-API-specific logic. CONTEXT: surfaced by user testing /literature 55 in ~/Projects/Logos/Hardware after tasks 793/794; the two 794 fixes (slug->description query, loud Tier 2 print hint) verified working -- this task upgrades ONLY the Tier 2 hint to assisted generation. PRIMARY FILES: .claude/extensions/literature/scripts/literature-discover.sh (canonical) + .claude/scripts/literature-discover.sh (byte-identical flat re-sync, task-793 dual-copy model); reference .claude/extensions/literature/scripts/zotero-search.sh for wording and the CSL-JSON shape. OUT OF SCOPE: three-tier pipeline architecture changes; Semantic Scholar API keys or any API-dependent Tier 3 enhancement; the literature.md whole-script 2>/dev/null stderr capture (separate follow-up).
 
