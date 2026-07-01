@@ -189,10 +189,10 @@ cat <<'FOOTER'
 
 - **Read a chunk**: Use the Read tool with the absolute path to a chunk file under the
   document's directory listed above (e.g., Read(file_path="<dir>/ch01_intro.md"))
-- **Search the corpus**: Run `bash ~/.config/nvim/.claude/scripts/literature-search.sh "<query>"`
+- **Search the corpus**: Run `bash .claude/scripts/literature-search.sh "<query>"`
   to search via FTS5 full-text index; returns JSON with ranked results and chunk paths
 - **Browse TOC**: Pass `--toc` flag to literature-search.sh for a table-of-contents view
-  of a specific document: `bash ~/.config/nvim/.claude/scripts/literature-search.sh --toc <doc_id>`
+  of a specific document: `bash .claude/scripts/literature-search.sh --toc <doc_id>`
 - **Read selectively**: Start with the most relevant chunks; do not read all chunks unless
   the task requires comprehensive coverage
 </literature-briefing>

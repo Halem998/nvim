@@ -35,7 +35,21 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
+# Walk up from SCRIPT_DIR to find the repo root (the directory containing .claude/). A fixed
+# "../../../.." depth is WRONG here: it assumes this script always runs from the nested
+# extension source tree (.claude/extensions/literature/scripts/, 4 levels below repo root), but
+# provides.scripts deploys this script FLAT into {repo}/.claude/scripts/ in every consuming repo
+# (only 2 levels below repo root) -- see .claude/context/guides/extension-development.md. A fixed
+# 4-level walk-up from the flat location lands 2 directories ABOVE the actual repo root. Walking
+# up dynamically until a `.claude` directory is found resolves correctly from either location.
+PROJECT_ROOT="$SCRIPT_DIR"
+while [ "$PROJECT_ROOT" != "/" ] && [ ! -d "$PROJECT_ROOT/.claude" ]; do
+  PROJECT_ROOT="$(dirname "$PROJECT_ROOT")"
+done
+if [ ! -d "$PROJECT_ROOT/.claude" ]; then
+  echo "Error: could not locate repo root (no .claude/ directory found above $SCRIPT_DIR)" >&2
+  exit 2
+fi
 ZOTERO_INDEX="$PROJECT_ROOT/specs/zotero-index.json"
 LITERATURE_SCRIPTS_DIR="$PROJECT_ROOT/.claude/scripts"
 

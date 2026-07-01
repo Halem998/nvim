@@ -155,36 +155,48 @@ succeed.
 
 ---
 
-### Phase 2: Fix genuinely broken path references [IN PROGRESS]
+### Phase 2: Fix genuinely broken path references [COMPLETED]
 
 **Goal**: Correct the three references that do not resolve under the flat-deploy model, then
 re-sync the affected flat copies.
 
 **Tasks**:
-- [ ] `literature-discover.sh:340-342` (now at
-      `.claude/extensions/literature/scripts/literature-discover.sh`): reorder/replace the
+- [x] `literature-discover.sh:340-342` (now at
+      `.claude/extensions/literature/scripts/literature-discover.sh`): reordered the
       `zotero-search.sh` candidate list so the flat sibling path (`$SCRIPT_DIR/zotero-search.sh`) is
-      the PRIMARY candidate; drop or demote the nested
-      `.claude/extensions/literature/scripts/zotero-search.sh` candidate (unreachable in a deployed
-      repo since only `manifest.json` lands under `extensions/{name}/`).
-- [ ] `skill-literature/SKILL.md:1123-1125` (at
-      `.claude/extensions/literature/skills/skill-literature/SKILL.md`): same fix — make the flat
-      path (`.claude/scripts/zotero-search.sh` or `$(dirname "$0")/../../scripts/zotero-search.sh`)
-      primary; drop/demote the nested `extensions/literature/scripts/...` candidate.
-- [ ] `literature-briefing.sh:192,195` (at
-      `.claude/extensions/literature/scripts/literature-briefing.sh`): replace the hardcoded absolute
-      `~/.config/nvim/.claude/scripts/literature-search.sh` with a repo-relative
-      `.claude/scripts/literature-search.sh` (or a `$SCRIPT_DIR`-derived equivalent) so emitted agent
-      instructions are correct in any deployed repo.
-- [ ] Verify-only (no required change): `zotero-chunk.sh:38-40`
-      `LITERATURE_SCRIPTS_DIR="$PROJECT_ROOT/.claude/scripts"` — confirm it still resolves under the
-      flat model (all sibling scripts now land in `.claude/scripts/`). Optionally add a one-line
-      comment documenting the flat-deploy assumption; do not restructure.
-- [ ] Re-sync the flat copies of the two edited scripts (`literature-discover.sh`,
-      `literature-briefing.sh`) into `.claude/scripts/` per the re-sync convention; reload also
-      refreshes `.claude/skills/skill-literature/SKILL.md`. If using the `cp` fallback, also copy the
-      edited `SKILL.md` to `.claude/skills/skill-literature/SKILL.md`. `git add` all edited canonical
-      + flat copies.
+      the PRIMARY candidate; demoted the nested
+      `.claude/extensions/literature/scripts/zotero-search.sh` candidate to a fallback (dropped the
+      duplicate cwd-relative form of the same nested path). *(completed)*
+- [x] `skill-literature/SKILL.md:1123-1125` (at
+      `.claude/extensions/literature/skills/skill-literature/SKILL.md`): same fix — made
+      `.claude/scripts/zotero-search.sh` and `$(dirname "$0")/../../scripts/zotero-search.sh`
+      primary/secondary candidates; demoted the nested `extensions/literature/scripts/...`
+      candidate to a fallback. *(completed)*
+- [x] `literature-briefing.sh:192,195` (at
+      `.claude/extensions/literature/scripts/literature-briefing.sh`): replaced the hardcoded absolute
+      `~/.config/nvim/.claude/scripts/literature-search.sh` with the repo-relative
+      `.claude/scripts/literature-search.sh` so emitted agent instructions are correct in any
+      deployed repo. *(completed)*
+- [x] Verify-only, escalated to FIX: `zotero-chunk.sh:38-40`
+      `LITERATURE_SCRIPTS_DIR="$PROJECT_ROOT/.claude/scripts"` — empirically verified (via a
+      throwaway-repo probe simulating both the nested source location and the flat deployed
+      location) that the fixed `../../../..` (4-level) `PROJECT_ROOT` computation is GENUINELY
+      BROKEN when this script is flat-deployed: it resolves 2 directories ABOVE the actual repo
+      root (only correct from the nested 4-levels-deep source tree location), corrupting
+      `ZOTERO_INDEX`, `LITERATURE_SCRIPTS_DIR`, and `CHUNK_DIR` in any consuming repo. Fixed by
+      replacing the fixed-depth walk-up with a dynamic walk-up that stops at the first ancestor
+      directory containing `.claude/`; verified correct from both locations via direct probe.
+      *(deviation: altered — plan said verify-only/optional-comment, but the reference was
+      empirically confirmed broken so it was fixed per the orchestrator's "change only if
+      actually broken" instruction)*
+- [x] Re-synced the flat copies of the two edited scripts (`literature-discover.sh`,
+      `literature-briefing.sh`) into `.claude/scripts/` via `cp` fallback (byte-identical,
+      executable bits reapplied). `skill-literature/SKILL.md` under `.claude/extensions/literature/`
+      and `.claude/skills/` are hardlinks (same inode) so no separate re-sync step was needed —
+      the edit applied to both automatically. `zotero-chunk.sh` has no existing flat copy in this
+      repo (never previously deployed flat here), so no flat re-sync applies to it; the corrected
+      source will flat-deploy correctly to any consuming repo via its existing
+      `provides.scripts` declaration. `git add` all edited canonical + flat copies. *(completed)*
 
 **Timing**: 1 hour
 

@@ -335,11 +335,15 @@ tier2_search() {
     return 0
   fi
 
-  # Find zotero-search.sh
+  # Find zotero-search.sh. provides.scripts deploys flat into {base_dir}/scripts/ in every
+  # consuming repo (never into {base_dir}/extensions/{name}/scripts/, which only ever holds a
+  # copied manifest.json — see .claude/context/guides/extension-development.md), so the flat
+  # sibling path is the primary candidate. The nested path is kept only as a defensive fallback
+  # for running directly from the extension source tree pre-deployment.
   local zotero_script=""
   for candidate in \
-    "$SCRIPT_DIR/../extensions/literature/scripts/zotero-search.sh" \
-    ".claude/extensions/literature/scripts/zotero-search.sh"; do
+    "$SCRIPT_DIR/zotero-search.sh" \
+    "$SCRIPT_DIR/../extensions/literature/scripts/zotero-search.sh"; do
     if [ -f "$candidate" ]; then
       zotero_script="$candidate"
       break

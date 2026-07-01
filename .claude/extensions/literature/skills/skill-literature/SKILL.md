@@ -1118,11 +1118,16 @@ Search the Zotero library and Literature/ index, present interactive multi-selec
 ### Search Step 1: Resolve zotero-search.sh Path
 
 ```bash
-# Find zotero-search.sh relative to this skill's extension directory
+# Find zotero-search.sh. provides.scripts deploys flat into {base_dir}/scripts/ in every
+# consuming repo (never into {base_dir}/extensions/{name}/scripts/, which only ever holds a
+# copied manifest.json), so the flat sibling path is the primary candidate. The nested path is
+# kept only as a defensive fallback for running directly from the extension source tree
+# pre-deployment.
 zotero_script=""
 for candidate in \
-  ".claude/extensions/literature/scripts/zotero-search.sh" \
-  "$(dirname "$0")/../../scripts/zotero-search.sh"; do
+  ".claude/scripts/zotero-search.sh" \
+  "$(dirname "$0")/../../scripts/zotero-search.sh" \
+  ".claude/extensions/literature/scripts/zotero-search.sh"; do
   if [ -f "$candidate" ]; then
     zotero_script="$candidate"
     break

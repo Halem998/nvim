@@ -1,0 +1,27 @@
+{
+  "phase": 2,
+  "phase_name": "Fix genuinely broken path references",
+  "started_at": "2026-07-01T16:10:00Z",
+  "last_updated": "2026-07-01T16:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Fix literature-discover.sh:340-342 candidate ordering", "status": "done"},
+    {"id": 2, "description": "Fix skill-literature/SKILL.md:1123-1125 candidate ordering", "status": "done"},
+    {"id": 3, "description": "Fix literature-briefing.sh:192,195 hardcoded absolute path", "status": "done"},
+    {"id": 4, "description": "Verify zotero-chunk.sh:38-40 resolves under flat model", "status": "done"},
+    {"id": 5, "description": "Re-sync flat copies of edited scripts", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Empirically probed zotero-chunk.sh PROJECT_ROOT resolution using a throwaway repo at both the nested source path and the flat deployed path", "result": "success", "reason": "confirmed the fixed 4-level ../../../.. walk-up resolves 2 directories above repo root when flat-deployed -- a genuine bug, not just 'fragile/confusing' as research characterized it"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.4",
+      "description": "zotero-chunk.sh:38-40 was marked verify-only/optional-comment in the plan, with research asserting it 'should resolve correctly' under the flat-deploy model.",
+      "type": "altered",
+      "reason": "Empirical probe (throwaway repo, both nested and flat script locations) proved the fixed-depth ../../../.. PROJECT_ROOT computation is genuinely broken when flat-deployed (resolves 2 directories above actual repo root, corrupting ZOTERO_INDEX/LITERATURE_SCRIPTS_DIR/CHUNK_DIR). Fixed per orchestrator instruction 'change only if actually broken' by replacing the fixed depth with a dynamic walk-up to the nearest ancestor containing .claude/.",
+      "annotation": "*(deviation: altered — plan said verify-only, but escalated to a fix after empirical verification proved it broken)*"
+    }
+  ]
+}
