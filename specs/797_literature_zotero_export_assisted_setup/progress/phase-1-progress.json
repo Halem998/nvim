@@ -1,0 +1,27 @@
+{
+  "phase": 1,
+  "phase_name": "Generator script zotero-generate-export.sh",
+  "started_at": "2026-07-01T18:00:00Z",
+  "last_updated": "2026-07-01T18:02:47Z",
+  "objectives": [
+    {"id": 1, "description": "Create canonical generator script skeleton + header + jq guard", "status": "done"},
+    {"id": 2, "description": "Argument parsing (--output, --orchestrator-mode, --force)", "status": "done"},
+    {"id": 3, "description": "Path 1: Zotero 7 local API pull with pagination + filtering", "status": "done"},
+    {"id": 4, "description": "Path 2: Better BibTeX JSON-RPC citekey enrichment", "status": "done"},
+    {"id": 5, "description": "Path 3: sqlite reconstruction (items/itemData/itemCreators/itemAttachments)", "status": "done"},
+    {"id": 6, "description": "Citekey synthesis + collision disambiguation", "status": "done"},
+    {"id": 7, "description": "Better CSL JSON shape emission", "status": "done"},
+    {"id": 8, "description": "Staleness stamp (.zotero-library.meta.json)", "status": "done"},
+    {"id": 9, "description": "Atomic write + manual-fallback text + orchestrator-mode default", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "curl -w '%{http_code}' with bare '|| echo 000' fallback for API probes",
+      "result": "failed",
+      "reason": "curl printed its own '000' on connection failure in some cases, doubling to '000000' when the fallback also fired; fixed by capturing to a variable first and only defaulting when empty"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
