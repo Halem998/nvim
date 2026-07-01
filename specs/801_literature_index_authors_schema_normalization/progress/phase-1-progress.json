@@ -1,0 +1,27 @@
+{
+  "phase": 1,
+  "phase_name": "Extend /literature --validate authors-shape check",
+  "started_at": "2026-07-01T20:17:55Z",
+  "last_updated": "2026-07-01T20:17:55Z",
+  "objectives": [
+    {"id": 1, "description": "Add authors-shape jq check to Validate Step 2", "status": "done"},
+    {"id": 2, "description": "Add authors_shape_warnings as separate category from schema_warnings", "status": "done"},
+    {"id": 3, "description": "Refine possibly-comma-joined heuristic to avoid false positives", "status": "done"},
+    {"id": 4, "description": "Surface new warning category in Validate Step 4 report", "status": "done"}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {
+      "approach": "Flag any element containing ', ' followed by a capitalized token",
+      "result": "failed",
+      "reason": "False-positives on legitimate 'Last, First M.' single-author entries (e.g. 'Gabbay, Dov M.', 'Reynolds, Mark A.') found in the live global index"
+    },
+    {
+      "approach": "2+ ', ' occurrences OR single ', ' with 2+ non-initial capitalized tokens in remainder",
+      "result": "success",
+      "reason": "Tested against live ~/Projects/Literature/index.json (270 entries, read-only): flagged exactly the known 12 string-typed + 110 malformed-array entries, zero false positives on 'Gabbay, Dov M.' / 'Reynolds, Mark A.'"
+    }
+  ],
+  "deviations": [],
+  "handoff_count": 0
+}

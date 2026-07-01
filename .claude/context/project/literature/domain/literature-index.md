@@ -95,3 +95,32 @@ bash .claude/scripts/literature-search.sh blackburn_2002 --by-doc
 ```
 
 Returns JSON array of matching chunks with `doc_id`, `section_path`, `score`, and `snippet` fields.
+
+## Tooling Ownership Boundary
+
+One-time/re-runnable migration tooling for importing a project's `specs/literature/` into the
+central corpus lives in `~/Projects/Literature/scripts/migrate-from-repo.sh` — a script in the
+**separate Literature repo** (`$LITERATURE_DIR`), not in this config repo's `.claude/scripts/`.
+The central `index.json` is likewise owned and versioned by that separate repo; this repo's
+tooling only reads it (e.g. `literature-search.sh`, `literature-briefing.sh`) or, where explicitly
+documented, offers advisory normalization the user applies and commits there themselves.
+
+This distinction matters because it is easy to mis-scope an audit of "index-writing scripts" to
+only `.claude/scripts/` and miss the actual write path. Task 801 found and fixed exactly this: the
+malformed `authors` field shape (string-typed or unsplit comma-joined one-element arrays) in the
+live global index was traced to `migrate-from-repo.sh`'s two authors-handling sites, not to any
+script in `.claude/scripts/`.
+
+Two in-repo maintenance tools exist for this specific `authors` schema, and should stay in sync
+with each other (same comma-joined heuristic) whenever either is modified:
+
+- `/literature --validate` (per-repo index) — flags `authors:not-array`, `authors:non-string-element`,
+  and `authors:possibly-comma-joined` warnings. See `.claude/skills/skill-literature/SKILL.md`
+  Validate Step 2/4.
+- `.claude/scripts/literature-normalize-authors.sh` — a reusable, dry-run-by-default script that
+  fixes the shape for any given `index.json` (global or per-repo). Requires an explicit `--apply`/
+  `--write` flag to persist changes; safe to run repeatedly (idempotent).
+
+Fixing the external `migrate-from-repo.sh` source and normalizing the live global index are both
+user-applied actions outside this repo — see `specs/801_literature_index_authors_schema_normalization/`
+for the prepared patch, dry-run diff, and apply-guide.

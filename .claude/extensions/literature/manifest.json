@@ -44,6 +44,7 @@
       "literature-build-index.sh",
       "literature-convert.sh",
       "literature-chunk.sh",
+      "literature-normalize-authors.sh",
       "literature-schema.sql"
     ]
   },

@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Document the Literature tooling ownership boundary",
+  "started_at": "2026-07-01T20:20:00Z",
+  "last_updated": "2026-07-01T20:24:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add tooling ownership boundary note to literature context docs", "status": "done"},
+    {"id": 2, "description": "Cross-reference normalize script and validate check", "status": "done"}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "notes": "Added a 'Tooling Ownership Boundary' section to .claude/context/project/literature/domain/literature-index.md (the existing literature architecture doc, no new file needed). Also had to register literature-normalize-authors.sh in .claude/extensions/literature/manifest.json provides.scripts and deploy a physical copy under .claude/extensions/literature/scripts/ to pass bash .claude/scripts/check-extension-docs.sh (doc-lint requires manifest-declared scripts referenced in docs to exist on disk under the extension). literature extension now PASSes the doc-lint; the only remaining doc-lint FAIL (lean) is pre-existing and untouched by this task."
+}

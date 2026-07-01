@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Create reusable authors-normalization script",
+  "started_at": "2026-07-01T20:18:00Z",
+  "last_updated": "2026-07-01T20:19:53Z",
+  "objectives": [
+    {"id": 1, "description": "Create .claude/scripts/literature-normalize-authors.sh, dry-run by default", "status": "done"},
+    {"id": 2, "description": "Implement string-split and one-element-array-split normalization rules", "status": "done"},
+    {"id": 3, "description": "Guard against name-internal commas using shared heuristic", "status": "done"},
+    {"id": 4, "description": "Dry-run diff output, summary count, idempotence", "status": "done"},
+    {"id": 5, "description": "Usage header comment", "status": "done"}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "notes": "Tested against a scratch copy of the live ~/Projects/Literature/index.json (270 entries), never against the live file itself: dry-run flagged exactly 122 entries (12 string-typed + 110 malformed one-element arrays), matching Phase 1's validate heuristic exactly. --apply on the scratch copy normalized all 122, left the already-correct 2-element ['Gabbay, Dov M.', 'Reynolds, Mark A.'] array untouched, preserved entry count (270) and IDs. A second dry-run against the normalized scratch copy reported zero changes (idempotent). Confirmed via md5sum and git status that the live ~/Projects/Literature/index.json and repo were never touched."
+}

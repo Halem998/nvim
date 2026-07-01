@@ -366,11 +366,17 @@ For each indexed entry, check:
 1. File exists at `specs/literature/{entry.path}`
 2. Token count drift (recount vs stored, flag if >20% different)
 3. Required schema fields present: `id`, `path`, `token_count`, `keywords`, `summary`, `doc_type`, `source_format`
+4. `authors` field shape: present and an array, all elements are strings, and no element looks
+   like an unsplit comma-joined multi-author string (see authors-shape check below). This catches
+   regressions from any future writer that reintroduces the malformed schema fixed in task 801 —
+   see `.claude/context/project/literature/domain/literature-index.md` for the tooling ownership
+   boundary and `.claude/scripts/literature-normalize-authors.sh` for the companion fix-up tool.
 
 ```bash
 stale_entries=()
 drift_entries=()
 schema_warnings=()
+authors_shape_warnings=()
 
 while IFS= read -r entry_path; do
   full_path="$lit_dir/$entry_path"
@@ -404,6 +410,35 @@ while IFS= read -r entry_path; do
     ' "$index_file" 2>/dev/null || echo "")
     if [ -n "$missing_fields" ]; then
       schema_warnings+=("$entry_path (missing fields: $missing_fields)")
+    fi
+
+    # Check authors field shape (task 801: catch non-array or comma-joined authors so any
+    # future writer that reintroduces the malformed schema is caught by routine validation).
+    # The "possibly-comma-joined" heuristic is conservative: it flags an array element only
+    # when it contains 2+ ", " occurrences, or exactly one ", " followed by a second
+    # non-initial capitalized name-like token (2+ letters). This avoids false positives on
+    # legitimate single-author "Last, First" or "Last, First M." formatting (the pattern
+    # zotero-index-add.sh itself produces), while still catching packed multi-author strings
+    # like "Patrick Blackburn, Maarten de Rijke, Yde Venema" or two-author strings like
+    # "Patrick Blackburn, Maarten de Rijke". Mirror this same heuristic in
+    # .claude/scripts/literature-normalize-authors.sh so validate and normalize stay consistent.
+    authors_shape=$(jq -r --arg p "$entry_path" '
+      def is_comma_joined:
+        ( [scan(", ")] | length ) as $n
+        | if $n >= 2 then true
+          elif $n == 1 then
+            ( (split(", ")[1]) | ([scan("[A-Z][a-zA-Z]+")] | length) ) >= 2
+          else false
+          end;
+      .entries[] | select(.path == $p) |
+      [
+        (if .authors != null and (.authors | type) != "array" then "authors:not-array" else empty end),
+        (if (.authors | type) == "array" and (.authors | any(type != "string")) then "authors:non-string-element" else empty end),
+        (if (.authors | type) == "array" and (.authors | any(type == "string" and is_comma_joined)) then "authors:possibly-comma-joined" else empty end)
+      ] | join(", ")
+    ' "$index_file" 2>/dev/null || echo "")
+    if [ -n "$authors_shape" ]; then
+      authors_shape_warnings+=("$entry_path ($authors_shape)")
     fi
   fi
 done <<< "$entries"
@@ -443,6 +478,12 @@ done < <(find "$lit_dir" -maxdepth 1 -name "*.md" 2>/dev/null | sort)
 - {entry_path}: {missing_fields}
   Run: /literature --index {file_path} to update entry with missing fields
 
+### Authors Shape Warnings ({count}) — non-array or comma-joined authors (task 801)
+{for each authors_shape_warning entry:}
+- {entry_path}: {authors_shape}
+  Run: bash .claude/scripts/literature-normalize-authors.sh {index_file} --apply to normalize,
+  or --dry-run (default) first to preview the change.
+
 ### Unindexed Files ({count}) — markdown files not in index.json
 {for each unindexed file:}
 - {file_path}
@@ -451,7 +492,8 @@ done < <(find "$lit_dir" -maxdepth 1 -name "*.md" 2>/dev/null | sort)
 {if all clean:}
 ### Validation Passed
 
-All {N} index entries are valid. No stale paths, no drift, no schema warnings, no unindexed files.
+All {N} index entries are valid. No stale paths, no drift, no schema warnings, no authors-shape
+warnings, no unindexed files.
 ```
 
 ---
