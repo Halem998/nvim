@@ -277,23 +277,28 @@ deployed `.claude/CLAUDE.md`.
 
 ---
 
-### Phase 4: Cross-artifact verification and follow-up documentation [NOT STARTED]
+### Phase 4: Cross-artifact verification and follow-up documentation [COMPLETED]
 
 **Goal**: Confirm all edits are internally consistent and record the explicitly-out-of-scope
 follow-ups so they are not silently lost.
 
 **Tasks**:
-- [ ] Verify canonical vs mirror pattern files are byte-identical (`diff` clean).
-- [ ] Verify `index-entries.json` is valid JSON and the new entry's `line_count` matches the file.
-- [ ] Re-grep `claudemd.md` for all stale tokens (`literature-retrieve.sh`, `<literature-context>`,
+- [x] Verify canonical vs mirror pattern files are byte-identical (`diff` clean). *(completed: diff exit 0)*
+- [x] Verify `index-entries.json` is valid JSON and the new entry's `line_count` matches the file.
+  *(completed: jq empty exit 0; entry line_count=92 == wc -l=92)*
+- [x] Re-grep `claudemd.md` for all stale tokens (`literature-retrieve.sh`, `<literature-context>`,
   `TOKEN_BUDGET`, `MAX_FILES`, `Scoping note`) — all must be absent from the Literature Mode section.
-- [ ] Run the doc-lint script `bash .claude/scripts/check-extension-docs.sh` and confirm it does not
+  *(completed: grep returned no matches, exit 1)*
+- [x] Run the doc-lint script `bash .claude/scripts/check-extension-docs.sh` and confirm it does not
   newly fail due to these edits (record output; pre-existing unrelated failures are noted, not fixed).
-- [ ] Record in the implementation summary the two confirmed out-of-scope follow-ups:
+  *(completed: literature extension = PASS, core extension = PASS; overall summary shows FAIL(2)
+  attributable entirely to the pre-existing `lean` extension's undeployed `skill-lean-research-hard`
+  / `skill-lean-implementation-hard` routing_hard targets — not a regression introduced by this task)*
+- [x] Record in the implementation summary the two confirmed out-of-scope follow-ups:
   (a) the six stale `.claude/extensions/core/skills/*/SKILL.md` mirrors (sync source not updated by
   775 — a future "Load Core Agent System" sync would revert 775's Stage 4a rewrite), and
   (b) `.claude/context/guides/literature-organization.md` sharing the identical stale-model drift.
-  Recommend each as a small fast-follow task.
+  Recommend each as a small fast-follow task. *(completed: recorded in summary)*
 
 **Timing**: 0.5 hours
 
