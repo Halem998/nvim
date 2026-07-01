@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Rewrite Stage 4a in the three hard-mode skills",
+  "started_at": "2026-07-01T17:36:00Z",
+  "last_updated": "2026-07-01T17:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Apply template to skill-researcher-hard", "status": "done"},
+    {"id": 2, "description": "Apply template to skill-planner-hard", "status": "done"},
+    {"id": 3, "description": "Apply template to skill-implementer-hard", "status": "done"},
+    {"id": 4, "description": "Verify greps across all three hard files", "status": "done"},
+    {"id": 5, "description": "Cross-file consistency diff across all six skills", "status": "done"}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

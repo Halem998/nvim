@@ -260,16 +260,16 @@ docs -> integration).
     notice or explicit user choice precedes every empty `lit_context`). *(completed)*
   - [x] `literature-briefing.sh --global` referenced in each file. *(completed)*
 
-### Phase 4: Rewrite Stage 4a in the three hard-mode skills [NOT STARTED]
+### Phase 4: Rewrite Stage 4a in the three hard-mode skills [COMPLETED]
 
 - **Goal:** Apply the Phase 3 template to `skill-researcher-hard`, `skill-planner-hard`, and
   `skill-implementer-hard`, adapting to each file's line offsets while keeping the block identical
   in behavior.
 - **Tasks:**
-  - [ ] Rewrite Stage 4a in `skill-researcher-hard` (approx 121-217), `skill-planner-hard`
-    (approx 129-226), `skill-implementer-hard` (approx 144-236) using the Phase 3 template verbatim.
-  - [ ] Confirm each hard variant preserves any hard-mode-specific surrounding text while replacing
-    only the Stage 4a decision block.
+  - [x] Rewrite Stage 4a in `skill-researcher-hard` (approx 121-217), `skill-planner-hard`
+    (approx 129-226), `skill-implementer-hard` (approx 144-236) using the Phase 3 template verbatim. *(completed)*
+  - [x] Confirm each hard variant preserves any hard-mode-specific surrounding text while replacing
+    only the Stage 4a decision block. *(completed: surrounding hard-mode text, e.g. skill-implementer-hard's per-phase-dispatch orchestrator_mode usage, untouched)*
 - **Timing:** ~1 hour
 - **Depends on:** 3
 - **Files to modify:**
@@ -277,10 +277,10 @@ docs -> integration).
   - `.claude/skills/skill-planner-hard/SKILL.md` - Stage 4a rewrite.
   - `.claude/skills/skill-implementer-hard/SKILL.md` - Stage 4a rewrite.
 - **Verification:**
-  - [ ] Same greps as Phase 3 pass in all three hard files (`orchestrator_mode`, three labels,
-    `--global`).
-  - [ ] Cross-file consistency: the Stage 4a decision block matches the Phase 3 template across all
-    six skills (spot-diff the directive-branch structure).
+  - [x] Same greps as Phase 3 pass in all three hard files (`orchestrator_mode`, three labels,
+    `--global`). *(completed)*
+  - [x] Cross-file consistency: the Stage 4a decision block matches the Phase 3 template across all
+    six skills (spot-diff the directive-branch structure). *(completed: programmatic diff confirms the case/esac block is byte-identical across all six SKILL.md files)*
 
 ### Phase 5: Update CLAUDE.md source-of-truth (interactive-behavior only) [NOT STARTED]
 
