@@ -6,7 +6,7 @@ This document describes the integration of text-to-speech (TTS) notifications fo
 
 The integration provides two independent features:
 
-1. **TTS Notifications**: Claude Code announces events via pico2wave TTS with WezTerm tab identification
+1. **TTS Notifications**: Claude Code announces events via piper neural TTS with WezTerm tab identification
 2. **STT Input**: Neovim voice recording and transcription via Vosk for inserting text at cursor
 
 Both features work completely offline with no cloud APIs required.
@@ -27,8 +27,8 @@ Add to your NixOS configuration:
 {
   environment.systemPackages = with pkgs; [
     # TTS
-    svox             # SVOX Pico text-to-speech engine (pico2wave command)
-    alsa-utils       # For aplay
+    piper            # Piper neural text-to-speech engine (prebuilt binary)
+    pulseaudio       # For paplay
 
     # STT
     (python3.withPackages (ps: with ps; [
@@ -50,18 +50,20 @@ Add to your NixOS configuration:
 
 | Package | NixOS Package | Purpose |
 |---------|---------------|---------|
-| svox (pico2wave) | `svox` | Lightweight text-to-speech synthesis |
-| aplay | `alsa-utils` | ALSA audio playback |
-| paplay | `pulseaudio` | PulseAudio audio playback (alternative to aplay) |
+| piper | `piper` | Neural text-to-speech synthesis (requires a voice model) |
+| paplay | `pulseaudio` | PulseAudio audio playback |
 | jq | `jq` | JSON parsing in shell scripts |
 | wezterm | `wezterm` | Terminal emulator with CLI for tab detection |
 | Python 3 + Vosk | `python3.withPackages (ps: [ps.vosk])` | Offline speech recognition |
 
 ### Model Downloads
 
-#### pico2wave (TTS)
+#### piper (TTS)
 
-No model download required. `pico2wave` bundles language data in the Nix store at `$out/share/pico/lang/`. Supported languages: en-US, en-GB, de-DE, it-IT, es-ES, fr-FR.
+Piper requires an `.onnx` voice model plus its `.onnx.json` config. The hook defaults to
+`~/.local/share/piper/en_US-lessac-medium.onnx` (override with the `PIPER_VOICE` env var).
+Models are available from [rhasspy/piper-voices](https://huggingface.co/rhasspy/piper-voices);
+this repo's NixOS config provisions the Lessac medium voice via `packages/piper-voices.nix`.
 
 #### Vosk Speech Model (STT)
 
@@ -175,8 +177,9 @@ When called with no args (Notification hook):
 - Check log: `cat specs/tmp/claude-tts-notify.log`
 
 **No sound plays**:
-- Check that `pico2wave` is installed: `which pico2wave`
-- Test audio: `pico2wave -w /tmp/test-tts.wav "Hello" && aplay /tmp/test-tts.wav; rm -f /tmp/test-tts.wav`
+- Check that `piper` is installed: `which piper`
+- Check the voice model exists: `ls ~/.local/share/piper/*.onnx` (or set `PIPER_VOICE`)
+- Test audio: `echo "Hello" | piper --model ~/.local/share/piper/en_US-lessac-medium.onnx --output_file - | paplay`
 
 **WezTerm tab not detected**:
 - Ensure WezTerm is the terminal emulator
@@ -337,10 +340,10 @@ This format is optimal for speech recognition and keeps file sizes small.
 
 | Model | Size | Purpose |
 |-------|------|---------|
-| svox (bundled in Nix store) | ~5 MB | TTS voice synthesis |
+| piper voice model (.onnx) | ~63 MB | TTS voice synthesis |
 | Vosk small-en-us | ~50 MB | Speech recognition |
 
-Total disk usage: ~55 MB for both features.
+Total disk usage: ~113 MB for both features.
 
 ## Uninstallation
 
@@ -360,7 +363,8 @@ Total disk usage: ~55 MB for both features.
 
 ## See Also
 
-- [SVOX Pico (picotts)](https://github.com/naggety/picotts) - Lightweight TTS (pico2wave)
+- [Piper](https://github.com/rhasspy/piper) - Fast, local neural TTS
+- [piper-voices](https://huggingface.co/rhasspy/piper-voices) - Downloadable voice models
 - [Vosk](https://alphacephei.com/vosk/) - Offline speech recognition
 - [Claude Code Hooks](https://code.claude.com/docs/en/hooks) - Hook documentation
 - [WezTerm CLI](https://wezterm.org/cli/cli/activate-tab.html) - Tab management

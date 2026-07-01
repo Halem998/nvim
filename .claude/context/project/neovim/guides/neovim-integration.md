@@ -72,7 +72,7 @@ If the hook is missing or fails:
 
 ### Overview
 
-The `tts-notify.sh` hook announces Claude Code events using SVOX Pico TTS (pico2wave). It triggers on both Stop events (Claude finished) and Notification events (Claude needs input).
+The `tts-notify.sh` hook announces Claude Code events using piper neural TTS (streamed to `paplay`). It triggers on both Stop events (Claude finished) and Notification events (Claude needs input).
 
 For comprehensive TTS/STT documentation including software dependencies, model setup, and workflow examples, see the [TTS/STT Integration Guide](tts-stt-integration.md).
 
@@ -91,7 +91,7 @@ For comprehensive TTS/STT documentation including software dependencies, model s
 ],
 "Notification": [
   {
-    "matcher": "permission_prompt|idle_prompt|elicitation_dialog",
+    "matcher": "permission_prompt|elicitation_dialog",
     "hooks": [
       {
         "type": "command",
@@ -105,10 +105,10 @@ For comprehensive TTS/STT documentation including software dependencies, model s
 ### Features
 
 - **WezTerm tab detection**: Announces "Tab 5" (completion) or "Tab 5 needs permission" (input-needed)
-- **Event-specific messages**: Different messages for Stop, permission prompts, idle prompts, and questions
+- **Event-specific messages**: Different messages for Stop, permission prompts, and questions
 - **Cooldown**: 10-second minimum between notifications
 - **Background execution**: Non-blocking with 10s timeout
-- **Graceful fallback**: Silently skips if pico2wave/audio not available
+- **Graceful fallback**: Silently skips if piper, the voice model, or audio is not available
 
 ### Configuration
 
@@ -231,14 +231,15 @@ Should show both normal-mode and terminal-mode mappings.
 echo $TTS_ENABLED  # should be 1
 ```
 
-**Check pico2wave is installed**:
+**Check piper is installed**:
 ```bash
-which pico2wave
+which piper
+ls ~/.local/share/piper/*.onnx   # voice model must exist (or set PIPER_VOICE)
 ```
 
-**Test pico2wave**:
+**Test piper**:
 ```bash
-pico2wave -w /tmp/test.wav "test" && echo "works"
+echo "test" | piper --model ~/.local/share/piper/en_US-lessac-medium.onnx --output_file - | paplay && echo "works"
 ```
 
 **Check logs**:
@@ -292,7 +293,7 @@ Stop hook fires
          +-->  Check cooldown (10s)
          +-->  Get WezTerm tab number
          +-->  Generate message: "Tab 5"
-         +-->  Speak with pico2wave (background, 10s timeout)
+         +-->  Speak with piper | paplay (background, 10s timeout)
 ```
 
 ### Notification Hook Flow
@@ -301,7 +302,7 @@ Stop hook fires
 Claude needs user input
     |
     v
-Notification hook fires (permission_prompt, idle_prompt, elicitation_dialog)
+Notification hook fires (permission_prompt, elicitation_dialog)
     |
     +-->  tts-notify.sh (audio notification)
          |
@@ -309,7 +310,7 @@ Notification hook fires (permission_prompt, idle_prompt, elicitation_dialog)
          +-->  Check cooldown (10s)
          +-->  Get WezTerm tab number
          +-->  Generate message: "Tab 5 needs permission" / "Tab 5 needs input" / "Tab 5 has a question"
-         +-->  Speak with pico2wave (background, 10s timeout)
+         +-->  Speak with piper | paplay (background, 10s timeout)
 ```
 
 ## Related Files
