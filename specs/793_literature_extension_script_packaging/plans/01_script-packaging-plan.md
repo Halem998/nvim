@@ -262,27 +262,35 @@ from `manifest.provides.scripts`. Demonstrate it FAILS on the pre-fix state and 
 
 ---
 
-### Phase 4: Documentation corrections [NOT STARTED]
+### Phase 4: Documentation corrections [COMPLETED]
 
 **Goal**: Correct the false `LITERATURE_DIR` claim and document the default; optionally record the
 flat-deploy model to prevent recurrence.
 
 **Tasks**:
-- [ ] `.claude/extensions/literature/EXTENSION.md:51-55` (the "Centralized Repository" section,
-      false claim at line 53): remove the "(already configured)" assertion and the hardcoded personal
-      absolute path. State that `LITERATURE_DIR` defaults to `~/Projects/Literature` (via `$HOME`;
+- [x] `.claude/extensions/literature/EXTENSION.md:51-55` (the "Centralized Repository" section,
+      false claim at line 53): removed the "(already configured)" assertion and the hardcoded personal
+      absolute path. States that `LITERATURE_DIR` defaults to `~/Projects/Literature` (via `$HOME`;
       see `literature-discover.sh:36`
-      `LITERATURE_DIR="${LITERATURE_DIR:-$HOME/Projects/Literature}"`) and describe it as an optional
-      override env var / settings key a user MAY set.
-- [ ] `README.md:19` — verify phrasing ("configured via `LITERATURE_DIR`") does not assert it is
-      already set; adjust only if it overclaims (research says no change needed, verify).
-- [ ] Optional (research "Context Extension Recommendation"): add a short note to
-      `.claude/context/guides/extension-development.md` (or create the appropriate guide if absent)
-      stating that `provides.scripts` entries deploy FLAT into `{base_dir}/scripts/` in the consuming
-      repo — never into `{base_dir}/extensions/{name}/scripts/` — and that only `manifest.json` is
-      copied under `extensions/{name}/` via `copy_manifest`.
-- [ ] If EXTENSION.md/README.md are part of the loader's `copy_*` set, re-sync per convention;
-      otherwise no flat copy applies. `git add` edited docs.
+      `LITERATURE_DIR="${LITERATURE_DIR:-$HOME/Projects/Literature}"`) and describes it as an optional
+      override env var / settings key a user MAY set. *(completed)*
+- [x] `README.md:19` — verified phrasing ("configured via `LITERATURE_DIR`") does not assert it is
+      already set; no change needed (describes the mechanism, not current-repo state). *(completed: verify-only, no change)*
+- [x] Added a short note to
+      `.claude/context/guides/extension-development.md` (new "copy_scripts() Flat-Deploy Model"
+      subsection after "copy_context_dirs() Dual Behavior") stating that `provides.scripts` entries
+      deploy FLAT into `{base_dir}/scripts/` in the consuming repo — never into
+      `{base_dir}/extensions/{name}/scripts/` — and that only `manifest.json` is copied under
+      `extensions/{name}/` via `copy_manifest`. *(completed)*
+- [x] Discovered `.claude/context/guides/extension-development.md` IS a dual-copy deployment
+      artifact of the core-owned canonical source
+      `.claude/extensions/core/context/guides/extension-development.md` (confirmed identical
+      pre-edit via `diff`); re-synced the canonical copy to match. EXTENSION.md/README.md are not
+      part of any loader `copy_*` set (they are extension-root source files, not deployed
+      artifacts) so no flat-copy re-sync applies to them. `git add` edited docs (both
+      extension-development.md copies + EXTENSION.md). *(completed: altered — added the
+      dual-copy re-sync step for extension-development.md, which the plan text did not
+      anticipate)*
 
 **Timing**: 0.5 hour
 

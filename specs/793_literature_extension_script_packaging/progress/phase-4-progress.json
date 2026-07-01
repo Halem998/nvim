@@ -1,0 +1,24 @@
+{
+  "phase": 4,
+  "phase_name": "Documentation corrections",
+  "started_at": "2026-07-01T15:58:00Z",
+  "last_updated": "2026-07-01T16:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Fix EXTENSION.md false LITERATURE_DIR claim", "status": "done"},
+    {"id": 2, "description": "Verify README.md phrasing does not overclaim", "status": "done"},
+    {"id": 3, "description": "Add flat-deploy note to extension-development.md guide", "status": "done"},
+    {"id": 4, "description": "Re-sync dual-copy of extension-development.md", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "Discovered .claude/context/guides/extension-development.md is a dual-copy deployment artifact of .claude/extensions/core/context/guides/extension-development.md (confirmed identical via diff pre-edit).",
+      "type": "altered",
+      "reason": "The plan did not anticipate this file being a core-owned dual-copy; edited the flat copy then synced the canonical core source to match, per the repo's existing dual-copy convention.",
+      "annotation": "*(completed: altered — added the dual-copy re-sync step for extension-development.md)*"
+    }
+  ]
+}

@@ -50,9 +50,12 @@ Detection: path-like args -> Mode B; numeric/text args -> Mode A; no args -> Mod
 
 ### Centralized Repository
 
-Set `LITERATURE_DIR=/home/benjamin/Projects/Literature` in `.claude/settings.json` (already
-configured). The `--lit` flag and `/literature` commands operate on this directory. When
-`LITERATURE_DIR` is set, content directories use a `sources/` subdirectory prefix.
+`LITERATURE_DIR` defaults to `~/Projects/Literature` (via `$HOME`;
+`literature-discover.sh:36`: `LITERATURE_DIR="${LITERATURE_DIR:-$HOME/Projects/Literature}"`).
+It is an optional override env var / settings key: set `LITERATURE_DIR=/path/to/repo` in
+`.claude/settings.json` if you want to point at a different centralized repository. The `--lit`
+flag and `/literature` commands operate on whichever directory `LITERATURE_DIR` resolves to.
+When `LITERATURE_DIR` is set, content directories use a `sources/` subdirectory prefix.
 
 **Two-tier fallback**: If `LITERATURE_DIR` is set but the directory does not exist, the system
 falls back to per-project `specs/literature/`. If `LITERATURE_DIR` is unset, per-project

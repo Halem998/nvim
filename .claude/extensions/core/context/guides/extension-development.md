@@ -130,6 +130,17 @@ The `copy_context_dirs()` function in `loader.lua` handles two types of entries 
 
 The function detects which case applies by checking `vim.fn.isdirectory()` first, then falling back to `vim.fn.filereadable()` for individual files.
 
+### copy_scripts() Flat-Deploy Model
+
+`provides.scripts` entries are copied FLAT into `{base_dir}/scripts/` (e.g. `.claude/scripts/`) in the consuming repo, mixed together with core scripts and every other loaded extension's scripts (`loader.lua:308-342`, `copy_scripts`) -- **never** into `{base_dir}/extensions/{name}/scripts/`. Only `manifest.json` is copied into the per-extension `extensions/{name}/` directory (via `copy_manifest`, `loader.lua:588-617`); no `scripts/`, `commands/`, `skills/`, or `agents/` subtree is ever created there in a consuming repo.
+
+Consequences for script authors:
+- All path references between sibling scripts (or from commands/skills to scripts) must resolve against the flat `{base_dir}/scripts/` location, not a nested `extensions/{name}/scripts/` path -- the latter only exists in the extension's own source tree, never in a deployed target.
+- Non-`.sh` files (e.g. `.sql` schema files) can be packaged via `provides.scripts` too: `copy_file` only special-cases `%.sh$` for chmod/executable-bit preservation; any other filename is copied verbatim with default permissions. Use `provides.data` only for whole *directories* with merge-preserve (copy-if-absent) semantics meant for user-owned mutable state -- not for versioned static assets like a schema file.
+- The extension's own `scripts/` directory (under `.claude/extensions/{name}/scripts/`) is the canonical **source**; a repo that also happens to consume its own extension (as this repo does) maintains a git-tracked, regenerable flat deployment copy in `.claude/scripts/` -- keep both in sync after edits (edit the canonical source, then re-copy/reload to refresh the flat copy).
+
+This distinction is easy to miss: two real bugs (nested-path candidate lists in `literature-discover.sh` and `skill-literature/SKILL.md` referencing a location that is never populated in a deployed repo) were caused by assuming the nested `extensions/{name}/scripts/` path resolves at runtime in a consumer.
+
 ## Creating an Extension
 
 For a complete step-by-step creation guide with file templates, agent templates, skill templates, and testing checklists, see [Creating Extensions](../../docs/guides/creating-extensions.md).
