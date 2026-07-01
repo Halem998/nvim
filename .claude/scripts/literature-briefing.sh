@@ -141,8 +141,8 @@ if [ "$mode" = "repo" ]; then
     ' "$GLOBAL_INDEX" 2>/dev/null | head -1)
 
     authors_raw=$(jq -r --arg id "$doc_id" '
-      .entries[] | select(.id == $id) | (.authors // []) | join(", ")
-    ' "$GLOBAL_INDEX" 2>/dev/null | head -1)
+      .entries[] | select(.id == $id) | (.authors // [] | if type == "array" then . else [.] end | join(", "))
+    ' "$GLOBAL_INDEX" 2>/dev/null | head -1) || authors_raw=""
 
     year=$(jq -r --arg id "$doc_id" '
       .entries[] | select(.id == $id) | (.year // "?") | tostring
@@ -161,12 +161,14 @@ if [ "$mode" = "repo" ]; then
       # Also include parent entry tokens if present
       parent_tokens=$(jq -r --arg id "$doc_id" '
         .entries[] | select(.id == $id) | .token_count // 0
-      ' "$GLOBAL_INDEX" 2>/dev/null | head -1)
+      ' "$GLOBAL_INDEX" 2>/dev/null | head -1) || parent_tokens=0
+      [[ "$parent_tokens" =~ ^[0-9]+$ ]] || { echo "Warning: non-numeric parent token_count for '$doc_id', defaulting to 0" >&2; parent_tokens=0; }
       total_tokens=$(( total_tokens + parent_tokens ))
     else
       total_tokens=$(jq -r --arg id "$doc_id" '
         .entries[] | select(.id == $id) | .token_count // 0
-      ' "$GLOBAL_INDEX" 2>/dev/null | head -1)
+      ' "$GLOBAL_INDEX" 2>/dev/null | head -1) || { echo "Warning: could not read token_count for '$doc_id', defaulting to 0" >&2; total_tokens=0; }
+      [[ "$total_tokens" =~ ^[0-9]+$ ]] || total_tokens=0
       chunk_count=1
     fi
 

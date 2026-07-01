@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Apply authors normalization + per-entry arithmetic-fallback hardening",
+  "started_at": "2026-07-01T00:00:00Z",
+  "last_updated": "2026-07-01T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace authors substitution (143-145) with type-normalizing pattern + tail guard", "status": "done"},
+    {"id": 2, "description": "Harden parent_tokens (162-164) with fallback + numeric guard", "status": "done"},
+    {"id": 3, "description": "Harden no-chunks-branch total_tokens (167-169) with fallback + numeric guard", "status": "done"},
+    {"id": 4, "description": "Leave title/year/chunk_count/chunks-branch total_tokens/parent_path/relevance/parent_entry lookups unchanged", "status": "done"},
+    {"id": 5, "description": "Do NOT wrap loop body in function or relax set -e/pipefail", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

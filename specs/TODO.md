@@ -1,5 +1,5 @@
 ---
-next_project_number: 799
+next_project_number: 802
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 799
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,777,778,780,782,783,787,791,795,796 | -- | agent-system, email integration, terminal ui |
+| 1 | 78,87,772,777,778,780,782,783,787,791,795,796,800,801 | -- | agent-system, literature, email integration, ... |
 | 2 | 773,774,779,781,785 | 772,778,780 | agent-system |
 | 3 | 786 | 785 | agent-system |
 | 4 | 788 | 786,787 | agent-system |
@@ -40,6 +40,11 @@ next_project_number: 799
 795 [NOT STARTED] — Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-
 796 [NOT STARTED] — Make topic assignment mandatory across ALL task-creation paths so
 
+### Literature
+
+800 [NOT STARTED] — [--lit FAILURE SURFACING] When literature-briefing.sh crashes, th
+801 [NOT STARTED] — [LITERATURE INDEX SCHEMA NORMALIZATION -- optional/defense-in-dep
+
 ### Terminal Ui
 
 87 [RESEARCHED] — Investigate why the terminal working directory changes to a proje
@@ -49,6 +54,42 @@ next_project_number: 799
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
+
+### 801. Normalize authors schema in Literature index generation (defense-in-depth)
+- **Effort**: 3-6 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: [LITERATURE INDEX SCHEMA NORMALIZATION -- optional/defense-in-depth] The global Literature index (~/Projects/Literature/index.json) stores `authors` INCONSISTENTLY: 210 entries as an array, 12 as a plain string, and some arrays are malformed one-element comma-joined strings (e.g. ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]). This inconsistency is the UPSTREAM root cause of the briefing crash (task 799). Consumer tolerance (task 799) is the SUFFICIENT functional fix; this task prevents recurrence at the source. FIX: audit the index-writing scripts -- literature-build-index.sh, literature-discover.sh, and any converter (literature-convert.sh / literature-chunk.sh) that writes an `authors` field -- and standardize on a SINGLE representation (RECOMMEND: array of individual author strings, splitting comma-joined values). Consider a one-time normalization pass over the existing index.json plus a validation check so future writes stay consistent. Scope: Literature-corpus tooling in .claude/scripts/, NOT the --lit dispatch path; genuinely optional relative to tasks 799-800. CONTEXT: authors-type histogram over ~/Projects/Literature/index.json = 210 array / 12 string; the 12 string-typed entries (burgess/venema/gabbay/reynolds/rabinovich/caleiro/hodkinson/goldblatt families) are exactly what the cslib sub-index references, triggering the task-799 crash.
+
+---
+
+### 800. Surface --lit briefing-generation failures in skill consumers (no silent no-op)
+- **Effort**: 2-4 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: [--lit FAILURE SURFACING] When literature-briefing.sh crashes, the --lit consumers cannot distinguish a script CRASH from a legitimately EMPTY briefing, so they silently proceed as if no literature exists -- violating CLAUDE.md's repeated `--lit is never a silent no-op` contract. ROOT CAUSE: skill Stage 4b captures briefing output as `LIT bytes: N` and treats 0 bytes as 'no literature'; literature-briefing.sh exits 0 on a legitimate empty result but NON-ZERO (e.g. 5) on crash, and the consumers ignore the exit status. FIX: update the --lit consumers -- skill-researcher, skill-planner, skill-implementer and their -hard variants (skill-researcher-hard, skill-planner-hard, skill-implementer-hard) -- so that when literature-briefing.sh exits NON-ZERO they emit a VISIBLE `[lit] briefing generation failed (exit N)` notice to the transcript (distinct from the legitimate empty case) instead of silently continuing with no literature. Prefer a single shared pattern/helper so all six skills stay consistent. Scope: error-surfacing only in the Stage 4b invocation of each skill; does NOT fix the underlying script (task 799 does that), but the two are complementary. CONTEXT: transcript .claude/output/lit.md -- the empty result was only caught because a human-driven researcher agent manually diagnosed it; an autonomous run (e.g. /orchestrate) would have silently lost all literature context.
+
+---
+
+### 799. Fix literature-briefing.sh authors-type crash + harden per-entry resilience
+- **Effort**: 1-3 hours
+- **Status**: [COMPLETED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+- **Research**: [799_literature_briefing_authors_type_crash_fix/reports/01_authors-type-crash-fix.md]
+- **Plan**: [799_literature_briefing_authors_type_crash_fix/plans/01_authors-type-crash-fix.md]
+- **Summary**: [799_literature_briefing_authors_type_crash_fix/summaries/01_authors-type-crash-fix-summary.md]
+
+**Description**: [--lit BRIEFING CRASH] literature-briefing.sh silently produces an EMPTY <literature-briefing> for any repo whose sub-index references a string-typed authors entry, so --lit injects nothing. ROOT CAUSE: line 144 runs `(.authors // []) | join(", ")`, which is a jq RUNTIME ERROR (exit 5) when .authors is a plain string. The global Literature index (~/Projects/Literature/index.json) stores authors INCONSISTENTLY (210 array vs 12 string entries; some arrays are one-element comma-joined strings like ["A, B, C"]). With `set -euo pipefail` (line 41) and the `jq ... | head -1` pipeline (pipefail surfaces jq's non-zero status), the failed command substitution aborts the ENTIRE script on the very first entry (e.g. burgess_1982_i). FIX: (1) normalize authors for BOTH array and string types at line 144, mirroring the tolerant pattern already present in literature-discover.sh:281 (`.authors // [] | if type == "array" then . else [.] end | join(", ")`); (2) harden the per-entry metadata-extraction loop so a single malformed/failing entry WARNS to stderr and is SKIPPED, rather than aborting the whole briefing via set -e (guard the per-entry jq extractions so pipefail/set -e cannot kill the run, or use defensive jq that never errors); (3) VERIFY by regenerating a briefing against the cslib sub-index (all 12 doc_ids: burgess_1982_i, burgess_1982_ii, reynolds_2001, venema_1993_since_until, venema_1993_anti_axioms, gabbay_1993, blackburn_2001, goldblatt_2003, rabinovich_2014, caleiro_2013, hodkinson_2006, blackburn_2002_book) and confirming a populated block with correct author rendering for both string- and array-typed entries. NOTE: this script is shared .claude/ infrastructure; the config-repo copy (~/.config/nvim/.claude/scripts/literature-briefing.sh) is the source of truth and the fix must stay consistent with any child-project copies (e.g. ~/Projects/cslib/.claude/scripts/). CONTEXT: transcript .claude/output/lit.md -- /research 464 --lit returned `LIT bytes: 0`; the researcher agent manually diagnosed exit 5 and hand-built the briefing inline as a workaround.
+
+---
 
 ### 798. Literature zotero datadir and retry fixes
 - **Status**: [COMPLETED]

@@ -1,0 +1,32 @@
+{
+  "phase": 2,
+  "phase_name": "Verify against cslib sub-index and confirm empty-exit-0 paths",
+  "started_at": "2026-07-01T00:15:00Z",
+  "last_updated": "2026-07-01T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run briefing against cslib sub-index, confirm exit 0", "status": "done"},
+    {"id": 2, "description": "Confirm all 11 entries render", "status": "done"},
+    {"id": 3, "description": "Confirm string-typed author renders (burgess_1982_i -> John P. Burgess)", "status": "done"},
+    {"id": 4, "description": "Confirm array-typed author renders (blackburn_2002_book -> Blackburn/de Rijke/Venema)", "status": "done"},
+    {"id": 5, "description": "Confirm three legitimately-empty exit-0 paths still hold", "status": "done"},
+    {"id": 6, "description": "Confirm no unexpected stderr Warning lines on well-typed cslib data", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Copy fixed config-repo literature-briefing.sh and cslib's specs/literature-index.json into a scratch directory (mirroring the research report's reproduction method), run with LITERATURE_DIR=~/Projects/Literature so the script's own PROJECT_ROOT/SUB_INDEX derivation resolves the scratch sub-index while exercising the real global index and the CONFIG-REPO copy of the script (not cslib's own copy).",
+      "result": "success",
+      "reason": "Verifies the config-repo (source of truth) fix directly without editing any child-project copy."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.1",
+      "description": "Run the briefing against the cslib sub-index and confirm exit 0",
+      "type": "altered",
+      "reason": "The plan's literal recipe (cd ~/Projects/cslib && bash ~/.config/nvim/.claude/scripts/literature-briefing.sh) would not actually exercise cslib's sub-index: the script derives PROJECT_ROOT from its own $SCRIPT_DIR/../.. (the config-repo location), not cwd, so SUB_INDEX would resolve to ~/.config/nvim/specs/literature-index.json (nonexistent -> silent exit 0 false-positive), never touching cslib's 11-entry data. Used the plan's own fallback method instead: copied the fixed config-repo script plus cslib's specs/literature-index.json into a scratch directory (mirroring the research report's reproduction recipe) and ran it there with LITERATURE_DIR=~/Projects/Literature, which correctly exercises the CONFIG-REPO copy of the fix against the real cslib entry data and the real global index.",
+      "annotation": "*(deviation: altered — scratch-dir method used instead of literal cd-into-cslib recipe)*"
+    }
+  ]
+}
