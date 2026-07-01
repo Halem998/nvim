@@ -1,5 +1,5 @@
 ---
-next_project_number: 794
+next_project_number: 795
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 794
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,775,777,778,780,782,783,787,791 | -- | agent-system, literature, Terminal UI, ... |
+| 1 | 78,87,772,775,777,778,780,782,783,787,791,794 | -- | agent-system, literature, email integration, ... |
 | 2 | 773,774,776,779,781,785 | 772,775,778,780 | agent-system, literature |
 | 3 | 786 | 785 | agent-system |
 | 4 | 788 | 786,787 | agent-system |
@@ -42,8 +42,9 @@ next_project_number: 794
 
 775 [NOT STARTED] — [--lit, NO SILENT FALLBACK] When --lit is used but no per-repo sp
   └─ 776 [NOT STARTED] — Two coupled fixes so --lit works outside the formal /research N -
+794 [NOT STARTED] — Improve /literature N source discovery quality by fixing two issu
 
-### Terminal UI
+### Terminal Ui
 
 87 [RESEARCHED] — Investigate why the terminal working directory changes to a proje
 
@@ -52,6 +53,17 @@ next_project_number: 794
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
+
+### 794. Fix /literature N discovery to query task description+title instead of the slug, and hint on missing Zotero export
+- **Effort**: 1-2 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: Improve /literature N source discovery quality by fixing two issues in literature-discover.sh (both surfaced by testing /literature 55 in ~/Projects/Logos/Hardware/ after task 793). Both changes edit the CANONICAL extension source .claude/extensions/literature/scripts/literature-discover.sh AND must re-sync the flat deployed copy .claude/scripts/literature-discover.sh to byte-identical (follow the task-793 dual-copy / provides.scripts flat-deploy model; do NOT touch other repos). FIX 1 (PRIMARY DEFECT -- useless slug query): For the --task N form, literature-discover.sh:105-132 builds the search query ONLY from .project_name (the task slug), converting underscores/hyphens to spaces (line 112-118). The slug describes the task ("collect_literature_sources_task_54" -> "collect literature sources task") not the subject matter, so Tier 1/3 match nothing and discovery returns []. FIX: derive query terms from the task .description AND .title fields in specs/state.json (read both via jq), apply stopword filtering and drop terms under 3 chars (reuse/extend the existing FILTERED_TERMS logic around line 454), and DROP the slug/.project_name entirely from the query (user decision: description+title only, slug is noise). Preserve the existing "--task N \"extra terms\"" behavior (extra terms still append). Keep graceful fallback if description is empty (then title; if both empty, error clearly). Confirm the /literature "free text query" path is unaffected. FIX 2 (UX GAP -- silent missing Zotero export): tier2_search (literature-discover.sh:334-336) silently returns 0 when $LITERATURE_DIR/zotero-library.json is absent, so the user never learns Tier 2 is disabled or how to enable it. FIX: when the export file is missing, print (once per run, to stderr so it does not corrupt the JSON results on stdout) a concise one-time setup hint: in Zotero, File -> Export Library -> format "Better CSL JSON" -> check "Keep updated" -> save to ~/Projects/Literature/zotero-library.json (or $LITERATURE_DIR/zotero-library.json). Do not error or change exit status; Tier 2 still no-ops. Match the wording already used by zotero-search.sh (which prints setup instructions on exit code 1) for consistency. VERIFICATION: (a) with a real task that has a topical description, /literature N now yields a query containing subject-matter terms (not "collect/literature/sources/task") and returns hits where the free-text form does; (b) confirm the missing-zotero-library.json hint prints to stderr and JSON stdout stays valid; (c) assert flat/canonical byte parity for literature-discover.sh; (d) run check-extension-docs.sh (must still PASS). OUT OF SCOPE: creating the zotero-library.json export (user action); changing the three-tier pipeline architecture; Semantic Scholar API behavior. PRIMARY FILES: .claude/extensions/literature/scripts/literature-discover.sh (canonical), .claude/scripts/literature-discover.sh (flat re-sync).
+
+---
 
 ### 793. Fix literature extension script packaging so <leader>al deploys a working extension to all repos
 - **Effort**: 2-4 hours
