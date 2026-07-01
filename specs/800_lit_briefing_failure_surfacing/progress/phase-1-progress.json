@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Create the shared wrapper script",
+  "started_at": "2026-07-01T00:00:00Z",
+  "last_updated": "2026-07-01T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create literature-briefing-invoke.sh with set -uo pipefail", "status": "done"},
+    {"id": 2, "description": "Resolve SCRIPT_DIR and invoke literature-briefing.sh passthrough, stderr unmodified", "status": "done"},
+    {"id": 3, "description": "Capture exit code, emit notice and exit 0 on non-zero", "status": "done"},
+    {"id": 4, "description": "Print captured stdout unchanged on exit 0", "status": "done"},
+    {"id": 5, "description": "chmod +x the new script", "status": "done"},
+    {"id": 6, "description": "Add top-of-file comment documenting purpose and no-2>/dev/null contract", "status": "done"}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

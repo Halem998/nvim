@@ -11,7 +11,7 @@ next_project_number: 802
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,777,778,780,782,783,787,791,795,796,800,801 | -- | agent-system, literature, email integration, ... |
+| 1 | 78,87,772,777,778,780,782,783,787,791,795,796 | -- | agent-system, email integration, terminal ui |
 | 2 | 773,774,779,781,785 | 772,778,780 | agent-system |
 | 3 | 786 | 785 | agent-system |
 | 4 | 788 | 786,787 | agent-system |
@@ -40,11 +40,6 @@ next_project_number: 802
 795 [NOT STARTED] — Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-
 796 [NOT STARTED] — Make topic assignment mandatory across ALL task-creation paths so
 
-### Literature
-
-800 [NOT STARTED] — [--lit FAILURE SURFACING] When literature-briefing.sh crashes, th
-801 [NOT STARTED] — [LITERATURE INDEX SCHEMA NORMALIZATION -- optional/defense-in-dep
-
 ### Terminal Ui
 
 87 [RESEARCHED] — Investigate why the terminal working directory changes to a proje
@@ -57,10 +52,13 @@ next_project_number: 802
 
 ### 801. Normalize authors schema in Literature index generation (defense-in-depth)
 - **Effort**: 3-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [801_literature_index_authors_schema_normalization/reports/01_authors-schema-normalization.md]
+- **Plan**: [801_literature_index_authors_schema_normalization/plans/01_authors-schema-normalization.md]
+- **Summary**: [801_literature_index_authors_schema_normalization/summaries/01_authors-schema-normalization-summary.md]
 
 **Description**: [LITERATURE INDEX SCHEMA NORMALIZATION -- optional/defense-in-depth] The global Literature index (~/Projects/Literature/index.json) stores `authors` INCONSISTENTLY: 210 entries as an array, 12 as a plain string, and some arrays are malformed one-element comma-joined strings (e.g. ["Patrick Blackburn, Maarten de Rijke, Yde Venema"]). This inconsistency is the UPSTREAM root cause of the briefing crash (task 799). Consumer tolerance (task 799) is the SUFFICIENT functional fix; this task prevents recurrence at the source. FIX: audit the index-writing scripts -- literature-build-index.sh, literature-discover.sh, and any converter (literature-convert.sh / literature-chunk.sh) that writes an `authors` field -- and standardize on a SINGLE representation (RECOMMEND: array of individual author strings, splitting comma-joined values). Consider a one-time normalization pass over the existing index.json plus a validation check so future writes stay consistent. Scope: Literature-corpus tooling in .claude/scripts/, NOT the --lit dispatch path; genuinely optional relative to tasks 799-800. CONTEXT: authors-type histogram over ~/Projects/Literature/index.json = 210 array / 12 string; the 12 string-typed entries (burgess/venema/gabbay/reynolds/rabinovich/caleiro/hodkinson/goldblatt families) are exactly what the cslib sub-index references, triggering the task-799 crash.
 
@@ -68,10 +66,13 @@ next_project_number: 802
 
 ### 800. Surface --lit briefing-generation failures in skill consumers (no silent no-op)
 - **Effort**: 2-4 hours
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [800_lit_briefing_failure_surfacing/reports/01_lit-briefing-failure-surfacing.md]
+- **Plan**: [800_lit_briefing_failure_surfacing/plans/01_lit-briefing-failure-surfacing.md]
+- **Summary**: [800_lit_briefing_failure_surfacing/summaries/01_lit-briefing-failure-surfacing-summary.md]
 
 **Description**: [--lit FAILURE SURFACING] When literature-briefing.sh crashes, the --lit consumers cannot distinguish a script CRASH from a legitimately EMPTY briefing, so they silently proceed as if no literature exists -- violating CLAUDE.md's repeated `--lit is never a silent no-op` contract. ROOT CAUSE: skill Stage 4b captures briefing output as `LIT bytes: N` and treats 0 bytes as 'no literature'; literature-briefing.sh exits 0 on a legitimate empty result but NON-ZERO (e.g. 5) on crash, and the consumers ignore the exit status. FIX: update the --lit consumers -- skill-researcher, skill-planner, skill-implementer and their -hard variants (skill-researcher-hard, skill-planner-hard, skill-implementer-hard) -- so that when literature-briefing.sh exits NON-ZERO they emit a VISIBLE `[lit] briefing generation failed (exit N)` notice to the transcript (distinct from the legitimate empty case) instead of silently continuing with no literature. Prefer a single shared pattern/helper so all six skills stay consistent. Scope: error-surfacing only in the Stage 4b invocation of each skill; does NOT fix the underlying script (task 799 does that), but the two are complementary. CONTEXT: transcript .claude/output/lit.md -- the empty result was only caught because a human-driven researcher agent manually diagnosed it; an autonomous run (e.g. /orchestrate) would have silently lost all literature context.
 

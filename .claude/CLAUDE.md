@@ -321,41 +321,90 @@ explicitly pass `--hard` to activate hard mode.
 
 ## Literature Mode (`--lit`)
 
-Literature mode injects reference files from `specs/literature/` as `<literature-context>` into
-agent prompts. Use this when a task involves implementing from a paper, specification, or
-reference document.
+Literature mode produces a live, navigate-on-demand `<literature-briefing>` block for agent
+prompts — never a static content dump. Use this when a task involves implementing from a paper,
+specification, or reference document.
 
 ### What `--lit` Does
 
 When `--lit` is passed to `/research`, `/plan`, `/implement`, or `/orchestrate`:
-- `literature-retrieve.sh` reads all `.md` and `.txt` files from `specs/literature/`
-- Files are included up to TOKEN_BUDGET=4000 tokens (MAX_FILES=10)
-- A `<literature-context>` block is injected after `<memory-context>` (if any) and before
-  task-specific instructions
-- If `specs/literature/` does not exist or is empty, the flag is silently ignored (no error)
+- `--lit` triggers `literature-briefing.sh` to build a live `<literature-briefing>` block against
+  a corpus of pre-segmented literature chunks — the agent navigates on demand rather than
+  receiving injected file content.
+- Two source modes, matching `literature-briefing.sh`:
+  - **Per-repo mode** (default, no args): sourced from the per-repo sub-index
+    `specs/literature-index.json`, resolved against the global `$LITERATURE_DIR/index.json`.
+  - **Global-corpus mode** (`literature-briefing.sh --global "<query>"`): a live relevance search
+    over the global Literature corpus, used when no per-repo sub-index exists (see "Interactive
+    Sub-Index Setup Detection" below for when this mode is selected).
+- Both modes emit a single `<literature-briefing>` block containing document/chunk metadata plus
+  a "How to Use" footer instructing the agent to run `literature-search.sh` and `Read` specific
+  chunks on demand — no full-file content is ever injected.
+- The block is injected after `<memory-context>` (if any) and before task-specific instructions.
+- If `--lit` is not passed (`LIT_DISABLED`), nothing is injected. If a per-repo sub-index and the
+  global index are both absent (`GLOBAL_MISSING`), the skill emits a visible notice that no
+  literature is available and continues without a briefing — this is never a silent no-op (see
+  "Interactive Sub-Index Setup Detection" for the full missing-sub-index decision flow).
+- The only numeric limiter on any live path is `--top-n` (default 8 chunks), which applies to
+  global-corpus mode only.
+
+### Ad-Hoc / Conversational Literature Requests
+
+Stage 4a (below) only runs inside a `/research|/plan|/implement|/orchestrate --lit` dispatch. When
+a user instead asks conversationally — outside any such dispatch — to consult "the literature", a
+paper, or otherwise invoke `--lit`-like behavior, the primary/root session follows
+`.claude/context/project/literature/patterns/adhoc-navigation-directive.md`: it runs
+`literature-lit-flag-resolve.sh --orchestrator-mode false` and surfaces the SAME three-option
+interactive question as Stage 4a ("Use global corpus now" / "Create curation task" / "Skip this
+run") — never silently injecting nothing and never silently auto-searching.
 
 ### Interactive Sub-Index Setup Detection
 
-When `--lit` is used and `specs/literature-index.json` does not exist, the skill automatically
-detects this and offers an interactive setup flow instead of silently skipping:
+When `--lit` is used, each skill (skill-researcher, skill-planner, skill-implementer, and their
+`--hard` variants) resolves the situation via the shared helper
+`.claude/scripts/literature-lit-flag-resolve.sh`, which classifies the case and prints exactly
+one of five directives (`LIT_DISABLED`, `SUBINDEX_PRESENT`, `GLOBAL_MISSING`, `PROMPT_NEEDED`,
+`AUTONOMOUS_GLOBAL`) — this eliminates the prior per-skill duplication and, critically, ensures
+no directive branch defaults to an empty briefing without either a visible logged notice or an
+explicit user choice. There is no silent fallback.
 
-1. **No global index**: If `~/Projects/Literature/index.json` (or `$LITERATURE_DIR/index.json`)
-   does not exist, an informative message is shown and `--lit` is ignored for this invocation.
+1. **No global index** (`GLOBAL_MISSING`): If the per-repo sub-index at
+   `specs/literature-index.json` is absent AND `~/Projects/Literature/index.json` (or
+   `$LITERATURE_DIR/index.json`) is also absent, the skill emits a visible notice that no
+   literature is available and continues without literature context. This is the one acceptable
+   empty branch, and it is explicitly announced, never silent.
 
-2. **Global index exists, sub-index missing**: An `AskUserQuestion` prompt appears with three
-   choices:
-   - **Skip**: Continue without literature context (`--lit` ignored this time)
-   - **Create setup task**: Creates a task (`populate_literature_sub_index`) in TODO.md and
-     continues with the original command (no literature context this invocation). Run
-     `/orchestrate N` later to populate the sub-index.
-   - **Create task and run now**: Creates the task AND forks an inline agent to immediately
-     populate `specs/literature-index.json` by scanning the global index for relevant entries.
-     After the fork completes, the original command resumes with the newly populated literature
-     context.
+2. **Global index exists, sub-index missing, interactive context** (`PROMPT_NEEDED`): An
+   `AskUserQuestion` prompt appears with three choices — two live outcomes plus one explicit,
+   non-silent skip:
+   - **Use global corpus now** (recommended default, listed first): Runs a live relevance
+     search against the global Literature corpus via
+     `literature-briefing.sh --global "<task description>"` and injects the result for this run
+     only. No setup, no file writes.
+   - **Create curation task**: Creates a task (`populate_literature_sub_index`) in TODO.md via
+     `.claude/scripts/literature-create-setup-task.sh`, then attempts to fork-populate
+     `specs/literature-index.json` inline so the current run also benefits; injects via the
+     no-arg `literature-briefing.sh` once the sub-index exists (or emits a visible notice if the
+     inline population did not complete this run).
+   - **Skip this run**: An explicit, user-chosen decision to continue without literature context.
+     The skill logs a visible `[lit] Skipped by user choice` notice — non-silent because it is an
+     explicit choice, not a default.
 
-The sub-index creation helper is `.claude/scripts/literature-create-setup-task.sh`.
-The interactive detection block lives in Stage 4a of each skill that supports `--lit`
-(skill-researcher, skill-planner, skill-implementer, and their `--hard` variants).
+3. **Global index exists, sub-index missing, autonomous context** (`AUTONOMOUS_GLOBAL`): When
+   `orchestrator_mode == true` (e.g. `/orchestrate`), `AskUserQuestion` cannot prompt a human, so
+   the skill MUST NOT call it. It takes the deterministic default **"Use global corpus now"**:
+   it runs `literature-briefing.sh --global "<task description>"` and emits a visible
+   `[lit:auto]` notice to the transcript stating that the global-corpus briefing was
+   auto-selected because no per-repo sub-index exists and no human is available to prompt. This
+   is never a silent no-op.
+
+The sub-index creation helper is `.claude/scripts/literature-create-setup-task.sh`. The
+global-corpus search mode is `.claude/scripts/literature-briefing.sh --global "<query>"
+[--top-n N]`; both the per-repo and global-corpus briefing modes share a single output section
+that always appends the "How to Use" footer. The interactive detection block lives in Stage 4a
+of each skill that supports `--lit` (skill-researcher, skill-planner, skill-implementer, and
+their `--hard` variants), each delegating classification to
+`literature-lit-flag-resolve.sh`.
 
 ### specs/literature/ Directory Convention
 

@@ -1,0 +1,25 @@
+{
+  "phase": 3,
+  "phase_name": "Update Stage 4a in the three hard skills",
+  "started_at": "2026-07-01T00:26:00Z",
+  "last_updated": "2026-07-01T00:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "skill-researcher-hard/SKILL.md: replace 3 sites with wrapper call", "status": "done"},
+    {"id": 2, "description": "skill-planner-hard/SKILL.md: replace 3 sites with wrapper call", "status": "done"},
+    {"id": 3, "description": "skill-implementer-hard/SKILL.md: replace 3 sites with wrapper call", "status": "done"},
+    {"id": 4, "description": "Rewrite stale trailing comment in each of the three files", "status": "done", "note": "skill-implementer-hard has no such comment block; N/A there, rewritten in the other two"},
+    {"id": 5, "description": "Confirm legitimate-empty comment line unchanged", "status": "done"}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.4",
+      "description": "Rewrite the live-block trailing comment `# - script exited with error` to the canonical text in each of the three hard skills",
+      "type": "altered",
+      "reason": "skill-implementer-hard's live literature-briefing bash block has no `# lit_context will be empty string if: ... # - script exited with error` comment section at all (confirmed via grep across the file), so there was nothing to rewrite there. The other two hard skills (skill-researcher-hard, skill-planner-hard) had the comment and it was rewritten to the canonical text.",
+      "annotation": "*(deviation: altered — skill-implementer-hard had no stale comment block to rewrite; rewritten in the other two files)*"
+    }
+  ]
+}
