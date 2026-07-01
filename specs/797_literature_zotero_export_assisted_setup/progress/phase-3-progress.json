@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "phase_name": "Wire assisted offer into /literature discover workflow",
+  "started_at": "2026-07-01T18:15:00Z",
+  "last_updated": "2026-07-01T18:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add separate zotero-export-status.sh invocation before main discover call (no 2>/dev/null)", "status": "done"},
+    {"id": 2, "description": "Branch on ZOTERO_EXPORT_PRESENT", "status": "done"},
+    {"id": 3, "description": "Branch on ZOTERO_EXPORT_MISSING_RUNNING / MISSING_NOT_RUNNING with AskUserQuestion offer", "status": "done"},
+    {"id": 4, "description": "Branch on ZOTERO_EXPORT_UNAVAILABLE with manual-steps text", "status": "done"},
+    {"id": 5, "description": "Document orchestrator-mode deterministic default (never silent no-op)", "status": "done"},
+    {"id": 6, "description": "Verify main discover call and JSON-array handling untouched", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.4",
+      "description": "Add explicit wording mirroring the literature-lit-flag-resolve.sh three-option precedent style",
+      "type": "altered",
+      "reason": "The --lit precedent has three options (global corpus / create task / skip) because it has a genuine third path (curation task creation). The Zotero offer only has two real outcomes (generate now / skip) -- there is no equivalent 'create a task and populate later' action for a one-time local snapshot. Used a two-option prompt that mirrors the SAME structural properties (recommended option listed first, explicit non-silent skip as an option rather than a default) instead of forcing an artificial third option.",
+      "annotation": "*(completed: two-option \"Generate now\" / \"Skip this run\" prompt used instead of three, since there is no third \"create task\" equivalent for this offer)*"
+    }
+  ]
+}

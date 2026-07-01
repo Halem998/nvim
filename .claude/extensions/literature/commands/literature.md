@@ -122,6 +122,101 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--validate|--index FILE|--convert [F
     <process>
       When sub_mode = "discover":
 
+      0. **Assisted Zotero export offer** (runs BEFORE `literature-discover.sh`, via a
+         SEPARATE invocation with its own capture -- explicitly NOT `2>/dev/null`, so the
+         offer is never swallowed the way the plain `tier2_search()` stderr hint is):
+
+         ```bash
+         STATUS_SCRIPT=".claude/scripts/zotero-export-status.sh"
+         GENERATE_SCRIPT=".claude/scripts/zotero-generate-export.sh"
+
+         # Both stdout (directive token) AND stderr (rationale) are captured -- neither is
+         # discarded. orchestrator_mode is the delegation-context field (true for /orchestrate
+         # and other autonomous callers; false for a human-invoked /literature).
+         zotero_directive=$("$STATUS_SCRIPT" --orchestrator-mode "$orchestrator_mode" 2>/tmp/zotero-status-rationale.txt)
+         zotero_rationale=$(cat /tmp/zotero-status-rationale.txt)
+         ```
+
+         Branch on `zotero_directive`:
+
+         - **`ZOTERO_EXPORT_PRESENT`**: No offer. Proceed directly to step 1 (main discover
+           call) as today.
+
+         - **`ZOTERO_EXPORT_MISSING_RUNNING`** or **`ZOTERO_EXPORT_MISSING_NOT_RUNNING`**
+           (interactive context, `orchestrator_mode != true`): Issue `AskUserQuestion`
+           mirroring the three-option precedent style of `literature-lit-flag-resolve.sh`'s
+           `--lit` prompt:
+
+           ```json
+           {
+             "question": "No Zotero export found at {resolved_path}. Generate one now from your local Zotero library?",
+             "header": "Assisted Zotero Export Generation",
+             "multiSelect": false,
+             "options": [
+               {
+                 "label": "Generate now (recommended)",
+                 "description": "{path-specific detail, see below} This writes a ONE-TIME SNAPSHOT (not Zotero's auto-refreshing \"Keep updated\" export) plus a staleness stamp; re-run the generator later to refresh."
+               },
+               {
+                 "label": "Skip this run",
+                 "description": "Continue without a Zotero export; Tier 2 stays skipped for this discovery pass. You can generate it later via zotero-generate-export.sh."
+               }
+             ]
+           }
+           ```
+
+           Path-specific detail for the first option's description:
+           - If directive is `ZOTERO_EXPORT_MISSING_RUNNING`: "Zotero is running -- pulls your
+             whole library live via its local API (and enriches citation-keys via Better
+             BibTeX if installed)."
+           - If directive is `ZOTERO_EXPORT_MISSING_NOT_RUNNING`: "Zotero is closed, so this
+             reconstructs a snapshot directly from ~/Zotero/zotero.sqlite. For the richer live
+             API path instead, open Zotero first, then re-run `/literature`."
+
+           On "Generate now": run `"$GENERATE_SCRIPT" --orchestrator-mode false`, capturing
+           stdout (resolved output path) and stderr (progress/rationale, including the
+           staleness-stamp note); on success (exit 0), proceed to step 1 (main discover call,
+           Tier 2 now populated). On failure (non-zero exit, e.g. a race where Zotero closed
+           mid-run), surface the generator's stderr and fall back to step 1 as today (Tier 2
+           stays skipped, non-fatal).
+
+           On "Skip this run": log a visible, explicit "Zotero export generation skipped by
+           user choice" notice (non-silent because it is a chosen option, not a default), then
+           proceed to step 1.
+
+         - **`ZOTERO_EXPORT_UNAVAILABLE`**: No offer. Surface the zotero-search.sh-matching
+           manual-setup steps directly (no local Zotero data source exists to generate from):
+
+           ```
+           No Zotero export found, and no local Zotero installation was detected either
+           (Zotero's local API is unreachable and ~/Zotero/zotero.sqlite does not exist).
+
+           To set up Zotero CSL-JSON export manually:
+           1. Install the Better BibTeX plugin for Zotero: https://retorque.re/zotero-better-bibtex/
+           2. In Zotero, go to: File -> Export Library...
+           3. Choose format: "Better CSL JSON"  Check "Keep updated" for automatic re-export.
+           4. Save to one of: $ZOTERO_LIBRARY / ${LITERATURE_DIR}/zotero-library.json / ~/Projects/Literature/zotero-library.json
+           ```
+
+           Then proceed to step 1 (Tier 2 stays skipped, non-fatal, as today).
+
+         - **Orchestrator / non-interactive default** (`orchestrator_mode == true`):
+           `AskUserQuestion` cannot prompt a human, so it MUST NOT be called for
+           `ZOTERO_EXPORT_MISSING_RUNNING` / `ZOTERO_EXPORT_MISSING_NOT_RUNNING`. Instead, take
+           the deterministic default "generate now": run
+           `"$GENERATE_SCRIPT" --orchestrator-mode true` and emit a visible `[zotero:auto]`
+           notice (surfacing the generator's own `[zotero:auto]`-prefixed stderr line when the
+           directive was actually `ZOTERO_EXPORT_UNAVAILABLE` and the generator itself found no
+           data source) explaining the autonomous choice -- this is NEVER a silent no-op, and
+           mirrors the `AUTONOMOUS_GLOBAL` precedent from the `--lit` flow (see CLAUDE.md
+           "Literature Mode" section). Then proceed to step 1 regardless of the generation
+           outcome (Tier 2 either becomes populated or stays skipped, non-fatal).
+
+         This offer is a SEPARATE classifier invocation from the main discover call below; it
+         never touches `literature-discover.sh`'s pure-JSON-array stdout contract, and it does
+         NOT modify the existing `2>/dev/null` capture on the main call (that remains a
+         separate, intentionally out-of-scope follow-up).
+
       1. **Run `literature-discover.sh`**:
          ```bash
          DISCOVER_SCRIPT=".claude/scripts/literature-discover.sh"

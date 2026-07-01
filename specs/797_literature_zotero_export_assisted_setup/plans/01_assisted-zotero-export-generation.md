@@ -218,17 +218,18 @@ JSON stdout contract.
 
 ---
 
-### Phase 3: Wire assisted offer into `/literature` discover workflow [NOT STARTED]
+### Phase 3: Wire assisted offer into `/literature` discover workflow [COMPLETED]
 
 **Goal**: Add the interactive assisted-generation offer to the `/literature` discover flow via a
 separate classifier invocation before the main discover call, with an orchestrator-mode default.
 
 **Tasks**:
-- [ ] In `.claude/extensions/literature/commands/literature.md` Mode A (discover, step_2 around
+- [x] In `.claude/extensions/literature/commands/literature.md` Mode A (discover, step_2 around
       lines 120-139), BEFORE the existing `literature-discover.sh ... 2>/dev/null` call, add a
       separate invocation of `zotero-export-status.sh` that captures BOTH stdout (directive) and
       stderr (rationale) — explicitly NOT under `2>/dev/null` — so the offer is not swallowed.
-- [ ] Branch on the directive:
+      *(completed: new step "0." in step_2)*
+- [x] Branch on the directive:
       - `ZOTERO_EXPORT_PRESENT`: no offer; proceed to main discover as today.
       - `ZOTERO_EXPORT_MISSING_RUNNING` / `ZOTERO_EXPORT_MISSING_NOT_RUNNING`: issue
         `AskUserQuestion` offering to generate now (state which path will be used and the
@@ -237,14 +238,19 @@ separate classifier invocation before the main discover call, with an orchestrat
       - `ZOTERO_EXPORT_MISSING_NOT_RUNNING`: the offer text also notes the user may open Zotero for
         the richer API path or accept the sqlite snapshot.
       - `ZOTERO_EXPORT_UNAVAILABLE`: no offer; surface the zotero-search.sh-matching manual steps.
-- [ ] Orchestrator/non-interactive default: document that when the command runs without a human
+      *(completed; all four branches documented)*
+- [x] Orchestrator/non-interactive default: document that when the command runs without a human
       (orchestrator context), it passes `--orchestrator-mode true` to the classifier/generator,
       takes the visible logged default (attempt live generation via the viable path, or emit the
-      `[zotero:auto]` notice explaining the skip), and NEVER performs a silent no-op.
-- [ ] Add explicit wording mirroring the `literature-lit-flag-resolve.sh` three-option precedent
-      style so the offer is consistent with existing `--lit` prompts.
-- [ ] Do NOT modify the existing `2>/dev/null` main discover call itself (out of scope); only add
-      the preceding classifier invocation and branch.
+      `[zotero:auto]` notice explaining the skip), and NEVER performs a silent no-op. *(completed)*
+- [x] Add explicit wording mirroring the `literature-lit-flag-resolve.sh` three-option precedent
+      style so the offer is consistent with existing `--lit` prompts. *(completed; two-option
+      "Generate now" / "Skip this run" prompt used instead of three, since there is no
+      third "create task" equivalent for this offer — Generate-now/Skip mirrors the same
+      recommended-default-first, explicit-non-silent-skip structure as the `--lit` precedent)*
+- [x] Do NOT modify the existing `2>/dev/null` main discover call itself (out of scope); only add
+      the preceding classifier invocation and branch. *(completed; verified via grep that the
+      three existing `2>/dev/null` lines in the main discover call are unchanged)*
 
 **Timing**: 1 hour
 
