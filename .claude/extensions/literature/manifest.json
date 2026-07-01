@@ -26,6 +26,7 @@
       "zotero-search.sh",
       "zotero-generate-export.sh",
       "zotero-export-status.sh",
+      "zotero-resolve-sqlite-path.sh",
       "cite-extract.sh",
       "zotero-read.sh",
       "zotero-write.sh",

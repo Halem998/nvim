@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Create shared sqlite-path resolver + manifest registration + flat copy",
+  "started_at": "2026-07-01T00:00:00Z",
+  "last_updated": "2026-07-01T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write zotero-resolve-sqlite-path.sh resolver script", "status": "done"},
+    {"id": 2, "description": "chmod +x canonical, cp -p to flat, verify executable bit", "status": "done"},
+    {"id": 3, "description": "Add script to manifest.json provides.scripts", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
