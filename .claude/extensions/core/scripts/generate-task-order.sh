@@ -420,23 +420,28 @@ generate_grouped_section() {
 
   # Build ordered list of topics to render
   # Use active_topics_order if available, then add any extra topics found in tasks
+  # Topics are grouped case-insensitively: the grouping key is the lowercased
+  # topic string, so e.g. "Literature" and "literature" collapse into a single
+  # section (the heading is title-cased for display below).
   local -a topics_to_render=()
+  declare -A seen_topics=()
   if [[ ${#active_topics_order[@]} -gt 0 ]]; then
     for t in "${active_topics_order[@]}"; do
-      topics_to_render+=("$t")
+      local t_key="${t,,}"
+      if [[ -z "${seen_topics[$t_key]+x}" ]]; then
+        topics_to_render+=("$t_key")
+        seen_topics["$t_key"]=1
+      fi
     done
   fi
 
   # Collect any topics in tasks that aren't in active_topics_order
-  declare -A seen_topics=()
-  for t in "${topics_to_render[@]}"; do
-    seen_topics["$t"]=1
-  done
   for tn in "${all_task_nums[@]}"; do
     local tp="${task_topic[$tn]:-}"
-    if [[ -n "$tp" && -z "${seen_topics[$tp]+x}" ]]; then
-      topics_to_render+=("$tp")
-      seen_topics["$tp"]=1
+    local tp_key="${tp,,}"
+    if [[ -n "$tp" && -z "${seen_topics[$tp_key]+x}" ]]; then
+      topics_to_render+=("$tp_key")
+      seen_topics["$tp_key"]=1
     fi
   done
 
@@ -448,7 +453,7 @@ generate_grouped_section() {
     local -a topic_tasks=()
     for tn in $(printf '%s\n' "${all_task_nums[@]}" | sort -n); do
       local tp="${task_topic[$tn]:-}"
-      [[ "$tp" == "$topic" ]] && topic_tasks+=("$tn")
+      [[ "${tp,,}" == "$topic" ]] && topic_tasks+=("$tn")
     done
 
     [[ ${#topic_tasks[@]} -eq 0 ]] && continue
@@ -621,10 +626,12 @@ generate_wave_table() {
     fi
 
     # Compute Topics column: distinct topics in this wave, truncated to 3
+    # Keyed case-insensitively (lowercased) so a topic with mixed casing is not
+    # counted as two distinct topics in the wave's Topics column.
     declare -A topic_set=()
     for tn in "${tasks_in_wave[@]}"; do
       local tp="${task_topic[$tn]:-}"
-      [[ -n "$tp" ]] && topic_set["$tp"]=1
+      [[ -n "$tp" ]] && topic_set["${tp,,}"]=1
     done
 
     local topics_str="--"
@@ -632,13 +639,13 @@ generate_wave_table() {
       # Order by canonical topic order if available
       local -a ordered_topics=()
       for ct in "${active_topics_order[@]}"; do
-        [[ -n "${topic_set[$ct]+x}" ]] && ordered_topics+=("$ct")
+        [[ -n "${topic_set[${ct,,}]+x}" ]] && ordered_topics+=("${ct,,}")
       done
       # Add any topics not in canonical order
       for tp in "${!topic_set[@]}"; do
         local found=0
         for ct in "${active_topics_order[@]}"; do
-          [[ "$ct" == "$tp" ]] && found=1
+          [[ "${ct,,}" == "$tp" ]] && found=1
         done
         [[ "$found" -eq 0 ]] && ordered_topics+=("$tp")
       done
