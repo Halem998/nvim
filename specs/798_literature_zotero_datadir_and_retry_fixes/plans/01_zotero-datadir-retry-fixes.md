@@ -1,7 +1,7 @@
 # Implementation Plan: Zotero dataDir Auto-Detection + Open-and-Retry Branch
 
 - **Task**: 798 - Two follow-up fixes to task-797 assisted Zotero export generation (dataDir auto-detection + open-Zotero-and-retry interactive branch)
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: task-797 (COMPLETED), task-793 (COMPLETED)
 - **Research Inputs**: specs/798_literature_zotero_datadir_and_retry_fixes/reports/01_zotero-datadir-retry-fixes.md
@@ -315,27 +315,33 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 5: Full integration verification + re-sync audit [NOT STARTED]
+### Phase 5: Full integration verification + re-sync audit [COMPLETED]
 
 - **Goal:** Run the complete verification battery required by the task across all edited files and
   confirm no canonical/flat drift.
 - **Files to modify (ownership):** none (verification only; if any diff is found, re-run `cp -p` for
   the affected pair and re-verify).
 - **Tasks:**
-  - [ ] `bash -n` on all four scripts (resolver, status, generate — canonical and flat copies).
-  - [ ] `diff` each canonical/flat pair (resolver, status, generate) — all must produce no output.
-  - [ ] End-to-end resolver test: `.claude/scripts/zotero-resolve-sqlite-path.sh` resolves to
+  - [x] `bash -n` on all four scripts (resolver, status, generate — canonical and flat copies).
+        *(completed: all 6 invocations (3 scripts x 2 copies) exit 0)*
+  - [x] `diff` each canonical/flat pair (resolver, status, generate) — all must produce no output.
+        *(completed: all three pairs byte-identical)*
+  - [x] End-to-end resolver test: `.claude/scripts/zotero-resolve-sqlite-path.sh` resolves to
         `/home/benjamin/Documents/Zotero/zotero.sqlite` via prefs.js auto-detection (no
-        `ZOTERO_SQLITE_PATH` set).
-  - [ ] End-to-end generator test: with auto-detection, `zotero-generate-export.sh` reconstructs
-        ~1819 Better-CSL-JSON entries into a non-empty `zotero-library.json`.
-  - [ ] Classifier contract: `zotero-export-status.sh` emits exactly one directive token on stdout,
-        rationale on stderr, and correctly classifies given the resolved (non-stale) DB.
-  - [ ] Orchestrator loud-failure: no-data-source orchestrator invocation exits non-zero with a
-        visible error and never writes an empty export.
-  - [ ] `literature-discover.sh` stdout is still a pure JSON array (unchanged contract) — run it and
-        confirm `jq -e 'type == "array"'` succeeds on its stdout.
-  - [ ] `manifest.json` lists `zotero-resolve-sqlite-path.sh` in `provides.scripts`.
+        `ZOTERO_SQLITE_PATH` set). *(completed: confirmed exact match)*
+  - [x] End-to-end generator test: with auto-detection, `zotero-generate-export.sh` reconstructs
+        ~1819 Better-CSL-JSON entries into a non-empty `zotero-library.json`. *(completed: exactly
+        1819 entries written, valid JSON array, non-empty file)*
+  - [x] Classifier contract: `zotero-export-status.sh` emits exactly one directive token on stdout,
+        rationale on stderr, and correctly classifies given the resolved (non-stale) DB. *(completed:
+        `ZOTERO_EXPORT_MISSING_NOT_RUNNING`, 1 stdout line, non-empty stderr rationale)*
+  - [x] Orchestrator loud-failure: no-data-source orchestrator invocation exits non-zero with a
+        visible error and never writes an empty export. *(completed: exit 1, `[zotero:auto] Error:`
+        on stderr, no file created)*
+  - [x] `literature-discover.sh` stdout is still a pure JSON array (unchanged contract) — run it and
+        confirm `jq -e 'type == "array"'` succeeds on its stdout. *(completed: confirmed)*
+  - [x] `manifest.json` lists `zotero-resolve-sqlite-path.sh` in `provides.scripts`. *(completed:
+        confirmed via `jq -e`)*
 - **Timing:** 0.75 hours
 - **Depends on:** 1, 2, 3, 4
 - **Verification:**
@@ -345,18 +351,18 @@ Phases within the same wave can execute in parallel.
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on `zotero-resolve-sqlite-path.sh`, `zotero-export-status.sh`, and
+- [x] `bash -n` passes on `zotero-resolve-sqlite-path.sh`, `zotero-export-status.sh`, and
       `zotero-generate-export.sh` (both canonical and flat copies).
-- [ ] `diff` between each canonical and flat copy (resolver, status, generate) produces no output.
-- [ ] Resolver auto-detects and prints `/home/benjamin/Documents/Zotero/zotero.sqlite` on this machine
+- [x] `diff` between each canonical and flat copy (resolver, status, generate) produces no output.
+- [x] Resolver auto-detects and prints `/home/benjamin/Documents/Zotero/zotero.sqlite` on this machine
       (no env override) and honors `$ZOTERO_SQLITE_PATH` when set.
-- [ ] Generator reconstructs ~1819 Better-CSL-JSON entries into a non-empty `zotero-library.json`.
-- [ ] Classifier emits exactly one directive token on stdout with rationale on stderr.
-- [ ] Orchestrator-mode no-data-source path exits non-zero with a visible error and writes no empty
+- [x] Generator reconstructs ~1819 Better-CSL-JSON entries into a non-empty `zotero-library.json`.
+- [x] Classifier emits exactly one directive token on stdout with rationale on stderr.
+- [x] Orchestrator-mode no-data-source path exits non-zero with a visible error and writes no empty
       file (never silent no-op).
-- [ ] `literature-discover.sh` stdout remains a pure JSON array.
-- [ ] `manifest.json` `provides.scripts` includes the new helper.
-- [ ] `literature.md` NOT_RUNNING branch presents three options with a bounded (<= 3) retry loop and
+- [x] `literature-discover.sh` stdout remains a pure JSON array.
+- [x] `manifest.json` `provides.scripts` includes the new helper.
+- [x] `literature.md` NOT_RUNNING branch presents three options with a bounded (<= 3) retry loop and
       fresh enable-API guidance.
 
 ## Artifacts & Outputs
