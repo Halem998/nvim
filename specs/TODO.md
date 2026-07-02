@@ -46,7 +46,7 @@ next_project_number: 804
 
 ### Extensions
 
-803 [PLANNED] — Author the canonical email/ Claude Code extension at ~/.config/nv
+803 [NOT STARTED] — Author the canonical email/ Claude Code extension at ~/.config/nv
 
 ### Terminal Ui
 
@@ -60,7 +60,7 @@ next_project_number: 804
 
 ### 803. Build email/ Claude Code extension (author + doc-lint, no load)
 - **Effort**: 4-6 hours
-- **Status**: [PLANNED]
+- **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
