@@ -46,7 +46,7 @@ next_project_number: 804
 
 ### Extensions
 
-803 [NOT STARTED] — Author the canonical email/ Claude Code extension at ~/.config/nv
+803 [RESEARCHED] — Author the canonical email/ Claude Code extension at ~/.config/nv
 
 ### Terminal Ui
 
@@ -60,10 +60,11 @@ next_project_number: 804
 
 ### 803. Build email/ Claude Code extension (author + doc-lint, no load)
 - **Effort**: 4-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
+- **Research**: [803_email_claude_code_extension/reports/01_email-extension-seed.md]
 
 **Description**: Author the canonical email/ Claude Code extension at ~/.config/nvim/.claude/extensions/email/ (this repo is the master extension library that <leader>al loads into consuming repos). CROSS-REPO LINEAGE: child of .dotfiles task 71 (expanded); reference plan = ~/.dotfiles/specs/071_design_ai_email_management_workflow/plans/04_email-workflow-implementation.md (v3, phases 3/4/6). DEPENDS ON .dotfiles task 72 for: (a) the harvested ~/Mail email-preferences.md rule taxonomy + JSON schema + MAX_BATCH_SIZE=50, and (b) the nix wrapper CONTRACT (binary names + flags). Deliverable: manifest.json (task_type=email; ASYMMETRIC routing: research->skill-researcher, plan->skill-planner shared, implement->custom skill-email-implementation->email-implementation-agent; keyword_overrides keywords[inbox,email,gmail,himalaya,notmuch,unsubscribe,"junk mail","draft reply",mbsync,aerc,"mail triage"] aliases[mail,mailbox]; provides incl. hooks + merge_targets.settings so the hook unloads with the extension); email-implementation-agent (WRAPPER-ONLY: may only invoke email-census/email-classify/email-archive-confirmed/email-delete-confirmed/email-unsubscribe-extract by name, NEVER raw himalaya/notmuch); skill-email-implementation + skill-email-cleanup; hardened mail-guard.sh PreToolUse hook (ALLOWLIST the 5 wrapper binaries; DENY raw `himalaya message delete|move|send` + `himalaya folder expunge` + msmtp + rm-*Mail* + secret-tool); EXTENSION.md (<=60 lines slim standard); README.md (must mention every provided command); index-entries.json (load_when.task_types:[email]); context/project/email/ (harvested prefs + wrapper-contract + propose-review-confirm-execute pattern + recall-on-keep-bias). Keybind check: any email keybinds must NOT shadow the existing nvim Himalaya plugin <leader>me/mS/mf. SCOPE = AUTHOR + pass `bash .claude/scripts/check-extension-docs.sh` ONLY. Do NOT load via <leader>al (user loads manually into .dotfiles/.claude and ~/Mail/.claude afterward). Note: no code reuse from the retired ~/Mail harness (superseded); harvest DATA only.
 
