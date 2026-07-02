@@ -1,5 +1,5 @@
 ---
-next_project_number: 804
+next_project_number: 805
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 804
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,777,778,780,782,783,787,791,795,796,802,803 | -- | agent-system, literature, extensions, ... |
+| 1 | 78,87,772,777,778,780,782,783,787,791,795,796,802,803,804 | -- | agent-system, literature, extensions, ... |
 | 2 | 773,774,779,781,785 | 772,778,780 | agent-system |
 | 3 | 786 | 785 | agent-system |
 | 4 | 788 | 786,787 | agent-system |
@@ -39,6 +39,7 @@ next_project_number: 804
 791 [PR READY] — Fix the <leader>al 'Load Core' loader so WezTerm lifecycle tab co
 795 [NOT STARTED] — Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-
 796 [NOT STARTED] — Make topic assignment mandatory across ALL task-creation paths so
+804 [NOT STARTED] — Document the --fable model-selection flag alongside --haiku, --so
 
 ### Literature
 
@@ -57,6 +58,17 @@ next_project_number: 804
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
+
+### 804. Document the --fable model flag alongside --haiku/--sonnet/--opus across the agent system
+- **Effort**: 1-3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Document the --fable model-selection flag alongside --haiku, --sonnet, and --opus everywhere the other model flags appear in the agent system. The --fable flag (selecting the Fable 5 model family, claude-fable-5) is a supported model flag on /research, /plan, and /implement (and composes with effort flags --fast/--hard and --team, --lit, --clean), but it is currently undocumented while its siblings are listed. SCOPE: audit and update all documentation/reference sites that enumerate the model flags, including but not limited to: the CLAUDE.md Command Reference table flag column (/research, /plan, /implement usage strings currently show [--haiku|--sonnet|--opus]); the 'Model Enforcement' paragraph in the Skill-to-Agent Mapping section (describes 'model flags (--haiku, --sonnet, --opus) select the model family'); the composability notes under Hard Mode (e.g. '--hard works with model flags: --hard --opus'); the agent-frontmatter-standard doc (.claude/docs/reference/standards/agent-frontmatter-standard.md) which defines the tiered model policy and flag dimensions; the command markdown files under .claude/commands/ (research.md, plan.md, implement.md) and their argument-parsing/usage sections; any skill SKILL.md files or scripts (e.g. command-route-skill.sh or model-resolution logic) that parse/whitelist model flags; and any extension manifests or routing docs that reference the model-flag set. Also verify the flag is actually wired through the model-resolution code path (not just docs) and add it where the parser recognizes --haiku/--sonnet/--opus but not --fable. Goal: --fable is a first-class, documented model flag on par with --haiku/--sonnet/--opus across the entire agent system.
+
+---
 
 ### 803. Build email/ Claude Code extension (author + doc-lint, no load)
 - **Effort**: 4-6 hours

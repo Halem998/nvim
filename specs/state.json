@@ -1,7 +1,22 @@
 {
   "version": "1.1.0",
-  "next_project_number": 804,
+  "next_project_number": 805,
   "active_projects": [
+    {
+      "project_number": 804,
+      "project_name": "document_fable_model_flag",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Document the --fable model flag alongside --haiku/--sonnet/--opus across the agent system",
+      "description": "Document the --fable model-selection flag alongside --haiku, --sonnet, and --opus everywhere the other model flags appear in the agent system. The --fable flag (selecting the Fable 5 model family, claude-fable-5) is a supported model flag on /research, /plan, and /implement (and composes with effort flags --fast/--hard and --team, --lit, --clean), but it is currently undocumented while its siblings are listed. SCOPE: audit and update all documentation/reference sites that enumerate the model flags, including but not limited to: the CLAUDE.md Command Reference table flag column (/research, /plan, /implement usage strings currently show [--haiku|--sonnet|--opus]); the 'Model Enforcement' paragraph in the Skill-to-Agent Mapping section (describes 'model flags (--haiku, --sonnet, --opus) select the model family'); the composability notes under Hard Mode (e.g. '--hard works with model flags: --hard --opus'); the agent-frontmatter-standard doc (.claude/docs/reference/standards/agent-frontmatter-standard.md) which defines the tiered model policy and flag dimensions; the command markdown files under .claude/commands/ (research.md, plan.md, implement.md) and their argument-parsing/usage sections; any skill SKILL.md files or scripts (e.g. command-route-skill.sh or model-resolution logic) that parse/whitelist model flags; and any extension manifests or routing docs that reference the model-flag set. Also verify the flag is actually wired through the model-resolution code path (not just docs) and add it where the parser recognizes --haiku/--sonnet/--opus but not --fable. Goal: --fable is a first-class, documented model flag on par with --haiku/--sonnet/--opus across the entire agent system.",
+      "effort": "1-3 hours",
+      "parent_task": null,
+      "dependencies": [],
+      "artifacts": [],
+      "created": "2026-07-02T21:51:52Z",
+      "last_updated": "2026-07-02T21:51:52Z"
+    },
     {
       "project_number": 803,
       "project_name": "email_claude_code_extension",
