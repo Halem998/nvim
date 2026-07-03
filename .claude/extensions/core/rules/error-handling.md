@@ -123,7 +123,10 @@ Return structured error:
 ```
 1. Capture error output
 2. Log to errors.json
-3. Keep source unchanged
+3. Fix forward: correct the source to resolve the error. Never discard uncommitted changes
+   to reach a passing build - see .claude/context/contracts/recovery.md for the full recovery
+   ladder (fix forward -> strategic-sorry skeleton -> snapshot-then-rollback) and the "No
+   Destructive Git on Uncommitted Work" rule in git-workflow.md.
 4. Report error with context
 ```
 

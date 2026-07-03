@@ -244,19 +244,20 @@ orchestrator's responsibility per the Territory table.
 
 ---
 
-### Phase 5: Align error-handling.md Build Error Recovery with fix-forward language [NOT STARTED]
+### Phase 5: Align error-handling.md Build Error Recovery with fix-forward language [COMPLETED]
 
 - **Goal:** Replace the ambiguous "Keep source unchanged" line with explicit fix-forward +
   no-discard guidance and a cross-reference to recovery.md and git-workflow.md.
 - **Tasks:**
-  - [ ] In the "### Build Error Recovery" block (deployed lines ~82-87), replace step 3 "Keep
+  - [x] In the "### Build Error Recovery" block (deployed lines ~122-128), replace step 3 "Keep
     source unchanged" with: "Fix forward: correct the source to resolve the error. Never discard
     uncommitted changes to reach a passing build - see .claude/context/contracts/recovery.md for
     the full recovery ladder (fix forward -> strategic-sorry skeleton -> snapshot-then-rollback)
     and the 'No Destructive Git on Uncommitted Work' rule in git-workflow.md."
-  - [ ] Apply the identical edit to the core copy.
-  - [ ] Keep wording narrowly scoped (do not license large speculative changes); preserve the
-    original no-silent-patch intent.
+  - [x] Apply the identical edit to the core copy.
+  - [x] Keep wording narrowly scoped (do not license large speculative changes); preserve the
+    original no-silent-patch intent. *(kept the imperative "correct the source to resolve the
+    error" scoping, not a general license for broader changes)*
 - **Timing:** 0.25 hour
 - **Depends on:** 1
 
