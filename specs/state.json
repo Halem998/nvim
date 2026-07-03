@@ -560,10 +560,10 @@
     {
       "project_number": 782,
       "project_name": "formal_domain_goal_state_context_hygiene",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-06-24T22:56:34Z",
-      "last_updated": "2026-07-03T14:52:03Z",
+      "last_updated": "2026-07-03T15:22:23Z",
       "title": "Formal-domain context hygiene: minimize goal-state context for lean4 agents",
       "description": "[Formal-domain context hygiene] Reduce the context that lean4/formal-proof agents consume per step so enormous goal states do not overflow the window. MOTIVATING FAILURE: five dispatches on Lean tableau proofs overflowed because goal states are enormous and were repeatedly pulled into context. Scope (lean4 / formal domains -- applies to lean-*/cslib-* and formal hard agents and their context/contracts): (1) Goal-state query discipline: prefer TARGETED lean-lsp queries (lean_goal at a specific position, lean_minimal_hypotheses, lean_term_goal) over dumping full goal states; do NOT paste entire goal states into reasoning repeatedly; summarize the goal in a few lines and re-query precisely when needed. (2) File-read discipline: avoid re-reading whole large proof files; read only the region around the active proof; use lean_file_outline / targeted offset reads. (3) Hypothesis pruning: work from minimal hypotheses; avoid carrying large unused contexts forward. (4) Encode these as a formal-domain CONTEXT CONTRACT (an extension context file analogous to the lean4 override of anti-analysis.md) consumed by the lean/formal research + implementation hard agents. (5) Combine with checkpoint-before-overflow (task 781): hygiene lowers the baseline context; checkpointing handles the residual. SCOPE NOTE: this is domain-specific. If the lean/cslib extension lives in a separate repo, author the contract here and FLAG it for sync to that extension (do not assume the shared repo is the only consumer). Pairs with task 781. Goal: a single large goal state is handled by targeted querying and summarization rather than overflowing the agent's context.",
       "effort": "2-4 hours",

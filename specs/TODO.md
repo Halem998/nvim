@@ -11,7 +11,7 @@ next_project_number: 806
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,774,779,781,782,785,787,791,795,796,802,804 | -- | agent-system, literature, email integration, ... |
+| 1 | 78,87,774,779,781,785,787,791,795,796,802,804 | -- | agent-system, literature, email integration, ... |
 | 2 | 772,786 | 774,785 | agent-system |
 | 3 | 773,788 | 772,786,787 | agent-system |
 
@@ -24,7 +24,6 @@ next_project_number: 806
     └─ 773 [NOT STARTED] — The anti-analysis contract (H2, .claude/context/contracts/anti-an
 779 [NOT STARTED] — [--hard recovery discipline] Define an unambiguous recovery contr
 781 [NOT STARTED] — [Context-overflow safety] Dispatched agents must detect context p
-782 [PLANNED] — [Formal-domain context hygiene] Reduce the context that lean4/for
 785 [NOT STARTED] — Replace the repo-wide `git add -A` in the task commit pipeline wi
   └─ 786 [NOT STARTED] — Sweep the 40+ remaining `git add -A` references across the agent 
     └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree
@@ -292,7 +291,7 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 
 ### 782. Formal-domain context hygiene: minimize goal-state context for lean4 agents
 - **Effort**: 2-4 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
