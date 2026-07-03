@@ -201,22 +201,22 @@ unless a fresh snapshot marker (per Phase 1 contract) exists.
 
 ---
 
-### Phase 3: Extend git-workflow.md rule [NOT STARTED]
+### Phase 3: Extend git-workflow.md rule [COMPLETED]
 
 **Goal**: Add the "no destructive git on uncommitted work" section to the `git-workflow.md` rule
 (deployed copy), replacing/extending the current blanket `git reset --hard` prohibition.
 
 **Tasks**:
-- [ ] In `.claude/rules/git-workflow.md`, add a section that:
-  - [ ] Lists the forbidden destructive commands (`git reset --hard`, `git checkout -- <path>`,
+- [x] In `.claude/rules/git-workflow.md`, add a section that:
+  - [x] Lists the forbidden destructive commands (`git reset --hard`, `git checkout -- <path>`,
         `git restore <path>`, `git clean -fd`, `git stash drop/clear`, forced `checkout`/`switch`).
-  - [ ] States the exemption: allowed only when the tree is clean OR a snapshot was just taken
+  - [x] States the exemption: allowed only when the tree is clean OR a snapshot was just taken
         (WIP commit on scratch branch, `.patch` under `specs/{NNN}_{SLUG}/`, or `git stash` without drop).
-  - [ ] Names `git-snapshot.sh` as the sanctioned way to take the snapshot.
-  - [ ] Cross-references that this is enforced by the `guard-destructive-git.sh` PreToolUse hook.
-  - [ ] Reconciles with the existing blanket `Never Run: git reset --hard` line (replace it with the
+  - [x] Names `git-snapshot.sh` as the sanctioned way to take the snapshot.
+  - [x] Cross-references that this is enforced by the `guard-destructive-git.sh` PreToolUse hook.
+  - [x] Reconciles with the existing blanket `Never Run: git reset --hard` line (replace it with the
         nuanced clean-or-snapshotted rule).
-  - [ ] Notes the `/todo` / `git-safety.md` safety-commit exemption so it is not read as contradictory.
+  - [x] Notes the `/todo` / `git-safety.md` safety-commit exemption so it is not read as contradictory.
 
 **Timing**: ~0.75 hours
 

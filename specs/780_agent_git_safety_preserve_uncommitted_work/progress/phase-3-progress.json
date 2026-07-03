@@ -1,0 +1,13 @@
+{
+  "phase": 3,
+  "phase_name": "Extend git-workflow.md rule",
+  "started_at": "2026-07-03T00:45:00Z",
+  "last_updated": "2026-07-03T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add 'No Destructive Git on Uncommitted Work' section listing forbidden commands, exemptions, git-snapshot.sh, hook cross-reference, and /todo exemption note; replace blanket 'Never Run: git reset --hard' bullet", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

@@ -76,9 +76,47 @@ Modified:
 
 ### Never Run
 - `git push --force` to main/master
-- `git reset --hard` without explicit user request
+- `git reset --hard` on uncommitted work without a snapshot first — see
+  "No Destructive Git on Uncommitted Work" below for the full rule and exemptions
 - `git rebase -i` (interactive mode not supported)
 - Any destructive operations without user confirmation
+
+### No Destructive Git on Uncommitted Work
+
+Agents MUST NOT run git operations that discard working-tree changes while
+uncommitted changes exist, unless a snapshot was just taken. This is enforced by
+the `guard-destructive-git.sh` PreToolUse Bash hook (registered in `settings.json`),
+which blocks the commands below via `exit 2` + stderr guidance when the tree is
+dirty and no fresh snapshot exists.
+
+**Forbidden on a dirty tree** (discards uncommitted changes):
+- `git reset --hard`
+- `git checkout -- <path>` (pathspec discard form)
+- `git restore <path>` (without `--staged`; `--staged` only unstages and is safe)
+- `git clean -fd` (or any flag ordering/clustering that combines `-f` and `-d`)
+- `git stash drop` / `git stash clear`
+- Forced `git checkout` / `git switch` (`-f` / `--force`) — can silently overwrite
+  local changes when switching branches
+
+**Exemption — allowed when EITHER**:
+1. The working tree is already clean (`git status --porcelain` is empty) — there is
+   nothing to lose, so the hook exits 0 immediately. This is also how the sanctioned
+   `/todo` safety-commit rollback flow (see `.claude/context/standards/git-safety.md`)
+   stays exempt: the safety commit makes the tree clean *before* the
+   `git reset --hard {sha}` / `git clean -fd` rollback runs, so it is never blocked.
+2. A snapshot was just taken via `bash .claude/scripts/git-snapshot.sh` (the
+   sanctioned way to snapshot). The helper writes a durable `.patch` under
+   `specs/{NNN}_{SLUG}/` plus a belt-and-suspenders `git stash` (default mode) or a
+   WIP commit on a scratch branch (`--branch` mode), then refreshes a short-lived,
+   single-use freshness marker that the hook consumes on the next matching
+   destructive command.
+
+Before any intentional rollback that would otherwise be blocked, run
+`bash .claude/scripts/git-snapshot.sh` first, then retry the destructive command.
+
+**Not blocked** (do not discard uncommitted changes): `git stash` (push),
+`git stash pop` / `git stash apply`, `git restore --staged <path>`, and non-forced
+`git checkout` / `git switch` between branches.
 
 ### Always Check Before Commit
 - `git status` to verify staged files
