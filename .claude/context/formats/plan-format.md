@@ -28,6 +28,15 @@
 
 Plans may include a `plan_metadata` object in state.json with fields: `phases` (int), `total_effort_hours` (int), `complexity` (simple/medium/complex), `research_integrated` (bool), `plan_version` (int), `dependency_waves` (array of phase-number arrays for parallel execution groups), and `reports_integrated` (array of `{path, integrated_in_plan_version, integrated_date}` objects). Plans without `reports_integrated` use empty array default.
 
+**Hard-mode skeleton fields** (`--hard` plans only, optional otherwise): `skeleton` (bool, default
+`false`) — `true` when this plan's critical path ends in one or more planned strategic-sorry
+division points instead of covering full scope with more/larger phases; `follow_up_tasks` (array
+of int, default `[]`) — the real, allocated (plain-integer, never dotted) task numbers of the
+follow-up tasks created to discharge those division points. Both fields are populated by
+`skill-planner-hard` postflight after `{{FOLLOWUP:i}}` placeholder-token substitution (see
+`planner-hard-agent.md` Stage 4a); the field name `skeleton` reuses `wrap-up.md`'s implement-time
+`skeleton` boolean verbatim so plan-time intent and implement-time outcome are diffable.
+
 ```json
 {
   "phases": 5,
@@ -42,7 +51,9 @@ Plans may include a `plan_metadata` object in state.json with fields: `phases` (
       "integrated_in_plan_version": 1,
       "integrated_date": "2026-01-05"
     }
-  ]
+  ],
+  "skeleton": false,
+  "follow_up_tasks": []
 }
 ```
 
@@ -51,9 +62,10 @@ Plans may include a `plan_metadata` object in state.json with fields: `phases` (
 2. **Goals & Non-Goals** – bullets.
 3. **Risks & Mitigations** – bullets.
 4. **Implementation Phases** – under `## Implementation Phases`, preceded by a **Dependency Analysis** wave table (see below), with each phase at level `###` and including a status marker at the end of the heading.
-5. **Testing & Validation** – bullets/tests to run.
-6. **Artifacts & Outputs** – enumerate expected outputs with paths.
-7. **Rollback/Contingency** – brief plan if changes must be reverted.
+5. **Planned Strategic Sorries** (hard-mode skeleton plans only) – under `## Planned Strategic Sorries`, present only when `plan_metadata.skeleton: true`; see below.
+6. **Testing & Validation** – bullets/tests to run.
+7. **Artifacts & Outputs** – enumerate expected outputs with paths.
+8. **Rollback/Contingency** – brief plan if changes must be reverted.
 
 ## Implementation Phases (format)
 - Heading: `### Phase N: {name} [STATUS]`
@@ -79,6 +91,40 @@ Place a **Dependency Analysis** wave table immediately after `## Implementation 
 
 Phases within the same wave can execute in parallel.
 ```
+
+## Planned Strategic Sorries (format, hard-mode skeleton plans only)
+
+Present only when `plan_metadata.skeleton: true` (see Plan Metadata Schema above). Placed
+immediately after `## Implementation Phases`. Its columns map field-for-field to the `wrap-up.md`
+`sorry_inventory` schema `{file, line, statement, strategic, assumption, why_deferred,
+follow_up_task}` — reuse these field names verbatim; do not redefine, rename, or invent a
+parallel schema. `strategic` is not a column because every row in this table is, by definition,
+a planned strategic-sorry division point (`strategic: true` is implicit for the whole table).
+
+```
+## Planned Strategic Sorries
+
+| Division Point | File / Line / Statement | Assumption | Why Deferred | Follow-Up Task |
+|-----------------|--------------------------|------------|---------------|----------------|
+| {short label}   | TBD (plan-time provisional; confirmed by implementer) | {assumption} | {why_deferred} | {{FOLLOWUP:i}} |
+```
+
+- **Division Point**: short label identifying the division point (not a `sorry_inventory` field
+  itself; provided for readability/cross-reference from phase text).
+- **File / Line / Statement**: plan-time provisional, collapsed into one cell — write `TBD` (or a
+  best-guess target file) until the implementer places the actual sorry and fills in `file`/
+  `line`/`statement` in the implement-time `sorry_inventory`.
+- **Assumption**: maps to `sorry_inventory.assumption` — fixed at plan time.
+- **Why Deferred**: maps to `sorry_inventory.why_deferred` — fixed at plan time.
+- **Follow-Up Task**: maps to `sorry_inventory.follow_up_task` — a plain-integer task-number
+  string once resolved (never dotted, e.g. never `"774.2"`); written as the literal placeholder
+  token `{{FOLLOWUP:i}}` by the planning agent and substituted by `skill-planner-hard` postflight
+  with the real allocated task number.
+
+**Deviation flag**: An implementer-placed strategic sorry that does NOT correspond to a row on
+this table is a plan-unanticipated deviation. It is evaluated under a weaker claim on the
+`anti-analysis.md` 5-condition strategic-sorry test's condition 1 (not pre-declared) and MUST be
+flagged in the implementation summary, not silently accepted as equivalent to a planned one.
 
 ## Status Marker Requirements
 - Use markers exactly as defined in status-markers.md.

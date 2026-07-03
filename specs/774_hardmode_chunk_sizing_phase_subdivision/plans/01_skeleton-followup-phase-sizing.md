@@ -241,22 +241,25 @@ dependency being the escape-valve trigger introduced in Phase 1.
 
 ---
 
-### Phase 3: Add plan-time strategic-sorry schema to plan-format.md [NOT STARTED]
+### Phase 3: Add plan-time strategic-sorry schema to plan-format.md [COMPLETED]
 
 - **Goal:** Add the plan-time schema that reuses 778's field names, so plan-time pre-declaration
   is diffable against the implement-time `sorry_inventory`.
 - **Tasks:**
-  - [ ] Extend the `plan_metadata` schema section (plan-format.md:27-47) with `skeleton` (bool)
+  - [x] Extend the `plan_metadata` schema section (plan-format.md:27-47) with `skeleton` (bool)
         and `follow_up_tasks` (array of int), reusing the `skeleton` name from wrap-up.md.
-  - [ ] Add a new conditional plan section `## Planned Strategic Sorries` (present only when
+        *(completed)*
+  - [x] Add a new conditional plan section `## Planned Strategic Sorries` (present only when
         `skeleton: true`) with a table whose columns map field-for-field to the `sorry_inventory`
         schema: Division Point, Component (file/target — "TBD" if not yet created), Assumption,
         Why Deferred, Follow-Up Task. Note that `file`/`line`/`statement` are plan-time provisional
         ("to be confirmed by implementer") while `strategic: true` and `follow_up_task` are fixed.
-  - [ ] Note that an implementer-placed strategic sorry NOT on this table is a plan-unanticipated
+        *(completed: "Component" implemented as a "File / Line / Statement" collapsed cell)*
+  - [x] Note that an implementer-placed strategic sorry NOT on this table is a plan-unanticipated
         deviation (weaker claim under 5-condition test condition 1) and must be flagged, not
-        silently accepted.
-  - [ ] Apply identical edits to `.claude/extensions/core/context/formats/plan-format.md`.
+        silently accepted. *(completed)*
+  - [x] Apply identical edits to `.claude/extensions/core/context/formats/plan-format.md`.
+        *(completed: verified via diff)*
 - **Timing:** ~0.5 hours
 - **Depends on:** none
 - **Files to modify:**
@@ -318,28 +321,29 @@ dependency being the escape-valve trigger introduced in Phase 1.
 
 ---
 
-### Phase 5: Fix skill-implementer-hard Stage 3b defects [NOT STARTED]
+### Phase 5: Fix skill-implementer-hard Stage 3b defects [COMPLETED]
 
 - **Goal:** Fix the un-scoped handoff path and replace integer-increment phase selection so the
   smaller / sub-phase / skeleton plans drive task 772's per-phase dispatch correctly.
 - **Tasks:**
-  - [ ] Fix the handoff path in Stage 3b (`skill-implementer-hard/SKILL.md:129`) from
+  - [x] Fix the handoff path in Stage 3b (`skill-implementer-hard/SKILL.md:129`) from
         `specs/.orchestrator-handoff.json` to `${TASK_DIR}/.orchestrator-handoff.json`, aligning
-        with `skill-orchestrate-hard/SKILL.md:131`.
-  - [ ] Replace `next_phase=$((phases_completed + 1))` with a scan of the plan file's phase
+        with `skill-orchestrate-hard/SKILL.md:131`. *(completed)*
+  - [x] Replace `next_phase=$((phases_completed + 1))` with a scan of the plan file's phase
         headings for the first `[NOT STARTED]`/`[PARTIAL]`/`[IN PROGRESS]` marker (mirroring the
         base agent's Stage 3 "Find Resume Point" pattern), so N.1/N.2 sub-phase headings and
-        sparse numbering (`1, 2, 2.1, 2.2, 3`) are addressable.
-  - [ ] Add skeleton-exhaustion detection: when no incomplete phase is found AND the prior
+        sparse numbering (`1, 2, 2.1, 2.2, 3`) are addressable. *(completed)*
+  - [x] Add skeleton-exhaustion detection: when no incomplete phase is found AND the prior
         dispatch outcome was `skeleton == true`, emit an explicit
         `[hard-mode] Skeleton plan exhausted — N follow-up tasks pending: {list}` notice rather
         than looping on a nonexistent phase or silently no-op'ing. (Routing to follow-up tasks
         remains skill-orchestrate-hard's job — task 772 — out of scope here; Stage 3b only makes
-        the condition legible.)
-  - [ ] Mirror edits to `.claude/extensions/core/skills/skill-implementer-hard/SKILL.md`,
-        preserving the pre-existing literature-script-name drift.
-  - [ ] NOTE for implementation sequencing: task 779 also edits this file — serialize 774 and 779
-        on `skill-implementer-hard/SKILL.md` (do not edit concurrently).
+        the condition legible.) *(completed)*
+  - [x] Mirror edits to `.claude/extensions/core/skills/skill-implementer-hard/SKILL.md`,
+        preserving the pre-existing literature-script-name drift. *(completed: verified via diff)*
+  - [x] NOTE for implementation sequencing: task 779 also edits this file — serialize 774 and 779
+        on `skill-implementer-hard/SKILL.md` (do not edit concurrently). *(completed: no conflict
+        observed at time of this dispatch)*
 - **Timing:** ~0.5 hours
 - **Depends on:** none
 - **Files to modify:**

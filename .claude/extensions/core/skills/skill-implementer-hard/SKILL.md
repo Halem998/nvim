@@ -125,15 +125,41 @@ dispatching the whole plan:
 
 ```bash
 if [ "$orchestrator_mode" = "true" ]; then
-  # Read handoff JSON to find next incomplete phase
-  handoff_file="specs/.orchestrator-handoff.json"
-  if [ -f "$handoff_file" ]; then
-    phases_completed=$(jq -r '.phases_completed // 0' "$handoff_file")
-    next_phase=$((phases_completed + 1))
-    echo "[hard-mode] Per-phase dispatch: targeting phase ${next_phase}" >&2
+  task_dir="specs/${padded_num}_${project_name}"
+  # Fixed: was the un-scoped "specs/.orchestrator-handoff.json" (collided across tasks and
+  # didn't match skill-orchestrate-hard's own TASK_DIR-scoped path). Now scoped per task,
+  # matching skill-orchestrate-hard/SKILL.md:131 (`${TASK_DIR}/.orchestrator-handoff.json`).
+  handoff_file="${task_dir}/.orchestrator-handoff.json"
+  plan_path=$(ls -1 "${task_dir}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+
+  # Fixed: integer-increment phase selection (`next_phase=$((phases_completed + 1))`) could not
+  # address N.1/N.2 sub-phase headings or sparse numbering (1, 2, 2.1, 2.2, 3), and had no
+  # skeleton-exhaustion signal. Replaced with a heading-scan of the plan file itself, mirroring
+  # the base agent's Stage 3 "Find Resume Point" pattern. This is a strict superset: dense
+  # integer plans (1, 2, 3, ...) resolve identically to the old increment behavior.
+  next_phase=""
+  if [ -n "$plan_path" ] && [ -f "$plan_path" ]; then
+    # Scan phase headings top-to-bottom; first NOT STARTED / PARTIAL / IN PROGRESS wins.
+    # Heading form: "### Phase {N or N.1}: {name} [STATUS]"
+    next_phase=$(grep -E '^### Phase [0-9]+(\.[0-9]+)?: .*\[(NOT STARTED|PARTIAL|IN PROGRESS)\]' "$plan_path" \
+      | head -1 \
+      | sed -E 's/^### Phase ([0-9]+(\.[0-9]+)?):.*/\1/')
+  fi
+
+  if [ -n "$next_phase" ]; then
+    echo "[hard-mode] Per-phase dispatch: targeting phase ${next_phase} (heading-scan)" >&2
+  elif [ -f "$handoff_file" ] && [ "$(jq -r '.skeleton // false' "$handoff_file" 2>/dev/null)" = "true" ]; then
+    # Skeleton-exhaustion detection: no incomplete phase heading remains AND the prior dispatch
+    # outcome declared skeleton=true. Make the condition legible rather than looping on a
+    # nonexistent phase or silently no-op'ing. Routing to the follow-up tasks themselves remains
+    # skill-orchestrate-hard's job (task 772) -- out of scope here.
+    follow_up_tasks=$(jq -r '.follow_up_tasks // [] | join(", ")' "$handoff_file" 2>/dev/null)
+    follow_up_count=$(jq -r '.follow_up_tasks // [] | length' "$handoff_file" 2>/dev/null)
+    echo "[hard-mode] Skeleton plan exhausted -- ${follow_up_count} follow-up tasks pending: {${follow_up_tasks}}" >&2
+    next_phase=""
   else
     next_phase=1
-    echo "[hard-mode] No handoff found, dispatching phase 1" >&2
+    echo "[hard-mode] No incomplete phase heading found and no handoff, dispatching phase 1" >&2
   fi
   # phase_number will be passed in delegation context
 fi
