@@ -288,26 +288,36 @@ change survives a future sync/regen. This is the phase that prevents repeating t
 
 ---
 
-### Phase 5: Verification & scenario testing [NOT STARTED]
+### Phase 5: Verification & scenario testing [COMPLETED]
 
 **Goal**: Prove the end-to-end behavior and confirm no regression to sanctioned rollback flows.
 
 **Tasks**:
-- [ ] **Blocks dirty-tree reset**: on a scratch dirty tree, pipe
+- [x] **Blocks dirty-tree reset**: on a scratch dirty tree, pipe
       `{"tool_name":"Bash","tool_input":{"command":"git reset --hard"}}` to the hook; assert exit 2
-      + stderr message.
-- [ ] **Allows post-snapshot**: run `git-snapshot.sh`, then pipe the same input; assert exit 0 and
-      that the marker was consumed (deleted).
-- [ ] **Allows clean tree**: on a clean tree, pipe the same input; assert exit 0.
-- [ ] **Does not over-block**: pipe `git stash`, `git stash pop`, `git restore --staged`, and a
+      + stderr message. *(completed: PASS in disposable /tmp repo)*
+- [x] **Allows post-snapshot**: run `git-snapshot.sh`, then pipe the same input; assert exit 0 and
+      that the marker was consumed (deleted). *(completed: PASS — marker file confirmed deleted)*
+- [x] **Allows clean tree**: on a clean tree, pipe the same input; assert exit 0. *(completed: PASS)*
+- [x] **Does not over-block**: pipe `git stash`, `git stash pop`, `git restore --staged`, and a
       benign command containing "reset --hard" inside a quoted commit message; assert exit 0 for all.
-- [ ] **/todo flow intact**: simulate the `git-safety.md` pattern (safety commit -> tree clean ->
+      *(completed: PASS for all 4 cases, plus additionally verified git checkout -b (no force),
+      git clean -n (dry-run) allowed)*
+- [x] **/todo flow intact**: simulate the `git-safety.md` pattern (safety commit -> tree clean ->
       `git reset --hard {sha}` + `git clean -fd`); assert the hook allows it (clean-tree exemption).
-- [ ] **Dual-copy integrity**: run all Phase 4 `diff`/`jq` checks; assert every pair matches and
-      both manifest lists contain the new entries.
-- [ ] **Registration sanity**: confirm the hook is invoked by Claude Code for a Bash call (or, if
+      *(completed: PASS for both commands)*
+- [x] **Dual-copy integrity**: run all Phase 4 `diff`/`jq` checks; assert every pair matches and
+      both manifest lists contain the new entries. *(completed: all diffs empty, both jq index
+      checks non-null, both settings.json copies confirmed via jq)*
+- [x] **Registration sanity**: confirm the hook is invoked by Claude Code for a Bash call (or, if
       not testable in-session, confirm the settings.json entry matches the working
-      `block-pr-submission.sh`-style registration shape).
+      `block-pr-submission.sh`-style registration shape). *(completed via LIVE confirmation, not
+      just structural: mid-implementation, a Bash tool call in this very session containing a
+      multi-line script with a literal "git clean -qfd" line was intercepted and BLOCKED by the
+      now-registered guard-destructive-git.sh hook, since this repo's real working tree is
+      genuinely dirty with uncommitted work from other parallel agents. This is definitive proof
+      the hook is wired into the live settings.json and enforced by Claude Code, not just
+      structurally present.)*
 
 **Timing**: ~1 hour
 
@@ -324,18 +334,18 @@ change survives a future sync/regen. This is the phase that prevents repeating t
 
 ## Testing & Validation
 
-- [ ] Hook blocks dirty-tree `git reset --hard` (exit 2 + stderr).
-- [ ] Hook allows the same command immediately after `git-snapshot.sh` (marker consumed).
-- [ ] Hook allows the same command on a clean tree.
-- [ ] Hook does NOT block `git stash` (push), `git stash pop/apply`, `git restore --staged`, or
+- [x] Hook blocks dirty-tree `git reset --hard` (exit 2 + stderr).
+- [x] Hook allows the same command immediately after `git-snapshot.sh` (marker consumed).
+- [x] Hook allows the same command on a clean tree.
+- [x] Hook does NOT block `git stash` (push), `git stash pop/apply`, `git restore --staged`, or
       benign quoted substrings.
-- [ ] `/todo`-style safety-commit + `git reset --hard`/`git clean -fd` flow still works.
-- [ ] Non-Bash / empty command input never blocks (exit 0).
-- [ ] `git-snapshot.sh` writes a recoverable `.patch` under the task dir and a fresh marker.
-- [ ] Both deployed and extension-source copies of hook, helper, and rule are byte-identical.
-- [ ] `manifest.json` `provides.hooks` and `provides.scripts` include the new scripts.
-- [ ] Both `settings.json` copies register the Bash PreToolUse hook.
-- [ ] `.gitignore` ignores `**/.git-snapshot-marker`.
+- [x] `/todo`-style safety-commit + `git reset --hard`/`git clean -fd` flow still works.
+- [x] Non-Bash / empty command input never blocks (exit 0).
+- [x] `git-snapshot.sh` writes a recoverable `.patch` under the task dir and a fresh marker.
+- [x] Both deployed and extension-source copies of hook, helper, and rule are byte-identical.
+- [x] `manifest.json` `provides.hooks` and `provides.scripts` include the new scripts.
+- [x] Both `settings.json` copies register the Bash PreToolUse hook.
+- [x] `.gitignore` ignores `**/.git-snapshot-marker`.
 
 ## Artifacts & Outputs
 
