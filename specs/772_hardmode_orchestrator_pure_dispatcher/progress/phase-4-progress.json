@@ -1,0 +1,24 @@
+{
+  "phase": 4,
+  "phase_name": "Skeleton-aware phase selection + exhaustion routing (Item 5 Part A)",
+  "started_at": "2026-07-03T16:20:00Z",
+  "last_updated": "2026-07-03T16:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace integer-increment next_phase with heading-scan", "status": "done"},
+    {"id": 2, "description": "Add skeleton-exhaustion branch deriving from sorry_inventory[].follow_up_task, routing to pr_ready", "status": "done"},
+    {"id": 3, "description": "Non-skeleton no-heading fallback defers to Stage 5 gate", "status": "done"},
+    {"id": 4, "description": "Confirm build_hard_mode_prompt_context() untouched (779 reserved)", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "4.2",
+      "description": "Route skeleton-exhaustion to pr_ready with a note",
+      "type": "altered",
+      "reason": "Used the centralized .claude/scripts/update-task-status.sh postflight ... pr_ready helper instead of a raw jq write to state.json, per state-management.md's rule that agents must not hand-roll state.json writes when a centralized script exists. The follow-up task enumeration is logged via echo (visible in the run transcript) rather than persisted as a new unschematized state.json field.",
+      "annotation": "*(deviation: altered — routes via update-task-status.sh, not a raw jq write)*"
+    }
+  ],
+  "handoff_count": 0
+}

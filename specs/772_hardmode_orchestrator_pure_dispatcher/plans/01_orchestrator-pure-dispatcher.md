@@ -132,22 +132,33 @@ verifies. Within Phases 1-5, edit only the deployed copy
 
 ---
 
-### Phase 1: Frontmatter tool restriction (Items 1, 2, 4 structural) [NOT STARTED]
+### Phase 1: Frontmatter tool restriction (Items 1, 2, 4 structural) [COMPLETED]
 
 **Goal**: Rewrite the single `allowed-tools:` line (line 4) to remove `Edit`, scope `Bash` to the
 12 orchestration commands actually used, and scope `Read` to the four allowed path categories;
 then smoke-test that the multi-pattern syntax enforces as expected.
 
 **Tasks**:
-- [ ] Replace line 4 `allowed-tools: Agent, Bash, Read, Edit` with a scoped form, e.g.:
+- [x] Replace line 4 `allowed-tools: Agent, Bash, Read, Edit` with a scoped form, e.g.:
       `allowed-tools: Agent, Bash(jq:*), Bash(mkdir:*), Bash(mv:*), Bash(rm:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(grep:*), Bash(cat:*), Bash(date:*), Bash(echo:*), Bash(source:*), Read(specs/**), Read(.claude/context/contracts/*), Read(.claude/docs/architecture/*)`
-- [ ] Smoke-test the multi-pattern syntax: confirm an allowed command (`jq`) and an allowed Read
+      *(deviation: altered — see next item; landed as documented prose-fallback)*
+- [x] Smoke-test the multi-pattern syntax: confirm an allowed command (`jq`) and an allowed Read
       (a `specs/**` path) succeed, and a disallowed command (`lake`/`lean`) and a disallowed Read
       (a `lua/**` source path) are denied. If multi-pattern-per-line does NOT enforce, fall back to
       `Agent, Bash, Read` on line 4 and rely on the Phase 2 prose forbid-list as the sole gate,
-      recording the finding in the summary.
-- [ ] Confirm `Edit` is absent and referenced nowhere else in the body (only mention is the
-      dispatched agent's contract at line 312, which stays).
+      recording the finding in the summary. *(completed: no in-repo precedent found for
+      multi-pattern-per-line `Bash(cmd:*), Bash(cmd2:*)...` or `Read(path/*)` scoping in any
+      skill's `allowed-tools:` frontmatter — grepped all `.claude/skills/*/SKILL.md`,
+      `docs/guides/creating-skills.md`, `docs/guides/creating-commands.md`; only single-pattern
+      precedent exists (`skill-git-workflow: Bash(git:*)`). settings.json's `permissions.allow`
+      array is a different mechanism (JSON list, not frontmatter). No sandboxed harness is
+      available to this agent to runtime-verify Claude Code's frontmatter tool-scope enforcement
+      independent of a live invocation. Per the plan's own risk mitigation, took the documented
+      fallback: `allowed-tools: Agent, Bash, Read` (Edit removed), relying on the Phase 2 prose
+      forbid-list as the sole behavioral gate.)*
+- [x] Confirm `Edit` is absent and referenced nowhere else in the body (only mention is the
+      dispatched agent's contract at line 312, which stays). *(completed: grep confirms zero
+      remaining "Edit" references anywhere in the file)*
 
 **Timing**: 30 minutes
 
@@ -162,7 +173,7 @@ then smoke-test that the multi-pattern syntax enforces as expected.
 
 ---
 
-### Phase 2: Tool Constraints prose section (Items 2, 4 documented) [NOT STARTED]
+### Phase 2: Tool Constraints prose section (Items 2, 4 documented) [COMPLETED]
 
 **Goal**: Add a single delimited `## Tool Constraints (Pure Dispatcher)` section after the
 hard-mode additions bullets (after line 21, before `## Context References`) documenting the
@@ -170,7 +181,7 @@ Bash forbid-list and the four-category Read allowlist in prose — the human/aud
 statement of intent that backs the frontmatter scoping.
 
 **Tasks**:
-- [ ] Insert a new `## Tool Constraints (Pure Dispatcher)` section containing:
+- [x] Insert a new `## Tool Constraints (Pure Dispatcher)` section containing:
   - **Permitted Bash**: orchestration-only — `jq` state/handoff reads, file bookkeeping
     (`mkdir/mv/rm/ls`), `sort/tail/grep/cat/date/echo`, `source .claude/scripts/*.sh` helpers.
   - **Forbidden Bash Operations**: `lake build`, `lean`/`lean-lsp`/`mcp__lean-lsp__*`,
@@ -183,8 +194,10 @@ statement of intent that backs the frontmatter scoping.
     `.claude/docs/architecture/*.md`.
   - **Forbidden Reads**: implementation source (`lua/**`, `after/**`, or any per-project source
     root an `IMPLEMENT_AGENT` would modify).
-- [ ] Note this section is a standalone block that 773's Context-References additions must compose
-      around, not overwrite.
+  *(completed: inserted as a delimited `<!-- BEGIN/END 772 ... -->` block after the hard-mode
+  additions bullets and before `## Context References`)*
+- [x] Note this section is a standalone block that 773's Context-References additions must compose
+      around, not overwrite. *(completed: HTML comment delimiters mark the block boundaries)*
 
 **Timing**: 30 minutes
 
@@ -199,24 +212,29 @@ statement of intent that backs the frontmatter scoping.
 
 ---
 
-### Phase 3: Disable Parallel Wave Dispatch (Item 3) [NOT STARTED]
+### Phase 3: Disable Parallel Wave Dispatch (Item 3) [COMPLETED]
 
 **Goal**: Remove the ambiguity between blocking single-phase dispatch and parallel-wave dispatch
 by disabling the H7 parallel section so exactly one `Agent` call per cycle is the only path.
 
 **Tasks**:
-- [ ] Remove (or replace with a short "Disabled" note) the
+- [x] Remove (or replace with a short "Disabled" note) the
       `#### State: `planned` or `implementing` — Parallel Wave Dispatch (optional H7)` section and
       its code block (lines 323-344) plus the "Territory building" note (346-347). If replacing
       with a note, state: parallel-wave dispatch is disabled; the orchestrator dispatches exactly
       one phase per cycle and blocks on its return (see the Per-Phase Dispatch handler above).
-- [ ] Update the Key Differences table row (line 541): change
+      *(completed: replaced the entire heading + code block + territory-building note with a
+      single delimited "Parallel Wave Dispatch: DISABLED" prose paragraph, no longer a `####`
+      heading, so exactly one `#### State: \`planned\` or \`implementing\`` handler remains)*
+- [x] Update the Key Differences table row (line 541): change
       `Parallel dispatch | None | Wave-based with territory (H7)` to reflect
-      `Parallel dispatch | None | Disabled — single blocking phase per cycle`.
-- [ ] Update the H7 overview bullet (line 20) to describe territory contracts as informing
+      `Parallel dispatch | None | Disabled — single blocking phase per cycle`. *(completed)*
+- [x] Update the H7 overview bullet (line 20) to describe territory contracts as informing
       single-phase dispatch context, not parallel waves (or remove the parallel claim).
-- [ ] Confirm the Per-Phase Dispatch handler (267-321) remains the sole implement-dispatch path
-      and is unambiguously one blocking `Agent` call per cycle.
+      *(completed)*
+- [x] Confirm the Per-Phase Dispatch handler (267-321) remains the sole implement-dispatch path
+      and is unambiguously one blocking `Agent` call per cycle. *(completed: verified via grep —
+      only one `#### State: \`planned\` or \`implementing\`` heading in the file)*
 
 **Timing**: 30 minutes
 
@@ -232,7 +250,7 @@ by disabling the H7 parallel section so exactly one `Agent` call per cycle is th
 
 ---
 
-### Phase 4: Skeleton-aware phase selection + exhaustion routing (Item 5 Part A) [NOT STARTED]
+### Phase 4: Skeleton-aware phase selection + exhaustion routing (Item 5 Part A) [COMPLETED]
 
 **Goal**: Replace the naive `next_phase=$((phases_completed + 1))` at line 283 with the
 heading-scan phase selection mirroring 774's `skill-implementer-hard` fix, and add
@@ -240,21 +258,24 @@ skeleton-exhaustion routing that terminates cleanly (enumerating pending follow-
 of looping on a nonexistent phase until `MAX_CYCLES`.
 
 **Tasks**:
-- [ ] Replace line 283 with a heading-scan that finds the first incomplete phase heading, e.g.:
+- [x] Replace line 283 with a heading-scan that finds the first incomplete phase heading, e.g.:
       `next_phase=$(grep -E '^### Phase [0-9]+(\.[0-9]+)?: .*\[(NOT STARTED|PARTIAL|IN PROGRESS)\]' "$plan_path" | head -1 | sed -E 's/^### Phase ([0-9]+(\.[0-9]+)?):.*/\1/')`
       (mirrors `skill-implementer-hard/SKILL.md:122-165`; handles dotted sub-phases and sparse
-      numbering).
-- [ ] Add a skeleton-exhaustion branch: when no incomplete phase heading remains AND the last
+      numbering). *(completed)*
+- [x] Add a skeleton-exhaustion branch: when no incomplete phase heading remains AND the last
       handoff had `skeleton == true`, derive the follow-up task list by mapping/dedup'ing
       `sorry_inventory[].follow_up_task` from the handoff (NOT the unpopulated top-level
       `.follow_up_tasks`), then transition the task to `pr_ready` with a note enumerating the
       pending follow-up tasks, e.g.:
       `follow_up_tasks=$(jq -r '[.sorry_inventory[]?.follow_up_task | select(. != null)] | unique | join(", ")' "$handoff_file")`
       then log `[hard-orchestrate] Skeleton plan exhausted — follow-up tasks pending: {...}` and
-      set state to `pr_ready` (do not loop).
-- [ ] When no incomplete heading remains and the last handoff was NOT skeleton, fall through to the
-      existing completion path (Stage 5 Part B gate handles the transition).
-- [ ] Do NOT edit `build_hard_mode_prompt_context()` (305-319) — reserved for 779.
+      set state to `pr_ready` (do not loop). *(completed: routes via
+      `.claude/scripts/update-task-status.sh postflight ... pr_ready ...`, the centralized
+      status-update script, rather than a raw state.json jq write)*
+- [x] When no incomplete heading remains and the last handoff was NOT skeleton, fall through to the
+      existing completion path (Stage 5 Part B gate handles the transition). *(completed)*
+- [x] Do NOT edit `build_hard_mode_prompt_context()` (305-319) — reserved for 779. *(confirmed:
+      function body unchanged, verified via grep before and after edit)*
 
 **Timing**: 45 minutes
 
@@ -271,23 +292,26 @@ of looping on a nonexistent phase until `MAX_CYCLES`.
 
 ---
 
-### Phase 5: Stage 5 postflight completion gate (Item 5 Part B) [NOT STARTED]
+### Phase 5: Stage 5 postflight completion gate (Item 5 Part B) [COMPLETED]
 
 **Goal**: Make Stage 5's postflight status transition hard-mode-specific so a single per-phase
 `"implemented"` handoff (skeleton or not) does not flip the whole task to `completed`; only
 transition when all phases are done.
 
 **Tasks**:
-- [ ] Rewrite Stage 5 (450-461) from "Same as base Stage 5, plus:" to an explicit hard-mode block
+- [x] Rewrite Stage 5 (450-461) from "Same as base Stage 5, plus:" to an explicit hard-mode block
       that: for `dispatch_status == "implemented"`, calls `skill_postflight_update ... implement`
       ONLY when `phases_total > 0 && phases_completed >= phases_total`; otherwise logs
       `[hard-orchestrate] Phase ${phases_completed}/${phases_total} complete (skeleton=${skeleton}). Continuing.`
       and leaves state as `implementing` so Stage 3a re-enters the Per-Phase Dispatch handler next
       cycle. This applies identically whether or not the handoff carried `skeleton: true`.
-- [ ] Preserve the base Stage 5 behavior for `researched`/`planned` dispatch statuses and for
-      artifact linking (do not regress those; only the `implemented` case is gated).
-- [ ] Extend the existing `sorry_inventory` logging (456-459) to also read and log the `skeleton`
-      boolean and each entry's `follow_up_task`.
+      *(completed)*
+- [x] Preserve the base Stage 5 behavior for `researched`/`planned` dispatch statuses and for
+      artifact linking (do not regress those; only the `implemented` case is gated). *(completed:
+      also preserved drift-detection, which was implicitly inherited via the old "same as base"
+      reference — dropping it silently would have been a regression)*
+- [x] Extend the existing `sorry_inventory` logging (456-459) to also read and log the `skeleton`
+      boolean and each entry's `follow_up_task`. *(completed)*
 
 **Timing**: 45 minutes
 
@@ -303,20 +327,25 @@ transition when all phases are done.
 
 ---
 
-### Phase 6: Dual-copy sync + full verification [NOT STARTED]
+### Phase 6: Dual-copy sync + full verification [COMPLETED]
 
 **Goal**: Mirror every Phase 1-5 edit into the core copy and assert both copies are byte-identical
 and free of any build/test invocation.
 
 **Tasks**:
-- [ ] Apply the identical edits (or copy the finalized deployed file) to
-      `.claude/extensions/core/skills/skill-orchestrate-hard/SKILL.md`.
-- [ ] Assert `diff -q .claude/skills/skill-orchestrate-hard/SKILL.md .claude/extensions/core/skills/skill-orchestrate-hard/SKILL.md`
-      returns empty (no drift).
-- [ ] Grep both copies for any forbidden invocation (`lake`, `lean`, `nvim --headless`, `pytest`,
+- [x] Apply the identical edits (or copy the finalized deployed file) to
+      `.claude/extensions/core/skills/skill-orchestrate-hard/SKILL.md`. *(completed: copied the
+      finalized deployed file)*
+- [x] Assert `diff -q .claude/skills/skill-orchestrate-hard/SKILL.md .claude/extensions/core/skills/skill-orchestrate-hard/SKILL.md`
+      returns empty (no drift). *(completed: exit 0, empty diff)*
+- [x] Grep both copies for any forbidden invocation (`lake`, `lean`, `nvim --headless`, `pytest`,
       `npm`, `cargo`, `go test`) issued by the orchestrator's own instructions — expect none.
-- [ ] Confirm the Territory boundaries hold: `build_hard_mode_prompt_context()` (305-319) and the
-      Stage 2/3 top-of-loop region (124-197) are unchanged from pre-772 baseline.
+      *(completed: only matches are the Tool Constraints prose forbid-list itself, not live
+      invocations)*
+- [x] Confirm the Territory boundaries hold: `build_hard_mode_prompt_context()` (305-319) and the
+      Stage 2/3 top-of-loop region (124-197) are unchanged from pre-772 baseline. *(completed:
+      byte-for-byte diff against the pre-edit git HEAD version of both anchored regions returns
+      empty; both regions merely shifted down by line offset due to earlier insertions)*
 
 **Timing**: 20 minutes
 
@@ -332,17 +361,23 @@ and free of any build/test invocation.
 
 ## Testing & Validation
 
-- [ ] `grep -n '^allowed-tools:'` on both copies shows no `Edit`, scoped Bash/Read (or documented
-      prose-fallback if multi-pattern syntax did not enforce).
-- [ ] Multi-pattern frontmatter smoke-test result recorded (enforced vs. fallback).
-- [ ] `grep -n "Parallel Wave Dispatch"` returns nothing (or only a "Disabled" note); one
-      implement-dispatch handler remains.
-- [ ] No `next_phase=$((phases_completed + 1))` remains; heading-scan present; skeleton-exhaustion
-      branch derives from `sorry_inventory[].follow_up_task` and routes to `pr_ready`.
-- [ ] Stage 5 `implemented` transition gated on `phases_completed >= phases_total`; `skeleton` and
-      `follow_up_task` logged.
-- [ ] `diff -q` between deployed and core copies returns empty.
-- [ ] Reserved regions (305-319, 124-197) unchanged.
+- [x] `grep -n '^allowed-tools:'` on both copies shows no `Edit`, scoped Bash/Read (or documented
+      prose-fallback if multi-pattern syntax did not enforce). *(verified: both copies show
+      `allowed-tools: Agent, Bash, Read` — the documented prose-fallback path)*
+- [x] Multi-pattern frontmatter smoke-test result recorded (enforced vs. fallback). *(verified:
+      recorded in Phase 1 task notes — no in-repo precedent found, no sandboxed harness
+      available, fallback taken)*
+- [x] `grep -n "Parallel Wave Dispatch"` returns nothing (or only a "Disabled" note); one
+      implement-dispatch handler remains. *(verified: only the "DISABLED" prose note matches;
+      exactly one `#### State: \`planned\` or \`implementing\`` heading remains)*
+- [x] No `next_phase=$((phases_completed + 1))` remains; heading-scan present; skeleton-exhaustion
+      branch derives from `sorry_inventory[].follow_up_task` and routes to `pr_ready`. *(verified
+      via grep: zero matches for the old integer-increment pattern)*
+- [x] Stage 5 `implemented` transition gated on `phases_completed >= phases_total`; `skeleton` and
+      `follow_up_task` logged. *(verified)*
+- [x] `diff -q` between deployed and core copies returns empty. *(verified: exit 0)*
+- [x] Reserved regions (305-319, 124-197 pre-edit) unchanged. *(verified: anchored-text diff
+      against pre-edit git HEAD returns empty for both regions)*
 
 ## Artifacts & Outputs
 

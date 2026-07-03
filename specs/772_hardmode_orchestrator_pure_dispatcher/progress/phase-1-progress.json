@@ -1,0 +1,25 @@
+{
+  "phase": 1,
+  "phase_name": "Frontmatter tool restriction (Items 1, 2, 4 structural)",
+  "started_at": "2026-07-03T15:56:00Z",
+  "last_updated": "2026-07-03T16:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace allowed-tools line 4 with scoped form", "status": "done"},
+    {"id": 2, "description": "Smoke-test multi-pattern syntax; fallback if unverified", "status": "done"},
+    {"id": 3, "description": "Confirm Edit absent elsewhere in body", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Multi-pattern Bash(cmd:*)/Read(path/*) frontmatter scoping", "result": "not_attempted_live", "reason": "No repo precedent and no sandboxed harness to runtime-verify Claude Code frontmatter tool-scope enforcement; fell back to documented plan mitigation (Agent, Bash, Read + prose forbid-list)."}
+  ],
+  "deviations": [
+    {
+      "task_id": "1.1",
+      "description": "Replace line 4 with scoped multi-pattern Bash/Read form",
+      "type": "altered",
+      "reason": "No in-repo precedent for multi-pattern-per-line allowed-tools scoping; no way to runtime-verify enforcement from this agent. Used the plan's own documented fallback instead.",
+      "annotation": "*(deviation: altered — landed as documented prose-fallback)*"
+    }
+  ],
+  "handoff_count": 0
+}

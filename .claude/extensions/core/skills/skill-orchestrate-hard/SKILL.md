@@ -1,7 +1,7 @@
 ---
 name: skill-orchestrate-hard
 description: Full structural hard-mode orchestration state machine with per-phase dispatch (H1), adversarial verification (H4), convergence policing (H6), territory contracts (H7), and churn detection (H5). Invoke for /orchestrate --hard.
-allowed-tools: Agent, Bash, Read, Edit
+allowed-tools: Agent, Bash, Read
 ---
 
 # Orchestrate Hard Skill
@@ -17,7 +17,49 @@ Hard-mode additions over base `skill-orchestrate`:
 - **H4 Adversarial Verification Gate**: Research output is verified before plan/implement dispatch
 - **H5 Divergence Audit**: Three-strikes on any target triggers a dedicated audit research dispatch
 - **H6 Convergence Policing**: Churn detection with per-target counters (defect_claims, sorry_relocations)
-- **H7 Territory Contracts**: Parallel phase waves get explicit file territory in their dispatch context
+- **H7 Territory Contracts**: Territory context informs single-phase dispatch prompts (parallel-wave
+  dispatch is disabled — see "Tool Constraints (Pure Dispatcher)" below and Stage 4's Per-Phase
+  Dispatch handler; exactly one blocking `Agent` call happens per cycle)
+
+## Tool Constraints (Pure Dispatcher)
+
+<!-- BEGIN 772 pure-dispatcher tool constraints (standalone block; 773 must compose around this,
+     not overwrite it) -->
+
+The orchestrator is a pure dispatcher: it reads state, dispatches exactly one implementation
+agent per cycle, and reads that agent's handoff. It never edits implementation source, never
+runs build/test/compiler tooling, and never reads implementation source files itself. This
+section is the human/audit-readable statement of intent backing the frontmatter tool scoping
+above (`allowed-tools: Agent, Bash, Read` — `Edit` intentionally absent).
+
+**Permitted Bash**: orchestration bookkeeping only — `jq` reads/writes against state.json and
+handoff/loop-guard/churn JSON files, file bookkeeping (`mkdir`, `mv`, `rm`, `ls`), text utilities
+(`sort`, `tail`, `grep`, `cat`, `date`, `echo`), and `source .claude/scripts/*.sh` helper
+scripts. These are the 12 commands the state machine above actually issues: `jq, mkdir, mv, rm,
+ls, sort, tail, grep, cat, date, echo, source`.
+
+**Forbidden Bash Operations**: `lake build` (or any `lake` invocation), `lean` / `lean-lsp` /
+`mcp__lean-lsp__*`, `nvim --headless`, `npm` / `pytest` / `cargo test` / `go test`, or ANY
+language build/test/compiler/linter tool. These belong exclusively to the dispatched
+implementation agent (`$IMPLEMENT_AGENT`) — the orchestrator must never invoke them directly,
+even to "verify" a phase before or after dispatch.
+
+**Read allowlist (4 categories)**:
+1. `specs/state.json` — task status and metadata.
+2. `specs/{NNN}_{SLUG}/.orchestrator-handoff.json` and its siblings
+   `.orchestrator-loop-guard` / `.orchestrator-churn-state.json`.
+3. `specs/{NNN}_{SLUG}/plans/*.md` and `specs/{NNN}_{SLUG}/reports/*.md` (reports are needed
+   for the H4 adversarial-verification grep in Stage 4).
+4. `.claude/context/contracts/*.md` and `.claude/docs/architecture/*.md` (this skill's own
+   contracts and architecture docs, per Context References above).
+
+**Forbidden Reads**: implementation source of any kind — `lua/**`, `after/**`, or any
+per-project source root an `$IMPLEMENT_AGENT` would modify. If the orchestrator finds itself
+about to Read a source file to "check" an implementation, that is a signal it has drifted from
+pure-dispatcher behavior; the correct action is to dispatch (or re-dispatch) the implementation
+agent and read its handoff instead.
+
+<!-- END 772 pure-dispatcher tool constraints -->
 
 ## Context References
 
@@ -271,35 +313,71 @@ In-flight. Exit with warning. Same as base skill.
 ```bash
 plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
 
-# Read current handoff to determine next phase
+# Read current handoff to determine phase progress
 if [ -f "$handoff_file" ]; then
   phases_completed=$(jq -r '.phases_completed // 0' "$handoff_file")
   phases_total=$(jq -r '.phases_total // 0' "$handoff_file")
+  last_skeleton=$(jq -r '.skeleton // false' "$handoff_file")
 else
   phases_completed=0
   phases_total=0
+  last_skeleton=false
 fi
 
-next_phase=$((phases_completed + 1))
+# === BEGIN 772 Item 5A: heading-scan phase selection + skeleton-exhaustion routing ===
+# 772 Item 5A: heading-scan phase selection, replacing the naive
+# next_phase=$((phases_completed + 1)) integer increment (could not address N.1/N.2 sub-phase
+# headings, sparse numbering, or skeleton-exhaustion). Mirrors
+# skill-implementer-hard/SKILL.md Stage 3b's already-landed fix (task 774).
+next_phase=""
+if [ -n "$plan_path" ] && [ -f "$plan_path" ]; then
+  next_phase=$(grep -E '^### Phase [0-9]+(\.[0-9]+)?: .*\[(NOT STARTED|PARTIAL|IN PROGRESS)\]' "$plan_path" \
+    | head -1 \
+    | sed -E 's/^### Phase ([0-9]+(\.[0-9]+)?):.*/\1/')
+fi
 
-# Determine territory for this phase (single-phase dispatch, no parallel territory needed)
-# Territory becomes relevant for parallel wave dispatch (see Stage 4c: Parallel Waves)
-dispatch_context='{
-  "task_number": '$task_number',
-  "task_type": "'$TASK_TYPE'",
-  "session_id": "'$session_id'",
-  "orchestrator_mode": true,
-  "effort_flag": "hard",
-  "plan_path": "'$plan_path'",
-  "phase_number": '$next_phase'
-}'
+if [ -n "$next_phase" ]; then
+  echo "[hard-orchestrate] H1: Per-phase dispatch — phase $next_phase (heading-scan)" >&2
 
-echo "[hard-orchestrate] H1: Per-phase dispatch — phase $next_phase" >&2
+  # Determine territory for this phase (single-phase dispatch, no parallel territory needed —
+  # parallel wave dispatch is disabled, see "Tool Constraints (Pure Dispatcher)" above)
+  dispatch_context='{
+    "task_number": '$task_number',
+    "task_type": "'$TASK_TYPE'",
+    "session_id": "'$session_id'",
+    "orchestrator_mode": true,
+    "effort_flag": "hard",
+    "plan_path": "'$plan_path'",
+    "phase_number": '$next_phase'
+  }'
 
-Agent tool:
-  subagent_type: $IMPLEMENT_AGENT
-  prompt: "Implement phase $next_phase of task $task_number. $(build_hard_mode_prompt_context)"
-  delegation_context: $dispatch_context
+  Agent tool:
+    subagent_type: $IMPLEMENT_AGENT
+    prompt: "Implement phase $next_phase of task $task_number. $(build_hard_mode_prompt_context)"
+    delegation_context: $dispatch_context
+
+elif [ "$last_skeleton" = "true" ]; then
+  # Skeleton-exhaustion routing: no incomplete phase heading remains AND the last handoff
+  # declared skeleton=true. Derive the follow-up task list from the actually-shipped
+  # wrap-up.md field `sorry_inventory[].follow_up_task` — NOT the unpopulated top-level
+  # `.follow_up_tasks` that skill-implementer-hard's Stage 3b optimistically reads.
+  follow_up_tasks=$(jq -r '[.sorry_inventory[]?.follow_up_task | select(. != null)] | unique | join(", ")' "$handoff_file")
+  follow_up_count=$(jq -r '[.sorry_inventory[]?.follow_up_task | select(. != null)] | unique | length' "$handoff_file")
+  echo "[hard-orchestrate] Skeleton plan exhausted — follow-up tasks pending: {${follow_up_tasks}}" >&2
+
+  # Transition to pr_ready via the centralized status script (never raw-edit state.json).
+  bash .claude/scripts/update-task-status.sh postflight "$task_number" pr_ready "$session_id"
+  rm -f "$loop_guard_file"
+  EXIT (success, pr_ready — skeleton exhausted, ${follow_up_count} follow-up task(s): ${follow_up_tasks})
+
+else
+  # No incomplete phase heading remains and the last handoff was NOT a skeleton: all phases are
+  # genuinely complete. Do not blindly dispatch phase 1 and do not loop toward MAX_CYCLES here —
+  # fall through without a new Agent dispatch; Stage 5 Part B's
+  # phases_completed >= phases_total gate performs the actual status transition.
+  echo "[hard-orchestrate] No incomplete phase heading remains and last handoff was not a skeleton — deferring to Stage 5 completion gate." >&2
+fi
+# === END 772 Item 5A: heading-scan phase selection + skeleton-exhaustion routing ===
 ```
 
 **Hard-mode prompt context** (built inline):
@@ -320,31 +398,14 @@ PHASES COMPLETED: $phases_completed of $phases_total
 
 After dispatch: read handoff (Stage 5). Check churn state (Stage 4b). Increment cycle_count.
 
-#### State: `planned` or `implementing` — Parallel Wave Dispatch (optional H7)
-
-When the plan has phases in the same dependency wave that can run in parallel:
-
-```bash
-# Read plan's wave map (from Dependency Analysis table in plan)
-# If multiple phases are in the current wave and all their predecessors are COMPLETED:
-if [ "$parallel_wave_size" -gt 1 ]; then
-  echo "[hard-orchestrate] H7: Parallel wave dispatch — $parallel_wave_size phases" >&2
-
-  # Build territory for each phase
-  for phase in "${wave_phases[@]}"; do
-    territory=$(build_phase_territory "$plan_path" "$phase")
-    # Dispatch each phase with territory contract
-    Agent tool:
-      subagent_type: $IMPLEMENT_AGENT
-      prompt: "Implement phase $phase (parallel wave). Territory: $territory. $(build_hard_mode_prompt_context)"
-      delegation_context: {..., phase_number: $phase, territory: $territory}
-  done
-  # NOTE: Parallel dispatch via multiple simultaneous Agent tool calls
-fi
-```
-
-**Territory building**: Extract the files listed under each phase in the plan and assign
-them as `owned_files`. Other plan phases' files become `read_only_files`.
+<!-- BEGIN 772: Parallel Wave Dispatch — DISABLED -->
+**Parallel Wave Dispatch: DISABLED.** Parallel-wave dispatch (formerly "optional H7") is
+disabled. The Per-Phase Dispatch handler above is the sole implement-dispatch path: the
+orchestrator dispatches exactly one phase per cycle and blocks on its return — no
+simultaneous/background `Agent` calls. Territory contracts (H7) still inform the single-phase
+dispatch context (see "Tool Constraints (Pure Dispatcher)" above), but never fan out into
+parallel dispatch.
+<!-- END 772: Parallel Wave Dispatch — DISABLED -->
 
 #### State: `partial`
 
@@ -449,15 +510,105 @@ fi
 
 ### Stage 5: Handoff Reading (after each dispatch)
 
-Same as base `skill-orchestrate` Stage 5, plus:
+<!-- BEGIN 772 Item 5B: hard-mode-specific Stage 5 (explicit, not "same as base + sorry log") -->
+**HARD MODE DIFFERS FROM BASE**: After every Agent tool invocation, read the orchestrator
+handoff to learn the outcome — same drift-detection and artifact-linking behavior as base
+`skill-orchestrate` Stage 5, but the `implemented` postflight transition is gated so a single
+per-phase handoff (skeleton or not) never flips the whole task to `completed` early.
 
 ```bash
-# Additional hard-mode handoff fields
-sorry_inventory=$(echo "$handoff" | jq -c '.sorry_inventory // []')
-if [ "$(echo "$sorry_inventory" | jq 'length')" -gt 0 ]; then
-  echo "[hard-orchestrate] Sorry inventory: $(echo "$sorry_inventory" | jq 'length') sorrys" >&2
+if [ ! -f "$handoff_file" ]; then
+  echo "[hard-orchestrate] ERROR: Skill did not write orchestrator handoff."
+  echo "This may mean orchestrator_mode was not propagated correctly."
+  # Increment cycle and continue — state.json may still have been updated
+else
+  handoff=$(cat "$handoff_file")
+  dispatch_status=$(echo "$handoff" | jq -r '.status')
+  dispatch_summary=$(echo "$handoff" | jq -r '.summary // ""')
+  blockers=$(echo "$handoff" | jq -c '.blockers // []')
+  continuation=$(echo "$handoff" | jq -c '.continuation_context // null')
+  next_hint=$(echo "$handoff" | jq -r '.next_action_hint // "none"')
+  phases_completed=$(echo "$handoff" | jq -r '.phases_completed // 0')
+  phases_total=$(echo "$handoff" | jq -r '.phases_total // 0')
+  skeleton=$(echo "$handoff" | jq -r '.skeleton // false')
+
+  # Additional hard-mode handoff fields: sorry inventory, extended with skeleton + follow_up_task
+  sorry_inventory=$(echo "$handoff" | jq -c '.sorry_inventory // []')
+  if [ "$(echo "$sorry_inventory" | jq 'length')" -gt 0 ]; then
+    follow_ups=$(echo "$sorry_inventory" | jq -r '[.[] | .follow_up_task | select(. != null)] | unique | join(", ")')
+    echo "[hard-orchestrate] Sorry inventory: $(echo "$sorry_inventory" | jq 'length') sorrys (skeleton=${skeleton}, follow_up_task: {${follow_ups}})" >&2
+  fi
+
+  echo "[hard-orchestrate] Dispatch result: $dispatch_status — $dispatch_summary"
+  [ "$phases_total" -gt 0 ] && echo "[hard-orchestrate] Phase progress: $phases_completed/$phases_total (skeleton=${skeleton})"
+
+  # Drift detection: arithmetic gate (cheap check before expensive inspection fork) — same as base
+  if [ "$phases_total" -gt 0 ] && [ "$dispatch_status" = "partial" ]; then
+    completion_ratio=$(awk "BEGIN { printf \"%.4f\", $phases_completed / $phases_total }")
+    is_below_threshold=$(awk "BEGIN { print ($completion_ratio < $DRIFT_COMPLETION_THRESHOLD) ? \"yes\" : \"no\" }")
+    if [ "$is_below_threshold" = "yes" ]; then
+      echo "[hard-orchestrate] Low phase completion ($phases_completed/$phases_total). Inspecting plan for drift..."
+      invoke_drift_inspection "$task_number" "$plan_path" "$session_id"
+    fi
+  fi
+
+  # Postflight status update — hard-mode-specific gate on `implemented` (772 Item 5B)
+  case "$dispatch_status" in
+    researched)
+      skill_postflight_update "$task_number" "research" "$session_id" "$dispatch_status"
+      ;;
+    planned)
+      skill_postflight_update "$task_number" "plan" "$session_id" "$dispatch_status"
+      ;;
+    implemented)
+      # A single per-phase "implemented" handoff (skeleton or not) must NOT flip the whole task
+      # to completed. Only transition when every phase is actually done.
+      if [ "$phases_total" -gt 0 ] && [ "$phases_completed" -ge "$phases_total" ]; then
+        skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status"
+      else
+        echo "[hard-orchestrate] Phase ${phases_completed}/${phases_total} complete (skeleton=${skeleton}). Continuing." >&2
+        # Leave state as `implementing` — Stage 3a re-enters the Per-Phase Dispatch handler
+        # (Stage 4, H1) on the next cycle. No postflight status transition happens here.
+      fi
+      ;;
+    *)
+      echo "[hard-orchestrate] Dispatch status '$dispatch_status' — no postflight update needed"
+      ;;
+  esac
+
+  # Artifact linking — same as base: extract artifact path/type from handoff and link in
+  # TODO.md + state.json
+  handoff_artifact_path=$(echo "$handoff" | jq -r '.artifacts[0].path // ""')
+  handoff_artifact_type=$(echo "$handoff" | jq -r '.artifacts[0].type // ""')
+  handoff_artifact_summary=$(echo "$handoff" | jq -r '.artifacts[0].summary // ""')
+  if [ -n "$handoff_artifact_path" ] && [ "$handoff_artifact_path" != "null" ]; then
+    case "$handoff_artifact_type" in
+      report)
+        field_name='**Research**'
+        next_field='**Plan**'
+        ;;
+      plan)
+        field_name='**Plan**'
+        next_field='**Description**'
+        ;;
+      summary)
+        field_name='**Summary**'
+        next_field='**Description**'
+        ;;
+      *)
+        field_name='**Summary**'
+        next_field='**Description**'
+        ;;
+    esac
+    skill_link_artifacts "$task_number" "$handoff_artifact_path" "$handoff_artifact_type" \
+      "$handoff_artifact_summary" "$field_name" "$next_field"
+  fi
 fi
+
+# Increment cycle_count
+cycle_count=$((cycle_count + 1))
 ```
+<!-- END 772 Item 5B: hard-mode-specific Stage 5 -->
 
 ---
 
@@ -538,6 +689,6 @@ to each individual task in the wave — they each use the per-phase dispatch H1 
 | Adversarial gate | None | Research verified before plan (H4) |
 | Churn detection | None | Per-target counters (H6) |
 | Three-strikes | None | Audit dispatch at 3 (H5) |
-| Parallel dispatch | None | Wave-based with territory (H7) |
+| Parallel dispatch | None | Disabled — single blocking phase per cycle (772) |
 | Agents used | Base agents | Hard-mode agents |
 | Prompt construction | Simple | Contract-slot injection |
