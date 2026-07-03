@@ -1,7 +1,7 @@
 # Implementation Plan: Task #805 — Two-Mode Mass-Cleanup Workflow
 
 - **Task**: 805 - Improve the email/ extension's mass-cleanup workflow (default 50-step, `--all`, `--archive`)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 14 hours
 - **Dependencies**: None (task 803 email extension already authored; frozen `.dotfiles` wrapper contract, task 72)
 - **Research Inputs**:

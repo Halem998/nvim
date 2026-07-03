@@ -11,7 +11,7 @@ next_project_number: 806
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,777,778,780,782,783,787,791,795,796,802,804,805 | -- | agent-system, literature, extensions, ... |
+| 1 | 78,87,772,777,778,780,782,783,787,791,795,796,802,804 | -- | agent-system, literature, email integration, ... |
 | 2 | 773,774,779,781,785 | 772,778,780 | agent-system |
 | 3 | 786 | 785 | agent-system |
 | 4 | 788 | 786,787 | agent-system |
@@ -45,10 +45,6 @@ next_project_number: 806
 
 802 [NOT STARTED] — [LITERATURE AUTHORS RESOLVER TRUNCATION -- latent footgun, follow
 
-### Extensions
-
-805 [IMPLEMENTING] — Research how to improve the email/ extension's mass-cleanup comma
-
 ### Terminal Ui
 
 87 [RESEARCHED] — Investigate why the terminal working directory changes to a proje
@@ -60,12 +56,13 @@ next_project_number: 806
 ## Tasks
 
 ### 805. Improve email mass cleanup workflow
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [805_improve_email_mass_cleanup_workflow/reports/02_two-mode-batching-design.md]
 - **Plan**: [805_improve_email_mass_cleanup_workflow/plans/02_two-mode-mass-cleanup.md]
+- **Summary**: [805_improve_email_mass_cleanup_workflow/summaries/02_two-mode-mass-cleanup-summary.md]
 
 **Description**: Research how to improve the email/ extension's mass-cleanup commands and workflow for efficiently cleaning an entire mailbox, then propose concrete command/skill changes. Focus areas: (1) Interactive questions (AskUserQuestion) that make bulk review tractable - approve by sender/domain bucket rather than message-by-message, leaning on the recall-on-keep bias (delete auto-proposed only at confidence >= 0.90, else unsure) and email-unsubscribe-extract for recurring senders. (2) A `--all` flag on /email for reviewing/triaging the FULL inbox beyond a single 50-message pass - design a batch-drain loop that runs email-*-confirmed --execute in repeated <=50 batches, idempotent via the <manifest>.state.jsonl execution-state file, within the PLAN_EXPIRY_DAYS=7 approved-manifest window, with per-batch progress reporting. (3) A `--archive` flag to also clean up ARCHIVED (Gmail All Mail, ~64k msgs) email, which MUST proceed more carefully than inbox triage (larger blast radius, closer to irreversible after --expunge-trash + sync). Constraints/invariants to preserve: keep skill-email-cleanup wrapper-only (only the 5 named binaries, never raw himalaya/notmuch); keep the mandatory human review gate; run cleanup as direct-execution in the root session (interactive gate cannot live in a background subagent); do NOT raise MAX_BATCH_SIZE=50 (that is a .dotfiles task 72 wrapper-contract change with a bigger blast radius) - prefer looping. Likely touches .claude/extensions/email/ (commands/email.md, skills/skill-email-cleanup, possibly a new skill) and its context docs. References: task 803 artifacts (reports 01/02, plan 03, summary 02); the /email --sync addition (commit 51bfda974); wrapper contract in context/project/email/domain/wrapper-contracts.md (MAX_BATCH_SIZE, PLAN_EXPIRY_DAYS, delete invariant). Cross-repo note: MAX_BATCH_SIZE and the wrapper binaries are owned by .dotfiles task 72 (frozen contract), referenced here by name only.
 

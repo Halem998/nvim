@@ -5,14 +5,14 @@
     {
       "project_number": 805,
       "project_name": "improve_email_mass_cleanup_workflow",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "extensions",
       "parent_task": 803,
       "dependencies": [],
       "description": "Research how to improve the email/ extension's mass-cleanup commands and workflow for efficiently cleaning an entire mailbox, then propose concrete command/skill changes. Focus areas: (1) Interactive questions (AskUserQuestion) that make bulk review tractable - approve by sender/domain bucket rather than message-by-message, leaning on the recall-on-keep bias (delete auto-proposed only at confidence >= 0.90, else unsure) and email-unsubscribe-extract for recurring senders. (2) A `--all` flag on /email for reviewing/triaging the FULL inbox beyond a single 50-message pass - design a batch-drain loop that runs email-*-confirmed --execute in repeated <=50 batches, idempotent via the <manifest>.state.jsonl execution-state file, within the PLAN_EXPIRY_DAYS=7 approved-manifest window, with per-batch progress reporting. (3) A `--archive` flag to also clean up ARCHIVED (Gmail All Mail, ~64k msgs) email, which MUST proceed more carefully than inbox triage (larger blast radius, closer to irreversible after --expunge-trash + sync). Constraints/invariants to preserve: keep skill-email-cleanup wrapper-only (only the 5 named binaries, never raw himalaya/notmuch); keep the mandatory human review gate; run cleanup as direct-execution in the root session (interactive gate cannot live in a background subagent); do NOT raise MAX_BATCH_SIZE=50 (that is a .dotfiles task 72 wrapper-contract change with a bigger blast radius) - prefer looping. Likely touches .claude/extensions/email/ (commands/email.md, skills/skill-email-cleanup, possibly a new skill) and its context docs. References: task 803 artifacts (reports 01/02, plan 03, summary 02); the /email --sync addition (commit 51bfda974); wrapper contract in context/project/email/domain/wrapper-contracts.md (MAX_BATCH_SIZE, PLAN_EXPIRY_DAYS, delete invariant). Cross-repo note: MAX_BATCH_SIZE and the wrapper binaries are owned by .dotfiles task 72 (frozen contract), referenced here by name only.",
       "created": "2026-07-03T07:04:06Z",
-      "last_updated": "2026-07-03T12:43:11Z",
+      "last_updated": "2026-07-03T13:05:46Z",
       "next_artifact_number": 3,
       "session_id": "sess_1783082562_3cac71",
       "researched": "2026-07-03T07:31:29Z",
@@ -26,6 +26,11 @@
           "path": "specs/805_improve_email_mass_cleanup_workflow/plans/02_two-mode-mass-cleanup.md",
           "type": "plan",
           "summary": "9-phase implementation plan for the two-mode email mass-cleanup workflow (default 50-step, --all whole-mailbox sweep/bucket/drain, --archive scope + gates), verification-gated and doc-lint validated."
+        },
+        {
+          "path": "specs/805_improve_email_mass_cleanup_workflow/summaries/02_two-mode-mass-cleanup-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with the Phase-9 end-to-end dry-run walkthrough of all five /email invocation forms"
         }
       ],
       "memory_candidates": [
@@ -42,8 +47,50 @@
             "mtime-expiry",
             "wrapper-only"
           ]
+        },
+        {
+          "content": "The frozen email wrapper email-classify exposes a wrapper-only 'count oracle': calling `email-classify --limit 0 \"<notmuch query>\"` processes nothing and applies no tags, but its stderr NOTE line ('query matched <total> message(s); processing the first 0') discloses the total match count (absent NOTE = 0 matches). Side effect: the candidate manifest file is overwritten with an empty file, so preserve any accumulator before probing and never probe between sweep chunks. Used for pre-sweep size estimates and non-silent residual accounting in /email --all.",
+          "category": "TECHNIQUE",
+          "source_artifact": "specs/805_improve_email_mass_cleanup_workflow/summaries/02_two-mode-mass-cleanup-summary.md",
+          "confidence": 0.85,
+          "suggested_keywords": [
+            "email-classify",
+            "count-oracle",
+            "limit-0",
+            "notmuch",
+            "pagination",
+            "wrapper"
+          ]
+        },
+        {
+          "content": "When an implementation plan poses an open verification question WITH a designed fallback branch (in its Risks/Rollback sections), resolving the question to the fallback during Phase-1 verification is NOT a load-bearing falsification requiring a stop-and-revise: proceed using the pre-authorized fallback and record the adaptation as an 'altered' deviation on the affected tasks. Reserve stop-and-partial for falsified assumptions the plan did NOT design a branch for. Applied in task 805 when the wrapper exposed no message-ID-capture path.",
+          "category": "INSIGHT",
+          "source_artifact": "specs/805_improve_email_mass_cleanup_workflow/summaries/02_two-mode-mass-cleanup-summary.md",
+          "confidence": 0.7,
+          "suggested_keywords": [
+            "plan-fallback",
+            "phase-1-gate",
+            "deviation",
+            "verification-first",
+            "implementation"
+          ]
+        },
+        {
+          "content": "Batch caps that are enforced per-category per-file (like the email wrapper's MAX_BATCH_SIZE=50 counted per proposed_action within the --manifest file) allow pairwise packing: put up to the cap of EACH category into one split file, since each consuming binary enforces only its own category's count. 137 archive + 60 delete lines split into 3 files ((50a+50d),(50a+10d),(37a)) instead of 5. Pair with `touch -r <original> <split>` so derived split files inherit the original approval mtime and cannot silently extend a staleness window.",
+          "category": "PATTERN",
+          "source_artifact": ".claude/context/patterns/batch-drain-loop.md",
+          "confidence": 0.75,
+          "suggested_keywords": [
+            "batch-cap",
+            "manifest-split",
+            "touch-r",
+            "mtime",
+            "enforce_batch_size",
+            "drain"
+          ]
         }
-      ]
+      ],
+      "completion_summary": "Extended the email extension in place with a two-mode mass-cleanup workflow: default /email is now a safer bounded 50-step pass using durable +proposed-* tags as a cross-invocation cursor; /email --all performs a whole-mailbox operation (chunked backgrounded read/tag-only classify sweep, one consolidated sender/domain bucket approval with min() rollup and 0.90 option-availability gating, then a transparent sub-50 execute drain over sha256-confirmed, mtime-preserved splits with expiry stop-and-report); /email --archive composes with either mode to scope All Mail with extra-caution gates and a pilot gate. Phase-1 ground truth verification confirmed all five frozen-wrapper behaviors and engaged the plan's pre-authorized pagination fallback (no wrapper ID-capture path). Refreshed wrapper-contracts.md (82->209 lines), authored archive-mode-risk.md, bulk-bucket-review.md (email layer), and batch-drain-loop.md (agent-system layer), registered all in their indexes, and updated README/EXTENSION. Email doc-lint passes; no wrapper change; all safety invariants preserved."
     },
     {
       "project_number": 804,
