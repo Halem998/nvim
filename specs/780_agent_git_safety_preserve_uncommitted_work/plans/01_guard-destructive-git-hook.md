@@ -231,26 +231,38 @@ unless a fresh snapshot marker (per Phase 1 contract) exists.
 
 ---
 
-### Phase 4: Dual-copy deployment + wiring [NOT STARTED]
+### Phase 4: Dual-copy deployment + wiring [COMPLETED]
 
 **Goal**: Propagate all three artifacts to their extension-source copies and register them so the
 change survives a future sync/regen. This is the phase that prevents repeating the
 `block-pr-submission.sh` silent-revert failure.
 
 **Tasks**:
-- [ ] **Hook script**: copy `.claude/hooks/guard-destructive-git.sh` ->
+- [x] **Hook script**: copy `.claude/hooks/guard-destructive-git.sh` ->
       `.claude/extensions/core/hooks/guard-destructive-git.sh` (identical, executable); add
       `"guard-destructive-git.sh"` to `.claude/extensions/core/manifest.json` `provides.hooks`.
-- [ ] **Helper script**: copy `.claude/scripts/git-snapshot.sh` ->
+- [x] **Helper script**: copy `.claude/scripts/git-snapshot.sh` ->
       `.claude/extensions/core/scripts/git-snapshot.sh` (identical, executable); add
       `"git-snapshot.sh"` to `manifest.json` `provides.scripts`.
-- [ ] **Rule**: sync the Phase 3 section into `.claude/extensions/core/rules/git-workflow.md` so
+- [x] **Rule**: sync the Phase 3 section into `.claude/extensions/core/rules/git-workflow.md` so
       both copies are byte-identical.
-- [ ] **settings.json (both copies)**: append a new PreToolUse `"matcher": "Bash"` entry invoking
+- [x] **settings.json (both copies)**: append a new PreToolUse `"matcher": "Bash"` entry invoking
       `bash .claude/hooks/guard-destructive-git.sh 2>/dev/null || echo '{}'` to BOTH
       `.claude/settings.json` AND `.claude/extensions/core/root-files/settings.json`. Preserve the
       existing `Write` matcher entry (append, do not replace the PreToolUse array).
-- [ ] **.gitignore**: add `**/.git-snapshot-marker` (mirroring `**/.postflight-pending`) so the
+      *(deviation: altered — registered as plain `bash .claude/hooks/guard-destructive-git.sh`,
+      WITHOUT the `2>/dev/null || echo '{}'` suffix. That suffix is the correct convention for
+      advisory hooks that emit `permissionDecision` JSON, but for an exit-code+stderr blocking
+      hook it is actively harmful: `cmd 2>/dev/null || echo '{}'` swallows stderr (the corrective
+      message the hook is required to show) AND replaces any nonzero exit code — including the
+      deliberate `exit 2` block signal — with the fallback `echo`'s exit 0, silently turning the
+      hook into a permanent no-op. Verified by tracing bash `||` semantics: since `echo '{}'`
+      always succeeds, the composite command's exit code is always 0 regardless of the script's
+      real exit code, which is unacceptable for a hook whose entire purpose is to block via a
+      nonzero exit code. This mirrors the correct, unwrapped invocation shape implied by
+      block-pr-submission.sh's own header comment ("Blocking mechanism: exit code 2 ... Does NOT
+      use permissionDecision: deny").*
+- [x] **.gitignore**: add `**/.git-snapshot-marker` (mirroring `**/.postflight-pending`) so the
       ephemeral marker is never committed. Keep the durable `working-progress-*.patch` tracked.
 
 **Timing**: ~1 hour

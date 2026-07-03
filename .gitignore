@@ -3,6 +3,7 @@
 /.claude/tmp/
 /.opencode/tmp/
 **/.postflight-pending
+**/.git-snapshot-marker
 .syncprotect
 specs/literature/**/*.pdf
 specs/literature/**/*.djvu

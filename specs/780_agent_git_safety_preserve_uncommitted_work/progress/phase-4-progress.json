@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Dual-copy deployment + wiring",
+  "started_at": "2026-07-03T01:00:00Z",
+  "last_updated": "2026-07-03T01:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Copy hook to extension-source, add to manifest provides.hooks", "status": "done"},
+    {"id": 2, "description": "Copy helper script to extension-source, add to manifest provides.scripts", "status": "done"},
+    {"id": 3, "description": "Sync rule into extension-source rules/git-workflow.md (byte-identical)", "status": "done"},
+    {"id": 4, "description": "Append Bash PreToolUse matcher to both settings.json copies, preserving existing Write matcher", "status": "done"},
+    {"id": 5, "description": "Add **/.git-snapshot-marker to .gitignore", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "4.4",
+      "description": "settings.json Bash PreToolUse matcher command text",
+      "type": "altered",
+      "reason": "Plan specified 'bash .claude/hooks/guard-destructive-git.sh 2>/dev/null || echo {}', matching the convention used by other advisory (permissionDecision-JSON) hooks in this file. For an exit-code+stderr BLOCKING hook this is incorrect: bash `cmd || echo {}` always yields exit 0 for the composite command (since echo succeeds), silently discarding the hook's exit 2 block signal and its stderr corrective message. Registered as plain `bash .claude/hooks/guard-destructive-git.sh` instead, preserving both the exit code and stderr.",
+      "annotation": "*(deviation: altered — registered without the `2>/dev/null || echo {}` suffix; see Phase 4 checklist note for full reasoning)*"
+    }
+  ],
+  "handoff_count": 0,
+  "verification_notes": "diff empty for hook/script/rule pairs (deployed vs extensions/core source); both files executable (755); jq confirms manifest provides.hooks contains guard-destructive-git.sh and provides.scripts contains git-snapshot.sh; jq confirms both settings.json copies have a PreToolUse Bash matcher invoking the hook; .gitignore contains **/.git-snapshot-marker."
+}
