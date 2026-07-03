@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 806,
+  "next_project_number": 808,
   "active_projects": [
     {
       "project_number": 805,
@@ -861,7 +861,7 @@
       "project_name": "pr_ready_guard_type_pr",
       "status": "not_started",
       "task_type": "meta",
-      "description": "Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-lifecycle leak where cslib implementation tasks reach [PR READY] instead of [COMPLETED]. Three coordinated source-tree edits in /home/benjamin/.config/nvim/.claude/: (1) runtime guard in .claude/scripts/update-task-status.sh \u2014 reject preflight:pr_ready and postflight:pr_ready unless task_type==pr; (2) skill-cslib-implementation Stage 6 (extensions/cslib/skills/skill-cslib-implementation/SKILL.md) \u2014 spell out explicit postflight implement -> COMPLETED call mirroring skill-pr-implementation:95; (3) doc reconciliation in extensions/core/merge-sources/claudemd.md:36-37 \u2014 mark [PR READY] as type=pr-only, not the universal implementation terminus. Design decision for research/plan: guard in core update-task-status.sh (keyed on task_type==pr) vs pushing pr_ready/PR READY fully into the cslib extension; core doc must end up consistent with the choice. Out of scope: repairing the 5 already-mislabeled deployed tasks (447/404/407/438/453) in /home/benjamin/Projects/cslib/ state.json \u2014 separate manual data-repair after redeploy via <leader>al.",
+      "description": "Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-lifecycle leak where cslib implementation tasks reach [PR READY] instead of [COMPLETED]. Three coordinated source-tree edits in /home/benjamin/.config/nvim/.claude/: (1) runtime guard in .claude/scripts/update-task-status.sh — reject preflight:pr_ready and postflight:pr_ready unless task_type==pr; (2) skill-cslib-implementation Stage 6 (extensions/cslib/skills/skill-cslib-implementation/SKILL.md) — spell out explicit postflight implement -> COMPLETED call mirroring skill-pr-implementation:95; (3) doc reconciliation in extensions/core/merge-sources/claudemd.md:36-37 — mark [PR READY] as type=pr-only, not the universal implementation terminus. Design decision for research/plan: guard in core update-task-status.sh (keyed on task_type==pr) vs pushing pr_ready/PR READY fully into the cslib extension; core doc must end up consistent with the choice. Out of scope: repairing the 5 already-mislabeled deployed tasks (447/404/407/438/453) in /home/benjamin/Projects/cslib/ state.json — separate manual data-repair after redeploy via <leader>al.",
       "topic": "agent-system"
     },
     {
@@ -870,7 +870,7 @@
       "status": "not_started",
       "task_type": "meta",
       "topic": "agent-system",
-      "description": "Make topic assignment mandatory across ALL task-creation paths so tasks never land in Uncategorized. Root problem: three escape hatches produce topicless tasks \u2014 (1) the one-click Skip (no topic) option in Mode A pickers (/meta, /task create, /project-overview); (2) Mode B silent no-op when a parent task has no topic (topic-assignment-pattern.md:113 says no fallback, but /spawn, --expand, --review implementations DO have fallbacks \u2014 doc/impl divergence); (3) Mode C silent no-op when the /review and /fix-it path heuristic hits the other branch (:134). Plus /task --recover has zero topic handling and the meta-builder path can be bypassed entirely. FIX (source tree /home/benjamin/.config/nvim/.claude/, redeployed via <leader>al): rewrite canonical context/patterns/topic-assignment-pattern.md to drop Skip and make Mode A the universal fallback whenever no obvious topic exists (parent none / heuristic miss / batch null), keeping New topic always available; then update all callers to remove Skip and wire the fallback: agents/meta-builder-agent.md Stage 4.5, commands/task.md (create, --expand, --review, --recover which currently has none), commands/review.md and skills/skill-fix-it (Mode C other -> prompt), skills/skill-spawn, skills/skill-project-overview (errors.md inherits via /task). Reconcile the pattern-doc-vs-implementation divergence on Mode B fallback. Research/plan decisions: (a) remove Skip entirely vs keep a hard-to-reach explicit skip; (b) whether to add a defense-in-depth gate (generate-task-order.sh warns on topicless active tasks, or a validation check) so bypasses surface loudly. Out of scope: backfilling existing topicless tasks (/task --sync already does that)."
+      "description": "Make topic assignment mandatory across ALL task-creation paths so tasks never land in Uncategorized. Root problem: three escape hatches produce topicless tasks — (1) the one-click Skip (no topic) option in Mode A pickers (/meta, /task create, /project-overview); (2) Mode B silent no-op when a parent task has no topic (topic-assignment-pattern.md:113 says no fallback, but /spawn, --expand, --review implementations DO have fallbacks — doc/impl divergence); (3) Mode C silent no-op when the /review and /fix-it path heuristic hits the other branch (:134). Plus /task --recover has zero topic handling and the meta-builder path can be bypassed entirely. FIX (source tree /home/benjamin/.config/nvim/.claude/, redeployed via <leader>al): rewrite canonical context/patterns/topic-assignment-pattern.md to drop Skip and make Mode A the universal fallback whenever no obvious topic exists (parent none / heuristic miss / batch null), keeping New topic always available; then update all callers to remove Skip and wire the fallback: agents/meta-builder-agent.md Stage 4.5, commands/task.md (create, --expand, --review, --recover which currently has none), commands/review.md and skills/skill-fix-it (Mode C other -> prompt), skills/skill-spawn, skills/skill-project-overview (errors.md inherits via /task). Reconcile the pattern-doc-vs-implementation divergence on Mode B fallback. Research/plan decisions: (a) remove Skip entirely vs keep a hard-to-reach explicit skip; (b) whether to add a defense-in-depth gate (generate-task-order.sh warns on topicless active tasks, or a validation check) so bypasses surface loudly. Out of scope: backfilling existing topicless tasks (/task --sync already does that)."
     },
     {
       "project_number": 797,
@@ -1017,6 +1017,36 @@
         }
       ],
       "session_id": "sess_1782936248_41a19c_801"
+    },
+    {
+      "project_number": 806,
+      "project_name": "lean_cslib_strategic_sorry_alignment",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Align lean/cslib hard-mode contracts with 778 strategic-sorry policy",
+      "description": "[Follow-up to task 778, surfaced by 778 research + implementation as an explicit out-of-scope downstream note.] Task 778 relaxed the CORE zero-debt policy under --hard (.claude/context/contracts/anti-analysis.md) to permit documented STRATEGIC SORRIES forming a skeleton via a domain-agnostic 5-condition acceptance test, and added a `skeleton` boolean + 7-field sorry_inventory schema to wrap-up.md. But the lean/cslib EXTENSION overrides still forbid main-target sorries UNCONDITIONALLY, directly contradicting the new core policy for exactly the Lean4 domain (task 305) that motivated 772/774/778. Bring the lean/cslib hard-mode contracts into alignment. FILES: .claude/extensions/lean/context/contracts/anti-analysis.md (the override that categorically bans main-target sorries; cslib has NO separate anti-analysis.md -- it inherits lean via the cslib->lean dependency), .claude/extensions/lean/agents/lean-implementation-hard-agent.md, .claude/extensions/cslib/agents/cslib-implementation-hard-agent.md. CHANGES: replace the unconditional main-target-sorry prohibition with the 5-condition strategic-sorry test from core 778 (deliberate division boundary NOT abandoned proof; tightly scoped; documented with assumption / why-deferred / owning follow-up task; tracked; build-green), specialized for Lean4 where `sorry` is the canonical placeholder. The override should still ADD domain guidance (sorry must typecheck; track via #print axioms sorryAx / declaration-uses-sorry) but must NOT categorically ban deliberate skeleton sorries at main-target level. Verify consistency with core anti-analysis.md and wrap-up.md (778 schema). CROSS-REPO: the lean/cslib extensions are consumed by a separate repo (~/Projects/cslib via install-extension.sh file-copy) -- FLAG the change for re-install sync (do not edit that repo). Scope: hard-mode lean/cslib only; standard mode unchanged.",
+      "effort": "2-4 hours",
+      "parent_task": 778,
+      "dependencies": [],
+      "artifacts": [],
+      "created": "2026-07-03T16:33:31Z",
+      "last_updated": "2026-07-03T16:33:31Z"
+    },
+    {
+      "project_number": 807,
+      "project_name": "validate_handoff_skeleton_field",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Add skeleton-field validation to validate-handoff.sh",
+      "description": "[Follow-up to task 778, surfaced as a structural gap in the handoff validator.] Task 778 added a `skeleton` boolean to the H9 handoff schema (.claude/context/contracts/wrap-up.md) and extended sorry_inventory entries to {file,line,statement,strategic,assumption,why_deferred,follow_up_task}, so a documented strategic-sorry skeleton is reported as \"implemented (skeleton)\". However .claude/scripts/validate-handoff.sh has ZERO awareness of the new `skeleton` field (confirmed: 0 skeleton mentions vs 6 sorry_inventory mentions) -- it cannot validate that a skeleton handoff is well-formed, so relaxed zero-debt could pass validation while being untracked. FIX validate-handoff.sh so that when status==\"implemented\" and skeleton==true it: (1) accepts the skeleton:true field; (2) requires sorry_inventory to be non-empty and to enumerate every strategic sorry; (3) validates each strategic-sorry entry has the required fields (strategic:true, non-empty assumption, non-empty why_deferred, NON-NULL follow_up_task) per 778 5-condition test / wrap-up.md schema; (4) ensures relaxed zero-debt stays VISIBLE and TRACKED (every strategic sorry maps to a follow-up task). Keep STANDARD-mode validation unchanged (skeleton absent/false -> existing behavior). Reference wrap-up.md status/skeleton interaction table and the sorry_inventory schema. Add/extend test coverage if a validate-handoff.sh test harness exists. Note: validate-handoff.sh is a single-copy script under .claude/scripts/ (check whether an extensions/core mirror exists and keep them in lockstep if so). Scope: hard-mode handoff validation.",
+      "effort": "1-3 hours",
+      "parent_task": 778,
+      "dependencies": [],
+      "artifacts": [],
+      "created": "2026-07-03T16:33:31Z",
+      "last_updated": "2026-07-03T16:33:31Z"
     }
   ],
   "completed_projects": [],

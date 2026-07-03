@@ -1,5 +1,5 @@
 ---
-next_project_number: 806
+next_project_number: 808
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 806
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,785,787,791,795,796,802,804 | -- | agent-system, literature, email integration, ... |
+| 1 | 78,87,785,787,791,795,796,802,804,806,807 | -- | agent-system, literature, email integration, ... |
 | 2 | 786 | 785 | agent-system |
 | 3 | 788 | 786,787 | agent-system |
 
@@ -28,6 +28,8 @@ next_project_number: 806
 795 [NOT STARTED] — Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-
 796 [NOT STARTED] — Make topic assignment mandatory across ALL task-creation paths so
 804 [NOT STARTED] — Document the --fable model-selection flag alongside --haiku, --so
+806 [NOT STARTED] — [Follow-up to task 778, surfaced by 778 research + implementation
+807 [NOT STARTED] — [Follow-up to task 778, surfaced as a structural gap in the hando
 
 ### Literature
 
@@ -42,6 +44,28 @@ next_project_number: 806
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
+
+### 807. Add skeleton-field validation to validate-handoff.sh
+- **Effort**: 1-3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: [Follow-up to task 778, surfaced as a structural gap in the handoff validator.] Task 778 added a `skeleton` boolean to the H9 handoff schema (.claude/context/contracts/wrap-up.md) and extended sorry_inventory entries to {file,line,statement,strategic,assumption,why_deferred,follow_up_task}, so a documented strategic-sorry skeleton is reported as "implemented (skeleton)". However .claude/scripts/validate-handoff.sh has ZERO awareness of the new `skeleton` field (confirmed: 0 skeleton mentions vs 6 sorry_inventory mentions) -- it cannot validate that a skeleton handoff is well-formed, so relaxed zero-debt could pass validation while being untracked. FIX validate-handoff.sh so that when status=="implemented" and skeleton==true it: (1) accepts the skeleton:true field; (2) requires sorry_inventory to be non-empty and to enumerate every strategic sorry; (3) validates each strategic-sorry entry has the required fields (strategic:true, non-empty assumption, non-empty why_deferred, NON-NULL follow_up_task) per 778 5-condition test / wrap-up.md schema; (4) ensures relaxed zero-debt stays VISIBLE and TRACKED (every strategic sorry maps to a follow-up task). Keep STANDARD-mode validation unchanged (skeleton absent/false -> existing behavior). Reference wrap-up.md status/skeleton interaction table and the sorry_inventory schema. Add/extend test coverage if a validate-handoff.sh test harness exists. Note: validate-handoff.sh is a single-copy script under .claude/scripts/ (check whether an extensions/core mirror exists and keep them in lockstep if so). Scope: hard-mode handoff validation.
+
+---
+
+### 806. Align lean/cslib hard-mode contracts with 778 strategic-sorry policy
+- **Effort**: 2-4 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: [Follow-up to task 778, surfaced by 778 research + implementation as an explicit out-of-scope downstream note.] Task 778 relaxed the CORE zero-debt policy under --hard (.claude/context/contracts/anti-analysis.md) to permit documented STRATEGIC SORRIES forming a skeleton via a domain-agnostic 5-condition acceptance test, and added a `skeleton` boolean + 7-field sorry_inventory schema to wrap-up.md. But the lean/cslib EXTENSION overrides still forbid main-target sorries UNCONDITIONALLY, directly contradicting the new core policy for exactly the Lean4 domain (task 305) that motivated 772/774/778. Bring the lean/cslib hard-mode contracts into alignment. FILES: .claude/extensions/lean/context/contracts/anti-analysis.md (the override that categorically bans main-target sorries; cslib has NO separate anti-analysis.md -- it inherits lean via the cslib->lean dependency), .claude/extensions/lean/agents/lean-implementation-hard-agent.md, .claude/extensions/cslib/agents/cslib-implementation-hard-agent.md. CHANGES: replace the unconditional main-target-sorry prohibition with the 5-condition strategic-sorry test from core 778 (deliberate division boundary NOT abandoned proof; tightly scoped; documented with assumption / why-deferred / owning follow-up task; tracked; build-green), specialized for Lean4 where `sorry` is the canonical placeholder. The override should still ADD domain guidance (sorry must typecheck; track via #print axioms sorryAx / declaration-uses-sorry) but must NOT categorically ban deliberate skeleton sorries at main-target level. Verify consistency with core anti-analysis.md and wrap-up.md (778 schema). CROSS-REPO: the lean/cslib extensions are consumed by a separate repo (~/Projects/cslib via install-extension.sh file-copy) -- FLAG the change for re-install sync (do not edit that repo). Scope: hard-mode lean/cslib only; standard mode unchanged.
+
+---
 
 ### 805. Improve email mass cleanup workflow
 - **Status**: [COMPLETED]
