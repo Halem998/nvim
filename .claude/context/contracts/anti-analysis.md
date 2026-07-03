@@ -42,12 +42,45 @@ An agent may claim a design decision is defective ONLY when ALL of the following
 
 Without all four elements, a defect claim is analysis, not implementation work.
 
-## Sub-Sorry Policy (for formal verification domains)
+## Sub-Sorry Policy
+
+**`--hard`-only**: This entire contract, including this policy, is loaded exclusively by
+hard-mode dispatch paths (`skill-implementer-hard`, `general-implementation-hard-agent`,
+`skill-orchestrate-hard`); STANDARD mode never loads this file and its zero-debt bar is
+unaffected by anything below.
 
 - Tightly scoped, documented leaf sub-sorrys are acceptable progress markers
-- Main target theorems as sorry-stubs are not acceptable as final dispatch output
+- Main target theorems (or main-target-level constructs in non-formal domains) as sorry-stubs
+  are not acceptable as final dispatch output, EXCEPT when they qualify as a strategic sorry
+  under the "Strategic sorries" test below
 - Each sorry must include a comment stating: (a) what it assumes, (b) why it was deferred,
   (c) which next dispatch should address it
+
+### Strategic sorries (skeleton division points)
+
+A main-target-level placeholder is acceptable as a **strategic sorry** — a deliberate division
+point in a skeleton, not an abandoned or stuck proof — ONLY when ALL five conditions hold:
+
+1. **Deliberate division boundary**: The sorry marks a division point that was planned as part
+   of a skeleton (e.g., from a hard-mode plan's phase/part breakdown), not a proof the agent got
+   stuck on and gave up. An abandoned or stuck attempt is never strategic.
+2. **Tightly scoped**: The placeholder is scoped to exactly one theorem, function, or definition
+   — not an entire module, file, or multi-part goal.
+3. **Documented**: The sorry's accompanying comment states (a) the assumption it stands in for,
+   (b) why it was deferred rather than completed in this dispatch, and (c) the owning follow-up
+   task or sub-phase that will discharge it.
+4. **Tracked**: The sorry is recorded in the handoff `sorry_inventory` (see `wrap-up.md`) with
+   `strategic: true` and a non-null `follow_up_task`. An undocumented or untracked sorry is never
+   strategic — it forces `status: "partial"` or `status: "blocked"`, not `"implemented"`.
+5. **Build-green**: The placeholder is a syntactically/type-valid token in the target language
+   (`sorry` in Lean4; domain equivalents such as `admit`, `raise NotImplementedError`, or an
+   explicit `-- STUB:` marker) — the build/typecheck must still pass.
+
+A dispatch meeting all five conditions for every main-target-level placeholder it introduces
+reports `status: "implemented"` with `skeleton: true` (see `wrap-up.md` for the field and the
+full `sorry_inventory` schema), rather than being forced toward `partial`/`blocked` or into
+analysis-paralysis. Non-strategic main-target sorries — i.e. any that fail one or more of the
+five conditions — remain forbidden under the "Forbidden Conclusions" section above.
 
 ## Settled-Design Preamble Protocol
 

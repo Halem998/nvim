@@ -5,6 +5,10 @@ dispatch ends with a complete handoff artifact and a set of green-build incremen
 The orchestrator relies on handoff JSON to drive the next dispatch cycle; incomplete handoffs
 break the pipeline.
 
+**`--hard`-only**: This entire contract is loaded exclusively by hard-mode dispatch paths
+(`skill-implementer-hard`, `general-implementation-hard-agent`, `skill-orchestrate-hard`);
+STANDARD mode never loads this file.
+
 ## Orchestrator Handoff JSON Schema
 
 Every hard-mode implementation dispatch MUST write `.orchestrator-handoff.json` before
@@ -13,6 +17,7 @@ terminating. Maximum 400 tokens. Required fields:
 ```json
 {
   "status": "implemented | partial | blocked",
+  "skeleton": false,
   "phases_completed": 2,
   "phases_total": 5,
   "sorry_inventory": [],
@@ -30,11 +35,32 @@ terminating. Maximum 400 tokens. Required fields:
 ```
 
 **Field semantics**:
-- `sorry_inventory`: Array of {file, line, statement} for each sorry introduced (lean4 domains)
+- `skeleton`: Boolean, default `false`. `true` ONLY when `status == "implemented"` and
+  completeness rests on one or more strategic sorries meeting the `anti-analysis.md`
+  strategic-sorry policy — the "implemented (skeleton)" outcome. MUST be `false` or absent when
+  `status` is `"partial"` or `"blocked"` (see the status/skeleton interaction table below).
+- `sorry_inventory`: Array of entries, one per sorry introduced, with the canonical schema
+  `{file, line, statement, strategic, assumption, why_deferred, follow_up_task}`:
+  - `file`, `line`, `statement`: location and verbatim statement of the sorry (as before).
+  - `strategic`: boolean — `true` if the sorry qualifies as strategic under `anti-analysis.md`'s
+    five-condition test; `false` for an ordinary leaf sub-sorry.
+  - `assumption`: what the sorry stands in for / assumes.
+  - `why_deferred`: why it was deferred rather than completed in this dispatch.
+  - `follow_up_task`: the owning follow-up task number or sub-phase that will discharge it.
+    REQUIRED (non-null) when `strategic: true` — an untracked strategic sorry is a defect, not a
+    skeleton success.
 - `blockers`: MUST include verbatim goal text (from the plan checklist) for each blocker.
   Paraphrasing is a defect -- the orchestrator uses verbatim text for re-dispatch prompts.
 - `continuation_path`: Path to the handoff markdown artifact if `status != "implemented"`.
   Null when status is "implemented".
+
+**status / skeleton interaction**:
+
+| `status` | `skeleton` | Meaning |
+|----------|------------|---------|
+| `implemented` | `false` (or absent) | Fully complete, no outstanding sorries (unchanged baseline) |
+| `implemented` | `true` | Build-green with only tracked strategic sorries — "implemented (skeleton)" |
+| `partial` / `blocked` | `true` | **Invalid combination.** `skeleton: true` requires `status: "implemented"` |
 
 ## Continuation Handoff Markdown
 
@@ -82,7 +108,12 @@ At every commit, the following invariants hold:
    verification criteria
 2. **Syntactically valid**: All modified files are syntactically valid for their language
 3. **No leftover scaffolding**: No TODO-stubs, placeholder functions, or half-written code
-   blocks (except explicitly noted sorry-placeholders in lean4 domains)
+   blocks, EXCEPT — under `--hard` only — documented strategic sorries that meet the
+   `anti-analysis.md` strategic-sorry policy (deliberate skeleton division point, tightly
+   scoped, documented, tracked in `sorry_inventory` with `strategic: true` and a non-null
+   `follow_up_task`, and still build-green). STANDARD mode's invariant is unchanged and
+   absolute: it has no strategic-sorry exception, and no leftover scaffolding of any kind is
+   acceptable outside `--hard`.
 
 Violating the build-green invariant is a critical defect. Do not commit broken work and
 "continue in the next dispatch." Fix the regression before committing.
@@ -90,5 +121,8 @@ Violating the build-green invariant is a critical defect. Do not commit broken w
 ## Domain Specialization
 
 - **lean4**: sorry_inventory is mandatory and must be populated. Each sorry includes
-  the statement (verbatim from source), the location (file:line), and the justification
+  the statement (verbatim from source), the location (file:line), and the justification. Under
+  `--hard`, a sorry additionally counted as a strategic skeleton division point requires
+  `strategic: true` and a non-null `follow_up_task` in its `sorry_inventory` entry (see the
+  canonical entry schema above and the five-condition test in `anti-analysis.md`).
 - **z3**: handoff JSON includes `assertion_inventory` with any un-verified assertions

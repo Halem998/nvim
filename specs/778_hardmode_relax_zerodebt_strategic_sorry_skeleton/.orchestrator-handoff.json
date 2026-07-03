@@ -1,0 +1,62 @@
+{
+  "status": "implemented",
+  "summary": "All 5 phases completed: anti-analysis.md now defines a domain-agnostic 5-condition strategic-sorry acceptance test; wrap-up.md adds a skeleton boolean + extended 7-field sorry_inventory schema + a --hard-only build-green exception (status enum unchanged: implemented|partial|blocked); skill-implementer-hard Stage 6 parses/logs skeleton dispatches; general-implementation-hard-agent.md Stage 5 has a worked 'implemented (skeleton)' handoff example + MUST-DO follow_up_task line. Both dual-tracked skill/agent files verified byte-identical to their extensions/core source copies (one pre-existing, task-778-unrelated 3-line divergence in skill-implementer-hard's literature-briefing script name was identified and left untouched, out of scope). Sample skeleton handoff validated successfully against unmodified validate-handoff.sh.",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "artifacts": [
+    {
+      "type": "contract",
+      "path": ".claude/context/contracts/anti-analysis.md",
+      "summary": "Phase 1: retitled Sub-Sorry Policy, added --hard-only note, added 5-condition strategic-sorry acceptance subsection"
+    },
+    {
+      "type": "contract",
+      "path": ".claude/context/contracts/wrap-up.md",
+      "summary": "Phase 2: added skeleton field to handoff schema, extended sorry_inventory to 7-field canonical schema, status/skeleton interaction table, --hard-only build-green exception"
+    },
+    {
+      "type": "skill",
+      "path": ".claude/skills/skill-implementer-hard/SKILL.md",
+      "summary": "Phase 3 (deployed): Stage 6 parses skeleton/sorry_inventory, logs skeleton dispatch line"
+    },
+    {
+      "type": "skill",
+      "path": ".claude/extensions/core/skills/skill-implementer-hard/SKILL.md",
+      "summary": "Phase 3 (source): identical edit, byte-identical to deployed copy for the edited section"
+    },
+    {
+      "type": "agent",
+      "path": ".claude/agents/general-implementation-hard-agent.md",
+      "summary": "Phase 4 (deployed): Strategic-Sorry Skeleton subsection, third worked handoff example, MUST-DO follow_up_task line"
+    },
+    {
+      "type": "agent",
+      "path": ".claude/extensions/core/agents/general-implementation-hard-agent.md",
+      "summary": "Phase 4 (source): identical edit, confirmed byte-identical to deployed copy"
+    },
+    {
+      "type": "summary",
+      "path": "specs/778_hardmode_relax_zerodebt_strategic_sorry_skeleton/summaries/01_strategic-sorry-skeleton-policy-summary.md",
+      "summary": "Full implementation summary including downstream notes for tasks 772/774"
+    }
+  ],
+  "blockers": [],
+  "downstream_notes": [
+    {
+      "note": "lean/cslib_override_contradiction",
+      "files": [
+        ".claude/extensions/lean/context/contracts/anti-analysis.md",
+        ".claude/extensions/lean/agents/lean-implementation-hard-agent.md",
+        ".claude/extensions/cslib/agents/cslib-implementation-hard-agent.md"
+      ],
+      "description": "These files forbid main-target sorries unconditionally, contradicting the new core strategic-sorry policy for the Lean4 domain that motivated 772/774. Deliberately not edited (out of scope). Recommend a follow-up task surfaced via task 772 to reconcile the overrides and rename next_dispatch -> follow_up_task."
+    },
+    {
+      "note": "validate_handoff_structural_gap",
+      "files": [".claude/scripts/validate-handoff.sh"],
+      "description": "Script does not yet fail when strategic: true lacks follow_up_task/assumption/why_deferred. Passed unmodified against a sample skeleton handoff (Non-Goal respected). Recommend a follow-up task to add this structural check."
+    }
+  ],
+  "next_action_hint": "No further action required for task 778 itself. Tasks 772 and 774 may now proceed, building on this foundational strategic-sorry skeleton policy. A follow-up task (recommended, surfaced via 772) should reconcile the lean/cslib hard-mode overrides with the new core policy.",
+  "continuation_path": null
+}

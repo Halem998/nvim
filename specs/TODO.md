@@ -11,29 +11,27 @@ next_project_number: 806
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,777,778,780,782,783,787,791,795,796,802,804 | -- | agent-system, literature, email integration, ... |
-| 2 | 773,774,779,781,785 | 772,778,780 | agent-system |
-| 3 | 786 | 785 | agent-system |
+| 1 | 78,87,774,777,780,782,783,787,791,795,796,802,804 | -- | agent-system, literature, email integration, ... |
+| 2 | 772,779,781,785 | 774,780 | agent-system |
+| 3 | 773,786 | 772,785 | agent-system |
 | 4 | 788 | 786,787 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-772 [NOT STARTED] — [--hard IMPLEMENTATION leg: focus each agent round on an INDIVIDU
-  └─ 773 [NOT STARTED] — The anti-analysis contract (H2, .claude/context/contracts/anti-an
-777 [NOT STARTED] — [--hard RESEARCH leg: more effort, higher standards for quality, 
-778 [NOT STARTED] — [--hard CORE EFFECT: relax the zero-debt policy to permit STRATEG
-  └─ 774 [NOT STARTED] — [--hard PLANNING leg: make phases SMALLER and divide work into a 
+774 [NOT STARTED] — [--hard PLANNING leg: make phases SMALLER and divide work into a 
+  └─ 772 [NOT STARTED] — [--hard IMPLEMENTATION leg: focus each agent round on an INDIVIDU
+    └─ 773 [NOT STARTED] — The anti-analysis contract (H2, .claude/context/contracts/anti-an
+777 [PLANNED] — [--hard RESEARCH leg: more effort, higher standards for quality, 
+780 [PLANNED] — [Working-tree preservation] Prevent agents from destroying uncomm
   └─ 779 [NOT STARTED] — [--hard recovery discipline] Define an unambiguous recovery contr
-780 [NOT STARTED] — [Working-tree preservation] Prevent agents from destroying uncomm
-  └─ 779 [NOT STARTED] — [--hard recovery discipline] Define an unambiguous recovery contr (see above)
   └─ 781 [NOT STARTED] — [Context-overflow safety] Dispatched agents must detect context p
   └─ 785 [NOT STARTED] — Replace the repo-wide `git add -A` in the task commit pipeline wi
     └─ 786 [NOT STARTED] — Sweep the 40+ remaining `git add -A` references across the agent 
       └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree
-782 [NOT STARTED] — [Formal-domain context hygiene] Reduce the context that lean4/for
-783 [NOT STARTED] — Fix the sorry-census methodology in the review/vet agent tooling 
+782 [PLANNED] — [Formal-domain context hygiene] Reduce the context that lean4/for
+783 [PLANNED] — Fix the sorry-census methodology in the review/vet agent tooling 
 787 [NOT STARTED] — Make multi-task creation declare dependencies based on FILE FOOTP
   └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree (see above)
 791 [PR READY] — Fix the <leader>al 'Load Core' loader so WezTerm lifecycle tab co
@@ -285,10 +283,12 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 
 ### 783. Fix sorry-census to exclude comment/docstring lines (count only live proof debt)
 - **Effort**: 1-2 hours
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [783_fix_sorry_census_exclude_comments/reports/01_fix-sorry-census-comments.md]
+- **Plan**: [783_fix_sorry_census_exclude_comments/plans/01_sorry-census-comment-stripper.md]
 
 **Description**: Fix the sorry-census methodology in the review/vet agent tooling so it stops counting Lean comment/docstring lines as proof debt. Root cause surfaced by cslib task 431 (origin repo: ~/Projects/cslib): the health-review census is a raw grep for 'sorry' over Cslib/**.lean, which swept up 7 docstring/comment occurrences (e.g. 'sorry-free', 'removing the sorry') plus a commented-out TODO stub, producing false 'unowned foundational sorry' findings. Moving to word-boundary 'sorry' did not help -- it still matches inside docstrings. Fix: make the census count only live proof debt -- strip Lean line comments (--) and block comments (/- -/) before matching, and/or cross-check against the compiler 'declaration uses sorry' warnings or #print axioms sorryAx. Update whichever shared agent-system tooling performs the census (the /review and/or /vet skills/scripts under .claude/). Evidence: cslib specs/431_audit_unowned_foundational_sorries/reports/01_unowned-sorries-audit.md, specs/reviews/review-2026-06-30.md, review-2026-06-30-2.md. Moved here from cslib (was task 437) because it is an agent-system change.
 
@@ -296,10 +296,12 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 
 ### 782. Formal-domain context hygiene: minimize goal-state context for lean4 agents
 - **Effort**: 2-4 hours
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [782_formal_domain_goal_state_context_hygiene/reports/01_formal-domain-context-hygiene.md]
+- **Plan**: [782_formal_domain_goal_state_context_hygiene/plans/01_context-hygiene-contract.md]
 
 **Description**: [Formal-domain context hygiene] Reduce the context that lean4/formal-proof agents consume per step so enormous goal states do not overflow the window. MOTIVATING FAILURE: five dispatches on Lean tableau proofs overflowed because goal states are enormous and were repeatedly pulled into context. Scope (lean4 / formal domains -- applies to lean-*/cslib-* and formal hard agents and their context/contracts): (1) Goal-state query discipline: prefer TARGETED lean-lsp queries (lean_goal at a specific position, lean_minimal_hypotheses, lean_term_goal) over dumping full goal states; do NOT paste entire goal states into reasoning repeatedly; summarize the goal in a few lines and re-query precisely when needed. (2) File-read discipline: avoid re-reading whole large proof files; read only the region around the active proof; use lean_file_outline / targeted offset reads. (3) Hypothesis pruning: work from minimal hypotheses; avoid carrying large unused contexts forward. (4) Encode these as a formal-domain CONTEXT CONTRACT (an extension context file analogous to the lean4 override of anti-analysis.md) consumed by the lean/formal research + implementation hard agents. (5) Combine with checkpoint-before-overflow (task 781): hygiene lowers the baseline context; checkpointing handles the residual. SCOPE NOTE: this is domain-specific. If the lean/cslib extension lives in a separate repo, author the contract here and FLAG it for sync to that extension (do not assume the shared repo is the only consumer). Pairs with task 781. Goal: a single large goal state is handled by targeted querying and summarization rather than overflowing the agent's context.
 
@@ -318,10 +320,12 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 
 ### 780. Agent git-safety: preserve uncommitted work, guard destructive git ops
 - **Effort**: 3-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [780_agent_git_safety_preserve_uncommitted_work/reports/01_git-safety-preserve-uncommitted-work.md]
+- **Plan**: [780_agent_git_safety_preserve_uncommitted_work/plans/01_guard-destructive-git-hook.md]
 
 **Description**: [Working-tree preservation] Prevent agents from destroying uncommitted progress via destructive git operations, and require a recoverable snapshot before any rollback. MOTIVATING FAILURE: an implementation agent ran a revert-to-last-green-commit that discarded uncommitted forward progress (FreshAbove scaffolding + an 8->4 sorry reduction); the work existed only in the working tree and was lost. Two layers: (1) RULE (behavioral): extend .claude/rules/git-workflow.md with a 'no destructive git on uncommitted work' rule -- agents MUST NOT run git operations that discard working-tree changes (git reset --hard, git checkout -- <path>, git checkout/switch that would overwrite changes, git restore <path>, git clean -fd, git stash drop/clear) while uncommitted changes exist, UNLESS a snapshot was just taken. Before any intentional rollback the agent MUST snapshot recoverably: a WIP commit on a scratch/throwaway branch, OR a .patch artifact under specs/{NNN}_{SLUG}/ (e.g. working-progress-{ts}.patch), OR at minimum git stash (without drop). (2) HOOK (enforced): add a PreToolUse hook (registered via settings.json / the hooks system, e.g. .claude/scripts/guard-destructive-git.sh) that intercepts Bash tool calls, detects the destructive git patterns above, and BLOCKS them (deny / non-zero) with corrective context UNLESS (a) the working tree is clean, or (b) a snapshot marker shows a snapshot was just created. The hook returns guidance pointing to the snapshot-first procedure. Model it after the existing PostToolUse validators (e.g. validate-meta-write.sh) and the hooks registration pattern in .claude/. (3) Provide a tiny helper the agent calls to snapshot (write the .patch + record the marker the hook checks). Scope: applies to ALL agents (not just hard-mode) -- accidental destruction is universal -- but keep it lightweight so legitimate clean-tree operations (e.g. checkout on a clean tree) are not blocked. Pairs with task 779 (snapshot-before-rollback is rung c of the recovery ladder). Goal: a misread or mistaken instruction can never irreversibly destroy uncommitted agent work.
 
@@ -340,10 +344,13 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 
 ### 778. Hard-mode: relax zero-debt for strategic-sorry skeletons (division mechanism)
 - **Effort**: 3-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [778_hardmode_relax_zerodebt_strategic_sorry_skeleton/reports/01_strategic-sorry-skeleton-policy.md]
+- **Plan**: [778_hardmode_relax_zerodebt_strategic_sorry_skeleton/plans/01_strategic-sorry-skeleton-policy.md]
+- **Summary**: [778_hardmode_relax_zerodebt_strategic_sorry_skeleton/summaries/01_strategic-sorry-skeleton-policy-summary.md]
 
 **Description**: [--hard CORE EFFECT: relax the zero-debt policy to permit STRATEGIC SORRIES forming a SKELETON that divides the task into parts.] A primary effect of --hard is that the standard zero-debt / build-green completeness requirement is RELAXED to allow deliberately-placed, documented 'strategic' sorries (placeholder stubs) that scaffold a skeleton of the overall objective. The skeleton's strategic sorries are the DIVISION POINTS: each becomes a discrete part / follow-up task. This is the mechanism that connects the planning leg (task 774: skeleton + follow-up tasks) to the implementation leg (task 772: one phase per round). Scope of changes (hard-mode ONLY): (1) Relax zero-debt enforcement under --hard -- update the wrap-up build-green invariant (.claude/context/contracts/wrap-up.md, 'No leftover scaffolding' clause) and the anti-analysis Sub-Sorry Policy (.claude/context/contracts/anti-analysis.md) so a documented strategic-sorry skeleton is an ACCEPTABLE dispatch outcome under --hard. Under STANDARD mode, zero-debt still holds unchanged. (2) Define what makes a sorry 'strategic' and acceptable: a deliberate division boundary on the skeleton (NOT an abandoned proof), tightly scoped, documented with (a) what it assumes, (b) why deferred, (c) which follow-up task/part will discharge it. (3) Require every strategic sorry to map to a TRACKED part -- a follow-up task (created by planner-hard, task 774) or a sub-phase -- so relaxed zero-debt is VISIBLE and TRACKED, never silently abandoned. (4) Update the hard implementer/agent verification (skill-implementer-hard / general-implementation-hard-agent) and the handoff sorry_inventory so a documented strategic-sorry skeleton is reported as 'implemented (skeleton)' rather than 'failed/partial', while the sorry_inventory MUST enumerate every strategic sorry and its owning follow-up task. (5) Build-green still holds: the skeleton with strategic sorries must still compile/typecheck (sorries are valid placeholders), so 'green build with tracked strategic sorries' is the hard-mode skeleton-completion bar. Domain note: Lean4 'sorry' is the canonical strategic placeholder; the same idea applies to other domains (stubbed functions, 'admit', NotImplemented). CONTEXT: on task 305 the zero-debt expectation (no incomplete proofs) combined with an oversized phase pushed the orchestrator to try to fully prove a research-grade lemma in one round, driving burnout; allowing a strategic-sorry skeleton would have let it land the structure and divide the remaining proof obligations into tracked parts. Foundational --hard policy that the planning leg (774) and implementation leg (772) build on.
 
@@ -351,10 +358,12 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 
 ### 777. Hard-mode research: more effort, higher quality and verification standards
 - **Effort**: 3-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [777_hardmode_research_higher_standards/reports/01_hardmode_research_higher_standards.md]
+- **Plan**: [777_hardmode_research_higher_standards/plans/01_harden-research-verification.md]
 
 **Description**: [--hard RESEARCH leg: more effort, higher standards for quality, consistency, and verification of findings.] Strengthen hard-mode research (skill-researcher-hard / general-research-hard-agent, and domain research-hard agents where applicable) so --hard research is materially more rigorous than standard research, not just a relabel. (1) Raise the effort/coverage bar: require broader source coverage and deeper investigation before concluding (more searches, cross-checking multiple independent sources, no single-source conclusions). (2) Higher quality + consistency standards: require findings to be internally consistent and cross-validated; surface and RESOLVE contradictions rather than reporting them flatly. (3) Harden VERIFICATION of findings: extend the existing H4 adversarial self-verification and H3 reference grounding so every load-bearing claim is verified against a concrete source or counterexample before it ships, and uncertain claims are explicitly marked with confidence levels. (4) Encode the higher standard as enforceable CONTRACT language (analogous to the anti-analysis contract), in the research-hard skill/agent and any research-hard contract file, not just prose. Scope: hard-mode only; do NOT change standard research. CONTEXT: completes the three-leg --hard model alongside the implementation leg (task 772) and the planning leg (task 774). Motivating evidence: in transcript .claude/output/lit.md a hasty inline (non-hard) research conclusion was later found UNSOUND by a more careful standard-mode audit -- hard research should make that level of verification the default, raising confidence in the findings that drive planning and implementation.
 
@@ -415,7 +424,7 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 778, Task 774
 
 **Description**: [--hard IMPLEMENTATION leg: focus each agent round on an INDIVIDUAL PHASE, never the entire plan.] Make skill-orchestrate-hard structurally incapable of doing implementation work itself, forcing per-phase delegation. (1) Remove `Edit` from skill-orchestrate-hard `allowed-tools` (currently `Agent, Bash, Read, Edit`) so the orchestrator cannot directly modify source files -- it used Update ~10 times on task 305. (2) Constrain Bash to orchestration-only operations (jq/state.json reads, git status/log, status-sync scripts) and explicitly forbid build/test/compiler invocations (lake build, lean-lsp, etc.) in the orchestrator context. (3) Require BLOCKING, foreground single-phase dispatch: exactly one Agent call per cycle, wait for its handoff return, never interleave the orchestrator's own work -- forbid background/parallel dispatch of implementation agents (root cause: transcript line 92 'launched it in the background and will continue the orchestration'). (4) Restrict orchestrator Reads to handoff JSON, state.json, and plan files ONLY -- forbid reading implementation source files. (5) Under the relaxed zero-debt policy (task 778), a VALID outcome of an implementation round is a green-building strategic-sorry SKELETON for the phase -- each strategic sorry documented and mapped to a tracked follow-up part -- rather than a fully complete phase; the orchestrator must ACCEPT and route such skeleton handoffs (reading the sorry_inventory) as progress, not demand completeness in one round. Root causes: RC1 (orchestrator had Edit + unrestricted Bash), RC3 (H1 not enforced as a hard loop boundary; background dispatch). Scope: hard-mode only; do NOT modify base skill-orchestrate. CONTEXT: /orchestrate 305 --hard --lit (transcript .claude/output/hard.md) -- the orchestrator became the implementation agent (lines 954-2700: zero implementation dispatches, only inline proof reasoning + ~10 direct Update/lake-build/lean-lsp calls). Goal: each --hard implementation round dispatches exactly ONE phase to a bounded sub-agent; the orchestrator never takes the plan as a whole. Pairs with the planning leg (task 774), which produces the small phases / strategic-sorry skeleton this leg consumes, and the relaxed-debt policy (task 778).
 

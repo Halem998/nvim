@@ -41,6 +41,16 @@ Before beginning any work, internalize from `@.claude/context/contracts/anti-ana
 - **Forbidden conclusions**: Analysis-only outputs without accompanying implementation are defects
 - **Defect bar**: Four-element requirement before any defect claim is legitimate
 
+## Strategic-Sorry Skeleton (Hard Mode)
+
+`@.claude/context/contracts/anti-analysis.md` defines a five-condition strategic-sorry
+acceptance test (deliberate skeleton division boundary, tightly scoped, documented, tracked,
+build-green). When a main-target-level placeholder meets all five conditions, this agent MAY
+leave that strategic placeholder in place and report the dispatch as `status: "implemented"`
+with `skeleton: true`, instead of being forced toward `partial`/`blocked` or into
+analysis-paralysis. See Stage 5, Step 1 below for the worked handoff example. This is
+`--hard`-only; it has no effect on STANDARD-mode implementation.
+
 ## Settled-Design Preamble Protocol
 
 At the very start of Stage 4 (file operations), state:
@@ -208,6 +218,34 @@ Always write this file, even on successful completion:
 On `partial` or `blocked`: populate `blockers` with verbatim goal text from plan checklist.
 On `implemented`: set `status: "implemented"`, empty `blockers`, null `continuation_path`.
 
+On `implemented` with strategic sorries (skeleton): set `status: "implemented"`,
+`skeleton: true`, empty `blockers`, null `continuation_path`, and populate `sorry_inventory`
+with the full canonical 7-field entry for every strategic sorry:
+```json
+{
+  "status": "implemented",
+  "skeleton": true,
+  "phases_completed": N,
+  "phases_total": M,
+  "sorry_inventory": [
+    {
+      "file": "path/to/File.lean",
+      "line": 42,
+      "statement": "theorem foo : ...",
+      "strategic": true,
+      "assumption": "one-sentence description of what the sorry stands in for",
+      "why_deferred": "one-sentence reason this division point was deferred",
+      "follow_up_task": "774.2"
+    }
+  ],
+  "blockers": [],
+  "continuation_path": null
+}
+```
+See `@.claude/context/contracts/anti-analysis.md`'s five-condition test for when a sorry
+qualifies as strategic, and `@.claude/context/contracts/wrap-up.md` for the canonical
+`sorry_inventory` schema and the status/skeleton interaction table.
+
 **Step 2: Final incremental commit**
 
 ```bash
@@ -252,6 +290,8 @@ Same as base agent. On any error: write handoff JSON first, then metadata file.
 3. Write `.orchestrator-handoff.json` at end of every dispatch
 4. Commit at every green-build milestone (not one commit at end)
 5. Honor territory boundaries when `territory` params provided
+6. Populate a non-null `follow_up_task` for every strategic sorry in `sorry_inventory` — an
+   untracked sorry is a defect, not a skeleton success
 
 **MUST NOT**:
 1. Produce analysis-only output without accompanying file operations

@@ -336,8 +336,20 @@ if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
     completion_summary=$(jq -r '.completion_data.completion_summary // ""' "$metadata_file")
     phases_completed=$(jq -r '.phases_completed // 0' "$metadata_file")
     phases_total=$(jq -r '.phases_total // 0' "$metadata_file")
+    # H9 strategic-sorry skeleton fields (see .claude/context/contracts/wrap-up.md):
+    # optional, default false / [] when absent.
+    skeleton=$(jq -r '.skeleton // false' "$metadata_file")
+    sorry_inventory=$(jq -c '.sorry_inventory // []' "$metadata_file")
 else
     status="failed"
+    skeleton="false"
+    sorry_inventory="[]"
+fi
+
+if [ "$skeleton" = "true" ]; then
+  follow_up_tasks=$(echo "$sorry_inventory" | jq -r '[.[] | .follow_up_task] | join(", ")')
+  sorry_count=$(echo "$sorry_inventory" | jq -r 'length')
+  echo "[hard-mode] Skeleton dispatch: ${sorry_count} strategic sorries -> follow-up tasks {${follow_up_tasks}}" >&2
 fi
 ```
 
@@ -350,6 +362,9 @@ if [ "$status" = "implemented" ]; then
   bash .claude/scripts/update-task-status.sh postflight "$task_number" implement "$session_id"
 fi
 # On partial: keep status as "implementing" for resume
+# NOTE: A skeleton dispatch (skeleton=true) already reports status="implemented" per the
+# anti-analysis.md strategic-sorry policy, so it flows through the existing "implemented"
+# postflight path above with no additional branching required.
 ```
 
 ---
