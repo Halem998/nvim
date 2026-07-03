@@ -120,12 +120,12 @@ orchestrator's responsibility per the Territory table.
 | `.claude/rules/error-handling.md` | deployed | reword Build Error Recovery | none known |
 | `.claude/extensions/core/rules/error-handling.md` | core | reword Build Error Recovery | none known |
 
-### Phase 1: Create recovery.md contract and register in index.json [NOT STARTED]
+### Phase 1: Create recovery.md contract and register in index.json [COMPLETED]
 
 - **Goal:** Author the canonical `.claude/context/contracts/recovery.md` (single copy) and add its
   index.json entry so downstream phases can reference it.
 - **Tasks:**
-  - [ ] Create `.claude/context/contracts/recovery.md` following the anti-analysis.md/wrap-up.md
+  - [x] Create `.claude/context/contracts/recovery.md` following the anti-analysis.md/wrap-up.md
     structural convention:
     - Opening paragraph naming the technique (Recovery Contract - Fix-Forward Discipline).
     - A `--hard`-only load disclaimer scoped to rungs (b)/(c) mechanics; explicitly note the rung
@@ -142,11 +142,12 @@ orchestrator's responsibility per the Territory table.
       Uncommitted Work" rule, preferring smallest revert scope.
     - "Domain Specialization" section noting rung (b) placeholders are domain-specific (Lean4
       `sorry`, Python `NotImplementedError`, etc.).
-  - [ ] Add an index.json entry under subdomain "contracts", domain "core", path
+  - [x] Add an index.json entry under subdomain "contracts", domain "core", path
     `contracts/recovery.md`, `load_when.agents: ["general-implementation-hard-agent"]`, keywords
     including `fix-forward`, `recovery-ladder`, `strategic-sorry`, `snapshot`, `restore-green`,
     `rollback`. Match the structure of the existing anti-analysis.md/wrap-up.md entries.
-  - [ ] Confirm no core mirror is needed (contracts/*.md are single-copy).
+  - [x] Confirm no core mirror is needed (contracts/*.md are single-copy). *(confirmed: no
+    `.claude/extensions/core/context/contracts/` directory exists on disk)*
 - **Timing:** 1 hour
 - **Depends on:** none
 

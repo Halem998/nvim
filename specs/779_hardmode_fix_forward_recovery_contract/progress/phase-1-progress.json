@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Create recovery.md contract and register in index.json",
+  "started_at": "2026-07-03T00:00:00Z",
+  "last_updated": "2026-07-03T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create .claude/context/contracts/recovery.md", "status": "done"},
+    {"id": 2, "description": "Add index.json entry for recovery.md", "status": "done"},
+    {"id": 3, "description": "Confirm no core mirror needed", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

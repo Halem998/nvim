@@ -339,6 +339,34 @@
     },
     {
       "keywords": [
+        "fix-forward",
+        "recovery-ladder",
+        "strategic-sorry",
+        "snapshot",
+        "restore-green",
+        "rollback"
+      ],
+      "path": "contracts/recovery.md",
+      "subdomain": "contracts",
+      "topics": [
+        "hard-mode",
+        "recovery",
+        "contracts",
+        "implementation"
+      ],
+      "load_when": {
+        "task_types": [],
+        "agents": [
+          "general-implementation-hard-agent"
+        ],
+        "commands": []
+      },
+      "summary": "Fix-forward recovery contract: disambiguates 'reach green'/'restore green' as fix-forward-only, and defines the 3-rung Recovery Ladder (fix forward -> strategic-sorry skeleton -> snapshot-then-smallest-scope-rollback)",
+      "line_count": 82,
+      "domain": "core"
+    },
+    {
+      "keywords": [
         "literature",
         "inject",
         "index",
