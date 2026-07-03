@@ -161,20 +161,21 @@ orchestrator's responsibility per the Territory table.
 
 ---
 
-### Phase 2: Bake recovery slot into skill-orchestrate-hard dispatch prompt [NOT STARTED]
+### Phase 2: Bake recovery slot into skill-orchestrate-hard dispatch prompt [COMPLETED]
 
 - **Goal:** Add a 5th "Recovery Discipline" slot to `build_hard_mode_prompt_context()` so every
   per-phase (line 301) and parallel-wave (line 339) dispatch emits the disambiguated phrasing by
   default.
 - **Tasks:**
-  - [ ] In the deployed copy, add slot 5 to the CONTRACT SLOTS block (currently lines 309-314):
+  - [x] In the deployed copy, add slot 5 to the CONTRACT SLOTS block (currently lines 309-314):
     "5. Recovery Discipline: If RED, FIX FORWARD to reach green - never revert/reset/checkout to a
     prior commit. If a sub-goal is genuinely blocked, land a documented strategic-sorry skeleton
     (anti-analysis.md) instead of discarding structure. Only if rollback is truly required:
     snapshot first via `bash .claude/scripts/git-snapshot.sh`, then use the smallest revert scope.
-    Full ladder: .claude/context/contracts/recovery.md."
-  - [ ] Apply the identical edit to the core copy.
-  - [ ] Confine the edit to the CONTRACT SLOTS block only (distinct from any 772/773 sections).
+    Full ladder: .claude/context/contracts/recovery.md." *(note: parallel-wave dispatch was
+    disabled by task 772, so slot 5 now only appears at the single Per-Phase Dispatch call site)*
+  - [x] Apply the identical edit to the core copy.
+  - [x] Confine the edit to the CONTRACT SLOTS block only (distinct from any 772/773 sections).
 - **Timing:** 0.5 hour
 - **Depends on:** 1
 

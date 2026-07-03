@@ -1,0 +1,23 @@
+{
+  "phase": 2,
+  "phase_name": "Bake recovery slot into skill-orchestrate-hard dispatch prompt",
+  "started_at": "2026-07-03T00:15:00Z",
+  "last_updated": "2026-07-03T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add slot 5 to CONTRACT SLOTS block in deployed copy", "status": "done"},
+    {"id": 2, "description": "Apply identical edit to core copy", "status": "done"},
+    {"id": 3, "description": "Confine edit to CONTRACT SLOTS block only", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.note",
+      "description": "Plan referenced parallel-wave dispatch consuming build_hard_mode_prompt_context at line 339",
+      "type": "altered",
+      "reason": "Task 772 disabled Parallel Wave Dispatch entirely before this task ran; only the single Per-Phase Dispatch call site remains, so the slot 5 addition applies there only (still satisfies plan intent — every dispatch gets the phrasing).",
+      "annotation": "*(note: parallel-wave dispatch was disabled by task 772, so slot 5 now only appears at the single Per-Phase Dispatch call site)*"
+    }
+  ]
+}

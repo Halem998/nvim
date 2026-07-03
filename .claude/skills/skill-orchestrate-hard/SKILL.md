@@ -390,6 +390,7 @@ HARD MODE DISPATCH — CONTRACT SLOTS:
 2. Anti-Analysis Rules: Read .claude/context/contracts/anti-analysis.md. First file edit within 20% of tool calls.
 3. Wrap-up Contract: Write .orchestrator-handoff.json before terminating. Incremental commits.
 4. Settled Design Preamble: State the decided design before first tool call.
+5. Recovery Discipline: If RED, FIX FORWARD to reach green — never revert/reset/checkout to a prior commit. If a sub-goal is genuinely blocked, land a documented strategic-sorry skeleton (anti-analysis.md) instead of discarding structure. Only if rollback is truly required: snapshot first via 'bash .claude/scripts/git-snapshot.sh', then use the smallest revert scope. Full ladder: .claude/context/contracts/recovery.md.
 
 PHASES COMPLETED: $phases_completed of $phases_total
 "
