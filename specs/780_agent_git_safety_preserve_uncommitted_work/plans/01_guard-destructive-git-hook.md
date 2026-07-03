@@ -1,7 +1,7 @@
 # Implementation Plan: Task #780
 
 - **Task**: 780 - Agent git-safety: preserve uncommitted work, guard destructive git ops
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 5-6 hours
 - **Dependencies**: None (pairs with 779, 782; blocks 782, 785)
 - **Research Inputs**: reports/01_git-safety-preserve-uncommitted-work.md
