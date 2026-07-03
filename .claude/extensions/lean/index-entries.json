@@ -618,6 +618,28 @@
       "domain": "project",
       "subdomain": "lean",
       "summary": "H4 adversarial verification contract (lean4 parity copy): Claim Verification Bar, Confidence Level Taxonomy, Contradiction Resolution Protocol, Forbidden Verification Outputs, lean4 Domain Specialization (lean_hover_info, lean_local_search)"
+    },
+    {
+      "path": "contracts/context-hygiene.md",
+      "description": "Standalone Lean4/CSLib goal-state context hygiene contract: targeted goal queries, bounded file reads, hypothesis pruning",
+      "tags": [
+        "lean4",
+        "cslib",
+        "hard-mode",
+        "context-hygiene",
+        "contracts"
+      ],
+      "load_when": {
+        "agents": [
+          "lean-research-hard-agent",
+          "lean-implementation-hard-agent",
+          "cslib-research-hard-agent",
+          "cslib-implementation-hard-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Four discipline clauses (targeted lean_goal/lean_minimal_hypotheses/lean_term_goal queries, Read offset/limit bounded file reads, hypothesis pruning, Enforcement) for all four Lean/CSLib hard agents; cross-references blocked-mcp-tools.md and context-exhaustion-detection.md"
     }
   ]
 }

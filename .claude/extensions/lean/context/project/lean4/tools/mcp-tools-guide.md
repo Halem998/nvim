@@ -63,6 +63,25 @@ Parameters:
 #### lean_local_search
 **Purpose**: Fast local search to verify declarations exist.
 
+#### lean_minimal_hypotheses
+**Purpose**: Return only the hypotheses relevant to the goal at a position, instead of the
+full local context returned by a raw `lean_goal` call.
+
+**When to prefer over `lean_goal`**: whenever the full local hypothesis list is not needed —
+e.g., deciding the next tactic, summarizing state in the transcript, or checking a single
+hypothesis' shape. Prefer this over `lean_goal`'s local-context dump for hypothesis pruning.
+
+**Role in hypothesis pruning**: this is the primary tool for the hypothesis-pruning clause
+of `@.claude/extensions/lean/context/contracts/context-hygiene.md` — carry forward only
+hypotheses the planned tactic references, not the full local context.
+
+```
+Parameters:
+- file_path: Absolute path to Lean file
+- line: Line number (1-indexed)
+- column: Column (1-indexed, optional)
+```
+
 #### lean_build
 **Purpose**: Build the Lean project and restart LSP.
 

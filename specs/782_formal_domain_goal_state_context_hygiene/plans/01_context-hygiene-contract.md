@@ -1,7 +1,7 @@
 # Implementation Plan: Task #782 - Formal-domain context hygiene
 
 - **Task**: 782 - Formal-domain context hygiene: reduce per-step context lean4/formal agents consume
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None (complementary to task 781; not blocking)
 - **Research Inputs**: reports/01_formal-domain-context-hygiene.md
@@ -93,31 +93,31 @@ Phases within the same wave can execute in parallel. Phases 3 and 4 edit disjoin
 (lean vs. cslib); Phase 2 edits `index-entries.json`; Phase 5 edits `mcp-tools-guide.md` — no
 territory overlap within a wave.
 
-### Phase 1: Author the context-hygiene contract [NOT STARTED]
+### Phase 1: Author the context-hygiene contract [COMPLETED]
 
 - **Goal:** Create the standalone contract file and lock the exact shared wiring text that Phases
   3-4 will paste into the four agents.
 - **Tasks:**
-  - [ ] Create `.claude/extensions/lean/context/contracts/context-hygiene.md` titled
+  - [x] Create `.claude/extensions/lean/context/contracts/context-hygiene.md` titled
     "Goal-State Context Hygiene Contract — Lean4/CSLib" (standalone identity, does NOT claim to
     override a core file).
-  - [ ] Clause 1 (Goal-state query discipline): prefer `lean_goal` at a specific line/column over
+  - [x] Clause 1 (Goal-state query discipline): prefer `lean_goal` at a specific line/column over
     broad queries; use `lean_minimal_hypotheses` for only-relevant hypotheses; use `lean_term_goal`
     for expected-type-only checks; summarize returned goals in <=3 transcript lines rather than
     pasting raw MCP output every step; re-query precisely by exact line/column.
-  - [ ] Clause 2 (File-read discipline): `Read` with explicit `offset`/`limit` bounding the active
+  - [x] Clause 2 (File-read discipline): `Read` with explicit `offset`/`limit` bounding the active
     proof's enclosing declaration plus small margin; no whole-file reads of large `Theories/`/
     `Cslib/` files; no re-reading a region already read in the same dispatch; note
     `lean_file_outline` remains BLOCKED and point at `blocked-mcp-tools.md` as the single source of
     truth for block status (do not hardcode the block).
-  - [ ] Clause 3 (Hypothesis pruning): prefer `lean_minimal_hypotheses` over the full hypothesis
+  - [x] Clause 3 (Hypothesis pruning): prefer `lean_minimal_hypotheses` over the full hypothesis
     list from a raw `lean_goal`; do not carry forward hypotheses irrelevant to the current tactic;
     when summarizing, list only hypotheses the planned tactic references.
-  - [ ] Clause 4 (Packaging): express clauses 1-3 as MUST/SHOULD rules with a short "Enforcement"
+  - [x] Clause 4 (Packaging): express clauses 1-3 as MUST/SHOULD rules with a short "Enforcement"
     paragraph mirroring `anti-analysis.md` style; add explicit cross-reference to
     `@.claude/context/patterns/context-exhaustion-detection.md` (preventive hygiene here vs.
     reactive checkpointing there / task 781).
-  - [ ] At the bottom of this plan's working notes, record the EXACT `## Context References` bullet
+  - [x] At the bottom of this plan's working notes, record the EXACT `## Context References` bullet
     string and the EXACT 5-8 line inline internalization block to be pasted verbatim in Phases 3-4.
 - **Timing:** ~45 min
 - **Depends on:** none
@@ -127,16 +127,16 @@ territory overlap within a wave.
   Enforcement paragraph, and the exhaustion-detection cross-reference; block status is referenced
   (not hardcoded) via `blocked-mcp-tools.md`.
 
-### Phase 2: Register the contract in the lean extension index [NOT STARTED]
+### Phase 2: Register the contract in the lean extension index [COMPLETED]
 
 - **Goal:** Make the new contract auto-load for exactly the four hard-agent consumers.
 - **Tasks:**
-  - [ ] Add an entry to `.claude/extensions/lean/index-entries.json` with `path`
+  - [x] Add an entry to `.claude/extensions/lean/index-entries.json` with `path`
     `contracts/context-hygiene.md`, appropriate `description`/`tags`/`summary`, and
     `load_when.agents` = `["lean-research-hard-agent", "lean-implementation-hard-agent",
     "cslib-research-hard-agent", "cslib-implementation-hard-agent"]` (mirroring the existing
     `contracts/anti-analysis.md` entry structure, but with all four agents).
-  - [ ] Confirm no `manifest.json` edit is needed (the `contracts` directory is already declared at
+  - [x] Confirm no `manifest.json` edit is needed (the `contracts` directory is already declared at
     directory level in `provides.context`).
 - **Timing:** ~20 min
 - **Depends on:** 1
@@ -144,21 +144,21 @@ territory overlap within a wave.
   - `.claude/extensions/lean/index-entries.json` - append one entry
 - **Verification:** `jq empty` passes; new entry present with all four agents in `load_when.agents`.
 
-### Phase 3: Wire the two Lean hard agents [NOT STARTED]
+### Phase 3: Wire the two Lean hard agents [COMPLETED]
 
 - **Goal:** Reference + internalize the contract in the Lean hard agents and close the exhaustion
   gap for lean research.
 - **Tasks:**
-  - [ ] `lean-research-hard-agent.md`: add the shared `## Context References` bullet (MANDATORY) for
+  - [x] `lean-research-hard-agent.md`: add the shared `## Context References` bullet (MANDATORY) for
     `context-hygiene.md`; add the shared inline internalization section (5-8 lines); add
     `lean_minimal_hypotheses` to the Lean MCP Tools allowed list; ADD the missing
     `@.claude/context/patterns/context-exhaustion-detection.md` reference to Context References
     (companion wiring-gap fix).
-  - [ ] `lean-implementation-hard-agent.md`: add the shared `## Context References` bullet
+  - [x] `lean-implementation-hard-agent.md`: add the shared `## Context References` bullet
     (MANDATORY) for `context-hygiene.md`; add the shared inline internalization section; add
     `lean_minimal_hypotheses` to the allowed list. (Already references exhaustion-detection — no
     companion fix needed here.)
-  - [ ] Paste the Context-References bullet and inline block VERBATIM from Phase 1 to avoid drift.
+  - [x] Paste the Context-References bullet and inline block VERBATIM from Phase 1 to avoid drift.
 - **Timing:** ~35 min
 - **Depends on:** 1
 - **Files to modify:**
@@ -168,19 +168,19 @@ territory overlap within a wave.
   inline block; both list `lean_minimal_hypotheses`; `lean-research-hard-agent` now references
   `context-exhaustion-detection.md`.
 
-### Phase 4: Wire the two CSLib hard agents [NOT STARTED]
+### Phase 4: Wire the two CSLib hard agents [COMPLETED]
 
 - **Goal:** Reference + internalize the contract in the CSLib hard agents and close the exhaustion
   gap for cslib research.
 - **Tasks:**
-  - [ ] `cslib-research-hard-agent.md`: add the shared `## Context References` bullet (MANDATORY) for
+  - [x] `cslib-research-hard-agent.md`: add the shared `## Context References` bullet (MANDATORY) for
     `context-hygiene.md`; add the shared inline internalization section; add
     `lean_minimal_hypotheses` to the allowed list; ADD the missing
     `@.claude/context/patterns/context-exhaustion-detection.md` reference (companion wiring-gap fix).
-  - [ ] `cslib-implementation-hard-agent.md`: add the shared `## Context References` bullet
+  - [x] `cslib-implementation-hard-agent.md`: add the shared `## Context References` bullet
     (MANDATORY) for `context-hygiene.md`; add the shared inline internalization section; add
     `lean_minimal_hypotheses` to the allowed list. (Already references exhaustion-detection.)
-  - [ ] Use the reference form consistent with these files' existing convention
+  - [x] Use the reference form consistent with these files' existing convention
     (`@.claude/extensions/lean/context/contracts/context-hygiene.md`), pasting the inline block
     VERBATIM from Phase 1.
 - **Timing:** ~35 min
@@ -192,15 +192,15 @@ territory overlap within a wave.
   `lean_minimal_hypotheses`; `cslib-research-hard-agent` now references
   `context-exhaustion-detection.md`.
 
-### Phase 5: Document lean_minimal_hypotheses in the MCP tools guide [NOT STARTED]
+### Phase 5: Document lean_minimal_hypotheses in the MCP tools guide [COMPLETED]
 
 - **Goal:** Give `lean_minimal_hypotheses` a documented home in the shared tools reference.
 - **Tasks:**
-  - [ ] Add a `lean_minimal_hypotheses` entry to
+  - [x] Add a `lean_minimal_hypotheses` entry to
     `.claude/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md` (Core Tools section):
     what it returns (minimal relevant hypotheses at a position), when to prefer it over a raw
     `lean_goal` local-context dump, and its role in hypothesis pruning per the new contract.
-  - [ ] Cross-link the entry to `context-hygiene.md`.
+  - [x] Cross-link the entry to `context-hygiene.md`.
 - **Timing:** ~20 min
 - **Depends on:** none
 - **Files to modify:**
@@ -208,16 +208,16 @@ territory overlap within a wave.
 - **Verification:** Guide contains a `lean_minimal_hypotheses` entry with usage guidance and a link
   to the contract.
 
-### Phase 6: Validate wiring and flag cross-repo sync [NOT STARTED]
+### Phase 6: Validate wiring and flag cross-repo sync [COMPLETED]
 
 - **Goal:** Confirm consistency across all touched files and surface the manual re-install step.
 - **Tasks:**
-  - [ ] Run `jq empty` on `index-entries.json`; confirm the new entry loads for the four agents.
-  - [ ] Grep all four hard agents to confirm each references `context-hygiene.md`, contains the
+  - [x] Run `jq empty` on `index-entries.json`; confirm the new entry loads for the four agents.
+  - [x] Grep all four hard agents to confirm each references `context-hygiene.md`, contains the
     inline block, lists `lean_minimal_hypotheses`, and (both research agents) references
     `context-exhaustion-detection.md`.
-  - [ ] Confirm the inline block text is byte-identical across all four agents (drift check).
-  - [ ] Record the FLAGGED manual sync step in the implementation summary: re-run
+  - [x] Confirm the inline block text is byte-identical across all four agents (drift check).
+  - [x] Record the FLAGGED manual sync step in the implementation summary: re-run
     `.claude/scripts/install-extension.sh .claude/extensions/lean` (and `.../extensions/cslib` if
     cslib context files were touched) inside every consuming repo — at minimum
     `/home/benjamin/Projects/cslib` — to copy the new contract over. Do NOT edit or run anything in
@@ -230,16 +230,46 @@ territory overlap within a wave.
 - **Verification:** All greps pass; inline blocks identical; JSON valid; summary contains the
   flagged sync step.
 
+## Working Notes: Shared Wiring Text (Phase 1 output, pasted verbatim in Phases 3-4)
+
+**Context References bullet** (identical in all four hard agents):
+
+```
+- `@.claude/extensions/lean/context/contracts/context-hygiene.md` - Goal-state query discipline, bounded file reads, hypothesis pruning (MANDATORY)
+```
+
+**Inline internalization block** (identical in all four hard agents, inserted as its own
+`##`-level section near the other contract-enforcement sections):
+
+```
+## Context Hygiene Contract Enforcement
+
+Before querying Lean goal state or reading Lean source, internalize from
+`@.claude/extensions/lean/context/contracts/context-hygiene.md`:
+
+- **Targeted goal queries**: prefer `lean_goal` at a specific line/column,
+  `lean_minimal_hypotheses` for relevant-only hypotheses, `lean_term_goal` for
+  expected-type-only checks; summarize results in <=3 transcript lines instead of pasting
+  raw MCP output every step
+- **Bounded file reads**: `Read` with `offset`/`limit` around the active declaration; no
+  whole-file reads of large `Theories/`/`Cslib/` files; no re-reading an already-read region
+- **Hypothesis pruning**: carry forward only hypotheses the planned tactic references
+
+**Enforcement**: a raw unsummarized goal dump repeated for the same position, a whole-file
+read when only one declaration was needed, or irrelevant hypotheses left in a summary is a
+violation — correct the next step immediately.
+```
+
 ## Testing & Validation
 
-- [ ] `jq empty .claude/extensions/lean/index-entries.json` exits 0 and the new entry lists all four
+- [x] `jq empty .claude/extensions/lean/index-entries.json` exits 0 and the new entry lists all four
   hard agents in `load_when.agents`.
-- [ ] `grep -l context-hygiene` finds all four hard-agent files.
-- [ ] `grep -l lean_minimal_hypotheses` finds all four hard-agent files and `mcp-tools-guide.md`.
-- [ ] `lean-research-hard-agent.md` and `cslib-research-hard-agent.md` now contain
+- [x] `grep -l context-hygiene` finds all four hard-agent files.
+- [x] `grep -l lean_minimal_hypotheses` finds all four hard-agent files and `mcp-tools-guide.md`.
+- [x] `lean-research-hard-agent.md` and `cslib-research-hard-agent.md` now contain
   `context-exhaustion-detection`.
-- [ ] The inline internalization block is byte-identical across the four agents.
-- [ ] `context-hygiene.md` references `blocked-mcp-tools.md` for `lean_file_outline` block status
+- [x] The inline internalization block is byte-identical across the four agents.
+- [x] `context-hygiene.md` references `blocked-mcp-tools.md` for `lean_file_outline` block status
   (not hardcoded) and cross-references `context-exhaustion-detection.md`.
 
 ## Artifacts & Outputs

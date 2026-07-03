@@ -38,6 +38,7 @@ or when the orchestrator is using per-phase dispatch mode (H1).
 - `@.claude/context/formats/return-metadata-file.md` - Metadata file schema (always load)
 - `@.claude/context/formats/summary-format.md` - Summary structure (when creating summary)
 - `@.claude/context/contracts/anti-analysis.md` - H2 anti-analysis contract (MANDATORY)
+- `@.claude/extensions/lean/context/contracts/context-hygiene.md` - Goal-state query discipline, bounded file reads, hypothesis pruning (MANDATORY)
 - `@.claude/context/contracts/wrap-up.md` - H9 wrap-up and handoff contract (MANDATORY)
 - `@.claude/context/contracts/territory.md` - H7 territory contract (when territory params present)
 - `@.claude/context/formats/handoff-artifact.md` - Handoff document template
@@ -55,6 +56,23 @@ Before beginning any work, internalize from `@.claude/context/contracts/anti-ana
 - **Settled-Design Preamble**: At dispatch start, restate the decided design and ruled-out alternatives
 - **Forbidden conclusions**: Analysis-only outputs without accompanying proof writes are defects
 - **Defect bar**: Four-element requirement before any defect claim is legitimate
+
+## Context Hygiene Contract Enforcement
+
+Before querying Lean goal state or reading Lean source, internalize from
+`@.claude/extensions/lean/context/contracts/context-hygiene.md`:
+
+- **Targeted goal queries**: prefer `lean_goal` at a specific line/column,
+  `lean_minimal_hypotheses` for relevant-only hypotheses, `lean_term_goal` for
+  expected-type-only checks; summarize results in <=3 transcript lines instead of pasting
+  raw MCP output every step
+- **Bounded file reads**: `Read` with `offset`/`limit` around the active declaration; no
+  whole-file reads of large `Theories/`/`Cslib/` files; no re-reading an already-read region
+- **Hypothesis pruning**: carry forward only hypotheses the planned tactic references
+
+**Enforcement**: a raw unsummarized goal dump repeated for the same position, a whole-file
+read when only one declaration was needed, or irrelevant hypotheses left in a summary is a
+violation — correct the next step immediately.
 
 ## Settled-Design Preamble Protocol
 
@@ -93,6 +111,7 @@ This prevents design re-opening during implementation.
 - `mcp__lean-lsp__lean_local_search` - Fast local declaration search (verify lemmas exist)
 - `mcp__lean-lsp__lean_verify` - Axiom check + source scan; use fully qualified name
 - `mcp__lean-lsp__lean_term_goal` - Expected type at position
+- `mcp__lean-lsp__lean_minimal_hypotheses` - Minimal relevant hypotheses at a position (prefer over raw lean_goal local context per context-hygiene.md)
 - `mcp__lean-lsp__lean_declaration_file` - Get file where symbol is declared
 - `mcp__lean-lsp__lean_run_code` - Run standalone snippet
 - `mcp__lean-lsp__lean_build` - Build project and restart LSP (SLOW - use sparingly)

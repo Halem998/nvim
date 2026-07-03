@@ -40,8 +40,10 @@ abstraction before recommending new definitions.
 - `@.claude/context/contracts/anti-analysis.md` - H2 anti-analysis behavioral contract (MANDATORY)
 - `@.claude/context/contracts/reference-grounding.md` - H3 reference grounding contract (MANDATORY)
 - `@.claude/context/contracts/adversarial-verification.md` - H4 adversarial verification contract: Claim Verification Bar, Confidence Level Taxonomy, Contradiction Resolution Protocol (MANDATORY)
+- `@.claude/extensions/lean/context/contracts/context-hygiene.md` - Goal-state query discipline, bounded file reads, hypothesis pruning (MANDATORY)
 - `@.claude/context/repo/project-overview.md` - Project structure (for codebase research)
 - `@.claude/context/patterns/context-discovery.md` - Use with agent=`cslib-research-hard-agent`
+- `@.claude/context/patterns/context-exhaustion-detection.md` - Context pressure monitoring
 - `@.claude/extensions/cslib/context/project/cslib/standards/citation-conventions.md` - BibKey format (H3 enrichment)
 - `<literature-briefing>` block - Pre-loaded literature from `specs/literature/` (injected by skill when `--lit` flag is used; when present, auto-confirms Tier 1 reference grounding selection)
 
@@ -53,6 +55,23 @@ Before beginning research, read `@.claude/context/contracts/anti-analysis.md` an
 - **Forbidden outputs**: Analysis-only verdicts without actionable direction
 - **Defect bar**: 4-element requirement for defect claims (counterexample, current behavior,
   required behavior, isolation)
+
+## Context Hygiene Contract Enforcement
+
+Before querying Lean goal state or reading Lean source, internalize from
+`@.claude/extensions/lean/context/contracts/context-hygiene.md`:
+
+- **Targeted goal queries**: prefer `lean_goal` at a specific line/column,
+  `lean_minimal_hypotheses` for relevant-only hypotheses, `lean_term_goal` for
+  expected-type-only checks; summarize results in <=3 transcript lines instead of pasting
+  raw MCP output every step
+- **Bounded file reads**: `Read` with `offset`/`limit` around the active declaration; no
+  whole-file reads of large `Theories/`/`Cslib/` files; no re-reading an already-read region
+- **Hypothesis pruning**: carry forward only hypotheses the planned tactic references
+
+**Enforcement**: a raw unsummarized goal dump repeated for the same position, a whole-file
+read when only one declaration was needed, or irrelevant hypotheses left in a summary is a
+violation — correct the next step immediately.
 
 ## CSLib-Specific H3 Enrichment (Reference Grounding)
 
@@ -103,6 +122,7 @@ For Tier 1 (literature-backed) tasks, create this table as the first output in `
 - `mcp__lean-lsp__lean_multi_attempt` - Try multiple tactics without editing
 - `mcp__lean-lsp__lean_local_search` - Fast local declaration search (use first!)
 - `mcp__lean-lsp__lean_term_goal` - Expected type at position
+- `mcp__lean-lsp__lean_minimal_hypotheses` - Minimal relevant hypotheses at a position (prefer over raw lean_goal local context per context-hygiene.md)
 - `mcp__lean-lsp__lean_declaration_file` - Get file where symbol is declared
 - `mcp__lean-lsp__lean_run_code` - Run standalone snippet
 - `mcp__lean-lsp__lean_build` - Build project and restart LSP

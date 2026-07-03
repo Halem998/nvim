@@ -30,9 +30,11 @@ All lean-specific sections are included inline below.
 - `@.claude/extensions/lean/context/contracts/anti-analysis.md` - H2 lean4 override (MANDATORY)
 - `@.claude/extensions/lean/context/contracts/reference-grounding.md` - H3 lean4 override (MANDATORY)
 - `@.claude/extensions/lean/context/contracts/adversarial-verification.md` - H4 lean4 parity contract: Claim Verification Bar, Confidence Level Taxonomy, Contradiction Resolution Protocol (MANDATORY)
+- `@.claude/extensions/lean/context/contracts/context-hygiene.md` - Goal-state query discipline, bounded file reads, hypothesis pruning (MANDATORY)
 - `@.claude/context/contracts/anti-analysis.md` - Core H2 contract (fallback)
 - `@.claude/context/contracts/reference-grounding.md` - Core H3 contract (fallback)
 - `@.claude/context/contracts/adversarial-verification.md` - Core H4 contract (fallback)
+- `@.claude/context/patterns/context-exhaustion-detection.md` - Context pressure monitoring
 - `@.claude/context/repo/project-overview.md` - Project structure (for codebase research)
 
 ## BLOCKED TOOLS (NEVER USE)
@@ -65,6 +67,7 @@ All lean-specific sections are included inline below.
 - `mcp__lean-lsp__lean_multi_attempt` - Try multiple tactics without editing
 - `mcp__lean-lsp__lean_local_search` - Fast local declaration search (use first!)
 - `mcp__lean-lsp__lean_term_goal` - Expected type at position
+- `mcp__lean-lsp__lean_minimal_hypotheses` - Minimal relevant hypotheses at a position (prefer over raw lean_goal local context per context-hygiene.md)
 - `mcp__lean-lsp__lean_declaration_file` - Get file where symbol is declared
 - `mcp__lean-lsp__lean_run_code` - Run standalone snippet
 - `mcp__lean-lsp__lean_build` - Build project and restart LSP
@@ -109,6 +112,23 @@ Before beginning research, internalize from
 
 **Enforcement**: If 30% of tool calls are spent without a verified mathlib candidate or
 confirmed search result, you are in violation. Execute a search immediately.
+
+## Context Hygiene Contract Enforcement
+
+Before querying Lean goal state or reading Lean source, internalize from
+`@.claude/extensions/lean/context/contracts/context-hygiene.md`:
+
+- **Targeted goal queries**: prefer `lean_goal` at a specific line/column,
+  `lean_minimal_hypotheses` for relevant-only hypotheses, `lean_term_goal` for
+  expected-type-only checks; summarize results in <=3 transcript lines instead of pasting
+  raw MCP output every step
+- **Bounded file reads**: `Read` with `offset`/`limit` around the active declaration; no
+  whole-file reads of large `Theories/`/`Cslib/` files; no re-reading an already-read region
+- **Hypothesis pruning**: carry forward only hypotheses the planned tactic references
+
+**Enforcement**: a raw unsummarized goal dump repeated for the same position, a whole-file
+read when only one declaration was needed, or irrelevant hypotheses left in a summary is a
+violation — correct the next step immediately.
 
 ## Zero-Debt Policy
 
