@@ -1,0 +1,13 @@
+{
+  "status": "planned",
+  "summary": "Phased plan (6 phases) to make skill-orchestrate-hard a pure dispatcher: remove Edit, scope Bash/Read + prose forbid-lists, disable parallel-wave dispatch, skeleton-aware heading-scan phase selection with follow-up routing from sorry_inventory[].follow_up_task, Stage 5 postflight completion gate, dual-copy sync. All edits region-delimited to compose with tasks 779/773.",
+  "artifacts": [
+    {
+      "path": "specs/772_hardmode_orchestrator_pure_dispatcher/plans/01_orchestrator-pure-dispatcher.md",
+      "type": "plan",
+      "summary": "6-phase implementation plan editing skill-orchestrate-hard/SKILL.md and its extensions/core mirror for the five pure-dispatcher requirements."
+    }
+  ],
+  "phases_total": 6,
+  "next_action_hint": "implement"
+}

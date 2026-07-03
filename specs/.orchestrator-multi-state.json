@@ -1,64 +1,69 @@
 {
-  "session_id": "sess_1783089459_c17000",
+  "session_id": "sess_1783092185_cd6c84",
   "task_numbers": [
-    777,
-    778,
-    780,
-    782,
-    783
+    774,
+    779,
+    781,
+    772,
+    773
   ],
   "waves": [
     [
-      777,
-      778,
-      780,
-      782,
-      783
+      774,
+      779,
+      781
+    ],
+    [
+      772
+    ],
+    [
+      773
     ]
   ],
   "dependency_graph": {
-    "777": [],
-    "778": [],
-    "780": [],
-    "782": [],
-    "783": []
+    "774": [],
+    "779": [],
+    "781": [],
+    "772": [
+      "774"
+    ],
+    "773": [
+      "772"
+    ]
   },
   "max_cycles": 25,
   "cycle_count": 4,
   "failed_tasks": [],
   "completed_tasks": [
-    777,
-    778,
-    780,
-    782,
-    783
+    774,
+    781
   ],
   "current_statuses": {
-    "777": "completed",
-    "778": "completed",
-    "780": "completed",
-    "782": "completed",
-    "783": "completed"
+    "774": "completed",
+    "779": "planned",
+    "781": "completed",
+    "772": "planned",
+    "773": "not_started"
   },
   "task_dirs": {
-    "777": "specs/777_hardmode_research_higher_standards",
-    "778": "specs/778_hardmode_relax_zerodebt_strategic_sorry_skeleton",
-    "780": "specs/780_agent_git_safety_preserve_uncommitted_work",
-    "782": "specs/782_formal_domain_goal_state_context_hygiene",
-    "783": "specs/783_fix_sorry_census_exclude_comments"
+    "774": "specs/774_hardmode_chunk_sizing_phase_subdivision",
+    "779": "specs/779_hardmode_fix_forward_recovery_contract",
+    "781": "specs/781_agent_context_overflow_checkpoint_handoff",
+    "772": "specs/772_hardmode_orchestrator_pure_dispatcher",
+    "773": "specs/773_orchestrator_discipline_contract_burnout_breaker"
   },
   "research_agents": {
-    "777": "general-research-agent",
-    "778": "general-research-agent",
-    "780": "general-research-agent",
-    "782": "general-research-agent",
-    "783": "general-research-agent"
+    "774": "general-research-agent",
+    "779": "general-research-agent",
+    "781": "general-research-agent",
+    "772": "general-research-agent",
+    "773": "general-research-agent"
   },
   "implement_agents": {
-    "777": "general-implementation-agent",
-    "778": "general-implementation-agent",
-    "780": "general-implementation-agent",
-    "782": "general-implementation-agent",
-    "783": "general-implementation-agent"
+    "774": "general-implementation-agent",
+    "779": "general-implementation-agent",
+    "781": "general-implementation-agent",
+    "772": "general-implementation-agent",
+    "773": "general-implementation-agent"
   }
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #774
 
 - **Task**: 774 - Hard-mode planning: smaller phases + skeleton plan with follow-up tasks
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: Task 778 (COMPLETED — strategic-sorry skeleton policy in wrap-up.md / anti-analysis.md)
 - **Research Inputs**: specs/774_hardmode_chunk_sizing_phase_subdivision/reports/01_skeleton_followup_phase_sizing.md

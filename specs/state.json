@@ -346,10 +346,10 @@
     {
       "project_number": 772,
       "project_name": "hardmode_orchestrator_pure_dispatcher",
-      "status": "not_started",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-06-24T21:54:15Z",
-      "last_updated": "2026-06-24T22:38:22Z",
+      "last_updated": "2026-07-03T15:55:33Z",
       "title": "Make hard-mode orchestrator a pure dispatcher (strip implementation capability)",
       "description": "[--hard IMPLEMENTATION leg: focus each agent round on an INDIVIDUAL PHASE, never the entire plan.] Make skill-orchestrate-hard structurally incapable of doing implementation work itself, forcing per-phase delegation. (1) Remove `Edit` from skill-orchestrate-hard `allowed-tools` (currently `Agent, Bash, Read, Edit`) so the orchestrator cannot directly modify source files -- it used Update ~10 times on task 305. (2) Constrain Bash to orchestration-only operations (jq/state.json reads, git status/log, status-sync scripts) and explicitly forbid build/test/compiler invocations (lake build, lean-lsp, etc.) in the orchestrator context. (3) Require BLOCKING, foreground single-phase dispatch: exactly one Agent call per cycle, wait for its handoff return, never interleave the orchestrator's own work -- forbid background/parallel dispatch of implementation agents (root cause: transcript line 92 'launched it in the background and will continue the orchestration'). (4) Restrict orchestrator Reads to handoff JSON, state.json, and plan files ONLY -- forbid reading implementation source files. (5) Under the relaxed zero-debt policy (task 778), a VALID outcome of an implementation round is a green-building strategic-sorry SKELETON for the phase -- each strategic sorry documented and mapped to a tracked follow-up part -- rather than a fully complete phase; the orchestrator must ACCEPT and route such skeleton handoffs (reading the sorry_inventory) as progress, not demand completeness in one round. Root causes: RC1 (orchestrator had Edit + unrestricted Bash), RC3 (H1 not enforced as a hard loop boundary; background dispatch). Scope: hard-mode only; do NOT modify base skill-orchestrate. CONTEXT: /orchestrate 305 --hard --lit (transcript .claude/output/hard.md) -- the orchestrator became the implementation agent (lines 954-2700: zero implementation dispatches, only inline proof reasoning + ~10 direct Update/lake-build/lean-lsp calls). Goal: each --hard implementation round dispatches exactly ONE phase to a bounded sub-agent; the orchestrator never takes the plan as a whole. Pairs with the planning leg (task 774), which produces the small phases / strategic-sorry skeleton this leg consumes, and the relaxed-debt policy (task 778).",
       "effort": "3-6 hours",
@@ -358,7 +358,19 @@
         778,
         774
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/772_hardmode_orchestrator_pure_dispatcher/reports/01_orchestrator-pure-dispatcher.md",
+          "summary": "Full research report with exact file/line anchors for all 5 required structural changes to skill-orchestrate-hard (dual deployed + extensions/core copies), two explicit scope-decision flags (H7 parallel wave dispatch conflict with item 3; Read-scope tension with item 4's Context References/H4 grep usage), a two-part fix for item 5 (heading-scan phase-selection + skeleton-exhaustion routing mirroring task 774's already-landed skill-implementer-hard fix, plus an independent Stage 5 postflight-status-transition gate to prevent premature whole-task completion after a single phase), a sibling-task overlap map (773 auto-serializes after 772 via dependency; 774 confirmed non-overlapping; 779 has NO formal dependency on 772 and edits the same CONTRACT SLOTS function -- flagged for manual serialization), and scoped-tool syntax precedent (Bash(cmd:*), Read(path/*)) drawn from skill-git-workflow, spawn-agent, settings.json, and creating-commands.md."
+        },
+        {
+          "type": "plan",
+          "path": "specs/772_hardmode_orchestrator_pure_dispatcher/plans/01_orchestrator-pure-dispatcher.md",
+          "summary": "6-phase implementation plan editing skill-orchestrate-hard/SKILL.md and its extensions/core mirror for the five pure-dispatcher requirements."
+        }
+      ],
+      "session_id": "sess_1783092185_cd6c84_772"
     },
     {
       "project_number": 773,
@@ -379,10 +391,10 @@
     {
       "project_number": 774,
       "project_name": "hardmode_chunk_sizing_phase_subdivision",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-06-24T21:54:15Z",
-      "last_updated": "2026-06-24T22:38:22Z",
+      "last_updated": "2026-07-03T15:46:33Z",
       "title": "Hard-mode planning: smaller phases + skeleton plan with follow-up tasks",
       "description": "[--hard PLANNING leg: make phases SMALLER and divide work into a SKELETON plan + follow-up tasks.] Revise hard-mode planning (skill-planner-hard / planner-hard-agent) so that under --hard the plan is decomposed into genuinely small phases, each completable in one bounded agent round, rather than one large open-ended plan ('Phase 1 strike 3: prove merge_forward_succ' was research-grade). (1) Tighten H8 phase sizing so each phase is a minimal bounded unit (e.g. one lemma / one checklist sub-item / ~100-300 lines output), not a multi-part objective. (2) Add a SKELETON-PLUS-FOLLOW-UP decomposition: when the full objective exceeds what a few small phases can cover, planner-hard produces a SKELETON plan covering the core/critical path and SPAWNS follow-up tasks (via the task-spawn / multi-task-creation mechanism) for the remaining work, instead of inflating phases. The skeleton plan and its follow-up tasks are linked via state.json dependencies. (3) The SKELETON is realized with STRATEGIC SORRIES per the relaxed zero-debt policy (task 778): planner-hard plans the skeleton so that deliberately-placed, documented sorries sit at the DIVISION BOUNDARIES, and EACH strategic sorry maps to a follow-up task/part. The division into follow-up tasks is therefore concretely driven by where strategic sorries are placed on the skeleton -- each sorry's deferral comment names the follow-up task that will discharge it. (4) Ensure the resulting small phases feed the implementation leg (task 772) so each implement round handles exactly one phase. (5) Extend the handoff schema (.claude/context/contracts/wrap-up.md) as needed to track skeleton-vs-follow-up status and the strategic-sorry-to-task mapping, and update skill-implementer-hard Stage 3b to consume the smaller phases. Root cause: RC4 (phases not regimented; oversized open-ended phases drove orchestrator burnout on task 305). Scope: hard-mode only. CONTEXT: part of making --hard proceed in regimented bounded chunks (transcript /orchestrate 305 --hard --lit, .claude/output/hard.md). This is the PLANNING leg of the three-leg --hard model (research=task 777, planning=this task, implementation=task 772), built on the relaxed zero-debt / strategic-sorry policy (task 778). Depends on task 778.",
       "effort": "3-6 hours",
@@ -390,7 +402,19 @@
       "dependencies": [
         778
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/774_hardmode_chunk_sizing_phase_subdivision/reports/01_skeleton_followup_phase_sizing.md",
+          "summary": "Full research covering: (1) exact current H8 phase-sizing language and its gap (line-count ceiling without a bounded-unit test or phase-count escape valve), with tightening recommendations; (2) the skeleton-plus-follow-up decomposition mechanism, showing skill-spawn/spawn-agent as a reusable template requiring one corrected dependency direction (follow-ups depend on skeleton, not the reverse) and one new step (placeholder-token substitution in the plan file after real task numbers are allocated); (3) how to reuse 778's sorry_inventory schema on the plan side via a new Planned Strategic Sorries table, plus a flagged naming inconsistency (dotted '774.2' follow_up_task example vs. the codebase's plain-integer task numbering); (4) two concrete pre-existing defects in skill-implementer-hard Stage 3b (wrong handoff path; integer-only phase selection) that must be fixed for smaller/sub-phase plans to correctly drive task 772's per-phase dispatch; (5) exactly which schema additions belong in plan-format.md/planner-hard-agent.md (plan-time) versus which are already covered by 778 in wrap-up.md/anti-analysis.md (implement-time, do not re-touch); dual-copy deployment status for every file in scope."
+        },
+        {
+          "type": "plan",
+          "path": "specs/774_hardmode_chunk_sizing_phase_subdivision/plans/01_skeleton-followup-phase-sizing.md",
+          "summary": "8-phase implementation plan (waves: [1,3,5] -> [2] -> [4.1,6] -> [4.2] -> [7]) covering H8 tightening, skeleton+follow-up mechanism, plan-format schema, Stage 3b bug fixes, and follow_up_task convention, with dual-copy lockstep verification and 6 postmortem constraints (no edits to wrap-up.md/anti-analysis.md/skill-orchestrate-hard/skill-spawn)."
+        }
+      ],
+      "session_id": "sess_1783092185_cd6c84_774"
     },
     {
       "project_number": 87,
@@ -501,10 +525,10 @@
     {
       "project_number": 779,
       "project_name": "hardmode_fix_forward_recovery_contract",
-      "status": "not_started",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-06-24T22:53:54Z",
-      "last_updated": "2026-06-24T22:53:54Z",
+      "last_updated": "2026-07-03T15:34:54Z",
       "title": "Hard-mode: fix-forward recovery contract (disambiguate 'restore green')",
       "description": "[--hard recovery discipline] Define an unambiguous recovery contract so 'reach green' / 'restore green' / 'get back to green' ALWAYS means FIX FORWARD (make the current working tree green by adding/correcting code) and NEVER means revert/reset/checkout to a prior green commit. MOTIVATING FAILURE: an orchestrator instruction 'if RED, first restore green' was misread by an implementation agent as 'revert to last green commit', discarding uncommitted forward progress (new FreshAbove scaffolding AND an 8->4 sorry reduction); the working tree was reset to the committed baseline and the progress was lost. Scope of changes: (1) Create/extend a recovery contract (e.g. .claude/context/contracts/recovery.md, or a section in wrap-up.md) stating: 'green' is reached by FIXING FORWARD only; an agent MUST NOT discard uncommitted work to reach green. (2) Define the canonical RECOVERY LADDER for a RED state: (a) fix forward; (b) if a sub-goal is genuinely blocked, land a documented STRATEGIC-SORRY skeleton (task 778) so the build goes green WITHOUT losing structure; (c) only if a rollback is truly required, SNAPSHOT first (task 780) then roll back, preferring the smallest revert scope. (3) Bake this into the hard-mode implementation contract (anti-analysis / wrap-up, consumed by general-implementation-hard-agent and skill-implementer-hard) and into skill-orchestrate-hard's dispatch prompt construction, so the orchestrator emits the disambiguated phrasing BY DEFAULT and does not rely on ad-hoc wording. (4) Align error-handling.md Build Error Recovery ('Keep source unchanged' / 'Never lose completed work') with the fix-forward language so guidance is consistent across docs. Scope: hard-mode primarily, but the fix-forward phrasing must be safe for standard mode too. Depends on task 778 (strategic-sorry skeleton = ladder rung b) and task 780 (snapshot-before-rollback = ladder rung c). Goal: a single ambiguous recovery instruction can never again be read as 'destroy uncommitted progress.'",
       "effort": "2-4 hours",
@@ -513,7 +537,19 @@
         778,
         780
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/779_hardmode_fix_forward_recovery_contract/reports/01_fix-forward-recovery-contract.md",
+          "summary": "Research report: where the recovery contract should live, exact 3-rung ladder language grounded in task 778/780's actual shipped mechanisms, disambiguated dispatch-prompt phrasing for skill-orchestrate-hard, error-handling.md alignment, and the dual deployed/source copy map for every file in scope."
+        },
+        {
+          "type": "plan",
+          "path": "specs/779_hardmode_fix_forward_recovery_contract/plans/01_recovery-contract-fix-forward.md",
+          "summary": "6-phase plan: create recovery.md contract + index.json entry (Phase 1); wire into skill-orchestrate-hard 5th contract slot, skill-implementer-hard ref, general-implementation-hard-agent Context Ref + Recovery Ladder section, and error-handling.md Build Error Recovery reword (Phases 2-5, all dual-copy); cross-file verification (Phase 6). Includes a Territory table enumerating all 10 touched files and sibling-task overlaps for orchestrator serialization."
+        }
+      ],
+      "session_id": "sess_1783092185_cd6c84_779"
     },
     {
       "project_number": 780,
@@ -544,10 +580,10 @@
     {
       "project_number": 781,
       "project_name": "agent_context_overflow_checkpoint_handoff",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-06-24T22:56:34Z",
-      "last_updated": "2026-06-24T22:56:34Z",
+      "last_updated": "2026-07-03T15:55:31Z",
       "title": "Agent context-overflow safety: checkpoint + handoff before the hard limit",
       "description": "[Context-overflow safety] Dispatched agents must detect context pressure and CHECKPOINT before hitting the hard context limit, instead of crashing mid-work. MOTIVATING FAILURE: five agent dispatches on Lean tableau proofs (enormous goal states) hit 'Prompt is too long'; on overflow an agent crashes WITHOUT writing a handoff, leaving a stale handoff and a RED working tree -- which then triggers the revert/work-loss failure (the next agent sees RED and reverts). Scope (general -- all dispatched implementation/research agents): (1) Wire the existing context-exhaustion-detection.md into the dispatched implementation and research agents (general-implementation-hard-agent, general-research-hard-agent, and base variants), not just the orchestrator -- they must monitor context-pressure signals (large tool outputs, repeated reads, growing goal states, high tool-call count) and treat approaching the limit as a STOP condition. (2) Define the CHECKPOINT-BEFORE-OVERFLOW procedure: at the pressure threshold, STOP taking new work -> commit the current green state (or snapshot via task 780 if RED) -> write a complete H9 handoff (.orchestrator-handoff.json + continuation markdown) naming the exact next action -> terminate cleanly. Never crash mid-edit; never leave a stale handoff. (3) Ensure the handoff captures enough for a FRESH agent to resume with minimal context (the continuation-handoff markdown already specifies this), so work is divided across agents by CONTEXT BUDGET, not lost. (4) Coordinate with the small-phase/skeleton work (774/778): if a phase's single goal state is too large to fit, the agent lands a strategic-sorry skeleton (778) and hands off rather than overflowing. Pairs with task 780 (snapshot) and task 779 (resume must fix-forward, not revert). Goal: context overflow degrades gracefully to a clean handoff + recoverable checkpoint, never a crash that loses uncommitted progress. Depends on task 780 (snapshot mechanism for the RED-checkpoint path).",
       "effort": "3-6 hours",
@@ -555,7 +591,19 @@
       "dependencies": [
         780
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/781_agent_context_overflow_checkpoint_handoff/reports/01_context_overflow_checkpoint_handoff.md",
+          "summary": "Full findings: consumer map of context-exhaustion-detection.md across the 4 target agents (2 already wired, 2 total gaps), the missing RED/green git-snapshot.sh branch, wrap-up.md's H9 schema and its implementation-hard-only scope, and the skill-researcher continuation-loop absence that must be resolved for research handoffs to be actionable."
+        },
+        {
+          "type": "plan",
+          "path": "specs/781_agent_context_overflow_checkpoint_handoff/plans/01_checkpoint-before-overflow.md",
+          "summary": "5-phase plan: (1) author shared checkpoint-before-overflow.md pattern doc, (2) RED/green git checkpoint + skeleton cross-ref into both implementation agents' Stage 4C, (3) detection + monitoring stage into both research agents, (4) research-shaped handoff-on-pressure + explicit Option (A) scoping decision, (5) dual-copy parity gate. Enumerates every touched file (incl. task 779 overlap on general-implementation-hard-agent.md) for orchestrator serialization."
+        }
+      ],
+      "session_id": "sess_1783092185_cd6c84_781"
     },
     {
       "project_number": 782,
