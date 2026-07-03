@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Guard hook script (guard-destructive-git.sh)",
+  "started_at": "2026-07-03T00:15:00Z",
+  "last_updated": "2026-07-03T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create .claude/hooks/guard-destructive-git.sh modeled on block-pr-submission.sh (stdin JSON parse, early exit 0 on empty command, clean-tree-first exit 0, anchored destructive pattern matching, marker check with consume-on-use, exit 2 + stderr, final exit 0)", "status": "done"},
+    {"id": 2, "description": "Confirm corrective stderr message names git-snapshot.sh as remedy", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "verification_notes": "Scenario-tested in two disposable /tmp git repos (never touched this working tree): git reset --hard blocked on dirty tree (exit 2 + stderr); allowed on clean tree; git stash/git stash pop/git restore --staged all allowed on dirty tree; git checkout -- <path> and git restore <path> (no --staged) blocked; git checkout -b (no force) allowed, git checkout -f blocked; git clean -fd blocked, git clean -n allowed; git stash drop/clear blocked; benign quoted commit message containing 'reset --hard' allowed; empty/non-Bash command allowed; /todo-style safety-commit -> clean tree -> reset --hard + clean -fd both allowed; fresh marker consumed (deleted) exactly once then blocks retry; stale (>120s) marker does not authorize and is left untouched."
+}

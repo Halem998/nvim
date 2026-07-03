@@ -158,30 +158,31 @@ produces a recoverable snapshot and writes the marker the hook will check.
 
 ---
 
-### Phase 2: Guard hook script (guard-destructive-git.sh) [NOT STARTED]
+### Phase 2: Guard hook script (guard-destructive-git.sh) [COMPLETED]
 
 **Goal**: Implement the PreToolUse Bash hook that blocks destructive git commands on a dirty tree
 unless a fresh snapshot marker (per Phase 1 contract) exists.
 
 **Tasks**:
-- [ ] Create `.claude/scripts/../hooks/guard-destructive-git.sh` at `.claude/hooks/guard-destructive-git.sh`
+- [x] Create `.claude/scripts/../hooks/guard-destructive-git.sh` at `.claude/hooks/guard-destructive-git.sh`
       (executable), modeled line-for-line on `.claude/hooks/block-pr-submission.sh`:
-  - [ ] `INPUT=$(cat)`; `COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')`.
-  - [ ] Early `exit 0` if `COMMAND` empty (non-Bash / parse failure — never block).
-  - [ ] Run `git status --porcelain`; if clean, `exit 0` immediately (clean tree = nothing to lose;
+  - [x] `INPUT=$(cat)`; `COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')`.
+  - [x] Early `exit 0` if `COMMAND` empty (non-Bash / parse failure — never block).
+  - [x] Run `git status --porcelain`; if clean, `exit 0` immediately (clean tree = nothing to lose;
         this also auto-exempts `/todo`'s post-safety-commit reset).
-  - [ ] Match destructive patterns with anchored `grep -qE '(^|[;&|] *)...'` (from the research
+  - [x] Match destructive patterns with anchored `grep -qE '(^|[;&|] *)...'` (from the research
         pattern table): `git reset ... --hard`; `git checkout -- ` / `git checkout ... --\s`;
         `git restore` without `--staged`; `git clean` with flag-order-agnostic `-f`+`-d`;
         `git stash (drop|clear)`; forced `checkout`/`switch` (`-f`/`--force`). Do NOT match
         `git stash` (push), `git stash pop`/`apply`, or `git restore --staged`.
-  - [ ] If a destructive pattern matches AND tree is dirty: check for a fresh snapshot marker
+  - [x] If a destructive pattern matches AND tree is dirty: check for a fresh snapshot marker
         (`find specs -maxdepth 3 -name .git-snapshot-marker`, timestamp within freshness window);
         if fresh, consume (delete) it and `exit 0`; otherwise print a corrective message to
         **stderr** naming `git-snapshot.sh` as the remedy and `exit 2`.
-  - [ ] Final `exit 0` for the allow-through path.
-- [ ] Confirm the corrective stderr message tells the agent exactly how to proceed (run the helper
-      then retry).
+  - [x] Final `exit 0` for the allow-through path.
+- [x] Confirm the corrective stderr message tells the agent exactly how to proceed (run the helper
+      then retry). *(completed: stderr names git-snapshot.sh explicitly and describes what it
+      writes, then says "retry the command")*
 
 **Timing**: ~1.5 hours
 
