@@ -386,22 +386,30 @@ dependency being the escape-valve trigger introduced in Phase 1.
 
 ---
 
-### Phase 7: Verification and dual-copy lockstep sync [NOT STARTED]
+### Phase 7: Verification and dual-copy lockstep sync [COMPLETED]
 
 - **Goal:** Confirm all in-scope edits are complete, dual copies are in lockstep, and no
   out-of-scope files were touched.
 - **Tasks:**
-  - [ ] `diff` each deployed file against its `.claude/extensions/core/` copy:
+  - [x] `diff` each deployed file against its `.claude/extensions/core/` copy:
         `planner-hard-agent.md`, `general-implementation-hard-agent.md`, `plan-format.md` must be
         byte-identical; the two SKILL.md pairs must differ ONLY by the pre-existing
-        literature-script-name drift.
-  - [ ] Confirm `git status` shows NO changes to `wrap-up.md`, `anti-analysis.md`,
+        literature-script-name drift. *(completed: all three byte-identical; both SKILL.md pairs
+        differ only by the 4 pre-existing literature-briefing-invoke.sh drift lines)*
+  - [x] Confirm `git status` shows NO changes to `wrap-up.md`, `anti-analysis.md`,
         `skill-orchestrate-hard`, `skill-spawn`, `spawn-agent`, or any standard-mode planner/
-        implementer file.
-  - [ ] Run `bash .claude/scripts/check-extension-docs.sh` (doc-lint) and confirm it exits 0.
-  - [ ] Grep-verify cross-references resolve: `## Planned Strategic Sorries` referenced from
+        implementer file. *(completed: verified via git diff --stat across all task-774 commits —
+        only the 5 in-scope dual-copy files + task-774 specs/ artifacts changed)*
+  - [x] Run `bash .claude/scripts/check-extension-docs.sh` (doc-lint) and confirm it exits 0.
+        *(deviation: doc-lint exits 1 overall due to a PRE-EXISTING, unrelated FAIL in the [lean]
+        extension — `routing_hard` targets `skill-lean-research-hard`/`skill-lean-implementation-hard`
+        declared but not deployed. Confirmed pre-existing via `git log --follow` on
+        `.claude/extensions/lean/manifest.json` — the routing_hard block predates this task by 10+
+        commits and the lean extension is untouched by task 774. The `[core]` extension entry
+        (which covers all five in-scope files) reports `OK`.)*
+  - [x] Grep-verify cross-references resolve: `## Planned Strategic Sorries` referenced from
         planner-hard-agent.md and defined in plan-format.md; both contract files present in the
-        agent's Context References.
+        agent's Context References. *(completed)*
 - **Timing:** ~0.25 hours
 - **Depends on:** 1, 2, 3, 4.1, 4.2, 5, 6
 - **Files to modify:** none (verification only)
@@ -409,21 +417,23 @@ dependency being the escape-valve trigger introduced in Phase 1.
 
 ## Testing & Validation
 
-- [ ] `diff .claude/agents/planner-hard-agent.md .claude/extensions/core/agents/planner-hard-agent.md` → empty.
-- [ ] `diff .claude/agents/general-implementation-hard-agent.md .claude/extensions/core/agents/general-implementation-hard-agent.md` → empty.
-- [ ] `diff .claude/context/formats/plan-format.md .claude/extensions/core/context/formats/plan-format.md` → empty.
-- [ ] `diff` of each SKILL.md pair shows ONLY the pre-existing literature-script-name drift.
-- [ ] Grep: bounded-unit primary criterion + phase-count escape valve present in H8 (Phase 1).
-- [ ] Grep: `.skeleton-return.json`, `{{FOLLOWUP`, `new_tasks` schema, and both contract files in
+- [x] `diff .claude/agents/planner-hard-agent.md .claude/extensions/core/agents/planner-hard-agent.md` → empty.
+- [x] `diff .claude/agents/general-implementation-hard-agent.md .claude/extensions/core/agents/general-implementation-hard-agent.md` → empty.
+- [x] `diff .claude/context/formats/plan-format.md .claude/extensions/core/context/formats/plan-format.md` → empty.
+- [x] `diff` of each SKILL.md pair shows ONLY the pre-existing literature-script-name drift.
+- [x] Grep: bounded-unit primary criterion + phase-count escape valve present in H8 (Phase 1).
+- [x] Grep: `.skeleton-return.json`, `{{FOLLOWUP`, `new_tasks` schema, and both contract files in
       planner-hard-agent Context References (Phase 2).
-- [ ] `## Planned Strategic Sorries` columns map 1:1 to 778 `sorry_inventory` field names (Phase 3).
-- [ ] skill-planner-hard postflight sets follow-up `dependencies: [skeleton_task_number]` and
+- [x] `## Planned Strategic Sorries` columns map 1:1 to 778 `sorry_inventory` field names (Phase 3).
+- [x] skill-planner-hard postflight sets follow-up `dependencies: [skeleton_task_number]` and
       substitutes all `{{FOLLOWUP:i}}` tokens (Phases 4.1/4.2).
-- [ ] Stage 3b handoff path is `${TASK_DIR}/...`; phase selection is heading-scan; exhaustion
+- [x] Stage 3b handoff path is `${TASK_DIR}/...`; phase selection is heading-scan; exhaustion
       notice present (Phase 5).
-- [ ] No dotted `"774.2"` remains anywhere (Phase 6).
-- [ ] `bash .claude/scripts/check-extension-docs.sh` exits 0 (Phase 7).
-- [ ] `git status` shows no out-of-scope files (Phase 7).
+- [x] No dotted `"774.2"` remains anywhere (Phase 6).
+- [x] `bash .claude/scripts/check-extension-docs.sh` exits 0 (Phase 7). *(deviation: exits 1
+      overall due to a pre-existing, unrelated [lean] extension FAIL; the [core] entry covering
+      all in-scope files reports OK — see Phase 7 notes)*
+- [x] `git status` shows no out-of-scope files (Phase 7).
 
 ## Artifacts & Outputs
 
