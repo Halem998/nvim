@@ -1,0 +1,13 @@
+{
+  "status": "planned",
+  "summary": "Phased hard-mode plan for task 774 (PLANNING leg of the three-leg --hard model). Tightens H8 phase sizing so bounded-unit (one theorem/checklist item) is the PRIMARY criterion with a phase-count escape valve; adds a SKELETON-PLUS-FOLLOW-UP decomposition to planner-hard-agent (emit skeleton phases + new_tasks array + {{FOLLOWUP:i}} placeholder tokens + .skeleton-return.json) and skill-planner-hard postflight (allocate real task numbers via duplicate-with-modification of skill-spawn Stages 7-11, with REVERSED dependency direction so follow-ups depend on the skeleton task, plus a placeholder-substitution pass); adds plan-time strategic-sorry schema to plan-format.md (plan_metadata.skeleton + follow_up_tasks, ## Planned Strategic Sorries table) reusing task 778's exact sorry_inventory field names; fixes two pre-existing skill-implementer-hard Stage 3b defects (un-scoped specs/.orchestrator-handoff.json path -> ${TASK_DIR}/...; integer-increment phase selection -> heading-scan + skeleton-exhaustion detection); and settles follow_up_task as a plain-integer convention (correcting the dotted '774.2' example in general-implementation-hard-agent.md). All five in-scope files are dual-copy (deployed + .claude/extensions/core/) and edited in lockstep; wrap-up.md/anti-analysis.md (778) and skill-orchestrate-hard (task 772) are OUT OF SCOPE. Shared-file collisions with task 779 (skill-implementer-hard, general-implementation-hard-agent) are flagged for serialization.",
+  "artifacts": [
+    {
+      "path": "specs/774_hardmode_chunk_sizing_phase_subdivision/plans/01_skeleton-followup-phase-sizing.md",
+      "type": "plan",
+      "summary": "8-phase implementation plan (waves: [1,3,5] -> [2] -> [4.1,6] -> [4.2] -> [7]) covering H8 tightening, skeleton+follow-up mechanism, plan-format schema, Stage 3b bug fixes, and follow_up_task convention, with dual-copy lockstep verification and 6 postmortem constraints (no edits to wrap-up.md/anti-analysis.md/skill-orchestrate-hard/skill-spawn)."
+    }
+  ],
+  "phases_total": 8,
+  "next_action_hint": "implement"
+}

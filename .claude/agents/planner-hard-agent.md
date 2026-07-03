@@ -26,6 +26,12 @@ task involves formal verification, or task has been in IMPLEMENTING for 3+ dispa
 - `@.claude/context/formats/return-metadata-file.md` - Metadata file schema (always load)
 - `@.claude/context/formats/plan-format.md` - Plan artifact structure and metadata fields (always load)
 - `@.claude/context/contracts/reference-grounding.md` - H3 reference grounding (MANDATORY)
+- `@.claude/context/contracts/wrap-up.md` - `skeleton` boolean + `sorry_inventory` schema this
+  agent's plan-time `## Planned Strategic Sorries` table must reuse verbatim (load when the
+  skeleton path is a candidate)
+- `@.claude/context/contracts/anti-analysis.md` - 5-condition strategic-sorry test that governs
+  which division points are legitimate skeleton candidates (load when the skeleton path is a
+  candidate)
 - `@.claude/context/workflows/task-breakdown.md` - Task decomposition guidelines
 - `@.claude/CLAUDE.md` - Project configuration and conventions
 - `@.claude/context/patterns/context-discovery.md` - Use with agent=`planner-hard-agent`
@@ -34,12 +40,32 @@ task involves formal verification, or task has been in IMPLEMENTING for 3+ dispa
 
 **This is the highest-value structural change in hard mode.** Each phase must be:
 
-- **Completable in one agent run**: ~100-500 lines of output or 1-3 files per phase
+- **Bounded to one verifiable unit (PRIMARY criterion)**: one theorem / one function / one
+  config-block / one checklist sub-item, each completable and checkable in isolation without
+  depending on work not yet done. This is the primary sizing test — a phase passes or fails it
+  regardless of line count.
+- **~100-300 lines of output (SECONDARY / advisory signal)**: line count is a useful heuristic
+  but must never override the bounded-unit test. A phase can be small in lines yet still fail
+  H8 if its single unit is open-ended (see bounded-unit test below); conversely a phase slightly
+  over the advisory line count is still acceptable if it is exactly one bounded, verifiable unit.
 - **Self-contained**: Phase N does not depend on decisions to be made during phase N+1
 - **Verifiable**: Clear done-criterion that can be checked without running the full system
 
-**Splitting rule**: If a phase would require more than 500 lines of output or more than 4 hours,
-split it into sub-phases. Sub-phases are numbered N.1, N.2, N.3.
+**Bounded-unit test (independent of line count)**: Before accepting a phase, ask "is this one
+unit with a fixed, finite attempt surface, or could it silently expand into unbounded rework?"
+A phase such as "prove theorem X" can be small in lines yet fail this test if the proof is
+open-ended research-grade work with no fixed attempt budget (the task-305 failure mode: a single
+research-grade proof, small in lines but unbounded in attempts, consumed an entire dispatch
+without completing). If a phase cannot state a concrete stopping condition independent of line
+count, it fails the bounded-unit test and must be split, converted to a strategic-sorry division
+point, or escalated to the skeleton path (Stage 4).
+
+**Splitting rule**: If a phase would require more than 300 lines of output, more than 4 hours, or
+fails the bounded-unit test, split it into sub-phases. Sub-phases are numbered N.1, N.2, N.3.
+
+**Phase-count escape valve**: If applying the splitting rule would push total phase count past
+the Stage 3 ceiling for the task's complexity tier, do NOT keep inflating phase count or phase
+size — produce a SKELETON plan instead (see Stage 4 sub-stage "Decompose into Phases").
 
 **Forbidden phase descriptions**: Vague phase titles like "Implement core functionality",
 "Write remaining code", or "Complete implementation" are not acceptable. Each phase title
@@ -134,13 +160,20 @@ Read-only consultation only. If missing, skip gracefully.
 
 Evaluate complexity using H8 phase sizing:
 
-| Complexity | Phase Count | Lines/Phase |
+| Complexity | Phase Count | Lines/Phase (advisory) |
 |------------|-------------|-------------|
 | Simple | 1-2 phases | 50-200 lines |
-| Medium | 2-4 phases | 100-400 lines |
-| Complex | 4-8 phases | 100-500 lines (split if larger) |
+| Medium | 2-4 phases | 100-300 lines |
+| Complex | 4-8 phases (ceiling: 8) | 100-300 lines (split if larger) |
 
-**Sub-phase trigger**: Any phase estimated to require >500 lines or >4 hours MUST be split.
+**Sub-phase trigger**: Any phase estimated to require >300 lines, >4 hours, or that fails the
+bounded-unit test (see Phase Sizing Constraint above) MUST be split.
+
+**Phase-count ceiling / escape valve**: Complex tasks are capped at 6-8 phases. If splitting
+under the bounded-unit + line-count rules would push a plan past this ceiling, STOP inflating
+phase count or phase size — produce a SKELETON plan (critical path ending in strategic-sorry
+division points) plus linked follow-up tasks instead. See Stage 4 sub-stage "Decompose into
+Phases" for the skeleton mechanism.
 
 ### Stage 4: Decompose into Phases
 
@@ -159,6 +192,44 @@ Apply task-breakdown.md guidelines, plus hard-mode constraints:
 | 2 | Phase 3 | 1 |
 | 3 | Phase 4 | 2, 3 |
 ```
+
+#### Stage 4a: Skeleton Decomposition (when the Stage 3 phase-count ceiling is exceeded)
+
+If the Stage 3 escape valve fires — the task's scope cannot be decomposed into bounded-unit
+phases without exceeding the complexity tier's phase-count ceiling — decompose into a SKELETON
+plan instead of continuing to inflate phase count or phase size:
+
+1. **Skeleton phases**: Write the critical-path phases only, each still passing the H8
+   bounded-unit test, ending at explicit strategic-sorry division points (points where remaining
+   scope is deliberately deferred rather than force-fit into more phases).
+2. **`new_tasks` array**: For each deferred piece of scope, emit one entry in a `new_tasks` array
+   reusing `spawn-agent`'s exact 0-based schema — `{index, title, description, effort, task_type,
+   dependencies}` (see `.claude/agents/spawn-agent.md` Stage 5 for the field reference). Do not
+   invent a different schema.
+3. **Reversed dependency direction (SETTLED)**: Unlike `spawn-agent` (where the parent depends on
+   the new tasks), skeleton follow-ups depend on the SKELETON task — `new_tasks[].dependencies`
+   must reference the skeleton task itself, not sibling new_tasks that gate it. The skeleton
+   (current) task's own `dependencies` field is left untouched. The real skeleton task number is
+   not known to the agent at write time; populate the dependency with the literal placeholder
+   token `{{FOLLOWUP:skeleton}}` if a self-reference is required, otherwise leave inter-follow-up
+   dependencies as plain `new_tasks[].index` values per the spawn-agent schema — the skill
+   postflight (skill-planner-hard) resolves all placeholders to real task numbers in one pass.
+4. **Placeholder tokens**: In the plan file body — in the overview prose and in every
+   `## Planned Strategic Sorries` table `Follow-Up Task` cell (schema defined in plan-format.md,
+   Phase 3) — write the literal token `{{FOLLOWUP:i}}` where `i` matches the corresponding
+   `new_tasks[].index`. Do not guess or pre-allocate a real task number; the agent cannot access
+   `next_project_number`.
+5. **`.skeleton-return.json` artifact**: Write
+   `specs/{NNN}_{SLUG}/.skeleton-return.json` declaring `new_tasks` and a Kahn-sorted
+   `dependency_order` (mirroring `.spawn-return.json`'s structure), so `skill-planner-hard`
+   postflight can allocate real task numbers, create task directories, wire the reversed
+   dependency direction, and substitute every `{{FOLLOWUP:i}}` token in the plan file.
+6. **`follow_up_task` convention (SETTLED)**: Once substituted, `follow_up_task` values (both in
+   `.skeleton-return.json` cross-references and in the plan's `## Planned Strategic Sorries`
+   table) are plain-integer task-number strings (e.g. `"781"`), never dotted (e.g. never
+   `"774.2"`).
+7. Set `plan_metadata.skeleton: true` and populate `plan_metadata.follow_up_tasks` once real
+   numbers are known (post-substitution) per the plan-format.md schema (Phase 3).
 
 ### Stage 4.5: Populate Postmortem Constraints
 
@@ -185,6 +256,10 @@ Create directory and write plan file following plan-format.md plus hard-mode add
 3. Dependency Analysis table with explicit wave map
 4. `### Preserved Assets` subsection (in Overview) when prior work exists
 5. Source-to-implementation mapping table in Overview when Tier 1/2 task
+6. `## Planned Strategic Sorries` section (plan-format.md) — REQUIRED when `plan_metadata.skeleton:
+   true` (Stage 4a fired); reuses the 778 `sorry_inventory` field names verbatim and cites
+   `{{FOLLOWUP:i}}` placeholder tokens in its `Follow-Up Task` column until skill postflight
+   substitution resolves them
 
 **Standard plan format**: Follow plan-format.md for all other structure.
 
