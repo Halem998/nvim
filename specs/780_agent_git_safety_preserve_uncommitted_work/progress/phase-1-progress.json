@@ -1,0 +1,29 @@
+{
+  "phase": 1,
+  "phase_name": "Snapshot marker contract + helper script",
+  "started_at": "2026-07-03T00:00:00Z",
+  "last_updated": "2026-07-03T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Define marker contract as comment block in helper", "status": "done"},
+    {"id": 2, "description": "Create .claude/scripts/git-snapshot.sh with clean-tree no-op, default (patch+stash) mode, --branch mode, marker write, failure exit codes", "status": "done"},
+    {"id": 3, "description": "Smoke check helper on dirty scratch tree", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "write patch file directly under $TASK_DIR before git stash push -u",
+      "result": "failed",
+      "reason": "stash -u sweeps the newly-written untracked patch file (and can delete an otherwise-empty $TASK_DIR), causing the later marker write to fail with No such file or directory"
+    }
+  ],
+  "deviations": [
+    {
+      "task_id": "1.2b",
+      "description": "Default mode: git diff HEAD > patch AND git stash push (without drop)",
+      "type": "altered",
+      "reason": "Patch is captured to a scratch mktemp file first and moved into $TASK_DIR after the stash step, and stash uses -u to include untracked files; verified necessary via temp-repo smoke test",
+      "annotation": "*(altered: diff captured to scratch mktemp file, moved into task dir after stash; -u added for untracked coverage)*"
+    }
+  ],
+  "handoff_count": 0
+}
