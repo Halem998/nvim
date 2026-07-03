@@ -216,18 +216,22 @@ orchestrator's responsibility per the Territory table.
 
 ---
 
-### Phase 4: Update general-implementation-hard-agent.md Context References + Recovery Ladder section [NOT STARTED]
+### Phase 4: Update general-implementation-hard-agent.md Context References + Recovery Ladder section [COMPLETED]
 
 - **Goal:** Add recovery.md to the MANDATORY Context References and a short "Recovery Ladder (Hard
   Mode)" section mirroring the existing "Strategic-Sorry Skeleton (Hard Mode)" section.
 - **Tasks:**
-  - [ ] Add `- `@.claude/context/contracts/recovery.md` - recovery/fix-forward ladder (MANDATORY)`
+  - [x] Add `- `@.claude/context/contracts/recovery.md` - recovery/fix-forward ladder (MANDATORY)`
     to the Context References list (after line 27, alongside anti-analysis.md/wrap-up.md).
-  - [ ] Add a "Recovery Ladder (Hard Mode)" section (mirroring the "Strategic-Sorry Skeleton (Hard
+  - [x] Add a "Recovery Ladder (Hard Mode)" section (mirroring the "Strategic-Sorry Skeleton (Hard
     Mode)" section at line 44) stating the fix-forward default and pointing to rung (b)/(c)
-    mechanics in recovery.md rather than re-deriving them.
-  - [ ] Apply identical edits to both deployed and core copies (currently IDENTICAL).
-  - [ ] Confine edits to the recovery section (distinct from any 781 sections).
+    mechanics in recovery.md rather than re-deriving them. *(inserted directly after the
+    Strategic-Sorry Skeleton section, before Settled-Design Preamble Protocol)*
+  - [x] Apply identical edits to both deployed and core copies (currently IDENTICAL). *(verified
+    `diff -q` clean after edit)*
+  - [x] Confine edits to the recovery section (distinct from any 781 sections). *(verified 781's
+    Checkpoint Sub-Section and follow_up_task content at lines 205+/281+ untouched, only shifted
+    by the +16 lines inserted above them)*
 - **Timing:** 0.5 hour
 - **Depends on:** 1
 

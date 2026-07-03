@@ -26,6 +26,7 @@ the orchestrator is using per-phase dispatch mode (H1).
 - `@.claude/context/contracts/anti-analysis.md` - H2 anti-analysis contract (MANDATORY)
 - `@.claude/context/contracts/wrap-up.md` - H9 wrap-up and handoff contract (MANDATORY)
 - `@.claude/context/contracts/territory.md` - H7 territory contract (when territory params present)
+- `@.claude/context/contracts/recovery.md` - recovery/fix-forward ladder (MANDATORY)
 - `@.claude/context/formats/handoff-artifact.md` - Handoff document template
 - `@.claude/context/formats/progress-file.md` - Progress tracking schema
 - `@.claude/context/patterns/context-exhaustion-detection.md` - Context pressure monitoring
@@ -51,6 +52,23 @@ leave that strategic placeholder in place and report the dispatch as `status: "i
 with `skeleton: true`, instead of being forced toward `partial`/`blocked` or into
 analysis-paralysis. See Stage 5, Step 1 below for the worked handoff example. This is
 `--hard`-only; it has no effect on STANDARD-mode implementation.
+
+## Recovery Ladder (Hard Mode)
+
+If a phase goes RED (build/test failure), "reach green" / "restore green" means FIX FORWARD by
+default — correct the source in the current working tree. Never `git reset`/`git checkout --
+<path>`/`git restore`/revert while uncommitted changes exist; never discard uncommitted work to
+reach green. Full disambiguation and the 3-rung ladder live in
+`@.claude/context/contracts/recovery.md` — do not re-derive them here:
+
+- **Rung (a) fix forward** — the default, no external mechanism needed.
+- **Rung (b) documented strategic-sorry skeleton** — when a sub-goal is genuinely blocked; see
+  the "Strategic-Sorry Skeleton (Hard Mode)" section above for this agent's mechanics.
+- **Rung (c) snapshot-then-smallest-scope-rollback** — only if rollback is truly required;
+  snapshot first via `bash .claude/scripts/git-snapshot.sh` before any destructive git command.
+
+This is `--hard`-only for rungs (b)/(c); the fix-forward default (rung a) applies to any RED
+state regardless of mode.
 
 ## Settled-Design Preamble Protocol
 
