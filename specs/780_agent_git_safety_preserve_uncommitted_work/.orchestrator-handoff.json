@@ -1,0 +1,65 @@
+{
+  "status": "implemented",
+  "summary": "All 5 phases of the destructive-git guard implemented and verified. git-snapshot.sh (helper) writes a durable working-progress-{ts}.patch under the task dir plus a git stash -u / WIP-branch backup, then refreshes a gitignored .git-snapshot-marker freshness marker (120s window, single-shot/delete-on-use). guard-destructive-git.sh (PreToolUse Bash hook, modeled on block-pr-submission.sh) reads tool_input.command from stdin JSON, exits 0 immediately on a clean tree (auto-exempting /todo's safety-commit + reset --hard/clean -fd flow) or empty command, matches anchored destructive patterns (git reset --hard; git checkout -- <path>; git restore <path> without --staged; git clean with both -f and -d in any order; git stash drop/clear; forced checkout/switch), and blocks via exit 2 + stderr unless a fresh marker is consumed. git-workflow.md gained a 'No Destructive Git on Uncommitted Work' section replacing the old blanket prohibition. All three artifacts were dual-deployed to .claude/extensions/core/ (byte-identical, diff-verified) and wired into manifest.json provides.hooks/provides.scripts plus both settings.json copies (deployed + extension-source root-files). .gitignore gained **/.git-snapshot-marker. IMPORTANT DEVIATION: the settings.json Bash matcher was registered as plain 'bash .claude/hooks/guard-destructive-git.sh' rather than the plan's literal '... 2>/dev/null || echo {}' suffix, because that suffix silently discards the hook's exit-2 block signal and stderr message via bash || semantics, which would have made the entire mechanism a permanent no-op -- this is documented in the plan's Phase 4 checklist and the implementation summary. The hook's live enforcement was confirmed mid-implementation: this session's own Bash tool call was blocked when a test script literally contained 'git clean -qfd', since this repo's real tree is genuinely dirty with other agents' uncommitted work. No destructive git command was run against this repository's actual working tree at any point; all destructive-command testing used disposable /tmp git repos or crafted JSON piped directly to the hook script.",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "artifacts": [
+    {
+      "path": ".claude/scripts/git-snapshot.sh",
+      "type": "script",
+      "summary": "Snapshot helper: durable .patch + stash/WIP-branch backup + freshness marker write."
+    },
+    {
+      "path": ".claude/hooks/guard-destructive-git.sh",
+      "type": "hook",
+      "summary": "PreToolUse Bash hook blocking destructive git commands on a dirty tree unless clean or a fresh snapshot marker is consumed."
+    },
+    {
+      "path": ".claude/rules/git-workflow.md",
+      "type": "rule",
+      "summary": "New 'No Destructive Git on Uncommitted Work' section replacing the blanket git reset --hard prohibition."
+    },
+    {
+      "path": ".claude/extensions/core/hooks/guard-destructive-git.sh",
+      "type": "hook",
+      "summary": "Byte-identical extension-source copy of the hook."
+    },
+    {
+      "path": ".claude/extensions/core/scripts/git-snapshot.sh",
+      "type": "script",
+      "summary": "Byte-identical extension-source copy of the helper."
+    },
+    {
+      "path": ".claude/extensions/core/rules/git-workflow.md",
+      "type": "rule",
+      "summary": "Byte-identical extension-source copy of the rule."
+    },
+    {
+      "path": ".claude/extensions/core/manifest.json",
+      "type": "config",
+      "summary": "Added guard-destructive-git.sh to provides.hooks and git-snapshot.sh to provides.scripts."
+    },
+    {
+      "path": ".claude/settings.json",
+      "type": "config",
+      "summary": "Appended Bash PreToolUse matcher invoking the guard hook."
+    },
+    {
+      "path": ".claude/extensions/core/root-files/settings.json",
+      "type": "config",
+      "summary": "Appended Bash PreToolUse matcher invoking the guard hook (extension-source sync)."
+    },
+    {
+      "path": ".gitignore",
+      "type": "config",
+      "summary": "Added **/.git-snapshot-marker."
+    },
+    {
+      "path": "specs/780_agent_git_safety_preserve_uncommitted_work/summaries/01_guard-destructive-git-hook-summary.md",
+      "type": "summary",
+      "summary": "Full implementation summary with decisions, the settings.json registration deviation, and verification evidence."
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "Task fully implemented and verified; ready for status transition to [PR READY] / user review. No further action required from /implement."
+}
