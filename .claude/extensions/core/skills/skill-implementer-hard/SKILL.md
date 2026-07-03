@@ -24,6 +24,7 @@ Reference (do not load eagerly):
 - Path: `.claude/context/contracts/anti-analysis.md` - H2 contract (loaded by agent)
 - Path: `.claude/context/contracts/wrap-up.md` - H9 contract (loaded by agent)
 - Path: `.claude/context/contracts/territory.md` - H7 contract (when territory params present)
+- Path: `.claude/context/contracts/recovery.md` - recovery/fix-forward ladder (loaded by agent)
 - Path: `.claude/context/patterns/postflight-control.md` - Marker file protocol
 - Path: `.claude/context/patterns/subagent-continuation-loop.md` - Continuation loop pattern
 
@@ -262,7 +263,9 @@ fi
 
 ### Stage 4: Prepare Delegation Context
 
-Pass anti-analysis contract reference and territory params (when applicable):
+Pass anti-analysis contract reference, recovery contract reference (see
+`.claude/context/contracts/recovery.md` — fix-forward disambiguation and the 3-rung Recovery
+Ladder), and territory params (when applicable):
 
 ```json
 {

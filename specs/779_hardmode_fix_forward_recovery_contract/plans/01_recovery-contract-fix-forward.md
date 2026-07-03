@@ -188,19 +188,22 @@ orchestrator's responsibility per the Territory table.
 
 ---
 
-### Phase 3: Add recovery.md reference to skill-implementer-hard [NOT STARTED]
+### Phase 3: Add recovery.md reference to skill-implementer-hard [COMPLETED]
 
 - **Goal:** List recovery.md alongside the existing anti-analysis.md/wrap-up.md/territory.md
   contract references, and mention it in the dispatch-prompt-construction text.
 - **Tasks:**
-  - [ ] FIRST inspect BOTH copies (they currently DIFFER - pre-existing drift); locate the contract
-    reference list (deployed lines ~24-26) in each.
-  - [ ] Add `- Path: `.claude/context/contracts/recovery.md` - recovery/fix-forward ladder (loaded
+  - [x] FIRST inspect BOTH copies (they currently DIFFER - pre-existing drift); locate the contract
+    reference list (deployed lines ~24-26) in each. *(confirmed drift is 3 lines, all
+    literature-briefing.sh vs literature-briefing-invoke.sh script-name differences at lines
+    224/250/256 — unrelated to 779, left untouched)*
+  - [x] Add `- Path: `.claude/context/contracts/recovery.md` - recovery/fix-forward ladder (loaded
     by agent)` to the reference list in each copy.
-  - [ ] Add a recovery.md mention to the dispatch-prompt-construction text (near the anti-analysis
-    contract reference passing, deployed ~line 239) in each copy.
-  - [ ] Reconcile so both copies end byte-consistent for the sections 779 touches (do not
-    overwrite sibling-task 774 content; only add the recovery reference lines).
+  - [x] Add a recovery.md mention to the dispatch-prompt-construction text (near the anti-analysis
+    contract reference passing, now at line 265 in both copies) in each copy.
+  - [x] Reconcile so both copies end byte-consistent for the sections 779 touches (do not
+    overwrite sibling-task 774 content; only add the recovery reference lines). *(verified: `diff`
+    now shows only the 3 pre-existing literature-briefing drift lines, nothing else)*
 - **Timing:** 0.5 hour
 - **Depends on:** 1
 

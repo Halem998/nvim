@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "Add recovery.md reference to skill-implementer-hard",
+  "started_at": "2026-07-03T00:25:00Z",
+  "last_updated": "2026-07-03T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Inspect both copies for pre-existing drift", "status": "done"},
+    {"id": 2, "description": "Add recovery.md to Context References list in each copy", "status": "done"},
+    {"id": 3, "description": "Add recovery.md mention to dispatch-prompt-construction text in each copy", "status": "done"},
+    {"id": 4, "description": "Reconcile so both copies match on the touched region", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.pre-existing-drift",
+      "description": "skill-implementer-hard deployed vs core copies pre-existing drift (literature-briefing.sh vs literature-briefing-invoke.sh script name at 3 locations)",
+      "type": "skipped",
+      "reason": "Out of scope for task 779; mirrored the drift by leaving it untouched in both copies rather than reconciling it.",
+      "annotation": "left untouched, confirmed via diff"
+    }
+  ]
+}
