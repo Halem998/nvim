@@ -1,0 +1,32 @@
+{
+  "name": "email",
+  "version": "1.0.0",
+  "description": "AI email management: wrapper-only triage, classification, and confirmed-mutation workflow over Himalaya/notmuch via nix-built agent tools",
+  "task_type": "email",
+  "dependencies": ["core"],
+  "keyword_overrides": {
+    "email": {
+      "keywords": ["inbox", "email", "gmail", "himalaya", "notmuch", "unsubscribe", "junk mail", "draft reply", "mbsync", "aerc", "mail triage"],
+      "aliases": ["mail", "mailbox"]
+    }
+  },
+  "provides": {
+    "agents": ["email-implementation-agent.md"],
+    "skills": ["skill-email-implementation", "skill-email-cleanup"],
+    "commands": ["email.md"],
+    "rules": [],
+    "context": ["project/email"],
+    "scripts": [],
+    "hooks": ["mail-guard.sh"]
+  },
+  "routing": {
+    "research":  { "email": "skill-researcher" },
+    "plan":      { "email": "skill-planner" },
+    "implement": { "email": "skill-email-implementation" }
+  },
+  "merge_targets": {
+    "claudemd": { "source": "EXTENSION.md", "target": ".claude/CLAUDE.md", "section_id": "extension_email" },
+    "settings": { "source": "settings-fragment.json", "target": ".claude/settings.local.json" },
+    "index":    { "source": "index-entries.json", "target": ".claude/context/index.json" }
+  }
+}

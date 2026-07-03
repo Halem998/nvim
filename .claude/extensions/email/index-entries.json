@@ -1,0 +1,60 @@
+{
+  "entries": [
+    {
+      "path": "project/email/email-preferences.md",
+      "description": "Harvested classification preferences: constants, rule schema, confidence thresholds, categorization keyword lists, and user custom rules",
+      "load_when": {
+        "agents": ["email-implementation-agent"],
+        "languages": [],
+        "task_types": ["email"],
+        "commands": []
+      },
+      "line_count": 142,
+      "domain": "project",
+      "subdomain": "email",
+      "summary": "Harvested email classification preferences and confidence-threshold data"
+    },
+    {
+      "path": "project/email/domain/wrapper-contracts.md",
+      "description": "The five wrapper binaries, safety classes, global flag contract, and constants",
+      "load_when": {
+        "agents": ["email-implementation-agent"],
+        "languages": [],
+        "task_types": ["email"],
+        "commands": []
+      },
+      "line_count": 82,
+      "domain": "project",
+      "subdomain": "email",
+      "summary": "Frozen wrapper contract summary for the five email agent tools"
+    },
+    {
+      "path": "project/email/patterns/propose-review-confirm-execute.md",
+      "description": "Manifest lifecycle pattern: propose dry-run, human review, sha256 confirm, execute, diff",
+      "load_when": {
+        "agents": ["email-implementation-agent"],
+        "languages": [],
+        "task_types": ["email"],
+        "commands": []
+      },
+      "line_count": 50,
+      "domain": "project",
+      "subdomain": "email",
+      "summary": "Propose-review-confirm-execute manifest lifecycle pattern"
+    },
+    {
+      "path": "project/email/standards/recall-on-keep-bias.md",
+      "description": "Classifier bias standard: near-100% recall on KEEP, deterministic-first classification, high confidence bar for delete",
+      "load_when": {
+        "agents": ["email-implementation-agent"],
+        "languages": [],
+        "task_types": ["email"],
+        "commands": []
+      },
+      "line_count": 42,
+      "domain": "project",
+      "subdomain": "email",
+      "summary": "Recall-on-keep-bias classifier standard"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/mail-guard.sh 2>/dev/null || echo '{}'" }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "deny": [
+      "Bash(himalaya message delete*)",
+      "Bash(himalaya message move*)",
+      "Bash(himalaya * send*)",
+      "Bash(himalaya folder expunge*)",
+      "Bash(msmtp*)",
+      "Bash(secret-tool*)",
+      "Bash(rm *Mail*)"
+    ]
+  }
+}

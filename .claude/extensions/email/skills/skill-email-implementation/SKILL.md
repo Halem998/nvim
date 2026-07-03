@@ -1,0 +1,105 @@
+---
+name: skill-email-implementation
+description: Implement wrapper-only email triage/cleanup tasks from plans. Invoke for email implementation tasks.
+allowed-tools: Agent, Bash, Read
+---
+
+# Email Implementation Skill
+
+Thin wrapper that delegates email triage/cleanup implementation to the `email-implementation-agent`
+subagent. This skill never calls the wrapper binaries itself — it only prepares delegation
+context and dispatches.
+
+## Trigger Conditions
+
+This skill activates when:
+- Task type is "email"
+- `/implement` command targets an email task
+- A census/classify/archive/delete/unsubscribe-extract plan needs wrapper-only execution
+
+## Execution Flow
+
+### Stage 1: Input Validation
+
+Validate task_number exists, task_type is "email", and an implementation plan is present.
+
+### Stage 2: Preflight Status Update
+
+Update status to "implementing" BEFORE invoking the subagent.
+
+### Stage 3: $PATH Precondition Check (contract §9)
+
+Before dispatching, verify the five wrapper binaries are on `$PATH`:
+
+```bash
+command -v email-census email-classify email-archive-confirmed email-delete-confirmed \
+  email-unsubscribe-extract
+```
+
+If any are missing, do NOT dispatch. Write `status: "failed"` metadata naming the missing
+binary and instructing the user to run `home-manager switch --flake .#<user>` to activate the
+generation containing `modules/home/email/agent-tools.nix`.
+
+### Stage 4: Prepare Delegation Context
+
+Domain-specific context for `email-implementation-agent`:
+- Wrapper-only contract: only the five named binaries, never raw `himalaya`/`notmuch`/`msmtp`/
+  `secret-tool`, never `rm` against Maildir.
+- Propose-review-confirm-execute: STOP at every review gate for explicit human approval before
+  any `--execute --confirm-manifest <sha256>` call.
+- Constants: `MAX_BATCH_SIZE=50`, `PLAN_EXPIRY_DAYS=7`, delete auto-propose confidence `>= 0.90`.
+
+```json
+{
+  "session_id": "sess_{timestamp}_{random}",
+  "delegation_depth": 1,
+  "delegation_path": ["orchestrator", "implement", "skill-email-implementation"],
+  "timeout": 7200,
+  "task_context": {
+    "task_number": N,
+    "task_name": "{project_name}",
+    "description": "{description}",
+    "task_type": "email"
+  },
+  "plan_path": "specs/{NNN}_{SLUG}/plans/MM_{short-slug}.md",
+  "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"
+}
+```
+
+### Stage 5: Invoke Subagent
+
+Use Agent tool with subagent_type: "email-implementation-agent".
+
+### Stage 5b: Self-Execution Fallback
+
+**CRITICAL**: If you performed work above WITHOUT using the Agent tool, you MUST write a
+`.return-meta.json` file now before proceeding to postflight, per `return-metadata-file.md`.
+This is not expected for email tasks — the wrapper-only contract is agent-owned, so the fallback
+path here must still respect Stage 3's `$PATH` check and never invoke a wrapper binary directly
+from this skill.
+
+If you DID use the Agent tool, skip this stage.
+
+## Postflight (ALWAYS EXECUTE)
+
+### Stage 6: Parse Subagent Return
+
+Read the metadata file from `specs/{N}_{SLUG}/.return-meta.json`.
+
+### Stage 7: Update Task Status (Postflight)
+
+Update state.json and TODO.md based on result.
+
+### Stage 8: Link Artifacts
+
+Add artifact to state.json with summary. Update TODO.md per
+`@.claude/context/patterns/artifact-linking-todo.md`.
+
+### Stage 9: Git Commit
+
+Commit changes with session ID.
+
+### Stage 10: Return Brief Summary
+
+Return 3-6 bullets. State clearly whether any mutation (`--execute`) occurred and, if so, which
+manifest/sha256 authorized it.
