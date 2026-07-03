@@ -231,9 +231,12 @@ if [ "$adversarial_verified" = "false" ]; then
     specs/state.json)
 
   if [ -n "$research_path" ] && [ -f "$research_path" ]; then
-    # Check if adversarial verification section already exists in report
-    if grep -q "## Adversarial Self-Verification" "$research_path"; then
-      echo "[hard-orchestrate] H4: Adversarial verification section found in report. Proceeding to planning." >&2
+    # Check if adversarial verification section already exists in report, AND that it contains
+    # the required Claim Verification Table header (non-fatal structural strengthening; both
+    # checks must pass to skip re-dispatch).
+    if grep -q "## Adversarial Self-Verification" "$research_path" && \
+       grep -q "| Claim | Source/Counterexample" "$research_path"; then
+      echo "[hard-orchestrate] H4: Adversarial verification section with Claim Verification Table found in report. Proceeding to planning." >&2
       adversarial_verified=true
     else
       # Dispatch a focused verification research pass

@@ -1,0 +1,5 @@
+name = "sorrycensuscheck"
+defaultTargets = ["SorryCensusCheck"]
+
+[[lean_lib]]
+name = "SorryCensusCheck"

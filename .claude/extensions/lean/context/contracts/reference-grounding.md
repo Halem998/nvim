@@ -62,6 +62,27 @@ the implementation agent's handoff JSON. Specifically:
 For documentation-backed and implementation-backed lean4 tasks, the standard Tier 2 and
 Tier 3 rules from the core contract apply without modification.
 
+## Source-Coverage Minimums (Lean4)
+
+No single-source conclusions. This overrides/extends the core contract's Source-Coverage
+Minimums subsection with lean4-specific detail (see H4 `adversarial-verification.md`
+Claim Verification Bar for how this feeds into confidence tagging):
+
+- **Tier 1 (Literature-Backed)**: The 5-column mapping table row's `Source` citation is
+  mandatory. For safety- or design-critical theorems, a second corroborating source
+  (another passage, a second paper, or an independent proof-sketch/formalization in
+  another proof assistant) is required — no single-passage conclusions for load-bearing
+  main theorems.
+- **Tier 2 (Documentation-Backed)**: Mathlib source (via `lean_hover_info` /
+  `lean_declaration_file`) is the minimum. If the declaration's docstring is ambiguous or
+  silent, a second independent source (a second search tool result, the Mathlib changelog,
+  or the test/example file using the declaration) is required before concluding.
+- **Tier 3 (Implementation-Backed)**: Reading an existing Lean file without checking
+  whether it has corresponding tests/examples in the repo is insufficient; both required.
+- **Tier-agnostic lean4 convention rule**: an "this is the CSLib/Mathlib convention" claim
+  requires confirmation at 2+ independent declarations/files via `lean_local_search`, not
+  a single hit.
+
 ## Graceful Degradation
 
 When no reference materials are identified:

@@ -282,7 +282,7 @@ Not a checklist — state results:
 ## Verification
 
 - `lake build`: 0 errors (N jobs)
-- `grep -rn "sorry"`: 0 hits across all contributed files
+- `.claude/scripts/lean-sorry-census.sh`: `sorry_count: 0` across all contributed files
 - CI validation suite passed: `lake test`, `lake shake`, `lake exe checkInitImports`, `lake lint`, `lake exe lint-style`
 ```
 

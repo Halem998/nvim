@@ -1,0 +1,70 @@
+{
+  "status": "implemented",
+  "summary": "Created the shared .claude/scripts/lean-sorry-census.sh comment-stripping census script (depth-counting python3 stripper handling nested /- -/ block comments, --cross-check against lake build), validated it against a 9-case fixture corpus and a buildable Lake project (including a proven deliberate-mismatch detection), and replaced all 5 duplicated raw-grep sorry census call sites across the cslib and lean implementation agents with calls to the shared script. Packaged a source-of-truth copy in the lean extension (provides.scripts) and updated the pr-description-format.md example. Regression sweep confirms zero remaining inline sorry census chains under .claude/.",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "artifacts": [
+    {
+      "type": "script",
+      "path": ".claude/scripts/lean-sorry-census.sh",
+      "summary": "Canonical shared Lean sorry census script"
+    },
+    {
+      "type": "script",
+      "path": ".claude/extensions/lean/scripts/lean-sorry-census.sh",
+      "summary": "Byte-identical extension source-of-truth copy, registered in provides.scripts"
+    },
+    {
+      "type": "fixture",
+      "path": "specs/783_fix_sorry_census_exclude_comments/fixtures/SorryCensus.lean",
+      "summary": "9-case fixture corpus, genuine sorries at lines 10 and 40"
+    },
+    {
+      "type": "fixture",
+      "path": "specs/783_fix_sorry_census_exclude_comments/fixtures/run-census-test.sh",
+      "summary": "Assertion harness; passes 2/2 (sorry_count and file:line list)"
+    },
+    {
+      "type": "fixture",
+      "path": "specs/783_fix_sorry_census_exclude_comments/fixtures/lake-project",
+      "summary": "Buildable Lake project used for --cross-check validation; MATCH and MISMATCH both proven"
+    },
+    {
+      "type": "agent",
+      "path": ".claude/extensions/cslib/agents/cslib-implementation-agent.md",
+      "summary": "Site #1 updated to call shared script"
+    },
+    {
+      "type": "agent",
+      "path": ".claude/extensions/cslib/agents/cslib-implementation-hard-agent.md",
+      "summary": "Sites #2 (phase-end) and #3 (final wrap-up, --cross-check) updated"
+    },
+    {
+      "type": "agent",
+      "path": ".claude/extensions/lean/agents/lean-implementation-agent.md",
+      "summary": "Site #4 updated to call shared script"
+    },
+    {
+      "type": "agent",
+      "path": ".claude/extensions/lean/agents/lean-implementation-hard-agent.md",
+      "summary": "Site #5 updated to call shared script with --cross-check"
+    },
+    {
+      "type": "doc",
+      "path": ".claude/extensions/cslib/context/project/cslib/standards/pr-description-format.md",
+      "summary": "Example verification line updated to match shared script output format"
+    },
+    {
+      "type": "manifest",
+      "path": ".claude/extensions/lean/manifest.json",
+      "summary": "provides.scripts now lists lean-sorry-census.sh"
+    },
+    {
+      "type": "summary",
+      "path": "specs/783_fix_sorry_census_exclude_comments/summaries/01_sorry-census-comment-stripper-summary.md",
+      "summary": "Full implementation summary"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "Task ready for /todo archival (meta task, completion_summary set in .return-meta.json). Optional follow-ups noted but out of scope: consolidate vacuous-definition/new-axiom checks into a shared script; add a sorry census to cslib-vet-agent.md. Task 782 may now proceed to wire the *-hard agents' context-hygiene sections without conflict."
+}

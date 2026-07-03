@@ -290,9 +290,11 @@ Before writing final metadata, run the complete verification suite:
 
 1. **Check for sorries**:
    ```bash
-   grep -rn "\bsorry\b" Theories/ | grep -v "^[[:space:]]*--" | grep -v "/--" | wc -l
+   bash .claude/scripts/lean-sorry-census.sh Theories/ --cross-check
    ```
-   Record: `sorry_count` (must be 0 for implemented status)
+   Record: `sorry_count` (must be 0 for implemented status). `--cross-check` runs its own
+   `lake build` and reports both the stripper and compiler counts, feeding the reported
+   inventory into `sorry_inventory`.
 
 2. **Check for vacuous definitions** (PROHIBITED patterns):
    ```bash

@@ -33,7 +33,9 @@
       "project/lean4",
       "contracts"
     ],
-    "scripts": [],
+    "scripts": [
+      "lean-sorry-census.sh"
+    ],
     "hooks": []
   },
   "routing": {

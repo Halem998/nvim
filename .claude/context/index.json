@@ -191,8 +191,38 @@
         ],
         "commands": []
       },
-      "summary": "H3 reference grounding contract: three tiers (literature, documentation, implementation) with source-to-implementation mapping",
-      "line_count": 75,
+      "summary": "H3 reference grounding contract: three tiers (literature, documentation, implementation) with source-to-implementation mapping and per-tier Source-Coverage Minimums (no single-source conclusions)",
+      "line_count": 94,
+      "domain": "core"
+    },
+    {
+      "keywords": [
+        "adversarial-verification",
+        "claim-verification-bar",
+        "confidence-taxonomy",
+        "contradiction-resolution",
+        "hard-mode",
+        "H4"
+      ],
+      "path": "contracts/adversarial-verification.md",
+      "subdomain": "contracts",
+      "topics": [
+        "hard-mode",
+        "adversarial-verification",
+        "contracts",
+        "research"
+      ],
+      "load_when": {
+        "task_types": [],
+        "agents": [
+          "general-research-hard-agent",
+          "cslib-research-hard-agent",
+          "lean-research-hard-agent"
+        ],
+        "commands": []
+      },
+      "summary": "H4 adversarial verification contract: Claim Verification Bar, Confidence Level Taxonomy, Contradiction Resolution Protocol, Forbidden Verification Outputs, and domain specialization for cslib/lean4",
+      "line_count": 103,
       "domain": "core"
     },
     {

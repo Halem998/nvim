@@ -137,7 +137,7 @@ This verification happens at the END of implementation, after all phases are com
 
 1. **Check for sorries in modified files**:
    ```bash
-   grep -rn "\bsorry\b" Theories/ | grep -v "^[[:space:]]*--" | grep -v "/--" | wc -l
+   bash .claude/scripts/lean-sorry-census.sh Theories/
    ```
    Record: `sorry_count` (must be 0 for implemented status)
 

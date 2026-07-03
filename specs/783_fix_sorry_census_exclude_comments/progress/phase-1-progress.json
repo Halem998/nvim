@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Fixture corpus and test harness",
+  "started_at": "2026-07-03T00:00:00Z",
+  "last_updated": "2026-07-03T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create fixture .lean corpus with 9 labeled cases", "status": "done"},
+    {"id": 2, "description": "Create run-census-test.sh harness", "status": "done"},
+    {"id": 3, "description": "Document expected count/line assertions", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

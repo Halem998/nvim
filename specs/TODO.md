@@ -11,10 +11,9 @@ next_project_number: 806
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,774,777,780,782,783,787,791,795,796,802,804 | -- | agent-system, literature, email integration, ... |
-| 2 | 772,779,781,785 | 774,780 | agent-system |
-| 3 | 773,786 | 772,785 | agent-system |
-| 4 | 788 | 786,787 | agent-system |
+| 1 | 78,87,774,779,781,782,785,787,791,795,796,802,804 | -- | agent-system, literature, email integration, ... |
+| 2 | 772,786 | 774,785 | agent-system |
+| 3 | 773,788 | 772,786,787 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -23,15 +22,12 @@ next_project_number: 806
 774 [NOT STARTED] — [--hard PLANNING leg: make phases SMALLER and divide work into a 
   └─ 772 [NOT STARTED] — [--hard IMPLEMENTATION leg: focus each agent round on an INDIVIDU
     └─ 773 [NOT STARTED] — The anti-analysis contract (H2, .claude/context/contracts/anti-an
-777 [PLANNED] — [--hard RESEARCH leg: more effort, higher standards for quality, 
-780 [PLANNED] — [Working-tree preservation] Prevent agents from destroying uncomm
-  └─ 779 [NOT STARTED] — [--hard recovery discipline] Define an unambiguous recovery contr
-  └─ 781 [NOT STARTED] — [Context-overflow safety] Dispatched agents must detect context p
-  └─ 785 [NOT STARTED] — Replace the repo-wide `git add -A` in the task commit pipeline wi
-    └─ 786 [NOT STARTED] — Sweep the 40+ remaining `git add -A` references across the agent 
-      └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree
+779 [NOT STARTED] — [--hard recovery discipline] Define an unambiguous recovery contr
+781 [NOT STARTED] — [Context-overflow safety] Dispatched agents must detect context p
 782 [PLANNED] — [Formal-domain context hygiene] Reduce the context that lean4/for
-783 [PLANNED] — Fix the sorry-census methodology in the review/vet agent tooling 
+785 [NOT STARTED] — Replace the repo-wide `git add -A` in the task commit pipeline wi
+  └─ 786 [NOT STARTED] — Sweep the 40+ remaining `git add -A` references across the agent 
+    └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree
 787 [NOT STARTED] — Make multi-task creation declare dependencies based on FILE FOOTP
   └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree (see above)
 791 [PR READY] — Fix the <leader>al 'Load Core' loader so WezTerm lifecycle tab co
@@ -283,7 +279,7 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 
 ### 783. Fix sorry-census to exclude comment/docstring lines (count only live proof debt)
 - **Effort**: 1-2 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -320,7 +316,7 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 
 ### 780. Agent git-safety: preserve uncommitted work, guard destructive git ops
 - **Effort**: 3-6 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -358,7 +354,7 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 
 ### 777. Hard-mode research: more effort, higher quality and verification standards
 - **Effort**: 3-6 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None

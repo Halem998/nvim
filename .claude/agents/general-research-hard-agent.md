@@ -24,6 +24,7 @@ implementation direction, or when the task involves faithful transcription of fo
 - `@.claude/context/formats/report-format.md` - Research report structure (when creating report)
 - `@.claude/context/contracts/anti-analysis.md` - H2 anti-analysis behavioral contract (MANDATORY)
 - `@.claude/context/contracts/reference-grounding.md` - H3 reference grounding contract (MANDATORY)
+- `@.claude/context/contracts/adversarial-verification.md` - H4 adversarial verification contract: Claim Verification Bar, Confidence Level Taxonomy, Contradiction Resolution Protocol (MANDATORY)
 - `@.claude/context/repo/project-overview.md` - Project structure (for codebase research)
 - `@.claude/context/patterns/context-discovery.md` - Use with agent=`general-research-hard-agent`
 
@@ -132,6 +133,11 @@ Based on task type and description:
 - `WebFetch` for specific documentation pages
 - Retrieve API references, guides, specifications
 
+**No-Single-Source-Conclusion Rule** (H3 Source-Coverage Minimums): Do not proceed to Stage 4
+synthesis with a load-bearing claim backed by only one source. Run at least one cross-checking
+search/read first, per the tier-specific minimums in
+`@.claude/context/contracts/reference-grounding.md#source-coverage-minimums`.
+
 ### Stage 4: Synthesize Findings
 
 Compile discovered information:
@@ -147,17 +153,28 @@ to Stage 4.5. All load-bearing claims must have citations.
 
 ### Stage 4.5: Adversarial Self-Verification (H4)
 
-After main research is complete, re-read the report with an adversarial mandate:
+Before writing this stage, read `@.claude/context/contracts/adversarial-verification.md` and
+internalize the Claim Verification Bar, Confidence Level Taxonomy, and Contradiction
+Resolution Protocol. This stage's output is the structured table below, not free prose.
 
-1. **Challenge each recommendation**: Is there a documented counterargument to this approach?
-2. **Verify citations**: Are all Tier 1/2 claims backed by the cited source?
-3. **Check for analysis-only conclusions**: Any forbidden-output patterns in the draft?
-4. **Identify uncertain claims**: Flag claims made from instinct rather than evidence
+After main research is complete, re-read the report with an adversarial mandate and apply the
+Claim Verification Bar to every load-bearing claim: challenge each recommendation for a
+documented counterargument, verify every citation against its source, check for forbidden
+verification outputs (see contract), and assign a confidence level to every claim.
 
-Write a `## Adversarial Self-Verification` section in the report:
-- List challenged claims and how they were verified or revised
-- List uncertain claims with confidence levels
-- List any recommendations that were modified after verification
+Write a `## Adversarial Self-Verification` section in the report containing:
+
+1. **Claim Verification Table** (required, primary artifact of this stage):
+
+   | Claim | Source/Counterexample | Verification Method | Confidence |
+   |-------|------------------------|----------------------|------------|
+   | ... | ... | ... | High/Medium/Low |
+
+2. **Contradiction Log** (present only when contradictions were found): for each, apply the
+   Contradiction Resolution Protocol's precedence ranking before writing the entry; if
+   resolution fails, state `UNRESOLVED CONTRADICTION: <A> vs <B>` with downstream risk and the
+   resolving check not yet performed.
+3. List any recommendations that were modified after verification.
 
 If verification reveals a fundamental flaw in the research direction, write a new section
 `## Revised Direction` and restart research from Stage 3 with the corrected direction.

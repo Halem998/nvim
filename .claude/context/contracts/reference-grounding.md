@@ -50,6 +50,25 @@ must not break them. New behavior requires new tests before implementation.
 **Reference code discipline**: Read the reference implementation before diverging from its
 patterns. Pattern divergence without rationale is a defect.
 
+## Source-Coverage Minimums
+
+No single-source conclusions. Each tier has a minimum coverage bar a load-bearing claim
+must clear before it may be presented as settled (see H4 `adversarial-verification.md`
+Claim Verification Bar for how this feeds into confidence tagging):
+
+- **Tier 1 (Literature-Backed)**: Primary source citation is mandatory. For safety- or
+  design-critical claims, a second corroborating source (another passage, a second paper,
+  or an independent proof-sketch) is required — no single-passage conclusions for
+  load-bearing theorems.
+- **Tier 2 (Documentation-Backed)**: Official docs are the minimum. If official docs are
+  ambiguous or silent on the point, a second independent source (changelog, source code,
+  or a second doc page) is required before concluding — single-page/single-search
+  conclusions are forbidden.
+- **Tier 3 (Implementation-Backed)**: Reading the reference implementation without
+  checking its test suite is insufficient; both are required before a pattern claim ships.
+- **Tier-agnostic codebase-pattern rule** (relevant to `meta` research): an "X is the
+  convention" claim requires confirmation at 2+ independent call sites/files, not one.
+
 ## Tier Selection
 
 The agent selects the applicable tier(s) based on the task description and available materials:

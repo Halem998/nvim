@@ -194,7 +194,7 @@ State the Settled-Design Preamble for this phase (see above).
 **C. Verify Phase Completion** - Run CSLib CI pipeline steps relevant to this phase:
 1. `lake build Module.Name` - Scoped build
 2. `lake exe checkInitImports` - Verify Cslib.Init imports
-3. Check for sorries: `grep -rn "\bsorry\b" Cslib/ | grep -v "^[[:space:]]*--" | wc -l`
+3. Check for sorries: `bash .claude/scripts/lean-sorry-census.sh Cslib/`
 
 **D. Mark Phase Complete** ([IN PROGRESS] -> [COMPLETED])
 
@@ -231,7 +231,7 @@ Run all 7 steps before writing final metadata:
 7. `lake test` - Full test suite
 
 Then check:
-8. `grep -rn "\bsorry\b" Cslib/ | grep -v "^[[:space:]]*--" | grep -v "/--" | wc -l` - sorry count
+8. `bash .claude/scripts/lean-sorry-census.sh Cslib/ --cross-check` - sorry count (cross-checked against the `lake build` already run in step 1; feed the reported inventory into `sorry_inventory`)
 9. Vacuous definition check
 10. New axiom check
 

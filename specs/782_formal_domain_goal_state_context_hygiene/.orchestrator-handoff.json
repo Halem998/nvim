@@ -1,0 +1,13 @@
+{
+  "status": "planned",
+  "summary": "Phased plan to author a standalone Lean/CSLib context-hygiene contract (goal-state query discipline, bounded Read offset/limit file reads, hypothesis pruning via lean_minimal_hypotheses, transcript summarization), register it in the lean extension index for four hard-agent consumers, wire it (Context References + inline internalization block) into lean/cslib research+implementation hard agents, document the undocumented lean_minimal_hypotheses tool, close the context-exhaustion-detection wiring gap in the two research hard agents, and flag a manual cross-repo re-install for /home/benjamin/Projects/cslib.",
+  "artifacts": [
+    {
+      "path": "specs/782_formal_domain_goal_state_context_hygiene/plans/01_context-hygiene-contract.md",
+      "type": "plan",
+      "summary": "6-phase implementation plan (3 waves, ~3h) for the formal-domain context-hygiene contract and its wiring into four hard agents, plus lean_minimal_hypotheses documentation and a flagged cross-repo sync step."
+    }
+  ],
+  "phases_total": 6,
+  "next_action_hint": "implement"
+}

@@ -39,6 +39,7 @@ abstraction before recommending new definitions.
 - `@.claude/context/formats/report-format.md` - Research report structure (when creating report)
 - `@.claude/context/contracts/anti-analysis.md` - H2 anti-analysis behavioral contract (MANDATORY)
 - `@.claude/context/contracts/reference-grounding.md` - H3 reference grounding contract (MANDATORY)
+- `@.claude/context/contracts/adversarial-verification.md` - H4 adversarial verification contract: Claim Verification Bar, Confidence Level Taxonomy, Contradiction Resolution Protocol (MANDATORY)
 - `@.claude/context/repo/project-overview.md` - Project structure (for codebase research)
 - `@.claude/context/patterns/context-discovery.md` - Use with agent=`cslib-research-hard-agent`
 - `@.claude/extensions/cslib/context/project/cslib/standards/citation-conventions.md` - BibKey format (H3 enrichment)
@@ -209,6 +210,11 @@ Same as base cslib-research-agent. Apply Reuse Check Protocol before any recomme
 - Read `references.bib` to verify or locate BibKey for cited sources
 - Document BibKey in source-to-implementation mapping table
 
+**No-Single-Source-Conclusion Rule** (H3 Source-Coverage Minimums): Do not proceed to Stage 4
+synthesis with a load-bearing claim backed by only one source. Run at least one cross-checking
+search/read first, per the tier-specific minimums in
+`@.claude/context/contracts/reference-grounding.md#source-coverage-minimums`.
+
 ### Stage 4: Synthesize Findings
 
 Compile discovered information:
@@ -222,19 +228,35 @@ For Tier 1/2/3 tasks: complete source-to-implementation mapping table before Sta
 
 ### Stage 4.5: Adversarial Self-Verification (H4)
 
-After main research is complete, re-read the report with an adversarial mandate:
+Before writing this stage, read `@.claude/context/contracts/adversarial-verification.md` and
+internalize the Claim Verification Bar, Confidence Level Taxonomy, and Contradiction
+Resolution Protocol (Domain Specialization section covers cslib BibKey verification). This
+stage's output is the structured table below, not free prose.
 
+After main research is complete, re-read the report with an adversarial mandate and apply the
+Claim Verification Bar to every load-bearing claim, plus the cslib-specific checks:
 1. **Challenge each recommendation**: Is there a documented counterargument to this approach?
-2. **Verify citations**: Are all Tier 1 claims backed by cited source with verified BibKey?
-3. **Check for analysis-only conclusions**: Any forbidden-output patterns in the draft?
-4. **Check reuse completeness**: Were all 5 Reuse Check Protocol steps exhausted?
-5. **Verify zero-debt compliance**: Does any recommendation involve sorry deferral?
+2. **Check for forbidden verification outputs**: Any pattern from the contract's Forbidden
+   Verification Outputs list in the draft?
+3. **Check reuse completeness**: Were all 5 Reuse Check Protocol steps exhausted?
+4. **Verify zero-debt compliance**: Does any recommendation involve sorry deferral?
 
-Write a `## Adversarial Self-Verification` section in the report:
-- List challenged claims and how they were verified or revised
-- List uncertain claims with confidence levels
-- List any recommendations modified after verification
-- Note BibKey verification status for all Tier 1 citations
+Write a `## Adversarial Self-Verification` section in the report containing:
+
+1. **Claim Verification Table** (required, primary artifact of this stage). For CSLib claims,
+   the `Verification Method` column uses domain-specific values: `BibKey verified against
+   references.bib`, `Reuse Check Protocol (5 steps)`, or `Zero-Debt Policy check`:
+
+   | Claim | Source/Counterexample | Verification Method | Confidence |
+   |-------|------------------------|----------------------|------------|
+   | ... | ... | BibKey verified against references.bib / Reuse Check Protocol / ... | High/Medium/Low |
+
+2. **Contradiction Log** (present only when contradictions were found): apply the
+   Contradiction Resolution Protocol's precedence ranking before writing the entry; if
+   resolution fails, state `UNRESOLVED CONTRADICTION: <A> vs <B>` with downstream risk and the
+   resolving check not yet performed.
+3. List any recommendations modified after verification.
+4. Note BibKey verification status for all Tier 1 citations.
 
 If verification reveals a fundamental flaw, write `## Revised Direction` and restart from Stage 3.
 

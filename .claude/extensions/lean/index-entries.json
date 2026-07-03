@@ -596,6 +596,28 @@
       "domain": "project",
       "subdomain": "lean",
       "summary": "Lean4 H2 override: formal proof line bar (first sorry-free lemma within 30% of tool calls), lean-specific forbidden conclusions, sub-sorry policy enforcement for leaf-only sorries"
+    },
+    {
+      "path": "contracts/adversarial-verification.md",
+      "description": "Lean4 parity copy of the H4 adversarial verification contract (Claim Verification Bar, Confidence Level Taxonomy, Contradiction Resolution Protocol)",
+      "tags": [
+        "lean4",
+        "hard-mode",
+        "adversarial-verification",
+        "contracts",
+        "H4"
+      ],
+      "load_when": {
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-research-hard-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "H4 adversarial verification contract (lean4 parity copy): Claim Verification Bar, Confidence Level Taxonomy, Contradiction Resolution Protocol, Forbidden Verification Outputs, lean4 Domain Specialization (lean_hover_info, lean_local_search)"
     }
   ]
 }

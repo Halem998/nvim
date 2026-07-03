@@ -20,6 +20,7 @@ Reference (do not load eagerly):
 - Path: `.claude/context/formats/return-metadata-file.md` - Metadata file schema
 - Path: `.claude/context/contracts/anti-analysis.md` - H2 contract (loaded by agent)
 - Path: `.claude/context/contracts/reference-grounding.md` - H3 contract (loaded by agent)
+- Path: `.claude/context/contracts/adversarial-verification.md` - H4 contract: Claim Verification Bar, Confidence Level Taxonomy, Contradiction Resolution Protocol (MANDATORY, loaded by agent)
 - Path: `.claude/context/patterns/postflight-control.md` - Marker file protocol
 - Path: `.claude/context/patterns/jq-escaping-workarounds.md` - jq escaping patterns
 

@@ -29,8 +29,10 @@ All lean-specific sections are included inline below.
 - `@.claude/context/formats/report-format.md` - Research report structure
 - `@.claude/extensions/lean/context/contracts/anti-analysis.md` - H2 lean4 override (MANDATORY)
 - `@.claude/extensions/lean/context/contracts/reference-grounding.md` - H3 lean4 override (MANDATORY)
+- `@.claude/extensions/lean/context/contracts/adversarial-verification.md` - H4 lean4 parity contract: Claim Verification Bar, Confidence Level Taxonomy, Contradiction Resolution Protocol (MANDATORY)
 - `@.claude/context/contracts/anti-analysis.md` - Core H2 contract (fallback)
 - `@.claude/context/contracts/reference-grounding.md` - Core H3 contract (fallback)
+- `@.claude/context/contracts/adversarial-verification.md` - Core H4 contract (fallback)
 - `@.claude/context/repo/project-overview.md` - Project structure (for codebase research)
 
 ## BLOCKED TOOLS (NEVER USE)
@@ -166,6 +168,11 @@ Based on task type and description, identify research questions:
 **Step 2: Mathlib search** (lean_local_search first, then rate-limited tools)
 **Step 3: Tactic survey** (lean_multi_attempt for candidate tactics)
 
+**No-Single-Source-Conclusion Rule** (H3 Source-Coverage Minimums, lean4): Do not proceed to
+Stage 4 synthesis with a load-bearing claim backed by only one source. Run at least one
+cross-checking search/read first, per the tier-specific minimums in
+`@.claude/extensions/lean/context/contracts/reference-grounding.md#source-coverage-minimums-lean4`.
+
 **Literature Extraction Protocol** (when literature source present):
 1. Identify source from task description or focus_prompt
 2. Extract proof structure: main theorem, proof steps, key lemmas, strategy
@@ -186,18 +193,34 @@ For Tier 1/2/3 tasks: complete the source-to-implementation mapping table before
 
 ### Stage 4.5: Adversarial Self-Verification (H4)
 
-After main research is complete, re-read the draft report with adversarial mandate:
+Before writing this stage, read `@.claude/extensions/lean/context/contracts/adversarial-verification.md`
+and internalize the Claim Verification Bar, Confidence Level Taxonomy, and Contradiction
+Resolution Protocol (Domain Specialization section covers `lean_hover_info`-confirmed type
+signatures). This stage's output is the structured table below, not free prose.
 
+After main research is complete, re-read the draft report with adversarial mandate and apply
+the Claim Verification Bar to every load-bearing claim:
 1. **Challenge each recommendation**: Is there a documented reason this Mathlib lemma
    would NOT apply (type signature mismatch, namespace issue, version incompatibility)?
-2. **Verify all citations**: Are all type signatures confirmed via lean_hover_info?
-3. **Check for forbidden outputs**: Any "mathlib likely has" without a search call?
-4. **Identify uncertain claims**: Flag claims from instinct rather than lean_local_search
+2. **Check for forbidden verification outputs**: Any pattern from the contract's Forbidden
+   Verification Outputs list (including "mathlib likely has" without a search call)?
+3. **Identify uncertain claims**: Flag claims from instinct rather than lean_local_search
 
-Write a `## Adversarial Self-Verification` section in the report:
-- List challenged claims and whether they were verified or revised
-- List uncertain claims with confidence levels
-- List any recommendations modified after verification
+Write a `## Adversarial Self-Verification` section in the report containing:
+
+1. **Claim Verification Table** (required, primary artifact of this stage). For lean4 claims,
+   the `Verification Method` column uses domain-specific values: `lean_hover_info-confirmed
+   type signature`, `lean_local_search hit`, or a named rate-limited search tool result:
+
+   | Claim | Source/Counterexample | Verification Method | Confidence |
+   |-------|------------------------|----------------------|------------|
+   | ... | ... | lean_hover_info-confirmed type signature / lean_local_search hit / ... | High/Medium/Low |
+
+2. **Contradiction Log** (present only when contradictions were found): apply the
+   Contradiction Resolution Protocol's precedence ranking before writing the entry; if
+   resolution fails, state `UNRESOLVED CONTRADICTION: <A> vs <B>` with downstream risk and the
+   resolving check not yet performed.
+3. List any recommendations modified after verification.
 
 If verification reveals a fundamental flaw in search direction, write a `## Revised Direction`
 section and restart from Stage 3 with corrected search strategy.

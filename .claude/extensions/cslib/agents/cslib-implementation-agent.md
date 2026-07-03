@@ -264,7 +264,7 @@ After the CI pipeline:
 
 8. **Check for sorries in modified files**:
    ```bash
-   grep -rn "\bsorry\b" Cslib/ | grep -v "^[[:space:]]*--" | grep -v "/--" | wc -l
+   bash .claude/scripts/lean-sorry-census.sh Cslib/
    ```
    Record: `sorry_count` (must be 0 for implemented status)
 

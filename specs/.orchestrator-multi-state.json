@@ -1,0 +1,58 @@
+{
+  "session_id": "sess_1783089459_c17000",
+  "task_numbers": [
+    777,
+    778,
+    780,
+    782,
+    783
+  ],
+  "waves": [
+    [
+      777,
+      778,
+      780,
+      782,
+      783
+    ]
+  ],
+  "dependency_graph": {
+    "777": [],
+    "778": [],
+    "780": [],
+    "782": [],
+    "783": []
+  },
+  "max_cycles": 25,
+  "cycle_count": 2,
+  "failed_tasks": [],
+  "completed_tasks": [],
+  "current_statuses": {
+    "777": "planned",
+    "778": "planned",
+    "780": "planned",
+    "782": "planned",
+    "783": "planned"
+  },
+  "task_dirs": {
+    "777": "specs/777_hardmode_research_higher_standards",
+    "778": "specs/778_hardmode_relax_zerodebt_strategic_sorry_skeleton",
+    "780": "specs/780_agent_git_safety_preserve_uncommitted_work",
+    "782": "specs/782_formal_domain_goal_state_context_hygiene",
+    "783": "specs/783_fix_sorry_census_exclude_comments"
+  },
+  "research_agents": {
+    "777": "general-research-agent",
+    "778": "general-research-agent",
+    "780": "general-research-agent",
+    "782": "general-research-agent",
+    "783": "general-research-agent"
+  },
+  "implement_agents": {
+    "777": "general-implementation-agent",
+    "778": "general-implementation-agent",
+    "780": "general-implementation-agent",
+    "782": "general-implementation-agent",
+    "783": "general-implementation-agent"
+  }
+}
