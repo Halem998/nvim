@@ -235,13 +235,19 @@ with the full canonical 7-field entry for every strategic sorry:
       "strategic": true,
       "assumption": "one-sentence description of what the sorry stands in for",
       "why_deferred": "one-sentence reason this division point was deferred",
-      "follow_up_task": "774.2"
+      "follow_up_task": "781"
     }
   ],
   "blockers": [],
   "continuation_path": null
 }
 ```
+`follow_up_task` is always a plain-integer task-number string (e.g. `"781"`), allocated via
+`skill-planner-hard`'s `{{FOLLOWUP:i}}` placeholder-substitution mechanism at plan time — never a
+dotted sub-task ID (e.g. never `"774.2"`). This is a documentation correction, not a schema
+change: it is consistent with `wrap-up.md`'s "owning follow-up task number or sub-phase"
+description of the field.
+
 See `@.claude/context/contracts/anti-analysis.md`'s five-condition test for when a sorry
 qualifies as strategic, and `@.claude/context/contracts/wrap-up.md` for the canonical
 `sorry_inventory` schema and the status/skeleton interaction table.

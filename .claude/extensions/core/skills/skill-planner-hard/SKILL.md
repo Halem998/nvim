@@ -320,6 +320,146 @@ fi
 
 ---
 
+### Stage 6b: Skeleton Task Allocation (H8 escape valve)
+
+Duplicate-with-modification of `skill-spawn/SKILL.md` Stages 7-11 (do NOT extract a shared
+helper — this is a deliberate lower-risk, smaller-diff first cut; revisit only if a second
+consumer appears). Structurally identical, EXCEPT the dependency direction is REVERSED (see
+below) and the artifact consumed is `.skeleton-return.json` rather than `.spawn-return.json`.
+
+Runs only when `planner-hard-agent` (Stage 4a of `planner-hard-agent.md`) declared a skeleton
+plan. No-ops cleanly otherwise.
+
+```bash
+skeleton_file="specs/${padded_num}_${project_name}/.skeleton-return.json"
+
+if [ -f "$skeleton_file" ] && jq empty "$skeleton_file" 2>/dev/null; then
+  new_tasks=$(jq -r '.new_tasks' "$skeleton_file")
+  task_count=$(jq '.new_tasks | length' "$skeleton_file")
+
+  if [ "$task_count" -gt 0 ]; then
+    dependency_order=$(jq -r '.dependency_order' "$skeleton_file")
+
+    # Stage 6b-i: Get next task numbers (mirrors skill-spawn Stage 8)
+    next_num=$(jq -r '.next_project_number' specs/state.json)
+
+    # Stage 6b-ii: Apply topological sort (mirrors skill-spawn Stage 9)
+    # dependency_order is already topologically sorted (foundational first).
+    declare -A task_num_map
+    order_idx=0
+    for idx in $(echo "$dependency_order" | jq -r '.[]'); do
+        task_num_map[$idx]=$((next_num + order_idx))
+        order_idx=$((order_idx + 1))
+    done
+
+    # Stage 6b-iii: Create new task directories (mirrors skill-spawn Stage 10)
+    for idx in $(echo "$dependency_order" | jq -r '.[]'); do
+        new_task_num=${task_num_map[$idx]}
+        new_padded=$(printf "%03d" "$new_task_num")
+        task_title=$(jq -r --argjson i "$idx" '.new_tasks[$i].title' "$skeleton_file")
+        task_slug=$(echo "$task_title" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | sed 's/[^a-z0-9_]//g')
+        mkdir -p "specs/${new_padded}_${task_slug}/reports"
+    done
+
+    # Stage 6b-iv: Update state.json with new tasks (mirrors skill-spawn Stage 11), BUT with the
+    # SETTLED REVERSED dependency direction: each follow-up task's `dependencies` includes the
+    # SKELETON (current) task number, NOT sibling new_tasks that gate it the spawn-agent way.
+    # This is the inverse of skill-spawn Stage 13 -- copying that step verbatim here would wire
+    # dependencies backwards and leave the skeleton task perpetually [BLOCKED].
+    for idx in $(echo "$dependency_order" | jq -r '.[]'); do
+        new_task_num=${task_num_map[$idx]}
+        task_title=$(jq -r --argjson i "$idx" '.new_tasks[$i].title' "$skeleton_file")
+        task_desc=$(jq -r --argjson i "$idx" '.new_tasks[$i].description' "$skeleton_file")
+        task_effort=$(jq -r --argjson i "$idx" '.new_tasks[$i].effort' "$skeleton_file")
+        task_type_new=$(jq -r --argjson i "$idx" '.new_tasks[$i].task_type' "$skeleton_file")
+        task_slug=$(echo "$task_title" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | sed 's/[^a-z0-9_]//g')
+
+        # REVERSED: dependencies = [skeleton_task_number] (the current task), not the spawn-agent
+        # sibling-index resolution. The skeleton task's own `dependencies` field is untouched --
+        # there is no Stage 13-equivalent "update parent task dependencies" step here.
+        resolved_deps="[$task_number]"
+
+        jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+           --argjson num "$new_task_num" \
+           --arg name "$task_slug" \
+           --arg desc "$task_desc" \
+           --arg effort "$task_effort" \
+           --arg lang "$task_type_new" \
+           --argjson deps "$resolved_deps" \
+           --argjson parent "$task_number" \
+          '.active_projects += [{
+            "project_number": $num,
+            "project_name": $name,
+            "status": "not_started",
+            "task_type": $lang,
+            "description": $desc,
+            "effort": $effort,
+            "parent_task": $parent,
+            "dependencies": $deps,
+            "created": $ts,
+            "last_updated": $ts,
+            "artifacts": []
+          }]' \
+          specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    done
+
+    # Update next_project_number
+    jq --argjson next "$((next_num + task_count))" \
+      '.next_project_number = $next' \
+      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+
+    # Stage 6b-v: Record follow-up task numbers on the skeleton (current) task's plan_metadata
+    # (skeleton: true, follow_up_tasks: [...]) per plan-format.md's schema (Phase 3).
+    follow_up_task_nums="[]"
+    for idx in $(echo "$dependency_order" | jq -r '.[]'); do
+        follow_up_task_nums=$(echo "$follow_up_task_nums" | jq --argjson n "${task_num_map[$idx]}" '. + [$n]')
+    done
+    jq --argjson num "$task_number" --argjson follow_ups "$follow_up_task_nums" \
+       '(.active_projects[] | select(.project_number == $num) | .plan_metadata) =
+        ((.active_projects[] | select(.project_number == $num) | .plan_metadata) // {} +
+         {"skeleton": true, "follow_up_tasks": $follow_ups})' \
+      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+
+    # Stage 6b-vi: Regenerate TODO.md after state writes.
+    bash .claude/scripts/generate-todo.sh
+  fi
+fi
+```
+
+---
+
+### Stage 6c: Placeholder-Token Substitution Pass
+
+Immediately after Stage 6b's allocation. Resolves every `{{FOLLOWUP:i}}` token written by
+`planner-hard-agent` in the just-written plan file to the concrete allocated task number from
+Stage 6b's `task_num_map`. This step has no `skill-spawn` equivalent (spawn-agent never emits
+forward-reference tokens into a sibling artifact).
+
+Guards to a clean no-op when `.skeleton-return.json` is absent (non-skeleton plans) — the plan
+file is left completely untouched in that case.
+
+```bash
+if [ -f "$skeleton_file" ] && [ "$task_count" -gt 0 ] && [ -n "$artifact_path" ] && [ -f "$artifact_path" ]; then
+  # Single text-substitution pass: replace {{FOLLOWUP:i}} with the real allocated task number.
+  # Covers both the plan overview prose and the `## Planned Strategic Sorries` table's
+  # `Follow-Up Task` column -- both are plain textual occurrences of the same token.
+  for idx in $(echo "$dependency_order" | jq -r '.[]'); do
+      token="{{FOLLOWUP:${idx}}}"
+      real_num="${task_num_map[$idx]}"
+      sed -i "s/${token//\//\\/}/${real_num}/g" "$artifact_path"
+  done
+
+  # Verify no unresolved tokens remain (defensive check, non-fatal)
+  if grep -q '{{FOLLOWUP:' "$artifact_path" 2>/dev/null; then
+    echo "[hard-mode] Warning: unresolved {{FOLLOWUP:i}} token(s) remain in $artifact_path after substitution pass" >&2
+  fi
+
+  echo "[hard-mode] Skeleton plan: allocated ${task_count} follow-up task(s), substituted placeholder tokens" >&2
+fi
+```
+
+---
+
 ### Stage 7: Update Task Status (Postflight)
 
 ```bash

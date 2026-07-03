@@ -270,24 +270,26 @@ dependency being the escape-valve trigger introduced in Phase 1.
 
 ---
 
-### Phase 4.1: skill-planner-hard postflight — task allocation + reversed dependency wiring [NOT STARTED]
+### Phase 4.1: skill-planner-hard postflight — task allocation + reversed dependency wiring [COMPLETED]
 
 - **Goal:** Add a postflight sub-stage that consumes `.skeleton-return.json` and creates real
   follow-up tasks with the CORRECT (reversed) dependency direction.
 - **Tasks:**
-  - [ ] Add a new postflight sub-stage to `skill-planner-hard/SKILL.md` (after Stage 6, before
+  - [x] Add a new postflight sub-stage to `skill-planner-hard/SKILL.md` (after Stage 6, before
         Stage 7 status update) that: reads `.skeleton-return.json` if present; gets
         `next_project_number`; applies `dependency_order` (Kahn-sorted by the agent) to assign
         consecutive real task numbers; creates task directories; writes `state.json` entries —
         duplicating-with-modification `skill-spawn` Stages 7-11 (do NOT extract a shared helper).
-  - [ ] Wire dependencies in the SETTLED reversed direction: each new follow-up task gets
+        *(completed: added as Stage 6b, between existing Stage 6a and Stage 7)*
+  - [x] Wire dependencies in the SETTLED reversed direction: each new follow-up task gets
         `dependencies: [skeleton_task_number]`; the skeleton (current) task's own `dependencies`
-        are left untouched (the inverse of skill-spawn Stage 13).
-  - [ ] Record the resulting follow-up task numbers on the skeleton task's `plan_metadata`
-        (`skeleton: true`, `follow_up_tasks: [...]`) per the Phase 3 schema.
-  - [ ] Regenerate TODO.md via `generate-todo.sh` after state writes.
-  - [ ] Mirror all edits to `.claude/extensions/core/skills/skill-planner-hard/SKILL.md`,
-        preserving the pre-existing literature-script-name drift (do not "fix" it).
+        are left untouched (the inverse of skill-spawn Stage 13). *(completed)*
+  - [x] Record the resulting follow-up task numbers on the skeleton task's `plan_metadata`
+        (`skeleton: true`, `follow_up_tasks: [...]`) per the Phase 3 schema. *(completed)*
+  - [x] Regenerate TODO.md via `generate-todo.sh` after state writes. *(completed)*
+  - [x] Mirror all edits to `.claude/extensions/core/skills/skill-planner-hard/SKILL.md`,
+        preserving the pre-existing literature-script-name drift (do not "fix" it). *(completed:
+        verified via diff — only the pre-existing drift lines differ)*
 - **Timing:** ~0.75 hours
 - **Depends on:** 2, 3
 - **Files to modify:**
@@ -298,19 +300,23 @@ dependency being the escape-valve trigger introduced in Phase 1.
 
 ---
 
-### Phase 4.2: skill-planner-hard postflight — placeholder-token substitution pass [NOT STARTED]
+### Phase 4.2: skill-planner-hard postflight — placeholder-token substitution pass [COMPLETED]
 
 - **Goal:** Resolve `{{FOLLOWUP:i}}` tokens in the just-written plan file to real allocated task
   numbers (the step with no skill-spawn equivalent).
 - **Tasks:**
-  - [ ] Add a postflight sub-stage (immediately after Phase 4.1's allocation) that performs a
+  - [x] Add a postflight sub-stage (immediately after Phase 4.1's allocation) that performs a
         single text-substitution pass over the just-written plan file, replacing each
         `{{FOLLOWUP:i}}` token with the concrete allocated task number from Phase 4.1's mapping.
-  - [ ] Ensure the substitution covers both the plan overview and the `## Planned Strategic
+        *(completed: added as Stage 6c)*
+  - [x] Ensure the substitution covers both the plan overview and the `## Planned Strategic
         Sorries` table `Follow-Up Task` column, so the plan (and the sorries the implementer later
-        places from it) cite real, resolvable plain-integer task numbers.
-  - [ ] Guard the pass to no-op cleanly when `.skeleton-return.json` is absent (non-skeleton plans).
-  - [ ] Mirror edits to `.claude/extensions/core/skills/skill-planner-hard/SKILL.md`.
+        places from it) cite real, resolvable plain-integer task numbers. *(completed: plain
+        text-substitution pass covers both locations since both use the same literal token)*
+  - [x] Guard the pass to no-op cleanly when `.skeleton-return.json` is absent (non-skeleton plans).
+        *(completed)*
+  - [x] Mirror edits to `.claude/extensions/core/skills/skill-planner-hard/SKILL.md`.
+        *(completed: verified via diff)*
 - **Timing:** ~0.5 hours
 - **Depends on:** 4.1
 - **Files to modify:**
@@ -354,19 +360,22 @@ dependency being the escape-valve trigger introduced in Phase 1.
 
 ---
 
-### Phase 6: Settle follow_up_task convention in general-implementation-hard-agent.md [NOT STARTED]
+### Phase 6: Settle follow_up_task convention in general-implementation-hard-agent.md [COMPLETED]
 
 - **Goal:** Correct the dotted `"774.2"` worked-example value to a plain integer and note the
   convention (documentation-only; no schema change).
 - **Tasks:**
-  - [ ] In `.claude/agents/general-implementation-hard-agent.md` line 238, change
+  - [x] In `.claude/agents/general-implementation-hard-agent.md` line 238, change
         `"follow_up_task": "774.2"` to a plain-integer example (e.g. `"follow_up_task": "781"`).
-  - [ ] Add a one-line note that `follow_up_task` is a plain-integer task-number string (allocated
+        *(completed)*
+  - [x] Add a one-line note that `follow_up_task` is a plain-integer task-number string (allocated
         via skill-planner-hard's placeholder-substitution mechanism), consistent with wrap-up.md's
         "owning follow-up task number or sub-phase" description — a documentation correction, not a
-        schema change.
-  - [ ] Mirror edits to `.claude/extensions/core/agents/general-implementation-hard-agent.md`.
-  - [ ] NOTE for implementation sequencing: task 779 also edits this file — serialize with 779.
+        schema change. *(completed)*
+  - [x] Mirror edits to `.claude/extensions/core/agents/general-implementation-hard-agent.md`.
+        *(completed: verified via diff)*
+  - [x] NOTE for implementation sequencing: task 779 also edits this file — serialize with 779.
+        *(completed: no conflict observed at time of this dispatch)*
 - **Timing:** ~0.25 hours
 - **Depends on:** 2
 - **Files to modify:**
