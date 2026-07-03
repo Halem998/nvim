@@ -68,6 +68,11 @@ Architecture documentation (load as needed):
 - `.claude/context/contracts/territory.md` - H7 territory contract for parallel dispatch
 - `.claude/context/contracts/anti-analysis.md` - H2 contract injected into each implement dispatch
 - `.claude/context/contracts/wrap-up.md` - H9 contract for handoff discipline
+- `.claude/context/contracts/recovery.md` - Fix-forward recovery ladder referenced by the
+  Recovery Discipline contract slot (see CONTRACT SLOTS below)
+- `.claude/context/contracts/orchestrator-discipline.md` - Orchestrator-role discipline
+  contract governing this state-machine loop itself (Stage 1c preamble, Stage 3c burnout
+  circuit-breaker gate) — not the implement dispatches that anti-analysis.md governs
 - `.claude/docs/architecture/orchestrate-state-machine.md` - Base state table (reference)
 - `.claude/docs/architecture/handoff-schema.md` - Handoff JSON schema
 
@@ -163,6 +168,22 @@ echo "[hard-orchestrate] Routing: research=$RESEARCH_AGENT, implement=$IMPLEMENT
 
 ---
 
+### Stage 1c: Orchestrator Discipline Preamble
+
+Runs ONCE per invocation, immediately after Stage 1b and before the loop begins.
+
+`Read .claude/context/contracts/orchestrator-discipline.md`
+
+State (to yourself, in your own transcript) that this session is bound by the orchestrator
+discipline contract just read: no inline design/proof analysis, no reading implementation
+source, no running builds, no mid-cycle strategy reconsideration without a fresh dispatch; when
+a phase cannot complete in a bounded dispatch, the only allowed responses are (a) dispatch a
+fresh research/audit agent or (b) escalate via the blocker ladder — never absorb the work
+inline. This preamble is the pointer; the enforceable checklist is inlined at every loop
+iteration in Stage 3c below.
+
+---
+
 ### Stage 2: Preflight — Loop Guard and Churn State
 
 Create or read the loop guard file with hard-mode churn counters.
@@ -177,9 +198,11 @@ mkdir -p "$TASK_DIR"
 
 if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
   cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
-  echo "[hard-orchestrate] Resuming — cycle $cycle_count of $MAX_CYCLES"
+  burnout_signals_this_session=$(jq -r '.burnout_signals_this_session // 0' "$loop_guard_file")
+  echo "[hard-orchestrate] Resuming — cycle $cycle_count of $MAX_CYCLES (burnout signals so far: $burnout_signals_this_session)"
 else
   cycle_count=0
+  burnout_signals_this_session=0
   jq -n \
     --arg session_id "$session_id" \
     --argjson max_cycles "$MAX_CYCLES" \
@@ -190,6 +213,7 @@ else
       "max_cycles": $max_cycles,
       "current_state": "reading",
       "hard_mode": true,
+      "burnout_signals_this_session": 0,
       "started": $started,
       "last_updated": $started
     }' > "$loop_guard_file"
@@ -236,6 +260,44 @@ jq --arg state "$current_status" \
    --argjson count "$cycle_count" \
   '.current_state = $state | .last_updated = $updated | .cycle_count = $count' \
   "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+```
+
+---
+
+### Stage 3c: Burnout Circuit-Breaker Gate
+
+**MANDATORY — runs EVERY loop iteration**, after `current_status` is known (3a) and the loop
+guard is persisted (3b), strictly before any Stage 4 dispatch decision. This is not an optional
+guideline; it is a gate. Per `.claude/context/contracts/orchestrator-discipline.md`, check all
+three self-checks before proceeding to Stage 4:
+
+1. **If you are about to Read a path you have already read this session without an
+   intervening `Agent` dispatch having produced new information, STOP and dispatch
+   `$RESEARCH_AGENT` instead** (focus_prompt = a literal restatement of the exact unresolved
+   question) — do not complete the re-read.
+2. **If this is the second or later consecutive orchestrator turn reasoning about task content
+   with no `Agent` tool call in between, STOP reasoning immediately and take response (a) or
+   (b) from the contract now** — do not produce a third such turn.
+3. **If you are about to reverse a phase, target, or escalation decision without a fresh
+   dispatch having just produced the new finding that justifies it, STOP and either dispatch
+   `$RESEARCH_AGENT` to obtain that finding (reasoning-about-what-a-phase-should-do) or jump
+   directly to Stage 6 (deciding-whether-to-keep-escalating) — never reverse on inline
+   reasoning alone.**
+
+No new artifact type is introduced. The forced dispatch reuses the Stage 4b divergence-audit
+dispatch shape, triggered by a burnout signal instead of a churn-count threshold; the forced
+escalation reuses Stage 6 directly.
+
+**On any signal firing**, increment the scalar counter in the same 3b-style jq write that
+already touches `loop_guard_file`:
+
+```bash
+burnout_signals_this_session=$((burnout_signals_this_session + 1))
+jq --argjson count "$burnout_signals_this_session" \
+   --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  '.burnout_signals_this_session = $count | .last_updated = $updated' \
+  "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+echo "[hard-orchestrate] H-orch: burnout signal detected (session total: $burnout_signals_this_session) — forcing dispatch/escalation, not inline reasoning" >&2
 ```
 
 ---

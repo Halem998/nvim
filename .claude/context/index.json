@@ -367,6 +367,30 @@
     },
     {
       "keywords": [
+        "orchestrator-discipline",
+        "burnout",
+        "circuit-breaker",
+        "hard-mode",
+        "H-orch"
+      ],
+      "path": "contracts/orchestrator-discipline.md",
+      "subdomain": "contracts",
+      "topics": [
+        "hard-mode",
+        "contracts",
+        "orchestration"
+      ],
+      "load_when": {
+        "task_types": [],
+        "agents": [],
+        "commands": []
+      },
+      "summary": "Orchestrator-role discipline contract: prohibits inline design/proof analysis, reading implementation source, running builds, and mid-cycle strategy reconsideration by the orchestrator itself; defines the two allowed responses (fresh dispatch or escalation) and the burnout circuit-breaker forced-handoff mechanism",
+      "line_count": 86,
+      "domain": "core"
+    },
+    {
+      "keywords": [
         "literature",
         "inject",
         "index",

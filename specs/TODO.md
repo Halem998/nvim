@@ -11,7 +11,7 @@ next_project_number: 806
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,773,785,787,791,795,796,802,804 | -- | agent-system, literature, email integration, ... |
+| 1 | 78,87,785,787,791,795,796,802,804 | -- | agent-system, literature, email integration, ... |
 | 2 | 786 | 785 | agent-system |
 | 3 | 788 | 786,787 | agent-system |
 
@@ -19,7 +19,6 @@ next_project_number: 806
 
 ### Agent System
 
-773 [NOT STARTED] — The anti-analysis contract (H2, .claude/context/contracts/anti-an
 785 [NOT STARTED] — Replace the repo-wide `git add -A` in the task commit pipeline wi
   └─ 786 [NOT STARTED] — Sweep the 40+ remaining `git add -A` references across the agent 
     └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree
@@ -407,10 +406,13 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 
 ### 773. Add orchestrator-role discipline contract and burnout circuit-breaker
 - **Effort**: 3-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 772
+- **Research**: [773_orchestrator_discipline_contract_burnout_breaker/reports/01_orchestrator_discipline_burnout_breaker.md]
+- **Plan**: [773_orchestrator_discipline_contract_burnout_breaker/plans/01_orchestrator-discipline-burnout-breaker.md]
+- **Summary**: [773_orchestrator_discipline_contract_burnout_breaker/summaries/01_orchestrator-discipline-burnout-breaker-summary.md]
 
 **Description**: The anti-analysis contract (H2, .claude/context/contracts/anti-analysis.md) is injected only into IMPLEMENT dispatches via build_hard_mode_prompt_context -- the orchestrator ROLE itself is ungoverned, which is why burnout happened in the orchestrator's own context. Create a new contract (e.g. .claude/context/contracts/orchestrator-discipline.md) binding the orchestrator role: NO inline design/proof analysis, NO reading implementation source, NO running builds, NO strategy reconsideration; when a phase cannot complete in a bounded dispatch, the only allowed responses are (a) dispatch a fresh research/audit agent, or (b) escalate via the blocker ladder -- NEVER absorb the work. Wire this contract into skill-orchestrate-hard so it is referenced/enforced at the top of the state-machine loop (analogous to anti-analysis.md injection into implement dispatches). Add a burnout circuit-breaker: detect orchestrator context-exhaustion signals (repeated re-reads of the same file, multiple consecutive inline-reasoning turns with no Agent dispatch, mid-analysis strategy reversal) and force a handoff/dispatch instead of continuing inline. Reference existing context-exhaustion-detection.md if present. Root causes: RC2 (orchestrator role ungoverned by H2), RC5 (no burnout circuit-breaker). Scope: hard-mode only. CONTEXT: burnout signatures in transcript -- circular reconsideration (built renameNF_eval_dup -> doubted it -> abandoned -> re-added -> stripped -> re-added a hypothesis), explicit 'before I concede... ONE more time' (line 2009); ended marking phase BLOCKED with an UNSOUND inline conclusion later caught by a standard-mode audit.
 

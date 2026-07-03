@@ -375,10 +375,10 @@
     {
       "project_number": 773,
       "project_name": "orchestrator_discipline_contract_burnout_breaker",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-06-24T21:54:15Z",
-      "last_updated": "2026-06-24T21:54:15Z",
+      "last_updated": "2026-07-03T16:28:05Z",
       "title": "Add orchestrator-role discipline contract and burnout circuit-breaker",
       "description": "The anti-analysis contract (H2, .claude/context/contracts/anti-analysis.md) is injected only into IMPLEMENT dispatches via build_hard_mode_prompt_context -- the orchestrator ROLE itself is ungoverned, which is why burnout happened in the orchestrator's own context. Create a new contract (e.g. .claude/context/contracts/orchestrator-discipline.md) binding the orchestrator role: NO inline design/proof analysis, NO reading implementation source, NO running builds, NO strategy reconsideration; when a phase cannot complete in a bounded dispatch, the only allowed responses are (a) dispatch a fresh research/audit agent, or (b) escalate via the blocker ladder -- NEVER absorb the work. Wire this contract into skill-orchestrate-hard so it is referenced/enforced at the top of the state-machine loop (analogous to anti-analysis.md injection into implement dispatches). Add a burnout circuit-breaker: detect orchestrator context-exhaustion signals (repeated re-reads of the same file, multiple consecutive inline-reasoning turns with no Agent dispatch, mid-analysis strategy reversal) and force a handoff/dispatch instead of continuing inline. Reference existing context-exhaustion-detection.md if present. Root causes: RC2 (orchestrator role ungoverned by H2), RC5 (no burnout circuit-breaker). Scope: hard-mode only. CONTEXT: burnout signatures in transcript -- circular reconsideration (built renameNF_eval_dup -> doubted it -> abandoned -> re-added -> stripped -> re-added a hypothesis), explicit 'before I concede... ONE more time' (line 2009); ended marking phase BLOCKED with an UNSOUND inline conclusion later caught by a standard-mode audit.",
       "effort": "3-6 hours",
@@ -386,7 +386,25 @@
       "dependencies": [
         772
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/773_orchestrator_discipline_contract_burnout_breaker/reports/01_orchestrator_discipline_burnout_breaker.md",
+          "summary": "Research report: proposed orchestrator-discipline.md contract structure (6 sections modeled on anti-analysis.md/convergence.md/recovery.md), exact SKILL.md wiring points (Stage 1c preamble + Stage 3c burnout gate in the 772-reserved Stage 1b-3b region), burnout signal mapping to context-exhaustion-detection.md, forced-handoff mechanism (reuse existing Agent-dispatch/escalation paths, extend loop_guard_file with a counter rather than new sidecar file), and dual-copy notes (contracts+index.json single-copy, SKILL.md dual-copy)."
+        },
+        {
+          "type": "plan",
+          "path": "specs/773_orchestrator_discipline_contract_burnout_breaker/plans/01_orchestrator-discipline-burnout-breaker.md",
+          "summary": "6-phase plan (est. 4h): create orchestrator-discipline.md contract, register in index.json (empty load_when), wire Context References + recovery.md, insert Stage 1c preamble + Stage 3c burnout gate + loop_guard counter into both dual-copy SKILL.md files, verify byte-identity and single-copy invariants."
+        },
+        {
+          "type": "summary",
+          "path": "specs/773_orchestrator_discipline_contract_burnout_breaker/summaries/01_orchestrator-discipline-burnout-breaker-summary.md",
+          "summary": "Implementation summary: orchestrator-discipline.md contract created and registered; Stage 1c/3c wired into both skill-orchestrate-hard SKILL.md copies; byte-identity and single-copy invariants verified."
+        }
+      ],
+      "session_id": "sess_1783096045_wnia2f_773",
+      "completion_summary": "Added .claude/context/contracts/orchestrator-discipline.md (single-copy, 6-section orchestrator-role discipline contract) and registered it in index.json with empty load_when; wired it into skill-orchestrate-hard (dual-copy) via a new Stage 1c once-per-invocation preamble and a new Stage 3c every-cycle burnout circuit-breaker gate reusing existing dispatch/escalation paths plus a loop_guard_file burnout_signals_this_session counter; added the missing recovery.md Context References entry; verified both SKILL.md copies remain byte-identical."
     },
     {
       "project_number": 774,
@@ -843,7 +861,7 @@
       "project_name": "pr_ready_guard_type_pr",
       "status": "not_started",
       "task_type": "meta",
-      "description": "Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-lifecycle leak where cslib implementation tasks reach [PR READY] instead of [COMPLETED]. Three coordinated source-tree edits in /home/benjamin/.config/nvim/.claude/: (1) runtime guard in .claude/scripts/update-task-status.sh — reject preflight:pr_ready and postflight:pr_ready unless task_type==pr; (2) skill-cslib-implementation Stage 6 (extensions/cslib/skills/skill-cslib-implementation/SKILL.md) — spell out explicit postflight implement -> COMPLETED call mirroring skill-pr-implementation:95; (3) doc reconciliation in extensions/core/merge-sources/claudemd.md:36-37 — mark [PR READY] as type=pr-only, not the universal implementation terminus. Design decision for research/plan: guard in core update-task-status.sh (keyed on task_type==pr) vs pushing pr_ready/PR READY fully into the cslib extension; core doc must end up consistent with the choice. Out of scope: repairing the 5 already-mislabeled deployed tasks (447/404/407/438/453) in /home/benjamin/Projects/cslib/ state.json — separate manual data-repair after redeploy via <leader>al.",
+      "description": "Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-lifecycle leak where cslib implementation tasks reach [PR READY] instead of [COMPLETED]. Three coordinated source-tree edits in /home/benjamin/.config/nvim/.claude/: (1) runtime guard in .claude/scripts/update-task-status.sh \u2014 reject preflight:pr_ready and postflight:pr_ready unless task_type==pr; (2) skill-cslib-implementation Stage 6 (extensions/cslib/skills/skill-cslib-implementation/SKILL.md) \u2014 spell out explicit postflight implement -> COMPLETED call mirroring skill-pr-implementation:95; (3) doc reconciliation in extensions/core/merge-sources/claudemd.md:36-37 \u2014 mark [PR READY] as type=pr-only, not the universal implementation terminus. Design decision for research/plan: guard in core update-task-status.sh (keyed on task_type==pr) vs pushing pr_ready/PR READY fully into the cslib extension; core doc must end up consistent with the choice. Out of scope: repairing the 5 already-mislabeled deployed tasks (447/404/407/438/453) in /home/benjamin/Projects/cslib/ state.json \u2014 separate manual data-repair after redeploy via <leader>al.",
       "topic": "agent-system"
     },
     {
@@ -852,7 +870,7 @@
       "status": "not_started",
       "task_type": "meta",
       "topic": "agent-system",
-      "description": "Make topic assignment mandatory across ALL task-creation paths so tasks never land in Uncategorized. Root problem: three escape hatches produce topicless tasks — (1) the one-click Skip (no topic) option in Mode A pickers (/meta, /task create, /project-overview); (2) Mode B silent no-op when a parent task has no topic (topic-assignment-pattern.md:113 says no fallback, but /spawn, --expand, --review implementations DO have fallbacks — doc/impl divergence); (3) Mode C silent no-op when the /review and /fix-it path heuristic hits the other branch (:134). Plus /task --recover has zero topic handling and the meta-builder path can be bypassed entirely. FIX (source tree /home/benjamin/.config/nvim/.claude/, redeployed via <leader>al): rewrite canonical context/patterns/topic-assignment-pattern.md to drop Skip and make Mode A the universal fallback whenever no obvious topic exists (parent none / heuristic miss / batch null), keeping New topic always available; then update all callers to remove Skip and wire the fallback: agents/meta-builder-agent.md Stage 4.5, commands/task.md (create, --expand, --review, --recover which currently has none), commands/review.md and skills/skill-fix-it (Mode C other -> prompt), skills/skill-spawn, skills/skill-project-overview (errors.md inherits via /task). Reconcile the pattern-doc-vs-implementation divergence on Mode B fallback. Research/plan decisions: (a) remove Skip entirely vs keep a hard-to-reach explicit skip; (b) whether to add a defense-in-depth gate (generate-task-order.sh warns on topicless active tasks, or a validation check) so bypasses surface loudly. Out of scope: backfilling existing topicless tasks (/task --sync already does that)."
+      "description": "Make topic assignment mandatory across ALL task-creation paths so tasks never land in Uncategorized. Root problem: three escape hatches produce topicless tasks \u2014 (1) the one-click Skip (no topic) option in Mode A pickers (/meta, /task create, /project-overview); (2) Mode B silent no-op when a parent task has no topic (topic-assignment-pattern.md:113 says no fallback, but /spawn, --expand, --review implementations DO have fallbacks \u2014 doc/impl divergence); (3) Mode C silent no-op when the /review and /fix-it path heuristic hits the other branch (:134). Plus /task --recover has zero topic handling and the meta-builder path can be bypassed entirely. FIX (source tree /home/benjamin/.config/nvim/.claude/, redeployed via <leader>al): rewrite canonical context/patterns/topic-assignment-pattern.md to drop Skip and make Mode A the universal fallback whenever no obvious topic exists (parent none / heuristic miss / batch null), keeping New topic always available; then update all callers to remove Skip and wire the fallback: agents/meta-builder-agent.md Stage 4.5, commands/task.md (create, --expand, --review, --recover which currently has none), commands/review.md and skills/skill-fix-it (Mode C other -> prompt), skills/skill-spawn, skills/skill-project-overview (errors.md inherits via /task). Reconcile the pattern-doc-vs-implementation divergence on Mode B fallback. Research/plan decisions: (a) remove Skip entirely vs keep a hard-to-reach explicit skip; (b) whether to add a defense-in-depth gate (generate-task-order.sh warns on topicless active tasks, or a validation check) so bypasses surface loudly. Out of scope: backfilling existing topicless tasks (/task --sync already does that)."
     },
     {
       "project_number": 797,
