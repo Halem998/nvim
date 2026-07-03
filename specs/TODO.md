@@ -11,17 +11,15 @@ next_project_number: 806
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,779,785,787,791,795,796,802,804 | -- | agent-system, literature, email integration, ... |
-| 2 | 773,786 | 772,785 | agent-system |
+| 1 | 78,87,773,785,787,791,795,796,802,804 | -- | agent-system, literature, email integration, ... |
+| 2 | 786 | 785 | agent-system |
 | 3 | 788 | 786,787 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-772 [PLANNED] — [--hard IMPLEMENTATION leg: focus each agent round on an INDIVIDU
-  └─ 773 [NOT STARTED] — The anti-analysis contract (H2, .claude/context/contracts/anti-an
-779 [PLANNED] — [--hard recovery discipline] Define an unambiguous recovery contr
+773 [NOT STARTED] — The anti-analysis contract (H2, .claude/context/contracts/anti-an
 785 [NOT STARTED] — Replace the repo-wide `git add -A` in the task commit pipeline wi
   └─ 786 [NOT STARTED] — Sweep the 40+ remaining `git add -A` references across the agent 
     └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree
@@ -328,7 +326,7 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 
 ### 779. Hard-mode: fix-forward recovery contract (disambiguate 'restore green')
 - **Effort**: 2-4 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 778, Task 780
@@ -420,11 +418,12 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 
 ### 772. Make hard-mode orchestrator a pure dispatcher (strip implementation capability)
 - **Effort**: 3-6 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 778, Task 774
 - **Research**: [772_hardmode_orchestrator_pure_dispatcher/reports/01_orchestrator-pure-dispatcher.md]
+- **Plan**: [772_hardmode_orchestrator_pure_dispatcher/plans/01_orchestrator-pure-dispatcher.md]
 
 **Description**: [--hard IMPLEMENTATION leg: focus each agent round on an INDIVIDUAL PHASE, never the entire plan.] Make skill-orchestrate-hard structurally incapable of doing implementation work itself, forcing per-phase delegation. (1) Remove `Edit` from skill-orchestrate-hard `allowed-tools` (currently `Agent, Bash, Read, Edit`) so the orchestrator cannot directly modify source files -- it used Update ~10 times on task 305. (2) Constrain Bash to orchestration-only operations (jq/state.json reads, git status/log, status-sync scripts) and explicitly forbid build/test/compiler invocations (lake build, lean-lsp, etc.) in the orchestrator context. (3) Require BLOCKING, foreground single-phase dispatch: exactly one Agent call per cycle, wait for its handoff return, never interleave the orchestrator's own work -- forbid background/parallel dispatch of implementation agents (root cause: transcript line 92 'launched it in the background and will continue the orchestration'). (4) Restrict orchestrator Reads to handoff JSON, state.json, and plan files ONLY -- forbid reading implementation source files. (5) Under the relaxed zero-debt policy (task 778), a VALID outcome of an implementation round is a green-building strategic-sorry SKELETON for the phase -- each strategic sorry documented and mapped to a tracked follow-up part -- rather than a fully complete phase; the orchestrator must ACCEPT and route such skeleton handoffs (reading the sorry_inventory) as progress, not demand completeness in one round. Root causes: RC1 (orchestrator had Edit + unrestricted Bash), RC3 (H1 not enforced as a hard loop boundary; background dispatch). Scope: hard-mode only; do NOT modify base skill-orchestrate. CONTEXT: /orchestrate 305 --hard --lit (transcript .claude/output/hard.md) -- the orchestrator became the implementation agent (lines 954-2700: zero implementation dispatches, only inline proof reasoning + ~10 direct Update/lake-build/lean-lsp calls). Goal: each --hard implementation round dispatches exactly ONE phase to a bounded sub-agent; the orchestrator never takes the plan as a whole. Pairs with the planning leg (task 774), which produces the small phases / strategic-sorry skeleton this leg consumes, and the relaxed-debt policy (task 778).
 

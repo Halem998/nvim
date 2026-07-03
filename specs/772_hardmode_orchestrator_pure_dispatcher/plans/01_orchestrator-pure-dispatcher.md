@@ -1,7 +1,7 @@
 # Implementation Plan: Task #772
 
 - **Task**: 772 - Make hard-mode orchestrator a pure dispatcher (strip implementation capability)
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: 774 (DONE — commit `41cd982d4` landed the mirrored implementer fix), 778 (DONE — skeleton/sorry_inventory schema). Serialize BEFORE 779 (shared file, no state.json edge).
 - **Research Inputs**: specs/772_hardmode_orchestrator_pure_dispatcher/reports/01_orchestrator-pure-dispatcher.md

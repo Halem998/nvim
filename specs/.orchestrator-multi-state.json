@@ -35,14 +35,16 @@
   "cycle_count": 4,
   "failed_tasks": [],
   "completed_tasks": [
+    772,
     774,
+    779,
     781
   ],
   "current_statuses": {
     "774": "completed",
-    "779": "planned",
+    "779": "completed",
     "781": "completed",
-    "772": "planned",
+    "772": "completed",
     "773": "not_started"
   },
   "task_dirs": {
