@@ -68,17 +68,44 @@ Leaf sub-sorries are permitted as progress markers under STRICT conditions:
 3. It does NOT appear in the sorry_inventory of the final handoff as "main target"
    (it may appear as a leaf entry with `why_deferred` populated)
 
-**Non-leaf sorries (i.e., main-target sorries) are NEVER acceptable as final output.**
+### Strategic main-target sorries (Lean4 skeleton division points)
 
-If the main theorem body is `by sorry`, the dispatch has failed to make progress.
-The escalation protocol (from lean-implementation-agent) applies.
+A main-target-level `sorry` (i.e., a non-leaf sorry — the body of a top-level theorem,
+lemma, or definition) is acceptable as a **strategic sorry** — a deliberate division point in
+a skeleton, not an abandoned or stuck proof — ONLY when ALL five conditions hold:
+
+1. **Deliberate division boundary**: The sorry marks a division point planned as part of a
+   skeleton (e.g., from a hard-mode plan's phase/part breakdown), not a proof the agent got
+   stuck on and gave up. An abandoned or stuck attempt is never strategic.
+2. **Tightly scoped**: The placeholder is scoped to exactly one theorem, lemma, or definition
+   — not an entire module, file, or multi-part goal.
+3. **Documented**: The sorry's accompanying comment states (a) the assumption it stands in for,
+   (b) why it was deferred rather than completed in this dispatch, and (c) the owning follow-up
+   task or sub-phase that will discharge it (e.g.,
+   `-- sorry: assumes X; deferred because Y; follow-up: task NNN`).
+4. **Tracked**: The sorry is recorded in the handoff `sorry_inventory` with `strategic: true` and
+   a non-null `follow_up_task`. An undocumented or untracked sorry is never strategic — it forces
+   `status: "partial"` or `status: "blocked"`, not `"implemented"`.
+5. **Build-green**: `sorry` is Lean4's canonical build-green placeholder — `lake build` (or a
+   scoped module build) must still succeed with the sorry present. Track via `#print axioms
+   <decl>` (showing `sorryAx` in the axiom list) and/or the `declaration uses 'sorry'` compiler
+   warning to confirm the sorry is real and located exactly where documented.
+
+A dispatch meeting all five conditions for every main-target sorry it introduces reports
+`status: "implemented"` with `skeleton: true` (see core `wrap-up.md` for the field and the full
+`sorry_inventory` schema), rather than being forced toward `partial`/`blocked` or into
+analysis-paralysis. **Non-strategic main-target sorries — i.e. any that fail one or more of the
+five conditions — remain forbidden.** If the main theorem body is `by sorry` and the five-condition
+test is not met, the dispatch has failed to make progress and the Escalation Protocol (from
+lean-implementation-agent) applies.
 
 ## Interaction with H9 Sorry Inventory
 
 Lean4 hard dispatches use the sorry_inventory field in `.orchestrator-handoff.json`
-to track leaf sorries across dispatch boundaries. At the end of each dispatch:
+to track leaf and strategic sorries across dispatch boundaries. At the end of each dispatch:
 
-1. All remaining sorries (leaf or otherwise) MUST be enumerated in `sorry_inventory`
-2. Each entry requires: `{file, line, statement, assumption, why_deferred, next_dispatch}`
+1. All remaining sorries (leaf or strategic) MUST be enumerated in `sorry_inventory`
+2. Each entry requires: `{file, line, statement, strategic, assumption, why_deferred,
+   follow_up_task}`
 3. The orchestrator uses sorry_inventory to dispatch targeted follow-ups
 4. A dispatch with sorries but an empty sorry_inventory is NON-CONFORMING

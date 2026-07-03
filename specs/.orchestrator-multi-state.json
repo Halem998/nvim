@@ -1,0 +1,36 @@
+{
+  "session_id": "sess_1783099196_7b6d2a",
+  "task_numbers": [
+    806,
+    807
+  ],
+  "waves": [
+    [
+      806,
+      807
+    ]
+  ],
+  "max_cycles": 10,
+  "cycle_count": 3,
+  "failed_tasks": [],
+  "completed_tasks": [
+    806,
+    807
+  ],
+  "current_statuses": {
+    "806": "completed",
+    "807": "completed"
+  },
+  "task_dirs": {
+    "806": "specs/806_lean_cslib_strategic_sorry_alignment",
+    "807": "specs/807_validate_handoff_skeleton_field"
+  },
+  "research_agents": {
+    "806": "general-research-agent",
+    "807": "general-research-agent"
+  },
+  "implement_agents": {
+    "806": "general-implementation-agent",
+    "807": "general-implementation-agent"
+  }
+}

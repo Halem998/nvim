@@ -260,6 +260,7 @@ Always write this file, even on successful completion:
 ```json
 {
   "status": "implemented | partial | blocked",
+  "skeleton": false,
   "summary": "Brief summary of what was proven",
   "phases_completed": N,
   "phases_total": M,
@@ -270,8 +271,15 @@ Always write this file, even on successful completion:
 }
 ```
 
-`sorry_inventory` MUST be populated: list any remaining sorries with file and line number.
-On clean implementation: `sorry_inventory: []`.
+`sorry_inventory` MUST be populated: list any remaining sorries with the canonical schema
+`{file, line, statement, strategic, assumption, why_deferred, follow_up_task}`. On clean
+implementation: `sorry_inventory: []`. A tracked strategic main-target sorry — one meeting ALL
+five conditions of the strategic-sorry test in core `.claude/context/contracts/anti-analysis.md`
+(deliberate division boundary, tightly scoped, documented, tracked, build-green) — is also
+permissible: record it with `strategic: true` and a non-null `follow_up_task`, and report
+`status: "implemented"` with `skeleton: true` rather than requiring an empty `sorry_inventory`.
+`skeleton` is boolean, default `false`; set it `true` ONLY when `status == "implemented"` and
+completeness rests on one or more such tracked strategic sorries.
 On `partial` or `blocked`: populate `blockers` with verbatim goal text from plan checklist.
 
 **Step 3: Final incremental commit**
@@ -348,7 +356,9 @@ Same as base cslib-implementation-agent. On any error: write handoff JSON first,
 2. Continue past the assigned phase when `phase_number` is set
 3. Skip the orchestrator handoff JSON write
 4. Omit `sorry_inventory` from handoff JSON
-5. Return implemented status if any sorry remains
+5. Return implemented status if any sorry remains (leaf sorries must be in inventory;
+   main-target sorries only permitted as tracked strategic sorries meeting the five-condition
+   test in `anti-analysis.md`, with `skeleton: true`)
 6. Return implemented status if any new axiom was introduced
 7. Create vacuous definitions (`def X := True`, `theorem X := trivial`, etc.)
 8. Skip `lake exe checkInitImports` (commonly missed, causes CI failure)

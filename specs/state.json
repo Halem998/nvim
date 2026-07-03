@@ -1021,7 +1021,7 @@
     {
       "project_number": 806,
       "project_name": "lean_cslib_strategic_sorry_alignment",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Align lean/cslib hard-mode contracts with 778 strategic-sorry policy",
@@ -1029,14 +1029,32 @@
       "effort": "2-4 hours",
       "parent_task": 778,
       "dependencies": [],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/806_lean_cslib_strategic_sorry_alignment/reports/01_lean-cslib-sorry-alignment.md",
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/806_lean_cslib_strategic_sorry_alignment/plans/01_strategic-sorry-alignment.md",
+          "type": "plan",
+          "summary": ""
+        },
+        {
+          "path": "specs/806_lean_cslib_strategic_sorry_alignment/summaries/01_strategic-sorry-alignment-summary.md",
+          "type": "summary",
+          "summary": ""
+        }
+      ],
       "created": "2026-07-03T16:33:31Z",
-      "last_updated": "2026-07-03T16:33:31Z"
+      "last_updated": "2026-07-03T17:36:23Z",
+      "session_id": "sess_1783099196_7b6d2a_806",
+      "completion_summary": "Aligned lean/cslib hard-mode contracts with core task 778 relaxed zero-debt policy: replaced the categorical main-target-sorry ban with a Lean4-specialized 5-condition strategic-sorry test across all 6 anchor points in 3 files (lean anti-analysis.md override, lean & cslib hard-agents), renamed next_dispatch->follow_up_task to match the wrap-up.md 7-field sorry_inventory schema, kept standard mode unchanged, and flagged the stale ~/Projects/cslib copy for manual re-sync."
     },
     {
       "project_number": 807,
       "project_name": "validate_handoff_skeleton_field",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Add skeleton-field validation to validate-handoff.sh",
@@ -1044,9 +1062,27 @@
       "effort": "1-3 hours",
       "parent_task": 778,
       "dependencies": [],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/807_validate_handoff_skeleton_field/reports/01_validate-handoff-skeleton-field.md",
+          "type": "report",
+          "summary": "Research report with exact line anchors in .claude/scripts/validate-handoff.sh (Check 3, lines 108-115) and full proposed bash/jq validation logic for skeleton-aware sorry_inventory checks, plus confirmation that no test harness or extensions/core mirror exists for this script."
+        },
+        {
+          "path": "specs/807_validate_handoff_skeleton_field/plans/01_validate-handoff-skeleton-field.md",
+          "type": "plan",
+          "summary": ""
+        },
+        {
+          "path": "specs/807_validate_handoff_skeleton_field/summaries/01_validate-handoff-skeleton-field-summary.md",
+          "type": "summary",
+          "summary": ""
+        }
+      ],
       "created": "2026-07-03T16:33:31Z",
-      "last_updated": "2026-07-03T16:33:31Z"
+      "last_updated": "2026-07-03T17:36:27Z",
+      "session_id": "sess_1783099196_7b6d2a_807",
+      "completion_summary": "Made .claude/scripts/validate-handoff.sh skeleton-aware: added an early status/skeleton read and a strict skeleton-mode Check 3 branch (non-empty sorry_inventory, per-entry strategic/assumption/why_deferred/follow_up_task enforcement, status/skeleton invalid-combination check) while keeping standard-mode behavior byte-identical; added .claude/tests/test-validate-handoff.sh (5/5 fixtures pass) and verified a byte-identical regression against a production handoff."
     }
   ],
   "completed_projects": [],

@@ -209,10 +209,11 @@ For each phase starting from resume point (or the specific `phase_number`):
 
 **C. Sorry Inventory Update**:
 After completing each proof step, update sorry_inventory:
-- For any newly introduced `sorry`: add entry with file, line, statement, assumption,
-  why_deferred, next_dispatch
+- For any newly introduced `sorry`: add entry with file, line, statement, strategic,
+  assumption, why_deferred, follow_up_task
 - For any resolved `sorry`: remove entry from inventory
-- Leaf sub-sorries allowed ONLY per H2 lean4 sub-sorry policy
+- Leaf sub-sorries allowed ONLY per H2 lean4 sub-sorry policy; main-target sorries allowed
+  ONLY as tracked strategic sorries meeting the five-condition test in `anti-analysis.md`
 
 **D. Verify Phase Completion**:
 ```bash
@@ -260,6 +261,7 @@ After all assigned phases complete (or on context pressure), execute H9 wrap-up:
 ```json
 {
   "status": "implemented | partial | blocked",
+  "skeleton": false,
   "summary": "Brief summary of what was accomplished",
   "phases_completed": N,
   "phases_total": M,
@@ -268,9 +270,10 @@ After all assigned phases complete (or on context pressure), execute H9 wrap-up:
       "file": "Theories/Foo.lean",
       "line": 42,
       "statement": "theorem Foo.bar : P x",
+      "strategic": false,
       "assumption": "Assumes P is monotone",
       "why_deferred": "Requires Mathlib.Order.Monotone which has API changes",
-      "next_dispatch": "Research monotone API, implement Foo.bar"
+      "follow_up_task": "Research monotone API, implement Foo.bar"
     }
   ],
   "blockers": [],
@@ -279,6 +282,10 @@ After all assigned phases complete (or on context pressure), execute H9 wrap-up:
 }
 ```
 
+`skeleton`: boolean, default `false`. May be `true` ONLY when `status == "implemented"` and
+completeness rests on one or more tracked strategic sorries meeting the five-condition test
+in `anti-analysis.md` (the "implemented (skeleton)" outcome).
+
 On `partial` or `blocked`: populate `blockers` with verbatim goal text from plan checklist.
 On `implemented`: set `status: "implemented"`, empty `blockers`, null `continuation_path`.
 
@@ -286,15 +293,22 @@ On `implemented`: set `status: "implemented"`, empty `blockers`, null `continuat
 - `file`: Path to the Lean file containing the sorry
 - `line`: Line number of the sorry
 - `statement`: The full theorem/lemma statement
+- `strategic`: boolean — `true` if the sorry qualifies as strategic under the lean
+  `anti-analysis.md` five-condition test; `false` for an ordinary leaf sub-sorry
 - `assumption`: What the sorry is currently assuming (what needs to be proved)
 - `why_deferred`: Why this sorry could not be resolved in this dispatch
-- `next_dispatch`: What work the next dispatch should do to resolve it
+- `follow_up_task`: The owning follow-up task number or sub-phase that will discharge it.
+  REQUIRED (non-null) when `strategic: true`
 
 **Leaf sub-sorry vs. main-target sorry**:
 - Leaf sub-sorries (inside `have` steps, not top-level): include in sorry_inventory with
   prefix notation in statement: "have (leaf): {statement}"
-- Main-target sorries (top-level theorem body is `by sorry`): include in `blockers`, not
-  just sorry_inventory; set `status: "partial"` if any main-target sorries remain
+- Main-target sorries (top-level theorem body is `by sorry`): when all five core conditions
+  in `anti-analysis.md`'s strategic-sorry test hold, include in `sorry_inventory` with
+  `strategic: true` and `follow_up_task` populated (NOT in `blockers`), and `status` may be
+  `"implemented"` with `skeleton: true`. When the five-condition test is not met, include in
+  `blockers` instead of (or in addition to) `sorry_inventory`, and `status` cannot be
+  `"implemented"`.
 
 **Step 2: Final incremental commit**:
 ```bash
@@ -311,9 +325,11 @@ Before writing final metadata, run the complete verification suite:
    ```bash
    bash .claude/scripts/lean-sorry-census.sh Theories/ --cross-check
    ```
-   Record: `sorry_count` (must be 0 for implemented status). `--cross-check` runs its own
-   `lake build` and reports both the stripper and compiler counts, feeding the reported
-   inventory into `sorry_inventory`.
+   Record: `sorry_count`. `sorry_count` must be 0 OR every remaining sorry is tracked in
+   `sorry_inventory` with `strategic: true` and satisfies the five-condition strategic-sorry
+   test in `anti-analysis.md`; otherwise `status` cannot be `"implemented"`. `--cross-check`
+   runs its own `lake build` and reports both the stripper and compiler counts, feeding the
+   reported inventory into `sorry_inventory`.
 
 2. **Check for vacuous definitions** (PROHIBITED patterns):
    ```bash
@@ -393,13 +409,22 @@ When a phase cannot be completed — missing mathlib lemmas, unsolvable goals, u
 
 ## Zero-Debt Policy
 
-**NO sorry in implemented status**. This applies to both main-target theorems AND
-any sorry introduced during this dispatch that was not present at dispatch start.
+**NO sorry in implemented status**, except the two tracked exceptions below. This applies to
+both main-target theorems AND any sorry introduced during this dispatch that was not present
+at dispatch start.
 
-Exceptions ONLY for leaf sub-sorries that:
+Exception 1 — leaf sub-sorries that:
 1. Were pre-existing in sorry_inventory from prior dispatches
 2. Are being tracked for a future targeted dispatch
-3. Are documented in sorry_inventory with next_dispatch populated
+3. Are documented in sorry_inventory with follow_up_task populated
+
+Exception 2 — strategic main-target sorries that:
+1. Meet ALL five conditions of the strategic-sorry test in
+   `.claude/extensions/lean/context/contracts/anti-analysis.md` (deliberate division boundary,
+   tightly scoped, documented, tracked, build-green)
+2. Are recorded in sorry_inventory with `strategic: true` and a non-null `follow_up_task`
+3. Report `status: "implemented"` with `skeleton: true` — never a bare `"implemented"` with an
+   untracked or non-strategic main-target sorry
 
 ## Context Management
 
@@ -453,7 +478,9 @@ When `lake build` fails:
 1. Produce analysis-only output without accompanying proof progress
 2. Continue past the assigned phase when `phase_number` is set
 3. Skip the orchestrator handoff JSON write
-4. Return `status: "implemented"` if any sorry remains (leaf sorries must be in inventory)
+4. Return `status: "implemented"` if any sorry remains (leaf sorries must be in inventory;
+   main-target sorries only permitted as tracked strategic sorries meeting the five-condition
+   test, with `skeleton: true`)
 5. Return `status: "implemented"` if any phase is `[BLOCKED]`
 6. Create vacuous definitions (def X := True, theorem X := trivial, etc.)
 7. Introduce new axioms as a solution

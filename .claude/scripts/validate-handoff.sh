@@ -34,12 +34,16 @@ while [[ $# -gt 0 ]]; do
       echo ""
       echo "Required fields: status, phases_completed, phases_total, blockers"
       echo "Optional fields: sorry_inventory, continuation_path, continuation_context, artifacts, summary"
+      echo "Conditionally-required field: skeleton (boolean, defaults to false)"
       echo ""
       echo "Validation rules:"
       echo "  - JSON must be parsable"
       echo "  - status must be: implemented | partial | blocked"
       echo "  - When status is partial or blocked: continuation_path or continuation_context must be non-null"
       echo "  - When status is partial: phases_completed must be < phases_total"
+      echo "  - skeleton=true requires status=='implemented', a non-empty sorry_inventory, and every"
+      echo "    strategic:true entry must have non-empty assumption/why_deferred and non-null"
+      echo "    follow_up_task"
       echo ""
       echo "Exit codes: 0 = valid, 1 = invalid, 3 = file not found"
       exit 0
@@ -94,6 +98,10 @@ else
   exit 1
 fi
 
+# --- Read status and skeleton early (needed for skeleton-aware Check 3 below) ---
+status=$(jq -r ".status // \"\"" "$HANDOFF_FILE" 2>/dev/null)
+skeleton=$(jq -r ".skeleton // false" "$HANDOFF_FILE" 2>/dev/null)
+
 # --- Check 2: Required field existence ---
 required_fields=("status" "phases_completed" "phases_total" "blockers")
 for field in "${required_fields[@]}"; do
@@ -105,13 +113,68 @@ for field in "${required_fields[@]}"; do
   fi
 done
 
-# --- Check 3: Optional contract fields (warn if absent) ---
-# sorry_inventory is in the H9 contract spec but not always used in practice
-sorry_inventory=$(jq -r ".sorry_inventory // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
-if [[ "$sorry_inventory" == "__MISSING__" ]]; then
-  log_warn "Optional field absent: sorry_inventory (H9 contract field; use [] for empty)"
+# --- Check 3: sorry_inventory validation (skeleton-aware) ---
+sorry_inventory_present=true
+if [[ "$(jq -r ".sorry_inventory // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)" == "__MISSING__" ]]; then
+  sorry_inventory_present=false
+fi
+sorry_count=$(jq -r ".sorry_inventory | length" "$HANDOFF_FILE" 2>/dev/null || echo "0")
+
+if [[ "$skeleton" == "true" ]]; then
+  # --- status/skeleton combination (wrap-up.md interaction table) ---
+  if [[ "$status" != "implemented" ]]; then
+    log_fail "Invalid status/skeleton combination: skeleton=true requires status=='implemented' (found status='$status'); see wrap-up.md status/skeleton interaction table"
+  else
+    log_pass "skeleton=true paired with status='implemented' (valid combination)"
+  fi
+
+  # --- skeleton mode requires a non-empty sorry_inventory ---
+  if [[ "$sorry_inventory_present" == "false" ]] || [[ "$sorry_count" -eq 0 ]]; then
+    log_fail "skeleton=true requires non-empty sorry_inventory enumerating every strategic sorry"
+  else
+    log_pass "sorry_inventory present with $sorry_count entry(s) (skeleton mode)"
+
+    invalid_entries=0
+    strategic_count=0
+    for i in $(seq 0 $((sorry_count - 1))); do
+      strategic=$(jq -r ".sorry_inventory[$i].strategic // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
+      if [[ "$strategic" == "true" ]]; then
+        strategic_count=$((strategic_count + 1))
+        assumption=$(jq -r ".sorry_inventory[$i].assumption // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
+        why_deferred=$(jq -r ".sorry_inventory[$i].why_deferred // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
+        follow_up_task=$(jq -r ".sorry_inventory[$i].follow_up_task // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
+        entry_bad=false
+        if [[ -z "$assumption" ]] || [[ "$assumption" == "__MISSING__" ]] || [[ "$assumption" == "null" ]]; then
+          log_fail "sorry_inventory[$i]: strategic=true but assumption is empty/missing"
+          entry_bad=true
+        fi
+        if [[ -z "$why_deferred" ]] || [[ "$why_deferred" == "__MISSING__" ]] || [[ "$why_deferred" == "null" ]]; then
+          log_fail "sorry_inventory[$i]: strategic=true but why_deferred is empty/missing"
+          entry_bad=true
+        fi
+        if [[ "$follow_up_task" == "__MISSING__" ]] || [[ "$follow_up_task" == "null" ]]; then
+          log_fail "sorry_inventory[$i]: strategic=true but follow_up_task is null/missing (untracked strategic sorry -- relaxed zero-debt must stay tracked)"
+          entry_bad=true
+        fi
+        if [[ "$entry_bad" == "true" ]]; then
+          invalid_entries=$((invalid_entries + 1))
+        fi
+      fi
+    done
+
+    if [[ "$strategic_count" -eq 0 ]]; then
+      log_fail "skeleton=true but no sorry_inventory entry has strategic:true (skeleton dispatch requires at least one tracked strategic sorry)"
+    elif [[ "$invalid_entries" -eq 0 ]]; then
+      log_pass "All $strategic_count strategic sorry entry(s) are fully tracked (assumption, why_deferred, follow_up_task all present)"
+    fi
+  fi
 else
-  log_pass "Optional field present: sorry_inventory"
+  # --- STANDARD mode (skeleton absent/false): existing behavior, byte-for-byte unchanged ---
+  if [[ "$sorry_inventory_present" == "false" ]]; then
+    log_warn "Optional field absent: sorry_inventory (H9 contract field; use [] for empty)"
+  else
+    log_pass "Optional field present: sorry_inventory"
+  fi
 fi
 
 # continuation_path or continuation_context (one of these two forms is acceptable)

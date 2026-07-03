@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Make validate-handoff.sh skeleton-aware",
+  "started_at": "2026-07-03T00:00:00Z",
+  "last_updated": "2026-07-03T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Insert early status/skeleton read after Check 1", "status": "done"},
+    {"id": 2, "description": "Replace Check 3 with skeleton-aware branch", "status": "done"},
+    {"id": 3, "description": "Leave redundant status re-read in Check 4 untouched", "status": "done"},
+    {"id": 4, "description": "Update --help text with skeleton documentation", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
