@@ -12,7 +12,7 @@
   },
   "provides": {
     "agents": ["email-implementation-agent.md"],
-    "skills": ["skill-email-implementation", "skill-email-cleanup"],
+    "skills": ["skill-email-implementation", "skill-email-cleanup", "skill-email-sync"],
     "commands": ["email.md"],
     "rules": [],
     "context": ["project/email"],

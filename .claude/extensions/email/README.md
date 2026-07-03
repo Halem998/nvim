@@ -31,7 +31,8 @@ execute the approved archive/delete/unsubscribe-extract actions. The agent never
 | `agents/email-implementation-agent.md` | Wrapper-only executor for `/implement` |
 | `skills/skill-email-implementation/SKILL.md` | `/implement` target skill (dispatches to the agent) |
 | `skills/skill-email-cleanup/SKILL.md` | Direct-execution `/email` ad-hoc cleanup skill |
-| `commands/email.md` | The `/email` slash command |
+| `skills/skill-email-sync/SKILL.md` | Direct-execution `/email --sync` server-reconcile skill |
+| `commands/email.md` | The `/email` slash command (cleanup, or `--sync`) |
 | `hooks/mail-guard.sh` | Allowlist/deny PreToolUse hook (technical enforcement layer) |
 | `context/project/email/` | Harvested preferences plus wrapper-contract, pattern, and standard docs |
 
@@ -81,6 +82,24 @@ present the candidate manifest for review, then (on confirmation) execute the ap
 archive/delete/unsubscribe-extract actions. `/email` is direct-execution — no `subagent_type`
 dispatch — while the `/implement` path for `email`-typed tasks routes through
 `skill-email-implementation` and `email-implementation-agent` instead.
+
+### `/email --sync [channel]` — reconcile the cleanup to Gmail
+
+The cleanup wrappers mutate the **local** maildir only; nothing reaches Gmail-in-the-browser until
+a separate `mbsync` reconcile runs. This is deliberate — the "freeze sync during bulk ops" rule
+keeps `mbsync` from interleaving with an in-progress mutation batch.
+
+Once a cleanup is complete and looks right, run `/email --sync` (routes to `skill-email-sync`) to
+run `mbsync <channel>` (default channel `gmail`, overridable: `/email --sync work`). This pushes
+the local archives/deletes up to Gmail, so the browser inbox reflects the cleanup:
+
+- Archived messages -> Gmail **All Mail** (still searchable/recoverable).
+- Deleted messages -> Gmail **Trash** (recoverable ~30 days).
+- Messages locally `--expunge-trash`'d -> **permanently removed** server-side after this sync.
+
+Because the last case is irreversible, `skill-email-sync` stops for an explicit confirmation
+before running. `mbsync` is not a wrapper binary and is not denied by `mail-guard.sh` — it passes
+through the hook and is subject to normal Bash permissioning.
 
 ## Scope Note
 
