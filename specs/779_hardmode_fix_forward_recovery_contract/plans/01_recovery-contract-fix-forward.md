@@ -1,7 +1,7 @@
 # Implementation Plan: Task #779
 
 - **Task**: 779 - Hard-mode: fix-forward recovery contract (disambiguate 'restore green')
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: 778 (DONE - strategic-sorry skeleton), 780 (DONE - git-snapshot.sh + guard-destructive-git.sh + git-workflow.md rule)
 - **Research Inputs**: reports/01_fix-forward-recovery-contract.md
@@ -270,20 +270,25 @@ orchestrator's responsibility per the Territory table.
 
 ---
 
-### Phase 6: Cross-file verification and consistency check [NOT STARTED]
+### Phase 6: Cross-file verification and consistency check [COMPLETED]
 
 - **Goal:** Confirm all edits landed, all dual copies are consistent, and the disambiguated phrasing
   is now the default everywhere it should appear.
 - **Tasks:**
-  - [ ] `diff -q` each dual pair (skill-orchestrate-hard, general-implementation-hard-agent,
+  - [x] `diff -q` each dual pair (skill-orchestrate-hard, general-implementation-hard-agent,
     error-handling.md) - expect no difference; for skill-implementer-hard, confirm the
-    recovery-reference lines match in both copies.
-  - [ ] `grep -rn "contracts/recovery.md"` across `.claude/` - confirm references from
+    recovery-reference lines match in both copies. *(all three pairs identical; implementer-hard
+    shows only the 3 pre-existing literature-briefing drift lines, recovery lines match)*
+  - [x] `grep -rn "contracts/recovery.md"` across `.claude/` - confirm references from
     skill-orchestrate-hard, skill-implementer-hard, general-implementation-hard-agent, and
-    error-handling.md (both copies each).
-  - [ ] Validate index.json parses and the recovery.md entry is present.
-  - [ ] Confirm no edits leaked into sibling-task sections (spot-review the CONTRACT SLOTS block,
-    the implementer-hard reference list, and the agent Recovery Ladder section).
+    error-handling.md (both copies each). *(confirmed: 8 consumer-file hits, 2 per file pair,
+    plus the index.json entry)*
+  - [x] Validate index.json parses and the recovery.md entry is present. *(confirmed via
+    `python3 -c "import json; json.load(...)"`)*
+  - [x] Confirm no edits leaked into sibling-task sections (spot-review the CONTRACT SLOTS block,
+    the implementer-hard reference list, and the agent Recovery Ladder section). *(confirmed: no
+    "burnout" string yet in skill-orchestrate-hard (773 not yet run), 781's Checkpoint Sub-Section
+    at line 205 is distinct from and untouched by the Recovery Ladder section at line 56)*
 - **Timing:** 0.25 hour
 - **Depends on:** 2, 3, 4, 5
 
