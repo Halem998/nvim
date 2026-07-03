@@ -29237,3 +29237,51 @@
 [2026-07-03T05:20:05-07:00] No postflight marker, allowing stop
 [2026-07-03T05:22:40-07:00] No postflight marker, allowing stop
 [2026-07-03T05:22:55-07:00] No postflight marker, allowing stop
+[2026-07-03T05:23:36-07:00] No postflight marker, allowing stop
+[2026-07-03T05:37:14-07:00] No postflight marker, allowing stop
+[2026-07-03T05:44:07-07:00] Postflight marker found at: specs/805_improve_email_mass_cleanup_workflow/.postflight-pending
+[2026-07-03T05:44:07-07:00] Task directory: specs/805_improve_email_mass_cleanup_workflow
+[2026-07-03T05:44:07-07:00] Loop guard initialized to 1
+[2026-07-03T05:44:07-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-07-03T05:44:36-07:00] Postflight marker found at: specs/805_improve_email_mass_cleanup_workflow/.postflight-pending
+[2026-07-03T05:44:36-07:00] Task directory: specs/805_improve_email_mass_cleanup_workflow
+[2026-07-03T05:44:36-07:00] Loop guard incremented to 2
+[2026-07-03T05:44:36-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-07-03T05:44:43-07:00] Postflight marker found at: specs/805_improve_email_mass_cleanup_workflow/.postflight-pending
+[2026-07-03T05:44:43-07:00] Task directory: specs/805_improve_email_mass_cleanup_workflow
+[2026-07-03T05:44:43-07:00] Loop guard incremented to 3
+[2026-07-03T05:44:43-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-07-03T05:45:07-07:00] Postflight marker found at: specs/805_improve_email_mass_cleanup_workflow/.postflight-pending
+[2026-07-03T05:45:07-07:00] Task directory: specs/805_improve_email_mass_cleanup_workflow
+[2026-07-03T05:45:07-07:00] Loop guard triggered: 3 >= 3
+[2026-07-03T05:45:07-07:00] Loop guard prevented continuation
+[2026-07-03T05:47:12-07:00] No postflight marker, allowing stop
+[2026-07-03T05:48:17-07:00] No postflight marker, allowing stop
+[2026-07-03T05:49:22-07:00] No postflight marker, allowing stop
+[2026-07-03T05:50:06-07:00] No postflight marker, allowing stop
+[2026-07-03T05:50:42-07:00] No postflight marker, allowing stop
+[2026-07-03T05:51:18-07:00] No postflight marker, allowing stop
+[2026-07-03T05:51:53-07:00] No postflight marker, allowing stop
+[2026-07-03T05:52:28-07:00] No postflight marker, allowing stop
+[2026-07-03T05:53:33-07:00] No postflight marker, allowing stop
+[2026-07-03T05:54:07-07:00] No postflight marker, allowing stop
+[2026-07-03T05:54:43-07:00] No postflight marker, allowing stop
+[2026-07-03T05:55:17-07:00] No postflight marker, allowing stop
+[2026-07-03T05:55:51-07:00] No postflight marker, allowing stop
+[2026-07-03T05:56:26-07:00] No postflight marker, allowing stop
+[2026-07-03T05:57:02-07:00] No postflight marker, allowing stop
+[2026-07-03T05:57:36-07:00] No postflight marker, allowing stop
+[2026-07-03T05:58:12-07:00] No postflight marker, allowing stop
+[2026-07-03T05:58:48-07:00] No postflight marker, allowing stop
+[2026-07-03T05:59:22-07:00] No postflight marker, allowing stop
+[2026-07-03T05:59:59-07:00] No postflight marker, allowing stop
+[2026-07-03T06:00:34-07:00] No postflight marker, allowing stop
+[2026-07-03T06:01:09-07:00] No postflight marker, allowing stop
+[2026-07-03T06:01:44-07:00] No postflight marker, allowing stop
+[2026-07-03T06:02:22-07:00] No postflight marker, allowing stop
+[2026-07-03T06:02:56-07:00] No postflight marker, allowing stop
+[2026-07-03T06:03:33-07:00] No postflight marker, allowing stop
+[2026-07-03T06:04:09-07:00] No postflight marker, allowing stop
+[2026-07-03T06:04:44-07:00] No postflight marker, allowing stop
+[2026-07-03T06:05:20-07:00] No postflight marker, allowing stop
+[2026-07-03T06:05:23-07:00] No postflight marker, allowing stop

@@ -16,17 +16,45 @@
     },
     {
       "path": "project/email/domain/wrapper-contracts.md",
-      "description": "The five wrapper binaries, safety classes, global flag contract, and constants",
+      "description": "The five wrapper binaries, safety classes, global flag contract, constants, classify pagination contract (limit/no-offset, count oracle), and folder-scope query tokens",
       "load_when": {
         "agents": ["email-implementation-agent"],
         "languages": [],
         "task_types": ["email"],
         "commands": []
       },
-      "line_count": 82,
+      "line_count": 209,
       "domain": "project",
       "subdomain": "email",
-      "summary": "Frozen wrapper contract summary for the five email agent tools"
+      "summary": "Frozen wrapper contract summary for the five email agent tools, ground-truth verified"
+    },
+    {
+      "path": "project/email/domain/archive-mode-risk.md",
+      "description": "All Mail (--archive) blast radius, reversible-vs-hard delete boundary, asymmetric confidence policy, extra gates, and never-auto-sync rule",
+      "load_when": {
+        "agents": ["email-implementation-agent"],
+        "languages": [],
+        "task_types": ["email"],
+        "commands": []
+      },
+      "line_count": 78,
+      "domain": "project",
+      "subdomain": "email",
+      "summary": "Risk rationale and extra-caution gates for archive-scope (All Mail) email operations"
+    },
+    {
+      "path": "project/email/patterns/bulk-bucket-review.md",
+      "description": "Sender/domain bucket bulk-approval pattern: min() confidence rollup, 0.90 option-availability gating, fix-it multiSelect idiom, residual labeling",
+      "load_when": {
+        "agents": ["email-implementation-agent"],
+        "languages": [],
+        "task_types": ["email"],
+        "commands": []
+      },
+      "line_count": 81,
+      "domain": "project",
+      "subdomain": "email",
+      "summary": "One consolidated sender/domain bucket approval for whole-mailbox cleanup"
     },
     {
       "path": "project/email/patterns/propose-review-confirm-execute.md",

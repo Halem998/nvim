@@ -30,11 +30,18 @@ execute the approved archive/delete/unsubscribe-extract actions. The agent never
 | `settings-fragment.json` | PreToolUse hook registration + permissions.deny entries |
 | `agents/email-implementation-agent.md` | Wrapper-only executor for `/implement` |
 | `skills/skill-email-implementation/SKILL.md` | `/implement` target skill (dispatches to the agent) |
-| `skills/skill-email-cleanup/SKILL.md` | Direct-execution `/email` ad-hoc cleanup skill |
+| `skills/skill-email-cleanup/SKILL.md` | Direct-execution `/email` cleanup skill (default 50-step mode, `--all` mode, `--archive` scope) |
 | `skills/skill-email-sync/SKILL.md` | Direct-execution `/email --sync` server-reconcile skill |
-| `commands/email.md` | The `/email` slash command (cleanup, or `--sync`) |
+| `commands/email.md` | The `/email` slash command (default/`--all`/`--archive` cleanup, or `--sync`) |
 | `hooks/mail-guard.sh` | Allowlist/deny PreToolUse hook (technical enforcement layer) |
 | `context/project/email/` | Harvested preferences plus wrapper-contract, pattern, and standard docs |
+| `context/project/email/domain/wrapper-contracts.md` | Ground-truth-verified wrapper contract (incl. classify pagination contract and folder tokens) |
+| `context/project/email/domain/archive-mode-risk.md` | All Mail blast radius, reversible-vs-hard boundary, asymmetric confidence policy |
+| `context/project/email/patterns/bulk-bucket-review.md` | Sender/domain bucket bulk-approval pattern (`--all` mode review gate) |
+
+A fourth new doc lives at the agent-system layer (domain-agnostic):
+`.claude/context/patterns/batch-drain-loop.md` — one approval draining many capped batches,
+plus chunked-sweep pagination for `--limit`-only readers.
 
 ## The Five Wrapper Binaries
 
@@ -77,11 +84,32 @@ Neither layer is sufficient alone — this is why both exist.
 
 ## Using `/email`
 
-Run `/email` to trigger an ad-hoc triage pass via `skill-email-cleanup`: census, classify,
-present the candidate manifest for review, then (on confirmation) execute the approved
+Run `/email` to trigger a triage pass via `skill-email-cleanup`: census, classify, present the
+candidates for review, then (on confirmation) execute the approved
 archive/delete/unsubscribe-extract actions. `/email` is direct-execution — no `subagent_type`
 dispatch — while the `/implement` path for `email`-typed tasks routes through
 `skill-email-implementation` and `email-implementation-agent` instead.
+
+### Two modes and a scope flag
+
+- **`/email` (default — the safer mode)**: a bounded 50-at-a-time stepping pass. Each run
+  classifies at most 50 messages and reviews them per-message; the durable `+proposed-*`
+  notmuch tags act as a cross-invocation cursor, so repeated bare `/email` runs step forward
+  through the mailbox instead of re-showing the same newest 50.
+- **`/email --all` (whole-mailbox mode)**: classifies EVERYTHING in scope via an
+  unconditionally-chunked, backgrounded, read/tag-only classify sweep; presents ONE
+  consolidated sender/domain bucket approval; then drains the approved set as ≤50-per-action
+  sub-manifests, mechanically and with progress-only reporting (no per-batch re-prompt). The
+  wrapper's `MAX_BATCH_SIZE=50` is never raised — the drain loops over splits, each carrying
+  the ORIGINAL approval mtime (`touch -r`) so the 7-day expiry window is never silently
+  extended; an expired split stops the drain with a report.
+- **`/email --archive` (scope flag, composable with either mode)**: operates on All Mail
+  (`folder:Gmail/.All_Mail`, ~64k messages) instead of INBOX, with extra-caution gates: a
+  second blast-radius-naming confirmation, a stricter corroborated delete bar, deletes always
+  stopping at recoverable Trash (`--expunge-trash` strictly opt-in), and — because this
+  extension has never been live-validated — a **pilot gate**: full-scale `--archive` is
+  refused until a bounded pilot pass (low-thousands slice) has been run, verified, and
+  explicitly acknowledged. See `context/project/email/domain/archive-mode-risk.md`.
 
 ### `/email --sync [channel]` — reconcile the cleanup to Gmail
 

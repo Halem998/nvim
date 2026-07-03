@@ -1,0 +1,50 @@
+{
+  "phase": 9,
+  "phase_name": "All phases 1-9 (single-session execution)",
+  "started_at": "2026-07-03T00:00:00Z",
+  "last_updated": "2026-07-03T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Phase 1: ground-truth verification + wrapper-contracts.md refresh", "status": "done", "note": "All five load-bearing behaviors confirmed against agent-tools.nix; wrapper-contracts.md rewritten with verified sections 5a-c, 7a, 10, 11"},
+    {"id": 2, "description": "Phase 2: mode dispatch in email.md", "status": "done"},
+    {"id": 3, "description": "Phase 3: default 50-step mode with tag cursor", "status": "done"},
+    {"id": 4, "description": "Phase 4: --all sweep + bucket bulk-approval", "status": "done", "note": "Pagination adapted per pre-authorized fallback (no wrapper ID-capture path)"},
+    {"id": 5, "description": "Phase 5: split + transparent drain + expiry stop-and-report", "status": "done"},
+    {"id": 6, "description": "Phase 6: --archive scope + extra gates + archive-mode-risk.md", "status": "done", "note": "Pilot gate (Phase 9 task 1) front-loaded here"},
+    {"id": 7, "description": "Phase 7: pattern docs + index registration", "status": "done"},
+    {"id": 8, "description": "Phase 8: README.md + EXTENSION.md", "status": "done"},
+    {"id": 9, "description": "Phase 9: pilot gate + final validation + walkthrough", "status": "done"}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "4.1",
+      "description": "Sweep pagination by captured message-ID-list slice",
+      "type": "altered",
+      "reason": "Phase 1 verified no wrapper emits a complete ID list for an arbitrary query; the plan's pre-authorized fallback (Risks row 2, Rollback bullet 3) was applied: --limit + tag-exclusion chunking for new mail (complete) plus bounded per-tag residual re-classify passes (documented completeness caveat)",
+      "annotation": "*(deviation: altered — pre-authorized no-ID-capture fallback: tag-exclusion chunking + bounded residual passes)*"
+    },
+    {
+      "task_id": "4.3",
+      "description": "Pagination is NOT by +proposed-* tags",
+      "type": "altered",
+      "reason": "Inverted by ground truth: tag-based pagination IS the only wrapper-only mechanism; the previously-declined-exclusion concern is made non-silent via pre-sweep residual counts (--limit 0 count oracle), bounded residual passes, and [residual] bucket labeling",
+      "annotation": "*(deviation: altered — tag pagination is the mechanism; exclusion caveat made non-silent)*"
+    },
+    {
+      "task_id": "5.2",
+      "description": "Drain stage naming",
+      "type": "altered",
+      "reason": "Cosmetic: plan's 'Stage 3.5 (drain)' authored as 'Stage 5' for sequential numbering, with the plan name noted inline; also added a Stage 3 materialize step so the approval mtime has a concrete origin file",
+      "annotation": "*(deviation: altered — renamed Stage 5, plan name noted inline)*"
+    },
+    {
+      "task_id": "9.1",
+      "description": "Pilot gate specification",
+      "type": "altered",
+      "reason": "Front-loaded into Phase 6 (tightly coupled to the archive Stage-0 gates); Phase 9 verified it rather than authoring it",
+      "annotation": "*(deviation: altered — authored in Phase 6, verified in Phase 9)*"
+    }
+  ],
+  "handoff_count": 0
+}

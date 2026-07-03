@@ -47,7 +47,7 @@ next_project_number: 806
 
 ### Extensions
 
-805 [PLANNED] — Research how to improve the email/ extension's mass-cleanup comma
+805 [IMPLEMENTING] — Research how to improve the email/ extension's mass-cleanup comma
 
 ### Terminal Ui
 
@@ -60,7 +60,7 @@ next_project_number: 806
 ## Tasks
 
 ### 805. Improve email mass cleanup workflow
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None

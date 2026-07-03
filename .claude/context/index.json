@@ -3618,6 +3618,39 @@
       "summary": "TTS/STT setup, configuration, and troubleshooting for Claude Code and Neovim",
       "line_count": 367,
       "domain": "project"
+    },
+    {
+      "keywords": [
+        "batch",
+        "drain",
+        "cap",
+        "split",
+        "approval",
+        "resume",
+        "chunked-sweep",
+        "limit",
+        "pagination"
+      ],
+      "path": "patterns/batch-drain-loop.md",
+      "subdomain": "patterns",
+      "token_cost_estimate": 672,
+      "load_when": {
+        "task_types": [
+          "email"
+        ],
+        "agents": [
+          "email-implementation-agent"
+        ],
+        "commands": []
+      },
+      "line_count": 84,
+      "tier": 3,
+      "domain": "core",
+      "summary": "One human approval draining many capped mutation batches with safe resume; sibling chunked-sweep pagination for limit-only readers",
+      "topics": [
+        "orchestration",
+        "safety"
+      ]
     }
   ],
   "version": null
