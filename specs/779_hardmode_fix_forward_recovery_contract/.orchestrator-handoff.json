@@ -1,13 +1,21 @@
 {
-  "status": "planned",
-  "summary": "Created a 6-phase implementation plan for task 779's fix-forward recovery contract. Phase 1 (Wave 1) authors the new single-copy contract .claude/context/contracts/recovery.md (fix-forward disambiguation + 3-rung ladder grounded in task 778's strategic-sorry mechanism and task 780's git-snapshot.sh/guard-destructive-git.sh/git-workflow.md rule) and registers it in index.json. Phases 2-5 (Wave 2, disjoint files, parallel within-task) wire it in: Phase 2 adds a 5th 'Recovery Discipline' CONTRACT SLOT to skill-orchestrate-hard's build_hard_mode_prompt_context() (lines 307-314, both copies) so every per-phase and parallel-wave dispatch emits the disambiguated phrasing by default; Phase 3 adds a recovery.md reference to skill-implementer-hard (both copies, which currently DIFFER - pre-existing drift flagged as a risk); Phase 4 adds a Context Reference + Recovery Ladder section to general-implementation-hard-agent.md (both copies); Phase 5 rewords error-handling.md's ambiguous 'Keep source unchanged' Build Error Recovery line to explicit fix-forward + no-discard language (both copies). Phase 6 (Wave 3) verifies dual-copy consistency and cross-references. The plan includes an explicit Territory table enumerating all 10 file paths touched and their sibling-task overlaps (772/773 -> skill-orchestrate-hard; 774 -> skill-implementer-hard; 781 -> general-implementation-hard-agent.md) so the orchestrator can serialize per-file across the batch; 779's edits are confined to distinct recovery sections to compose cleanly.",
-  "artifacts": [
-    {
-      "path": "specs/779_hardmode_fix_forward_recovery_contract/plans/01_recovery-contract-fix-forward.md",
-      "type": "plan",
-      "summary": "6-phase plan: create recovery.md contract + index.json entry (Phase 1); wire into skill-orchestrate-hard 5th contract slot, skill-implementer-hard ref, general-implementation-hard-agent Context Ref + Recovery Ladder section, and error-handling.md Build Error Recovery reword (Phases 2-5, all dual-copy); cross-file verification (Phase 6). Includes a Territory table enumerating all 10 touched files and sibling-task overlaps for orchestrator serialization."
-    }
-  ],
+  "status": "implemented",
+  "summary": "Created .claude/context/contracts/recovery.md (fix-forward disambiguation + 3-rung Recovery Ladder grounded in task 778/780 mechanisms) and registered it in index.json. Wired references into skill-orchestrate-hard (5th CONTRACT SLOT), skill-implementer-hard (reference list + dispatch text), general-implementation-hard-agent.md (Context Ref + new Recovery Ladder section), and error-handling.md (reworded Build Error Recovery step 3). All dual deployed/core copies verified consistent (pre-existing skill-implementer-hard drift mirrored, not touched).",
+  "phases_completed": 6,
   "phases_total": 6,
-  "next_action_hint": "implement"
+  "artifacts": [
+    {"type": "contract", "path": ".claude/context/contracts/recovery.md"},
+    {"type": "index", "path": ".claude/context/index.json"},
+    {"type": "skill", "path": ".claude/skills/skill-orchestrate-hard/SKILL.md"},
+    {"type": "skill", "path": ".claude/extensions/core/skills/skill-orchestrate-hard/SKILL.md"},
+    {"type": "skill", "path": ".claude/skills/skill-implementer-hard/SKILL.md"},
+    {"type": "skill", "path": ".claude/extensions/core/skills/skill-implementer-hard/SKILL.md"},
+    {"type": "agent", "path": ".claude/agents/general-implementation-hard-agent.md"},
+    {"type": "agent", "path": ".claude/extensions/core/agents/general-implementation-hard-agent.md"},
+    {"type": "rule", "path": ".claude/rules/error-handling.md"},
+    {"type": "rule", "path": ".claude/extensions/core/rules/error-handling.md"},
+    {"type": "summary", "path": "specs/779_hardmode_fix_forward_recovery_contract/summaries/01_recovery-contract-fix-forward-summary.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "Task complete; ready for /todo archival. No further action required."
 }
