@@ -19,6 +19,7 @@ Implementation agent for general programming, meta (system), and markdown tasks.
 - `@.claude/context/patterns/context-discovery.md` - Use with agent=`general-implementation-agent`, command=`/implement`
 - `@.claude/context/patterns/subagent-continuation-loop.md` - When continuing from handoffs
 - `@.claude/context/patterns/context-exhaustion-detection.md` - For context pressure monitoring
+- `@.claude/context/patterns/checkpoint-before-overflow.md` - CHECKPOINT-BEFORE-OVERFLOW git checkpoint procedure (Stage 4C git-checkpoint step)
 - For meta tasks: `@.claude/CLAUDE.md`, `@.claude/context/index.json`, existing skill/agent files
 - For code tasks: project-specific style guides and similar implementations
 
@@ -254,18 +255,20 @@ At the end of each successfully completed phase, write or update a handoff artif
 
 If context pressure is detected during a phase (per Stage 4.5 monitoring), do NOT continue with more file operations. Instead:
 
-1. **Update progress file** to reflect the exact current state:
+1. **Git checkpoint** (CHECKPOINT-BEFORE-OVERFLOW — see `@.claude/context/patterns/checkpoint-before-overflow.md` for the full procedure): run `git status --porcelain`. If the tree is clean, no git action is needed. If dirty and confirmably green (verification criteria for work done so far passed, or files written are complete and verified), `git commit` a checkpoint commit. If dirty and RED (or green cannot be confirmed), run `bash .claude/scripts/git-snapshot.sh {task_number}` instead of committing broken state. Record the resulting reference (commit SHA, or the snapshot's patch path / stash ref / branch name) — this is written into the handoff's Current State in step 3 below. This step does not duplicate Stage 4.5 monitoring; it only adds the missing checkpoint action once pressure has already been detected.
+
+2. **Update progress file** to reflect the exact current state:
    - Set current objective status to `in_progress` (or `done` if just completed)
    - Update `last_updated`
 
-   1.5. **Annotate plan file (final checkpoint)** — Before writing the handoff document, update the plan file to reflect exact current state:
+   2.5. **Annotate plan file (final checkpoint)** — Before writing the handoff document, update the plan file to reflect exact current state:
       - For each completed task in the current phase: ensure `- [x]` with `*(completed)*` annotation if not already annotated
       - For the in-progress task (if any): append `*(in progress — handoff)*` to its checklist line
       - For each deviation in the progress file `deviations` array: write the `annotation` value inline on the corresponding checklist item
 
       This ensures the plan file is a reliable resume point for successors even if the handoff artifact is lost.
 
-2. **Write handoff artifact** to `specs/{NNN}_{SLUG}/handoffs/phase-{P}-handoff-{TIMESTAMP}.md`:
+3. **Write handoff artifact** to `specs/{NNN}_{SLUG}/handoffs/phase-{P}-handoff-{TIMESTAMP}.md`:
    ```bash
    mkdir -p "specs/{NNN}_{SLUG}/handoffs"
    handoff_file="specs/{NNN}_{SLUG}/handoffs/phase-{P}-handoff-$(date -u +%Y%m%dT%H%M%SZ).md"
@@ -273,15 +276,15 @@ If context pressure is detected during a phase (per Stage 4.5 monitoring), do NO
 
    Follow the template from `@.claude/context/formats/handoff-artifact.md`:
    - Immediate Next Action
-   - Current State
+   - Current State — include the git checkpoint reference from step 1 (commit SHA, or snapshot patch path / stash ref / branch name; "tree was clean, no git action needed" if applicable)
    - Key Decisions Made
    - What NOT to Try
    - Critical Context
    - References
 
-3. **Increment `handoff_count`** in the progress file
+4. **Increment `handoff_count`** in the progress file
 
-4. **Skip remaining steps** in this phase and proceed directly to Stage 7 (Write Metadata File), returning `partial` status with `handoff_path` in `partial_progress`
+5. **Skip remaining steps** in this phase and proceed directly to Stage 7 (Write Metadata File), returning `partial` status with `handoff_path` in `partial_progress`
 
 ### Stage 5: Run Final Verification
 

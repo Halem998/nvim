@@ -17,6 +17,8 @@ Research agent for general programming, meta (system), markdown, and LaTeX tasks
 - `@.claude/context/repo/project-overview.md` - Project structure (for codebase research)
 - `@.claude/context/patterns/context-discovery.md` - Use with agent=`general-research-agent`, command=`/research`
 - `@.claude/context/formats/roadmap-format.md` - Roadmap structure (when roadmap_path provided)
+- `@.claude/context/patterns/context-exhaustion-detection.md` - Context pressure detection signals and handoff-writing protocol
+- `@.claude/context/patterns/checkpoint-before-overflow.md` - CHECKPOINT-BEFORE-OVERFLOW git checkpoint procedure (Stage 3.6 git-checkpoint step)
 
 ## Research Strategy Decision Tree
 
@@ -130,6 +132,62 @@ Execute searches based on strategy:
 **Step 4: Deep Documentation (When Needed)**
 - `WebFetch` for specific documentation pages
 - Retrieve API references, guides, specifications
+
+### Stage 3.5: Context Exhaustion Monitoring
+
+Adapt `@.claude/context/patterns/context-exhaustion-detection.md`'s detection signals to
+research work. Throughout Stage 3 (and before starting any further search step), monitor for:
+
+- **Tool call volume**: After every 10 tool calls, assess remaining capacity against the
+  model-specific threshold table in `context-exhaustion-detection.md` (Sonnet: ~35-call handoff
+  threshold, Opus: ~45, Haiku: ~20). If tool calls exceed the threshold and synthesis (Stage 4)
+  has not started, proceed to Stage 3.6 below.
+- **Large tool outputs**: A single Read/WebFetch/Grep result that is very large (a long file, a
+  large web page) counts disproportionately toward context pressure — weigh it as multiple
+  ordinary tool calls when assessing capacity.
+- **Repeated reads/searches**: Re-reading a file, re-running a WebSearch query, or re-fetching a
+  URL already retrieved this session is a strong context-pressure signal.
+- **Pre-operation risk assessment**: Before starting any search step that will read or fetch 3+
+  sources in one step, check whether a handoff would be safer first.
+
+If pressure is detected, do NOT start additional searches — proceed to Stage 3.6.
+
+### Stage 3.6: Handoff on Context Pressure
+
+When Stage 3.5 detects context pressure, STOP starting new searches and execute, in order:
+
+1. **Git checkpoint** (CHECKPOINT-BEFORE-OVERFLOW — see
+   `@.claude/context/patterns/checkpoint-before-overflow.md` for the full procedure): run
+   `git status --porcelain`. Research rarely dirties the tree, but the branch is included for
+   completeness. If clean, no git action is needed. If dirty and confirmably green, `git commit`
+   a checkpoint commit. If dirty and RED (or green cannot be confirmed), run
+   `bash .claude/scripts/git-snapshot.sh {task_number}` instead. Record the resulting reference
+   for the handoff's Current State below.
+2. **Write partial findings** to the report path (Stage 6 path construction) as a "partial
+   report-in-progress": include everything gathered so far under the normal report-format.md
+   sections, with a header note `**Status**: partial — see handoff for next action`.
+3. **Write a handoff artifact** using the `@.claude/context/formats/handoff-artifact.md` template
+   (NOT `wrap-up.md`'s H9 schema — see Scoping Decision below) at
+   `specs/{NNN}_{SLUG}/handoffs/research-handoff-{TIMESTAMP}.md`:
+   - **Immediate Next Action**: the exact next search/section to pursue
+   - **Current State**: what has been found so far, plus the git checkpoint reference from step 1
+   - **Key Decisions Made**: research direction decisions made so far
+   - **What NOT to Try**: search approaches already exhausted or ruled out
+   - **Critical Context**: essential facts a fresh research pass needs
+   - **References**: partial report path, task description
+4. **Jump to Stage 7** and return `status: "partial"` with `handoff_path` set to the handoff
+   artifact path in `partial_progress` (same `partial`/`handoff_path` contract implementation
+   agents use — see `context-exhaustion-detection.md`'s "Handoff Writing Protocol").
+
+**Scoping Decision (Option A — chosen)**: This handoff is detection + clean-stop + a
+research-shaped partial-report handoff. It does NOT rely on or claim a `skill-researcher`
+continuation loop — none exists today (unlike `skill-implementer`'s `continuation_context` /
+`subagent-continuation-loop.md` consumer). The value is crash-avoidance plus a discoverable
+partial report that a fresh `/research N` invocation can build on, not automatic resume. Do NOT
+use `wrap-up.md`'s H9 schema or `.orchestrator-handoff.json` for research — that schema and its
+consumer allowlist are implementation-agent-only. A minimal prior-handoff consumer for
+`skill-researcher{,-hard}` (Option B, mirroring `subagent-continuation-loop.md`'s `is_successor`
+shape) is a recommended follow-up task, not implemented here.
 
 ### Stage 4: Synthesize Findings
 

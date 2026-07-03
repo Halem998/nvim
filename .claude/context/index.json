@@ -58,6 +58,36 @@
     },
     {
       "keywords": [
+        "checkpoint",
+        "overflow",
+        "git-snapshot",
+        "handoff",
+        "red-green"
+      ],
+      "path": "patterns/checkpoint-before-overflow.md",
+      "subdomain": "patterns",
+      "token_cost_estimate": 1400,
+      "load_when": {
+        "task_types": [],
+        "agents": [
+          "general-implementation-agent",
+          "general-implementation-hard-agent",
+          "general-research-agent",
+          "general-research-hard-agent"
+        ],
+        "commands": []
+      },
+      "line_count": 163,
+      "tier": 4,
+      "domain": "core",
+      "summary": "CHECKPOINT-BEFORE-OVERFLOW: RED/green git commit-or-snapshot procedure run before a context-pressure handoff",
+      "topics": [
+        "context-loading",
+        "recovery"
+      ]
+    },
+    {
+      "keywords": [
         "context",
         "protective",
         "lead",

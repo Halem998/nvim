@@ -29,6 +29,7 @@ the orchestrator is using per-phase dispatch mode (H1).
 - `@.claude/context/formats/handoff-artifact.md` - Handoff document template
 - `@.claude/context/formats/progress-file.md` - Progress tracking schema
 - `@.claude/context/patterns/context-exhaustion-detection.md` - Context pressure monitoring
+- `@.claude/context/patterns/checkpoint-before-overflow.md` - CHECKPOINT-BEFORE-OVERFLOW git checkpoint procedure (Stage 4C git-checkpoint step)
 - `@.claude/context/patterns/subagent-continuation-loop.md` - When continuing from handoffs
 - For meta tasks: `@.claude/CLAUDE.md`, `@.claude/context/index.json`, existing skill/agent files
 
@@ -168,11 +169,35 @@ Same as base agent. Additionally: if any of the following are true, write handof
 - Tool calls > 40 and phase not nearly complete
 - Re-reading a file already read (context-pressure signal per H9)
 - 3+ files needed for next step that haven't been read yet
+- Item (4) — **skeleton-vs-handoff preference**: if the oversized-context trigger is an
+  oversized goal state belonging to a formal-domain phase where the strategic-sorry skeleton
+  mechanism (task 778; see the Strategic-Sorry Skeleton section above and
+  `@.claude/context/contracts/anti-analysis.md`'s five-condition test) is available, prefer
+  landing the skeleton (a scoped, documented, tracked, build-green strategic placeholder) over
+  writing a context-pressure handoff. Only fall through to the Stage 4C handoff below if the
+  skeleton itself cannot be completed within the remaining budget.
 
 ### Stage 4C: Handoff on Context Pressure
 
-Same as base agent, plus: ensure `.orchestrator-handoff.json` is written with `status: "partial"`,
+Same as base agent (see `@.claude/context/patterns/checkpoint-before-overflow.md` for the full
+RED/green git checkpoint procedure that base Stage 4C runs as its first step before writing the
+handoff), plus: ensure `.orchestrator-handoff.json` is written with `status: "partial"`,
 `blockers` including the interrupted phase with verbatim goal text, and `continuation_path`.
+
+#### Checkpoint Sub-Section: Git Checkpoint Reference in `.orchestrator-handoff.json`
+
+*(This sub-section is scoped to task 781 only — it records the CHECKPOINT-BEFORE-OVERFLOW git
+reference and does not touch any other part of Stage 4C or `.orchestrator-handoff.json`.)*
+
+After the base Stage 4C git-checkpoint step (commit if green,
+`bash .claude/scripts/git-snapshot.sh {task_number}` if RED — see
+`@.claude/context/patterns/checkpoint-before-overflow.md`) produces a reference (a commit SHA, a
+`working-progress-*.patch` path, a `stash@{N}` ref, or a `wip-snapshot-{ts}` branch name),
+surface that same reference in `.orchestrator-handoff.json`: add a `git_checkpoint` string field
+to the relevant `blockers` entry for the interrupted phase (or at the top level of the JSON if no
+per-phase blocker entry applies) so a fresh dispatch can locate the checkpointed state without
+re-deriving it. This field is additive to the existing `blockers`/`continuation_path` shape
+described in Stage 5 below.
 
 ### Stage 5a: Verify and Repair Plan Markers (HARD CONTRACT)
 
