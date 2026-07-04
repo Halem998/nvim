@@ -1,0 +1,107 @@
+{
+  "session_id": "sess_1783192850_515b14",
+  "task_numbers": [
+    804,
+    808,
+    809,
+    810,
+    811,
+    812,
+    813,
+    814
+  ],
+  "waves": [
+    [
+      804,
+      808,
+      809
+    ],
+    [
+      810
+    ],
+    [
+      811,
+      812,
+      813
+    ],
+    [
+      814
+    ]
+  ],
+  "dependency_graph": {
+    "804": [],
+    "808": [],
+    "809": [],
+    "810": [
+      804,
+      809
+    ],
+    "811": [
+      804,
+      808,
+      809,
+      810
+    ],
+    "812": [
+      804,
+      808,
+      809,
+      810
+    ],
+    "813": [
+      804,
+      808,
+      809,
+      810
+    ],
+    "814": [
+      811,
+      812,
+      813
+    ]
+  },
+  "max_cycles": 25,
+  "cycle_count": 6,
+  "failed_tasks": [],
+  "completed_tasks": [
+    804,
+    808,
+    809
+  ],
+  "current_statuses": {
+    "804": "completed",
+    "808": "completed",
+    "809": "completed",
+    "810": "planned"
+  },
+  "task_dirs": {
+    "804": "specs/804_document_fable_model_flag",
+    "808": "specs/808_loop_guard_atomic_creation",
+    "809": "specs/809_file_scope_granular_locking",
+    "810": "specs/810_gate_script_sourcing_research_plan_revise",
+    "811": "specs/811_audit_orchestration_core",
+    "812": "specs/812_audit_knowledge_standards_layer",
+    "813": "specs/813_audit_infrastructure_layer",
+    "814": "specs/814_synthesize_improvement_roadmap"
+  },
+  "research_agents": {
+    "804": "general-research-agent",
+    "808": "general-research-agent",
+    "809": "general-research-agent",
+    "810": "general-research-agent",
+    "811": "general-research-agent",
+    "812": "general-research-agent",
+    "813": "general-research-agent",
+    "814": "general-research-agent"
+  },
+  "implement_agents": {
+    "804": "general-implementation-agent",
+    "808": "general-implementation-agent",
+    "809": "general-implementation-agent",
+    "810": "general-implementation-agent",
+    "811": "general-implementation-agent",
+    "812": "general-implementation-agent",
+    "813": "general-implementation-agent",
+    "814": "general-implementation-agent"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "phase": 1,
+  "phase_name": "Add init-marker subcommand to task-lock.sh (both copies)",
+  "started_at": "2026-07-04T12:30:00Z",
+  "last_updated": "2026-07-04T12:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add cmd_init_marker() function to .claude/scripts/task-lock.sh",
+      "status": "done",
+      "files_touched": [".claude/scripts/task-lock.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Add init-marker) case arm to dispatch block",
+      "status": "done",
+      "files_touched": [".claude/scripts/task-lock.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Update header comment block with init-marker exit-code table",
+      "status": "done",
+      "files_touched": [".claude/scripts/task-lock.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Apply identically to .claude/extensions/core/scripts/task-lock.sh",
+      "status": "done",
+      "files_touched": [".claude/extensions/core/scripts/task-lock.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

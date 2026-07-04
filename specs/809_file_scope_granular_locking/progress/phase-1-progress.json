@@ -1,0 +1,22 @@
+{
+  "phase": 1,
+  "phase_name": "Add pure helper functions to task-lock.sh",
+  "started_at": "2026-07-04T00:00:00Z",
+  "last_updated": "2026-07-04T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add get_file_scope, scopes_overlap, find_held_locks helpers", "status": "done", "files_touched": [".claude/scripts/task-lock.sh"]},
+    {"id": 2, "description": "Add acquire_scope_mutex/release_scope_mutex helpers", "status": "done", "files_touched": [".claude/scripts/task-lock.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.1",
+      "description": "Insert helpers after age_minutes() (line 146) and before cmd_acquire() (line 151) per plan",
+      "type": "altered",
+      "reason": "Task 808 landed concurrently and shifted line numbers (age_minutes now ends ~153, cmd_acquire starts ~158, plus new init-marker doc/function/dispatch case). Inserted at the equivalent anchor point (immediately after age_minutes(), immediately before the acquire comment banner) rather than the stale literal line numbers; verified via git diff that the insertion is isolated to this one hunk and cmd_acquire/case block are untouched.",
+      "annotation": "*(deviation: altered — anchor by function name, not stale line numbers, due to task 808 shift)*"
+    }
+  ]
+}

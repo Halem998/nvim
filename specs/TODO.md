@@ -1,5 +1,5 @@
 ---
-next_project_number: 815
+next_project_number: 816
 ---
 
 # TODO
@@ -11,29 +11,25 @@ next_project_number: 815
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,804,808,809 | -- | agent-system, email integration, terminal ui |
-| 2 | 810 | 804,809 | agent-system |
-| 3 | 811,812,813 | 808,810 | agent-system |
-| 4 | 814 | 811,812,813 | agent-system |
+| 1 | 78,87,810,815 | -- | agent-system, extensions, email integration, ... |
+| 2 | 811,812,813 | 810 | agent-system |
+| 3 | 814 | 811,812,813 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-804 [NOT STARTED] — Document the --fable model-selection flag alongside --haiku, --so
-  └─ 810 [NOT STARTED] — Follow-up from task 788. Task 788 wired session-lock acquire/rele
-    └─ 811 [NOT STARTED] — Systematic audit of the orchestration core of the .claude/ agent 
-      └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie
-    └─ 812 [NOT STARTED] — Systematic audit of the knowledge & standards layer of the .claud
-      └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie (see above)
-    └─ 813 [NOT STARTED] — Systematic audit of the infrastructure layer of the .claude/ agen
-      └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie (see above)
-808 [NOT STARTED] — Follow-up from task 788. The .orchestrator-loop-guard file (and p
-  └─ 811 [NOT STARTED] — Systematic audit of the orchestration core of the .claude/ agent  (see above)
-  └─ 812 [NOT STARTED] — Systematic audit of the knowledge & standards layer of the .claud (see above)
-  └─ 813 [NOT STARTED] — Systematic audit of the infrastructure layer of the .claude/ agen (see above)
-809 [NOT STARTED] — Follow-up from task 788. Task 788 implemented task-NUMBER-keyed s
-  └─ 810 [NOT STARTED] — Follow-up from task 788. Task 788 wired session-lock acquire/rele (see above)
+810 [PLANNED] — Follow-up from task 788. Task 788 wired session-lock acquire/rele
+  └─ 811 [NOT STARTED] — Systematic audit of the orchestration core of the .claude/ agent 
+    └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie
+  └─ 812 [NOT STARTED] — Systematic audit of the knowledge & standards layer of the .claud
+    └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie (see above)
+  └─ 813 [NOT STARTED] — Systematic audit of the infrastructure layer of the .claude/ agen
+    └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie (see above)
+
+### Extensions
+
+815 [NOT STARTED] — Revise the email/ extension in the .claude/ agent system to suppo
 
 ### Terminal Ui
 
@@ -44,6 +40,16 @@ next_project_number: 815
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
+
+### 815. Revise email extension multi account
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: Revise the email/ extension in the .claude/ agent system to support multiple email accounts, drawing on the nvim-extension handoff report at /home/benjamin/.dotfiles/specs/079_email_wrappers_multi_account/reports/01_nvim-extension-handoff.md, aligning it with the multi-account changes being made in the .dotfiles/ NixOS config
+
+---
 
 ### 814. Synthesize improvement roadmap
 - **Status**: [NOT STARTED]
@@ -87,10 +93,12 @@ next_project_number: 815
 
 ### 810. Route /research, /plan, /revise through shared gate scripts for lock + checkpoint coverage
 - **Effort**: 2-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 788, Task 804, Task 809
+- **Research**: [810_gate_script_sourcing_research_plan_revise/reports/01_gate-sourcing-analysis.md]
+- **Plan**: [810_gate_script_sourcing_research_plan_revise/plans/02_gate-sourcing-plan.md]
 
 **Description**: Follow-up from task 788. Task 788 wired session-lock acquire/release and heartbeat into command-gate-in.sh / command-gate-out.sh (sourced by /implement and /orchestrate) and into multi-task dispatch. But /research, /plan, and /revise carry their OWN inline, duplicated CHECKPOINT gate logic and do NOT source the shared gate scripts -- so session-lock protection and the commit-per-green-substep cadence do NOT cover those three commands. SCOPE: refactor commands/research.md, commands/plan.md, and commands/revise.md to source command-gate-in.sh / command-gate-out.sh (acquiring/releasing the task lock, emitting heartbeats) instead of their inline duplicated gate logic, so ALL lifecycle commands share one gate path and one lock discipline. Keep dual-copy pairs in sync. Verify the shared gate path composes with each command existing preflight/postflight expectations.
 
@@ -98,10 +106,13 @@ next_project_number: 815
 
 ### 809. File-scope-granular cross-task locking (compose task 787 overlap with task 788 locks)
 - **Effort**: 3-4 hours
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 787, Task 788
+- **Research**: [809_file_scope_granular_locking/reports/01_file-scope-lock-design.md]
+- **Plan**: [809_file_scope_granular_locking/plans/02_file-scope-lock-plan.md]
+- **Summary**: [809_file_scope_granular_locking/summaries/03_file-scope-lock-summary.md]
 
 **Description**: Follow-up from task 788. Task 788 implemented task-NUMBER-keyed session locks, which solves the 427 clobber failure but does NOT prevent two DIFFERENT tasks whose file_scope (the field added by task 787) OVERLAPS from being worked concurrently -- they hold distinct task-number locks yet edit the same files. SCOPE: extend the lock model in .claude/scripts/task-lock.sh so lock acquisition also checks file_scope overlap against currently-held locks, using task 787 canonical file-footprint-overlap algorithm (.claude/context/patterns/file-footprint-overlap.md), refusing/deferring (override-and-warn, consistent with 788) when a concurrently-held lock file_scope overlaps the acquiring task file_scope. Update task-lock.md spec accordingly. Composes 787 (file_scope + overlap algorithm) with 788 (locking). Task 788 explicitly deferred this as a larger follow-up.
 
@@ -109,10 +120,13 @@ next_project_number: 815
 
 ### 808. Atomic creation for .orchestrator-loop-guard and peer marker files
 - **Effort**: 1-2 hours
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 788
+- **Research**: [808_loop_guard_atomic_creation/reports/01_marker-file-atomicity-audit.md]
+- **Plan**: [808_loop_guard_atomic_creation/plans/02_atomic-marker-plan.md]
+- **Summary**: [808_loop_guard_atomic_creation/summaries/03_atomic-marker-summary.md]
 
 **Description**: Follow-up from task 788. The .orchestrator-loop-guard file (and peer orchestrator marker files such as .postflight-pending) are still created via the non-atomic jq-n-redirect pattern, which task 788 identified as unsafe for concurrent creation. Task 788 introduced an atomic mkdir-based primitive in .claude/scripts/task-lock.sh for task locking, but the loop-guard and similar marker files were left on the old pattern. SCOPE: bring .orchestrator-loop-guard creation (in skill-orchestrate/SKILL.md, plus any peer marker-file creation sites that must be race-safe) up to the atomic-creation standard established by task-lock.sh, reusing the task-lock.sh atomic primitive rather than reimplementing. Keep dual-copy pairs (.claude + extensions/core) in sync. OUT OF SCOPE: task-lock.sh itself (already atomic).
 
@@ -161,10 +175,13 @@ next_project_number: 815
 
 ### 804. Document the --fable model flag alongside --haiku/--sonnet/--opus across the agent system
 - **Effort**: 1-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 786, Task 795
+- **Research**: [804_document_fable_model_flag/reports/01_fable-model-flag-sites.md]
+- **Plan**: [804_document_fable_model_flag/plans/02_fable-model-flag-plan.md]
+- **Summary**: [804_document_fable_model_flag/summaries/03_fable-model-flag-summary.md]
 
 **Description**: Document the --fable model-selection flag alongside --haiku, --sonnet, and --opus everywhere the other model flags appear in the agent system. The --fable flag (selecting the Fable 5 model family, claude-fable-5) is a supported model flag on /research, /plan, and /implement (and composes with effort flags --fast/--hard and --team, --lit, --clean), but it is currently undocumented while its siblings are listed. SCOPE: audit and update all documentation/reference sites that enumerate the model flags, including but not limited to: the CLAUDE.md Command Reference table flag column (/research, /plan, /implement usage strings currently show [--haiku|--sonnet|--opus]); the 'Model Enforcement' paragraph in the Skill-to-Agent Mapping section (describes 'model flags (--haiku, --sonnet, --opus) select the model family'); the composability notes under Hard Mode (e.g. '--hard works with model flags: --hard --opus'); the agent-frontmatter-standard doc (.claude/docs/reference/standards/agent-frontmatter-standard.md) which defines the tiered model policy and flag dimensions; the command markdown files under .claude/commands/ (research.md, plan.md, implement.md) and their argument-parsing/usage sections; any skill SKILL.md files or scripts (e.g. command-route-skill.sh or model-resolution logic) that parse/whitelist model flags; and any extension manifests or routing docs that reference the model-flag set. Also verify the flag is actually wired through the model-resolution code path (not just docs) and add it where the parser recognizes --haiku/--sonnet/--opus but not --fable. Goal: --fable is a first-class, documented model flag on par with --haiku/--sonnet/--opus across the entire agent system.
 

@@ -1,7 +1,17 @@
 {
   "version": "1.1.0",
-  "next_project_number": 815,
+  "next_project_number": 816,
   "active_projects": [
+    {
+      "project_number": 815,
+      "project_name": "revise_email_extension_multi_account",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Revise the email/ extension in the .claude/ agent system to support multiple email accounts, drawing on the nvim-extension handoff report at /home/benjamin/.dotfiles/specs/079_email_wrappers_multi_account/reports/01_nvim-extension-handoff.md, aligning it with the multi-account changes being made in the .dotfiles/ NixOS config",
+      "topic": "extensions",
+      "created": "2026-07-04T20:14:30Z",
+      "last_updated": "2026-07-04T20:14:30Z"
+    },
     {
       "project_number": 805,
       "project_name": "improve_email_mass_cleanup_workflow",
@@ -95,7 +105,7 @@
     {
       "project_number": 804,
       "project_name": "document_fable_model_flag",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Document the --fable model flag alongside --haiku/--sonnet/--opus across the agent system",
@@ -106,9 +116,27 @@
         786,
         795
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/804_document_fable_model_flag/reports/01_fable-model-flag-sites.md",
+          "type": "report",
+          "summary": "Complete file:line inventory of every --haiku/--sonnet/--opus enumeration site plus the exact parser code path needing a --fable branch"
+        },
+        {
+          "path": "specs/804_document_fable_model_flag/plans/02_fable-model-flag-plan.md",
+          "type": "plan",
+          "summary": "8-phase, 3.5h plan: parser wiring (wave 1), six parallel doc-mirror phases (wave 2), verification (wave 3)."
+        },
+        {
+          "path": "specs/804_document_fable_model_flag/summaries/03_fable-model-flag-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 8 phases, decisions, deviations, and verification results"
+        }
+      ],
       "created": "2026-07-02T21:51:52Z",
-      "last_updated": "2026-07-02T21:51:52Z"
+      "last_updated": "2026-07-04T19:46:59Z",
+      "session_id": "sess_1783192850_515b14_804",
+      "completion_summary": "Wired --fable into parse-command-args.sh (functional MODEL_FLAG=\"fable\" branch + FOCUS_PROMPT strip, both copies) and documented it across every model-flag enumeration site the research report inventoried: command markdown (Claude-Code, core mirror, and OpenCode), the CLAUDE.md merge-source (regeneration left to next extension load, no runnable script found), agent-frontmatter-standard, six skill SKILL.md files, and the guides/architecture-spec/meta-guide negative enumeration, with all mirror pa"
     },
     {
       "project_number": 803,
@@ -1219,10 +1247,10 @@
     {
       "project_number": 808,
       "project_name": "loop_guard_atomic_creation",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-07-04T18:33:12Z",
-      "last_updated": "2026-07-04T18:33:12Z",
+      "last_updated": "2026-07-04T19:47:04Z",
       "title": "Atomic creation for .orchestrator-loop-guard and peer marker files",
       "description": "Follow-up from task 788. The .orchestrator-loop-guard file (and peer orchestrator marker files such as .postflight-pending) are still created via the non-atomic jq-n-redirect pattern, which task 788 identified as unsafe for concurrent creation. Task 788 introduced an atomic mkdir-based primitive in .claude/scripts/task-lock.sh for task locking, but the loop-guard and similar marker files were left on the old pattern. SCOPE: bring .orchestrator-loop-guard creation (in skill-orchestrate/SKILL.md, plus any peer marker-file creation sites that must be race-safe) up to the atomic-creation standard established by task-lock.sh, reusing the task-lock.sh atomic primitive rather than reimplementing. Keep dual-copy pairs (.claude + extensions/core) in sync. OUT OF SCOPE: task-lock.sh itself (already atomic).",
       "effort": "1-2 hours",
@@ -1234,16 +1262,33 @@
         ".claude/skills/skill-orchestrate/SKILL.md",
         ".claude/extensions/core/skills/skill-orchestrate/SKILL.md"
       ],
-      "artifacts": [],
-      "session_id": "sess_1783182771_c4ab90"
+      "artifacts": [
+        {
+          "path": "specs/808_loop_guard_atomic_creation/reports/01_marker-file-atomicity-audit.md",
+          "type": "report",
+          "summary": "Marker-file atomicity audit: inventory, task-lock.sh primitive interface, dual-copy pairs, and init-marker remediation design"
+        },
+        {
+          "path": "specs/808_loop_guard_atomic_creation/plans/02_atomic-marker-plan.md",
+          "type": "plan",
+          "summary": "3-phase plan: add init-marker subcommand (both task-lock.sh copies) -> swap 3 creation branches (4 SKILL.md copies) + document/retire-gap in task-lock.md (both copies)."
+        },
+        {
+          "path": "specs/808_loop_guard_atomic_creation/summaries/03_atomic-marker-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all 3 phases, verification results, and coordination notes for batch 804/808/809/810."
+        }
+      ],
+      "session_id": "sess_1783192850_515b14_808",
+      "completion_summary": "Implemented all 3 phases of the atomic-marker plan: added a task-lock.sh init-marker <file_path> subcommand (mkdir-gate + tmp-mv payload write, bounded-recheck orphan self-heal, added identically to both task-lock.sh copies), swapped all three TOCTOU marker-creation branches (.orchestrator-loop-guard in skill-orchestrate and skill-orchestrate-hard, .orchestrator-churn-state.json in skill-orchestrate-hard) to call it with a resume-read fallback on a lost race across all four SKILL.md copies, and "
     },
     {
       "project_number": 809,
       "project_name": "file_scope_granular_locking",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-07-04T18:33:12Z",
-      "last_updated": "2026-07-04T18:33:12Z",
+      "last_updated": "2026-07-04T20:00:53Z",
       "title": "File-scope-granular cross-task locking (compose task 787 overlap with task 788 locks)",
       "description": "Follow-up from task 788. Task 788 implemented task-NUMBER-keyed session locks, which solves the 427 clobber failure but does NOT prevent two DIFFERENT tasks whose file_scope (the field added by task 787) OVERLAPS from being worked concurrently -- they hold distinct task-number locks yet edit the same files. SCOPE: extend the lock model in .claude/scripts/task-lock.sh so lock acquisition also checks file_scope overlap against currently-held locks, using task 787 canonical file-footprint-overlap algorithm (.claude/context/patterns/file-footprint-overlap.md), refusing/deferring (override-and-warn, consistent with 788) when a concurrently-held lock file_scope overlaps the acquiring task file_scope. Update task-lock.md spec accordingly. Composes 787 (file_scope + overlap algorithm) with 788 (locking). Task 788 explicitly deferred this as a larger follow-up.",
       "effort": "3-4 hours",
@@ -1257,16 +1302,33 @@
         ".claude/context/patterns/task-lock.md",
         ".claude/context/patterns/file-footprint-overlap.md"
       ],
-      "artifacts": [],
-      "session_id": "sess_1783182771_c4ab90"
+      "artifacts": [
+        {
+          "path": "specs/809_file_scope_granular_locking/reports/01_file-scope-lock-design.md",
+          "type": "report",
+          "summary": "Full design: current cmd_acquire/holder.json model with file:line refs, file_scope schema location, overlap algorithm reuse via jq, exact call sites needing zero changes, override-and-warn semantics extended to cross-task (never mutating a foreign lock), TOCTOU race and global-mutex mitigation, and edge cases (empty file_scope, stale locks, same-session re-entry across suffixed multi-task session_ids)."
+        },
+        {
+          "path": "specs/809_file_scope_granular_locking/plans/02_file-scope-lock-plan.md",
+          "type": "plan",
+          "summary": "5-phase insert-only plan: helpers -> cmd_acquire integration + mutex -> sandbox tests -> dual-copy mirror -> spec/doc updates."
+        },
+        {
+          "path": "specs/809_file_scope_granular_locking/summaries/03_file-scope-lock-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary with scenario->exit/message verification table and plan deviations."
+        }
+      ],
+      "session_id": "sess_1783192850_515b14_809",
+      "completion_summary": "Extended task-lock.sh's cmd_acquire with a mutex-guarded cross-task file_scope overlap check that composes with the existing task-number lock: a fresh overlapping foreign lock refuses (exit 1) and a stale overlapping foreign lock warns and proceeds (exit 0) without ever mutating the foreign lock, reusing file-footprint-overlap.md's directory-prefix algorithm exactly via a new scopes_overlap() jq helper, and closing the scan-then-mkdir TOCTOU race with a short-lived specs/.scope-lock/ mutex that "
     },
     {
       "project_number": 810,
       "project_name": "gate_script_sourcing_research_plan_revise",
-      "status": "not_started",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-07-04T18:33:12Z",
-      "last_updated": "2026-07-04T18:33:12Z",
+      "last_updated": "2026-07-04T20:13:19Z",
       "title": "Route /research, /plan, /revise through shared gate scripts for lock + checkpoint coverage",
       "description": "Follow-up from task 788. Task 788 wired session-lock acquire/release and heartbeat into command-gate-in.sh / command-gate-out.sh (sourced by /implement and /orchestrate) and into multi-task dispatch. But /research, /plan, and /revise carry their OWN inline, duplicated CHECKPOINT gate logic and do NOT source the shared gate scripts -- so session-lock protection and the commit-per-green-substep cadence do NOT cover those three commands. SCOPE: refactor commands/research.md, commands/plan.md, and commands/revise.md to source command-gate-in.sh / command-gate-out.sh (acquiring/releasing the task lock, emitting heartbeats) instead of their inline duplicated gate logic, so ALL lifecycle commands share one gate path and one lock discipline. Keep dual-copy pairs in sync. Verify the shared gate path composes with each command existing preflight/postflight expectations.",
       "effort": "2-3 hours",
@@ -1283,8 +1345,19 @@
         ".claude/scripts/command-gate-in.sh",
         ".claude/scripts/command-gate-out.sh"
       ],
-      "artifacts": [],
-      "session_id": "sess_1783182771_c4ab90"
+      "artifacts": [
+        {
+          "path": "specs/810_gate_script_sourcing_research_plan_revise/reports/01_gate-sourcing-analysis.md",
+          "type": "report",
+          "summary": "Field-by-field diff of inline vs shared gate logic, 809 overlap-refusal analysis, dual-copy pair enumeration, and concrete refactor recommendation (gate-in exemption for revise, gate-out status_token fix, per-command CHECKPOINT rewrites, multi-task lock bracketing for research/plan)."
+        },
+        {
+          "path": "specs/810_gate_script_sourcing_research_plan_revise/plans/02_gate-sourcing-plan.md",
+          "type": "plan",
+          "summary": "5-phase gate-sourcing refactor plan with dual-copy discipline, multi-task lock bracketing, and a final coherence audit."
+        }
+      ],
+      "session_id": "sess_1783192850_515b14_810"
     },
     {
       "project_number": 811,

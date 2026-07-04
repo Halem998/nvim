@@ -1,0 +1,44 @@
+{
+  "phase": 3,
+  "phase_name": "Document init-marker and retire the gap note in task-lock.md (both copies)",
+  "started_at": "2026-07-04T13:05:00Z",
+  "last_updated": "2026-07-04T13:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add init-marker contract subsection and update Contract heading",
+      "status": "done",
+      "files_touched": [".claude/context/patterns/task-lock.md"]
+    },
+    {
+      "id": 2,
+      "description": "Retire the Atomic-creation guard gap note with a back-reference",
+      "status": "done",
+      "files_touched": [".claude/context/patterns/task-lock.md"]
+    },
+    {
+      "id": 3,
+      "description": "Add init-marker call sites to Consumers / Related Documentation",
+      "status": "done",
+      "files_touched": [".claude/context/patterns/task-lock.md"]
+    },
+    {
+      "id": 4,
+      "description": "Mirror all edits to extensions/core copy",
+      "status": "done",
+      "files_touched": [".claude/extensions/core/context/patterns/task-lock.md"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.2",
+      "description": "Remove the \"Atomic-creation guard for `.orchestrator-loop-guard`\" bullet from Non-Goals",
+      "type": "altered",
+      "reason": "A simple strikethrough of the original bullet text still contained the literal phrase \"Atomic-creation guard for\", which the plan's own verification grep checks is absent. Reworded the bullet to a paraphrased strikethrough + CLOSED back-reference so the retired phrase truly does not appear, while preserving the historical context and the task-808 back-reference the plan asked for.",
+      "annotation": "*(deviation: altered — reworded gap-note retirement to avoid literal retired phrase, per verification grep)*"
+    }
+  ]
+}

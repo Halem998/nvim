@@ -1,0 +1,28 @@
+{
+  "status": "implemented",
+  "summary": "Implemented all 3 phases of the atomic-marker plan: added a task-lock.sh init-marker <file_path> subcommand (mkdir-gate + tmp-mv payload write, bounded-recheck orphan self-heal, added identically to both task-lock.sh copies), swapped all three TOCTOU marker-creation branches (.orchestrator-loop-guard in skill-orchestrate and skill-orchestrate-hard, .orchestrator-churn-state.json in skill-orchestrate-hard) to call it with a resume-read fallback on a lost race across all four SKILL.md copies, and documented init-marker in task-lock.md while retiring the stale gap note (both copies). All four dual-copy pairs verified byte-identical via diff -q. N=20 concurrent-creation stress test passed (exactly one winner, no leftover artifacts), orphan-recovery test passed, and an integration smoke test confirmed resume does not clobber counters. cmd_acquire/write_holder (task 809 territory) and .postflight-pending (task 810 territory) were left untouched; task-lock.sh edits are strictly additive (new function + new case arm only).",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/808_loop_guard_atomic_creation/summaries/03_atomic-marker-summary.md",
+      "summary": "Implementation summary covering all 3 phases, verification results, and coordination notes for batch 804/808/809/810."
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "complete",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "modified_files": [
+    ".claude/scripts/task-lock.sh",
+    ".claude/extensions/core/scripts/task-lock.sh",
+    ".claude/skills/skill-orchestrate/SKILL.md",
+    ".claude/extensions/core/skills/skill-orchestrate/SKILL.md",
+    ".claude/skills/skill-orchestrate-hard/SKILL.md",
+    ".claude/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    ".claude/context/patterns/task-lock.md",
+    ".claude/extensions/core/context/patterns/task-lock.md",
+    "specs/808_loop_guard_atomic_creation/plans/02_atomic-marker-plan.md",
+    "specs/808_loop_guard_atomic_creation/summaries/03_atomic-marker-summary.md"
+  ]
+}

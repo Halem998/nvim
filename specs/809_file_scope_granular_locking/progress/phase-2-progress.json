@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Integrate cross-task overlap check into cmd_acquire",
+  "started_at": "2026-07-04T00:15:00Z",
+  "last_updated": "2026-07-04T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Wire mutex + cross-task overlap scan into cmd_acquire before own-task mkdir", "status": "done", "files_touched": [".claude/scripts/task-lock.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.3",
+      "description": "release the mutex on every return path",
+      "type": "altered",
+      "reason": "Used a function-scoped 'trap release_scope_mutex RETURN' instead of instrumenting each individual return statement. Empirically verified in bash that this fires exactly once, on cmd_acquire's own return, regardless of which internal return executes or which nested functions run in between -- functionally equivalent to per-return release calls but requires zero edits to the pre-existing branches.",
+      "annotation": "*(deviation: altered — used a RETURN trap instead of per-return-statement release calls; verified empirically)*"
+    }
+  ]
+}

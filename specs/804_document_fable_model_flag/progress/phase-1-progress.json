@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Wire --fable into the parser",
+  "started_at": "2026-07-04T00:00:00Z",
+  "last_updated": "2026-07-04T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Check for sync/generation script", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Edit .claude/scripts/parse-command-args.sh", "status": "done", "files_touched": [".claude/scripts/parse-command-args.sh"]},
+    {"id": 3, "description": "Edit .claude/extensions/core/scripts/parse-command-args.sh mirror", "status": "done", "files_touched": [".claude/extensions/core/scripts/parse-command-args.sh"]},
+    {"id": 4, "description": "Verify diff byte-identical and functional test", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

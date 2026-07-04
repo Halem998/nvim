@@ -1,0 +1,22 @@
+{
+  "phase": 5,
+  "phase_name": "Update task-lock.md and file-footprint-overlap.md docs (both dual copies)",
+  "started_at": "2026-07-04T01:15:00Z",
+  "last_updated": "2026-07-04T01:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add cross-task section + exit-code/Non-Goals updates to task-lock.md, mirror to extensions/core", "status": "done", "files_touched": [".claude/context/patterns/task-lock.md", ".claude/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 2, "description": "Update file-footprint-overlap.md Consumers/Non-Goals prose, mirror to extensions/core (dual copy exists)", "status": "done", "files_touched": [".claude/context/patterns/file-footprint-overlap.md", ".claude/extensions/core/context/patterns/file-footprint-overlap.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.4",
+      "description": "file-footprint-overlap.md has no extensions/core dual copy to mirror (confirm via find before assuming)",
+      "type": "altered",
+      "reason": "find confirmed an extensions/core dual copy of file-footprint-overlap.md DOES exist, contrary to the plan's stated assumption. Mirrored it mechanically alongside task-lock.md, and included it in the file_scope-parity discussion in Phase 4.",
+      "annotation": "*(deviation: altered — extensions/core dual copy of file-footprint-overlap.md exists; mirrored it too)*"
+    }
+  ]
+}

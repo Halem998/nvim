@@ -1,0 +1,14 @@
+{
+  "phase": 5,
+  "phase_name": "agent-frontmatter-standard.md + core mirror",
+  "started_at": "2026-07-04T00:23:00Z",
+  "last_updated": "2026-07-04T00:28:00Z",
+  "objectives": [
+    {"id": 1, "description": "Edit agent-frontmatter-standard.md at three sites", "status": "done", "files_touched": [".claude/docs/reference/standards/agent-frontmatter-standard.md"]},
+    {"id": 2, "description": "Apply identical edits to core mirror", "status": "done", "files_touched": [".claude/extensions/core/docs/reference/standards/agent-frontmatter-standard.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -1,0 +1,26 @@
+{
+  "status": "implemented",
+  "summary": "Extended task-lock.sh's cmd_acquire with a mutex-guarded cross-task file_scope overlap check that composes with the existing task-number lock: a fresh overlapping foreign lock refuses (exit 1) and a stale overlapping foreign lock warns and proceeds (exit 0) without ever mutating the foreign lock, reusing file-footprint-overlap.md's directory-prefix algorithm exactly via a new scopes_overlap() jq helper, and closing the scan-then-mkdir TOCTOU race with a short-lived specs/.scope-lock/ mutex that fails closed (exit 2) on timeout. acquire's signature and 0/1/2 exit-code contract are fully preserved (zero call-site changes, so task 810's future gate-script wiring inherits this behavior for free). All edits were insert-only around task 808's concurrent init-marker additions to the same file, verified disjoint via git diff -U1. All 8 sandbox scenarios plus 3 regression scenarios passed in a scratchpad sandbox that never touched the live specs/ tree, and all three dual-copy pairs (task-lock.sh, task-lock.md, and a newly-discovered extensions/core copy of file-footprint-overlap.md) are byte-identical.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/809_file_scope_granular_locking/summaries/03_file-scope-lock-summary.md",
+      "summary": "Full implementation summary with scenario->exit/message verification table and plan deviations."
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "complete",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "modified_files": [
+    ".claude/scripts/task-lock.sh",
+    ".claude/extensions/core/scripts/task-lock.sh",
+    ".claude/context/patterns/task-lock.md",
+    ".claude/extensions/core/context/patterns/task-lock.md",
+    ".claude/context/patterns/file-footprint-overlap.md",
+    ".claude/extensions/core/context/patterns/file-footprint-overlap.md",
+    "specs/809_file_scope_granular_locking/plans/02_file-scope-lock-plan.md",
+    "specs/809_file_scope_granular_locking/summaries/03_file-scope-lock-summary.md"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "phase": 3,
+  "phase_name": "Behavioral test scenarios (sandbox)",
+  "started_at": "2026-07-04T00:35:00Z",
+  "last_updated": "2026-07-04T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Overlap refusal scenario", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Non-overlap allowed scenario", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Stale-overlap warn-and-proceed", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Empty file_scope no-op", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Same-session bypass", "status": "done", "files_touched": []},
+    {"id": 6, "description": "TOCTOU mutex race", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Mutex fail-closed", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

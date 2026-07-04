@@ -1,0 +1,14 @@
+{
+  "phase": 6,
+  "phase_name": "Skill SKILL.md prose enumerations + core mirrors",
+  "started_at": "2026-07-04T00:28:00Z",
+  "last_updated": "2026-07-04T00:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Edit six .claude/skills/skill-*/SKILL.md files", "status": "done", "files_touched": [".claude/skills/skill-researcher/SKILL.md", ".claude/skills/skill-planner/SKILL.md", ".claude/skills/skill-implementer/SKILL.md", ".claude/skills/skill-team-research/SKILL.md", ".claude/skills/skill-team-plan/SKILL.md", ".claude/skills/skill-team-implement/SKILL.md"]},
+    {"id": 2, "description": "Apply identical edits to core mirrors", "status": "done", "files_touched": [".claude/extensions/core/skills/skill-researcher/SKILL.md", ".claude/extensions/core/skills/skill-planner/SKILL.md", ".claude/extensions/core/skills/skill-implementer/SKILL.md", ".claude/extensions/core/skills/skill-team-research/SKILL.md", ".claude/extensions/core/skills/skill-team-plan/SKILL.md", ".claude/extensions/core/skills/skill-team-implement/SKILL.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
