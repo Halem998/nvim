@@ -144,36 +144,36 @@ consume. Additive: bare `/email` unchanged.
 
 ---
 
-### Phase 2: Make `skill-email-cleanup/SKILL.md` account-aware [NOT STARTED]
+### Phase 2: Make `skill-email-cleanup/SKILL.md` account-aware [COMPLETED]
 
 **Goal**: The load-bearing edit — account-aware `BASE_QUERY` derivation, `--account` passthrough to
 every wrapper call, and per-account pilot-gate scoping. Gmail stays the default; `folder:` tokens only.
 
 **Tasks**:
-- [ ] Add `account` to the args table (lines ~15-22): `gmail` (default, no flag) / `logos`
+- [x] Add `account` to the args table (lines ~15-22): `gmail` (default, no flag) / `logos`
       (`--account logos` or `--logos`).
-- [ ] Make Stage 0's `BASE_QUERY` account-aware (lines ~56-71):
+- [x] Make Stage 0's `BASE_QUERY` account-aware (lines ~56-71):
   - `account=gmail, scope=inbox` -> `folder:Gmail` (unchanged)
   - `account=gmail, scope=archive` -> `folder:Gmail/.All_Mail` (unchanged)
   - `account=logos, scope=inbox` -> `folder:Logos` (bare root = INBOX; NOT `tag:inbox AND tag:logos` —
     that tag scheme is inert in the live DB)
   - `account=logos, scope=archive` -> `folder:Logos/.Archive` (the real Proton folder; there is no
     `.All_Mail`/`.Spam` for Logos). No fallthrough to a Gmail token for any non-gmail account.
-- [ ] Pass `--account <account>` to **every** wrapper invocation (resolved once in Stage 0, threaded
+- [x] Pass `--account <account>` to **every** wrapper invocation (resolved once in Stage 0, threaded
       unchanged): census (Stage 1 default-mode ~line 84 and `--all`-mode ~line 173), classify calls
       (~line 89 default-mode; `--all` sweep loop ~190-204; count probes ~174-180), and execute calls
       (`email-archive-confirmed`/`email-delete-confirmed` ~127-129 default and ~284-286 `--all`).
-- [ ] Confirm (do not silently assume) the cursor rule (Stage 2, ~94-113) remains account-agnostic:
+- [x] Confirm (do not silently assume) the cursor rule (Stage 2, ~94-113) remains account-agnostic:
       `CURSOR_QUERY` builds on the now-account-aware `BASE_QUERY`, so Gmail and Logos passes scope to
       disjoint folders and never collide on `+proposed-*` tags.
-- [ ] Reword the Archive Scope section (~320-384): the "All Mail is the archive of record (~64k)"
+- [x] Reword the Archive Scope section (~320-384): the "All Mail is the archive of record (~64k)"
       framing is Gmail-specific; for Logos the parallel archive-of-record is the real `Archive` folder
       (~54 messages per the live probe — much smaller blast radius). Keep the pilot gate required for
       **both** accounts independently.
-- [ ] Implement per-account pilot-gate scoping: key `archive-pilot-ack.json` per account (top-level
+- [x] Implement per-account pilot-gate scoping: key `archive-pilot-ack.json` per account (top-level
       `"account"` field, or separate ack files) so a Gmail pilot-ack cannot silently satisfy a Logos
       archive-scope run, or vice versa.
-- [ ] Honor the precondition gate from Phase 1 for `account=logos` (fail loudly if the wrapper does not
+- [x] Honor the precondition gate from Phase 1 for `account=logos` (fail loudly if the wrapper does not
       accept `--account logos`); do not exercise the Logos path as working until task 79 lands.
 
 **Timing**: ~1.5 hours

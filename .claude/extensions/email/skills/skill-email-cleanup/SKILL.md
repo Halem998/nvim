@@ -1,6 +1,6 @@
 ---
 name: skill-email-cleanup
-description: Ad-hoc wrapper-only email triage - census, classify, review, confirmed archive/delete/unsubscribe-extract. Default 50-step mode, --all whole-mailbox mode, --archive All Mail scope. Invoke for /email command.
+description: Ad-hoc wrapper-only email triage - census, classify, review, confirmed archive/delete/unsubscribe-extract. Default 50-step mode, --all whole-mailbox mode, --archive scope to the account's archive folder. Gmail and Logos accounts supported. Invoke for /email command.
 allowed-tools: Bash, Read, AskUserQuestion
 ---
 
@@ -12,13 +12,14 @@ skill is wrapper-only: it may invoke ONLY the five named nix-built binaries belo
 must NEVER call raw `himalaya`, `notmuch`, `msmtp`, or `secret-tool`, and must NEVER run `rm`
 against a Maildir path.
 
-Two decision-granularity modes and an orthogonal folder scope (parsed by `/email`, passed in as
-args):
+An account selector, two decision-granularity modes, and an orthogonal folder scope (parsed by
+`/email`, passed in as args):
 
 | Arg | Values | Meaning |
 |-----|--------|---------|
+| `account` | `gmail` (default, no flag) / `logos` (`--account logos` or `--logos`) | which mailbox account BASE_QUERY, the pilot gate, and every wrapper `--account` call resolve against. Resolved ONCE and threaded unchanged through the whole invocation. `account=logos` is documented-but-gated: see "Account Precondition Gate" below. |
 | `mode` | `default` (no flag) / `all` (`--all`) | bounded 50-step pass vs. whole-mailbox sweep + one bucket approval + sub-50 drain |
-| `scope` | `inbox` (no flag) / `archive` (`--archive`) | classify QUERY base `folder:Gmail` vs. `folder:Gmail/.All_Mail` |
+| `scope` | `inbox` (no flag) / `archive` (`--archive`) | classify QUERY base — account-dependent, see Stage 0 |
 | `focus_hint` | free text | optional extra narrowing (sender/domain/topic) |
 
 **MANDATORY INTERACTIVE REQUIREMENT -- DO NOT SKIP**:
@@ -41,6 +42,23 @@ If any binary is missing, stop and tell the user to run `home-manager switch --f
 to activate the generation containing `modules/home/email/agent-tools.nix`. Do not fall back to
 a raw `himalaya`/`notmuch` call.
 
+## Account Precondition Gate (`account=logos` only — check before Stage 1)
+
+The five wrapper binaries currently reserve `--account gmail`; any other value is a hard error
+(wrapper-contracts.md §2), pending `.dotfiles` task 79 landing + `home-manager switch`. When
+`account=logos` is resolved (from `/email`'s `--account logos`/`--logos`), this skill MUST
+confirm the wrapper accepts it BEFORE any binary call — e.g. `email-census --account logos
+--help` or an equivalent dry probe — and if the wrapper still rejects `--account logos` (or the
+probe itself errors), STOP immediately and report:
+
+> `/email --logos` is documented but not yet usable — the wrapper binaries only accept
+> `--account gmail` until `.dotfiles` task 79 lands and `home-manager switch` activates it.
+
+This is an ACTIONABLE, LOUD failure — never a silent continuation against `gmail`. Do not
+construct or run any `folder:Logos*` query, and do not touch Gmail either, once `account=logos`
+has been resolved and the gate fails. `account=gmail` is entirely unaffected by this gate (it
+is today's already-accepted value) and proceeds straight to the `$PATH` check above.
+
 ## The Five Wrapper Binaries (the ONLY binaries this skill may invoke)
 
 | Binary | Safety class | Mutates? |
@@ -57,17 +75,29 @@ a raw `himalaya`/`notmuch` call.
 
 Resolve the branch before any binary call:
 
-1. **Base query from scope**: `scope=inbox` -> `BASE_QUERY="folder:Gmail"`;
-   `scope=archive` -> `BASE_QUERY="folder:Gmail/.All_Mail"` (the exact token from
-   wrapper-contracts.md §11 — folder scoping is ONLY ever expressed as (part of) the
-   `email-classify` QUERY positional; no wrapper flag exists for it).
+0. **Account gate**: if `account=logos`, run the Account Precondition Gate above FIRST; do not
+   proceed to step 1 until it passes. `account` is resolved exactly ONCE here and threaded
+   unchanged (same value) to every wrapper call, the pilot gate, and both `BASE_QUERY` branches
+   below for the rest of this invocation — never re-resolved mid-flow.
+1. **Base query from account + scope** (folder: tokens ONLY — never `tag:<account>`, which is
+   confirmed inert in the live notmuch database; no fallthrough to a Gmail token for a non-gmail
+   account):
+
+   | `account` | `scope=inbox` | `scope=archive` |
+   |-----------|---------------|------------------|
+   | `gmail` (default) | `BASE_QUERY="folder:Gmail"` | `BASE_QUERY="folder:Gmail/.All_Mail"` |
+   | `logos` | `BASE_QUERY="folder:Logos"` (bare root = INBOX) | `BASE_QUERY="folder:Logos/.Archive"` (the real Proton Archive folder — Logos has no `.All_Mail`/`.Spam`) |
+
+   These are the exact tokens from wrapper-contracts.md §11 (gmail) and the Logos ground-truth
+   folder census (task 815 research) — folder scoping is ONLY ever expressed as (part of) the
+   `email-classify` QUERY positional; no wrapper flag exists for it.
 2. **Focus terms**: translate `focus_hint` (if any) into additional notmuch query terms
    (e.g. `from:github.com`) appended to `BASE_QUERY` with `and`.
 3. **Branch on mode**: `mode=default` -> Default Mode flow below; `mode=all` -> `--all` Mode
    flow below.
 4. **Archive gates**: if `scope=archive`, apply the extra-caution gates in the
-   "Archive Scope (`scope=archive`)" section to whichever mode flow runs, including the pilot
-   gate check BEFORE any sweep or classify pass.
+   "Archive Scope (`scope=archive`)" section to whichever mode flow runs, including the
+   PER-ACCOUNT pilot gate check BEFORE any sweep or classify pass.
 
 ---
 
@@ -81,15 +111,15 @@ in Stage 2.
 
 ### Stage 1: Census
 
-Run `email-census` (dry-run/read-only by nature) to summarize senders, folders, and date ranges.
-Present a brief summary to the user.
+Run `email-census --account <account>` (dry-run/read-only by nature) to summarize senders,
+folders, and date ranges. Present a brief summary to the user.
 
 ### Stage 2: Classify (with cross-invocation cursor)
 
-Run `email-classify --limit 50 "<CURSOR_QUERY>"` to produce a candidate manifest (JSONL keyed on
-Message-ID) with `proposed_action` (`delete|archive|keep|unsure`) and `confidence` per message,
-following the recall-on-keep-bias standard (near-100% recall on `keep`; delete auto-proposed
-only at confidence `>= 0.90`, otherwise `unsure`).
+Run `email-classify --account <account> --limit 50 "<CURSOR_QUERY>"` to produce a candidate
+manifest (JSONL keyed on Message-ID) with `proposed_action` (`delete|archive|keep|unsure`) and
+`confidence` per message, following the recall-on-keep-bias standard (near-100% recall on
+`keep`; delete auto-proposed only at confidence `>= 0.90`, otherwise `unsure`).
 
 **Cursor rule** — once a mailbox has had at least one default pass, exclude already-classified
 messages so each re-run advances by construction:
@@ -112,6 +142,13 @@ query is equivalent to the plain scoped query.
 To deliberately revisit previously-declined messages, use `/email --all` (the whole-mailbox
 sweep re-surfaces them); the default cursor intentionally skips them.
 
+**Cursor rule stays account-agnostic by construction**: `CURSOR_QUERY` is built on top of the
+now-account-aware `BASE_QUERY` (Stage 0), which already confines every account to its own
+disjoint `folder:Gmail*` / `folder:Logos*` subtree. The `+proposed-*` tags themselves are
+per-message notmuch tags, not account-scoped, but because the two accounts' folders never
+overlap, a Gmail pass and a Logos pass can never tag, cursor-exclude, or collide on the same
+message — no additional account qualifier is needed in the tag-exclusion terms.
+
 ### Stage 3: Review (mandatory stop)
 
 Present the candidate manifest to the user via AskUserQuestion. Allow the user to approve some,
@@ -124,10 +161,11 @@ and its sha256 (over the raw manifest bytes) is computed.
 
 ### Stage 5: Execute
 
-Invoke `email-archive-confirmed` and/or `email-delete-confirmed` with
-`--execute --confirm-manifest <sha256>` for the approved manifest only. Optionally run
-`email-unsubscribe-extract` (read-only) to surface `List-Unsubscribe` candidates for senders the
-user flagged.
+Invoke `email-archive-confirmed --account <account>` and/or `email-delete-confirmed --account
+<account>` with `--execute --confirm-manifest <sha256>` for the approved manifest only — the
+SAME `account` resolved in Stage 0, never re-resolved. Optionally run
+`email-unsubscribe-extract --account <account>` (read-only) to surface `List-Unsubscribe`
+candidates for senders the user flagged.
 
 ### Stage 6: Verify
 
@@ -152,14 +190,15 @@ forbidden. Per the plan's pre-authorized fallback, the sweep therefore paginates
 `--limit`-based chunking driven by the QUERY positional:
 
 - **New messages** (never classified): repeated
-  `email-classify --limit <CHUNK_SIZE> "<SCOPE_QUERY> and not tag:proposed-delete and not
-  tag:proposed-archive and not tag:proposed-unsure and not tag:proposed-keep"` — each call tags
-  everything it processes, so the exclusion query advances deterministically; the sweep of
-  never-classified mail is COMPLETE (terminates when a chunk classifies 0).
+  `email-classify --account <account> --limit <CHUNK_SIZE> "<SCOPE_QUERY> and not
+  tag:proposed-delete and not tag:proposed-archive and not tag:proposed-unsure and not
+  tag:proposed-keep"` — each call tags everything it processes, so the exclusion query advances
+  deterministically; the sweep of never-classified mail is COMPLETE (terminates when a chunk
+  classifies 0).
 - **Residual messages** (previously classified, e.g. seen-and-declined in earlier passes): one
-  bounded re-classify pass per prior tag, `email-classify --limit <CHUNK_SIZE>
-  "<SCOPE_QUERY> and tag:proposed-<X>"` for each of `delete|archive|unsure|keep`. Because
-  classification is deterministic, these passes cannot paginate beyond the first `CHUNK_SIZE`
+  bounded re-classify pass per prior tag, `email-classify --account <account> --limit
+  <CHUNK_SIZE> "<SCOPE_QUERY> and tag:proposed-<X>"` for each of `delete|archive|unsure|keep`.
+  Because classification is deterministic, these passes cannot paginate beyond the first `CHUNK_SIZE`
   per tag bucket — **documented completeness caveat**: residual coverage is bounded to
   `CHUNK_SIZE` messages per prior-tag bucket per `--all` run. Residuals shrink across runs as
   executed messages leave the folder; the pre-sweep estimate reports the exact residual counts
@@ -170,11 +209,12 @@ Pilot Gate section).
 
 ### Stage 1 (`--all`): Census + Pre-Sweep Estimate
 
-1. Run `email-census` for the folder/sender/date overview.
+1. Run `email-census --account <account>` for the folder/sender/date overview.
 2. **Count probe** (wrapper-only count oracle, wrapper-contracts.md §10): run
-   `email-classify --limit 0 "<SCOPE_QUERY> and not tag:proposed-... (all four)"` and parse the
-   `NOTE: query matched <total> message(s)` line for the new-message count N (no NOTE line = 0).
-   Then probe each `"<SCOPE_QUERY> and tag:proposed-<X>"` the same way for the four residual
+   `email-classify --account <account> --limit 0 "<SCOPE_QUERY> and not tag:proposed-... (all
+   four)"` and parse the `NOTE: query matched <total> message(s)` line for the new-message count
+   N (no NOTE line = 0). Then probe each `"<SCOPE_QUERY> and tag:proposed-<X>"` the same way
+   (same `--account <account>`) for the four residual
    counts R_delete, R_archive, R_unsure, R_keep. The `--limit 0` probe processes nothing and
    applies no tags, but DOES overwrite the candidate manifest — always run probes before the
    sweep starts, never between sweep chunks.
@@ -194,7 +234,7 @@ ACCUMULATOR="$MANIFEST_DIR/sweep-accumulator-$(date +%Y%m%dT%H%M%S).jsonl"
 PROGRESS_LOG="$ACCUMULATOR.progress.log"
 
 # loop (inside ONE backgrounded job):
-#   1. email-classify --limit 1000 "<SCOPE_QUERY> and not tag:proposed-* (all four)"
+#   1. email-classify --account <account> --limit 1000 "<SCOPE_QUERY> and not tag:proposed-* (all four)"
 #   2. append the candidate manifest to $ACCUMULATOR IMMEDIATELY (the wrapper overwrites
 #      candidate-manifest.jsonl on every call — accumulate BEFORE the next chunk)
 #   3. append a progress line to $PROGRESS_LOG: "chunk <i>: <count> classified, <running-total> total, <timestamp>"
@@ -281,9 +321,9 @@ For each split file, in order:
    STOP the drain (see stop-and-report below). The wrapper would refuse anyway; the pre-check
    produces the clean report instead of a wrapper error.
 2. Compute `sha256sum <split-file>`.
-3. For whichever action(s) the split contains, invoke:
-   - `email-archive-confirmed --execute --confirm-manifest <sha256> --manifest <split-path>`
-   - `email-delete-confirmed --execute --confirm-manifest <sha256> --manifest <split-path>`
+3. For whichever action(s) the split contains, invoke (same `account` resolved in Stage 0):
+   - `email-archive-confirmed --account <account> --execute --confirm-manifest <sha256> --manifest <split-path>`
+   - `email-delete-confirmed --account <account> --execute --confirm-manifest <sha256> --manifest <split-path>`
 4. **Idempotency**: rely EXCLUSIVELY on the wrapper's per-split `<split>.state.jsonl`
    companion (derived per manifest path, wrapper-contracts.md §4) — already-`executed` IDs are
    skipped by the wrapper on re-run. The skill keeps NO second ledger.
@@ -291,7 +331,8 @@ For each split file, in order:
    Individual ID failures (recorded as `failed` in the state file) do NOT stop the drain;
    wrapper-level refusals (hash mismatch, expiry, batch-cap) DO stop it.
 6. Note: each split run that executes ≥1 mutation triggers the wrapper's own internal
-   `mbsync gmail` reconcile (wrapper-contracts.md §7a) — expect one reconcile per executed
+   `mbsync <account-channel>` reconcile (wrapper-contracts.md §7a; `mbsync gmail` for
+   `account=gmail`, `mbsync logos` for `account=logos`) — expect one reconcile per executed
    split; this is frozen wrapper behavior, not something to suppress or replicate.
 
 **Aggregate progress surface** — after each split, report:
@@ -317,70 +358,92 @@ text), skipped-as-already-executed, and expired-unexecuted residual.
 
 ---
 
-## Archive Scope (`scope=archive`): All Mail with Extra-Caution Gates
+## Archive Scope (`scope=archive`): Account's Archive Folder with Extra-Caution Gates
 
-`--archive` is an orthogonal scope flag, composable with either mode: it sets
-`BASE_QUERY="folder:Gmail/.All_Mail"` (the exact notmuch token, wrapper-contracts.md §11) as
-the classify QUERY base — no wrapper flag exists or is used for folder scoping. Composition:
+`--archive` is an orthogonal scope flag, composable with either mode: it sets `BASE_QUERY` to the
+resolved account's archive-folder token (Stage 0) — `folder:Gmail/.All_Mail` for `account=gmail`
+(the exact notmuch token, wrapper-contracts.md §11), `folder:Logos/.Archive` for `account=logos`
+(the real Proton Archive folder; Logos has no `.All_Mail`/`.Spam` sibling) — as the classify
+QUERY base. No wrapper flag exists or is used for folder scoping. Composition:
 
-- `/email --archive` = default 50-step pass stepping through All Mail.
-- `/email --all --archive` = full All Mail sweep + bucket approval + drain (~64k messages).
+- `/email --archive` = default 50-step pass stepping through the account's archive folder
+  (All Mail for gmail, Archive for logos).
+- `/email --all --archive` = full archive-folder sweep + bucket approval + drain.
 
-All Mail is the archive of record (~64k messages vs. ~hundreds in INBOX): a bad bulk decision
-here is orders of magnitude more destructive, and much of the content is old mail the
-classifier's inbox-tuned rules have never been validated against. Proportionate extra gates
-(full rationale: `context/project/email/domain/archive-mode-risk.md`):
+**Archive of record, per account**:
 
-1. **Pilot gate first**: before ANY full-scale archive-scope operation, the bounded pilot pass
-   must have been run and acknowledged — see "Pilot Gate for `--archive`" below. Check this
-   gate at Stage 0, before any sweep or classify call.
+| Account | Archive folder | Approximate size | Blast-radius note |
+|---------|----------------|-------------------|---------------------|
+| `gmail` | All Mail (`folder:Gmail/.All_Mail`) | ~64,000 messages | orders of magnitude more destructive than INBOX; much of the content is old mail the classifier's inbox-tuned rules were never validated against |
+| `logos` | Archive (`folder:Logos/.Archive`) | ~54 messages (live probe) | much smaller blast radius than the Gmail archive, but the SAME proportionate gates apply in full — smaller scale is not a reason to relax any gate |
+
+Proportionate extra gates apply identically to BOTH accounts (full rationale:
+`context/project/email/domain/archive-mode-risk.md`):
+
+1. **Pilot gate first, per account**: before ANY full-scale archive-scope operation FOR A GIVEN
+   ACCOUNT, that account's bounded pilot pass must have been run and acknowledged — see "Pilot
+   Gate for `--archive`" below. Check this gate at Stage 0, before any sweep or classify call,
+   keyed to the resolved `account`.
 2. **Second, distinctly-worded blast-radius confirmation**: after the normal review gate
    (Stage 3 review in default mode / Stage 2.5 bucket approval in `--all` mode) and BEFORE
    Stage 4/execute, ask a separate AskUserQuestion that names the blast radius explicitly:
-   "Yes, operate on N archived messages in All Mail" / "No, stop here". Generic "proceed?"
-   wording is not acceptable; the option label must state N and "All Mail".
+   "Yes, operate on N archived messages in All Mail" (gmail) / "Yes, operate on N archived
+   messages in Logos Archive" (logos) / "No, stop here". Generic "proceed?" wording is not
+   acceptable; the option label must state N and the account's archive-folder name.
 3. **Asymmetric, corroborated confidence bar for deletes**: archive-scope DELETE bulk-approval
    requires more than the inbox 0.90 gate — the bucket must be BOTH `min()`-confidence
    `>= 0.90` AND corroborated by a deterministic rule-tier reason (e.g.
    `custom-domain-delete:*` at 0.98); keyword-fallback-only reasons never license an
    archive-scope bulk delete option, regardless of numeric confidence. Archive proposals
    (recoverable moves) keep the standard bar. When in doubt, offer archive-in-place/skip, not
-   delete.
+   delete. This bar is identical for both accounts.
 4. **Reversible-then-hard two-phase**: archive-scope deletes ALWAYS stop at the recoverable
    hop (move to Trash). `--expunge-trash` is opt-in ONLY — a separate, explicit user request
    in a later invocation, with its own `--execute --confirm-manifest` gate (the wrapper
    already tracks the two hops in separate state files). Never expunge by default; never
    bundle move-to-Trash and expunge in one pass.
 5. **Per-chunk classify** (inherited from `--all` Stage 2): never attempt a single unchunked
-   classify over All Mail.
+   classify over the archive folder, for either account.
 6. **Never auto-chain `/email --sync`** after an archive drain. The wrapper's internal
-   per-run `mbsync gmail` reconcile is frozen contract behavior; the separate `--sync` skill
-   run is a human decision for a later, calmer moment.
+   per-run `mbsync <account-channel>` reconcile is frozen contract behavior; the separate
+   `--sync` skill run is a human decision for a later, calmer moment.
 
 ## Pilot Gate for `--archive`
 
 Because this extension has never been validated against a live mailbox at archive scale, the
-FIRST archive-scope operation must be a bounded pilot, and full-scale `--archive` is REFUSED
-until the pilot has been run and explicitly acknowledged.
+FIRST archive-scope operation **for a given account** must be a bounded pilot, and full-scale
+`--archive` for that account is REFUSED until that account's pilot has been run and explicitly
+acknowledged. **The gate is scoped per account**: a Gmail pilot-ack does NOT license a Logos
+archive-scope run, and vice versa — each account's first full-scale archive pass must clear its
+own pilot independently.
 
-- **Pilot bound**: scope the pilot to a slice of All Mail capped at low thousands — e.g. one
-  historical year (`folder:Gmail/.All_Mail and date:2019-01-01..2019-12-31`, picking a year
-  whose census count is ≲ 3,000) or, in default mode, simply the ordinary 50-step pass. The
-  pilot runs the FULL flow (sweep → buckets → approval → split → drain → verify) at reduced
-  blast radius.
-- **Acknowledgement record**: after a pilot completes and Stage 6 verification is clean, ask
-  the user to acknowledge the pilot outcome (AskUserQuestion, root session). On acknowledgement
-  write `$MANIFEST_DIR/archive-pilot-ack.json`:
-  `{"acknowledged_at": "<ISO8601>", "pilot_scope": "<query>", "messages_processed": N,
-  "chunk_size_verdict": "keep 1000 | adjust to <n>"}`. This file is git-tracked and is the
-  gate's persistent evidence.
+- **Pilot bound**: scope the pilot to a slice of the account's archive folder capped at low
+  thousands — for `account=gmail`, e.g. one historical year
+  (`folder:Gmail/.All_Mail and date:2019-01-01..2019-12-31`, picking a year whose census count
+  is ≲ 3,000); for `account=logos`, the entire `folder:Logos/.Archive` folder is already only
+  ~54 messages (live probe), so the "pilot" and the full archive coincide — no further date
+  slicing is needed before acknowledging it. In default mode, simply the ordinary 50-step pass
+  also qualifies as a pilot for either account. The pilot runs the FULL flow (sweep → buckets →
+  approval → split → drain → verify) at reduced blast radius.
+- **Acknowledgement record, keyed by account**: after a pilot completes and Stage 6
+  verification is clean, ask the user to acknowledge the pilot outcome (AskUserQuestion, root
+  session). On acknowledgement write (or update) `$MANIFEST_DIR/archive-pilot-ack.json` as an
+  account-keyed structure — either a top-level `"account"` field per ack record, or separate
+  per-account ack files (e.g. `archive-pilot-ack-gmail.json` / `archive-pilot-ack-logos.json`);
+  pick one convention and apply it consistently. Record shape:
+  `{"account": "gmail|logos", "acknowledged_at": "<ISO8601>", "pilot_scope": "<query>",
+  "messages_processed": N, "chunk_size_verdict": "keep 1000 | adjust to <n>"}`. This file is
+  git-tracked and is the gate's persistent evidence, per account.
 - **Gate check (Stage 0)**: a full-scale archive-scope run (`--all --archive`, or any
-  archive-scope pass beyond the pilot bound) first checks for `archive-pilot-ack.json`. If
-  absent, REFUSE with: "Archive scope is pilot-gated: run a bounded pilot first (e.g.
-  `/email --archive` or a one-year `--all --archive` slice), verify, and acknowledge."
+  archive-scope pass beyond the pilot bound) for the resolved `account` first checks for that
+  SAME account's acknowledgement record. If absent for that account, REFUSE with: "Archive scope
+  is pilot-gated for `<account>`: run a bounded pilot first (e.g. `/email [--logos] --archive`
+  or a one-year `--all --archive` slice), verify, and acknowledge." A pilot-ack recorded for the
+  OTHER account never satisfies this check.
 - **Chunk-size confirmation**: the sweep `CHUNK_SIZE=1000` default is provisional until the
-  pilot; record the observed per-chunk latency in the acknowledgement's
-  `chunk_size_verdict` and adjust the default if the pilot says so.
+  `gmail` pilot; record the observed per-chunk latency in the acknowledgement's
+  `chunk_size_verdict` and adjust the default if the pilot says so. (Logos's ~54-message archive
+  will never exercise chunking in practice, but the same acknowledgement flow still applies.)
 
 ## Constants (do not override)
 

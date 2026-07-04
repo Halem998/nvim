@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Make skill-email-cleanup/SKILL.md account-aware",
+  "started_at": "2026-07-04T20:46:00Z",
+  "last_updated": "2026-07-04T21:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add account to args table", "status": "done", "files_touched": [".claude/extensions/email/skills/skill-email-cleanup/SKILL.md"]},
+    {"id": 2, "description": "Make Stage 0 BASE_QUERY account-aware (folder: tokens only, no fallthrough)", "status": "done", "files_touched": [".claude/extensions/email/skills/skill-email-cleanup/SKILL.md"]},
+    {"id": 3, "description": "Pass --account to every wrapper invocation", "status": "done", "files_touched": [".claude/extensions/email/skills/skill-email-cleanup/SKILL.md"]},
+    {"id": 4, "description": "Confirm cursor rule remains account-agnostic (builds on account-aware BASE_QUERY)", "status": "done", "files_touched": [".claude/extensions/email/skills/skill-email-cleanup/SKILL.md"]},
+    {"id": 5, "description": "Reword Archive Scope section for per-account blast radius", "status": "done", "files_touched": [".claude/extensions/email/skills/skill-email-cleanup/SKILL.md"]},
+    {"id": 6, "description": "Implement per-account pilot-gate scoping", "status": "done", "files_touched": [".claude/extensions/email/skills/skill-email-cleanup/SKILL.md"]},
+    {"id": 7, "description": "Honor precondition gate from Phase 1 for account=logos", "status": "done", "files_touched": [".claude/extensions/email/skills/skill-email-cleanup/SKILL.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
