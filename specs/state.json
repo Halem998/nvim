@@ -764,10 +764,10 @@
     {
       "project_number": 787,
       "project_name": "file_footprint_aware_dependencies",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-06-30T19:56:26Z",
-      "last_updated": "2026-06-30T19:56:26Z",
+      "last_updated": "2026-07-04T17:55:49Z",
       "title": "File-footprint-aware task dependency declaration (serialize same-file tasks)",
       "description": "Make multi-task creation declare dependencies based on FILE FOOTPRINT OVERLAP, not just logical sequencing, so two tasks that will edit the same files are never dispatched in the same wave / run concurrently. ROOT CAUSE: dependencies[] exists in the schema but is used only for Kahn topo-ordering; task creation (multi-task-creation-standard Component 4) asks only about logical ordering, and territory/file-ownership (H7, context/contracts/territory.md) is hard-mode-only, per-phase, and declarative. Scope: (1) Add an optional task-level 'file_scope' (anticipated owned paths) field to the state.json task schema (.claude/rules/state-management.md + .claude/context/reference/state-management-schema.md), promoting H7 territory to a lightweight task-level declaration. (2) Extend multi-task-creation-standard.md Component 4 so creators capture each proposed task's file footprint and AUTO-ADD a dependency (or surface a conflict warning) when two footprints overlap. (3) Wire this into meta-builder-agent, skill-fix-it, and skill-spawn. (4) Document that /orchestrate and --team wave assignment must treat file-footprint overlap as a serialization edge. Goal: when the system proposes multiple tasks touching the same files, it declares the dependency automatically instead of leaving them parallelizable. This is the gap that let two same-file tasks run concurrently.",
       "effort": "3-5 hours",
@@ -775,7 +775,24 @@
       "dependencies": [
         786
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/787_file_footprint_aware_dependencies/reports/01_file-footprint-aware-dependencies.md",
+          "summary": "Full findings: exact schema insertion points for file_scope (state-management-schema.md Project Entry Fields + new File Scope Field subsection, state.json-only/no TODO.md rendering), Component 4 extension design (automatic pre-processing sub-step '4a' mirroring /meta Stage 3.5, auto-add dependency edges on overlap with visible confirmation-table annotation), a shared directory-prefix overlap algorithm recommendation (new file-footprint-overlap.md pattern doc, also closing skill-team-implement.md's undefined infer_from_file_overlap gap), per-consumer wiring notes for meta-builder-agent/skill-fix-it/skill-spawn (fix-it is lowest-effort since tag file:line is already structured), confirmation that /orchestrate wave assignment needs no code change if dependencies[] is footprint-aware at creation time (only a documentation note) plus an identified residual cross-batch risk with a proposed defense-in-depth runtime check, the file_scope vs modified_files/files_touched relationship (distinct fields, prospective vs retrospective), and the full dual-copy file inventory (8 paired files + 1 non-paired file: territory.md)."
+        },
+        {
+          "type": "plan",
+          "path": "specs/787_file_footprint_aware_dependencies/plans/01_file-footprint-aware-dependencies.md",
+          "summary": "Phased plan: (1) file_scope schema field [state.json-only, dual copy]; (2) shared file-footprint-overlap.md algorithm doc; (3) Component 4a footprint capture + auto-dependency; (4) wire meta-builder-agent/skill-fix-it/skill-spawn/spawn-agent + skill-team-implement; (5) orchestrate wave-safety docs + adopted runtime wave-split check. Waves: [1,2],[3],[4,5]. Explicit Decision adopts the cross-batch defense-in-depth check."
+        },
+        {
+          "type": "summary",
+          "path": "specs/787_file_footprint_aware_dependencies/summaries/01_file-footprint-aware-dependencies-summary.md",
+          "summary": "Implementation summary covering all 5 phases, 12 dual-copy pairs verified, decisions, and verification results."
+        }
+      ],
+      "session_id": "sess_1783182771_c4ab90_787"
     },
     {
       "project_number": 788,

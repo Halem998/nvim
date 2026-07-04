@@ -152,6 +152,37 @@ done
 
 Wave assignment summary: tasks in Wave 0 have no intra-batch predecessors and run first. Tasks in Wave 1 depend only on Wave 0 tasks, and so on. All tasks within a wave are independent and can run in parallel.
 
+**File-safety is a property of `dependencies[]` accuracy**: Wave assignment above places two
+tasks in the same wave whenever no `dependencies[]` edge connects them. Since task creation
+(Multi-Task Creation Standard Component 4a) now auto-adds a serializing `dependencies[]` edge
+whenever two tasks' `file_scope` overlaps, tasks created together in the same batch are
+file-safe "for free" — no change to the Kahn's-algorithm ordering itself was required. The
+residual gap is **cross-batch**: two tasks created in *separate* batches (e.g. `/orchestrate
+785,787` where task 785 and task 787 were each created independently) have no creation-time
+overlap comparison between them, so `dependencies[]` may not encode a real file conflict. The
+runtime wave-split check below closes that gap.
+
+**Runtime wave-split check (cross-batch defense-in-depth)**: Before dispatching any wave with 2+
+tasks (Step 4), compare every pair of tasks in that wave using the shared directory-prefix
+overlap algorithm in `.claude/context/patterns/file-footprint-overlap.md` (referenced by path —
+the rule is not restated here), applied to each task's `file_scope` (read only for the tasks
+already collected into `validated_tasks` for this invocation — no repo-wide scan). If two
+in-wave tasks have overlapping `file_scope` and no `dependencies[]` edge between them, defer the
+lower-priority task (the one with the higher `project_number`, unless a wave-internal priority
+signal says otherwise) to the next wave and log a visible warning:
+
+```
+[orchestrate] WARNING: Wave {N} tasks #{X} and #{Y} have overlapping file_scope
+  ({path}) with no dependencies[] edge between them. Deferring #{Y} to wave {N+1}
+  to avoid concurrent edits to the same files.
+```
+
+This check is cheap (bounded by the small `task_numbers` set for this invocation) and never
+silent. If it proves too aggressive in practice (over-splitting waves), it can be relaxed to
+warn-only by editing this section and the mirrored section in
+`.claude/skills/skill-orchestrate/SKILL.md` — see Rollback/Contingency in the originating plan
+(`specs/787_file_footprint_aware_dependencies/plans/01_file-footprint-aware-dependencies.md`).
+
 #### Step 4: Wave Execution
 
 Generate the batch session ID:

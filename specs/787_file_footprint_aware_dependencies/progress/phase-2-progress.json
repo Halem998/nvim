@@ -1,0 +1,14 @@
+{
+  "phase": 2,
+  "phase_name": "Define shared file-footprint overlap algorithm",
+  "started_at": "2026-07-04T00:05:00Z",
+  "last_updated": "2026-07-04T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create .claude/context/patterns/file-footprint-overlap.md (normalization, overlap rule, pseudocode, directory-vs-file example, Consumers section)", "status": "done", "files_touched": [".claude/context/patterns/file-footprint-overlap.md"]},
+    {"id": 2, "description": "Mirror into extensions/core/ twin", "status": "done", "files_touched": [".claude/extensions/core/context/patterns/file-footprint-overlap.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

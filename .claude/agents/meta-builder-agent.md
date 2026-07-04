@@ -380,6 +380,31 @@ for task_idx, ext_deps in external_dependencies:
 - `dependency_map{}`: Map of task index -> [dependency indices] (internal)
 - `external_dependencies{}`: Map of task index -> [existing task numbers] (external)
 
+**File Footprint Capture and Overlap Detection (Component 4a)**: Before finalizing
+`dependency_map`, capture and apply footprint overlap:
+
+1. **Populate `file_scope` per task** in `task_list[]`:
+   - If the user's Stage 3 breakdown names specific files or directories for a task, use those
+     paths directly.
+   - Otherwise, infer `file_scope` via a keyword-to-directory heuristic over the task's
+     title/description: match domain keywords (e.g. "skill", "agent", "command", "rule",
+     "context pattern") against their corresponding `.claude/` subdirectories (`skills/`,
+     `agents/`, `commands/`, `rules/`, `context/patterns/`, etc.) and any explicit file paths
+     already mentioned in the interview transcript. Bias toward the broader directory prefix
+     when uncertain — over-declaring only costs parallelism, never correctness.
+2. **Run the shared overlap algorithm** (`.claude/context/patterns/file-footprint-overlap.md`,
+   referenced by path — do not restate the rule) pairwise across `task_list[]`'s `file_scope`
+   entries.
+3. **Auto-add a serializing dependency** into `dependency_map` for every overlapping pair with no
+   existing edge (from the Question 5/5b interview above or a prior 4a pass): the
+   later/lower-priority task index depends on the other.
+4. **Never silent**: every edge added by this step must be visibly annotated
+   "(auto: file overlap)" in the Stage 5 (ReviewAndConfirm) task summary table so the user can
+   override it by selecting "Revise".
+
+This runs automatically (no AskUserQuestion gate) and re-validates the augmented
+`dependency_map` against the same self-reference/cycle checks used above.
+
 ### Interview Stage 3.5: AnalyzeConsolidation (Task Consolidation)
 
 **Skip Condition**: Execute ONLY when:
@@ -582,6 +607,9 @@ Note: question wording is plural — "Assign a topic to these tasks?".
 **Dependencies Legend**:
 - "Task {M}" = internal dependency on another new task in this batch
 - "#{ext_task}" = external dependency on existing task in TODO
+- "Task {M} (auto: file overlap)" = dependency auto-added by Component 4a (Stage 3 File Footprint
+  Capture and Overlap Detection) because the two tasks' `file_scope` entries overlap; never
+  silent, can be overridden via "Revise"
 - Topic assigned via Stage 4.5 picker; applies to all tasks in this batch. User can revise by selecting "Revise".
 
 **Total Estimated Effort**: {sum} hours

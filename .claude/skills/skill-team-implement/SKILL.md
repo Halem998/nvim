@@ -231,6 +231,18 @@ if not has_explicit_deps:
 - Implicit dependencies from file modifications (phases modifying same files are dependent)
 - Cross-phase imports or references
 
+**`infer_from_file_overlap(phase, phases)` definition**: This function applies the shared
+directory-prefix overlap algorithm defined once in
+`.claude/context/patterns/file-footprint-overlap.md` (referenced by path — the rule is not
+restated here). For the given `phase`, compare its declared/inferred file touch-set (parsed from
+the plan's "Files to modify" list for that phase) pairwise against every other phase in `phases`
+using the same overlap rule (exact match, or bidirectional directory-prefix containment). Return
+the list of phase numbers whose file touch-set overlaps with this phase's — those phases must be
+treated as dependencies (serialized), since concurrent dispatch would risk two phase-implementer
+sub-agents editing the same file at once. This is the phase-level counterpart to the task-level
+Component 4a check in `.claude/docs/reference/standards/multi-task-creation-standard.md`; both
+consume the same canonical algorithm.
+
 > **CRITICAL: Plan-Text-Only Analysis** -- Stage 5 analyzes dependencies using file paths and phase descriptions extracted from the plan text. The lead agent MUST NOT read, grep, or glob source files to infer dependencies. All signals come from parsing the plan document itself. Actual source file reading is the exclusive responsibility of phase implementer sub-agents.
 
 ---

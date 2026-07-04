@@ -292,6 +292,30 @@ done
 
 ---
 
+### Stage 9.5: File Footprint Overlap Check (Component 4a)
+
+Before finalizing any `dependencies` merges (Stage 11), run the shared overlap check across
+`new_tasks[]`'s `file_scope` entries so two spawned tasks that touch the same files are never
+left without a serializing edge:
+
+```bash
+# Pairwise check across all new_tasks using file-footprint-overlap.md's directory-prefix rule
+# (.claude/context/patterns/file-footprint-overlap.md, referenced by path — not restated here).
+# For each unordered pair (i, j) of new_tasks indices with no existing dependency edge between
+# them (checking .new_tasks[i].dependencies and .new_tasks[j].dependencies), if their
+# file_scope arrays overlap, auto-add an edge from the later index to the earlier one:
+#   .new_tasks[later_idx].dependencies += [earlier_idx]
+# This mutates the in-memory dependency data used by Stage 9's task_num_map and Stage 11's
+# internal_deps resolution, so the auto-added edge flows through Kahn's ordering and into
+# state.json like any agent-declared dependency.
+```
+
+**Never silent**: any edge added by this check must be included in the Stage 17 return summary
+annotated "(auto: file overlap)", distinguishing it from dependencies the `spawn-agent` already
+declared with explicit reasoning.
+
+---
+
 ### Stage 10: Create New Task Directories
 
 For each new task, create directory structure:
@@ -486,10 +510,15 @@ Return a brief text summary (NOT JSON). Example:
 Spawned {M} tasks to unblock task {N}:
 - Task #{X}: {title} (no dependencies)
 - Task #{Y}: {title} (depends on #{X})
-- Parent task #{N} now depends on: #{X}, #{Y}
+- Task #{Z}: {title} (depends on #{X} (auto: file overlap))
+- Parent task #{N} now depends on: #{X}, #{Y}, #{Z}
 - Status: Parent [BLOCKED], spawned tasks [RESEARCHED]
 - Next: /plan {first_spawned_task_num}
 ```
+
+Any dependency edge added by Stage 9.5's file-footprint overlap check MUST be annotated
+"(auto: file overlap)" in this summary, distinguishing it from `spawn-agent`-declared
+dependencies.
 
 ---
 

@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Add file_scope field to state.json schema",
+  "started_at": "2026-07-04T00:00:00Z",
+  "last_updated": "2026-07-04T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add file_scope row to Project Entry Fields table + File Scope Field subsection in state-management-schema.md", "status": "done", "files_touched": [".claude/context/reference/state-management-schema.md"]},
+    {"id": 2, "description": "Add file_scope behavioral note to state-management.md", "status": "done", "files_touched": [".claude/rules/state-management.md"]},
+    {"id": 3, "description": "Mirror both edits into extensions/core/ twins via cp + diff -q", "status": "done", "files_touched": [".claude/extensions/core/context/reference/state-management-schema.md", ".claude/extensions/core/rules/state-management.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

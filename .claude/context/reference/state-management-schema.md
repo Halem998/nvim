@@ -67,6 +67,7 @@ Complete schema reference for state.json, TODO.md, and artifact formats. For beh
 | `created` | string | Yes | ISO8601 creation timestamp |
 | `last_updated` | string | Yes | ISO8601 last update timestamp |
 | `dependencies` | array | No | Array of task numbers this depends on |
+| `file_scope` | array of strings | No | Anticipated repo-relative paths/prefixes this task expects to touch (default: `[]`) |
 | `artifacts` | array | No | Array of artifact objects |
 | `next_artifact_number` | number | No | Next artifact sequence number (default: 1) |
 
@@ -203,6 +204,26 @@ The `memory_candidates` array on task entries accumulates structured memory cand
 | `[]` | `None` |
 | `[35]` | `Task #35` |
 | `[35, 36]` | `Task #35, Task #36` |
+
+### File Scope Field
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|--------------|
+| `file_scope` | array of strings | No | `[]` | Anticipated repo-relative paths or directory-prefixes this task expects to create or modify; used at task-creation time to detect same-file overlap with sibling tasks and derive serializing `dependencies[]` edges |
+
+**Validation**:
+- Paths need not exist yet (prospective, not filesystem-validated)
+- Not a graph edge itself, so no cycle/self-reference checks apply (unlike `dependencies`)
+- state.json-only: no TODO.md rendering (mirrors `next_artifact_number`; no
+  `generate-todo.sh`/template change is needed)
+
+**Contrast with `modified_files`/`files_touched`**: `file_scope` is prospective and set at
+task-creation time (an anticipation of what the task will touch, used to detect same-file
+overlap between sibling tasks and to auto-derive a serializing `dependencies[]` edge before any
+work starts). `modified_files`/`files_touched` are retrospective and set during/after
+implementation (the actual paths touched, self-reported by implementation agents for targeted
+git staging — see `.claude/context/standards/git-staging-scope.md`). The two fields are
+complementary and are never merged or reconciled against each other.
 
 ### Repository Health Fields
 

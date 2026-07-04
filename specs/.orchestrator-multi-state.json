@@ -55,12 +55,13 @@
     785,
     795,
     802,
-    786
+    786,
+    787
   ],
   "current_statuses": {
     "785": "completed",
     "786": "completed",
-    "787": "not_started",
+    "787": "completed",
     "788": "not_started",
     "791": "completed",
     "795": "completed",

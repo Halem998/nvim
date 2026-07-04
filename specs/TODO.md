@@ -11,16 +11,14 @@ next_project_number: 808
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,787,804 | -- | agent-system, email integration, terminal ui |
-| 2 | 788,796 | 787 | agent-system |
+| 1 | 78,87,788,796,804 | -- | agent-system, email integration, terminal ui |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-787 [NOT STARTED] — Make multi-task creation declare dependencies based on FILE FOOTP
-  └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree
-  └─ 796 [NOT STARTED] — Make topic assignment mandatory across ALL task-creation paths so
+788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree
+796 [NOT STARTED] — Make topic assignment mandatory across ALL task-creation paths so
 804 [NOT STARTED] — Document the --fable model-selection flag alongside --haiku, --so
 
 ### Terminal Ui
@@ -264,10 +262,12 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 
 ### 787. File-footprint-aware task dependency declaration (serialize same-file tasks)
 - **Effort**: 3-5 hours
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 786
+- **Research**: [787_file_footprint_aware_dependencies/reports/01_file-footprint-aware-dependencies.md]
+- **Plan**: [787_file_footprint_aware_dependencies/plans/01_file-footprint-aware-dependencies.md]
 
 **Description**: Make multi-task creation declare dependencies based on FILE FOOTPRINT OVERLAP, not just logical sequencing, so two tasks that will edit the same files are never dispatched in the same wave / run concurrently. ROOT CAUSE: dependencies[] exists in the schema but is used only for Kahn topo-ordering; task creation (multi-task-creation-standard Component 4) asks only about logical ordering, and territory/file-ownership (H7, context/contracts/territory.md) is hard-mode-only, per-phase, and declarative. Scope: (1) Add an optional task-level 'file_scope' (anticipated owned paths) field to the state.json task schema (.claude/rules/state-management.md + .claude/context/reference/state-management-schema.md), promoting H7 territory to a lightweight task-level declaration. (2) Extend multi-task-creation-standard.md Component 4 so creators capture each proposed task's file footprint and AUTO-ADD a dependency (or surface a conflict warning) when two footprints overlap. (3) Wire this into meta-builder-agent, skill-fix-it, and skill-spawn. (4) Document that /orchestrate and --team wave assignment must treat file-footprint overlap as a serialization edge. Goal: when the system proposes multiple tasks touching the same files, it declares the dependency automatically instead of leaving them parallelizable. This is the gap that let two same-file tasks run concurrently.
 
@@ -281,6 +281,7 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 - **Dependencies**: Task 785
 - **Research**: [786_propagate_scoped_staging_templates/reports/01_propagate-scoped-staging-templates.md]
 - **Plan**: [786_propagate_scoped_staging_templates/plans/01_propagate-scoped-staging.md]
+- **Summary**: [786_propagate_scoped_staging_templates/summaries/01_propagate-scoped-staging-summary.md]
 
 **Description**: Sweep the 40+ remaining `git add -A` references across the agent system to the canonical scoped-staging pattern established in task 785, so no template re-introduces repo-wide staging. SITES (from audit): implementation agents (general-implementation-agent.md:435, general-implementation-hard-agent.md:214, neovim:364, nix:384, python:116, web:432, founder, cslib-implementation-hard:261); commands (implement.md:187,192; plan.md:500; research.md:473; orchestrate.md:250,258,375,382; errors.md:197); skills (skill-implementer + extension implement/research skills); and doc/command templates (creating-commands.md:127, command-template.md, checkpoint-commit.md:10, checkpoint-execution.md:114, subagent-continuation-loop.md:127, workflow-interruptions.md:217, research-flow-example.md, creating-skills.md:403). Update the command/skill generator TEMPLATES so newly-created components inherit scoped staging by default. Leave cslib/pr.md's deliberate 'git add -A then exclude' flow alone unless it can be made scoped safely. Goal: scoped staging is uniform -- 'grep -rn "git add -A" .claude/' returns only intentional, documented exceptions. Depends on 785 (canonical pattern). Coordinate with the 779/781 hard-mode cluster on shared agent files (e.g. general-implementation-hard-agent.md).
 

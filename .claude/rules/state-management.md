@@ -73,6 +73,13 @@ bash .claude/scripts/generate-todo.sh
 3. Sync to latest version
 4. Use git for recovery of overwritten versions
 
+## File Scope
+
+`file_scope` is an optional task field set at creation time: it is descriptive/anticipated (not
+filesystem-validated) and is never mutated by status-sync. See
+[State Management Schema](.claude/context/reference/state-management-schema.md#file-scope-field)
+for the full field definition and its contrast with `modified_files`/`files_touched`.
+
 ## Schema Reference
 
 For complete field schemas, status values mapping, artifact linking formats, and directory creation patterns, see:

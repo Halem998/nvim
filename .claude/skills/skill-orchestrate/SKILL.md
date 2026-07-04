@@ -612,6 +612,26 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
 
 4. **No-eligible circuit breaker**: If `eligible_tasks` is empty, log warning with list of stuck tasks and break loop (exit partial).
 
+4.5. **Runtime wave-split check (cross-batch defense-in-depth)**: Before dispatching
+   `eligible_tasks` when it contains 2+ tasks, compare every pair using the shared
+   directory-prefix overlap algorithm in `.claude/context/patterns/file-footprint-overlap.md`
+   (referenced by path — not restated here), applied to each task's `file_scope` (read only for
+   the tasks already in `task_numbers` for this invocation — no repo-wide scan). If two tasks in
+   `eligible_tasks` have overlapping `file_scope` and no edge between them in
+   `dependency_graph`, remove the lower-priority task (higher `project_number`) from this
+   cycle's dispatch batch (it becomes eligible again next cycle, once the other completes) and
+   log a visible warning:
+   ```
+   [orchestrate] WARNING: Tasks #{X} and #{Y} have overlapping file_scope with no
+     dependency_graph edge between them. Deferring #{Y} to a later cycle to avoid
+     concurrent edits to the same files.
+   ```
+   This mirrors the same check documented in `orchestrate.md` Step 3 for the pre-computed wave
+   schedule; here it applies per-cycle to `eligible_tasks` since Multi-Task Mode dispatches
+   cycle-by-cycle rather than strictly wave-by-wave. If this proves too aggressive in practice,
+   it can be relaxed to warn-only by editing this step (see Rollback/Contingency in
+   `specs/787_file_footprint_aware_dependencies/plans/01_file-footprint-aware-dependencies.md`).
+
 5. **Dispatch** (Stage MT-4) — see below.
 
 6. **Increment cycle_count**, update `mt_state_file.cycle_count`. If `cycle_count >= MAX_CYCLES_MT`: log partial status and break.

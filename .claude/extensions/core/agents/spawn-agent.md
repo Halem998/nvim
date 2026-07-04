@@ -84,8 +84,17 @@ Apply the **Task Minimization Principle**:
 | `effort` | Time estimate (e.g., "1-2 hours") |
 | `task_type` | Inherit from parent task unless clearly different |
 | `dependencies` | Array of indices of other new tasks this depends on |
+| `file_scope` | Array of repo-relative paths/prefixes this task expects to touch, populated from the blocker/codebase research performed in this stage (default `[]`) |
 
 **Dependency reasoning**: For each dependency, explicitly state WHY task B depends on task A. The reason must be about implementation details (what choices/decisions from A affect how B is done), not just "A must be done first".
+
+**File Footprint Overlap Check (Component 4a)**: After populating `file_scope` for every proposed
+task, run the shared overlap algorithm
+(`.claude/context/patterns/file-footprint-overlap.md`, referenced by path — do not restate the
+rule) pairwise across `new_tasks[]`. For every overlapping pair with no existing `dependencies`
+edge, auto-add a serializing dependency (the later-index task depends on the other) and note it
+in the Dependency Reasoning section of the report (Stage 4) as "(auto: file overlap)" — never
+silent, always visible to the user reviewing the report.
 
 **Task count guidance**:
 - Prefer 2-3 tasks (rarely need more)
@@ -155,7 +164,8 @@ Write to `specs/{NNN}_{SLUG}/.spawn-return.json`:
       "description": "Full description with enough detail for an implementer to act without additional context",
       "effort": "1-2 hours",
       "task_type": "meta",
-      "dependencies": []
+      "dependencies": [],
+      "file_scope": []
     },
     {
       "index": 1,
@@ -163,7 +173,8 @@ Write to `specs/{NNN}_{SLUG}/.spawn-return.json`:
       "description": "Full description referencing what it needs from task 0",
       "effort": "2-3 hours",
       "task_type": "meta",
-      "dependencies": [0]
+      "dependencies": [0],
+      "file_scope": [".claude/skills/skill-example/SKILL.md"]
     }
   ],
   "dependency_order": [0, 1],
@@ -184,6 +195,7 @@ Write to `specs/{NNN}_{SLUG}/.spawn-return.json`:
 | `new_tasks[].effort` | string | Time estimate like "1-2 hours" |
 | `new_tasks[].task_type` | string | Task type (meta, general, etc.) |
 | `new_tasks[].dependencies` | array | Indices of other new tasks this depends on |
+| `new_tasks[].file_scope` | array | Anticipated repo-relative paths/prefixes this task expects to touch; used by the Component 4a overlap check (default `[]`) |
 | `dependency_order` | array | Topologically sorted list of indices (foundational first) |
 | `parent_task_number` | integer | The blocked task number |
 | `analysis_summary` | string | 1-2 sentence summary for display |

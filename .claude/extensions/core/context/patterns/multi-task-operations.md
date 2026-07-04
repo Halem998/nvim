@@ -538,6 +538,34 @@ Example: /orchestrate 42, 43, 44, 45
     Wave 2: [44]          (parallel -- depends on Wave 1)
 ```
 
+### File Footprint Overlap as a Serialization Edge
+
+Wave assignment (above) treats any `dependencies[]` edge as a serialization constraint. Since
+task creation (Multi-Task Creation Standard Component 4a, see
+`.claude/docs/reference/standards/multi-task-creation-standard.md`) now auto-adds a serializing
+`dependencies[]` edge whenever two tasks' `file_scope` arrays overlap (per the shared algorithm
+in `.claude/context/patterns/file-footprint-overlap.md`), **file footprint overlap is itself a
+serialization edge** by the time `/orchestrate` reads `dependencies[]` — no separate
+footprint-aware wave-computation logic is needed for tasks created together in the same batch.
+
+**Same-batch vs cross-batch coverage**:
+- **Same-batch** (tasks created together, e.g. via one `/meta` or `/fix-it` run): fully covered
+  at creation time by Component 4a. Wave assignment is file-safe "for free".
+- **Cross-batch** (tasks created in separate batches/sessions that happen to touch the same
+  files, e.g. `/orchestrate 785,787` where 785 and 787 were created independently): no
+  creation-time comparison exists between them, so `dependencies[]` may be silent about a real
+  file conflict. This residual gap is closed by the runtime wave-split check documented in
+  `.claude/commands/orchestrate.md` Step 3 and mirrored in `.claude/skills/skill-orchestrate/SKILL.md`
+  Stage MT-3 (step 4.5): before dispatching a wave/cycle with 2+ tasks, compare `file_scope`
+  pairwise and defer the lower-priority task if an overlap has no `dependencies[]` edge.
+
+**Note on `--team`**: `/orchestrate` does not support `--team` (see "`--team` Flag Not
+Supported" above), so there is no `/orchestrate --team` footprint concern at the task level. The
+analogous `--team` footprint concern is a **within-task, phase-level** path — handled separately
+by `skill-team-implement.md`'s `infer_from_file_overlap(phase, phases)` (Phase 4 of the
+originating plan), which consumes the same shared `file-footprint-overlap.md` algorithm one
+level down (phases within a single task, not tasks within a batch).
+
 ### Failed Predecessor Handling
 
 A failed task in Wave N causes its **direct dependents** to be skipped in Wave N+1 (and transitively in later waves). Failure does NOT propagate sideways -- other tasks in Wave N that succeeded do NOT become failed.

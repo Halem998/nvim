@@ -318,6 +318,24 @@ elif majority from .claude/ files -> "meta"
 else -> "general"
 ```
 
+#### 8.2c: File Footprint Overlap Check (Component 4a)
+
+In addition to the hardcoded NOTE-before-fix-it dependency rule above (8.2), run the shared
+Multi-Task Creation Standard Component 4a overlap check across `topic_groups[]` (each group
+already carries a `file_section` from Step 7.5's clustering):
+
+1. **Derive `file_scope` per group**: union the `file:line` paths of every item in the group
+   (dropping the `:line` suffix) into a `file_scope` array for that group's would-be task.
+2. **Run the shared overlap algorithm** (`.claude/context/patterns/file-footprint-overlap.md`,
+   referenced by path — not restated here) pairwise across all groups that will become separate
+   tasks (grouped or separate mode; combined mode produces a single task, so no pairwise check
+   applies).
+3. **Auto-add a serializing dependency** for every overlapping pair with no existing edge
+   (in addition to the fix-it/learn-it edge from 8.2), so two groups whose `file_scope` overlaps
+   never land in the same task creation batch without a dependency between them.
+4. **Never silent**: annotate any auto-added edge in the Step 9 task summary/confirmation with
+   "(auto: file overlap)" per Component 7 of the Multi-Task Creation Standard.
+
 #### 8.3: Learn-It Task (when created without dependency)
 
 **Condition**: User selected "learn-it task" AND NOTE: tags exist AND has_note_dependency is FALSE

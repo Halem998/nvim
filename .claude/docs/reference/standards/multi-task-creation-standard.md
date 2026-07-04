@@ -192,6 +192,37 @@ Ask users about dependencies between tasks when creating multiple tasks.
 3. **Circular dependency check**: No cycles allowed (detect via DFS)
 4. **External validation**: Verify external task numbers exist in state.json
 
+### 4a. File Footprint Capture and Overlap Detection (Automatic)
+
+Runs automatically after Component 3 (Topic Grouping) and before the user is asked about
+dependencies in Component 4 — mirroring `/meta` Stage 3.5's proactive-before-asking placement.
+This sub-step never depends on user input; it derives an initial set of serializing dependency
+edges from file footprint alone, which Component 4's interview can then extend or the user can
+override.
+
+**Steps**:
+1. **Populate `file_scope` per proposed task**: Using whatever structured signal the calling
+   command already has (tag `file:line` locations for `/fix-it`, keyword-to-directory inference
+   for `meta-builder-agent`, blocker/codebase research paths for `skill-spawn`), assign each
+   proposed task an anticipated `file_scope` array of repo-relative paths or directory-prefixes.
+   Bias toward over-declaring (broader prefixes): false positives here only cost parallelism,
+   not correctness.
+2. **Run the shared overlap algorithm pairwise across the batch**: apply the directory-prefix
+   overlap check defined once in `.claude/context/patterns/file-footprint-overlap.md` (reference
+   by path — do not restate the rule) to every unordered pair of proposed tasks in the current
+   batch.
+3. **Auto-add a serializing dependency for every overlapping pair with no existing edge**: when
+   two proposed tasks' `file_scope` arrays overlap and neither already depends on the other
+   (from Component 4's interview or a prior 4a pass), add a dependency edge from the
+   later/lower-priority task onto the other, so they can never land in the same `/orchestrate`
+   wave.
+4. **Never silent**: every auto-added edge from this sub-step must be visibly annotated in the
+   Component 7 confirmation summary (see below) so the user can override it via the existing
+   Custom/Revise path.
+
+Components 5 (Kahn ordering) and 6 (Visualization) require no change — they consume whatever
+`dependency_map` they are given, now augmented with 4a's auto-added edges, automatically.
+
 ### 5. Task Ordering (Required when dependencies exist)
 
 Apply topological sort (Kahn's algorithm) to ensure foundational tasks receive lower numbers.
@@ -271,9 +302,16 @@ Always show task summary and require explicit confirmation before creating tasks
 |---|-------|----------|--------|--------------|
 | 37 | Add sorting | meta | 2h | None |
 | 38 | Update insertion | meta | 1h | Task #37 |
+| 39 | Refactor helper | meta | 1h | Task #37 (auto: file overlap) |
 
-**Total Estimated Effort**: 3 hours
+**Total Estimated Effort**: 4 hours
 ```
+
+**Auto-Derived Dependency Annotation**: Any dependency edge added automatically by Component 4a
+(file footprint overlap) MUST be annotated inline in the Dependencies cell with
+`(auto: file overlap)`, distinguishing it from user-declared dependencies (Component 4). This
+annotation is never omitted — an auto-added edge is always visible in the confirmation summary
+so the user can override it via the Custom/Revise path before tasks are created.
 
 **Confirmation Pattern**:
 ```json
@@ -353,6 +391,7 @@ For any command/skill/agent that creates multiple tasks:
 
 ### Optional Components (Recommended for 3+ Tasks)
 - [ ] **Grouping**: Semantic clustering when 2+ items selected
+- [ ] **File Footprint Overlap (4a)**: Populate `file_scope` and auto-add serializing dependencies on overlap (automatic, not user-interview-gated)
 - [ ] **Dependency Interview**: Ask about internal and external dependencies
 - [ ] **Validation**: Self-reference, cycle detection, valid indices
 - [ ] **Topological Sort**: Kahn's algorithm for task ordering
@@ -386,15 +425,19 @@ See `.claude/agents/meta-builder-agent.md` for complete implementation details.
 
 ## Current Compliance Status
 
-| Command | Required | Grouping | Dependencies | Ordering | Visualization |
-|---------|----------|----------|--------------|----------|---------------|
-| `/meta` | Yes | **Automatic** | Full DAG | Kahn's | Linear/Layered |
-| `/fix-it` | Yes | Yes | Internal only | No | No |
-| `/review` | Yes | Yes | No | No | No |
-| `/errors` | Partial* | No | No | No | No |
-| `/task --review` | Yes | No | parent_task | No | No |
+| Command | Required | Grouping | Footprint Overlap (4a) | Dependencies | Ordering | Visualization |
+|---------|----------|----------|-------------------------|--------------|----------|---------------|
+| `/meta` | Yes | **Automatic** | Yes (meta-builder-agent) | Full DAG | Kahn's | Linear/Layered |
+| `/fix-it` | Yes | Yes | Yes (skill-fix-it) | Internal only | No | No |
+| `/review` | Yes | Yes | No | No | No | No |
+| `/errors` | Partial* | No | No | No | No | No |
+| `/task --review` | Yes | No | No | parent_task | No | No |
 
 *`/errors` creates tasks automatically without interactive selection (intentional for error triage workflow).
+
+`/spawn` (single-task-follow-up creator, `spawn-agent` + `skill-spawn`) also implements
+Footprint Overlap (4a) even though it is not a multi-task *creation* command in the strict
+Component-1-8 sense; see `.claude/agents/spawn-agent.md` and `.claude/skills/skill-spawn/SKILL.md`.
 
 **Enhanced `/meta` Features**:
 - **Automatic Task Consolidation** (Stage 3.5): Proactively analyzes user-provided task breakdown and suggests consolidation opportunities
