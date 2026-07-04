@@ -1,0 +1,19 @@
+{
+  "phase": 1,
+  "phase_name": "Add the account dimension to commands/email.md",
+  "started_at": "2026-07-04T20:28:44Z",
+  "last_updated": "2026-07-04T20:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add account parsing (--account <gmail|logos> / --logos) to argument parsing, default account=gmail", "status": "done", "files_touched": [".claude/extensions/email/commands/email.md"]},
+    {"id": 2, "description": "Thread account into cleanup-path delegation args", "status": "done", "files_touched": [".claude/extensions/email/commands/email.md"]},
+    {"id": 3, "description": "Update sync_path to pass account + channel default", "status": "done", "files_touched": [".claude/extensions/email/commands/email.md"]},
+    {"id": 4, "description": "Document per-account --archive semantics", "status": "done", "files_touched": [".claude/extensions/email/commands/email.md"]},
+    {"id": 5, "description": "Add unknown-account error entry", "status": "done", "files_touched": [".claude/extensions/email/commands/email.md"]},
+    {"id": 6, "description": "Add actionable precondition gate for account=logos", "status": "done", "files_touched": [".claude/extensions/email/commands/email.md"]},
+    {"id": 7, "description": "Generalize Gmail-specific prose", "status": "done", "files_touched": [".claude/extensions/email/commands/email.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
