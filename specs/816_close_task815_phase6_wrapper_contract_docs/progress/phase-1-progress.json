@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Refresh wrapper-contracts.md §2 enum + §11 tables",
+  "started_at": "2026-07-04T21:42:13Z",
+  "last_updated": "2026-07-04T21:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace stale --account gmail reserved-only bullet in §2 with confirmed enum", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"]},
+    {"id": 2, "description": "Generalize §11 intro and insert per-account folder-token table", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"]},
+    {"id": 3, "description": "Add new §11a mbsync-channel mapping table", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

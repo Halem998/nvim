@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "summary": "Created a 3-phase docs-only closure plan (0.5h) for task 815 Phase 6. Phase 1: wrapper-contracts.md §2 --account <gmail|logos> enum replacement + §11 per-account folder-token table and new §11a mbsync-channel table (verbatim from .dotfiles task-80 closure report §3). Phase 2: generalize archive-mode-risk.md lines 3/10/74 (line 28 left Gmail-specific). Phase 3: flip task 815 Phase 6 to [COMPLETED] across five coupled edit sites (Status ~4, heading ~308, Depends-on/Blocked ~328-333, Testing ~365-367, Rollback ~385), citing task 79 landed + task 80 verified 9/9 PASS. All three phases are independent (Wave 1). No live verification needed.",
+  "artifacts": [
+    {
+      "path": "specs/816_close_task815_phase6_wrapper_contract_docs/plans/01_phase6-docs-closure.md",
+      "type": "plan",
+      "summary": "3-phase docs-only closure plan: wrapper-contracts.md §2/§11 refresh, archive-mode-risk.md token generalization, and task-815 Phase 6 marker flip. Dependency waves [[1,2,3]] (all parallelizable)."
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "phases_completed": 0,
+  "phases_total": 3,
+  "next_action_hint": "Run /implement 816 to execute the documentation edits"
+}

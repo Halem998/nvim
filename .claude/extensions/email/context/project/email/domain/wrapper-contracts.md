@@ -27,7 +27,11 @@ to it, or raise its constants (in particular `MAX_BATCH_SIZE=50` — split/loop 
 - **`--execute` requires `--confirm-manifest <sha256>`.** The sha256 is computed over the raw
   bytes of the approved manifest file; the wrapper recomputes it at run time and refuses on
   mismatch (guards against edited/substituted manifests) (lines 125-133).
-- **`--account gmail` reserved on all five.** Any other value is a hard error.
+- **`--account <gmail|logos>` (also `--account=<value>` form) on all five.** Default when
+  omitted is `gmail` (preserves pre-multi-account behavior byte-for-byte). Unknown values are
+  rejected with an actionable stderr error and a non-zero exit — never silently coerced to
+  Gmail (verified `.dotfiles` task 80, `verify_logos_wrapper_contract_close_phase6`: all 9
+  contract rows PASS, zero divergence).
 - **`--manifest-dir <path>`** overrides manifest storage.
 - **`--manifest <path>`** (mutation binaries) points at an arbitrary approved-manifest file;
   default is `<manifest-dir>/approved-manifest.jsonl` (lines 101-109). All hash, mtime, batch,
@@ -207,3 +211,26 @@ Notmuch folder tokens for the gmail maildir, as hardcoded in `email-census` (lin
 The All Mail token `folder:Gmail/.All_Mail` (line 299) is the exact scope token for
 archive-scoped (`--archive`) operations, passed as (part of) the `email-classify` QUERY
 positional — no wrapper flag exists or is needed for folder scoping.
+
+With the `--account` enum (§2) covering both `gmail` and `logos`, the tokens above are the
+`gmail`-account case specifically. Verified per-account folder-token summary (`.dotfiles` task
+80, `verify_logos_wrapper_contract_close_phase6`, all 9 contract rows PASS, zero divergence):
+
+| Account | Inbox query | Archive query | Real folders |
+|---------|-------------|----------------|---------------|
+| `gmail` | `folder:Gmail` | `folder:Gmail/.All_Mail` | `.All_Mail`, `.Sent`, `.Trash`, `.Spam`, `.Drafts` |
+| `logos` | `folder:Logos` | `folder:Logos/.Archive` | `.Sent`, `.Archive`, `.Drafts`, `.Trash` (no `.All_Mail`, no `.Spam`) |
+
+### 11a. mbsync Channel Mapping (verified)
+
+Each account resolves to its own named, disjoint mbsync group; the wrapper's built-in
+post-mutation reconcile (§7a) invokes the group scoped to the `--account` in effect and never
+`mbsync -a`:
+
+| Account | mbsync invocation | mbsync.nix Group | Location |
+|---------|--------------------|-------------------|----------|
+| `gmail` | `mbsync gmail` | `Group gmail` (5 gmail-* channels) | `modules/home/email/mbsync.nix:114-119` |
+| `logos` | `mbsync logos` | `Group logos` (7 logos-* channels) | `modules/home/email/mbsync.nix:190-197` |
+
+Never `mbsync -a` in either code path (`agent-tools.nix:282-283` explicitly comments against
+this).
