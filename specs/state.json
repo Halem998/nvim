@@ -5,12 +5,95 @@
     {
       "project_number": 815,
       "project_name": "revise_email_extension_multi_account",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "description": "Revise the email/ extension in the .claude/ agent system to support multiple email accounts, drawing on the nvim-extension handoff report at /home/benjamin/.dotfiles/specs/079_email_wrappers_multi_account/reports/01_nvim-extension-handoff.md, aligning it with the multi-account changes being made in the .dotfiles/ NixOS config",
       "topic": "extensions",
       "created": "2026-07-04T20:14:30Z",
-      "last_updated": "2026-07-04T20:14:30Z"
+      "last_updated": "2026-07-04T20:42:58Z",
+      "researched": "2026-07-04T20:21:47Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/815_revise_email_extension_multi_account/reports/01_multi-account-extension-revision.md",
+          "type": "report",
+          "summary": "File-by-file revision plan for the email/ extension's multi-account support (commands/email.md account selector, skill-email-cleanup account-aware BASE_QUERY + --account passthrough, skill-email-sync channel default, mail-guard.sh confirmed no-change, EXTENSION.md doc update). Confirms .dotfiles task 79 (wrapper binaries) is status=researched only (not landed) - a hard sequencing blocker for implementation. Incorporates ground-truth Logos folder tokens (folder:Logos INBOX/Sent/Archive/Drafts/Trash, no All_Mail/Spam) from task 79's second report."
+        },
+        {
+          "path": "specs/815_revise_email_extension_multi_account/plans/01_email-multi-account-support.md",
+          "type": "plan",
+          "summary": "6-phase plan for email/ extension multi-account (gmail+logos) support: --account/--logos selector in commands/email.md, account-aware BASE_QUERY + --account passthrough in skill-email-cleanup, account-to-channel default in skill-email-sync, EXTENSION.md/manifest.json docs, verification, and a task-79-gated [BLOCKED] Phase 6 for live verification. Approach (b): additive+gated, Gmail path unchanged, /email --logos documented-but-gated pending .dotfiles task 79."
+        },
+        {
+          "path": "specs/815_revise_email_extension_multi_account/summaries/01_email-multi-account-support-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: Phases 1-5 landed (account selector, account-aware BASE_QUERY, mbsync channel default, docs/keywords); Phase 6 documented as intentionally [BLOCKED] pending .dotfiles task 79."
+        }
+      ],
+      "planned": "2026-07-04T20:30:00Z",
+      "plan_metadata": {
+        "phases": 6,
+        "total_effort_hours": 5,
+        "complexity": "medium",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            4
+          ],
+          [
+            5
+          ],
+          [
+            6
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_multi-account-extension-revision.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-07-04"
+          }
+        ]
+      },
+      "session_id": "sess_1783196275_db6362",
+      "implemented": "2026-07-04T21:52:00Z",
+      "completion_summary": "Added multi-account (Gmail + Logos/Protonmail Bridge) support to the .claude/ email extension across Phases 1-5: --account/--logos selector in commands/email.md, account-aware BASE_QUERY + --account passthrough in skill-email-cleanup, account-to-channel default in skill-email-sync, and documentation/keyword updates in EXTENSION.md/manifest.json. The Gmail-only path is byte-for-byte unchanged; /email --logos is parsed and documented but routed through an actionable precondition gate that fails loudly pending .dotfiles task 79's wrapper binaries. Phase 6 (live end-to-end verification) remains intentionally [BLOCKED] pending that external landing; a follow-up task is recommended once task 79 lands.",
+      "memory_candidates": [
+        {
+          "content": "When adding a second account/tenant dimension to an existing single-account agent skill, resolve the selector exactly ONCE at the top of the flow (before any branch that could re-derive it) and thread the SAME resolved value through every downstream call (query construction, wrapper/API calls, gate checks). This prevents 'account drift' where e.g. a census runs under one account and a mutation runs under another. Pair this with per-account-keyed side files (e.g. a pilot-acknowledgement record) so an approval/gate satisfied for account A can never silently license the same operation for account B.",
+          "category": "PATTERN",
+          "source_artifact": "specs/815_revise_email_extension_multi_account/summaries/01_email-multi-account-support-summary.md",
+          "confidence": 0.78,
+          "suggested_keywords": [
+            "multi-account",
+            "account-resolution",
+            "gate-scoping",
+            "pilot-gate",
+            "drift-prevention"
+          ]
+        },
+        {
+          "content": "This nvim config repo drives .claude/CLAUDE.md generation via a Neovim-plugin extension picker (lua/neotex/plugins/ai/shared/extensions/merge.lua's generate_claudemd), not a standalone bash script. It regenerates the ENTIRE CLAUDE.md by concatenating each LOADED extension's EXTENSION.md (per .claude/extensions.json's loaded set) in dependency order. Editing an extension's EXTENSION.md alone does not propagate to CLAUDE.md until a user runs the picker's load/sync action for that extension. When verifying 'does this propagate to CLAUDE.md', check whether the extension is actually in .claude/extensions.json's loaded set first -- if not, propagation is unobservable and that is a pre-existing condition, not a defect in the edit.",
+          "category": "CONFIG",
+          "source_artifact": "specs/815_revise_email_extension_multi_account/summaries/01_email-multi-account-support-summary.md",
+          "confidence": 0.75,
+          "suggested_keywords": [
+            "extension-picker",
+            "generate_claudemd",
+            "extensions.json",
+            "merge-pipeline",
+            "claudemd-propagation"
+          ]
+        }
+      ]
     },
     {
       "project_number": 805,
@@ -851,7 +934,7 @@
         {
           "type": "summary",
           "path": "specs/788_concurrent_session_lock_commit_cadence/summaries/01_session-lock-commit-cadence-summary.md",
-          "summary": "Full implementation summary: what changed across 8 files (+ 8 dual copies + 1 non-dual-copied index.json entry), key decisions, 3 plan deviations (all 'altered' — skill-implementer/SKILL.md is a thin wrapper with no per-phase/per-objective loop of its own, so the heartbeat and green-commit hooks were wired into general-implementation-agent.md instead), and verification results."
+          "summary": "Full implementation summary: what changed across 8 files (+ 8 dual copies + 1 non-dual-copied index.json entry), key decisions, 3 plan deviations (all 'altered' \u2014 skill-implementer/SKILL.md is a thin wrapper with no per-phase/per-objective loop of its own, so the heartbeat and green-commit hooks were wired into general-implementation-agent.md instead), and verification results."
         }
       ],
       "session_id": "sess_1783182771_c4ab90_788"
@@ -980,7 +1063,7 @@
       "project_name": "pr_ready_guard_type_pr",
       "status": "completed",
       "task_type": "meta",
-      "description": "Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-lifecycle leak where cslib implementation tasks reach [PR READY] instead of [COMPLETED]. Three coordinated source-tree edits in /home/benjamin/.config/nvim/.claude/: (1) runtime guard in .claude/scripts/update-task-status.sh — reject preflight:pr_ready and postflight:pr_ready unless task_type==pr; (2) skill-cslib-implementation Stage 6 (extensions/cslib/skills/skill-cslib-implementation/SKILL.md) — spell out explicit postflight implement -> COMPLETED call mirroring skill-pr-implementation:95; (3) doc reconciliation in extensions/core/merge-sources/claudemd.md:36-37 — mark [PR READY] as type=pr-only, not the universal implementation terminus. Design decision for research/plan: guard in core update-task-status.sh (keyed on task_type==pr) vs pushing pr_ready/PR READY fully into the cslib extension; core doc must end up consistent with the choice. Out of scope: repairing the 5 already-mislabeled deployed tasks (447/404/407/438/453) in /home/benjamin/Projects/cslib/ state.json — separate manual data-repair after redeploy via <leader>al.",
+      "description": "Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-lifecycle leak where cslib implementation tasks reach [PR READY] instead of [COMPLETED]. Three coordinated source-tree edits in /home/benjamin/.config/nvim/.claude/: (1) runtime guard in .claude/scripts/update-task-status.sh \u2014 reject preflight:pr_ready and postflight:pr_ready unless task_type==pr; (2) skill-cslib-implementation Stage 6 (extensions/cslib/skills/skill-cslib-implementation/SKILL.md) \u2014 spell out explicit postflight implement -> COMPLETED call mirroring skill-pr-implementation:95; (3) doc reconciliation in extensions/core/merge-sources/claudemd.md:36-37 \u2014 mark [PR READY] as type=pr-only, not the universal implementation terminus. Design decision for research/plan: guard in core update-task-status.sh (keyed on task_type==pr) vs pushing pr_ready/PR READY fully into the cslib extension; core doc must end up consistent with the choice. Out of scope: repairing the 5 already-mislabeled deployed tasks (447/404/407/438/453) in /home/benjamin/Projects/cslib/ state.json \u2014 separate manual data-repair after redeploy via <leader>al.",
       "topic": "agent-system",
       "last_updated": "2026-07-04T17:04:56Z",
       "session_id": "sess_1783182771_c4ab90_795",
@@ -1008,7 +1091,7 @@
       "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
-      "description": "Make topic assignment mandatory across ALL task-creation paths so tasks never land in Uncategorized. Root problem: three escape hatches produce topicless tasks — (1) the one-click Skip (no topic) option in Mode A pickers (/meta, /task create, /project-overview); (2) Mode B silent no-op when a parent task has no topic (topic-assignment-pattern.md:113 says no fallback, but /spawn, --expand, --review implementations DO have fallbacks — doc/impl divergence); (3) Mode C silent no-op when the /review and /fix-it path heuristic hits the other branch (:134). Plus /task --recover has zero topic handling and the meta-builder path can be bypassed entirely. FIX (source tree /home/benjamin/.config/nvim/.claude/, redeployed via <leader>al): rewrite canonical context/patterns/topic-assignment-pattern.md to drop Skip and make Mode A the universal fallback whenever no obvious topic exists (parent none / heuristic miss / batch null), keeping New topic always available; then update all callers to remove Skip and wire the fallback: agents/meta-builder-agent.md Stage 4.5, commands/task.md (create, --expand, --review, --recover which currently has none), commands/review.md and skills/skill-fix-it (Mode C other -> prompt), skills/skill-spawn, skills/skill-project-overview (errors.md inherits via /task). Reconcile the pattern-doc-vs-implementation divergence on Mode B fallback. Research/plan decisions: (a) remove Skip entirely vs keep a hard-to-reach explicit skip; (b) whether to add a defense-in-depth gate (generate-task-order.sh warns on topicless active tasks, or a validation check) so bypasses surface loudly. Out of scope: backfilling existing topicless tasks (/task --sync already does that).",
+      "description": "Make topic assignment mandatory across ALL task-creation paths so tasks never land in Uncategorized. Root problem: three escape hatches produce topicless tasks \u2014 (1) the one-click Skip (no topic) option in Mode A pickers (/meta, /task create, /project-overview); (2) Mode B silent no-op when a parent task has no topic (topic-assignment-pattern.md:113 says no fallback, but /spawn, --expand, --review implementations DO have fallbacks \u2014 doc/impl divergence); (3) Mode C silent no-op when the /review and /fix-it path heuristic hits the other branch (:134). Plus /task --recover has zero topic handling and the meta-builder path can be bypassed entirely. FIX (source tree /home/benjamin/.config/nvim/.claude/, redeployed via <leader>al): rewrite canonical context/patterns/topic-assignment-pattern.md to drop Skip and make Mode A the universal fallback whenever no obvious topic exists (parent none / heuristic miss / batch null), keeping New topic always available; then update all callers to remove Skip and wire the fallback: agents/meta-builder-agent.md Stage 4.5, commands/task.md (create, --expand, --review, --recover which currently has none), commands/review.md and skills/skill-fix-it (Mode C other -> prompt), skills/skill-spawn, skills/skill-project-overview (errors.md inherits via /task). Reconcile the pattern-doc-vs-implementation divergence on Mode B fallback. Research/plan decisions: (a) remove Skip entirely vs keep a hard-to-reach explicit skip; (b) whether to add a defense-in-depth gate (generate-task-order.sh warns on topicless active tasks, or a validation check) so bypasses surface loudly. Out of scope: backfilling existing topicless tasks (/task --sync already does that).",
       "dependencies": [
         787
       ],
@@ -1325,10 +1408,10 @@
     {
       "project_number": 810,
       "project_name": "gate_script_sourcing_research_plan_revise",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-07-04T18:33:12Z",
-      "last_updated": "2026-07-04T20:13:19Z",
+      "last_updated": "2026-07-04T20:25:04Z",
       "title": "Route /research, /plan, /revise through shared gate scripts for lock + checkpoint coverage",
       "description": "Follow-up from task 788. Task 788 wired session-lock acquire/release and heartbeat into command-gate-in.sh / command-gate-out.sh (sourced by /implement and /orchestrate) and into multi-task dispatch. But /research, /plan, and /revise carry their OWN inline, duplicated CHECKPOINT gate logic and do NOT source the shared gate scripts -- so session-lock protection and the commit-per-green-substep cadence do NOT cover those three commands. SCOPE: refactor commands/research.md, commands/plan.md, and commands/revise.md to source command-gate-in.sh / command-gate-out.sh (acquiring/releasing the task lock, emitting heartbeats) instead of their inline duplicated gate logic, so ALL lifecycle commands share one gate path and one lock discipline. Keep dual-copy pairs in sync. Verify the shared gate path composes with each command existing preflight/postflight expectations.",
       "effort": "2-3 hours",
@@ -1355,9 +1438,15 @@
           "path": "specs/810_gate_script_sourcing_research_plan_revise/plans/02_gate-sourcing-plan.md",
           "type": "plan",
           "summary": "5-phase gate-sourcing refactor plan with dual-copy discipline, multi-task lock bracketing, and a final coherence audit."
+        },
+        {
+          "path": "specs/810_gate_script_sourcing_research_plan_revise/summaries/03_gate-sourcing-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary documenting all file changes, decisions, and Phase 5 coherence/dual-copy audit results"
         }
       ],
-      "session_id": "sess_1783192850_515b14_810"
+      "session_id": "sess_1783192850_515b14_810",
+      "completion_summary": "All 5 plan phases completed: fixed command-gate-in.sh's terminal-status guard to exempt operation=revise, fixed command-gate-out.sh's status_token mapping (adding revise and repairing a latent orchestrate bug), then refactored research.md, plan.md, and revise.md to source the shared gate scripts in place of their inline CHECKPOINT logic, added per-task task-lock bracketing to research.md/plan.md's multi-task dispatch loops matching implement.md, and verified in Phase 5 that all 10 dual-copy pair"
     },
     {
       "project_number": 811,

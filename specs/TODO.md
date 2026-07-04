@@ -11,25 +11,19 @@ next_project_number: 816
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,810,815 | -- | agent-system, extensions, email integration, ... |
-| 2 | 811,812,813 | 810 | agent-system |
-| 3 | 814 | 811,812,813 | agent-system |
+| 1 | 78,87,811,812,813 | -- | agent-system, email integration, terminal ui |
+| 2 | 814 | 811,812,813 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-810 [PLANNED] — Follow-up from task 788. Task 788 wired session-lock acquire/rele
-  └─ 811 [NOT STARTED] — Systematic audit of the orchestration core of the .claude/ agent 
-    └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie
-  └─ 812 [NOT STARTED] — Systematic audit of the knowledge & standards layer of the .claud
-    └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie (see above)
-  └─ 813 [NOT STARTED] — Systematic audit of the infrastructure layer of the .claude/ agen
-    └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie (see above)
-
-### Extensions
-
-815 [NOT STARTED] — Revise the email/ extension in the .claude/ agent system to suppo
+811 [NOT STARTED] — Systematic audit of the orchestration core of the .claude/ agent 
+  └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie
+812 [NOT STARTED] — Systematic audit of the knowledge & standards layer of the .claud
+  └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie (see above)
+813 [NOT STARTED] — Systematic audit of the infrastructure layer of the .claude/ agen
+  └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie (see above)
 
 ### Terminal Ui
 
@@ -42,10 +36,13 @@ next_project_number: 816
 ## Tasks
 
 ### 815. Revise email extension multi account
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
+- **Research**: [815_revise_email_extension_multi_account/reports/01_multi-account-extension-revision.md]
+- **Plan**: [815_revise_email_extension_multi_account/plans/01_email-multi-account-support.md]
+- **Summary**: [815_revise_email_extension_multi_account/summaries/01_email-multi-account-support-summary.md]
 
 **Description**: Revise the email/ extension in the .claude/ agent system to support multiple email accounts, drawing on the nvim-extension handoff report at /home/benjamin/.dotfiles/specs/079_email_wrappers_multi_account/reports/01_nvim-extension-handoff.md, aligning it with the multi-account changes being made in the .dotfiles/ NixOS config
 
@@ -93,12 +90,13 @@ next_project_number: 816
 
 ### 810. Route /research, /plan, /revise through shared gate scripts for lock + checkpoint coverage
 - **Effort**: 2-3 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 788, Task 804, Task 809
 - **Research**: [810_gate_script_sourcing_research_plan_revise/reports/01_gate-sourcing-analysis.md]
 - **Plan**: [810_gate_script_sourcing_research_plan_revise/plans/02_gate-sourcing-plan.md]
+- **Summary**: [810_gate_script_sourcing_research_plan_revise/summaries/03_gate-sourcing-summary.md]
 
 **Description**: Follow-up from task 788. Task 788 wired session-lock acquire/release and heartbeat into command-gate-in.sh / command-gate-out.sh (sourced by /implement and /orchestrate) and into multi-task dispatch. But /research, /plan, and /revise carry their OWN inline, duplicated CHECKPOINT gate logic and do NOT source the shared gate scripts -- so session-lock protection and the commit-per-green-substep cadence do NOT cover those three commands. SCOPE: refactor commands/research.md, commands/plan.md, and commands/revise.md to source command-gate-in.sh / command-gate-out.sh (acquiring/releasing the task lock, emitting heartbeats) instead of their inline duplicated gate logic, so ALL lifecycle commands share one gate path and one lock discipline. Keep dual-copy pairs in sync. Verify the shared gate path composes with each command existing preflight/postflight expectations.
 
