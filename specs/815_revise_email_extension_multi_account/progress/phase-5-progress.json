@@ -1,0 +1,25 @@
+{
+  "phase": 5,
+  "phase_name": "Consistency verification + merge propagation",
+  "started_at": "2026-07-04T21:26:00Z",
+  "last_updated": "2026-07-04T21:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Grep for residual folder:Gmail fallthrough and tag:<account> queries", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm bare /email path byte-for-byte unchanged (Gmail default)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm mail-guard.sh unmodified, record why", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run check-extension-docs.sh doc-lint", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Verify EXTENSION.md propagates to CLAUDE.md extension_email section", "status": "done", "files_touched": [], "note": "Mechanism/config verified correct; end-to-end propagation not observable because the email extension is not currently loaded in this repo's .claude/extensions.json (pre-existing, unrelated to task 815). See deviation."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.5",
+      "description": "Verify the EXTENSION.md additions propagate to .claude/CLAUDE.md's extension_email section via the sync/merge pipeline",
+      "type": "altered",
+      "reason": "The email extension is not currently loaded in this repo (.claude/extensions.json lists only core, memory, nix, nvim), so .claude/CLAUDE.md has no Email Extension section to compare against, independent of this task. Verified instead that the merge config (manifest.json merge_targets.claudemd) and mechanism (generate_claudemd in lua/neotex/plugins/ai/shared/extensions/merge.lua) are correctly structured to pick up the new EXTENSION.md content once the extension is loaded/synced by the user via the Neovim extension picker -- a user-driven, repo-wide-side-effect action out of scope for this headless implementation.",
+      "annotation": "*(deviation: altered — verified merge mechanism/config correctness in place of unobservable end-to-end propagation; see phase progress note)*"
+    }
+  ]
+}

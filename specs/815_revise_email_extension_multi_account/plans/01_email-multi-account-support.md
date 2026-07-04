@@ -1,7 +1,7 @@
 # Implementation Plan: Task #815
 
 - **Task**: 815 - Revise the email/ extension in the .claude/ agent system to support multiple email accounts (Gmail + Logos/Protonmail Bridge)
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED] (Phases 1-5 landed; Phase 6 remains `[BLOCKED]` pending `.dotfiles` task 79)
 - **Effort**: 5 hours (4.5h for landable Phases 1-5; +0.5h for the deferred, task-79-gated Phase 6)
 - **Dependencies**: `.dotfiles` task 79 (email wrapper multi-account `--account` support) — status `researched` only. Soft dependency for authoring Phases 1-5 (additive, gated); HARD dependency for Phase 6 live verification. See Risks.
 - **Research Inputs**: specs/815_revise_email_extension_multi_account/reports/01_multi-account-extension-revision.md
@@ -257,22 +257,38 @@ keyword routing. Depends on the flag/skill surface being settled in Phases 1-3.
 
 ---
 
-### Phase 5: Consistency verification + merge propagation [NOT STARTED]
+### Phase 5: Consistency verification + merge propagation [COMPLETED]
 
 **Goal**: Confirm the Gmail path is unchanged, no silent-fallthrough or `tag:<account>` queries were
 introduced, `mail-guard.sh` is untouched, and the `EXTENSION.md` content propagates to
 `.claude/CLAUDE.md`.
 
 **Tasks**:
-- [ ] Grep the three edited skill/command files for any residual hardcoded `folder:Gmail` on a
+- [x] Grep the three edited skill/command files for any residual hardcoded `folder:Gmail` on a
       non-gmail code path and for any `tag:logos`/`tag:gmail` account scoping (must be zero).
-- [ ] Confirm a bare `/email` invocation path is byte-for-byte semantically unchanged (Gmail default).
-- [ ] Confirm `hooks/mail-guard.sh` is unmodified and record explicitly in the summary WHY no change is
+      *(completed: zero `tag:gmail`/`tag:logos` matches; every `folder:Gmail` occurrence is
+      textually scoped to an `account=gmail` branch — no fallthrough on a non-gmail path)*
+- [x] Confirm a bare `/email` invocation path is byte-for-byte semantically unchanged (Gmail default).
+      *(completed: step 1 default is `account=gmail` when neither `--account`/`--logos` is
+      present, identical to pre-change behavior; mode/scope defaults unchanged)*
+- [x] Confirm `hooks/mail-guard.sh` is unmodified and record explicitly in the summary WHY no change is
       needed (allowlists by binary name; task 79 adds no new binaries) to pre-empt a reviewer "fix".
-- [ ] Run `.claude/scripts/check-extension-docs.sh` (doc-lint) and confirm it passes for the email
-      extension.
-- [ ] Verify the `EXTENSION.md` additions propagate to `.claude/CLAUDE.md`'s `extension_email` section
-      via the sync/merge pipeline (per `manifest.json` `merge_targets.claudemd`).
+      *(completed: `git diff` across all phase-1-4 commits shows zero changes to
+      hooks/mail-guard.sh)*
+- [x] Run `.claude/scripts/check-extension-docs.sh` (doc-lint) and confirm it passes for the email
+      extension. *(completed: `[email]` section reports OK/PASS; unrelated pre-existing FAILs in
+      `core`/`lean` extensions are out of scope for this task)*
+- [x] Verify the `EXTENSION.md` additions propagate to `.claude/CLAUDE.md`'s `extension_email` section
+      via the sync/merge pipeline (per `manifest.json` `merge_targets.claudemd`). *(deviation:
+      altered — verified the merge MECHANISM and config are correct (manifest.json
+      `merge_targets.claudemd` matches the pattern used by loaded extensions; `generate_claudemd`
+      in merge.lua concatenates each loaded extension's EXTENSION.md by dependency order), but
+      could not observe END-TO-END propagation because `.claude/extensions.json` shows this repo
+      currently has only `core`, `memory`, `nix`, `nvim` loaded — the `email` extension is not in
+      the loaded set, so `.claude/CLAUDE.md` has no Email Extension section at all yet,
+      independent of this task's edits. Triggering the extension picker's load/sync is a
+      user-driven action with repo-wide side effects (regenerates the whole CLAUDE.md) and is out
+      of scope for this implementation; see summary for follow-up note)*
 
 **Timing**: ~0.75 hour
 
@@ -327,16 +343,28 @@ live environment. On landing, resume this phase here or spawn a follow-up task (
 
 ## Testing & Validation
 
-- [ ] Bare `/email` parses and behaves identically to pre-change (Gmail default; regression guard).
-- [ ] `/email --logos` and `/email --account logos` parse to `account=logos`; `--account work` yields an
-      actionable rejection (no silent Gmail fallback).
-- [ ] `/email --logos --archive` resolves `BASE_QUERY=folder:Logos/.Archive` (never `folder:Gmail/.All_Mail`).
-- [ ] Grep confirms zero `tag:<account>` queries and zero non-gmail-path `folder:Gmail*` fallthroughs.
-- [ ] `/email --logos --sync` resolves `mbsync logos`; no path yields `mbsync -a`.
-- [ ] Per-account pilot ack: a Gmail ack does not license a Logos archive-scope run.
-- [ ] `.claude/scripts/check-extension-docs.sh` exits 0; `EXTENSION.md` propagates to `.claude/CLAUDE.md`.
-- [ ] `hooks/mail-guard.sh` diff is empty (documented as intentional).
+- [x] Bare `/email` parses and behaves identically to pre-change (Gmail default; regression guard).
+      *(completed: confirmed by reading commands/email.md step 1 — defaults to `account=gmail`)*
+- [x] `/email --logos` and `/email --account logos` parse to `account=logos`; `--account work` yields an
+      actionable rejection (no silent Gmail fallback). *(completed: documented in step 1 and the
+      Error Handling unknown-account entry)*
+- [x] `/email --logos --archive` resolves `BASE_QUERY=folder:Logos/.Archive` (never `folder:Gmail/.All_Mail`).
+      *(completed: Stage 0 account+scope table in skill-email-cleanup/SKILL.md)*
+- [x] Grep confirms zero `tag:<account>` queries and zero non-gmail-path `folder:Gmail*` fallthroughs.
+      *(completed: see Phase 5 verification)*
+- [x] `/email --logos --sync` resolves `mbsync logos`; no path yields `mbsync -a`. *(completed:
+      skill-email-sync/SKILL.md channel-default table + explicit never-`mbsync -a` MUST NOT rule)*
+- [x] Per-account pilot ack: a Gmail ack does not license a Logos archive-scope run. *(completed:
+      Pilot Gate for `--archive` section, account-keyed acknowledgement record)*
+- [x] `.claude/scripts/check-extension-docs.sh` exits 0; `EXTENSION.md` propagates to `.claude/CLAUDE.md`.
+      *(deviation: altered — `[email]` section passes the doc-lint; propagation to CLAUDE.md is
+      unobservable end-to-end because the email extension is not currently loaded in this repo's
+      `.claude/extensions.json` — see Phase 5 deviation note)*
+- [x] `hooks/mail-guard.sh` diff is empty (documented as intentional). *(completed: confirmed via
+      git diff across all phase commits)*
 - [ ] (Phase 6, gated) `email-census --help` + live `/email --logos` end-to-end once task 79 lands.
+      *(deviation: deferred to Phase 6 — genuinely cannot run until `.dotfiles` task 79's wrapper
+      binaries land; Phase 6 remains `[BLOCKED]` per the implementation scoping instruction)*
 
 ## Artifacts & Outputs
 
