@@ -111,7 +111,9 @@ fi
 **Purpose**: Finalize operation with git commit.
 
 **Operations**:
-1. Stage all changes: `git add -A`
+1. Stage the operation's scope per `.claude/context/standards/git-staging-scope.md` (task dir +
+   `specs/TODO.md` + `specs/state.json`, extended for `implement` with `plan_path` and
+   self-reported `modified_files`) — under-stage, never a repo-wide add
 2. Create commit with session_id
 3. Handle commit failure (non-blocking)
 4. Return final result to user

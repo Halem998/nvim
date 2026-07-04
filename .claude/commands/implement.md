@@ -182,14 +182,34 @@ The following steps are implement-specific (not handled by command-gate-out.sh):
 
 ### CHECKPOINT 3: COMMIT
 
+Apply the `implement` scope from `.claude/context/standards/git-staging-scope.md` (plan scope +
+`plan_path` + self-reported `modified_files`) — under-stage, never over-stage, never a repo-wide add:
+
+```bash
+stage_paths=("specs/${PADDED_NUM}_${PROJECT_NAME}/" "specs/TODO.md" "specs/state.json")
+plan_file=$(ls -1 "specs/${PADDED_NUM}_${PROJECT_NAME}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+[ -n "$plan_file" ] && stage_paths+=("$plan_file")
+
+metadata_file="specs/${PADDED_NUM}_${PROJECT_NAME}/.return-meta.json"
+while IFS= read -r f; do
+  [ -n "$f" ] && stage_paths+=("$f")
+done < <(jq -r '.modified_files[]? // empty' "$metadata_file" 2>/dev/null)
+
+if [ "${#stage_paths[@]}" -le 3 ]; then
+  echo "[implement] WARNING: no modified_files reported; source-file changes NOT committed automatically. Review and commit manually."
+fi
+
+git add "${stage_paths[@]}"
+```
+
 **On completion:**
 ```bash
-git add -A && git commit -m "task {N}: complete implementation\n\nSession: {SESSION_ID}"
+git commit -m "task {N}: complete implementation\n\nSession: {SESSION_ID}"
 ```
 
 **On partial:**
 ```bash
-git add -A && git commit -m "task {N}: partial implementation (phases 1-{M} of {total})\n\nSession: {SESSION_ID}"
+git commit -m "task {N}: partial implementation (phases 1-{M} of {total})\n\nSession: {SESSION_ID}"
 ```
 
 Commit failure is non-blocking (log and continue).

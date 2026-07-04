@@ -123,8 +123,18 @@ bash .claude/scripts/command-gate-out.sh "$task_number" "<operation>" "$SESSION_
 
 #### CHECKPOINT 3: COMMIT
 
+Apply the task-scoped staging pattern from `.claude/context/standards/git-staging-scope.md` —
+under-stage, never over-stage, and never a repo-wide add:
+
 ```bash
-git add -A
+padded_num=$(printf "%03d" "$task_number")
+project_name=$(jq -r --argjson num "$task_number" \
+  '.active_projects[] | select(.project_number == $num) | .project_name' \
+  specs/state.json)
+git add \
+  "specs/${padded_num}_${project_name}/" \
+  "specs/TODO.md" \
+  "specs/state.json"
 git commit -m "$(cat <<'EOF'
 task {N}: {action}
 

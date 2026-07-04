@@ -390,8 +390,11 @@ Add artifact to state.json with summary. Use the two-step jq pattern to avoid Is
 
 ### Stage 11: Git Commit
 
+Apply the `plan` scope from `.claude/context/standards/git-staging-scope.md` — targeted staging,
+never a repo-wide add:
+
 ```bash
-git add -A
+git add "${task_dir}/" "specs/TODO.md" "specs/state.json"
 git commit -m "task ${task_number}: create slide implementation plan
 
 Session: ${session_id}"

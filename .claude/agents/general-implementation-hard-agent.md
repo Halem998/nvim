@@ -297,8 +297,15 @@ qualifies as strategic, and `@.claude/context/contracts/wrap-up.md` for the cano
 
 **Step 2: Final incremental commit**
 
+Targeted, work-scoped staging per `@.claude/context/standards/git-staging-scope.md` — never stage
+the entire working tree:
+
 ```bash
-git add -A && git commit -m "task {N} phase {P}: complete
+task_dir="specs/{NNN}_{SLUG}"
+stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
+# Append every path accumulated in this phase's progress-file files_touched arrays
+git add "${stage_paths[@]}"
+git commit -m "task {N} phase {P}: complete
 
 Session: {session_id}"
 ```

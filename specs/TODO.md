@@ -11,19 +11,17 @@ next_project_number: 808
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,786 | -- | agent-system, email integration, terminal ui |
-| 2 | 787,804 | 786 | agent-system |
-| 3 | 788,796 | 787 | agent-system |
+| 1 | 78,87,787,804 | -- | agent-system, email integration, terminal ui |
+| 2 | 788,796 | 787 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-786 [NOT STARTED] — Sweep the 40+ remaining `git add -A` references across the agent 
-  └─ 787 [NOT STARTED] — Make multi-task creation declare dependencies based on FILE FOOTP
-    └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree
-    └─ 796 [NOT STARTED] — Make topic assignment mandatory across ALL task-creation paths so
-  └─ 804 [NOT STARTED] — Document the --fable model-selection flag alongside --haiku, --so
+787 [NOT STARTED] — Make multi-task creation declare dependencies based on FILE FOOTP
+  └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree
+  └─ 796 [NOT STARTED] — Make topic assignment mandatory across ALL task-creation paths so
+804 [NOT STARTED] — Document the --fable model-selection flag alongside --haiku, --so
 
 ### Terminal Ui
 
@@ -111,6 +109,7 @@ next_project_number: 808
 - **Dependencies**: None
 - **Research**: [802_literature_authors_first_char_truncation_guard/reports/01_authors_first_char_truncation_guard.md]
 - **Plan**: [802_literature_authors_first_char_truncation_guard/plans/01_authors-truncation-guard.md]
+- **Summary**: [802_literature_authors_first_char_truncation_guard/summaries/01_authors-truncation-guard-summary.md]
 
 **Description**: [LITERATURE AUTHORS RESOLVER TRUNCATION -- latent footgun, follow-up to task 801] In .claude/skills/skill-literature/SKILL.md at line ~1696 (per-repo sub-index Resolve operation), the authors resolver uses `(.authors // []) | first // "?"`. Because jq `first` on a JSON STRING returns its first CHARACTER (e.g. `"Yde Venema" | first` -> `"Y"`) rather than erroring, a string-typed `.authors` value is silently truncated to a single character instead of yielding the author name. `.authors // []` only substitutes on null/false, not on a string, so it does not protect this path. This is a DIFFERENT code path from the one task 799 fixed in literature-briefing.sh. The global corpus is currently normalized to arrays (task 801, ~/Projects/Literature commit c6eccfb), so this will not trigger in practice today, but any string-typed authors reaching this line (a source that bypasses migrate-from-repo.sh, or a not-yet-normalized index) would silently corrupt output. FIX: make the resolver type-aware, e.g. `if (.authors|type)=="array" then (.authors|first) elif (.authors|type)=="string" then .authors else "?" end`. Scope: single line in .claude/skills/skill-literature/SKILL.md; small, self-contained. CONTEXT: flagged during task 801 research (report 01_authors-schema-normalization.md) and deferred as out-of-scope.
 
@@ -276,10 +275,12 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 
 ### 786. Propagate scoped-staging convention across all agent/command/skill templates
 - **Effort**: 2-4 hours
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 785
+- **Research**: [786_propagate_scoped_staging_templates/reports/01_propagate-scoped-staging-templates.md]
+- **Plan**: [786_propagate_scoped_staging_templates/plans/01_propagate-scoped-staging.md]
 
 **Description**: Sweep the 40+ remaining `git add -A` references across the agent system to the canonical scoped-staging pattern established in task 785, so no template re-introduces repo-wide staging. SITES (from audit): implementation agents (general-implementation-agent.md:435, general-implementation-hard-agent.md:214, neovim:364, nix:384, python:116, web:432, founder, cslib-implementation-hard:261); commands (implement.md:187,192; plan.md:500; research.md:473; orchestrate.md:250,258,375,382; errors.md:197); skills (skill-implementer + extension implement/research skills); and doc/command templates (creating-commands.md:127, command-template.md, checkpoint-commit.md:10, checkpoint-execution.md:114, subagent-continuation-loop.md:127, workflow-interruptions.md:217, research-flow-example.md, creating-skills.md:403). Update the command/skill generator TEMPLATES so newly-created components inherit scoped staging by default. Leave cslib/pr.md's deliberate 'git add -A then exclude' flow alone unless it can be made scoped safely. Goal: scoped staging is uniform -- 'grep -rn "git add -A" .claude/' returns only intentional, documented exceptions. Depends on 785 (canonical pattern). Coordinate with the 779/781 hard-mode cluster on shared agent files (e.g. general-implementation-hard-agent.md).
 

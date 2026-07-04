@@ -379,9 +379,14 @@ For each phase in the implementation plan:
 2. **Update phase status** to `[IN PROGRESS]` in plan file
 3. **Execute phase steps** as documented (Steps A-E above)
 4. **Update phase status** to `[COMPLETED]` (Step E), then perform post-phase self-review (Stage 4D-ii) and write a progressive handoff (Stage 4D-iii)
-5. **Git commit** with message: `task {N} phase {P}: {phase_name}`
+5. **Git commit** with message: `task {N} phase {P}: {phase_name}`, using targeted, work-scoped
+   staging — never stage the entire working tree. See
+   `.claude/context/standards/git-staging-scope.md` for the full commit-scope contract:
    ```bash
-   git add -A && git commit -m "task {N} phase {P}: {phase_name}
+   task_dir="specs/{NNN}_{SLUG}"
+   stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
+   git add "${stage_paths[@]}"
+   git commit -m "task {N} phase {P}: {phase_name}
 
    Session: {session_id}
    "

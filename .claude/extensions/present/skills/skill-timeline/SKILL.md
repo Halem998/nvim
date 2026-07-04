@@ -327,7 +327,8 @@ case "$workflow_type" in
     ;;
 esac
 
-git add -A
+# Targeted staging per .claude/context/standards/git-staging-scope.md — never a repo-wide add
+git add "specs/${padded_num}_${project_name}/" "specs/TODO.md" "specs/state.json"
 git commit -m "task ${task_number}: ${commit_action}
 
 Session: ${session_id}

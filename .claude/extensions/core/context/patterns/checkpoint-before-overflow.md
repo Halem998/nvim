@@ -63,9 +63,15 @@ git status --porcelain
   can positively confirm is not broken — e.g., the phase's own verification criteria passed, a
   build/test command that was run succeeded, or (for markdown/meta edits with no build step) the
   files written are syntactically complete and were verified to exist and be non-empty. In this
-  case:
+  case, apply the `implement` scope from `.claude/context/standards/git-staging-scope.md` (task
+  dir + `plan_path` + self-reported `modified_files`) — under-stage, never a repo-wide add:
   ```bash
-  git add -A && git commit -m "task {N}: checkpoint before context-pressure handoff
+  stage_paths=("specs/${padded_num}_${project_name}/" "specs/TODO.md" "specs/state.json" "$plan_path")
+  while IFS= read -r f; do
+    [ -n "$f" ] && stage_paths+=("$f")
+  done < <(jq -r '.modified_files[]? // empty' "specs/${padded_num}_${project_name}/.return-meta.json" 2>/dev/null)
+  git add "${stage_paths[@]}"
+  git commit -m "task {N}: checkpoint before context-pressure handoff
 
   Session: {session_id}"
   ```

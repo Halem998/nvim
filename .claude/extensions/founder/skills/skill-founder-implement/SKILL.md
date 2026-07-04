@@ -241,8 +241,16 @@ If partial (status == "partial"):
 
 ### 8. Git Commit
 
+Apply the `implement` scope from `.claude/context/standards/git-staging-scope.md` — targeted
+staging, never a repo-wide add:
+
 ```bash
-git add -A
+stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
+metadata_file="${task_dir}/.return-meta.json"
+while IFS= read -r f; do
+  [ -n "$f" ] && stage_paths+=("$f")
+done < <(jq -r '.modified_files[]? // empty' "$metadata_file" 2>/dev/null)
+git add "${stage_paths[@]}"
 git commit -m "$(cat <<'EOF'
 task {N}: complete implementation
 

@@ -379,10 +379,15 @@ fi
 
 ### Stage 9: Git Commit
 
-Commit changes with session ID:
+Apply the `research` scope from `.claude/context/standards/git-staging-scope.md` — targeted
+staging, never a repo-wide add — then commit with session ID:
 
 ```bash
-git add -A
+git add \
+  "specs/${padded_num}_${project_name}/reports/" \
+  "specs/${padded_num}_${project_name}/.return-meta.json" \
+  "specs/TODO.md" \
+  "specs/state.json"
 git commit -m "task ${task_number}: complete funding analysis research
 
 Session: ${session_id}
@@ -476,7 +481,8 @@ Non-blocking error:
 Funding analysis completed for task {N}:
 - {analysis_results}
 - [Warning] Git commit failed: {error}
-- Manual commit recommended: git add -A && git commit
+- Manual commit recommended: review `git status --short`, then stage only the task directory
+  (`specs/{padded}_{slug}/`) plus `specs/TODO.md` and `specs/state.json` before committing
 ```
 
 ### Subagent Timeout

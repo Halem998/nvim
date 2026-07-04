@@ -270,8 +270,9 @@ if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
               specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
         fi
 
-        # Git commit
-        git add -A
+        # Git commit — targeted staging per .claude/context/standards/git-staging-scope.md,
+        # never a repo-wide add
+        git add "specs/${padded_num}_${task_slug}/" "specs/TODO.md" "specs/state.json"
         git commit -m "task ${task_number}: complete ${status}
 
 Session: ${session_id}

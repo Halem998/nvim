@@ -508,7 +508,9 @@ case "$workflow_type" in
     ;;
 esac
 
-git add -A
+# Targeted staging per .claude/context/standards/git-staging-scope.md — never a repo-wide add
+padded_num=$(printf "%03d" "$task_number")
+git add "specs/${padded_num}_${project_name}/" "specs/TODO.md" "specs/state.json"
 git commit -m "task ${task_number}: ${commit_action}
 
 Session: ${session_id}
@@ -963,7 +965,8 @@ Non-blocking error. Log failure but continue with success response:
 Grant {workflow_type} completed for task {N}:
 - {workflow_results}
 - [Warning] Git commit failed: {error}
-- Manual commit recommended: git add -A && git commit
+- Manual commit recommended: review `git status --short`, then stage only the task directory
+  (`specs/{padded}_{slug}/`) plus `specs/TODO.md` and `specs/state.json` before committing
 ```
 
 ### Subagent Timeout

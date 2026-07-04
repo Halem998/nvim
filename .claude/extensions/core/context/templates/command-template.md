@@ -66,7 +66,8 @@ Execute checkpoint-gate-out.md:
 
 Execute checkpoint-commit.md:
 
-1. `git add -A`
+1. Apply targeted staging per `.claude/context/standards/git-staging-scope.md` (task dir +
+   `specs/TODO.md` + `specs/state.json`) — never a repo-wide add
 2. Create commit with session_id
 3. Verify commit (non-blocking)
 

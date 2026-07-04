@@ -421,9 +421,18 @@ Non-blocking: called in background after artifacts are linked. Speaks "Tab N STA
 
 ### Stage 9: Git Commit
 
+Apply task-dir scope from `.claude/context/standards/git-staging-scope.md` — targeted staging,
+never a repo-wide add:
+
+```bash
+git add \
+  "specs/${padded_num}_${project_name}/" \
+  "specs/TODO.md" \
+  "specs/state.json"
+```
+
 **For Plan Revision:**
 ```bash
-git add -A
 git commit -m "$(cat <<'EOF'
 task {N}: revise plan (v{NEW_VERSION})
 
@@ -435,7 +444,6 @@ EOF
 
 **For Description Update:**
 ```bash
-git add -A
 git commit -m "$(cat <<'EOF'
 task {N}: revise description
 

@@ -121,10 +121,16 @@ The successor MUST NOT re-read the full plan unless the handoff explicitly indic
 
 ## Per-Continuation Git Commits
 
-Each iteration of the continuation loop includes a git checkpoint (Stage 6b):
+Each iteration of the continuation loop includes a git checkpoint (Stage 6b). Apply the
+`implement` scope from `.claude/context/standards/git-staging-scope.md` — task dir + plan_path +
+self-reported `modified_files` — never a repo-wide add:
 
 ```bash
-git add -A
+stage_paths=("specs/${padded_num}_${project_name}/" "specs/TODO.md" "specs/state.json" "$plan_path")
+while IFS= read -r f; do
+  [ -n "$f" ] && stage_paths+=("$f")
+done < <(jq -r '.modified_files[]? // empty' "specs/${padded_num}_${project_name}/.return-meta.json" 2>/dev/null)
+git add "${stage_paths[@]}"
 git commit -m "task ${task_number} phase ${phases_completed}: implementation progress
 
 Session: ${session_id}
@@ -136,7 +142,7 @@ This ensures:
 - If a later continuation fails, earlier progress is preserved
 - Git history reflects the incremental nature of the work
 
-After the loop exits, a final commit (Stage 9) captures completion:
+After the loop exits, a final commit (Stage 9) captures completion (same scope as above):
 ```bash
 git commit -m "task ${task_number}: complete implementation
 

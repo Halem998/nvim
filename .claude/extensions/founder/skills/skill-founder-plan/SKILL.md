@@ -204,8 +204,11 @@ Update TODO.md status marker to [PLANNED] and link plan artifact per `@.claude/c
 
 ### 8. Git Commit
 
+Apply the `plan` scope from `.claude/context/standards/git-staging-scope.md` — targeted staging,
+never a repo-wide add:
+
 ```bash
-git add -A
+git add "${task_dir}/" "specs/TODO.md" "specs/state.json"
 git commit -m "$(cat <<'EOF'
 task {N}: create implementation plan
 

@@ -230,9 +230,11 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
    - old_string: `### Phase 1: {Phase Name} [IN PROGRESS]`
    - new_string: `### Phase 1: {Phase Name} [COMPLETED]`
 
-7. Git commit:
+7. Git commit — targeted staging per `.claude/context/standards/git-staging-scope.md` (never a
+   repo-wide add):
    ```bash
-   git add -A && git commit -m "task {N} phase 1: {phase_name}
+   git add "${task_dir}/" "specs/TODO.md" "specs/state.json"
+   git commit -m "task {N} phase 1: {phase_name}
 
    Session: {session_id}"
    ```
@@ -258,9 +260,11 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
    - old_string: `### Phase 2: {Phase Name} [IN PROGRESS]`
    - new_string: `### Phase 2: {Phase Name} [COMPLETED]`
 
-6. Git commit:
+6. Git commit — targeted staging per `.claude/context/standards/git-staging-scope.md` (never a
+   repo-wide add):
    ```bash
-   git add -A && git commit -m "task {N} phase 2: {phase_name}
+   git add "${task_dir}/" "specs/TODO.md" "specs/state.json"
+   git commit -m "task {N} phase 2: {phase_name}
 
    Session: {session_id}"
    ```
@@ -285,9 +289,11 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
    - old_string: `### Phase 3: {Phase Name} [IN PROGRESS]`
    - new_string: `### Phase 3: {Phase Name} [COMPLETED]`
 
-6. Git commit:
+6. Git commit — targeted staging per `.claude/context/standards/git-staging-scope.md` (never a
+   repo-wide add):
    ```bash
-   git add -A && git commit -m "task {N} phase 3: {phase_name}
+   git add "${task_dir}/" "specs/TODO.md" "specs/state.json"
+   git commit -m "task {N} phase 3: {phase_name}
 
    Session: {session_id}"
    ```
@@ -336,9 +342,12 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
    - old_string: `### Phase 4: {Phase Name} [IN PROGRESS]`
    - new_string: `### Phase 4: {Phase Name} [COMPLETED]`
 
-6. Git commit:
+6. Git commit — targeted staging per `.claude/context/standards/git-staging-scope.md` (never a
+   repo-wide add). Phase 4 additionally writes outside the task directory (`founder/` and
+   `strategy/` or `output_dir`), so include those specific produced files:
    ```bash
-   git add -A && git commit -m "task {N} phase 4: {phase_name}
+   git add "${task_dir}/" "specs/TODO.md" "specs/state.json" "$typst_file" "$output_path"
+   git commit -m "task {N} phase 4: {phase_name}
 
    Session: {session_id}"
    ```
@@ -391,9 +400,12 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
 
    In all cases, proceed to Stage 6. Phase 5 status does not affect the overall task status -- if Phases 1-4 succeeded, the task is `implemented`.
 
-5. Git commit (if Phase 5 was not skipped):
+5. Git commit (if Phase 5 was not skipped) — targeted staging per
+   `.claude/context/standards/git-staging-scope.md` (never a repo-wide add), including the
+   compiled PDF written outside the task directory:
    ```bash
-   git add -A && git commit -m "task {N} phase 5: {phase_name}
+   git add "${task_dir}/" "specs/TODO.md" "specs/state.json" "founder/${report_type}-${slug}.pdf"
+   git commit -m "task {N} phase 5: {phase_name}
 
    Session: {session_id}"
    ```

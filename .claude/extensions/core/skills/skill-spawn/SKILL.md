@@ -439,10 +439,19 @@ bash .claude/scripts/generate-todo.sh \
 
 ### Stage 15: Git Commit
 
-Commit all changes with session ID:
+Apply targeted staging per `.claude/context/standards/git-staging-scope.md` — scope to the
+parent task dir plus every newly spawned task dir, never a repo-wide add:
 
 ```bash
-git add -A
+stage_paths=("specs/${padded_num}_${project_name}/" "specs/TODO.md" "specs/state.json")
+for idx in $(echo "$dependency_order" | jq -r '.[]'); do
+    new_task_num=${task_num_map[$idx]}
+    new_padded=$(printf "%03d" "$new_task_num")
+    task_title=$(jq -r --argjson i "$idx" '.new_tasks[$i].title' "$spawn_file")
+    task_slug=$(echo "$task_title" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | sed 's/[^a-z0-9_]//g')
+    stage_paths+=("specs/${new_padded}_${task_slug}/")
+done
+git add "${stage_paths[@]}"
 git commit -m "$(cat <<'EOF'
 task {N}: spawn {M} tasks to resolve blocker
 

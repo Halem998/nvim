@@ -245,9 +245,24 @@ skipped_count=${#skipped_tasks[@]}
 
 **Batch Git Commit**:
 
+Apply targeted staging per `.claude/context/standards/git-staging-scope.md` — iterate the scope
+over each task directory in the requested range, never a repo-wide add:
+
+```bash
+stage_paths=("specs/TODO.md" "specs/state.json")
+for tnum in "${validated_tasks[@]}"; do
+  tpadded=$(printf "%03d" "$tnum")
+  tname=$(jq -r --argjson num "$tnum" \
+    '.active_projects[] | select(.project_number == $num) | .project_name' \
+    specs/state.json)
+  [ -n "$tname" ] && stage_paths+=("specs/${tpadded}_${tname}/")
+done
+git add "${stage_paths[@]}"
+```
+
 Full success (all tasks completed):
 ```bash
-git add -A && git commit -m "orchestrate tasks {range_summary}: complete orchestration
+git commit -m "orchestrate tasks {range_summary}: complete orchestration
 
 Tasks: {comma-separated succeeded list}
 Session: {batch_session_id}"
@@ -255,7 +270,7 @@ Session: {batch_session_id}"
 
 Partial success:
 ```bash
-git add -A && git commit -m "orchestrate tasks {range_summary}: complete orchestration ({succeeded}/{total} succeeded)
+git commit -m "orchestrate tasks {range_summary}: complete orchestration ({succeeded}/{total} succeeded)
 
 Tasks completed: {comma-separated succeeded list}
 Tasks failed: {failed_count} (see multi-state log)
@@ -370,16 +385,28 @@ jq --arg summary "$completion_summary" \
 
 ### CHECKPOINT 3: COMMIT
 
+Apply the `implement`-equivalent scope from `.claude/context/standards/git-staging-scope.md`
+(task dir + self-reported `modified_files`) — under-stage, never a repo-wide add:
+
+```bash
+stage_paths=("specs/${PADDED_NUM}_${PROJECT_NAME}/" "specs/TODO.md" "specs/state.json")
+metadata_file="specs/${PADDED_NUM}_${PROJECT_NAME}/.return-meta.json"
+while IFS= read -r f; do
+  [ -n "$f" ] && stage_paths+=("$f")
+done < <(jq -r '.modified_files[]? // empty' "$metadata_file" 2>/dev/null)
+git add "${stage_paths[@]}"
+```
+
 **On completion:**
 ```bash
-git add -A && git commit -m "task {N}: complete orchestration
+git commit -m "task {N}: complete orchestration
 
 Session: {SESSION_ID}"
 ```
 
 **On partial:**
 ```bash
-git add -A && git commit -m "task {N}: orchestration paused (cycles {M}/{MAX})
+git commit -m "task {N}: orchestration paused (cycles {M}/{MAX})
 
 Session: {SESSION_ID}"
 ```

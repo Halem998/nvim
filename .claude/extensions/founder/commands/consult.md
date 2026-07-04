@@ -231,8 +231,11 @@ Recommend professional review for materials targeting legal professionals in hig
 
 ### Step 2: Git Commit
 
+Apply targeted staging per `.claude/context/standards/git-staging-scope.md` — never a repo-wide
+add:
+
 ```bash
-git add -A
+git add "specs/${padded_num}_${task_slug}/" "specs/TODO.md" "specs/state.json"
 git commit -m "task ${task_number}: legal design consultation
 
 Session: ${session_id}

@@ -193,8 +193,17 @@ Mark fixed errors:
 
 ### 5. Git Commit
 
+Apply targeted staging per `.claude/context/standards/git-staging-scope.md` — scope to
+`specs/errors.json` plus the generated fix-task directory, never a repo-wide add:
+
 ```bash
-git add -A
+padded_m=$(printf "%03d" "$M")
+task_m_name=$(jq -r --argjson num "$M" \
+  '.active_projects[] | select(.project_number == $num) | .project_name' \
+  specs/state.json)
+stage_paths=("specs/errors.json" "specs/TODO.md" "specs/state.json")
+[ -n "$task_m_name" ] && stage_paths+=("specs/${padded_m}_${task_m_name}/")
+git add "${stage_paths[@]}"
 git commit -m "errors: fix {N} errors (task {M})"
 ```
 

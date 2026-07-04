@@ -209,8 +209,15 @@ Artifact type: "report" (study design report).
 
 ### Stage 9: Git Commit
 
+Apply the `research` scope from `.claude/context/standards/git-staging-scope.md` — targeted
+staging, never a repo-wide add:
+
 ```bash
-git add -A
+git add \
+  "specs/${padded_num}_${project_name}/reports/" \
+  "specs/${padded_num}_${project_name}/.return-meta.json" \
+  "specs/TODO.md" \
+  "specs/state.json"
 git commit -m "task ${task_number}: complete epi research
 
 Session: ${session_id}"

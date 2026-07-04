@@ -190,8 +190,11 @@ fi
 
 ### Stage 7: Git Commit
 
+Apply targeted staging per `.claude/context/standards/git-staging-scope.md` — never a repo-wide
+add:
+
 ```bash
-git add -A
+git add "${task_dir}/" "specs/TODO.md" "specs/state.json"
 git commit -m "task ${task_number}: legal design consultation
 
 Session: ${session_id}

@@ -1566,11 +1566,16 @@ fi
 ### Import Step 12: Git Commit to Literature/ Repo
 
 ```bash
-  # Non-blocking git commit in $LITERATURE_DIR
+  # Non-blocking git commit in $LITERATURE_DIR — targeted staging (never a repo-wide add) so an
+  # import only commits the files this import produced, not unrelated stray edits elsewhere in
+  # the separate Literature/ repo. Mirrors .claude/context/standards/git-staging-scope.md's
+  # under-stage direction, adapted to this import's own artifact set (symlink, converted
+  # markdown, index.json) since Literature/ is a separate git repo with no task-dir concept.
   if [ -d "$lit_dir/.git" ]; then
     (
       cd "$lit_dir" && \
-      git add -A && \
+      git add "pdfs/${ckey}.pdf" "index.json" \
+        $(find . -maxdepth 2 -name "${entry_id}*.md" -not -path "./source_files/*" 2>/dev/null) && \
       git commit -m "import: $title ($year)" 2>&1 | head -5
     ) || echo "Note: git commit in $lit_dir failed (non-blocking)"
   fi

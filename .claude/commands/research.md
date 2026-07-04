@@ -469,8 +469,19 @@ The skill will spawn the appropriate agent(s) to conduct research and create a r
 
 ### CHECKPOINT 3: COMMIT
 
+Apply the `research` scope from `.claude/context/standards/git-staging-scope.md` — targeted
+staging, never a repo-wide add:
+
 ```bash
-git add -A
+padded_num=$(printf "%03d" "$task_number")
+project_name=$(jq -r --argjson num "$task_number" \
+  '.active_projects[] | select(.project_number == $num) | .project_name' \
+  specs/state.json)
+git add \
+  "specs/${padded_num}_${project_name}/reports/" \
+  "specs/${padded_num}_${project_name}/.return-meta.json" \
+  "specs/TODO.md" \
+  "specs/state.json"
 git commit -m "$(cat <<'EOF'
 task {N}: complete research
 

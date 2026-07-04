@@ -284,8 +284,14 @@ On `partial` or `blocked`: populate `blockers` with verbatim goal text from plan
 
 **Step 3: Final incremental commit**
 
+Targeted, work-scoped staging per `.claude/context/standards/git-staging-scope.md` — never stage
+the entire working tree:
+
 ```bash
-git add -A && git commit -m "task {N} phase {P}: complete
+task_dir="specs/{NNN}_{SLUG}"
+stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
+git add "${stage_paths[@]}"
+git commit -m "task {N} phase {P}: complete
 
 Session: {session_id}"
 ```

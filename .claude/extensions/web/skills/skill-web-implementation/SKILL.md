@@ -312,10 +312,16 @@ fi
 
 ### 6. Git Commit
 
-Commit changes with session ID:
+Apply the `implement` scope from `.claude/context/standards/git-staging-scope.md` — targeted
+staging, never a repo-wide add — then commit with session ID:
 
 ```bash
-git add -A
+stage_paths=("specs/${padded_num}_${project_name}/" "specs/TODO.md" "specs/state.json")
+metadata_file="specs/${padded_num}_${project_name}/.return-meta.json"
+while IFS= read -r f; do
+  [ -n "$f" ] && stage_paths+=("$f")
+done < <(jq -r '.modified_files[]? // empty' "$metadata_file" 2>/dev/null)
+git add "${stage_paths[@]}"
 git commit -m "task ${task_number}: complete implementation
 
 Session: ${session_id}

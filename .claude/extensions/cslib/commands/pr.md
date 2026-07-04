@@ -563,6 +563,14 @@ echo ""
 cd "$CSLIB_DIR"
 
 # Step A: Commit uncommitted changes if any
+#
+# Intentional exception to .claude/context/standards/git-staging-scope.md: this commit runs
+# inside $CSLIB_DIR, a SEPARATE git repository from the agent-system working tree, so the
+# task-directory scoping model does not map here — there is no agent-system task-dir to fall
+# back to. A PR review-feedback commit is by design expected to capture whatever files the
+# reviewer asked to change across the branch, and it is already guarded by the
+# `git status --porcelain` emptiness check immediately above. Full-tree add is deliberate here,
+# not an oversight — do not "fix" this to targeted staging.
 git_status_porcelain=$(git status --porcelain 2>&1)
 if [ -n "$git_status_porcelain" ]; then
   echo "Committing uncommitted changes..."

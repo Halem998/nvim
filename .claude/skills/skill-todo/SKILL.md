@@ -735,7 +735,12 @@ ${transition_comment}
     <action>Commit all changes</action>
     <process>
       1. **Pre-commit vault safety net**: If next_project_number > 1000 and vault_count unchanged, block commit with error directing back to Stage 10 sub-step 9
-      2. `git add -A`
+      2. Apply the purpose-built archive scope from `.claude/context/standards/git-staging-scope.md`
+         — never a repo-wide add. Stage the fixed archive paths plus every path this run actually
+         touched: `git add specs/archive/ specs/TODO.md specs/state.json`, then conditionally add
+         `specs/CHANGE_LOG.md` (Stage 12), `specs/ROADMAP.md` (Stage 11 annotations), any
+         `README.md` files updated (Stage 13), and `.memory/` (Stage 14 memory harvest) — each
+         only when that stage reports it made changes
       3. Commit: `todo: archive {N} tasks` with counts for completed, abandoned, roadmap, orphans, misplaced, readme, memories
     </process>
   </stage>

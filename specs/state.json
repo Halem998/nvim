@@ -731,10 +731,10 @@
     {
       "project_number": 786,
       "project_name": "propagate_scoped_staging_templates",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-06-30T19:56:26Z",
-      "last_updated": "2026-06-30T19:56:26Z",
+      "last_updated": "2026-07-04T17:35:51Z",
       "title": "Propagate scoped-staging convention across all agent/command/skill templates",
       "description": "Sweep the 40+ remaining `git add -A` references across the agent system to the canonical scoped-staging pattern established in task 785, so no template re-introduces repo-wide staging. SITES (from audit): implementation agents (general-implementation-agent.md:435, general-implementation-hard-agent.md:214, neovim:364, nix:384, python:116, web:432, founder, cslib-implementation-hard:261); commands (implement.md:187,192; plan.md:500; research.md:473; orchestrate.md:250,258,375,382; errors.md:197); skills (skill-implementer + extension implement/research skills); and doc/command templates (creating-commands.md:127, command-template.md, checkpoint-commit.md:10, checkpoint-execution.md:114, subagent-continuation-loop.md:127, workflow-interruptions.md:217, research-flow-example.md, creating-skills.md:403). Update the command/skill generator TEMPLATES so newly-created components inherit scoped staging by default. Leave cslib/pr.md's deliberate 'git add -A then exclude' flow alone unless it can be made scoped safely. Goal: scoped staging is uniform -- 'grep -rn \"git add -A\" .claude/' returns only intentional, documented exceptions. Depends on 785 (canonical pattern). Coordinate with the 779/781 hard-mode cluster on shared agent files (e.g. general-implementation-hard-agent.md).",
       "effort": "2-4 hours",
@@ -742,7 +742,24 @@
       "dependencies": [
         785
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/786_propagate_scoped_staging_templates/reports/01_propagate-scoped-staging-templates.md",
+          "summary": "Full categorized inventory (Categories A-J): already-fixed (785, verified clean), core command/skill exec sites needing conversion, hard-mode agent coordination note, deployed nix/neovim dual-copy pairs, non-deployed single-copy extension sites, founder/present extension clusters, generator-template sites, confirmed intentional exceptions, and one flagged ambiguous site requiring a decision."
+        },
+        {
+          "type": "plan",
+          "path": "specs/786_propagate_scoped_staging_templates/plans/01_propagate-scoped-staging.md",
+          "summary": "6-phase plan (Wave 1: phases 1-5 parallel on disjoint file sets; Wave 2: phase 6 convergence/verification) converting all remaining git add -A exec and template sites to canonical scoped staging, with per-phase dual-copy diff -q sync, preserved intentional exceptions, and an explicit documented decision on cslib/pr.md:569."
+        },
+        {
+          "type": "summary",
+          "path": "specs/786_propagate_scoped_staging_templates/summaries/01_propagate-scoped-staging-summary.md",
+          "summary": "Full implementation summary with per-phase file lists, decisions (research.md CHECKPOINT 3 redundancy investigation, cslib/pr.md:569 exception, skill-literature import-commit exception, multi-workflow present skills, founder Phase 4/5 outputs), plan deviations (skill-planner literature-briefing drift repair), and the itemized final grep classification."
+        }
+      ],
+      "session_id": "sess_1783182771_c4ab90_786"
     },
     {
       "project_number": 787,

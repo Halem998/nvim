@@ -112,8 +112,14 @@ After marking COMPLETED, review any unchecked plan items and annotate deviations
 Write a condensed phase-end handoff to `specs/{NNN}_{SLUG}/handoffs/phase-{P}-handoff-{TIMESTAMP}.md` after each phase completion (see general agent 4D-iii for template).
 
 **D. Git Commit**
+
+Targeted, work-scoped staging per `.claude/context/standards/git-staging-scope.md` — never stage
+the entire working tree:
 ```bash
-git add -A && git commit -m "task {N} phase {P}: {phase_name}
+task_dir="specs/{NNN}_{SLUG}"
+stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
+git add "${stage_paths[@]}"
+git commit -m "task {N} phase {P}: {phase_name}
 
 Session: {session_id}"
 ```

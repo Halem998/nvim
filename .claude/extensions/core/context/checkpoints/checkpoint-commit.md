@@ -4,10 +4,28 @@ The COMMIT checkpoint creates a git commit and completes the operation.
 
 ## Execution Steps
 
-### 1. Stage All Changes
+### 1. Stage Targeted Changes
+
+Apply the operation's scope from `.claude/context/standards/git-staging-scope.md` — under-stage,
+never over-stage, and never `git add -A` / `git add .`:
 
 ```bash
-git add -A
+padded_num=$(printf "%03d" "$task_number")
+project_name=$(jq -r --argjson num "$task_number" \
+  '.active_projects[] | select(.project_number == $num) | .project_name' \
+  specs/state.json)
+stage_paths=("specs/${padded_num}_${project_name}/" "specs/TODO.md" "specs/state.json")
+
+# implement only: also stage the plan file and self-reported modified_files
+if [ "$operation" = "implement" ]; then
+  [ -n "$plan_path" ] && stage_paths+=("$plan_path")
+  metadata_file="specs/${padded_num}_${project_name}/.return-meta.json"
+  while IFS= read -r f; do
+    [ -n "$f" ] && stage_paths+=("$f")
+  done < <(jq -r '.modified_files[]? // empty' "$metadata_file" 2>/dev/null)
+fi
+
+git add "${stage_paths[@]}"
 ```
 
 ### 2. Compose Commit Message
