@@ -194,19 +194,19 @@ every wrapper call, and per-account pilot-gate scoping. Gmail stays the default;
 
 ---
 
-### Phase 3: Default the mbsync channel from the account in `skill-email-sync/SKILL.md` [NOT STARTED]
+### Phase 3: Default the mbsync channel from the account in `skill-email-sync/SKILL.md` [COMPLETED]
 
 **Goal**: Accept the threaded `account` arg and default the mbsync channel to the active account's
 group, preserving the never-`mbsync -a` invariant and explicit-override behavior.
 
 **Tasks**:
-- [ ] Accept the `account` arg (threaded from `commands/email.md`'s updated `<sync_path>`) and default
+- [x] Accept the `account` arg (threaded from `commands/email.md`'s updated `<sync_path>`) and default
       the channel: `account=gmail -> channel=gmail` (unchanged), `account=logos -> channel=logos` (group
       exists per `mbsync.nix:190`). Preserve `/email --sync <explicit-channel>` override (explicit wins).
-- [ ] Preserve the never-`mbsync -a` invariant verbatim: `--sync logos` must resolve to `mbsync logos`,
+- [x] Preserve the never-`mbsync -a` invariant verbatim: `--sync logos` must resolve to `mbsync logos`,
       never `mbsync -a` (already the skill's single-channel design; only the default-resolution logic
       changes).
-- [ ] Conditionalize the Gmail-specific "What sync does" prose (~18-27): give Logos a parallel clause
+- [x] Conditionalize the Gmail-specific "What sync does" prose (~18-27): give Logos a parallel clause
       ("...land in Archive/Trash, the account's real IMAP folders") instead of the Gmail label model.
 
 **Timing**: ~0.5 hour
