@@ -1,6 +1,1603 @@
 {
   "completed_projects": [
     {
+      "project_number": 814,
+      "project_name": "synthesize_improvement_roadmap",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "dependencies": [
+        811,
+        812,
+        813
+      ],
+      "description": "Synthesis capstone for the systematic .claude/ agent-system review. DEPENDS ON tasks 811 (orchestration core audit), 812 (knowledge & standards layer audit), and 813 (infrastructure layer audit) - all three must be researched/complete before this task's research phase runs. GOAL: combine the three layer audits with fresh July 2026 agent-system best-practices research into a single prioritized, complexity-reducing improvement roadmap that preserves ALL existing functionality and workflows. This is an AUDIT/RESEARCH+SYNTHESIS task - it produces the consolidated roadmap document; it does NOT implement changes (each roadmap item becomes an individually-approved improvement task via /spawn or /task). Focus areas: (1) Ingest and de-duplicate findings from the 811/812/813 reports; resolve cross-layer findings (e.g. a routing inconsistency that spans a command, a skill, and a script). (2) Conduct best-practices research (WebSearch) on current (as of July 2026) agent-orchestration, skill/subagent-architecture, and prompt-engineering patterns; map each relevant practice to a concrete finding or gap in this system. (3) Prioritize all findings into tiers (e.g. P0 correctness/robustness, P1 consistency, P2 complexity-reduction/performance, P3 nice-to-have) with an explicit effort/impact estimate per item. (4) Explicitly flag which recommendations REDUCE complexity vs ADD capability, honoring the user's directive to reduce complexity where possible and enhance only where appropriate. (5) Produce a sequenced roadmap (respecting dependencies between improvements) and a shortlist of the highest-value tasks to spawn first. DELIVERABLE: a prioritized improvement roadmap report suitable for spawning concrete improvement tasks. Constraint: preserve all functionality/workflows; no corners cut on research.",
+      "created": "2026-07-04T19:01:56Z",
+      "last_updated": "2026-07-04T20:56:59Z",
+      "next_artifact_number": 1,
+      "artifacts": [
+        {
+          "path": "specs/814_synthesize_improvement_roadmap/reports/01_improvement-roadmap.md",
+          "type": "report",
+          "summary": "Prioritized P0-P3 improvement roadmap with consolidated findings register, best-practices mapping, dependency-sequenced waves, and 9-item spawn-first shortlist."
+        }
+      ],
+      "session_id": "sess_1783192850_515b14_814",
+      "completion_summary": "Synthesized all 50 findings from tasks 811 (orchestration core, 20 findings), 812 (knowledge/standards, 15 findings), and 813 (infrastructure, 15 findings) into a single de-duplicated, cross-layer-resolved, priority-tiered improvement roadmap grounded in July 2026 agent-orchestration best-practices research. Tier counts: P0 (correctness/robustness) = 10, P1 (consistency) = 20, P2 (complexity-reduction/performance) = 13, P3 (nice-to-have/policy) = 7. Confirmed the three cross-layer threads named ",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 813,
+      "project_name": "audit_infrastructure_layer",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "dependencies": [
+        804,
+        808,
+        809,
+        810
+      ],
+      "description": "Systematic audit of the infrastructure layer of the .claude/ agent system: the 65 scripts (.claude/scripts/), 19 extensions (.claude/extensions/), hooks, and settings (.claude/settings.json, extensions.json). GOAL: identify what can and should be improved for a more consistent, robust, and performant system, following best practices as of July 2026, while preserving ALL existing functionality and workflows. This is an AUDIT/RESEARCH task only - it produces a findings report with prioritized recommendations and does NOT implement changes. Focus areas: (1) Script robustness: error handling consistency (set -euo pipefail, quoting, jq-escaping workarounds per jq-escaping-workarounds.md, the '| not' safety pattern), exit-code discipline, idempotency, and non-blocking-vs-fatal behavior. (2) Script duplication and consolidation opportunities across the 65 scripts (shared helpers, gate scripts, generate-todo.sh, manage-topics.sh, command-route-skill.sh); dead/orphaned scripts no longer referenced. (3) Extension system: manifest.json schema conformance across the 19 extensions, dependency declaration correctness (circular detection, depth limit), lifecycle hooks vs provides.hooks distinction, keyword_overrides and routing/routing_hard consistency, doc-lint (check-extension-docs.sh) pass status. (4) Hooks: PostToolUse/PreToolUse hook correctness (e.g. validate-meta-write.sh, guard-destructive-git.sh), and settings.json wiring. (5) Performance/robustness: script startup cost, redundant filesystem scans, concurrency/lock safety (relate to tasks 787/788/808/809). DELIVERABLE: reports/ audit with categorized findings (robustness risks, duplication, packaging/manifest issues, dead code, performance), each with severity, affected files, and a concrete recommended change. Independent of tasks 811/812; task 814 synthesizes all three.",
+      "created": "2026-07-04T19:01:56Z",
+      "last_updated": "2026-07-04T20:48:21Z",
+      "next_artifact_number": 1,
+      "artifacts": [
+        {
+          "path": "specs/813_audit_infrastructure_layer/reports/01_infrastructure-audit.md",
+          "type": "report",
+          "summary": "Infrastructure audit report with severity-rated, ID-tagged findings (IN-01..IN-15), prioritized recommendations, and preserved-functionality constraints"
+        }
+      ],
+      "session_id": "sess_1783192850_515b14_813",
+      "completion_summary": "Audited the .claude/ infrastructure layer (65 scripts, 19 extension manifests, 14 hooks, settings.json/extensions.json) read-only against the live tree and produced 15 findings: 1 critical (validate-meta-write.sh, the documented /meta anti-bypass hook, is absent from settings.json's PostToolUse array and has never fired), 3 high (literature extension's keyword_overrides uses the wrong schema shape and empirically throws a jq error, silently masked, so literature/zotero/bibliography/citation rout",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 812,
+      "project_name": "audit_knowledge_standards_layer",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "dependencies": [
+        804,
+        808,
+        809,
+        810
+      ],
+      "description": "Systematic audit of the knowledge & standards layer of the .claude/ agent system: the 10 rules (.claude/rules/), 156 context files (.claude/context/), and the docs tree (.claude/docs/). GOAL: identify what can and should be improved for a more consistent, robust, and performant system, following best practices as of July 2026, while preserving ALL existing functionality and workflows. This is an AUDIT/RESEARCH task only - it produces a findings report with prioritized recommendations and does NOT implement changes. Focus areas: (1) Context index health: .claude/context/index.json load_when correctness (agents/task_types/commands/always semantics), line_count accuracy, orphaned or unreferenced context files, and files that exist but are absent from index.json (or vice versa). (2) Rules coverage and path-pattern correctness (auto-applied rules vs their declared globs); overlap/conflict between rules. (3) Format & pattern documents (context/formats/, context/patterns/) for internal consistency, duplication, and stale cross-references (e.g. .opencode/ paths referenced from .claude/ docs, as seen in return-metadata-file.md Related Documentation). (4) Standards documents (docs/reference/standards/) - are they current, mutually consistent, and actually followed by the components they govern? (5) Complexity reduction: consolidate overlapping context, remove dead knowledge, tighten token budgets. DELIVERABLE: reports/ audit with categorized findings (stale references, index/filesystem drift, duplication, coverage gaps, best-practice gaps), each with severity, affected files, and a concrete recommended change. Independent of tasks 811/813; task 814 synthesizes all three.",
+      "created": "2026-07-04T19:01:56Z",
+      "last_updated": "2026-07-04T20:48:13Z",
+      "next_artifact_number": 1,
+      "artifacts": [
+        {
+          "path": "specs/812_audit_knowledge_standards_layer/reports/01_knowledge-standards-audit.md",
+          "type": "report",
+          "summary": "Categorized audit findings (KS-01..KS-15) with severity, affected files, evidence, and preserve-functionality-scoped recommendations"
+        }
+      ],
+      "session_id": "sess_1783192850_515b14_812",
+      "completion_summary": "Audited .claude/rules (10 files), .claude/context (155 indexed + 6 unindexed files), and .claude/docs against the live working tree, producing 15 findings (KS-01..KS-15): 2 critical, 5 high, 6 medium, 2 low. Critical: an always-loaded, unconditionally-imported context file (repo/project-overview.md) is missing from disk; index.schema.json's load_when schema still uses 'languages' while 74% of entries actually use 'task_types', making most of the index schema-invalid. High-severity highlights: 61",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 811,
+      "project_name": "audit_orchestration_core",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "dependencies": [
+        804,
+        808,
+        809,
+        810
+      ],
+      "description": "Systematic audit of the orchestration core of the .claude/ agent system: the 24 commands (.claude/commands/), 28 skills (.claude/skills/), and 23 agents (.claude/agents/). GOAL: identify what can and should be improved for a more consistent, robust, and performant system, following agent-system best practices as of July 2026, while preserving ALL existing functionality and workflows. This is an AUDIT/RESEARCH task only - it produces a findings report with prioritized, evidence-backed recommendations; it does NOT implement changes (improvement tasks are spawned/approved individually afterward). Focus areas: (1) Command->skill->agent routing and dispatch consistency (command-route-skill.sh precedence, skill-to-agent mapping table in CLAUDE.md vs actual frontmatter, model-tier policy enforcement). (2) Lifecycle consistency across skills (GATE IN preflight -> DELEGATE -> GATE OUT postflight -> COMMIT; checkpoint/marker protocol; return-metadata-file usage). (3) Hard-mode (--hard) and team-mode (--team) contract consistency across the standard vs -hard skill/agent variants; check for drift between paired variants (e.g. skill-researcher vs skill-researcher-hard). (4) Redundancy and complexity-reduction opportunities: duplicated prompt scaffolding across skills/agents, thin-wrapper adherence, opportunities to consolidate. (5) Frontmatter standard conformance (agent-frontmatter-standard.md), model flags (--haiku/--sonnet/--opus/--fable), naming and structure consistency. DELIVERABLE: reports/ audit with a categorized inventory of findings (consistency gaps, robustness risks, performance/token-cost issues, complexity-reduction candidates), each with severity, affected files, and a concrete recommended change. Cross-reference CLAUDE.md routing tables and .claude/docs/reference/standards/. Independent of tasks 812/813; task 814 synthesizes all three.",
+      "created": "2026-07-04T19:01:56Z",
+      "last_updated": "2026-07-04T20:48:06Z",
+      "next_artifact_number": 1,
+      "artifacts": [
+        {
+          "path": "specs/811_audit_orchestration_core/reports/01_orchestration-core-audit.md",
+          "type": "report",
+          "summary": "Categorized OC-01..OC-20 findings table (severity, affected files, recommended change) across routing/dispatch, lifecycle, hard/team-mode drift, redundancy, and frontmatter conformance."
+        }
+      ],
+      "session_id": "sess_1783192850_515b14_811",
+      "completion_summary": "Audit of the .claude/ orchestration core (24 commands, 37 skill dirs incl. 9 unloaded-extension symlinks, 23 agents) found 20 findings (OC-01..OC-20): 4 high, 9 medium, 7 low severity. No critical issues. Highest-value items: OC-13 (skill-researcher/planner/implementer/reviser + -hard variants share ~5,400 lines of ~60-70% duplicated 11-stage boilerplate, the root cause of OC-11's hard-mode-pair drift risk); OC-10 (core skills physically duplicated, not symlinked, between .claude/skills/ and .cl",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 810,
+      "project_name": "gate_script_sourcing_research_plan_revise",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-07-04T18:33:12Z",
+      "last_updated": "2026-07-04T20:25:04Z",
+      "title": "Route /research, /plan, /revise through shared gate scripts for lock + checkpoint coverage",
+      "description": "Follow-up from task 788. Task 788 wired session-lock acquire/release and heartbeat into command-gate-in.sh / command-gate-out.sh (sourced by /implement and /orchestrate) and into multi-task dispatch. But /research, /plan, and /revise carry their OWN inline, duplicated CHECKPOINT gate logic and do NOT source the shared gate scripts -- so session-lock protection and the commit-per-green-substep cadence do NOT cover those three commands. SCOPE: refactor commands/research.md, commands/plan.md, and commands/revise.md to source command-gate-in.sh / command-gate-out.sh (acquiring/releasing the task lock, emitting heartbeats) instead of their inline duplicated gate logic, so ALL lifecycle commands share one gate path and one lock discipline. Keep dual-copy pairs in sync. Verify the shared gate path composes with each command existing preflight/postflight expectations.",
+      "effort": "2-3 hours",
+      "topic": "agent-system",
+      "dependencies": [
+        788,
+        804,
+        809
+      ],
+      "file_scope": [
+        ".claude/commands/research.md",
+        ".claude/commands/plan.md",
+        ".claude/commands/revise.md",
+        ".claude/scripts/command-gate-in.sh",
+        ".claude/scripts/command-gate-out.sh"
+      ],
+      "artifacts": [
+        {
+          "path": "specs/810_gate_script_sourcing_research_plan_revise/reports/01_gate-sourcing-analysis.md",
+          "type": "report",
+          "summary": "Field-by-field diff of inline vs shared gate logic, 809 overlap-refusal analysis, dual-copy pair enumeration, and concrete refactor recommendation (gate-in exemption for revise, gate-out status_token fix, per-command CHECKPOINT rewrites, multi-task lock bracketing for research/plan)."
+        },
+        {
+          "path": "specs/810_gate_script_sourcing_research_plan_revise/plans/02_gate-sourcing-plan.md",
+          "type": "plan",
+          "summary": "5-phase gate-sourcing refactor plan with dual-copy discipline, multi-task lock bracketing, and a final coherence audit."
+        },
+        {
+          "path": "specs/810_gate_script_sourcing_research_plan_revise/summaries/03_gate-sourcing-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary documenting all file changes, decisions, and Phase 5 coherence/dual-copy audit results"
+        }
+      ],
+      "session_id": "sess_1783192850_515b14_810",
+      "completion_summary": "All 5 plan phases completed: fixed command-gate-in.sh's terminal-status guard to exempt operation=revise, fixed command-gate-out.sh's status_token mapping (adding revise and repairing a latent orchestrate bug), then refactored research.md, plan.md, and revise.md to source the shared gate scripts in place of their inline CHECKPOINT logic, added per-task task-lock bracketing to research.md/plan.md's multi-task dispatch loops matching implement.md, and verified in Phase 5 that all 10 dual-copy pair",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 809,
+      "project_name": "file_scope_granular_locking",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-07-04T18:33:12Z",
+      "last_updated": "2026-07-04T20:00:53Z",
+      "title": "File-scope-granular cross-task locking (compose task 787 overlap with task 788 locks)",
+      "description": "Follow-up from task 788. Task 788 implemented task-NUMBER-keyed session locks, which solves the 427 clobber failure but does NOT prevent two DIFFERENT tasks whose file_scope (the field added by task 787) OVERLAPS from being worked concurrently -- they hold distinct task-number locks yet edit the same files. SCOPE: extend the lock model in .claude/scripts/task-lock.sh so lock acquisition also checks file_scope overlap against currently-held locks, using task 787 canonical file-footprint-overlap algorithm (.claude/context/patterns/file-footprint-overlap.md), refusing/deferring (override-and-warn, consistent with 788) when a concurrently-held lock file_scope overlaps the acquiring task file_scope. Update task-lock.md spec accordingly. Composes 787 (file_scope + overlap algorithm) with 788 (locking). Task 788 explicitly deferred this as a larger follow-up.",
+      "effort": "3-4 hours",
+      "topic": "agent-system",
+      "dependencies": [
+        787,
+        788
+      ],
+      "file_scope": [
+        ".claude/scripts/task-lock.sh",
+        ".claude/context/patterns/task-lock.md",
+        ".claude/context/patterns/file-footprint-overlap.md"
+      ],
+      "artifacts": [
+        {
+          "path": "specs/809_file_scope_granular_locking/reports/01_file-scope-lock-design.md",
+          "type": "report",
+          "summary": "Full design: current cmd_acquire/holder.json model with file:line refs, file_scope schema location, overlap algorithm reuse via jq, exact call sites needing zero changes, override-and-warn semantics extended to cross-task (never mutating a foreign lock), TOCTOU race and global-mutex mitigation, and edge cases (empty file_scope, stale locks, same-session re-entry across suffixed multi-task session_ids)."
+        },
+        {
+          "path": "specs/809_file_scope_granular_locking/plans/02_file-scope-lock-plan.md",
+          "type": "plan",
+          "summary": "5-phase insert-only plan: helpers -> cmd_acquire integration + mutex -> sandbox tests -> dual-copy mirror -> spec/doc updates."
+        },
+        {
+          "path": "specs/809_file_scope_granular_locking/summaries/03_file-scope-lock-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary with scenario->exit/message verification table and plan deviations."
+        }
+      ],
+      "session_id": "sess_1783192850_515b14_809",
+      "completion_summary": "Extended task-lock.sh's cmd_acquire with a mutex-guarded cross-task file_scope overlap check that composes with the existing task-number lock: a fresh overlapping foreign lock refuses (exit 1) and a stale overlapping foreign lock warns and proceeds (exit 0) without ever mutating the foreign lock, reusing file-footprint-overlap.md's directory-prefix algorithm exactly via a new scopes_overlap() jq helper, and closing the scan-then-mkdir TOCTOU race with a short-lived specs/.scope-lock/ mutex that ",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 808,
+      "project_name": "loop_guard_atomic_creation",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-07-04T18:33:12Z",
+      "last_updated": "2026-07-04T19:47:04Z",
+      "title": "Atomic creation for .orchestrator-loop-guard and peer marker files",
+      "description": "Follow-up from task 788. The .orchestrator-loop-guard file (and peer orchestrator marker files such as .postflight-pending) are still created via the non-atomic jq-n-redirect pattern, which task 788 identified as unsafe for concurrent creation. Task 788 introduced an atomic mkdir-based primitive in .claude/scripts/task-lock.sh for task locking, but the loop-guard and similar marker files were left on the old pattern. SCOPE: bring .orchestrator-loop-guard creation (in skill-orchestrate/SKILL.md, plus any peer marker-file creation sites that must be race-safe) up to the atomic-creation standard established by task-lock.sh, reusing the task-lock.sh atomic primitive rather than reimplementing. Keep dual-copy pairs (.claude + extensions/core) in sync. OUT OF SCOPE: task-lock.sh itself (already atomic).",
+      "effort": "1-2 hours",
+      "topic": "agent-system",
+      "dependencies": [
+        788
+      ],
+      "file_scope": [
+        ".claude/skills/skill-orchestrate/SKILL.md",
+        ".claude/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ],
+      "artifacts": [
+        {
+          "path": "specs/808_loop_guard_atomic_creation/reports/01_marker-file-atomicity-audit.md",
+          "type": "report",
+          "summary": "Marker-file atomicity audit: inventory, task-lock.sh primitive interface, dual-copy pairs, and init-marker remediation design"
+        },
+        {
+          "path": "specs/808_loop_guard_atomic_creation/plans/02_atomic-marker-plan.md",
+          "type": "plan",
+          "summary": "3-phase plan: add init-marker subcommand (both task-lock.sh copies) -> swap 3 creation branches (4 SKILL.md copies) + document/retire-gap in task-lock.md (both copies)."
+        },
+        {
+          "path": "specs/808_loop_guard_atomic_creation/summaries/03_atomic-marker-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all 3 phases, verification results, and coordination notes for batch 804/808/809/810."
+        }
+      ],
+      "session_id": "sess_1783192850_515b14_808",
+      "completion_summary": "Implemented all 3 phases of the atomic-marker plan: added a task-lock.sh init-marker <file_path> subcommand (mkdir-gate + tmp-mv payload write, bounded-recheck orphan self-heal, added identically to both task-lock.sh copies), swapped all three TOCTOU marker-creation branches (.orchestrator-loop-guard in skill-orchestrate and skill-orchestrate-hard, .orchestrator-churn-state.json in skill-orchestrate-hard) to call it with a resume-read fallback on a lost race across all four SKILL.md copies, and ",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 807,
+      "project_name": "validate_handoff_skeleton_field",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Add skeleton-field validation to validate-handoff.sh",
+      "description": "[Follow-up to task 778, surfaced as a structural gap in the handoff validator.] Task 778 added a `skeleton` boolean to the H9 handoff schema (.claude/context/contracts/wrap-up.md) and extended sorry_inventory entries to {file,line,statement,strategic,assumption,why_deferred,follow_up_task}, so a documented strategic-sorry skeleton is reported as \"implemented (skeleton)\". However .claude/scripts/validate-handoff.sh has ZERO awareness of the new `skeleton` field (confirmed: 0 skeleton mentions vs 6 sorry_inventory mentions) -- it cannot validate that a skeleton handoff is well-formed, so relaxed zero-debt could pass validation while being untracked. FIX validate-handoff.sh so that when status==\"implemented\" and skeleton==true it: (1) accepts the skeleton:true field; (2) requires sorry_inventory to be non-empty and to enumerate every strategic sorry; (3) validates each strategic-sorry entry has the required fields (strategic:true, non-empty assumption, non-empty why_deferred, NON-NULL follow_up_task) per 778 5-condition test / wrap-up.md schema; (4) ensures relaxed zero-debt stays VISIBLE and TRACKED (every strategic sorry maps to a follow-up task). Keep STANDARD-mode validation unchanged (skeleton absent/false -> existing behavior). Reference wrap-up.md status/skeleton interaction table and the sorry_inventory schema. Add/extend test coverage if a validate-handoff.sh test harness exists. Note: validate-handoff.sh is a single-copy script under .claude/scripts/ (check whether an extensions/core mirror exists and keep them in lockstep if so). Scope: hard-mode handoff validation.",
+      "effort": "1-3 hours",
+      "parent_task": 778,
+      "dependencies": [],
+      "artifacts": [
+        {
+          "path": "specs/807_validate_handoff_skeleton_field/reports/01_validate-handoff-skeleton-field.md",
+          "type": "report",
+          "summary": "Research report with exact line anchors in .claude/scripts/validate-handoff.sh (Check 3, lines 108-115) and full proposed bash/jq validation logic for skeleton-aware sorry_inventory checks, plus confirmation that no test harness or extensions/core mirror exists for this script."
+        },
+        {
+          "path": "specs/807_validate_handoff_skeleton_field/plans/01_validate-handoff-skeleton-field.md",
+          "type": "plan",
+          "summary": ""
+        },
+        {
+          "path": "specs/807_validate_handoff_skeleton_field/summaries/01_validate-handoff-skeleton-field-summary.md",
+          "type": "summary",
+          "summary": ""
+        }
+      ],
+      "created": "2026-07-03T16:33:31Z",
+      "last_updated": "2026-07-03T17:36:27Z",
+      "session_id": "sess_1783099196_7b6d2a_807",
+      "completion_summary": "Made .claude/scripts/validate-handoff.sh skeleton-aware: added an early status/skeleton read and a strict skeleton-mode Check 3 branch (non-empty sorry_inventory, per-entry strategic/assumption/why_deferred/follow_up_task enforcement, status/skeleton invalid-combination check) while keeping standard-mode behavior byte-identical; added .claude/tests/test-validate-handoff.sh (5/5 fixtures pass) and verified a byte-identical regression against a production handoff.",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 806,
+      "project_name": "lean_cslib_strategic_sorry_alignment",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Align lean/cslib hard-mode contracts with 778 strategic-sorry policy",
+      "description": "[Follow-up to task 778, surfaced by 778 research + implementation as an explicit out-of-scope downstream note.] Task 778 relaxed the CORE zero-debt policy under --hard (.claude/context/contracts/anti-analysis.md) to permit documented STRATEGIC SORRIES forming a skeleton via a domain-agnostic 5-condition acceptance test, and added a `skeleton` boolean + 7-field sorry_inventory schema to wrap-up.md. But the lean/cslib EXTENSION overrides still forbid main-target sorries UNCONDITIONALLY, directly contradicting the new core policy for exactly the Lean4 domain (task 305) that motivated 772/774/778. Bring the lean/cslib hard-mode contracts into alignment. FILES: .claude/extensions/lean/context/contracts/anti-analysis.md (the override that categorically bans main-target sorries; cslib has NO separate anti-analysis.md -- it inherits lean via the cslib->lean dependency), .claude/extensions/lean/agents/lean-implementation-hard-agent.md, .claude/extensions/cslib/agents/cslib-implementation-hard-agent.md. CHANGES: replace the unconditional main-target-sorry prohibition with the 5-condition strategic-sorry test from core 778 (deliberate division boundary NOT abandoned proof; tightly scoped; documented with assumption / why-deferred / owning follow-up task; tracked; build-green), specialized for Lean4 where `sorry` is the canonical placeholder. The override should still ADD domain guidance (sorry must typecheck; track via #print axioms sorryAx / declaration-uses-sorry) but must NOT categorically ban deliberate skeleton sorries at main-target level. Verify consistency with core anti-analysis.md and wrap-up.md (778 schema). CROSS-REPO: the lean/cslib extensions are consumed by a separate repo (~/Projects/cslib via install-extension.sh file-copy) -- FLAG the change for re-install sync (do not edit that repo). Scope: hard-mode lean/cslib only; standard mode unchanged.",
+      "effort": "2-4 hours",
+      "parent_task": 778,
+      "dependencies": [],
+      "artifacts": [
+        {
+          "path": "specs/806_lean_cslib_strategic_sorry_alignment/reports/01_lean-cslib-sorry-alignment.md",
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/806_lean_cslib_strategic_sorry_alignment/plans/01_strategic-sorry-alignment.md",
+          "type": "plan",
+          "summary": ""
+        },
+        {
+          "path": "specs/806_lean_cslib_strategic_sorry_alignment/summaries/01_strategic-sorry-alignment-summary.md",
+          "type": "summary",
+          "summary": ""
+        }
+      ],
+      "created": "2026-07-03T16:33:31Z",
+      "last_updated": "2026-07-03T17:36:23Z",
+      "session_id": "sess_1783099196_7b6d2a_806",
+      "completion_summary": "Aligned lean/cslib hard-mode contracts with core task 778 relaxed zero-debt policy: replaced the categorical main-target-sorry ban with a Lean4-specialized 5-condition strategic-sorry test across all 6 anchor points in 3 files (lean anti-analysis.md override, lean & cslib hard-agents), renamed next_dispatch->follow_up_task to match the wrap-up.md 7-field sorry_inventory schema, kept standard mode unchanged, and flagged the stale ~/Projects/cslib copy for manual re-sync.",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 801,
+      "project_name": "literature_index_authors_schema_normalization",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-07-01T19:45:00Z",
+      "last_updated": "2026-07-01T20:28:32Z",
+      "title": "Normalize authors schema in Literature index generation (defense-in-depth)",
+      "description": "[LITERATURE INDEX SCHEMA NORMALIZATION -- optional/defense-in-depth] The global Literature index (~/Projects/Literature/index.json) stores `authors` INCONSISTENTLY: 210 entries as an array, 12 as a plain string, and some arrays are malformed one-element comma-joined strings (e.g. [\"Patrick Blackburn, Maarten de Rijke, Yde Venema\"]). This inconsistency is the UPSTREAM root cause of the briefing crash (task 799). Consumer tolerance (task 799) is the SUFFICIENT functional fix; this task prevents recurrence at the source. FIX: audit the index-writing scripts -- literature-build-index.sh, literature-discover.sh, and any converter (literature-convert.sh / literature-chunk.sh) that writes an `authors` field -- and standardize on a SINGLE representation (RECOMMEND: array of individual author strings, splitting comma-joined values). Consider a one-time normalization pass over the existing index.json plus a validation check so future writes stay consistent. Scope: Literature-corpus tooling in .claude/scripts/, NOT the --lit dispatch path; genuinely optional relative to tasks 799-800. CONTEXT: authors-type histogram over ~/Projects/Literature/index.json = 210 array / 12 string; the 12 string-typed entries (burgess/venema/gabbay/reynolds/rabinovich/caleiro/hodkinson/goldblatt families) are exactly what the cslib sub-index references, triggering the task-799 crash.",
+      "effort": "3-6 hours",
+      "topic": "literature",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "path": "specs/801_literature_index_authors_schema_normalization/reports/01_authors-schema-normalization.md",
+          "type": "report",
+          "summary": "Confirmed the authors-field inconsistency in ~/Projects/Literature/index.json (270 entries: 258 array-typed / 12 string-typed; 110 of the array-typed entries are malformed one-element comma-joined arr"
+        },
+        {
+          "path": "specs/801_literature_index_authors_schema_normalization/plans/01_authors-schema-normalization.md",
+          "type": "plan",
+          "summary": "Created a 4-phase plan for the authors-schema defense-in-depth work. The plan honors the cross-repo constraint: Phases 1-3 are in-repo and safely automatable (Phase 1 extends /literature --validate in"
+        },
+        {
+          "path": "specs/801_literature_index_authors_schema_normalization/summaries/01_authors-schema-normalization-summary.md",
+          "type": "summary",
+          "summary": "Executed all 4 phases of the authors-schema-normalization plan. Phases 1-3 (in-repo, Wave 1) are committed: (1) extended /literature --validate in .claude/skills/skill-literature/SKILL.md with an auth"
+        }
+      ],
+      "session_id": "sess_1782936248_41a19c_801",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 800,
+      "project_name": "lit_briefing_failure_surfacing",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-07-01T19:45:00Z",
+      "last_updated": "2026-07-01T20:28:30Z",
+      "title": "Surface --lit briefing-generation failures in skill consumers (no silent no-op)",
+      "description": "[--lit FAILURE SURFACING] When literature-briefing.sh crashes, the --lit consumers cannot distinguish a script CRASH from a legitimately EMPTY briefing, so they silently proceed as if no literature exists -- violating CLAUDE.md's repeated `--lit is never a silent no-op` contract. ROOT CAUSE: skill Stage 4b captures briefing output as `LIT bytes: N` and treats 0 bytes as 'no literature'; literature-briefing.sh exits 0 on a legitimate empty result but NON-ZERO (e.g. 5) on crash, and the consumers ignore the exit status. FIX: update the --lit consumers -- skill-researcher, skill-planner, skill-implementer and their -hard variants (skill-researcher-hard, skill-planner-hard, skill-implementer-hard) -- so that when literature-briefing.sh exits NON-ZERO they emit a VISIBLE `[lit] briefing generation failed (exit N)` notice to the transcript (distinct from the legitimate empty case) instead of silently continuing with no literature. Prefer a single shared pattern/helper so all six skills stay consistent. Scope: error-surfacing only in the Stage 4b invocation of each skill; does NOT fix the underlying script (task 799 does that), but the two are complementary. CONTEXT: transcript .claude/output/lit.md -- the empty result was only caught because a human-driven researcher agent manually diagnosed it; an autonomous run (e.g. /orchestrate) would have silently lost all literature context.",
+      "effort": "2-4 hours",
+      "topic": "literature",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "path": "specs/800_lit_briefing_failure_surfacing/reports/01_lit-briefing-failure-surfacing.md",
+          "type": "report",
+          "summary": "Researched the --lit failure-surfacing bug. Confirmed all six core skills (skill-researcher, skill-planner, skill-implementer, skill-researcher-hard, skill-planner-hard, skill-implementer-hard) invoke"
+        },
+        {
+          "path": "specs/800_lit_briefing_failure_surfacing/plans/01_lit-briefing-failure-surfacing.md",
+          "type": "plan",
+          "summary": ""
+        },
+        {
+          "path": "specs/800_lit_briefing_failure_surfacing/summaries/01_lit-briefing-failure-surfacing-summary.md",
+          "type": "summary",
+          "summary": "Fixed the --lit consumer-side silent-failure anti-pattern across all six core skills (skill-researcher, skill-planner, skill-implementer, and their -hard variants). Previously each of the 18 Stage 4a "
+        }
+      ],
+      "session_id": "sess_1782936248_41a19c_800",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 799,
+      "project_name": "literature_briefing_authors_type_crash_fix",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-07-01T19:45:00Z",
+      "last_updated": "2026-07-01T20:01:13Z",
+      "title": "Fix literature-briefing.sh authors-type crash + harden per-entry resilience",
+      "description": "[--lit BRIEFING CRASH] literature-briefing.sh silently produces an EMPTY <literature-briefing> for any repo whose sub-index references a string-typed authors entry, so --lit injects nothing. ROOT CAUSE: line 144 runs `(.authors // []) | join(\", \")`, which is a jq RUNTIME ERROR (exit 5) when .authors is a plain string. The global Literature index (~/Projects/Literature/index.json) stores authors INCONSISTENTLY (210 array vs 12 string entries; some arrays are one-element comma-joined strings like [\"A, B, C\"]). With `set -euo pipefail` (line 41) and the `jq ... | head -1` pipeline (pipefail surfaces jq's non-zero status), the failed command substitution aborts the ENTIRE script on the very first entry (e.g. burgess_1982_i). FIX: (1) normalize authors for BOTH array and string types at line 144, mirroring the tolerant pattern already present in literature-discover.sh:281 (`.authors // [] | if type == \"array\" then . else [.] end | join(\", \")`); (2) harden the per-entry metadata-extraction loop so a single malformed/failing entry WARNS to stderr and is SKIPPED, rather than aborting the whole briefing via set -e (guard the per-entry jq extractions so pipefail/set -e cannot kill the run, or use defensive jq that never errors); (3) VERIFY by regenerating a briefing against the cslib sub-index (all 12 doc_ids: burgess_1982_i, burgess_1982_ii, reynolds_2001, venema_1993_since_until, venema_1993_anti_axioms, gabbay_1993, blackburn_2001, goldblatt_2003, rabinovich_2014, caleiro_2013, hodkinson_2006, blackburn_2002_book) and confirming a populated block with correct author rendering for both string- and array-typed entries. NOTE: this script is shared .claude/ infrastructure; the config-repo copy (~/.config/nvim/.claude/scripts/literature-briefing.sh) is the source of truth and the fix must stay consistent with any child-project copies (e.g. ~/Projects/cslib/.claude/scripts/). CONTEXT: transcript .claude/output/lit.md -- /research 464 --lit returned `LIT bytes: 0`; the researcher agent manually diagnosed exit 5 and hand-built the briefing inline as a workaround.",
+      "effort": "1-3 hours",
+      "topic": "literature",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "path": "specs/799_literature_briefing_authors_type_crash_fix/reports/01_authors-type-crash-fix.md",
+          "type": "report",
+          "summary": "Research: authors-type crash root cause + hardening surface"
+        },
+        {
+          "path": "specs/799_literature_briefing_authors_type_crash_fix/plans/01_authors-type-crash-fix.md",
+          "type": "plan",
+          "summary": "2-phase plan: authors normalization + arithmetic hardening, then verify"
+        },
+        {
+          "path": "specs/799_literature_briefing_authors_type_crash_fix/summaries/01_authors-type-crash-fix-summary.md",
+          "type": "summary",
+          "summary": "Implemented authors type-normalization + arithmetic hardening; verified against cslib sub-index"
+        }
+      ],
+      "session_id": "sess_1782935221_e7a140",
+      "completion_summary": "Fixed literature-briefing.sh authors-type crash: normalized the authors jq at lines 143-145 to tolerate both array and string types (mirroring literature-discover.sh:281) with a tail guard, and hardened the parent_tokens / no-chunks total_tokens arithmetic substitutions with ||default + numeric guards + stderr warnings. Root cause was join(\", \") on the 12/222 string-typed global-index entries throwing jq exit 5, which set -euo pipefail propagated to abort the whole --lit briefing on the first entry. Verified against the real 11-entry cslib sub-index: exit 0, both string-typed (burgess_1982_i) and array-typed (blackburn_2002_book) authors render correctly, no stderr on well-typed data, and all three legitimately-empty exit-0 contract paths preserved. Cross-repo propagation to byte-identical child copies (cslib, Logos/Hardware, BimodalLogic) flagged as out-of-scope follow-up.",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 798,
+      "project_name": "literature_zotero_datadir_and_retry_fixes",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "Two follow-up fixes to task-797 assisted Zotero export generation, surfaced by user testing /literature 55 in ~/Projects/Logos/Hardware. PRIMARY FILES (task-793 dual-copy model: edit canonical under .claude/extensions/literature/scripts/, then byte-identical re-sync to .claude/scripts/): zotero-generate-export.sh, zotero-export-status.sh, and the /literature wiring in .claude/extensions/literature/commands/literature.md.\n\nFIX 1 (dataDir auto-detection) -- BUG: both zotero-export-status.sh (classifier, Path 3 viability probe) and zotero-generate-export.sh (Path 3 sqlite reconstruction) hardcode the sqlite default to ${HOME}/Zotero/zotero.sqlite (only overridable via the ZOTERO_SQLITE_PATH env var). On any machine with a custom Zotero data directory this reads the wrong DB. Confirmed on this machine: the real library is /home/benjamin/Documents/Zotero/zotero.sqlite (878 bibliographic items, 92MB, set via extensions.zotero.dataDir + useDataDir=true in ~/.zotero/zotero/*/prefs.js), while the hardcoded ~/Zotero/zotero.sqlite is a stale EMPTY profile (0 items, 1.1MB). Because the empty file EXISTS, the classifier returns ZOTERO_EXPORT_MISSING_NOT_RUNNING and the generator writes a silently-EMPTY zotero-library.json -- no error, useless result. REQUIRED: before falling back to the ${HOME}/Zotero default, auto-detect Zoteros configured data directory by parsing extensions.zotero.dataDir (only when extensions.zotero.useDataDir is true) from the Zotero profile prefs.js (search ~/.zotero/zotero/*/prefs.js and ~/.mozilla/zotero/*/prefs.js; pick the default profile). Resolution order for the Path 3 sqlite: (1) $ZOTERO_SQLITE_PATH explicit override; (2) <dataDir>/zotero.sqlite from prefs.js when useDataDir=true; (3) ${HOME}/Zotero/zotero.sqlite default. Apply the SAME resolution in BOTH scripts (share via a helper function so they cannot drift). Verified working manually: ZOTERO_SQLITE_PATH=/home/benjamin/Documents/Zotero/zotero.sqlite zotero-generate-export.sh produced 1819 valid Better-CSL-JSON entries with synthesized citation-keys -- the reconstruction logic is correct; only the path resolution is wrong.\n\nFIX 2 (open-Zotero-and-retry interactive branch) -- ENHANCEMENT: currently when Zotero is closed (ZOTERO_EXPORT_MISSING_NOT_RUNNING) the /literature offer goes straight to a Path 3 sqlite snapshot. Because Path 1 (live Zotero local API) is data-dir-agnostic and always reads the true open library, the primary interactive choice for the NOT_RUNNING case should instead be \"Open Zotero, then retry\": on that choice the /literature workflow re-runs zotero-export-status.sh and, once it flips to ZOTERO_EXPORT_MISSING_RUNNING, generates via Path 1. Requirements: (a) cap retries (~2-3) so an unopened/unreachable Zotero does not loop forever; (b) when the API stays non-200 even though the user says Zotero is open, surface the SPECIFIC fix -- enable Settings -> Advanced -> \"Allow other applications on this computer to communicate with Zotero\" (match zotero-search.sh wording style); (c) KEEP the Path 3 sqlite snapshot as an explicit SECONDARY choice (\"generate an offline snapshot without opening Zotero\") -- do not remove it (it is now correct once FIX 1 lands); (d) non-interactive/orchestrator-mode: do NOT loop or prompt -- fail with a VISIBLE logged error instructing the user to open Zotero (never write an empty file, never silent no-op). HONEST SCOPE NOTE: this does NOT guarantee success (API-disabled-while-running, genuinely-empty library, and non-interactive contexts still fail) -- the goal is to convert the dangerous silent-empty-snapshot failure into a clear, actionable, retryable error.\n\nVERIFICATION: bash -n on all edited scripts; byte-identical diff between each canonical and flat copy; prefs.js parsing tested against this machine (must resolve to /home/benjamin/Documents/Zotero/zotero.sqlite and reconstruct 1819 entries); classifier must still emit exactly one directive token on stdout with rationale on stderr; literature-discover.sh pure-JSON-array stdout contract unchanged. OUT OF SCOPE: Tier 3 / Semantic Scholar; three-tier pipeline architecture; the literature.md whole-script 2>/dev/null capture; the orphaned zot-CLI subsystem.",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "path": "specs/798_literature_zotero_datadir_and_retry_fixes/reports/01_zotero-datadir-retry-fixes.md",
+          "type": "report",
+          "summary": "Research on Zotero dataDir + retry fixes"
+        },
+        {
+          "path": "specs/798_literature_zotero_datadir_and_retry_fixes/plans/01_zotero-datadir-retry-fixes.md",
+          "type": "plan",
+          "summary": "Phased plan for Zotero dataDir + retry fixes"
+        }
+      ],
+      "parent_task": 797,
+      "last_updated": "2026-07-01T19:02:24Z",
+      "session_id": "sess_1782930815_51c8ea",
+      "completion_summary": "FIX 1: new shared zotero-resolve-sqlite-path.sh resolver (canonical+flat, registered in manifest) auto-detects custom Zotero dataDir from prefs.js (3-tier: env override -> prefs dataDir -> ~/Zotero default), wired into zotero-export-status.sh and zotero-generate-export.sh. FIX 2: literature.md NOT_RUNNING branch restructured (open-Zotero-and-retry primary w/ bounded 3-attempt loop + fresh enable-API guidance, offline snapshot secondary, skip); generator else-branch hardened to fail loudly (no empty file) in orchestrator mode. Verified: resolves to /home/benjamin/Documents/Zotero/zotero.sqlite, reconstructs 1819 entries; bash -n clean; all 3 canonical/flat pairs byte-identical; single-token classifier + pure-JSON discover contracts intact.",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 797,
+      "project_name": "literature_zotero_export_assisted_setup",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "PRIMARY GOAL (assisted Zotero export generation, supersedes task-794 FIX 2 print-only hint per user direction \"actually generate the zotero-library.json\"): when $LITERATURE_DIR/zotero-library.json is MISSING, literature-discover.sh Tier 2 must present an INTERACTIVE AskUserQuestion offering to GENERATE the export automatically, and on agreement ACTUALLY create $LITERATURE_DIR/zotero-library.json in the Better CSL JSON shape that tier2_search / zotero-search.sh already consume. Feasibility confirmed on this machine: ~/Zotero/zotero.sqlite exists (1.1MB library), zotero-library.json absent, Zotero not running at check time. Generation paths use LOCAL Zotero only (these are the user's own Zotero on localhost -- NOT a remote/third-party API), in preference order: (1) Zotero 7 built-in local API http://127.0.0.1:23119/api/users/0/items?format=csljson when Zotero is running (no plugin, returns CSL-JSON directly); (2) Better BibTeX JSON-RPC at localhost:23119/better-bibtex/ when the BBT plugin is installed + Zotero running; (3) direct read of ~/Zotero/zotero.sqlite reconstructing CSL-JSON as a fallback when Zotero is CLOSED (the DB is locked while Zotero runs). Design must handle: Zotero-not-running detection (prompt the user to open Zotero, or use the sqlite fallback), and the snapshot-vs-keep-updated tradeoff (a one-time API/sqlite pull is a snapshot, NOT the auto-refreshing manual \"Keep updated\" export -- provide re-pull-on-demand or a clear staleness note). Non-interactive/orchestrator contexts: take a visible logged default, never a silent no-op. Match zotero-search.sh wording for any manual-steps fallback text. TIER 3 SCOPE LIMIT (per explicit user direction \"I do not want to assume API access or anything more than web search for Tier 3; nothing fancy\"): DO NOT build API-dependent Tier 3 handling. Specifically DROPPED from the earlier draft of this task: the Semantic Scholar 429/.message loud-failure detection and the top-N query-term-capping-for-Semantic-Scholar item -- both are out of scope. Do not assume Semantic Scholar (or any online) API access; Tier 3 should rely on nothing beyond web search. Leave existing Tier 3 behavior as-is unless a trivial web-search-only adjustment is warranted; invest no effort in SS-API-specific logic. CONTEXT: surfaced by user testing /literature 55 in ~/Projects/Logos/Hardware after tasks 793/794; the two 794 fixes (slug->description query, loud Tier 2 print hint) verified working -- this task upgrades ONLY the Tier 2 hint to assisted generation. PRIMARY FILES: .claude/extensions/literature/scripts/literature-discover.sh (canonical) + .claude/scripts/literature-discover.sh (byte-identical flat re-sync, task-793 dual-copy model); reference .claude/extensions/literature/scripts/zotero-search.sh for wording and the CSL-JSON shape. OUT OF SCOPE: three-tier pipeline architecture changes; Semantic Scholar API keys or any API-dependent Tier 3 enhancement; the literature.md whole-script 2>/dev/null stderr capture (separate follow-up).",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "path": "specs/797_literature_zotero_export_assisted_setup/reports/01_zotero-export-assisted-generation.md",
+          "type": "report",
+          "summary": "Assisted Zotero export generation: Tier 2 design, CSL-JSON shape, 3 generation paths, classifier pattern"
+        },
+        {
+          "path": "specs/797_literature_zotero_export_assisted_setup/plans/01_assisted-zotero-export-generation.md",
+          "type": "plan",
+          "summary": "4-phase plan: generator script, classifier directive + Tier 2 hint, /literature wiring, dual-copy re-sync + manifest + verification"
+        },
+        {
+          "path": "specs/797_literature_zotero_export_assisted_setup/summaries/01_assisted-zotero-export-generation-summary.md",
+          "type": "summary",
+          "summary": "Assisted Zotero export generation: generator + classifier scripts, /literature wiring, dual-copy + manifest, verified"
+        }
+      ],
+      "parent_task": 794,
+      "last_updated": "2026-07-01T18:11:12Z",
+      "session_id": "sess_1782927693_833583",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 796,
+      "project_name": "mandatory_topic_assignment",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "description": "Make topic assignment mandatory across ALL task-creation paths so tasks never land in Uncategorized. Root problem: three escape hatches produce topicless tasks — (1) the one-click Skip (no topic) option in Mode A pickers (/meta, /task create, /project-overview); (2) Mode B silent no-op when a parent task has no topic (topic-assignment-pattern.md:113 says no fallback, but /spawn, --expand, --review implementations DO have fallbacks — doc/impl divergence); (3) Mode C silent no-op when the /review and /fix-it path heuristic hits the other branch (:134). Plus /task --recover has zero topic handling and the meta-builder path can be bypassed entirely. FIX (source tree /home/benjamin/.config/nvim/.claude/, redeployed via <leader>al): rewrite canonical context/patterns/topic-assignment-pattern.md to drop Skip and make Mode A the universal fallback whenever no obvious topic exists (parent none / heuristic miss / batch null), keeping New topic always available; then update all callers to remove Skip and wire the fallback: agents/meta-builder-agent.md Stage 4.5, commands/task.md (create, --expand, --review, --recover which currently has none), commands/review.md and skills/skill-fix-it (Mode C other -> prompt), skills/skill-spawn, skills/skill-project-overview (errors.md inherits via /task). Reconcile the pattern-doc-vs-implementation divergence on Mode B fallback. Research/plan decisions: (a) remove Skip entirely vs keep a hard-to-reach explicit skip; (b) whether to add a defense-in-depth gate (generate-task-order.sh warns on topicless active tasks, or a validation check) so bypasses surface loudly. Out of scope: backfilling existing topicless tasks (/task --sync already does that).",
+      "dependencies": [
+        787
+      ],
+      "last_updated": "2026-07-04T18:25:40Z",
+      "session_id": "sess_1783182771_c4ab90_796",
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/796_mandatory_topic_assignment/reports/01_mandatory-topic-assignment.md",
+          "summary": "Full research report: per-caller current-state table for all 9 task-creation paths (/task create, --expand, --recover, --sync backfill, meta-builder-agent Stage 4.5, /review Mode C, /fix-it Mode C, /spawn Mode B, /project-overview Mode A), pattern-doc structural analysis, defense-in-depth gate options, compatibility check against task 787, and risks/mitigations."
+        },
+        {
+          "type": "plan",
+          "path": "specs/796_mandatory_topic_assignment/plans/01_mandatory-topic-assignment.md",
+          "summary": "7-phase implementation plan (~6h). Wave 1: Phase 1 (rewrite topic-assignment-pattern.md), Phase 6 (generate-task-order.sh stderr warning). Wave 2 (parallel, disjoint dual-copy file sets): Phase 2 task.md create/expand/recover/sync; Phase 3 meta-builder Stage 4.5/6; Phase 4 review.md + skill-fix-it Mode C; Phase 5 skill-spawn + skill-project-overview. Wave 3: Phase 7 verification. Both explicit decisions resolved with rationale; dual-copy sync enforced via diff -q on all seven pairs."
+        },
+        {
+          "type": "summary",
+          "path": "specs/796_mandatory_topic_assignment/summaries/01_mandatory-topic-assignment-summary.md",
+          "summary": "Full implementation summary: files changed per phase, decisions, two plan deviations (task.md Review Mode Step 7.6 Skip picker also fixed; skill-cite/SKILL.md fixed as a 7th creation path found during Phase 7 verification), and verification results."
+        }
+      ],
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 795,
+      "project_name": "pr_ready_guard_type_pr",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-lifecycle leak where cslib implementation tasks reach [PR READY] instead of [COMPLETED]. Three coordinated source-tree edits in /home/benjamin/.config/nvim/.claude/: (1) runtime guard in .claude/scripts/update-task-status.sh — reject preflight:pr_ready and postflight:pr_ready unless task_type==pr; (2) skill-cslib-implementation Stage 6 (extensions/cslib/skills/skill-cslib-implementation/SKILL.md) — spell out explicit postflight implement -> COMPLETED call mirroring skill-pr-implementation:95; (3) doc reconciliation in extensions/core/merge-sources/claudemd.md:36-37 — mark [PR READY] as type=pr-only, not the universal implementation terminus. Design decision for research/plan: guard in core update-task-status.sh (keyed on task_type==pr) vs pushing pr_ready/PR READY fully into the cslib extension; core doc must end up consistent with the choice. Out of scope: repairing the 5 already-mislabeled deployed tasks (447/404/407/438/453) in /home/benjamin/Projects/cslib/ state.json — separate manual data-repair after redeploy via <leader>al.",
+      "topic": "agent-system",
+      "last_updated": "2026-07-04T17:04:56Z",
+      "session_id": "sess_1783182771_c4ab90_795",
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/795_pr_ready_guard_type_pr/reports/01_pr_ready_guard_type_pr.md",
+          "summary": "Full findings: current unguarded pr_ready behavior in update-task-status.sh; root-cause analysis of skill-cslib-implementation Stage 6's vagueness vs. its hard-mode sibling's correct pattern; discovery of skill-orchestrate-hard's task-type-agnostic skeleton-exhaustion caller of postflight pr_ready and why it breaks a naive guard; recommended guard predicate (task_type==pr OR explicit override) and file-mirror considerations (extension source vs. deployed copies must stay in sync); recommended claudemd.md:36-37 replacement text; flagged adjacent stale doc (pr-prohibition.md) as an out-of-scope follow-up."
+        },
+        {
+          "type": "plan",
+          "path": "specs/795_pr_ready_guard_type_pr/plans/01_pr-ready-guard-type-pr.md",
+          "summary": "4-phase implementation plan (guard+flag, orchestrate-hard call site, cslib Stage 6, doc reconciliation) with dependency waves, per-phase dual-copy sync checks, and dry-run verification steps."
+        },
+        {
+          "type": "summary",
+          "path": "specs/795_pr_ready_guard_type_pr/summaries/01_pr-ready-guard-type-pr-summary.md",
+          "summary": "Full implementation summary: what changed, decisions, verification results, and notes on the symlink discovery and the missing CLAUDE.md regeneration path."
+        }
+      ],
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 794,
+      "project_name": "literature_discover_query_from_description",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-07-01T16:19:32Z",
+      "last_updated": "2026-07-01T17:05:13Z",
+      "title": "Fix /literature N discovery to query task description+title instead of the slug, and hint on missing Zotero export",
+      "description": "Improve /literature N source discovery quality by fixing two issues in literature-discover.sh (both surfaced by testing /literature 55 in ~/Projects/Logos/Hardware/ after task 793). Both changes edit the CANONICAL extension source .claude/extensions/literature/scripts/literature-discover.sh AND must re-sync the flat deployed copy .claude/scripts/literature-discover.sh to byte-identical (follow the task-793 dual-copy / provides.scripts flat-deploy model; do NOT touch other repos). FIX 1 (PRIMARY DEFECT -- useless slug query): For the --task N form, literature-discover.sh:105-132 builds the search query ONLY from .project_name (the task slug), converting underscores/hyphens to spaces (line 112-118). The slug describes the task (\"collect_literature_sources_task_54\" -> \"collect literature sources task\") not the subject matter, so Tier 1/3 match nothing and discovery returns []. FIX: derive query terms from the task .description AND .title fields in specs/state.json (read both via jq), apply stopword filtering and drop terms under 3 chars (reuse/extend the existing FILTERED_TERMS logic around line 454), and DROP the slug/.project_name entirely from the query (user decision: description+title only, slug is noise). Preserve the existing \"--task N \\\"extra terms\\\"\" behavior (extra terms still append). Keep graceful fallback if description is empty (then title; if both empty, error clearly). Confirm the /literature \"free text query\" path is unaffected. FIX 2 (UX GAP -- silent missing Zotero export): tier2_search (literature-discover.sh:334-336) silently returns 0 when $LITERATURE_DIR/zotero-library.json is absent, so the user never learns Tier 2 is disabled or how to enable it. FIX: when the export file is missing, print (once per run, to stderr so it does not corrupt the JSON results on stdout) a concise one-time setup hint: in Zotero, File -> Export Library -> format \"Better CSL JSON\" -> check \"Keep updated\" -> save to ~/Projects/Literature/zotero-library.json (or $LITERATURE_DIR/zotero-library.json). Do not error or change exit status; Tier 2 still no-ops. Match the wording already used by zotero-search.sh (which prints setup instructions on exit code 1) for consistency. VERIFICATION: (a) with a real task that has a topical description, /literature N now yields a query containing subject-matter terms (not \"collect/literature/sources/task\") and returns hits where the free-text form does; (b) confirm the missing-zotero-library.json hint prints to stderr and JSON stdout stays valid; (c) assert flat/canonical byte parity for literature-discover.sh; (d) run check-extension-docs.sh (must still PASS). OUT OF SCOPE: creating the zotero-library.json export (user action); changing the three-tier pipeline architecture; Semantic Scholar API behavior. PRIMARY FILES: .claude/extensions/literature/scripts/literature-discover.sh (canonical), .claude/scripts/literature-discover.sh (flat re-sync).",
+      "effort": "1-2 hours",
+      "topic": "literature",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/794_literature_discover_query_from_description/reports/01_discover-query-fix.md",
+          "summary": "Research: literature-discover.sh query fix + Zotero UX hint"
+        },
+        {
+          "type": "plan",
+          "path": "specs/794_literature_discover_query_from_description/plans/01_discover-query-fix.md",
+          "summary": "4-phase plan: description/title query, Zotero hint, flat re-sync, verification"
+        },
+        {
+          "type": "summary",
+          "path": "specs/794_literature_discover_query_from_description/summaries/01_discover-query-fix-summary.md",
+          "summary": "4/4 phases implemented"
+        }
+      ],
+      "session_id": "sess_1782923730_e38a8e_794",
+      "completion_summary": "Fixed literature-discover.sh --task N query to derive from description+title (dropped useless slug), added missing-Zotero-export stderr setup hint with swallow-point fixes, re-synced flat copy byte-identical. Verified query quality, stderr hint, byte parity, and literature-section check-docs PASS.",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 793,
+      "project_name": "literature_extension_script_packaging",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-07-01T15:24:31Z",
+      "last_updated": "2026-07-01T16:01:58Z",
+      "title": "Fix literature extension script packaging so <leader>al deploys a working extension to all repos",
+      "description": "Fix incomplete literature extension script packaging so the <leader>al \"Load Core\"/extension loader deploys a fully working literature extension to every repo, not just this source repo. ROOT CAUSE (confirmed): the picker deploys extensions via loader.copy_scripts() (lua/neotex/plugins/ai/shared/extensions/loader.lua:308-342), which copies ONLY the scripts named in manifest.provides.scripts, reading them from the extension's own scripts/ directory, and silently skips any not physically present there (filereadable guard, line 331). The literature extension's command/skill/agent reference several scripts that are NEITHER in manifest.provides.scripts NOR in .claude/extensions/literature/scripts/ -- they live only in this repo's deployed .claude/scripts/. So loading literature into another repo (e.g. ~/Projects/Logos/Hardware) omits them and /literature N fails (missing literature-discover.sh). SCOPE: (1) Migrate the referenced-but-unpackaged scripts into .claude/extensions/literature/scripts/ and add each to manifest.provides.scripts. Candidates (verify each is genuinely referenced by the literature command/skill/agent before packaging): literature-discover.sh (608), literature-ingest.sh (363), literature-search.sh (688), literature-build-index.sh (323), literature-convert.sh (364), literature-chunk.sh (423), literature-audit.sh (417). (2) Package literature-schema.sql (88 lines) correctly -- it is a .sql data file, NOT caught by copy_scripts or the sync *.sh glob; determine the right mechanism (likely manifest.provides.data or a data-copy path). literature-ingest.sh depends on it. (3) Fix inter-script path references broken by relocation -- e.g. literature-discover.sh:341-342 resolves zotero-search.sh via \"$SCRIPT_DIR/../extensions/literature/scripts/...\" which breaks once the script lives INSIDE the extension; audit all migrated scripts for $SCRIPT_DIR-relative and cross-directory .sh references and correct them for their new colocated location. (4) Resolve source-of-truth duplication with .claude/scripts/: after migration remove the now-orphaned copies from .claude/scripts/ (extension becomes source of truth) while ensuring THIS repo's own /literature still works (re-apply the extension to this repo if needed). Leave core-owned literature-retrieve.sh untouched. (5) Add an automated safeguard to .claude/scripts/check-extension-docs.sh (or a new lint) that flags any .sh referenced by an extension's commands/skills/agents but missing from that extension's manifest.provides.scripts, so this class of packaging bug is caught going forward; must exit non-zero on violation. (6) Document LITERATURE_DIR in the extension README (literature-discover.sh:36 already defaults it to ~/Projects/Literature, so no settings entry is required). VERIFICATION: simulate loader.copy_scripts + manifest against a clean target and confirm every script the literature command references is carried; run check-extension-docs.sh and confirm it passes for literature and would fail if a reference were removed from the manifest. PRIMARY FILES: .claude/extensions/literature/manifest.json, .claude/extensions/literature/scripts/, .claude/scripts/literature-*.sh, .claude/scripts/check-extension-docs.sh, lua/neotex/plugins/ai/shared/extensions/loader.lua (reference only). OUT OF SCOPE: redesigning the discovery pipeline logic; changing LITERATURE_DIR resolution.",
+      "effort": "2-4 hours",
+      "topic": "agent-system",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "path": "specs/793_literature_extension_script_packaging/reports/01_script-packaging-research.md",
+          "type": "report",
+          "summary": "Script packaging research"
+        },
+        {
+          "path": "specs/793_literature_extension_script_packaging/plans/01_script-packaging-plan.md",
+          "type": "plan",
+          "summary": "Script packaging plan"
+        },
+        {
+          "path": "specs/793_literature_extension_script_packaging/summaries/01_script-packaging-summary.md",
+          "type": "summary",
+          "summary": "Script packaging summary"
+        }
+      ],
+      "session_id": "sess_1782919568_e31bb9",
+      "completion_summary": "Fixed literature extension script packaging: migrated 7 scripts + schema (12->19 manifest entries) into the extension source as canonical, fixed 3 broken path references plus a genuine PROJECT_ROOT bug found in zotero-chunk.sh, added a check_referenced_scripts_declared doc-lint regression guard (and fixed 2 analogous core-owned packaging bugs it surfaced), corrected LITERATURE_DIR docs, and verified via a throwaway-repo dry-run that a clean deploy now yields a working literature-discover.sh.",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 791,
+      "project_name": "loader_wezterm_status_hook_merge",
+      "status": "completed",
+      "task_type": "neovim",
+      "created": "2026-07-01T01:10:44Z",
+      "last_updated": "2026-07-04T16:34:34Z",
+      "title": "Fix Load Core loader so WezTerm lifecycle tab coloring propagates to all synced repos",
+      "description": "Fix the <leader>al 'Load Core' loader so WezTerm lifecycle tab coloring works in every repo the agent system is copied into, not just this one. ROOT CAUSE (confirmed): lifecycle tab coloring (researching/planning/implementing/completed/blocked, etc.) is driven by the CLAUDE_STATUS WezTerm user variable, read in ~/.config/wezterm/wezterm.lua's format-tab-title handler (lines ~316-338). CLAUDE_STATUS is only set when a status-emitting hook fires (wezterm-notify.sh / wezterm-preflight-status.sh / wezterm-clear-status.sh). A hook fires only if (a) its script is present under .claude/hooks/ AND (b) it is REGISTERED in .claude/settings.json. Load Core syncs the hook SCRIPTS but NOT the registration: in lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua (scan_all_artifacts, lines ~894-910), settings.json uses install-only semantics -- copy if absent, replace only if a settings.json.managed marker exists, otherwise SKIP. So any target repo that already has a .claude/settings.json never receives the status-hook registrations, CLAUDE_STATUS is never emitted, and inactive tabs keep the default gray. This repo works only because its settings.json already registers the status hook. FIX DIRECTION (validate/refine during /research): instead of skipping settings.json wholesale, MERGE the core wezterm status-hook registrations into the target's existing settings.json without clobbering project-specific permissions/MCP servers. Infrastructure already exists: merge.lua provides merge_settings()/unmerge_settings() (lines ~229-263), and the core manifest (.claude/extensions/core/manifest.json:7-17) already declares merge_targets for claudemd and index but NOT settings. Add a merge_targets.settings fragment (core hook registrations) and wire the loader to merge it on Load Core, idempotently. Ensure the loader change also propagates to the synced .opencode tree if applicable, and keep the two synced .claude/ trees (dotfiles + nvim) consistent. Verify end-to-end: after Load Core into a repo with a pre-existing settings.json, the wezterm status hooks are registered and lifecycle tab coloring works. OUT OF SCOPE: redesigning the wezterm.lua color palette; the TASK_NUMBER title mechanism (already works). PRIMARY FILES: lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua, lua/neotex/plugins/ai/shared/extensions/merge.lua, .claude/extensions/core/manifest.json, .claude/extensions/core/root-files/settings.json.",
+      "effort": "3-5 hours",
+      "topic": "agent-system",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/791_loader_wezterm_status_hook_merge/reports/01_loader-settings-merge.md"
+        },
+        {
+          "type": "plan",
+          "path": "specs/791_loader_wezterm_status_hook_merge/plans/01_loader-settings-merge-plan.md"
+        },
+        {
+          "type": "summary",
+          "path": "specs/791_loader_wezterm_status_hook_merge/summaries/01_loader-settings-merge-summary.md"
+        }
+      ],
+      "plan_metadata": {
+        "phases": 4,
+        "total_effort_hours": 3,
+        "complexity": "medium",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1,
+            3
+          ],
+          [
+            2
+          ],
+          [
+            4
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_loader-settings-merge.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-07-01"
+          }
+        ]
+      },
+      "completion_summary": "Fixed the Load Core loader so WezTerm lifecycle tab coloring propagates to every synced repo: reconciled the stale provides.hooks allow-list in both .claude and .opencode core manifests, added a merge_targets.settings fragment registering the 3 WezTerm lifecycle hook events into the committed .claude/settings.json, and patched reinject_loaded_extensions to unconditionally include core so Load-Core-only repos also receive the settings merge. Verified end-to-end against a throwaway BimodalLogic copy, including idempotency.",
+      "session_id": "sess_1783182771_c4ab90",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 788,
+      "project_name": "concurrent_session_lock_commit_cadence",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-06-30T19:56:26Z",
+      "last_updated": "2026-07-04T18:25:38Z",
+      "title": "Concurrent-session protection: task lock + mandatory commit-per-green-substep",
+      "description": "Prevent concurrent sessions from clobbering a shared working tree (the 427 failure: an uncommitted in-progress task wiped by a concurrent session). USER-SELECTED SCOPE: lock + commit-per-step, NO git-worktree integration (keep the single shared tree; worktree isolation explicitly deferred). ROOT CAUSE: no concurrency protection exists -- manage-topics.sh assumes 'single-threaded sessions', state.json is last-write-wins, and nothing reserves a task for one session. Scope: (1) TASK LOCK: a session must reserve a task before working it -- a lock (lockfile under specs/{NNN}_{SLUG}/.lock or a state.json lock field) recording session_id + heartbeat timestamp; /orchestrate and /implement acquire on entry and REFUSE (with clear guidance) if a fresh lock is held by another session, with a stale-lock override threshold and release on completion/abort. (2) COMMIT-PER-GREEN-SUBSTEP: mandate an incremental commit at every green sub-step so in-progress work lives in git, not only the working tree -- align with checkpoint discipline and the scoped-staging contract from 785/786. (3) Coordinate with the 779/780/781 git-safety + checkpoint cluster (snapshot-before-rollback, checkpoint-before-overflow) so locking + commit cadence compose. OUT OF SCOPE: git worktree isolation (deferred). Depends on 786 (edits orchestrate.md/implement.md) and 787 (shared state schema + uses file_scope for lock granularity). Goal: a concurrent session can never silently destroy another session's uncommitted progress.",
+      "effort": "4-6 hours",
+      "topic": "agent-system",
+      "dependencies": [
+        786,
+        787
+      ],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/788_concurrent_session_lock_commit_cadence/reports/01_concurrent-session-lock-design.md",
+          "summary": "Design research: lockfile-vs-state-field tradeoff (lockfile recommended), heartbeat/stale-threshold mechanism, acquire/release hook points for single-task and multi-task/wave dispatch, file_scope-granularity deferral recommendation, and reconciliation of commit-per-green-substep with git-workflow.md's existing 'Do Not Commit: intermediate states' prohibition."
+        },
+        {
+          "type": "plan",
+          "path": "specs/788_concurrent_session_lock_commit_cadence/plans/01_session-lock-commit-cadence.md",
+          "summary": "5 phases across 4 dependency waves ([1],[2,3],[4],[5]); ~5 hours. Covers atomic lock helper + spec, gate-script wiring, multi-task/heartbeat wiring, commit-cadence reconciliation, and verification with dual-copy parity."
+        },
+        {
+          "type": "summary",
+          "path": "specs/788_concurrent_session_lock_commit_cadence/summaries/01_session-lock-commit-cadence-summary.md",
+          "summary": "Full implementation summary: what changed across 8 files (+ 8 dual copies + 1 non-dual-copied index.json entry), key decisions, 3 plan deviations (all 'altered' — skill-implementer/SKILL.md is a thin wrapper with no per-phase/per-objective loop of its own, so the heartbeat and green-commit hooks were wired into general-implementation-agent.md instead), and verification results."
+        }
+      ],
+      "session_id": "sess_1783182771_c4ab90_788",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 787,
+      "project_name": "file_footprint_aware_dependencies",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-06-30T19:56:26Z",
+      "last_updated": "2026-07-04T17:55:49Z",
+      "title": "File-footprint-aware task dependency declaration (serialize same-file tasks)",
+      "description": "Make multi-task creation declare dependencies based on FILE FOOTPRINT OVERLAP, not just logical sequencing, so two tasks that will edit the same files are never dispatched in the same wave / run concurrently. ROOT CAUSE: dependencies[] exists in the schema but is used only for Kahn topo-ordering; task creation (multi-task-creation-standard Component 4) asks only about logical ordering, and territory/file-ownership (H7, context/contracts/territory.md) is hard-mode-only, per-phase, and declarative. Scope: (1) Add an optional task-level 'file_scope' (anticipated owned paths) field to the state.json task schema (.claude/rules/state-management.md + .claude/context/reference/state-management-schema.md), promoting H7 territory to a lightweight task-level declaration. (2) Extend multi-task-creation-standard.md Component 4 so creators capture each proposed task's file footprint and AUTO-ADD a dependency (or surface a conflict warning) when two footprints overlap. (3) Wire this into meta-builder-agent, skill-fix-it, and skill-spawn. (4) Document that /orchestrate and --team wave assignment must treat file-footprint overlap as a serialization edge. Goal: when the system proposes multiple tasks touching the same files, it declares the dependency automatically instead of leaving them parallelizable. This is the gap that let two same-file tasks run concurrently.",
+      "effort": "3-5 hours",
+      "topic": "agent-system",
+      "dependencies": [
+        786
+      ],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/787_file_footprint_aware_dependencies/reports/01_file-footprint-aware-dependencies.md",
+          "summary": "Full findings: exact schema insertion points for file_scope (state-management-schema.md Project Entry Fields + new File Scope Field subsection, state.json-only/no TODO.md rendering), Component 4 extension design (automatic pre-processing sub-step '4a' mirroring /meta Stage 3.5, auto-add dependency edges on overlap with visible confirmation-table annotation), a shared directory-prefix overlap algorithm recommendation (new file-footprint-overlap.md pattern doc, also closing skill-team-implement.md's undefined infer_from_file_overlap gap), per-consumer wiring notes for meta-builder-agent/skill-fix-it/skill-spawn (fix-it is lowest-effort since tag file:line is already structured), confirmation that /orchestrate wave assignment needs no code change if dependencies[] is footprint-aware at creation time (only a documentation note) plus an identified residual cross-batch risk with a proposed defense-in-depth runtime check, the file_scope vs modified_files/files_touched relationship (distinct fields, prospective vs retrospective), and the full dual-copy file inventory (8 paired files + 1 non-paired file: territory.md)."
+        },
+        {
+          "type": "plan",
+          "path": "specs/787_file_footprint_aware_dependencies/plans/01_file-footprint-aware-dependencies.md",
+          "summary": "Phased plan: (1) file_scope schema field [state.json-only, dual copy]; (2) shared file-footprint-overlap.md algorithm doc; (3) Component 4a footprint capture + auto-dependency; (4) wire meta-builder-agent/skill-fix-it/skill-spawn/spawn-agent + skill-team-implement; (5) orchestrate wave-safety docs + adopted runtime wave-split check. Waves: [1,2],[3],[4,5]. Explicit Decision adopts the cross-batch defense-in-depth check."
+        },
+        {
+          "type": "summary",
+          "path": "specs/787_file_footprint_aware_dependencies/summaries/01_file-footprint-aware-dependencies-summary.md",
+          "summary": "Implementation summary covering all 5 phases, 12 dual-copy pairs verified, decisions, and verification results."
+        }
+      ],
+      "session_id": "sess_1783182771_c4ab90_787",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 786,
+      "project_name": "propagate_scoped_staging_templates",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-06-30T19:56:26Z",
+      "last_updated": "2026-07-04T17:35:51Z",
+      "title": "Propagate scoped-staging convention across all agent/command/skill templates",
+      "description": "Sweep the 40+ remaining `git add -A` references across the agent system to the canonical scoped-staging pattern established in task 785, so no template re-introduces repo-wide staging. SITES (from audit): implementation agents (general-implementation-agent.md:435, general-implementation-hard-agent.md:214, neovim:364, nix:384, python:116, web:432, founder, cslib-implementation-hard:261); commands (implement.md:187,192; plan.md:500; research.md:473; orchestrate.md:250,258,375,382; errors.md:197); skills (skill-implementer + extension implement/research skills); and doc/command templates (creating-commands.md:127, command-template.md, checkpoint-commit.md:10, checkpoint-execution.md:114, subagent-continuation-loop.md:127, workflow-interruptions.md:217, research-flow-example.md, creating-skills.md:403). Update the command/skill generator TEMPLATES so newly-created components inherit scoped staging by default. Leave cslib/pr.md's deliberate 'git add -A then exclude' flow alone unless it can be made scoped safely. Goal: scoped staging is uniform -- 'grep -rn \"git add -A\" .claude/' returns only intentional, documented exceptions. Depends on 785 (canonical pattern). Coordinate with the 779/781 hard-mode cluster on shared agent files (e.g. general-implementation-hard-agent.md).",
+      "effort": "2-4 hours",
+      "topic": "agent-system",
+      "dependencies": [
+        785
+      ],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/786_propagate_scoped_staging_templates/reports/01_propagate-scoped-staging-templates.md",
+          "summary": "Full categorized inventory (Categories A-J): already-fixed (785, verified clean), core command/skill exec sites needing conversion, hard-mode agent coordination note, deployed nix/neovim dual-copy pairs, non-deployed single-copy extension sites, founder/present extension clusters, generator-template sites, confirmed intentional exceptions, and one flagged ambiguous site requiring a decision."
+        },
+        {
+          "type": "plan",
+          "path": "specs/786_propagate_scoped_staging_templates/plans/01_propagate-scoped-staging.md",
+          "summary": "6-phase plan (Wave 1: phases 1-5 parallel on disjoint file sets; Wave 2: phase 6 convergence/verification) converting all remaining git add -A exec and template sites to canonical scoped staging, with per-phase dual-copy diff -q sync, preserved intentional exceptions, and an explicit documented decision on cslib/pr.md:569."
+        },
+        {
+          "type": "summary",
+          "path": "specs/786_propagate_scoped_staging_templates/summaries/01_propagate-scoped-staging-summary.md",
+          "summary": "Full implementation summary with per-phase file lists, decisions (research.md CHECKPOINT 3 redundancy investigation, cslib/pr.md:569 exception, skill-literature import-commit exception, multi-workflow present skills, founder Phase 4/5 outputs), plan deviations (skill-planner literature-briefing drift repair), and the itemized final grep classification."
+        }
+      ],
+      "session_id": "sess_1783182771_c4ab90_786",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 785,
+      "project_name": "scoped_git_staging_commit_pipeline",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-06-30T19:56:26Z",
+      "last_updated": "2026-07-04T17:04:54Z",
+      "title": "Scoped git staging: eliminate `git add -A` in the commit pipeline",
+      "description": "Replace the repo-wide `git add -A` in the task commit pipeline with targeted, work-scoped staging so commits contain only files the operation actually produced. ROOT CAUSE: .claude/scripts/orchestrator-postflight.sh:322 runs 'git add -A && git commit', and agents track nothing about which files they modified -- so every research/plan/implement commit sweeps the entire working tree (including a concurrent session's stray edits). This contradicts the system's own policy: .claude/rules/git-workflow.md 'Commit Scope' (lines 51-62) and shared-core .claude/context/core/standards/git-safety.md (lines 182-195) already forbid 'git add -A'/'git commit -am' and prescribe targeted staging. Scope: (1) Define a commit-scope contract -- operation-type scope (research/plan -> specs/TODO.md + specs/state.json + specs/{NNN}_{SLUG}/; implement -> task dir + the source files the agent reports it modified) read from agent return-meta (modified_files) or a COMMIT_SCOPE param. (2) Rewrite orchestrator-postflight.sh (project + shared copy) to stage only those paths via 'git add <paths>', with 'git status --short'/'git diff --staged' review per the git-safety.md flow. (3) Harden git-workflow.md to explicitly FORBID 'git add -A'/'git commit -am' and reference the targeted-staging procedure. (4) Establish skill-git-workflow as the canonical scoped-commit helper. Goal: a commit reflects only the work actually accomplished, and a concurrent session's uncommitted changes can never be swept into this task's commit. Depends on 780 (also edits git-workflow.md, so serialized to avoid clobber).",
+      "effort": "2-4 hours",
+      "topic": "agent-system",
+      "dependencies": [
+        780
+      ],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/785_scoped_git_staging_commit_pipeline/reports/01_scoped-git-staging-commit-pipeline.md",
+          "summary": "Full findings: verified root cause and line numbers, mapped every git add -A site in the real pipeline (orchestrator-postflight.sh, skill-implementer.md x2, general-implementation-agent.md), confirmed the dual-deploy convention applies to 4 of 5 relevant files but not orchestrator-postflight.sh itself, identified the already-working scoped-staging template in the --team skills, found skill-git-workflow is unused/dead code, found a dangling git-staging-scope.md reference, and gave phased implementation recommendations with an explicit scope-out list for the broader repo-wide sweep."
+        },
+        {
+          "type": "plan",
+          "path": "specs/785_scoped_git_staging_commit_pipeline/plans/01_scoped-git-staging.md",
+          "summary": "7-phase, 5-wave implementation plan for scoped git staging in the core commit pipeline, reusing the proven --team targeted-staging template and keeping the four dual-copy file pairs in sync."
+        },
+        {
+          "type": "summary",
+          "path": "specs/785_scoped_git_staging_commit_pipeline/summaries/01_scoped-git-staging-summary.md",
+          "summary": "Full 7-phase implementation summary with verification results and plan deviations."
+        }
+      ],
+      "session_id": "sess_1783182771_c4ab90_785",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 783,
+      "project_name": "fix_sorry_census_exclude_comments",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-06-30T16:47:22Z",
+      "last_updated": "2026-07-03T15:13:21Z",
+      "title": "Fix sorry-census to exclude comment/docstring lines (count only live proof debt)",
+      "description": "Fix the sorry-census methodology in the review/vet agent tooling so it stops counting Lean comment/docstring lines as proof debt. Root cause surfaced by cslib task 431 (origin repo: ~/Projects/cslib): the health-review census is a raw grep for 'sorry' over Cslib/**.lean, which swept up 7 docstring/comment occurrences (e.g. 'sorry-free', 'removing the sorry') plus a commented-out TODO stub, producing false 'unowned foundational sorry' findings. Moving to word-boundary 'sorry' did not help -- it still matches inside docstrings. Fix: make the census count only live proof debt -- strip Lean line comments (--) and block comments (/- -/) before matching, and/or cross-check against the compiler 'declaration uses sorry' warnings or #print axioms sorryAx. Update whichever shared agent-system tooling performs the census (the /review and/or /vet skills/scripts under .claude/). Evidence: cslib specs/431_audit_unowned_foundational_sorries/reports/01_unowned-sorries-audit.md, specs/reviews/review-2026-06-30.md, review-2026-06-30-2.md. Moved here from cslib (was task 437) because it is an agent-system change.",
+      "effort": "1-2 hours",
+      "topic": "agent-system",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/783_fix_sorry_census_exclude_comments/reports/01_fix-sorry-census-comments.md",
+          "summary": "Full research report: exact file/line locations of the 5 raw-grep sorry census call sites, root-cause analysis of why word-boundary + line-prefix filters still false-positive on multi-line and nested Lean comments, recommended fix (shared comment-stripping script with nesting-depth tracking + optional compiler-warning cross-check), and a concrete verification plan with a fixture corpus covering nested block comments, multi-line docstrings, and trailing inline comments."
+        },
+        {
+          "type": "plan",
+          "path": "specs/783_fix_sorry_census_exclude_comments/plans/01_sorry-census-comment-stripper.md",
+          "summary": "5-phase plan: fixture corpus + test harness, shared lean-sorry-census.sh comment-stripping script, compiler cross-check validation, 5 call-site updates (deployed-symlink vs extension-source aware), and doc/packaging/regression sweep. Dependency waves: [1] -> [2] -> [3,4] -> [5]. Estimated 4 hours."
+        }
+      ],
+      "session_id": "sess_1783089459_c17000_783",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 782,
+      "project_name": "formal_domain_goal_state_context_hygiene",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-06-24T22:56:34Z",
+      "last_updated": "2026-07-03T15:22:23Z",
+      "title": "Formal-domain context hygiene: minimize goal-state context for lean4 agents",
+      "description": "[Formal-domain context hygiene] Reduce the context that lean4/formal-proof agents consume per step so enormous goal states do not overflow the window. MOTIVATING FAILURE: five dispatches on Lean tableau proofs overflowed because goal states are enormous and were repeatedly pulled into context. Scope (lean4 / formal domains -- applies to lean-*/cslib-* and formal hard agents and their context/contracts): (1) Goal-state query discipline: prefer TARGETED lean-lsp queries (lean_goal at a specific position, lean_minimal_hypotheses, lean_term_goal) over dumping full goal states; do NOT paste entire goal states into reasoning repeatedly; summarize the goal in a few lines and re-query precisely when needed. (2) File-read discipline: avoid re-reading whole large proof files; read only the region around the active proof; use lean_file_outline / targeted offset reads. (3) Hypothesis pruning: work from minimal hypotheses; avoid carrying large unused contexts forward. (4) Encode these as a formal-domain CONTEXT CONTRACT (an extension context file analogous to the lean4 override of anti-analysis.md) consumed by the lean/formal research + implementation hard agents. (5) Combine with checkpoint-before-overflow (task 781): hygiene lowers the baseline context; checkpointing handles the residual. SCOPE NOTE: this is domain-specific. If the lean/cslib extension lives in a separate repo, author the contract here and FLAG it for sync to that extension (do not assume the shared repo is the only consumer). Pairs with task 781. Goal: a single large goal state is handled by targeted querying and summarization rather than overflowing the agent's context.",
+      "effort": "2-4 hours",
+      "topic": "agent-system",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/782_formal_domain_goal_state_context_hygiene/reports/01_formal-domain-context-hygiene.md",
+          "summary": "Full findings: repo topology and cross-repo install mechanism, existing contract structure/consumption pattern, tool-usage gaps (lean_minimal_hypotheses undocumented, lean_file_outline blocked), decisions on contract location/registration/consumers/content, risks, and context-extension recommendations."
+        },
+        {
+          "type": "plan",
+          "path": "specs/782_formal_domain_goal_state_context_hygiene/plans/01_context-hygiene-contract.md",
+          "summary": "6-phase implementation plan (3 waves, ~3h) for the formal-domain context-hygiene contract and its wiring into four hard agents, plus lean_minimal_hypotheses documentation and a flagged cross-repo sync step."
+        }
+      ],
+      "session_id": "sess_1783089459_c17000_782",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 781,
+      "project_name": "agent_context_overflow_checkpoint_handoff",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-06-24T22:56:34Z",
+      "last_updated": "2026-07-03T15:55:31Z",
+      "title": "Agent context-overflow safety: checkpoint + handoff before the hard limit",
+      "description": "[Context-overflow safety] Dispatched agents must detect context pressure and CHECKPOINT before hitting the hard context limit, instead of crashing mid-work. MOTIVATING FAILURE: five agent dispatches on Lean tableau proofs (enormous goal states) hit 'Prompt is too long'; on overflow an agent crashes WITHOUT writing a handoff, leaving a stale handoff and a RED working tree -- which then triggers the revert/work-loss failure (the next agent sees RED and reverts). Scope (general -- all dispatched implementation/research agents): (1) Wire the existing context-exhaustion-detection.md into the dispatched implementation and research agents (general-implementation-hard-agent, general-research-hard-agent, and base variants), not just the orchestrator -- they must monitor context-pressure signals (large tool outputs, repeated reads, growing goal states, high tool-call count) and treat approaching the limit as a STOP condition. (2) Define the CHECKPOINT-BEFORE-OVERFLOW procedure: at the pressure threshold, STOP taking new work -> commit the current green state (or snapshot via task 780 if RED) -> write a complete H9 handoff (.orchestrator-handoff.json + continuation markdown) naming the exact next action -> terminate cleanly. Never crash mid-edit; never leave a stale handoff. (3) Ensure the handoff captures enough for a FRESH agent to resume with minimal context (the continuation-handoff markdown already specifies this), so work is divided across agents by CONTEXT BUDGET, not lost. (4) Coordinate with the small-phase/skeleton work (774/778): if a phase's single goal state is too large to fit, the agent lands a strategic-sorry skeleton (778) and hands off rather than overflowing. Pairs with task 780 (snapshot) and task 779 (resume must fix-forward, not revert). Goal: context overflow degrades gracefully to a clean handoff + recoverable checkpoint, never a crash that loses uncommitted progress. Depends on task 780 (snapshot mechanism for the RED-checkpoint path).",
+      "effort": "3-6 hours",
+      "topic": "agent-system",
+      "dependencies": [
+        780
+      ],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/781_agent_context_overflow_checkpoint_handoff/reports/01_context_overflow_checkpoint_handoff.md",
+          "summary": "Full findings: consumer map of context-exhaustion-detection.md across the 4 target agents (2 already wired, 2 total gaps), the missing RED/green git-snapshot.sh branch, wrap-up.md's H9 schema and its implementation-hard-only scope, and the skill-researcher continuation-loop absence that must be resolved for research handoffs to be actionable."
+        },
+        {
+          "type": "plan",
+          "path": "specs/781_agent_context_overflow_checkpoint_handoff/plans/01_checkpoint-before-overflow.md",
+          "summary": "5-phase plan: (1) author shared checkpoint-before-overflow.md pattern doc, (2) RED/green git checkpoint + skeleton cross-ref into both implementation agents' Stage 4C, (3) detection + monitoring stage into both research agents, (4) research-shaped handoff-on-pressure + explicit Option (A) scoping decision, (5) dual-copy parity gate. Enumerates every touched file (incl. task 779 overlap on general-implementation-hard-agent.md) for orchestrator serialization."
+        }
+      ],
+      "session_id": "sess_1783092185_cd6c84_781",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 780,
+      "project_name": "agent_git_safety_preserve_uncommitted_work",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-06-24T22:53:54Z",
+      "last_updated": "2026-07-03T15:13:20Z",
+      "title": "Agent git-safety: preserve uncommitted work, guard destructive git ops",
+      "description": "[Working-tree preservation] Prevent agents from destroying uncommitted progress via destructive git operations, and require a recoverable snapshot before any rollback. MOTIVATING FAILURE: an implementation agent ran a revert-to-last-green-commit that discarded uncommitted forward progress (FreshAbove scaffolding + an 8->4 sorry reduction); the work existed only in the working tree and was lost. Two layers: (1) RULE (behavioral): extend .claude/rules/git-workflow.md with a 'no destructive git on uncommitted work' rule -- agents MUST NOT run git operations that discard working-tree changes (git reset --hard, git checkout -- <path>, git checkout/switch that would overwrite changes, git restore <path>, git clean -fd, git stash drop/clear) while uncommitted changes exist, UNLESS a snapshot was just taken. Before any intentional rollback the agent MUST snapshot recoverably: a WIP commit on a scratch/throwaway branch, OR a .patch artifact under specs/{NNN}_{SLUG}/ (e.g. working-progress-{ts}.patch), OR at minimum git stash (without drop). (2) HOOK (enforced): add a PreToolUse hook (registered via settings.json / the hooks system, e.g. .claude/scripts/guard-destructive-git.sh) that intercepts Bash tool calls, detects the destructive git patterns above, and BLOCKS them (deny / non-zero) with corrective context UNLESS (a) the working tree is clean, or (b) a snapshot marker shows a snapshot was just created. The hook returns guidance pointing to the snapshot-first procedure. Model it after the existing PostToolUse validators (e.g. validate-meta-write.sh) and the hooks registration pattern in .claude/. (3) Provide a tiny helper the agent calls to snapshot (write the .patch + record the marker the hook checks). Scope: applies to ALL agents (not just hard-mode) -- accidental destruction is universal -- but keep it lightweight so legitimate clean-tree operations (e.g. checkout on a clean tree) are not blocked. Pairs with task 779 (snapshot-before-rollback is rung c of the recovery ladder). Goal: a misread or mistaken instruction can never irreversibly destroy uncommitted agent work.",
+      "effort": "3-6 hours",
+      "topic": "agent-system",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/780_agent_git_safety_preserve_uncommitted_work/reports/01_git-safety-preserve-uncommitted-work.md",
+          "summary": "Research report covering the destructive-git pattern list, the PreToolUse/PostToolUse hook input/output contract (with block-pr-submission.sh as the direct model), the snapshot-marker mechanism design, the helper script design, and the dual-copy (deployed vs extensions/core source) wiring checklist required for the rule, hook, and settings.json registration to actually take effect and not be silently reverted by a future sync, as previously happened to block-pr-submission.sh."
+        },
+        {
+          "type": "plan",
+          "path": "specs/780_agent_git_safety_preserve_uncommitted_work/plans/01_guard-destructive-git-hook.md",
+          "summary": "5-phase implementation plan with explicit dual deployed/source wiring checklist and a scenario-based verification plan (blocks dirty-tree reset --hard, allows post-snapshot and clean-tree, preserves /todo safety-commit flow)."
+        }
+      ],
+      "session_id": "sess_1783089459_c17000_780",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 779,
+      "project_name": "hardmode_fix_forward_recovery_contract",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-06-24T22:53:54Z",
+      "last_updated": "2026-07-03T16:14:58Z",
+      "title": "Hard-mode: fix-forward recovery contract (disambiguate 'restore green')",
+      "description": "[--hard recovery discipline] Define an unambiguous recovery contract so 'reach green' / 'restore green' / 'get back to green' ALWAYS means FIX FORWARD (make the current working tree green by adding/correcting code) and NEVER means revert/reset/checkout to a prior green commit. MOTIVATING FAILURE: an orchestrator instruction 'if RED, first restore green' was misread by an implementation agent as 'revert to last green commit', discarding uncommitted forward progress (new FreshAbove scaffolding AND an 8->4 sorry reduction); the working tree was reset to the committed baseline and the progress was lost. Scope of changes: (1) Create/extend a recovery contract (e.g. .claude/context/contracts/recovery.md, or a section in wrap-up.md) stating: 'green' is reached by FIXING FORWARD only; an agent MUST NOT discard uncommitted work to reach green. (2) Define the canonical RECOVERY LADDER for a RED state: (a) fix forward; (b) if a sub-goal is genuinely blocked, land a documented STRATEGIC-SORRY skeleton (task 778) so the build goes green WITHOUT losing structure; (c) only if a rollback is truly required, SNAPSHOT first (task 780) then roll back, preferring the smallest revert scope. (3) Bake this into the hard-mode implementation contract (anti-analysis / wrap-up, consumed by general-implementation-hard-agent and skill-implementer-hard) and into skill-orchestrate-hard's dispatch prompt construction, so the orchestrator emits the disambiguated phrasing BY DEFAULT and does not rely on ad-hoc wording. (4) Align error-handling.md Build Error Recovery ('Keep source unchanged' / 'Never lose completed work') with the fix-forward language so guidance is consistent across docs. Scope: hard-mode primarily, but the fix-forward phrasing must be safe for standard mode too. Depends on task 778 (strategic-sorry skeleton = ladder rung b) and task 780 (snapshot-before-rollback = ladder rung c). Goal: a single ambiguous recovery instruction can never again be read as 'destroy uncommitted progress.'",
+      "effort": "2-4 hours",
+      "topic": "agent-system",
+      "dependencies": [
+        778,
+        780
+      ],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/779_hardmode_fix_forward_recovery_contract/reports/01_fix-forward-recovery-contract.md",
+          "summary": "Research report: where the recovery contract should live, exact 3-rung ladder language grounded in task 778/780's actual shipped mechanisms, disambiguated dispatch-prompt phrasing for skill-orchestrate-hard, error-handling.md alignment, and the dual deployed/source copy map for every file in scope."
+        },
+        {
+          "type": "plan",
+          "path": "specs/779_hardmode_fix_forward_recovery_contract/plans/01_recovery-contract-fix-forward.md",
+          "summary": "6-phase plan: create recovery.md contract + index.json entry (Phase 1); wire into skill-orchestrate-hard 5th contract slot, skill-implementer-hard ref, general-implementation-hard-agent Context Ref + Recovery Ladder section, and error-handling.md Build Error Recovery reword (Phases 2-5, all dual-copy); cross-file verification (Phase 6). Includes a Territory table enumerating all 10 touched files and sibling-task overlaps for orchestrator serialization."
+        }
+      ],
+      "session_id": "sess_1783092185_cd6c84_779",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 778,
+      "project_name": "hardmode_relax_zerodebt_strategic_sorry_skeleton",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-06-24T22:38:22Z",
+      "last_updated": "2026-07-03T14:59:10Z",
+      "title": "Hard-mode: relax zero-debt for strategic-sorry skeletons (division mechanism)",
+      "description": "[--hard CORE EFFECT: relax the zero-debt policy to permit STRATEGIC SORRIES forming a SKELETON that divides the task into parts.] A primary effect of --hard is that the standard zero-debt / build-green completeness requirement is RELAXED to allow deliberately-placed, documented 'strategic' sorries (placeholder stubs) that scaffold a skeleton of the overall objective. The skeleton's strategic sorries are the DIVISION POINTS: each becomes a discrete part / follow-up task. This is the mechanism that connects the planning leg (task 774: skeleton + follow-up tasks) to the implementation leg (task 772: one phase per round). Scope of changes (hard-mode ONLY): (1) Relax zero-debt enforcement under --hard -- update the wrap-up build-green invariant (.claude/context/contracts/wrap-up.md, 'No leftover scaffolding' clause) and the anti-analysis Sub-Sorry Policy (.claude/context/contracts/anti-analysis.md) so a documented strategic-sorry skeleton is an ACCEPTABLE dispatch outcome under --hard. Under STANDARD mode, zero-debt still holds unchanged. (2) Define what makes a sorry 'strategic' and acceptable: a deliberate division boundary on the skeleton (NOT an abandoned proof), tightly scoped, documented with (a) what it assumes, (b) why deferred, (c) which follow-up task/part will discharge it. (3) Require every strategic sorry to map to a TRACKED part -- a follow-up task (created by planner-hard, task 774) or a sub-phase -- so relaxed zero-debt is VISIBLE and TRACKED, never silently abandoned. (4) Update the hard implementer/agent verification (skill-implementer-hard / general-implementation-hard-agent) and the handoff sorry_inventory so a documented strategic-sorry skeleton is reported as 'implemented (skeleton)' rather than 'failed/partial', while the sorry_inventory MUST enumerate every strategic sorry and its owning follow-up task. (5) Build-green still holds: the skeleton with strategic sorries must still compile/typecheck (sorries are valid placeholders), so 'green build with tracked strategic sorries' is the hard-mode skeleton-completion bar. Domain note: Lean4 'sorry' is the canonical strategic placeholder; the same idea applies to other domains (stubbed functions, 'admit', NotImplemented). CONTEXT: on task 305 the zero-debt expectation (no incomplete proofs) combined with an oversized phase pushed the orchestrator to try to fully prove a research-grade lemma in one round, driving burnout; allowing a strategic-sorry skeleton would have let it land the structure and divide the remaining proof obligations into tracked parts. Foundational --hard policy that the planning leg (774) and implementation leg (772) build on.",
+      "effort": "3-6 hours",
+      "topic": "agent-system",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/778_hardmode_relax_zerodebt_strategic_sorry_skeleton/reports/01_strategic-sorry-skeleton-policy.md",
+          "summary": "Full strategic-sorry skeleton policy: exact clause edits for wrap-up.md ('No leftover scaffolding' + handoff schema + sorry_inventory field semantics) and anti-analysis.md (Sub-Sorry Policy extension with 5-condition acceptance test), exact Stage-level edits for skill-implementer-hard/SKILL.md and general-implementation-hard-agent.md, the proposed sorry_inventory entry schema (file/line/statement/strategic/assumption/why_deferred/follow_up_task), the status/skeleton field interaction table, decisions (no 4th status enum value; policy defined in anti-analysis.md, schema in wrap-up.md; lean/cslib overrides out of scope), risks (self-attestation gaming, lean/cslib contradiction, scope creep into research-grade sorries), and two Context Extension Recommendations (lean/cslib alignment follow-up task; validate-handoff.sh structural checks for follow_up_task)."
+        },
+        {
+          "type": "plan",
+          "path": "specs/778_hardmode_relax_zerodebt_strategic_sorry_skeleton/plans/01_strategic-sorry-skeleton-policy.md",
+          "summary": "5-phase plan applying the report's exact clause edits across anti-analysis.md, wrap-up.md, skill-implementer-hard/SKILL.md (dual copy), and general-implementation-hard-agent.md (dual copy), with a final consistency + downstream-note phase for the lean/cslib contradiction."
+        },
+        {
+          "type": "summary",
+          "path": "specs/778_hardmode_relax_zerodebt_strategic_sorry_skeleton/summaries/01_strategic-sorry-skeleton-policy-summary.md",
+          "summary": "Implemented all 5 phases: 5-condition strategic-sorry policy in anti-analysis.md, skeleton field + extended sorry_inventory schema + build-green amendment in wrap-up.md, Stage 6 parsing in skill-implementer-hard (dual copy), Stage 5 skeleton handoff example in general-implementation-hard-agent.md (dual copy, byte-identical), and downstream lean/cslib contradiction note for 772/774."
+        }
+      ],
+      "session_id": "sess_1783090407_348a96_778",
+      "completion_summary": "Broadened anti-analysis.md into a domain-agnostic 5-condition strategic-sorry acceptance test permitting main-target-level placeholders at deliberate skeleton division points; added a skeleton boolean and extended 7-field sorry_inventory schema to wrap-up.md with a --hard-only build-green exception (no 4th status enum value); updated skill-implementer-hard Stage 6 parsing/logging and general-implementation-hard-agent Stage 5 with an 'implemented (skeleton)' handoff example across both deployed and extensions/core dual copies (verified byte-identical); recorded an explicit downstream note that lean/cslib hard-mode overrides contradict the new core policy, flagged for a follow-up task via 772.",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 777,
+      "project_name": "hardmode_research_higher_standards",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-06-24T22:23:57Z",
+      "last_updated": "2026-07-03T15:13:18Z",
+      "title": "Hard-mode research: more effort, higher quality and verification standards",
+      "description": "[--hard RESEARCH leg: more effort, higher standards for quality, consistency, and verification of findings.] Strengthen hard-mode research (skill-researcher-hard / general-research-hard-agent, and domain research-hard agents where applicable) so --hard research is materially more rigorous than standard research, not just a relabel. (1) Raise the effort/coverage bar: require broader source coverage and deeper investigation before concluding (more searches, cross-checking multiple independent sources, no single-source conclusions). (2) Higher quality + consistency standards: require findings to be internally consistent and cross-validated; surface and RESOLVE contradictions rather than reporting them flatly. (3) Harden VERIFICATION of findings: extend the existing H4 adversarial self-verification and H3 reference grounding so every load-bearing claim is verified against a concrete source or counterexample before it ships, and uncertain claims are explicitly marked with confidence levels. (4) Encode the higher standard as enforceable CONTRACT language (analogous to the anti-analysis contract), in the research-hard skill/agent and any research-hard contract file, not just prose. Scope: hard-mode only; do NOT change standard research. CONTEXT: completes the three-leg --hard model alongside the implementation leg (task 772) and the planning leg (task 774). Motivating evidence: in transcript .claude/output/lit.md a hasty inline (non-hard) research conclusion was later found UNSOUND by a more careful standard-mode audit -- hard research should make that level of verification the default, raising confidence in the findings that drive planning and implementation.",
+      "effort": "3-6 hours",
+      "topic": "agent-system",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/777_hardmode_research_higher_standards/reports/01_hardmode_research_higher_standards.md",
+          "summary": "Research report"
+        },
+        {
+          "type": "plan",
+          "path": "specs/777_hardmode_research_higher_standards/plans/01_harden-research-verification.md",
+          "summary": "Phased plan (7 phases, ~7h) with dependency waves [[1],[2],[3,4,5,6],[7]], a Dual-Copy/Canonical-Source Map table, per-phase file lists and verification steps, and rollback guidance. Integrates research report 01."
+        }
+      ],
+      "session_id": "sess_1783089459_c17000_777",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 774,
+      "project_name": "hardmode_chunk_sizing_phase_subdivision",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-06-24T21:54:15Z",
+      "last_updated": "2026-07-03T15:46:33Z",
+      "title": "Hard-mode planning: smaller phases + skeleton plan with follow-up tasks",
+      "description": "[--hard PLANNING leg: make phases SMALLER and divide work into a SKELETON plan + follow-up tasks.] Revise hard-mode planning (skill-planner-hard / planner-hard-agent) so that under --hard the plan is decomposed into genuinely small phases, each completable in one bounded agent round, rather than one large open-ended plan ('Phase 1 strike 3: prove merge_forward_succ' was research-grade). (1) Tighten H8 phase sizing so each phase is a minimal bounded unit (e.g. one lemma / one checklist sub-item / ~100-300 lines output), not a multi-part objective. (2) Add a SKELETON-PLUS-FOLLOW-UP decomposition: when the full objective exceeds what a few small phases can cover, planner-hard produces a SKELETON plan covering the core/critical path and SPAWNS follow-up tasks (via the task-spawn / multi-task-creation mechanism) for the remaining work, instead of inflating phases. The skeleton plan and its follow-up tasks are linked via state.json dependencies. (3) The SKELETON is realized with STRATEGIC SORRIES per the relaxed zero-debt policy (task 778): planner-hard plans the skeleton so that deliberately-placed, documented sorries sit at the DIVISION BOUNDARIES, and EACH strategic sorry maps to a follow-up task/part. The division into follow-up tasks is therefore concretely driven by where strategic sorries are placed on the skeleton -- each sorry's deferral comment names the follow-up task that will discharge it. (4) Ensure the resulting small phases feed the implementation leg (task 772) so each implement round handles exactly one phase. (5) Extend the handoff schema (.claude/context/contracts/wrap-up.md) as needed to track skeleton-vs-follow-up status and the strategic-sorry-to-task mapping, and update skill-implementer-hard Stage 3b to consume the smaller phases. Root cause: RC4 (phases not regimented; oversized open-ended phases drove orchestrator burnout on task 305). Scope: hard-mode only. CONTEXT: part of making --hard proceed in regimented bounded chunks (transcript /orchestrate 305 --hard --lit, .claude/output/hard.md). This is the PLANNING leg of the three-leg --hard model (research=task 777, planning=this task, implementation=task 772), built on the relaxed zero-debt / strategic-sorry policy (task 778). Depends on task 778.",
+      "effort": "3-6 hours",
+      "topic": "agent-system",
+      "dependencies": [
+        778
+      ],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/774_hardmode_chunk_sizing_phase_subdivision/reports/01_skeleton_followup_phase_sizing.md",
+          "summary": "Full research covering: (1) exact current H8 phase-sizing language and its gap (line-count ceiling without a bounded-unit test or phase-count escape valve), with tightening recommendations; (2) the skeleton-plus-follow-up decomposition mechanism, showing skill-spawn/spawn-agent as a reusable template requiring one corrected dependency direction (follow-ups depend on skeleton, not the reverse) and one new step (placeholder-token substitution in the plan file after real task numbers are allocated); (3) how to reuse 778's sorry_inventory schema on the plan side via a new Planned Strategic Sorries table, plus a flagged naming inconsistency (dotted '774.2' follow_up_task example vs. the codebase's plain-integer task numbering); (4) two concrete pre-existing defects in skill-implementer-hard Stage 3b (wrong handoff path; integer-only phase selection) that must be fixed for smaller/sub-phase plans to correctly drive task 772's per-phase dispatch; (5) exactly which schema additions belong in plan-format.md/planner-hard-agent.md (plan-time) versus which are already covered by 778 in wrap-up.md/anti-analysis.md (implement-time, do not re-touch); dual-copy deployment status for every file in scope."
+        },
+        {
+          "type": "plan",
+          "path": "specs/774_hardmode_chunk_sizing_phase_subdivision/plans/01_skeleton-followup-phase-sizing.md",
+          "summary": "8-phase implementation plan (waves: [1,3,5] -> [2] -> [4.1,6] -> [4.2] -> [7]) covering H8 tightening, skeleton+follow-up mechanism, plan-format schema, Stage 3b bug fixes, and follow_up_task convention, with dual-copy lockstep verification and 6 postmortem constraints (no edits to wrap-up.md/anti-analysis.md/skill-orchestrate-hard/skill-spawn)."
+        }
+      ],
+      "session_id": "sess_1783092185_cd6c84_774",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 773,
+      "project_name": "orchestrator_discipline_contract_burnout_breaker",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-06-24T21:54:15Z",
+      "last_updated": "2026-07-03T16:28:05Z",
+      "title": "Add orchestrator-role discipline contract and burnout circuit-breaker",
+      "description": "The anti-analysis contract (H2, .claude/context/contracts/anti-analysis.md) is injected only into IMPLEMENT dispatches via build_hard_mode_prompt_context -- the orchestrator ROLE itself is ungoverned, which is why burnout happened in the orchestrator's own context. Create a new contract (e.g. .claude/context/contracts/orchestrator-discipline.md) binding the orchestrator role: NO inline design/proof analysis, NO reading implementation source, NO running builds, NO strategy reconsideration; when a phase cannot complete in a bounded dispatch, the only allowed responses are (a) dispatch a fresh research/audit agent, or (b) escalate via the blocker ladder -- NEVER absorb the work. Wire this contract into skill-orchestrate-hard so it is referenced/enforced at the top of the state-machine loop (analogous to anti-analysis.md injection into implement dispatches). Add a burnout circuit-breaker: detect orchestrator context-exhaustion signals (repeated re-reads of the same file, multiple consecutive inline-reasoning turns with no Agent dispatch, mid-analysis strategy reversal) and force a handoff/dispatch instead of continuing inline. Reference existing context-exhaustion-detection.md if present. Root causes: RC2 (orchestrator role ungoverned by H2), RC5 (no burnout circuit-breaker). Scope: hard-mode only. CONTEXT: burnout signatures in transcript -- circular reconsideration (built renameNF_eval_dup -> doubted it -> abandoned -> re-added -> stripped -> re-added a hypothesis), explicit 'before I concede... ONE more time' (line 2009); ended marking phase BLOCKED with an UNSOUND inline conclusion later caught by a standard-mode audit.",
+      "effort": "3-6 hours",
+      "topic": "agent-system",
+      "dependencies": [
+        772
+      ],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/773_orchestrator_discipline_contract_burnout_breaker/reports/01_orchestrator_discipline_burnout_breaker.md",
+          "summary": "Research report: proposed orchestrator-discipline.md contract structure (6 sections modeled on anti-analysis.md/convergence.md/recovery.md), exact SKILL.md wiring points (Stage 1c preamble + Stage 3c burnout gate in the 772-reserved Stage 1b-3b region), burnout signal mapping to context-exhaustion-detection.md, forced-handoff mechanism (reuse existing Agent-dispatch/escalation paths, extend loop_guard_file with a counter rather than new sidecar file), and dual-copy notes (contracts+index.json single-copy, SKILL.md dual-copy)."
+        },
+        {
+          "type": "plan",
+          "path": "specs/773_orchestrator_discipline_contract_burnout_breaker/plans/01_orchestrator-discipline-burnout-breaker.md",
+          "summary": "6-phase plan (est. 4h): create orchestrator-discipline.md contract, register in index.json (empty load_when), wire Context References + recovery.md, insert Stage 1c preamble + Stage 3c burnout gate + loop_guard counter into both dual-copy SKILL.md files, verify byte-identity and single-copy invariants."
+        },
+        {
+          "type": "summary",
+          "path": "specs/773_orchestrator_discipline_contract_burnout_breaker/summaries/01_orchestrator-discipline-burnout-breaker-summary.md",
+          "summary": "Implementation summary: orchestrator-discipline.md contract created and registered; Stage 1c/3c wired into both skill-orchestrate-hard SKILL.md copies; byte-identity and single-copy invariants verified."
+        }
+      ],
+      "session_id": "sess_1783096045_wnia2f_773",
+      "completion_summary": "Added .claude/context/contracts/orchestrator-discipline.md (single-copy, 6-section orchestrator-role discipline contract) and registered it in index.json with empty load_when; wired it into skill-orchestrate-hard (dual-copy) via a new Stage 1c once-per-invocation preamble and a new Stage 3c every-cycle burnout circuit-breaker gate reusing existing dispatch/escalation paths plus a loop_guard_file burnout_signals_this_session counter; added the missing recovery.md Context References entry; verified both SKILL.md copies remain byte-identical.",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 772,
+      "project_name": "hardmode_orchestrator_pure_dispatcher",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-06-24T21:54:15Z",
+      "last_updated": "2026-07-03T16:06:31Z",
+      "title": "Make hard-mode orchestrator a pure dispatcher (strip implementation capability)",
+      "description": "[--hard IMPLEMENTATION leg: focus each agent round on an INDIVIDUAL PHASE, never the entire plan.] Make skill-orchestrate-hard structurally incapable of doing implementation work itself, forcing per-phase delegation. (1) Remove `Edit` from skill-orchestrate-hard `allowed-tools` (currently `Agent, Bash, Read, Edit`) so the orchestrator cannot directly modify source files -- it used Update ~10 times on task 305. (2) Constrain Bash to orchestration-only operations (jq/state.json reads, git status/log, status-sync scripts) and explicitly forbid build/test/compiler invocations (lake build, lean-lsp, etc.) in the orchestrator context. (3) Require BLOCKING, foreground single-phase dispatch: exactly one Agent call per cycle, wait for its handoff return, never interleave the orchestrator's own work -- forbid background/parallel dispatch of implementation agents (root cause: transcript line 92 'launched it in the background and will continue the orchestration'). (4) Restrict orchestrator Reads to handoff JSON, state.json, and plan files ONLY -- forbid reading implementation source files. (5) Under the relaxed zero-debt policy (task 778), a VALID outcome of an implementation round is a green-building strategic-sorry SKELETON for the phase -- each strategic sorry documented and mapped to a tracked follow-up part -- rather than a fully complete phase; the orchestrator must ACCEPT and route such skeleton handoffs (reading the sorry_inventory) as progress, not demand completeness in one round. Root causes: RC1 (orchestrator had Edit + unrestricted Bash), RC3 (H1 not enforced as a hard loop boundary; background dispatch). Scope: hard-mode only; do NOT modify base skill-orchestrate. CONTEXT: /orchestrate 305 --hard --lit (transcript .claude/output/hard.md) -- the orchestrator became the implementation agent (lines 954-2700: zero implementation dispatches, only inline proof reasoning + ~10 direct Update/lake-build/lean-lsp calls). Goal: each --hard implementation round dispatches exactly ONE phase to a bounded sub-agent; the orchestrator never takes the plan as a whole. Pairs with the planning leg (task 774), which produces the small phases / strategic-sorry skeleton this leg consumes, and the relaxed-debt policy (task 778).",
+      "effort": "3-6 hours",
+      "topic": "agent-system",
+      "dependencies": [
+        778,
+        774
+      ],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/772_hardmode_orchestrator_pure_dispatcher/reports/01_orchestrator-pure-dispatcher.md",
+          "summary": "Full research report with exact file/line anchors for all 5 required structural changes to skill-orchestrate-hard (dual deployed + extensions/core copies), two explicit scope-decision flags (H7 parallel wave dispatch conflict with item 3; Read-scope tension with item 4's Context References/H4 grep usage), a two-part fix for item 5 (heading-scan phase-selection + skeleton-exhaustion routing mirroring task 774's already-landed skill-implementer-hard fix, plus an independent Stage 5 postflight-status-transition gate to prevent premature whole-task completion after a single phase), a sibling-task overlap map (773 auto-serializes after 772 via dependency; 774 confirmed non-overlapping; 779 has NO formal dependency on 772 and edits the same CONTRACT SLOTS function -- flagged for manual serialization), and scoped-tool syntax precedent (Bash(cmd:*), Read(path/*)) drawn from skill-git-workflow, spawn-agent, settings.json, and creating-commands.md."
+        },
+        {
+          "type": "plan",
+          "path": "specs/772_hardmode_orchestrator_pure_dispatcher/plans/01_orchestrator-pure-dispatcher.md",
+          "summary": "6-phase implementation plan editing skill-orchestrate-hard/SKILL.md and its extensions/core mirror for the five pure-dispatcher requirements."
+        }
+      ],
+      "session_id": "sess_1783092185_cd6c84_772",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 776,
+      "project_name": "lit_adhoc_dispatch_navigation_doc_sync",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-06-24T22:01:31Z",
+      "last_updated": "2026-07-01T17:32:00Z",
+      "title": "Make --lit navigation work for ad-hoc dispatch and sync stale CLAUDE.md docs",
+      "description": "Two coupled fixes so --lit works outside the formal /research N --lit command path and is documented accurately. (1) Ad-hoc dispatch directive: create a reusable 'literature navigation directive' that the primary/orchestrator agent injects when the user asks for --lit conversationally (not via skill Stage 4a). When no per-repo sub-index exists, this path must surface the SAME interactive question defined in task 775 (create curation task vs use global now) -- it must NOT silently inject nothing and must NOT silently auto-search. Once a path is chosen, the dispatched agent receives the <literature-briefing> navigation instructions (run literature-search.sh against the chosen corpus, Read the relevant segmented chunk files). Reference how Stage 4a generates lit_context. (2) CLAUDE.md doc sync: the 'Literature Mode (--lit)' section still describes the DEPRECATED static-dump model (literature-retrieve.sh, <literature-context>, 'reads all .md and .txt files from specs/literature/', TOKEN_BUDGET=4000/MAX_FILES=10). Rewrite the 'What --lit Does' and 'Interactive Sub-Index Setup Detection' subsections to describe (i) the live navigate-on-demand briefing (literature-briefing.sh -> <literature-briefing>) against the global segmented corpus, and (ii) the interactive no-silent-fallback behavior from task 775 (create-curation-task vs use-global-now). Reconcile the token-budget drift (literature-retrieve.sh header 8000, CLAUDE.md 4000, global index.json 8000). Root causes: G3 (navigation reachable only from skill Stage 4a), G4 (stale CLAUDE.md misdocuments --lit). Depends on task 775 (documents the interactive behavior 775 implements).",
+      "effort": "3-6 hours",
+      "topic": "literature",
+      "dependencies": [
+        775
+      ],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/776_lit_adhoc_dispatch_navigation_doc_sync/reports/01_lit-adhoc-dispatch-doc-sync.md",
+          "summary": "Research: ad-hoc --lit dispatch directive + CLAUDE.md doc sync (post-775)"
+        },
+        {
+          "type": "plan",
+          "path": "specs/776_lit_adhoc_dispatch_navigation_doc_sync/plans/01_lit-adhoc-navigation-doc-sync.md",
+          "summary": "4-phase plan: greenfield ad-hoc navigation directive + CLAUDE.md doc sync"
+        },
+        {
+          "type": "summary",
+          "path": "specs/776_lit_adhoc_dispatch_navigation_doc_sync/summaries/01_lit-adhoc-navigation-doc-sync-summary.md",
+          "summary": "4/4 phases implemented"
+        }
+      ],
+      "session_id": "sess_1782923730_e38a8e_776",
+      "completion_summary": "Created ad-hoc/conversational --lit navigation directive pattern file (canonical+mirror) reusing 775 primitives, registered in index-entries.json, and doc-synced claudemd.md Literature Mode (live briefing model, dropped stale TOKEN_BUDGET/MAX_FILES, added ad-hoc pointer).",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 775,
+      "project_name": "lit_global_corpus_fallback_briefing",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-06-24T22:01:31Z",
+      "last_updated": "2026-07-01T17:05:12Z",
+      "title": "--lit: interactive prompt when no per-repo sub-index (no silent fallback)",
+      "description": "[--lit, NO SILENT FALLBACK] When --lit is used but no per-repo specs/literature-index.json sub-index exists, the system MUST present an INTERACTIVE question (AskUserQuestion) -- never silently do nothing, and never silently auto-search. The question asks the user to choose between: (a) CREATE A TASK to curate a per-repo sub-index (so future --lit runs use a focused, repo-specific selection from the global corpus), or (b) POINT TO THE GLOBAL corpus now (run a relevance search against the global ~/Projects/Literature FTS5 index via literature-search.sh, keyed by the task description, and build a <literature-briefing> from the top-N matching segments for this run). (1) literature-briefing.sh must accept the task description/query (it currently takes no arguments) and support a global-corpus briefing mode used by option (b). (2) Wire the interactive prompt into the skill Stage 4a callers (skill-researcher, skill-researcher-hard, skill-planner, skill-planner-hard, skill-implementer, skill-implementer-hard) -- reconcile with / replace the existing 3-option Stage 4a flow (Skip / Create setup task / Create+run) so the choice is clearly 'create curation task' vs 'use global now', and NO branch silently yields an empty briefing. (3) Either briefing path always carries the 'How to Use' footer directing the agent to run literature-search.sh and Read the relevant segmented chunk files. (4) DESIGN QUESTION to resolve during /plan: define the default for autonomous contexts (e.g. /orchestrate) where AskUserQuestion cannot prompt -- it must be a VISIBLE, logged choice (e.g. default to global with a logged notice, or create-and-defer), never a silent no-op. Root causes: G1 (hard gate + silent empty exit), G2 (no global-corpus option). SUPERSEDES the earlier non-interactive auto-fallback design per user direction: 'I don't like fallbacks which are silent.' CONTEXT: transcript .claude/output/lit.md -- no sub-index existed, briefing silently exited empty, the agent got nothing from --lit and fell back to web/training knowledge; the segmented global corpus (222 entries + queryable FTS5 .literature.db via literature-search.sh) was never explored.",
+      "effort": "3-6 hours",
+      "topic": "literature",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/775_lit_global_corpus_fallback_briefing/reports/01_lit-no-silent-fallback.md",
+          "summary": "Research: --lit no-silent-fallback + global-corpus briefing design"
+        },
+        {
+          "type": "plan",
+          "path": "specs/775_lit_global_corpus_fallback_briefing/plans/01_lit-global-corpus-briefing.md",
+          "summary": "6-phase plan: global-briefing mode, shared resolve helper, Stage 4a rewrite x6, doc sync"
+        },
+        {
+          "type": "summary",
+          "path": "specs/775_lit_global_corpus_fallback_briefing/summaries/01_lit-global-corpus-briefing-summary.md",
+          "summary": "6/6 phases implemented"
+        }
+      ],
+      "session_id": "sess_1782923730_e38a8e_775",
+      "completion_summary": "Implemented no-silent-fallback interactive --lit briefing: added literature-briefing.sh --global mode, shared literature-lit-flag-resolve.sh helper, rewrote Stage 4a in all 6 skills to two live outcomes + explicit skip, resolved autonomous default (orchestrator_mode bypasses prompt, defaults to global with [lit:auto] notice), scoped claudemd.md doc update.",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 802,
+      "project_name": "literature_authors_first_char_truncation_guard",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-07-01T00:00:00Z",
+      "last_updated": "2026-07-04T17:04:58Z",
+      "title": "Guard skill-literature authors resolver against string-to-first-char truncation",
+      "description": "[LITERATURE AUTHORS RESOLVER TRUNCATION -- latent footgun, follow-up to task 801] In .claude/skills/skill-literature/SKILL.md at line ~1696 (per-repo sub-index Resolve operation), the authors resolver uses `(.authors // []) | first // \"?\"`. Because jq `first` on a JSON STRING returns its first CHARACTER (e.g. `\"Yde Venema\" | first` -> `\"Y\"`) rather than erroring, a string-typed `.authors` value is silently truncated to a single character instead of yielding the author name. `.authors // []` only substitutes on null/false, not on a string, so it does not protect this path. This is a DIFFERENT code path from the one task 799 fixed in literature-briefing.sh. The global corpus is currently normalized to arrays (task 801, ~/Projects/Literature commit c6eccfb), so this will not trigger in practice today, but any string-typed authors reaching this line (a source that bypasses migrate-from-repo.sh, or a not-yet-normalized index) would silently corrupt output. FIX: make the resolver type-aware, e.g. `if (.authors|type)==\"array\" then (.authors|first) elif (.authors|type)==\"string\" then .authors else \"?\" end`. Scope: single line in .claude/skills/skill-literature/SKILL.md; small, self-contained. CONTEXT: flagged during task 801 research (report 01_authors-schema-normalization.md) and deferred as out-of-scope.",
+      "effort": "30 minutes",
+      "topic": "literature",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/802_literature_authors_first_char_truncation_guard/reports/01_authors_first_char_truncation_guard.md",
+          "summary": "Exact location (SKILL.md:1696), exact current text, exact type-aware replacement, and confirmation via grep that no other occurrences of the buggy first-on-authors pattern exist in the file."
+        },
+        {
+          "type": "plan",
+          "path": "specs/802_literature_authors_first_char_truncation_guard/plans/01_authors-truncation-guard.md",
+          "summary": "One-phase, one-edit plan: verbatim jq string replacement at SKILL.md:1696 plus string/array jq sanity checks and a grep confirming the old pattern is gone."
+        },
+        {
+          "type": "summary",
+          "path": "specs/802_literature_authors_first_char_truncation_guard/summaries/01_authors-truncation-guard-summary.md",
+          "summary": "Implementation summary describing the single-line jq fix, the hardlink-sync finding, and verification results."
+        }
+      ],
+      "parent_task": 801,
+      "session_id": "sess_1783182771_c4ab90_802",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 803,
+      "project_name": "email_claude_code_extension",
+      "title": "Build email/ Claude Code extension (author + doc-lint, no load)",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "extensions",
+      "effort": "4-6 hours",
+      "parent_task": null,
+      "dependencies": [],
+      "created": "2026-07-02T20:16:12Z",
+      "last_updated": "2026-07-03T06:16:37Z",
+      "artifacts": [
+        {
+          "path": "specs/803_email_claude_code_extension/reports/01_email-extension-seed.md",
+          "type": "research",
+          "summary": "Seed report: email/ extension scope (canonical source in nvim, asymmetric routing, keyword_overrides, wrapper-only agent, HARDENED allowlist hook, doc-lint, harvest data only); shared invariants + handoff contracts"
+        },
+        {
+          "path": "specs/803_email_claude_code_extension/reports/02_authoring-contract-verification.md",
+          "type": "research",
+          "summary": "Implementation-grounding verification of the doc-lint contract, extension templates, hook/settings merge mechanism, keybind map, and now-closed .dotfiles #72 handoff, with concrete manifest and fragment specs"
+        },
+        {
+          "path": "specs/803_email_claude_code_extension/plans/03_author-email-extension.md",
+          "type": "plan",
+          "summary": "7-phase plan: scaffold+manifest -> five parallel authoring phases (docs/index, agent+skill, cleanup skill+command, hook+settings-fragment, context payload) -> doc-lint verification gate"
+        },
+        {
+          "path": "specs/803_email_claude_code_extension/summaries/02_author-email-extension-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the email/ extension authoring task"
+        }
+      ],
+      "description": "Author the canonical email/ Claude Code extension at ~/.config/nvim/.claude/extensions/email/ (this repo is the master extension library that <leader>al loads into consuming repos). CROSS-REPO LINEAGE: child of .dotfiles task 71 (expanded); reference plan = ~/.dotfiles/specs/071_design_ai_email_management_workflow/plans/04_email-workflow-implementation.md (v3, phases 3/4/6). DEPENDS ON .dotfiles task 72 for: (a) the harvested ~/Mail email-preferences.md rule taxonomy + JSON schema + MAX_BATCH_SIZE=50, and (b) the nix wrapper CONTRACT (binary names + flags). Deliverable: manifest.json (task_type=email; ASYMMETRIC routing: research->skill-researcher, plan->skill-planner shared, implement->custom skill-email-implementation->email-implementation-agent; keyword_overrides keywords[inbox,email,gmail,himalaya,notmuch,unsubscribe,\"junk mail\",\"draft reply\",mbsync,aerc,\"mail triage\"] aliases[mail,mailbox]; provides incl. hooks + merge_targets.settings so the hook unloads with the extension); email-implementation-agent (WRAPPER-ONLY: may only invoke email-census/email-classify/email-archive-confirmed/email-delete-confirmed/email-unsubscribe-extract by name, NEVER raw himalaya/notmuch); skill-email-implementation + skill-email-cleanup; hardened mail-guard.sh PreToolUse hook (ALLOWLIST the 5 wrapper binaries; DENY raw `himalaya message delete|move|send` + `himalaya folder expunge` + msmtp + rm-*Mail* + secret-tool); EXTENSION.md (<=60 lines slim standard); README.md (must mention every provided command); index-entries.json (load_when.task_types:[email]); context/project/email/ (harvested prefs + wrapper-contract + propose-review-confirm-execute pattern + recall-on-keep-bias). Keybind check: any email keybinds must NOT shadow the existing nvim Himalaya plugin <leader>me/mS/mf. SCOPE = AUTHOR + pass `bash .claude/scripts/check-extension-docs.sh` ONLY. Do NOT load via <leader>al (user loads manually into .dotfiles/.claude and ~/Mail/.claude afterward). Note: no code reuse from the retired ~/Mail harness (superseded); harvest DATA only.",
+      "researched": "2026-07-02T20:26:10Z",
+      "next_artifact_number": 3,
+      "session_id": "sess_1783058696_8cb281",
+      "memory_candidates": [
+        {
+          "content": "check-extension-docs.sh fails any manifest routing_hard target that is not deployed under .claude/skills/, EVEN when the extension is not installed (unconditional-dispatch FAIL clause, lines 256-261). Extensions authored in the master library but not loaded must omit routing_hard entirely or point it only at deployed core hard skills (skill-researcher-hard, skill-planner-hard, skill-implementer-hard). The lean extension currently fails doc-lint for exactly this reason, making the repo-wide lint exit code 1 regardless of other extensions.",
+          "category": "PATTERN",
+          "source_artifact": "specs/803_email_claude_code_extension/reports/02_authoring-contract-verification.md",
+          "confidence": 0.9,
+          "suggested_keywords": [
+            "routing_hard",
+            "doc-lint",
+            "check-extension-docs",
+            "extension",
+            "manifest",
+            "lint-fail"
+          ]
+        },
+        {
+          "content": "keyword_overrides has two on-disk schemas but only the nested form {\"<task_type>\": {\"keywords\": [...], \"aliases\": [...]}} (cslib style) is honored by /task step 4b/4e jq in .claude/commands/task.md; literature's flat form {\"keyword\": \"task_type\"} never matches (.value.keywords[]? is null) and is dead config. Multi-word keywords work because 4b uses regex test() with word boundaries. Aliases only remap results of the hardcoded table/default (4e), never fire directly from descriptions.",
+          "category": "INSIGHT",
+          "source_artifact": "specs/803_email_claude_code_extension/reports/02_authoring-contract-verification.md",
+          "confidence": 0.85,
+          "suggested_keywords": [
+            "keyword_overrides",
+            "task-type",
+            "manifest",
+            "extension",
+            "task-routing"
+          ]
+        },
+        {
+          "content": "Extension-shipped Claude Code hooks register cleanly and unload with the extension: put the script in hooks/ + provides.hooks (loader copy_hooks deploys to .claude/hooks/ with exec perms, loader.lua:352-384), and register it via settings-fragment.json carrying hooks.PreToolUse + permissions.deny, declared under merge_targets.settings -> .claude/settings.local.json. merge_settings (shared/extensions/merge.lua:229) deep-merges with per-key tracking (new_object/appended) and unmerge_settings removes appended array items by deep-equality on unload. Doc-lint does NOT verify provides.hooks existence, but the loader requires the file.",
+          "category": "TECHNIQUE",
+          "source_artifact": "specs/803_email_claude_code_extension/reports/02_authoring-contract-verification.md",
+          "confidence": 0.85,
+          "suggested_keywords": [
+            "PreToolUse",
+            "hooks",
+            "settings-fragment",
+            "merge_targets",
+            "extension-unload",
+            "mail-guard"
+          ]
+        },
+        {
+          "content": "Extension keyword_overrides in .claude/extensions/*/manifest.json must use the NESTED cslib-style schema {\"<task_type>\": {\"keywords\": [...], \"aliases\": [...]}}, not a flat {\"<task_type>\": \"meta\"} form. Only the nested form is consumed by /task step 4b/4e jq (task.md:123-190); the flat form (used by literature) is dead config that never matches.",
+          "category": "PATTERN",
+          "source_artifact": "specs/803_email_claude_code_extension/summaries/02_author-email-extension-summary.md",
+          "confidence": 0.9,
+          "suggested_keywords": [
+            "keyword_overrides",
+            "extension-manifest",
+            "task-routing",
+            "nested-schema",
+            "task.md"
+          ]
+        },
+        {
+          "content": "check-extension-docs.sh FAILs unconditionally on any routing_hard target that is declared but not deployed, even when the declaring extension itself is not installed (the 'unconditional-dispatch FAIL clause', lines 256-261) -- unlike routing_hard-does-not-apply, plain routing targets only WARN in that same uninstalled case. New extensions should omit routing_hard entirely unless the hard-mode skill target is already deployed under .claude/skills/.",
+          "category": "PATTERN",
+          "source_artifact": "specs/803_email_claude_code_extension/summaries/02_author-email-extension-summary.md",
+          "confidence": 0.9,
+          "suggested_keywords": [
+            "routing_hard",
+            "check-extension-docs",
+            "doc-lint",
+            "extension-authoring"
+          ]
+        },
+        {
+          "content": "check-extension-docs.sh Rule E (check_referenced_scripts_declared) flags any *.sh/*.sql filename token mentioned in an extension's commands/skills/agents/README/EXTENSION.md unless it is covered by the extension's own provides.hooks, any extension's provides.scripts, or core's provides.scripts/hooks. When authoring docs for an extension shipping its own hook (e.g. mail-guard.sh), only mention that hook's own filename and core-declared script names -- any other .sh mention will fail lint.",
+          "category": "TECHNIQUE",
+          "source_artifact": "specs/803_email_claude_code_extension/summaries/02_author-email-extension-summary.md",
+          "confidence": 0.85,
+          "suggested_keywords": [
+            "rule-e",
+            "check-extension-docs",
+            "doc-lint",
+            "provides.hooks",
+            "provides.scripts"
+          ]
+        }
+      ],
+      "plan_metadata": {
+        "phases": 7,
+        "total_effort_hours": 4,
+        "complexity": "medium",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          [
+            7
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_email-extension-seed.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-07-02"
+          },
+          {
+            "path": "reports/02_authoring-contract-verification.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-07-02"
+          }
+        ]
+      },
+      "completion_summary": "Authored the email/ Claude Code extension (manifest, EXTENSION.md, README, agent, skills, /email command, hardened mail-guard.sh hook, settings-fragment.json, and harvested context docs); check-extension-docs.sh reports email PASS.",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 804,
+      "project_name": "document_fable_model_flag",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Document the --fable model flag alongside --haiku/--sonnet/--opus across the agent system",
+      "description": "Document the --fable model-selection flag alongside --haiku, --sonnet, and --opus everywhere the other model flags appear in the agent system. The --fable flag (selecting the Fable 5 model family, claude-fable-5) is a supported model flag on /research, /plan, and /implement (and composes with effort flags --fast/--hard and --team, --lit, --clean), but it is currently undocumented while its siblings are listed. SCOPE: audit and update all documentation/reference sites that enumerate the model flags, including but not limited to: the CLAUDE.md Command Reference table flag column (/research, /plan, /implement usage strings currently show [--haiku|--sonnet|--opus]); the 'Model Enforcement' paragraph in the Skill-to-Agent Mapping section (describes 'model flags (--haiku, --sonnet, --opus) select the model family'); the composability notes under Hard Mode (e.g. '--hard works with model flags: --hard --opus'); the agent-frontmatter-standard doc (.claude/docs/reference/standards/agent-frontmatter-standard.md) which defines the tiered model policy and flag dimensions; the command markdown files under .claude/commands/ (research.md, plan.md, implement.md) and their argument-parsing/usage sections; any skill SKILL.md files or scripts (e.g. command-route-skill.sh or model-resolution logic) that parse/whitelist model flags; and any extension manifests or routing docs that reference the model-flag set. Also verify the flag is actually wired through the model-resolution code path (not just docs) and add it where the parser recognizes --haiku/--sonnet/--opus but not --fable. Goal: --fable is a first-class, documented model flag on par with --haiku/--sonnet/--opus across the entire agent system.",
+      "effort": "1-3 hours",
+      "parent_task": null,
+      "dependencies": [
+        786,
+        795
+      ],
+      "artifacts": [
+        {
+          "path": "specs/804_document_fable_model_flag/reports/01_fable-model-flag-sites.md",
+          "type": "report",
+          "summary": "Complete file:line inventory of every --haiku/--sonnet/--opus enumeration site plus the exact parser code path needing a --fable branch"
+        },
+        {
+          "path": "specs/804_document_fable_model_flag/plans/02_fable-model-flag-plan.md",
+          "type": "plan",
+          "summary": "8-phase, 3.5h plan: parser wiring (wave 1), six parallel doc-mirror phases (wave 2), verification (wave 3)."
+        },
+        {
+          "path": "specs/804_document_fable_model_flag/summaries/03_fable-model-flag-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 8 phases, decisions, deviations, and verification results"
+        }
+      ],
+      "created": "2026-07-02T21:51:52Z",
+      "last_updated": "2026-07-04T19:46:59Z",
+      "session_id": "sess_1783192850_515b14_804",
+      "completion_summary": "Wired --fable into parse-command-args.sh (functional MODEL_FLAG=\"fable\" branch + FOCUS_PROMPT strip, both copies) and documented it across every model-flag enumeration site the research report inventoried: command markdown (Claude-Code, core mirror, and OpenCode), the CLAUDE.md merge-source (regeneration left to next extension load, no runnable script found), agent-frontmatter-standard, six skill SKILL.md files, and the guides/architecture-spec/meta-guide negative enumeration, with all mirror pa",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 805,
+      "project_name": "improve_email_mass_cleanup_workflow",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "extensions",
+      "parent_task": 803,
+      "dependencies": [],
+      "description": "Research how to improve the email/ extension's mass-cleanup commands and workflow for efficiently cleaning an entire mailbox, then propose concrete command/skill changes. Focus areas: (1) Interactive questions (AskUserQuestion) that make bulk review tractable - approve by sender/domain bucket rather than message-by-message, leaning on the recall-on-keep bias (delete auto-proposed only at confidence >= 0.90, else unsure) and email-unsubscribe-extract for recurring senders. (2) A `--all` flag on /email for reviewing/triaging the FULL inbox beyond a single 50-message pass - design a batch-drain loop that runs email-*-confirmed --execute in repeated <=50 batches, idempotent via the <manifest>.state.jsonl execution-state file, within the PLAN_EXPIRY_DAYS=7 approved-manifest window, with per-batch progress reporting. (3) A `--archive` flag to also clean up ARCHIVED (Gmail All Mail, ~64k msgs) email, which MUST proceed more carefully than inbox triage (larger blast radius, closer to irreversible after --expunge-trash + sync). Constraints/invariants to preserve: keep skill-email-cleanup wrapper-only (only the 5 named binaries, never raw himalaya/notmuch); keep the mandatory human review gate; run cleanup as direct-execution in the root session (interactive gate cannot live in a background subagent); do NOT raise MAX_BATCH_SIZE=50 (that is a .dotfiles task 72 wrapper-contract change with a bigger blast radius) - prefer looping. Likely touches .claude/extensions/email/ (commands/email.md, skills/skill-email-cleanup, possibly a new skill) and its context docs. References: task 803 artifacts (reports 01/02, plan 03, summary 02); the /email --sync addition (commit 51bfda974); wrapper contract in context/project/email/domain/wrapper-contracts.md (MAX_BATCH_SIZE, PLAN_EXPIRY_DAYS, delete invariant). Cross-repo note: MAX_BATCH_SIZE and the wrapper binaries are owned by .dotfiles task 72 (frozen contract), referenced here by name only.",
+      "created": "2026-07-03T07:04:06Z",
+      "last_updated": "2026-07-03T13:05:46Z",
+      "next_artifact_number": 3,
+      "session_id": "sess_1783082562_3cac71",
+      "researched": "2026-07-03T07:31:29Z",
+      "artifacts": [
+        {
+          "path": "specs/805_improve_email_mass_cleanup_workflow/reports/02_two-mode-batching-design.md",
+          "type": "report",
+          "summary": "Round-2 design report: two-mode batching (default 50-step vs. --all whole-mailbox bulk decision), resolving the 50-cap split via mtime-preserved sub-manifests and an unconditionally-chunked, backgrounded classify sweep with ID-list-slice pagination."
+        },
+        {
+          "path": "specs/805_improve_email_mass_cleanup_workflow/plans/02_two-mode-mass-cleanup.md",
+          "type": "plan",
+          "summary": "9-phase implementation plan for the two-mode email mass-cleanup workflow (default 50-step, --all whole-mailbox sweep/bucket/drain, --archive scope + gates), verification-gated and doc-lint validated."
+        },
+        {
+          "path": "specs/805_improve_email_mass_cleanup_workflow/summaries/02_two-mode-mass-cleanup-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with the Phase-9 end-to-end dry-run walkthrough of all five /email invocation forms"
+        }
+      ],
+      "memory_candidates": [
+        {
+          "content": "For a frozen CLI wrapper that hard-refuses over-cap mutation manifests (never auto-chunks) and exposes only --limit (no offset/cursor) on its classify/read side, a safe whole-scope UX splits into: (1) a backgrounded, read/tag-only classify sweep paginated by a captured message-ID-list slice (NOT by durable tags, which persist cross-invocation and would exclude previously-declined items), accumulating into a persistent file because the tool overwrites its candidate output per call; (2) ONE consolidated human bucket-approval; (3) a transparent, progress-only drain over sha256-confirmed sub-cap sub-manifests with NO per-batch re-prompt. Preserve the original approval mtime on splits (touch -r) so the staleness guard still triggers, and STOP-and-report on expiry rather than silently re-timestamping.",
+          "category": "PATTERN",
+          "source_artifact": "specs/805_improve_email_mass_cleanup_workflow/plans/02_two-mode-mass-cleanup.md",
+          "confidence": 0.8,
+          "suggested_keywords": [
+            "batch-drain-loop",
+            "manifest-splitting",
+            "chunked-sweep-pagination",
+            "human-gate",
+            "mtime-expiry",
+            "wrapper-only"
+          ]
+        },
+        {
+          "content": "The frozen email wrapper email-classify exposes a wrapper-only 'count oracle': calling `email-classify --limit 0 \"<notmuch query>\"` processes nothing and applies no tags, but its stderr NOTE line ('query matched <total> message(s); processing the first 0') discloses the total match count (absent NOTE = 0 matches). Side effect: the candidate manifest file is overwritten with an empty file, so preserve any accumulator before probing and never probe between sweep chunks. Used for pre-sweep size estimates and non-silent residual accounting in /email --all.",
+          "category": "TECHNIQUE",
+          "source_artifact": "specs/805_improve_email_mass_cleanup_workflow/summaries/02_two-mode-mass-cleanup-summary.md",
+          "confidence": 0.85,
+          "suggested_keywords": [
+            "email-classify",
+            "count-oracle",
+            "limit-0",
+            "notmuch",
+            "pagination",
+            "wrapper"
+          ]
+        },
+        {
+          "content": "When an implementation plan poses an open verification question WITH a designed fallback branch (in its Risks/Rollback sections), resolving the question to the fallback during Phase-1 verification is NOT a load-bearing falsification requiring a stop-and-revise: proceed using the pre-authorized fallback and record the adaptation as an 'altered' deviation on the affected tasks. Reserve stop-and-partial for falsified assumptions the plan did NOT design a branch for. Applied in task 805 when the wrapper exposed no message-ID-capture path.",
+          "category": "INSIGHT",
+          "source_artifact": "specs/805_improve_email_mass_cleanup_workflow/summaries/02_two-mode-mass-cleanup-summary.md",
+          "confidence": 0.7,
+          "suggested_keywords": [
+            "plan-fallback",
+            "phase-1-gate",
+            "deviation",
+            "verification-first",
+            "implementation"
+          ]
+        },
+        {
+          "content": "Batch caps that are enforced per-category per-file (like the email wrapper's MAX_BATCH_SIZE=50 counted per proposed_action within the --manifest file) allow pairwise packing: put up to the cap of EACH category into one split file, since each consuming binary enforces only its own category's count. 137 archive + 60 delete lines split into 3 files ((50a+50d),(50a+10d),(37a)) instead of 5. Pair with `touch -r <original> <split>` so derived split files inherit the original approval mtime and cannot silently extend a staleness window.",
+          "category": "PATTERN",
+          "source_artifact": ".claude/context/patterns/batch-drain-loop.md",
+          "confidence": 0.75,
+          "suggested_keywords": [
+            "batch-cap",
+            "manifest-split",
+            "touch-r",
+            "mtime",
+            "enforce_batch_size",
+            "drain"
+          ]
+        }
+      ],
+      "completion_summary": "Extended the email extension in place with a two-mode mass-cleanup workflow: default /email is now a safer bounded 50-step pass using durable +proposed-* tags as a cross-invocation cursor; /email --all performs a whole-mailbox operation (chunked backgrounded read/tag-only classify sweep, one consolidated sender/domain bucket approval with min() rollup and 0.90 option-availability gating, then a transparent sub-50 execute drain over sha256-confirmed, mtime-preserved splits with expiry stop-and-report); /email --archive composes with either mode to scope All Mail with extra-caution gates and a pilot gate. Phase-1 ground truth verification confirmed all five frozen-wrapper behaviors and engaged the plan's pre-authorized pagination fallback (no wrapper ID-capture path). Refreshed wrapper-contracts.md (82->209 lines), authored archive-mode-risk.md, bulk-bucket-review.md (email layer), and batch-drain-loop.md (agent-system layer), registered all in their indexes, and updated README/EXTENSION. Email doc-lint passes; no wrapper change; all safety invariants preserved.",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 815,
+      "project_name": "revise_email_extension_multi_account",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "Revise the email/ extension in the .claude/ agent system to support multiple email accounts, drawing on the nvim-extension handoff report at /home/benjamin/.dotfiles/specs/079_email_wrappers_multi_account/reports/01_nvim-extension-handoff.md, aligning it with the multi-account changes being made in the .dotfiles/ NixOS config",
+      "topic": "extensions",
+      "created": "2026-07-04T20:14:30Z",
+      "last_updated": "2026-07-04T20:42:58Z",
+      "researched": "2026-07-04T20:21:47Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/815_revise_email_extension_multi_account/reports/01_multi-account-extension-revision.md",
+          "type": "report",
+          "summary": "File-by-file revision plan for the email/ extension's multi-account support (commands/email.md account selector, skill-email-cleanup account-aware BASE_QUERY + --account passthrough, skill-email-sync channel default, mail-guard.sh confirmed no-change, EXTENSION.md doc update). Confirms .dotfiles task 79 (wrapper binaries) is status=researched only (not landed) - a hard sequencing blocker for implementation. Incorporates ground-truth Logos folder tokens (folder:Logos INBOX/Sent/Archive/Drafts/Trash, no All_Mail/Spam) from task 79's second report."
+        },
+        {
+          "path": "specs/815_revise_email_extension_multi_account/plans/01_email-multi-account-support.md",
+          "type": "plan",
+          "summary": "6-phase plan for email/ extension multi-account (gmail+logos) support: --account/--logos selector in commands/email.md, account-aware BASE_QUERY + --account passthrough in skill-email-cleanup, account-to-channel default in skill-email-sync, EXTENSION.md/manifest.json docs, verification, and a task-79-gated [BLOCKED] Phase 6 for live verification. Approach (b): additive+gated, Gmail path unchanged, /email --logos documented-but-gated pending .dotfiles task 79."
+        },
+        {
+          "path": "specs/815_revise_email_extension_multi_account/summaries/01_email-multi-account-support-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: Phases 1-5 landed (account selector, account-aware BASE_QUERY, mbsync channel default, docs/keywords); Phase 6 documented as intentionally [BLOCKED] pending .dotfiles task 79."
+        }
+      ],
+      "planned": "2026-07-04T20:30:00Z",
+      "plan_metadata": {
+        "phases": 6,
+        "total_effort_hours": 5,
+        "complexity": "medium",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            4
+          ],
+          [
+            5
+          ],
+          [
+            6
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_multi-account-extension-revision.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-07-04"
+          }
+        ]
+      },
+      "session_id": "sess_1783196275_db6362",
+      "implemented": "2026-07-04T21:52:00Z",
+      "completion_summary": "Added multi-account (Gmail + Logos/Protonmail Bridge) support to the .claude/ email extension across Phases 1-5: --account/--logos selector in commands/email.md, account-aware BASE_QUERY + --account passthrough in skill-email-cleanup, account-to-channel default in skill-email-sync, and documentation/keyword updates in EXTENSION.md/manifest.json. The Gmail-only path is byte-for-byte unchanged; /email --logos is parsed and documented but routed through an actionable precondition gate that fails loudly pending .dotfiles task 79's wrapper binaries. Phase 6 (live end-to-end verification) remains intentionally [BLOCKED] pending that external landing; a follow-up task is recommended once task 79 lands.",
+      "memory_candidates": [
+        {
+          "content": "When adding a second account/tenant dimension to an existing single-account agent skill, resolve the selector exactly ONCE at the top of the flow (before any branch that could re-derive it) and thread the SAME resolved value through every downstream call (query construction, wrapper/API calls, gate checks). This prevents 'account drift' where e.g. a census runs under one account and a mutation runs under another. Pair this with per-account-keyed side files (e.g. a pilot-acknowledgement record) so an approval/gate satisfied for account A can never silently license the same operation for account B.",
+          "category": "PATTERN",
+          "source_artifact": "specs/815_revise_email_extension_multi_account/summaries/01_email-multi-account-support-summary.md",
+          "confidence": 0.78,
+          "suggested_keywords": [
+            "multi-account",
+            "account-resolution",
+            "gate-scoping",
+            "pilot-gate",
+            "drift-prevention"
+          ]
+        },
+        {
+          "content": "This nvim config repo drives .claude/CLAUDE.md generation via a Neovim-plugin extension picker (lua/neotex/plugins/ai/shared/extensions/merge.lua's generate_claudemd), not a standalone bash script. It regenerates the ENTIRE CLAUDE.md by concatenating each LOADED extension's EXTENSION.md (per .claude/extensions.json's loaded set) in dependency order. Editing an extension's EXTENSION.md alone does not propagate to CLAUDE.md until a user runs the picker's load/sync action for that extension. When verifying 'does this propagate to CLAUDE.md', check whether the extension is actually in .claude/extensions.json's loaded set first -- if not, propagation is unobservable and that is a pre-existing condition, not a defect in the edit.",
+          "category": "CONFIG",
+          "source_artifact": "specs/815_revise_email_extension_multi_account/summaries/01_email-multi-account-support-summary.md",
+          "confidence": 0.75,
+          "suggested_keywords": [
+            "extension-picker",
+            "generate_claudemd",
+            "extensions.json",
+            "merge-pipeline",
+            "claudemd-propagation"
+          ]
+        }
+      ],
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
+      "project_number": 816,
+      "project_name": "close_task815_phase6_wrapper_contract_docs",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "Discharge Phase 6 of task 815 (email/ extension multi-account). The blocker is resolved: .dotfiles task 79 landed and is switched in, and all 9 wrapper-contract rows verified PASS with zero divergence — see the self-contained closure report at /home/benjamin/.dotfiles/specs/080_verify_logos_wrapper_contract_close_phase6/summaries/01_phase6-closure-report.md (§2 verdict table, §3 ready-to-paste contract data, §5 checklist). Do the §5 items: (1) refresh .claude/extensions/email/context/project/email/domain/wrapper-contracts.md §2/§11 with the confirmed --account <gmail|logos> enum (default gmail, unknown rejected with error) and the per-account folder-token + mbsync-channel tables from §3; (2) optionally generalize the illustrative folder:Gmail/.All_Mail tokens in archive-mode-risk.md to be account-neutral; (3) flip the Phase 6 marker from [BLOCKED] to [COMPLETED] in specs/815_revise_email_extension_multi_account/plans/01_email-multi-account-support.md, updating Status/Dependencies to note task 79 landed and citing .dotfiles task 80 as the verification source. Est ~0.5h, docs-only, no further live verification needed. (Follow-up from task #815)",
+      "topic": "extensions",
+      "parent_task": 815,
+      "created": "2026-07-04T21:31:29Z",
+      "last_updated": "2026-07-04T22:20:00Z",
+      "researched": "2026-07-04T21:37:44Z",
+      "next_artifact_number": 2,
+      "session_id": "sess_1783200919_fce5b6",
+      "artifacts": [
+        {
+          "path": "specs/816_close_task815_phase6_wrapper_contract_docs/reports/01_phase6-docs-closure.md",
+          "type": "report",
+          "summary": "Confirms .dotfiles task 79 landed/switched-in and task 80 closure report verified all 9 wrapper-contract rows PASS with zero divergence. Confirms wrapper-contracts.md §2/§11 anchors match the closure report exactly (no discrepancy). Enumerates precise edit sites: wrapper-contracts.md line 30 (stale --account gmail-only bullet) and §11 (new per-account folder-token + mbsync-channel tables, mbsync table is new content not a replacement); archive-mode-risk.md lines 3/10/74 (generalize) vs line 28 (Gmail-specific retention claim, leave as-is); plan file five edit sites (Status line 4, Phase 6 heading 308, Depends-on/Blocked block 328-333, Testing checklist 365-367, Rollback mention 385) that must flip together."
+        },
+        {
+          "path": "specs/816_close_task815_phase6_wrapper_contract_docs/plans/01_phase6-docs-closure.md",
+          "type": "plan",
+          "summary": "3-phase docs-only closure plan for task 815 Phase 6: wrapper-contracts.md §2 enum + §11 tables, archive-mode-risk.md token generalization, and flip task 815 Phase 6 marker to COMPLETED across five edit sites. All phases independent (Wave 1)."
+        },
+        {
+          "path": "specs/816_close_task815_phase6_wrapper_contract_docs/summaries/01_phase6-docs-closure-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: refreshed wrapper-contracts.md (§2 account enum, §11 folder-token + new §11a mbsync tables), generalized archive-mode-risk.md illustrative tokens to be account-neutral, and flipped task 815 Phase 6 to [COMPLETED] across all edit sites (including two additional historical BLOCKED mentions found during verification)."
+        }
+      ],
+      "planned": "2026-07-04T21:40:00Z",
+      "plan_metadata": {
+        "phases": 3,
+        "total_effort_hours": 1,
+        "complexity": "simple",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1,
+            2,
+            3
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "specs/816_close_task815_phase6_wrapper_contract_docs/reports/01_phase6-docs-closure.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-07-04"
+          }
+        ]
+      },
+      "implemented": "2026-07-04T22:20:00Z",
+      "completion_summary": "Discharged task 815's Phase 6 (email/ extension multi-account) documentation closure: refreshed wrapper-contracts.md §2/§11 with the confirmed --account <gmail|logos> enum and per-account folder-token + mbsync-channel tables verbatim from .dotfiles task 80's closure report, generalized archive-mode-risk.md's illustrative Gmail-only tokens to be account-neutral, and flipped task 815's Phase 6 marker from [BLOCKED] to [COMPLETED] across all coupled edit sites. Task 815 is now fully closed across all six phases.",
+      "archived": "2026-07-04T22:02:29Z"
+    },
+    {
       "project_number": 573,
       "project_name": "bidirectional_discord_opencode_relay",
       "status": "abandoned",
