@@ -11,23 +11,29 @@ next_project_number: 815
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,804,808,809,810,811,812,813 | -- | agent-system, email integration, terminal ui |
-| 2 | 814 | 811,812,813 | agent-system |
+| 1 | 78,87,804,808,809 | -- | agent-system, email integration, terminal ui |
+| 2 | 810 | 804,809 | agent-system |
+| 3 | 811,812,813 | 808,810 | agent-system |
+| 4 | 814 | 811,812,813 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
 804 [NOT STARTED] — Document the --fable model-selection flag alongside --haiku, --so
+  └─ 810 [NOT STARTED] — Follow-up from task 788. Task 788 wired session-lock acquire/rele
+    └─ 811 [NOT STARTED] — Systematic audit of the orchestration core of the .claude/ agent 
+      └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie
+    └─ 812 [NOT STARTED] — Systematic audit of the knowledge & standards layer of the .claud
+      └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie (see above)
+    └─ 813 [NOT STARTED] — Systematic audit of the infrastructure layer of the .claude/ agen
+      └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie (see above)
 808 [NOT STARTED] — Follow-up from task 788. The .orchestrator-loop-guard file (and p
+  └─ 811 [NOT STARTED] — Systematic audit of the orchestration core of the .claude/ agent  (see above)
+  └─ 812 [NOT STARTED] — Systematic audit of the knowledge & standards layer of the .claud (see above)
+  └─ 813 [NOT STARTED] — Systematic audit of the infrastructure layer of the .claude/ agen (see above)
 809 [NOT STARTED] — Follow-up from task 788. Task 788 implemented task-NUMBER-keyed s
-810 [NOT STARTED] — Follow-up from task 788. Task 788 wired session-lock acquire/rele
-811 [NOT STARTED] — Systematic audit of the orchestration core of the .claude/ agent 
-  └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie
-812 [NOT STARTED] — Systematic audit of the knowledge & standards layer of the .claud
-  └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie (see above)
-813 [NOT STARTED] — Systematic audit of the infrastructure layer of the .claude/ agen
-  └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie (see above)
+  └─ 810 [NOT STARTED] — Follow-up from task 788. Task 788 wired session-lock acquire/rele (see above)
 
 ### Terminal Ui
 
@@ -53,7 +59,7 @@ next_project_number: 815
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 804, Task 808, Task 809, Task 810
 
 **Description**: Systematic audit of the infrastructure layer of the .claude/ agent system: the 65 scripts (.claude/scripts/), 19 extensions (.claude/extensions/), hooks, and settings (.claude/settings.json, extensions.json). GOAL: identify what can and should be improved for a more consistent, robust, and performant system, following best practices as of July 2026, while preserving ALL existing functionality and workflows. This is an AUDIT/RESEARCH task only - it produces a findings report with prioritized recommendations and does NOT implement changes. Focus areas: (1) Script robustness: error handling consistency (set -euo pipefail, quoting, jq-escaping workarounds per jq-escaping-workarounds.md, the '| not' safety pattern), exit-code discipline, idempotency, and non-blocking-vs-fatal behavior. (2) Script duplication and consolidation opportunities across the 65 scripts (shared helpers, gate scripts, generate-todo.sh, manage-topics.sh, command-route-skill.sh); dead/orphaned scripts no longer referenced. (3) Extension system: manifest.json schema conformance across the 19 extensions, dependency declaration correctness (circular detection, depth limit), lifecycle hooks vs provides.hooks distinction, keyword_overrides and routing/routing_hard consistency, doc-lint (check-extension-docs.sh) pass status. (4) Hooks: PostToolUse/PreToolUse hook correctness (e.g. validate-meta-write.sh, guard-destructive-git.sh), and settings.json wiring. (5) Performance/robustness: script startup cost, redundant filesystem scans, concurrency/lock safety (relate to tasks 787/788/808/809). DELIVERABLE: reports/ audit with categorized findings (robustness risks, duplication, packaging/manifest issues, dead code, performance), each with severity, affected files, and a concrete recommended change. Independent of tasks 811/812; task 814 synthesizes all three.
 
@@ -63,7 +69,7 @@ next_project_number: 815
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 804, Task 808, Task 809, Task 810
 
 **Description**: Systematic audit of the knowledge & standards layer of the .claude/ agent system: the 10 rules (.claude/rules/), 156 context files (.claude/context/), and the docs tree (.claude/docs/). GOAL: identify what can and should be improved for a more consistent, robust, and performant system, following best practices as of July 2026, while preserving ALL existing functionality and workflows. This is an AUDIT/RESEARCH task only - it produces a findings report with prioritized recommendations and does NOT implement changes. Focus areas: (1) Context index health: .claude/context/index.json load_when correctness (agents/task_types/commands/always semantics), line_count accuracy, orphaned or unreferenced context files, and files that exist but are absent from index.json (or vice versa). (2) Rules coverage and path-pattern correctness (auto-applied rules vs their declared globs); overlap/conflict between rules. (3) Format & pattern documents (context/formats/, context/patterns/) for internal consistency, duplication, and stale cross-references (e.g. .opencode/ paths referenced from .claude/ docs, as seen in return-metadata-file.md Related Documentation). (4) Standards documents (docs/reference/standards/) - are they current, mutually consistent, and actually followed by the components they govern? (5) Complexity reduction: consolidate overlapping context, remove dead knowledge, tighten token budgets. DELIVERABLE: reports/ audit with categorized findings (stale references, index/filesystem drift, duplication, coverage gaps, best-practice gaps), each with severity, affected files, and a concrete recommended change. Independent of tasks 811/813; task 814 synthesizes all three.
 
@@ -73,7 +79,7 @@ next_project_number: 815
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 804, Task 808, Task 809, Task 810
 
 **Description**: Systematic audit of the orchestration core of the .claude/ agent system: the 24 commands (.claude/commands/), 28 skills (.claude/skills/), and 23 agents (.claude/agents/). GOAL: identify what can and should be improved for a more consistent, robust, and performant system, following agent-system best practices as of July 2026, while preserving ALL existing functionality and workflows. This is an AUDIT/RESEARCH task only - it produces a findings report with prioritized, evidence-backed recommendations; it does NOT implement changes (improvement tasks are spawned/approved individually afterward). Focus areas: (1) Command->skill->agent routing and dispatch consistency (command-route-skill.sh precedence, skill-to-agent mapping table in CLAUDE.md vs actual frontmatter, model-tier policy enforcement). (2) Lifecycle consistency across skills (GATE IN preflight -> DELEGATE -> GATE OUT postflight -> COMMIT; checkpoint/marker protocol; return-metadata-file usage). (3) Hard-mode (--hard) and team-mode (--team) contract consistency across the standard vs -hard skill/agent variants; check for drift between paired variants (e.g. skill-researcher vs skill-researcher-hard). (4) Redundancy and complexity-reduction opportunities: duplicated prompt scaffolding across skills/agents, thin-wrapper adherence, opportunities to consolidate. (5) Frontmatter standard conformance (agent-frontmatter-standard.md), model flags (--haiku/--sonnet/--opus/--fable), naming and structure consistency. DELIVERABLE: reports/ audit with a categorized inventory of findings (consistency gaps, robustness risks, performance/token-cost issues, complexity-reduction candidates), each with severity, affected files, and a concrete recommended change. Cross-reference CLAUDE.md routing tables and .claude/docs/reference/standards/. Independent of tasks 812/813; task 814 synthesizes all three.
 
@@ -84,7 +90,7 @@ next_project_number: 815
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 788
+- **Dependencies**: Task 788, Task 804, Task 809
 
 **Description**: Follow-up from task 788. Task 788 wired session-lock acquire/release and heartbeat into command-gate-in.sh / command-gate-out.sh (sourced by /implement and /orchestrate) and into multi-task dispatch. But /research, /plan, and /revise carry their OWN inline, duplicated CHECKPOINT gate logic and do NOT source the shared gate scripts -- so session-lock protection and the commit-per-green-substep cadence do NOT cover those three commands. SCOPE: refactor commands/research.md, commands/plan.md, and commands/revise.md to source command-gate-in.sh / command-gate-out.sh (acquiring/releasing the task lock, emitting heartbeats) instead of their inline duplicated gate logic, so ALL lifecycle commands share one gate path and one lock discipline. Keep dual-copy pairs in sync. Verify the shared gate path composes with each command existing preflight/postflight expectations.
 
