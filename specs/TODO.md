@@ -1,5 +1,5 @@
 ---
-next_project_number: 816
+next_project_number: 817
 ---
 
 # TODO
@@ -11,9 +11,13 @@ next_project_number: 816
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87 | -- | email integration, terminal ui |
+| 1 | 78,87,816 | -- | extensions, email integration, terminal ui |
 
 **Grouped by Topic** (indented = depends on parent):
+
+### Extensions
+
+816 [NOT STARTED] — Discharge Phase 6 of task 815 (email/ extension multi-account). T
 
 ### Terminal Ui
 
@@ -24,6 +28,16 @@ next_project_number: 816
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
+
+### 816. Close task815 phase6 wrapper contract docs
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: Discharge Phase 6 of task 815 (email/ extension multi-account). The blocker is resolved: .dotfiles task 79 landed and is switched in, and all 9 wrapper-contract rows verified PASS with zero divergence — see the self-contained closure report at /home/benjamin/.dotfiles/specs/080_verify_logos_wrapper_contract_close_phase6/summaries/01_phase6-closure-report.md (§2 verdict table, §3 ready-to-paste contract data, §5 checklist). Do the §5 items: (1) refresh .claude/extensions/email/context/project/email/domain/wrapper-contracts.md §2/§11 with the confirmed --account <gmail|logos> enum (default gmail, unknown rejected with error) and the per-account folder-token + mbsync-channel tables from §3; (2) optionally generalize the illustrative folder:Gmail/.All_Mail tokens in archive-mode-risk.md to be account-neutral; (3) flip the Phase 6 marker from [BLOCKED] to [COMPLETED] in specs/815_revise_email_extension_multi_account/plans/01_email-multi-account-support.md, updating Status/Dependencies to note task 79 landed and citing .dotfiles task 80 as the verification source. Est ~0.5h, docs-only, no further live verification needed. (Follow-up from task #815)
+
+---
 
 ### 815. Revise email extension multi account
 - **Status**: [COMPLETED]
