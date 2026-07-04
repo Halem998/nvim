@@ -1,7 +1,9 @@
 # Implementation Plan: Task #815
 
 - **Task**: 815 - Revise the email/ extension in the .claude/ agent system to support multiple email accounts (Gmail + Logos/Protonmail Bridge)
-- **Status**: [COMPLETED] (Phases 1-5 landed; Phase 6 remains `[BLOCKED]` pending `.dotfiles` task 79)
+- **Status**: [COMPLETED] (Phases 1-6 landed; `.dotfiles` task 79 landed and switched in, verified
+  by `.dotfiles` task 80 `verify_logos_wrapper_contract_close_phase6` — all 9 wrapper-contract
+  rows PASS, zero divergence)
 - **Effort**: 5 hours (4.5h for landable Phases 1-5; +0.5h for the deferred, task-79-gated Phase 6)
 - **Dependencies**: `.dotfiles` task 79 (email wrapper multi-account `--account` support) — status `researched` only. Soft dependency for authoring Phases 1-5 (additive, gated); HARD dependency for Phase 6 live verification. See Risks.
 - **Research Inputs**: specs/815_revise_email_extension_multi_account/reports/01_multi-account-extension-revision.md
@@ -27,9 +29,11 @@ functional against the existing Gmail-only wrappers, while `/email --logos` is p
 routed through an **actionable precondition gate** that fails loudly (never a silent Gmail fallback)
 until task 79's wrappers land. Phases 1-5 are therefore safe to land and reach `[COMPLETED]` now.
 Phase 6 (live end-to-end verification of `/email --logos` and the post-landing `wrapper-contracts.md`
-refresh) is the one segment that **genuinely cannot be verified until task 79's binaries land**; it is
-carried as an explicit `[BLOCKED]` phase and, on task-79 landing, is either resumed here or spawned as
-a follow-up task.
+refresh) is the one segment that **genuinely could not be verified until task 79's binaries landed**;
+it was carried as an explicitly blocked phase until task 79 landed and was switched in, at which
+point `.dotfiles` task 80 (`verify_logos_wrapper_contract_close_phase6`) verified all 9 contract rows
+PASS with zero divergence and nvim task 816 discharged the remaining documentation refresh, bringing
+Phase 6 to `[COMPLETED]`.
 
 ### Research Integration
 
@@ -81,7 +85,7 @@ No ROADMAP.md consulted for this dispatch (meta task; roadmap flag not set).
 
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|------------|------------|
-| Shipping account edits before task 79 lands produces a broken/silent `/email --logos` | H | H | Approach (b): additive edits + actionable precondition gate that fails loudly; Gmail path unchanged. Phase 6 (live verify) carried as `[BLOCKED]` pending task 79. |
+| Shipping account edits before task 79 lands produces a broken/silent `/email --logos` | H | H | Approach (b): additive edits + actionable precondition gate that fails loudly; Gmail path unchanged. Phase 6 (live verify) was carried as blocked pending task 79; task 79 has since landed and Phase 6 is `[COMPLETED]` (verified by `.dotfiles` task 80, all 9 rows PASS). |
 | Silent Gmail-shaped query (`folder:Gmail/.All_Mail`) sent for a Logos `--archive` run yields false-empty, not an error | H | M | No fallthrough case: every non-gmail account MUST resolve its own `folder:` branch; Phase 5 greps for any residual hardcoded `folder:Gmail` on a non-gmail path. |
 | Task 79's final `--account` flag spelling could shift during its own impl | M | L | Folder tokens are query-side facts (low risk to encode now); Phase 6 re-confirms exact flag spelling via `email-census --help` once the wrapper lands. |
 | Introducing a `tag:<account>` query (inert in live DB) would silently return 0 | M | L | Convention enforced in Phases 2-3 and grep-checked in Phase 5: `folder:` tokens only. |
@@ -305,7 +309,7 @@ introduced, `mail-guard.sh` is untouched, and the `EXTENSION.md` content propaga
 
 ---
 
-### Phase 6: Post-task-79 live verification + `wrapper-contracts.md` refresh [BLOCKED]
+### Phase 6: Post-task-79 live verification + `wrapper-contracts.md` refresh [COMPLETED]
 
 **Goal**: Once `.dotfiles` task 79's wrapper binaries land and are switched in, verify `/email --logos`
 end-to-end and refresh the read-only wrapper-contract summary. This phase **genuinely cannot be
@@ -313,24 +317,30 @@ verified until task 79's wrapper binaries exist** and is the sole segment gated 
 landing.
 
 **Tasks**:
-- [ ] Re-confirm the exact wrapper flag spelling via `email-census --help` (guard against a flag-name
-      shift during task 79's own implementation) before treating the Logos path as live.
-- [ ] Exercise `/email --logos` end-to-end (census -> classify -> a small archive/delete dry run) against
+- [x] Re-confirm the exact wrapper flag spelling via `email-census --help` (guard against a flag-name
+      shift during task 79's own implementation) before treating the Logos path as live. *(completed:
+      `.dotfiles` task 80 confirmed `--account <gmail|logos>` verbatim across all five wrapper
+      binaries' `--help` output)*
+- [x] Exercise `/email --logos` end-to-end (census -> classify -> a small archive/delete dry run) against
       the live Logos maildir; confirm `folder:Logos` / `folder:Logos/.Archive` scoping returns non-empty,
-      correct counts and the precondition gate now passes.
-- [ ] Refresh `context/project/email/domain/wrapper-contracts.md` §2/§11 with the real `--account` enum
-      and the per-account folder-token table, re-verified against the landed `agent-tools.nix`.
-- [ ] Optional editorial polish: generalize illustrative `folder:Gmail/.All_Mail` tokens in
-      `archive-mode-risk.md` to be account-neutral.
+      correct counts and the precondition gate now passes. *(completed: `.dotfiles` task 80 §4 ran the
+      live census -> classify -> dry-run-mutation exercise end-to-end with correct folder scoping)*
+- [x] Refresh `context/project/email/domain/wrapper-contracts.md` §2/§11 with the real `--account` enum
+      and the per-account folder-token table, re-verified against the landed `agent-tools.nix`. *(completed:
+      nvim task 816 Phase 1, transcribing `.dotfiles` task 80's verified §2/§11 tables verbatim)*
+- [x] Optional editorial polish: generalize illustrative `folder:Gmail/.All_Mail` tokens in
+      `archive-mode-risk.md` to be account-neutral. *(completed: nvim task 816 Phase 2)*
 
 **Timing**: ~0.5 hour (once unblocked)
 
 **Depends on**: 5, and external: `.dotfiles` task 79 landing + `home-manager switch`
 
-**Blocked**: 2026-07-04 — `.dotfiles` task 79 is status `researched` only (not planned/implemented/
-switched-in). This phase cannot start until task 79's wrapper binaries accept `--account logos` in the
-live environment. On landing, resume this phase here or spawn a follow-up task (recommend
-`/spawn 815` or a new `/task`) to discharge it.
+**Resolved**: 2026-07-04 — `.dotfiles` task 79 (`email_wrappers_multi_account`) landed and is
+switched in (live-confirmed via `home-manager switch` in `.dotfiles` task 80). Verification source:
+`.dotfiles` task 80, `verify_logos_wrapper_contract_close_phase6` — all 9 wrapper-contract rows
+PASS, zero divergence, including a live end-to-end `/email --logos` exercise (census -> classify ->
+dry-run mutation) with correct account scoping at every step. Documentation refresh (this phase's
+remaining deliverable) discharged via nvim task 816.
 
 **Files to modify** (when unblocked):
 - `.claude/extensions/email/context/project/email/domain/wrapper-contracts.md`
@@ -362,9 +372,11 @@ live environment. On landing, resume this phase here or spawn a follow-up task (
       `.claude/extensions.json` — see Phase 5 deviation note)*
 - [x] `hooks/mail-guard.sh` diff is empty (documented as intentional). *(completed: confirmed via
       git diff across all phase commits)*
-- [ ] (Phase 6, gated) `email-census --help` + live `/email --logos` end-to-end once task 79 lands.
-      *(deviation: deferred to Phase 6 — genuinely cannot run until `.dotfiles` task 79's wrapper
-      binaries land; Phase 6 remains `[BLOCKED]` per the implementation scoping instruction)*
+- [x] (Phase 6, gated) `email-census --help` + live `/email --logos` end-to-end once task 79 lands.
+      *(completed: `.dotfiles` task 80 `verify_logos_wrapper_contract_close_phase6` ran both —
+      `--help` flag-spelling re-confirmation and the live census -> classify -> dry-run-mutation
+      `/email --logos` exercise, §4 of its closure report — with all 9 contract rows PASS and zero
+      divergence)*
 
 ## Artifacts & Outputs
 
@@ -382,5 +394,6 @@ live environment. On landing, resume this phase here or spawn a follow-up task (
 - If task 79's landed flag surface diverges from the encoded assumption, only the flag-spelling
   passthrough (Phase 2/3) and Phase 6's `wrapper-contracts.md` refresh need adjustment; the folder-token
   branches are query-side facts and remain valid.
-- Phase 6 stays `[BLOCKED]` until task 79 lands; if task 815 must reach a terminus before then,
-  Phases 1-5 constitute a complete, landable deliverable and Phase 6 is spawned as a follow-up task.
+- Phase 6 is `[COMPLETED]`: task 79 landed and is switched in, verified by `.dotfiles` task 80
+  (`verify_logos_wrapper_contract_close_phase6`, all 9 rows PASS, zero divergence) and discharged
+  in nvim task 816. All six phases now constitute a complete, landed deliverable.

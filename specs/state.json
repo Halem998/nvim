@@ -5,13 +5,57 @@
     {
       "project_number": 816,
       "project_name": "close_task815_phase6_wrapper_contract_docs",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
-      "description": "Discharge Phase 6 of task 815 (email/ extension multi-account). The blocker is resolved: .dotfiles task 79 landed and is switched in, and all 9 wrapper-contract rows verified PASS with zero divergence — see the self-contained closure report at /home/benjamin/.dotfiles/specs/080_verify_logos_wrapper_contract_close_phase6/summaries/01_phase6-closure-report.md (§2 verdict table, §3 ready-to-paste contract data, §5 checklist). Do the §5 items: (1) refresh .claude/extensions/email/context/project/email/domain/wrapper-contracts.md §2/§11 with the confirmed --account <gmail|logos> enum (default gmail, unknown rejected with error) and the per-account folder-token + mbsync-channel tables from §3; (2) optionally generalize the illustrative folder:Gmail/.All_Mail tokens in archive-mode-risk.md to be account-neutral; (3) flip the Phase 6 marker from [BLOCKED] to [COMPLETED] in specs/815_revise_email_extension_multi_account/plans/01_email-multi-account-support.md, updating Status/Dependencies to note task 79 landed and citing .dotfiles task 80 as the verification source. Est ~0.5h, docs-only, no further live verification needed. (Follow-up from task #815)",
+      "description": "Discharge Phase 6 of task 815 (email/ extension multi-account). The blocker is resolved: .dotfiles task 79 landed and is switched in, and all 9 wrapper-contract rows verified PASS with zero divergence \u2014 see the self-contained closure report at /home/benjamin/.dotfiles/specs/080_verify_logos_wrapper_contract_close_phase6/summaries/01_phase6-closure-report.md (\u00a72 verdict table, \u00a73 ready-to-paste contract data, \u00a75 checklist). Do the \u00a75 items: (1) refresh .claude/extensions/email/context/project/email/domain/wrapper-contracts.md \u00a72/\u00a711 with the confirmed --account <gmail|logos> enum (default gmail, unknown rejected with error) and the per-account folder-token + mbsync-channel tables from \u00a73; (2) optionally generalize the illustrative folder:Gmail/.All_Mail tokens in archive-mode-risk.md to be account-neutral; (3) flip the Phase 6 marker from [BLOCKED] to [COMPLETED] in specs/815_revise_email_extension_multi_account/plans/01_email-multi-account-support.md, updating Status/Dependencies to note task 79 landed and citing .dotfiles task 80 as the verification source. Est ~0.5h, docs-only, no further live verification needed. (Follow-up from task #815)",
       "topic": "extensions",
       "parent_task": 815,
       "created": "2026-07-04T21:31:29Z",
-      "last_updated": "2026-07-04T21:31:29Z"
+      "last_updated": "2026-07-04T22:20:00Z",
+      "researched": "2026-07-04T21:37:44Z",
+      "next_artifact_number": 2,
+      "session_id": "sess_1783200919_fce5b6",
+      "artifacts": [
+        {
+          "path": "specs/816_close_task815_phase6_wrapper_contract_docs/reports/01_phase6-docs-closure.md",
+          "type": "report",
+          "summary": "Confirms .dotfiles task 79 landed/switched-in and task 80 closure report verified all 9 wrapper-contract rows PASS with zero divergence. Confirms wrapper-contracts.md \u00a72/\u00a711 anchors match the closure report exactly (no discrepancy). Enumerates precise edit sites: wrapper-contracts.md line 30 (stale --account gmail-only bullet) and \u00a711 (new per-account folder-token + mbsync-channel tables, mbsync table is new content not a replacement); archive-mode-risk.md lines 3/10/74 (generalize) vs line 28 (Gmail-specific retention claim, leave as-is); plan file five edit sites (Status line 4, Phase 6 heading 308, Depends-on/Blocked block 328-333, Testing checklist 365-367, Rollback mention 385) that must flip together."
+        },
+        {
+          "path": "specs/816_close_task815_phase6_wrapper_contract_docs/plans/01_phase6-docs-closure.md",
+          "type": "plan",
+          "summary": "3-phase docs-only closure plan for task 815 Phase 6: wrapper-contracts.md \u00a72 enum + \u00a711 tables, archive-mode-risk.md token generalization, and flip task 815 Phase 6 marker to COMPLETED across five edit sites. All phases independent (Wave 1)."
+        },
+        {
+          "path": "specs/816_close_task815_phase6_wrapper_contract_docs/summaries/01_phase6-docs-closure-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: refreshed wrapper-contracts.md (\u00a72 account enum, \u00a711 folder-token + new \u00a711a mbsync tables), generalized archive-mode-risk.md illustrative tokens to be account-neutral, and flipped task 815 Phase 6 to [COMPLETED] across all edit sites (including two additional historical BLOCKED mentions found during verification)."
+        }
+      ],
+      "planned": "2026-07-04T21:40:00Z",
+      "plan_metadata": {
+        "phases": 3,
+        "total_effort_hours": 1,
+        "complexity": "simple",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1,
+            2,
+            3
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "specs/816_close_task815_phase6_wrapper_contract_docs/reports/01_phase6-docs-closure.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-07-04"
+          }
+        ]
+      },
+      "implemented": "2026-07-04T22:20:00Z",
+      "completion_summary": "Discharged task 815's Phase 6 (email/ extension multi-account) documentation closure: refreshed wrapper-contracts.md \u00a72/\u00a711 with the confirmed --account <gmail|logos> enum and per-account folder-token + mbsync-channel tables verbatim from .dotfiles task 80's closure report, generalized archive-mode-risk.md's illustrative Gmail-only tokens to be account-neutral, and flipped task 815's Phase 6 marker from [BLOCKED] to [COMPLETED] across all coupled edit sites. Task 815 is now fully closed across all six phases."
     },
     {
       "project_number": 815,
@@ -945,7 +989,7 @@
         {
           "type": "summary",
           "path": "specs/788_concurrent_session_lock_commit_cadence/summaries/01_session-lock-commit-cadence-summary.md",
-          "summary": "Full implementation summary: what changed across 8 files (+ 8 dual copies + 1 non-dual-copied index.json entry), key decisions, 3 plan deviations (all 'altered' — skill-implementer/SKILL.md is a thin wrapper with no per-phase/per-objective loop of its own, so the heartbeat and green-commit hooks were wired into general-implementation-agent.md instead), and verification results."
+          "summary": "Full implementation summary: what changed across 8 files (+ 8 dual copies + 1 non-dual-copied index.json entry), key decisions, 3 plan deviations (all 'altered' \u2014 skill-implementer/SKILL.md is a thin wrapper with no per-phase/per-objective loop of its own, so the heartbeat and green-commit hooks were wired into general-implementation-agent.md instead), and verification results."
         }
       ],
       "session_id": "sess_1783182771_c4ab90_788"
@@ -1074,7 +1118,7 @@
       "project_name": "pr_ready_guard_type_pr",
       "status": "completed",
       "task_type": "meta",
-      "description": "Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-lifecycle leak where cslib implementation tasks reach [PR READY] instead of [COMPLETED]. Three coordinated source-tree edits in /home/benjamin/.config/nvim/.claude/: (1) runtime guard in .claude/scripts/update-task-status.sh — reject preflight:pr_ready and postflight:pr_ready unless task_type==pr; (2) skill-cslib-implementation Stage 6 (extensions/cslib/skills/skill-cslib-implementation/SKILL.md) — spell out explicit postflight implement -> COMPLETED call mirroring skill-pr-implementation:95; (3) doc reconciliation in extensions/core/merge-sources/claudemd.md:36-37 — mark [PR READY] as type=pr-only, not the universal implementation terminus. Design decision for research/plan: guard in core update-task-status.sh (keyed on task_type==pr) vs pushing pr_ready/PR READY fully into the cslib extension; core doc must end up consistent with the choice. Out of scope: repairing the 5 already-mislabeled deployed tasks (447/404/407/438/453) in /home/benjamin/Projects/cslib/ state.json — separate manual data-repair after redeploy via <leader>al.",
+      "description": "Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-lifecycle leak where cslib implementation tasks reach [PR READY] instead of [COMPLETED]. Three coordinated source-tree edits in /home/benjamin/.config/nvim/.claude/: (1) runtime guard in .claude/scripts/update-task-status.sh \u2014 reject preflight:pr_ready and postflight:pr_ready unless task_type==pr; (2) skill-cslib-implementation Stage 6 (extensions/cslib/skills/skill-cslib-implementation/SKILL.md) \u2014 spell out explicit postflight implement -> COMPLETED call mirroring skill-pr-implementation:95; (3) doc reconciliation in extensions/core/merge-sources/claudemd.md:36-37 \u2014 mark [PR READY] as type=pr-only, not the universal implementation terminus. Design decision for research/plan: guard in core update-task-status.sh (keyed on task_type==pr) vs pushing pr_ready/PR READY fully into the cslib extension; core doc must end up consistent with the choice. Out of scope: repairing the 5 already-mislabeled deployed tasks (447/404/407/438/453) in /home/benjamin/Projects/cslib/ state.json \u2014 separate manual data-repair after redeploy via <leader>al.",
       "topic": "agent-system",
       "last_updated": "2026-07-04T17:04:56Z",
       "session_id": "sess_1783182771_c4ab90_795",
@@ -1102,7 +1146,7 @@
       "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
-      "description": "Make topic assignment mandatory across ALL task-creation paths so tasks never land in Uncategorized. Root problem: three escape hatches produce topicless tasks — (1) the one-click Skip (no topic) option in Mode A pickers (/meta, /task create, /project-overview); (2) Mode B silent no-op when a parent task has no topic (topic-assignment-pattern.md:113 says no fallback, but /spawn, --expand, --review implementations DO have fallbacks — doc/impl divergence); (3) Mode C silent no-op when the /review and /fix-it path heuristic hits the other branch (:134). Plus /task --recover has zero topic handling and the meta-builder path can be bypassed entirely. FIX (source tree /home/benjamin/.config/nvim/.claude/, redeployed via <leader>al): rewrite canonical context/patterns/topic-assignment-pattern.md to drop Skip and make Mode A the universal fallback whenever no obvious topic exists (parent none / heuristic miss / batch null), keeping New topic always available; then update all callers to remove Skip and wire the fallback: agents/meta-builder-agent.md Stage 4.5, commands/task.md (create, --expand, --review, --recover which currently has none), commands/review.md and skills/skill-fix-it (Mode C other -> prompt), skills/skill-spawn, skills/skill-project-overview (errors.md inherits via /task). Reconcile the pattern-doc-vs-implementation divergence on Mode B fallback. Research/plan decisions: (a) remove Skip entirely vs keep a hard-to-reach explicit skip; (b) whether to add a defense-in-depth gate (generate-task-order.sh warns on topicless active tasks, or a validation check) so bypasses surface loudly. Out of scope: backfilling existing topicless tasks (/task --sync already does that).",
+      "description": "Make topic assignment mandatory across ALL task-creation paths so tasks never land in Uncategorized. Root problem: three escape hatches produce topicless tasks \u2014 (1) the one-click Skip (no topic) option in Mode A pickers (/meta, /task create, /project-overview); (2) Mode B silent no-op when a parent task has no topic (topic-assignment-pattern.md:113 says no fallback, but /spawn, --expand, --review implementations DO have fallbacks \u2014 doc/impl divergence); (3) Mode C silent no-op when the /review and /fix-it path heuristic hits the other branch (:134). Plus /task --recover has zero topic handling and the meta-builder path can be bypassed entirely. FIX (source tree /home/benjamin/.config/nvim/.claude/, redeployed via <leader>al): rewrite canonical context/patterns/topic-assignment-pattern.md to drop Skip and make Mode A the universal fallback whenever no obvious topic exists (parent none / heuristic miss / batch null), keeping New topic always available; then update all callers to remove Skip and wire the fallback: agents/meta-builder-agent.md Stage 4.5, commands/task.md (create, --expand, --review, --recover which currently has none), commands/review.md and skills/skill-fix-it (Mode C other -> prompt), skills/skill-spawn, skills/skill-project-overview (errors.md inherits via /task). Reconcile the pattern-doc-vs-implementation divergence on Mode B fallback. Research/plan decisions: (a) remove Skip entirely vs keep a hard-to-reach explicit skip; (b) whether to add a defense-in-depth gate (generate-task-order.sh warns on topicless active tasks, or a validation check) so bypasses surface loudly. Out of scope: backfilling existing topicless tasks (/task --sync already does that).",
       "dependencies": [
         787
       ],

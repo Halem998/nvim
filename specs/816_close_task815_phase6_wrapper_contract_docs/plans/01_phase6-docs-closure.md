@@ -1,7 +1,7 @@
 # Implementation Plan: Task #816
 
 - **Task**: 816 - Discharge Phase 6 of task 815 (email/ extension multi-account)
-- **Status**: [IN PROGRESS]
+- **Status**: [COMPLETED]
 - **Effort**: 0.5 hours
 - **Dependencies**: task 815 (parent); .dotfiles task 79 (landed, switched in); .dotfiles task 80 (verification source) — all discharged, no live blockers remain
 - **Research Inputs**: specs/816_close_task815_phase6_wrapper_contract_docs/reports/01_phase6-docs-closure.md
@@ -154,24 +154,29 @@ account-neutral without asserting any Logos-specific server behavior.
 
 ---
 
-### Phase 3: Flip task 815 Phase 6 marker to [COMPLETED] [NOT STARTED]
+### Phase 3: Flip task 815 Phase 6 marker to [COMPLETED] [COMPLETED]
 
 **Goal**: Update all five coupled edit sites in the task-815 plan so Phase 6 reads `[COMPLETED]`
 consistently, citing the landing and verification sources.
 
 **Tasks**:
-- [ ] Top **Status** line (~4): update the parenthetical from "Phase 6 remains `[BLOCKED]` pending
+- [x] Top **Status** line (~4): update the parenthetical from "Phase 6 remains `[BLOCKED]` pending
       `.dotfiles` task 79" to reflect Phase 6 now `[COMPLETED]` (task 79 landed + switched in,
-      task 80 verified 9/9 PASS).
-- [ ] Phase 6 heading (~308): flip the trailing marker from `[BLOCKED]` to `[COMPLETED]`.
-- [ ] **Depends on** / **Blocked** block (~328-333): note task 79's external dependency is
+      task 80 verified 9/9 PASS). *(completed)*
+- [x] Phase 6 heading (~308): flip the trailing marker from `[BLOCKED]` to `[COMPLETED]`. *(completed)*
+- [x] **Depends on** / **Blocked** block (~328-333): note task 79's external dependency is
       discharged (landed); replace the stale `**Blocked**:` paragraph with a resolution note
       citing `.dotfiles` task 80 (`verify_logos_wrapper_contract_close_phase6`) as the verification
-      source (all 9 rows PASS, zero divergence).
-- [ ] Testing & Validation checklist item (~365-367): flip `- [ ]` to `- [x]` and reference the
-      closure report's live-exercise results (closure report §4) as completion evidence.
-- [ ] Rollback/Contingency mention (~385): update the stale "Phase 6 stays `[BLOCKED]` until task
-      79 lands" line to reflect the resolved state.
+      source (all 9 rows PASS, zero divergence). *(completed)*
+- [x] Testing & Validation checklist item (~365-367): flip `- [ ]` to `- [x]` and reference the
+      closure report's live-exercise results (closure report §4) as completion evidence. *(completed)*
+- [x] Rollback/Contingency mention (~385): update the stale "Phase 6 stays `[BLOCKED]` until task
+      79 lands" line to reflect the resolved state. *(completed)*
+- [x] Eliminate two residual Phase-6-associated `[BLOCKED]` mentions in the Overview (~line 33) and
+      Risks & Mitigations table (~line 88), discovered when the whole-file grep verification caught
+      them beyond the five originally enumerated sites. *(deviation: altered — scope expanded beyond
+      the five enumerated edit sites to satisfy the zero-`[BLOCKED]`-anywhere verification criterion;
+      see progress file phase-3 deviations)*
 
 **Timing**: 0.15 hours
 
@@ -190,16 +195,21 @@ consistently, citing the landing and verification sources.
 
 ## Testing & Validation
 
-- [ ] `bash .claude/scripts/check-extension-docs.sh` passes (exit 0) after all edits.
-- [ ] `grep -rn 'reserved-only' .claude/extensions/email/context/project/email/domain/wrapper-contracts.md`
-      returns no hit in the §2 account contract.
-- [ ] `wrapper-contracts.md` §11 contains a per-account folder-token table (gmail + logos rows) and
-      an mbsync-channel table; both match closure report §3.
-- [ ] `archive-mode-risk.md` line ~28 (Gmail Trash retention) is unchanged; lines 3/10/74 are
-      account-neutral.
-- [ ] `grep -n 'BLOCKED' specs/815_revise_email_extension_multi_account/plans/01_email-multi-account-support.md`
-      shows zero remaining Phase-6-associated `[BLOCKED]` references.
-- [ ] Task-815 plan's top Status line and Phase 6 heading are internally consistent.
+- [x] `bash .claude/scripts/check-extension-docs.sh` passes (exit 0) after all edits. *(deviation:
+      altered — the `[email]` extension section reports `PASS`; the script's overall exit code is 1
+      due to pre-existing, unrelated `[core]` and `[lean]` extension FAILs, confirmed via `git
+      stash` to predate this task's edits — see progress file phase-3 deviations / summary)*
+- [x] `grep -rn 'reserved-only' .claude/extensions/email/context/project/email/domain/wrapper-contracts.md`
+      returns no hit in the §2 account contract. *(completed: zero hits)*
+- [x] `wrapper-contracts.md` §11 contains a per-account folder-token table (gmail + logos rows) and
+      an mbsync-channel table; both match closure report §3. *(completed)*
+- [x] `archive-mode-risk.md` line ~28 (Gmail Trash retention) is unchanged; lines 3/10/74 are
+      account-neutral. *(completed)*
+- [x] `grep -n 'BLOCKED' specs/815_revise_email_extension_multi_account/plans/01_email-multi-account-support.md`
+      shows zero remaining Phase-6-associated `[BLOCKED]` references. *(completed: zero hits, after
+      also resolving two additional historical mentions beyond the five enumerated sites)*
+- [x] Task-815 plan's top Status line and Phase 6 heading are internally consistent. *(completed:
+      both now read `[COMPLETED]`)*
 
 ## Artifacts & Outputs
 
