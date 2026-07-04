@@ -224,21 +224,21 @@ group, preserving the never-`mbsync -a` invariant and explicit-override behavior
 
 ---
 
-### Phase 4: Documentation + routing surface (`EXTENSION.md`, `manifest.json`) [NOT STARTED]
+### Phase 4: Documentation + routing surface (`EXTENSION.md`, `manifest.json`) [COMPLETED]
 
 **Goal**: Document the account dimension for propagation to `.claude/CLAUDE.md` and add optional
 keyword routing. Depends on the flag/skill surface being settled in Phases 1-3.
 
 **Tasks**:
-- [ ] `EXTENSION.md`: extend the `/email` command-table row to document `--account <gmail|logos>` /
+- [x] `EXTENSION.md`: extend the `/email` command-table row to document `--account <gmail|logos>` /
       `--logos` shorthand and per-account `--archive` semantics.
-- [ ] `EXTENSION.md`: add a Safety Invariants bullet for account isolation (never `mbsync -a`,
+- [x] `EXTENSION.md`: add a Safety Invariants bullet for account isolation (never `mbsync -a`,
       folder-scoped account resolution, no tag-based account scoping) and a per-account `--archive`
       semantics bullet (Proton has no All-Mail label model; `--archive` -> real `Archive` folder for
       Logos vs `All_Mail` label-folder for Gmail).
-- [ ] `EXTENSION.md`: note the additive/gated posture (`/email --logos` documented but gated pending
+- [x] `EXTENSION.md`: note the additive/gated posture (`/email --logos` documented but gated pending
       `.dotfiles` task 79) and that `hooks/mail-guard.sh` intentionally needs no change.
-- [ ] `manifest.json`: append `"logos"`, `"protonmail"`, `"proton"` to
+- [x] `manifest.json`: append `"logos"`, `"protonmail"`, `"proton"` to
       `keyword_overrides.email.keywords` (optional routing convenience). Leave `routing`/`merge_targets`
       unchanged.
 

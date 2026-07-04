@@ -15,17 +15,18 @@ All mutation goes through five nix-built wrapper binaries; the extension itself 
 | Skill | Agent | Model | Purpose |
 |-------|-------|-------|---------|
 | skill-email-implementation | email-implementation-agent | sonnet | Wrapper-only classify/archive/delete execution via `/implement` |
-| skill-email-cleanup | (direct execution) | - | `/email` triage: default 50-step mode, `--all` whole-mailbox mode, `--archive` All Mail scope |
-| skill-email-sync | (direct execution) | - | `/email --sync` human-confirmed `mbsync` reconcile to Gmail |
+| skill-email-cleanup | (direct execution) | - | `/email` triage: default 50-step mode, `--all` whole-mailbox mode, `--archive` scope to the account's archive folder |
+| skill-email-sync | (direct execution) | - | `/email --sync` human-confirmed `mbsync` reconcile to the account's server |
 
 ### Commands
 
 | Command | Description |
 |---------|-------------|
-| `/email` | Default safer mode: bounded 50-step census -> classify -> review -> confirmed archive/delete pass; repeated runs step forward via the durable `+proposed-*` tag cursor |
+| `/email` | Default safer mode: bounded 50-step census -> classify -> review -> confirmed archive/delete pass against `account=gmail`; repeated runs step forward via the durable `+proposed-*` tag cursor |
 | `/email --all` | Whole-mailbox mode: chunked backgrounded classify sweep, ONE consolidated sender/domain bucket approval, transparent ≤50-per-action execute drain |
-| `/email --archive` | Scope flag (composable with default or `--all`): operate on All Mail (`folder:Gmail/.All_Mail`) with extra-caution gates and a pilot gate before full scale |
-| `/email --sync [channel]` | Human-confirmed `mbsync` reconcile pushing a completed cleanup to Gmail (never auto-chained) |
+| `/email --archive` | Scope flag (composable with default or `--all`): operate on the account's archive folder (`folder:Gmail/.All_Mail` for gmail; `folder:Logos/.Archive` for logos) with extra-caution gates and a per-account pilot gate before full scale |
+| `/email --sync [channel]` | Human-confirmed `mbsync` reconcile pushing a completed cleanup to the account's server; channel defaults from the account (`gmail`/`logos`), never auto-chained |
+| `/email --account <gmail\|logos>` / `/email --logos` | Account selector (default `gmail`, unchanged behavior). Composable with any of the above (e.g. `/email --logos --archive`). `account=gmail` is the existing, fully-functional path; `account=logos` (Protonmail Bridge) is documented-but-gated — parsed and query-constructed now, but routed through an actionable precondition gate that fails loudly until `.dotfiles` task 79's wrapper binaries land and accept `--account logos`. Never a silent fallback to Gmail. |
 
 ### Safety Invariants
 
@@ -53,11 +54,36 @@ All mutation goes through five nix-built wrapper binaries; the extension itself 
   report — never a silent re-timestamp.
 - **Archive extra gates** (`--archive`): second blast-radius-naming confirmation, corroborated
   (rule-tier) confidence bar for bulk deletes, reversible-then-hard two-phase deletes
-  (`--expunge-trash` opt-in only), a bounded pilot gate before full scale, and never
-  auto-chaining `/email --sync` after a drain.
+  (`--expunge-trash` opt-in only), a bounded per-account pilot gate before full scale (a Gmail
+  pilot-ack never licenses a Logos archive-scope run, or vice versa), and never auto-chaining
+  `/email --sync` after a drain.
+- **Account isolation, folder-scoped only**: multi-account support (`--account <gmail|logos>` /
+  `--logos`, default `gmail`) is resolved once per invocation and threaded unchanged through every
+  wrapper call. Account scoping is expressed EXCLUSIVELY as `folder:` query tokens
+  (`folder:Gmail*` vs `folder:Logos*`) — a `tag:<account>` scheme exists in the notmuch database
+  but is confirmed inert (always 0 matches) and must never be relied on. No path for either
+  account ever resolves to a whole-mailbox `mbsync -a`; the channel is always a single, explicit
+  group (`gmail` or `logos`).
+- **Per-account `--archive` semantics**: Gmail's archive-of-record is the `All Mail` label-folder
+  (`folder:Gmail/.All_Mail`, ~64k messages); Proton/Logos has no label-based "All Mail" model —
+  its archive-of-record is the real `Archive` folder (`folder:Logos/.Archive`, ~54 messages per
+  the live probe, a much smaller blast radius). The same proportionate extra-caution gates apply
+  to both, regardless of scale.
+- **`/email --logos` is additive and gated, never a silent fallback**: the account selector,
+  folder-token queries, and pilot-gate scoping for `account=logos` are implemented and documented
+  now, but every `--logos` invocation is routed through an actionable precondition gate that
+  fails loudly until `.dotfiles` task 79's wrapper binaries land (accepting `--account logos`)
+  and `home-manager switch` activates them. A bare `/email` (Gmail, the default) is unaffected
+  and remains byte-for-byte unchanged.
+- **`hooks/mail-guard.sh` intentionally needs no change** for multi-account support: it allowlists
+  the five wrapper binaries by NAME only (not by account/flag), and `.dotfiles` task 79 adds an
+  `--account` flag to those same five binaries rather than introducing new binary names — so the
+  guard's allowlist is unaffected by the account dimension.
 
 ### Key Technologies
 
 - **Himalaya**: CLI email client (maildir backend) driving read/move/delete operations.
-- **notmuch**: local tagging/search index used for classification tags and Message-ID lookup.
-- **mbsync**: IMAP sync engine reconciling local maildir with Gmail after mutation.
+- **notmuch**: local tagging/search index used for classification tags and Message-ID lookup,
+  across both the Gmail and Logos accounts (folder-scoped, never tag-scoped).
+- **mbsync**: IMAP sync engine reconciling local maildir with the account's server (Gmail or
+  Logos/Protonmail Bridge) after mutation.

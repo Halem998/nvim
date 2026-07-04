@@ -6,7 +6,7 @@
   "dependencies": ["core"],
   "keyword_overrides": {
     "email": {
-      "keywords": ["inbox", "email", "gmail", "himalaya", "notmuch", "unsubscribe", "junk mail", "draft reply", "mbsync", "aerc", "mail triage"],
+      "keywords": ["inbox", "email", "gmail", "himalaya", "notmuch", "unsubscribe", "junk mail", "draft reply", "mbsync", "aerc", "mail triage", "logos", "protonmail", "proton"],
       "aliases": ["mail", "mailbox"]
     }
   },
