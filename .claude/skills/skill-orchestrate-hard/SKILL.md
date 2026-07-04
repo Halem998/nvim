@@ -428,7 +428,10 @@ elif [ "$last_skeleton" = "true" ]; then
   echo "[hard-orchestrate] Skeleton plan exhausted — follow-up tasks pending: {${follow_up_tasks}}" >&2
 
   # Transition to pr_ready via the centralized status script (never raw-edit state.json).
-  bash .claude/scripts/update-task-status.sh postflight "$task_number" pr_ready "$session_id"
+  # --allow-pr-ready is required here because update-task-status.sh now restricts pr_ready to
+  # task_type == "pr"; this skeleton-exhaustion branch is the sanctioned task-type-agnostic
+  # exception (it runs for general/lean4/cslib hard-mode tasks, not just type=pr).
+  bash .claude/scripts/update-task-status.sh postflight "$task_number" pr_ready "$session_id" --allow-pr-ready
   rm -f "$loop_guard_file"
   EXIT (success, pr_ready — skeleton exhausted, ${follow_up_count} follow-up task(s): ${follow_up_tasks})
 

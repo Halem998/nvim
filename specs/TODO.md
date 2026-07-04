@@ -6,32 +6,24 @@ next_project_number: 808
 
 ## Task Order
 
-*Updated 2026-07-03. Generated from state.json dependency graph.*
+*Updated 2026-07-04. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,785,787,791,795,796,802,804 | -- | agent-system, literature, email integration, ... |
-| 2 | 786 | 785 | agent-system |
-| 3 | 788 | 786,787 | agent-system |
+| 1 | 78,87,786 | -- | agent-system, email integration, terminal ui |
+| 2 | 787,804 | 786 | agent-system |
+| 3 | 788,796 | 787 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-785 [NOT STARTED] — Replace the repo-wide `git add -A` in the task commit pipeline wi
-  └─ 786 [NOT STARTED] — Sweep the 40+ remaining `git add -A` references across the agent 
+786 [NOT STARTED] — Sweep the 40+ remaining `git add -A` references across the agent 
+  └─ 787 [NOT STARTED] — Make multi-task creation declare dependencies based on FILE FOOTP
     └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree
-787 [NOT STARTED] — Make multi-task creation declare dependencies based on FILE FOOTP
-  └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree (see above)
-791 [PR READY] — Fix the <leader>al 'Load Core' loader so WezTerm lifecycle tab co
-795 [NOT STARTED] — Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-
-796 [NOT STARTED] — Make topic assignment mandatory across ALL task-creation paths so
-804 [NOT STARTED] — Document the --fable model-selection flag alongside --haiku, --so
-
-### Literature
-
-802 [NOT STARTED] — [LITERATURE AUTHORS RESOLVER TRUNCATION -- latent footgun, follow
+    └─ 796 [NOT STARTED] — Make topic assignment mandatory across ALL task-creation paths so
+  └─ 804 [NOT STARTED] — Document the --fable model-selection flag alongside --haiku, --so
 
 ### Terminal Ui
 
@@ -89,7 +81,7 @@ next_project_number: 808
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 786, Task 795
 
 **Description**: Document the --fable model-selection flag alongside --haiku, --sonnet, and --opus everywhere the other model flags appear in the agent system. The --fable flag (selecting the Fable 5 model family, claude-fable-5) is a supported model flag on /research, /plan, and /implement (and composes with effort flags --fast/--hard and --team, --lit, --clean), but it is currently undocumented while its siblings are listed. SCOPE: audit and update all documentation/reference sites that enumerate the model flags, including but not limited to: the CLAUDE.md Command Reference table flag column (/research, /plan, /implement usage strings currently show [--haiku|--sonnet|--opus]); the 'Model Enforcement' paragraph in the Skill-to-Agent Mapping section (describes 'model flags (--haiku, --sonnet, --opus) select the model family'); the composability notes under Hard Mode (e.g. '--hard works with model flags: --hard --opus'); the agent-frontmatter-standard doc (.claude/docs/reference/standards/agent-frontmatter-standard.md) which defines the tiered model policy and flag dimensions; the command markdown files under .claude/commands/ (research.md, plan.md, implement.md) and their argument-parsing/usage sections; any skill SKILL.md files or scripts (e.g. command-route-skill.sh or model-resolution logic) that parse/whitelist model flags; and any extension manifests or routing docs that reference the model-flag set. Also verify the flag is actually wired through the model-resolution code path (not just docs) and add it where the parser recognizes --haiku/--sonnet/--opus but not --fable. Goal: --fable is a first-class, documented model flag on par with --haiku/--sonnet/--opus across the entire agent system.
 
@@ -113,10 +105,12 @@ next_project_number: 808
 
 ### 802. Guard skill-literature authors resolver against string-to-first-char truncation
 - **Effort**: 30 minutes
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [802_literature_authors_first_char_truncation_guard/reports/01_authors_first_char_truncation_guard.md]
+- **Plan**: [802_literature_authors_first_char_truncation_guard/plans/01_authors-truncation-guard.md]
 
 **Description**: [LITERATURE AUTHORS RESOLVER TRUNCATION -- latent footgun, follow-up to task 801] In .claude/skills/skill-literature/SKILL.md at line ~1696 (per-repo sub-index Resolve operation), the authors resolver uses `(.authors // []) | first // "?"`. Because jq `first` on a JSON STRING returns its first CHARACTER (e.g. `"Yde Venema" | first` -> `"Y"`) rather than erroring, a string-typed `.authors` value is silently truncated to a single character instead of yielding the author name. `.authors // []` only substitutes on null/false, not on a string, so it does not protect this path. This is a DIFFERENT code path from the one task 799 fixed in literature-briefing.sh. The global corpus is currently normalized to arrays (task 801, ~/Projects/Literature commit c6eccfb), so this will not trigger in practice today, but any string-typed authors reaching this line (a source that bypasses migrate-from-repo.sh, or a not-yet-normalized index) would silently corrupt output. FIX: make the resolver type-aware, e.g. `if (.authors|type)=="array" then (.authors|first) elif (.authors|type)=="string" then .authors else "?" end`. Scope: single line in .claude/skills/skill-literature/SKILL.md; small, self-contained. CONTEXT: flagged during task 801 research (report 01_authors-schema-normalization.md) and deferred as out-of-scope.
 
@@ -197,17 +191,20 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 787
 
 **Description**: Make topic assignment mandatory across ALL task-creation paths so tasks never land in Uncategorized. Root problem: three escape hatches produce topicless tasks — (1) the one-click Skip (no topic) option in Mode A pickers (/meta, /task create, /project-overview); (2) Mode B silent no-op when a parent task has no topic (topic-assignment-pattern.md:113 says no fallback, but /spawn, --expand, --review implementations DO have fallbacks — doc/impl divergence); (3) Mode C silent no-op when the /review and /fix-it path heuristic hits the other branch (:134). Plus /task --recover has zero topic handling and the meta-builder path can be bypassed entirely. FIX (source tree /home/benjamin/.config/nvim/.claude/, redeployed via <leader>al): rewrite canonical context/patterns/topic-assignment-pattern.md to drop Skip and make Mode A the universal fallback whenever no obvious topic exists (parent none / heuristic miss / batch null), keeping New topic always available; then update all callers to remove Skip and wire the fallback: agents/meta-builder-agent.md Stage 4.5, commands/task.md (create, --expand, --review, --recover which currently has none), commands/review.md and skills/skill-fix-it (Mode C other -> prompt), skills/skill-spawn, skills/skill-project-overview (errors.md inherits via /task). Reconcile the pattern-doc-vs-implementation divergence on Mode B fallback. Research/plan decisions: (a) remove Skip entirely vs keep a hard-to-reach explicit skip; (b) whether to add a defense-in-depth gate (generate-task-order.sh warns on topicless active tasks, or a validation check) so bypasses surface loudly. Out of scope: backfilling existing topicless tasks (/task --sync already does that).
 
 ---
 
 ### 795. Pr ready guard type pr
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [795_pr_ready_guard_type_pr/reports/01_pr_ready_guard_type_pr.md]
+- **Plan**: [795_pr_ready_guard_type_pr/plans/01_pr-ready-guard-type-pr.md]
+- **Summary**: [795_pr_ready_guard_type_pr/summaries/01_pr-ready-guard-type-pr-summary.md]
 
 **Description**: Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-lifecycle leak where cslib implementation tasks reach [PR READY] instead of [COMPLETED]. Three coordinated source-tree edits in /home/benjamin/.config/nvim/.claude/: (1) runtime guard in .claude/scripts/update-task-status.sh — reject preflight:pr_ready and postflight:pr_ready unless task_type==pr; (2) skill-cslib-implementation Stage 6 (extensions/cslib/skills/skill-cslib-implementation/SKILL.md) — spell out explicit postflight implement -> COMPLETED call mirroring skill-pr-implementation:95; (3) doc reconciliation in extensions/core/merge-sources/claudemd.md:36-37 — mark [PR READY] as type=pr-only, not the universal implementation terminus. Design decision for research/plan: guard in core update-task-status.sh (keyed on task_type==pr) vs pushing pr_ready/PR READY fully into the cslib extension; core doc must end up consistent with the choice. Out of scope: repairing the 5 already-mislabeled deployed tasks (447/404/407/438/453) in /home/benjamin/Projects/cslib/ state.json — separate manual data-repair after redeploy via <leader>al.
 
@@ -243,7 +240,7 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 
 ### 791. Fix Load Core loader so WezTerm lifecycle tab coloring propagates to all synced repos
 - **Effort**: 3-5 hours
-- **Status**: [PR READY]
+- **Status**: [COMPLETED]
 - **Task Type**: neovim
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -271,7 +268,7 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 786
 
 **Description**: Make multi-task creation declare dependencies based on FILE FOOTPRINT OVERLAP, not just logical sequencing, so two tasks that will edit the same files are never dispatched in the same wave / run concurrently. ROOT CAUSE: dependencies[] exists in the schema but is used only for Kahn topo-ordering; task creation (multi-task-creation-standard Component 4) asks only about logical ordering, and territory/file-ownership (H7, context/contracts/territory.md) is hard-mode-only, per-phase, and declarative. Scope: (1) Add an optional task-level 'file_scope' (anticipated owned paths) field to the state.json task schema (.claude/rules/state-management.md + .claude/context/reference/state-management-schema.md), promoting H7 territory to a lightweight task-level declaration. (2) Extend multi-task-creation-standard.md Component 4 so creators capture each proposed task's file footprint and AUTO-ADD a dependency (or surface a conflict warning) when two footprints overlap. (3) Wire this into meta-builder-agent, skill-fix-it, and skill-spawn. (4) Document that /orchestrate and --team wave assignment must treat file-footprint overlap as a serialization edge. Goal: when the system proposes multiple tasks touching the same files, it declares the dependency automatically instead of leaving them parallelizable. This is the gap that let two same-file tasks run concurrently.
 
@@ -290,10 +287,13 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 
 ### 785. Scoped git staging: eliminate `git add -A` in the commit pipeline
 - **Effort**: 2-4 hours
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 780
+- **Research**: [785_scoped_git_staging_commit_pipeline/reports/01_scoped-git-staging-commit-pipeline.md]
+- **Plan**: [785_scoped_git_staging_commit_pipeline/plans/01_scoped-git-staging.md]
+- **Summary**: [785_scoped_git_staging_commit_pipeline/summaries/01_scoped-git-staging-summary.md]
 
 **Description**: Replace the repo-wide `git add -A` in the task commit pipeline with targeted, work-scoped staging so commits contain only files the operation actually produced. ROOT CAUSE: .claude/scripts/orchestrator-postflight.sh:322 runs 'git add -A && git commit', and agents track nothing about which files they modified -- so every research/plan/implement commit sweeps the entire working tree (including a concurrent session's stray edits). This contradicts the system's own policy: .claude/rules/git-workflow.md 'Commit Scope' (lines 51-62) and shared-core .claude/context/core/standards/git-safety.md (lines 182-195) already forbid 'git add -A'/'git commit -am' and prescribe targeted staging. Scope: (1) Define a commit-scope contract -- operation-type scope (research/plan -> specs/TODO.md + specs/state.json + specs/{NNN}_{SLUG}/; implement -> task dir + the source files the agent reports it modified) read from agent return-meta (modified_files) or a COMMIT_SCOPE param. (2) Rewrite orchestrator-postflight.sh (project + shared copy) to stage only those paths via 'git add <paths>', with 'git status --short'/'git diff --staged' review per the git-safety.md flow. (3) Harden git-workflow.md to explicitly FORBID 'git add -A'/'git commit -am' and reference the targeted-staging procedure. (4) Establish skill-git-workflow as the canonical scoped-commit helper. Goal: a commit reflects only the work actually accomplished, and a concurrent session's uncommitted changes can never be swept into this task's commit. Depends on 780 (also edits git-workflow.md, so serialized to avoid clobber).
 

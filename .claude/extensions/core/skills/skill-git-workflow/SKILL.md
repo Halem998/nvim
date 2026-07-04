@@ -12,8 +12,27 @@ Create properly scoped git commits for task operations.
 ## Context Loading
 
 Load context on-demand when needed:
+- `@.claude/context/standards/git-staging-scope.md` - Canonical per-operation commit-scope
+  contract (research/plan/implement staging rules, forbidden operations, fail-safe direction)
 - `@.claude/context/standards/git-safety.md` - Git safety rules and best practices
 - `@.claude/context/index.json` - Full context discovery index
+
+## Relationship to `orchestrator-postflight.sh`
+
+This skill is the **documentation front** for the commit-scope contract — it is not literally
+invoked as a runtime script from bash. The actual execution of task-scoped commits happens in:
+
+- `.claude/scripts/orchestrator-postflight.sh` Stage 9 — the single shared execution site for
+  `research`/`plan`/`implement` postflight commits, branching on `operation_type` for targeted
+  staging (never staging the entire working tree).
+- `.claude/skills/skill-implementer/SKILL.md` Stage 6b (per-phase progress commit) and Stage 9
+  (final "complete implementation" commit) — two additional inline sites that run independently
+  of `orchestrator-postflight.sh` for the `implement` operation.
+- `.claude/agents/general-implementation-agent.md`'s Phase Checkpoint Protocol (per-phase
+  commit) — the innermost, once-per-phase commit site.
+
+All four sites implement the same contract documented in `git-staging-scope.md`. This SKILL.md
+describes that contract and where it is enforced; it does not add a fifth execution path.
 
 ## Trigger Conditions
 
@@ -71,6 +90,9 @@ This skill activates when:
 
 ## Commit Scope Rules
 
+See `@.claude/context/standards/git-staging-scope.md` for the authoritative, canonical
+per-operation commit-scope contract. Summary:
+
 ### Task-Specific Commits
 Include only task-related files:
 ```
@@ -80,18 +102,27 @@ specs/{NNN}_{SLUG}/**
 ```
 
 ### Implementation Commits
-Include source files modified:
+Include source files modified, via the agent's self-reported `modified_files` field (see
+`@.claude/context/formats/return-metadata-file.md`) — never a blanket stage of the entire
+working tree:
 ```
 Logos/**/*.lean  (for Lean tasks)
 src/**/*         (for general tasks)
 ```
 
 ### Phase Commits
-Scope to phase changes only:
+Scope to phase changes only, using the paths accumulated in that phase's progress-file
+`files_touched` array (see `@.claude/context/formats/progress-file.md`):
 ```
 Files modified in that phase
 Updated plan with phase status
 ```
+
+### Fail-Safe Direction
+
+Under-stage with a loud, non-silent warning rather than over-stage. If the modified-files
+self-report is absent or empty, stage only the fixed task-directory paths and print a warning —
+never fall back to staging the entire working tree.
 
 ## Safety Checks
 
@@ -106,6 +137,9 @@ Updated plan with phase status
 - `git push --force`
 - `git reset --hard` (without explicit request)
 - `git rebase -i`
+- `git add -A` / `git add .` (stages the entire working tree; use targeted staging per
+  `@.claude/context/standards/git-staging-scope.md` instead)
+- `git commit -am` (implicitly stages all tracked-file modifications — same over-staging problem)
 
 ## Message Template
 

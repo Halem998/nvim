@@ -36,6 +36,7 @@ Example: `specs/1_setup_lsp_config/.return-meta.json`
     "delegation_depth": 1,
     "delegation_path": ["orchestrator", "research", "general-research-agent"]
   },
+  "modified_files": ["path/to/file/touched/during/implement.ext"],
   "memory_candidates": [
     {
       "content": "Description of reusable knowledge",
@@ -155,6 +156,35 @@ Contains fields needed for task completion processing. Skills extract this data 
 - `completion_summary` is mandatory for all `implemented` status returns
 - `roadmap_items` is optional and only relevant for non-meta tasks
 - Skills propagate these fields to state.json for use by `/todo` command
+
+### modified_files (optional)
+
+**Type**: array of strings
+**Include if**: agent_type is an implementation agent (e.g. `general-implementation-agent`) and
+`operation_type` is `implement`
+
+Repo-relative paths of every source file the agent `Write` or `Edit`-ed during execution
+(accumulated from each phase's progress-file `files_touched` field — see
+`.claude/context/formats/progress-file.md`). This is the authoritative self-report that the
+`orchestrator-postflight.sh` Stage 9 git commit (and the two inline `implement`-path staging
+sites) use for targeted staging instead of `git add -A`. See
+`.claude/context/standards/git-staging-scope.md` for the full commit-scope contract this field
+feeds.
+
+Like `completion_data` and `memory_candidates`, all jq reads of this field MUST use the `// []`
+fallback for backward compatibility with agents/metadata predating this field:
+
+```bash
+jq -r '.modified_files[]? // empty' "$metadata_file"
+```
+
+**Notes**:
+- Absence or an empty array is valid — the staging fallback (fixed task-dir paths only, plus a
+  loud warning) applies; this is the fail-safe "under-stage" direction, never `git add -A`.
+- Paths should be repo-relative (e.g. `.claude/skills/skill-foo/SKILL.md`), matching what `git
+  add` expects.
+- Duplicate paths across phases are harmless (git add is idempotent); agents need not
+  deduplicate before writing this field.
 
 ### memory_candidates (optional)
 

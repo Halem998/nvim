@@ -1,0 +1,29 @@
+{
+  "phase": 4,
+  "phase_name": "Fix the two inline implement-path staging sites",
+  "started_at": "2026-07-04T17:16:00Z",
+  "last_updated": "2026-07-04T17:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "skill-implementer/SKILL.md Stage 6b (+ dual copy): replace git add -A with scoped staging", "status": "done"},
+    {"id": 2, "description": "general-implementation-agent.md Stage 4 per-phase commit (+ dual copy): incremental scoped staging", "status": "done"},
+    {"id": 3, "description": "Reconcile/remove vestigial skill-implementer Stage 9 Git Commit text if dead", "status": "done", "note": "Not dead: it is skill-implementer's own final commit, run inline. Fixed git add -A and malformed code fence; both commit sites now reference git-staging-scope.md."}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.pre-existing-drift",
+      "description": "extensions/core copy of skill-implementer/SKILL.md had pre-existing drift unrelated to git staging (literature-briefing.sh vs literature-briefing-invoke.sh script name in the --lit section)",
+      "type": "altered",
+      "reason": "Phase 7 requires this exact dual-copy pair to diff empty; syncing the whole file (required anyway for my Stage 6b/Stage 9 edits) incidentally fixed this unrelated pre-existing drift to the canonical (non-extension) version.",
+      "annotation": "*(deviation: altered — incidentally synced unrelated pre-existing drift while performing the required dual-copy sync)*"
+    }
+  ],
+  "files_touched": [
+    ".claude/skills/skill-implementer/SKILL.md",
+    ".claude/extensions/core/skills/skill-implementer/SKILL.md",
+    ".claude/agents/general-implementation-agent.md",
+    ".claude/extensions/core/agents/general-implementation-agent.md"
+  ]
+}

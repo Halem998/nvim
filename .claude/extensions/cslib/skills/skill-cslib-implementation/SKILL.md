@@ -118,7 +118,13 @@ subagent or inline (Stage 4b). Do NOT skip these stages for any reason.
 Read the metadata file from `specs/{N}_{SLUG}/.return-meta.json`.
 
 ### Stage 6: Update Task Status (Postflight)
-Update state.json and TODO.md based on result.
+
+```bash
+if [ "$status" = "implemented" ]; then
+  bash .claude/scripts/update-task-status.sh postflight "$task_number" implement "$session_id"
+fi
+# On partial: keep status as "implementing" for resume
+```
 
 ### Stage 7: Link Artifacts
 Add artifact to state.json with summary. Update TODO.md per `@.claude/context/patterns/artifact-linking-todo.md` with `field_name=**Summary**`, `next_field=**Description**`.

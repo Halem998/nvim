@@ -137,6 +137,11 @@ For each step in the phase:
    - Use `Write` for new files
    - Use `Edit` for modifications
    - Follow project conventions and patterns
+   - **Track the path**: append the repo-relative path of every file `Write`/`Edit`-ed to the
+     current objective's `files_touched` list in the progress file (see step 4 below and
+     `@.claude/context/formats/progress-file.md`). This feeds the `modified_files` self-report
+     at Stage 6, which the commit pipeline uses for targeted git staging instead of staging the
+     entire working tree — see `@.claude/context/standards/git-staging-scope.md`.
 
 3. **Verify step completion**
    - Check file exists and is non-empty
@@ -147,6 +152,9 @@ For each step in the phase:
    - Set the current objective's `status` to `done` or `in_progress`
    - Update `current_objective` to the next pending objective
    - Update `last_updated` to current timestamp
+   - Append every repo-relative path touched during this objective to that objective's
+     `files_touched` array (additive — do not overwrite paths from earlier updates to the same
+     objective)
    - If an approach was attempted and failed, add it to `approaches_tried` with `result: "failed"` and a brief `reason`
 
    ```bash
@@ -340,6 +348,18 @@ Write to `specs/{NNN}_{SLUG}/summaries/{NN}_{short-slug}-summary.md`:
 
 Populate `## Plan Deviations` from the `deviations` arrays across all phase progress files. If all deviations arrays are empty, write `- None (implementation followed plan)`.
 
+### Stage 6-modified-files: Sum `files_touched` into `modified_files`
+
+Before writing the final metadata (Stage 7), collect the `modified_files` self-report: read
+every phase's progress file, concatenate all `objectives[].files_touched` arrays across all
+phases into a single flat list, and de-duplicate. This becomes the `modified_files: string[]`
+field in the Stage 7 return-meta (see `@.claude/context/formats/return-metadata-file.md`). If no
+files were touched (e.g. a verification-only phase), write an empty array — never omit the
+field and never fall back to staging the entire working tree downstream. This is the mechanism
+the commit pipeline (`orchestrator-postflight.sh` Stage 9 and the per-phase commit in this
+agent's Phase Checkpoint Protocol below) uses for targeted staging; see
+`@.claude/context/standards/git-staging-scope.md` for the full contract.
+
 ### Stage 6a: Generate Completion Data
 
 **CRITICAL**: Before writing metadata, prepare the `completion_data` object.
@@ -397,7 +417,7 @@ Store the candidates array in memory for inclusion in the metadata file at Stage
 
 ### Stage 7: Write Metadata File
 
-Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial|failed`. Include `completion_data` with `completion_summary` (all tasks) and `roadmap_items` (non-meta). Include `memory_candidates` array (from Stage 6b) at the top level of the JSON output. Agent-specific metadata fields: `phases_completed`, `phases_total`.
+Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial|failed`. Include `completion_data` with `completion_summary` (all tasks) and `roadmap_items` (non-meta). Include `memory_candidates` array (from Stage 6b) at the top level of the JSON output. Include `modified_files` (from Stage 6-modified-files) at the top level of the JSON output — this is the agent's self-reported list of every source file touched, consumed by the commit pipeline for targeted staging (see `@.claude/context/standards/git-staging-scope.md`). Agent-specific metadata fields: `phases_completed`, `phases_total`.
 
 **If returning `partial` and a handoff artifact was written** (Stage 4C), include `handoff_path` in `partial_progress`:
 
@@ -433,12 +453,19 @@ For each phase in the implementation plan:
 2. **Update phase status** to `[IN PROGRESS]` in plan file
 3. **Execute phase steps** as documented
 4. **Update phase status** to `[COMPLETED]` (Stage 4D), then perform post-phase self-review (Stage 4D-ii) and write a progressive handoff (Stage 4D-iii)
-5. **Git commit** with message: `task {N} phase {P}: {phase_name}`
+5. **Git commit** with message: `task {N} phase {P}: {phase_name}`, using targeted, work-scoped
+   staging — never stage the entire working tree. See
+   `@.claude/context/standards/git-staging-scope.md` for the full commit-scope contract:
    ```bash
-   git add -A && git commit -m "task {N} phase {P}: {phase_name}
+   task_dir="specs/{NNN}_{SLUG}"
+   stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
+   # Append every path accumulated in this phase's progress-file files_touched arrays
+   # (the same paths summed into modified_files at Stage 6-modified-files)
+   git add "${stage_paths[@]}"
+   git commit -m "task {N} phase {P}: {phase_name}
 
    Session: {session_id}
-
+   "
    ```
 6. **Proceed to next phase** or return if blocked
 

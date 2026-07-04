@@ -1,0 +1,19 @@
+{
+  "phase": 5,
+  "phase_name": "Harden git-workflow.md",
+  "started_at": "2026-07-04T17:01:00Z",
+  "last_updated": "2026-07-04T17:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add git add -A and git commit -am to the Never Run list", "status": "done"},
+    {"id": 2, "description": "Reference git-staging-scope.md from Commit Scope and Always Check Before Commit sections", "status": "done"},
+    {"id": 3, "description": "Apply identical edit to extensions/core dual copy", "status": "done"}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "files_touched": [
+    ".claude/rules/git-workflow.md",
+    ".claude/extensions/core/rules/git-workflow.md"
+  ]
+}

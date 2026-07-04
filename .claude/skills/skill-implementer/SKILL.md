@@ -457,17 +457,41 @@ fi
 
 #### Stage 6b: Commit Phase Progress (Inside Loop)
 
-After each subagent completes (whether implemented, partial, or failed), commit the work:
+After each subagent completes (whether implemented, partial, or failed), commit the work using
+targeted, work-scoped staging — never stage the entire working tree. See
+`.claude/context/standards/git-staging-scope.md` for the full commit-scope contract:
 
 ```bash
-git add -A
+task_dir="specs/${padded_num}_${project_name}"
+stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
+
+# Include the plan file explicitly (already covered by task_dir/ above; staged
+# explicitly too per the contract)
+plan_file=$(ls "${task_dir}"/plans/*.md 2>/dev/null | head -1)
+[ -n "$plan_file" ] && stage_paths+=("$plan_file")
+
+# Agent self-reported modified_files (accumulated files_touched from this iteration's subagent)
+modified_files_count=0
+while IFS= read -r f; do
+  if [ -n "$f" ]; then
+    stage_paths+=("$f")
+    modified_files_count=$((modified_files_count + 1))
+  fi
+done < <(jq -r '.modified_files[]? // empty' "$metadata_file" 2>/dev/null)
+
+if [ "$modified_files_count" -eq 0 ]; then
+  echo "WARNING: no modified_files reported; source-file changes NOT committed automatically. Review and commit manually."
+fi
+
+git add "${stage_paths[@]}"
 git commit -m "task ${task_number} phase ${phases_completed}: implementation progress
 
 Session: ${session_id}
 " || echo "Note: Nothing to commit or commit failed (non-blocking)"
 ```
 
-This ensures each subagent's progress is checkpointed in git before proceeding.
+This ensures each subagent's progress is checkpointed in git before proceeding, without staging
+unrelated concurrent-session changes.
 
 ---
 
@@ -640,14 +664,41 @@ Non-blocking: called in background after artifacts are linked. Speaks "Tab N STA
 
 ### Stage 9: Git Commit
 
-Commit changes with session ID:
+Commit changes with session ID, using targeted staging (never stage the entire working tree)
+per `.claude/context/standards/git-staging-scope.md`:
 
 ```bash
-git add -A
+task_dir="specs/${padded_num}_${project_name}"
+stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
+
+# Include the plan file explicitly (already covered by task_dir/ above)
+plan_file=$(ls "${task_dir}"/plans/*.md 2>/dev/null | head -1)
+[ -n "$plan_file" ] && stage_paths+=("$plan_file")
+
+# Agent self-reported modified_files
+modified_files_count=0
+while IFS= read -r f; do
+  if [ -n "$f" ]; then
+    stage_paths+=("$f")
+    modified_files_count=$((modified_files_count + 1))
+  fi
+done < <(jq -r '.modified_files[]? // empty' "$metadata_file" 2>/dev/null)
+
+if [ "$modified_files_count" -eq 0 ]; then
+  echo "WARNING: no modified_files reported; source-file changes NOT committed automatically. Review and commit manually."
+fi
+
+git add "${stage_paths[@]}"
 git commit -m "task ${task_number}: complete implementation
 
 Session: ${session_id}
+"
 ```
+
+**Note**: This inline commit and `orchestrator-postflight.sh` Stage 9 both exist in the
+pipeline (this skill runs its own postflight inline rather than delegating to the shared
+script); both now follow the same targeted-staging contract in
+`.claude/context/standards/git-staging-scope.md`, so their descriptions no longer diverge.
 
 ---
 

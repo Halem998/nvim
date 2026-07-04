@@ -50,6 +50,10 @@ task {N}: {action} {description}
 
 ## Commit Scope
 
+See `.claude/context/standards/git-staging-scope.md` for the authoritative per-operation
+commit-scope contract (`research`/`plan`/`implement` staging rules, the proven `--team` staging
+template, and the fail-safe under-stage-not-over-stage direction).
+
 ### Single-Task Operations
 Include only files related to that task:
 ```
@@ -80,6 +84,11 @@ Modified:
   "No Destructive Git on Uncommitted Work" below for the full rule and exemptions
 - `git rebase -i` (interactive mode not supported)
 - Any destructive operations without user confirmation
+- `git add -A` (or `git add .`) — stages the entire working tree, silently pulling in
+  concurrent-session or unrelated stray edits; use targeted, work-scoped staging instead. See
+  `.claude/context/standards/git-staging-scope.md` for the per-operation commit-scope contract.
+- `git commit -am` — implicitly stages all tracked-file modifications, the same over-staging
+  problem as `git add -A`
 
 ### No Destructive Git on Uncommitted Work
 
@@ -122,6 +131,8 @@ Before any intentional rollback that would otherwise be blocked, run
 - `git status` to verify staged files
 - `git diff --staged` to review changes
 - Ensure no sensitive files (.env, credentials) are staged
+- See `.claude/context/standards/git-staging-scope.md` for the required `git status --short` /
+  `git diff --staged` review flow before any targeted commit
 
 ## Commit Message Format
 

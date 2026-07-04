@@ -1,0 +1,19 @@
+{
+  "phase": 6,
+  "phase_name": "Establish skill-git-workflow as canonical",
+  "started_at": "2026-07-04T17:31:00Z",
+  "last_updated": "2026-07-04T17:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Update skill-git-workflow/SKILL.md (+ dual copy) to point at git-staging-scope.md and describe actual orchestrator-postflight.sh behavior", "status": "done"},
+    {"id": 2, "description": "Update skill-team-research/SKILL.md:563 reference (+ dual copy) to resolve to the now-existing standard", "status": "done", "note": "Reference already resolved once git-staging-scope.md existed from Phase 1; no text change needed"},
+    {"id": 3, "description": "Confirm no other dangling references to git-staging-scope.md remain", "status": "done"}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "files_touched": [
+    ".claude/skills/skill-git-workflow/SKILL.md",
+    ".claude/extensions/core/skills/skill-git-workflow/SKILL.md"
+  ]
+}

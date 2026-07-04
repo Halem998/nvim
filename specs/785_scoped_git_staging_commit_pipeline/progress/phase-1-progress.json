@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Create the commit-scope contract standard",
+  "started_at": "2026-07-04T16:48:02Z",
+  "last_updated": "2026-07-04T16:52:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create .claude/context/standards/git-staging-scope.md documenting per-operation scope", "status": "done"},
+    {"id": 2, "description": "Include the proven --team template verbatim as reference snippet", "status": "done"},
+    {"id": 3, "description": "State forbidden operations and required review flow", "status": "done"},
+    {"id": 4, "description": "Create byte-identical dual copy at extensions/core", "status": "done"}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "files_touched": [
+    ".claude/context/standards/git-staging-scope.md",
+    ".claude/extensions/core/context/standards/git-staging-scope.md"
+  ]
+}

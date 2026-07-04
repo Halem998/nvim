@@ -316,13 +316,53 @@ fi
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 9: Git commit (plan and implement only; non-blocking)
+# Targeted, work-scoped staging per .claude/context/standards/git-staging-scope.md —
+# never stage the entire working tree. Fail-safe direction is to under-stage with a loud
+# warning rather than over-stage and pull in a concurrent session's stray edits.
 # ─────────────────────────────────────────────────────────────────────────────
 if [ "$do_git_commit" = "true" ]; then
-  echo "[postflight] Creating git commit: ${commit_message}"
-  git add -A && git commit -m "${commit_message}
+  echo "[postflight] Creating git commit (targeted staging): ${commit_message}"
+
+  # Base scope for both plan and implement: the task directory + shared index files.
+  stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
+
+  if [ "$operation_type" = "implement" ]; then
+    # Explicitly include the plan file (already covered by task_dir/ above; staged
+    # explicitly too per the git-staging-scope.md contract).
+    plan_file=$(ls "${task_dir}"/plans/*.md 2>/dev/null | head -1)
+    if [ -n "$plan_file" ]; then
+      stage_paths+=("$plan_file")
+    fi
+
+    # Agent self-reported modified_files (implement-specific; see return-metadata-file.md).
+    modified_files_count=0
+    while IFS= read -r f; do
+      if [ -n "$f" ]; then
+        stage_paths+=("$f")
+        modified_files_count=$((modified_files_count + 1))
+      fi
+    done < <(jq -r '.modified_files[]? // empty' "$metadata_file" 2>/dev/null)
+
+    if [ "$modified_files_count" -eq 0 ]; then
+      echo "[postflight] WARNING: no modified_files reported; source-file changes NOT committed automatically. Review and commit manually." >&2
+    fi
+  fi
+
+  if git add "${stage_paths[@]}"; then
+    git commit -m "${commit_message}
 
 Session: ${session_id}
 " || echo "[postflight] NOTE: Nothing to commit or git commit failed (non-blocking)" >&2
+  else
+    echo "[postflight] WARNING: git add failed for one or more staged paths (non-blocking)" >&2
+  fi
+
+  # Surface any residual uncommitted changes rather than silently ignoring them.
+  residual="$(git status --porcelain 2>/dev/null)"
+  if [ -n "$residual" ]; then
+    echo "[postflight] WARNING: working tree has uncommitted changes after targeted commit. Review and commit manually if needed:" >&2
+    echo "$residual" >&2
+  fi
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────

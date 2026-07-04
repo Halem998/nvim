@@ -7,12 +7,13 @@
 #   3. Plan file (optional, via update-plan-status.sh)
 #
 # Usage:
-#   .claude/scripts/update-task-status.sh <operation> <task_number> <target_status> <session_id> [--dry-run]
+#   .claude/scripts/update-task-status.sh <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready]
 #
 # Arguments:
 #   operation     - "preflight" or "postflight"
 #   task_number   - Task number (integer)
-#   target_status - "research", "plan", or "implement"
+#   target_status - "research", "plan", "implement", or "pr_ready" (pr_ready is reserved for
+#                    task_type == "pr" unless --allow-pr-ready is passed)
 #   session_id    - Session identifier string
 #
 # Exit codes:
@@ -36,11 +37,13 @@ trap cleanup EXIT
 
 # --- Parse arguments ---
 DRY_RUN=false
+ALLOW_PR_READY=false
 POSITIONAL_ARGS=()
 
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
+    --allow-pr-ready) ALLOW_PR_READY=true ;;
     *) POSITIONAL_ARGS+=("$arg") ;;
   esac
 done
@@ -52,9 +55,9 @@ session_id="${POSITIONAL_ARGS[3]:-}"
 
 # --- Validation ---
 if [[ -z "$operation" || -z "$task_number" || -z "$target_status" || -z "$session_id" ]]; then
-  echo "Usage: $0 <operation> <task_number> <target_status> <session_id> [--dry-run]" >&2
+  echo "Usage: $0 <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready]" >&2
   echo "  operation:     preflight | postflight" >&2
-  echo "  target_status: research | plan | implement" >&2
+  echo "  target_status: research | plan | implement | pr_ready (pr_ready requires task_type==pr unless --allow-pr-ready)" >&2
   exit 1
 fi
 
@@ -108,6 +111,22 @@ task_exists=$(jq -r --arg num "$task_number" \
 
 if [[ "$task_exists" == "0" ]]; then
   echo "Error: task $task_number not found in state.json" >&2
+  exit 1
+fi
+
+# --- task_type lookup (mirrors the project_name lookup pattern used below) ---
+task_type=$(jq -r --arg num "$task_number" \
+  '.active_projects[] | select(.project_number == ($num | tonumber)) | .task_type // "general"' \
+  "$STATE_FILE")
+
+# --- Guard: pr_ready is reserved for task_type == "pr" unless explicitly overridden ---
+if [[ "$target_status" == "pr_ready" && "$task_type" == "pr" ]]; then
+  : # allowed: pr-type task transitioning to pr_ready
+elif [[ "$target_status" == "pr_ready" && "$ALLOW_PR_READY" == "true" ]]; then
+  : # allowed: explicit override flag passed (e.g. skeleton-exhaustion routing in skill-orchestrate-hard)
+elif [[ "$target_status" == "pr_ready" ]]; then
+  echo "Error: 'pr_ready' is reserved for task_type == 'pr' (task $task_number has task_type '$task_type')." >&2
+  echo "       Pass --allow-pr-ready to override this guard." >&2
   exit 1
 fi
 
