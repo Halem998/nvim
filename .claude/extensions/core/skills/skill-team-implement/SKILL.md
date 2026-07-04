@@ -39,7 +39,7 @@ This skill activates when:
 | `resume_phase` | integer | No | Phase to resume from |
 | `team_size` | integer | No | Max concurrent teammates (2-4, default 2) |
 | `session_id` | string | Yes | Session ID for tracking |
-| `model_flag` | string | No | Model override (haiku, sonnet, opus). If set, use instead of default |
+| `model_flag` | string | No | Model override (haiku, sonnet, opus, fable). If set, use instead of default |
 | `effort_flag` | string | No | Effort level (fast, hard). Passed as prompt context |
 
 **Model Selection**: Determine teammate model early:

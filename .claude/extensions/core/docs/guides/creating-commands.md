@@ -84,7 +84,7 @@ source .claude/scripts/parse-command-args.sh "$ARGUMENTS"
 #          EFFORT_FLAG, MODEL_FLAG, CLEAN_FLAG, FORCE_FLAG, FOCUS_PROMPT
 ```
 
-`parse-command-args.sh` extracts task numbers (single, comma-separated, or ranges), flags (`--team`, `--fast`, `--hard`, `--clean`, `--force`), model selectors (`--haiku`, `--sonnet`, `--opus`), and remaining text as `FOCUS_PROMPT`.
+`parse-command-args.sh` extracts task numbers (single, comma-separated, or ranges), flags (`--team`, `--fast`, `--hard`, `--clean`, `--force`), model selectors (`--haiku`, `--sonnet`, `--opus`, `--fable`), and remaining text as `FOCUS_PROMPT`.
 
 #### CHECKPOINT 1: GATE IN (Preflight)
 

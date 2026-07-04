@@ -113,9 +113,12 @@ if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
   cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
   echo "[orchestrate] Resuming — cycle $cycle_count of $MAX_CYCLES"
 else
-  # Fresh start: create guard
-  cycle_count=0
-  jq -n \
+  # Fresh start: create guard atomically via init-marker (task 808). A plain
+  # `>` redirect has no O_EXCL semantics, so two racing writers could both take
+  # this branch and stomp each other's counters; init-marker's mkdir-gate +
+  # tmp-mv payload guarantees exactly one winner. On a lost race (exit 1),
+  # degrade to the same resume-read the `if`-branch above performs.
+  if jq -n \
     --arg session_id "$session_id" \
     --argjson max_cycles "$MAX_CYCLES" \
     --arg started "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
@@ -126,8 +129,14 @@ else
       "current_state": "reading",
       "started": $started,
       "last_updated": $started
-    }' > "$loop_guard_file"
-  echo "[orchestrate] Starting fresh — MAX_CYCLES=$MAX_CYCLES"
+    }' | bash .claude/scripts/task-lock.sh init-marker "$loop_guard_file"; then
+    cycle_count=0
+    echo "[orchestrate] Starting fresh — MAX_CYCLES=$MAX_CYCLES"
+  else
+    # Lost the creation race: another writer won. Resume from their guard.
+    cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
+    echo "[orchestrate] Resuming (lost init race) — cycle $cycle_count of $MAX_CYCLES"
+  fi
 fi
 
 # Blocker escalation counter (reset each /orchestrate invocation)

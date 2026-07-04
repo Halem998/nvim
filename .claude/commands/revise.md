@@ -20,35 +20,24 @@ Create a new version of an implementation plan, or update task description if no
 
 ### CHECKPOINT 1: GATE IN
 
-1. **Generate Session ID**
-   ```
-   session_id = sess_{timestamp}_{random}
-   ```
+```bash
+source .claude/scripts/command-gate-in.sh "$task_number" "revise"
+# Exports: SESSION_ID, TASK_TYPE, TASK_STATUS, PROJECT_NAME, DESCRIPTION, PADDED_NUM
+# Displays: [REVISE] Task {N}: {project_name}
+# The Phase-1 (task 810) operation-aware exemption means "revise" is never rejected on
+# terminal-status tasks, preserving skill-reviser's documented "works regardless of task
+# status" contract. No other ABORT conditions exist for /revise.
+```
 
-2. **Lookup Task**
-   ```bash
-   task_data=$(jq -r --arg num "$task_number" \
-     '.active_projects[] | select(.project_number == ($num | tonumber))' \
-     specs/state.json)
-   ```
+**Check Plan Existence** (revise-specific; no gate-script equivalent — determines routing):
+```bash
+plan_exists=$(ls "specs/${PADDED_NUM}_${PROJECT_NAME}/plans/"*.md 2>/dev/null | head -1)
+```
 
-3. **Validate Task Exists**
-   - **ABORT** if task not found in state.json
+- Plan file exists: Plan Revision path
+- No plan file: Description Update path
 
-   No other ABORT conditions. The command works regardless of task status.
-
-4. **Check Plan Existence**
-   ```bash
-   padded_num=$(printf "%03d" "$task_number")
-   project_name=$(echo "$task_data" | jq -r '.project_name')
-   plan_exists=$(ls specs/${padded_num}_${project_name}/plans/*.md 2>/dev/null | head -1)
-   ```
-
-   This determines routing:
-   - Plan file exists: Plan Revision path
-   - No plan file: Description Update path
-
-**PROCEED** to delegation.
+**On GATE IN success**: Task validated. **IMMEDIATELY CONTINUE** to CHECKPOINT 2 below.
 
 ---
 
@@ -61,17 +50,19 @@ Invoke `skill-reviser` with the validated task context. The skill delegates to `
 
 Pass to skill-reviser:
 - `task_number` - Validated task number
-- `session_id` - Generated session ID
+- `session_id` - `$SESSION_ID` from GATE IN
 - `revision_reason` - Optional reason from remaining args
-- `task_data` - Full task data from state.json lookup
 - `plan_exists` - Whether a plan file exists (boolean flag)
 
 ```
 skill: "skill-reviser"
-args: "task_number={N} session_id={session_id} revision_reason={reason} plan_exists={true|false}"
+args: "task_number={N} session_id={SESSION_ID} revision_reason={reason} plan_exists={true|false}"
 ```
 
-The skill spawns the reviser-agent, handles postflight (status update, artifact linking, git commit), and returns a brief text summary.
+The skill spawns the reviser-agent and returns a brief text summary. Status update (state.json),
+artifact linking, and git commit for the Plan Revision path are handled by CHECKPOINT 3 below via
+`command-gate-out.sh`; the Description Update path intentionally skips that correction (see
+CHECKPOINT 3).
 
 **On DELEGATE success**: Revision complete. **IMMEDIATELY CONTINUE** to CHECKPOINT 3 below.
 
@@ -79,40 +70,29 @@ The skill spawns the reviser-agent, handles postflight (status update, artifact 
 
 ### CHECKPOINT 3: GATE OUT
 
-1. **Verify Artifacts** (Plan Revision only)
-   If `plan_exists` was true (plan revision path), check the revised plan file exists on disk:
-   ```bash
-   revised_plan=$(ls -1t specs/${padded_num}_${project_name}/plans/*.md 2>/dev/null | head -1)
-   if [ -z "$revised_plan" ]; then
-       echo "WARNING: No plan file found after revision."
-   fi
-   ```
+```bash
+bash .claude/scripts/command-gate-out.sh "$task_number" "revise" "$SESSION_ID"
+# Reads .return-meta.json; applies defensive status correction if needed
+# status_token mapping (Phase 1, task 810): operation "revise" -> target_status "plan"
+# Runs validate-artifact.sh --fix (non-blocking)
+# Defensive correction (state.json + TODO.md) handled by this script
+```
 
-2. **Verify Status Updated** (Plan Revision only)
-   The skill handles status updates internally (postflight).
-   Confirm status is now "planned" in state.json:
+**Description-update path skips the correction automatically**: `skill-reviser` reports
+`status="description_updated"` for that path, which falls outside `command-gate-out.sh`'s
+`implemented|researched|planned` gate, so no defensive correction fires — this is intentional
+(there is no "planned" state to defend when only the description changed).
 
-   ```bash
-   current_status=$(jq -r --argjson num "$task_number" \
-     '.active_projects[] | select(.project_number == $num) | .status' \
-     specs/state.json)
+The following step is revise-specific (not handled by `command-gate-out.sh`):
 
-   if [ "$current_status" = "planned" | not ]; then
-       echo "WARNING: state.json status is '$current_status', expected 'planned'. Applying defensive correction."
-       bash .claude/scripts/update-task-status.sh postflight "$task_number" plan "$session_id"
-   fi
-   ```
-
-3. **Verify TODO.md Status** (Plan Revision only)
-   Check that the task entry in TODO.md shows `[PLANNED]`:
-
-   ```bash
-   if grep -q "- \*\*Status\*\*: \[PLANNING\]" <(grep -A 5 "^### ${task_number}\." specs/TODO.md); then
-       echo "WARNING: TODO.md status not updated to [PLANNED]. Applying defensive correction."
-   fi
-   ```
-
-   If mismatch found, use Edit tool to fix both task entry and Task Order.
+**Verify Artifacts (Plan Revision only)**: If `plan_exists` was true (plan revision path), check
+the revised plan file exists on disk:
+```bash
+revised_plan=$(ls -1t "specs/${PADDED_NUM}_${PROJECT_NAME}/plans/"*.md 2>/dev/null | head -1)
+if [ -z "$revised_plan" ]; then
+    echo "WARNING: No plan file found after revision."
+fi
+```
 
 **On GATE OUT success**: Revision verified.
 
@@ -148,6 +128,16 @@ Status: [{current_status}]
 
 ### GATE IN Failure
 - Task not found: Return error with guidance
+- Locked by another session: `command-gate-in.sh` propagates `task-lock.sh acquire`'s refusal
+  (a fresh lock held by a genuinely different session) — ABORT with the lock's held-by/reason
+  message; re-run once the other session's operation completes or its lock goes stale
+- Cross-task `file_scope` overlap (task 809): if another currently-locked task's `file_scope`
+  overlaps this task's and that lock is fresh, `/revise` ABORTs before DELEGATE, naming the
+  conflicting task number — this is a new failure mode `/revise` did not have before this
+  refactor (see task 810); re-run once the other task's lock releases or goes stale
+- Note: unlike `/research`/`/plan`/`/implement`, `/revise` has no terminal-status ABORT — the
+  Phase-1 gate-in exemption preserves the pre-existing "works regardless of task status"
+  contract; only the two lock-refusal modes above can block `/revise` at GATE IN
 
 ### DELEGATE Failure
 - skill-reviser handles all error cases internally
@@ -157,4 +147,4 @@ Status: [{current_status}]
 
 ### GATE OUT Failure
 - Missing artifacts: Log warning, continue with available
-- Status mismatch: Apply defensive correction via update-task-status.sh
+- Status mismatch: Apply defensive correction via `command-gate-out.sh` (status_token `plan`)

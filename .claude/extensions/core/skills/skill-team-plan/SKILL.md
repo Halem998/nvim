@@ -38,7 +38,7 @@ This skill activates when:
 | `research_path` | string | No | Path to research report |
 | `team_size` | integer | No | Number of teammates (2-3, default 2) |
 | `session_id` | string | Yes | Session ID for tracking |
-| `model_flag` | string | No | Model override (haiku, sonnet, opus). If set, use instead of default |
+| `model_flag` | string | No | Model override (haiku, sonnet, opus, fable). If set, use instead of default |
 | `effort_flag` | string | No | Effort level (fast, hard). Passed as prompt context |
 
 **Model Selection**: Determine teammate model early:

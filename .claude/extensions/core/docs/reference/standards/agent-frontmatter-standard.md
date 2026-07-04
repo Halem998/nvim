@@ -52,7 +52,7 @@ Agents use a three-tier model assignment based on task complexity:
 
 Sonnet 5 delivers near-Opus quality on most pattern-execution work, including coding and agentic tasks; Opus remains the choice for deep analytical reasoning, multi-step planning, and formal verification.
 
-Users can override the model at invocation time using model flags (`--haiku`, `--sonnet`, `--opus`) for cost/speed tradeoffs on specific tasks.
+Users can override the model at invocation time using model flags (`--haiku`, `--sonnet`, `--opus`, `--fable`) for cost/speed tradeoffs on specific tasks.
 
 ### Values
 
@@ -98,6 +98,7 @@ Users can override the agent's default model at invocation time using flags on `
 | `--haiku` | `haiku` | Use Haiku model (fastest, lowest cost) |
 | `--sonnet` | `sonnet` | Use Sonnet model (balanced cost/quality) |
 | `--opus` | `opus` | Use Opus model (highest quality, same as default) |
+| `--fable` | `fable` | Use Fable model (claude-fable-5) |
 
 Effort and model flags are independent and can be combined. For example, `--fast --opus` uses Opus with low-effort reasoning. If no model flag is provided, the agent's frontmatter default is used (opus for deep-reasoning agents, sonnet for general-purpose agents). If no effort flag is provided, normal effort is used.
 
@@ -108,6 +109,7 @@ If multiple flags of the same dimension are provided, the last one wins. These f
 /research 42 --opus        # Force Opus (same as default for research/plan/implement commands)
 /research 42 --sonnet      # Use Sonnet on research sub-agent (overrides default Sonnet for general-research-agent)
 /research 42 --haiku       # Use Haiku for speed
+/research 42 --fable       # Use Fable model (claude-fable-5)
 /implement 42 --hard       # Deep reasoning at high effort (model per command frontmatter; --opus to force Opus)
 /implement 42 --fast       # Light reasoning with default model
 /plan 42 --fast --sonnet   # Light reasoning with Sonnet (overrides Opus command, uses Sonnet for planner sub-agent)

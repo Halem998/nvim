@@ -14,7 +14,7 @@
 #   TEAM_MODE      — "true" or "false"
 #   TEAM_SIZE      — integer 2-4 (default 2)
 #   EFFORT_FLAG    — "fast", "hard", or ""
-#   MODEL_FLAG     — "haiku", "sonnet", "opus", or ""
+#   MODEL_FLAG     — "haiku", "sonnet", "opus", "fable", or ""
 #   CLEAN_FLAG     — "true" or "false"
 #   FORCE_FLAG     — "true" or "false"
 #   EXPLOIT_FLAG   — "true" or "false" (--exploit mode hint for team research)
@@ -97,6 +97,9 @@ parse_command_args() {
   if [[ "$remaining" =~ --opus ]]; then
     MODEL_FLAG="opus"
   fi
+  if [[ "$remaining" =~ --fable ]]; then
+    MODEL_FLAG="fable"
+  fi
   if [[ "$remaining" =~ --clean ]]; then
     CLEAN_FLAG="true"
   fi
@@ -122,6 +125,7 @@ parse_command_args() {
     | sed 's/--haiku//g' \
     | sed 's/--sonnet//g' \
     | sed 's/--opus//g' \
+    | sed 's/--fable//g' \
     | sed 's/--clean//g' \
     | sed 's/--force//g' \
     | sed 's/--exploit//g' \

@@ -17,6 +17,7 @@
 #   task-lock.sh heartbeat <task_number> <session_id>
 #   task-lock.sh release <task_number> <session_id>
 #   task-lock.sh check <task_number>
+#   task-lock.sh init-marker <file_path>    (stdin = JSON content; task 808)
 #
 # Lockfile layout (per task):
 #   specs/{NNN}_{SLUG}/.lock/            <- directory, created via `mkdir` (POSIX-atomic
@@ -47,6 +48,12 @@
 #     1 - held, fresh
 #     2 - held, stale (heartbeat older than the threshold)
 #     3 - usage/task-not-found error
+#   init-marker (task 808 — generic atomic-on-creation marker-file primitive,
+#   file-granularity, independent of and unrelated to the acquire/heartbeat/
+#   release/check task-number `.lock/` mechanism above):
+#     0 - created (fresh; caller treats this as a fresh start)
+#     1 - already exists (valid JSON found); caller resumes from the existing file
+#     2 - usage/write-error, or an orphaned claim persisted after one self-heal retry
 #
 # Same-session re-entry (CRITICAL): a session re-acquiring its own lock (e.g.
 # `/research 42` then `/plan 42` in one conversation) MUST NOT self-block. `acquire`
@@ -145,6 +152,98 @@ age_minutes() {
   echo $(( (now - then_epoch) / 60 ))
 }
 
+# --- get_file_scope: task_number -> compact JSON file_scope array (task 809) ---
+# Graceful degradation mirrors resolve_task_dir: any lookup failure (missing state
+# file, no jq, unknown task, absent/null field) resolves to "[]", never a non-zero
+# exit or stderr noise that could break the acquire caller.
+get_file_scope() {
+  local task_number="$1" result
+  if [ -f "$STATE_FILE" ] && command -v jq >/dev/null 2>&1; then
+    result=$(jq -c --argjson num "$task_number" \
+      '(.active_projects[]? | select(.project_number == $num) | .file_scope) // empty' \
+      "$STATE_FILE" 2>/dev/null)
+    if [ -n "$result" ] && [ "$result" != "null" ]; then
+      echo "$result"
+      return 0
+    fi
+  fi
+  echo "[]"
+}
+
+# --- scopes_overlap: jq transcription of file-footprint-overlap.md (lines 43-59) ---
+# scope_a_json / scope_b_json are compact JSON arrays of path strings. Prints the
+# first overlapping path FROM scope_b (the "foreign" side, per cmd_acquire's call
+# convention scopes_overlap "$own_scope" "$other_scope") on stdout when an overlap
+# is found; prints nothing otherwise. Callers use `[ -n "$out" ]` as the boolean
+# test and reuse the printed path in ABORT/WARN messages. Mirrors the canonical
+# rtrimstr("/") normalization and exact-match-or-either-side-prefix rule exactly;
+# does not restate or fork the algorithm.
+scopes_overlap() {
+  local scope_a="$1" scope_b="$2"
+  jq -n -r --argjson a "$scope_a" --argjson b "$scope_b" '
+    def norm: rtrimstr("/");
+    ($a // []) as $sa | ($b // []) as $sb |
+    [ $sa[] as $pa | $sb[] as $pb |
+      ($pa|norm) as $na | ($pb|norm) as $nb |
+      select($na == $nb or ($nb | startswith($na + "/")) or ($na | startswith($nb + "/"))) |
+      $pb
+    ] | first // empty
+  ' 2>/dev/null
+}
+
+# --- find_held_locks: list foreign .lock dirs under specs/, excluding one dir ---
+# Skips any lock dir whose holder.json is missing or unreadable/invalid (never lets
+# a corrupt foreign holder abort the caller's own acquire).
+find_held_locks() {
+  local exclude_dir="$1" dir
+  find "$PROJECT_ROOT/specs" -mindepth 2 -maxdepth 2 -type d -name ".lock" 2>/dev/null |
+    while IFS= read -r dir; do
+      [ "$dir" = "$exclude_dir" ] && continue
+      [ -f "$dir/holder.json" ] || continue
+      jq -e . "$dir/holder.json" >/dev/null 2>&1 || continue
+      echo "$dir"
+    done
+}
+
+# --- specs/.scope-lock/ global mutex (task 809) ---
+# Closes the scan-then-mkdir TOCTOU race around cmd_acquire's cross-task overlap
+# scan. Distinct staleness window from TASK_LOCK_STALE_MIN: a stuck mutex is a bug,
+# not ordinary contention, so this window is short and acquire_scope_mutex fails
+# CLOSED (non-zero) on timeout rather than ever failing open.
+SCOPE_MUTEX_STALE_SEC=10
+
+acquire_scope_mutex() {
+  local mutex_dir="$PROJECT_ROOT/specs/.scope-lock"
+  local waited_ms=0 claimed_at now age
+  while true; do
+    if mkdir "$mutex_dir" 2>/dev/null; then
+      now_epoch > "$mutex_dir/claimed_at" 2>/dev/null || true
+      return 0
+    fi
+
+    claimed_at=$(cat "$mutex_dir/claimed_at" 2>/dev/null)
+    now=$(now_epoch)
+    if [ -n "$claimed_at" ]; then
+      age=$(( now - claimed_at ))
+      if [ "$age" -gt "$SCOPE_MUTEX_STALE_SEC" ]; then
+        echo "WARN: reclaiming stale specs/.scope-lock mutex (age ${age}s > ${SCOPE_MUTEX_STALE_SEC}s)." >&2
+        rm -rf "$mutex_dir" 2>/dev/null || true
+        continue
+      fi
+    fi
+
+    if [ "$waited_ms" -ge 5000 ]; then
+      return 1
+    fi
+    sleep 0.05
+    waited_ms=$(( waited_ms + 50 ))
+  done
+}
+
+release_scope_mutex() {
+  rm -rf "$PROJECT_ROOT/specs/.scope-lock" 2>/dev/null || true
+}
+
 # =====================================================================
 # acquire <task_number> <operation> <session_id> [command]
 # =====================================================================
@@ -157,6 +256,49 @@ cmd_acquire() {
     return 2
   }
   lock_dir="$task_dir/.lock"
+
+  # --- task 809: cross-task file_scope overlap check, mutex-guarded ---
+  # Wraps the scan-and-decide below AND the pre-existing own-task mkdir/holder logic in
+  # the global specs/.scope-lock/ mutex, closing the scan-then-mkdir TOCTOU race. Fails
+  # CLOSED (return 2) on mutex timeout — a stuck mutex is a bug, never silently bypassed.
+  if ! acquire_scope_mutex; then
+    echo "ERROR: timed out waiting for specs/.scope-lock mutex during task $task_number's acquire; another acquire may be stuck." >&2
+    return 2
+  fi
+  trap 'release_scope_mutex' RETURN
+
+  local own_scope
+  own_scope=$(get_file_scope "$task_number")
+  if [ -n "$own_scope" ] && [ "$own_scope" != "[]" ]; then
+    local held_dir other_task other_session other_scope overlap_path other_heartbeat other_age
+    while IFS= read -r held_dir; do
+      [ -n "$held_dir" ] || continue
+      other_task=$(read_holder_field "$held_dir" "task_number")
+      other_session=$(read_holder_field "$held_dir" "session_id")
+      # Skip: unreadable holder, defensive self-match, or same-session bypass (report
+      # Decisions — a session's own concurrent work never blocks itself).
+      [ -n "$other_task" ] || continue
+      [ "$other_task" = "$task_number" ] && continue
+      [ "$other_session" = "$session_id" ] && continue
+
+      other_scope=$(get_file_scope "$other_task")
+      overlap_path=$(scopes_overlap "$own_scope" "$other_scope")
+      if [ -n "$overlap_path" ]; then
+        other_heartbeat=$(read_holder_field "$held_dir" "heartbeat_at")
+        other_age=$(age_minutes "$other_heartbeat")
+        if [ "$other_age" -le "$TASK_LOCK_STALE_MIN" ]; then
+          # Fresh overlapping foreign lock: refuse. The foreign lock is only ever read
+          # here, never mutated.
+          echo "ABORT: Task $task_number's file_scope overlaps task $other_task's file_scope at \"$overlap_path\" and task $other_task is locked by session $other_session (heartbeat ${other_age} min ago; stale threshold ${TASK_LOCK_STALE_MIN} min)." >&2
+          echo "  Wait for task $other_task's lock to go stale, or coordinate with that session before retrying." >&2
+          return 1
+        fi
+        # Stale overlapping foreign lock: warn and proceed. Never touch the foreign lock.
+        echo "WARN: task $other_task's file_scope overlaps this acquire at \"$overlap_path\", but task $other_task's lock (session $other_session, heartbeat ${other_age} min ago) is stale (> ${TASK_LOCK_STALE_MIN} min); proceeding without modifying it." >&2
+      fi
+    done < <(find_held_locks "$lock_dir")
+  fi
+  # --- end task 809 cross-task check ---
 
   if mkdir "$lock_dir" 2>/dev/null; then
     # Fresh acquire: directory did not exist a moment ago (POSIX-atomic).
@@ -286,6 +428,71 @@ cmd_check() {
 }
 
 # =====================================================================
+# init-marker <file_path>   (task 808)
+# =====================================================================
+# Generic atomic-on-creation primitive for marker/state files that were using a
+# TOCTOU-prone "check-then-create" `if [ -f X ]; then resume; else jq -n ... > X; fi`
+# pattern (e.g. .orchestrator-loop-guard, .orchestrator-churn-state.json). Reuses
+# this script's existing exclusivity idiom — an atomic `mkdir` gate plus a
+# tmp-file-`mv` payload write, mirroring `write_holder` above — but claims a
+# `${file_path}.init` directory, which is entirely distinct from the task-number
+# `.lock/` directory used by acquire/heartbeat/release/check. init-marker is
+# file-granularity and composes independently of the task-number lock: it does
+# not read, call, or modify cmd_acquire, write_holder, or `.lock/` in any way.
+cmd_init_marker() {
+  local file_path="$1"
+  local init_dir="${file_path}.init"
+  local tmp_file="${file_path}.tmp"
+  local attempt recheck
+
+  for attempt in 1 2; do
+    if mkdir "$init_dir" 2>/dev/null; then
+      # Won the exclusivity claim: write stdin payload via tmp-file + mv
+      # (atomic replace), then release the claim directory.
+      cat > "$tmp_file"
+      if [ ! -s "$tmp_file" ]; then
+        echo "ERROR: init-marker failed to write $file_path (stdin produced empty output)" >&2
+        rm -f "$tmp_file"
+        rmdir "$init_dir" 2>/dev/null || true
+        return 2
+      fi
+      mv "$tmp_file" "$file_path"
+      rmdir "$init_dir" 2>/dev/null || true
+      return 0
+    fi
+
+    # mkdir failed: another process holds (or held) the init claim. Before
+    # concluding the claim is orphaned, do a bounded recheck (poll briefly)
+    # for the winner's payload to appear — this distinguishes "actively being
+    # written by a live racer" (expected under concurrency) from "abandoned by
+    # a crashed initializer" (the only case that should trigger self-heal).
+    for recheck in 1 2 3 4 5 6 7 8 9 10; do
+      if [ -f "$file_path" ] && jq empty "$file_path" >/dev/null 2>&1; then
+        return 1
+      fi
+      [ -d "$init_dir" ] || break
+      sleep 0.05
+    done
+
+    if [ -f "$file_path" ] && jq empty "$file_path" >/dev/null 2>&1; then
+      return 1
+    fi
+
+    if [ "$attempt" -eq 1 ]; then
+      # Still absent/corrupt after the bounded recheck: a crashed initializer
+      # left an orphaned claim. Self-heal (never silent, never permanent):
+      # warn, remove the stale claim, retry the mkdir once.
+      echo "WARN: init-marker found a stale claim ($init_dir) with no valid $file_path after recheck; self-healing and retrying." >&2
+      rmdir "$init_dir" 2>/dev/null || true
+      continue
+    fi
+  done
+
+  echo "ERROR: init-marker failed to create $file_path after retry" >&2
+  return 2
+}
+
+# =====================================================================
 # Dispatch
 # =====================================================================
 SUBCMD="${1:-}"
@@ -324,8 +531,16 @@ case "$SUBCMD" in
     cmd_check "$@"
     exit $?
     ;;
+  init-marker)
+    if [ "$#" -lt 1 ]; then
+      echo "Usage: $0 init-marker <file_path>" >&2
+      exit 2
+    fi
+    cmd_init_marker "$@"
+    exit $?
+    ;;
   *)
-    echo "Usage: $0 {acquire|heartbeat|release|check} ..." >&2
+    echo "Usage: $0 {acquire|heartbeat|release|check|init-marker} ..." >&2
     exit 2
     ;;
 esac

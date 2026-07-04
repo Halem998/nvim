@@ -1,7 +1,7 @@
 ---
 description: Research a task and create reports
 allowed-tools: Skill, Agent, Bash(jq:*), Bash(git:*), Read, Edit
-argument-hint: TASK_NUMBERS [FOCUS] [--team [--team-size N]] [--fast|--hard] [--haiku|--sonnet|--opus]
+argument-hint: TASK_NUMBERS [FOCUS] [--team [--team-size N]] [--fast|--hard] [--haiku|--sonnet|--opus|--fable]
 model: opus
 ---
 
@@ -36,6 +36,7 @@ When multiple tasks are specified, each task is researched independently in para
 | `--haiku` | Use Haiku model (fastest, lowest cost) | false |
 | `--sonnet` | Use Sonnet model (balanced cost/quality) | false |
 | `--opus` | Use Opus model (highest quality, same as agent default) | false |
+| `--fable` | Use Fable model (claude-fable-5) | false |
 | `--clean` | Skip automatic memory and roadmap retrieval | false |
 | `--lit` | Literature mode: pass lit_flag=true to skill for paper/spec-based research | false |
 
@@ -156,13 +157,20 @@ batch_session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 
 #### Step 3: Dispatch Skills
 
+This multi-task loop bypasses `command-gate-in.sh`/`command-gate-out.sh` entirely (those are
+only sourced by the single-task path below), so each per-task dispatch acquires/releases the
+task lock itself, mirroring `implement.md`'s Step 3. See
+`.claude/context/patterns/task-lock.md` for the full contract.
+
 For each validated task, invoke the appropriate research skill using parallel Skill tool calls from the orchestrator's built-in batch loop:
 
 1. Extract task_type per task from state.json
 2. Route to the appropriate research skill per task (extension routing or default `skill-researcher`)
-3. Invoke all skills in a single message (parallel execution, one skill per task)
-4. Each skill runs the full single-task research lifecycle independently (preflight, agent delegation, postflight)
-5. Collect text results from all skills; read `.return-meta.json` in each task directory for structured data if needed
+3. **Before** invoking the skill for a task: `bash .claude/scripts/task-lock.sh acquire "$task_num" research "${batch_session_id}_${task_num}" "/research (multi-task)"`. If this refuses (exit 1 — a fresh lock held by a genuinely different session; same-session re-entry never refuses), move that task from `validated_tasks` to `skipped_tasks` with reason `"locked by another session"` and do NOT invoke its skill this run.
+4. Invoke all skills in a single message (parallel execution, one skill per task)
+5. Each skill runs the full single-task research lifecycle independently (preflight, agent delegation, postflight)
+6. Collect text results from all skills; read `.return-meta.json` in each task directory for structured data if needed
+7. **After** each task's skill invocation completes (success, partial, or failed): `bash .claude/scripts/task-lock.sh release "$task_num" "${batch_session_id}_${task_num}"` — unconditional, run regardless of outcome.
 
 **Note**: Batch dispatch is handled directly by this command's orchestrator loop via parallel Skill tool calls, not by a separate batch skill.
 
@@ -228,38 +236,26 @@ Skipped: {count}
 
 - **Partial success is normal**: Failure of one task does not block or roll back others
 - **Failed tasks**: Remain in "researching" status; user can re-run individually (`/research {N}`)
-- **Skipped tasks**: Never dispatched; user fixes the issue and re-runs
+- **Skipped tasks**: Never dispatched; user fixes the issue and re-runs — includes both
+  pre-existing skip reasons (not found, terminal status) and the new `"locked by another
+  session"` reason from per-task lock-acquire refusal (task 810)
 - **Git conflicts**: Non-blocking (logged, not fatal)
 
 ---
 
 ### CHECKPOINT 1: GATE IN
 
-**Display header**:
+```bash
+source .claude/scripts/command-gate-in.sh "$task_number" "research"
+# Exports: SESSION_ID, TASK_TYPE, TASK_STATUS, PROJECT_NAME, DESCRIPTION, PADDED_NUM
+# Displays: [RESEARCH] Task {N}: {project_name}
+# Aborts if task not found, in terminal status, or the task lock is refused (same-task
+# different-session, or a cross-task file_scope overlap per task 809)
 ```
-[Researching] Task {N}: {project_name}
-```
 
-1. **Generate Session ID**
-   ```
-   session_id = sess_{timestamp}_{random}
-   ```
-
-2. **Lookup Task**
-   ```bash
-   task_data=$(jq -r --arg num "$task_number" \
-     '.active_projects[] | select(.project_number == ($num | tonumber))' \
-     specs/state.json)
-
-   task_type=$(echo "$task_data" | jq -r '.task_type // "general"')
-   ```
-
-3. **Validate**
-   - Task exists (ABORT if not)
-   - Status is not terminal: block completed, abandoned, expanded
-   - If terminal: ABORT with recommendation
-
-**ABORT** if any validation fails.
+Note: the header now reads `[RESEARCH]` (gate-in's mechanical uppercasing of the operation
+string), replacing the prior `[Researching]` present-participle wording — an intentional
+cosmetic change from this refactor (task 810), not a defect.
 
 **On GATE IN success**: Task validated. **IMMEDIATELY CONTINUE** to STAGE 1.5 below.
 
@@ -295,6 +291,7 @@ Skipped: {count}
    - `--haiku` -> `model_flag = "haiku"` (use Haiku model)
    - `--sonnet` -> `model_flag = "sonnet"` (use Sonnet model)
    - `--opus` -> `model_flag = "opus"` (use Opus model)
+   - `--fable` -> `model_flag = "fable"` (use Fable model)
 
    If multiple are provided, last one wins.
    If none: `model_flag = null` (use agent's frontmatter default: opus for planner/meta-builder/reviser; sonnet for general-purpose agents)
@@ -316,7 +313,7 @@ Skipped: {count}
    - Remove `--team`
    - Remove `--team-size N` (flag and its value)
    - Remove `--fast`, `--hard`
-   - Remove `--haiku`, `--sonnet`, `--opus`
+   - Remove `--haiku`, `--sonnet`, `--opus`, `--fable`
    - Remove `--clean`
    - Remove `--lit`
 
@@ -339,8 +336,9 @@ If `team_mode == true`:
 Check extension manifests for task-type-specific research routing:
 
 ```bash
-# Get task_type (may be simple "founder" or compound "founder:deck")
-task_type=$(echo "$task_data" | jq -r '.task_type // "general"')
+# task_type (may be simple "founder" or compound "founder:deck") comes from gate-in's
+# exported TASK_TYPE (CHECKPOINT 1) — no separate task_data lookup needed here.
+task_type="$TASK_TYPE"
 
 # Check extension routing for research (skill_name starts empty)
 skill_name=""
@@ -397,17 +395,18 @@ else:
 ```
 # For team mode:
 skill: "skill-team-research"
-args: "task_number={N} focus={focus_prompt} team_size={team_size} session_id={session_id} effort_flag={effort_flag} model_flag={model_flag} clean_flag={clean_flag} lit_flag={lit_flag}"
+args: "task_number={N} focus={focus_prompt} team_size={team_size} session_id={SESSION_ID} effort_flag={effort_flag} model_flag={model_flag} clean_flag={clean_flag} lit_flag={lit_flag}"
 
 # For single-agent mode:
 skill: "{skill-name from table above}"
-args: "task_number={N} focus={focus_prompt} session_id={session_id} effort_flag={effort_flag} model_flag={model_flag} clean_flag={clean_flag} lit_flag={lit_flag}"
+args: "task_number={N} focus={focus_prompt} session_id={SESSION_ID} effort_flag={effort_flag} model_flag={model_flag} clean_flag={clean_flag} lit_flag={lit_flag}"
 ```
 
 If `model_flag` is set, pass the `model` parameter to override the agent's default model:
 - `model_flag="haiku"` -> pass `model: haiku`
 - `model_flag="sonnet"` -> pass `model: sonnet`
 - `model_flag="opus"` -> pass `model: opus`
+- `model_flag="fable"` -> pass `model: fable`
 - `model_flag=null` -> omit `model` parameter (use agent's frontmatter default: opus for planner/meta-builder/reviser; sonnet for general-purpose agents)
 
 If `effort_flag` is set, pass it as prompt context to the skill/agent for reasoning depth guidance.
@@ -421,47 +420,17 @@ The skill will spawn the appropriate agent(s) to conduct research and create a r
 1. **Validate Return**
    Required fields: status, summary, artifacts
 
-2. **Verify Artifacts**
+2. **Verify Artifacts** (research-specific; kept inline — `command-gate-out.sh`'s
+   `validate-artifact.sh --fix` leg is dead code and cannot substitute for this check)
    Check each artifact path exists on disk
 
-3. **Verify Status Updated**
-   The skill handles status updates internally (preflight and postflight).
-   Confirm status is now "researched" in state.json.
-
-4. **Verify state.json Status (Defensive)**
-
-   **Only when skill reports success:**
-
-   Check that state.json shows status "researched" for this task. If not, apply defensive correction:
-
-   ```bash
-   # Check if state.json status is "researched"
-   current_status=$(jq -r --argjson num "$task_number" \
-     '.active_projects[] | select(.project_number == $num) | .status' \
-     specs/state.json)
-
-   if [ "$current_status" = "researched" | not ]; then
-       echo "WARNING: state.json status is '$current_status', expected 'researched'. Applying defensive correction."
-       bash .claude/scripts/update-task-status.sh postflight "$task_number" research "$session_id"
-   fi
-   ```
-
-5. **Verify TODO.md Status (Defensive)**
-
-   **Only when skill reports success:**
-
-   Check that the task entry in TODO.md shows `[RESEARCHED]`. If it still shows `[RESEARCHING]`, apply correction:
-
-   ```bash
-   # Check if TODO.md task entry still shows [RESEARCHING]
-   if grep -q "- \*\*Status\*\*: \[RESEARCHING\]" <(grep -A 5 "^### ${task_number}\." specs/TODO.md); then
-       echo "WARNING: TODO.md status not updated to [RESEARCHED]. Applying defensive correction."
-   fi
-   ```
-
-   If the check finds a mismatch, use Edit tool to fix both:
-   - Task entry: `- **Status**: [RESEARCHING]` -> `- **Status**: [RESEARCHED]`
-   - Task Order: `**{N}** [RESEARCHING]` -> `**{N}** [RESEARCHED]`
+```bash
+bash .claude/scripts/command-gate-out.sh "$task_number" "research" "$SESSION_ID"
+# Reads .return-meta.json; applies defensive status correction if needed
+# status_token mapping (Phase 1, task 810): operation "research" -> target_status "research"
+# Runs validate-artifact.sh --fix (non-blocking)
+# Defensive correction (state.json + TODO.md) handled by this script
+```
 
 **RETRY** skill if validation fails.
 
@@ -509,6 +478,13 @@ Next: /plan {N}
 ### GATE IN Failure
 - Task not found: Return error with guidance
 - Invalid status: Return error with current status
+- Locked by another session: `command-gate-in.sh` propagates `task-lock.sh acquire`'s refusal
+  (a fresh lock held by a genuinely different session) — ABORT with the lock's held-by/reason
+  message; re-run once the other session's operation completes or its lock goes stale
+- Cross-task `file_scope` overlap (task 809): if another currently-locked task's `file_scope`
+  overlaps this task's and that lock is fresh, `/research` ABORTs before DELEGATE, naming the
+  conflicting task number — this is a new failure mode `/research` did not have before this
+  refactor (see task 810); re-run once the other task's lock releases or goes stale
 
 ### DELEGATE Failure
 - Skill fails: Keep [RESEARCHING], log error

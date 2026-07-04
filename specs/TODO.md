@@ -11,19 +11,9 @@ next_project_number: 816
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,811,812,813 | -- | agent-system, email integration, terminal ui |
-| 2 | 814 | 811,812,813 | agent-system |
+| 1 | 78,87 | -- | email integration, terminal ui |
 
 **Grouped by Topic** (indented = depends on parent):
-
-### Agent System
-
-811 [NOT STARTED] — Systematic audit of the orchestration core of the .claude/ agent 
-  └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie
-812 [NOT STARTED] — Systematic audit of the knowledge & standards layer of the .claud
-  └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie (see above)
-813 [NOT STARTED] — Systematic audit of the infrastructure layer of the .claude/ agen
-  └─ 814 [NOT STARTED] — Synthesis capstone for the systematic .claude/ agent-system revie (see above)
 
 ### Terminal Ui
 
@@ -49,40 +39,44 @@ next_project_number: 816
 ---
 
 ### 814. Synthesize improvement roadmap
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 811, Task 812, Task 813
+- **Research**: [814_synthesize_improvement_roadmap/reports/01_improvement-roadmap.md]
 
 **Description**: Synthesis capstone for the systematic .claude/ agent-system review. DEPENDS ON tasks 811 (orchestration core audit), 812 (knowledge & standards layer audit), and 813 (infrastructure layer audit) - all three must be researched/complete before this task's research phase runs. GOAL: combine the three layer audits with fresh July 2026 agent-system best-practices research into a single prioritized, complexity-reducing improvement roadmap that preserves ALL existing functionality and workflows. This is an AUDIT/RESEARCH+SYNTHESIS task - it produces the consolidated roadmap document; it does NOT implement changes (each roadmap item becomes an individually-approved improvement task via /spawn or /task). Focus areas: (1) Ingest and de-duplicate findings from the 811/812/813 reports; resolve cross-layer findings (e.g. a routing inconsistency that spans a command, a skill, and a script). (2) Conduct best-practices research (WebSearch) on current (as of July 2026) agent-orchestration, skill/subagent-architecture, and prompt-engineering patterns; map each relevant practice to a concrete finding or gap in this system. (3) Prioritize all findings into tiers (e.g. P0 correctness/robustness, P1 consistency, P2 complexity-reduction/performance, P3 nice-to-have) with an explicit effort/impact estimate per item. (4) Explicitly flag which recommendations REDUCE complexity vs ADD capability, honoring the user's directive to reduce complexity where possible and enhance only where appropriate. (5) Produce a sequenced roadmap (respecting dependencies between improvements) and a shortlist of the highest-value tasks to spawn first. DELIVERABLE: a prioritized improvement roadmap report suitable for spawning concrete improvement tasks. Constraint: preserve all functionality/workflows; no corners cut on research.
 
 ---
 
 ### 813. Audit infrastructure layer
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 804, Task 808, Task 809, Task 810
+- **Research**: [813_audit_infrastructure_layer/reports/01_infrastructure-audit.md]
 
 **Description**: Systematic audit of the infrastructure layer of the .claude/ agent system: the 65 scripts (.claude/scripts/), 19 extensions (.claude/extensions/), hooks, and settings (.claude/settings.json, extensions.json). GOAL: identify what can and should be improved for a more consistent, robust, and performant system, following best practices as of July 2026, while preserving ALL existing functionality and workflows. This is an AUDIT/RESEARCH task only - it produces a findings report with prioritized recommendations and does NOT implement changes. Focus areas: (1) Script robustness: error handling consistency (set -euo pipefail, quoting, jq-escaping workarounds per jq-escaping-workarounds.md, the '| not' safety pattern), exit-code discipline, idempotency, and non-blocking-vs-fatal behavior. (2) Script duplication and consolidation opportunities across the 65 scripts (shared helpers, gate scripts, generate-todo.sh, manage-topics.sh, command-route-skill.sh); dead/orphaned scripts no longer referenced. (3) Extension system: manifest.json schema conformance across the 19 extensions, dependency declaration correctness (circular detection, depth limit), lifecycle hooks vs provides.hooks distinction, keyword_overrides and routing/routing_hard consistency, doc-lint (check-extension-docs.sh) pass status. (4) Hooks: PostToolUse/PreToolUse hook correctness (e.g. validate-meta-write.sh, guard-destructive-git.sh), and settings.json wiring. (5) Performance/robustness: script startup cost, redundant filesystem scans, concurrency/lock safety (relate to tasks 787/788/808/809). DELIVERABLE: reports/ audit with categorized findings (robustness risks, duplication, packaging/manifest issues, dead code, performance), each with severity, affected files, and a concrete recommended change. Independent of tasks 811/812; task 814 synthesizes all three.
 
 ---
 
 ### 812. Audit knowledge standards layer
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 804, Task 808, Task 809, Task 810
+- **Research**: [812_audit_knowledge_standards_layer/reports/01_knowledge-standards-audit.md]
 
 **Description**: Systematic audit of the knowledge & standards layer of the .claude/ agent system: the 10 rules (.claude/rules/), 156 context files (.claude/context/), and the docs tree (.claude/docs/). GOAL: identify what can and should be improved for a more consistent, robust, and performant system, following best practices as of July 2026, while preserving ALL existing functionality and workflows. This is an AUDIT/RESEARCH task only - it produces a findings report with prioritized recommendations and does NOT implement changes. Focus areas: (1) Context index health: .claude/context/index.json load_when correctness (agents/task_types/commands/always semantics), line_count accuracy, orphaned or unreferenced context files, and files that exist but are absent from index.json (or vice versa). (2) Rules coverage and path-pattern correctness (auto-applied rules vs their declared globs); overlap/conflict between rules. (3) Format & pattern documents (context/formats/, context/patterns/) for internal consistency, duplication, and stale cross-references (e.g. .opencode/ paths referenced from .claude/ docs, as seen in return-metadata-file.md Related Documentation). (4) Standards documents (docs/reference/standards/) - are they current, mutually consistent, and actually followed by the components they govern? (5) Complexity reduction: consolidate overlapping context, remove dead knowledge, tighten token budgets. DELIVERABLE: reports/ audit with categorized findings (stale references, index/filesystem drift, duplication, coverage gaps, best-practice gaps), each with severity, affected files, and a concrete recommended change. Independent of tasks 811/813; task 814 synthesizes all three.
 
 ---
 
 ### 811. Audit orchestration core
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 804, Task 808, Task 809, Task 810
+- **Research**: [811_audit_orchestration_core/reports/01_orchestration-core-audit.md]
 
 **Description**: Systematic audit of the orchestration core of the .claude/ agent system: the 24 commands (.claude/commands/), 28 skills (.claude/skills/), and 23 agents (.claude/agents/). GOAL: identify what can and should be improved for a more consistent, robust, and performant system, following agent-system best practices as of July 2026, while preserving ALL existing functionality and workflows. This is an AUDIT/RESEARCH task only - it produces a findings report with prioritized, evidence-backed recommendations; it does NOT implement changes (improvement tasks are spawned/approved individually afterward). Focus areas: (1) Command->skill->agent routing and dispatch consistency (command-route-skill.sh precedence, skill-to-agent mapping table in CLAUDE.md vs actual frontmatter, model-tier policy enforcement). (2) Lifecycle consistency across skills (GATE IN preflight -> DELEGATE -> GATE OUT postflight -> COMMIT; checkpoint/marker protocol; return-metadata-file usage). (3) Hard-mode (--hard) and team-mode (--team) contract consistency across the standard vs -hard skill/agent variants; check for drift between paired variants (e.g. skill-researcher vs skill-researcher-hard). (4) Redundancy and complexity-reduction opportunities: duplicated prompt scaffolding across skills/agents, thin-wrapper adherence, opportunities to consolidate. (5) Frontmatter standard conformance (agent-frontmatter-standard.md), model flags (--haiku/--sonnet/--opus/--fable), naming and structure consistency. DELIVERABLE: reports/ audit with a categorized inventory of findings (consistency gaps, robustness risks, performance/token-cost issues, complexity-reduction candidates), each with severity, affected files, and a concrete recommended change. Cross-reference CLAUDE.md routing tables and .claude/docs/reference/standards/. Independent of tasks 812/813; task 814 synthesizes all three.
 

@@ -281,7 +281,7 @@ Prepare delegation context for the subagent:
 
 **Note**: The `artifact_number` field tells the agent which sequence number to use for artifact naming (e.g., `01`, `02`).
 
-**Model/Effort Flags**: If `model_flag` is set (haiku, sonnet, opus), pass it as the `model` parameter on the Agent tool to override the agent's frontmatter default. If `effort_flag` is set (fast, hard), include it as prompt context for reasoning depth guidance.
+**Model/Effort Flags**: If `model_flag` is set (haiku, sonnet, opus, fable), pass it as the `model` parameter on the Agent tool to override the agent's frontmatter default. If `effort_flag` is set (fast, hard), include it as prompt context for reasoning depth guidance.
 
 ---
 

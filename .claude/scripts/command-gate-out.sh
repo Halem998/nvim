@@ -8,8 +8,12 @@
 #
 # Arguments:
 #   $1  task_number — The numeric task ID
-#   $2  operation   — "research" | "plan" | "implement"
+#   $2  operation   — "research" | "plan" | "implement" | "orchestrate" | "revise"
 #   $3  session_id  — The session ID (sess_{timestamp}_{hex}) from gate-in
+#
+# Note: "operation" is NOT passed verbatim as update-task-status.sh's target_status (which only
+# accepts research|plan|implement|pr_ready). A separate "status_token" mapping below translates
+# operation -> a valid target_status ("revise" -> "plan", "orchestrate" -> "implement").
 #
 # Scope: NARROW — only the shared defensive correction pattern (~25 lines).
 # Implement-specific steps (completion_summary, plan file verification) stay inline
@@ -60,12 +64,21 @@ skill_status=$(jq -r '.status' "$meta_file")
 
 # Defensive status correction: map skill status to task status
 # Only applies when skill reports completion but state.json is stale
+#
+# status_token is the value passed to update-task-status.sh's target_status positional arg,
+# which only accepts research|plan|implement|pr_ready. It is deliberately distinct from
+# "operation": "revise" produces a "planned" state.json status (expected_status) but must pass
+# "plan" (not "revise") as target_status; "orchestrate" produces a "completed" state.json status
+# but must pass "implement" (not "orchestrate") — this repairs a latent bug where "orchestrate"
+# was previously passed verbatim and would have failed update-task-status.sh's validation had
+# this branch ever been exercised on a desynced orchestrate run.
 case "$operation" in
-  research)    expected_status="researched" ;;
-  plan)        expected_status="planned" ;;
-  implement)   expected_status="completed" ;;
-  orchestrate) expected_status="completed" ;;
-  *)           expected_status="" ;;
+  research)    expected_status="researched"; status_token="research" ;;
+  plan)        expected_status="planned";    status_token="plan" ;;
+  implement)   expected_status="completed";  status_token="implement" ;;
+  orchestrate) expected_status="completed";  status_token="implement" ;;
+  revise)      expected_status="planned";    status_token="plan" ;;
+  *)           expected_status="";           status_token="" ;;
 esac
 
 if [ -n "$expected_status" ] && { [ "$skill_status" = "implemented" ] || \
@@ -78,7 +91,7 @@ if [ -n "$expected_status" ] && { [ "$skill_status" = "implemented" ] || \
 
   if [ "$current_status" != "$expected_status" ] && [ "$skill_status" != "partial" ] && [ "$skill_status" != "failed" ]; then
     echo "[gate-out] Defensive correction: status is '$current_status', skill reports '$skill_status'. Applying correction to '$expected_status'."
-    bash .claude/scripts/update-task-status.sh postflight "$task_number" "$operation" "$session_id" 2>/dev/null || \
+    bash .claude/scripts/update-task-status.sh postflight "$task_number" "$status_token" "$session_id" 2>/dev/null || \
       echo "WARNING: update-task-status.sh failed — manual correction may be needed" >&2
   fi
 fi

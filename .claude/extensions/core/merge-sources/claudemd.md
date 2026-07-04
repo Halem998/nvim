@@ -90,9 +90,9 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 |---------|-------|-------------|
 | `/task` | `/task "Description"` | Create task |
 | `/task` | `/task --recover N`, `--expand N`, `--sync`, `--abandon N` | Manage tasks |
-| `/research` | `/research N[,N-N] [focus] [--team] [--clean] [--lit] [--fast\|--hard] [--haiku\|--sonnet\|--opus]` | Research task(s), route by task type |
-| `/plan` | `/plan N[,N-N] [--team] [--clean] [--lit] [--fast\|--hard] [--haiku\|--sonnet\|--opus]` | Create implementation plan(s) |
-| `/implement` | `/implement N[,N-N] [--team] [--force] [--clean] [--lit] [--fast\|--hard] [--haiku\|--sonnet\|--opus]` | Execute plan(s), resume from incomplete phase |
+| `/research` | `/research N[,N-N] [focus] [--team] [--clean] [--lit] [--fast\|--hard] [--haiku\|--sonnet\|--opus\|--fable]` | Research task(s), route by task type |
+| `/plan` | `/plan N[,N-N] [--team] [--clean] [--lit] [--fast\|--hard] [--haiku\|--sonnet\|--opus\|--fable]` | Create implementation plan(s) |
+| `/implement` | `/implement N[,N-N] [--team] [--force] [--clean] [--lit] [--fast\|--hard] [--haiku\|--sonnet\|--opus\|--fable]` | Execute plan(s), resume from incomplete phase |
 | `/revise` | `/revise N` | Create new plan version |
 | `/review` | `/review` | Analyze codebase |
 | `/project-overview` | `/project-overview` | Interactive repo scan and project-overview.md generation |
@@ -224,7 +224,7 @@ Standard actions: `create`, `complete research`, `create implementation plan`, `
 | planner-hard-agent | Hard-mode planning with phase sizing constraints and postmortem rules |
 | general-implementation-hard-agent | Hard-mode implementation with anti-analysis contracts and per-phase focus |
 
-**Model Enforcement**: Agents declare preferred models via `model:` frontmatter field using a tiered policy: Opus for deep-reasoning agents (planner, meta-builder, reviser, formal/lean/math/logic) AND for orchestrator commands (`/research`, `/plan`, `/implement`) which accumulate large context across sequential sub-agent calls and require the 1M context auto-upgrade; Sonnet for worker agents (research, implementation, review, spawn, domain tasks) which have their own fresh context per invocation. Two independent flag dimensions override behavior at invocation time: effort flags (`--fast`, `--hard`) control reasoning depth, and model flags (`--haiku`, `--sonnet`, `--opus`) select the model family. These flags work on `/research`, `/plan`, and `/implement`. See `.claude/docs/reference/standards/agent-frontmatter-standard.md` for details.
+**Model Enforcement**: Agents declare preferred models via `model:` frontmatter field using a tiered policy: Opus for deep-reasoning agents (planner, meta-builder, reviser, formal/lean/math/logic) AND for orchestrator commands (`/research`, `/plan`, `/implement`) which accumulate large context across sequential sub-agent calls and require the 1M context auto-upgrade; Sonnet for worker agents (research, implementation, review, spawn, domain tasks) which have their own fresh context per invocation. Two independent flag dimensions override behavior at invocation time: effort flags (`--fast`, `--hard`) control reasoning depth, and model flags (`--haiku`, `--sonnet`, `--opus`, `--fable`) select the model family. These flags work on `/research`, `/plan`, and `/implement`. See `.claude/docs/reference/standards/agent-frontmatter-standard.md` for details.
 
 **User-Only Skills**: Skills marked as "user-only" cannot be invoked by agents. These are for human-controlled operations like deployment (`skill-tag`).
 
@@ -279,7 +279,8 @@ Use `--hard` when one or more of the following apply:
 ### Composability
 
 - `--hard` works with `--team`: team skills inject hard-mode contracts into each teammate
-- `--hard` works with model flags: `--hard --opus` uses Opus model with hard-mode contracts
+- `--hard` works with model flags: `--hard --opus` uses Opus model with hard-mode contracts (also
+  composable with `--fable`, e.g. `--hard --fable`)
 - `--hard` works with extension routing: extensions declare `routing_hard` in their manifest
 - Graceful fallback: commands without hard variants silently use standard behavior
 

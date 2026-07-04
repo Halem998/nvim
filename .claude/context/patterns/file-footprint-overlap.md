@@ -73,7 +73,7 @@ compare across unrelated batches.
 
 ## Consumers
 
-This algorithm has two callers, one at the task level and one at the phase level:
+This algorithm has three callers, at the task, phase, and lock-acquisition levels:
 
 - **Task-level**: Multi-Task Creation Standard Component **4a** (File Footprint Capture and
   Overlap Detection) — see
@@ -84,14 +84,25 @@ This algorithm has two callers, one at the task level and one at the phase level
   phases)` — runs this algorithm pairwise across a single task's phase list (using each phase's
   declared or inferred file touch-set) to decide whether phases can execute in parallel or must
   be serialized.
+- **Lock-acquisition-level** (task 809): `.claude/scripts/task-lock.sh`'s `cmd_acquire`, via the
+  `scopes_overlap()` jq transcription of this file's pseudocode, checks the acquiring task's
+  `file_scope` against every OTHER currently-held lock's `file_scope` repo-wide (see
+  `task-lock.md`'s "Cross-Task `file_scope` Overlap Check"). Unlike the two callers above, this
+  is a live, repo-wide scan at acquire time rather than a one-shot pairwise pass over a fixed
+  batch — see the Non-Goals note below on scan scope.
 
-Both callers reference this document by path; neither restates the normalization or overlap
+All three callers reference this document by path; none restates the normalization or overlap
 rule inline.
 
 ## Non-Goals
 
 - No glob or regex matching (e.g. `*.lua`, `**/test_*`) — only literal directory-prefix
   containment.
-- No repo-wide scan across all tasks in `state.json` — callers apply this only within the small
-  set of items already collected for their operation (a creation batch, or a task's phase list).
 - No filesystem validation of declared paths.
+- No opinion on scan scope: this document defines the overlap PREDICATE only
+  (`overlaps(pathA, pathB)` and its pairwise-set application), not how widely a caller applies
+  it. The task-level and phase-level callers apply it within a small, already-collected batch (a
+  creation batch, or a task's phase list); the lock-acquisition-level caller (task 809) applies
+  it repo-wide, scanning every currently-held lock in `specs/` at acquire time. Both usages are
+  in scope for this algorithm — each caller chooses its own scan scope, and this document is not
+  extended or forked to accommodate the difference.

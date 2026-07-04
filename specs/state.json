@@ -934,7 +934,7 @@
         {
           "type": "summary",
           "path": "specs/788_concurrent_session_lock_commit_cadence/summaries/01_session-lock-commit-cadence-summary.md",
-          "summary": "Full implementation summary: what changed across 8 files (+ 8 dual copies + 1 non-dual-copied index.json entry), key decisions, 3 plan deviations (all 'altered' \u2014 skill-implementer/SKILL.md is a thin wrapper with no per-phase/per-objective loop of its own, so the heartbeat and green-commit hooks were wired into general-implementation-agent.md instead), and verification results."
+          "summary": "Full implementation summary: what changed across 8 files (+ 8 dual copies + 1 non-dual-copied index.json entry), key decisions, 3 plan deviations (all 'altered' — skill-implementer/SKILL.md is a thin wrapper with no per-phase/per-objective loop of its own, so the heartbeat and green-commit hooks were wired into general-implementation-agent.md instead), and verification results."
         }
       ],
       "session_id": "sess_1783182771_c4ab90_788"
@@ -1063,7 +1063,7 @@
       "project_name": "pr_ready_guard_type_pr",
       "status": "completed",
       "task_type": "meta",
-      "description": "Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-lifecycle leak where cslib implementation tasks reach [PR READY] instead of [COMPLETED]. Three coordinated source-tree edits in /home/benjamin/.config/nvim/.claude/: (1) runtime guard in .claude/scripts/update-task-status.sh \u2014 reject preflight:pr_ready and postflight:pr_ready unless task_type==pr; (2) skill-cslib-implementation Stage 6 (extensions/cslib/skills/skill-cslib-implementation/SKILL.md) \u2014 spell out explicit postflight implement -> COMPLETED call mirroring skill-pr-implementation:95; (3) doc reconciliation in extensions/core/merge-sources/claudemd.md:36-37 \u2014 mark [PR READY] as type=pr-only, not the universal implementation terminus. Design decision for research/plan: guard in core update-task-status.sh (keyed on task_type==pr) vs pushing pr_ready/PR READY fully into the cslib extension; core doc must end up consistent with the choice. Out of scope: repairing the 5 already-mislabeled deployed tasks (447/404/407/438/453) in /home/benjamin/Projects/cslib/ state.json \u2014 separate manual data-repair after redeploy via <leader>al.",
+      "description": "Reserve [PR READY]/pr_ready for type=pr tasks only. Fix a status-lifecycle leak where cslib implementation tasks reach [PR READY] instead of [COMPLETED]. Three coordinated source-tree edits in /home/benjamin/.config/nvim/.claude/: (1) runtime guard in .claude/scripts/update-task-status.sh — reject preflight:pr_ready and postflight:pr_ready unless task_type==pr; (2) skill-cslib-implementation Stage 6 (extensions/cslib/skills/skill-cslib-implementation/SKILL.md) — spell out explicit postflight implement -> COMPLETED call mirroring skill-pr-implementation:95; (3) doc reconciliation in extensions/core/merge-sources/claudemd.md:36-37 — mark [PR READY] as type=pr-only, not the universal implementation terminus. Design decision for research/plan: guard in core update-task-status.sh (keyed on task_type==pr) vs pushing pr_ready/PR READY fully into the cslib extension; core doc must end up consistent with the choice. Out of scope: repairing the 5 already-mislabeled deployed tasks (447/404/407/438/453) in /home/benjamin/Projects/cslib/ state.json — separate manual data-repair after redeploy via <leader>al.",
       "topic": "agent-system",
       "last_updated": "2026-07-04T17:04:56Z",
       "session_id": "sess_1783182771_c4ab90_795",
@@ -1091,7 +1091,7 @@
       "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
-      "description": "Make topic assignment mandatory across ALL task-creation paths so tasks never land in Uncategorized. Root problem: three escape hatches produce topicless tasks \u2014 (1) the one-click Skip (no topic) option in Mode A pickers (/meta, /task create, /project-overview); (2) Mode B silent no-op when a parent task has no topic (topic-assignment-pattern.md:113 says no fallback, but /spawn, --expand, --review implementations DO have fallbacks \u2014 doc/impl divergence); (3) Mode C silent no-op when the /review and /fix-it path heuristic hits the other branch (:134). Plus /task --recover has zero topic handling and the meta-builder path can be bypassed entirely. FIX (source tree /home/benjamin/.config/nvim/.claude/, redeployed via <leader>al): rewrite canonical context/patterns/topic-assignment-pattern.md to drop Skip and make Mode A the universal fallback whenever no obvious topic exists (parent none / heuristic miss / batch null), keeping New topic always available; then update all callers to remove Skip and wire the fallback: agents/meta-builder-agent.md Stage 4.5, commands/task.md (create, --expand, --review, --recover which currently has none), commands/review.md and skills/skill-fix-it (Mode C other -> prompt), skills/skill-spawn, skills/skill-project-overview (errors.md inherits via /task). Reconcile the pattern-doc-vs-implementation divergence on Mode B fallback. Research/plan decisions: (a) remove Skip entirely vs keep a hard-to-reach explicit skip; (b) whether to add a defense-in-depth gate (generate-task-order.sh warns on topicless active tasks, or a validation check) so bypasses surface loudly. Out of scope: backfilling existing topicless tasks (/task --sync already does that).",
+      "description": "Make topic assignment mandatory across ALL task-creation paths so tasks never land in Uncategorized. Root problem: three escape hatches produce topicless tasks — (1) the one-click Skip (no topic) option in Mode A pickers (/meta, /task create, /project-overview); (2) Mode B silent no-op when a parent task has no topic (topic-assignment-pattern.md:113 says no fallback, but /spawn, --expand, --review implementations DO have fallbacks — doc/impl divergence); (3) Mode C silent no-op when the /review and /fix-it path heuristic hits the other branch (:134). Plus /task --recover has zero topic handling and the meta-builder path can be bypassed entirely. FIX (source tree /home/benjamin/.config/nvim/.claude/, redeployed via <leader>al): rewrite canonical context/patterns/topic-assignment-pattern.md to drop Skip and make Mode A the universal fallback whenever no obvious topic exists (parent none / heuristic miss / batch null), keeping New topic always available; then update all callers to remove Skip and wire the fallback: agents/meta-builder-agent.md Stage 4.5, commands/task.md (create, --expand, --review, --recover which currently has none), commands/review.md and skills/skill-fix-it (Mode C other -> prompt), skills/skill-spawn, skills/skill-project-overview (errors.md inherits via /task). Reconcile the pattern-doc-vs-implementation divergence on Mode B fallback. Research/plan decisions: (a) remove Skip entirely vs keep a hard-to-reach explicit skip; (b) whether to add a defense-in-depth gate (generate-task-order.sh warns on topicless active tasks, or a validation check) so bypasses surface loudly. Out of scope: backfilling existing topicless tasks (/task --sync already does that).",
       "dependencies": [
         787
       ],
@@ -1451,7 +1451,7 @@
     {
       "project_number": 811,
       "project_name": "audit_orchestration_core",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [
@@ -1462,14 +1462,22 @@
       ],
       "description": "Systematic audit of the orchestration core of the .claude/ agent system: the 24 commands (.claude/commands/), 28 skills (.claude/skills/), and 23 agents (.claude/agents/). GOAL: identify what can and should be improved for a more consistent, robust, and performant system, following agent-system best practices as of July 2026, while preserving ALL existing functionality and workflows. This is an AUDIT/RESEARCH task only - it produces a findings report with prioritized, evidence-backed recommendations; it does NOT implement changes (improvement tasks are spawned/approved individually afterward). Focus areas: (1) Command->skill->agent routing and dispatch consistency (command-route-skill.sh precedence, skill-to-agent mapping table in CLAUDE.md vs actual frontmatter, model-tier policy enforcement). (2) Lifecycle consistency across skills (GATE IN preflight -> DELEGATE -> GATE OUT postflight -> COMMIT; checkpoint/marker protocol; return-metadata-file usage). (3) Hard-mode (--hard) and team-mode (--team) contract consistency across the standard vs -hard skill/agent variants; check for drift between paired variants (e.g. skill-researcher vs skill-researcher-hard). (4) Redundancy and complexity-reduction opportunities: duplicated prompt scaffolding across skills/agents, thin-wrapper adherence, opportunities to consolidate. (5) Frontmatter standard conformance (agent-frontmatter-standard.md), model flags (--haiku/--sonnet/--opus/--fable), naming and structure consistency. DELIVERABLE: reports/ audit with a categorized inventory of findings (consistency gaps, robustness risks, performance/token-cost issues, complexity-reduction candidates), each with severity, affected files, and a concrete recommended change. Cross-reference CLAUDE.md routing tables and .claude/docs/reference/standards/. Independent of tasks 812/813; task 814 synthesizes all three.",
       "created": "2026-07-04T19:01:56Z",
-      "last_updated": "2026-07-04T19:01:56Z",
+      "last_updated": "2026-07-04T20:48:06Z",
       "next_artifact_number": 1,
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/811_audit_orchestration_core/reports/01_orchestration-core-audit.md",
+          "type": "report",
+          "summary": "Categorized OC-01..OC-20 findings table (severity, affected files, recommended change) across routing/dispatch, lifecycle, hard/team-mode drift, redundancy, and frontmatter conformance."
+        }
+      ],
+      "session_id": "sess_1783192850_515b14_811",
+      "completion_summary": "Audit of the .claude/ orchestration core (24 commands, 37 skill dirs incl. 9 unloaded-extension symlinks, 23 agents) found 20 findings (OC-01..OC-20): 4 high, 9 medium, 7 low severity. No critical issues. Highest-value items: OC-13 (skill-researcher/planner/implementer/reviser + -hard variants share ~5,400 lines of ~60-70% duplicated 11-stage boilerplate, the root cause of OC-11's hard-mode-pair drift risk); OC-10 (core skills physically duplicated, not symlinked, between .claude/skills/ and .cl"
     },
     {
       "project_number": 812,
       "project_name": "audit_knowledge_standards_layer",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [
@@ -1480,14 +1488,22 @@
       ],
       "description": "Systematic audit of the knowledge & standards layer of the .claude/ agent system: the 10 rules (.claude/rules/), 156 context files (.claude/context/), and the docs tree (.claude/docs/). GOAL: identify what can and should be improved for a more consistent, robust, and performant system, following best practices as of July 2026, while preserving ALL existing functionality and workflows. This is an AUDIT/RESEARCH task only - it produces a findings report with prioritized recommendations and does NOT implement changes. Focus areas: (1) Context index health: .claude/context/index.json load_when correctness (agents/task_types/commands/always semantics), line_count accuracy, orphaned or unreferenced context files, and files that exist but are absent from index.json (or vice versa). (2) Rules coverage and path-pattern correctness (auto-applied rules vs their declared globs); overlap/conflict between rules. (3) Format & pattern documents (context/formats/, context/patterns/) for internal consistency, duplication, and stale cross-references (e.g. .opencode/ paths referenced from .claude/ docs, as seen in return-metadata-file.md Related Documentation). (4) Standards documents (docs/reference/standards/) - are they current, mutually consistent, and actually followed by the components they govern? (5) Complexity reduction: consolidate overlapping context, remove dead knowledge, tighten token budgets. DELIVERABLE: reports/ audit with categorized findings (stale references, index/filesystem drift, duplication, coverage gaps, best-practice gaps), each with severity, affected files, and a concrete recommended change. Independent of tasks 811/813; task 814 synthesizes all three.",
       "created": "2026-07-04T19:01:56Z",
-      "last_updated": "2026-07-04T19:01:56Z",
+      "last_updated": "2026-07-04T20:48:13Z",
       "next_artifact_number": 1,
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/812_audit_knowledge_standards_layer/reports/01_knowledge-standards-audit.md",
+          "type": "report",
+          "summary": "Categorized audit findings (KS-01..KS-15) with severity, affected files, evidence, and preserve-functionality-scoped recommendations"
+        }
+      ],
+      "session_id": "sess_1783192850_515b14_812",
+      "completion_summary": "Audited .claude/rules (10 files), .claude/context (155 indexed + 6 unindexed files), and .claude/docs against the live working tree, producing 15 findings (KS-01..KS-15): 2 critical, 5 high, 6 medium, 2 low. Critical: an always-loaded, unconditionally-imported context file (repo/project-overview.md) is missing from disk; index.schema.json's load_when schema still uses 'languages' while 74% of entries actually use 'task_types', making most of the index schema-invalid. High-severity highlights: 61"
     },
     {
       "project_number": 813,
       "project_name": "audit_infrastructure_layer",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [
@@ -1498,14 +1514,22 @@
       ],
       "description": "Systematic audit of the infrastructure layer of the .claude/ agent system: the 65 scripts (.claude/scripts/), 19 extensions (.claude/extensions/), hooks, and settings (.claude/settings.json, extensions.json). GOAL: identify what can and should be improved for a more consistent, robust, and performant system, following best practices as of July 2026, while preserving ALL existing functionality and workflows. This is an AUDIT/RESEARCH task only - it produces a findings report with prioritized recommendations and does NOT implement changes. Focus areas: (1) Script robustness: error handling consistency (set -euo pipefail, quoting, jq-escaping workarounds per jq-escaping-workarounds.md, the '| not' safety pattern), exit-code discipline, idempotency, and non-blocking-vs-fatal behavior. (2) Script duplication and consolidation opportunities across the 65 scripts (shared helpers, gate scripts, generate-todo.sh, manage-topics.sh, command-route-skill.sh); dead/orphaned scripts no longer referenced. (3) Extension system: manifest.json schema conformance across the 19 extensions, dependency declaration correctness (circular detection, depth limit), lifecycle hooks vs provides.hooks distinction, keyword_overrides and routing/routing_hard consistency, doc-lint (check-extension-docs.sh) pass status. (4) Hooks: PostToolUse/PreToolUse hook correctness (e.g. validate-meta-write.sh, guard-destructive-git.sh), and settings.json wiring. (5) Performance/robustness: script startup cost, redundant filesystem scans, concurrency/lock safety (relate to tasks 787/788/808/809). DELIVERABLE: reports/ audit with categorized findings (robustness risks, duplication, packaging/manifest issues, dead code, performance), each with severity, affected files, and a concrete recommended change. Independent of tasks 811/812; task 814 synthesizes all three.",
       "created": "2026-07-04T19:01:56Z",
-      "last_updated": "2026-07-04T19:01:56Z",
+      "last_updated": "2026-07-04T20:48:21Z",
       "next_artifact_number": 1,
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/813_audit_infrastructure_layer/reports/01_infrastructure-audit.md",
+          "type": "report",
+          "summary": "Infrastructure audit report with severity-rated, ID-tagged findings (IN-01..IN-15), prioritized recommendations, and preserved-functionality constraints"
+        }
+      ],
+      "session_id": "sess_1783192850_515b14_813",
+      "completion_summary": "Audited the .claude/ infrastructure layer (65 scripts, 19 extension manifests, 14 hooks, settings.json/extensions.json) read-only against the live tree and produced 15 findings: 1 critical (validate-meta-write.sh, the documented /meta anti-bypass hook, is absent from settings.json's PostToolUse array and has never fired), 3 high (literature extension's keyword_overrides uses the wrong schema shape and empirically throws a jq error, silently masked, so literature/zotero/bibliography/citation rout"
     },
     {
       "project_number": 814,
       "project_name": "synthesize_improvement_roadmap",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [
@@ -1515,9 +1539,17 @@
       ],
       "description": "Synthesis capstone for the systematic .claude/ agent-system review. DEPENDS ON tasks 811 (orchestration core audit), 812 (knowledge & standards layer audit), and 813 (infrastructure layer audit) - all three must be researched/complete before this task's research phase runs. GOAL: combine the three layer audits with fresh July 2026 agent-system best-practices research into a single prioritized, complexity-reducing improvement roadmap that preserves ALL existing functionality and workflows. This is an AUDIT/RESEARCH+SYNTHESIS task - it produces the consolidated roadmap document; it does NOT implement changes (each roadmap item becomes an individually-approved improvement task via /spawn or /task). Focus areas: (1) Ingest and de-duplicate findings from the 811/812/813 reports; resolve cross-layer findings (e.g. a routing inconsistency that spans a command, a skill, and a script). (2) Conduct best-practices research (WebSearch) on current (as of July 2026) agent-orchestration, skill/subagent-architecture, and prompt-engineering patterns; map each relevant practice to a concrete finding or gap in this system. (3) Prioritize all findings into tiers (e.g. P0 correctness/robustness, P1 consistency, P2 complexity-reduction/performance, P3 nice-to-have) with an explicit effort/impact estimate per item. (4) Explicitly flag which recommendations REDUCE complexity vs ADD capability, honoring the user's directive to reduce complexity where possible and enhance only where appropriate. (5) Produce a sequenced roadmap (respecting dependencies between improvements) and a shortlist of the highest-value tasks to spawn first. DELIVERABLE: a prioritized improvement roadmap report suitable for spawning concrete improvement tasks. Constraint: preserve all functionality/workflows; no corners cut on research.",
       "created": "2026-07-04T19:01:56Z",
-      "last_updated": "2026-07-04T19:01:56Z",
+      "last_updated": "2026-07-04T20:56:59Z",
       "next_artifact_number": 1,
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/814_synthesize_improvement_roadmap/reports/01_improvement-roadmap.md",
+          "type": "report",
+          "summary": "Prioritized P0-P3 improvement roadmap with consolidated findings register, best-practices mapping, dependency-sequenced waves, and 9-item spawn-first shortlist."
+        }
+      ],
+      "session_id": "sess_1783192850_515b14_814",
+      "completion_summary": "Synthesized all 50 findings from tasks 811 (orchestration core, 20 findings), 812 (knowledge/standards, 15 findings), and 813 (infrastructure, 15 findings) into a single de-duplicated, cross-layer-resolved, priority-tiered improvement roadmap grounded in July 2026 agent-orchestration best-practices research. Tier counts: P0 (correctness/robustness) = 10, P1 (consistency) = 20, P2 (complexity-reduction/performance) = 13, P3 (nice-to-have/policy) = 7. Confirmed the three cross-layer threads named "
     }
   ],
   "completed_projects": [],

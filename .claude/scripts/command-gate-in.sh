@@ -10,7 +10,10 @@
 #
 # Arguments:
 #   $1  task_number — The numeric task ID to look up
-#   $2  operation   — "research" | "plan" | "implement" | "revise"
+#   $2  operation   — "research" | "plan" | "implement" | "revise" | "orchestrate"
+#
+# Note: operation == "revise" is exempt from the terminal-status guard below (skill-reviser's
+# documented contract is "works regardless of task status").
 #
 # Exported Variables:
 #   SESSION_ID    — sess_{timestamp}_{random}
@@ -53,14 +56,17 @@ gate_in() {
   PROJECT_NAME=$(echo "$task_data" | jq -r '.project_name')
   DESCRIPTION=$(echo "$task_data" | jq -r '.description // ""')
 
-  # Guard: terminal status check
-  case "$TASK_STATUS" in
-    completed|abandoned|expanded)
-      echo "ABORT: Task $task_number is in terminal status: $TASK_STATUS" >&2
-      echo "  Use --force to override (implement only), or check task status with /task --sync" >&2
-      return 1
-      ;;
-  esac
+  # Guard: terminal status check (skipped for "revise" — skill-reviser's documented contract
+  # is "no status-based ABORT rules; the skill works regardless of task status")
+  if [ "$operation" != "revise" ]; then
+    case "$TASK_STATUS" in
+      completed|abandoned|expanded)
+        echo "ABORT: Task $task_number is in terminal status: $TASK_STATUS" >&2
+        echo "  Use --force to override (implement only), or check task status with /task --sync" >&2
+        return 1
+        ;;
+    esac
+  fi
 
   # Task lock: acquire AFTER the terminal-status guard so terminal-status tasks fail fast
   # without ever touching the lock. See .claude/context/patterns/task-lock.md for the full

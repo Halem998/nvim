@@ -1,7 +1,7 @@
 # Implementation Plan: Task #810
 
 - **Task**: 810 - Route /research, /plan, /revise through shared gate scripts for lock + checkpoint coverage
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: 788 (task-lock.sh + gate-in/out baseline), 804, 809 (cross-task file_scope overlap check) — all complete in the working tree
 - **Research Inputs**: reports/01_gate-sourcing-analysis.md
@@ -76,16 +76,16 @@ Phases within the same wave can execute in parallel. Phases 2, 3, and 4 touch di
 
 ---
 
-### Phase 1: Correct the shared gate scripts [NOT STARTED]
+### Phase 1: Correct the shared gate scripts [COMPLETED]
 
 **Goal**: Land the two prerequisite script corrections so the three commands can source them unmodified afterward: the operation-aware terminal-status exemption in `command-gate-in.sh`, and the `status_token` mapping fix in `command-gate-out.sh` (adding the `revise` arm and repairing the latent `orchestrate` bug in the same block).
 
 **Tasks**:
-- [ ] In `.claude/scripts/command-gate-in.sh`, wrap the `completed|abandoned|expanded` terminal-status guard so it is skipped when `operation == "revise"` (per report Recommendation 1); leave the guard behavior identical for all other operations.
-- [ ] In `.claude/scripts/command-gate-out.sh`, refactor the `case "$operation"` block to set both `expected_status` and a new `status_token` variable: `research→researched/research`, `plan→planned/plan`, `implement→completed/implement`, `orchestrate→completed/implement` (fixes latent bug), `revise→planned/plan` (new), `*→""` (no-op).
-- [ ] In the same file, change the postflight call to pass `"$status_token"` (not `"$operation"`) as `update-task-status.sh`'s `target_status` positional arg.
-- [ ] Do NOT touch the dead `validate-artifact.sh "$task_dir" --fix` leg (out of scope; left as-is per Recommendation 4).
-- [ ] Mirror both edits byte-for-byte into `.claude/extensions/core/scripts/command-gate-in.sh` and `.claude/extensions/core/scripts/command-gate-out.sh`.
+- [x] In `.claude/scripts/command-gate-in.sh`, wrap the `completed|abandoned|expanded` terminal-status guard so it is skipped when `operation == "revise"` (per report Recommendation 1); leave the guard behavior identical for all other operations. *(completed)*
+- [x] In `.claude/scripts/command-gate-out.sh`, refactor the `case "$operation"` block to set both `expected_status` and a new `status_token` variable: `research→researched/research`, `plan→planned/plan`, `implement→completed/implement`, `orchestrate→completed/implement` (fixes latent bug), `revise→planned/plan` (new), `*→""` (no-op). *(completed)*
+- [x] In the same file, change the postflight call to pass `"$status_token"` (not `"$operation"`) as `update-task-status.sh`'s `target_status` positional arg. *(completed)*
+- [x] Do NOT touch the dead `validate-artifact.sh "$task_dir" --fix` leg (out of scope; left as-is per Recommendation 4). *(confirmed untouched)*
+- [x] Mirror both edits byte-for-byte into `.claude/extensions/core/scripts/command-gate-in.sh` and `.claude/extensions/core/scripts/command-gate-out.sh`. *(completed: diff -q zero output both pairs)*
 
 **Timing**: 0.5 hours
 
@@ -98,26 +98,26 @@ Phases within the same wave can execute in parallel. Phases 2, 3, and 4 touch di
 - `.claude/extensions/core/scripts/command-gate-out.sh` - identical mirror
 
 **Verification**:
-- [ ] `bash -n` clean on both `.claude/scripts/command-gate-in.sh` and `command-gate-out.sh`.
-- [ ] `diff .claude/scripts/command-gate-in.sh .claude/extensions/core/scripts/command-gate-in.sh` → zero output; same for `command-gate-out.sh`.
-- [ ] Subshell test: source `command-gate-in.sh` against a fabricated `abandoned`/`completed` task with `operation=revise` → returns 0, prints no `ABORT`; with `operation=research` → still aborts (return 1). (Use a throwaway state entry or a stubbed `TASK_STATUS`.)
-- [ ] Inspect the gate-out `case` block: `orchestrate` now yields `status_token=implement`, `revise` yields `status_token=plan`; no branch passes a value outside `research|plan|implement|pr_ready` to `target_status`.
+- [x] `bash -n` clean on both `.claude/scripts/command-gate-in.sh` and `command-gate-out.sh`. *(verified)*
+- [x] `diff .claude/scripts/command-gate-in.sh .claude/extensions/core/scripts/command-gate-in.sh` → zero output; same for `command-gate-out.sh`. *(verified, both zero output)*
+- [x] Subshell test: source `command-gate-in.sh` against a fabricated `abandoned`/`completed` task with `operation=revise` → returns 0, prints no `ABORT`; with `operation=research` → still aborts (return 1). (Use a throwaway state entry or a stubbed `TASK_STATUS`.) *(verified in a sandbox specs/state.json under /tmp, exit 0/no ABORT for revise, exit 1/ABORT for research)*
+- [x] Inspect the gate-out `case` block: `orchestrate` now yields `status_token=implement`, `revise` yields `status_token=plan`; no branch passes a value outside `research|plan|implement|pr_ready` to `target_status`. *(verified: functional sandbox test with a stubbed update-task-status.sh confirmed status_token=plan for revise and status_token=implement for orchestrate, no validation error)*
 
 ---
 
-### Phase 2: Refactor revise.md onto the shared gate [NOT STARTED]
+### Phase 2: Refactor revise.md onto the shared gate [COMPLETED]
 
 **Goal**: Replace `revise.md`'s inline CHECKPOINT 1 (GATE IN) and CHECKPOINT 3 (GATE OUT) logic with `command-gate-in.sh`/`command-gate-out.sh`, preserving revise's status-agnostic behavior and its Plan-Revision vs Description-Update routing.
 
 **Tasks**:
-- [ ] CHECKPOINT 1: replace inline session-ID generation, `jq` task lookup, and the explicit "no terminal-status guard" prose with `source .claude/scripts/command-gate-in.sh "$task_number" "revise"`. The Phase-1 exemption preserves the "works regardless of task status" contract.
-- [ ] Keep the revise-specific plan-existence check (drives Plan-Revision vs Description-Update routing) immediately after the gate-in source; it has no gate-script equivalent and must stay inline.
-- [ ] CHECKPOINT 3: replace the inline state.json/TODO.md defensive-correction block (scoped to "Plan Revision only") with `bash .claude/scripts/command-gate-out.sh "$task_number" "revise" "$SESSION_ID"`.
-- [ ] Drop the now-redundant manual TODO.md Edit-tool fallback (achieved as a side effect of `update-task-status.sh`'s internal `generate-todo.sh` call).
-- [ ] Confirm the description-update path still skips defensive correction: `skill-reviser` reports `status="description_updated"`, outside gate-out's `implemented|researched|planned` gate, so no correction fires — desired behavior; keep the description-update path routed around the gate-out call as today.
-- [ ] Update the "GATE IN Failure" Error Handling section to name the new lock-refusal and cross-task `file_scope` overlap-refusal modes (§4) in addition to the existing "task not found"/"invalid status" cases.
-- [ ] Note the header now displays `[REVISE]` (gate-in's mechanical uppercasing) as an intentional change.
-- [ ] Mirror every edit byte-for-byte into `.claude/extensions/core/commands/revise.md`.
+- [x] CHECKPOINT 1: replace inline session-ID generation, `jq` task lookup, and the explicit "no terminal-status guard" prose with `source .claude/scripts/command-gate-in.sh "$task_number" "revise"`. The Phase-1 exemption preserves the "works regardless of task status" contract. *(completed)*
+- [x] Keep the revise-specific plan-existence check (drives Plan-Revision vs Description-Update routing) immediately after the gate-in source; it has no gate-script equivalent and must stay inline. *(completed)*
+- [x] CHECKPOINT 3: replace the inline state.json/TODO.md defensive-correction block (scoped to "Plan Revision only") with `bash .claude/scripts/command-gate-out.sh "$task_number" "revise" "$SESSION_ID"`. *(completed)*
+- [x] Drop the now-redundant manual TODO.md Edit-tool fallback (achieved as a side effect of `update-task-status.sh`'s internal `generate-todo.sh` call). *(completed)*
+- [x] Confirm the description-update path still skips defensive correction: `skill-reviser` reports `status="description_updated"`, outside gate-out's `implemented|researched|planned` gate, so no correction fires — desired behavior; keep the description-update path routed around the gate-out call as today. *(confirmed, documented inline in CHECKPOINT 3)*
+- [x] Update the "GATE IN Failure" Error Handling section to name the new lock-refusal and cross-task `file_scope` overlap-refusal modes (§4) in addition to the existing "task not found"/"invalid status" cases. *(completed)*
+- [x] Note the header now displays `[REVISE]` (gate-in's mechanical uppercasing) as an intentional change. *(completed, noted inline in CHECKPOINT 1 comment)*
+- [x] Mirror every edit byte-for-byte into `.claude/extensions/core/commands/revise.md`. *(completed: diff -q zero output)*
 
 **Timing**: 0.5 hours
 
@@ -128,25 +128,25 @@ Phases within the same wave can execute in parallel. Phases 2, 3, and 4 touch di
 - `.claude/extensions/core/commands/revise.md` - identical mirror
 
 **Verification**:
-- [ ] `diff .claude/commands/revise.md .claude/extensions/core/commands/revise.md` → zero output.
-- [ ] `grep` confirms `source .claude/scripts/command-gate-in.sh "$task_number" "revise"` and `command-gate-out.sh ... "revise"` present; no inline `sess_$(date +%s)` session-gen or manual TODO.md Edit fallback remains.
-- [ ] Plan-existence check and description-update conditioning still present.
-- [ ] Error Handling section mentions cross-task overlap-refusal.
+- [x] `diff .claude/commands/revise.md .claude/extensions/core/commands/revise.md` → zero output. *(verified)*
+- [x] `grep` confirms `source .claude/scripts/command-gate-in.sh "$task_number" "revise"` and `command-gate-out.sh ... "revise"` present; no inline `sess_$(date +%s)` session-gen or manual TODO.md Edit fallback remains. *(verified)*
+- [x] Plan-existence check and description-update conditioning still present. *(verified)*
+- [x] Error Handling section mentions cross-task overlap-refusal. *(verified)*
 
 ---
 
-### Phase 3: Refactor research.md onto the shared gate + multi-task lock [NOT STARTED]
+### Phase 3: Refactor research.md onto the shared gate + multi-task lock [COMPLETED]
 
 **Goal**: Replace `research.md`'s inline CHECKPOINT 1/CHECKPOINT 2 logic with the shared gate scripts, keep the inline artifact-existence check, and add per-task lock bracketing to the MULTI-TASK DISPATCH loop (mirroring `implement.md` Step 3).
 
 **Tasks**:
-- [ ] CHECKPOINT 1 (single-task path): replace inline session-ID gen, `jq` lookup, and terminal-status handling with `source .claude/scripts/command-gate-in.sh "$task_number" "research"`.
-- [ ] CHECKPOINT 2: replace the inline state.json defensive-correction block and the manual TODO.md Edit-tool fallback with `bash .claude/scripts/command-gate-out.sh "$task_number" "research" "$SESSION_ID"`.
-- [ ] KEEP the inline artifact-existence check (step 2) as a command-specific supplementary step — `command-gate-out.sh`'s `validate-artifact.sh --fix` leg is dead code and cannot substitute for it.
-- [ ] Update the header expectation from `[Researching]` to `[RESEARCH]` (gate-in's uppercasing; call out as intentional cosmetic change).
-- [ ] Add per-task lock bracketing to the MULTI-TASK DISPATCH loop (Step 3), copying `implement.md`'s pattern verbatim: `task-lock.sh acquire "$task_num" research "${batch_session_id}_${task_num}" "/research (multi-task)"` before each skill invocation (skip-with-reason `"locked by another session"` on exit 1), unconditional `task-lock.sh release "$task_num" "${batch_session_id}_${task_num}"` after each invocation regardless of outcome.
-- [ ] Update the "GATE IN Failure" Error Handling section to name the new lock-refusal and cross-task overlap-refusal modes (§4).
-- [ ] Mirror every edit byte-for-byte into `.claude/extensions/core/commands/research.md`.
+- [x] CHECKPOINT 1 (single-task path): replace inline session-ID gen, `jq` lookup, and terminal-status handling with `source .claude/scripts/command-gate-in.sh "$task_number" "research"`. *(completed)*
+- [x] CHECKPOINT 2: replace the inline state.json defensive-correction block and the manual TODO.md Edit-tool fallback with `bash .claude/scripts/command-gate-out.sh "$task_number" "research" "$SESSION_ID"`. *(completed)*
+- [x] KEEP the inline artifact-existence check (step 2) as a command-specific supplementary step — `command-gate-out.sh`'s `validate-artifact.sh --fix` leg is dead code and cannot substitute for it. *(completed)*
+- [x] Update the header expectation from `[Researching]` to `[RESEARCH]` (gate-in's uppercasing; call out as intentional cosmetic change). *(completed)*
+- [x] Add per-task lock bracketing to the MULTI-TASK DISPATCH loop (Step 3), copying `implement.md`'s pattern verbatim: `task-lock.sh acquire "$task_num" research "${batch_session_id}_${task_num}" "/research (multi-task)"` before each skill invocation (skip-with-reason `"locked by another session"` on exit 1), unconditional `task-lock.sh release "$task_num" "${batch_session_id}_${task_num}"` after each invocation regardless of outcome. *(completed)*
+- [x] Update the "GATE IN Failure" Error Handling section to name the new lock-refusal and cross-task overlap-refusal modes (§4). *(completed, also updated multi-task Error Handling section)*
+- [x] Mirror every edit byte-for-byte into `.claude/extensions/core/commands/research.md`. *(completed: diff -q zero output)*
 
 **Timing**: 0.75 hours
 
@@ -157,26 +157,26 @@ Phases within the same wave can execute in parallel. Phases 2, 3, and 4 touch di
 - `.claude/extensions/core/commands/research.md` - identical mirror
 
 **Verification**:
-- [ ] `diff .claude/commands/research.md .claude/extensions/core/commands/research.md` → zero output.
-- [ ] `grep` confirms `source .claude/scripts/command-gate-in.sh "$task_number" "research"`, `command-gate-out.sh ... "research"`, and both `task-lock.sh acquire ... research` / `task-lock.sh release` in the multi-task loop.
-- [ ] Inline artifact-existence check retained; no leftover manual TODO.md Edit fallback or inline session-gen block.
-- [ ] Error Handling section mentions cross-task overlap-refusal.
+- [x] `diff .claude/commands/research.md .claude/extensions/core/commands/research.md` → zero output. *(verified)*
+- [x] `grep` confirms `source .claude/scripts/command-gate-in.sh "$task_number" "research"`, `command-gate-out.sh ... "research"`, and both `task-lock.sh acquire ... research` / `task-lock.sh release` in the multi-task loop. *(verified)*
+- [x] Inline artifact-existence check retained; no leftover manual TODO.md Edit fallback or inline session-gen block. *(verified)*
+- [x] Error Handling section mentions cross-task overlap-refusal. *(verified)*
 
 ---
 
-### Phase 4: Refactor plan.md onto the shared gate + multi-task lock [NOT STARTED]
+### Phase 4: Refactor plan.md onto the shared gate + multi-task lock [COMPLETED]
 
 **Goal**: Replace `plan.md`'s inline CHECKPOINT 1/CHECKPOINT 2 logic with the shared gate scripts, keep the plan-specific supplementary steps (Load Context, plan-file-status verification), and add per-task lock bracketing to the MULTI-TASK DISPATCH loop.
 
 **Tasks**:
-- [ ] CHECKPOINT 1 (single-task path): replace inline session-ID gen, `jq` lookup, and terminal-status handling with `source .claude/scripts/command-gate-in.sh "$task_number" "plan"`.
-- [ ] KEEP the plan-specific "Load Context" step (research reports + prior-plan discovery) immediately after gate-in; it has no gate-script equivalent.
-- [ ] CHECKPOINT 2: replace the inline state.json defensive-correction block and the manual TODO.md Edit-tool fallback with `bash .claude/scripts/command-gate-out.sh "$task_number" "plan" "$SESSION_ID"`.
-- [ ] KEEP the plan-specific step 6 (plan-file-status verification) as a command-specific supplementary step after the gate-out call, mirroring how `implement.md` keeps its plan-status/TODO.md steps.
-- [ ] Update the header expectation from `[Planning]` to `[PLAN]` (intentional cosmetic change).
-- [ ] Add per-task lock bracketing to the MULTI-TASK DISPATCH loop, copying `implement.md`'s Step 3 verbatim: `task-lock.sh acquire "$task_num" plan "${batch_session_id}_${task_num}" "/plan (multi-task)"` before each skill invocation (skip-with-reason on exit 1), unconditional release after.
-- [ ] Update the "GATE IN Failure" Error Handling section to name the new lock-refusal and cross-task overlap-refusal modes (§4).
-- [ ] Mirror every edit byte-for-byte into `.claude/extensions/core/commands/plan.md`.
+- [x] CHECKPOINT 1 (single-task path): replace inline session-ID gen, `jq` lookup, and terminal-status handling with `source .claude/scripts/command-gate-in.sh "$task_number" "plan"`. *(completed)*
+- [x] KEEP the plan-specific "Load Context" step (research reports + prior-plan discovery) immediately after gate-in; it has no gate-script equivalent. *(completed)*
+- [x] CHECKPOINT 2: replace the inline state.json defensive-correction block and the manual TODO.md Edit-tool fallback with `bash .claude/scripts/command-gate-out.sh "$task_number" "plan" "$SESSION_ID"`. *(completed)*
+- [x] KEEP the plan-specific step 6 (plan-file-status verification) as a command-specific supplementary step after the gate-out call, mirroring how `implement.md` keeps its plan-status/TODO.md steps. *(completed)*
+- [x] Update the header expectation from `[Planning]` to `[PLAN]` (intentional cosmetic change). *(completed)*
+- [x] Add per-task lock bracketing to the MULTI-TASK DISPATCH loop, copying `implement.md`'s Step 3 verbatim: `task-lock.sh acquire "$task_num" plan "${batch_session_id}_${task_num}" "/plan (multi-task)"` before each skill invocation (skip-with-reason on exit 1), unconditional release after. *(completed)*
+- [x] Update the "GATE IN Failure" Error Handling section to name the new lock-refusal and cross-task overlap-refusal modes (§4). *(completed)*
+- [x] Mirror every edit byte-for-byte into `.claude/extensions/core/commands/plan.md`. *(completed: diff -q zero output)*
 
 **Timing**: 0.75 hours
 
@@ -187,26 +187,26 @@ Phases within the same wave can execute in parallel. Phases 2, 3, and 4 touch di
 - `.claude/extensions/core/commands/plan.md` - identical mirror
 
 **Verification**:
-- [ ] `diff .claude/commands/plan.md .claude/extensions/core/commands/plan.md` → zero output.
-- [ ] `grep` confirms `source .claude/scripts/command-gate-in.sh "$task_number" "plan"`, `command-gate-out.sh ... "plan"`, and `task-lock.sh acquire ... plan` / `task-lock.sh release` in the multi-task loop.
-- [ ] Load Context step and plan-file-status verification retained; no leftover manual TODO.md Edit fallback or inline session-gen block.
-- [ ] Error Handling section mentions cross-task overlap-refusal.
+- [x] `diff .claude/commands/plan.md .claude/extensions/core/commands/plan.md` → zero output. *(verified)*
+- [x] `grep` confirms `source .claude/scripts/command-gate-in.sh "$task_number" "plan"`, `command-gate-out.sh ... "plan"`, and `task-lock.sh acquire ... plan` / `task-lock.sh release` in the multi-task loop. *(verified)*
+- [x] Load Context step and plan-file-status verification retained; no leftover manual TODO.md Edit fallback or inline session-gen block. *(verified)*
+- [x] Error Handling section mentions cross-task overlap-refusal. *(verified)*
 
 ---
 
-### Phase 5: Coherence verification and dual-copy audit [NOT STARTED]
+### Phase 5: Coherence verification and dual-copy audit [COMPLETED]
 
 **Goal**: Confirm the refactor leaves ONE clean shared gate path (no partial variant), all dual-copy pairs are byte-identical, and the load-bearing behaviors survive — a system-level check ahead of the 811-813 audits.
 
 **Tasks**:
-- [ ] Diff-audit all 10 affected files as 5 pairs (`.claude/` ↔ `.claude/extensions/core/`): `research.md`, `plan.md`, `revise.md`, `command-gate-in.sh`, `command-gate-out.sh` — each `diff` must produce zero output.
-- [ ] Grep all three refactored commands for residual inline gate logic (`sess_$(date +%s)` session-gen, inline `jq` terminal-status guards, manual TODO.md Edit-tool fallback) — must find none beyond the documented command-specific supplementary steps (research artifact check; plan Load Context + plan-file-status; revise plan-existence + description-update routing).
-- [ ] Confirm all three commands source `command-gate-in.sh` with the correct operation string and call `command-gate-out.sh` with the matching operation, consistent with `implement.md`/`orchestrate.md`.
-- [ ] Acceptance test A (revise on terminal status): source `command-gate-in.sh` with a task whose status is `abandoned`/`completed` and `operation=revise` → succeeds (exit 0, no ABORT); same task with `operation=research`/`plan` → aborts. Confirms the Phase-1 exemption is exercised end-to-end.
-- [ ] Acceptance test B (gate-out token mapping): confirm `command-gate-out.sh` with `operation=revise` would pass `plan` as `target_status`, and `operation=orchestrate` would pass `implement` — neither hits `update-task-status.sh`'s validation error.
-- [ ] Acceptance test C (multi-task lock): confirm `research.md` and `plan.md` multi-task loops acquire before and release after each per-task skill invocation, with skip-on-refusal semantics matching `implement.md` Step 3.
-- [ ] Confirm no changes were made to `.opencode/*`, `.claude/context/patterns/task-lock.md`, `.postflight-pending` write sites, or `validate-artifact.sh` (Non-Goals held).
-- [ ] Record the intentional header wording change (`[RESEARCH]`/`[PLAN]`/`[REVISE]`) and the bundled `orchestrate→implement` fix in the implementation summary so they are not later flagged as defects/scope creep.
+- [x] Diff-audit all 10 affected files as 5 pairs (`.claude/` ↔ `.claude/extensions/core/`): `research.md`, `plan.md`, `revise.md`, `command-gate-in.sh`, `command-gate-out.sh` — each `diff` must produce zero output. *(completed: all 5 pairs zero-output)*
+- [x] Grep all three refactored commands for residual inline gate logic (`sess_$(date +%s)` session-gen, inline `jq` terminal-status guards, manual TODO.md Edit-tool fallback) — must find none beyond the documented command-specific supplementary steps (research artifact check; plan Load Context + plan-file-status; revise plan-existence + description-update routing). *(completed: no residual matches found)*
+- [x] Confirm all three commands source `command-gate-in.sh` with the correct operation string and call `command-gate-out.sh` with the matching operation, consistent with `implement.md`/`orchestrate.md`. *(completed: verified via grep across all 5 commands)*
+- [x] Acceptance test A (revise on terminal status): source `command-gate-in.sh` with a task whose status is `abandoned`/`completed` and `operation=revise` → succeeds (exit 0, no ABORT); same task with `operation=research`/`plan` → aborts. Confirms the Phase-1 exemption is exercised end-to-end. *(passed: revise exit 0/no ABORT, research and plan both exit 1/ABORT)*
+- [x] Acceptance test B (gate-out token mapping): confirm `command-gate-out.sh` with `operation=revise` would pass `plan` as `target_status`, and `operation=orchestrate` would pass `implement` — neither hits `update-task-status.sh`'s validation error. *(passed: functional sandbox test with stubbed update-task-status.sh)*
+- [x] Acceptance test C (multi-task lock): confirm `research.md` and `plan.md` multi-task loops acquire before and release after each per-task skill invocation, with skip-on-refusal semantics matching `implement.md` Step 3. *(passed: pattern matches implement.md verbatim in both files)*
+- [x] Confirm no changes were made to `.opencode/*`, `.claude/context/patterns/task-lock.md`, `.postflight-pending` write sites, or `validate-artifact.sh` (Non-Goals held). *(confirmed: these files show as modified in `git status` from the coordinated batch's prior tasks 804/808/809, live in the working tree before this dispatch began — task 810's own edit set touched only the 10 files listed in Artifacts & Outputs; no Edit/Write tool call in this dispatch touched task-lock.md, .opencode/*, validate-artifact.sh, or any .postflight-pending write site)*
+- [x] Record the intentional header wording change (`[RESEARCH]`/`[PLAN]`/`[REVISE]`) and the bundled `orchestrate→implement` fix in the implementation summary so they are not later flagged as defects/scope creep. *(completed: recorded in summary, see summaries/03_gate-sourcing-summary.md)*
 
 **Timing**: 0.5 hours
 
@@ -216,21 +216,21 @@ Phases within the same wave can execute in parallel. Phases 2, 3, and 4 touch di
 - None (verification-only; produces findings for the implementation summary)
 
 **Verification**:
-- [ ] All 5 `diff` pairs zero-output.
-- [ ] Residual-inline-logic grep returns nothing unexpected across all three commands.
-- [ ] Acceptance tests A, B, C pass.
-- [ ] Non-Goals confirmed untouched via `git status`/`diff` scoped to the out-of-scope paths.
+- [x] All 5 `diff` pairs zero-output. *(verified)*
+- [x] Residual-inline-logic grep returns nothing unexpected across all three commands. *(verified)*
+- [x] Acceptance tests A, B, C pass. *(verified)*
+- [x] Non-Goals confirmed untouched via `git status`/`diff` scoped to the out-of-scope paths. *(verified — see Phase 5 task note on pre-existing batch modifications)*
 
 ## Testing & Validation
 
-- [ ] `bash -n` clean on `command-gate-in.sh` and `command-gate-out.sh` (both trees).
-- [ ] All 5 dual-copy `diff` pairs produce zero output.
-- [ ] Gate-in `revise` exemption: `abandoned`/`completed` task + `operation=revise` → success; `operation=research`/`plan` → abort.
-- [ ] Gate-out token mapping: `revise→plan`, `orchestrate→implement`, `research→research`, `plan→plan`, `implement→implement`; no value outside `research|plan|implement|pr_ready` reaches `target_status`.
-- [ ] `research.md`/`plan.md` multi-task loops acquire/release the lock per task with skip-on-refusal, matching `implement.md` Step 3.
-- [ ] Each command's Error Handling section documents the cross-task overlap-refusal mode.
-- [ ] No residual inline session-gen / terminal-guard / manual TODO.md Edit logic in the three commands beyond their documented command-specific supplementary steps.
-- [ ] `.opencode/*`, `task-lock.md`, `.postflight-pending` sites, and `validate-artifact.sh` unchanged.
+- [x] `bash -n` clean on `command-gate-in.sh` and `command-gate-out.sh` (both trees).
+- [x] All 5 dual-copy `diff` pairs produce zero output.
+- [x] Gate-in `revise` exemption: `abandoned`/`completed` task + `operation=revise` → success; `operation=research`/`plan` → abort.
+- [x] Gate-out token mapping: `revise→plan`, `orchestrate→implement`, `research→research`, `plan→plan`, `implement→implement`; no value outside `research|plan|implement|pr_ready` reaches `target_status`.
+- [x] `research.md`/`plan.md` multi-task loops acquire/release the lock per task with skip-on-refusal, matching `implement.md` Step 3.
+- [x] Each command's Error Handling section documents the cross-task overlap-refusal mode.
+- [x] No residual inline session-gen / terminal-guard / manual TODO.md Edit logic in the three commands beyond their documented command-specific supplementary steps.
+- [x] `.opencode/*`, `task-lock.md`, `.postflight-pending` sites, and `validate-artifact.sh` unchanged by this task's own edits (these paths show as modified in `git status` due to the coordinated batch's earlier tasks 804/808/809, already live in the working tree before this dispatch).
 
 ## Artifacts & Outputs
 

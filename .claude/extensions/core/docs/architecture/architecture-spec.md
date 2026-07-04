@@ -76,7 +76,7 @@ See Appendix A for the full dependency graph.
 #   TEAM_MODE       - "true" or "false"
 #   TEAM_SIZE       - integer 2-4
 #   EFFORT_FLAG     - "fast", "hard", or ""
-#   MODEL_FLAG      - "haiku", "sonnet", "opus", or ""
+#   MODEL_FLAG      - "haiku", "sonnet", "opus", "fable", or ""
 #   CLEAN_FLAG      - "true" or "false"
 #   FORCE_FLAG      - "true" or "false"  (implement only)
 #   FOCUS_PROMPT    - remaining text after all flags removed

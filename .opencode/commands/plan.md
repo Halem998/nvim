@@ -1,7 +1,7 @@
 ---
 description: Create implementation plan for a task
 allowed-tools: Skill, Bash(jq:*), Bash(git:*), Read, Edit
-argument-hint: TASK_NUMBERS [--team [--team-size N]] [--fast|--hard] [--haiku|--sonnet|--opus]
+argument-hint: TASK_NUMBERS [--team [--team-size N]] [--fast|--hard] [--haiku|--sonnet|--opus|--fable]
 ---
 
 > **COMMAND EXECUTION MODE** — You have been invoked as this command with arguments: `$ARGUMENTS`. Execute the workflow below immediately. Do not summarize this file, ask what to do with it, or describe its contents. Start execution now.
@@ -32,6 +32,7 @@ When multiple task numbers are provided, the command enters multi-task mode (see
 | `--haiku` | Use Haiku model (fastest, lowest cost) | false |
 | `--sonnet` | Use Sonnet model (balanced cost/quality) | false |
 | `--opus` | Use Opus model (highest quality, same as agent default) | false |
+| `--fable` | Use Fable model (claude-fable-5) | false |
 | `--clean` | Skip automatic memory retrieval | false |
 | `--roadmap` | Include ROADMAP.md review/update phases in plan | false |
 
@@ -303,6 +304,7 @@ Skipped: {count}
    - `--haiku` -> `model_flag = "haiku"` (use Haiku model)
    - `--sonnet` -> `model_flag = "sonnet"` (use Sonnet model)
    - `--opus` -> `model_flag = "opus"` (use Opus model)
+   - `--fable` -> `model_flag = "fable"` (use Fable model)
 
    If multiple are provided, last one wins.
    If none: `model_flag = null` (use agent default, currently opus for all agents)
@@ -431,6 +433,7 @@ If `model_flag` is set, pass the `model` parameter to override the agent's defau
 - `model_flag="haiku"` -> pass `model: haiku`
 - `model_flag="sonnet"` -> pass `model: sonnet`
 - `model_flag="opus"` -> pass `model: opus`
+- `model_flag="fable"` -> pass `model: fable`
 - `model_flag=null` -> omit `model` parameter (use agent default, currently opus for all agents)
 
 If `effort_flag` is set, pass it as prompt context to the skill/agent for reasoning depth guidance.

@@ -1,7 +1,7 @@
 ---
 description: Execute implementation with resume support
 allowed-tools: Skill, Agent, Bash(jq:*), Bash(git:*), Read, Edit, Glob
-argument-hint: TASK_NUMBERS [--team [--team-size N]] [--force] [--fast|--hard] [--haiku|--sonnet|--opus]
+argument-hint: TASK_NUMBERS [--team [--team-size N]] [--force] [--fast|--hard] [--haiku|--sonnet|--opus|--fable]
 model: opus
 ---
 
@@ -26,6 +26,7 @@ Execute implementation plan with automatic resume support by delegating to the a
 | `--haiku` | Use Haiku model (fastest, lowest cost) | false |
 | `--sonnet` | Use Sonnet model (balanced cost/quality) | false |
 | `--opus` | Use Opus model (highest quality, same as agent default) | false |
+| `--fable` | Use Fable model (claude-fable-5) | false |
 | `--clean` | Skip automatic memory retrieval | false |
 | `--lit` | Literature mode: pass lit_flag=true to skill for paper/spec-based implementation | false |
 
