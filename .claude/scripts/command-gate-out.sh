@@ -29,6 +29,13 @@ operation="$2"
 session_id="$3"
 state_file="specs/state.json"
 
+# Task lock: unconditional release, run FIRST so it executes regardless of any downstream
+# branch or early exit below (missing state.json, missing .return-meta.json, etc.). Success,
+# partial, and failed skill statuses all release — release is idempotent and never conditioned
+# on the operation's own outcome. See .claude/context/patterns/task-lock.md for the full
+# contract. Uses the SAME session_id the gate-in acquired with.
+bash .claude/scripts/task-lock.sh release "$task_number" "$session_id" 2>/dev/null || true
+
 if [ ! -f "$state_file" ]; then
   echo "ERROR: $state_file not found" >&2
   exit 1

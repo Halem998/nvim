@@ -482,7 +482,8 @@ for tag_path in "${task_file_paths[@]}"; do
 done
 ```
 
-If `inferred_topic` is non-empty, show Mode C confirm via AskUserQuestion:
+If `inferred_topic` is non-empty, show Mode C confirm via AskUserQuestion (Accept / Override
+only — no Skip option; topic assignment is mandatory):
 ```json
 {
   "question": "Topic for this task?",
@@ -490,17 +491,18 @@ If `inferred_topic` is non-empty, show Mode C confirm via AskUserQuestion:
   "multiSelect": false,
   "options": [
     {"label": "Accept: {inferred_topic}", "description": "Use auto-inferred topic"},
-    {"label": "Override...", "description": "Enter a different topic name"},
-    {"label": "Skip (no topic)", "description": "Create task without a topic"}
+    {"label": "Override...", "description": "Enter a different topic name"}
   ]
 }
 ```
 
 - If user selects "Accept: {inferred_topic}" → `topic="$inferred_topic"`
 - If user selects "Override..." → show free-text follow-up: `{"question": "Enter topic name (lowercase, kebab-case):"}` and capture result as `topic`
-- If user selects "Skip (no topic)" → `topic=""`
 
-If `inferred_topic` is empty, skip confirm entirely and set `topic=""`.
+If `inferred_topic` is empty (the path heuristic missed for this `topic_groups[]` entry),
+invoke the Mode A universal fallback instead of setting `topic=""`: follow
+@.claude/context/patterns/topic-assignment-pattern.md (Mode A: Interactive, batch variant)
+and capture the result in `topic`.
 
 **For fix-it task when has_note_dependency is TRUE**, include dependencies array:
 ```json
@@ -533,7 +535,8 @@ Note: Pass `--arg title "$title"` and `--arg desc "$description"` to the jq call
 
 Note: Pass `--arg title "$title"` and `--arg desc "$description"` to the jq call.
 
-Note: Omit `"topic"` field if topic cannot be inferred (empty string from heuristic).
+Note: The `"topic"` field is always populated (task 796: topic assignment is mandatory — the
+Mode A universal fallback runs whenever the path heuristic cannot infer a topic).
 
 #### 9.2: (Removed — state.json is authoritative for task entries)
 

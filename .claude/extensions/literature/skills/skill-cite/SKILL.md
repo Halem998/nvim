@@ -507,7 +507,8 @@ elif [[ "$source_file" == *.tex ]] || [[ "$source_file" == *.lean ]]; then
 fi
 ```
 
-If `inferred_topic` is non-empty, confirm via AskUserQuestion (Mode C Suggest-Wrap):
+If `inferred_topic` is non-empty, confirm via AskUserQuestion (Mode C Suggest-Wrap; Accept /
+Override only — no Skip option; topic assignment is mandatory per task 796):
 
 ```json
 {
@@ -516,8 +517,7 @@ If `inferred_topic` is non-empty, confirm via AskUserQuestion (Mode C Suggest-Wr
   "multiSelect": false,
   "options": [
     {"label": "Accept: {inferred_topic}", "description": "Use auto-inferred topic"},
-    {"label": "Override...", "description": "Enter a different topic name"},
-    {"label": "Skip (no topic)", "description": "Create task without a topic"}
+    {"label": "Override...", "description": "Enter a different topic name"}
   ]
 }
 ```
@@ -527,11 +527,19 @@ If "Override..." selected, follow up:
 {"question": "Enter topic name (lowercase, kebab-case):"}
 ```
 
+If `inferred_topic` is empty (the heuristic missed), invoke the Mode A universal fallback
+instead of leaving the task topicless: follow
+@.claude/context/patterns/topic-assignment-pattern.md (Mode A: Interactive, batch variant)
+and capture the result in `topic`.
+
 ### Step 12: State Update and Commit
 
 After all tasks have been written to state.json:
 
 #### Step 12.1: Assign Topics (Non-Blocking)
+
+`$topic` is non-empty by construction (task 796: Accept/Override confirm or Mode A universal
+fallback above); the `-n` guard below is defensive only.
 
 ```bash
 if [[ -n "$topic" ]]; then

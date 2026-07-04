@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Wire multi-task/wave dispatch + heartbeat refresh",
+  "started_at": "2026-07-04T18:36:00Z",
+  "last_updated": "2026-07-04T19:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "skill-orchestrate/SKILL.md Stage MT: acquire before / release after each per-task dispatch", "status": "done", "files_touched": [".claude/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "skill-orchestrate/SKILL.md Stage 3 while-loop: task-lock.sh heartbeat alongside .orchestrator-loop-guard refresh", "status": "done", "files_touched": [".claude/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "implement.md multi-task Step 3: acquire before / release after each per-task skill invocation", "status": "done", "files_touched": [".claude/commands/implement.md"]},
+    {"id": 4, "description": "phase-transition heartbeat for single-task /implement", "status": "done", "note": "Plan named skill-implementer/SKILL.md, but that file is a thin wrapper with no phase-transition point of its own (it delegates the whole phase loop to general-implementation-agent in one Agent call). Wired the heartbeat into general-implementation-agent.md Stage 4D (Mark Phase Complete) instead, and added a cross-reference note in skill-implementer/SKILL.md explaining why. See plan Phase 3 deviation note.", "files_touched": [".claude/agents/general-implementation-agent.md", ".claude/skills/skill-implementer/SKILL.md"]},
+    {"id": 5, "description": "Apply identical edits to extensions/core twins of all touched files", "status": "done", "files_touched": [".claude/extensions/core/skills/skill-orchestrate/SKILL.md", ".claude/extensions/core/commands/implement.md", ".claude/extensions/core/agents/general-implementation-agent.md", ".claude/extensions/core/skills/skill-implementer/SKILL.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

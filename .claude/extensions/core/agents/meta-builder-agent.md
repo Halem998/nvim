@@ -579,9 +579,11 @@ Options per task:
 **Purpose**: Assign a topic to all tasks in this batch for Task Order grouping in TODO.md.
 
 Follow @.claude/context/patterns/topic-assignment-pattern.md (Mode A: Interactive, batch variant).
-Note: question wording is plural — "Assign a topic to these tasks?".
+Note: question wording is plural — "Assign a topic to these tasks?". Topic assignment is
+mandatory (task 796): there is no Skip option, so this stage always produces a non-empty topic.
 
-**Capture**: `batch_topic` (string or null) — used in Stage 5 confirmation table and Stage 6 state.json entry.
+**Capture**: `batch_topic` (non-empty string by construction — Mode A has no Skip option) —
+used in Stage 5 confirmation table and Stage 6 state.json entry.
 
 ---
 
@@ -712,7 +714,9 @@ for position, task_idx in enumerate(sorted_indices):
   # 3. Update TODO.md
 ```
 
-**Topic Assignment**: Write `batch_topic` (from Stage 4.5) to the `"topic"` field in each state.json entry. If `batch_topic` is null (user selected "Skip"), omit the `topic` field.
+**Topic Assignment**: Write `batch_topic` (from Stage 4.5) to the `"topic"` field in each
+state.json entry. `batch_topic` is non-empty by construction (task 796: Mode A has no Skip
+option), so this field is always populated.
 
 **state.json Entry** (with dependencies):
 ```json
@@ -731,7 +735,8 @@ for position, task_idx in enumerate(sorted_indices):
 
 Note: Pass `--arg title "$task_title"` and `--arg desc "$task_description"` to the jq call, where `$task_title` and `$task_description` come from `task_list[].title` and `task_list[].description` populated during the interview (Stage 3A).
 
-Note: Include `"topic"` field only if a topic was inferred or assigned; omit if null/skipped.
+Note: The `"topic"` field is always populated (task 796: topic assignment is mandatory, no
+Skip option exists in Stage 4.5's Mode A picker).
 
 After all tasks are written to state.json, call `bash .claude/scripts/generate-todo.sh` to regenerate TODO.md. This handles frontmatter, task entries (in descending project_number order), and Task Order — all in one step.
 
@@ -1344,7 +1349,9 @@ Return ONLY valid JSON matching this schema:
 
 4b. **Update active_topics** (after all tasks created, before generate-todo.sh call):
 
-   Ensure each new topic is registered in active_topics, then assign to each task:
+   Ensure each new topic is registered in active_topics, then assign to each task.
+   `batch_topic` is non-empty by construction (task 796: Mode A has no Skip option); the
+   empty-string guard below is defensive only:
    ```bash
    for topic in "${new_topics[@]}"; do
      [[ -z "$topic" ]] && continue

@@ -294,6 +294,13 @@ The format content will be included as a delimited section in the Stage 5 prompt
 
 ### Stage 5: Invoke Subagent
 
+**Task-lock heartbeat note**: this skill is a thin wrapper that delegates the entire phase loop
+to `general-implementation-agent` in a single Agent tool call — it has no per-phase-transition
+point of its own to hook a `task-lock.sh heartbeat` call into. The heartbeat refresh lives inside
+`general-implementation-agent.md`'s Stage 4D ("Mark Phase Complete"), which fires once per phase
+as the subagent progresses through the plan. See `.claude/context/patterns/task-lock.md` for the
+full contract.
+
 **CRITICAL**: You MUST use the **Agent** tool to spawn the subagent.
 
 **Required Tool Invocation**:
@@ -459,7 +466,14 @@ fi
 
 After each subagent completes (whether implemented, partial, or failed), commit the work using
 targeted, work-scoped staging — never stage the entire working tree. See
-`.claude/context/standards/git-staging-scope.md` for the full commit-scope contract:
+`.claude/context/standards/git-staging-scope.md` for the full commit-scope contract.
+
+**Composes with, does not duplicate, per-objective green commits**: `general-implementation-agent`
+already commits at every verified-green objective during its own execution (see that agent's
+Stage 4B-iii and `.claude/rules/git-workflow.md`'s Commit-Per-Green-Substep Mandate). This
+subagent-return-level commit is coarser-grained (fires once per iteration, not per objective) and
+is expected to often find nothing new to stage — `git commit` failing with "nothing to commit" is
+non-blocking and normal here, not a sign the mandate was skipped.
 
 ```bash
 task_dir="specs/${padded_num}_${project_name}"

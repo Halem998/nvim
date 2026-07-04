@@ -203,7 +203,8 @@ When $ARGUMENTS contains a description (no flags).
 
 6. **Update state.json** (via jq):
    ```bash
-   # Include topic field only if not null/skipped
+   # Topic assignment is mandatory (task 796): $topic from step 4.5 is always non-empty
+   # by construction (Mode A has no Skip option). This jq guard remains defensive only.
    # Build topic from step 4.5 result
    # $improved_desc is the final description from step 3 text transformation
    jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
@@ -269,6 +270,30 @@ Parse task ranges after --recover (e.g., "343-345", "337, 343"):
    slug=$(echo "$task_data" | jq -r '.project_name')
    ```
 
+   **Topic check (task 796 — net-new)**: Recovered tasks may predate mandatory topic
+   assignment or have lost their topic in archival. Check before returning to
+   `active_projects`:
+   ```bash
+   recovered_topic=$(echo "$task_data" | jq -r '.topic // empty')
+
+   if [[ -z "$recovered_topic" ]]; then
+     mapfile -t existing_topics < <(bash .claude/scripts/manage-topics.sh list)
+     # Follow @.claude/context/patterns/topic-assignment-pattern.md (Mode A: Interactive)
+     # to show the picker and capture the result in $recovered_topic. No Skip option;
+     # topic assignment is mandatory.
+     task_data=$(echo "$task_data" | jq --arg topic "$recovered_topic" '.topic = $topic')
+   fi
+   ```
+   AskUserQuestion (shown only when `recovered_topic` is empty):
+   ```json
+   {
+     "question": "Assign a topic to recovered task {task_number} (none found)?",
+     "header": "Topic",
+     "multiSelect": false,
+     "options": ["<existing-topic-1>", "<existing-topic-2>", "New topic..."]
+   }
+   ```
+
    **Move to active_projects via jq** (two-step to avoid jq escaping bug - see `jq-escaping-workarounds.md`):
    ```bash
    # Step 1: Remove from archive using del() instead of map(select(!=))
@@ -277,11 +302,17 @@ Parse task ranges after --recover (e.g., "343-345", "337, 343"):
     specs/archive/state.json > specs/tmp/archive.json && \
     mv specs/tmp/archive.json specs/archive/state.json
 
-   # Step 2: Add to active with status reset
+   # Step 2: Add to active with status reset ($task_data now carries a non-empty .topic)
     jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --argjson task "$task_data" \
       '.active_projects = [$task | .status = "not_started" | .last_updated = $ts] + .active_projects' \
       specs/state.json > specs/tmp/state.json && \
       mv specs/tmp/state.json specs/state.json
+
+   # Ensure the topic is registered in active_topics (idempotent)
+   if [[ -n "$recovered_topic" ]]; then
+     bash .claude/scripts/manage-topics.sh add "$recovered_topic" \
+       2>/dev/null || echo "Warning: manage-topics.sh add failed (non-fatal)" >&2
+   fi
    ```
 
    **Move project directory from archive** (handle both legacy unpadded and new padded formats):
@@ -326,11 +357,15 @@ Parse task number and optional prompt:
      specs/state.json)
    ```
 
-   **Mode B Fallback Picker**: If `parent_topic` is empty, show a full Mode A interactive picker:
+   **Mode A Universal Fallback**: If `parent_topic` is empty, invoke Mode A per
+   @.claude/context/patterns/topic-assignment-pattern.md (Mode A: Interactive, batch variant —
+   this assigns one topic shared by all subtasks being created). There is no Skip option;
+   topic assignment is mandatory. Capture the result in `parent_topic`.
    ```bash
    if [[ -z "$parent_topic" ]]; then
      mapfile -t existing_topics < <(bash .claude/scripts/manage-topics.sh list)
-     # Show AskUserQuestion picker (existing topics + "New topic..." + "Skip (no topic)")
+     # Follow @.claude/context/patterns/topic-assignment-pattern.md (Mode A: Interactive,
+     # batch variant) to show the picker and capture the result in $parent_topic.
    fi
    ```
    AskUserQuestion:
@@ -339,23 +374,22 @@ Parse task number and optional prompt:
      "question": "Assign a topic to subtasks (parent has none)?",
      "header": "Topic",
      "multiSelect": false,
-     "options": ["<existing-topic-1>", "<existing-topic-2>", "New topic...", "Skip (no topic)"]
+     "options": ["<existing-topic-1>", "<existing-topic-2>", "New topic..."]
    }
    ```
    - If user selects an existing topic → `parent_topic="$selected"`
    - If user selects "New topic..." → free-text follow-up, capture as `parent_topic`
-   - If user selects "Skip (no topic)" → `parent_topic=""` (no topic assigned)
 
 3. **Create 2-5 subtasks** using the Create Task jq pattern for each, inheriting parent topic:
    ```bash
    # Each subtask jq entry MUST include a "description" field:
    # where $subtask_desc is the subtask's description derived from the parent task analysis.
-   # Include "topic": parent_topic in each subtask jq entry (if parent has a topic)
+   # Include "topic": parent_topic in each subtask jq entry. $parent_topic is non-empty by
+   # construction (task 796): either inherited from the parent or assigned via the Mode A
+   # universal fallback above.
    # After each subtask entry is written to state.json, call manage-topics.sh set:
-   if [[ -n "$parent_topic" ]]; then
-     bash .claude/scripts/manage-topics.sh set "$subtask_num" "$parent_topic" \
-       2>/dev/null || echo "Warning: manage-topics.sh set failed (non-fatal)" >&2
-   fi
+   bash .claude/scripts/manage-topics.sh set "$subtask_num" "$parent_topic" \
+     2>/dev/null || echo "Warning: manage-topics.sh set failed (non-fatal)" >&2
    ```
 
 4. **Update original task** to reference subtasks and set status to expanded:
@@ -424,12 +458,27 @@ state.json is the authoritative source of truth. Sync validates integrity and re
    ```
 
    If any tasks need backfill, follow @.claude/context/patterns/topic-assignment-pattern.md
-   (Mode A: Interactive, per-task backfill variant). Loop over detected tasks with header
-   "Topic Backfill ({i} of {total})".
+   (Mode A: Interactive — `/task --sync` backfill exception). Loop over detected tasks with
+   header "Topic Backfill ({i} of {total})". This is the ONE path in the system permitted an
+   explicit deferral option, because it remediates pre-existing topicless tasks rather than
+   gatekeeping new-task creation (task 796 Decision (a)):
+   ```json
+   {
+     "question": "Assign a topic to task {task_num} ({i} of {total})?",
+     "header": "Topic Backfill",
+     "multiSelect": false,
+     "options": ["<existing-topic-1>", "<existing-topic-2>", "New topic...", "Defer (leave uncategorized for now)"]
+   }
+   ```
 
    After each topic selection:
    ```bash
-   bash .claude/scripts/manage-topics.sh set "$task_num" "$topic"
+   if [[ "$topic" == "Defer (leave uncategorized for now)" ]]; then
+     : # no-op; task remains topicless. The Phase 6 stderr warning in
+       # generate-task-order.sh keeps deferred tasks visible until categorized.
+   else
+     bash .claude/scripts/manage-topics.sh set "$task_num" "$topic"
+   fi
    ```
 
 7. Git commit: "sync: reconcile TODO.md and state.json"
@@ -624,11 +673,15 @@ parent_topic=$(jq -r --arg num "$task_number" \
 
 ### Step 7.6: Fallback Topic Picker
 
-If `parent_topic` is empty, the parent task has no topic. Show a full Mode A interactive picker:
+If `parent_topic` is empty, the parent task has no topic. Invoke the Mode A universal
+fallback per @.claude/context/patterns/topic-assignment-pattern.md (Mode A: Interactive,
+batch variant — one topic shared by all follow-up tasks being created). There is no Skip
+option; topic assignment is mandatory.
 ```bash
 if [[ -z "$parent_topic" ]]; then
   mapfile -t existing_topics < <(bash .claude/scripts/manage-topics.sh list)
-  # Show AskUserQuestion picker (existing topics + "New topic..." + "Skip (no topic)")
+  # Follow @.claude/context/patterns/topic-assignment-pattern.md (Mode A: Interactive,
+  # batch variant) to show the picker and capture the result in $parent_topic.
 fi
 ```
 
@@ -638,13 +691,12 @@ AskUserQuestion:
   "question": "Assign a topic to follow-up tasks (parent has none)?",
   "header": "Topic",
   "multiSelect": false,
-  "options": ["<existing-topic-1>", "<existing-topic-2>", "New topic...", "Skip (no topic)"]
+  "options": ["<existing-topic-1>", "<existing-topic-2>", "New topic..."]
 }
 ```
 
 - If user selects an existing topic → `parent_topic="$selected"`
 - If user selects "New topic..." → free-text follow-up, capture as `parent_topic`
-- If user selects "Skip (no topic)" → `parent_topic=""` (no topic assigned)
 
 ### Step 8: Create Selected Follow-up Tasks
 
@@ -657,7 +709,9 @@ next_num=$(jq -r '.next_project_number' specs/state.json)
 # Create follow-up task
 description="Complete phase {P} of task {parent_N}: {phase_name}. Goal: {phase_goal}. (Follow-up from task #{parent_N})"
 
-# Update state.json (inherit parent topic if available)
+# Update state.json. $parent_topic is non-empty by construction (task 796): either
+# inherited from the parent task or assigned via the Mode A universal fallback (Step 7.6).
+# The null-guard below is defensive only.
 jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
   --arg desc "$description" \
   --arg topic "$parent_topic" \

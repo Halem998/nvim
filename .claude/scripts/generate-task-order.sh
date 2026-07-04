@@ -496,6 +496,15 @@ generate_grouped_section() {
     fi
   done
 
+  # Defense-in-depth (task 796): topic assignment is mandatory on every new-task-creation
+  # path, so any task landing here indicates a pre-existing gap (e.g. deferred via
+  # /task --sync backfill) rather than a new bypass. Surface it loudly but non-fatally.
+  if [[ ${#uncategorized_tasks[@]} -gt 0 ]]; then
+    _uncategorized_list=$(printf '%s, ' "${uncategorized_tasks[@]}")
+    _uncategorized_list="${_uncategorized_list%, }"
+    echo "Warning: ${#uncategorized_tasks[@]} task(s) have no topic and will render under Uncategorized: ${_uncategorized_list} (non-fatal)" >&2
+  fi
+
   if [[ ${#uncategorized_tasks[@]} -gt 0 ]]; then
     echo "### Uncategorized"
     echo ""

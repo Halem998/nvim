@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Wire acquire/release into the single-task gate scripts",
+  "started_at": "2026-07-04T18:20:00Z",
+  "last_updated": "2026-07-04T18:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add task-lock.sh acquire call in command-gate-in.sh gate_in() after terminal-status guard", "status": "done", "files_touched": [".claude/scripts/command-gate-in.sh"]},
+    {"id": 2, "description": "Add unconditional task-lock.sh release call in command-gate-out.sh", "status": "done", "files_touched": [".claude/scripts/command-gate-out.sh"]},
+    {"id": 3, "description": "Confirm /orchestrate single-task acquires once at CHECKPOINT 1 / releases once at CHECKPOINT 2", "status": "done"},
+    {"id": 4, "description": "Apply identical edits to extensions/core twins of both gate scripts", "status": "done", "files_touched": [".claude/extensions/core/scripts/command-gate-in.sh", ".claude/extensions/core/scripts/command-gate-out.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "Place release call at end of command-gate-out.sh (after meta_file check)", "result": "failed", "reason": "meta_file-missing branch exits 0 early, which would skip the release call entirely, violating the unconditional-release requirement; moved release to the top of the script instead"}
+  ],
+  "handoff_count": 0
+}

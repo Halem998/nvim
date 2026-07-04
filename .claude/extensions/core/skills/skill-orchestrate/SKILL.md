@@ -168,6 +168,13 @@ jq --arg state "$current_status" \
    --argjson count "$cycle_count" \
   '.current_state = $state | .last_updated = $updated | .cycle_count = $count' \
   "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+
+# Task-lock heartbeat: refresh at the same per-cycle boundary as the loop guard, so a
+# multi-hour single-task /orchestrate run (whose lock was acquired once at orchestrate.md's
+# CHECKPOINT 1) never goes stale under its own hand. No-op with a warning if the lock is
+# somehow missing or held by another session — heartbeat never blocks this loop. See
+# .claude/context/patterns/task-lock.md.
+bash .claude/scripts/task-lock.sh heartbeat "$task_number" "$session_id" 2>/dev/null || true
 ```
 
 **3c. Dispatch by state** (see State Handlers in Stage 4)
@@ -654,6 +661,26 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
 | `partial` with no handoff | implement_tasks | `implement_agents[task_num]` |
 | `blocked`, `researching`, `planning`, unknown | skip | — |
 
+**Task-lock acquire (per-task, before dispatch)**: Multi-task dispatch bypasses the single-task
+gate scripts entirely (`command-gate-in.sh`/`command-gate-out.sh` are never sourced here), so
+this stage acquires/releases the lock itself. See `.claude/context/patterns/task-lock.md` for the
+full contract. For each task across `research_tasks + plan_tasks + implement_tasks` (before
+building the single dispatch message):
+
+```bash
+bash .claude/scripts/task-lock.sh acquire "$task_num" "$op" "${session_id}_${task_num}" "/orchestrate (multi-task)"
+```
+
+where `$op` is `research`/`plan`/`implement` matching the task's group. If `acquire` refuses
+(exit 1 — a fresh lock held by a genuinely different session; same-session re-entry, including a
+prior cycle of this SAME multi-task run, never refuses), remove that task from this cycle's
+dispatch batch (do NOT add it to `failed_tasks` — it becomes eligible again next cycle, mirroring
+the wave-split check's defer-not-fail behavior in Stage MT-3 step 4.5) and log:
+
+```
+[orchestrate] WARNING: Task #{task_num} is locked by another session; deferring to a later cycle.
+```
+
 **Dispatch all groups in ONE message**:
 
 For each task in `research_tasks`:
@@ -683,6 +710,11 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
    - If `fresh_status = "completed"`: also add to `completed_tasks`.
    - If `dispatch_status` is `"failed"` or `"blocked"`: add to `failed_tasks`.
    - Otherwise: set `current_statuses[task_num] = fresh_status`.
+6. **Task-lock release (per-task, unconditional)**: regardless of the outcome above (success,
+   failed, or blocked):
+   ```bash
+   bash .claude/scripts/task-lock.sh release "$task_num" "${session_id}_${task_num}"
+   ```
 
 ### Stage MT-5: Multi-Task Postflight
 

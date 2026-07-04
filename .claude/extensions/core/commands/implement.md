@@ -80,11 +80,17 @@ batch_session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 
 #### Step 3: Dispatch Skills
 
+This multi-task loop bypasses `command-gate-in.sh`/`command-gate-out.sh` entirely (those are
+only sourced by the single-task path below), so each per-task dispatch acquires/releases the
+task lock itself. See `.claude/context/patterns/task-lock.md` for the full contract.
+
 For each validated task, invoke the appropriate implementation skill using parallel Skill tool calls:
 - Extract task_type per task from state.json; route using extension manifests or default `skill-implementer`
+- **Before** invoking the skill for a task: `bash .claude/scripts/task-lock.sh acquire "$task_num" implement "${batch_session_id}_${task_num}" "/implement (multi-task)"`. If this refuses (exit 1 — a fresh lock held by a genuinely different session; same-session re-entry never refuses), move that task from `validated_tasks` to `skipped_tasks` with reason `"locked by another session"` and do NOT invoke its skill this run.
 - If `--team`: use `skill-team-implement`; invoke all skills in a single message (parallel execution)
 - Pass `--force` to each skill when `FORCE_FLAG == "true"`
 - Collect results; read `.return-meta.json` for structured data
+- **After** each task's skill invocation completes (success, partial, or failed): `bash .claude/scripts/task-lock.sh release "$task_num" "${batch_session_id}_${task_num}"` — unconditional, run regardless of outcome.
 
 #### Step 4: Batch Git Commit and Consolidated Output
 

@@ -532,7 +532,8 @@ elif echo "$file_path" | grep -qE "^home/|^modules/"; then
 fi
 ```
 
-If `inferred_topic` is non-empty, show Mode C confirm via AskUserQuestion:
+If `inferred_topic` is non-empty, show Mode C confirm via AskUserQuestion (Accept / Override
+only — no Skip option; topic assignment is mandatory):
 ```json
 {
   "question": "Topic for this task?",
@@ -540,19 +541,21 @@ If `inferred_topic` is non-empty, show Mode C confirm via AskUserQuestion:
   "multiSelect": false,
   "options": [
     {"label": "Accept: {inferred_topic}", "description": "Use auto-inferred topic"},
-    {"label": "Override...", "description": "Enter a different topic name"},
-    {"label": "Skip (no topic)", "description": "Create task without a topic"}
+    {"label": "Override...", "description": "Enter a different topic name"}
   ]
 }
 ```
 
 - If user selects "Accept: {inferred_topic}" → `topic="$inferred_topic"`
 - If user selects "Override..." → show free-text follow-up: `{"question": "Enter topic name (lowercase, kebab-case):"}` and capture result as `topic`
-- If user selects "Skip (no topic)" → `topic=""`
 
-If `inferred_topic` is empty, skip confirm entirely and set `topic=""`.
+If `inferred_topic` is empty (the path heuristic missed), invoke the Mode A universal
+fallback instead of setting `topic=""`: follow
+@.claude/context/patterns/topic-assignment-pattern.md (Mode A: Interactive, batch variant)
+and capture the result in `topic`.
 
-**4. Add task to state.json:**
+**4. Add task to state.json** (`$topic` is non-empty by construction — task 796: mandatory
+topic assignment, no Skip option; the null-guard below is defensive only):
 ```bash
 jq --arg num "$next_num" --arg slug "$slug" --arg title "$title" \
    --arg desc "$description" --arg tt "$task_type" --arg prio "$priority" \

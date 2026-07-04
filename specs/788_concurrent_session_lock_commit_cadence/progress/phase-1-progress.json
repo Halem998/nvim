@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Lock helper script, schema, and canonical pattern doc",
+  "started_at": "2026-07-04T18:07:17Z",
+  "last_updated": "2026-07-04T18:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create .claude/scripts/task-lock.sh with acquire/heartbeat/release/check subcommands", "status": "done", "files_touched": [".claude/scripts/task-lock.sh"]},
+    {"id": 2, "description": "Define tunable stale-threshold constant (TASK_LOCK_STALE_MIN, default 30)", "status": "done", "files_touched": [".claude/scripts/task-lock.sh"]},
+    {"id": 3, "description": "Author ABORT: + remedy refusal message", "status": "done", "files_touched": [".claude/scripts/task-lock.sh"]},
+    {"id": 4, "description": "Create .claude/context/patterns/task-lock.md canonical spec", "status": "done", "files_touched": [".claude/context/patterns/task-lock.md", ".claude/context/index.json"]},
+    {"id": 5, "description": "Create dual copies (task-lock.sh, task-lock.md) under .claude/extensions/core/", "status": "done", "files_touched": [".claude/extensions/core/scripts/task-lock.sh", ".claude/extensions/core/context/patterns/task-lock.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

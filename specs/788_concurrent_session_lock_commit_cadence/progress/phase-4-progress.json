@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "Commit-per-green-substep mandate + git-workflow.md reconciliation",
+  "started_at": "2026-07-04T19:05:00Z",
+  "last_updated": "2026-07-04T19:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace git-workflow.md 'Intermediate states' Do-Not-Commit bullet with green-substep carve-out", "status": "done", "files_touched": [".claude/rules/git-workflow.md"]},
+    {"id": 2, "description": "Add Standard Actions table row for sub-step commit message convention", "status": "done", "files_touched": [".claude/rules/git-workflow.md"]},
+    {"id": 3, "description": "Reuse checkpoint-before-overflow.md green-commit branch + git-staging-scope.md implement scope verbatim", "status": "done", "files_touched": [".claude/rules/git-workflow.md"]},
+    {"id": 4, "description": "Wire commit-here action into objective-done transition reusing checkpoint mechanism", "status": "done", "note": "Plan named skill-implementer/SKILL.md; that file is a thin wrapper with no per-objective loop of its own. Wired the green-commit action into general-implementation-agent.md Stage 4B-iii instead (the actual objective-done transition site, same deviation pattern as Phase 3 Task 3.4), and added a composability note to skill-implementer/SKILL.md's Stage 6b.", "files_touched": [".claude/agents/general-implementation-agent.md", ".claude/skills/skill-implementer/SKILL.md"]},
+    {"id": 5, "description": "Re-grep git-workflow.md for git add -A / git commit -am regressions", "status": "done", "note": "grep confirmed only pre-existing prohibition-context references remain; no new permissive usage introduced"},
+    {"id": 6, "description": "Apply identical edits to extensions/core twins", "status": "done", "files_touched": [".claude/extensions/core/rules/git-workflow.md", ".claude/extensions/core/agents/general-implementation-agent.md", ".claude/extensions/core/skills/skill-implementer/SKILL.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "First draft of the 'Green means verified' bullet in git-workflow.md accidentally duplicated a trailing sentence fragment", "result": "failed", "reason": "Copy-paste artifact while drafting the carve-out language; caught on re-read and fixed with a follow-up Edit before dual-copying"}
+  ],
+  "handoff_count": 0
+}

@@ -88,6 +88,42 @@
     },
     {
       "keywords": [
+        "lock",
+        "concurrency",
+        "session",
+        "mkdir",
+        "atomic",
+        "heartbeat",
+        "stale"
+      ],
+      "path": "patterns/task-lock.md",
+      "subdomain": "patterns",
+      "token_cost_estimate": 1600,
+      "load_when": {
+        "task_types": [],
+        "agents": [
+          "general-implementation-agent",
+          "general-implementation-hard-agent"
+        ],
+        "commands": [
+          "/research",
+          "/plan",
+          "/implement",
+          "/revise",
+          "/orchestrate"
+        ]
+      },
+      "line_count": 183,
+      "tier": 4,
+      "domain": "core",
+      "summary": "Canonical per-task concurrency lock: mkdir-atomic acquire/heartbeat/release/check contract, stale-threshold override-and-warn, same-session re-entry safety",
+      "topics": [
+        "concurrency",
+        "state-management"
+      ]
+    },
+    {
+      "keywords": [
         "context",
         "protective",
         "lead",

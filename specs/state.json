@@ -797,10 +797,10 @@
     {
       "project_number": 788,
       "project_name": "concurrent_session_lock_commit_cadence",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-06-30T19:56:26Z",
-      "last_updated": "2026-06-30T19:56:26Z",
+      "last_updated": "2026-07-04T18:25:38Z",
       "title": "Concurrent-session protection: task lock + mandatory commit-per-green-substep",
       "description": "Prevent concurrent sessions from clobbering a shared working tree (the 427 failure: an uncommitted in-progress task wiped by a concurrent session). USER-SELECTED SCOPE: lock + commit-per-step, NO git-worktree integration (keep the single shared tree; worktree isolation explicitly deferred). ROOT CAUSE: no concurrency protection exists -- manage-topics.sh assumes 'single-threaded sessions', state.json is last-write-wins, and nothing reserves a task for one session. Scope: (1) TASK LOCK: a session must reserve a task before working it -- a lock (lockfile under specs/{NNN}_{SLUG}/.lock or a state.json lock field) recording session_id + heartbeat timestamp; /orchestrate and /implement acquire on entry and REFUSE (with clear guidance) if a fresh lock is held by another session, with a stale-lock override threshold and release on completion/abort. (2) COMMIT-PER-GREEN-SUBSTEP: mandate an incremental commit at every green sub-step so in-progress work lives in git, not only the working tree -- align with checkpoint discipline and the scoped-staging contract from 785/786. (3) Coordinate with the 779/780/781 git-safety + checkpoint cluster (snapshot-before-rollback, checkpoint-before-overflow) so locking + commit cadence compose. OUT OF SCOPE: git worktree isolation (deferred). Depends on 786 (edits orchestrate.md/implement.md) and 787 (shared state schema + uses file_scope for lock granularity). Goal: a concurrent session can never silently destroy another session's uncommitted progress.",
       "effort": "4-6 hours",
@@ -809,7 +809,24 @@
         786,
         787
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/788_concurrent_session_lock_commit_cadence/reports/01_concurrent-session-lock-design.md",
+          "summary": "Design research: lockfile-vs-state-field tradeoff (lockfile recommended), heartbeat/stale-threshold mechanism, acquire/release hook points for single-task and multi-task/wave dispatch, file_scope-granularity deferral recommendation, and reconciliation of commit-per-green-substep with git-workflow.md's existing 'Do Not Commit: intermediate states' prohibition."
+        },
+        {
+          "type": "plan",
+          "path": "specs/788_concurrent_session_lock_commit_cadence/plans/01_session-lock-commit-cadence.md",
+          "summary": "5 phases across 4 dependency waves ([1],[2,3],[4],[5]); ~5 hours. Covers atomic lock helper + spec, gate-script wiring, multi-task/heartbeat wiring, commit-cadence reconciliation, and verification with dual-copy parity."
+        },
+        {
+          "type": "summary",
+          "path": "specs/788_concurrent_session_lock_commit_cadence/summaries/01_session-lock-commit-cadence-summary.md",
+          "summary": "Full implementation summary: what changed across 8 files (+ 8 dual copies + 1 non-dual-copied index.json entry), key decisions, 3 plan deviations (all 'altered' — skill-implementer/SKILL.md is a thin wrapper with no per-phase/per-objective loop of its own, so the heartbeat and green-commit hooks were wired into general-implementation-agent.md instead), and verification results."
+        }
+      ],
+      "session_id": "sess_1783182771_c4ab90_788"
     },
     {
       "project_number": 791,
@@ -960,12 +977,31 @@
     {
       "project_number": 796,
       "project_name": "mandatory_topic_assignment",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "description": "Make topic assignment mandatory across ALL task-creation paths so tasks never land in Uncategorized. Root problem: three escape hatches produce topicless tasks — (1) the one-click Skip (no topic) option in Mode A pickers (/meta, /task create, /project-overview); (2) Mode B silent no-op when a parent task has no topic (topic-assignment-pattern.md:113 says no fallback, but /spawn, --expand, --review implementations DO have fallbacks — doc/impl divergence); (3) Mode C silent no-op when the /review and /fix-it path heuristic hits the other branch (:134). Plus /task --recover has zero topic handling and the meta-builder path can be bypassed entirely. FIX (source tree /home/benjamin/.config/nvim/.claude/, redeployed via <leader>al): rewrite canonical context/patterns/topic-assignment-pattern.md to drop Skip and make Mode A the universal fallback whenever no obvious topic exists (parent none / heuristic miss / batch null), keeping New topic always available; then update all callers to remove Skip and wire the fallback: agents/meta-builder-agent.md Stage 4.5, commands/task.md (create, --expand, --review, --recover which currently has none), commands/review.md and skills/skill-fix-it (Mode C other -> prompt), skills/skill-spawn, skills/skill-project-overview (errors.md inherits via /task). Reconcile the pattern-doc-vs-implementation divergence on Mode B fallback. Research/plan decisions: (a) remove Skip entirely vs keep a hard-to-reach explicit skip; (b) whether to add a defense-in-depth gate (generate-task-order.sh warns on topicless active tasks, or a validation check) so bypasses surface loudly. Out of scope: backfilling existing topicless tasks (/task --sync already does that).",
       "dependencies": [
         787
+      ],
+      "last_updated": "2026-07-04T18:25:40Z",
+      "session_id": "sess_1783182771_c4ab90_796",
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/796_mandatory_topic_assignment/reports/01_mandatory-topic-assignment.md",
+          "summary": "Full research report: per-caller current-state table for all 9 task-creation paths (/task create, --expand, --recover, --sync backfill, meta-builder-agent Stage 4.5, /review Mode C, /fix-it Mode C, /spawn Mode B, /project-overview Mode A), pattern-doc structural analysis, defense-in-depth gate options, compatibility check against task 787, and risks/mitigations."
+        },
+        {
+          "type": "plan",
+          "path": "specs/796_mandatory_topic_assignment/plans/01_mandatory-topic-assignment.md",
+          "summary": "7-phase implementation plan (~6h). Wave 1: Phase 1 (rewrite topic-assignment-pattern.md), Phase 6 (generate-task-order.sh stderr warning). Wave 2 (parallel, disjoint dual-copy file sets): Phase 2 task.md create/expand/recover/sync; Phase 3 meta-builder Stage 4.5/6; Phase 4 review.md + skill-fix-it Mode C; Phase 5 skill-spawn + skill-project-overview. Wave 3: Phase 7 verification. Both explicit decisions resolved with rationale; dual-copy sync enforced via diff -q on all seven pairs."
+        },
+        {
+          "type": "summary",
+          "path": "specs/796_mandatory_topic_assignment/summaries/01_mandatory-topic-assignment-summary.md",
+          "summary": "Full implementation summary: files changed per phase, decisions, two plan deviations (task.md Review Mode Step 7.6 Skip picker also fixed; skill-cite/SKILL.md fixed as a 7th creation path found during Phase 7 verification), and verification results."
+        }
       ]
     },
     {

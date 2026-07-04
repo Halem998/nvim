@@ -14,25 +14,45 @@ This document and `manage-topics.sh` replace all inline implementations. Command
 call `manage-topics.sh` for state.json operations and copy the AskUserQuestion templates
 from this document for user interaction.
 
+### Mandatory Assignment Guarantee
+
+Every new-task-creation path MUST end with a non-empty topic. **Mode A is the universal
+fallback**: whenever a topic cannot be inherited (Mode B, parent has no topic) or inferred
+(Mode C, heuristic misses), the caller invokes Mode A instead of leaving the task topicless.
+There is no option to bypass topic assignment with no topic on any new-task-creation path —
+the only escape hatch permitted anywhere in the system is the single, explicitly-labeled
+**"Defer (leave uncategorized for now)"** option in `/task --sync`'s backfill loop, which
+remediates *pre-existing* topicless tasks and is not a creation-time bypass. See
+`specs/796_mandatory_topic_assignment/plans/01_mandatory-topic-assignment.md` Decision (a) for
+the rationale; future edits to this document or its callers must not re-introduce a bypass
+option outside that one carve-out.
+
 ### Three Assignment Modes
 
 | Mode | Used by | Picker shown? | State updated by |
 |------|---------|---------------|-----------------|
-| **A: Interactive** | `/task` create, `/task` sync backfill, `/meta` interview Stage 4.5 | Yes (full picker) | `manage-topics.sh add` + `manage-topics.sh set` |
-| **B: Inherit** | `/task --expand`, `/task --recover` follow-up tasks, `/spawn` | No | `manage-topics.sh add` + `manage-topics.sh set` |
-| **C: Suggest** | `/review`, `/fix-it` | No | `manage-topics.sh add` + `manage-topics.sh set` |
+| **A: Interactive** | `/task` create, `/task` sync backfill, `/meta` interview Stage 4.5; also the universal fallback for Modes B/C | Yes (full picker) | `manage-topics.sh add` + `manage-topics.sh set` |
+| **B: Inherit** | `/task --expand`, `/task --recover` follow-up tasks, `/spawn` | No (falls back to Mode A if parent has no topic) | `manage-topics.sh add` + `manage-topics.sh set` |
+| **C: Suggest** | `/review`, `/fix-it` | No (falls back to Mode A if heuristic misses) | `manage-topics.sh add` + `manage-topics.sh set` |
 
 ---
 
 ## Mode A: Interactive
 
 Show a picker when the user is actively creating or reviewing a task and can make a
-deliberate topic choice.
+deliberate topic choice. **Mode A is the universal fallback**: any caller of Mode B or Mode C
+that cannot inherit or infer a topic MUST invoke this picker (or its batch variant, below)
+rather than leaving the task topicless.
 
 **Caller locations**:
 - `/task` — Create new task (task creation interview, last step)
-- `/task --sync` — Backfill missing topics for existing tasks
-- `/meta` — Interview Stage 4.5 (group tasks by topic before creation)
+- `/task --sync` — Backfill missing topics for existing tasks (retains a single explicit
+  "Defer" option — see Step 4 below; this is the ONE exception to "no Skip")
+- `/meta` — Interview Stage 4.5 (group tasks by topic before creation; see batch variant)
+- Universal fallback invocation from Mode B (`/task --expand`, `/task --recover`, `/spawn`)
+  when the parent/source has no topic
+- Universal fallback invocation from Mode C (`/review`, `/fix-it`) when the path heuristic
+  misses
 
 ### Step 1: Build options array
 
@@ -40,13 +60,12 @@ deliberate topic choice.
 # Get existing active topics from state.json
 mapfile -t existing_topics < <(bash .claude/scripts/manage-topics.sh list)
 
-# Build AskUserQuestion options: existing + "New topic..." + "Skip"
+# Build AskUserQuestion options: existing + "New topic..." (no Skip option)
 options=()
 for t in "${existing_topics[@]}"; do
   options+=("$t")
 done
 options+=("New topic...")
-options+=("Skip (no topic)")
 ```
 
 ### Step 2: Show picker
@@ -55,7 +74,7 @@ options+=("Skip (no topic)")
 {
   "question": "Assign a topic to this task?",
   "type": "select",
-  "options": ["<existing-topic-1>", "<existing-topic-2>", "New topic...", "Skip (no topic)"]
+  "options": ["<existing-topic-1>", "<existing-topic-2>", "New topic..."]
 }
 ```
 
@@ -70,19 +89,47 @@ If the user selects "New topic...", show a follow-up free-text question:
 }
 ```
 
-Validate: non-empty, no spaces (suggest replacing spaces with hyphens if entered).
+Validate: non-empty, no spaces (suggest replacing spaces with hyphens if entered). Re-prompt
+on empty input — an empty free-text response is not a valid escape from topic assignment.
 
 ### Step 4: Update state
 
 ```bash
-# topic is either the selected existing value or the new free-text value
-if [[ "$topic" == "Skip (no topic)" || -z "$topic" ]]; then
-  : # no-op, do not assign
+# topic is either the selected existing value or the new free-text value.
+# Every caller except /task --sync backfill MUST have a non-empty topic here.
+bash .claude/scripts/manage-topics.sh add "$topic"
+bash .claude/scripts/manage-topics.sh set "$task_num" "$topic"
+```
+
+**`/task --sync` backfill exception ONLY**: this is the sole path in the system permitted an
+explicit deferral affordance, because it remediates pre-existing topicless tasks rather than
+gatekeeping new-task creation. Its picker adds exactly one extra option, clearly labeled (NOT
+"Skip"):
+
+```json
+{
+  "question": "Assign a topic to this task?",
+  "type": "select",
+  "options": ["<existing-topic-1>", "<existing-topic-2>", "New topic...", "Defer (leave uncategorized for now)"]
+}
+```
+
+```bash
+if [[ "$topic" == "Defer (leave uncategorized for now)" ]]; then
+  : # no-op, remediation deferred; Phase 6 warning in generate-task-order.sh keeps this visible
 else
   bash .claude/scripts/manage-topics.sh add "$topic"
   bash .claude/scripts/manage-topics.sh set "$task_num" "$topic"
 fi
 ```
+
+### Mode A: Interactive, batch variant
+
+Used when assigning topics to multiple tasks at once (e.g. `/meta` Stage 4.5 grouping several
+proposed tasks, or `/fix-it`'s per-`topic_groups[]` fallback). The picker and options are the
+same as Step 1-3 above but the question wording is pluralized (e.g. "Assign a topic to these N
+tasks?") and the selection loops per group. No Skip option here either — a batch entry that
+cannot be grouped by heuristic still routes through this picker before task creation completes.
 
 ---
 
@@ -90,7 +137,8 @@ fi
 
 Propagate the parent task's topic to child tasks automatically, without showing a picker.
 Used for tasks that are derived from or blocked by another task and should share its
-organizational context.
+organizational context. **If the parent/source has no topic, the caller MUST invoke Mode A
+(the universal fallback) rather than leaving the child topicless.**
 
 **Caller locations**:
 - `/task --expand N` — Sub-tasks inherit the expanded task's topic
@@ -105,12 +153,14 @@ parent_topic=$(jq -r --arg num "$parent_task_num" \
   '.active_projects[] | select(.project_number == ($num | tonumber)) | .topic // empty' \
   specs/state.json)
 
-# Only assign if parent had a topic
 if [[ -n "$parent_topic" ]]; then
   bash .claude/scripts/manage-topics.sh add "$parent_topic"
   bash .claude/scripts/manage-topics.sh set "$new_task_num" "$parent_topic"
+else
+  # Parent has no topic: invoke Mode A as the universal fallback (no Skip option).
+  # Show the Mode A picker (Steps 1-3 above) and apply Step 4 with the result.
+  : # caller: run Mode A picker here, then manage-topics.sh add/set with its result
 fi
-# If parent has no topic, no topic is assigned (no fallback picker in current implementation)
 ```
 
 ---
@@ -118,7 +168,9 @@ fi
 ## Mode C: Suggest
 
 Infer the topic from the path of files being reviewed or the type of fix, without showing
-a picker. Used for batch task creation where user interaction would be disruptive.
+a picker. Used for batch task creation where user interaction would be disruptive. **If the
+path heuristic misses (the `other` branch below), the caller MUST invoke the Mode A batch
+variant as the universal fallback instead of silently assigning `topic=""`.**
 
 **Caller locations**:
 - `/review` — Code review creates tasks; topic inferred from reviewed path
@@ -131,7 +183,7 @@ a picker. Used for batch task creation where user interaction would be disruptiv
 | `.claude/` or `specs/` | `agent-system` |
 | `lua/` or `after/` | `neovim` |
 | `home/` or `modules/` (nix) | `nix-config` |
-| other | *(no topic assigned)* |
+| other | *(routes to Mode A universal fallback — see below)* |
 
 ### Canonical bash
 
@@ -154,6 +206,11 @@ inferred=$(infer_topic_from_path "$file_path")
 if [[ -n "$inferred" ]]; then
   bash .claude/scripts/manage-topics.sh add "$inferred"
   bash .claude/scripts/manage-topics.sh set "$task_num" "$inferred"
+else
+  # Heuristic missed: invoke the Mode A batch variant as the universal fallback
+  # (do NOT set topic="" and move on).
+  : # caller: run Mode A batch-variant picker (confirm-wrap: Accept / Override, no Skip),
+    # then manage-topics.sh add/set with its result
 fi
 ```
 

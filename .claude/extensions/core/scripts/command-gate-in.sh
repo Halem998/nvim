@@ -62,6 +62,14 @@ gate_in() {
       ;;
   esac
 
+  # Task lock: acquire AFTER the terminal-status guard so terminal-status tasks fail fast
+  # without ever touching the lock. See .claude/context/patterns/task-lock.md for the full
+  # acquire/heartbeat/release/check contract. Same-session re-entry never self-blocks; a fresh
+  # lock held by a DIFFERENT session aborts the command before DELEGATE.
+  if ! bash .claude/scripts/task-lock.sh acquire "$task_number" "$operation" "$SESSION_ID" "/$operation $task_number"; then
+    return 1
+  fi
+
   # Display operation header
   local op_label
   op_label=$(echo "$operation" | tr '[:lower:]' '[:upper:]')

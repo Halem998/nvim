@@ -359,13 +359,17 @@ Run `/plan {N}` to create an implementation plan, then `/implement {N}` to gener
 
 #### 5.2.5: Assign Topic (Mode A Interactive Picker)
 
-Before writing the task to state.json, offer an interactive topic picker:
+Before writing the task to state.json, offer an interactive topic picker. Topic assignment
+is mandatory (task 796) — there is no Skip option. This follows
+@.claude/context/patterns/topic-assignment-pattern.md (Mode A: Interactive); the steps are
+inlined below to prevent drift since this picker does not delegate to the pattern doc via a
+runtime lookup:
 
 ```bash
 # Get existing active topics from state.json
 mapfile -t existing_topics < <(bash .claude/scripts/manage-topics.sh list)
 
-# Build options: existing topics + "New topic..." + "Skip (no topic)"
+# Build options: existing topics + "New topic..." (no Skip option)
 ```
 
 Show picker via AskUserQuestion:
@@ -374,7 +378,7 @@ Show picker via AskUserQuestion:
   "question": "Assign a topic to this task?",
   "header": "Topic",
   "multiSelect": false,
-  "options": ["<existing-topic-1>", "<existing-topic-2>", "New topic...", "Skip (no topic)"]
+  "options": ["<existing-topic-1>", "<existing-topic-2>", "New topic..."]
 }
 ```
 
@@ -383,12 +387,12 @@ Show picker via AskUserQuestion:
   ```json
   {"question": "Enter new topic name (lowercase, kebab-case, e.g. 'agent-system'):"}
   ```
-  Capture result as `topic`. Validate: non-empty, no spaces.
-- If user selects "Skip (no topic)" → `topic=""`
+  Capture result as `topic`. Validate: non-empty, no spaces. Re-prompt on empty input.
 
 #### 5.3: Update state.json
 
-Add new task to active_projects:
+Add new task to active_projects. `$topic` is non-empty by construction (task 796: mandatory
+topic assignment, no Skip option); the null-guard below is defensive only.
 ```bash
 jq --argjson num "$next_num" \
    --arg name "$task_slug" \

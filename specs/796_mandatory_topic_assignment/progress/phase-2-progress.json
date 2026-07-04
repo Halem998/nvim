@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "Update /task create, --expand, --recover, --sync (task.md)",
+  "started_at": "2026-07-04T18:25:00Z",
+  "last_updated": "2026-07-04T18:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "create: confirm Mode A inheritance, clarify jq comment", "status": "done", "files_touched": [".claude/commands/task.md", ".claude/extensions/core/commands/task.md"]},
+    {"id": 2, "description": "--expand: replace inline Skip picker with Mode A fallback reference", "status": "done", "files_touched": [".claude/commands/task.md", ".claude/extensions/core/commands/task.md"]},
+    {"id": 3, "description": "--recover: add net-new topic null/empty check invoking Mode A fallback", "status": "done", "files_touched": [".claude/commands/task.md", ".claude/extensions/core/commands/task.md"]},
+    {"id": 4, "description": "--sync backfill: add single labeled Defer option", "status": "done", "files_touched": [".claude/commands/task.md", ".claude/extensions/core/commands/task.md"]},
+    {"id": 5, "description": "Apply to both copies, diff -q clean", "status": "done", "files_touched": [".claude/commands/task.md", ".claude/extensions/core/commands/task.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.2",
+      "description": "--expand Skip removal scope",
+      "type": "altered",
+      "reason": "Also fixed an equivalent Skip picker in task.md's --review Mode Step 7.6 (follow-up task creation), which the plan did not explicitly enumerate under Phase 2 but which the Phase 7 grep verification gate would have caught as a remaining Skip occurrence in task.md.",
+      "annotation": "*(deviation: altered — also fixed Review Mode Step 7.6 Skip picker, required by Phase 7 grep gate)*"
+    }
+  ]
+}

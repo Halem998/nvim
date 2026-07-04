@@ -1,0 +1,15 @@
+{
+  "phase": 6,
+  "phase_name": "Defense-in-depth warning in generate-task-order.sh",
+  "started_at": "2026-07-04T18:08:40Z",
+  "last_updated": "2026-07-04T18:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add stderr warning to Uncategorized fallback block", "status": "done", "files_touched": [".claude/scripts/generate-task-order.sh", ".claude/extensions/core/scripts/generate-task-order.sh"]},
+    {"id": 2, "description": "Verify warning is informational only (no output/exit-code change)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Apply to both copies and diff -q clean", "status": "done", "files_touched": [".claude/scripts/generate-task-order.sh", ".claude/extensions/core/scripts/generate-task-order.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

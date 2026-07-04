@@ -58,13 +58,17 @@ description=$(echo "$task_data" | jq -r '.description // ""')
 parent_topic=$(echo "$task_data" | jq -r '.topic // ""')  # Inherited by spawned tasks
 ```
 
-**Mode B Fallback Picker**: If `parent_topic` is empty, the parent task has no topic. Show a full Mode A interactive picker to let the user assign one now (which will also be inherited by spawned tasks):
+**Mode A Universal Fallback**: If `parent_topic` is empty, the parent task has no topic.
+Invoke Mode A per @.claude/context/patterns/topic-assignment-pattern.md (Mode A:
+Interactive) to let the user assign one now (which will also be inherited by spawned tasks).
+There is no Skip option; topic assignment is mandatory.
 
 ```bash
 if [[ -z "$parent_topic" ]]; then
   # Get existing active topics from state.json
   mapfile -t existing_topics < <(bash .claude/scripts/manage-topics.sh list)
-  # Show Mode A picker (existing topics + "New topic..." + "Skip (no topic)")
+  # Follow @.claude/context/patterns/topic-assignment-pattern.md (Mode A: Interactive) to
+  # show the picker and capture the result in $parent_topic.
 fi
 ```
 
@@ -74,13 +78,12 @@ AskUserQuestion:
   "question": "Assign a topic to this task (will be inherited by spawned tasks)?",
   "header": "Topic",
   "multiSelect": false,
-  "options": ["<existing-topic-1>", "<existing-topic-2>", "New topic...", "Skip (no topic)"]
+  "options": ["<existing-topic-1>", "<existing-topic-2>", "New topic..."]
 }
 ```
 
 - If user selects an existing topic → `parent_topic="$selected"`
 - If user selects "New topic..." → show free-text follow-up and capture as `parent_topic`
-- If user selects "Skip (no topic)" → `parent_topic=""` (no topic assigned)
 
 ---
 
@@ -435,7 +438,7 @@ The state.json update in Stage 13 already writes the dependencies array. TODO.md
 
 ### Stage 14a: Assign Topics via manage-topics.sh (Non-Blocking)
 
-For each new task created in Stage 11, assign the inherited `parent_topic` via `manage-topics.sh set`. The `set` subcommand updates both the task's `topic` field and the `active_topics` array atomically (must be called AFTER the task entry exists in state.json from Stage 11):
+For each new task created in Stage 11, assign the inherited `parent_topic` via `manage-topics.sh set`. The `set` subcommand updates both the task's `topic` field and the `active_topics` array atomically (must be called AFTER the task entry exists in state.json from Stage 11). `parent_topic` is non-empty by construction (task 796: either inherited from the parent or assigned via the Mode A universal fallback above); the `-n` guard below is defensive only:
 
 ```bash
 # Call set for each new task (parent_topic already written to each task entry in Stage 11)

@@ -187,6 +187,33 @@ After updating the progress file, also update the plan file to reflect completed
 
 **Note**: If the plan file does not use `- [ ]` checklist syntax for the current phase, skip this step. The progress file remains the authoritative tracking mechanism.
 
+#### 4B-iii. Green Sub-Step Commit (Mandatory)
+
+Per `@.claude/rules/git-workflow.md`'s Commit-Per-Green-Substep Mandate, commit immediately once
+an objective reaches `status: "done"` (step 4 above) AND its own verification passed (step 3
+above) — do NOT wait for the whole phase to complete. This is the SAME green-commit mechanism
+`@.claude/context/patterns/checkpoint-before-overflow.md` uses at context-pressure time, reused
+here (not duplicated) for the routine per-objective cadence:
+
+```bash
+task_dir="specs/{NNN}_{SLUG}"
+stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json" "{plan_path}")
+# Append this objective's files_touched (already accumulated in the progress file at step 4)
+while IFS= read -r f; do
+  [ -n "$f" ] && stage_paths+=("$f")
+done < <(jq -r '.objectives[] | select(.id == {objective_id}) | .files_touched[]? // empty' "$progress_file" 2>/dev/null)
+git add "${stage_paths[@]}"
+git commit -m "task {N} phase {P}.{O}: {objective_description}
+
+Session: {session_id}
+"
+```
+
+If nothing is staged (e.g. a verification-only objective that touched no files), the commit is a
+no-op — do not force an empty commit. Skip this step ONLY if the objective's status is still
+`in_progress` (not yet green) or if it was marked `blocked`/failed — those stay uncommitted per
+the Do Not Commit rule.
+
 **C. Verify Phase Completion**
 
 Run phase verification criteria:
@@ -202,6 +229,18 @@ Use the Edit tool with:
 - new_string: `### Phase {P}: {Phase Name} [COMPLETED]`
 
 Phase status lives ONLY in the heading. Do NOT add or edit a separate `**Status**:` line per phase.
+
+**Task-lock heartbeat**: at this same phase-transition point, refresh the task lock so a
+multi-phase `/implement` run never goes stale under its own hand (the lock was acquired once at
+`command-gate-in.sh`'s gate-in, before this agent was even spawned):
+```bash
+bash .claude/scripts/task-lock.sh heartbeat "{task_number}" "{session_id}" 2>/dev/null || true
+```
+No-op with a warning if the lock is missing or held by another session — heartbeat never blocks
+phase progression. See `.claude/context/patterns/task-lock.md` for the full contract. (This is
+the actual per-phase-transition site for single-task `/implement`; `skill-implementer/SKILL.md`
+is a thin wrapper that delegates the entire phase loop to this agent and has no phase-transition
+point of its own to hook — see task 788 Phase 3 deviation note.)
 
 #### 4D-ii. Post-Phase Self-Review
 
@@ -452,7 +491,9 @@ For each phase in the implementation plan:
 1. **Read plan file**, identify current phase
 2. **Update phase status** to `[IN PROGRESS]` in plan file
 3. **Execute phase steps** as documented
-4. **Update phase status** to `[COMPLETED]` (Stage 4D), then perform post-phase self-review (Stage 4D-ii) and write a progressive handoff (Stage 4D-iii)
+4. **Update phase status** to `[COMPLETED]` (Stage 4D) — refreshing the task-lock heartbeat at
+   the same point — then perform post-phase self-review (Stage 4D-ii) and write a progressive
+   handoff (Stage 4D-iii)
 5. **Git commit** with message: `task {N} phase {P}: {phase_name}`, using targeted, work-scoped
    staging — never stage the entire working tree. See
    `@.claude/context/standards/git-staging-scope.md` for the full commit-scope contract:

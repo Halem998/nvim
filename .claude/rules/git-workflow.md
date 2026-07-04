@@ -20,6 +20,7 @@ task {N}: {action} {description}
 | Create task | `task {N}: create {title}` |
 | Complete research | `task {N}: complete research` |
 | Create plan | `task {N}: create implementation plan` |
+| Green sub-step (in-progress phase) | `task {N} phase {P}.{O}: {objective_description}` |
 | Complete phase | `task {N} phase {P}: {phase_name}` |
 | Complete implementation | `task {N}: complete implementation` |
 | Revise plan | `task {N}: revise plan (v{V})` |
@@ -44,9 +45,38 @@ task {N}: {action} {description}
 - Task archival operations
 
 ### Do Not Commit
-- Partial/incomplete work
+- Partial/incomplete work — half-applied, unverified edits (a file half-written, an edit made but
+  not yet checked to exist/be non-empty, a step abandoned mid-way)
 - Failed operations (rollback instead)
-- Intermediate states during multi-phase operations
+
+### Commit-Per-Green-Substep Mandate
+
+**Every verified-green sub-step is committed as it happens — this is a mandate, not an
+optional-when-convenient practice.** "Intermediate states during multi-phase operations" is NOT
+a reason to withhold a commit: an intermediate state that is *green* (its own verification
+criteria passed — see `checkpoint-before-overflow.md`'s green/RED distinction) MUST be
+committed, not held back until the whole phase or task finishes. This replaces an earlier,
+contradictory version of this rule that listed "intermediate states" as uncommittable; that
+language conflicted directly with the checkpoint-before-overflow and progress-file granularity
+this codebase already relies on for crash recovery, and has been removed.
+
+- **Sub-step granularity**: a "sub-step" is a `progress-file.md` objective transitioning to
+  `status: "done"` — the same unit `files_touched` accumulates against (see
+  `.claude/context/formats/progress-file.md`).
+- **"Green" means verified, not merely attempted**: the objective's own verification criteria
+  passed (a check ran and succeeded, files were confirmed to exist and be non-empty, or a
+  build/test step passed where applicable) — per `checkpoint-before-overflow.md`'s green/RED
+  distinction. "Some tool calls happened" is NOT green; an unverified edit is still
+  partial/incomplete work per the bullet above and stays uncommitted until it can be confirmed
+  green.
+- **Staging reuses the existing `implement` scope verbatim** — task dir + `plan_path` + the
+  agent's self-reported `modified_files` (`.claude/context/standards/git-staging-scope.md`) and
+  `checkpoint-before-overflow.md`'s green-commit branch. This is NOT a second staging codepath:
+  the same under-stage-never-over-stage discipline and the same forbidden `git add -A` /
+  `git commit -am` operations apply identically to sub-step commits.
+- **Message convention**: see the `task {N} phase {P}.{O}: {objective_description}` row in
+  Standard Actions below — finer-grained than the existing per-phase row, used specifically for
+  a single objective's green commit within a phase still in progress.
 
 ## Commit Scope
 

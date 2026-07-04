@@ -11,14 +11,12 @@ next_project_number: 808
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,788,796,804 | -- | agent-system, email integration, terminal ui |
+| 1 | 78,87,804 | -- | agent-system, email integration, terminal ui |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree
-796 [NOT STARTED] — Make topic assignment mandatory across ALL task-creation paths so
 804 [NOT STARTED] — Document the --fable model-selection flag alongside --haiku, --so
 
 ### Terminal Ui
@@ -185,10 +183,12 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 ---
 
 ### 796. Mandatory topic assignment
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 787
+- **Research**: [796_mandatory_topic_assignment/reports/01_mandatory-topic-assignment.md]
+- **Plan**: [796_mandatory_topic_assignment/plans/01_mandatory-topic-assignment.md]
 
 **Description**: Make topic assignment mandatory across ALL task-creation paths so tasks never land in Uncategorized. Root problem: three escape hatches produce topicless tasks — (1) the one-click Skip (no topic) option in Mode A pickers (/meta, /task create, /project-overview); (2) Mode B silent no-op when a parent task has no topic (topic-assignment-pattern.md:113 says no fallback, but /spawn, --expand, --review implementations DO have fallbacks — doc/impl divergence); (3) Mode C silent no-op when the /review and /fix-it path heuristic hits the other branch (:134). Plus /task --recover has zero topic handling and the meta-builder path can be bypassed entirely. FIX (source tree /home/benjamin/.config/nvim/.claude/, redeployed via <leader>al): rewrite canonical context/patterns/topic-assignment-pattern.md to drop Skip and make Mode A the universal fallback whenever no obvious topic exists (parent none / heuristic miss / batch null), keeping New topic always available; then update all callers to remove Skip and wire the fallback: agents/meta-builder-agent.md Stage 4.5, commands/task.md (create, --expand, --review, --recover which currently has none), commands/review.md and skills/skill-fix-it (Mode C other -> prompt), skills/skill-spawn, skills/skill-project-overview (errors.md inherits via /task). Reconcile the pattern-doc-vs-implementation divergence on Mode B fallback. Research/plan decisions: (a) remove Skip entirely vs keep a hard-to-reach explicit skip; (b) whether to add a defense-in-depth gate (generate-task-order.sh warns on topicless active tasks, or a validation check) so bypasses surface loudly. Out of scope: backfilling existing topicless tasks (/task --sync already does that).
 
@@ -251,10 +251,13 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 
 ### 788. Concurrent-session protection: task lock + mandatory commit-per-green-substep
 - **Effort**: 4-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 786, Task 787
+- **Research**: [788_concurrent_session_lock_commit_cadence/reports/01_concurrent-session-lock-design.md]
+- **Plan**: [788_concurrent_session_lock_commit_cadence/plans/01_session-lock-commit-cadence.md]
+- **Summary**: [788_concurrent_session_lock_commit_cadence/summaries/01_session-lock-commit-cadence-summary.md]
 
 **Description**: Prevent concurrent sessions from clobbering a shared working tree (the 427 failure: an uncommitted in-progress task wiped by a concurrent session). USER-SELECTED SCOPE: lock + commit-per-step, NO git-worktree integration (keep the single shared tree; worktree isolation explicitly deferred). ROOT CAUSE: no concurrency protection exists -- manage-topics.sh assumes 'single-threaded sessions', state.json is last-write-wins, and nothing reserves a task for one session. Scope: (1) TASK LOCK: a session must reserve a task before working it -- a lock (lockfile under specs/{NNN}_{SLUG}/.lock or a state.json lock field) recording session_id + heartbeat timestamp; /orchestrate and /implement acquire on entry and REFUSE (with clear guidance) if a fresh lock is held by another session, with a stale-lock override threshold and release on completion/abort. (2) COMMIT-PER-GREEN-SUBSTEP: mandate an incremental commit at every green sub-step so in-progress work lives in git, not only the working tree -- align with checkpoint discipline and the scoped-staging contract from 785/786. (3) Coordinate with the 779/780/781 git-safety + checkpoint cluster (snapshot-before-rollback, checkpoint-before-overflow) so locking + commit cadence compose. OUT OF SCOPE: git worktree isolation (deferred). Depends on 786 (edits orchestrate.md/implement.md) and 787 (shared state schema + uses file_scope for lock granularity). Goal: a concurrent session can never silently destroy another session's uncommitted progress.
 
@@ -268,6 +271,7 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 - **Dependencies**: Task 786
 - **Research**: [787_file_footprint_aware_dependencies/reports/01_file-footprint-aware-dependencies.md]
 - **Plan**: [787_file_footprint_aware_dependencies/plans/01_file-footprint-aware-dependencies.md]
+- **Summary**: [787_file_footprint_aware_dependencies/summaries/01_file-footprint-aware-dependencies-summary.md]
 
 **Description**: Make multi-task creation declare dependencies based on FILE FOOTPRINT OVERLAP, not just logical sequencing, so two tasks that will edit the same files are never dispatched in the same wave / run concurrently. ROOT CAUSE: dependencies[] exists in the schema but is used only for Kahn topo-ordering; task creation (multi-task-creation-standard Component 4) asks only about logical ordering, and territory/file-ownership (H7, context/contracts/territory.md) is hard-mode-only, per-phase, and declarative. Scope: (1) Add an optional task-level 'file_scope' (anticipated owned paths) field to the state.json task schema (.claude/rules/state-management.md + .claude/context/reference/state-management-schema.md), promoting H7 territory to a lightweight task-level declaration. (2) Extend multi-task-creation-standard.md Component 4 so creators capture each proposed task's file footprint and AUTO-ADD a dependency (or surface a conflict warning) when two footprints overlap. (3) Wire this into meta-builder-agent, skill-fix-it, and skill-spawn. (4) Document that /orchestrate and --team wave assignment must treat file-footprint overlap as a serialization edge. Goal: when the system proposes multiple tasks touching the same files, it declares the dependency automatically instead of leaving them parallelizable. This is the gap that let two same-file tasks run concurrently.
 
