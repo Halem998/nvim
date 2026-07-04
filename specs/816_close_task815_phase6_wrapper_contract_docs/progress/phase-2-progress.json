@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "Generalize archive-mode-risk.md illustrative tokens",
+  "started_at": "2026-07-04T21:55:00Z",
+  "last_updated": "2026-07-04T22:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Generalize line ~3 top-of-file framing sentence", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/domain/archive-mode-risk.md"]},
+    {"id": 2, "description": "Generalize line ~10 Blast Radius table column headers", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/domain/archive-mode-risk.md"]},
+    {"id": 3, "description": "Generalize line ~74 What Archive Scope Does NOT Change token", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/domain/archive-mode-risk.md"]},
+    {"id": 4, "description": "Confirm line ~28 Gmail Trash retention unchanged and line-6 cross-ref resolves", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

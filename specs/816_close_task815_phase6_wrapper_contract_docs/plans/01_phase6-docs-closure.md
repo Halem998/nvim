@@ -119,23 +119,25 @@ new mbsync-channel mapping table to §11, verbatim from closure report §3.
 
 ---
 
-### Phase 2: Generalize archive-mode-risk.md illustrative tokens [NOT STARTED]
+### Phase 2: Generalize archive-mode-risk.md illustrative tokens [COMPLETED]
 
 **Goal**: Make the three purely-illustrative `folder:Gmail/.All_Mail` token mentions
 account-neutral without asserting any Logos-specific server behavior.
 
 **Tasks**:
-- [ ] Line ~3 (top-of-file framing sentence): generalize the `folder:Gmail/.All_Mail`
+- [x] Line ~3 (top-of-file framing sentence): generalize the `folder:Gmail/.All_Mail`
       archive-scope example so it reads correctly for either account (reference the per-account
-      table in `wrapper-contracts.md` §11 rather than hardcoding Gmail tokens).
-- [ ] Line ~10 (Blast Radius table column headers `INBOX (folder:Gmail)` /
+      table in `wrapper-contracts.md` §11 rather than hardcoding Gmail tokens). *(completed)*
+- [x] Line ~10 (Blast Radius table column headers `INBOX (folder:Gmail)` /
       `All Mail (folder:Gmail/.All_Mail)`): generalize the header phrasing to be account-neutral.
-- [ ] Line ~74 ("What Archive Scope Does NOT Change" — `folder:Gmail/.All_Mail` classify query
-      base token): generalize to account-neutral phrasing.
-- [ ] Leave line ~28 ("Gmail's Trash retention") UNCHANGED — substantive Gmail-specific server
-      fact, not an illustrative token.
-- [ ] Confirm the line-6 cross-reference to `wrapper-contracts.md` §10/§11 still resolves (section
-      numbers are unchanged; §11 only grew content).
+      *(completed)*
+- [x] Line ~74 ("What Archive Scope Does NOT Change" — `folder:Gmail/.All_Mail` classify query
+      base token): generalize to account-neutral phrasing. *(completed)*
+- [x] Leave line ~28 ("Gmail's Trash retention") UNCHANGED — substantive Gmail-specific server
+      fact, not an illustrative token. *(completed: verified unchanged, now at line 30 due to
+      earlier line-count shift)*
+- [x] Confirm the line-6 cross-reference to `wrapper-contracts.md` §10/§11 still resolves (section
+      numbers are unchanged; §11 only grew content). *(completed)*
 
 **Timing**: 0.15 hours
 

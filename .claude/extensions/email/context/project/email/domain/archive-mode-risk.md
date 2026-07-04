@@ -1,13 +1,15 @@
 # Archive-Mode Risk (`--archive`, All Mail Scope)
 
-Why archive-scope (`folder:Gmail/.All_Mail`) email operations get extra-caution gates beyond
-the standard propose-review-confirm-execute flow, and what those gates are. Companion to
+Why archive-scope (the account's archive query token, e.g. `folder:Gmail/.All_Mail` for
+`gmail` or `folder:Logos/.Archive` for `logos` — see `wrapper-contracts.md` §11 for the full
+per-account table) email operations get extra-caution gates beyond the standard
+propose-review-confirm-execute flow, and what those gates are. Companion to
 `skill-email-cleanup`'s "Archive Scope" and "Pilot Gate" sections; contract facts come from
 `wrapper-contracts.md` (§10 pagination, §11 folder tokens).
 
 ## The Blast Radius
 
-| Property | INBOX (`folder:Gmail`) | All Mail (`folder:Gmail/.All_Mail`) |
+| Property | INBOX (account inbox query, e.g. `folder:Gmail`) | Archive (account archive query, e.g. `folder:Gmail/.All_Mail`; see `wrapper-contracts.md` §11 for the per-account table) |
 |----------|------------------------|--------------------------------------|
 | Approximate size | hundreds | ~64,000 messages |
 | Content age | recent, familiar | years of archive-of-record history |
@@ -70,8 +72,10 @@ filtering.
 
 ## What Archive Scope Does NOT Change
 
-- Wrapper-only invariant: All Mail scoping is purely the classify QUERY base token
-  `folder:Gmail/.All_Mail` — no new binary, no wrapper flag, no raw `notmuch`/`himalaya`.
+- Wrapper-only invariant: archive scoping is purely the classify QUERY base token — the
+  account's archive query (`folder:Gmail/.All_Mail` for `gmail`, `folder:Logos/.Archive` for
+  `logos`; see `wrapper-contracts.md` §11) — no new binary, no wrapper flag, no raw
+  `notmuch`/`himalaya`.
 - `MAX_BATCH_SIZE=50` stays frozen; archive-scope drains loop over ≤50-per-action splits like
   any `--all` drain.
 - The mandatory human review gate (per-message or bucket) still precedes every mutation; the
