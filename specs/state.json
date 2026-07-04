@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 808,
+  "next_project_number": 811,
   "active_projects": [
     {
       "project_number": 805,
@@ -1215,6 +1215,74 @@
       "last_updated": "2026-07-03T17:36:27Z",
       "session_id": "sess_1783099196_7b6d2a_807",
       "completion_summary": "Made .claude/scripts/validate-handoff.sh skeleton-aware: added an early status/skeleton read and a strict skeleton-mode Check 3 branch (non-empty sorry_inventory, per-entry strategic/assumption/why_deferred/follow_up_task enforcement, status/skeleton invalid-combination check) while keeping standard-mode behavior byte-identical; added .claude/tests/test-validate-handoff.sh (5/5 fixtures pass) and verified a byte-identical regression against a production handoff."
+    },
+    {
+      "project_number": 808,
+      "project_name": "loop_guard_atomic_creation",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-07-04T18:33:12Z",
+      "last_updated": "2026-07-04T18:33:12Z",
+      "title": "Atomic creation for .orchestrator-loop-guard and peer marker files",
+      "description": "Follow-up from task 788. The .orchestrator-loop-guard file (and peer orchestrator marker files such as .postflight-pending) are still created via the non-atomic jq-n-redirect pattern, which task 788 identified as unsafe for concurrent creation. Task 788 introduced an atomic mkdir-based primitive in .claude/scripts/task-lock.sh for task locking, but the loop-guard and similar marker files were left on the old pattern. SCOPE: bring .orchestrator-loop-guard creation (in skill-orchestrate/SKILL.md, plus any peer marker-file creation sites that must be race-safe) up to the atomic-creation standard established by task-lock.sh, reusing the task-lock.sh atomic primitive rather than reimplementing. Keep dual-copy pairs (.claude + extensions/core) in sync. OUT OF SCOPE: task-lock.sh itself (already atomic).",
+      "effort": "1-2 hours",
+      "topic": "agent-system",
+      "dependencies": [
+        788
+      ],
+      "file_scope": [
+        ".claude/skills/skill-orchestrate/SKILL.md",
+        ".claude/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ],
+      "artifacts": [],
+      "session_id": "sess_1783182771_c4ab90"
+    },
+    {
+      "project_number": 809,
+      "project_name": "file_scope_granular_locking",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-07-04T18:33:12Z",
+      "last_updated": "2026-07-04T18:33:12Z",
+      "title": "File-scope-granular cross-task locking (compose task 787 overlap with task 788 locks)",
+      "description": "Follow-up from task 788. Task 788 implemented task-NUMBER-keyed session locks, which solves the 427 clobber failure but does NOT prevent two DIFFERENT tasks whose file_scope (the field added by task 787) OVERLAPS from being worked concurrently -- they hold distinct task-number locks yet edit the same files. SCOPE: extend the lock model in .claude/scripts/task-lock.sh so lock acquisition also checks file_scope overlap against currently-held locks, using task 787 canonical file-footprint-overlap algorithm (.claude/context/patterns/file-footprint-overlap.md), refusing/deferring (override-and-warn, consistent with 788) when a concurrently-held lock file_scope overlaps the acquiring task file_scope. Update task-lock.md spec accordingly. Composes 787 (file_scope + overlap algorithm) with 788 (locking). Task 788 explicitly deferred this as a larger follow-up.",
+      "effort": "3-4 hours",
+      "topic": "agent-system",
+      "dependencies": [
+        787,
+        788
+      ],
+      "file_scope": [
+        ".claude/scripts/task-lock.sh",
+        ".claude/context/patterns/task-lock.md",
+        ".claude/context/patterns/file-footprint-overlap.md"
+      ],
+      "artifacts": [],
+      "session_id": "sess_1783182771_c4ab90"
+    },
+    {
+      "project_number": 810,
+      "project_name": "gate_script_sourcing_research_plan_revise",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-07-04T18:33:12Z",
+      "last_updated": "2026-07-04T18:33:12Z",
+      "title": "Route /research, /plan, /revise through shared gate scripts for lock + checkpoint coverage",
+      "description": "Follow-up from task 788. Task 788 wired session-lock acquire/release and heartbeat into command-gate-in.sh / command-gate-out.sh (sourced by /implement and /orchestrate) and into multi-task dispatch. But /research, /plan, and /revise carry their OWN inline, duplicated CHECKPOINT gate logic and do NOT source the shared gate scripts -- so session-lock protection and the commit-per-green-substep cadence do NOT cover those three commands. SCOPE: refactor commands/research.md, commands/plan.md, and commands/revise.md to source command-gate-in.sh / command-gate-out.sh (acquiring/releasing the task lock, emitting heartbeats) instead of their inline duplicated gate logic, so ALL lifecycle commands share one gate path and one lock discipline. Keep dual-copy pairs in sync. Verify the shared gate path composes with each command existing preflight/postflight expectations.",
+      "effort": "2-3 hours",
+      "topic": "agent-system",
+      "dependencies": [
+        788
+      ],
+      "file_scope": [
+        ".claude/commands/research.md",
+        ".claude/commands/plan.md",
+        ".claude/commands/revise.md",
+        ".claude/scripts/command-gate-in.sh",
+        ".claude/scripts/command-gate-out.sh"
+      ],
+      "artifacts": [],
+      "session_id": "sess_1783182771_c4ab90"
     }
   ],
   "completed_projects": [],

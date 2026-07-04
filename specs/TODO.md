@@ -1,5 +1,5 @@
 ---
-next_project_number: 808
+next_project_number: 811
 ---
 
 # TODO
@@ -11,13 +11,16 @@ next_project_number: 808
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,804 | -- | agent-system, email integration, terminal ui |
+| 1 | 78,87,804,808,809,810 | -- | agent-system, email integration, terminal ui |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
 804 [NOT STARTED] — Document the --fable model-selection flag alongside --haiku, --so
+808 [NOT STARTED] — Follow-up from task 788. The .orchestrator-loop-guard file (and p
+809 [NOT STARTED] — Follow-up from task 788. Task 788 implemented task-NUMBER-keyed s
+810 [NOT STARTED] — Follow-up from task 788. Task 788 wired session-lock acquire/rele
 
 ### Terminal Ui
 
@@ -28,6 +31,39 @@ next_project_number: 808
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
+
+### 810. Route /research, /plan, /revise through shared gate scripts for lock + checkpoint coverage
+- **Effort**: 2-3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 788
+
+**Description**: Follow-up from task 788. Task 788 wired session-lock acquire/release and heartbeat into command-gate-in.sh / command-gate-out.sh (sourced by /implement and /orchestrate) and into multi-task dispatch. But /research, /plan, and /revise carry their OWN inline, duplicated CHECKPOINT gate logic and do NOT source the shared gate scripts -- so session-lock protection and the commit-per-green-substep cadence do NOT cover those three commands. SCOPE: refactor commands/research.md, commands/plan.md, and commands/revise.md to source command-gate-in.sh / command-gate-out.sh (acquiring/releasing the task lock, emitting heartbeats) instead of their inline duplicated gate logic, so ALL lifecycle commands share one gate path and one lock discipline. Keep dual-copy pairs in sync. Verify the shared gate path composes with each command existing preflight/postflight expectations.
+
+---
+
+### 809. File-scope-granular cross-task locking (compose task 787 overlap with task 788 locks)
+- **Effort**: 3-4 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 787, Task 788
+
+**Description**: Follow-up from task 788. Task 788 implemented task-NUMBER-keyed session locks, which solves the 427 clobber failure but does NOT prevent two DIFFERENT tasks whose file_scope (the field added by task 787) OVERLAPS from being worked concurrently -- they hold distinct task-number locks yet edit the same files. SCOPE: extend the lock model in .claude/scripts/task-lock.sh so lock acquisition also checks file_scope overlap against currently-held locks, using task 787 canonical file-footprint-overlap algorithm (.claude/context/patterns/file-footprint-overlap.md), refusing/deferring (override-and-warn, consistent with 788) when a concurrently-held lock file_scope overlaps the acquiring task file_scope. Update task-lock.md spec accordingly. Composes 787 (file_scope + overlap algorithm) with 788 (locking). Task 788 explicitly deferred this as a larger follow-up.
+
+---
+
+### 808. Atomic creation for .orchestrator-loop-guard and peer marker files
+- **Effort**: 1-2 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 788
+
+**Description**: Follow-up from task 788. The .orchestrator-loop-guard file (and peer orchestrator marker files such as .postflight-pending) are still created via the non-atomic jq-n-redirect pattern, which task 788 identified as unsafe for concurrent creation. Task 788 introduced an atomic mkdir-based primitive in .claude/scripts/task-lock.sh for task locking, but the loop-guard and similar marker files were left on the old pattern. SCOPE: bring .orchestrator-loop-guard creation (in skill-orchestrate/SKILL.md, plus any peer marker-file creation sites that must be race-safe) up to the atomic-creation standard established by task-lock.sh, reusing the task-lock.sh atomic primitive rather than reimplementing. Keep dual-copy pairs (.claude + extensions/core) in sync. OUT OF SCOPE: task-lock.sh itself (already atomic).
+
+---
 
 ### 807. Add skeleton-field validation to validate-handoff.sh
 - **Effort**: 1-3 hours
@@ -189,6 +225,7 @@ VERIFICATION: bash -n on all edited scripts; byte-identical diff between each ca
 - **Dependencies**: Task 787
 - **Research**: [796_mandatory_topic_assignment/reports/01_mandatory-topic-assignment.md]
 - **Plan**: [796_mandatory_topic_assignment/plans/01_mandatory-topic-assignment.md]
+- **Summary**: [796_mandatory_topic_assignment/summaries/01_mandatory-topic-assignment-summary.md]
 
 **Description**: Make topic assignment mandatory across ALL task-creation paths so tasks never land in Uncategorized. Root problem: three escape hatches produce topicless tasks — (1) the one-click Skip (no topic) option in Mode A pickers (/meta, /task create, /project-overview); (2) Mode B silent no-op when a parent task has no topic (topic-assignment-pattern.md:113 says no fallback, but /spawn, --expand, --review implementations DO have fallbacks — doc/impl divergence); (3) Mode C silent no-op when the /review and /fix-it path heuristic hits the other branch (:134). Plus /task --recover has zero topic handling and the meta-builder path can be bypassed entirely. FIX (source tree /home/benjamin/.config/nvim/.claude/, redeployed via <leader>al): rewrite canonical context/patterns/topic-assignment-pattern.md to drop Skip and make Mode A the universal fallback whenever no obvious topic exists (parent none / heuristic miss / batch null), keeping New topic always available; then update all callers to remove Skip and wire the fallback: agents/meta-builder-agent.md Stage 4.5, commands/task.md (create, --expand, --review, --recover which currently has none), commands/review.md and skills/skill-fix-it (Mode C other -> prompt), skills/skill-spawn, skills/skill-project-overview (errors.md inherits via /task). Reconcile the pattern-doc-vs-implementation divergence on Mode B fallback. Research/plan decisions: (a) remove Skip entirely vs keep a hard-to-reach explicit skip; (b) whether to add a defense-in-depth gate (generate-task-order.sh warns on topicless active tasks, or a validation check) so bypasses surface loudly. Out of scope: backfilling existing topicless tasks (/task --sync already does that).
 
