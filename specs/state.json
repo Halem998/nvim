@@ -122,23 +122,34 @@
     {
       "project_number": 820,
       "project_name": "email_all_resurface_classified_gap",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "language": null,
       "effort": "2 hours",
       "priority": "medium",
       "created": "2026-07-05T00:00:00Z",
-      "last_updated": "2026-07-05T00:00:00Z",
-      "session_id": "sess_1783282887_wrap820",
+      "last_updated": "2026-07-05T21:00:00Z",
+      "session_id": "sess_1783283834_70bd2d",
       "description": "/email --all cannot re-surface an already-fully-classified mailbox for review: email-classify is emit-on-change, email-census takes no query, and mutation wrappers plan over an approved manifest not proposed-* tags, so there is no wrapper-only read-out of tagged messages. Fix spans the email extension skill (--all Stage 2) and the .dotfiles wrapper binaries (a read-only --emit-tagged / candidate rebuild). See reports/01_wrapper-gap-seed.md.",
       "cross_repo_dependency": ".dotfiles email wrapper binaries (cf. tasks 72, 79)",
       "artifacts": [
         {
-          "type": "report",
           "path": "specs/820_email_all_resurface_classified_gap/reports/01_wrapper-gap-seed.md",
-          "summary": "Seed report: reproduction, root cause, and candidate wrapper+skill fixes"
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/820_email_all_resurface_classified_gap/plans/02_email-all-emit-tagged.md",
+          "type": "plan",
+          "summary": ""
+        },
+        {
+          "path": "~/.dotfiles/modules/home/email/agent-tools/classify.nix",
+          "type": "implementation",
+          "summary": ""
         }
-      ]
+      ],
+      "completion_summary": "Added read-only email-classify --emit-tagged mode (.dotfiles classify.nix) that rebuilds candidate-manifest.jsonl strictly from existing +proposed-* tags without re-tagging; switched skill-email-cleanup --all Stage 1/2 residual paths to it and added a '0 new, all residual' status; corrected the 'emit-on-change' mischaracterization in wrapper-contracts.md. Closes the wrapper-only read-out gap so /email --all can re-surface a fully-classified mailbox."
     }
   ],
   "completed_projects": [],
