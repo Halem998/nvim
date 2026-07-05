@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 823,
+  "next_project_number": 826,
   "active_projects": [
     {
       "project_number": 817,
@@ -198,6 +198,76 @@
       "created": "2026-07-05T21:19:39Z",
       "last_updated": "2026-07-05T21:19:39Z",
       "session_id": "sess_1783284700_meta820",
+      "artifacts": []
+    },
+    {
+      "project_number": 823,
+      "project_name": "email_notmuch_staleness_detection_gate",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "extensions",
+      "priority": "high",
+      "title": "Add notmuch-staleness detection gate to skill-email-cleanup",
+      "description": "/email --all promises whole-mailbox coverage but classification reads notmuch (email-classify) while mailbox ground truth is maildir/himalaya (email-census); a stale notmuch index silently degrades --all to partial coverage (observed: census=62 vs notmuch folder:Logos=12 for the Logos INBOX). Add a wrapper-only staleness precondition to skill-email-cleanup that, before an --all sweep (and surfaced in default mode), compares the maildir ground-truth count from email-census against the notmuch indexed count for the same account/folder via the email-classify --limit 0 count-oracle (wrapper-contracts.md §10); on divergence beyond a small threshold, WARN or BLOCK with an actionable message rather than presenting partial coverage as whole-mailbox. Research must verify which source email-census actually counts from (maildir vs notmuch) so the comparison is meaningful. Add domain/staleness-detection.md documenting the check, count sources, and threshold. Wrapper-only compliant (both are wrapper calls); no .dotfiles change.",
+      "file_scope": [
+        ".claude/extensions/email/skills/skill-email-cleanup/SKILL.md",
+        ".claude/extensions/email/context/project/email/domain/"
+      ],
+      "dependencies": [],
+      "estimated_effort": "2 hours",
+      "created": "2026-07-05T15:47:50-07:00",
+      "last_updated": "2026-07-05T15:47:50-07:00",
+      "session_id": "sess_1783291670_meta823",
+      "artifacts": []
+    },
+    {
+      "project_number": 824,
+      "project_name": "email_sanctioned_notmuch_reindex_path",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "extensions",
+      "priority": "high",
+      "title": "Provide a sanctioned notmuch reindex remediation path for /email",
+      "description": "When staleness is detected (task 823) the skill currently dead-ends: notmuch new is treated as forbidden raw notmuch, so there is no sanctioned remediation. But notmuch new is index-only and non-mutating — exactly analogous to mbsync, which IS sanctioned via skill-email-sync (not a wrapper binary, passes mail-guard.sh, human-confirmed). Research how notmuch reindexing is actually wired for these maildirs (post-mbsync notmuch new hook? systemd path/timer? manual). Then add a sanctioned remediation mirroring the mbsync precedent: fold a reindex step into skill-email-sync or a documented /email --sync behavior, or document the exact sanctioned command, so the skill can remediate rather than dead-end. Reconcile wrapper-contracts.md §8 (two-layer enforcement) and mail-guard.sh reasoning to distinguish index-only notmuch new (sanctioned, like mbsync) from forbidden raw notmuch/himalaya MUTATION and tag commands; ensure skill MUST-NOT text stays consistent. May surface a .dotfiles handoff recommendation if reindex belongs in the frozen wrapper layer.",
+      "file_scope": [
+        ".claude/extensions/email/skills/skill-email-sync/SKILL.md",
+        ".claude/extensions/email/skills/skill-email-cleanup/SKILL.md",
+        ".claude/extensions/email/hooks/mail-guard.sh",
+        ".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"
+      ],
+      "dependencies": [
+        823
+      ],
+      "estimated_effort": "3 hours",
+      "created": "2026-07-05T15:47:50-07:00",
+      "last_updated": "2026-07-05T15:47:50-07:00",
+      "session_id": "sess_1783291670_meta823",
+      "artifacts": []
+    },
+    {
+      "project_number": 825,
+      "project_name": "email_all_coverage_contract_docs",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "extensions",
+      "priority": "medium",
+      "title": "Wire detect->remediate->re-run into the --all coverage contract and docs",
+      "description": "Synthesis/documentation task closing the loop opened by 823 (detection) and 824 (remediation). Update commands/email.md (add the staleness->remediation flow to Workflow Execution and Error Handling), EXTENSION.md, README.md, and the archive-mode-risk.md / bulk-bucket-review.md context so the --all whole-mailbox coverage promise is EXPLICITLY conditioned on a fresh notmuch index, and the end-to-end flow (detect staleness -> recommend/run sanctioned reindex or --sync -> re-run --all) is documented consistently across command, skill, and context layers. Ensure no residual doc claims --all covers the whole mailbox unconditionally.",
+      "file_scope": [
+        ".claude/extensions/email/commands/email.md",
+        ".claude/extensions/email/EXTENSION.md",
+        ".claude/extensions/email/README.md",
+        ".claude/extensions/email/context/project/email/domain/archive-mode-risk.md",
+        ".claude/extensions/email/context/project/email/patterns/bulk-bucket-review.md"
+      ],
+      "dependencies": [
+        823,
+        824
+      ],
+      "estimated_effort": "2 hours",
+      "created": "2026-07-05T15:47:50-07:00",
+      "last_updated": "2026-07-05T15:47:50-07:00",
+      "session_id": "sess_1783291670_meta823",
       "artifacts": []
     }
   ],
