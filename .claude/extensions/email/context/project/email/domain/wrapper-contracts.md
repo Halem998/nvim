@@ -15,7 +15,7 @@ to it, or raise its constants (in particular `MAX_BATCH_SIZE=50` — split/loop 
 | Binary | Verb | Safety class | Mutates? |
 |--------|------|--------------|----------|
 | `email-census` | report sender/folder/date census | read-only | no |
-| `email-classify` | apply provisional `+proposed-*` notmuch tags; emit candidate manifest; `--append-approved` | local-tags-only | notmuch tags only (never maildir/IMAP) |
+| `email-classify` | apply provisional `+proposed-*` notmuch tags; emit candidate manifest; `--append-approved`; `--emit-tagged` (read-only tag-derived re-emit, task 820 — see §10) | local-tags-only (default mode); `--emit-tagged` is **read-only** | notmuch tags only (never maildir/IMAP); `--emit-tagged` makes NO `notmuch tag` call |
 | `email-unsubscribe-extract` | extract `List-Unsubscribe` headers to a review list | read-only | no (never fetches/POSTs URLs) |
 | `email-archive-confirmed` | move approved-`archive` IDs to All Mail | mutation | yes (maildir move) |
 | `email-delete-confirmed` | move approved-`delete` IDs to Trash; `--expunge-trash` permanently removes | mutation | yes (maildir move + expunge) |
@@ -119,12 +119,17 @@ lines 473-474).
 
 ## 6. Approval Provenance
 
-1. `email-classify` (dry-run) emits a candidate manifest and applies `+proposed-*` tags.
-   Candidates are not approved and are never consumed by mutation wrappers.
+1. `email-classify` (dry-run, default mode) emits a candidate manifest and applies `+proposed-*`
+   tags. Candidates are not approved and are never consumed by mutation wrappers.
 2. A human review/approval gesture is the sole approval act: it appends a Message-ID line to an
    approved manifest.
 3. Mutation wrappers consume ONLY approved manifests — never `email-classify`'s raw candidate
-   output.
+   output (from either default mode or `--emit-tagged`).
+4. `email-classify --emit-tagged` (task 820, §10) is **not** an approval or classification act —
+   it re-populates the candidate manifest from durable `+proposed-*` tags applied by a prior
+   default-mode call, purely so a later review pass (e.g. `skill-email-cleanup`'s `--all`
+   residual pass) can re-surface an already-tagged message set without a second classify+retag
+   round-trip. It never writes to the approved manifest and never touches notmuch tags.
 
 ## 7. Delete Invariant
 
@@ -162,6 +167,18 @@ containing the wrapper module. Agents/skills in this extension must check
 
 ## 10. email-classify Pagination Contract (verified, task 805 Phase 1)
 
+**Correction (task 820, verified against `classify.nix`): `email-classify`'s default mode is
+NOT emit-on-change.** Every message matched by `QUERY` (up to `--limit`) is unconditionally
+re-emitted to the candidate manifest and re-tagged with `+proposed-<action>` on every call,
+including messages that already carry a `+proposed-*` tag from a prior call — there is no
+"only emit if the tag/action changed" short-circuit anywhere in the default-mode branch. This
+is the mechanism behind two risks: (1) a `--limit 0` counting probe still destructively
+overwrites `candidate-manifest.jsonl` with an empty file (§10 below), and (2) a residual
+re-classify pass over already-tagged messages recomputes each message's action from the
+**current** `classify_one()` rule table and re-applies it — so rule-table drift since the tag
+was first applied can silently overwrite a prior human decision before it is ever reviewed
+again. `--emit-tagged` (below) exists specifically to close both gaps.
+
 These facts govern any multi-pass ("sweep") design built on top of `email-classify`:
 
 - **`--limit <N>` is a head-cap, not a page.** The binary runs
@@ -194,6 +211,36 @@ These facts govern any multi-pass ("sweep") design built on top of `email-classi
   header. Consequently a "capture the full in-scope ID list once, then slice it" pagination
   design is **not implementable wrapper-only**; sweep designs must paginate via the QUERY
   positional (date windows and/or tag exclusion) with `--limit`, per the count oracle above.
+
+### 10a. `--emit-tagged`: read-only tag-derived re-emit (task 820, `.dotfiles` addendum §12)
+
+`email-classify --emit-tagged "<QUERY>"` is a distinct, genuinely read-only mode, verified
+against the `.dotfiles` `classify.nix` implementation:
+
+- **No `notmuch tag` call anywhere in this mode.** It only reads.
+- **`proposed_action` is derived strictly from the message's existing `+proposed-*` tag** via a
+  `case` over `proposed-delete|archive|unsure|keep`. It is never recomputed from
+  `classify_one()` and never overwritten — this is what makes it safe to re-run over an
+  already-tagged mailbox without risking the rule-table-drift overwrite described in §10 above.
+  Messages with no `+proposed-*` tag are skipped (not emitted).
+- **`classify_one()` is still invoked per message, but ONLY for display `confidence`/`reason`** —
+  these fields reflect the CURRENT rule table, not necessarily the rules in effect when the tag
+  was first applied, and are explicitly NOT authoritative. The manifest's `reason` field is
+  prefixed `tag-derived;` to make this display-only provenance visible to any reviewer.
+- **`--limit`/`MAX_BATCH_SIZE` do not apply** — `--emit-tagged` processes the full `QUERY` match
+  unconditionally in one call; there is no batch-cap rationale for a mode that never mutates.
+- **Manifest re-population, not accumulation**: like default mode, `--emit-tagged` still writes
+  via `mv "$CANDIDATE_FILE.tmp" "$CANDIDATE_FILE"` — the candidate manifest is replaced with
+  exactly the tagged messages matching this call's `QUERY`, not merged with any prior content.
+  Callers that need to accumulate across multiple `--emit-tagged` calls (e.g. one call per
+  `tag:proposed-<X>` bucket) must copy/append the manifest to their own accumulator between
+  calls, exactly as with default mode (§10 above).
+- **Idempotent and side-effect-free**: repeated `--emit-tagged` calls against the same `QUERY`
+  leave durable `+proposed-*` tag counts unchanged and simply rebuild the manifest from current
+  tag state — safe to re-run any number of times.
+- **Consumer**: `skill-email-cleanup`'s `--all` mode (task 820) uses `--emit-tagged` for its
+  Stage 1 residual count-probe and Stage 2 residual pass in place of the destructive default
+  mode, per `skill-email-cleanup/SKILL.md`.
 
 ## 11. Folder-Scope Query Tokens (verified)
 

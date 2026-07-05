@@ -202,13 +202,18 @@ forbidden. Per the plan's pre-authorized fallback, the sweep therefore paginates
   deterministically; the sweep of never-classified mail is COMPLETE (terminates when a chunk
   classifies 0).
 - **Residual messages** (previously classified, e.g. seen-and-declined in earlier passes): one
-  bounded re-classify pass per prior tag, `email-classify --account <account> --limit
-  <CHUNK_SIZE> "<SCOPE_QUERY> and tag:proposed-<X>"` for each of `delete|archive|unsure|keep`.
-  Because classification is deterministic, these passes cannot paginate beyond the first `CHUNK_SIZE`
-  per tag bucket — **documented completeness caveat**: residual coverage is bounded to
-  `CHUNK_SIZE` messages per prior-tag bucket per `--all` run. Residuals shrink across runs as
-  executed messages leave the folder; the pre-sweep estimate reports the exact residual counts
-  so nothing is silently missed.
+  read-only re-emit pass per prior tag, `email-classify --account <account> --emit-tagged
+  "<SCOPE_QUERY> and tag:proposed-<X>"` for each of `delete|archive|unsure|keep`. `--emit-tagged`
+  derives `proposed_action` strictly from the message's existing `+proposed-<X>` tag (never
+  recomputed from the live rule table, never re-tagged — wrapper-contracts.md §12), so a
+  residual pass can never silently overwrite a prior human decision even if the classifier's
+  rule table has drifted since the tag was applied. It also ignores `--limit`/`MAX_BATCH_SIZE`
+  and processes the FULL per-tag match in one call — **the previously-documented completeness
+  caveat (residual coverage bounded to `CHUNK_SIZE` per prior-tag bucket) no longer applies**:
+  residual coverage is now complete by construction, not an estimate. (At very large per-tag
+  bucket sizes — e.g. a fully-tagged multi-thousand-message archive — the per-message
+  `notmuch show` read loop this mode uses may take noticeably longer; this is a performance
+  characteristic, not a coverage gap.)
 
 `CHUNK_SIZE = 1000` by default (tunable; confirm/adjust after the `--archive` pilot — see the
 Pilot Gate section).
@@ -216,18 +221,31 @@ Pilot Gate section).
 ### Stage 1 (`--all`): Census + Pre-Sweep Estimate
 
 1. Run `email-census --account <account>` for the folder/sender/date overview.
-2. **Count probe** (wrapper-only count oracle, wrapper-contracts.md §10): run
+2. **Count probe** (wrapper-only count oracle, wrapper-contracts.md §10, §12): run
    `email-classify --account <account> --limit 0 "<SCOPE_QUERY> and not tag:proposed-... (all
    four)"` and parse the `NOTE: query matched <total> message(s)` line for the new-message count
-   N (no NOTE line = 0). Then probe each `"<SCOPE_QUERY> and tag:proposed-<X>"` the same way
-   (same `--account <account>`) for the four residual
-   counts R_delete, R_archive, R_unsure, R_keep. The `--limit 0` probe processes nothing and
-   applies no tags, but DOES overwrite the candidate manifest — always run probes before the
-   sweep starts, never between sweep chunks.
+   N (no NOTE line = 0). This new-message probe stays on the mutating `--limit 0` NOTE-line
+   oracle — untagged messages carry no `+proposed-*` tag, so there is nothing for a read-only,
+   tag-derived mode to read here. It processes nothing and applies no tags, but DOES overwrite
+   the candidate manifest — always run this probe before the sweep starts, never between sweep
+   chunks.
+   Then probe each of the four residual buckets with the read-only mode instead:
+   `email-classify --account <account> --emit-tagged "<SCOPE_QUERY> and tag:proposed-<X>"` for
+   each of `delete|archive|unsure|keep`, and count the resulting `candidate-manifest.jsonl` line
+   count (`wc -l`) as R_delete, R_archive, R_unsure, R_keep respectively. `--emit-tagged` is
+   genuinely read-only (no `notmuch tag` call — wrapper-contracts.md §12) and unbounded (no
+   `--limit`/`MAX_BATCH_SIZE`), so each residual count is now the COMPLETE per-tag count, not an
+   estimate.
 3. Present a ONE-TIME estimate before starting:
-   `"~N new + ~R previously-classified messages in scope, ~ceil(N/1000) chunks, est. <time> —
-   proceeding in background"`. This is informational, not an approval gate (the sweep is
-   read/tag-only); but if N is very large the user can narrow the scope here.
+   `"~N new + R previously-classified messages in scope (R_delete/R_archive/R_unsure/R_keep),
+   ~ceil(N/1000) chunks, est. <time> — proceeding in background"`. This is informational, not an
+   approval gate (the sweep is read/tag-only); but if N is very large the user can narrow the
+   scope here.
+4. **"0 new, all residual" status**: if the new-message count probe reports `N=0`, emit before
+   Stage 2.5: `"0 new messages; R previously-classified messages across 4 tag buckets
+   (R_delete/R_archive/R_unsure/R_keep) — proceeding directly to bucket review"`. In this case
+   skip straight to the residual `--emit-tagged` pass (Stage 2 below) and Stage 2.5 — there is
+   no new-message sweep to run or wait on.
 
 ### Stage 2 (`--all`): Chunked, Backgrounded, Read/Tag-Only Classify Sweep
 
@@ -245,8 +263,10 @@ PROGRESS_LOG="$ACCUMULATOR.progress.log"
 #      candidate-manifest.jsonl on every call — accumulate BEFORE the next chunk)
 #   3. append a progress line to $PROGRESS_LOG: "chunk <i>: <count> classified, <running-total> total, <timestamp>"
 #   4. stop when a chunk classifies 0 messages
-# then one bounded residual pass per prior tag (delete/archive/unsure/keep), appending records
-# to $ACCUMULATOR with a `"residual": true` field added per line, and logging each as a chunk.
+# then one read-only --emit-tagged pass per prior tag (delete/archive/unsure/keep) — unbounded,
+# not chunked (no --limit applies, full per-tag match processed in one call) — appending records
+# to $ACCUMULATOR with a `"residual": true` field added per line, and logging it as one chunk
+# entry in $PROGRESS_LOG.
 ```
 
 Rules:
