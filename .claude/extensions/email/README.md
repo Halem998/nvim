@@ -60,6 +60,13 @@ only — this extension does not bundle or reimplement them:
 All five are dry-run by default. Mutation requires `--execute --confirm-manifest <sha256>` over
 the raw bytes of a human-reviewed, git-tracked manifest.
 
+**Sanctioned non-wrapper helpers** (index/sync only — never mail mutation): the group-scoped
+`mbsync` reconcile (`/email --sync`) and `email-reindex` (index-only `notmuch new --no-hooks`,
+alongside the `email-freeze`/`email-thaw` operator helpers). Because classification reads notmuch
+and no auto-indexer exists, `--all` runs an index-freshness gate before claiming whole-mailbox
+coverage: `email-census` prints an `INBOX freshness … [ok|STALE]` line, and a `[STALE]` divergence
+is reconciled with `email-reindex` (tasks 823-824; see `context/project/email/domain/staleness-detection.md`).
+
 ## Workflow: Propose -> Review -> Confirm -> Execute
 
 1. **Propose**: `email-census` and `email-classify` run read-only/tag-only, producing a

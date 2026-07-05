@@ -5,7 +5,13 @@ Why archive-scope (the account's archive query token, e.g. `folder:Gmail/.All_Ma
 per-account table) email operations get extra-caution gates beyond the standard
 propose-review-confirm-execute flow, and what those gates are. Companion to
 `skill-email-cleanup`'s "Archive Scope" and "Pilot Gate" sections; contract facts come from
-`wrapper-contracts.md` (§10 pagination, §11 folder tokens).
+`wrapper-contracts.md` (§10 pagination, §11 folder tokens, §13 index freshness).
+
+**Coverage depends on a fresh notmuch index.** Like INBOX `--all`, an archive-scope sweep only
+covers what notmuch has indexed; a stale index silently narrows the blast radius *and* the
+coverage. The Stage 1 staleness gate and `email-reindex` remediation
+(`staleness-detection.md`, `wrapper-contracts.md` §13) apply here too — never present an
+archive bucket approval as whole-folder coverage while the index reads `[STALE]`.
 
 ## The Blast Radius
 

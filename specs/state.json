@@ -203,7 +203,7 @@
     {
       "project_number": 823,
       "project_name": "email_notmuch_staleness_detection_gate",
-      "status": "researched",
+      "status": "completed",
       "task_type": "meta",
       "topic": "extensions",
       "priority": "high",
@@ -216,7 +216,7 @@
       "dependencies": [],
       "estimated_effort": "2 hours",
       "created": "2026-07-05T15:47:50-07:00",
-      "last_updated": "2026-07-05T15:54:37-07:00",
+      "last_updated": "2026-07-05T16:05:44-07:00",
       "session_id": "sess_1783291670_meta823",
       "artifacts": [
         {
@@ -225,12 +225,13 @@
           "summary": "email-census reads notmuch not maildir; naive file count unreliable; detection needs himalaya-aware count (likely .dotfiles change)"
         }
       ],
-      "cross_repo_dependency": "~/.dotfiles email-census wrapper (frozen, task 72): census reports notmuch counts only; a trustworthy maildir/server ground-truth count line must be added there for wrapper-only detection"
+      "cross_repo_dependency": "~/.dotfiles email-census wrapper (frozen, task 72): census reports notmuch counts only; a trustworthy maildir/server ground-truth count line must be added there for wrapper-only detection",
+      "completion_summary": "Added a notmuch-staleness detection gate to skill-email-cleanup --all Stage 1. Research (report 01) invalidated the original premise: email-census reads notmuch for all counts (not maildir), and raw file counts are unreliable, so detection needed a himalaya-authoritative on-disk count. Implemented via a .dotfiles change (census.nix) adding an INBOX freshness line (on-disk vs notmuch-indexed, [ok|STALE]); the skill parses it and refuses whole-mailbox coverage claims while STALE. Requires home-manager switch to activate the census change (uncommitted .dotfiles diff for user review)."
     },
     {
       "project_number": 824,
       "project_name": "email_sanctioned_notmuch_reindex_path",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "extensions",
       "priority": "high",
@@ -247,15 +248,16 @@
       ],
       "estimated_effort": "3 hours",
       "created": "2026-07-05T15:47:50-07:00",
-      "last_updated": "2026-07-05T15:54:37-07:00",
+      "last_updated": "2026-07-05T16:05:44-07:00",
       "session_id": "sess_1783291670_meta823",
       "artifacts": [],
-      "cross_repo_dependency": "~/.dotfiles notmuch.nix/mbsync.nix (frozen, task 72): sanctioned reindex is `notmuch new --no-hooks` (plain notmuch new triggers preNew mbsync -a); optional new email-reindex operator helper mirrors email-freeze/thaw"
+      "cross_repo_dependency": "~/.dotfiles notmuch.nix/mbsync.nix (frozen, task 72): sanctioned reindex is `notmuch new --no-hooks` (plain notmuch new triggers preNew mbsync -a); optional new email-reindex operator helper mirrors email-freeze/thaw",
+      "completion_summary": "Provided a sanctioned reindex remediation: new email-reindex operator helper (.dotfiles mbsync.nix, notmuch new --no-hooks, freeze-safe, index-only) mirroring email-freeze/thaw. skill-email-cleanup gained a Staleness Remediation section and a reconciled MUST-NOT that exempts email-reindex (like mbsync) while still forbidding raw notmuch new (which triggers mbsync -a). Documented in wrapper-contracts.md §13. Requires home-manager switch to activate (uncommitted .dotfiles diff)."
     },
     {
       "project_number": 825,
       "project_name": "email_all_coverage_contract_docs",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "extensions",
       "priority": "medium",
@@ -274,9 +276,10 @@
       ],
       "estimated_effort": "2 hours",
       "created": "2026-07-05T15:47:50-07:00",
-      "last_updated": "2026-07-05T15:47:50-07:00",
+      "last_updated": "2026-07-05T16:05:44-07:00",
       "session_id": "sess_1783291670_meta823",
-      "artifacts": []
+      "artifacts": [],
+      "completion_summary": "Wired detect->remediate->re-run into the --all coverage contract and docs: conditioned the --all coverage promise on a fresh index in commands/email.md (Input + Error Handling), added domain/staleness-detection.md (registered in index-entries.json), and cross-referenced from EXTENSION.md, README.md, archive-mode-risk.md, and wrapper-contracts.md §13."
     }
   ],
   "completed_projects": [],

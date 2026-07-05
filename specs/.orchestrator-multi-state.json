@@ -1,0 +1,12 @@
+{
+  "session_id": "sess_1783291831_e8177e",
+  "multi_task_mode": true,
+  "task_numbers": [823, 824, 825],
+  "waves": [[823], [824], [825]],
+  "dependency_graph": {"823": [], "824": ["823"], "825": ["823", "824"]},
+  "completed_tasks": [823, 824, 825],
+  "failed_tasks": [],
+  "cycle_count": 3,
+  "max_cycles": 25,
+  "notes": "Research invalidated task-823 premise (census reads notmuch, not maildir). User chose split .dotfiles+in-repo approach. .dotfiles wrapper changes are made but UNCOMMITTED and require `home-manager switch` to activate."
+}

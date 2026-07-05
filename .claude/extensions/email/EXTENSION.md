@@ -32,7 +32,13 @@ All mutation goes through five nix-built wrapper binaries; the extension itself 
 
 - **Wrapper-only**: agents may invoke ONLY `email-census`, `email-classify`,
   `email-archive-confirmed`, `email-delete-confirmed`, `email-unsubscribe-extract` by name.
-  Raw `himalaya`/`notmuch`/`msmtp`/`secret-tool` calls are prohibited.
+  Raw `himalaya`/`notmuch`/`msmtp`/`secret-tool` calls are prohibited. Sanctioned NON-wrapper
+  exceptions (index/sync only, never mail mutation): the group-scoped `mbsync` reconcile
+  (`/email --sync`) and the `email-reindex` operator helper (index-only `notmuch new --no-hooks`).
+- **Index-freshness gate**: because classification reads notmuch and there is no auto-indexer,
+  `--all` runs a staleness gate before claiming whole-mailbox coverage — comparing the
+  `email-census` freshness line (on-disk vs notmuch-indexed) and reconciling with `email-reindex`
+  on divergence (tasks 823-824; see `domain/staleness-detection.md`, `wrapper-contracts.md` §13).
 - **Two-layer enforcement**: the `mail-guard.sh` PreToolUse hook (social/technical layer 1,
   per-machine, may be gitignored) plus the nix-built wrapper source itself (layer 2, always
   present). Neither layer is sufficient alone.

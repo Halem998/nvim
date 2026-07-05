@@ -281,3 +281,42 @@ post-mutation reconcile (§7a) invokes the group scoped to the `--account` in ef
 
 Never `mbsync -a` in either code path (`agent-tools.nix:282-283` explicitly comments against
 this).
+
+## 13. Index Freshness, Reindex, and the Absence of an Auto-Indexer (tasks 823-824)
+
+**The blind spot.** `email-classify` operates on notmuch's index; `email-census` also reports
+`notmuch count` for every folder line. When the notmuch index lags the on-disk maildir, BOTH
+under-report by exactly the same amount — so a coverage-promising `--all` sweep can silently
+cover only the indexed subset. Verified live (2026-07-05): `folder:Logos` notmuch-indexed = 62
+while himalaya's on-disk INBOX count = 3736; and the divergence can invert (`folder:Gmail`
+indexed 3382 vs on-disk 2276) when the index retains entries for files removed on disk. A raw
+`find ~/Mail/<acct>/{new,cur} | wc -l` is NOT a reliable ground truth (maildir++ stray dirs,
+`.Labels.*`, notmuch `folder:` match semantics). **himalaya's per-folder envelope count is the
+authoritative on-disk ground truth** because himalaya resolves the maildir++ folder mapping.
+
+**No auto-indexer exists.** There is NO mbsync systemd timer and no post-sync `notmuch new`
+service (`mbsync.nix` "TRIGGER-PATH GUARDS": mbsync's ONLY trigger paths are notmuch's `preNew`
+hook = `mbsync -a`, aerc's `$` keybind = `mbsync -a && notmuch new`, and manual invocation).
+Consequently the notmuch index lags the maildir whenever mail lands and none of those paths has
+run since — staleness is expected and intermittent, not exceptional.
+
+**Freshness disclosure (task 823).** `email-census` emits an
+`INBOX freshness  on-disk=<D>  notmuch-indexed=<I>  [ok|STALE]` line (`census.nix`), where
+`on-disk` is `himalaya envelope list -f INBOX | jq length` and `notmuch-indexed` is
+`notmuch count folder:<ACCOUNT_FOLDER>`. `skill-email-cleanup`'s `--all` Stage 1 staleness gate
+parses this line and refuses to claim whole-mailbox coverage while it reads `[STALE]`.
+
+**Sanctioned reindex: `email-reindex` (task 824).** A sixth operator helper (`mbsync.nix`,
+alongside `email-freeze`/`email-thaw`; **NOT** one of the five contract binaries) runs
+`notmuch new --no-hooks`:
+- `--no-hooks` skips `preNew = mbsync -a` (preserving the never-`mbsync -a` invariant and staying
+  freeze-safe) and skips `postNew` auto-tagging (`+inbox`/`+gmail`/`+logos`). Folder-scoped
+  classification (`folder:Gmail`/`folder:Logos`) is made current; tag-based views lag until a
+  later full `notmuch new`.
+- It is **index-only and mutates no mail**. Like the group-scoped `mbsync` reconcile (§7a) and
+  `skill-email-sync`, it is a sanctioned NON-wrapper operation: `mail-guard.sh` neither
+  allowlists nor denies it (it passes through), and the skills' "never call raw notmuch"
+  discipline explicitly exempts it. A raw `notmuch new` (no `--no-hooks`) remains forbidden
+  because it triggers `mbsync -a`.
+- `email-reindex` does NOT sync the server; if the maildir itself is behind the server, run
+  `mbsync <group>` / `email-thaw` / `/email --sync` first, then `email-reindex`.

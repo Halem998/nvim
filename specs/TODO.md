@@ -11,9 +11,8 @@ next_project_number: 826
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,823 | -- | extensions, email integration, terminal ui |
-| 2 | 822,824 | 821,823 | extensions |
-| 3 | 825 | 824 | extensions |
+| 1 | 78,87,821 | -- | extensions, email integration, terminal ui |
+| 2 | 822 | 821 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -21,9 +20,6 @@ next_project_number: 826
 
 821 [RESEARCHED] — Route confirmed email-cleanup decisions (junk vs keep) from the e
   └─ 822 [NOT STARTED] — Implement the email->memory contribution per the #821 design. Add
-823 [RESEARCHED] — /email --all promises whole-mailbox coverage but classification r
-  └─ 824 [NOT STARTED] — When staleness is detected (task 823) the skill currently dead-en
-    └─ 825 [NOT STARTED] — Synthesis/documentation task closing the loop opened by 823 (dete
 
 ### Terminal Ui
 
@@ -36,7 +32,7 @@ next_project_number: 826
 ## Tasks
 
 ### 825. Wire detect->remediate->re-run into the --all coverage contract and docs
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 823, Task 824
@@ -46,7 +42,7 @@ next_project_number: 826
 ---
 
 ### 824. Provide a sanctioned notmuch reindex remediation path for /email
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 823
@@ -56,7 +52,7 @@ next_project_number: 826
 ---
 
 ### 823. Add notmuch-staleness detection gate to skill-email-cleanup
-- **Status**: [RESEARCHED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None

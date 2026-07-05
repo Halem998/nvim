@@ -23,7 +23,12 @@ see the Accounts subsection below.
   on).
 - `--all`: whole-mailbox mode — classify EVERYTHING in scope (chunked, backgrounded read/tag-only
   sweep), then ONE consolidated sender/domain bucket approval, then a mechanical sub-50 execute
-  drain with progress-only reporting.
+  drain with progress-only reporting. **Coverage is conditioned on a fresh notmuch index**:
+  because classification reads notmuch (not the maildir directly) and there is no auto-indexer,
+  `--all` first runs a staleness gate (skill-email-cleanup Stage 1, task 823) comparing the
+  census freshness line's on-disk vs notmuch-indexed INBOX counts. On divergence it will not claim
+  whole-mailbox coverage until the index is reconciled with the sanctioned `email-reindex` helper
+  (task 824) — see Error Handling and `context/project/email/domain/staleness-detection.md`.
 - `--archive`: scope flag — operate on the account's archive folder instead of INBOX
   (`folder:Gmail/.All_Mail` for `account=gmail`; `folder:Logos/.Archive` for `account=logos`),
   with extra-caution gates (second blast-radius confirmation, stricter delete bar,
@@ -211,6 +216,14 @@ always a single, explicit group.
       generation with multi-account support, then retry." NEVER silently continue against Gmail
       instead. This is a transient/environmental failure branch, not a permanent gate — the
       contract itself accepts `--account logos`.
+    - Stale notmuch index detected before an `--all` sweep (census freshness line reads
+      `[STALE]`: on-disk INBOX count diverges from notmuch-indexed) -> Do NOT claim whole-mailbox
+      coverage. Report the divergence and route to the sanctioned reindex `email-reindex`
+      (index-only `notmuch new --no-hooks`; task 824). Interactive: offer to run it, then
+      re-census and re-check. Autonomous/orchestrator: STOP and report the divergence plus the
+      `email-reindex` command — never reindex unprompted, never silently sweep a partial index.
+      Never run a raw `notmuch new` (it triggers `mbsync -a`). See
+      `context/project/email/domain/staleness-detection.md`.
     - Skill failure -> Return error details, no mutation performed
   </execution_errors>
 
