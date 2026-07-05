@@ -1,7 +1,7 @@
 # Implementation Plan: Task #819
 
 - **Task**: 819 - Add the email extension to .claude/extensions.json so it is actually loaded
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 0.5 hours
 - **Dependencies**: None
 - **Research Inputs**: reports/01_intent-and-mechanics.md
@@ -113,19 +113,23 @@ Phases within the same wave can execute in parallel.
   - The summary artifact exists and states intent = NO, the cross-repo rationale, the WARN
     explanation, and "no config files changed".
 
-### Phase 2: Verify the No-Op Baseline [NOT STARTED]
+### Phase 2: Verify the No-Op Baseline [COMPLETED]
 
 - **Goal:** Confirm that no configuration changed and the `[email]` doc-lint baseline is intact.
 - **Tasks:**
-  - [ ] Run `git status --porcelain .claude/extensions.json .claude/CLAUDE.md .claude/settings.local.json .claude/context/index.json`
+  - [x] Run `git status --porcelain .claude/extensions.json .claude/CLAUDE.md .claude/settings.local.json .claude/context/index.json`
     and confirm none of these files are modified by task 819 (empty output for these paths, or only
-    pre-existing unrelated changes — none introduced by this task).
-  - [ ] Run `bash .claude/scripts/check-extension-docs.sh` and confirm the `[email]` section
+    pre-existing unrelated changes — none introduced by this task). *(completed: extensions.json
+    and context/index.json show pre-existing key-reordering diffs unrelated to task 819 — verified
+    to contain no "email" references; CLAUDE.md and settings.local.json fully clean)*
+  - [x] Run `bash .claude/scripts/check-extension-docs.sh` and confirm the `[email]` section
     reports overall `PASS` with exactly the single expected line
     `WARN: routing target not deployed (extension not installed): skill-email-implementation`
-    (baseline unchanged; the WARN is expected, not a regression).
-  - [ ] Confirm `.claude/extensions.json` still contains exactly the four extension entries
-    (`core`, `nix`, `memory`, `nvim`) and no `email` key.
+    (baseline unchanged; the WARN is expected, not a regression). *(completed: confirmed exact
+    single WARN line, `[email] ... PASS`)*
+  - [x] Confirm `.claude/extensions.json` still contains exactly the four extension entries
+    (`core`, `nix`, `memory`, `nvim`) and no `email` key. *(completed: `jq '.extensions | keys'`
+    -> `["core","memory","nix","nvim"]`)*
 - **Timing:** ~10 minutes
 - **Depends on:** 1
 - **Files to modify:** none (read-only verification)
@@ -136,10 +140,10 @@ Phases within the same wave can execute in parallel.
 
 ## Testing & Validation
 
-- [ ] `.claude/extensions.json` is unchanged and has no `email` key (four entries: core, nix, memory, nvim).
-- [ ] `.claude/CLAUDE.md`, `.claude/settings.local.json`, and `.claude/context/index.json` are unmodified by this task.
-- [ ] `bash .claude/scripts/check-extension-docs.sh` reports `[email] ... PASS` with the single expected `WARN` line (baseline unchanged).
-- [ ] The summary artifact exists and records the decision, rationale, and no-change outcome.
+- [x] `.claude/extensions.json` is unchanged and has no `email` key (four entries: core, nix, memory, nvim).
+- [x] `.claude/CLAUDE.md`, `.claude/settings.local.json`, and `.claude/context/index.json` are unmodified by this task.
+- [x] `bash .claude/scripts/check-extension-docs.sh` reports `[email] ... PASS` with the single expected `WARN` line (baseline unchanged).
+- [x] The summary artifact exists and records the decision, rationale, and no-change outcome.
 
 ## Artifacts & Outputs
 
