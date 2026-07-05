@@ -154,7 +154,7 @@
     {
       "project_number": 821,
       "project_name": "email_to_memory_contribution_architecture",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "extensions",
       "priority": "medium",
@@ -166,9 +166,17 @@
       "dependencies": [],
       "estimated_effort": "2 hours",
       "created": "2026-07-05T21:19:39Z",
-      "last_updated": "2026-07-05T21:19:39Z",
-      "session_id": "sess_1783284700_meta820",
-      "artifacts": []
+      "last_updated": "2026-07-05T21:35:42Z",
+      "session_id": "sess_1783286925_28f248",
+      "artifacts": [
+        {
+          "path": "specs/821_email_to_memory_contribution_architecture/reports/01_team-research.md",
+          "type": "research",
+          "summary": "Team research (4 teammates): email->memory contribution architecture"
+        }
+      ],
+      "researched": "2026-07-05T21:35:42Z",
+      "next_artifact_number": 2
     },
     {
       "project_number": 822,
