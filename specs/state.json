@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 820,
+  "next_project_number": 821,
   "active_projects": [
     {
       "project_number": 817,
@@ -118,6 +118,27 @@
       "title": "Fix Himalaya SMTP authentication failure when sending emails",
       "description": "Fix Gmail SMTP authentication failure when sending emails via Himalaya (<leader>me). Error: Authentication failed: Code: 535, Enhanced code: 5.7.8, Message: Username and Password not accepted. The error occurs with TLS connection attempts and persists through multiple retry attempts. Identify and fix the root cause of the SMTP credential configuration.",
       "topic": "Email Integration"
+    },
+    {
+      "project_number": 820,
+      "project_name": "email_all_resurface_classified_gap",
+      "status": "not_started",
+      "task_type": "meta",
+      "language": null,
+      "effort": "2 hours",
+      "priority": "medium",
+      "created": "2026-07-05T00:00:00Z",
+      "last_updated": "2026-07-05T00:00:00Z",
+      "session_id": "sess_1783282887_wrap820",
+      "description": "/email --all cannot re-surface an already-fully-classified mailbox for review: email-classify is emit-on-change, email-census takes no query, and mutation wrappers plan over an approved manifest not proposed-* tags, so there is no wrapper-only read-out of tagged messages. Fix spans the email extension skill (--all Stage 2) and the .dotfiles wrapper binaries (a read-only --emit-tagged / candidate rebuild). See reports/01_wrapper-gap-seed.md.",
+      "cross_repo_dependency": ".dotfiles email wrapper binaries (cf. tasks 72, 79)",
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/820_email_all_resurface_classified_gap/reports/01_wrapper-gap-seed.md",
+          "summary": "Seed report: reproduction, root cause, and candidate wrapper+skill fixes"
+        }
+      ]
     }
   ],
   "completed_projects": [],

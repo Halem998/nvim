@@ -1,9 +1,10 @@
 ---
-next_project_number: 820
+next_project_number: 821
 ---
 
 # TODO
 
+Warning: 1 task(s) have no topic and will render under Uncategorized: 820 (non-fatal)
 ## Task Order
 
 *Updated 2026-07-05. Generated from state.json dependency graph.*
@@ -11,7 +12,7 @@ next_project_number: 820
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87 | -- | email integration, terminal ui |
+| 1 | 78,87,820 | -- | email integration, terminal ui |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -23,7 +24,22 @@ next_project_number: 820
 
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
+### Uncategorized
+
+820 [NOT STARTED] — /email --all cannot re-surface an already-fully-classified mailbo
+
 ## Tasks
+
+### 820. Email all resurface classified gap
+- **Effort**: 2 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: None
+- **Research**: [820_email_all_resurface_classified_gap/reports/01_wrapper-gap-seed.md]
+
+**Description**: /email --all cannot re-surface an already-fully-classified mailbox for review: email-classify is emit-on-change, email-census takes no query, and mutation wrappers plan over an approved manifest not proposed-* tags, so there is no wrapper-only read-out of tagged messages. Fix spans the email extension skill (--all Stage 2) and the .dotfiles wrapper binaries (a read-only --emit-tagged / candidate rebuild). See reports/01_wrapper-gap-seed.md.
+
+---
 
 ### 819. Load email extension in extensions json
 - **Status**: [COMPLETED]
