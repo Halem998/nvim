@@ -56,20 +56,23 @@ The channel arg is threaded from `/email`'s resolved `account` (`commands/email.
 `<sync_path>` passes `account={gmail|logos}, channel={channel or <account-default>}`):
 
 - **Default, derived from account**: `account=gmail` -> channel `gmail` (matching the wrappers'
-  currently-reserved `--account gmail`); `account=logos` -> channel `logos` (the `logos` mbsync
-  group; per `.dotfiles` `mbsync.nix`, this group already exists in the isync config even though
-  the wrapper binaries don't yet accept `--account logos`). This is a pure default-resolution
-  change — the never-`mbsync -a` invariant is unaffected: `--sync` (implicit or explicit) always
-  resolves to exactly ONE `mbsync <single-channel>` invocation, never a whole-config `mbsync -a`.
+  accepted `--account gmail` value); `account=logos` -> channel `logos` (the `logos` mbsync
+  group; per `.dotfiles` `mbsync.nix`, this group exists in the isync config, and the wrapper
+  binaries accept `--account logos` as a live enum value, wrapper-contracts.md §2). This is a
+  pure default-resolution mapping — the never-`mbsync -a` invariant is unaffected: `--sync`
+  (implicit or explicit) always resolves to exactly ONE `mbsync <single-channel>` invocation,
+  never a whole-config `mbsync -a`.
 - **Explicit override wins**: the user may override the resolved default with an explicit
   channel token as the argument to `--sync` (e.g. `/email --sync work`) — an explicit channel
-  always takes precedence over the account-derived default, for either account.
+  always takes precedence over the account-derived default, for either account — but see
+  Stage 3, which surfaces a warning if this override disagrees with the resolved account.
 - If `mbsync <channel>` reports an unknown channel/group, read `~/.mbsyncrc` (or
   `$XDG_CONFIG_HOME/isync/mbsyncrc`) to find the configured `Channel`/`Group` name and ask the
   user which to use — never guess a second name.
-- For `account=logos`, this skill is reached only after `/email`'s Phase-1 precondition gate has
-  passed (i.e. once the wrapper binaries accept `--account logos`); until then, `/email --logos
-  --sync` fails loudly at the command layer before this skill is even invoked.
+- For `account=logos`, this skill is reached only after `/email`'s step-1 precondition gate
+  (a light liveness check confirming the wrapper binaries accept `--account logos`) has passed;
+  if that check fails, `/email --logos --sync` stops loudly at the command layer before this
+  skill is even invoked.
 
 ## Execution Flow
 
@@ -93,6 +96,14 @@ Call AskUserQuestion to confirm the reconcile before running it. Make the prompt
 sync propagates local archives/deletes to the account's server and that any locally expunged
 messages become permanently removed on the server. Include the channel name to be synced
 (`gmail` or `logos`, or the explicit override). Do not proceed without an explicit approval.
+
+**Channel/account mismatch check**: if an explicit channel override was given (see "Explicit
+override wins" above) and it does not match the resolved `account`'s default channel (e.g.
+`account=gmail` but `--sync logos`, or vice versa), surface this as an explicit warning inside
+the same confirmation prompt — e.g. "Warning: the channel to sync (`logos`) does not match the
+account this cleanup ran against (`gmail`) — proceed anyway?". Never silently sync a mismatched
+channel; the override still wins if the user confirms, but the confirmation prompt must name the
+mismatch explicitly rather than presenting a generic proceed/stop choice.
 
 ### Stage 4: Execute
 

@@ -17,7 +17,7 @@ An account selector, two decision-granularity modes, and an orthogonal folder sc
 
 | Arg | Values | Meaning |
 |-----|--------|---------|
-| `account` | `gmail` (default, no flag) / `logos` (`--account logos` or `--logos`) | which mailbox account BASE_QUERY, the pilot gate, and every wrapper `--account` call resolve against. Resolved ONCE and threaded unchanged through the whole invocation. `account=logos` is documented-but-gated: see "Account Precondition Gate" below. |
+| `account` | `gmail` (default, no flag) / `logos` (`--account logos` or `--logos`) | which mailbox account BASE_QUERY, the pilot gate, and every wrapper `--account` call resolve against. Resolved ONCE and threaded unchanged through the whole invocation. `account=logos` is a live, accepted account subject to a light liveness check: see "Account Liveness Check" below. |
 | `mode` | `default` (no flag) / `all` (`--all`) | bounded 50-step pass vs. whole-mailbox sweep + one bucket approval + sub-50 drain |
 | `scope` | `inbox` (no flag) / `archive` (`--archive`) | classify QUERY base — account-dependent, see Stage 0 |
 | `focus_hint` | free text | optional extra narrowing (sender/domain/topic) |
@@ -42,22 +42,28 @@ If any binary is missing, stop and tell the user to run `home-manager switch --f
 to activate the generation containing `modules/home/email/agent-tools.nix`. Do not fall back to
 a raw `himalaya`/`notmuch` call.
 
-## Account Precondition Gate (`account=logos` only — check before Stage 1)
+## Account Liveness Check (`account=logos` only — check before Stage 1)
 
-The five wrapper binaries currently reserve `--account gmail`; any other value is a hard error
-(wrapper-contracts.md §2), pending `.dotfiles` task 79 landing + `home-manager switch`. When
-`account=logos` is resolved (from `/email`'s `--account logos`/`--logos`), this skill MUST
-confirm the wrapper accepts it BEFORE any binary call — e.g. `email-census --account logos
---help` or an equivalent dry probe — and if the wrapper still rejects `--account logos` (or the
-probe itself errors), STOP immediately and report:
+The five wrapper binaries accept `--account <gmail|logos>` as a live enum (wrapper-contracts.md
+§2, verified 9/9 by `.dotfiles` task 80); unknown values are rejected loudly. This is not a
+permanent gate on `logos` — it is a light read-only liveness check that guards against a
+transient/environmental problem (e.g. a stale `$PATH` generation predating multi-account
+support). When `account=logos` is resolved (from `/email`'s `--account logos`/`--logos`), this
+skill confirms the wrapper accepts it BEFORE any binary call by running `email-census --account
+logos` (read-only, side-effect-free per the Five Binaries safety-class table below) and checking
+its exit code and stderr — NOT `email-census --account logos --help`, which short-circuits
+before flag validation (wrapper-contracts.md line 41: `--help` prints verb/safety-class/flags
+unconditionally) and would never actually test account acceptance. If the probe exits non-zero
+or reports an account-rejection error, STOP immediately and report:
 
-> `/email --logos` is documented but not yet usable — the wrapper binaries only accept
-> `--account gmail` until `.dotfiles` task 79 lands and `home-manager switch` activates it.
+> `/email --logos` failed its liveness check — `email-census --account logos` did not succeed.
+> Run `home-manager switch --flake .#<user>` to activate the generation with multi-account
+> support, then retry.
 
 This is an ACTIONABLE, LOUD failure — never a silent continuation against `gmail`. Do not
-construct or run any `folder:Logos*` query, and do not touch Gmail either, once `account=logos`
-has been resolved and the gate fails. `account=gmail` is entirely unaffected by this gate (it
-is today's already-accepted value) and proceeds straight to the `$PATH` check above.
+construct or run any `folder:Logos*` query, and do not touch Gmail either, if the liveness check
+fails. `account=gmail` is entirely unaffected by this check (it is today's already-accepted
+default value) and proceeds straight to the `$PATH` check above.
 
 ## The Five Wrapper Binaries (the ONLY binaries this skill may invoke)
 
@@ -75,8 +81,8 @@ is today's already-accepted value) and proceeds straight to the `$PATH` check ab
 
 Resolve the branch before any binary call:
 
-0. **Account gate**: if `account=logos`, run the Account Precondition Gate above FIRST; do not
-   proceed to step 1 until it passes. `account` is resolved exactly ONCE here and threaded
+0. **Account liveness check**: if `account=logos`, run the Account Liveness Check above FIRST;
+   do not proceed to step 1 until it passes. `account` is resolved exactly ONCE here and threaded
    unchanged (same value) to every wrapper call, the pilot gate, and both `BASE_QUERY` branches
    below for the rest of this invocation — never re-resolved mid-flow.
 1. **Base query from account + scope** (folder: tokens ONLY — never `tag:<account>`, which is
@@ -427,13 +433,15 @@ own pilot independently.
   approval → split → drain → verify) at reduced blast radius.
 - **Acknowledgement record, keyed by account**: after a pilot completes and Stage 6
   verification is clean, ask the user to acknowledge the pilot outcome (AskUserQuestion, root
-  session). On acknowledgement write (or update) `$MANIFEST_DIR/archive-pilot-ack.json` as an
-  account-keyed structure — either a top-level `"account"` field per ack record, or separate
-  per-account ack files (e.g. `archive-pilot-ack-gmail.json` / `archive-pilot-ack-logos.json`);
-  pick one convention and apply it consistently. Record shape:
-  `{"account": "gmail|logos", "acknowledged_at": "<ISO8601>", "pilot_scope": "<query>",
-  "messages_processed": N, "chunk_size_verdict": "keep 1000 | adjust to <n>"}`. This file is
-  git-tracked and is the gate's persistent evidence, per account.
+  session). On acknowledgement write (or update) `$MANIFEST_DIR/archive-pilot-ack.json` — always
+  this single, hardcoded file path; per-account filenames (e.g. `archive-pilot-ack-gmail.json` /
+  `archive-pilot-ack-logos.json`) are never used. The file holds a JSON array of per-account
+  records, each shaped exactly as: `{"account": "gmail|logos", "acknowledged_at": "<ISO8601>",
+  "pilot_scope": "<query>", "messages_processed": N, "chunk_size_verdict": "keep 1000 | adjust to
+  <n>"}`. If the file does not yet exist, create it with a one-element array containing the new
+  record; if it exists, read the array and replace (or append) the record whose `"account"` field
+  matches the resolved account — never create a second file. This file is git-tracked and is the
+  gate's persistent evidence, per account.
 - **Gate check (Stage 0)**: a full-scale archive-scope run (`--all --archive`, or any
   archive-scope pass beyond the pilot bound) for the resolved `account` first checks for that
   SAME account's acknowledgement record. If absent for that account, REFUSE with: "Archive scope

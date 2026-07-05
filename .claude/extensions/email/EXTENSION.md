@@ -26,7 +26,7 @@ All mutation goes through five nix-built wrapper binaries; the extension itself 
 | `/email --all` | Whole-mailbox mode: chunked backgrounded classify sweep, ONE consolidated sender/domain bucket approval, transparent ≤50-per-action execute drain |
 | `/email --archive` | Scope flag (composable with default or `--all`): operate on the account's archive folder (`folder:Gmail/.All_Mail` for gmail; `folder:Logos/.Archive` for logos) with extra-caution gates and a per-account pilot gate before full scale |
 | `/email --sync [channel]` | Human-confirmed `mbsync` reconcile pushing a completed cleanup to the account's server; channel defaults from the account (`gmail`/`logos`), never auto-chained |
-| `/email --account <gmail\|logos>` / `/email --logos` | Account selector (default `gmail`, unchanged behavior). Composable with any of the above (e.g. `/email --logos --archive`). `account=gmail` is the existing, fully-functional path; `account=logos` (Protonmail Bridge) is documented-but-gated — parsed and query-constructed now, but routed through an actionable precondition gate that fails loudly until `.dotfiles` task 79's wrapper binaries land and accept `--account logos`. Never a silent fallback to Gmail. |
+| `/email --account <gmail\|logos>` / `/email --logos` | Account selector (default `gmail`, unchanged behavior). Composable with any of the above (e.g. `/email --logos --archive`). Both `account=gmail` and `account=logos` (Protonmail Bridge) are live, accepted values per wrapper-contracts.md §2, gated only by a light step-1 liveness check before any wrapper call. Never a silent fallback to Gmail; an unknown `--account` value is rejected loudly. |
 
 ### Safety Invariants
 
@@ -69,16 +69,16 @@ All mutation goes through five nix-built wrapper binaries; the extension itself 
   its archive-of-record is the real `Archive` folder (`folder:Logos/.Archive`, ~54 messages per
   the live probe, a much smaller blast radius). The same proportionate extra-caution gates apply
   to both, regardless of scale.
-- **`/email --logos` is additive and gated, never a silent fallback**: the account selector,
-  folder-token queries, and pilot-gate scoping for `account=logos` are implemented and documented
-  now, but every `--logos` invocation is routed through an actionable precondition gate that
-  fails loudly until `.dotfiles` task 79's wrapper binaries land (accepting `--account logos`)
-  and `home-manager switch` activates them. A bare `/email` (Gmail, the default) is unaffected
-  and remains byte-for-byte unchanged.
-- **`hooks/mail-guard.sh` intentionally needs no change** for multi-account support: it allowlists
-  the five wrapper binaries by NAME only (not by account/flag), and `.dotfiles` task 79 adds an
-  `--account` flag to those same five binaries rather than introducing new binary names — so the
-  guard's allowlist is unaffected by the account dimension.
+- **`/email --logos` is additive, live, and never a silent fallback**: the account selector,
+  folder-token queries, and pilot-gate scoping for `account=logos` are implemented, documented,
+  and accepted by the wrapper binaries (`--account <gmail|logos>`, wrapper-contracts.md §2,
+  verified 9/9 by `.dotfiles` task 80); every `--logos` invocation is routed through a light
+  step-1 liveness check before any wrapper call. A bare `/email` (Gmail, the default) is
+  unaffected and remains byte-for-byte unchanged.
+- **`hooks/mail-guard.sh` needed no change** for multi-account support: it allowlists the five
+  wrapper binaries by NAME only (not by account/flag), and multi-account support was added as an
+  `--account` flag on those same five binaries rather than as new binary names — so the guard's
+  allowlist is unaffected by the account dimension.
 
 ### Key Technologies
 

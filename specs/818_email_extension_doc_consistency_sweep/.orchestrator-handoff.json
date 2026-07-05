@@ -1,0 +1,36 @@
+{
+  "status": "implemented",
+  "task_number": 818,
+  "task_slug": "email_extension_doc_consistency_sweep",
+  "session_id": "sess_1783227911_33260c_818",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "phases_completed": 5,
+  "phases_total": 5,
+  "summary": "All four MEDIUM findings (3-6) from review-2026-07-04 applied across .claude/extensions/email/: archive-mode-risk.md fully account-generalized (title, blast-radius table, Gate #1, Gate #3), the pilot-ack either/or ambiguity in skill-email-cleanup/SKILL.md collapsed into a single hardcoded archive-pilot-ack.json array-of-records convention, README.md refreshed for the multi-account (--account/--logos) feature, and a --sync channel/account mismatch warning added consistently at the enforcement point (skill-email-sync/SKILL.md Stage 3) plus descriptive text in commands/email.md. check-extension-docs.sh reports [email] PASS.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/818_email_extension_doc_consistency_sweep/plans/01_email-doc-consistency-sweep.md",
+      "summary": "5-phase doc-only plan, all 5 phases marked [COMPLETED]."
+    },
+    {
+      "type": "summary",
+      "path": "specs/818_email_extension_doc_consistency_sweep/summaries/01_email-doc-consistency-sweep-summary.md",
+      "summary": "Implementation summary covering all 5 phases with verification results."
+    }
+  ],
+  "modified_files": [
+    ".claude/extensions/email/context/project/email/domain/archive-mode-risk.md",
+    ".claude/extensions/email/skills/skill-email-cleanup/SKILL.md",
+    ".claude/extensions/email/README.md",
+    ".claude/extensions/email/skills/skill-email-sync/SKILL.md",
+    ".claude/extensions/email/commands/email.md"
+  ],
+  "verification_gate": "bash .claude/scripts/check-extension-docs.sh -- [email] section reports PASS (only a pre-existing, unrelated WARN about skill-email-implementation routing target not being deployed). Overall summary shows core and lean FAIL, both pre-existing and out of scope for this task.",
+  "file_overlap_note": "Confirmed no edit touched any span task 817 already owned. archive-mode-risk.md and README.md were untouched by 817 (edited here for the first time); skill-email-cleanup/SKILL.md, skill-email-sync/SKILL.md, and commands/email.md were edited in different regions than 817's reconciliation edits. git diff --stat also shows EXTENSION.md as modified, but that is a pre-existing uncommitted change from task 817 not touched by this task.",
+  "next_action": "Task 818 complete. Ready for /todo archival.",
+  "blockers": [],
+  "deviations": [],
+  "git_checkpoint": "not committed by this agent; changes left in working tree for the orchestrator/skill postflight commit step"
+}

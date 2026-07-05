@@ -11,13 +11,9 @@ next_project_number: 820
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,819 | -- | extensions, email integration, terminal ui |
+| 1 | 78,87 | -- | email integration, terminal ui |
 
 **Grouped by Topic** (indented = depends on parent):
-
-### Extensions
-
-819 [PLANNED] — Add the email extension to .claude/extensions.json so it is actua
 
 ### Terminal Ui
 
@@ -30,7 +26,7 @@ next_project_number: 820
 ## Tasks
 
 ### 819. Load email extension in extensions json
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None

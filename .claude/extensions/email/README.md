@@ -13,7 +13,8 @@ Extension picker -> select "email"
 
 ## Purpose
 
-This extension gives an agent a safe, auditable way to triage a Gmail inbox: read a census of
+This extension gives an agent a safe, auditable way to triage a mailbox (Gmail by default, or
+the Logos/Protonmail-Bridge account via `--account logos` / `--logos`): read a census of
 senders/folders, classify messages into propose-archive/propose-delete/keep/unsure buckets,
 surface unsubscribe candidates, and — only after a human reviews and confirms a manifest —
 execute the approved archive/delete/unsubscribe-extract actions. The agent never talks to
@@ -36,7 +37,7 @@ execute the approved archive/delete/unsubscribe-extract actions. The agent never
 | `hooks/mail-guard.sh` | Allowlist/deny PreToolUse hook (technical enforcement layer) |
 | `context/project/email/` | Harvested preferences plus wrapper-contract, pattern, and standard docs |
 | `context/project/email/domain/wrapper-contracts.md` | Ground-truth-verified wrapper contract (incl. classify pagination contract and folder tokens) |
-| `context/project/email/domain/archive-mode-risk.md` | All Mail blast radius, reversible-vs-hard boundary, asymmetric confidence policy |
+| `context/project/email/domain/archive-mode-risk.md` | Account archive blast radius, reversible-vs-hard boundary, asymmetric confidence policy |
 | `context/project/email/patterns/bulk-bucket-review.md` | Sender/domain bucket bulk-approval pattern (`--all` mode review gate) |
 
 A fourth new doc lives at the agent-system layer (domain-agnostic):
@@ -90,6 +91,20 @@ archive/delete/unsubscribe-extract actions. `/email` is direct-execution — no 
 dispatch — while the `/implement` path for `email`-typed tasks routes through
 `skill-email-implementation` and `email-implementation-agent` instead.
 
+### Accounts
+
+An orthogonal `--account <gmail|logos>` / `--logos` selector (default `gmail`) chooses which
+mailbox account the modes/flags below apply to:
+
+- `account=gmail` (default, no flag needed): the existing, fully-functional path — unchanged by
+  this selector.
+- `account=logos` (`--account logos` or `--logos`): the Logos (Protonmail Bridge) account,
+  folder-based (`folder:Logos`, `folder:Logos/.Archive`, `.Sent`, `.Drafts`, `.Trash` — there is
+  no `.All_Mail`/`.Spam` for Logos). `account=logos` is routed through a light liveness check
+  before any wrapper call, but is not otherwise gated — this is never a silent fallback to Gmail.
+- Any other value (e.g. `--account work`) is an unknown account: an actionable rejection is
+  surfaced; it never silently falls back to `gmail`.
+
 ### Two modes and a scope flag
 
 - **`/email` (default — the safer mode)**: a bounded 50-at-a-time stepping pass. Each run
@@ -103,26 +118,30 @@ dispatch — while the `/implement` path for `email`-typed tasks routes through
   wrapper's `MAX_BATCH_SIZE=50` is never raised — the drain loops over splits, each carrying
   the ORIGINAL approval mtime (`touch -r`) so the 7-day expiry window is never silently
   extended; an expired split stops the drain with a report.
-- **`/email --archive` (scope flag, composable with either mode)**: operates on All Mail
-  (`folder:Gmail/.All_Mail`, ~64k messages) instead of INBOX, with extra-caution gates: a
-  second blast-radius-naming confirmation, a stricter corroborated delete bar, deletes always
-  stopping at recoverable Trash (`--expunge-trash` strictly opt-in), and — because this
-  extension has never been live-validated — a **pilot gate**: full-scale `--archive` is
-  refused until a bounded pilot pass (low-thousands slice) has been run, verified, and
-  explicitly acknowledged. See `context/project/email/domain/archive-mode-risk.md`.
+- **`/email --archive` (scope flag, composable with either mode)**: operates on the account's
+  archive folder instead of INBOX — All Mail (`folder:Gmail/.All_Mail`, ~64k messages) for
+  `account=gmail`; Archive (`folder:Logos/.Archive`, ~54 messages) for `account=logos` — with
+  extra-caution gates: a second blast-radius-naming confirmation, a stricter corroborated delete
+  bar, deletes always stopping at recoverable Trash (`--expunge-trash` strictly opt-in), and —
+  because this extension has never been live-validated — a **pilot gate**, scoped per account:
+  full-scale `--archive` for a given account is refused until that account's bounded pilot pass
+  has been run, verified, and explicitly acknowledged. See
+  `context/project/email/domain/archive-mode-risk.md`.
 
-### `/email --sync [channel]` — reconcile the cleanup to Gmail
+### `/email --sync [channel]` — reconcile the cleanup to the account's server
 
-The cleanup wrappers mutate the **local** maildir only; nothing reaches Gmail-in-the-browser until
-a separate `mbsync` reconcile runs. This is deliberate — the "freeze sync during bulk ops" rule
-keeps `mbsync` from interleaving with an in-progress mutation batch.
+The cleanup wrappers mutate the **local** maildir only; nothing reaches the account's
+server-side mailbox until a separate `mbsync` reconcile runs. This is deliberate — the "freeze
+sync during bulk ops" rule keeps `mbsync` from interleaving with an in-progress mutation batch.
 
 Once a cleanup is complete and looks right, run `/email --sync` (routes to `skill-email-sync`) to
-run `mbsync <channel>` (default channel `gmail`, overridable: `/email --sync work`). This pushes
-the local archives/deletes up to Gmail, so the browser inbox reflects the cleanup:
+run `mbsync <channel>` (default channel resolved from the account — `gmail` or `logos`,
+overridable: `/email --sync work`). This pushes the local archives/deletes up to the server, so
+the account's mailbox reflects the cleanup:
 
-- Archived messages -> Gmail **All Mail** (still searchable/recoverable).
-- Deleted messages -> Gmail **Trash** (recoverable ~30 days).
+- Archived messages -> the account's archive folder (Gmail **All Mail** for `gmail`; **Archive**
+  for `logos`) — still searchable/recoverable.
+- Deleted messages -> the account's **Trash** folder (recoverable ~30 days).
 - Messages locally `--expunge-trash`'d -> **permanently removed** server-side after this sync.
 
 Because the last case is irreversible, `skill-email-sync` stops for an explicit confirmation

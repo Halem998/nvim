@@ -31,17 +31,20 @@ see the Accounts subsection below.
   archive folder) and with `--all` (`/email --all --archive` = full archive-folder sweep).
 - `--sync [channel]`: reconcile local mutations to the server; optional mbsync channel name
   (default: the resolved account's channel — `gmail` or `logos`; an explicit channel always
-  overrides the account default).
+  overrides the account default). If the explicit channel disagrees with the resolved account's
+  default channel (e.g. `account=gmail` but `--sync logos`), `skill-email-sync`'s Stage 3 confirm
+  surfaces an explicit mismatch warning before proceeding — the override still wins on explicit
+  user confirmation.
 
 **Accounts** (`--account <gmail|logos>` / `--logos` shorthand, default `gmail`):
 - `account=gmail` (default, no flag needed): the existing, fully-functional path — unchanged by
   this selector.
 - `account=logos` (`--account logos` or `--logos`): the Logos (Protonmail Bridge) account,
   folder-based (`folder:Logos`, `folder:Logos/.Archive`, `.Sent`, `.Drafts`, `.Trash` — there is
-  no `.All_Mail`/`.Spam` for Logos). **Documented but gated**: parsing and query construction are
-  implemented now, but `/email --logos` is routed through an actionable precondition gate (see
-  Error Handling) that fails loudly until `.dotfiles` task 79's wrapper binaries land and accept
-  `--account logos`. This is never a silent fallback to Gmail.
+  no `.All_Mail`/`.Spam` for Logos). `--account logos` is a live, accepted account per
+  wrapper-contracts.md §2: `/email --logos` is routed through a light liveness check (see
+  Error Handling) before any wrapper call, but is not otherwise gated. This is never a silent
+  fallback to Gmail.
 - Any other value (e.g. `--account work`) is an unknown account: an actionable rejection is
   surfaced (see Error Handling); it never silently falls back to `gmail`.
 
@@ -64,12 +67,12 @@ see the Accounts subsection below.
     - Any `--account` value other than `gmail`/`logos` (e.g. `--account work`) -> unknown-account
       error (see Error Handling below): report an actionable rejection naming the supported
       values; NEVER silently fall back to `gmail`.
-    - If `account=logos` is resolved, apply the **actionable precondition gate** (see Error
-      Handling) before proceeding to either the cleanup or sync path below: confirm the wrapper
-      binaries accept `--account logos` (they currently reserve `--account gmail` only, per
-      wrapper-contracts.md §2, pending `.dotfiles` task 79); if the wrapper rejects it (or the
-      binaries are absent), stop and report the gate failure loudly — never silently continue as
-      `gmail`.
+    - If `account=logos` is resolved, apply the **step-1 liveness check** (see Error Handling)
+      before proceeding to either the cleanup or sync path below: confirm the wrapper binaries
+      accept `--account logos` (they do, per wrapper-contracts.md §2 — `--account <gmail|logos>`
+      is a live, accepted enum on all five binaries); if the liveness probe fails (e.g. the
+      binaries are absent, stale, or unexpectedly reject the value), stop and report the failure
+      loudly — never silently continue as `gmail`.
   </step_1>
   <step_2>
     If the remaining `$ARGUMENTS` begins with the `--sync` flag, this is a SYNC invocation.
@@ -175,10 +178,10 @@ folders these calls target, never the safety gates around them.
 - **Accounts are isolated by folder, never by tag**: all account scoping is expressed as
   `folder:` query tokens (`folder:Gmail*` vs `folder:Logos*`); a `tag:<account>` scheme exists in
   the notmuch database but is confirmed inert (always 0 matches) and must never be relied on.
-- **`--logos` is documented-but-gated**: `/email --logos` (any mode/scope) is parsed and its
-  queries are constructed, but is routed through an actionable precondition gate (see Error
-  Handling) that fails loudly until `.dotfiles` task 79's wrapper binaries land and accept
-  `--account logos`. It never silently falls back to operating on Gmail.
+- **`--logos` is a live, accepted account**: `/email --logos` (any mode/scope) is parsed, its
+  queries are constructed, and it is routed through a light step-1 liveness check (see Error
+  Handling) before any wrapper call. It never silently falls back to operating on Gmail, and an
+  unknown `--account` value is still rejected loudly (see Error Handling).
 
 `/email --sync` performs no classification and mutates no local mail; it runs a single
 `mbsync <channel>` reconcile that PUSHES the already-approved local archives/deletes up to the
@@ -201,16 +204,20 @@ always a single, explicit group.
     - Unknown mbsync channel/group (`--sync`) -> Read `~/.mbsyncrc` and ask which channel to use
     - Unknown `--account` value (e.g. `--account work`) -> Report an actionable rejection naming
       the supported values (`gmail`, `logos`); NEVER silently fall back to `gmail`
-    - `account=logos` precondition gate fails (wrapper binaries do not yet accept
-      `--account logos`, e.g. because `.dotfiles` task 79 has not landed/switched-in) -> Stop
-      before any wrapper call and report: "`/email --logos` is documented but not yet usable —
-      the wrapper binaries only accept `--account gmail` until `.dotfiles` task 79 lands and
-      `home-manager switch` activates it." NEVER silently continue against Gmail instead.
+    - `account=logos` step-1 liveness check fails (the wrapper binaries unexpectedly reject
+      `--account logos`, or are absent/stale on `$PATH`) -> Stop before any wrapper call and
+      report: "`/email --logos` failed its liveness check — the wrapper binaries did not accept
+      `--account logos` as expected. Run `home-manager switch --flake .#<user>` to activate the
+      generation with multi-account support, then retry." NEVER silently continue against Gmail
+      instead. This is a transient/environmental failure branch, not a permanent gate — the
+      contract itself accepts `--account logos`.
     - Skill failure -> Return error details, no mutation performed
   </execution_errors>
 
   <interactive_errors>
     - User declines all proposed actions -> Exit gracefully, no files/messages mutated
     - User declines the sync confirmation -> Exit gracefully, no reconcile performed
+    - Explicit `--sync <channel>` disagrees with the resolved `account` -> Stage 3 surfaces an
+      explicit mismatch warning; proceeding is still possible on explicit user confirmation.
   </interactive_errors>
 </error_handling>

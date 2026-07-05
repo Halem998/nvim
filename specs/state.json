@@ -50,13 +50,13 @@
     {
       "project_number": 819,
       "project_name": "load_email_extension_in_extensions_json",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "extensions",
       "priority": "medium",
       "description": "Add the email extension to .claude/extensions.json so it is actually loaded and its EXTENSION.md content propagates into .claude/CLAUDE.md (pre-existing gap flagged in review-2026-07-04: check-extension-docs.sh warns 'routing target not deployed: skill-email-implementation', and EXTENSION.md->CLAUDE.md merge is unobservable because 'email' is absent from extensions.json). Only do this if the email extension is intended to be loaded in this repo. Verify: extension loads without routing warnings, EXTENSION.md [email] section propagates to CLAUDE.md via the merge mechanism.",
       "created": "2026-07-05T04:44:07Z",
-      "last_updated": "2026-07-05T05:39:43Z",
+      "last_updated": "2026-07-05T05:44:16Z",
       "session_id": "sess_1783227911_33260c_819",
       "artifacts": [
         {

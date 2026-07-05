@@ -1,4 +1,4 @@
-# Archive-Mode Risk (`--archive`, All Mail Scope)
+# Archive-Mode Risk (`--archive`, Account Archive Scope)
 
 Why archive-scope (the account's archive query token, e.g. `folder:Gmail/.All_Mail` for
 `gmail` or `folder:Logos/.Archive` for `logos` — see `wrapper-contracts.md` §11 for the full
@@ -11,16 +11,25 @@ propose-review-confirm-execute flow, and what those gates are. Companion to
 
 | Property | INBOX (account inbox query, e.g. `folder:Gmail`) | Archive (account archive query, e.g. `folder:Gmail/.All_Mail`; see `wrapper-contracts.md` §11 for the per-account table) |
 |----------|------------------------|--------------------------------------|
-| Approximate size | hundreds | ~64,000 messages |
+| Approximate size | hundreds | varies by account — see per-account table below |
 | Content age | recent, familiar | years of archive-of-record history |
 | Classifier validation | rules hand-tuned against inbox traffic | never validated against archive-era senders |
 | Cost of a wrong delete | annoying | potentially irreplaceable history |
 
+**Archive of record, per account** (mirrors `skill-email-cleanup/SKILL.md`'s "Archive of
+record, per account" table — do not re-derive these figures independently):
+
+| Account | Archive folder | Approximate size | Blast-radius note |
+|---------|----------------|-------------------|---------------------|
+| `gmail` | All Mail (`folder:Gmail/.All_Mail`) | ~64,000 messages | orders of magnitude more destructive than INBOX; much of the content is old mail the classifier's inbox-tuned rules were never validated against |
+| `logos` | Archive (`folder:Logos/.Archive`) | ~54 messages (live probe) | much smaller blast radius than the Gmail archive, but the SAME proportionate gates apply in full — smaller scale is not a reason to relax any gate |
+
 Two multipliers compound in archive scope: **volume** (a single bulk-approved bucket can cover
-thousands of messages) and **rule drift** (the deterministic classifier constants —
-wrapper-contracts.md §5c — were tuned on current inbox traffic; a domain that is
+thousands of messages, for the gmail account) and **rule drift** (the deterministic classifier
+constants — wrapper-contracts.md §5c — were tuned on current inbox traffic; a domain that is
 delete-worthy today may have sent important mail in 2016). Extra gates are proportionate to
-that product, not paranoia.
+that product, not paranoia — and apply identically to both accounts regardless of the logos
+archive's much smaller scale.
 
 ## The Reversible-vs-Hard Boundary
 
@@ -58,14 +67,15 @@ filtering.
 
 1. **Second blast-radius-naming confirmation**: after the normal review/bucket approval and
    before any execute, a separate confirmation whose affirmative option names the scale and
-   the folder verbatim: "Yes, operate on N archived messages in All Mail". Distinct wording is
+   the folder verbatim: "Yes, operate on N archived messages in All Mail" (gmail) / "Yes,
+   operate on N archived messages in Logos Archive" (logos). Distinct wording is
    deliberate — a reflexive second "yes" to an identical prompt has no safety value.
 2. **Pilot prerequisite**: full-scale archive scope is REFUSED until a bounded pilot pass
    (low-thousands slice, full flow, clean Stage-6 verify) has been run and explicitly
    acknowledged (`archive-pilot-ack.json`). The pilot also confirms or adjusts the sweep
    `CHUNK_SIZE` default (1000). See "Pilot Gate for `--archive`" in `skill-email-cleanup`.
 3. **Never auto-chain `/email --sync`** after an archive drain. The mutation wrappers already
-   run their own group-scoped `mbsync gmail` reconcile per executed run (frozen contract,
+   run their own group-scoped `mbsync <account-channel>` reconcile per executed run (frozen contract,
    wrapper-contracts.md §7a); the separate `--sync` skill — which can make expunged deletions
    permanent server-side — must remain a deliberate, human-initiated follow-up, never an
    automatic tail call.
