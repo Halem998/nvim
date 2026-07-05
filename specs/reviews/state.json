@@ -1,7 +1,7 @@
 {
   "_schema_version": "1.0.0",
   "_comment": "Review state tracking",
-  "_last_updated": "2026-05-22T18:40:00Z",
+  "_last_updated": "2026-07-04T22:12:16Z",
   "reviews": [
     {
       "review_id": "review-2026-04-10",
@@ -32,14 +32,35 @@
         "medium_issues": 2,
         "low_issues": 2
       },
-      "tasks_created": [606],
+      "tasks_created": [
+        606
+      ],
+      "registries_updated": []
+    },
+    {
+      "review_id": "review-2026-07-04",
+      "date": "2026-07-04",
+      "scope": ".claude/extensions/email/ (multi-account diff)",
+      "report_path": "specs/reviews/review-2026-07-04.md",
+      "summary": {
+        "files_reviewed": 7,
+        "critical_issues": 1,
+        "high_issues": 1,
+        "medium_issues": 4,
+        "low_issues": 1
+      },
+      "tasks_created": [
+        817,
+        818,
+        819
+      ],
       "registries_updated": []
     }
   ],
   "statistics": {
-    "total_reviews": 2,
-    "last_review": "2026-05-22",
-    "total_issues_found": 8,
-    "total_tasks_created": 2
+    "total_reviews": 3,
+    "last_review": "2026-07-04",
+    "total_issues_found": 15,
+    "total_tasks_created": 5
   }
 }
