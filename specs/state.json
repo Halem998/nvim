@@ -203,7 +203,7 @@
     {
       "project_number": 823,
       "project_name": "email_notmuch_staleness_detection_gate",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "extensions",
       "priority": "high",
@@ -216,9 +216,16 @@
       "dependencies": [],
       "estimated_effort": "2 hours",
       "created": "2026-07-05T15:47:50-07:00",
-      "last_updated": "2026-07-05T15:47:50-07:00",
+      "last_updated": "2026-07-05T15:54:37-07:00",
       "session_id": "sess_1783291670_meta823",
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/823_email_notmuch_staleness_detection_gate/reports/01_staleness-detection-research.md",
+          "type": "report",
+          "summary": "email-census reads notmuch not maildir; naive file count unreliable; detection needs himalaya-aware count (likely .dotfiles change)"
+        }
+      ],
+      "cross_repo_dependency": "~/.dotfiles email-census wrapper (frozen, task 72): census reports notmuch counts only; a trustworthy maildir/server ground-truth count line must be added there for wrapper-only detection"
     },
     {
       "project_number": 824,
@@ -240,9 +247,10 @@
       ],
       "estimated_effort": "3 hours",
       "created": "2026-07-05T15:47:50-07:00",
-      "last_updated": "2026-07-05T15:47:50-07:00",
+      "last_updated": "2026-07-05T15:54:37-07:00",
       "session_id": "sess_1783291670_meta823",
-      "artifacts": []
+      "artifacts": [],
+      "cross_repo_dependency": "~/.dotfiles notmuch.nix/mbsync.nix (frozen, task 72): sanctioned reindex is `notmuch new --no-hooks` (plain notmuch new triggers preNew mbsync -a); optional new email-reindex operator helper mirrors email-freeze/thaw"
     },
     {
       "project_number": 825,

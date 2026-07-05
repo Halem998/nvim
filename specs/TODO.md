@@ -21,7 +21,7 @@ next_project_number: 826
 
 821 [RESEARCHED] — Route confirmed email-cleanup decisions (junk vs keep) from the e
   └─ 822 [NOT STARTED] — Implement the email->memory contribution per the #821 design. Add
-823 [NOT STARTED] — /email --all promises whole-mailbox coverage but classification r
+823 [RESEARCHED] — /email --all promises whole-mailbox coverage but classification r
   └─ 824 [NOT STARTED] — When staleness is detected (task 823) the skill currently dead-en
     └─ 825 [NOT STARTED] — Synthesis/documentation task closing the loop opened by 823 (dete
 
@@ -56,10 +56,11 @@ next_project_number: 826
 ---
 
 ### 823. Add notmuch-staleness detection gate to skill-email-cleanup
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
+- **Research**: [823_email_notmuch_staleness_detection_gate/reports/01_staleness-detection-research.md]
 
 **Description**: /email --all promises whole-mailbox coverage but classification reads notmuch (email-classify) while mailbox ground truth is maildir/himalaya (email-census); a stale notmuch index silently degrades --all to partial coverage (observed: census=62 vs notmuch folder:Logos=12 for the Logos INBOX). Add a wrapper-only staleness precondition to skill-email-cleanup that, before an --all sweep (and surfaced in default mode), compares the maildir ground-truth count from email-census against the notmuch indexed count for the same account/folder via the email-classify --limit 0 count-oracle (wrapper-contracts.md §10); on divergence beyond a small threshold, WARN or BLOCK with an actionable message rather than presenting partial coverage as whole-mailbox. Research must verify which source email-census actually counts from (maildir vs notmuch) so the comparison is meaningful. Add domain/staleness-detection.md documenting the check, count sources, and threshold. Wrapper-only compliant (both are wrapper calls); no .dotfiles change.
 
