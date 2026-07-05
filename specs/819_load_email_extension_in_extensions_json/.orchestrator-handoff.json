@@ -1,0 +1,25 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Created a 2-phase minimal-no-op plan for task 819, adopting the research verdict (intent = NO). The plan makes zero config changes: Phase 1 writes a task summary recording the decision and rationale (email extension is authored in this repo but consumed live by ~/.dotfiles via a cross-repo source_dir; this repo has zero email-typed tasks; the 'skill-email-implementation not deployed' line is check-extension-docs.sh's documented non-failing WARN with [email] overall PASS) and stages the completion_summary; Phase 2 verifies the no-op baseline (extensions.json unchanged with no email key, and check-extension-docs.sh [email] still PASS with the single expected WARN). No edits to extensions.json, CLAUDE.md, settings.local.json, or context/index.json.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/819_load_email_extension_in_extensions_json/plans/01_document-no-op-decision.md"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "implement",
+  "files_modified": [],
+  "decisions_made": [
+    "Plan is a documented no-op: no email entry added to this repo's .claude/extensions.json, and no CLAUDE.md/settings edits.",
+    "Phase 1 records the decision (task summary + completion_summary); Phase 2 verifies extensions.json is unchanged and check-extension-docs.sh [email] still reports PASS with the expected non-failing WARN.",
+    "The research report's optional Recommendation 3 (add a scope-note line to .claude/extensions/email/README.md) is intentionally out of scope to keep this a strict zero-config-change no-op."
+  ],
+  "dead_ends": [
+    "Do not add an email key to extensions.json or run install-extension.sh for email in this repo; the extension is intentionally consumed only by ~/.dotfiles.",
+    "Do not attempt to silence the check-extension-docs.sh [email] WARN; it is by-design for an authored-but-uninstalled extension and [email] is PASS overall."
+  ],
+  "plan_markers_verified": true
+}
