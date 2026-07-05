@@ -1,7 +1,7 @@
 # Implementation Plan: Task #820
 
 - **Task**: 820 - `/email --all` cannot re-surface an already-fully-classified mailbox for review
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: Cross-repo — the skill-side phases (3, 4) require the `.dotfiles` `email-classify --emit-tagged` binary (Phase 1) to have shipped before they can be exercised end-to-end.
 - **Research Inputs**: reports/02_wrapper-gap-verified.md (primary, verified); reports/01_wrapper-gap-seed.md (seed)
@@ -263,20 +263,40 @@ re-derive it.
 
 ---
 
-### Phase 5: Cross-repo verification and consistency check [NOT STARTED]
+### Phase 5: Cross-repo verification and consistency check [COMPLETED]
 
 **Goal**: Confirm the two repos agree and the skill's referenced flag exists in the deployed
 wrapper.
 
 **Tasks**:
-- [ ] Verify `SKILL.md`'s `--emit-tagged` invocations match the flag name and argument shape
-      actually implemented in `.dotfiles` `classify.nix` (Phase 1).
-- [ ] Verify both contract docs (`.dotfiles` handoff + this repo's `wrapper-contracts.md`) describe
-      the same mode semantics (read-only, tag-derived action, display-only confidence, no cap).
+- [x] Verify `SKILL.md`'s `--emit-tagged` invocations match the flag name and argument shape
+      actually implemented in `.dotfiles` `classify.nix` (Phase 1). *(completed: grep-verified —
+      flag name `--emit-tagged`, argument shape `email-classify [--account <acct>] --emit-tagged
+      "<QUERY>"`, identical across SKILL.md, both contract docs, and the classify.nix
+      implementation)*
+- [x] Verify both contract docs (`.dotfiles` handoff + this repo's `wrapper-contracts.md`) describe
+      the same mode semantics (read-only, tag-derived action, display-only confidence, no cap). *(completed: both docs state no-`notmuch-tag`, tag-derived-action, display-only confidence/reason prefixed `tag-derived;`, and no `--limit`/`MAX_BATCH_SIZE`)*
 - [ ] If a live mailbox is available, run one end-to-end `--all` dry pass against a fully-tagged
       mailbox and confirm Stage 2.5 review reconstructs without any re-tag (durable tag counts
-      stable before/after).
-- [ ] Confirm no changes leaked into `mode=default` or the mutation wrappers.
+      stable before/after). *(deviation: skipped — no live notmuch mailbox reachable in this
+      execution environment; substituted a scripted logic test of the `--emit-tagged` tag-parsing
+      and jq-manifest-construction path against a synthetic tagged message, confirming correct
+      action derivation and `tag-derived;` reason prefixing. Live end-to-end verification remains
+      open for the user's next live `/email --all` run.)*
+- [x] Confirm no changes leaked into `mode=default` or the mutation wrappers. *(completed:
+      `git diff` on the `.dotfiles` commit shows only `classify.nix` + the contract doc touched,
+      with the default mode's single `notmuch tag` call at its original line unchanged and
+      `archive-confirmed.nix`/`delete-confirmed.nix`/`census.nix` untouched; the nvim-repo diff
+      touches only the `--all` mode's residual/count-probe paths, with `mode=default` Stages 1-6
+      untouched)*
+
+**Deviations**:
+- **Task 5.3 (live end-to-end dry pass)** deferred: no live mailbox/notmuch database is reachable
+  from this execution environment. A synthetic logic test (fake tagged-message JSON piped through
+  the tag-`case`/jq-construction logic extracted from the implemented branch) was run instead and
+  confirmed correct behavior; see Phase 1's deviation note for the equivalent substitution used
+  there. Recommend the user run one real `/email --all` pass to confirm live behavior when
+  convenient.
 
 **Timing**: ~0.5 hour
 
@@ -291,15 +311,17 @@ wrapper.
 
 ## Testing & Validation
 
-- [ ] `.dotfiles` module builds / evaluates after the `classify.nix` change.
-- [ ] `--emit-tagged` branch contains no `notmuch tag` call (grep).
-- [ ] Action is tag-derived only; `classify_one()` feeds display fields only.
-- [ ] `SKILL.md` `--all` residual count-probe and residual pass reference `--emit-tagged`; the
+- [x] `.dotfiles` module builds / evaluates after the `classify.nix` change. *(verified via
+      `nix-instantiate --parse` and an extracted-body `bash -n` syntax check)*
+- [x] `--emit-tagged` branch contains no `notmuch tag` call (grep).
+- [x] Action is tag-derived only; `classify_one()` feeds display fields only.
+- [x] `SKILL.md` `--all` residual count-probe and residual pass reference `--emit-tagged`; the
       new-message count probe still uses `--limit 0`.
-- [ ] "0 new, all residual" status line present before Stage 2.5.
-- [ ] Both contract docs document `--emit-tagged` and carry the "NOT emit-on-change" correction.
+- [x] "0 new, all residual" status line present before Stage 2.5.
+- [x] Both contract docs document `--emit-tagged` and carry the "NOT emit-on-change" correction.
 - [ ] (If live mailbox) fully-tagged mailbox re-surfaces for Stage 2.5 review; durable tag counts
-      unchanged before/after a read-only pass.
+      unchanged before/after a read-only pass. *(deviation: skipped — no live mailbox available;
+      see Phase 5 deviation note)*
 
 ## Artifacts & Outputs
 
