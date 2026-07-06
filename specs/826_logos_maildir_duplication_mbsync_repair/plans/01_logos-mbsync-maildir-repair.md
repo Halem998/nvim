@@ -278,23 +278,38 @@ headerless Sent message) are independent of the Labels folders.
 
 ---
 
-### Phase 5: Message-ID-Based UID Dedup for .Trash/.Archive + Narrow State Reset [NOT STARTED]
+### Phase 5: Message-ID-Based UID Dedup for .Trash/.Archive + Narrow State Reset [PARTIAL]
 
 **Goal**: Remove the duplicate-`U=NNN` files so each UID maps to exactly one physical file, then
 reset only the two affected folders' mbsync state so reconcile can rebuild cleanly.
 
 **Tasks**:
-- [ ] Enumerate duplicate `U=NNN` pairs in `.Trash/cur` (~860 pairs) and `.Archive/cur` (~2 pairs)
-      via the `U=` suffix.
+- [x] Enumerate duplicate `U=NNN` pairs in `.Trash/cur` (~860 pairs) and `.Archive/cur` (~2 pairs)
+      via the `U=` suffix. *(completed — exactly 860 pairs in `.Trash/cur`, 2 pairs in
+      `.Archive/cur`, matching the plan's estimate exactly; zero anomalies (every duplicate UID
+      has exactly 2 files, none had 1 or 3+))*
 - [ ] For each pair, choose the copy to keep by **Message-Id** and flags — NOT by checksum (content
       is not byte-identical; report §3). For `.Trash`, prefer the copy carrying the deleted/trashed
       flags matching the recent cleanup; for `.Archive`, keep the copy whose Message-ID is confirmed
-      still present server-side. Remove the other member of the pair.
+      still present server-side. Remove the other member of the pair. *(deviation: skipped —
+      CRITICAL FINDING: verified all 862 pairs (860 Trash + 2 Archive), and 100% have DIFFERENT
+      Message-Id values between the two files. These are NOT redundant copies of one message; they
+      are 862 distinct, irreplaceable real messages that collided on the same local UID number due
+      to the 2026-02-09 import corruption. "Remove the other member" as literally instructed would
+      permanently destroy real mail with zero redundancy. See
+      `handoffs/phase-5-blocker-report.md` for full analysis.)*
 - [ ] Script this (860 pairs is not feasible by hand); dry-run the script to list keep/remove
-      decisions before executing, and log the decisions to the Phase 1 backup dir.
+      decisions before executing, and log the decisions to the Phase 1 backup dir. *(deviation:
+      skipped — no keep/remove decision can be made safely without a live IMAP verification
+      against the Bridge server (out of scope for this plan) or a rename-only fix that risks
+      creating new server-side duplicates on the next reconcile; see blocker report)*
 - [ ] After dedup, back up and clear ONLY the `.Trash` and `.Archive` `.mbsyncstate`/`.uidvalidity`
       files (they are already snapshotted in Phase 1) so mbsync rebuilds Near-side state for just
-      those two folders — do NOT reset the whole `logos` account state.
+      those two folders — do NOT reset the whole `logos` account state. *(deviation: skipped — no
+      dedup occurred to act on; clearing state now, with the filename-level UID collision still
+      physically present, would not resolve the underlying corruption and could cause unpredictable
+      reconcile behavior. `.Trash`/`.Archive` `.mbsyncstate`/`.uidvalidity` remain untouched, exactly
+      as backed up in Phase 1.)*
 
 **Timing**: 1.5 hours
 
@@ -307,9 +322,19 @@ reset only the two affected folders' mbsync state so reconcile can rebuild clean
 
 **Verification**:
 - `ls .Trash/cur | grep -oE 'U=[0-9]+' | sort | uniq -d` returns nothing (no duplicate UIDs);
-  same for `.Archive/cur`.
+  same for `.Archive/cur`. *(NOT satisfied — duplicates remain; see blocker)*
 - Keep/remove decision log written; `.mbsyncstate`/`.uidvalidity` for the two folders backed up
-  then cleared.
+  then cleared. *(NOT satisfied by design — no destructive action taken; see blocker report)*
+
+**Phase 5 BLOCKER (for handoff/orchestrator visibility)**: This phase could not complete safely.
+See `handoffs/phase-5-blocker-report.md` for the full analysis. Summary: all 862 duplicate-UID
+pairs (860 `.Trash` + 2 `.Archive`) were verified to contain two messages with DIFFERENT
+Message-Id values — i.e. these are not redundant copies but distinct, irreplaceable real messages
+that collided on the same local UID number. Deleting either member of any pair would destroy real
+mail. No safe automated resolution is possible without either a live IMAP verification pass
+against the Bridge server (862 lookups, out of scope here) or a rename-only fix that risks
+creating new server-side duplicates on the next reconcile. No files or state were modified. This
+blocks Phase 7 (reconcile), which depends on Phase 5.
 
 ---
 
