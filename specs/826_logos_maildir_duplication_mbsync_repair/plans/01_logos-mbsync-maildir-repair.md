@@ -144,21 +144,26 @@ mutation.
 
 ---
 
-### Phase 2: Apply mbsync.nix Config Fix (cross-repo, ~/.dotfiles) [NOT STARTED]
+### Phase 2: Apply mbsync.nix Config Fix (cross-repo, ~/.dotfiles) [COMPLETED]
 
 **Goal**: Remove `logos-labels` from `Group logos` so no further label-mirror bloat accumulates,
 and apply it via home-manager.
 
 **Tasks**:
-- [ ] In `~/.dotfiles/modules/home/email/mbsync.nix`: keep the `Channel logos-labels` *definition*
+- [x] In `~/.dotfiles/modules/home/email/mbsync.nix`: keep the `Channel logos-labels` *definition*
       but remove it from the `Group logos` channel list, adding an explanatory comment mirroring
       the existing `gmail-trash`/`gmail-spam` exclusion precedent (labels are additive Bridge
       metadata, not exclusive folders; including them duplicated every labeled message and crashed
-      the whole-group reconcile on the dotted `benbrastmckie@gmail.com` label name).
-- [ ] Leave `logos-folders` in `Group logos` unchanged (Proton Folders are exclusive; 0 files).
-- [ ] Rebuild home-manager so the generated `mbsyncrc` reflects the change
-      (`home-manager switch --flake …` or the repo's standard rebuild command).
-- [ ] Commit the change in `~/.dotfiles` (separate repo; scoped commit referencing task 826).
+      the whole-group reconcile on the dotted `benbrastmckie@gmail.com` label name). *(completed)*
+- [x] Leave `logos-folders` in `Group logos` unchanged (Proton Folders are exclusive; 0 files).
+      *(completed — unchanged)*
+- [x] Rebuild home-manager so the generated `mbsyncrc` reflects the change
+      (`home-manager switch --flake …` or the repo's standard rebuild command). *(completed —
+      `home-manager switch --flake .#benjamin`; also verified via a scoped `nix build
+      .#homeConfigurations.benjamin.activationPackage` before the switch)*
+- [x] Commit the change in `~/.dotfiles` (separate repo; scoped commit referencing task 826).
+      *(completed — commit a8f65ad, "email: remove logos-labels from Group logos (nvim task 826)",
+      only `modules/home/email/mbsync.nix` staged)*
 
 **Timing**: 1 hour
 
