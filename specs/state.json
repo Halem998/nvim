@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 828,
+  "next_project_number": 829,
   "active_projects": [
     {
       "project_number": 817,
@@ -293,11 +293,13 @@
       "file_scope": [
         "specs/826_logos_maildir_duplication_mbsync_repair/"
       ],
-      "dependencies": [],
+      "dependencies": [
+        828
+      ],
       "estimated_effort": "4 hours",
       "created": "2026-07-05T18:43:19-07:00",
-      "last_updated": "2026-07-06T02:18:11Z",
-      "session_id": "sess_1783303281_4bb6c5_826",
+      "last_updated": "2026-07-06T02:55:24Z",
+      "session_id": "sess_1783306492_9dde74",
       "cross_repo_dependency": "~/.dotfiles/modules/home/email/{mbsync.nix,notmuch.nix,protonmail.nix} and the live ~/Mail/Logos maildir",
       "artifacts": [
         {
@@ -319,7 +321,8 @@
       "blockers": [
         "Phase 5 (Trash/Archive UID dedup): all 862 duplicate-UID pairs have DIFFERENT Message-Ids -- distinct irreplaceable messages colliding on corrupted UID slots, not dupes. Requires live IMAP verification against Bridge server before any keep/remove decision. Blocks reconcile+reindex.",
         "Phase 4 (Labels-mirror cleanup): 98-100% of .Labels.* content has no copy elsewhere -- real unique mail, left inert per plan Abort-criteria fallback."
-      ]
+      ],
+      "previous_status": "partial"
     },
     {
       "project_number": 827,
@@ -346,6 +349,32 @@
       "artifacts": [],
       "blockers": [
         "Predecessor task 826 (Logos maildir/mbsync repair) is BLOCKED: the true Logos count depends on resolving maildir duplication, which 826 found to be largely irreducible (real distinct messages, not dupes) pending live IMAP verification. Staleness-detector redesign should proceed only once 826 establishes the final count semantics."
+      ]
+    },
+    {
+      "project_number": 828,
+      "project_name": "logos_trash_archive_uid_collision_repair",
+      "title": "Resolve Logos Trash/Archive UID collisions via live IMAP verification",
+      "status": "researched",
+      "task_type": "nix",
+      "description": "Build and run a live-IMAP-verified, rename-only repair for the 862 duplicate-UID pairs left unresolved by task 826's Phase 5 (860 in ~/Mail/Logos/.Trash/cur, 2 in ~/Mail/Logos/.Archive/cur). Task 826's implementation verified that all 862 pairs have DIFFERENT Message-Id values between the two colliding files -- these are distinct, irreplaceable real messages that collided on the same local U=NNN slot due to a corrupted, non-monotonic Near-side UID counter from the 2026-02-09 import (see specs/826_logos_maildir_duplication_mbsync_repair/handoffs/phase-5-blocker-report.md). No Message-Id-based delete is safe.\n\nScope: For each colliding UID, perform a live IMAP UID FETCH/Message-Id lookup against the ProtonMail Bridge server for the current Far-side UID assignment of the affected folder (.Trash or .Archive), compare it against each local candidate file's Message-Id, and where a match is found on one member of the pair, rename the OTHER (non-matching) member's Maildir filename to a fresh, non-colliding U=NNN token. Rename only -- never delete either file, never write/push anything to the server via this task's own script. Build a dry-run mode that lists all planned renames before executing any of them. Validate the technique end-to-end on the 2 tractable .Archive pairs first, then apply the same script to the 860 .Trash pairs. Use the existing Phase 1 backup at ~/Mail/.logos-backup-20260706/ (tarballs, mbsyncstate/uidvalidity snapshots, baseline counts) as the rollback source, and log every rename decision (matched/renamed, which file, old and new UID token) to a new artifact under that backup directory.\n\nExplicitly out of scope (left for task 826 to resume afterward): running `mbsync logos`, clearing/resetting .mbsyncstate or .uidvalidity, lifting email-freeze, notmuch reindexing. Do not re-verify Message-Id distinctness (already established) or re-run Phase 3's Labels-mirror analysis (separate, already-decided concern). Ground the implementation in specs/826_logos_maildir_duplication_mbsync_repair/handoffs/phase-5-blocker-report.md (resolution path 1) and the Phase 5 section of specs/826_logos_maildir_duplication_mbsync_repair/plans/01_logos-mbsync-maildir-repair.md.\n\nDefinition of done: `ls ~/Mail/Logos/.Trash/cur | grep -oE 'U=[0-9]+' | sort | uniq -d` and the equivalent for .Archive/cur both return nothing (one physical file per UID), zero files deleted, zero server-side writes performed by this task's script, and a decision log written to the Phase 1 backup directory documenting every rename.",
+      "effort": "3-4 hours",
+      "parent_task": 826,
+      "topic": "extensions",
+      "dependencies": [],
+      "file_scope": [
+        "~/Mail/Logos/.Trash/cur/",
+        "~/Mail/Logos/.Archive/cur/",
+        "~/Mail/.logos-backup-20260706/"
+      ],
+      "created": "2026-07-06T02:58:03Z",
+      "last_updated": "2026-07-06T02:58:03Z",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/826_logos_maildir_duplication_mbsync_repair/reports/02_spawn-analysis.md",
+          "summary": "Spawn analysis from parent task 826"
+        }
       ]
     }
   ],

@@ -1,5 +1,5 @@
 ---
-next_project_number: 828
+next_project_number: 829
 ---
 
 # TODO
@@ -11,8 +11,9 @@ next_project_number: 828
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826 | -- | extensions, email integration, terminal ui |
-| 2 | 822,827 | 821,826 | extensions |
+| 1 | 78,87,821,828 | -- | extensions, email integration, terminal ui |
+| 2 | 822,826 | 821,828 | extensions |
+| 3 | 827 | 826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -20,8 +21,9 @@ next_project_number: 828
 
 821 [RESEARCHED] — Route confirmed email-cleanup decisions (junk vs keep) from the e
   └─ 822 [NOT STARTED] — Implement the email->memory contribution per the #821 design. Add
-826 [BLOCKED] — Root-cause and fix the pre-existing Logos (Protonmail Bridge) mai
-  └─ 827 [BLOCKED] — The freshness gate shipped in tasks 823-825 is defective: email-c
+828 [RESEARCHED] — Build and run a live-IMAP-verified, rename-only repair for the 86
+  └─ 826 [BLOCKED] — Root-cause and fix the pre-existing Logos (Protonmail Bridge) mai
+    └─ 827 [BLOCKED] — The freshness gate shipped in tasks 823-825 is defective: email-c
 
 ### Terminal Ui
 
@@ -32,6 +34,24 @@ next_project_number: 828
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
+
+### 828. Resolve Logos Trash/Archive UID collisions via live IMAP verification
+- **Effort**: 3-4 hours
+- **Status**: [RESEARCHED]
+- **Task Type**: nix
+- **Topic**: extensions
+- **Dependencies**: None
+- **Research**: [826_logos_maildir_duplication_mbsync_repair/reports/02_spawn-analysis.md]
+
+**Description**: Build and run a live-IMAP-verified, rename-only repair for the 862 duplicate-UID pairs left unresolved by task 826's Phase 5 (860 in ~/Mail/Logos/.Trash/cur, 2 in ~/Mail/Logos/.Archive/cur). Task 826's implementation verified that all 862 pairs have DIFFERENT Message-Id values between the two colliding files -- these are distinct, irreplaceable real messages that collided on the same local U=NNN slot due to a corrupted, non-monotonic Near-side UID counter from the 2026-02-09 import (see specs/826_logos_maildir_duplication_mbsync_repair/handoffs/phase-5-blocker-report.md). No Message-Id-based delete is safe.
+
+Scope: For each colliding UID, perform a live IMAP UID FETCH/Message-Id lookup against the ProtonMail Bridge server for the current Far-side UID assignment of the affected folder (.Trash or .Archive), compare it against each local candidate file's Message-Id, and where a match is found on one member of the pair, rename the OTHER (non-matching) member's Maildir filename to a fresh, non-colliding U=NNN token. Rename only -- never delete either file, never write/push anything to the server via this task's own script. Build a dry-run mode that lists all planned renames before executing any of them. Validate the technique end-to-end on the 2 tractable .Archive pairs first, then apply the same script to the 860 .Trash pairs. Use the existing Phase 1 backup at ~/Mail/.logos-backup-20260706/ (tarballs, mbsyncstate/uidvalidity snapshots, baseline counts) as the rollback source, and log every rename decision (matched/renamed, which file, old and new UID token) to a new artifact under that backup directory.
+
+Explicitly out of scope (left for task 826 to resume afterward): running `mbsync logos`, clearing/resetting .mbsyncstate or .uidvalidity, lifting email-freeze, notmuch reindexing. Do not re-verify Message-Id distinctness (already established) or re-run Phase 3's Labels-mirror analysis (separate, already-decided concern). Ground the implementation in specs/826_logos_maildir_duplication_mbsync_repair/handoffs/phase-5-blocker-report.md (resolution path 1) and the Phase 5 section of specs/826_logos_maildir_duplication_mbsync_repair/plans/01_logos-mbsync-maildir-repair.md.
+
+Definition of done: `ls ~/Mail/Logos/.Trash/cur | grep -oE 'U=[0-9]+' | sort | uniq -d` and the equivalent for .Archive/cur both return nothing (one physical file per UID), zero files deleted, zero server-side writes performed by this task's script, and a decision log written to the Phase 1 backup directory documenting every rename.
+
+---
 
 ### 827. Redesign the /email staleness detector - stop equating maildir files with deduped messages
 - **Status**: [BLOCKED]
@@ -47,7 +67,7 @@ next_project_number: 828
 - **Status**: [BLOCKED]
 - **Task Type**: nix
 - **Topic**: extensions
-- **Dependencies**: None
+- **Dependencies**: Task 828
 - **Research**: [826_logos_maildir_duplication_mbsync_repair/reports/01_logos-maildir-mbsync-diagnosis.md]
 - **Plan**: [826_logos_maildir_duplication_mbsync_repair/plans/01_logos-mbsync-maildir-repair.md]
 - **Summary**: [826_logos_maildir_duplication_mbsync_repair/summaries/01_logos-mbsync-maildir-repair-summary.md]
