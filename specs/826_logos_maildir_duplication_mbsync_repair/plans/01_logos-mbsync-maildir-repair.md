@@ -224,7 +224,7 @@ deletion, and identify any label-only messages that must be preserved.
 
 ---
 
-### Phase 4: Remove or Archive Orphaned Labels-Mirror Files [NOT STARTED]
+### Phase 4: Remove or Archive Orphaned Labels-Mirror Files [PARTIAL]
 
 **Goal**: Reclaim the ~38,041 label-mirror files now that the channel is out of the group and
 redundancy is verified, without losing any label-only message.
@@ -232,14 +232,25 @@ redundancy is verified, without losing any label-only message.
 **Tasks**:
 - [ ] For any label-only Message-ID identified in Phase 3: move its file into the appropriate
       canonical folder (e.g. `.Archive/cur`) with a correctly rewritten Maildir filename BEFORE
-      deleting the label mirror.
+      deleting the label mirror. *(deviation: skipped — label-only set is ~37,412 messages
+      (98.4%/99.8%/62.5%/100% per folder), not a small exception list; bulk-moving this many
+      messages into `.Archive` (currently 54 files) is a human-judgment-requiring
+      re-categorization decision out of scope for this plan's Phase 4 budget. See Phase 3
+      verification report.)*
 - [ ] Delete the now-orphaned `.Labels.Important`, `.Labels.Letters`, `.Labels.EuroTrip`,
       `.Labels.CrazyTown` mirror content (`cur`/`new` files). Because `logos-labels` is no longer
       in `Group logos`, these will not resync. Prefer removing the whole `.Labels.*` maildir
       directories (including their now-orphaned `.mbsyncstate`/`.uidvalidity`) rather than leaving
       empty shells; the empty `.Labels.[Gmail]-*`/`.Labels.[Imap]-*` mailboxes may be removed too.
-- [ ] If Phase 3 verification was inconclusive, fall back to leaving the files in place (inert,
+      *(deviation: skipped — deletion is unsafe given the Phase 3 finding; would destroy ~37,412
+      messages with no other local copy)*
+- [x] If Phase 3 verification was inconclusive, fall back to leaving the files in place (inert,
       since the channel is out of the group) and record that decision — no data-loss risk.
+      *(completed — this is the path taken. Phase 3 verification was not merely inconclusive but
+      conclusively negative for bulk redundancy; the inert fallback applies a fortiori. All
+      `.Labels.*` directories and their `.mbsyncstate`/`.uidvalidity` files are left completely
+      untouched. Confirmed inert: `logos-labels` channel is out of `Group logos` per Phase 2, so
+      no future `mbsync logos` will resync, grow, or touch these folders.)*
 
 **Timing**: 1 hour
 
@@ -251,8 +262,19 @@ redundancy is verified, without losing any label-only message.
 
 **Verification**:
 - Post-deletion filesystem count for `~/Mail/Logos` drops by ~38,041 files vs the Phase 1 baseline
-  (or the leave-in-place decision is recorded).
-- Every label-only Message-ID from Phase 3 is now present in a canonical folder.
+  (or the leave-in-place decision is recorded). *(leave-in-place decision recorded; filesystem
+  count unchanged from Phase 1 baseline for all `.Labels.*` folders — confirmed below)*
+- Every label-only Message-ID from Phase 3 is now present in a canonical folder. *(not
+  applicable — no messages were moved; all label-only messages remain in their original
+  `.Labels.*` location, which is preserved untouched, so no data loss occurred)*
+
+**Phase 4 blocker (for handoff/orchestrator visibility)**: This plan's original goal of reclaiming
+~38,041 `.Labels.*` files is NOT achieved. The files remain in place, inert but unreclaimed. A
+follow-up task should be spawned to decide, with human input, the disposition of the ~37,412
+label-only messages (fold into a canonical folder, leave as a permanent read-only archive, or
+another resolution). This does not block Phases 5-8: the config fix (Phase 2) already prevents
+further growth, and the mbsync-reconcile-blocking defects (duplicate Trash/Archive UIDs,
+headerless Sent message) are independent of the Labels folders.
 
 ---
 
