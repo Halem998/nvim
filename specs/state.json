@@ -284,7 +284,7 @@
     {
       "project_number": 826,
       "project_name": "logos_maildir_duplication_mbsync_repair",
-      "status": "planned",
+      "status": "blocked",
       "task_type": "nix",
       "topic": "extensions",
       "priority": "high",
@@ -309,13 +309,22 @@
           "path": "specs/826_logos_maildir_duplication_mbsync_repair/plans/01_logos-mbsync-maildir-repair.md",
           "type": "plan",
           "summary": "Logos mbsync/maildir repair plan"
+        },
+        {
+          "path": "specs/826_logos_maildir_duplication_mbsync_repair/summaries/01_logos-mbsync-maildir-repair-summary.md",
+          "type": "summary",
+          "summary": "Logos mbsync/maildir repair (PARTIAL, 2 blockers)"
         }
+      ],
+      "blockers": [
+        "Phase 5 (Trash/Archive UID dedup): all 862 duplicate-UID pairs have DIFFERENT Message-Ids -- distinct irreplaceable messages colliding on corrupted UID slots, not dupes. Requires live IMAP verification against Bridge server before any keep/remove decision. Blocks reconcile+reindex.",
+        "Phase 4 (Labels-mirror cleanup): 98-100% of .Labels.* content has no copy elsewhere -- real unique mail, left inert per plan Abort-criteria fallback."
       ]
     },
     {
       "project_number": 827,
       "project_name": "email_staleness_detector_redesign",
-      "status": "not_started",
+      "status": "blocked",
       "task_type": "meta",
       "topic": "extensions",
       "priority": "medium",
@@ -334,7 +343,10 @@
       "last_updated": "2026-07-05T18:43:19-07:00",
       "session_id": "sess_1783302199_meta826",
       "cross_repo_dependency": "~/.dotfiles/modules/home/email/agent-tools/census.nix (freshness line)",
-      "artifacts": []
+      "artifacts": [],
+      "blockers": [
+        "Predecessor task 826 (Logos maildir/mbsync repair) is BLOCKED: the true Logos count depends on resolving maildir duplication, which 826 found to be largely irreducible (real distinct messages, not dupes) pending live IMAP verification. Staleness-detector redesign should proceed only once 826 establishes the final count semantics."
+      ]
     }
   ],
   "completed_projects": [],
