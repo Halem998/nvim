@@ -1,18 +1,18 @@
 ---
-next_project_number: 826
+next_project_number: 828
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-07-05. Generated from state.json dependency graph.*
+*Updated 2026-07-06. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821 | -- | extensions, email integration, terminal ui |
-| 2 | 822 | 821 | extensions |
+| 1 | 78,87,821,826 | -- | extensions, email integration, terminal ui |
+| 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -20,6 +20,8 @@ next_project_number: 826
 
 821 [RESEARCHED] — Route confirmed email-cleanup decisions (junk vs keep) from the e
   └─ 822 [NOT STARTED] — Implement the email->memory contribution per the #821 design. Add
+826 [NOT STARTED] — Root-cause and fix the pre-existing Logos (Protonmail Bridge) mai
+  └─ 827 [NOT STARTED] — The freshness gate shipped in tasks 823-825 is defective: email-c
 
 ### Terminal Ui
 
@@ -30,6 +32,26 @@ next_project_number: 826
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
+
+### 827. Redesign the /email staleness detector - stop equating maildir files with deduped messages
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 826
+
+**Description**: The freshness gate shipped in tasks 823-825 is defective: email-census compares `himalaya -f INBOX` maildir FILE count against `notmuch count folder:X` deduped-MESSAGE count. These are incomparable (different file sets; heavy label-folder duplication; Message-ID dedup), so the line reads [STALE] even immediately after a full email-reindex (observed live: on-disk=3736 vs notmuch-indexed=3735, and `notmuch count --output=files folder:Logos`=11075 - none agree). As a hard gate requiring [ok] it is unreachable, forcing a manual 'Proceed, accept N' override on every --all run. Redesign options to evaluate: (a) compare comparable file sets - on-disk files vs `notmuch count --output=files` for the EXACT indexed path (path:<acct>/cur); (b) downgrade from a hard equality gate to a 'notmuch grossly behind disk' ratio/threshold heuristic that can actually reach a passing state and only blocks on large lags; (c) make the real gate 'was email-reindex run this session?' rather than a count comparison. Update census.nix (freshness line), skill-email-cleanup Stage 1 gate, staleness-detection.md, and wrapper-contracts.md section 13. Depends on 826 because the correct true count depends on resolving the Logos maildir duplication first. Cross-repo: census.nix change lands in ~/.dotfiles.
+
+---
+
+### 826. Investigate Logos maildir file-duplication and repair broken mbsync logos sync
+- **Status**: [NOT STARTED]
+- **Task Type**: nix
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: Root-cause and fix the pre-existing Logos (Protonmail Bridge) mail infrastructure problem exposed by /email --logos --all (2026-07-05). Symptoms: (1) severe maildir file duplication - path:Logos/cur holds 8448 files for only 2869 unique Message-IDs (~3x), and folder:Logos spans 3735 messages / 11075 files; the Gmail-labels-over-IMAP pattern stores one message under many .Labels.* folders. (2) `mbsync logos` reconcile exits non-zero after mutations with: duplicate UIDs in .Trash/.Archive, a Maildir++ dotted-folder problem on `.Labels.benbrastmckie@gmail.com` (a dot in the folder name), and a draft with a missing Date header. Consequence: 161 local deletes from the recent cleanup are staged in local Logos Trash but CANNOT be pushed to the Proton server. Investigate ~/.dotfiles/modules/home/email/mbsync.nix (logos group/channels), notmuch.nix, and protonmail.nix; determine whether the .Labels.* folders should be excluded from the logos mbsync channels, whether Bridge label-folders are double-synced, and how to resolve the duplicate-UID and dotted-folder errors. Cross-repo: fixes land in ~/.dotfiles (deliberate handoff). Deliver a diagnosis + a concrete mbsync/notmuch config fix and a maildir de-duplication/cleanup plan. Do NOT run /email --logos --sync until this is fixed.
+
+---
 
 ### 825. Wire detect->remediate->re-run into the --all coverage contract and docs
 - **Status**: [COMPLETED]
