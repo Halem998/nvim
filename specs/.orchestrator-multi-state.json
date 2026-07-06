@@ -1,10 +1,14 @@
 {
-  "session_id": "sess_1783303281_4bb6c5",
+  "session_id": "sess_1783306877_438377",
   "task_numbers": [
     826,
-    827
+    827,
+    828
   ],
   "waves": [
+    [
+      828
+    ],
     [
       826
     ],
@@ -13,32 +17,41 @@
     ]
   ],
   "dependency_graph": {
-    "826": [],
+    "826": [
+      828
+    ],
     "827": [
       826
-    ]
+    ],
+    "828": []
   },
-  "max_cycles": 10,
+  "max_cycles": 15,
   "cycle_count": 3,
   "failed_tasks": [
     826,
     827
   ],
-  "completed_tasks": [],
+  "completed_tasks": [
+    828
+  ],
   "current_statuses": {
+    "828": "completed",
     "826": "blocked",
     "827": "blocked"
   },
   "task_dirs": {
     "826": "specs/826_logos_maildir_duplication_mbsync_repair",
-    "827": "specs/827_email_staleness_detector_redesign"
+    "827": "specs/827_email_staleness_detector_redesign",
+    "828": "specs/828_logos_trash_archive_uid_collision_repair"
   },
   "research_agents": {
     "826": "nix-research-agent",
-    "827": "general-research-agent"
+    "827": "general-research-agent",
+    "828": "nix-research-agent"
   },
   "implement_agents": {
     "826": "nix-implementation-agent",
-    "827": "general-implementation-agent"
+    "827": "general-implementation-agent",
+    "828": "nix-implementation-agent"
   }
 }

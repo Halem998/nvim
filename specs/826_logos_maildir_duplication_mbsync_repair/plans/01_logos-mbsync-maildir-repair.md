@@ -1,7 +1,7 @@
 # Implementation Plan: Task #826
 
 - **Task**: 826 - Fix Logos (Protonmail Bridge) maildir duplication and mbsync reconcile failures
-- **Status**: [PARTIAL]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/826_logos_maildir_duplication_mbsync_repair/reports/01_logos-maildir-mbsync-diagnosis.md
@@ -376,25 +376,53 @@ blocks Phase 7 (reconcile), which depends on Phase 5.
 **Goal**: Push the 161 staged Trash deletes and confirm a clean (exit 0) group reconcile.
 
 **Tasks**:
-- [ ] Confirm the freeze is still in effect and no mbsync process is running. *(deviation:
-      skipped — phase not attempted, see blocker below)*
-- [ ] Run a scoped, group-limited `mbsync logos` (NEVER `mbsync -a`, and NEVER
+- [x] Confirm the freeze is still in effect and no mbsync process is running. *(completed —
+      re-verified in the follow-up session after task 828 resolved the Phase 5 duplicate-UID
+      blocker: `pgrep mbsync`/`pgrep isync` empty, duplicate-UID checks empty for both folders,
+      backup dir intact, no systemd timer/cron trigger)*
+- [x] Run a scoped, group-limited `mbsync logos` (NEVER `mbsync -a`, and NEVER
       `/email --logos --sync`) — first with verbose/dry output if the isync version supports it —
-      capturing full stdout/stderr. *(deviation: skipped — NOT attempted, per the orchestrator's
-      explicit instruction not to run this before verification passes. Phase 5's duplicate-UID
-      corruption is unresolved (see phase-5-blocker-report.md); running `mbsync logos` now would
-      hit the exact same "duplicate UID" failure the task was created to fix, achieving nothing,
-      and risks unpredictable behavior given the still-corrupted Near-side UID bookkeeping.)*
+      capturing full stdout/stderr. *(deviation: altered — ran `mbsync -y -V logos-trash
+      logos-archive` (dry-run, per-channel scope narrower than the full `logos` group, as an extra
+      precaution) instead of the full group. Both channels hard-errored: "Maildir error: UID X is
+      beyond highest assigned UID Y" — .Trash's `.mbsyncstate` ceiling (MaxPulledUid/MaxPushedUid
+      924) is now below the highest on-disk U= token (5505, from task 828's renames plus 161
+      pre-existing untracked legit files); same pattern for .Archive (ceiling 39 vs disk max 865).
+      This is the plan's own anticipated Phase-5-leftover "narrow state reset" trigger. See
+      `handoffs/phase-7-blocker-report.md` §2.)*
 - [ ] On success (exit 0): confirm the 161 Trash deletes propagated (Trash reconciled with server)
-      and `.Trash`/`.Archive` Near-side state rebuilt without duplicate-UID errors. *(not
-      reached)*
-- [ ] On failure: stop, record which channel failed and the exact stderr to the backup dir, and do
-      NOT force-push; treat as a resume point rather than proceeding to reindex. *(not reached —
-      phase blocked before attempting reconcile; treat Phase 5 as the resume point for a follow-up
-      task)*
+      and `.Trash`/`.Archive` Near-side state rebuilt without duplicate-UID errors. *(not reached —
+      dry-run hard-errored before any reconcile action was attempted; see blocker report)*
+- [x] On failure: stop, record which channel failed and the exact stderr to the backup dir, and do
+      NOT force-push; treat as a resume point rather than proceeding to reindex. *(completed — both
+      channels' exact stderr captured to
+      `~/Mail/.logos-backup-20260706/task-826-phase7/mbsync-dryrun-trash-archive.log`; no force-push
+      attempted; additionally discovered two further blocking findings before even considering a
+      state reset — see Phase 7 BLOCKER below)*
 
-**Phase 7 BLOCKER**: Depends on Phase 5 (not completed) and Phase 4 (PARTIAL). Not attempted in
-this run. See `handoffs/phase-5-blocker-report.md`.
+**Phase 7 BLOCKER (updated)**: Phase 5's duplicate-UID corruption itself IS resolved (task 828,
+live-IMAP-verified rename-only repair; re-verified clean this session). However, attempting the
+reconcile surfaced two NEW findings that were not anticipated by this plan or by task 828's
+handoff, and are more severe than the original UID-ceiling error alone:
+1. `.Trash`/`.Archive` `.mbsyncstate` Max*Uid ceilings are now below the highest on-disk UID token
+   (expected, narrow-reset-shaped fix) — but a precise breakdown shows the untracked UIDs are a
+   *mix* of 161 legitimate not-yet-pushed messages (the actual "161 staged Trash deletes" this
+   task exists to push) and 862 task-828-renamed messages whose safe-to-push disposition is
+   unverified (see #2).
+2. Read-only IMAP `EXAMINE` against every Bridge mailbox reveals `logos-sent` (11 local vs 26,187
+   server) and `logos-archive` (54 local vs 36,232 server) are drastically under-synced — a
+   ~62,000-message pull scope explosion the group-scoped `mbsync logos` would attempt, utterly
+   disproportionate to and unplanned by this task.
+3. Message-Id cross-checks (read-only `UID FETCH`/`UID SEARCH`, control-verified against a
+   fabricated Message-Id) show only ~22 of the 862 task-828-renamed messages already carry
+   Trash/Archive folder membership server-side; whether pushing the remainder would safely tag an
+   already-existing canonical message or create a genuine duplicate depends on undocumented
+   ProtonMail Bridge APPEND-dedup behavior that cannot be determined via read-only inspection.
+
+Per the plan's own safety gate ("if the dry-run reveals anything beyond the expected 161 staged
+deletes... STOP"), this session made NO further changes: no state file was written, no `mbsync`
+push/pull was executed. Full analysis, evidence, and recommended next steps in
+`handoffs/phase-7-blocker-report.md`.
 
 **Timing**: 1 hour
 
@@ -443,9 +471,14 @@ this run. See `handoffs/phase-5-blocker-report.md`.
   *(freeze intentionally left in place; final filesystem counts for touched folders recorded in
   the implementation summary)*
 
-**Phase 8 BLOCKER**: Depends on Phase 7 (blocked). Not attempted in this run. The freeze remains
-active; resume with `email-thaw` only after a follow-up task resolves the Phase 5 blocker and
-Phase 7's reconcile succeeds.
+**Phase 8 BLOCKER**: Depends on Phase 7 (still blocked, though for a different, more nuanced
+reason than originally recorded — see the updated Phase 7 blocker note and
+`handoffs/phase-7-blocker-report.md`). Not attempted in this run. There is no dedicated
+Logos-specific freeze tool (`email-freeze`/`email-thaw` are Gmail-scoped); the operative
+discipline is "no mbsync process running + avoid the two known trigger paths (notmuch `preNew`
+hook, aerc `$` keybind)," which remains in effect. Resume only after a follow-up task resolves
+the Phase 7 blocker (scope decision on `logos-sent`/`logos-archive`'s ~62,000-message backlog,
+and a verified-safe push path for the 862 task-828-renamed messages).
 
 ## Testing & Validation
 
@@ -455,12 +488,17 @@ Phase 7's reconcile succeeds.
 - [x] No `.Labels.*` folder resyncs on `mbsync logos` (channel is out of the group). *(channel
       confirmed out of `Group logos` in the live `.mbsyncrc`; will not resync — cannot be verified
       by an actual reconcile since Phase 7 is blocked)*
-- [ ] `ls ~/Mail/Logos/.Trash/cur | grep -oE 'U=[0-9]+' | sort | uniq -d` is empty; same for
-      `.Archive/cur`. *(NOT satisfied — 860/2 duplicate UIDs remain; see Phase 5 blocker)*
+- [x] `ls ~/Mail/Logos/.Trash/cur | grep -oE 'U=[0-9]+' | sort | uniq -d` is empty; same for
+      `.Archive/cur`. *(satisfied — resolved by task 828's live-IMAP-verified rename-only repair;
+      re-verified clean in this follow-up session)*
 - [x] Missing-`Date:`-header scan over `~/Mail/Logos` returns no files. *(verified — Phase 6, 0
       results post-deletion)*
 - [ ] `mbsync logos` exits 0 with no duplicate-UID or dotted-folder errors; 161 Trash deletes pushed.
-      *(NOT attempted — blocked by Phase 5; see phase-5-blocker-report.md)*
+      *(NOT attempted (live) — a scoped dry-run now hard-errors on "UID beyond highest assigned
+      UID" for both `.Trash`/`.Archive` (the plan's anticipated Phase-5-leftover state-reset
+      trigger), and further read-only investigation surfaced a ~62,000-message Sent/Archive
+      pull-scope explosion plus unresolved duplicate-push risk for ~840 messages; see
+      `handoffs/phase-7-blocker-report.md`)*
 - [ ] `notmuch new --no-hooks` completes; consistency spot-check recorded. *(NOT attempted —
       blocked by Phase 7)*
 - [x] Every label-only Message-ID (if any) identified in Phase 3 is preserved in a canonical

@@ -11,9 +11,8 @@ next_project_number: 829
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,828 | -- | extensions, email integration, terminal ui |
-| 2 | 822,826 | 821,828 | extensions |
-| 3 | 827 | 826 | extensions |
+| 1 | 78,87,821,826 | -- | extensions, email integration, terminal ui |
+| 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -21,9 +20,8 @@ next_project_number: 829
 
 821 [RESEARCHED] — Route confirmed email-cleanup decisions (junk vs keep) from the e
   └─ 822 [NOT STARTED] — Implement the email->memory contribution per the #821 design. Add
-828 [RESEARCHED] — Build and run a live-IMAP-verified, rename-only repair for the 86
-  └─ 826 [BLOCKED] — Root-cause and fix the pre-existing Logos (Protonmail Bridge) mai
-    └─ 827 [BLOCKED] — The freshness gate shipped in tasks 823-825 is defective: email-c
+826 [BLOCKED] — Root-cause and fix the pre-existing Logos (Protonmail Bridge) mai
+  └─ 827 [BLOCKED] — The freshness gate shipped in tasks 823-825 is defective: email-c
 
 ### Terminal Ui
 
@@ -37,11 +35,13 @@ next_project_number: 829
 
 ### 828. Resolve Logos Trash/Archive UID collisions via live IMAP verification
 - **Effort**: 3-4 hours
-- **Status**: [RESEARCHED]
+- **Status**: [COMPLETED]
 - **Task Type**: nix
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [826_logos_maildir_duplication_mbsync_repair/reports/02_spawn-analysis.md]
+- **Plan**: [828_logos_trash_archive_uid_collision_repair/plans/01_logos-uid-collision-repair.md]
+- **Summary**: [828_logos_trash_archive_uid_collision_repair/summaries/01_logos-uid-collision-repair-summary.md]
 
 **Description**: Build and run a live-IMAP-verified, rename-only repair for the 862 duplicate-UID pairs left unresolved by task 826's Phase 5 (860 in ~/Mail/Logos/.Trash/cur, 2 in ~/Mail/Logos/.Archive/cur). Task 826's implementation verified that all 862 pairs have DIFFERENT Message-Id values between the two colliding files -- these are distinct, irreplaceable real messages that collided on the same local U=NNN slot due to a corrupted, non-monotonic Near-side UID counter from the 2026-02-09 import (see specs/826_logos_maildir_duplication_mbsync_repair/handoffs/phase-5-blocker-report.md). No Message-Id-based delete is safe.
 
@@ -67,10 +67,14 @@ Definition of done: `ls ~/Mail/Logos/.Trash/cur | grep -oE 'U=[0-9]+' | sort | u
 - **Status**: [BLOCKED]
 - **Task Type**: nix
 - **Topic**: extensions
-- **Dependencies**: Task 828
-- **Research**: [826_logos_maildir_duplication_mbsync_repair/reports/01_logos-maildir-mbsync-diagnosis.md]
+- **Dependencies**: None
+- **Research**:
+  - [826_logos_maildir_duplication_mbsync_repair/reports/01_logos-maildir-mbsync-diagnosis.md]
+  - [826_logos_maildir_duplication_mbsync_repair/handoffs/phase-7-blocker-report.md]
 - **Plan**: [826_logos_maildir_duplication_mbsync_repair/plans/01_logos-mbsync-maildir-repair.md]
-- **Summary**: [826_logos_maildir_duplication_mbsync_repair/summaries/01_logos-mbsync-maildir-repair-summary.md]
+- **Summary**:
+  - [826_logos_maildir_duplication_mbsync_repair/summaries/01_logos-mbsync-maildir-repair-summary.md]
+  - [826_logos_maildir_duplication_mbsync_repair/summaries/02_phase7-reconcile-attempt-summary.md]
 
 **Description**: Root-cause and fix the pre-existing Logos (Protonmail Bridge) mail infrastructure problem exposed by /email --logos --all (2026-07-05). Symptoms: (1) severe maildir file duplication - path:Logos/cur holds 8448 files for only 2869 unique Message-IDs (~3x), and folder:Logos spans 3735 messages / 11075 files; the Gmail-labels-over-IMAP pattern stores one message under many .Labels.* folders. (2) `mbsync logos` reconcile exits non-zero after mutations with: duplicate UIDs in .Trash/.Archive, a Maildir++ dotted-folder problem on `.Labels.benbrastmckie@gmail.com` (a dot in the folder name), and a draft with a missing Date header. Consequence: 161 local deletes from the recent cleanup are staged in local Logos Trash but CANNOT be pushed to the Proton server. Investigate ~/.dotfiles/modules/home/email/mbsync.nix (logos group/channels), notmuch.nix, and protonmail.nix; determine whether the .Labels.* folders should be excluded from the logos mbsync channels, whether Bridge label-folders are double-synced, and how to resolve the duplicate-UID and dotted-folder errors. Cross-repo: fixes land in ~/.dotfiles (deliberate handoff). Deliver a diagnosis + a concrete mbsync/notmuch config fix and a maildir de-duplication/cleanup plan. Do NOT run /email --logos --sync until this is fixed.
 

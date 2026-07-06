@@ -1,7 +1,9 @@
 {
   "status": "partial",
   "metadata": {
-    "tasks_completed": [],
+    "tasks_completed": [
+      828
+    ],
     "tasks_failed": [
       826,
       827
