@@ -20,7 +20,7 @@ next_project_number: 828
 
 821 [RESEARCHED] — Route confirmed email-cleanup decisions (junk vs keep) from the e
   └─ 822 [NOT STARTED] — Implement the email->memory contribution per the #821 design. Add
-826 [NOT STARTED] — Root-cause and fix the pre-existing Logos (Protonmail Bridge) mai
+826 [PLANNED] — Root-cause and fix the pre-existing Logos (Protonmail Bridge) mai
   └─ 827 [NOT STARTED] — The freshness gate shipped in tasks 823-825 is defective: email-c
 
 ### Terminal Ui
@@ -44,10 +44,12 @@ next_project_number: 828
 ---
 
 ### 826. Investigate Logos maildir file-duplication and repair broken mbsync logos sync
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: nix
 - **Topic**: extensions
 - **Dependencies**: None
+- **Research**: [826_logos_maildir_duplication_mbsync_repair/reports/01_logos-maildir-mbsync-diagnosis.md]
+- **Plan**: [826_logos_maildir_duplication_mbsync_repair/plans/01_logos-mbsync-maildir-repair.md]
 
 **Description**: Root-cause and fix the pre-existing Logos (Protonmail Bridge) mail infrastructure problem exposed by /email --logos --all (2026-07-05). Symptoms: (1) severe maildir file duplication - path:Logos/cur holds 8448 files for only 2869 unique Message-IDs (~3x), and folder:Logos spans 3735 messages / 11075 files; the Gmail-labels-over-IMAP pattern stores one message under many .Labels.* folders. (2) `mbsync logos` reconcile exits non-zero after mutations with: duplicate UIDs in .Trash/.Archive, a Maildir++ dotted-folder problem on `.Labels.benbrastmckie@gmail.com` (a dot in the folder name), and a draft with a missing Date header. Consequence: 161 local deletes from the recent cleanup are staged in local Logos Trash but CANNOT be pushed to the Proton server. Investigate ~/.dotfiles/modules/home/email/mbsync.nix (logos group/channels), notmuch.nix, and protonmail.nix; determine whether the .Labels.* folders should be excluded from the logos mbsync channels, whether Bridge label-folders are double-synced, and how to resolve the duplicate-UID and dotted-folder errors. Cross-repo: fixes land in ~/.dotfiles (deliberate handoff). Deliver a diagnosis + a concrete mbsync/notmuch config fix and a maildir de-duplication/cleanup plan. Do NOT run /email --logos --sync until this is fixed.
 
