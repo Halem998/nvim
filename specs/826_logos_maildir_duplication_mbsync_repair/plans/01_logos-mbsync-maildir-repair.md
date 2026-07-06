@@ -1,7 +1,7 @@
 # Implementation Plan: Task #826
 
 - **Task**: 826 - Fix Logos (Protonmail Bridge) maildir duplication and mbsync reconcile failures
-- **Status**: [NOT STARTED]
+- **Status**: [PARTIAL]
 - **Effort**: 7.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/826_logos_maildir_duplication_mbsync_repair/reports/01_logos-maildir-mbsync-diagnosis.md
@@ -371,19 +371,30 @@ blocks Phase 7 (reconcile), which depends on Phase 5.
 
 ---
 
-### Phase 7: Reconcile — Scoped `mbsync logos` [NOT STARTED]
+### Phase 7: Reconcile — Scoped `mbsync logos` [BLOCKED]
 
 **Goal**: Push the 161 staged Trash deletes and confirm a clean (exit 0) group reconcile.
 
 **Tasks**:
-- [ ] Confirm the freeze is still in effect and no mbsync process is running.
+- [ ] Confirm the freeze is still in effect and no mbsync process is running. *(deviation:
+      skipped — phase not attempted, see blocker below)*
 - [ ] Run a scoped, group-limited `mbsync logos` (NEVER `mbsync -a`, and NEVER
       `/email --logos --sync`) — first with verbose/dry output if the isync version supports it —
-      capturing full stdout/stderr.
+      capturing full stdout/stderr. *(deviation: skipped — NOT attempted, per the orchestrator's
+      explicit instruction not to run this before verification passes. Phase 5's duplicate-UID
+      corruption is unresolved (see phase-5-blocker-report.md); running `mbsync logos` now would
+      hit the exact same "duplicate UID" failure the task was created to fix, achieving nothing,
+      and risks unpredictable behavior given the still-corrupted Near-side UID bookkeeping.)*
 - [ ] On success (exit 0): confirm the 161 Trash deletes propagated (Trash reconciled with server)
-      and `.Trash`/`.Archive` Near-side state rebuilt without duplicate-UID errors.
+      and `.Trash`/`.Archive` Near-side state rebuilt without duplicate-UID errors. *(not
+      reached)*
 - [ ] On failure: stop, record which channel failed and the exact stderr to the backup dir, and do
-      NOT force-push; treat as a resume point rather than proceeding to reindex.
+      NOT force-push; treat as a resume point rather than proceeding to reindex. *(not reached —
+      phase blocked before attempting reconcile; treat Phase 5 as the resume point for a follow-up
+      task)*
+
+**Phase 7 BLOCKER**: Depends on Phase 5 (not completed) and Phase 4 (PARTIAL). Not attempted in
+this run. See `handoffs/phase-5-blocker-report.md`.
 
 **Timing**: 1 hour
 
@@ -398,17 +409,26 @@ blocks Phase 7 (reconcile), which depends on Phase 5.
 
 ---
 
-### Phase 8: Reindex notmuch and Consistency Check [NOT STARTED]
+### Phase 8: Reindex notmuch and Consistency Check [BLOCKED]
 
 **Goal**: Bring the notmuch index current with the cleaned maildir and lift the freeze.
 
 **Tasks**:
 - [ ] Run the sanctioned reindex path `notmuch new --no-hooks` (per `email-reindex`, task 824).
+      *(deviation: deferred — depends on Phase 7 which was not attempted; deferred to the
+      follow-up task that resolves Phase 5)*
 - [ ] Perform a full index consistency spot-check cross-referencing filesystem counts vs notmuch
       counts for `Logos` folders; note (do not attempt to fix here) any residual `path:`/`folder:`
-      inconsistency and cross-reference tasks 823/824/827.
-- [ ] Lift the `email-freeze` so normal sync/hooks resume.
+      inconsistency and cross-reference tasks 823/824/827. *(deviation: deferred — same reason)*
+- [ ] Lift the `email-freeze` so normal sync/hooks resume. *(deviation: deferred — deliberately
+      NOT lifted. The freeze remains in effect at the end of this implementation run because the
+      `.Trash`/`.Archive` duplicate-UID corruption is unresolved; lifting the freeze risks an
+      accidental `mbsync -a` trigger via notmuch's preNew hook or aerc's `$` keybind hitting the
+      same corruption unexpectedly. Resume with `email-thaw` only after the Phase 5 blocker is
+      resolved.)*
 - [ ] Record final per-folder filesystem counts vs the Phase 1 baseline in a short cleanup log.
+      *(completed for the folders actually touched — see the implementation summary for a
+      complete before/after count table covering Phases 1-6)*
 
 **Timing**: 0.75 hours
 
@@ -418,20 +438,34 @@ blocks Phase 7 (reconcile), which depends on Phase 5.
 - notmuch index (`~/.local/share/notmuch` or configured DB path) - reindexed (not a repo file).
 
 **Verification**:
-- `notmuch new --no-hooks` completes without error.
+- `notmuch new --no-hooks` completes without error. *(not run — see blocker)*
 - Consistency spot-check recorded; freeze lifted (normal sync resumes); final counts logged.
+  *(freeze intentionally left in place; final filesystem counts for touched folders recorded in
+  the implementation summary)*
+
+**Phase 8 BLOCKER**: Depends on Phase 7 (blocked). Not attempted in this run. The freeze remains
+active; resume with `email-thaw` only after a follow-up task resolves the Phase 5 blocker and
+Phase 7's reconcile succeeds.
 
 ## Testing & Validation
 
-- [ ] `~/.dotfiles/modules/home/email/mbsync.nix` no longer includes `logos-labels` in `Group
-      logos`; home-manager rebuild succeeded and the generated `mbsyncrc` reflects it.
-- [ ] No `.Labels.*` folder resyncs on `mbsync logos` (channel is out of the group).
+- [x] `~/.dotfiles/modules/home/email/mbsync.nix` no longer includes `logos-labels` in `Group
+      logos`; home-manager rebuild succeeded and the generated `mbsyncrc` reflects it. *(verified
+      — Phase 2)*
+- [x] No `.Labels.*` folder resyncs on `mbsync logos` (channel is out of the group). *(channel
+      confirmed out of `Group logos` in the live `.mbsyncrc`; will not resync — cannot be verified
+      by an actual reconcile since Phase 7 is blocked)*
 - [ ] `ls ~/Mail/Logos/.Trash/cur | grep -oE 'U=[0-9]+' | sort | uniq -d` is empty; same for
-      `.Archive/cur`.
-- [ ] Missing-`Date:`-header scan over `~/Mail/Logos` returns no files.
+      `.Archive/cur`. *(NOT satisfied — 860/2 duplicate UIDs remain; see Phase 5 blocker)*
+- [x] Missing-`Date:`-header scan over `~/Mail/Logos` returns no files. *(verified — Phase 6, 0
+      results post-deletion)*
 - [ ] `mbsync logos` exits 0 with no duplicate-UID or dotted-folder errors; 161 Trash deletes pushed.
-- [ ] `notmuch new --no-hooks` completes; consistency spot-check recorded.
-- [ ] Every label-only Message-ID (if any) identified in Phase 3 is preserved in a canonical folder.
+      *(NOT attempted — blocked by Phase 5; see phase-5-blocker-report.md)*
+- [ ] `notmuch new --no-hooks` completes; consistency spot-check recorded. *(NOT attempted —
+      blocked by Phase 7)*
+- [x] Every label-only Message-ID (if any) identified in Phase 3 is preserved in a canonical
+      folder. *(satisfied trivially — no messages were moved or deleted; all label-only messages
+      remain exactly where they were, in their original `.Labels.*` location)*
 
 ## Artifacts & Outputs
 
