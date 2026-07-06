@@ -180,23 +180,32 @@ and apply it via home-manager.
 
 ---
 
-### Phase 3: Verify Labels-Mirror Redundancy (deletion safety gate) [NOT STARTED]
+### Phase 3: Verify Labels-Mirror Redundancy (deletion safety gate) [COMPLETED]
 
 **Goal**: Confirm every message under `.Labels.*` also exists in a canonical folder before any
 deletion, and identify any label-only messages that must be preserved.
 
 **Tasks**:
-- [ ] For each `.Labels.*` folder, extract the set of `Message-Id` headers
+- [x] For each `.Labels.*` folder, extract the set of `Message-Id` headers
       (`.Labels.Important`, `.Labels.Letters`, `.Labels.EuroTrip`, `.Labels.CrazyTown`).
-- [ ] Extract the `Message-Id` set from the canonical folders
-      (top-level INBOX `cur`/`new`, `.Archive`, `.Sent`, `.Drafts`, `.Trash`).
-- [ ] Compute the set difference: Message-IDs present in `.Labels.*` but absent from every
-      canonical folder ("label-only" messages).
-- [ ] Produce a verification report listing counts and any label-only Message-IDs (with their
+      *(completed — 37540/488/8/5 files, 100% have a Message-Id header)*
+- [x] Extract the `Message-Id` set from the canonical folders
+      (top-level INBOX `cur`/`new`, `.Archive`, `.Sent`, `.Drafts`, `.Trash`). *(completed —
+      5615 unique canonical Message-IDs; `.Folders` confirmed empty, 0 files)*
+- [x] Compute the set difference: Message-IDs present in `.Labels.*` but absent from every
+      canonical folder ("label-only" messages). *(completed — see verification report)*
+- [x] Produce a verification report listing counts and any label-only Message-IDs (with their
       source file paths). If the label-only set is non-empty, list each file so Phase 4 can move it
-      into a canonical folder before deleting the label mirror.
-- [ ] Use direct filesystem enumeration (`grep`/`find` over maildir files), NOT notmuch queries
-      (per report caveat).
+      into a canonical folder before deleting the label mirror. *(completed — report at
+      `specs/826_logos_maildir_duplication_mbsync_repair/handoffs/phase-3-verification-report.md`.
+      DEVIATION/CRITICAL FINDING: the label-only set is NOT a small exception list as the plan
+      assumed — it is 98.4% of `.Labels.Important` (36925/37540) and 99.8% of `.Labels.Letters`
+      (487/488). This invalidates the plan's redundancy assumption; see report for full analysis
+      and the resulting Phase 4 fallback decision.)*
+- [x] Use direct filesystem enumeration (`grep`/`find` over maildir files), NOT notmuch queries
+      (per report caveat). *(completed — used `grep -Z -H -i -m1 "^message-id:"`, NUL-separated
+      to correctly handle maildir filenames containing literal colons in the `U=NNN:2,FLAGS`
+      suffix; an initial colon-split parse was discarded after it produced corrupted output)*
 
 **Timing**: 1 hour
 
@@ -207,8 +216,11 @@ deletion, and identify any label-only messages that must be preserved.
 
 **Verification**:
 - Verification report exists listing per-folder Message-ID counts and the label-only set.
+  *(satisfied — see phase-3-verification-report.md)*
 - If label-only set is empty: Phase 4 may bulk-delete. If non-empty: the exact files to preserve
-  are enumerated for Phase 4.
+  are enumerated for Phase 4. *(label-only set is 98.4%/99.8%/62.5%/100% per folder — FAR from
+  empty. Per the plan's own Abort criteria, Phase 4 falls back to leave-in-place/inert rather than
+  bulk-delete or attempt an out-of-scope bulk-move of ~37,412 messages.)*
 
 ---
 
