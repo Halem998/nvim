@@ -338,18 +338,22 @@ blocks Phase 7 (reconcile), which depends on Phase 5.
 
 ---
 
-### Phase 6: Remove Headerless Test Message from .Sent [NOT STARTED]
+### Phase 6: Remove Headerless Test Message from .Sent [COMPLETED]
 
 **Goal**: Remove the local-only headerless test message that will fail IMAP `APPEND` on the next
 `logos-sent` reconcile.
 
 **Tasks**:
-- [ ] Confirm the target file is the headerless test scaffolding: subject `FROM LOGOS`, body
+- [x] Confirm the target file is the headerless test scaffolding: subject `FROM LOGOS`, body
       `TEST`, no `Date:`/`Message-Id:`/`MIME-Version:`/`Content-Type:` header, Dovecot-style
       filename (distinct from Bridge's `hamsa,` pattern):
       `~/Mail/Logos/.Sent/cur/1771019138.#1M604459477P4171775V66306I26262783.hamsa,U=12:2,S`.
-- [ ] Back it up to the Phase 1 backup dir, then delete it (per Rec D — do not synthesize a
-      `Date:` header; it has no correspondence value).
+      *(completed — content and missing headers confirmed exactly as described; a full-tree
+      missing-`Date:`-header scan found this as the ONLY such file in all of `~/Mail/Logos`)*
+- [x] Back it up to the Phase 1 backup dir, then delete it (per Rec D — do not synthesize a
+      `Date:` header; it has no correspondence value). *(completed — backed up to
+      `~/Mail/.logos-backup-20260706/phase6/`, verified byte-identical via `diff -q` before
+      deletion, then removed)*
 
 **Timing**: 0.5 hours
 
@@ -360,7 +364,10 @@ blocks Phase 7 (reconcile), which depends on Phase 5.
 
 **Verification**:
 - The file no longer exists in `.Sent/cur`; a backup copy exists in the Phase 1 backup dir.
-- A missing-`Date:`-header scan over `~/Mail/Logos` returns no remaining files.
+  *(satisfied — confirmed removed via `ls`; backup at
+  `~/Mail/.logos-backup-20260706/phase6/1771019138.#1M604459477P4171775V66306I26262783.hamsa,U=12:2,S`)*
+- A missing-`Date:`-header scan over `~/Mail/Logos` returns no remaining files. *(satisfied —
+  re-ran the full-tree scan post-deletion, 0 results)*
 
 ---
 
