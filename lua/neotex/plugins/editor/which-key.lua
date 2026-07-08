@@ -801,7 +801,7 @@ return {
     })
 
     -- ============================================================================
-    -- <leader>v - VOICE GROUP (STT)
+    -- <leader>v - VOICE GROUP (STT + TTS)
     -- ============================================================================
 
     wk.add({
@@ -810,6 +810,7 @@ return {
       { "<leader>vr", function() require('neotex.plugins.tools.stt').start_recording() end, desc = "start recording", icon = "󰑊" },
       { "<leader>vs", function() require('neotex.plugins.tools.stt').stop_recording() end, desc = "stop recording", icon = "󰓛" },
       { "<leader>vv", function() require('neotex.plugins.tools.stt').toggle_recording() end, desc = "toggle recording", icon = "󰔊" },
+      { "<leader>vl", function() require('neotex.util.tts').toggle() end, desc = "read buffer aloud (TTS)", icon = "󰕾" },
     })
 
     -- ============================================================================
