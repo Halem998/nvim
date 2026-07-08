@@ -1,7 +1,7 @@
 # Implementation Plan: Task #829
 
 - **Task**: 829 - Add a `<leader>vl` toggle mapping that uses piper TTS to read the current buffer aloud from the cursor position to end of buffer, stopping playback when toggled off.
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/829_add_leader_vl_piper_tts_read_buffer/reports/01_piper-tts-toggle-research.md

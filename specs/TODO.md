@@ -11,7 +11,7 @@ next_project_number: 830
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826,829 | -- | extensions, neovim, email integration, ... |
+| 1 | 78,87,821,826 | -- | extensions, email integration, terminal ui |
 | 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -22,10 +22,6 @@ next_project_number: 830
   └─ 822 [NOT STARTED] — Implement the email->memory contribution per the #821 design. Add
 826 [BLOCKED] — Root-cause and fix the pre-existing Logos (Protonmail Bridge) mai
   └─ 827 [BLOCKED] — The freshness gate shipped in tasks 823-825 is defective: email-c
-
-### Neovim
-
-829 [NOT STARTED] — Add <leader>vl toggle mapping that uses piper TTS to read the cur
 
 ### Terminal Ui
 
@@ -38,10 +34,12 @@ next_project_number: 830
 ## Tasks
 
 ### 829. Add leader vl piper tts read buffer
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: neovim
 - **Topic**: neovim
 - **Dependencies**: None
+- **Research**: [829_add_leader_vl_piper_tts_read_buffer/reports/01_piper-tts-toggle-research.md]
+- **Plan**: [829_add_leader_vl_piper_tts_read_buffer/plans/01_piper-tts-toggle.md]
 
 **Description**: Add <leader>vl toggle mapping that uses piper TTS to read the current buffer aloud from the cursor position to end of buffer, stopping playback when toggled off
 

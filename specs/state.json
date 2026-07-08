@@ -5,12 +5,52 @@
     {
       "project_number": 829,
       "project_name": "add_leader_vl_piper_tts_read_buffer",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "neovim",
       "description": "Add <leader>vl toggle mapping that uses piper TTS to read the current buffer aloud from the cursor position to end of buffer, stopping playback when toggled off",
       "topic": "neovim",
       "created": "2026-07-08T22:33:07Z",
-      "last_updated": "2026-07-08T22:33:07Z"
+      "last_updated": "2026-07-08T22:57:40Z",
+      "session_id": "sess_1783550656_p829",
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/829_add_leader_vl_piper_tts_read_buffer/reports/01_piper-tts-toggle-research.md",
+          "summary": "Research on <leader>vl piper TTS toggle: keymap/module placement conventions, empirically-verified jobstart/jobstop process-group teardown of the piper|play pipeline, text extraction, and toggle-state handling."
+        },
+        {
+          "type": "plan",
+          "path": "specs/829_add_leader_vl_piper_tts_read_buffer/plans/01_piper-tts-toggle.md",
+          "summary": "3-phase plan for <leader>vl piper TTS cursor-to-EOF toggle: core module + helpers, playback engine (jobstop/on_exit/VimLeave cleanup), which-key wiring."
+        }
+      ],
+      "next_artifact_number": 2,
+      "plan_metadata": {
+        "phases": 3,
+        "total_effort_hours": 2,
+        "complexity": "simple",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_piper-tts-toggle-research.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-07-08"
+          }
+        ]
+      },
+      "completion_summary": "Added a <leader>vl toggle (lua/neotex/util/tts.lua + which-key entry) that reads the current buffer aloud from the cursor to end-of-buffer via a piper|play pipeline, stopping playback immediately on a second press, with auto-reset on natural completion and orphan-free cleanup on Neovim exit."
     },
     {
       "project_number": 817,
