@@ -1,17 +1,17 @@
 ---
-next_project_number: 829
+next_project_number: 830
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-07-06. Generated from state.json dependency graph.*
+*Updated 2026-07-08. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826 | -- | extensions, email integration, terminal ui |
+| 1 | 78,87,821,826,829 | -- | extensions, neovim, email integration, ... |
 | 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -23,6 +23,10 @@ next_project_number: 829
 826 [BLOCKED] — Root-cause and fix the pre-existing Logos (Protonmail Bridge) mai
   └─ 827 [BLOCKED] — The freshness gate shipped in tasks 823-825 is defective: email-c
 
+### Neovim
+
+829 [NOT STARTED] — Add <leader>vl toggle mapping that uses piper TTS to read the cur
+
 ### Terminal Ui
 
 87 [RESEARCHED] — Investigate why the terminal working directory changes to a proje
@@ -32,6 +36,16 @@ next_project_number: 829
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
+
+### 829. Add leader vl piper tts read buffer
+- **Status**: [NOT STARTED]
+- **Task Type**: neovim
+- **Topic**: neovim
+- **Dependencies**: None
+
+**Description**: Add <leader>vl toggle mapping that uses piper TTS to read the current buffer aloud from the cursor position to end of buffer, stopping playback when toggled off
+
+---
 
 ### 828. Resolve Logos Trash/Archive UID collisions via live IMAP verification
 - **Effort**: 3-4 hours
