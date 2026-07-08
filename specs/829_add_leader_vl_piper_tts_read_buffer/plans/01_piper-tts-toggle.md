@@ -132,19 +132,19 @@ checks, notify helper, `health()`). No playback yet.
 - `require('neotex.util.tts').health()` runs headless and reports piper/player/model all present in
   the verified environment.
 
-### Phase 2: Playback engine (start / stop / toggle) [NOT STARTED]
+### Phase 2: Playback engine (start / stop / toggle) [COMPLETED]
 
 **Goal**: Implement the toggle lifecycle: spawn the `piper | play` pipeline, feed text via
 `chansend`/`chanclose`, reset state in a single `on_exit`, kill via `jobstop`, and register lazy
 `VimLeavePre` cleanup. Guard empty selection and missing dependencies.
 
 **Tasks**:
-- [ ] Add a module-local `local cleanup_registered = false` and
+- [x] Add a module-local `local cleanup_registered = false` and
       `local function ensure_cleanup()` that, on first call, creates augroup
       `vim.api.nvim_create_augroup("TTSPlayback", { clear = true })` with a `VimLeavePre` autocmd
       calling `M.stop()` (guarded by `M.is_playing()`), then sets the flag. This avoids the
       `sleep-inhibit.lua` gap where `setup()` is never wired.
-- [ ] Implement `function M.start()`:
+- [x] Implement `function M.start()`:
       - If `M.is_playing()`, return (idempotent).
       - Resolve player via `resolve_player()`; if `nil` or `piper` missing or model unreadable,
         `notify(..., ERROR)` and return.
@@ -155,10 +155,13 @@ checks, notify helper, `health()`). No playback yet.
       - Guard `job_id <= 0` (spawn failure): `notify(..., ERROR)`, reset, return.
       - `ensure_cleanup()`, `vim.fn.chansend(job_id, text)`, `vim.fn.chanclose(job_id, "stdin")`,
         `notify("Reading buffer...", INFO)`.
-- [ ] Implement `function M.stop()`: if not `M.is_playing()`, return; `pcall(vim.fn.jobstop, job_id)`;
+      *(deviation: altered — order is piper-check, then model-readable-check, then
+      `resolve_player(sample_rate)`, since the sample rate must be read from the model's sidecar
+      before a player command can be formatted; behavior is otherwise identical to the plan)*
+- [x] Implement `function M.stop()`: if not `M.is_playing()`, return; `pcall(vim.fn.jobstop, job_id)`;
       rely on `on_exit` to reset `job_id` (do not double-clear); `notify("Stopped", INFO)`.
-- [ ] Implement `function M.toggle()`: `if M.is_playing() then M.stop() else M.start() end`.
-- [ ] LuaDoc-comment `start`, `stop`, `toggle`, `ensure_cleanup`.
+- [x] Implement `function M.toggle()`: `if M.is_playing() then M.stop() else M.start() end`.
+- [x] LuaDoc-comment `start`, `stop`, `toggle`, `ensure_cleanup`.
 
 **Timing**: 45 minutes
 

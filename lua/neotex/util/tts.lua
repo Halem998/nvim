@@ -141,4 +141,112 @@ function M.health()
   end
 end
 
+--- Register lazy `VimLeavePre` cleanup (idempotent; guarded by `cleanup_registered`).
+---
+--- Ensures no orphaned `piper`/`play` processes survive Neovim exit. Registered lazily from
+--- `M.start()` rather than an unwired `M.setup()`, avoiding the gap noted in `sleep-inhibit.lua`
+--- (whose cleanup augroup is only created if `setup()` happens to be called).
+local function ensure_cleanup()
+  if cleanup_registered then
+    return
+  end
+
+  local group = vim.api.nvim_create_augroup("TTSPlayback", { clear = true })
+  vim.api.nvim_create_autocmd("VimLeavePre", {
+    group = group,
+    callback = function()
+      if M.is_playing() then
+        M.stop()
+      end
+    end,
+    desc = "Stop TTS playback on Neovim exit",
+  })
+
+  cleanup_registered = true
+end
+
+--- Start reading the buffer aloud from the cursor position through end-of-buffer.
+---
+--- No-op (idempotent) if playback is already active. Spawns the `piper | play` pipeline as a
+--- single shell job so `M.stop()` can tear down the whole pipeline with one `jobstop`. Text is
+--- fed to piper's stdin via `chansend`, then `chanclose(stdin)` signals EOF (piper hangs
+--- waiting for input without it).
+function M.start()
+  if M.is_playing() then
+    return
+  end
+
+  if not command_exists("piper") then
+    notify("piper not found on PATH", vim.log.levels.ERROR)
+    return
+  end
+
+  local model_path = get_model_path()
+  if vim.fn.filereadable(model_path) ~= 1 then
+    notify("voice model not found at " .. model_path, vim.log.levels.ERROR)
+    return
+  end
+
+  local sample_rate = get_sample_rate(model_path)
+  local player_cmd = resolve_player(sample_rate)
+  if not player_cmd then
+    notify(
+      "no audio player found (install sox for `play` or use PipeWire `pw-play`)",
+      vim.log.levels.ERROR
+    )
+    return
+  end
+
+  local text = get_text()
+  if text:match("^%s*$") then
+    notify("Nothing to read", vim.log.levels.WARN)
+    return
+  end
+
+  local cmd = string.format(
+    "piper -m %s --output_raw -q | %s",
+    vim.fn.shellescape(model_path),
+    player_cmd
+  )
+
+  job_id = vim.fn.jobstart({ "sh", "-c", cmd }, {
+    on_exit = function(_, _, _)
+      job_id = nil
+    end,
+  })
+
+  if not job_id or job_id <= 0 then
+    notify("Failed to start TTS playback", vim.log.levels.ERROR)
+    job_id = nil
+    return
+  end
+
+  ensure_cleanup()
+  vim.fn.chansend(job_id, text)
+  vim.fn.chanclose(job_id, "stdin")
+  notify("Reading buffer...", vim.log.levels.INFO)
+end
+
+--- Stop TTS playback immediately.
+---
+--- No-op if not currently playing. Relies on the `on_exit` callback (registered in
+--- `M.start()`) to reset `job_id`; does not clear the state directly here.
+function M.stop()
+  if not M.is_playing() then
+    return
+  end
+
+  pcall(vim.fn.jobstop, job_id)
+  notify("Stopped", vim.log.levels.INFO)
+end
+
+--- Toggle TTS playback: start reading from the cursor if idle, stop if playing.
+function M.toggle()
+  if M.is_playing() then
+    M.stop()
+  else
+    M.start()
+  end
+end
+
 return M
