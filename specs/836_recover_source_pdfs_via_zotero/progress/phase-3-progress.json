@@ -1,0 +1,25 @@
+{
+  "phase": 3,
+  "phase_name": "Dry-Run Sweep of All 52 Targets",
+  "started_at": "2026-07-09T20:21:00Z",
+  "last_updated": "2026-07-09T20:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm 52-entry target population", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Sweep all 52 via resolver", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Aggregate resolution-manifest.json with counts", "status": "done", "files_touched": ["specs/836_recover_source_pdfs_via_zotero/artifacts/resolution-manifest.json"]},
+    {"id": 4, "description": "Write dry-run-report.md", "status": "done", "files_touched": ["specs/836_recover_source_pdfs_via_zotero/artifacts/dry-run-report.md"]},
+    {"id": 5, "description": "Cross-check 7 confirmed recoverables and known tier expectations", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.6",
+      "description": "Confirm kamp_1968 and pnueli_1977 land in matched-no-pdf",
+      "type": "altered",
+      "reason": "pnueli_1977_temporal-logic-programs surfaced as search-candidate (zotero_key 96GLGRC5, a Lamport 1980 paper with a genuine PDF and title_similarity 0.5227) instead of matched-no-pdf, because the resolver's best-PDF selection outscored the correct-but-HTML-only Pnueli 1977 item (YCLL49EF). Functionally equivalent since Phase 4's year check (1977 vs 1980) will reject the candidate and the entry remains no_source_pdf either way.",
+      "annotation": "*(deviation: kamp_1968 lands in matched-no-pdf as expected; pnueli_1977 instead surfaced as search-candidate ... see dry-run-report.md)*"
+    }
+  ]
+}

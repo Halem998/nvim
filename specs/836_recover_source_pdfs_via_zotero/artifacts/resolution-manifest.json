@@ -1,0 +1,346 @@
+{
+  "generated_at": "2026-07-09T20:13:16Z",
+  "records": [
+    {
+      "doc_id": "burgess_1982_i",
+      "tier": "key-anchored",
+      "access_mode": "live-api",
+      "zotero_key": "7XEG8NM9",
+      "attachment_key": "5HK4WV9T",
+      "resolved_path": "/home/benjamin/Documents/Zotero/storage/5HK4WV9T/Burgess - 1982 - Axioms for tense logic. I. ``Since'' and ``until''..pdf",
+      "zotero_title": "Axioms for tense logic. I. ``Since'' and ``until''.",
+      "zotero_year": "1982",
+      "zotero_doi": "10.1305/ndjfl/1093870149",
+      "title_similarity": 1.0
+    },
+    {
+      "doc_id": "burgess_1982_ii",
+      "tier": "key-anchored",
+      "access_mode": "live-api",
+      "zotero_key": "ZASX3GNR",
+      "attachment_key": "C9CHHCD2",
+      "resolved_path": "/home/benjamin/Documents/Zotero/storage/C9CHHCD2/Burgess - 1982 - Axioms for tense logic. II. Time periods..pdf",
+      "zotero_title": "Axioms for tense logic. II. Time periods.",
+      "zotero_year": "1982",
+      "zotero_doi": "10.1305/ndjfl/1093870150",
+      "title_similarity": 1.0
+    },
+    {
+      "doc_id": "thomas_1997",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "alur_2013_syntax-guided-synthesis",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2308.00708_verigen",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2308.05345_rtlllm",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2309.07544_verilogeval-v1",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2311.00176_chipnemo",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2312.08617_rtlcoder",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2402.00386_assertllm",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2406.18627_assertionbench",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2408.09858_shortcircuit",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2408.11053_verilogeval-v2",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2410.23299_fveval",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2502.00212_stp-self-play-theorem-provers",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2503.15112_openllm-rtl",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2504.01986_turtle",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2507.04736_chipseek",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2509.06239_proof2silicon",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2510.00915_rl-verifiable-noisy-rewards",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2512.18160_propose-solve-verify",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2601.19747_veri-sure",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2601.21448_chipbench",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2603.03147_agentic-coverage-closure",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2603.08738_formalrtl",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2603.27630_rtlseek",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2604.07666_imperfect-verifier-good-enough",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2604.15149_llms-gaming-verifiers",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2605.12857_chipmate",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2605.22763_alphaproof-nexus",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "arxiv_2605.27472_assertllm2",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "biere_1999_symbolic-model-checking-without-bdds",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "bradley_2011_ic3-pdr",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "burch_1992_symbolic-model-checking",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "een_2011_efficient-pdr-implementation",
+      "tier": "search-candidate",
+      "access_mode": "live-api",
+      "zotero_key": "4F3Z5EEG",
+      "attachment_key": "IIMGIINM",
+      "resolved_path": "/home/benjamin/Documents/Zotero/storage/IIMGIINM/2014 - Meaning and Explanation - Shaheen.pdf",
+      "zotero_title": "Meaning and Explanation",
+      "zotero_year": "2014",
+      "zotero_doi": null,
+      "title_similarity": 0.4314
+    },
+    {
+      "doc_id": "fine_2010_some-puzzles-of-ground",
+      "tier": "search-candidate",
+      "access_mode": "live-api",
+      "zotero_key": "G953SI3G",
+      "attachment_key": "SJF2E79E",
+      "resolved_path": "/home/benjamin/Documents/Zotero/storage/SJF2E79E/euclid.ndjfl.1273002112.pdf",
+      "zotero_title": "Some Puzzles of Ground",
+      "zotero_year": "2010",
+      "zotero_doi": "10.1215/00294527-2010-007",
+      "title_similarity": 1.0
+    },
+    {
+      "doc_id": "fine_2012_counterfactuals-without-possible-worlds",
+      "tier": "search-candidate",
+      "access_mode": "live-api",
+      "zotero_key": "5DAQR76K",
+      "attachment_key": "6JWNHIJ3",
+      "resolved_path": "/home/benjamin/Documents/Zotero/storage/6JWNHIJ3/Fine - 2012 - Counterfactuals Without Possible Worlds.pdf",
+      "zotero_title": "Counterfactuals Without Possible Worlds",
+      "zotero_year": "2012",
+      "zotero_doi": "10.5840/jphil201210938",
+      "title_similarity": 1.0
+    },
+    {
+      "doc_id": "fine_2012_difficulty-possible-worlds-counterfactuals",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "fine_2012_guide-to-ground",
+      "tier": "search-candidate",
+      "access_mode": "live-api",
+      "zotero_key": "4JFAFMBY",
+      "attachment_key": "534375IH",
+      "resolved_path": "/home/benjamin/Documents/Zotero/storage/534375IH/2012 - Guide to Ground - Fine(2).pdf",
+      "zotero_title": "Guide to Ground",
+      "zotero_year": "2012",
+      "zotero_doi": null,
+      "title_similarity": 0.9375
+    },
+    {
+      "doc_id": "fine_2012_pure-logic-of-ground",
+      "tier": "search-candidate",
+      "access_mode": "live-api",
+      "zotero_key": "TXUP5UWL",
+      "attachment_key": "FAKSF5IF",
+      "resolved_path": "/home/benjamin/Documents/Zotero/storage/FAKSF5IF/Fine - 2012 - THE PURE LOGIC OF GROUND.pdf",
+      "zotero_title": "The Pure Logic of Ground",
+      "zotero_year": "2012",
+      "zotero_doi": "10.1017/S1755020311000086",
+      "title_similarity": 0.9091
+    },
+    {
+      "doc_id": "fine_2014_truthmaker-semantics-intuitionistic",
+      "tier": "search-candidate",
+      "access_mode": "live-api",
+      "zotero_key": "S2VXD9JT",
+      "attachment_key": "DPAGXJAY",
+      "resolved_path": "/home/benjamin/Documents/Zotero/storage/DPAGXJAY/Fine - 2017 - Truthmaker Semantics.pdf",
+      "zotero_title": "Truthmaker Semantics",
+      "zotero_year": "2017",
+      "zotero_doi": "10.1002/9781118972090.ch22",
+      "title_similarity": 0.7273
+    },
+    {
+      "doc_id": "herklotz_2021_vericert",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "kamp_1968_tense-logic-linear-order",
+      "tier": "matched-no-pdf",
+      "access_mode": "live-api",
+      "zotero_key": "AYJAC2IF",
+      "zotero_title": "Tense Logic and the Theory of Linear Order",
+      "zotero_year": "1968",
+      "matched_attachment": "KAMTLA.html",
+      "title_similarity": 0.7273
+    },
+    {
+      "doc_id": "kuehlmann_2002_robust-boolean-reasoning",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "lamport_2002_specifying-systems",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "mishchenko_2010_sequential-equivalence-checking",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "piterman_2006_gr1-synthesis",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "pnueli_1977_temporal-logic-programs",
+      "tier": "search-candidate",
+      "access_mode": "live-api",
+      "zotero_key": "96GLGRC5",
+      "attachment_key": "QVLHSV9L",
+      "resolved_path": "/home/benjamin/Documents/Zotero/storage/QVLHSV9L/Lamport - 1980 - ``Sometime'' is sometimes ``not never'' on the temporal logic of programs.pdf",
+      "zotero_title": "``Sometime'' is sometimes ``not never'': on the temporal logic of programs",
+      "zotero_year": "1980",
+      "zotero_doi": "10.1145/567446.567463",
+      "title_similarity": 0.5227
+    },
+    {
+      "doc_id": "solar-lezama_2008_sketching-thesis",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "biere_2024_hwmcc-2024",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "witharana_2022_abv-survey",
+      "tier": "absent",
+      "access_mode": "live-api"
+    },
+    {
+      "doc_id": "bacon_2018_broadest-necessity",
+      "tier": "search-candidate",
+      "access_mode": "live-api",
+      "zotero_key": "Q3YVBYBT",
+      "attachment_key": "28I7VAYT",
+      "resolved_path": "/home/benjamin/Documents/Zotero/storage/28I7VAYT/Bacon - 2018 - The Broadest Necessity.pdf",
+      "zotero_title": "The Broadest Necessity",
+      "zotero_year": "2018",
+      "zotero_doi": "10.1007/s10992-017-9447-9",
+      "title_similarity": 1.0
+    }
+  ],
+  "counts": {
+    "absent": 41,
+    "key-anchored": 2,
+    "matched-no-pdf": 1,
+    "search-candidate": 8
+  }
+}

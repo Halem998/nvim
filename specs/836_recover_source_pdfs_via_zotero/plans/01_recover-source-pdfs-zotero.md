@@ -264,32 +264,39 @@ reordered relative to the dry-run and confirmation gates that precede them.
 
 ---
 
-### Phase 3: Dry-Run Sweep of All 52 Targets [NOT STARTED]
+### Phase 3: Dry-Run Sweep of All 52 Targets [COMPLETED]
 
 - **Goal:** Produce the complete, reviewable manifest of what *would* change, for every one of the
   52 `no_source_pdf` entries. Nothing is applied.
 
 - **Tasks:**
-  - [ ] Read the authoritative target list directly from the corpus:
+  - [x] Read the authoritative target list directly from the corpus:
         `jq -r '.entries[] | select(.provenance_fidelity == "no_source_pdf") | .id' ~/Projects/Literature/index.json`.
         Assert the count is 52; if it is not, stop and report the drift rather than proceeding
-        against a changed population.
-  - [ ] Run `zotero-resolve-pdf.sh` over each of the 52. Do not short-circuit on the 2 entries with
+        against a changed population. *(completed: confirmed 52)*
+  - [x] Run `zotero-resolve-pdf.sh` over each of the 52. Do not short-circuit on the 2 entries with
         a `zotero_key` — the research found 5 of the 7 recoverables only via live search.
-  - [ ] Aggregate results into `specs/836_recover_source_pdfs_via_zotero/artifacts/resolution-manifest.json`,
+  - [x] Aggregate results into `specs/836_recover_source_pdfs_via_zotero/artifacts/resolution-manifest.json`,
         one record per doc_id with its tier and resolved fields, plus a `counts` summary object.
-  - [ ] Write a human-readable dry-run report to
+  - [x] Write a human-readable dry-run report to
         `specs/836_recover_source_pdfs_via_zotero/artifacts/dry-run-report.md` listing, per tier,
         exactly which files would be copied to which `sources/<doc_id>/` paths and which
         `index.json` fields would be set. State plainly that no change has been made yet.
-  - [ ] Cross-check the manifest against the research report's confirmed list: the 7 recoverables
+  - [x] Cross-check the manifest against the research report's confirmed list: the 7 recoverables
         (`burgess_1982_i`, `burgess_1982_ii`, `bacon_2018_broadest-necessity`,
         `fine_2010_some-puzzles-of-ground`, `fine_2012_pure-logic-of-ground`,
         `fine_2012_counterfactuals-without-possible-worlds`, `fine_2012_guide-to-ground`) must all
         appear as `key-anchored` or `search-candidate` with a resolved on-disk path. A missing one
-        is a resolver defect, not an acceptable "absent".
-  - [ ] Confirm `kamp_1968_tense-logic-linear-order` and `pnueli_1977_temporal-logic-programs` land
+        is a resolver defect, not an acceptable "absent". *(completed: all 7 present, all resolved
+        paths pass test -f)*
+  - [x] Confirm `kamp_1968_tense-logic-linear-order` and `pnueli_1977_temporal-logic-programs` land
         in `matched-no-pdf`, and that the 30-entry arXiv cluster lands in `absent`.
+        *(deviation: kamp_1968 lands in matched-no-pdf as expected; pnueli_1977 instead surfaced
+        as search-candidate because an unrelated Lamport-1980 item with a genuine PDF outscored
+        the correct-but-HTML-only Pnueli item on title similarity. Functionally equivalent --
+        Phase 4's year check rejects it either way, and the entry stays no_source_pdf. See
+        dry-run-report.md "Bibliographically matched but not recoverable" section. All 30 arXiv
+        cluster entries confirmed absent.)*
 
 - **Timing:** 1 hour
 
