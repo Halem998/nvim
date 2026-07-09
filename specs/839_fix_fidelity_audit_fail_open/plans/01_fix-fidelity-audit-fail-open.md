@@ -1,7 +1,7 @@
 # Implementation Plan: Fix fail-open classification in literature-fidelity-audit.sh
 
 - **Task**: 839 - Fix fail-open classification in literature-fidelity-audit.sh
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 4.75 hours
 - **Dependencies**: None (task #832 depends on THIS task and runs immediately after)
 - **Research Inputs**: specs/839_fix_fidelity_audit_fail_open/reports/01_fidelity-audit-fail-open.md
@@ -378,25 +378,34 @@ Expect all invariant rows correct and `IDEMPOTENT`.
 
 ---
 
-### Phase 7: Correct stale report records and cross-references [NOT STARTED]
+### Phase 7: Correct stale report records and cross-references [COMPLETED]
 
 **Goal**: Bring the documentation record in line with the realized-and-fixed state.
 
 **Tasks**:
-- [ ] In `specs/835_literature_corpus_provenance_fidelity_audit/reports/01_provenance-fidelity-audit.md`:
+- [x] In `specs/835_literature_corpus_provenance_fidelity_audit/reports/01_provenance-fidelity-audit.md`:
   - Update the "accepted residual risk" bullet (the `frac is None` gap) to state the risk was
     REALIZED (3-4 real victims found), and reference task #839 as the fix that introduced
-    `unadjudicated` (fail closed).
+    `unadjudicated` (fail closed). *(completed: line 118's bullet now records the realized-risk
+    outcome with the 3 named victims plus venema_1991's disclosure-detection miss, and
+    cross-references specs/839_.../)*
   - Update the `thomas_2003_reactive` recommendation ("recommend adding an explicit scope banner")
     to mark it IMPLEMENTED via Option A (or superseded by `unadjudicated` if the Phase-4 fallback
-    was taken).
-- [ ] Add a one-line cross-reference note in this task's summary (at implement time) that #832's
+    was taken). *(completed: cohort table row (line 71) now records "IMPLEMENTED by task #839"
+    with the banner text and confirmation)*
+- [x] Add a one-line cross-reference note in this task's summary (at implement time) that #832's
       cohort logic now reads the corrected `unadjudicated` value; no code change was needed in #832.
-- [ ] (Optional, low-cost) Add a short note to `.claude/context/project/literature/patterns/`
+      *(completed: added to the implementation summary)*
+- [x] (Optional, low-cost) Add a short note to `.claude/context/project/literature/patterns/`
       documenting that `chunk_NNNN.md` files are index-only re-splits of the canonical `.md` and
       must be excluded from whole-document word counts (per the research's Context Extension
       Recommendation), and update the one prose reference to the enum in
       `.claude/context/project/literature/patterns/zotero-pdf-resolution.md` from five to six values.
+      *(completed the chunk-convention note as a new file
+      `.claude/context/project/literature/patterns/chunk-file-conventions.md`; deviation on the
+      second half — inspected `zotero-pdf-resolution.md` and found its one `provenance_fidelity`
+      reference (line 5) does not actually enumerate a value count ("five"/"six"), it is a generic
+      cross-reference with nothing stale to correct, so no edit was made there)*
 
 **Timing**: 0.75 hours
 
@@ -415,16 +424,16 @@ Expect the residual-risk bullet and the thomas_2003 recommendation to reflect th
 
 ## Testing & Validation
 
-- [ ] `--dry-run` shows the 3 named victim dirs as `unadjudicated`.
-- [ ] `doets_1987` and `libkin_2004_ch3_ch7` remain `verified_conversion` via the disclosure branch.
-- [ ] `rabinovich_2014` remains `unverified_summary` (proof_fraction 0.545 < 0.6).
-- [ ] The 3 ratio>1 dirs show ratios ~0.9-1.0 after the glob fix; whole-cohort diff reviewed.
-- [ ] `thomas_2003_reactive` shows the Phase-4 Option-A outcome (`verified_conversion`,
+- [x] `--dry-run` shows the 3 named victim dirs as `unadjudicated`.
+- [x] `doets_1987` and `libkin_2004_ch3_ch7` remain `verified_conversion` via the disclosure branch.
+- [x] `rabinovich_2014` remains `unverified_summary` (proof_fraction 0.545 < 0.6).
+- [x] The 3 ratio>1 dirs show ratios ~0.9-1.0 after the glob fix; whole-cohort diff reviewed.
+- [x] `thomas_2003_reactive` shows the Phase-4 Option-A outcome (`verified_conversion`,
       `disclosed=True`), or a flagged Option-B fallback.
-- [ ] Header enum contract lists six values; population summary prints an `unadjudicated:` count.
-- [ ] `literature-search.sh` quarantines `unadjudicated`; `literature-briefing.sh` marks it.
-- [ ] `--write` re-stamps the live corpus and is idempotent on a second run.
-- [ ] #835 report's residual-risk bullet and thomas_2003 recommendation are corrected.
+- [x] Header enum contract lists six values; population summary prints an `unadjudicated:` count.
+- [x] `literature-search.sh` quarantines `unadjudicated`; `literature-briefing.sh` marks it.
+- [x] `--write` re-stamps the live corpus and is idempotent on a second run.
+- [x] #835 report's residual-risk bullet and thomas_2003 recommendation are corrected.
 
 ## Artifacts & Outputs
 
