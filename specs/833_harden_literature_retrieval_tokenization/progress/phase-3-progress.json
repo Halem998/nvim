@@ -1,0 +1,40 @@
+{
+  "phase": 3,
+  "phase_name": "Fallback ladder, lazy trigram migration, and result envelope in literature-search.sh",
+  "started_at": "2026-07-09T00:00:00Z",
+  "last_updated": "2026-07-09T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add ensure_trigram() helper", "status": "done", "files_touched": [".claude/scripts/literature-search.sh"]},
+    {"id": 2, "description": "Fallback ladder in both search_db() definitions, match_tier tagging, envelope output", "status": "done", "files_touched": [".claude/scripts/literature-search.sh"]},
+    {"id": 3, "description": "Verify against real DB: punctuation classes, plain query regression, trigram firing, lazy migration, read-only degradation, unmatchable query", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "count(*) FROM chunks_trigram LIMIT 1 as an empty-check for ensure_trigram", "result": "failed", "reason": "count(*) on an external-content FTS5 table reads from the content table's rowid range regardless of whether 'rebuild' has run, so it never reports 0 even for a truly unpopulated fresh table -- replaced with a real MATCH-based probe against a sampled content row"},
+    {"approach": "conn.close() without conn.commit() after ensure_trigram's rebuild INSERT", "result": "failed", "reason": "the INSERT lives in Python sqlite3's implicit per-connection transaction and is silently rolled back on close() since do_search() was read-only before this task -- added explicit conn.commit() after the rebuild insert"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.ensure_trigram",
+      "description": "ensure_trigram() empty-check via SELECT count(*) FROM chunks_trigram LIMIT 1",
+      "type": "altered",
+      "reason": "count(*) on an external-content FTS5 table does not reflect index population state; replaced with a MATCH-based probe against a real content sample",
+      "annotation": "*(deviation: altered -- count(*) empty-check replaced with a MATCH probe)*"
+    },
+    {
+      "task_id": "3.ensure_trigram.commit",
+      "description": "Persisting the lazy trigram rebuild",
+      "type": "altered",
+      "reason": "Missing conn.commit() silently rolled back the rebuild INSERT on connection close; added explicit commit",
+      "annotation": "*(deviation: altered -- added conn.commit() after the rebuild insert)*"
+    },
+    {
+      "task_id": "3.verification.trigram_rung",
+      "description": "Trigram rung verification using the task's own punctuation-glued title terms",
+      "type": "altered",
+      "reason": "Those exact terms do not exist in the corpus at all, so they cannot exercise the trigram rung meaningfully; used a real corpus substring (roarch, from microarchitectural) instead",
+      "annotation": "*(deviation: altered -- verification term substituted for a real corpus substring)*"
+    }
+  ]
+}

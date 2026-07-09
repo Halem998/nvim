@@ -206,6 +206,7 @@ do_search() {
 import sqlite3
 import json
 import os
+import re
 import sys
 
 local_db = "$local_db"
@@ -267,53 +268,151 @@ def get_fidelity(fmap, doc_id):
 
 fidelity_map = load_fidelity_map(literature_dir)
 
-def search_db(db_path, query, limit, allowed_doc_ids=None):
-    """Search a single database, return list of result dicts"""
-    if not os.path.isfile(db_path):
-        return []
+# --- Fallback ladder tiers (task #833) ---
+# Internal tier names match the envelope's "fallback_tier" vocabulary exactly
+# ("bm25" | "phrase_retry" | "trigram" | "none"); row-level "match_tier" uses
+# "trigram_fallback" instead of "trigram" -- ROW_TIER_LABEL maps between them.
+TIER_RANK = {'bm25': 0, 'phrase_retry': 1, 'trigram': 2, 'none': 3}
+ROW_TIER_LABEL = {'bm25': 'bm25', 'phrase_retry': 'phrase_retry', 'trigram': 'trigram_fallback'}
 
+
+def ensure_trigram(conn):
+    """Idempotently ensure chunks_trigram exists and is populated (task #833). This is the
+    ONLY place chunks_trigram is populated -- literature-build-index.sh rebuilds chunks_fts
+    only, so the trigram table starts (or goes back to) empty after any full reindex until a
+    search next needs this rung. Returns True if the table is usable for a query, False if
+    creation/rebuild failed (e.g. a read-only DB) -- callers must skip the trigram rung and
+    report fallback_tier "none" with query_error populated, rather than raise."""
     try:
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
+        conn.execute(
+            "CREATE VIRTUAL TABLE IF NOT EXISTS chunks_trigram USING fts5("
+            "content, content='chunks_data', content_rowid='id', tokenize='trigram')"
+        )
+        # count(*) on an external-content FTS5 table is satisfied directly from the content
+        # table's rowid range and is NOT a reliable "is the index populated" check -- it
+        # reports the full chunks_data row count immediately after CREATE, before 'rebuild'
+        # has ever run (verified empirically against the real corpus DB: a freshly (re)created
+        # table reports the full row count via count(*) while an actual MATCH query still
+        # returns zero rows until 'rebuild' runs). Probe with a real MATCH against a
+        # known-present substring from chunks_data instead of trusting count(*).
+        sample = conn.execute(
+            "SELECT id, content FROM chunks_data WHERE content IS NOT NULL"
+            " AND length(content) >= 8 LIMIT 1"
+        ).fetchone()
+        if sample is not None:
+            sample_id, sample_content = sample
+            m = re.search(r'[A-Za-z]{6,}', sample_content or '')
+            if m:
+                probe_term = '"' + m.group(0)[:6] + '"'
+                hit = conn.execute(
+                    "SELECT count(*) FROM chunks_trigram WHERE chunks_trigram MATCH ? AND rowid = ?",
+                    (probe_term, sample_id),
+                ).fetchone()[0]
+                if hit == 0:
+                    conn.execute("INSERT INTO chunks_trigram(chunks_trigram) VALUES('rebuild')")
+                    # Without an explicit commit, this write lives only in the connection's
+                    # implicit transaction and is silently rolled back the moment conn.close()
+                    # runs below (do_search()'s connections were read-only before task #833, so
+                    # this was never an issue until ensure_trigram() added the first write path)
+                    # -- verified empirically: the rebuild was visible within the same
+                    # connection but vanished from the on-disk shadow tables after close()
+                    # without this commit.
+                    conn.commit()
+        return True
+    except sqlite3.OperationalError:
+        return False
 
+
+def search_db(db_path, query, limit, allowed_doc_ids=None):
+    """Search a single database. Returns {'results': [...], 'tier': tier, 'query_error': str|None}
+    where tier is the internal name (see TIER_RANK) of whichever rung actually produced the
+    returned results ('none' if no rung produced any rows)."""
+    if not os.path.isfile(db_path):
+        return {'results': [], 'tier': 'none', 'query_error': None}
+
+    def build_sql(table, rank_expr, q):
         if allowed_doc_ids:
             placeholders = ','.join('?' * len(allowed_doc_ids))
             sql = f"""
                 SELECT d.chunk_id, d.doc_id, d.section_path, d.title, d.summary,
                        d.token_count, d.cross_refs, d.source_path,
                        d.prev_chunk_id, d.next_chunk_id,
-                       bm25(chunks_fts, 10, 5, 3, 1) AS rank,
+                       {rank_expr} AS rank,
                        substr(d.content, 1, 200) AS snippet
-                FROM chunks_fts
-                JOIN chunks_data d ON d.id = chunks_fts.rowid
-                WHERE chunks_fts MATCH ?
+                FROM {table}
+                JOIN chunks_data d ON d.id = {table}.rowid
+                WHERE {table} MATCH ?
                 AND d.doc_id IN ({placeholders})
                 ORDER BY rank
                 LIMIT ?
             """
-            params = [query] + allowed_doc_ids + [limit]
+            params = [q] + allowed_doc_ids + [limit]
         else:
-            sql = """
+            sql = f"""
                 SELECT d.chunk_id, d.doc_id, d.section_path, d.title, d.summary,
                        d.token_count, d.cross_refs, d.source_path,
                        d.prev_chunk_id, d.next_chunk_id,
-                       bm25(chunks_fts, 10, 5, 3, 1) AS rank,
+                       {rank_expr} AS rank,
                        substr(d.content, 1, 200) AS snippet
-                FROM chunks_fts
-                JOIN chunks_data d ON d.id = chunks_fts.rowid
-                WHERE chunks_fts MATCH ?
+                FROM {table}
+                JOIN chunks_data d ON d.id = {table}.rowid
+                WHERE {table} MATCH ?
                 ORDER BY rank
                 LIMIT ?
             """
-            params = [query, limit]
+            params = [q, limit]
+        return sql, params
 
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+
+        query_error = None
+        rows = []
+        tier = 'none'
+
+        # Rung 0: primary BM25 MATCH on the sanitized query
         try:
-            cursor = conn.execute(sql, params)
-            rows = cursor.fetchall()
+            sql, params = build_sql("chunks_fts", "bm25(chunks_fts, 10, 5, 3, 1)", query)
+            rows = conn.execute(sql, params).fetchall()
+            if rows:
+                tier = 'bm25'
         except sqlite3.OperationalError as e:
+            query_error = str(e)
             print(f"[search] Query error: {e}", file=sys.stderr)
-            conn.close()
-            return []
+            rows = []
+
+        # Rung 1: phrase-quote retry -- only when Rung 0 raised a syntax error
+        if query_error is not None:
+            phrase_query = '"' + query.replace('"', '') + '"'
+            try:
+                sql, params = build_sql("chunks_fts", "bm25(chunks_fts, 10, 5, 3, 1)", phrase_query)
+                rows = conn.execute(sql, params).fetchall()
+                if rows:
+                    tier = 'phrase_retry'
+            except sqlite3.OperationalError as e:
+                print(f"[search] Phrase-retry query error: {e}", file=sys.stderr)
+                rows = []
+
+        # Rung 2: trigram fallback -- on zero rows from whichever of Rungs 0/1 ran
+        # (syntactically valid-but-empty is the common case; this is also the
+        # best-effort path if Rung 1's phrase-retry itself failed to parse).
+        if not rows:
+            if ensure_trigram(conn):
+                trigram_query = '"' + query.replace('"', '') + '"'
+                try:
+                    sql, params = build_sql("chunks_trigram", "bm25(chunks_trigram)", trigram_query)
+                    rows = conn.execute(sql, params).fetchall()
+                    if rows:
+                        tier = 'trigram'
+                except sqlite3.OperationalError as e:
+                    print(f"[search] Trigram query error: {e}", file=sys.stderr)
+                    rows = []
+            elif query_error is None:
+                # Trigram creation/rebuild failed (e.g. read-only DB) and there was no
+                # earlier syntax error to report -- surface the degradation reason so the
+                # envelope's query_error is never silently null on a real failure.
+                query_error = f"trigram fallback unavailable for {db_path} (create/rebuild failed, e.g. read-only database)"
 
         results = []
         for row in rows:
@@ -334,19 +433,22 @@ def search_db(db_path, query, limit, allowed_doc_ids=None):
                 'rank': row['rank'],
                 'snippet': (row['snippet'] or '').strip()[:200],
                 'provenance_fidelity': get_fidelity(fidelity_map, row['doc_id']),
+                'match_tier': ROW_TIER_LABEL.get(tier, 'bm25'),
                 '_source_path': row['source_path'],
                 '_db_path': db_path,
             })
 
         conn.close()
-        return results
+        return {'results': results, 'tier': tier if results else 'none', 'query_error': query_error}
     except Exception as e:
         print(f"[search] Database error ({db_path}): {e}", file=sys.stderr)
-        return []
+        return {'results': [], 'tier': 'none', 'query_error': str(e)}
 
 # Search local then global
-local_results = search_db(local_db, query, limit, allowed_doc_ids if allowed_doc_ids else None)
-global_results = search_db(global_db, query, limit, allowed_doc_ids if allowed_doc_ids else None)
+local_out = search_db(local_db, query, limit, allowed_doc_ids if allowed_doc_ids else None)
+global_out = search_db(global_db, query, limit, allowed_doc_ids if allowed_doc_ids else None)
+local_results = local_out['results']
+global_results = global_out['results']
 
 # Merge: local takes precedence on duplicate doc_id
 local_doc_ids = {r['doc_id'] for r in local_results}
@@ -362,24 +464,53 @@ if not include_unverified:
 merged.sort(key=lambda r: r['rank'])
 merged = merged[:limit]
 
+# --- Envelope construction (task #833) ---
+# fallback_tier/degraded reflect the rows actually surviving quarantine (a tier whose rows
+# were all quarantined does not count as having "answered"). "degraded" is true whenever the
+# primary bm25 tier is not what answered -- this is the honest, never-silent signal that
+# distinguishes "retrieval degraded" from "genuine zero-result", which literature-briefing.sh
+# consumes downstream.
+if merged:
+    tiers_present = {r.get('match_tier', 'bm25') for r in merged}
+    if 'bm25' in tiers_present:
+        fallback_tier = 'bm25'
+    elif 'phrase_retry' in tiers_present:
+        fallback_tier = 'phrase_retry'
+    elif 'trigram_fallback' in tiers_present:
+        fallback_tier = 'trigram'
+    else:
+        fallback_tier = 'none'
+else:
+    fallback_tier = 'none'
+degraded = fallback_tier != 'bm25'
+query_error = next((o['query_error'] for o in (local_out, global_out) if o['query_error']), None)
+
 # Remove internal fields from output
 for r in merged:
     r.pop('_source_path', None)
     r.pop('_db_path', None)
 
-print(json.dumps(merged, indent=2, ensure_ascii=False))
+envelope = {
+    'results': merged,
+    'degraded': degraded,
+    'fallback_tier': fallback_tier,
+    'query_error': query_error,
+}
+
+print(json.dumps(envelope, indent=2, ensure_ascii=False))
 PYEOF
 )
 
   # Fallback: if project filter yielded zero results, re-run without filter
   if [ -n "$project_filter" ] && [ -n "$allowed_doc_ids" ]; then
     local result_count
-    result_count=$(echo "$results" | python3 -c "import json,sys; data=json.load(sys.stdin); print(len(data))" 2>/dev/null || echo "0")
+    result_count=$(echo "$results" | python3 -c "import json,sys; data=json.load(sys.stdin); print(len(data.get('results', [])))" 2>/dev/null || echo "0")
     if [ "$result_count" = "0" ]; then
       results=$(python3 << PYEOF
 import sqlite3
 import json
 import os
+import re
 import sys
 
 local_db = "$local_db"
@@ -424,32 +555,115 @@ def get_fidelity(fmap, doc_id):
 
 fidelity_map = load_fidelity_map(literature_dir)
 
+# See the primary do_search heredoc above for the full docstring/rationale on the fallback
+# ladder (task #833); this unscoped-retry block mirrors it without the allowed_doc_ids branch.
+TIER_RANK = {'bm25': 0, 'phrase_retry': 1, 'trigram': 2, 'none': 3}
+ROW_TIER_LABEL = {'bm25': 'bm25', 'phrase_retry': 'phrase_retry', 'trigram': 'trigram_fallback'}
+
+
+def ensure_trigram(conn):
+    try:
+        conn.execute(
+            "CREATE VIRTUAL TABLE IF NOT EXISTS chunks_trigram USING fts5("
+            "content, content='chunks_data', content_rowid='id', tokenize='trigram')"
+        )
+        # count(*) on an external-content FTS5 table is satisfied directly from the content
+        # table's rowid range and is NOT a reliable "is the index populated" check -- it
+        # reports the full chunks_data row count immediately after CREATE, before 'rebuild'
+        # has ever run (verified empirically against the real corpus DB: a freshly (re)created
+        # table reports the full row count via count(*) while an actual MATCH query still
+        # returns zero rows until 'rebuild' runs). Probe with a real MATCH against a
+        # known-present substring from chunks_data instead of trusting count(*).
+        sample = conn.execute(
+            "SELECT id, content FROM chunks_data WHERE content IS NOT NULL"
+            " AND length(content) >= 8 LIMIT 1"
+        ).fetchone()
+        if sample is not None:
+            sample_id, sample_content = sample
+            m = re.search(r'[A-Za-z]{6,}', sample_content or '')
+            if m:
+                probe_term = '"' + m.group(0)[:6] + '"'
+                hit = conn.execute(
+                    "SELECT count(*) FROM chunks_trigram WHERE chunks_trigram MATCH ? AND rowid = ?",
+                    (probe_term, sample_id),
+                ).fetchone()[0]
+                if hit == 0:
+                    conn.execute("INSERT INTO chunks_trigram(chunks_trigram) VALUES('rebuild')")
+                    # Without an explicit commit, this write lives only in the connection's
+                    # implicit transaction and is silently rolled back the moment conn.close()
+                    # runs below (do_search()'s connections were read-only before task #833, so
+                    # this was never an issue until ensure_trigram() added the first write path)
+                    # -- verified empirically: the rebuild was visible within the same
+                    # connection but vanished from the on-disk shadow tables after close()
+                    # without this commit.
+                    conn.commit()
+        return True
+    except sqlite3.OperationalError:
+        return False
+
 
 def search_db(db_path, query, limit):
     if not os.path.isfile(db_path):
-        return []
-    try:
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-        sql = """
+        return {'results': [], 'tier': 'none', 'query_error': None}
+
+    def build_sql(table, rank_expr, q):
+        sql = f"""
             SELECT d.chunk_id, d.doc_id, d.section_path, d.title, d.summary,
                    d.token_count, d.cross_refs, d.source_path,
                    d.prev_chunk_id, d.next_chunk_id,
-                   bm25(chunks_fts, 10, 5, 3, 1) AS rank,
+                   {rank_expr} AS rank,
                    substr(d.content, 1, 200) AS snippet
-            FROM chunks_fts
-            JOIN chunks_data d ON d.id = chunks_fts.rowid
-            WHERE chunks_fts MATCH ?
+            FROM {table}
+            JOIN chunks_data d ON d.id = {table}.rowid
+            WHERE {table} MATCH ?
             ORDER BY rank
             LIMIT ?
         """
+        return sql, (q, limit)
+
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+
+        query_error = None
+        rows = []
+        tier = 'none'
+
         try:
-            cursor = conn.execute(sql, (query, limit))
-            rows = cursor.fetchall()
+            sql, params = build_sql("chunks_fts", "bm25(chunks_fts, 10, 5, 3, 1)", query)
+            rows = conn.execute(sql, params).fetchall()
+            if rows:
+                tier = 'bm25'
         except sqlite3.OperationalError as e:
+            query_error = str(e)
             print(f"[search] Query error: {e}", file=sys.stderr)
-            conn.close()
-            return []
+            rows = []
+
+        if query_error is not None:
+            phrase_query = '"' + query.replace('"', '') + '"'
+            try:
+                sql, params = build_sql("chunks_fts", "bm25(chunks_fts, 10, 5, 3, 1)", phrase_query)
+                rows = conn.execute(sql, params).fetchall()
+                if rows:
+                    tier = 'phrase_retry'
+            except sqlite3.OperationalError as e:
+                print(f"[search] Phrase-retry query error: {e}", file=sys.stderr)
+                rows = []
+
+        if not rows:
+            if ensure_trigram(conn):
+                trigram_query = '"' + query.replace('"', '') + '"'
+                try:
+                    sql, params = build_sql("chunks_trigram", "bm25(chunks_trigram)", trigram_query)
+                    rows = conn.execute(sql, params).fetchall()
+                    if rows:
+                        tier = 'trigram'
+                except sqlite3.OperationalError as e:
+                    print(f"[search] Trigram query error: {e}", file=sys.stderr)
+                    rows = []
+            elif query_error is None:
+                query_error = f"trigram fallback unavailable for {db_path} (create/rebuild failed, e.g. read-only database)"
+
         results = []
         for row in rows:
             cross_refs = row['cross_refs'] or '[]'
@@ -468,27 +682,53 @@ def search_db(db_path, query, limit):
                 'rank': row['rank'],
                 'snippet': (row['snippet'] or '').strip()[:200],
                 'provenance_fidelity': get_fidelity(fidelity_map, row['doc_id']),
+                'match_tier': ROW_TIER_LABEL.get(tier, 'bm25'),
                 '_source_path': row['source_path'],
                 '_db_path': db_path,
             })
         conn.close()
-        return results
+        return {'results': results, 'tier': tier if results else 'none', 'query_error': query_error}
     except Exception as e:
         print(f"[search] Database error ({db_path}): {e}", file=sys.stderr)
-        return []
+        return {'results': [], 'tier': 'none', 'query_error': str(e)}
 
-local_results = search_db(local_db, query, limit)
-global_results = search_db(global_db, query, limit)
+local_out = search_db(local_db, query, limit)
+global_out = search_db(global_db, query, limit)
+local_results = local_out['results']
+global_results = global_out['results']
 local_doc_ids = {r['doc_id'] for r in local_results}
 merged = local_results + [r for r in global_results if r['doc_id'] not in local_doc_ids]
 if not include_unverified:
     merged = [r for r in merged if r['provenance_fidelity'] not in quarantined_fidelity]
 merged.sort(key=lambda r: r['rank'])
 merged = merged[:limit]
+
+if merged:
+    tiers_present = {r.get('match_tier', 'bm25') for r in merged}
+    if 'bm25' in tiers_present:
+        fallback_tier = 'bm25'
+    elif 'phrase_retry' in tiers_present:
+        fallback_tier = 'phrase_retry'
+    elif 'trigram_fallback' in tiers_present:
+        fallback_tier = 'trigram'
+    else:
+        fallback_tier = 'none'
+else:
+    fallback_tier = 'none'
+degraded = fallback_tier != 'bm25'
+query_error = next((o['query_error'] for o in (local_out, global_out) if o['query_error']), None)
+
 for r in merged:
     r.pop('_source_path', None)
     r.pop('_db_path', None)
-print(json.dumps(merged, indent=2, ensure_ascii=False))
+
+envelope = {
+    'results': merged,
+    'degraded': degraded,
+    'fallback_tier': fallback_tier,
+    'query_error': query_error,
+}
+print(json.dumps(envelope, indent=2, ensure_ascii=False))
 PYEOF
 )
     fi
@@ -510,6 +750,7 @@ do_read() {
 import sqlite3
 import json
 import os
+import re
 import sys
 
 local_db = "$local_db"
@@ -653,6 +894,7 @@ do_toc() {
 import sqlite3
 import json
 import os
+import re
 import sys
 
 local_db = "$local_db"
@@ -745,6 +987,7 @@ do_refs() {
 import sqlite3
 import json
 import os
+import re
 import sys
 
 local_db = "$local_db"
@@ -799,6 +1042,7 @@ do_navigate() {
 import sqlite3
 import json
 import os
+import re
 import sys
 
 local_db = "$local_db"
