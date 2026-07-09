@@ -1,0 +1,32 @@
+{
+  "phase": 3,
+  "phase_name": "Reconvert truncated Fine papers + rabinovich_2014 paraphrase",
+  "started_at": "2026-07-09T23:58:00Z",
+  "last_updated": "2026-07-10T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Back up existing .md for all 3 dirs", "status": "done",
+     "files_touched": [
+       "Projects/Literature/sources/fine_2012_guide-to-ground/fine_2012_guide-to-ground.md.bak-20260709T235817Z",
+       "Projects/Literature/sources/fine_2012_counterfactuals-without-possible-worlds/fine_2012_counterfactuals-without-possible-worlds.md.bak-20260709T235817Z",
+       "Projects/Literature/sources/rabinovich_2014/Rabinovich_2014_Proof_of_Kamps_Theorem.md.bak-20260709T235817Z"
+     ]},
+    {"id": 2, "description": "Reconvert fine_2012_guide-to-ground from PDF", "status": "done",
+     "files_touched": ["Projects/Literature/sources/fine_2012_guide-to-ground/fine_2012_guide-to-ground.md"]},
+    {"id": 3, "description": "Reconvert fine_2012_counterfactuals-without-possible-worlds from PDF", "status": "done",
+     "files_touched": ["Projects/Literature/sources/fine_2012_counterfactuals-without-possible-worlds/fine_2012_counterfactuals-without-possible-worlds.md"]},
+    {"id": 4, "description": "Reconvert rabinovich_2014 from PDF", "status": "done",
+     "files_touched": ["Projects/Literature/sources/rabinovich_2014/Rabinovich_2014_Proof_of_Kamps_Theorem.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.2",
+      "description": "Reconvert each via literature-convert.sh <pdf> then literature-chunk.sh <md>",
+      "type": "altered",
+      "reason": "literature-convert.sh names its output file from the PDF's own basename (slugified), not the existing .md's filename, so each reconversion initially landed as a differently-named sibling file rather than overwriting in place. mv'd the new file onto the canonical .md filename (backup already taken first). Did not separately run literature-chunk.sh in this phase since the audit's acceptance signal (Phase 3's verification) reads only whole-document .md content; chunk regeneration for search is centralized in Phase 8.",
+      "annotation": "*(deviation: altered — see plan Task 3.2 note)*"
+    }
+  ]
+}

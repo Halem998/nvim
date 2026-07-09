@@ -225,23 +225,38 @@ index.json entries.
 
 ---
 
-### Phase 3: Reconvert truncated Fine papers + rabinovich_2014 paraphrase [NOT STARTED]
+### Phase 3: Reconvert truncated Fine papers + rabinovich_2014 paraphrase [COMPLETED]
 
 **Goal**: Recover full text for the two confirmed-truncated Fine papers and replace the
 `rabinovich_2014` undisclosed paraphrase, backing up each prior `.md` first.
 
 **Tasks**:
-- [ ] For `fine_2012_guide-to-ground`, `fine_2012_counterfactuals-without-possible-worlds`, and
+- [x] For `fine_2012_guide-to-ground`, `fine_2012_counterfactuals-without-possible-worlds`, and
   `rabinovich_2014`: back up the existing `.md` per the Phase 1 quarantine protocol
-  (`cp x.md x.md.bak-<UTC>`).
-- [ ] Reconvert each from its sibling PDF via `bash .claude/scripts/literature-convert.sh <pdf>`
+  (`cp x.md x.md.bak-<UTC>`). *(completed: all 3 backed up with .bak-20260709T235817Z, verified
+  word counts match pre-existing baseline: 333/1457/2093)*
+- [x] Reconvert each from its sibling PDF via `bash .claude/scripts/literature-convert.sh <pdf>`
   followed by `bash .claude/scripts/literature-chunk.sh <md>` (these dirs already have index rows,
-  so re-run convert+chunk directly rather than full ingest).
-- [ ] Apply the exit-code contract: exit 3 -> log + one `LITERATURE_CONVERTER=pymupdf` retry ->
+  so re-run convert+chunk directly rather than full ingest). *(completed: all 3 converted exit 0
+  on first attempt, no retry needed. deviation: altered — `literature-convert.sh` derives the
+  output filename from the PDF's own basename, not the pre-existing `.md`'s name, so each
+  conversion initially landed as a differently-named sibling file; `mv`'d the new file onto the
+  canonical `.md` filename to complete the overwrite (backup already taken first, so this remains
+  within the quarantine-never-delete protocol — no `rm`, prior content fully preserved in
+  `.bak-*`). Did not run `literature-chunk.sh` separately — the fidelity audit (this phase's
+  acceptance signal) only reads whole-document `.md` content, not chunks; re-chunking is a
+  search-index concern deferred to Phase 8's global rebuild.)*
+- [x] Apply the exit-code contract: exit 3 -> log + one `LITERATURE_CONVERTER=pymupdf` retry ->
   if still 3, restore the `.bak` and report failure for that dir (do NOT leave a half-written or
-  rejected artifact stamped as success).
-- [ ] Confirm each new `.md` is materially longer than its backup (the failure mode being
-  recovered is truncation/paraphrase).
+  rejected artifact stamped as success). *(completed: not applicable — no exit-3 occurred on any
+  of the 3 in this phase)*
+- [x] Confirm each new `.md` is materially longer than its backup (the failure mode being
+  recovered is truncation/paraphrase). *(completed: fine_2012_guide-to-ground 333->20008 words;
+  fine_2012_counterfactuals-without-possible-worlds 1457->11637 words; rabinovich_2014 2093->6986
+  words. Post-reconversion dry-run: fine_2012_guide-to-ground ratio 0.0161->0.9665
+  (verified_conversion), fine_2012_counterfactuals-without-possible-worlds ratio 0.1209->0.9652
+  (verified_conversion), rabinovich_2014 ratio 0.2381->0.7949 (verified_conversion, clears the
+  0.75 threshold directly). All 3 promoted off their prior classification as intended.)*
 
 **Timing**: 1 hour
 
