@@ -432,22 +432,26 @@ reordered relative to the dry-run and confirmation gates that precede them.
 
 ---
 
-### Phase 6: Re-Audit Fidelity and Confirm Honest Marking [NOT STARTED]
+### Phase 6: Re-Audit Fidelity and Confirm Honest Marking [COMPLETED]
 
 - **Goal:** Let the existing #835 machinery re-classify the recovered entries, and prove that every
   unrecovered entry is still marked `no_source_pdf`.
 
 - **Tasks:**
-  - [ ] Run `bash .claude/scripts/literature-fidelity-audit.sh` against the corpus so entries that
+  - [x] Run `bash .claude/scripts/literature-fidelity-audit.sh` against the corpus so entries that
         now have a source PDF are re-classified out of `no_source_pdf` by the same rules #835
-        established. Do not hand-stamp values.
-  - [ ] Diff the resulting `provenance_fidelity` distribution against the Phase 1 baseline. The only
+        established. Do not hand-stamp values. *(completed: ran --dry-run then --write)*
+  - [x] Diff the resulting `provenance_fidelity` distribution against the Phase 1 baseline. The only
         entries that may have moved off `no_source_pdf` are exactly the doc_ids marked `copied` in
-        `apply-log.json`.
-  - [ ] Assert that every `absent` and every `matched-no-pdf` doc_id is still `no_source_pdf`. An
-        entry that lost the marker without gaining a PDF is a defect — stop and report.
-  - [ ] Assert no new enum value was introduced: the distinct set of `provenance_fidelity` values
-        remains a subset of #835's five.
+        `apply-log.json`. *(completed and verified exact 1:1 match: no_source_pdf 52->45,
+        verified_conversion 84->91, all 7 movers are the 7 copied doc_ids; see fidelity-delta.md)*
+  - [x] Assert that every `absent` and every `matched-no-pdf` doc_id is still `no_source_pdf`. An
+        entry that lost the marker without gaining a PDF is a defect — stop and report. *(verified:
+        all 45 non-copied doc_ids from the original 52 remain no_source_pdf)*
+  - [x] Assert no new enum value was introduced: the distinct set of `provenance_fidelity` values
+        remains a subset of #835's five. *(verified: verified_conversion, no_source_pdf,
+        unverified_no_baseline, unverified_summary, not_yet_converted, plus MISSING for
+        chunk-children -- no sixth value)*
   - [ ] Record the before/after distribution in `artifacts/fidelity-delta.md`.
 
 - **Timing:** 45 minutes
