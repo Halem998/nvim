@@ -1,0 +1,42 @@
+{
+  "phase": 5,
+  "phase_name": "End-to-end verification and defect sweep",
+  "started_at": "2026-07-09T20:00:00Z",
+  "last_updated": "2026-07-09T20:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run the auditor --write on a clean corpus (backup taken); capture the enum distribution", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Exercise literature-search.sh default search, --include-unverified search, and --read for one doc of each enum value", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Exercise literature-briefing.sh per-repo and global mode; confirm markers and footer", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm the 5 disclosed partials and 30 healthy docs surface WITHOUT the unverified marker", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm no corpus .md/.pdf file was modified or deleted", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm re-running the auditor is a no-op (idempotency holds after all edits)", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Run existing test-lit-pipeline.sh (static + --runtime) to confirm no regression to existing callers", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "5.verification",
+      "description": "Plan's literal verification steps reference reading rabinovich_2014 chunks via literature-search.sh --read",
+      "type": "altered",
+      "reason": "rabinovich_2014 (and several other named benchmarks: thomas_2003_reactive, libkin_2004_ch3_ch7, hodkinson_2006, baier_katoen_2008) have no chunks.json and are not present in .literature.db -- a pre-existing corpus-indexing gap orthogonal to this task. index.json-side correctness for rabinovich_2014 was verified directly (repeated across Phases 1, 2, and 5). literature-search.sh/literature-briefing.sh runtime behavior was verified against equivalent live-indexed docs instead: thomason_1984 (unverified_no_baseline) and blackburn_2002/doets_1987 (verified_conversion).",
+      "annotation": "n/a - verification-only phase, no plan checklist items to annotate; documented here for traceability."
+    }
+  ],
+  "handoff_count": 0,
+  "verification_evidence": {
+    "auditor_idempotent_real_corpus": "3rd --write run (post Phase 3/4 script edits) produced changed=0/unchanged=153, byte-identical diff against pre-write snapshot",
+    "backups_present": ["index.json.bak.20260709-190805", "index.json.bak.20260709-190827", "index.json.bak.20260709-192417", "index.json.bak.20260709-192428"],
+    "sources_untouched": "confirmed via both mtime scan and `git status --short sources/` inside the ~/Projects/Literature git repo (empty output)",
+    "index_json_modified_as_expected": "`git status --short index.json` in ~/Projects/Literature shows ' M index.json' (intended stamping change, not yet committed -- external repo, out of scope for this task's git workflow)",
+    "test_lit_pipeline_static": "26/26 passed",
+    "test_lit_pipeline_runtime": "33/33 passed (includes 7 new Section E runtime smoke checks, all passing, no regression)",
+    "enum_value_spot_checks": {
+      "unverified_summary": "rabinovich_2014 (index.json direct)",
+      "unverified_no_baseline": "thomason_1984 (literature-search.sh --read, banner present)",
+      "verified_conversion": "blackburn_2002/doets_1987/caleiro_2013/hodkinson_2006/libkin_2004_ch3_ch7/thomas_2003_ch01/thomas_2003_ch03/baier_katoen_2008_part01 (no banner/marker)",
+      "no_source_pdf": "burgess_1982_i (index.json direct)",
+      "not_yet_converted": "gabbay_2000 (index.json direct + briefing.sh per-repo test, unmarked)"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #835
 
 - **Task**: 835 - Literature corpus provenance and fidelity audit
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: None (orthogonal to #831; unblocks a required /revise of #832)
 - **Research Inputs**: specs/835_literature_corpus_provenance_fidelity_audit/reports/01_provenance-fidelity-audit.md
@@ -312,21 +312,38 @@ global modes, extend the "How to Use" footer, and fail open on a missing field.
   `not_yet_converted` case (gabbay_2000) is correctly left UNMARKED per the plan's explicit
   fidelity-value routing (only unverified_summary/unverified_no_baseline/absent get the marker).
 
-### Phase 5: End-to-end verification and defect sweep [NOT STARTED]
+### Phase 5: End-to-end verification and defect sweep [COMPLETED]
 
 **Goal**: Confirm the full path (audit -> stamp -> flag) behaves correctly across both scripts and
 that no false positives or corpus mutations occurred.
 
 **Tasks**:
-- [ ] Run the auditor `--write` on a clean corpus (backup taken); capture the enum distribution.
-- [ ] Exercise `literature-search.sh` default search, `--include-unverified` search, and `--read`
-      for one doc of each enum value; record banner/ranking behavior.
-- [ ] Exercise `literature-briefing.sh` per-repo and (if a query is available) global mode; confirm
-      markers and footer.
-- [ ] Confirm the 5 disclosed partials and 30 healthy docs surface WITHOUT the unverified marker.
-- [ ] Confirm no corpus `.md`/`.pdf` file was modified or deleted (`git status`/mtime check on
-      `~/Projects/Literature/sources`).
-- [ ] Confirm re-running the auditor is a no-op (idempotency holds after all edits).
+- [x] Run the auditor `--write` on a clean corpus (backup taken); capture the enum distribution.
+      *(completed: re-ran after Phase 3/4 script edits; 0 changed / 153 unchanged, confirming the
+      corpus was never re-mutated by anything other than the Phase 2 write)*
+- [x] Exercise `literature-search.sh` default search, `--include-unverified` search, and `--read`
+      for one doc of each enum value; record banner/ranking behavior. *(completed: thomason_1984
+      (unverified_no_baseline) excluded by default, included + bannered with --include-unverified;
+      blackburn_2002/doets_1987 (verified_conversion) unbannered, normal ranking)*
+- [x] Exercise `literature-briefing.sh` per-repo and (if a query is available) global mode; confirm
+      markers and footer. *(completed: rabinovich_2014 marked in a temporary uncommitted test
+      sub-index; global-mode "bisimulation" query unmarked; footer extended in both modes)*
+- [x] Confirm the 5 disclosed partials and 30 healthy docs surface WITHOUT the unverified marker.
+      *(completed: doets_1987, libkin_2004_ch3_ch7, hodkinson_2006, thomas_2003_ch01,
+      thomas_2003_ch03 = verified_conversion; spot-checked blackburn_2002_book, caleiro_2013,
+      baier_katoen_2008_part01 among the healthy population)*
+- [x] Confirm no corpus `.md`/`.pdf` file was modified or deleted (`git status`/mtime check on
+      `~/Projects/Literature/sources`). *(completed: ~/Projects/Literature is itself a git repo;
+      `git status --short sources/` returns empty, and an mtime scan found zero files under
+      sources/ newer than the task start. `git status --short index.json` correctly shows the
+      intended modification.)*
+- [x] Confirm re-running the auditor is a no-op (idempotency holds after all edits). *(completed,
+      see first task above)*
+
+Additionally (beyond the plan's literal checklist): ran the pre-existing
+`.claude/scripts/test-lit-pipeline.sh` (both static and `--runtime` modes) to confirm no
+regression to existing literature-briefing.sh/literature-search.sh callers — 26/26 static checks
+and 33/33 runtime checks passed.
 
 **Timing**: 1 hour
 
@@ -337,18 +354,18 @@ that no false positives or corpus mutations occurred.
 
 **Verification**:
 - All checklist items pass; `rabinovich_2014` is the only `unverified_summary`; zero disclosed-partial
-  false positives; zero corpus deletions.
+  false positives; zero corpus deletions. CONFIRMED.
 
 ## Testing & Validation
 
-- [ ] Detector report-only run classifies the corpus with `rabinovich_2014` as the sole
+- [x] Detector report-only run classifies the corpus with `rabinovich_2014` as the sole
       `unverified_summary` and the 5 disclosed partials as `verified_conversion`.
-- [ ] `--write` is idempotent (second run produces an empty diff) and backup-first.
-- [ ] `literature-search.sh` `--read` banners non-verified content; default ranking excludes
+- [x] `--write` is idempotent (second run produces an empty diff) and backup-first.
+- [x] `literature-search.sh` `--read` banners non-verified content; default ranking excludes
       unverified; `--include-unverified` re-includes.
-- [ ] `literature-search.sh` and `literature-briefing.sh` both fail open (absent field -> unverified).
-- [ ] `literature-briefing.sh` marks non-verified entries and carries the extended footer.
-- [ ] No corpus file deleted or content-modified anywhere under `~/Projects/Literature/sources`.
+- [x] `literature-search.sh` and `literature-briefing.sh` both fail open (absent field -> unverified).
+- [x] `literature-briefing.sh` marks non-verified entries and carries the extended footer.
+- [x] No corpus file deleted or content-modified anywhere under `~/Projects/Literature/sources`.
 
 ## Artifacts & Outputs
 
