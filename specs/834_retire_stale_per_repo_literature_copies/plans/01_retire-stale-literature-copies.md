@@ -102,14 +102,14 @@ Phases within the same wave can execute in parallel. Phase 1 (pre-delete manifes
 
 ---
 
-### Phase 2: Back Up the Gitignored PDFs [NOT STARTED]
+### Phase 2: Back Up the Gitignored PDFs [COMPLETED]
 
 **Goal**: Create a single compressed backup of the untracked PDFs — the only content with zero git recoverability — stored outside the repo so it is not itself a second stale copy.
 
 **Tasks**:
-- [ ] Create the backup archive (PDFs are captured because the tar includes all of `sources/`; the tracked `.md`/`index.json` come along harmlessly and are separately git-recoverable):
-  `tar czf ~/Projects/backup-bimodallogic-literature-sources-$(date +%Y%m%d).tar.gz -C ~/Projects/BimodalLogic/specs/literature sources`
-- [ ] Confirm the archive was written to `~/Projects/` (repo-external) and record its path and size.
+- [x] Create the backup archive (PDFs are captured because the tar includes all of `sources/`; the tracked `.md`/`index.json` come along harmlessly and are separately git-recoverable):
+  `tar czf ~/Projects/backup-bimodallogic-literature-sources-$(date +%Y%m%d).tar.gz -C ~/Projects/BimodalLogic/specs/literature sources` *(completed)*
+- [x] Confirm the archive was written to `~/Projects/` (repo-external) and record its path and size. *(completed: ~/Projects/backup-bimodallogic-literature-sources-20260709.tar.gz, 166M, 223 tar entries)*
 
 **Timing**: 10 minutes
 
@@ -124,17 +124,17 @@ Phases within the same wave can execute in parallel. Phase 1 (pre-delete manifes
 
 ---
 
-### Phase 3: Verify the Backup Against the Manifest [NOT STARTED]
+### Phase 3: Verify the Backup Against the Manifest [COMPLETED]
 
 **Goal**: Prove the backup is restorable and byte-faithful BEFORE deleting anything — an unverified backup is not a backup. Re-hash the PDFs from the archive contents and compare against the Phase 1 PDF manifest.
 
 **Tasks**:
-- [ ] Extract the archive to a scratch location: `mkdir -p ~/Projects/task834-verification/restore-check && tar xzf ~/Projects/backup-bimodallogic-literature-sources-*.tar.gz -C ~/Projects/task834-verification/restore-check`
-- [ ] Re-hash the restored PDFs with the same relative-path scheme used in Phase 1:
-  `cd ~/Projects/task834-verification/restore-check && find sources -type f -name '*.pdf' -exec sha256sum {} \; | sort > ~/Projects/task834-verification/backup-pdf-manifest.txt`
-- [ ] Diff the two PDF manifests: `diff ~/Projects/task834-verification/predelete-pdf-manifest.txt ~/Projects/task834-verification/backup-pdf-manifest.txt` — must be empty (identical hashes AND identical relative paths).
-- [ ] If the diff is non-empty, STOP: the backup is not verified; do not delete. Re-create the backup and re-verify, or report a blocker.
-- [ ] On success, remove the scratch restore copy to reclaim space: `rm -rf ~/Projects/task834-verification/restore-check`
+- [x] Extract the archive to a scratch location: `mkdir -p ~/Projects/task834-verification/restore-check && tar xzf ~/Projects/backup-bimodallogic-literature-sources-*.tar.gz -C ~/Projects/task834-verification/restore-check` *(completed)*
+- [x] Re-hash the restored PDFs with the same relative-path scheme used in Phase 1:
+  `cd ~/Projects/task834-verification/restore-check && find sources -type f -name '*.pdf' -exec sha256sum {} \; | sort > ~/Projects/task834-verification/backup-pdf-manifest.txt` *(completed: 31 PDFs)*
+- [x] Diff the two PDF manifests: `diff ~/Projects/task834-verification/predelete-pdf-manifest.txt ~/Projects/task834-verification/backup-pdf-manifest.txt` — must be empty (identical hashes AND identical relative paths). *(completed: empty diff, exit 0)*
+- [x] If the diff is non-empty, STOP: the backup is not verified; do not delete. Re-create the backup and re-verify, or report a blocker. *(completed: diff was empty — no action needed)*
+- [x] On success, remove the scratch restore copy to reclaim space: `rm -rf ~/Projects/task834-verification/restore-check` *(completed)*
 
 **Timing**: 15 minutes
 
@@ -150,15 +150,15 @@ Phases within the same wave can execute in parallel. Phase 1 (pre-delete manifes
 
 ---
 
-### Phase 4: Confirm `--lit` Resolves Pre-Delete (Read-Only Baseline) [NOT STARTED]
+### Phase 4: Confirm `--lit` Resolves Pre-Delete (Read-Only Baseline) [COMPLETED]
 
 **Goal**: Capture a baseline showing `literature-briefing.sh` in BimodalLogic emits a correct, non-empty briefing resolving to central, so the post-delete run (Phase 6) can be compared against it. Read-only; no writes, no deletion dependency.
 
 **Tasks**:
-- [ ] Run the per-repo briefing read-only from within BimodalLogic:
-  `cd ~/Projects/BimodalLogic && bash .claude/scripts/literature-briefing.sh` (per-repo mode reads `specs/literature-index.json` + `$LITERATURE_DIR/index.json`; it only prints).
-- [ ] Save the output to `~/Projects/task834-verification/predelete-briefing.txt`.
-- [ ] Confirm the briefing is non-empty, contains both sub-index entries (`rabinovich_2014`, `kamp_1968_tense-logic-linear-order`), and every `dir:` path points under `/home/benjamin/Projects/Literature/sources/` (central) — never under `~/Projects/BimodalLogic/specs/literature/sources/`.
+- [x] Run the per-repo briefing read-only from within BimodalLogic:
+  `cd ~/Projects/BimodalLogic && bash .claude/scripts/literature-briefing.sh` (per-repo mode reads `specs/literature-index.json` + `$LITERATURE_DIR/index.json`; it only prints). *(completed, exit 0)*
+- [x] Save the output to `~/Projects/task834-verification/predelete-briefing.txt`. *(completed)*
+- [x] Confirm the briefing is non-empty, contains both sub-index entries (`rabinovich_2014`, `kamp_1968_tense-logic-linear-order`), and every `dir:` path points under `/home/benjamin/Projects/Literature/sources/` (central) — never under `~/Projects/BimodalLogic/specs/literature/sources/`. *(completed: both entries present, both dir: paths under central)*
 
 **Timing**: 10 minutes
 
