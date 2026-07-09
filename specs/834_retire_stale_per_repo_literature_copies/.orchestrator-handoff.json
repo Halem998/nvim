@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Created an 8-phase safe-deletion plan for retiring ~/Projects/BimodalLogic/specs/literature/sources/: pre-delete sha256 manifest and central re-verification, a verified backup of the gitignored PDFs, read-only --lit confirmation before and after, sources/-only deletion, a local BimodalLogic-repo commit (no push, no PR), and a recorded cslib follow-up recommendation. Backup lifecycle and rollback (git for tracked files, backup tar for gitignored PDFs) are specified; nothing under ~/Projects/Literature/ is touched.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/834_retire_stale_per_repo_literature_copies/plans/01_retire-stale-literature-copies.md",
+      "summary": "8-phase backup-verify-delete plan; deletes only sources/, commits locally in the BimodalLogic repo, respects pr-prohibition, records cslib follow-up out of scope."
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "implement",
+  "phases_total": 8
+}

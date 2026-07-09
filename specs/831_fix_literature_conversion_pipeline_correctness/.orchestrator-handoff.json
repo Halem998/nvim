@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Created a 7-phase implementation plan sequencing the engine swap and BUG 2/3/4 fixes so the converter is never left silently-wrong, with a loud-failing quality gate (exit 3), an explicitly forced-fallback test, an Alur regression fixture, and recorded #832/#833 interface contracts. The ~/.dotfiles nix unblock is documented as a non-blocking user prerequisite, not an agent edit.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/831_fix_literature_conversion_pipeline_correctness/plans/01_conversion-pipeline-fix.md",
+      "summary": "7-phase plan for the conversion-pipeline correctness fixes and quality gate."
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "implement",
+  "phases_total": 7
+}
