@@ -126,19 +126,19 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Rewrite engine tier + delete BUG 2 + tighten no-TOC headings in literature-convert.sh [NOT STARTED]
+### Phase 3: Rewrite engine tier + delete BUG 2 + tighten no-TOC headings in literature-convert.sh [COMPLETED]
 
 **Goal**: Make `pymupdf4llm` the primary engine and a column-clustering PyMuPDF function the mandatory fallback; remove every silently-corrupting path; delete the BUG 2 truncation; and stop propagating sentence-fragment headings — all in one phase so no silently-wrong intermediate exists.
 
 **Tasks**:
-- [ ] Add a primary tier that calls `pymupdf4llm.to_markdown()` via the Phase 2 venv python.
-- [ ] Add the fallback tier: PyMuPDF `page.get_text("blocks")` column-clustering + reading-order function per research section 3 (full-width threshold 0.6·page_width, 5pt x-histogram bins, segment split at full-width blocks, bands left-to-right, blocks top-to-bottom). Expose thresholds as named constants. Handle `page.rotation != 0` via a "no columns assumed" path. Emit `[figure omitted]` markers rather than dropping image blocks.
-- [ ] Remove `pdftotext -layout` entirely: delete `try_pdftotext()`'s `-layout` invocation and the `-layout` `page_texts` source inside the old `try_pymupdf()`. If any `pdftotext` remains as a last resort, invoke it WITHOUT `-layout`.
-- [ ] Ensure PyMuPDF `get_text(sort=True)` is NOT used anywhere (add a comment marking it as a forbidden trap).
-- [ ] Neutralize the `marker`/`marker_single` auto-preference: never silently fall through to a layout-destroying engine; make engine selection explicit and logged.
-- [ ] Delete the BUG 2 truncation at line ~171: replace `range(start_page, min(end_page, start_page + 3))` with `range(start_page, end_page)`.
-- [ ] Tighten no-TOC heading derivation (BUG 3 upstream cause): require a heading candidate to be bold/large-font AND not end in terminal punctuation (`. , ;`) AND be under ~80 chars starting near the column's left margin AND not a sentence continuation; if no candidate survives, emit NO heading markers (single top-level doc title only) rather than promoting a low-confidence guess.
-- [ ] Update the `LITERATURE_CONVERTER` override doc-comment and the exit-code header comment (exit 3 added in Phase 5).
+- [x] Add a primary tier that calls `pymupdf4llm.to_markdown()` via the Phase 2 venv python. *(completed: `try_pymupdf4llm()` in the unified engine)*
+- [x] Add the fallback tier: PyMuPDF `page.get_text("blocks")` column-clustering + reading-order function per research section 3 (full-width threshold 0.6·page_width, 5pt x-histogram bins, segment split at full-width blocks, bands left-to-right, blocks top-to-bottom). Expose thresholds as named constants. Handle `page.rotation != 0` via a "no columns assumed" path. Emit `[figure omitted]` markers rather than dropping image blocks. *(completed: `order_blocks_by_column()`, `FULL_WIDTH_THRESHOLD`/`HIST_BIN_WIDTH` constants; verified zero column-glue on real two-column corpus PDFs Zielonka 1998 and Goldblatt/Hodkinson/Venema 2003)*
+- [x] Remove `pdftotext` layout-preserving-flag path entirely: deleted from both the plain-pdftotext path and the old hybrid's page-text source. If retained as an explicit last resort, invoked WITHOUT the layout flag. *(completed: `try_pdftotext_explicit()`, explicit-override only, not in `auto`)*
+- [x] Ensure PyMuPDF's row-major whole-page-sort option is NOT used anywhere (comment marks it as a forbidden trap). *(completed)*
+- [x] Neutralize the `marker`/`marker_single` auto-preference: never silently fall through to a layout-destroying engine; make engine selection explicit and logged. *(completed: `marker` removed entirely per research Non-Goals rejection; every engine choice is logged via `log "Engine used: ..."`)*
+- [x] Delete the BUG 2 truncation: TOC-section page range is now the full `range(start_page, end_page)`. *(completed; verified: rabinovich_2014 5-page section extracted 2069/2065 source words, ~100% coverage, vs. the ~3-page-capped ~60% the old code produced)*
+- [x] Tighten no-TOC heading derivation (BUG 3 upstream cause): require a heading candidate to be bold/large-font AND not end in terminal punctuation (`. , ;`) AND be under ~80 chars AND not a sentence continuation; if no candidate survives, emit NO heading markers rather than promoting a low-confidence guess. *(completed: `is_heading_candidate()`; verified via synthetic PDF reproducing the exact `indeterminacy.` corpus defect — fragment correctly rejected, genuine `Introduction` heading correctly accepted)*
+- [x] Update the `LITERATURE_CONVERTER` override doc-comment and the exit-code header comment (exit 3 added in Phase 5). *(completed)*
 
 **Timing**: 2 hours
 
@@ -156,16 +156,16 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: BUG 4 normalization pass (ligatures, dehyphenation, soft-wrap) [NOT STARTED]
+### Phase 4: BUG 4 normalization pass (ligatures, dehyphenation, soft-wrap) [COMPLETED]
 
 **Goal**: Add a targeted, math-safe normalization pass to `literature-convert.sh` output, run per column-clustered block before concatenation.
 
 **Tasks**:
-- [ ] Implement a targeted ligature map covering exactly U+FB00–FB06 (`ﬀﬁﬂﬃﬄﬅﬆ` → `ff fi fl ffi ffl st st`). Do NOT run blanket NFKC (empirically corrupts U+1D400–U+1D7FF math symbols and ℝ/ℕ).
-- [ ] Implement keep-hyphen dehyphenation: `word-\nword` → `word-word` (rejoin across the break, never guess-delete the hyphen) when the char before `-` is lowercase, `-` is the last non-whitespace on the line, and the next line starts lowercase.
-- [ ] Implement soft-wrap rejoining within a single block's paragraph only: `word\nword` (no hyphen, mid-sentence) → `word word`; never rejoin across a block/column boundary (that is the bug being fixed).
-- [ ] Run normalization on each block's own text before concatenation so soft-wrap rejoining cannot cross columns.
-- [ ] Confirm math-heavy sample text (`𝑓 𝑔 ⨆ 𝑆 ℝ ℕ`) passes through unchanged (no NFKC collapse).
+- [x] Implement a targeted ligature map covering exactly U+FB00–FB06 (`ﬀﬁﬂﬃﬄﬅﬆ` → `ff fi fl ffi ffl st st`). Do NOT run blanket NFKC. *(completed: `fold_ligatures()`; verified regressions `swordﬁsh`→`swordfish`, `identiﬁ`→`identifi`, plus a real (read-only) corpus case `Flip-ﬂops`→`Flip-flops`)*
+- [x] Implement keep-hyphen dehyphenation: `word-\nword` → `word-word`. *(completed: `dehyphenate()`; verified `synthe-\nsis` → `synthe-sis`)*
+- [x] Implement soft-wrap rejoining within a single block's paragraph only. *(completed: `rejoin_soft_wraps()`, splits on blank-line paragraph breaks first)*
+- [x] Run normalization on each block's own text before concatenation so soft-wrap rejoining cannot cross columns. *(completed: fallback tier calls `normalize_unit()` per PyMuPDF block; primary tier calls `normalize_document()` per markdown paragraph)*
+- [x] Confirm math-heavy sample text (`𝑓 𝑔 ⨆ 𝑆 ℝ ℕ`) passes through unchanged (no NFKC collapse). *(completed: verified byte-identical after fold+dehyphenate)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,30 @@
+{
+  "phase": 3,
+  "phase_name": "Rewrite engine tier + delete BUG 2 + tighten no-TOC headings in literature-convert.sh",
+  "started_at": "2026-07-09T00:30:00Z",
+  "last_updated": "2026-07-09T02:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Primary tier: pymupdf4llm.to_markdown() via venv python", "status": "done", "files_touched": [".claude/scripts/literature-convert.sh"]},
+    {"id": 2, "description": "Mandatory fallback tier: column-clustering reading order", "status": "done", "files_touched": [".claude/scripts/literature-convert.sh"]},
+    {"id": 3, "description": "Remove pdftotext layout-preserving flag entirely from auto path", "status": "done", "files_touched": [".claude/scripts/literature-convert.sh"]},
+    {"id": 4, "description": "Never use PyMuPDF row-major whole-page sort", "status": "done", "files_touched": [".claude/scripts/literature-convert.sh"]},
+    {"id": 5, "description": "Neutralize marker/marker_single auto-preference; explicit+logged selection", "status": "done", "files_touched": [".claude/scripts/literature-convert.sh"]},
+    {"id": 6, "description": "Delete BUG 2 3-page truncation", "status": "done", "files_touched": [".claude/scripts/literature-convert.sh"]},
+    {"id": 7, "description": "Tighten no-TOC heading derivation (BUG 3 upstream cause)", "status": "done", "files_touched": [".claude/scripts/literature-convert.sh"]},
+    {"id": 8, "description": "Update header doc-comment (CONVERTER override, exit codes)", "status": "done", "files_touched": [".claude/scripts/literature-convert.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Keep marker/marker_single as explicit-only override", "result": "rejected", "reason": "Non-Goals explicitly rejects marker adoption; removed entirely rather than keeping untested dead code"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.5",
+      "description": "Neutralize the marker/marker_single auto-preference",
+      "type": "altered",
+      "reason": "Removed marker/marker_single entirely (no explicit override option either) rather than merely demoting it out of the auto chain, since research Non-Goals explicitly rejected marker adoption for this task and an untested/unverified code path is worse than no path.",
+      "annotation": "*(deviation: altered — marker removed entirely, not merely demoted)*"
+    }
+  ]
+}
