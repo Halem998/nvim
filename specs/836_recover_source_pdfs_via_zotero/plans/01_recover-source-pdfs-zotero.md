@@ -368,35 +368,44 @@ reordered relative to the dry-run and confirmation gates that precede them.
 
 ---
 
-### Phase 5: Apply — Copy Approved PDFs and Update index.json (Idempotent) [NOT STARTED]
+### Phase 5: Apply — Copy Approved PDFs and Update index.json (Idempotent) [COMPLETED]
 
 - **Goal:** The first and only phase that mutates the corpus. Copy each eligible PDF into its
   `sources/<doc_id>/` directory and record the verified Zotero identity in `index.json`. Re-running
   this phase must be a no-op.
 
 - **Tasks:**
-  - [ ] Re-assert the Phase 1 preconditions immediately before writing: backup file exists and
-        parses, corpus git tree is clean apart from expected artifacts.
-  - [ ] For each eligible record (`tier == "key-anchored"`, or `tier == "search-candidate"` with
-        `decision == "approved"`):
-    - [ ] Compute the destination `~/Projects/Literature/sources/<doc_id>/<basename-of-resolved-path>`.
+  - [x] Re-assert the Phase 1 preconditions immediately before writing: backup file exists and
+        parses, corpus git tree is clean apart from expected artifacts. *(re-verified: backup
+        parses with 280 entries, HEAD unchanged since Phase 1, sources/ diff still empty)*
+  - [x] For each eligible record (`tier == "key-anchored"`, or `tier == "search-candidate"` with
+        `decision == "approved"`) -- 7 records:
+    - [x] Compute the destination `~/Projects/Literature/sources/<doc_id>/<basename-of-resolved-path>`.
           Never create `~/Projects/Literature/pdfs/`.
-    - [ ] If the destination already exists and its sha256 equals the source's, skip and record
-          `skipped-identical` (this is the idempotency path).
-    - [ ] If the destination exists with a *different* sha256, do not overwrite. Record
-          `conflict` and continue; surface all conflicts at the end of the phase.
-    - [ ] Otherwise `cp` (never `mv`) the file from the Zotero storage tree to the destination and
-          verify the destination sha256 matches the source.
-  - [ ] Update `index.json` for every record whose Zotero item identity was positively verified —
+    - [x] If the destination already exists and its sha256 equals the source's, skip and record
+          `skipped-identical` (this is the idempotency path). *(exercised on the required
+          second run: all 7 skipped-identical)*
+    - [x] If the destination exists with a *different* sha256, do not overwrite. Record
+          `conflict` and continue; surface all conflicts at the end of the phase. *(none occurred)*
+    - [x] Otherwise `cp` (never `mv`) the file from the Zotero storage tree to the destination and
+          verify the destination sha256 matches the source. *(all 7 copied and sha256-verified)*
+  - [x] Update `index.json` for every record whose Zotero item identity was positively verified —
         this includes `matched-no-pdf` rows, whose item identity is known even though no PDF exists:
-    - [ ] Set `zotero_key` when currently null and a verified key is available.
-    - [ ] Set `zotero_path` only for records where a real file was copied.
-    - [ ] Do **not** hand-edit `provenance_fidelity` in this phase. It stays `no_source_pdf` here
-          and is recomputed in Phase 6 by the existing audit script.
-  - [ ] Perform every `index.json` write atomically: `jq` into a temp file, validate the temp file
+    - [x] Set `zotero_key` when currently null and a verified key is available. *(deviation:
+          burgess_1982_i/ii already carried a non-null (citekey-style) zotero_key, so per the
+          literal "when currently null" instruction their zotero_key was left untouched; only
+          zotero_path was set for those two. The other 5 copied records plus kamp_1968
+          (matched-no-pdf) had null zotero_key and were set to their verified real Zotero item
+          keys.)*
+    - [x] Set `zotero_path` only for records where a real file was copied. *(7 entries)*
+    - [x] Do **not** hand-edit `provenance_fidelity` in this phase. It stays `no_source_pdf` here
+          and is recomputed in Phase 6 by the existing audit script. *(verified: still 52
+          no_source_pdf entries after this phase)*
+  - [x] Perform every `index.json` write atomically: `jq` into a temp file, validate the temp file
         parses and still has 280 entries, then `mv` it over the original.
-  - [ ] Write `artifacts/apply-log.json` recording, per doc_id, the action taken
-        (`copied` | `skipped-identical` | `conflict` | `index-only` | `no-action`).
+  - [x] Write `artifacts/apply-log.json` recording, per doc_id, the action taken
+        (`copied` | `skipped-identical` | `conflict` | `index-only` | `no-action`). *(52 entries:
+        7 copied, 1 index-only (kamp), 44 no-action)*
 
 - **Timing:** 1.5 hours
 

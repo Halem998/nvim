@@ -1,0 +1,225 @@
+[
+  {
+    "doc_id": "burgess_1982_i",
+    "action": "copied",
+    "dest": "/home/benjamin/Projects/Literature/sources/burgess_1982_i/Burgess - 1982 - Axioms for tense logic. I. ``Since'' and ``until''..pdf",
+    "sha256": "0807929cf57d13b75942275434fd8b6721e6b07b08b9804576461a1cef8b15d4"
+  },
+  {
+    "doc_id": "burgess_1982_ii",
+    "action": "copied",
+    "dest": "/home/benjamin/Projects/Literature/sources/burgess_1982_ii/Burgess - 1982 - Axioms for tense logic. II. Time periods..pdf",
+    "sha256": "895894c5ca37096942b11bf5ff0c6fb0bb2d299d2ee0269543df1e7412e26761"
+  },
+  {
+    "doc_id": "thomas_1997",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "alur_2013_syntax-guided-synthesis",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2308.00708_verigen",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2308.05345_rtlllm",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2309.07544_verilogeval-v1",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2311.00176_chipnemo",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2312.08617_rtlcoder",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2402.00386_assertllm",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2406.18627_assertionbench",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2408.09858_shortcircuit",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2408.11053_verilogeval-v2",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2410.23299_fveval",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2502.00212_stp-self-play-theorem-provers",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2503.15112_openllm-rtl",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2504.01986_turtle",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2507.04736_chipseek",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2509.06239_proof2silicon",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2510.00915_rl-verifiable-noisy-rewards",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2512.18160_propose-solve-verify",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2601.19747_veri-sure",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2601.21448_chipbench",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2603.03147_agentic-coverage-closure",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2603.08738_formalrtl",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2603.27630_rtlseek",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2604.07666_imperfect-verifier-good-enough",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2604.15149_llms-gaming-verifiers",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2605.12857_chipmate",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2605.22763_alphaproof-nexus",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "arxiv_2605.27472_assertllm2",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "biere_1999_symbolic-model-checking-without-bdds",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "bradley_2011_ic3-pdr",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "burch_1992_symbolic-model-checking",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "een_2011_efficient-pdr-implementation",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "fine_2010_some-puzzles-of-ground",
+    "action": "copied",
+    "dest": "/home/benjamin/Projects/Literature/sources/fine_2010_some-puzzles-of-ground/euclid.ndjfl.1273002112.pdf",
+    "sha256": "81bf2647d6e0d388ca6c1208cad388e6bb0e1f39a1cca7b905f01086bd464b60"
+  },
+  {
+    "doc_id": "fine_2012_counterfactuals-without-possible-worlds",
+    "action": "copied",
+    "dest": "/home/benjamin/Projects/Literature/sources/fine_2012_counterfactuals-without-possible-worlds/Fine - 2012 - Counterfactuals Without Possible Worlds.pdf",
+    "sha256": "8fe66fb5507ae66cbcb02a29aaa3a8f1710e58f34cc4494f6dd0fc7e7998e03c"
+  },
+  {
+    "doc_id": "fine_2012_difficulty-possible-worlds-counterfactuals",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "fine_2012_guide-to-ground",
+    "action": "copied",
+    "dest": "/home/benjamin/Projects/Literature/sources/fine_2012_guide-to-ground/2012 - Guide to Ground - Fine(2).pdf",
+    "sha256": "28a93b87f0e35a1ed1a405c748ed2002e9d684c18346946030705a059acc0c7e"
+  },
+  {
+    "doc_id": "fine_2012_pure-logic-of-ground",
+    "action": "copied",
+    "dest": "/home/benjamin/Projects/Literature/sources/fine_2012_pure-logic-of-ground/Fine - 2012 - THE PURE LOGIC OF GROUND.pdf",
+    "sha256": "8c085bd7dead11032aaa9ab2b22d2364feae53544b4f2fb6531503b384dcb331"
+  },
+  {
+    "doc_id": "fine_2014_truthmaker-semantics-intuitionistic",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "herklotz_2021_vericert",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "kamp_1968_tense-logic-linear-order",
+    "action": "index-only",
+    "note": "zotero_key set (AYJAC2IF); matched-no-pdf, no file to copy"
+  },
+  {
+    "doc_id": "kuehlmann_2002_robust-boolean-reasoning",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "lamport_2002_specifying-systems",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "mishchenko_2010_sequential-equivalence-checking",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "piterman_2006_gr1-synthesis",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "pnueli_1977_temporal-logic-programs",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "solar-lezama_2008_sketching-thesis",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "biere_2024_hwmcc-2024",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "witharana_2022_abv-survey",
+    "action": "no-action"
+  },
+  {
+    "doc_id": "bacon_2018_broadest-necessity",
+    "action": "copied",
+    "dest": "/home/benjamin/Projects/Literature/sources/bacon_2018_broadest-necessity/Bacon - 2018 - The Broadest Necessity.pdf",
+    "sha256": "0927d7044fade12df65ab43d27ffe065c243387c1d32d44841f3f217c1cd98bd"
+  }
+]

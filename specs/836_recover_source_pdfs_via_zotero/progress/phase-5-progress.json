@@ -1,0 +1,37 @@
+{
+  "phase": 5,
+  "phase_name": "Apply - Copy Approved PDFs and Update index.json (Idempotent)",
+  "started_at": "2026-07-09T20:46:00Z",
+  "last_updated": "2026-07-09T21:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-assert Phase 1 preconditions before writing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Copy 7 eligible PDFs into sources/<doc_id>/ with sha256 verification", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Update index.json atomically (zotero_key/zotero_path) for 8 doc_ids", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Write apply-log.json for all 52", "status": "done", "files_touched": ["specs/836_recover_source_pdfs_via_zotero/artifacts/apply-log.json"]},
+    {"id": 5, "description": "Required idempotency check: re-run entire phase, confirm zero copied and identical index.json md5", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.6",
+      "description": "Set zotero_key when currently null and a verified key is available",
+      "type": "altered",
+      "reason": "burgess_1982_i and burgess_1982_ii already had non-null zotero_key values in index.json (citekey-style strings 'Burgess1982I'/'Burgess1982a', not real Zotero API item keys). Per the literal instruction 'when currently null', these were left untouched; only zotero_path was set for those two entries. Their real Zotero item keys (7XEG8NM9, ZASX3GNR) were used internally for resolution but not written back over the existing citekey field, since that would be a different kind of correction outside this task's stated scope.",
+      "annotation": "*(deviation: burgess_1982_i/ii already carried a non-null (citekey-style) zotero_key ... see plan Phase 5 task annotation)*"
+    }
+  ],
+  "results": {
+    "copied": 7,
+    "index_only": 1,
+    "skipped_identical_on_second_run": 7,
+    "no_action": 44,
+    "conflicts": 0,
+    "index_json_entry_count_before": 280,
+    "index_json_entry_count_after": 280,
+    "no_source_pdf_count_before": 52,
+    "no_source_pdf_count_after_phase5": 52,
+    "second_run_index_json_md5_unchanged": true
+  }
+}
