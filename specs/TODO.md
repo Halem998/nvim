@@ -1,5 +1,5 @@
 ---
-next_project_number: 839
+next_project_number: 840
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 839
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826,832,837,838 | -- | agent-system, literature, extensions, ... |
-| 2 | 822,827 | 821,826 | extensions |
+| 1 | 78,87,821,826,837,838,839 | -- | agent-system, literature, extensions, ... |
+| 2 | 822,827,832 | 821,826,839 | literature, extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -23,7 +23,8 @@ next_project_number: 839
 
 ### Literature
 
-832 [NOT STARTED] — Reconvert and validate the actionable portion of the ~/Projects/L
+839 [NOT STARTED] — Fix the fail-open classification bug in .claude/scripts/literatur
+  └─ 832 [NOT STARTED] — Reconvert and validate the actionable portion of the ~/Projects/L
 
 ### Extensions
 
@@ -41,6 +42,53 @@ next_project_number: 839
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
+
+### 839. Fix fail-open classification in literature-fidelity-audit.sh
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: Fix the fail-open classification bug in .claude/scripts/literature-fidelity-audit.sh, which silently stamps provenance_fidelity="verified_conversion" onto documents it could not actually adjudicate.
+
+THE BUG (verified by reading the script and by running `literature-fidelity-audit.sh --dry-run` against the live corpus):
+
+At lines 367-374, classify_dir() takes this branch:
+
+    frac, adequate, total = proof_completeness_fraction(md_texts)
+    if frac is None:
+        # "this corpus is formal-math-heavy and every low-ratio case observed
+        #  carries numbered statements"
+        result["provenance_fidelity"] = "verified_conversion"
+        return result
+
+So a document with word_ratio far below RATIO_THRESHOLD (0.75), disclosed=False, and NO numbered statements to check gets labeled verified_conversion by default. The signal that would have caught it cannot fire, and the absence of that signal is read as a pass.
+
+The inline comment justifies this by asserting "every low-ratio case observed carries numbered statements." That assumption was true of the corpus #835 measured. It is now FALSIFIED: task #836 recovered PDFs for prose philosophy papers that carry no numbered theorems.
+
+MEASURED VICTIMS (disclosed=False, proof_fraction=None, stamped verified_conversion):
+  fine_2012_guide-to-ground                         word_ratio=0.0327   (677 md words vs 20,701 pdf words)
+  fine_2012_counterfactuals-without-possible-worlds word_ratio=0.2455   (2,960 vs 12,056)
+  venema_1991                                       word_ratio=0.3737   (22,623 vs 60,541)
+
+A 677-word stub against a 20,701-word PDF is a hand-written summary, not a verified conversion. The corpus currently asserts otherwise.
+
+DO NOT BREAK THE LEGITIMATE BRANCH: doets_1987 (ratio=0.2378) and libkin_2004_ch3_ch7 (ratio=0.0187) are also low-ratio, but have disclosed=True. These are the documented partial conversions from #835. The disclosure branch (line 361) is correct and must keep passing them.
+
+REQUIRED FIX: when the proof-completeness signal cannot fire (frac is None) on a low-ratio, undisclosed document, the honest result is a distinct value meaning "could not adjudicate" -- NOT verified_conversion. Introduce a sixth enum value (suggested: `unadjudicated`) rather than overloading unverified_summary, which asserts a positive finding the audit did not make. Fail closed, never open.
+
+CONSEQUENT WORK:
+- Update the five-value enum contract (currently documented at the script header, ~line 38) to six values, and update every consumer of provenance_fidelity. Known consumers: `.claude/scripts/literature-build-index.sh`, `literature-search.sh` (surfaces provenance_fidelity in result rows), and task #832 s cohort logic.
+- Re-run `--write` after the fix so the 3 victim dirs are re-stamped honestly.
+- #835 s report (`01_provenance-fidelity-audit.md`) documents this branch as accepted residual risk. Update that record; the risk is now realized, not residual.
+
+SECONDARY DEFECT (same file, lower severity, no upper ratio bound): the `ratio >= RATIO_THRESHOLD` test at line 354 has no upper bound, so a markdown file with FAR MORE words than its PDF passes unexamined. Observed: fine_2010_some-puzzles-of-ground (2.08), fine_2012_pure-logic-of-ground (1.91), bacon_2018_broadest-necessity (1.78). Plausibly pdftotext under-extracting two-column math rather than corrupted markdown -- but nothing checks, and a ratio of 2.08 is not evidence of a faithful conversion. Investigate; add an upper sanity bound or an explicit documented exemption.
+
+VERIFICATION: `--dry-run` is report-only and never writes index.json -- use it freely. After the fix, `--dry-run` must show the 3 victim dirs as unadjudicated (or equivalent), doets_1987 and libkin_2004_ch3_ch7 still verified_conversion via disclosure, and rabinovich_2014 still unverified_summary (proof_fraction=0.545 < 0.6). Confirm `--write` remains idempotent.
+
+CONTEXT: discovered while orchestrating #836 (Zotero PDF recovery) and preparing the second /revise of #832. Task #832 was explicitly amended to WORK AROUND this bug (treating the 3 unadjudicated dirs as reconversion candidates) rather than fix it, because the audit script is outside #832 s file_scope. This task is the real fix.
+
+---
 
 ### 838. Fix planner clobbering researcher .return-meta.json (merge not overwrite)
 - **Status**: [NOT STARTED]
@@ -118,33 +166,50 @@ next_project_number: 839
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: literature
-- **Dependencies**: Task 831, Task 835, Task 836
+- **Dependencies**: Task 831, Task 835, Task 836, Task 839
 
-**Description**: Reconvert and validate the actionable portion of the ~/Projects/Literature corpus, driven by the measured provenance/fidelity classification that task #835 established and stamped onto ~/Projects/Literature/index.json. Do NOT re-derive that classification — read #835's `provenance_fidelity` field (produced by `.claude/scripts/literature-fidelity-audit.sh`). The original "reconvert and validate all 97 source dirs" premise is dead, and so are the earlier "verified facts" that replaced it: the "ZERO are healthy / 45 dirs are hand-written summaries" figures and the cited word-ratios (blackburn_2002 = 0.03, rabinovich_2014 = 0.29) were artifacts of a single-file-sampling bug (comparing one arbitrary .md file against the entire PDF). Aggregated at the whole-document level, nearly every cited case is a healthy conversion (ratios 0.92-1.04), and blackburn_2002 is in fact a verified conversion. Drop all of those numbers rather than restating them.
+**Description**: Reconvert and validate the actionable portion of the ~/Projects/Literature corpus, driven by the measured provenance/fidelity classification that task #835 established and stamped onto ~/Projects/Literature/index.json, as corrected by the re-derivation performed after #836 landed. The original "reconvert and validate all 97 source dirs" premise is dead, and so are the earlier "verified facts" that replaced it: the "ZERO are healthy / 45 dirs are hand-written summaries" figures and the cited word-ratios (blackburn_2002 = 0.03, rabinovich_2014 = 0.29) were artifacts of a single-file-sampling bug (comparing one arbitrary .md file against the entire PDF). Aggregated at the whole-document level, nearly every cited case is a healthy conversion, and blackburn_2002 is in fact a verified conversion. Drop all of those numbers rather than restating them.
 
-MEASURED CLASSIFICATION (authoritative, from #835's stamped field). Two real granularities exist; state which you mean and never conflate them.
+MEASURED CLASSIFICATION (authoritative, re-derived post-#836 via `literature-fidelity-audit.sh --dry-run`). Two real granularities exist; state which you mean and never conflate them.
 At DIRECTORY level (97 dirs total):
-- 52 no_source_pdf        — no PDF present; cannot be reconverted (gated on #836)
-- 35 verified_conversion  — healthy (30 clean full conversions + 5 disclosed partial conversions); need nothing
-- 5  not_yet_converted    — PDF present, zero markdown (already self-disclosed)
+- 45 no_source_pdf         — no PDF present; cannot be reconverted
+- 42 verified_conversion   — stamped healthy, but see the UNADJUDICATED caveat below
+- 5  not_yet_converted     — PDF present, zero markdown (already self-disclosed)
 - 4  unverified_no_baseline — PDF present but `pdftotext -layout` extracts 0 words; ratio undeterminable
-- 1  unverified_summary   — rabinovich_2014, the ONLY confirmed undisclosed paraphrase
-At index-ENTRY level (153 entries): 84 verified_conversion, 52 no_source_pdf, 15 unverified_no_baseline, 1 not_yet_converted, 1 unverified_summary.
+- 1  unverified_summary    — rabinovich_2014, the ONLY confirmed undisclosed paraphrase
+At index-ENTRY level (153 entries): 91 verified_conversion, 45 no_source_pdf, 15 unverified_no_baseline, 1 not_yet_converted, 1 unverified_summary.
 
-REMAINING WORK, SCOPED PER COHORT (touch only the cohorts that need work):
-- 5 not_yet_converted dirs — the only genuine conversion work. Run the fixed converter from #831 (COMPLETE). Treat converter exit code 3 as skip+log (a loud quality-gate failure), NEVER as success. Goldblatt/Hodkinson/Venema 2003 is a known document that fails the primary tier and must be routed with LITERATURE_CONVERTER=pymupdf.
+THE STAMP IS NOT FULLY TRUSTWORTHY (read before acting on any classification). `.claude/scripts/literature-fidelity-audit.sh` FAILS OPEN at lines 367-374: when a document has word_ratio < 0.75, disclosed = False, AND proof_fraction = None (no numbered statements available to check), it defaults the document to `verified_conversion`. Its inline comment justifies this by assuming "every low-ratio case observed carries numbered statements" — an assumption FALSIFIED by the PDFs #836 recovered, which include prose philosophy papers with no numbered theorems. Three directories are therefore stamped `verified_conversion` while being genuinely UNADJUDICATED:
+- fine_2012_guide-to-ground                         ratio = 0.0327 (677 md words vs 20,701 pdf words)
+- fine_2012_counterfactuals-without-possible-worlds ratio = 0.2455 (2,960 vs 12,056)
+- venema_1991                                       ratio = 0.3737 (22,623 vs 60,541)
+Two other low-ratio dirs — doets_1987 (0.2378) and libkin_2004_ch3_ch7 (0.0187) — carry disclosed = True. Those are the LEGITIMATE documented partial conversions. Do not touch them.
+
+REMAINING WORK — 13 ACTIONABLE DIRS, SCOPED PER COHORT (touch only the cohorts that need work):
+- 5 not_yet_converted dirs (gabbay_2000, girard_1989, negri_von_plato_2001, troelstra_schwichtenberg_2000, van_doorn_2015) — the only greenfield conversion work. Run the fixed converter from #831 (COMPLETE). Treat converter exit code 3 as skip+log (a loud quality-gate failure), NEVER as success. Goldblatt/Hodkinson/Venema 2003 is a known document that fails the primary tier and must be routed with LITERATURE_CONVERTER=pymupdf.
+- 3 unadjudicated dirs (fine_2012_guide-to-ground, fine_2012_counterfactuals-without-possible-worlds, venema_1991) — RECONVERSION CANDIDATES despite their `verified_conversion` stamp. The two Fine papers have real PDFs thanks to #836; venema_1991 had a PDF all along. Reconvert from the PDF and compare.
 - 4 unverified_no_baseline dirs (burgess_1984, gabbay_1994, thomason_1984, vardi_wolper_1986) — NOT reconversion. Their PDFs yield 0 words under pdftotext (scanned/image PDFs), so they need a baseline-extraction fix (OCR-based re-extraction, e.g. ocrmypdf/pytesseract) so a ratio becomes computable; then re-run the fidelity audit to confirm/promote.
 - 1 unverified_summary dir (rabinovich_2014) — REPLACE its .md with a real conversion derived from its sibling PDF (a PDF is present), then re-run `literature-fidelity-audit.sh` to reclassify.
-- 35 verified_conversion dirs — no action.
-- 52 no_source_pdf dirs — BLOCKED on #836 (Zotero PDF recovery), which is STILL not_started. They cannot be reconverted until a PDF exists. #836's outcome determines how many become actionable; its result is NOT known and must not be assumed. A SECOND `/revise 832` is warranted once #836 lands.
+- Remaining verified_conversion dirs (the 42 minus the 3 unadjudicated above) — no action.
+- 45 no_source_pdf dirs — OUT OF SCOPE. #836 RAN and resolved the question: it recovered 7 of the original 52 from Zotero, and the remaining 45 are CONFIRMED ABSENT from the Zotero library (not merely unmatched). They are not "gated pending #836"; they need a different acquisition route entirely, which belongs to a separate sourcing task.
 
 REVALIDATION HALF (still real, still worth doing): now that a fixed converter (#831) and a provenance field (#835) both exist, rebuild/validate the corpus index via `.claude/scripts/literature-build-index.sh`, and re-run the fidelity audit after any conversion so newly-converted dirs receive a fresh `provenance_fidelity` + `word_ratio` stamp. Any residue that still lacks a PDF stays no_source_pdf.
 
-CONSTRAINTS: read #835's stamped classification rather than re-deriving it; aggregate word-ratio at the whole-document level, never single-file; quarantine-never-delete posture; the 52 no_source_pdf cohort is out of scope until #836 completes.
+CONSTRAINTS:
+- Trust #835's stamped `provenance_fidelity` EXCEPT where (word_ratio < 0.75 AND disclosed = False AND proof_fraction = None). Those entries are UNADJUDICATED, not verified, and must be treated as reconversion candidates.
+- Aggregate word-ratio at the WHOLE-DOCUMENT level, never single-file.
+- Quarantine-never-delete posture throughout.
+- Converter exit code 3 = skip + log, never success.
+- Goldblatt/Hodkinson/Venema 2003 must route with LITERATURE_CONVERTER=pymupdf.
+- The 45 no_source_pdf dirs are out of scope for this task.
 
-STATUS: The full "SUPERSEDED PREMISE — DO NOT IMPLEMENT" banner is lifted, because the 10 actionable dirs (5 not_yet_converted + 4 unverified_no_baseline + 1 unverified_summary) ARE implementable now against #831's fixed converter and #835's classification. Scoped caveat: the 52 no_source_pdf dirs remain gated on #836 and are not actionable in this round — revisit them via a second /revise 832 once #836 lands.
+SCOPE BOUNDARY: fixing the fail-open in `literature-fidelity-audit.sh` is task #839 (Fix fail-open classification in literature-fidelity-audit.sh). 832's file_scope is `~/Projects/Literature/sources/` and `.claude/scripts/literature-build-index.sh`; the audit script is NOT in scope. 832 must WORK AROUND the fail-open by treating the 3 unadjudicated dirs as reconversion candidates — do not fix the script here. Re-run the audit only AFTER #839 lands; otherwise accept that re-running it will re-stamp those 3 dirs as `verified_conversion` again.
 
-DEPENDENCIES: 831 (COMPLETE — fixed converter), 835 (COMPLETE — provenance/fidelity classification), 836 (still not_started — a real unmet dependency for the 52 no_source_pdf dirs).
+RESIDUAL RISK (note, not work): the audit has no UPPER ratio bound — fine_2010_some-puzzles-of-ground (2.08), fine_2012_pure-logic-of-ground (1.91), and bacon_2018 (1.78) pass unexamined because they clear the >= 0.75 floor. Plausibly pdftotext under-extracting math, but nothing checks.
+
+STATUS: BLOCKED on #839 (audit fail-open fix). #831/#835/#836 are all complete, so the corpus work itself is fully specified and ready; the remaining gate is #839, which also serializes on the shared file `.claude/scripts/literature-build-index.sh`. All 13 actionable dirs (5 not_yet_converted + 3 unadjudicated + 4 unverified_no_baseline + 1 unverified_summary) can be executed against #831's fixed converter and #835's classification, with the unadjudicated caveat applied.
+
+DEPENDENCIES: 831 (COMPLETE — fixed converter), 835 (COMPLETE — provenance/fidelity classification), 836 (COMPLETE — Zotero PDF recovery; 7 recovered, 45 confirmed absent), 839 (NOT STARTED — audit fail-open fix; both a correctness prerequisite for the final re-audit and a file_scope conflict on literature-build-index.sh).
 
 ---
 
