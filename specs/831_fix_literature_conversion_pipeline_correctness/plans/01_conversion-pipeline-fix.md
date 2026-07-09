@@ -78,15 +78,15 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Fix BUG 3 breadcrumb doubling in literature-chunk.sh [NOT STARTED]
+### Phase 1: Fix BUG 3 breadcrumb doubling in literature-chunk.sh [COMPLETED]
 
 **Goal**: Eliminate the `A > A` doubled-breadcrumb defect (2,351 affected corpus chunks) at its source in `split_at_headings()`, independent of any engine change.
 
 **Tasks**:
-- [ ] In `literature-chunk.sh`, at the in-loop flush call site (line ~196) pass `section_stack[:-1]` instead of `section_stack` to `build_section_path`.
-- [ ] At the final-flush call site (line ~215) apply the same `section_stack[:-1]` change.
-- [ ] Confirm the level-0 / empty-stack document case is unaffected (`[][:-1] == []`).
-- [ ] Do NOT touch the no-TOC fragment-heading cause here (that is conversion-time, Phase 3) — this phase only removes the doubling.
+- [x] In `literature-chunk.sh`, at the in-loop flush call site (line ~196) pass `section_stack[:-1]` instead of `section_stack` to `build_section_path`. *(completed)*
+- [x] At the final-flush call site (line ~215) apply the same `section_stack[:-1]` change. *(completed)*
+- [x] Confirm the level-0 / empty-stack document case is unaffected (`[][:-1] == []`). *(completed: verified via standalone repro)*
+- [x] Do NOT touch the no-TOC fragment-heading cause here (that is conversion-time, Phase 3) — this phase only removes the doubling. *(completed: untouched)*
 
 **Timing**: 0.75 hours
 
