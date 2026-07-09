@@ -82,6 +82,36 @@ while [ $# -gt 0 ]; do
   esac
 done
 
+# --- provenance_fidelity lookup (task #835) ---
+# doc_id -> provenance_fidelity, mirroring the existing per-repo relevance/title/
+# authors/year lookups below (all keyed by index.json's .id field -- specs/
+# literature-index.json's doc_id values are curated in that same .id namespace, e.g.
+# "rabinovich_2014", "blackburn_2002_book"). Fail-open: an absent field or entry
+# resolves to "unverified_summary".
+get_doc_fidelity() {
+  local doc_id="$1"
+  local val
+  val=$(jq -r --arg id "$doc_id" '
+    .entries[] | select(.id == $id) | .provenance_fidelity // empty
+  ' "$GLOBAL_INDEX" 2>/dev/null | head -1)
+  echo "${val:-unverified_summary}"
+}
+
+# Only unverified_summary/unverified_no_baseline/absent get the loud marker --
+# no_source_pdf (nothing to compare against) and not_yet_converted (nothing
+# converted yet, already self-evident from a 0-token entry) are not fidelity
+# failures in the same sense and are left unmarked here.
+needs_fidelity_marker() {
+  case "$1" in
+    unverified_summary | unverified_no_baseline) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+FIDELITY_MARKER_TEXT() {
+  echo "[UNVERIFIED - provenance_fidelity: $1 - not confirmed faithful to its source PDF; verify before citing]"
+}
+
 briefing_lines=()
 header=""
 
@@ -198,6 +228,9 @@ if [ "$mode" = "repo" ]; then
       .entries[] | select(.doc_id == $id) | .relevance // ""
     ' "$SUB_INDEX" 2>/dev/null | head -1)
 
+    # provenance_fidelity lookup (task #835) -- fail-open, see get_doc_fidelity above
+    fidelity=$(get_doc_fidelity "$doc_id")
+
     doc_num=$(( doc_num + 1 ))
 
     # Format authors (truncate if long)
@@ -217,6 +250,11 @@ if [ "$mode" = "repo" ]; then
     if [ -n "$relevance" ]; then
       entry="${entry}
    Relevance: ${relevance}"
+    fi
+
+    if needs_fidelity_marker "$fidelity"; then
+      entry="$(FIDELITY_MARKER_TEXT "$fidelity")
+${entry}"
     fi
 
     briefing_lines+=("$entry")
@@ -257,6 +295,9 @@ else
       title=$(echo "$seg" | jq -r '.title // "Untitled"')
       summary=$(echo "$seg" | jq -r '.summary // ""')
       token_count=$(echo "$seg" | jq -r '.token_count // 0')
+      # provenance_fidelity is already present on every do_search result object
+      # (task #835, literature-search.sh) -- no separate lookup needed here.
+      fidelity=$(echo "$seg" | jq -r '.provenance_fidelity // "unverified_summary"')
 
       doc_num=$(( doc_num + 1 ))
 
@@ -269,6 +310,11 @@ else
       fi
       entry="${entry}
    Read: \`bash .claude/scripts/literature-search.sh --read ${chunk_id}\`"
+
+      if needs_fidelity_marker "$fidelity"; then
+        entry="$(FIDELITY_MARKER_TEXT "$fidelity")
+${entry}"
+      fi
 
       briefing_lines+=("$entry")
     done < <(echo "$results_json" | jq -c '.[]')
@@ -311,5 +357,9 @@ cat <<'FOOTER'
   of a specific document: `bash .claude/scripts/literature-search.sh --toc <doc_id>`
 - **Read selectively**: Start with the most relevant chunks; do not read all chunks unless
   the task requires comprehensive coverage
+- **UNVERIFIED entries**: Entries marked `[UNVERIFIED - provenance_fidelity: ...]` above are
+  not confirmed faithful to their source PDF (hand-authored summary, or no PDF available to
+  verify against); treat any claims, lemmas, or definitions from them as provisional and
+  verify against the primary source PDF before citing in formal work
 </literature-briefing>
 FOOTER

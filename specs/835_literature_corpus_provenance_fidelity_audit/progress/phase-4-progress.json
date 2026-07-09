@@ -1,0 +1,25 @@
+{
+  "phase": 4,
+  "phase_name": "literature-briefing.sh loud flagging",
+  "started_at": "2026-07-09T19:45:00Z",
+  "last_updated": "2026-07-09T19:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add a doc_id -> provenance_fidelity lookup against $GLOBAL_INDEX, mirroring the existing relevance lookup (per-repo), reused for global-mode entries by doc_id", "status": "done", "files_touched": [".claude/scripts/literature-briefing.sh"]},
+    {"id": 2, "description": "Per-repo mode: prepend warning marker when fidelity is unverified_summary/unverified_no_baseline/absent", "status": "done", "files_touched": [".claude/scripts/literature-briefing.sh"]},
+    {"id": 3, "description": "Global mode: apply the same marker to each search-result entry by doc_id", "status": "done", "files_touched": [".claude/scripts/literature-briefing.sh"]},
+    {"id": 4, "description": "Extend the How to Use footer with UNVERIFIED guidance line", "status": "done", "files_touched": [".claude/scripts/literature-briefing.sh"]},
+    {"id": 5, "description": "Leave verified_conversion entries visually unchanged", "status": "done", "files_touched": [".claude/scripts/literature-briefing.sh"], "note": "Verified live via a temporary (uncommitted, removed) test sub-index and a global-mode bisimulation query."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "4.1",
+      "description": "'Add a doc_id -> provenance_fidelity lookup against $GLOBAL_INDEX, mirroring the existing relevance lookup (per-repo, ~line 197)'",
+      "type": "none",
+      "reason": "Not actually a deviation, documented here to record why this differs from Phase 3's fix. literature-briefing.sh's per-repo mode `doc_id` variable is drawn from specs/literature-index.json, which is curated in index.json's OWN `.id` namespace (confirmed against two real per-repo sub-indexes: BimodalLogic and cslib both reference doc_id values that are literal index.json `.id` values, e.g. 'rabinovich_2014', 'kamp_1968_tense-logic-linear-order') -- this is the SAME namespace the existing title/authors/year/chunk_count lookups in this function already use (`select(.id == $id)`). This is a genuinely different namespace from literature-search.sh's chunks_data.doc_id (bare directory name) fixed in Phase 3 -- the two scripts' `doc_id` variables are not interchangeable, and the plan's literal `.id`-keyed mirroring instruction is correct here. Global mode needs no separate lookup at all: literature-search.sh's do_search (fixed in Phase 3) already returns a directory-name-keyed provenance_fidelity field on every result object, and literature-briefing.sh's global mode consumes that JSON directly.",
+      "annotation": "n/a - no plan checklist item requires this annotation; recorded for cross-phase clarity only."
+    }
+  ],
+  "handoff_count": 0
+}

@@ -267,22 +267,30 @@ non-verified docs, exclude unverified docs from default ranking (opt back in via
   `provenance_fidelity` field all fall through the same `fmap.get(doc_id) or "unverified_summary"`
   path).
 
-### Phase 4: literature-briefing.sh loud flagging [NOT STARTED]
+### Phase 4: literature-briefing.sh loud flagging [COMPLETED]
 
 **Goal**: Prepend a visible per-entry warning marker for non-verified docs in both per-repo and
 global modes, extend the "How to Use" footer, and fail open on a missing field.
 
 **Tasks**:
-- [ ] Add a `doc_id -> provenance_fidelity` lookup against `$GLOBAL_INDEX`, mirroring the existing
+- [x] Add a `doc_id -> provenance_fidelity` lookup against `$GLOBAL_INDEX`, mirroring the existing
       `relevance` lookup (per-repo, ~line 197) and reusing it for global-mode entries by `doc_id`.
-      Absent field -> treat as unverified (fail-open).
-- [ ] Per-repo mode: when fidelity is `unverified_summary`/`unverified_no_baseline`/absent, prepend
+      Absent field -> treat as unverified (fail-open). *(completed: per-repo mode uses a new
+      `get_doc_fidelity()` jq helper keyed by `.id`, matching the existing relevance/title/authors
+      lookups exactly, since specs/literature-index.json's doc_id values are curated in
+      index.json's own `.id` namespace — confirmed against two real per-repo sub-indexes.
+      Global mode needs no separate lookup: it reads `provenance_fidelity` directly off each
+      do_search result object, already populated by Phase 3.)*
+- [x] Per-repo mode: when fidelity is `unverified_summary`/`unverified_no_baseline`/absent, prepend
       an ASCII-safe warning marker line to that `entry` string (emoji-policy compliant), e.g.
-      `[UNVERIFIED SUMMARY - verify against source PDF before citing]`.
-- [ ] Global mode: apply the same marker to each search-result entry by `doc_id`.
-- [ ] Extend the "How to Use" footer with a line explaining that UNVERIFIED entries are not
+      `[UNVERIFIED SUMMARY - verify against source PDF before citing]`. *(completed)*
+- [x] Global mode: apply the same marker to each search-result entry by `doc_id`. *(completed,
+      shares the same `needs_fidelity_marker`/`FIDELITY_MARKER_TEXT` helper functions as per-repo
+      mode)*
+- [x] Extend the "How to Use" footer with a line explaining that UNVERIFIED entries are not
       confirmed faithful to their source PDF and must be verified before citing in formal work.
-- [ ] Leave `verified_conversion` entries visually unchanged.
+      *(completed)*
+- [x] Leave `verified_conversion` entries visually unchanged. *(completed and verified)*
 
 **Timing**: 1 hour
 
@@ -293,10 +301,16 @@ global modes, extend the "How to Use" footer, and fail open on a missing field.
   footer extension.
 
 **Verification**:
-- Construct a briefing including `rabinovich_2014`: its entry shows the warning marker.
-- The footer contains the new UNVERIFIED guidance line.
+- Construct a briefing including `rabinovich_2014`: its entry shows the warning marker. VERIFIED
+  (temporary test sub-index with rabinovich_2014, blackburn_2002_book, gabbay_2000: only
+  rabinovich_2014 showed the `[UNVERIFIED - provenance_fidelity: unverified_summary ...]` marker;
+  test sub-index removed afterward, never committed).
+- The footer contains the new UNVERIFIED guidance line. VERIFIED.
 - A `verified_conversion`-only briefing shows no markers and is otherwise byte-compatible with
-  prior output aside from the new footer line.
+  prior output aside from the new footer line. VERIFIED: blackburn_2002_book entry unmarked;
+  global-mode "bisimulation" query (all blackburn_2002 results) unmarked. Also verified the
+  `not_yet_converted` case (gabbay_2000) is correctly left UNMARKED per the plan's explicit
+  fidelity-value routing (only unverified_summary/unverified_no_baseline/absent get the marker).
 
 ### Phase 5: End-to-end verification and defect sweep [NOT STARTED]
 
