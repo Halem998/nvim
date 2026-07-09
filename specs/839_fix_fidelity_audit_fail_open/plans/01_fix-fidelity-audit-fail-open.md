@@ -177,20 +177,24 @@ Expect the 3 named dirs to show `unadjudicated`; `doets_1987`, `libkin_2004_ch3_
 
 ---
 
-### Phase 2: Fix chunk_*.md double-counting in the mds glob [NOT STARTED]
+### Phase 2: Fix chunk_*.md double-counting in the mds glob [COMPLETED]
 
 **Goal**: Remove the `word_ratio > 1` artifact at its root cause by excluding `chunk_NNNN.md`
 re-split files from the `mds` glob, then re-verify the ENTIRE classification cohort (the glob
 change affects word_ratio for many dirs, not only the 3 flagged high-ratio dirs).
 
 **Tasks**:
-- [ ] Capture a baseline full `--dry-run` TSV BEFORE the change:
+- [x] Capture a baseline full `--dry-run` TSV BEFORE the change:
       `bash .claude/scripts/literature-fidelity-audit.sh --dry-run > /tmp/claude-1000/audit-before.tsv 2>/dev/null`.
-- [ ] In the `mds` glob (lines 298-301), exclude files matching `^chunk_\d+\.md$`
+      *(completed: baseline captured after Phase 1's fix, before Phase 2's glob change)*
+- [x] In the `mds` glob (lines 298-301), exclude files matching `^chunk_\d+\.md$`
       (case-insensitive), e.g. add `and not re.match(r"^chunk_\d+\.md$", e, re.IGNORECASE)` to the
-      comprehension filter. Do NOT alter the `pdfs` glob.
-- [ ] Capture the AFTER TSV and diff it against the baseline to review every classification change
-      across the whole cohort (not just the 3 flagged dirs).
+      comprehension filter. Do NOT alter the `pdfs` glob. *(completed)*
+- [x] Capture the AFTER TSV and diff it against the baseline to review every classification change
+      across the whole cohort (not just the 3 flagged dirs). *(completed: full diff shows exactly
+      5 rows changed — the 3 ratio>1 dirs collapsed to ~0.96-1.07, and 2 already-`unadjudicated`
+      low-ratio dirs got lower (more honest) ratios with no classification change; population
+      summary counts unchanged; no unexpected classification flips anywhere in the 97-dir cohort)*
 
 **Timing**: 0.75 hours
 

@@ -298,6 +298,7 @@ def classify_dir(dirname, idx):
     mds = sorted(
         os.path.join(dirpath, e) for e in entries_on_disk
         if e.lower().endswith(".md")
+        and not re.match(r"^chunk_\d+\.md$", e, re.IGNORECASE)
     )
 
     has_pdf = len(pdfs) > 0

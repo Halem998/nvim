@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "Fix chunk_*.md double-counting in the mds glob",
+  "started_at": "2026-07-09T23:31:00Z",
+  "last_updated": "2026-07-09T23:38:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture baseline --dry-run TSV before change", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Exclude chunk_NNNN.md from mds glob", "status": "done", "files_touched": [".claude/scripts/literature-fidelity-audit.sh"]},
+    {"id": 3, "description": "Capture after TSV, diff against baseline, review whole cohort", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Full-cohort diff (97 dirs) showed exactly 5 rows changed: bacon_2018_broadest-necessity (1.7814->1.0), fine_2010_some-puzzles-of-ground (2.0827->1.0741), fine_2012_pure-logic-of-ground (1.9118->0.9962) all stayed verified_conversion; fine_2012_counterfactuals-without-possible-worlds (0.2455->0.1209) and fine_2012_guide-to-ground (0.0327->0.0161) stayed unadjudicated. No unexpected classification flips."
+}
