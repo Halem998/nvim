@@ -173,14 +173,14 @@ Phases within the same wave can execute in parallel. Phase 1 (pre-delete manifes
 
 ---
 
-### Phase 5: Delete Exactly `sources/` [NOT STARTED]
+### Phase 5: Delete Exactly `sources/` [COMPLETED]
 
 **Goal**: Remove `~/Projects/BimodalLogic/specs/literature/sources/` and nothing else, leaving the sibling metadata files intact.
 
 **Tasks**:
-- [ ] Delete only the `sources/` subdirectory: `rm -rf ~/Projects/BimodalLogic/specs/literature/sources`
-- [ ] Assert the sibling files survive: confirm `~/Projects/BimodalLogic/specs/literature/DEPRECATED.md`, `README.md`, and `index.json` all still exist.
-- [ ] Assert `sources/` is gone: `test ! -e ~/Projects/BimodalLogic/specs/literature/sources`.
+- [x] Delete only the `sources/` subdirectory: `rm -rf ~/Projects/BimodalLogic/specs/literature/sources` *(completed)*
+- [x] Assert the sibling files survive: confirm `~/Projects/BimodalLogic/specs/literature/DEPRECATED.md`, `README.md`, and `index.json` all still exist. *(completed: all three present)*
+- [x] Assert `sources/` is gone: `test ! -e ~/Projects/BimodalLogic/specs/literature/sources`. *(completed)*
 
 **Timing**: 5 minutes
 
@@ -195,14 +195,14 @@ Phases within the same wave can execute in parallel. Phase 1 (pre-delete manifes
 
 ---
 
-### Phase 6: Re-Confirm `--lit` Resolves Post-Delete [NOT STARTED]
+### Phase 6: Re-Confirm `--lit` Resolves Post-Delete [COMPLETED]
 
 **Goal**: Prove `--lit` still produces a correct, non-empty briefing for BimodalLogic after `sources/` is gone — the zero-cost regression check.
 
 **Tasks**:
-- [ ] Re-run the briefing read-only: `cd ~/Projects/BimodalLogic && bash .claude/scripts/literature-briefing.sh` and save to `~/Projects/task834-verification/postdelete-briefing.txt`.
-- [ ] Assert the post-delete briefing is non-empty and still contains both entries resolving to central.
-- [ ] Diff against the baseline: `diff ~/Projects/task834-verification/predelete-briefing.txt ~/Projects/task834-verification/postdelete-briefing.txt` — expect no meaningful difference (identical `dir:` resolution to central). Note any timestamp-only differences as benign.
+- [x] Re-run the briefing read-only: `cd ~/Projects/BimodalLogic && bash .claude/scripts/literature-briefing.sh` and save to `~/Projects/task834-verification/postdelete-briefing.txt`. *(completed, exit 0)*
+- [x] Assert the post-delete briefing is non-empty and still contains both entries resolving to central. *(completed: both entries present, dir: paths under central)*
+- [x] Diff against the baseline: `diff ~/Projects/task834-verification/predelete-briefing.txt ~/Projects/task834-verification/postdelete-briefing.txt` — expect no meaningful difference (identical `dir:` resolution to central). Note any timestamp-only differences as benign. *(completed: byte-identical, empty diff)*
 
 **Timing**: 10 minutes
 
@@ -217,17 +217,17 @@ Phases within the same wave can execute in parallel. Phase 1 (pre-delete manifes
 
 ---
 
-### Phase 7: Commit the Tracked-File Deletion in the BimodalLogic Repo (Local Only) [NOT STARTED]
+### Phase 7: Commit the Tracked-File Deletion in the BimodalLogic Repo (Local Only) [COMPLETED]
 
 **Goal**: Record the deletion of the 192 tracked `.md`/`index.json` files as a local commit in the BimodalLogic repository — a DIFFERENT git repo from the working repo (`/home/benjamin/.config/nvim`). No push, no PR (`.claude/rules/pr-prohibition.md`).
 
 **Tasks**:
-- [ ] Confirm the working tree of the BimodalLogic repo has no unrelated staged changes that would be swept in: `git -C ~/Projects/BimodalLogic status --porcelain specs/literature`.
-- [ ] Stage only the deletion path: `git -C ~/Projects/BimodalLogic add -A specs/literature/sources`.
-- [ ] Verify staged changes are deletions only, scoped to `specs/literature/sources`: `git -C ~/Projects/BimodalLogic status --porcelain specs/literature/sources`.
-- [ ] Commit locally with a descriptive message (include the session id in the body):
-  `git -C ~/Projects/BimodalLogic commit -m "Retire stale per-repo literature sources (task 834)" -m "Deletes specs/literature/sources/ (content-equivalent to central ~/Projects/Literature; verified byte-identical by sha256 with a verified PDF backup). DEPRECATED.md, README.md, and index.json retained. --lit resolution confirmed unaffected (resolves to central)."`
-- [ ] Do NOT run `git push`. Do NOT create a PR/MR. Do NOT invoke `/merge`. The commit stays local.
+- [x] Confirm the working tree of the BimodalLogic repo has no unrelated staged changes that would be swept in: `git -C ~/Projects/BimodalLogic status --porcelain specs/literature`. *(completed: only the sources/ deletions present)*
+- [x] Stage only the deletion path: `git -C ~/Projects/BimodalLogic add -A specs/literature/sources`. *(completed)*
+- [x] Verify staged changes are deletions only, scoped to `specs/literature/sources`: `git -C ~/Projects/BimodalLogic status --porcelain specs/literature/sources`. *(completed: 192 " D" entries, no other status codes)*
+- [x] Commit locally with a descriptive message (include the session id in the body):
+  `git -C ~/Projects/BimodalLogic commit -m "Retire stale per-repo literature sources (task 834)" -m "Deletes specs/literature/sources/ (content-equivalent to central ~/Projects/Literature; verified byte-identical by sha256 with a verified PDF backup). DEPRECATED.md, README.md, and index.json retained. --lit resolution confirmed unaffected (resolves to central)."` *(completed: commit 60cef7179, 192 files changed, 160292 deletions)*
+- [x] Do NOT run `git push`. Do NOT create a PR/MR. Do NOT invoke `/merge`. The commit stays local. *(confirmed: no push executed; BimodalLogic main is ahead of origin/main by 211 commits, unrelated pre-existing drift, not created by this task)*
 
 **Timing**: 10 minutes
 
