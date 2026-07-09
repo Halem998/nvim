@@ -1,0 +1,14 @@
+{
+  "status": "planned",
+  "summary": "9-phase plan re-derives the 13 actionable dirs into 5 execution cohorts (3 clean greenfield, 3 backup-then-reconvert, 1 disclosure banner, 5 OCR incl. re-cohorted gabbay_2000, 1 deferred) with the three named decisions made explicitly, quarantine-never-delete backups, exit-3 skip+retry handling, and a full convert/OCR -> rebuild-index -> --dry-run -> --write re-audit verification contract.",
+  "artifacts": [
+    {
+      "path": "specs/832_reconvert_and_validate_literature_corpus/plans/01_reconvert-validate-corpus.md",
+      "type": "plan",
+      "summary": "Phased implementation plan with per-phase concrete verification commands, decisions A/B/C as named load-bearing phases, and honest partial-completion reporting."
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "implement"
+}

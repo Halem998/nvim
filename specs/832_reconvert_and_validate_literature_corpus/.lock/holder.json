@@ -1,8 +1,8 @@
 {
-  "session_id": "sess_1783635528_71383c",
+  "session_id": "sess_1783638490_ebbf91_832",
   "task_number": 832,
-  "operation": "revise",
-  "acquired_at": "2026-07-09T22:18:49Z",
-  "heartbeat_at": "2026-07-09T22:18:49Z",
-  "command": "/revise 832"
+  "operation": "implement",
+  "acquired_at": "2026-07-09T23:51:46Z",
+  "heartbeat_at": "2026-07-09T23:51:46Z",
+  "command": "/orchestrate (multi-task)"
 }

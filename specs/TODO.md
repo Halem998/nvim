@@ -23,7 +23,7 @@ next_project_number: 840
 
 ### Literature
 
-832 [NOT STARTED] — Reconvert and validate the actionable portion of the ~/Projects/L
+832 [PLANNED] — Reconvert and validate the actionable portion of the ~/Projects/L
 
 ### Extensions
 
@@ -165,10 +165,12 @@ CONTEXT: discovered while orchestrating #836 (Zotero PDF recovery) and preparing
 ---
 
 ### 832. Reconvert and validate the literature corpus (BUG 5)
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 831, Task 835, Task 836, Task 839
+- **Research**: [832_reconvert_and_validate_literature_corpus/reports/01_reconvert-validate-corpus.md]
+- **Plan**: [832_reconvert_and_validate_literature_corpus/plans/01_reconvert-validate-corpus.md]
 
 **Description**: Reconvert and validate the actionable portion of the ~/Projects/Literature corpus, driven by the measured provenance/fidelity classification that task #835 established and stamped onto ~/Projects/Literature/index.json, as corrected by the re-derivation performed after #836 landed. The original "reconvert and validate all 97 source dirs" premise is dead, and so are the earlier "verified facts" that replaced it: the "ZERO are healthy / 45 dirs are hand-written summaries" figures and the cited word-ratios (blackburn_2002 = 0.03, rabinovich_2014 = 0.29) were artifacts of a single-file-sampling bug (comparing one arbitrary .md file against the entire PDF). Aggregated at the whole-document level, nearly every cited case is a healthy conversion, and blackburn_2002 is in fact a verified conversion. Drop all of those numbers rather than restating them.
 
