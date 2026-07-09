@@ -1,7 +1,7 @@
 # Implementation Plan: Task #831
 
 - **Task**: 831 - Fix literature conversion pipeline correctness (BUGS 1-4) + loud-failing quality gate
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 10 hours
 - **Dependencies**: None (blocks #832 corpus reconversion; informs #833 retrieval hardening)
 - **Research Inputs**: specs/831_fix_literature_conversion_pipeline_correctness/reports/01_conversion-pipeline-fix.md
@@ -240,18 +240,18 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 7: Cross-task interface contracts (#832/#833) + nix unblock prerequisite [NOT STARTED]
+### Phase 7: Cross-task interface contracts (#832/#833) + nix unblock prerequisite [COMPLETED]
 
 **Goal**: Write down the exact interface commitments #832 and #833 depend on, and document the `~/.dotfiles` nix unblock as a user prerequisite (not an agent edit).
 
 **Tasks**:
-- [ ] Record the **exit-code contract**: `0` success+gate pass, `1` input missing/unsupported, `2` all converters failed, `3` NEW gate failed (do-not-ingest). State that #832 reconversion MUST treat exit 3 as "skip + log," and #833 is unaffected by exit codes.
-- [ ] Record the **output-format contract**: markdown headings as `## ...` (matches `literature-chunk.sh`'s `^(#{1,4})\s+(.+)$` regex — verified non-breaking); bold/italic emphasis does not collide with the atomic-block keyword regex; chunk files remain `chunk_NNNN.md` + `chunks.json` manifest (schema unchanged).
-- [ ] Record the **breadcrumb-format contract**: `A > B > C`, now non-doubled after Phase 1; no-TOC docs may legitimately have only a single top-level title (no fragment headings) — #833 retrieval must not assume a deep `section_path` on every chunk.
-- [ ] Record the **ligature-folding boundary**: #831 stores ground-truth math text with targeted ligature folding only (no NFKC); #833 must perform FTS-time folding for `unicode61` search matching. This is a #833 dependency, not implemented here.
-- [ ] Record `pymupdf4llm`'s dropped-vector-math limitation as an accepted known limitation for #833 awareness.
-- [ ] **Nix unblock (documented prerequisite, no repo edits)**: `~/.dotfiles/packages/pymupdf4llm.nix` is in a DIFFERENT git repo and MUST NOT be committed as part of task 831. Document: (a) the stale "requires PyMuPDF 1.26.6" gate comment in `modules/home/packages/python.nix` (machine now has 1.27.2.3, satisfying ≥1.26.6); (b) the pinned 0.2.2 lags PyPI 1.28.0, which now also needs `pymupdf-layout` + `onnxruntime`; (c) re-enabling requires a user-run `home-manager switch`. State clearly the runtime does NOT depend on the nix package (the uv venv from Phase 2 is the chosen path), so this is a non-blocking follow-up for the user.
-- [ ] Capture these contracts in the implementation summary (and, if warranted, a short note file within the task directory).
+- [x] Record the **exit-code contract**. *(completed — see implementation summary)*
+- [x] Record the **output-format contract**. *(completed — see implementation summary)*
+- [x] Record the **breadcrumb-format contract**. *(completed — see implementation summary)*
+- [x] Record the **ligature-folding boundary**. *(completed — see implementation summary)*
+- [x] Record `pymupdf4llm`'s dropped-vector-math limitation, AND the newly-discovered dropped-inter-word-space defect around `<sup>`/`<sub>` spans (found in Phase 6), as accepted known limitations for #833/#832 awareness. *(completed — see implementation summary)*
+- [x] **Nix unblock (documented prerequisite, no repo edits)**. *(completed — see implementation summary; `~/.dotfiles` was not touched)*
+- [x] Capture these contracts in the implementation summary. *(completed)*
 
 **Timing**: 1 hour
 
@@ -268,15 +268,15 @@ Phases within the same wave can execute in parallel.
 
 ## Testing & Validation
 
-- [ ] `grep -nE 'sort=True|-layout' .claude/scripts/literature-convert.sh` returns zero matches (silent-corruption paths removed).
-- [ ] `grep -n 'start_page + 3' .claude/scripts/literature-convert.sh` returns zero matches (BUG 2 gone).
-- [ ] Breadcrumb doubling: zero `^(.+) > \1$` matches in freshly generated chunks (BUG 3).
-- [ ] Ligature scan: zero U+FB00–FB06 in fresh output; math Unicode preserved (BUG 4).
-- [ ] Column-order correct on a synthetic two-column PDF (regression fixture).
-- [ ] Forced-fallback test: fallback tier exercised, output correct or exit 3 (never silently wrong).
-- [ ] Quality gate: deliberately-corrupt input yields exit 3, `.rejected` file, stderr reason with measured values, and no final `.md`.
-- [ ] Caller summary: `literature-ingest.sh` reports a distinct gate-failed count over a mixed batch.
-- [ ] No mutation of `~/Projects/Literature/` at any point (all test conversions write to temp/scratch dirs).
+- [x] `grep -nE 'sort=True|-layout' .claude/scripts/literature-convert.sh` returns zero matches (silent-corruption paths removed).
+- [x] `grep -n 'start_page + 3' .claude/scripts/literature-convert.sh` returns zero matches (BUG 2 gone).
+- [x] Breadcrumb doubling: zero `^(.+) > \1$` matches in freshly generated chunks (BUG 3).
+- [x] Ligature scan: zero U+FB00–FB06 in fresh output; math Unicode preserved (BUG 4).
+- [x] Column-order correct on a synthetic two-column PDF (regression fixture) — 8/8 tests passing in `.claude/scripts/tests/test-literature-convert.sh`.
+- [x] Forced-fallback test: fallback tier exercised, output correct or exit 3 (never silently wrong).
+- [x] Quality gate: deliberately-corrupt input yields exit 3, `.rejected` file, stderr reason with measured values, and no final `.md`.
+- [x] Caller summary: `literature-ingest.sh` reports a distinct gate-failed count over a mixed batch.
+- [x] No mutation of `~/Projects/Literature/` at any point — confirmed: all pre-existing uncommitted changes in that repo (index.json, .literature.db, two new source directories) carry mtimes from 2026-07-06, three days before this session started; this task's own conversions all wrote to `mktemp -d` scratch directories exclusively.
 
 ## Artifacts & Outputs
 

@@ -1,0 +1,19 @@
+{
+  "phase": 7,
+  "phase_name": "Cross-task interface contracts (#832/#833) + nix unblock prerequisite",
+  "started_at": "2026-07-09T05:00:00Z",
+  "last_updated": "2026-07-09T05:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record exit-code contract", "status": "done", "files_touched": ["specs/831_fix_literature_conversion_pipeline_correctness/summaries/01_conversion-pipeline-fix-summary.md"]},
+    {"id": 2, "description": "Record output-format contract", "status": "done", "files_touched": ["specs/831_fix_literature_conversion_pipeline_correctness/summaries/01_conversion-pipeline-fix-summary.md"]},
+    {"id": 3, "description": "Record breadcrumb-format contract", "status": "done", "files_touched": ["specs/831_fix_literature_conversion_pipeline_correctness/summaries/01_conversion-pipeline-fix-summary.md"]},
+    {"id": 4, "description": "Record ligature-folding boundary", "status": "done", "files_touched": ["specs/831_fix_literature_conversion_pipeline_correctness/summaries/01_conversion-pipeline-fix-summary.md"]},
+    {"id": 5, "description": "Record known limitations (dropped vector-math, dropped inter-word spaces)", "status": "done", "files_touched": ["specs/831_fix_literature_conversion_pipeline_correctness/summaries/01_conversion-pipeline-fix-summary.md"]},
+    {"id": 6, "description": "Document nix unblock as user prerequisite, no repo edits", "status": "done", "files_touched": ["specs/831_fix_literature_conversion_pipeline_correctness/summaries/01_conversion-pipeline-fix-summary.md"]},
+    {"id": 7, "description": "Capture contracts in implementation summary", "status": "done", "files_touched": ["specs/831_fix_literature_conversion_pipeline_correctness/summaries/01_conversion-pipeline-fix-summary.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
