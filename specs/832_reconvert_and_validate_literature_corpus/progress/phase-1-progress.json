@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Preconditions, baseline snapshot, quarantine protocol",
+  "started_at": "2026-07-09T00:00:00Z",
+  "last_updated": "2026-07-09T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm sqlite3 present", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm pipeline scripts exist", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Capture BEFORE audit snapshot", "status": "done", "files_touched": ["specs/832_reconvert_and_validate_literature_corpus/progress/audit-before.txt"]},
+    {"id": 4, "description": "Record quarantine protocol", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Re-state exit-code contract", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

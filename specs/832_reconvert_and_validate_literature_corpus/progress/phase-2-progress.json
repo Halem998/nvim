@@ -1,0 +1,33 @@
+{
+  "phase": 2,
+  "phase_name": "Clean greenfield conversions",
+  "started_at": "2026-07-09T16:50:00Z",
+  "last_updated": "2026-07-09T17:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Convert girard_1989 (Proofs_and_Types.pdf)", "status": "done",
+     "files_touched": ["Projects/Literature/sources/girard_1989/proofs_and_types.md"]},
+    {"id": 2, "description": "Convert troelstra_schwichtenberg_2000 (Proof_Theory_Lectures.pdf)", "status": "blocked",
+     "files_touched": ["Projects/Literature/sources/troelstra_schwichtenberg_2000/proof_theory_lectures.md.rejected"],
+     "note": "auto and pymupdf retry both exit 3 (sentence-boundary-glue quality gate); genuine two-column PDF layout defect, not papered over"},
+    {"id": 3, "description": "Convert van_doorn_2015 (van_Doorn_2015_Propositional_Calculus_Coq.pdf)", "status": "done",
+     "files_touched": ["Projects/Literature/sources/van_doorn_2015/van_doorn_2015_propositional_calculus_coq.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "literature-ingest.sh <pdf> (default auto tier) for girard_1989", "result": "failed", "reason": "exit 3 quality-gate sentence-boundary-glue"},
+    {"approach": "literature-convert.sh <pdf> sources/<dir>/ directly (LITERATURE_CONVERTER=pymupdf) for girard_1989", "result": "success"},
+    {"approach": "literature-convert.sh <pdf> sources/<dir>/ default auto for van_doorn_2015", "result": "success"},
+    {"approach": "literature-convert.sh <pdf> sources/<dir>/ default auto for troelstra_schwichtenberg_2000", "result": "failed", "reason": "exit 3 sentence-boundary-glue (69 transitions)"},
+    {"approach": "LITERATURE_CONVERTER=pymupdf retry for troelstra_schwichtenberg_2000", "result": "failed", "reason": "exit 3 again (89 transitions) — both attempts exhausted, skip+report per contract"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.1",
+      "description": "Use literature-ingest.sh <path-to-source-pdf> for each of the 3 dirs",
+      "type": "altered",
+      "reason": "literature-ingest.sh/literature-convert.sh write output to $LITERATURE_DIR/<doc_id>/, not sources/<dir>/; literature-fidelity-audit.sh classify_dir() only reads non-chunk-named .md files directly in sources/<dir>/. Used literature-convert.sh <pdf> sources/<dir>/ directly (matching the established convention already used by every prior converted dir) so the audit picks up the conversion, then additionally ran literature-ingest.sh for the 2 successful conversions to also create index.json entries + chunks for search.",
+      "annotation": "*(deviation: altered — see Task 2.1 note)*"
+    }
+  ]
+}

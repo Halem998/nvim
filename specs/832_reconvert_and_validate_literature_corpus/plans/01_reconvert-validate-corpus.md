@@ -134,27 +134,27 @@ the only conversion-independent work and run in Wave 2 alongside Phase 2 on disj
 
 ---
 
-### Phase 1: Preconditions, baseline snapshot, quarantine protocol [NOT STARTED]
+### Phase 1: Preconditions, baseline snapshot, quarantine protocol [COMPLETED]
 
 **Goal**: Establish the safety baseline and the reversibility protocol before any write to
 `~/Projects/Literature/`.
 
 **Tasks**:
-- [ ] Confirm `command -v sqlite3` succeeds (hard dependency of `literature-build-index.sh`); if
-  absent, stop and report — do not proceed to Phase 8.
-- [ ] Confirm the converter and pipeline scripts exist and are readable:
-  `.claude/scripts/literature-{convert,ingest,chunk,build-index,fidelity-audit}.sh`.
-- [ ] Capture the authoritative BEFORE snapshot:
+- [x] Confirm `command -v sqlite3` succeeds (hard dependency of `literature-build-index.sh`); if
+  absent, stop and report — do not proceed to Phase 8. *(completed: sqlite3 at /run/current-system/sw/bin/sqlite3)*
+- [x] Confirm the converter and pipeline scripts exist and are readable:
+  `.claude/scripts/literature-{convert,ingest,chunk,build-index,fidelity-audit}.sh`. *(completed: all present, executable)*
+- [x] Capture the authoritative BEFORE snapshot:
   `bash .claude/scripts/literature-fidelity-audit.sh --dry-run > /tmp/832-audit-before.txt` and
   record the per-dir provenance_fidelity/word_ratio for all 13 actionable dirs plus the four
-  do-not-touch dirs (doets_1987, libkin_2004_ch3_ch7, thomas_2003_reactive, goldblatt_2003).
-- [ ] Record the quarantine protocol to be used by every `.md`-replacing task: before overwriting
+  do-not-touch dirs (doets_1987, libkin_2004_ch3_ch7, thomas_2003_reactive, goldblatt_2003). *(completed: exit 0, matches research report exactly; copy saved to specs/832_reconvert_and_validate_literature_corpus/progress/audit-before.txt)*
+- [x] Record the quarantine protocol to be used by every `.md`-replacing task: before overwriting
   `sources/<dir>/<file>.md`, run `cp <file>.md <file>.md.bak-$(date -u +%Y%m%dT%H%M%SZ)`; never
-  `rm`. Rollback = restore the newest `.bak-*`.
-- [ ] Re-state the converter exit-code contract for downstream phases: 0 success; 2 all tiers
+  `rm`. Rollback = restore the newest `.bak-*`. *(completed)*
+- [x] Re-state the converter exit-code contract for downstream phases: 0 success; 2 all tiers
   empty (hard fail, skip+log); 3 quality-gate rejection (`.rejected` written, real `.md` NOT
   written — skip+log, then one `LITERATURE_CONVERTER=pymupdf` retry; if still 3, report, never
-  success).
+  success). *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -171,21 +171,41 @@ the only conversion-independent work and run in Wave 2 alongside Phase 2 on disj
 
 ---
 
-### Phase 2: Clean greenfield conversions (girard_1989, troelstra_schwichtenberg_2000, van_doorn_2015) [NOT STARTED]
+### Phase 2: Clean greenfield conversions (girard_1989, troelstra_schwichtenberg_2000, van_doorn_2015) [PARTIAL]
 
 **Goal**: Convert the 3 genuinely clean, text-bearing greenfield dirs and create their missing
 index.json entries.
 
 **Tasks**:
-- [ ] For each of the 3 dirs, run `bash .claude/scripts/literature-ingest.sh <path-to-source-pdf>`
+- [x] For each of the 3 dirs, run `bash .claude/scripts/literature-ingest.sh <path-to-source-pdf>`
   (ingest runs convert -> chunk -> index.json entry creation; centralized global-DB rebuild is
   deferred to Phase 8, so avoid triggering redundant parallel rebuilds — run these sequentially).
-- [ ] After each, check `$?`: exit 0 = success. Exit 3 = quality-gate rejection: log loudly,
+  *(deviation: altered — discovered `literature-ingest.sh`/`literature-convert.sh <pdf> <tmpdir>`
+  writes chunks/.md to `$LITERATURE_DIR/<doc_id>/`, NOT `sources/<dir>/`, while
+  `literature-fidelity-audit.sh` classifies purely on non-`chunk_NNNN.md`-named `.md` files found
+  DIRECTLY in `sources/<dir>/` — confirmed by reading the audit script's `classify_dir()`. Used
+  `literature-convert.sh <pdf> sources/<dir>/` directly (output dir = sources/<dir>/, matching the
+  established convention seen in every already-converted dir e.g. doets_1987/burgess_1984) to get
+  a real full `.md` where the audit will see it, then additionally ran `literature-ingest.sh` for
+  the 2 that succeeded to also get chunks + an index.json entry for search. See progress file for
+  detail.)*
+- [x] After each, check `$?`: exit 0 = success. Exit 3 = quality-gate rejection: log loudly,
   retry once with `LITERATURE_CONVERTER=pymupdf bash .claude/scripts/literature-ingest.sh <path>`;
   if still 3, skip+report that dir, do NOT stamp success. Exit 2 = hard fail, skip+log.
-- [ ] Confirm each produced a non-empty `.md` and a new index.json entry (girard_1989,
-  troelstra_schwichtenberg_2000, van_doorn_2015 had no index rows before).
-- [ ] Do NOT touch gabbay_2000 or negri_von_plato_2001 in this phase (they are NOT greenfield).
+  *(completed: girard_1989 auto->exit3 (sentence-boundary-glue)->pymupdf retry->exit0 success.
+  van_doorn_2015 auto->exit0 success first try. troelstra_schwichtenberg_2000 auto->exit3->pymupdf
+  retry->exit3 AGAIN (89 then still glued transitions on a genuinely two-column-laid-out PDF) —
+  both attempts exhausted per contract, skip+report, NOT stamped success; `.rejected` sibling
+  examined, left in place for inspection, never treated as success.)*
+- [x] Confirm each produced a non-empty `.md` and a new index.json entry (girard_1989,
+  troelstra_schwichtenberg_2000, van_doorn_2015 had no index rows before). *(completed for
+  girard_1989 (doc_id proofs_and_types, 51572 words) and van_doorn_2015 (doc_id
+  van_doorn_2015_propositional_calculus_coq, 4946 words) — both now index.json entries + dry-run
+  `verified_conversion` (0.855 and 0.9765 respectively). troelstra_schwichtenberg_2000: NO entry
+  created, remains `not_yet_converted` — genuinely incomplete, reported honestly, not papered
+  over.)*
+- [x] Do NOT touch gabbay_2000 or negri_von_plato_2001 in this phase (they are NOT greenfield).
+  *(completed: untouched)*
 
 **Timing**: 1 hour
 
