@@ -258,16 +258,18 @@ Expect `MARKED`. (If `source` triggers side effects, instead extract and eval th
 
 ---
 
-### Phase 4: Resolve thomas_2003_reactive via disclosure banner (Option A) [NOT STARTED]
+### Phase 4: Resolve thomas_2003_reactive via disclosure banner (Option A) [COMPLETED]
 
 **Goal**: Execute the Option A decision — add a factually accurate scope-disclosure banner so
 `thomas_2003_reactive` resolves via the legitimate `disclosed=True` branch as `verified_conversion`,
 rather than falling through the (now `unadjudicated`) fail-closed branch.
 
 **Tasks**:
-- [ ] Read `disclosure_check()` in `literature-fidelity-audit.sh` to determine exactly what
-      triggers `disclosed=True` (it reads both `md_texts` and `index_summaries`).
-- [ ] Add a factually accurate scope-disclosure banner in the mechanism `disclosure_check()`
+- [x] Read `disclosure_check()` in `literature-fidelity-audit.sh` to determine exactly what
+      triggers `disclosed=True` (it reads both `md_texts` and `index_summaries`). *(completed:
+      `DISCLOSURE_RE` matches "selective conversion|extracted:?\s*chapter|truncated|excerpt|
+      chapters?\s+\d+\s+and\s+\d+" against the combined text of `md_texts` + `index_summaries`)*
+- [x] Add a factually accurate scope-disclosure banner in the mechanism `disclosure_check()`
       recognizes, matching the `hodkinson_2006` precedent (its `index.json` `.summary` phrasing,
       e.g. "...table of contents and introduction only; full chapter truncated"). Prefer the
       durable location: if disclosure is keyed off the source `.md` text, add the banner to both
@@ -275,8 +277,13 @@ rather than falling through the (now `unadjudicated`) fail-closed branch.
       index summary, add disclosure language to the `.summary` fields of both `thomas_2003_ch01`
       and `thomas_2003_ch03` entries in `~/Projects/Literature/index.json`. The banner must
       truthfully state the scope (chapters 1 and 3; garbled ligatures; real theorem content).
-- [ ] If the banner cannot be written truthfully, fall back to Option B (leave undisclosed -> it
+      *(completed: added "Selective conversion: chapters 1 and 3 of the lecture notes only; some
+      ligature/OCR garbling from the source PDF..." to both `.summary` fields via jq, atomic
+      write, backup verified before edit)*
+- [x] If the banner cannot be written truthfully, fall back to Option B (leave undisclosed -> it
       becomes `unadjudicated`) and FLAG this deviation for the summary — do not take it silently.
+      *(not applicable: banner written truthfully, Option A succeeded — confirmed via --dry-run:
+      thomas_2003_reactive shows verified_conversion, disclosed=True; no fallback taken)*
 
 **Timing**: 0.75 hours
 

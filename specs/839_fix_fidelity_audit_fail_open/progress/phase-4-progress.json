@@ -1,0 +1,16 @@
+{
+  "phase": 4,
+  "phase_name": "Resolve thomas_2003_reactive via disclosure banner (Option A)",
+  "started_at": "2026-07-09T23:39:00Z",
+  "last_updated": "2026-07-09T23:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read disclosure_check() mechanism", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add truthful disclosure banner to thomas_2003_ch01/ch03 .summary fields", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm Option A succeeded (no fallback needed)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Backed up ~/Projects/Literature/index.json before edit (byte-verified). Banner text: 'Selective conversion: chapters 1 and 3 of the lecture notes only; some ligature/OCR garbling from the source PDF...' appended to both thomas_2003_ch01 and thomas_2003_ch03 .summary fields via jq atomic write. Verified via --dry-run: thomas_2003_reactive now shows verified_conversion, disclosed=True (Option A succeeded, no fallback taken). Note: index.json lives outside the git repo at ~/Projects/Literature/ so this change is not tracked by git; it will be re-stamped again (idempotently) in Phase 5's --write."
+}
