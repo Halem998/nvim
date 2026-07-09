@@ -35,8 +35,8 @@
 #   this corpus — see report). This is intentional; do not add them back without
 #   re-reading the report's "Detector Design" section.
 #
-# Five-value enum: verified_conversion, unverified_summary, no_source_pdf,
-# not_yet_converted, unverified_no_baseline.
+# Six-value enum: verified_conversion, unverified_summary, no_source_pdf,
+# not_yet_converted, unverified_no_baseline, unadjudicated.
 #
 # Target entry resolution (which index.json entries get stamped):
 #   A directory's entries are all index.json entries whose `.path` starts with
@@ -365,13 +365,15 @@ def classify_dir(dirname, idx):
     frac, adequate, total = proof_completeness_fraction(md_texts)
     result["proof_fraction"] = frac
     if frac is None:
-        # No numbered statements to check at all. Conservative default for a
-        # low-ratio, undisclosed, non-formal-prose document: this corpus is
-        # formal-math-heavy and every low-ratio case observed carries numbered
-        # statements; a document with none is out of this signal's coverage
-        # (documented residual risk in report 01) rather than misclassified
-        # against a signal that cannot fire.
-        result["provenance_fidelity"] = "verified_conversion"
+        # No numbered statements to check at all: the proof-completeness signal
+        # cannot fire. This is the ABSENCE of a signal, not a positive finding --
+        # a low-ratio, undisclosed document with no numbered statements to check
+        # has not been adjudicated by any of the three signals. Fail CLOSED:
+        # stamp "unadjudicated" rather than reading silence as a pass. (Task
+        # #839 fix -- previously fell through to verified_conversion here, which
+        # was a fail-open misclassification; see report 01_provenance-fidelity-audit.md
+        # and specs/839_fix_fidelity_audit_fail_open/ for the realized-risk record.)
+        result["provenance_fidelity"] = "unadjudicated"
         return result
 
     if frac < PROOF_ADEQUACY_THRESHOLD:
@@ -421,7 +423,7 @@ def main():
 
     print("\n--- Population summary ---", file=sys.stderr)
     for k in ("verified_conversion", "unverified_summary", "no_source_pdf",
-              "not_yet_converted", "unverified_no_baseline"):
+              "not_yet_converted", "unverified_no_baseline", "unadjudicated"):
         print(f"{k}: {counts.get(k, 0)}", file=sys.stderr)
     print(f"Total directories: {len(results)}", file=sys.stderr)
 

@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Fix the primary fail-open branch and enum contract",
+  "started_at": "2026-07-09T23:22:00Z",
+  "last_updated": "2026-07-09T23:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Change frac is None branch to assign unadjudicated", "status": "done", "files_touched": [".claude/scripts/literature-fidelity-audit.sh"]},
+    {"id": 2, "description": "Update branch explanatory comment", "status": "done", "files_touched": [".claude/scripts/literature-fidelity-audit.sh"]},
+    {"id": 3, "description": "Update header enum contract to six values", "status": "done", "files_touched": [".claude/scripts/literature-fidelity-audit.sh"]},
+    {"id": 4, "description": "Add unadjudicated to population-summary tuple", "status": "done", "files_touched": [".claude/scripts/literature-fidelity-audit.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

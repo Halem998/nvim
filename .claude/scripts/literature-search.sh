@@ -47,8 +47,10 @@ INCLUDE_UNVERIFIED="false"
 # Docs whose fidelity is one of these are quarantined from default do_search output:
 # still fully retrievable (via --include-unverified, or directly via --read/--toc/
 # --doc), never deleted, never edited. See literature-fidelity-audit.sh for how the
-# field is computed and stamped.
-QUARANTINED_FIDELITY_VALUES="unverified_summary unverified_no_baseline"
+# field is computed and stamped. "unadjudicated" (task #839) covers low-ratio,
+# undisclosed docs where the proof-completeness signal could not fire at all --
+# fail closed, quarantine it like the other unverified values.
+QUARANTINED_FIDELITY_VALUES="unverified_summary unverified_no_baseline unadjudicated"
 
 # --- Build allowed doc_id set from index.json for a project ---
 # Returns newline-separated doc_ids, or empty string if no index or no matches

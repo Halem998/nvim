@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Widen the two real downstream consumers",
+  "started_at": "2026-07-09T23:22:00Z",
+  "last_updated": "2026-07-09T23:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add unadjudicated to QUARANTINED_FIDELITY_VALUES in literature-search.sh", "status": "done", "files_touched": [".claude/scripts/literature-search.sh"]},
+    {"id": 2, "description": "Add unadjudicated to needs_fidelity_marker allowlist in literature-briefing.sh", "status": "done", "files_touched": [".claude/scripts/literature-briefing.sh"]},
+    {"id": 3, "description": "Confirm no code change needed in literature-search.sh banner/get_fidelity logic", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
