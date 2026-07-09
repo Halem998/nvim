@@ -1,0 +1,28 @@
+{
+  "phase": 6,
+  "phase_name": "Fallback-forced test + Alur SyGuS regression fixture",
+  "started_at": "2026-07-09T03:30:00Z",
+  "last_updated": "2026-07-09T05:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test harness directory + files", "status": "done", "files_touched": [".claude/scripts/tests/test-literature-convert.sh", ".claude/scripts/tests/generate-test-fixtures.py"]},
+    {"id": 2, "description": "Forced-fallback test", "status": "done", "files_touched": [".claude/scripts/tests/test-literature-convert.sh"]},
+    {"id": 3, "description": "Two-column regression fixture with reading-order assertion", "status": "done", "files_touched": [".claude/scripts/tests/test-literature-convert.sh", ".claude/scripts/tests/generate-test-fixtures.py"]},
+    {"id": 4, "description": "Optional real Alur PDF stronger check, skip-with-warning when absent", "status": "done", "files_touched": [".claude/scripts/tests/test-literature-convert.sh"]},
+    {"id": 5, "description": "Document how to obtain the real Alur PDF", "status": "done", "files_touched": [".claude/scripts/tests/test-literature-convert.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Two-column fixture using insert_text() for whole unwrapped sentences", "result": "failed", "reason": "Lines wide enough to span both columns' x-ranges, defeating column-band clustering for both engine tiers. Not representative of real multi-column PDFs. Fixed with insert_textbox() + column-width-constrained rectangles."},
+    {"approach": "sentence_boundary_glue_count() matching [a-z][.,;][A-Z] (comma/semicolon included)", "result": "failed", "reason": "Heavy false positives on legitimate math tuple/list notation (x,Y) common throughout this math-heavy corpus. Restricted to period-only."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.6",
+      "description": "Additional quality-gate detector beyond Phase 5's four",
+      "type": "altered",
+      "reason": "While building the Phase 6 test harness, discovered a real, previously-undetected word-fusion defect in pymupdf4llm's extraction of a real corpus document (Goldblatt/Hodkinson/Venema 2003) that none of Phase 5's four detectors catch. Added a fifth detector (sentence_boundary_glue_count) to literature-convert.sh's quality gate to close this gap, consistent with the task's zero-silent-corruption mandate.",
+      "annotation": "*(deviation: altered — Phase 5's quality gate extended with a fifth detector discovered during Phase 6 test-harness construction)*"
+    }
+  ]
+}

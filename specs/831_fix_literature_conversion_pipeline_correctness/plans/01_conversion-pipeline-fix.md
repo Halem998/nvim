@@ -210,16 +210,20 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 6: Fallback-forced test + Alur SyGuS regression fixture [NOT STARTED]
+### Phase 6: Fallback-forced test + Alur SyGuS regression fixture [COMPLETED]
 
 **Goal**: Prove the fallback tier is actually exercised and correct (the whole point of this task class), and lock in a two-column reading-order regression.
 
 **Tasks**:
-- [ ] Create a test harness under `.claude/scripts/tests/` (e.g. `test-literature-convert.sh` + a Python helper); create the directory.
-- [ ] **Forced-fallback test**: invoke the converter with the primary engine forced unavailable (e.g. hide/rename the venv or set an override), assert the PyMuPDF column-clustering fallback path is taken (logged), and assert it EITHER produces correct column order (interleaving heuristic passes) OR fails loudly with exit 3 — never silently emits corrupt output.
-- [ ] **Regression fixture**: generate a hermetic synthetic two-column PDF at test time via PyMuPDF (known left-column and right-column sentences, no network, no committed binary); run the full converter; assert reading order is left-column-complete-then-right-column (column text never interleaved on one line).
-- [ ] **Optional stronger check**: if a real Alur SyGuS PDF is present (via `LITERATURE_TEST_PDF` env or a cached fixture path), additionally assert its known-bad body page now extracts in correct order; if the PDF is absent, SKIP WITH WARNING (never fail). Convert to a temp/scratch dir only — never touch `~/Projects/Literature/`.
-- [ ] Document how to obtain the real Alur PDF (research located it at the cs.utexas.edu FMCAD'13 mirror) for anyone wanting the stronger check.
+- [x] Create a test harness under `.claude/scripts/tests/` (`test-literature-convert.sh` + `generate-test-fixtures.py`). *(completed)*
+- [x] **Forced-fallback test**: invoke the converter with the primary engine forced unavailable, assert the PyMuPDF column-clustering fallback path is taken (logged), and assert it EITHER produces correct column order OR fails loudly with exit 3. *(completed)*
+- [x] **Regression fixture**: generate a hermetic synthetic two-column PDF at test time via PyMuPDF; run the full converter; assert reading order is left-column-complete-then-right-column. *(completed: run against both the forced-fallback tier (strict) and auto mode (loose: correct OR loudly rejected))*
+- [x] **Optional stronger check**: real Alur SyGuS PDF via `LITERATURE_TEST_PDF`; skip with warning if absent, never fail. *(completed)*
+- [x] Document how to obtain the real Alur PDF (cs.utexas.edu FMCAD'13 mirror). *(completed, in the test script's header comment)*
+
+**Findings from building this test harness** (both discovered by the harness itself, not anticipated by the plan):
+1. **Fixture design bug (self-corrected)**: the first version of the two-column fixture used `insert_text()` for whole un-wrapped sentences, which produced lines wide enough to span BOTH columns' x-ranges (unrealistic — real PDF columns confine each line to their own width). This defeated column-band clustering for both engine tiers. Fixed by using `insert_textbox()` with a column-width-constrained rectangle, matching how real multi-column PDFs actually wrap text. See `generate-test-fixtures.py`'s docstring.
+2. **Real, previously-undetected defect found in the primary engine**: while debugging finding 1, a genuine defect was found in `pymupdf4llm`'s own extraction of a REAL corpus document (Goldblatt/Hodkinson/Venema 2003, via a fresh in-process conversion — the corpus file itself was never read or reconverted): inter-word spaces are dropped entirely around some `<sup>`/`<sub>` markdown spans, producing fused runs like `Thesecondlinefollowsby`. This was previously undetected because none of the four quality-gate checks in Phase 5 target word-fusion specifically. Added a fifth (well, Phase 5's plan named four; this is a targeted fifth) quality-gate detector, `sentence_boundary_glue_count()`, in `literature-convert.sh` — period-only (`[a-z]\.[A-Z]`), verified at 0-1 occurrences across 60 random real corpus files, threshold 3. This means Phase 3/4's earlier verification note that Goldblatt's conversion showed `Quality gate: PASSED` is now superseded: with this additional detector, that same document's `pymupdf4llm` conversion correctly fails the gate (12 occurrences), while Zielonka 1998 and Rabinovich 2014 continue to pass cleanly (0 occurrences, no false positives). This is valuable, actionable information for task #832 (corpus reconversion will need `LITERATURE_CONVERTER=pymupdf` fallback-tier reconversion, or acceptance of the defect, for this specific source document).
 
 **Timing**: 1.5 hours
 

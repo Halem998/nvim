@@ -15,3 +15,5 @@ specs/literature/.literature.db.tmp
 # literature-convert.sh pymupdf4llm engine venv (auto-provisioned by
 # literature-pyenv-provision.sh; never commit — see task 831)
 .claude/scripts/literature-pyenv/
+__pycache__/
+*.pyc

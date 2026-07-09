@@ -540,6 +540,31 @@ def column_interleaving_flagged(text):
     return (frac > 0.15 and long_enough), frac
 
 
+def sentence_boundary_glue_count(text):
+    """Secondary word-fusion signal, added during task #831 Phase 6
+    test-harness verification. Deliberately period-ONLY (`[a-z]\\.[A-Z]`),
+    NOT comma/semicolon: an earlier comma/semicolon-inclusive version was
+    empirically found to false-positive heavily on legitimate math tuple/
+    list notation (`(x,Y)`, `a,B,c` are extremely common in this math-heavy
+    corpus and are not defects).
+
+    Found via a REAL corpus PDF, not a synthetic fixture (a synthetic
+    two-column fixture also seemed to trigger this during early Phase 6
+    testing, but that turned out to be an artifact of an unrealistic first
+    version of the fixture — see generate-test-fixtures.py's docstring —
+    and no longer reproduces once the fixture uses column-width-constrained
+    wrapped text like a real PDF): pymupdf4llm was observed to drop
+    inter-word spaces entirely around some `<sup>`/`<sub>` markdown spans on
+    Goldblatt/Hodkinson/Venema 2003 (a real corpus document, read via a
+    fresh in-process conversion, never by reading/reconverting the corpus
+    itself), producing fused runs like "Thesecondlinefollowsby" — a
+    genuine, previously-undetected correctness defect this check catches.
+    Verified at 0-1 occurrences across a random sample of 60 real corpus
+    markdown files (read-only, not reconverted) with the period-only
+    pattern; the threshold below (>=3) sits well above that baseline."""
+    return len(re.findall(r"[a-z]\.[A-Z]", text))
+
+
 def run_quality_gate(content, doc):
     reasons = []
 
@@ -548,6 +573,14 @@ def run_quality_gate(content, doc):
         reasons.append(
             f"column-interleaving: {frac:.1%} of non-blank lines contain a mid-line "
             f"4+-space glue run with above-median length (threshold 15%)"
+        )
+
+    glue_count = sentence_boundary_glue_count(content)
+    if glue_count >= 3:
+        reasons.append(
+            f"sentence-boundary-glue: {glue_count} zero-space word/sentence-fusion "
+            f"transition(s) found (threshold 3) — a distinct extraction-corruption "
+            f"signature, independent of the whitespace-gap column-interleaving check"
         )
 
     src_words = sum(len(page.get_text().split()) for page in doc)
