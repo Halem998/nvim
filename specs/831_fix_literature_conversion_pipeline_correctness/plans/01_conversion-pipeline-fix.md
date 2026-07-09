@@ -101,15 +101,15 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Provision pinned engine environment (uv venv + nix-ld shim) [NOT STARTED]
+### Phase 2: Provision pinned engine environment (uv venv + nix-ld shim) [COMPLETED]
 
 **Goal**: Establish an auto-provisioned, gitignored `uv` venv containing `pymupdf4llm`, invoked by absolute `bin/python`, with the `nix-ld` + `stdenv.cc.cc.lib` `LD_LIBRARY_PATH` shim, without yet changing any pipeline behavior.
 
 **Tasks**:
-- [ ] Choose and document the venv location (e.g. `.claude/scripts/literature-pyenv/`); add it to `.gitignore` (do NOT commit the venv).
-- [ ] Write a provisioning helper (a function in `literature-convert.sh` or a small `literature-pyenv-provision.sh`) that: creates the venv via `uv venv` if absent, installs a pinned `pymupdf4llm` version, and is idempotent/cached.
-- [ ] Implement the `LD_LIBRARY_PATH` shim: prepend `$(nix-build '<nixpkgs>' -A stdenv.cc.cc.lib --no-out-link)/lib` (cached) to `$NIX_LD_LIBRARY_PATH` when invoking the venv python, so the compiled `_extra` wheel loads. Detect/set this in the calling script; never assume the caller's env has it.
-- [ ] Add graceful detection: if `uv` is unavailable or provisioning fails, the helper must report unavailability cleanly (so Phase 3's tier logic can fall back), never crash.
+- [x] Choose and document the venv location (e.g. `.claude/scripts/literature-pyenv/`); add it to `.gitignore` (do NOT commit the venv). *(completed: `.claude/scripts/literature-pyenv/`)*
+- [x] Write a provisioning helper (a function in `literature-convert.sh` or a small `literature-pyenv-provision.sh`) that: creates the venv via `uv venv` if absent, installs a pinned `pymupdf4llm` version, and is idempotent/cached. *(completed: new `literature-pyenv-provision.sh`, pinned `pymupdf4llm==1.28.0`)*
+- [x] Implement the `LD_LIBRARY_PATH` shim: prepend `$(nix-build '<nixpkgs>' -A stdenv.cc.cc.lib --no-out-link)/lib` (cached) to `$NIX_LD_LIBRARY_PATH` when invoking the venv python, so the compiled `_extra` wheel loads. Detect/set this in the calling script; never assume the caller's env has it. *(completed: cached in `.claude/scripts/literature-pyenv/.cclib_path`)*
+- [x] Add graceful detection: if `uv` is unavailable or provisioning fails, the helper must report unavailability cleanly (so Phase 3's tier logic can fall back), never crash. *(completed: `set -uo pipefail`, no `-e`, all failure paths return non-zero + stderr log)*
 
 **Timing**: 1.5 hours
 

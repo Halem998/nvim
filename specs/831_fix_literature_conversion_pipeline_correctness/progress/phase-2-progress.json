@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "Provision pinned engine environment (uv venv + nix-ld shim)",
+  "started_at": "2026-07-09T00:10:00Z",
+  "last_updated": "2026-07-09T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Choose venv location, add to .gitignore", "status": "done", "files_touched": [".gitignore"]},
+    {"id": 2, "description": "Write idempotent provisioning helper", "status": "done", "files_touched": [".claude/scripts/literature-pyenv-provision.sh"]},
+    {"id": 3, "description": "Implement nix-ld + stdenv.cc.cc.lib LD_LIBRARY_PATH shim, cached", "status": "done", "files_touched": [".claude/scripts/literature-pyenv-provision.sh"]},
+    {"id": 4, "description": "Graceful unavailability detection, never crash caller", "status": "done", "files_touched": [".claude/scripts/literature-pyenv-provision.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
