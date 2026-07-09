@@ -517,11 +517,26 @@ def column_interleaving_flagged(text):
         return False, 0.0
     glue_re = re.compile(r"\S\s{4,}\S")
     glued = [l for l in lines if glue_re.search(l)]
+    non_glued = [l for l in lines if not glue_re.search(l)]
     frac = len(glued) / len(lines)
-    lengths = sorted(len(l) for l in lines)
-    median_len = lengths[len(lengths) // 2] if lengths else 0
     avg_glued_len = (sum(len(l) for l in glued) / len(glued)) if glued else 0
-    long_enough = median_len > 0 and avg_glued_len > 1.5 * median_len
+
+    # Baseline for "conspicuously long": the median length of the NON-glued
+    # lines specifically, not all lines. Comparing against the whole
+    # document's median fails on the exact worst-case (and most important)
+    # scenario this check exists to catch: when column-gluing affects the
+    # MAJORITY of a document, glued lines themselves dominate the overall
+    # median, so "avg glued length > 1.5x overall median" can never fire —
+    # empirically verified against the real corrupted Alur SyGuS corpus
+    # document (task #831), which the document-wide-median formulation
+    # failed to flag (79% of lines glued, yet ratio stayed ~1.0x). Falling
+    # back to the whole-document median only when every line is glued (no
+    # non-glued baseline exists at all).
+    baseline_lengths = non_glued if non_glued else lines
+    baseline_sorted = sorted(len(l) for l in baseline_lengths)
+    baseline_len = baseline_sorted[len(baseline_sorted) // 2] if baseline_sorted else 0
+
+    long_enough = baseline_len > 0 and avg_glued_len > 1.5 * baseline_len
     return (frac > 0.15 and long_enough), frac
 
 

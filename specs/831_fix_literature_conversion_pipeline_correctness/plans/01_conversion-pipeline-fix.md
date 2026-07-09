@@ -182,16 +182,18 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 5: Quality gate, exit code 3, and loud-failure contract [NOT STARTED]
+### Phase 5: Quality gate, exit code 3, and loud-failure contract [COMPLETED]
 
 **Goal**: Add a post-conversion validation step that refuses to emit corrupt markdown, introduce exit code 3, and wire the caller to surface gate failures visibly across the corpus.
 
 **Tasks**:
-- [ ] Implement the four detectors per research section 6: (1) column-interleaving heuristic (`\S\s{4,}\S` run fraction > ~15% of non-blank lines AND avg length > ~1.5x median); (2) page-coverage assertion — re-open the source with `fitz.open`, assert markdown word count ≥ ~40% of `sum(len(page.get_text().split()))` and content proportional to `len(doc)`; (3) ligature scan (any U+FB00–FB06 remaining = hard fail); (4) dehyphenation sanity check (`[a-z]-\n[a-z]` count must be 0).
-- [ ] Add exit code 3 (conversion succeeded but quality gate failed), extending the current 0/1/2 scheme; update the script header comment.
-- [ ] Loud-failure contract: on gate failure, print `[convert] QUALITY GATE FAILED: <specific reason(s) with measured values>` to stderr AND write output to a `.rejected` sibling (or leave no `.md`) so no caller can mistake a failed conversion for a success. Print the reason with measured numbers, not a boolean.
-- [ ] Wire the caller `literature-ingest.sh`: change the per-file invocation (currently `2>&1 | tail -1` at line ~189) to capture and check the exit code; on exit 3 log the specific file + reason and increment a distinct gate-failed counter; emit a final `N converted, M quality-gate-failed (see list)` summary rather than silently continuing.
-- [ ] Ensure the existing unconditional `[convert] Metrics: headings=... words=... math=...` line is no longer presented as a success signal (it says nothing about correctness).
+- [x] Implement the four detectors per research section 6. *(completed: `run_quality_gate()`. Deviation on detector 1's threshold formula — see below.)*
+- [x] Add exit code 3 (conversion succeeded but quality gate failed), extending the current 0/1/2 scheme; update the script header comment. *(completed)*
+- [x] Loud-failure contract: on gate failure, print `[convert] QUALITY GATE FAILED: <specific reason(s) with measured values>` to stderr AND write output to a `.rejected` sibling so no caller can mistake a failed conversion for a success. *(completed; verified end-to-end: exit 3, `.rejected` written, final `.md` NOT written, stderr names each failed check with measured values)*
+- [x] Wire the caller `literature-ingest.sh`: capture and check the exit code explicitly (no longer swallowed by a `| tail -1` pipe under `set -e`); on exit 3 log the specific file + reason and increment a distinct `GATE_FAILED` counter; emit a final summary with a distinct `Files quality-gate-failed` count and per-file reason list. *(completed; verified via a stubbed mixed batch: 1 good + 1 gate-failed file, summary correctly reports both counts and names the offending file)*
+- [x] Ensure the existing unconditional `[convert] Metrics: headings=... words=... math=...` line is no longer presented as a success signal. *(completed: metrics line is now explicitly documented as "informational only — NOT a correctness signal"; also fixed a pre-existing cosmetic bug where a zero count printed as a duplicated `0` line)*
+
+**Deviation**: The column-interleaving detector's "avg glued line length > 1.5x median" check used the WHOLE DOCUMENT's median line length per the research spec. Empirically verified against the actual known-bad Alur SyGuS corpus document (the task's own motivating example): this formulation **failed to flag it** (79% of lines glued, but the glued lines themselves dominate and inflate the document-wide median, so the ratio check never fires). Fixed by comparing against the median length of the NON-glued lines specifically (falling back to the whole-document median only when literally every line is glued). Re-verified: now correctly flags the real Alur document, still does not false-positive on well-formed synthetic/real content, and does not false-positive on any of this task's own successful conversions (Zielonka 1998, Goldblatt/Hodkinson/Venema 2003, Rabinovich 2014, both engine tiers).
 
 **Timing**: 2 hours
 

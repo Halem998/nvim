@@ -1,0 +1,27 @@
+{
+  "phase": 5,
+  "phase_name": "Quality gate, exit code 3, and loud-failure contract",
+  "started_at": "2026-07-09T02:20:00Z",
+  "last_updated": "2026-07-09T03:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Implement the four quality-gate detectors", "status": "done", "files_touched": [".claude/scripts/literature-convert.sh"]},
+    {"id": 2, "description": "Add exit code 3, update header comment", "status": "done", "files_touched": [".claude/scripts/literature-convert.sh"]},
+    {"id": 3, "description": "Loud-failure contract: stderr reason + .rejected sibling, no final .md", "status": "done", "files_touched": [".claude/scripts/literature-convert.sh"]},
+    {"id": 4, "description": "Wire literature-ingest.sh caller for exit-code-aware handling + gate-failed summary", "status": "done", "files_touched": [".claude/scripts/literature-ingest.sh"]},
+    {"id": 5, "description": "Metrics line no longer presented as a success signal", "status": "done", "files_touched": [".claude/scripts/literature-convert.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "column-interleaving avg-glued-length vs whole-document median (literal research spec)", "result": "failed", "reason": "Empirically fails to flag the real motivating Alur corpus bug case: when gluing affects the majority of a document, glued lines dominate and inflate the document median itself, so the ratio check never fires (verified: 79% lines glued yet ratio stayed ~1.0x)."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.1",
+      "description": "Column-interleaving detector: avg glued line length vs document median",
+      "type": "altered",
+      "reason": "The literal research-spec formula (vs whole-document median) fails to flag the actual known-bad Alur SyGuS corpus document because glued lines dominate the document and inflate the median itself. Fixed by comparing against the median of NON-glued lines instead (falling back to whole-document median only if literally every line is glued). Re-verified against the real bad document (now correctly flagged) and against every successful conversion produced in this task (no false positives).",
+      "annotation": "*(deviation: altered — baseline changed from whole-document median to non-glued-lines median; see plan Phase 5 deviation note)*"
+    }
+  ]
+}
