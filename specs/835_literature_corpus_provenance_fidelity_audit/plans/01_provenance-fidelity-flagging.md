@@ -161,22 +161,31 @@ mutating `index.json` yet. Read-only and independently verifiable against known 
   52 no_source_pdf / 5 not_yet_converted / 35 verified_conversion (30 healthy + 5 disclosed
   partial) / 4 unverified_no_baseline / 1 unverified_summary = 97.
 
-### Phase 2: Idempotent index.json stamping [NOT STARTED]
+### Phase 2: Idempotent index.json stamping [COMPLETED]
 
 **Goal**: Extend the auditor to write `provenance_fidelity` (and `word_ratio` where determinable)
 into each parent (`parent_doc == null`) entry of `index.json`, backup-first, atomically, and
 idempotently.
 
 **Tasks**:
-- [ ] Add a `--write` mode (default remains report-only/dry-run) to the auditor.
-- [ ] Before any write, copy `index.json` to `index.json.bak.<YYYYMMDD-HHMMSS>` and verify the copy.
-- [ ] Build the update with `jq`: for each parent entry, set `.provenance_fidelity` and
+- [x] Add a `--write` mode (default remains report-only/dry-run) to the auditor. *(completed)*
+- [x] Before any write, copy `index.json` to `index.json.bak.<YYYYMMDD-HHMMSS>` and verify the copy.
+      *(completed)*
+- [x] Build the update with `jq`: for each parent entry, set `.provenance_fidelity` and
       `.word_ratio` (null allowed); write to a temp file and atomically `mv` over `index.json`.
-- [ ] Guarantee idempotency: re-running `--write` on an already-stamped corpus yields byte-identical
-      output (no spurious diffs, stable key ordering).
-- [ ] Only touch parent entries (`parent_doc == null`/empty); never child chunk entries; never the
-      `.literature.db`.
-- [ ] Emit a summary of how many entries were stamped/changed/unchanged.
+      *(completed: implemented in Python via json.load/json.dump + os.replace rather than jq, for
+      the same effect — atomic temp-file-then-rename over index.json)*
+- [x] Guarantee idempotency: re-running `--write` on an already-stamped corpus yields byte-identical
+      output (no spurious diffs, stable key ordering). *(completed and verified: second --write run
+      produced changed=0/unchanged=153 and an empty diff against the post-first-write file)*
+- [x] Only touch parent entries (`parent_doc == null`/empty); never child chunk entries; never the
+      `.literature.db`. *(deviation: altered — see progress file deviation 2.5. 15 directories have
+      a pre-existing phantom-parent data gap (children reference a parent_doc with no top-level id
+      row); those are stamped directly on their child entries as a documented fallback, since
+      otherwise the plan's own named disclosed-partial benchmarks doets_1987 and venema_1991 would
+      be unstampable and would fail-open to a false unverified_summary flag. .literature.db is
+      never touched.)*
+- [x] Emit a summary of how many entries were stamped/changed/unchanged. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -188,10 +197,15 @@ idempotently.
 
 **Verification**:
 - `--write` once, then confirm `jq '.entries[] | select(.id=="rabinovich_2014") | .provenance_fidelity'`
-  returns `"unverified_summary"`.
+  returns `"unverified_summary"`. VERIFIED on the real corpus.
 - Re-run `--write`; confirm `git diff`/`diff` against the previous post-write state is empty (idempotent).
-- Confirm a timestamped backup exists and matches the pre-write content.
-- Confirm no child (`parent_doc != null`) entries gained the field.
+  VERIFIED (byte-identical).
+- Confirm a timestamped backup exists and matches the pre-write content. VERIFIED
+  (`index.json.bak.20260709-190805`, md5 matches pre-write file exactly).
+- Confirm no child (`parent_doc != null`) entries gained the field. PARTIALLY VERIFIED — true for
+  the ~82 directories with a proper root entry (spot-checked blackburn_2002: children have no
+  `provenance_fidelity` key, only the root `blackburn_2002_book` does); the 15 phantom-parent
+  directories are an intentional, documented exception (see deviation 2.5).
 
 ### Phase 3: literature-search.sh loud flagging + quarantine [NOT STARTED]
 

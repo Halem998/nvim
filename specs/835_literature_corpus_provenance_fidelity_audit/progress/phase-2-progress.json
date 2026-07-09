@@ -1,0 +1,27 @@
+{
+  "phase": 2,
+  "phase_name": "Idempotent index.json stamping",
+  "started_at": "2026-07-09T19:15:00Z",
+  "last_updated": "2026-07-09T19:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add a --write mode (default remains report-only/dry-run) to the auditor", "status": "done", "files_touched": [".claude/scripts/literature-fidelity-audit.sh"]},
+    {"id": 2, "description": "Before any write, copy index.json to index.json.bak.<ts> and verify the copy", "status": "done", "files_touched": [".claude/scripts/literature-fidelity-audit.sh"]},
+    {"id": 3, "description": "Build the update with jq/atomic mv over index.json", "status": "done", "files_touched": [".claude/scripts/literature-fidelity-audit.sh"]},
+    {"id": 4, "description": "Guarantee idempotency", "status": "done", "files_touched": [".claude/scripts/literature-fidelity-audit.sh"]},
+    {"id": 5, "description": "Only touch parent entries, never child chunk entries, never .literature.db", "status": "done", "files_touched": [".claude/scripts/literature-fidelity-audit.sh"], "note": "Altered per deviation 2.5: path-prefix + root-detection with a documented phantom-parent-fallback for 15 directories lacking a true root row."},
+    {"id": 6, "description": "Emit a summary of how many entries were stamped/changed/unchanged", "status": "done", "files_touched": [".claude/scripts/literature-fidelity-audit.sh"]},
+    {"id": 7, "description": "Run --write on the real corpus, verify backup + rabinovich_2014 stamp + idempotency + no child-of-rooted-doc contamination", "status": "done", "files_touched": ["~/Projects/Literature/index.json"], "note": "Real corpus stamped: 153 entries (90 true roots + 63 phantom-parent-fallback children). Backup index.json.bak.20260709-190805 verified byte-identical to pre-write state. Second --write produced zero-diff (idempotent). No file under sources/ modified (mtime check)."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "2.5",
+      "description": "'Only touch parent entries (parent_doc == null/empty); never child chunk entries' (Phase 2 task 5)",
+      "type": "altered",
+      "reason": "15 of the 97 source directories (doets_1987, venema_1991, thomason_1984, burgess_1982, burgess_1982b, burgess_1984, derijke_1995, doets_1989, obendrauf_2024, reynolds_1992, reynolds_1994, venema_1997, venema_2001, verbrugge_2004, xu_1988) have a pre-existing, orthogonal index.json data gap: their children carry a parent_doc value with NO corresponding top-level id row at all (a phantom parent). Strictly honoring 'never touch child entries' would leave these directories permanently unstampable, so literature-search.sh's fail-open lookup would flag several of the plan's own named disclosed-partial benchmarks (doets_1987, venema_1991) as unverified_summary -- directly violating the plan's dominant acceptance criterion (zero false positives against the 5 disclosed partials). Resolution: entries are targeted by index.json .path prefix match against sources/<dir>/ (not by id-name matching); when at least one matched entry is a true root (no parent_doc), only roots are stamped (matches the plan exactly, ~82 of 97 dirs); when NO matched entry is a root, all matched child entries sharing the phantom parent_doc are stamped directly instead (the 15-directory fallback). This is documented in the auditor script's header comment and verified empirically: doets_1987 and venema_1991 both resolve to verified_conversion with zero false positives after this fallback.",
+      "annotation": "*(deviation: altered — parent-only stamping relaxed to a path-prefix + root-detection-with-phantom-parent-fallback rule; see script header and progress approaches_tried for the 15-directory list)*"
+    }
+  ],
+  "handoff_count": 0
+}
