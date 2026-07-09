@@ -41,6 +41,20 @@
         "skills": ["skill-literature", "skill-researcher", "skill-implementer", "skill-planner"],
         "commands": ["/literature", "/research", "/plan", "/implement"]
       }
+    },
+    {
+      "path": "project/literature/patterns/zotero-pdf-resolution.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "topics": ["literature", "zotero", "pdf", "resolution", "storage-root", "provenance"],
+      "keywords": ["zotero", "pdf", "resolve", "storage-root", "sqlite", "live-api", "citekey", "title-similarity"],
+      "summary": "How to resolve an index.json doc_id to its Zotero PDF: live-API-vs-sqlite-vs-snapshot tradeoffs, derived (never hardcoded) storage root, citekey-vs-real-key gotcha, and title-search truncation/similarity-floor mitigations",
+      "line_count": 114,
+      "load_when": {
+        "agents": ["literature-agent", "general-research-agent", "general-implementation-agent"],
+        "skills": ["skill-literature", "skill-researcher", "skill-implementer"],
+        "commands": ["/literature"]
+      }
     }
   ]
 }

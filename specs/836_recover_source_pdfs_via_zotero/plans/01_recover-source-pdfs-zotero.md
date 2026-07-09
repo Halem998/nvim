@@ -473,27 +473,36 @@ reordered relative to the dry-run and confirmation gates that precede them.
 
 ---
 
-### Phase 7: Document the Resolution Pattern and Write the Summary [NOT STARTED]
+### Phase 7: Document the Resolution Pattern and Write the Summary [COMPLETED]
 
 - **Goal:** Capture the Zotero access knowledge that this task established, flag the latent exporter
   bug for a follow-up, and report the outcome honestly.
 
 - **Tasks:**
-  - [ ] Write `.claude/context/project/literature/patterns/zotero-pdf-resolution.md` documenting:
+  - [x] Write `.claude/context/project/literature/patterns/zotero-pdf-resolution.md` documenting:
         (1) prefer the live local HTTP API when reachable; (2) the sqlite fallback requires Zotero
         to be closed, because the DB is locked while it runs; (3) the storage root must be derived
         from `zotero-resolve-sqlite-path.sh`'s dataDir and never hardcoded to `~/Zotero/storage/`;
-        (4) `zotero-library.json` carries no attachment paths and goes stale.
-  - [ ] Record the `zotero-generate-export.sh` `fetch_path3()` hardcoded-storage-root bug as a
+        (4) `zotero-library.json` carries no attachment paths and goes stale. *(completed; also
+        added sections on the citekey-vs-real-key gotcha and the title-search
+        truncation/similarity-floor mitigations found during Phase 2; registered in
+        `.claude/extensions/literature/index-entries.json`)*
+  - [x] Record the `zotero-generate-export.sh` `fetch_path3()` hardcoded-storage-root bug as a
         follow-up item (it is latent today because Path 3 only runs when the live API is down). Do
-        not fix it here.
-  - [ ] Record the `fine_2012_*` suspected corpus-duplicate as a follow-up item.
-  - [ ] Write `specs/836_recover_source_pdfs_via_zotero/summaries/01_recover-source-pdfs-zotero-summary.md`
+        not fix it here. *(completed, in the new context file's "Follow-up items" section)*
+  - [x] Record the `fine_2012_*` suspected corpus-duplicate as a follow-up item. *(completed, same
+        section, plus flagged in resolution-manifest.json's duplicate_flags and the summary)*
+  - [x] Write `specs/836_recover_source_pdfs_via_zotero/summaries/01_recover-source-pdfs-zotero-summary.md`
         stating the outcome in the research's terms: N recovered (expected ~7), 2 matched but
         HTML-only, 1 needing disambiguation, ~41 confirmed absent because they were never in this
-        Zotero library. Frame the ~41 as the correct result, not a resolution failure.
-  - [ ] Commit the corpus change in `~/Projects/Literature/` and the repo change separately, since
-        they are different repositories.
+        Zotero library. Frame the ~41 as the correct result, not a resolution failure. *(completed:
+        actual outcome was 7 recovered, 1 HTML-only (not 2 -- see Phase 3 deviation), 1 needing
+        disambiguation, 2 confirmed false-positive rejections, 41 absent -- all stated plainly with
+        the full 52-entry disposition table)*
+  - [x] Commit the corpus change in `~/Projects/Literature/` and the repo change separately, since
+        they are different repositories. *(completed: Literature repo commit e0ffb9b, staged
+        index.json only -- the 7 recovered PDFs are gitignored by that repo's own `*.pdf` rule and
+        correctly not tracked)*
 
 - **Timing:** 45 minutes
 

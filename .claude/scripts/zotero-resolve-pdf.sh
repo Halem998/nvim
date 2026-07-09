@@ -159,6 +159,15 @@ resolve_live_api() {
   # Evaluate every candidate; select the one with the HIGHEST title similarity among those that
   # have a resolvable PDF attachment (never just the first one found in API order -- a
   # low-similarity item appearing earlier in results must not shadow a better match).
+  #
+  # MIN_SIMILARITY floors out author-only-fallback collisions: a common surname (e.g. "Liu") can
+  # coincidentally match an unrelated item in a philosophy/logic library with a low title
+  # similarity (empirically observed: 0.12-0.34 for the arXiv hardware-verification cluster,
+  # which the research phase confirmed has zero true representation in this Zotero library).
+  # Genuine matches observed so far score >= 0.52 (pnueli's Lamport year-mismatch, itself a
+  # false positive but a *plausible* one correctly deferred to Phase 4) up to 1.0 (exact-title
+  # key-anchored hits). 0.4 sits between the two clusters.
+  local MIN_SIMILARITY="0.4"
   local best_pdf_sim="-1" best_pdf_key="" best_pdf_att="" best_pdf_path="" best_pdf_title="" best_pdf_year="" best_pdf_doi=""
   local best_bib_sim="-1" best_bib_key="" best_bib_title="" best_bib_year="" best_bib_att=""
   local i cand_key cand_title cand_year cand_doi
@@ -183,7 +192,7 @@ resolve_live_api() {
       att_key="$(jq -r '.key' <<<"$pdf_att")"
       att_filename="$(jq -r '.data.filename // ""' <<<"$pdf_att")"
       resolved_path="$ZOTERO_STORAGE_ROOT/$att_key/$att_filename"
-      if [ -f "$resolved_path" ] && awk -v s="$sim" -v b="$best_pdf_sim" 'BEGIN{exit !(s>b)}'; then
+      if [ -f "$resolved_path" ] && awk -v s="$sim" -v b="$best_pdf_sim" -v m="$MIN_SIMILARITY" 'BEGIN{exit !(s>b && s>=m)}'; then
         best_pdf_sim="$sim"; best_pdf_key="$cand_key"; best_pdf_att="$att_key"
         best_pdf_path="$resolved_path"; best_pdf_title="$cand_title"; best_pdf_year="$cand_year"
         best_pdf_doi="$cand_doi"
@@ -191,7 +200,9 @@ resolve_live_api() {
     fi
 
     # Track the best bibliographic match regardless of PDF, for the matched-no-pdf fallback.
-    if [ -n "$children" ] && [ "$children" != "[]" ] && awk -v s="$sim" -v b="$best_bib_sim" 'BEGIN{exit !(s>b)}'; then
+    # Same MIN_SIMILARITY floor applies -- a coincidental surname match must not be reported as
+    # a confirmed bibliographic identification.
+    if [ -n "$children" ] && [ "$children" != "[]" ] && awk -v s="$sim" -v b="$best_bib_sim" -v m="$MIN_SIMILARITY" 'BEGIN{exit !(s>b && s>=m)}'; then
       local html_att
       html_att="$(jq -c '[.[] | select(.data.itemType == "attachment")] | first // empty' <<<"$children")"
       best_bib_sim="$sim"; best_bib_key="$cand_key"; best_bib_title="$cand_title"; best_bib_year="$cand_year"
