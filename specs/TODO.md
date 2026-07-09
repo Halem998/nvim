@@ -1,17 +1,17 @@
 ---
-next_project_number: 830
+next_project_number: 831
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-07-08. Generated from state.json dependency graph.*
+*Updated 2026-07-09. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826 | -- | extensions, email integration, terminal ui |
+| 1 | 78,87,821,826,830 | -- | extensions, email integration, terminal ui |
 | 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -26,12 +26,35 @@ next_project_number: 830
 ### Terminal Ui
 
 87 [RESEARCHED] — Investigate why the terminal working directory changes to a proje
+830 [NOT STARTED] — Special-case the aerc terminal in Neovim's terminal-mode keymap s
 
 ### Email Integration
 
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
+
+### 830. Aerc terminal ctrl hjkl esc passthrough
+- **Status**: [NOT STARTED]
+- **Task Type**: neovim
+- **Topic**: Terminal UI
+- **Dependencies**: None
+
+**Description**: Special-case the aerc terminal in Neovim's terminal-mode keymap setup so <C-h/j/k/l> and <Esc> reach aerc instead of being intercepted by Neovim. This is the cross-repo companion to .dotfiles task 105 Recommendation B (aerc<->nvim/himalaya keymap alignment); it is a hard PREREQUISITE for the aerc-side <C-hjkl> folder binds in that task.
+
+BACKGROUND: aerc is launched via <leader>me into a floating toggleterm (lua/neotex/plugins/tools/mail.lua, cmd="aerc"). Every terminal matches the term://* TermOpen autocmd (lua/neotex/config/autocmds.lua:25) which calls set_terminal_keymaps() (lua/neotex/config/keymaps.lua:116). aerc is neither the is_claude nor is_opencode special case, so it falls through to the generic else branch (keymaps.lua:147-150) that maps terminal-mode <C-h/j/k/l> -> wincmd h/j/k/l, and the <Esc> -> <C-\><C-n> exit-terminal map (keymaps.lua:133). Result: aerc NEVER receives <C-hjkl> (they navigate Neovim windows) or <Esc> (it drops to Neovim normal mode instead of cancelling aerc's :prompt / :search / selection).
+
+CHANGE: add an is_aerc detection alongside is_claude/is_opencode (match the terminal bufname/cmd for 'aerc'), and for aerc terminals (1) SKIP the <C-h/j/k/l>->wincmd remaps so they pass through to aerc, and (2) SKIP the <Esc>->exit-terminal remap (extend the existing `if not is_claude` guard to also exempt aerc) so aerc prompts cancel with Esc. This is safe because the aerc window is a fullscreen float with no sibling Neovim windows, so wincmd h/j/k/l do nothing useful there anyway. The change MUST be strictly gated on is_aerc: claude, opencode, and generic terminals keep their current <C-hjkl>/<Esc> behavior unchanged.
+
+AFTER THIS LANDS: the .dotfiles task 105 side binds aerc's <C-h>/<C-l> = :prev-folder/:next-folder (or <C-j>/<C-k> = message nav) in modules/home/email/aerc.nix. That aerc-side edit is out of scope here.
+
+FILES: lua/neotex/config/keymaps.lua (set_terminal_keymaps, ~L116-158). Reference only: lua/neotex/config/autocmds.lua:25 (the term://* trigger), lua/neotex/plugins/tools/mail.lua (the <leader>me launcher).
+
+VERIFICATION: open aerc via <leader>me; confirm (once the aerc.nix binds exist) <C-hjkl> reach aerc and <Esc> cancels an aerc :prompt from inside the float; confirm a Claude Code terminal and a general :terminal STILL have working <C-hjkl> window-nav and <Esc> exit (no regression from the is_aerc gate).
+
+CROSS-REPO: research + rationale in ~/.dotfiles/specs/105_aerc_keybindings_nvim_himalaya_alignment/reports/01_aerc-keymap-alignment.md (esp. §4 reachability table and §6.2 Recommendation B). Companion .dotfiles task 105.
+
+---
 
 ### 829. Add leader vl piper tts read buffer
 - **Status**: [COMPLETED]
