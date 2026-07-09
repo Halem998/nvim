@@ -319,53 +319,82 @@ signal describing which tier answered and whether the original query failed to p
 
 ---
 
-### Phase 4: Honest degraded rendering and next action in literature-briefing.sh [NOT STARTED]
+### Phase 4: Honest degraded rendering and next action in literature-briefing.sh [COMPLETED]
 
 **Goal**: The `<literature-briefing>` block distinguishes "retrieval failed" from "nothing
 matched" and names a concrete next command, instead of coercing the failure to `[]`.
 
 **Tasks**:
-- [ ] At `literature-briefing.sh:276`, stop discarding the search script's stderr with
-      `2>/dev/null` unconditionally; capture it so a real failure can be surfaced.
-- [ ] Replace the `jq -e 'type == "array"'` coercion (lines 277-279) with shape-aware parsing that
-      accepts **both** the legacy bare array (treat as `degraded: false`, `fallback_tier: "bm25"`)
-      and the new envelope object. Extract `.results`, `.degraded`, `.fallback_tier`,
-      `.query_error`. An unparseable payload remains a hard `[]` fallback, but must now log a
-      visible notice rather than pass silently.
-- [ ] Apply `top_n` slicing to `.results`, not to the envelope.
-- [ ] When `degraded == true` and results are non-empty, prefix the segment list with a visible
-      notice naming the tier (e.g. a `trigram_fallback` banner: matches are substring-based, lower
-      precision, verify relevance). Follow the existing `FIDELITY_MARKER_TEXT` banner precedent
-      (#835) rather than inventing a new convention.
-- [ ] When results are empty **and** `query_error` is non-null, replace the bare "No matching
-      literature segments found for this query." line (line 339) with an honest message that says
-      the query triggered an FTS5 syntax error, that a phrase retry and trigram fallback both ran
-      and also found nothing, and that proposes a next action: try a shorter plainer query, or
-      `bash .claude/scripts/literature-search.sh --toc <doc_id>`.
-- [ ] When results are empty and `query_error` is null, keep the existing genuine-zero-result
+- [x] Stop discarding the search script's stderr with `2>/dev/null` unconditionally; capture it
+      (via `mktemp`) so a real failure can be surfaced.
+- [x] Replace the `jq -e 'type == "array"'` coercion with shape-aware parsing that accepts
+      **both** the legacy bare array (treat as `degraded: false`, `fallback_tier: "bm25"`) and the
+      new envelope object. Extract `.results`, `.degraded`, `.fallback_tier`, `.query_error`. An
+      unparseable payload remains a hard `[]` fallback, but now logs a visible warning to stderr
+      rather than pass silently.
+- [x] Apply `top_n` slicing to `.results`, not to the envelope.
+- [x] When `degraded == true` and results are non-empty, prefix the segment list with a visible,
+      tier-specific notice (`trigram`, `phrase_retry`, or generic). Follows the existing
+      `FIDELITY_MARKER_TEXT` "loud, never silent" precedent (#835) rather than inventing a new
+      convention.
+- [x] When results are empty **and** `query_error` is non-null, replace the bare "No matching
+      literature segments found for this query." line with an honest message naming the FTS5
+      syntax error, stating a phrase retry and trigram fallback both ran and also found nothing,
+      and proposing a next action (shorter plainer query, or
+      `bash .claude/scripts/literature-search.sh --toc <doc_id>`).
+- [x] When results are empty and `query_error` is null, keep the existing genuine-zero-result
       wording unchanged (it is already non-silent and correct).
-- [ ] Leave the per-repo (non-`--global`) branch's behavior untouched.
+- [x] Leave the per-repo (non-`--global`) branch's behavior untouched *(deviation: altered —
+      `query_error` had to be initialized to `"null"` at the top-level argument-parsing block,
+      before the mode branch, because the shared zero-results exit point at the bottom of the
+      script now references `$query_error` regardless of mode, and the script runs under
+      `set -euo pipefail` (nounset); without this default, repo mode — which never assigns
+      `query_error` — would crash with an unbound-variable error the first time it hit a
+      zero-entries case. The repo-mode branch's own logic is otherwise untouched, and the shared
+      exit point's new message is gated on `[ "$mode" = "global" ]` so repo mode's rendered output
+      is unaffected)*.
 
 **Timing**: 1 hour
 
 **Depends on**: 3
 
 **Files to modify**:
-- `.claude/scripts/literature-briefing.sh` — global-corpus search branch (lines 270-345)
+- `.claude/scripts/literature-briefing.sh` — global-corpus search branch, plus a top-level
+  `query_error` default (see deviation above)
 
 **Verification**:
-- [ ] `bash .claude/scripts/literature-briefing.sh --global 'disjunct(bracketholds)'` emits a
-      `<literature-briefing>` block that either lists segments with a labeled fallback banner or
-      states the syntax-error + next-action message — and never prints the bare
-      "No matching literature segments found" line for a query that failed to parse.
-- [ ] `bash .claude/scripts/literature-briefing.sh --global 'modal logic'` renders exactly as
-      before (no banner, no notice) — undegraded path is byte-comparable to the pre-change output
-      apart from intended additions.
-- [ ] Backward compatibility: feed the briefing a stubbed legacy bare-array payload and confirm it
-      still renders segments (both shapes accepted).
-- [ ] Genuinely unmatchable but syntactically valid query (e.g. `zzzqqqxyzzy`) still yields the
-      original genuine-zero-result wording, with no false syntax-error claim.
-- [ ] The "How to Use" footer is still appended in every branch.
+- [x] `bash .claude/scripts/literature-briefing.sh --global 'disjunct(bracketholds)'`
+      *(deviation: this exact term no longer triggers an FTS5 syntax error at all — Phase 1's
+      sanitizer already strips the parens, so `do_search` runs it as a syntactically valid,
+      genuinely-zero-result query; observed real output correctly shows the unchanged genuine-
+      zero-result wording, which is the CORRECT behavior now that the term parses cleanly, not a
+      defect. To exercise the actual syntax-error + next-action path, used `modal -classical`, a
+      query Phase 1's mid-word-only hyphen regex deliberately does not touch (space-preceded
+      hyphen is real FTS5 column-exclusion syntax) — confirmed live it still throws
+      `no such column: classical` at the do_search level)*. Observed real output for
+      `modal -classical`: `No matching literature segments found for "modal -classical" query.`
+      followed by `Note: the original query triggered an FTS5 syntax error (no such column:
+      classical); a punctuation-tolerant phrase retry and a trigram substring fallback both ran
+      and also found nothing. Try a shorter, plainer-language query, or browse the table of
+      contents: ...` — never the bare "No matching literature segments found for this query."
+      line, for a query that genuinely failed to parse.
+- [x] `bash .claude/scripts/literature-briefing.sh --global 'modal logic'` renders exactly as
+      before (no banner, no notice). Verified byte-identical (`diff` exit 0) against the true
+      pre-#833 baseline (commit `bd476d78c`, before Phases 1-4), run with its own matching
+      pre-#833 `literature-search.sh` to avoid comparing against an already-incompatible
+      intermediate state.
+- [x] Backward compatibility: fed the briefing a stubbed legacy bare-array payload (one JSON
+      array object, no envelope wrapper) — confirmed it still renders the segment correctly with
+      no banner (legacy shape defaults to `degraded: false`).
+- [x] Genuinely unmatchable but syntactically valid query (`zzzqqqxyzzy`): observed real output
+      still yields the original genuine-zero-result wording ("No matching literature segments
+      found for this query."), with no false syntax-error claim.
+- [x] Confirmed the "How to Use" footer is appended in every tested branch (undegraded, degraded
+      via stub, genuine-zero-result, syntax-error case, legacy-array case).
+- [x] Additionally verified (not in original checklist, found necessary during testing): a stubbed
+      envelope with `degraded: true, fallback_tier: "trigram"` and one non-empty result correctly
+      renders the `[DEGRADED RETRIEVAL - fallback_tier: trigram]` banner immediately before the
+      segment list, and the header's segment count excludes the banner itself.
 
 ---
 

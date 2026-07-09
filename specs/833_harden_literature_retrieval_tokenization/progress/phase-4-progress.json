@@ -1,0 +1,32 @@
+{
+  "phase": 4,
+  "phase_name": "Honest degraded rendering and next action in literature-briefing.sh",
+  "started_at": "2026-07-09T00:00:00Z",
+  "last_updated": "2026-07-09T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture stderr, shape-aware envelope/array parsing, top_n slicing on .results", "status": "done", "files_touched": [".claude/scripts/literature-briefing.sh"]},
+    {"id": 2, "description": "Degraded-tier banner and honest syntax-error zero-result message", "status": "done", "files_touched": [".claude/scripts/literature-briefing.sh"]},
+    {"id": 3, "description": "Verify against real DB and stubs: syntax-error message, undegraded byte-identical, legacy array, genuine zero-result, footer", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "using 'disjunct(bracketholds)' to test the syntax-error message path", "result": "failed", "reason": "Phase 1's sanitizer already fixes this exact term (strips parens), so it no longer throws a syntax error; substituted 'modal -classical' (space-preceded hyphen, real FTS5 exclusion syntax Phase 1 deliberately does not touch) to genuinely exercise the path"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.query_error_default",
+      "description": "Leave the per-repo branch's behavior untouched",
+      "type": "altered",
+      "reason": "query_error is referenced at the shared zero-results exit point regardless of mode; under set -u, repo mode (which never assigns it) would crash with unbound-variable. Added a top-level default query_error=\"null\" before the mode branch; repo-mode rendering itself is unaffected since the new message is gated on mode=global.",
+      "annotation": "*(deviation: altered -- query_error given a top-level default to satisfy set -u; repo-mode output itself unchanged)*"
+    },
+    {
+      "task_id": "4.verification.syntax_error_example",
+      "description": "Verify using 'disjunct(bracketholds)' per the plan's literal example",
+      "type": "altered",
+      "reason": "This term no longer triggers a syntax error after Phase 1; substituted 'modal -classical' to genuinely exercise the syntax-error + next-action path",
+      "annotation": "*(deviation: altered -- verification query substituted)*"
+    }
+  ]
+}
