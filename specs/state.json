@@ -530,7 +530,7 @@
         ".claude/scripts/literature-build-index.sh"
       ],
       "revision_required": [],
-      "revision_reason": "Premise falsified: 52 of 97 dirs have no source PDF; 45 hold hand-written summaries requiring replacement, not reconversion.",
+      "revision_reason": "Second revision (post-#836). Cohort table re-derived: no_source_pdf 52->45, verified_conversion 35->42; actionable set 10->13 dirs. #835's stamped provenance_fidelity is no longer trustworthy on its own: literature-fidelity-audit.sh fails open (lines 367-374), stamping verified_conversion on low-ratio, undisclosed docs whose proof-completeness signal cannot fire (fine_2012_guide-to-ground ratio=0.0327, 677 md words vs 20,701 pdf words). The prior revision_reason -- \"52 of 97 dirs have no source PDF; 45 hold hand-written summaries\" -- was itself falsified and is superseded by this one. Now gated on #839 (audit fail-open fix; also a file_scope overlap on literature-build-index.sh).",
       "last_updated": "2026-07-09T22:21:58Z"
     },
     {
