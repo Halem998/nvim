@@ -11,9 +11,8 @@ next_project_number: 839
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826,831,834,835,837,838 | -- | agent-system, literature, extensions, ... |
-| 2 | 822,827,833,836 | 821,826,831,835 | literature, extensions |
-| 3 | 832 | 831,836 | literature |
+| 1 | 78,87,821,826,833,836,837,838 | -- | agent-system, literature, extensions, ... |
+| 2 | 822,827,832 | 821,826,836 | literature, extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -24,13 +23,9 @@ next_project_number: 839
 
 ### Literature
 
-831 [PLANNED] — Fix silent conversion-correctness bugs in .claude/scripts/literat
+833 [NOT STARTED] — Harden .claude/scripts/literature-search.sh and literature-briefi
+836 [NOT STARTED] — Recover source PDFs for the 52 central dirs under ~/Projects/Lite
   └─ 832 [NOT STARTED] — SUPERSEDED PREMISE — DO NOT IMPLEMENT AS WRITTEN. The original sc
-  └─ 833 [NOT STARTED] — Harden .claude/scripts/literature-search.sh and literature-briefi
-834 [PLANNED] — Retire the stale per-repo literature copies. FINDING 6: the archi
-835 [NOT STARTED] — Provenance/fidelity defect orthogonal to #831's four extraction b
-  └─ 836 [NOT STARTED] — Recover source PDFs for the 52 central dirs under ~/Projects/Lite
-    └─ 832 [NOT STARTED] — SUPERSEDED PREMISE — DO NOT IMPLEMENT AS WRITTEN. The original sc (see above)
 
 ### Extensions
 
@@ -80,22 +75,26 @@ next_project_number: 839
 ---
 
 ### 835. Literature corpus provenance and fidelity audit
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [835_literature_corpus_provenance_fidelity_audit/reports/01_provenance-fidelity-audit.md]
+- **Plan**: [835_literature_corpus_provenance_fidelity_audit/plans/01_provenance-fidelity-flagging.md]
+- **Summary**: [835_literature_corpus_provenance_fidelity_audit/summaries/01_provenance-fidelity-flagging-summary.md]
 
 **Description**: Provenance/fidelity defect orthogonal to #831's four extraction bugs. Many literature dirs are not badly converted - they were never converted; the .md is a hand-authored paraphrase that reads as authoritative and the index blesses it with a token count, so agents ground formal work on a summary that never contained the lemma it cites. VERIFIED: of 97 dirs under ~/Projects/Literature/sources/, populations are: 0 healthy (PDF AND chunks), 45 PDF+zero-chunks (never converted; .md is a hand-written stand-in), 49 chunks+no-PDF (converted but source PDF absent, not reconvertible), 3 neither. Word-ratio (md_words/pdf_words) on PDF-bearing dirs shows systematic summary-substitution: blackburn_2002=0.03, baier_katoen_2008=0.10, caleiro_2013=0.09, doets_1987=0.11, gabbay_1993=0.15, goldblatt_2003=0.25, rabinovich_2014=0.29, doets_1989=0.36, derijke_1995=0.44, hodkinson_2006=0.57. Concrete exemplar: rabinovich_2014 .md = 245 lines / 2,093 words (opens '## Overview\nProvides a simple, self-contained proof of Kamp's theorem...' - editorial prose), sibling PDF = 16 pages / 7,296 words, index.json holds ONE entry id=rabinovich_2014 token_count=2721; Lemma 3.2(1) is a single unproved sentence, Definition 7.13 is one line. SCOPE: (1) classify every dir into the four populations; (2) build a detector for 'md is a hand-authored summary, not a conversion of the sibling PDF' using word-ratio threshold, absence of chunk_*.md, prose markers (leading '## Overview'), absence of the PDF's section headings, missing numbered lemma/definition bodies; (3) record a provenance/fidelity field per index.json entry with values verified_conversion / unverified_summary / no_source_pdf; (4) make literature-briefing.sh and literature-search.sh LOUDLY flag low-fidelity entries rather than serving them as authoritative; (5) quarantine, never delete. KEY INSIGHT to record for downstream: corrupt column-interleaved text announces itself, a fluent hand-written summary does not - which is exactly why fidelity needs its own gate, the fidelity analogue of #831's quality gate. Independent of #831-#834. NOTE: #832's 'reconvert all 97 dirs' premise is invalidated by this finding (52 have no PDF; 45 need .md replacement, not re-derivation) - #832 carries deps [835,836] as a premise interlock and should be /revised once 835/836 land.
 
 ---
 
 ### 834. Retire stale per-repo literature copies (FINDING 6)
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [834_retire_stale_per_repo_literature_copies/reports/01_retire-stale-literature-copies.md]
 - **Plan**: [834_retire_stale_per_repo_literature_copies/plans/01_retire-stale-literature-copies.md]
+- **Summary**: [834_retire_stale_per_repo_literature_copies/summaries/01_retire-stale-literature-copies-summary.md]
 
 **Description**: Retire the stale per-repo literature copies. FINDING 6: the architecture is ALREADY correct (central store + per-repo index, no document duplication) - the cleanup simply never happened. ~/Projects/BimodalLogic/specs/literature/ is 181 MB with 27 source dirs, and ALL 27 already exist in ~/Projects/Literature/sources/ (97 dirs total). A DEPRECATED.md there records migration completed 2026-06-14 under task 710, and LITERATURE_DIR is already wired into both .claude/settings.json and home.nix. Verify content equivalence of the 27 BimodalLogic source dirs against central, confirm the per-repo specs/literature-index.json sub-index convention works end-to-end (currently unclear whether it is populated anywhere), then delete ~/Projects/BimodalLogic/specs/literature/sources/. Sweep ~/Projects/ for other stale specs/literature/ copies. Keep DEPRECATED.md in place. Scope as verify-then-delete + confirm the sub-index convention works, NOT as a re-migration. Independent - no dependencies.
 
@@ -122,12 +121,13 @@ next_project_number: 839
 ---
 
 ### 831. Fix literature conversion pipeline correctness (BUGS 1-4)
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [831_fix_literature_conversion_pipeline_correctness/reports/01_conversion-pipeline-fix.md]
 - **Plan**: [831_fix_literature_conversion_pipeline_correctness/plans/01_conversion-pipeline-fix.md]
+- **Summary**: [831_fix_literature_conversion_pipeline_correctness/summaries/01_conversion-pipeline-fix-summary.md]
 
 **Description**: Fix silent conversion-correctness bugs in .claude/scripts/literature-convert.sh. BUG 1 (ROOT CAUSE): converter prefers marker/marker_single, but marker_single is NOT installed on this machine, so every corpus doc fell back to `pdftotext -layout`, which glues two-column academic layouts side-by-side into semantic garbage (verified in ~/Projects/Literature/sources/alur_2013_syntax-guided-synthesis/chunk_0012.md). Make converter selection explicit and LOUD, never silently degrade to a layout-destroying engine. Evaluate/require marker, or pymupdf4llm/docling/nougat, or replace the -layout path with column-aware PyMuPDF page.get_text("blocks"/"dict") reading-order extraction (never -layout on multi-column). BUG 2: literature-convert.sh:171 `for pg in range(start_page, min(end_page, start_page + 3))` silently truncates each TOC section to its first 3 pages (unbounded data loss) - remove it. BUG 3: 2,351 chunk files match `^(.+) > \1$` (doubled breadcrumb headers); no-TOC docs derive headings from sentence fragments (e.g. ~/Projects/Literature/wdb.cariani.santorio/chunk_0010.md begins 'indeterminacy. > indeterminacy.'). Fix heading derivation and doubled breadcrumbs. BUG 4: 64 markdown files contain raw U+FB00-U+FB06 ligatures (swordﬁsh, identiﬁ) that FTS5 unicode61 won't decompose; add NFKC/ligature folding, dehyphenation across line breaks, and soft-wrap rejoining. Add a conversion-quality gate that FAILS LOUDLY rather than emitting corrupt markdown: column-interleaving heuristic, page-coverage assertion against len(doc), ligature scan. HIGH priority - blocks #832 and #833. Evidence pre-verified; no need to re-derive.
 
