@@ -11,8 +11,8 @@ next_project_number: 840
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826,837,838,839 | -- | agent-system, literature, extensions, ... |
-| 2 | 822,827,832 | 821,826,839 | literature, extensions |
+| 1 | 78,87,821,826,832,837,838 | -- | agent-system, literature, extensions, ... |
+| 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -23,8 +23,7 @@ next_project_number: 840
 
 ### Literature
 
-839 [NOT STARTED] — Fix the fail-open classification bug in .claude/scripts/literatur
-  └─ 832 [NOT STARTED] — Reconvert and validate the actionable portion of the ~/Projects/L
+832 [NOT STARTED] — Reconvert and validate the actionable portion of the ~/Projects/L
 
 ### Extensions
 
@@ -44,10 +43,13 @@ next_project_number: 840
 ## Tasks
 
 ### 839. Fix fail-open classification in literature-fidelity-audit.sh
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [839_fix_fidelity_audit_fail_open/reports/01_fidelity-audit-fail-open.md]
+- **Plan**: [839_fix_fidelity_audit_fail_open/plans/01_fix-fidelity-audit-fail-open.md]
+- **Summary**: [839_fix_fidelity_audit_fail_open/summaries/01_fix-fidelity-audit-fail-open-summary.md]
 
 **Description**: Fix the fail-open classification bug in .claude/scripts/literature-fidelity-audit.sh, which silently stamps provenance_fidelity="verified_conversion" onto documents it could not actually adjudicate.
 
