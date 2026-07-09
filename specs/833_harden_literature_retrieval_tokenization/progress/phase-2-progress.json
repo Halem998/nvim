@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Add chunks_trigram and repair schema drift in literature-schema.sql",
+  "started_at": "2026-07-09T00:00:00Z",
+  "last_updated": "2026-07-09T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add content column to chunks_data", "status": "done", "files_touched": [".claude/scripts/literature-schema.sql"]},
+    {"id": 2, "description": "Add chunks_trigram virtual table, drop block entry, header comment", "status": "done", "files_touched": [".claude/scripts/literature-schema.sql"]},
+    {"id": 3, "description": "Verify on scratch DBs and a copy of the real DB; never run against live DB", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

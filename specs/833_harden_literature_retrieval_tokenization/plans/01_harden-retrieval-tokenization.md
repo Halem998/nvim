@@ -164,25 +164,25 @@ accepts, and folds ligatures so queries match the corpus's #831-normalized text.
 
 ---
 
-### Phase 2: Add chunks_trigram and repair schema drift in literature-schema.sql [NOT STARTED]
+### Phase 2: Add chunks_trigram and repair schema drift in literature-schema.sql [COMPLETED]
 
 **Goal**: The schema file declares the additive `chunks_trigram` table and the `content` column
 that `chunks_fts` already references, so a schema-fresh DB is internally consistent.
 
 **Tasks**:
-- [ ] Add `content TEXT DEFAULT ''` to the `chunks_data` CREATE TABLE. This repairs the drift
+- [x] Add `content TEXT DEFAULT ''` to the `chunks_data` CREATE TABLE. This repairs the drift
       where `chunks_fts` declares a `content` column that `chunks_data` lacks (a schema-fresh
       rebuild currently fails with `no such column: T.content`).
-- [ ] Add a new `CREATE VIRTUAL TABLE chunks_trigram USING fts5(content,
+- [x] Add a new `CREATE VIRTUAL TABLE chunks_trigram USING fts5(content,
       content='chunks_data', content_rowid='id', tokenize='trigram')` **after** the existing
       `chunks_fts` definition. Do not modify `chunks_fts`, its columns, its BM25 weights, or its
       `porter unicode61` tokenizer.
-- [ ] Add `DROP TABLE IF EXISTS chunks_trigram;` to the existing drop block (lines 25-28) so the
+- [x] Add `DROP TABLE IF EXISTS chunks_trigram;` to the existing drop block (lines 25-28) so the
       clean-rebuild path stays coherent. Add no other drops.
-- [ ] Update the file's header comment to document the trigram table as a fallback-only index,
+- [x] Update the file's header comment to document the trigram table as a fallback-only index,
       and to state that `chunks_trigram` is populated lazily by `literature-search.sh` (because
       `literature-build-index.sh` rebuilds only `chunks_fts`).
-- [ ] Do **not** run this file against the live DB at any point.
+- [x] Do **not** run this file against the live DB at any point.
 
 **Timing**: 45 minutes
 
@@ -192,19 +192,23 @@ that `chunks_fts` already references, so a schema-fresh DB is internally consist
 - `.claude/scripts/literature-schema.sql`
 
 **Verification**:
-- [ ] Apply the schema to a scratch DB and confirm it is self-consistent — this is the check
-      that currently fails:
+- [x] Applied the schema to a scratch DB (`/tmp/fresh.db`) and confirmed self-consistency:
       `sqlite3 /tmp/fresh.db < .claude/scripts/literature-schema.sql && sqlite3 /tmp/fresh.db "INSERT INTO chunks_data(chunk_id,doc_id,content) VALUES('c','d','alpha beta'); INSERT INTO chunks_fts(chunks_fts) VALUES('rebuild'); INSERT INTO chunks_trigram(chunks_trigram) VALUES('rebuild'); SELECT count(*) FROM chunks_fts WHERE chunks_fts MATCH 'alpha';"`
-      -> must print `1` with no `no such column` error.
-- [ ] Confirm `chunks_trigram` matches through punctuation on that scratch DB:
-      insert `disjunct(bracketholds)` as content, then
-      `SELECT count(*) FROM chunks_trigram WHERE chunks_trigram MATCH '"bracketholds"'` -> `1`.
-- [ ] Confirm the `ALTER TABLE` guard in `literature-build-index.sh:216-219` becomes a no-op
-      against the new schema (the `SELECT content FROM chunks_data LIMIT 0` probe now succeeds).
-      Read-only check; do not edit that file.
-- [ ] Confirm on a **copy** of the real DB (`cp ~/Projects/Literature/.literature.db /tmp/probe.db`)
-      that `CREATE VIRTUAL TABLE IF NOT EXISTS chunks_trigram ...` followed by a rebuild leaves
-      `chunks_fts` query results unchanged (`MATCH 'modal'` still returns 212).
+      -> observed real output: `1`, no `no such column` error.
+- [x] Confirmed `chunks_trigram` matches through punctuation on a fresh scratch DB
+      (`/tmp/fresh2.db`): inserted `disjunct(bracketholds)` as content, then
+      `SELECT count(*) FROM chunks_trigram WHERE chunks_trigram MATCH '"bracketholds"'` ->
+      observed real output: `1`.
+- [x] Confirmed the `ALTER TABLE` guard in `literature-build-index.sh:216-219` (read-only, not
+      edited): `conn.execute("SELECT content FROM chunks_data LIMIT 0")` now succeeds against the
+      new schema (verified by reading the guard against the new `chunks_data` definition), so its
+      `except sqlite3.OperationalError: ALTER TABLE ...` branch becomes a no-op.
+- [x] Confirmed on a **copy** of the real DB (`cp ~/Projects/Literature/.literature.db
+      /tmp/probe.db`) that `CREATE VIRTUAL TABLE IF NOT EXISTS chunks_trigram ...` followed by a
+      rebuild leaves `chunks_fts` query results unchanged: observed real output for
+      `MATCH 'modal'` -> `212` (matches baseline exactly). Confirmed the real DB itself was never
+      touched: `SELECT count(*) FROM chunks_data` on `~/Projects/Literature/.literature.db` ->
+      `3746` (unchanged).
 
 ---
 
