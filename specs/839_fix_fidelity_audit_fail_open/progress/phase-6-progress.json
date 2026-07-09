@@ -1,0 +1,15 @@
+{
+  "phase": 6,
+  "phase_name": "Verification contract (explicit)",
+  "started_at": "2026-07-09T23:51:00Z",
+  "last_updated": "2026-07-09T23:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run --dry-run and confirm all 5 invariants in one TSV", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run --write a second time and confirm idempotency", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "All invariants confirmed: fine_2012_guide-to-ground/fine_2012_counterfactuals-without-possible-worlds/venema_1991 -> unadjudicated; doets_1987/libkin_2004_ch3_ch7 -> verified_conversion (disclosed=True); rabinovich_2014 -> unverified_summary (proof_fraction 0.5454...); fine_2010_some-puzzles-of-ground/fine_2012_pure-logic-of-ground/bacon_2018_broadest-necessity -> ratios 1.0741/0.9962/1.0, verified_conversion; thomas_2003_reactive -> verified_conversion, disclosed=True. Second --write: changed=0, unchanged=153, byte-identical diff -- IDEMPOTENT."
+}

@@ -334,23 +334,29 @@ Expect the 3 named victims -> `unadjudicated`; `thomas_2003_ch01`/`ch03` -> `ver
 
 ---
 
-### Phase 6: Verification contract (explicit) [NOT STARTED]
+### Phase 6: Verification contract (explicit) [COMPLETED]
 
 **Goal**: Assert every invariant from the task's verification contract in one adversarial pass,
 including `--write` idempotency.
 
 **Tasks**:
-- [ ] Run `--dry-run` and confirm ALL of the following in one TSV:
-  - the 3 named victim dirs show `unadjudicated`;
+- [x] Run `--dry-run` and confirm ALL of the following in one TSV:
+  - the 3 named victim dirs show `unadjudicated`; *(confirmed)*
   - `doets_1987` (ratio 0.2378) and `libkin_2004_ch3_ch7` (ratio 0.0187) still
-    `verified_conversion` via the disclosure branch;
-  - `rabinovich_2014` still `unverified_summary` (proof_fraction 0.545 < 0.6);
+    `verified_conversion` via the disclosure branch; *(confirmed, disclosed=True for both)*
+  - `rabinovich_2014` still `unverified_summary` (proof_fraction 0.545 < 0.6); *(confirmed,
+    proof_fraction=0.5454545454545454)*
   - the 3 ratio>1 dirs (`fine_2010_some-puzzles-of-ground`, `fine_2012_pure-logic-of-ground`,
-    `bacon_2018_broadest-necessity`) now show ratios ~0.9-1.0;
+    `bacon_2018_broadest-necessity`) now show ratios ~0.9-1.0; *(confirmed: 1.0741, 0.9962, 1.0
+    respectively, all verified_conversion)*
   - `thomas_2003_reactive` shows the Phase-4 outcome (Option A: `verified_conversion`,
-    `disclosed=True`).
-- [ ] Run `--write` a SECOND time and confirm the run is a no-op (idempotent) — no `index.json`
-      diff, or the script's own "no changes" report.
+    `disclosed=True`). *(confirmed)*
+  All 9 invariant rows asserted in a single `--dry-run` pass (see implementation summary for
+  the full output table).
+- [x] Run `--write` a SECOND time and confirm the run is a no-op (idempotent) — no `index.json`
+      diff, or the script's own "no changes" report. *(confirmed: second --write reported
+      "changed: 0, unchanged: 153"; byte-for-byte diff of index.json before/after the second
+      write showed no differences — IDEMPOTENT)*
 
 **Timing**: 0.75 hours
 
