@@ -1,7 +1,7 @@
 # Implementation Plan: Task #834
 
 - **Task**: 834 - Retire the stale per-repo literature copies
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None (research verification complete; no ordering constraint against task #832)
 - **Research Inputs**: specs/834_retire_stale_per_repo_literature_copies/reports/01_retire-stale-literature-copies.md
@@ -243,16 +243,16 @@ Phases within the same wave can execute in parallel. Phase 1 (pre-delete manifes
 
 ---
 
-### Phase 8: Record cslib Follow-Up Recommendation and Backup Lifecycle Note [NOT STARTED]
+### Phase 8: Record cslib Follow-Up Recommendation and Backup Lifecycle Note [COMPLETED]
 
 **Goal**: Preserve the out-of-scope finding (cslib / cslib-refactor-prop_logic exhibit the identical stale-copy pattern) as a concrete follow-up recommendation, and restate the backup lifecycle so the 176 MB archive is not orphaned. This phase records a recommendation; it does NOT create the follow-up task.
 
 **Tasks**:
-- [ ] In the implementation summary (and orchestrator handoff), record a follow-up-task recommendation with observed specifics from research Finding 4:
-  - `~/Projects/cslib/specs/literature/` — 25 MB, 20 source dirs + 2 top-level PDFs, populated 11-entry sub-index verified live-resolving to central. Same stale-copy situation as BimodalLogic; strong candidate for a near-identical delete-after-verify task.
-  - `~/Projects/cslib-refactor-prop_logic/specs/literature/` — 25 MB, 20 dirs, a git worktree of cslib (shares `.git`, branch `refactor/prop_logic`); any decision on cslib's copy should be applied consistently across both worktrees. This is a worktree characteristic, not an independent second problem.
-  - Recommend the follow-up be created via `/task` (or `/spawn`) — explicitly NOT created by this plan.
-- [ ] State the backup lifecycle in the summary: `~/Projects/backup-bimodallogic-literature-sources-{DATE}.tar.gz` is retained through the post-delete confidence window (recommended: 7 days, or until the user confirms `--lit` and the BimodalLogic history are satisfactory), after which it is deleted with an explicit user-confirmed `rm`. Note that `~/Projects/task834-verification/` scratch manifests may be removed at the same time.
+- [x] In the implementation summary (and orchestrator handoff), record a follow-up-task recommendation with observed specifics from research Finding 4:
+  - `~/Projects/cslib/specs/literature/` — 25 MB, 19 source dirs (`sources/`), has `specs/literature-index.json` sub-index present, no `DEPRECATED.md` yet (not retired). Same stale-copy situation as BimodalLogic; strong candidate for a near-identical delete-after-verify task.
+  - `~/Projects/cslib-refactor-prop_logic/specs/literature/` — 25 MB, 19 dirs, a git worktree of cslib (shares `.git`, branch `refactor/prop_logic`); any decision on cslib's copy should be applied consistently across both worktrees. This is a worktree characteristic, not an independent second problem.
+  - Recommend the follow-up be created via `/task` (or `/spawn`) — explicitly NOT created by this plan. *(completed — see summary artifact; sweep additionally found two out-of-scope items not in the original research: `~/Projects/Logos/Hardware/specs/literature/` (68 MB flat-file PDF corpus, `SOURCES.md` not `DEPRECATED.md` — different convention entirely, needs separate triage) and three BimodalLogic agent-worktree `specs/literature/` copies under `.claude/worktrees/agent-*/` (1.7 MB each, `.md`-only, no PDFs/sources dir — stale worktree snapshots, likely safe to ignore/clean via normal worktree lifecycle, not part of this task's scope). None of these were touched.)*
+- [x] State the backup lifecycle in the summary: `~/Projects/backup-bimodallogic-literature-sources-{DATE}.tar.gz` is retained through the post-delete confidence window (recommended: 7 days, or until the user confirms `--lit` and the BimodalLogic history are satisfactory), after which it is deleted with an explicit user-confirmed `rm`. Note that `~/Projects/task834-verification/` scratch manifests may be removed at the same time. *(completed — see summary artifact)*
 
 **Timing**: 10 minutes
 
@@ -269,13 +269,13 @@ Phases within the same wave can execute in parallel. Phase 1 (pre-delete manifes
 
 ## Testing & Validation
 
-- [ ] Phase 1: pre-delete manifests exist; every co-present PDF is byte-identical to central (zero mismatches).
-- [ ] Phase 3: `diff predelete-pdf-manifest.txt backup-pdf-manifest.txt` is empty (backup verified restorable).
-- [ ] Phase 4: pre-delete `literature-briefing.sh` emits a non-empty 2-entry briefing resolving to central.
-- [ ] Phase 5: `sources/` is gone; `DEPRECATED.md`, `README.md`, `index.json` remain.
-- [ ] Phase 6 (post-delete assertion): `literature-briefing.sh` in BimodalLogic still produces a NON-EMPTY briefing with all `dir:` paths under `~/Projects/Literature/sources/`.
-- [ ] Phase 7: a local commit in `~/Projects/BimodalLogic` records only the `specs/literature/sources/` deletions; no push, no PR.
-- [ ] Nothing under `~/Projects/Literature/` was modified (verify `git -C ~/Projects/Literature status` unchanged / untouched, and no writes to that tree).
+- [x] Phase 1: pre-delete manifests exist; every co-present PDF is byte-identical to central (zero mismatches). *(31/31 matched)*
+- [x] Phase 3: `diff predelete-pdf-manifest.txt backup-pdf-manifest.txt` is empty (backup verified restorable). *(empty diff)*
+- [x] Phase 4: pre-delete `literature-briefing.sh` emits a non-empty 2-entry briefing resolving to central. *(confirmed)*
+- [x] Phase 5: `sources/` is gone; `DEPRECATED.md`, `README.md`, `index.json` remain. *(confirmed)*
+- [x] Phase 6 (post-delete assertion): `literature-briefing.sh` in BimodalLogic still produces a NON-EMPTY briefing with all `dir:` paths under `~/Projects/Literature/sources/`. *(byte-identical to pre-delete baseline)*
+- [x] Phase 7: a local commit in `~/Projects/BimodalLogic` records only the `specs/literature/sources/` deletions; no push, no PR. *(commit 60cef7179; no push executed)*
+- [x] Nothing under `~/Projects/Literature/` was modified (verify `git -C ~/Projects/Literature status` unchanged / untouched, and no writes to that tree). *(only read operations (sha256sum, ls) performed against central; the repo's pre-existing unrelated dirty state — `M .literature.db`, `M index.json`, and a few untracked new source dirs — predates this task and was not caused by it)*
 
 ## Artifacts & Outputs
 
