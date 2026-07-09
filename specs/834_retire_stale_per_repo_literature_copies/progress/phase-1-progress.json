@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Record Pre-Delete sha256 Manifest and Re-Verify Against Central",
+  "started_at": "2026-07-09T00:00:00Z",
+  "last_updated": "2026-07-09T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create verification working dir", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Record full manifest", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Record PDF-only manifest", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Re-verify each PDF against central (31 PDFs, MATCH=31 MISMATCH=0 MISSING=0, including the gabbay_1994->gabbay_2000 relocation case)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -75,18 +75,18 @@ Phases within the same wave can execute in parallel. Phase 1 (pre-delete manifes
 
 ---
 
-### Phase 1: Record Pre-Delete sha256 Manifest and Re-Verify Against Central [NOT STARTED]
+### Phase 1: Record Pre-Delete sha256 Manifest and Re-Verify Against Central [COMPLETED]
 
 **Goal**: Produce an authoritative pre-delete manifest of every file under `sources/`, and re-confirm (immediately before any destructive action) that all PDFs are byte-identical to their central counterparts. Abort the entire plan on any mismatch.
 
 **Tasks**:
-- [ ] Create a working directory for manifests outside the repo: `mkdir -p ~/Projects/task834-verification`
-- [ ] Record a full manifest (PDFs + tracked `.md`/`index.json`) with hashes:
-  `find ~/Projects/BimodalLogic/specs/literature/sources -type f -exec sha256sum {} \; | sort > ~/Projects/task834-verification/predelete-manifest.txt`
-- [ ] Record a PDF-only manifest with paths relative to the `sources/` root (for backup verification in Phase 3):
-  `cd ~/Projects/BimodalLogic/specs/literature && find sources -type f -name '*.pdf' -exec sha256sum {} \; | sort > ~/Projects/task834-verification/predelete-pdf-manifest.txt`
-- [ ] Re-verify each PDF against central: for every `sources/<dir>/<file>.pdf`, compare its sha256 to `~/Projects/Literature/sources/<dir>/<file>.pdf`. Note the one known relocation: `Gabbay_Reynolds_2000_Temporal_Logic_Foundations_Vol2.pdf` lives under `gabbay_1994/` in BimodalLogic but under `sources/gabbay_2000/` in central (per research Finding 1, row 10) — match it against its relocated central path, not a same-named path.
-- [ ] If ANY PDF present in both locations has a mismatched hash, STOP: do not proceed to backup or deletion; record the mismatch and report as a blocker.
+- [x] Create a working directory for manifests outside the repo: `mkdir -p ~/Projects/task834-verification` *(completed)*
+- [x] Record a full manifest (PDFs + tracked `.md`/`index.json`) with hashes:
+  `find ~/Projects/BimodalLogic/specs/literature/sources -type f -exec sha256sum {} \; | sort > ~/Projects/task834-verification/predelete-manifest.txt` *(completed: 195 files)*
+- [x] Record a PDF-only manifest with paths relative to the `sources/` root (for backup verification in Phase 3):
+  `cd ~/Projects/BimodalLogic/specs/literature && find sources -type f -name '*.pdf' -exec sha256sum {} \; | sort > ~/Projects/task834-verification/predelete-pdf-manifest.txt` *(completed: 31 PDFs, count matches `find ... -name '*.pdf' | wc -l`)*
+- [x] Re-verify each PDF against central: for every `sources/<dir>/<file>.pdf`, compare its sha256 to `~/Projects/Literature/sources/<dir>/<file>.pdf`. Note the one known relocation: `Gabbay_Reynolds_2000_Temporal_Logic_Foundations_Vol2.pdf` lives under `gabbay_1994/` in BimodalLogic but under `sources/gabbay_2000/` in central (per research Finding 1, row 10) — match it against its relocated central path, not a same-named path. *(completed: 31/31 PDFs matched, including the gabbay relocation)*
+- [x] If ANY PDF present in both locations has a mismatched hash, STOP: do not proceed to backup or deletion; record the mismatch and report as a blocker. *(completed: 0 mismatches, 0 missing — proceeding)*
 
 **Timing**: 15 minutes
 
