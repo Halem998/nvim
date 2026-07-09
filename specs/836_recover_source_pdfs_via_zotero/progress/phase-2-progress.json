@@ -1,0 +1,35 @@
+{
+  "phase": 2,
+  "phase_name": "Build the Read-Only doc_id -> PDF Resolver",
+  "started_at": "2026-07-09T20:03:00Z",
+  "last_updated": "2026-07-09T20:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create zotero-resolve-pdf.sh with doc-id/stdin input and storage-root derivation", "status": "done", "files_touched": [".claude/scripts/zotero-resolve-pdf.sh", ".claude/scripts/.zotero-title-sim.py"]},
+    {"id": 2, "description": "Implement live-api mode with tiering, progressive title search, best-similarity selection", "status": "done", "files_touched": [".claude/scripts/zotero-resolve-pdf.sh"]},
+    {"id": 3, "description": "Implement sqlite-readonly fallback", "status": "done", "files_touched": [".claude/scripts/zotero-resolve-pdf.sh"]},
+    {"id": 4, "description": "Implement abort mode", "status": "done", "files_touched": [".claude/scripts/zotero-resolve-pdf.sh"]},
+    {"id": 5, "description": "Verify against Phase 2 test doc_ids and side-effect-free", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "Use literal zotero_key field value as Zotero API item key path for fast path", "result": "failed", "reason": "index.json zotero_key is a citekey-style string (e.g. Burgess1982I), not a real 8-char Zotero item key; GET /items/<that>/children 404s"},
+    {"approach": "Take first search candidate with a PDF child attachment as the match", "result": "failed", "reason": "for pnueli_1977_temporal-logic-programs, first-with-PDF picked a different paper by Lamport (1980) with similar title words; correctly demoted to best-similarity selection, still surfaced as search-candidate for Phase 4 to reject on year mismatch"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.3",
+      "description": "Fast path: if zotero_key is non-null, GET /api/users/0/items/<key>/children",
+      "type": "altered",
+      "reason": "The literal zotero_key field values in index.json are Better-BibTeX-style citekeys, not real Zotero API item keys (confirmed empirically: direct lookup 404s). Implemented as: still search by title/author, but tier the result key-anchored (vs search-candidate) based on whether index.json pre-populated zotero_key, preserving the trust-level distinction the plan's tier scheme depends on.",
+      "annotation": "*(deviation: the literal zotero_key field in index.json is a citekey-style string, not a real Zotero API item key ... see plan Phase 2 task annotation)*"
+    },
+    {
+      "task_id": "2.3",
+      "description": "Search path: otherwise GET /api/users/0/items?q=<title-or-first-author>&itemType=-attachment&limit=5",
+      "type": "altered",
+      "reason": "Zotero's quick search requires all query tokens present; a full corpus title with a trailing slug-derived word not in the real bibliographic title (e.g. fine_2014's 'Intuitionistic' suffix) returns zero hits. Added progressive right-truncation (drop trailing words to a 2-word floor) before falling back to author-only search. This was required to correctly surface fine_2014's true Zotero candidate (S2VXD9JT) instead of a spurious low-similarity author-only match.",
+      "annotation": "*(deviation: added progressive title right-truncation ... see plan Phase 2 task annotation)*"
+    }
+  ]
+}

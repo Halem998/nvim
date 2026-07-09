@@ -190,30 +190,42 @@ reordered relative to the dry-run and confirmation gates that precede them.
 
 ---
 
-### Phase 2: Build the Read-Only `doc_id` -> PDF Resolver [NOT STARTED]
+### Phase 2: Build the Read-Only `doc_id` -> PDF Resolver [COMPLETED]
 
 - **Goal:** A standalone, read-only script that answers "given a `doc_id` and its `index.json`
   metadata, which Zotero PDF (if any) corresponds to it, and how confident are we?" It writes
   nothing to the corpus or to Zotero.
 
 - **Tasks:**
-  - [ ] Create `.claude/scripts/zotero-resolve-pdf.sh`. Inputs: a `doc_id` plus its `index.json`
+  - [x] Create `.claude/scripts/zotero-resolve-pdf.sh`. Inputs: a `doc_id` plus its `index.json`
         record on stdin (or `--doc-id` reading from a supplied index path). Output: one JSON object
         on stdout.
-  - [ ] Source the storage root by re-deriving it from `zotero-resolve-sqlite-path.sh` (never
-        hardcode `~/Zotero/storage/`). Fail loudly if the derived root is absent.
-  - [ ] Implement the `live-api` access mode:
+  - [x] Source the storage root by re-deriving it from `zotero-resolve-sqlite-path.sh` (never
+        hardcode the historical default profile's storage dir). Fail loudly if the derived root is
+        absent.
+  - [x] Implement the `live-api` access mode:
     - Fast path: if `zotero_key` is non-null, `GET /api/users/0/items/<key>/children`.
     - Search path: otherwise `GET /api/users/0/items?q=<title-or-first-author>&itemType=-attachment&limit=5`.
     - For every candidate item, fetch `/children` and require an attachment with
       `contentType == "application/pdf"`.
     - Resolve the attachment to disk as `$ZOTERO_STORAGE_ROOT/<attachmentKey>/<filename>` and
       require the file to exist.
-  - [ ] Implement the `sqlite-readonly` access mode as a fallback (`sqlite3 -readonly`, query
+      *(deviation: the literal `zotero_key` field in index.json is a citekey-style string, not a
+      real Zotero API item key — empirically confirmed a direct `/items/<key>/children` call with
+      it 404s. The "fast path" is implemented as: still perform title/author search, but tier the
+      result `key-anchored` (higher trust) when index.json already carried a non-null zotero_key,
+      vs `search-candidate` when it did not. Also added progressive title right-truncation (drop
+      trailing words down to a 2-word floor) before falling back to author-only search, since a
+      full-title query silently returns zero hits when the corpus title carries a trailing
+      slug-derived word not in the real bibliographic title — this was required to correctly
+      surface `fine_2014`'s true candidate (S2VXD9JT, "Truthmaker Semantics", 2017) instead of a
+      spurious author-only false positive.)*
+  - [x] Implement the `sqlite-readonly` access mode as a fallback (`sqlite3 -readonly`, query
         `itemAttachments` joined to `items`), resolving `storage:` paths against the same derived
-        `ZOTERO_STORAGE_ROOT`.
-  - [ ] Implement the `abort` mode: exit non-zero with the guidance message from Phase 1's matrix.
-  - [ ] Emit a per-doc result with an explicit `tier`:
+        `ZOTERO_STORAGE_ROOT`. *(implemented but not exercised this run — access_mode was
+        live-api throughout, since Zotero was running and reachable)*
+  - [x] Implement the `abort` mode: exit non-zero with the guidance message from Phase 1's matrix.
+  - [x] Emit a per-doc result with an explicit `tier`:
     - `key-anchored` — matched via a pre-existing `zotero_key`; PDF found on disk.
     - `search-candidate` — matched via title/author search; PDF found on disk; **requires Phase 4
       secondary verification before it may be applied**.
@@ -221,8 +233,14 @@ reordered relative to the dry-run and confirmation gates that precede them.
       snapshot).
     - `absent` — no plausible Zotero item.
     Include `zotero_key`, `attachment_key`, `resolved_path`, `zotero_title`, `zotero_year`,
-    `zotero_doi`, and a `title_similarity` score for `search-candidate` rows.
-  - [ ] Make the script side-effect free: no writes anywhere, no `mv`, no `cp`, no sqlite writes.
+    `zotero_doi`, and a `title_similarity` score for `search-candidate` rows. *(completed: also
+    computed similarity/selection across ALL candidates, picking best-by-similarity rather than
+    first-with-PDF, to avoid a spurious low-similarity PDF match shadowing the correct
+    bibliographic candidate — see pnueli_1977 test below, a genuine year/author-mismatched
+    false-positive risk correctly deferred to Phase 4, not silently accepted here.)*
+  - [x] Make the script side-effect free: no writes anywhere, no `mv`, no `cp`, no sqlite writes.
+        *(verified: git status --porcelain -- sources/ index.json shows no new changes from
+        running the resolver over 11 doc_ids)*
 
 - **Timing:** 1.5 hours
 
