@@ -1,5 +1,5 @@
 ---
-next_project_number: 835
+next_project_number: 839
 ---
 
 # TODO
@@ -11,17 +11,26 @@ next_project_number: 835
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826,831,834 | -- | literature, extensions, email integration, ... |
-| 2 | 822,827,832,833 | 821,826,831 | literature, extensions |
+| 1 | 78,87,821,826,831,834,835,837,838 | -- | agent-system, literature, extensions, ... |
+| 2 | 822,827,833,836 | 821,826,831,835 | literature, extensions |
+| 3 | 832 | 831,836 | literature |
 
 **Grouped by Topic** (indented = depends on parent):
 
+### Agent System
+
+837 [NOT STARTED] — Shared .claude/ infrastructure has diverged across child projects
+838 [NOT STARTED] — General skill-lifecycle data-loss bug: the planner-phase postflig
+
 ### Literature
 
-831 [NOT STARTED] — Fix silent conversion-correctness bugs in .claude/scripts/literat
+831 [RESEARCHED] — Fix silent conversion-correctness bugs in .claude/scripts/literat
   └─ 832 [NOT STARTED] — Reconvert and validate the full literature corpus using the fixed
   └─ 833 [NOT STARTED] — Harden .claude/scripts/literature-search.sh and literature-briefi
-834 [NOT STARTED] — Retire the stale per-repo literature copies. FINDING 6: the archi
+834 [RESEARCHED] — Retire the stale per-repo literature copies. FINDING 6: the archi
+835 [NOT STARTED] — Provenance/fidelity defect orthogonal to #831's four extraction b
+  └─ 836 [NOT STARTED] — Recover source PDFs for the 52 central dirs under ~/Projects/Lite
+    └─ 832 [NOT STARTED] — Reconvert and validate the full literature corpus using the fixed (see above)
 
 ### Extensions
 
@@ -40,11 +49,52 @@ next_project_number: 835
 
 ## Tasks
 
-### 834. Retire stale per-repo literature copies (FINDING 6)
+### 838. Fix planner clobbering researcher .return-meta.json (merge not overwrite)
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: General skill-lifecycle data-loss bug: the planner-phase postflight OVERWRITES the researcher's specs/{NNN}_*/.return-meta.json wholesale instead of MERGING, silently dropping memory_candidates the research agent emitted. Concrete instance: on task #831 the planner clobbered .return-meta.json, destroying 3 memory_candidates the research agent produced - (a) nix-ld/libstdc++ shim, (b) PyMuPDF sort=True reproduces the column-glue extraction bug, (c) NFKC normalization corrupts math Unicode. This affects EVERY task where research emits memory_candidates and a later phase rewrites the file, not just literature work - which is why it warrants its own task rather than folding into #835-#837 (all unrelated in scope). FIX SITE: .claude/context/formats/return-metadata-file.md (the contract) plus the skill postflight metadata-handling code - change semantics from overwrite to merge-not-overwrite so later phases preserve earlier phases' memory_candidates and other accumulated fields. Fully independent of #831-#837.
+
+---
+
+### 837. Fix .claude/ cross-project contract drift and add dangling-reference lint
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Shared .claude/ infrastructure has diverged across child projects and nothing detects dangling references at sync/load time - the same silent-degradation failure mode as #831's missing marker. IMPORTANT correction of the original bug report, which was MISATTRIBUTED to nvim: this repo (~/.config/nvim/.claude/) is HEALTHY - context/contracts/ contains all 8 of adversarial-verification, anti-analysis, convergence, orchestrator-discipline, recovery, reference-grounding, territory, wrap-up; its skill-orchestrate-hard/SKILL.md references 6, all present. The real defect is in ~/Projects/BimodalLogic/.claude/ - a SEPARATE COPY, not a symlink - whose skill-orchestrate-hard references 5 contracts it LACKS, so H5/H6/H7/H9 are silently un-injected. Drift is BIDIRECTIONAL: only-in-BimodalLogic = context-hygiene.md; only-in-nvim = convergence.md, orchestrator-discipline.md, recovery.md, territory.md, wrap-up.md. SCOPE: (1) reconcile contracts/ across ~/.config/nvim/.claude/ and ~/Projects/BimodalLogic/.claude/, sweeping other child projects (e.g. cslib); (2) decide the canonical set (is context-hygiene.md a real contract nvim should adopt?); (3) add a validator - extend check-extension-docs.sh or add a sibling script - that FAILS when any skill/agent/rule references a contracts/*.md, @.claude/... path, or context file absent in that project; (4) wire it into the sync path (.syncprotect / 'Load Core') so drift is caught at load time. LOUD-FAILURE requirement: a missing contract must not silently no-op. Fully independent of #831-#836 and #838.
+
+---
+
+### 836. Recover source PDFs via Zotero for PDF-less central dirs
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: Task 835
+
+**Description**: Recover source PDFs for the 52 central dirs under ~/Projects/Literature/sources/ that lack a source PDF (49 chunk-bearing + 3 empty - two different populations; address all 52). Zotero is the ONLY viable recovery source: ~/Projects/Literature/zotero-library.json exists (173 KB, 400 entries) and index.json entries carry zotero_key and zotero_path fields. SCOPE: re-resolve zotero_key/zotero_path against the Zotero library and its storage dir for the 52 PDF-less dirs; repopulate ~/Projects/Literature/pdfs/ symlinks; report which of the 52 remain unrecoverable after Zotero resolution and mark them no_source_pdf, never silently retained as authoritative. Likely entry point: .claude/scripts/zotero-resolve-sqlite-path.sh already exists and is probably the right starting point. VERIFIED - do NOT re-investigate per-repo copies: they yield ZERO unique PDFs (~/Projects/BimodalLogic/specs/literature/sources = 31 pdfs but 0 unique vs central; ~/Projects/cslib/specs/literature/sources = 0 pdfs; ~/Projects/cslib-refactor-prop_logic/specs/literature/sources = 0 pdfs). There is NO ordering constraint against #834 - deleting BimodalLogic's sources/ destroys zero unique recovery sources (central-lacks-PDF intersect BimodalLogic-has-PDF = 0). DEPENDENCY: depends on #835 via file-footprint overlap - both write ~/Projects/Literature/index.json, where 835 DEFINES the provenance/fidelity enum and 836 WRITES one of its values (no_source_pdf); schema must precede population.
+
+---
+
+### 835. Literature corpus provenance and fidelity audit
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+
+**Description**: Provenance/fidelity defect orthogonal to #831's four extraction bugs. Many literature dirs are not badly converted - they were never converted; the .md is a hand-authored paraphrase that reads as authoritative and the index blesses it with a token count, so agents ground formal work on a summary that never contained the lemma it cites. VERIFIED: of 97 dirs under ~/Projects/Literature/sources/, populations are: 0 healthy (PDF AND chunks), 45 PDF+zero-chunks (never converted; .md is a hand-written stand-in), 49 chunks+no-PDF (converted but source PDF absent, not reconvertible), 3 neither. Word-ratio (md_words/pdf_words) on PDF-bearing dirs shows systematic summary-substitution: blackburn_2002=0.03, baier_katoen_2008=0.10, caleiro_2013=0.09, doets_1987=0.11, gabbay_1993=0.15, goldblatt_2003=0.25, rabinovich_2014=0.29, doets_1989=0.36, derijke_1995=0.44, hodkinson_2006=0.57. Concrete exemplar: rabinovich_2014 .md = 245 lines / 2,093 words (opens '## Overview\nProvides a simple, self-contained proof of Kamp's theorem...' - editorial prose), sibling PDF = 16 pages / 7,296 words, index.json holds ONE entry id=rabinovich_2014 token_count=2721; Lemma 3.2(1) is a single unproved sentence, Definition 7.13 is one line. SCOPE: (1) classify every dir into the four populations; (2) build a detector for 'md is a hand-authored summary, not a conversion of the sibling PDF' using word-ratio threshold, absence of chunk_*.md, prose markers (leading '## Overview'), absence of the PDF's section headings, missing numbered lemma/definition bodies; (3) record a provenance/fidelity field per index.json entry with values verified_conversion / unverified_summary / no_source_pdf; (4) make literature-briefing.sh and literature-search.sh LOUDLY flag low-fidelity entries rather than serving them as authoritative; (5) quarantine, never delete. KEY INSIGHT to record for downstream: corrupt column-interleaved text announces itself, a fluent hand-written summary does not - which is exactly why fidelity needs its own gate, the fidelity analogue of #831's quality gate. Independent of #831-#834. NOTE: #832's 'reconvert all 97 dirs' premise is invalidated by this finding (52 have no PDF; 45 need .md replacement, not re-derivation) - #832 carries deps [835,836] as a premise interlock and should be /revised once 835/836 land.
+
+---
+
+### 834. Retire stale per-repo literature copies (FINDING 6)
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+- **Research**: [834_retire_stale_per_repo_literature_copies/reports/01_retire-stale-literature-copies.md]
 
 **Description**: Retire the stale per-repo literature copies. FINDING 6: the architecture is ALREADY correct (central store + per-repo index, no document duplication) - the cleanup simply never happened. ~/Projects/BimodalLogic/specs/literature/ is 181 MB with 27 source dirs, and ALL 27 already exist in ~/Projects/Literature/sources/ (97 dirs total). A DEPRECATED.md there records migration completed 2026-06-14 under task 710, and LITERATURE_DIR is already wired into both .claude/settings.json and home.nix. Verify content equivalence of the 27 BimodalLogic source dirs against central, confirm the per-repo specs/literature-index.json sub-index convention works end-to-end (currently unclear whether it is populated anywhere), then delete ~/Projects/BimodalLogic/specs/literature/sources/. Sweep ~/Projects/ for other stale specs/literature/ copies. Keep DEPRECATED.md in place. Scope as verify-then-delete + confirm the sub-index convention works, NOT as a re-migration. Independent - no dependencies.
 
@@ -64,17 +114,18 @@ next_project_number: 835
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: literature
-- **Dependencies**: Task 831
+- **Dependencies**: Task 831, Task 835, Task 836
 
 **Description**: Reconvert and validate the full literature corpus using the fixed pipeline from #831. BUG 5: ~/Projects/Literature/pdfs/ contains ZERO pdf symlinks (expected: symlinks into Zotero storage per that repo's README), so any reconversion must first re-resolve zotero_key/zotero_path from zotero-library.json. Caveat: .gitignore excludes pdfs/, so this may be expected-but-unpopulated rather than broken - VERIFY before assuming breakage. Reconvert all 97 source dirs in ~/Projects/Literature/sources/ (~4,143 markdown files total), re-chunk, and rebuild the FTS index (chunks_fts, bm25 weighting in literature-search.sh). Report before/after quality metrics: column-interleaving rate, ligature count (baseline 64 files), doubled-breadcrumb count (baseline 2,351 chunks), page coverage. Must be idempotent and must NOT destroy the existing corpus until the new one passes the #831 quality gate. Depends on #831; can run parallel to #833.
 
 ---
 
 ### 831. Fix literature conversion pipeline correctness (BUGS 1-4)
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [831_fix_literature_conversion_pipeline_correctness/reports/01_conversion-pipeline-fix.md]
 
 **Description**: Fix silent conversion-correctness bugs in .claude/scripts/literature-convert.sh. BUG 1 (ROOT CAUSE): converter prefers marker/marker_single, but marker_single is NOT installed on this machine, so every corpus doc fell back to `pdftotext -layout`, which glues two-column academic layouts side-by-side into semantic garbage (verified in ~/Projects/Literature/sources/alur_2013_syntax-guided-synthesis/chunk_0012.md). Make converter selection explicit and LOUD, never silently degrade to a layout-destroying engine. Evaluate/require marker, or pymupdf4llm/docling/nougat, or replace the -layout path with column-aware PyMuPDF page.get_text("blocks"/"dict") reading-order extraction (never -layout on multi-column). BUG 2: literature-convert.sh:171 `for pg in range(start_page, min(end_page, start_page + 3))` silently truncates each TOC section to its first 3 pages (unbounded data loss) - remove it. BUG 3: 2,351 chunk files match `^(.+) > \1$` (doubled breadcrumb headers); no-TOC docs derive headings from sentence fragments (e.g. ~/Projects/Literature/wdb.cariani.santorio/chunk_0010.md begins 'indeterminacy. > indeterminacy.'). Fix heading derivation and doubled breadcrumbs. BUG 4: 64 markdown files contain raw U+FB00-U+FB06 ligatures (swordﬁsh, identiﬁ) that FTS5 unicode61 won't decompose; add NFKC/ligature folding, dehyphenation across line breaks, and soft-wrap rejoining. Add a conversion-quality gate that FAILS LOUDLY rather than emitting corrupt markdown: column-interleaving heuristic, page-coverage assertion against len(doc), ligature scan. HIGH priority - blocks #832 and #833. Evidence pre-verified; no need to re-derive.
 
