@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 831,
+  "next_project_number": 835,
   "active_projects": [
     {
       "project_number": 829,
@@ -476,6 +476,54 @@
       "last_updated": "2026-07-09T06:32:50Z",
       "session_id": "sess_1783578231_0e8733",
       "completion_summary": "Special-cased aerc terminal in set_terminal_keymaps() (lua/neotex/config/keymaps.lua): added is_aerc = bufname:match('aerc'), gated <Esc> exit-terminal map with 'not is_aerc', and added empty elseif is_aerc branch so <C-hjkl> pass through to aerc's pty. Claude/opencode/generic terminals unchanged. Prerequisite for .dotfiles task 105 aerc-side folder binds."
+    },
+    {
+      "project_number": 831,
+      "project_name": "fix_literature_conversion_pipeline_correctness",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Fix literature conversion pipeline correctness (BUGS 1-4)",
+      "description": "Fix silent conversion-correctness bugs in .claude/scripts/literature-convert.sh. BUG 1 (ROOT CAUSE): converter prefers marker/marker_single, but marker_single is NOT installed on this machine, so every corpus doc fell back to `pdftotext -layout`, which glues two-column academic layouts side-by-side into semantic garbage (verified in ~/Projects/Literature/sources/alur_2013_syntax-guided-synthesis/chunk_0012.md). Make converter selection explicit and LOUD, never silently degrade to a layout-destroying engine. Evaluate/require marker, or pymupdf4llm/docling/nougat, or replace the -layout path with column-aware PyMuPDF page.get_text(\"blocks\"/\"dict\") reading-order extraction (never -layout on multi-column). BUG 2: literature-convert.sh:171 `for pg in range(start_page, min(end_page, start_page + 3))` silently truncates each TOC section to its first 3 pages (unbounded data loss) - remove it. BUG 3: 2,351 chunk files match `^(.+) > \\1$` (doubled breadcrumb headers); no-TOC docs derive headings from sentence fragments (e.g. ~/Projects/Literature/wdb.cariani.santorio/chunk_0010.md begins 'indeterminacy. > indeterminacy.'). Fix heading derivation and doubled breadcrumbs. BUG 4: 64 markdown files contain raw U+FB00-U+FB06 ligatures (swordﬁsh, identiﬁ) that FTS5 unicode61 won't decompose; add NFKC/ligature folding, dehyphenation across line breaks, and soft-wrap rejoining. Add a conversion-quality gate that FAILS LOUDLY rather than emitting corrupt markdown: column-interleaving heuristic, page-coverage assertion against len(doc), ligature scan. HIGH priority - blocks #832 and #833. Evidence pre-verified; no need to re-derive.",
+      "topic": "literature",
+      "dependencies": [],
+      "artifacts": []
+    },
+    {
+      "project_number": 832,
+      "project_name": "reconvert_and_validate_literature_corpus",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Reconvert and validate the literature corpus (BUG 5)",
+      "description": "Reconvert and validate the full literature corpus using the fixed pipeline from #831. BUG 5: ~/Projects/Literature/pdfs/ contains ZERO pdf symlinks (expected: symlinks into Zotero storage per that repo's README), so any reconversion must first re-resolve zotero_key/zotero_path from zotero-library.json. Caveat: .gitignore excludes pdfs/, so this may be expected-but-unpopulated rather than broken - VERIFY before assuming breakage. Reconvert all 97 source dirs in ~/Projects/Literature/sources/ (~4,143 markdown files total), re-chunk, and rebuild the FTS index (chunks_fts, bm25 weighting in literature-search.sh). Report before/after quality metrics: column-interleaving rate, ligature count (baseline 64 files), doubled-breadcrumb count (baseline 2,351 chunks), page coverage. Must be idempotent and must NOT destroy the existing corpus until the new one passes the #831 quality gate. Depends on #831; can run parallel to #833.",
+      "topic": "literature",
+      "dependencies": [
+        831
+      ],
+      "artifacts": []
+    },
+    {
+      "project_number": 833,
+      "project_name": "harden_literature_retrieval_tokenization",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Harden retrieval against tokenization brittleness",
+      "description": "Harden .claude/scripts/literature-search.sh and literature-briefing.sh so tokenization brittleness degrades gracefully. Triggering symptom (a symptom, not the disease): an agent dead-ended with 'FTS5 chokes on the punctuation; the research agent will read the chunk directly', surfaced while working on ~/Projects/BimodalLogic/specs/337_build_joint_multiowner_disjunct_bracketholds_engine_for_kve2_sepdisjunct/plans/04_joint-disjunct-holds-codesign.md. Normalize the search query using the SAME normalization applied to the corpus in #831; on zero-results or an FTS5 parse failure, fall back gracefully (trigram/LIKE, or sqlite-vec semantic search per the draperlaboratory/pdf2sqlite design, which would make retrieval resilient to exactly this punctuation/tokenization brittleness). Evaluate storing a per-chunk LLM-generated 'gist' alongside text for searchable summaries. Ensure literature-briefing.sh surfaces a usable next action rather than leaving the agent to improvise 'I'll just read the chunk directly.' System ALREADY has literature-schema.sql + FTS5 (chunks_fts, bm25) - this is augmentation, not a rewrite. Depends on #831; can run parallel to #832.",
+      "topic": "literature",
+      "dependencies": [
+        831
+      ],
+      "artifacts": []
+    },
+    {
+      "project_number": 834,
+      "project_name": "retire_stale_per_repo_literature_copies",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Retire stale per-repo literature copies (FINDING 6)",
+      "description": "Retire the stale per-repo literature copies. FINDING 6: the architecture is ALREADY correct (central store + per-repo index, no document duplication) - the cleanup simply never happened. ~/Projects/BimodalLogic/specs/literature/ is 181 MB with 27 source dirs, and ALL 27 already exist in ~/Projects/Literature/sources/ (97 dirs total). A DEPRECATED.md there records migration completed 2026-06-14 under task 710, and LITERATURE_DIR is already wired into both .claude/settings.json and home.nix. Verify content equivalence of the 27 BimodalLogic source dirs against central, confirm the per-repo specs/literature-index.json sub-index convention works end-to-end (currently unclear whether it is populated anywhere), then delete ~/Projects/BimodalLogic/specs/literature/sources/. Sweep ~/Projects/ for other stale specs/literature/ copies. Keep DEPRECATED.md in place. Scope as verify-then-delete + confirm the sub-index convention works, NOT as a re-migration. Independent - no dependencies.",
+      "topic": "literature",
+      "dependencies": [],
+      "artifacts": []
     }
   ],
   "completed_projects": [],
