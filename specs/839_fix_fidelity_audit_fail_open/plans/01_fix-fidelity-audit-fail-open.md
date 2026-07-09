@@ -304,15 +304,18 @@ Expect `verified_conversion` with `disclosed=True` (Option A). If the fallback w
 
 ---
 
-### Phase 5: Re-stamp the live corpus via --write [NOT STARTED]
+### Phase 5: Re-stamp the live corpus via --write [COMPLETED]
 
 **Goal**: Persist the honest classifications into `~/Projects/Literature/index.json` so downstream
 consumers (and task #832) read the corrected `provenance_fidelity` values.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/literature-fidelity-audit.sh --write` once to re-stamp.
-- [ ] Confirm via `jq` that the 3 named victim child entries now carry `unadjudicated`, and that
+- [x] Run `bash .claude/scripts/literature-fidelity-audit.sh --write` once to re-stamp. *(completed:
+      backup created and verified at index.json.bak.20260709-232631; 153 entries stamped, 14
+      changed, 139 unchanged; population summary: verified_conversion 39, unadjudicated 3)*
+- [x] Confirm via `jq` that the 3 named victim child entries now carry `unadjudicated`, and that
       `thomas_2003_ch01`/`thomas_2003_ch03` carry the Phase-4 outcome (Option A: `verified_conversion`).
+      *(completed: confirmed via jq, all correct)*
 
 **Timing**: 0.5 hours
 

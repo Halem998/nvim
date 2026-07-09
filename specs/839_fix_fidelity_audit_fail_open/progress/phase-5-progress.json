@@ -1,0 +1,15 @@
+{
+  "phase": 5,
+  "phase_name": "Re-stamp the live corpus via --write",
+  "started_at": "2026-07-09T23:46:00Z",
+  "last_updated": "2026-07-09T23:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run --write once to re-stamp", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm 3 victims unadjudicated, thomas_2003 ch01/ch03 verified_conversion", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Backup created and verified: ~/Projects/Literature/index.json.bak.20260709-232631. Population summary after write: verified_conversion 39, unverified_summary 1, no_source_pdf 45, not_yet_converted 5, unverified_no_baseline 4, unadjudicated 3, total 97 dirs. 153 entries stamped (14 changed, 139 unchanged). ~/Projects/Literature/index.json is outside the git repo and not tracked."
+}
