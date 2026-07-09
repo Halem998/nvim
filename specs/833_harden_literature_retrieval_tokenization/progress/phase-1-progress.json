@@ -1,0 +1,25 @@
+{
+  "phase": 1,
+  "phase_name": "Extend sanitize_query with ligature fold and punctuation normalization",
+  "started_at": "2026-07-09T00:00:00Z",
+  "last_updated": "2026-07-09T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add LIGATURE_MAP fold as first transform", "status": "done", "files_touched": [".claude/scripts/literature-search.sh"]},
+    {"id": 2, "description": "Mid-word hyphen, colon, slash, paren normalization", "status": "done", "files_touched": [".claude/scripts/literature-search.sh"]},
+    {"id": 3, "description": "Verify against real DB, no OperationalError, regression baseline unchanged", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "plan's literal source+sanitize_query verification command", "result": "failed", "reason": "sourcing whole script runs unconditional dispatch section, exits 1 before sanitize_query is called; worked around by sourcing only function defs (excluding dispatch section)"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.verification",
+      "description": "Run the sanitizer directly using the plan's literal source-and-call command",
+      "type": "altered",
+      "reason": "The literal command sources the whole script, which unconditionally runs the Main dispatch section at the bottom and exits 1 for zero args before sanitize_query is invoked. Verified instead by sourcing only the function definitions (excluding dispatch).",
+      "annotation": "*(deviation: altered — verification command adjusted to avoid triggering the script's unconditional dispatch section)*"
+    }
+  ]
+}

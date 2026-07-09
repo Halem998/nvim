@@ -1,0 +1,29 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Created a 5-phase plan (5.25h) for hardening literature retrieval tokenization: extend sanitize_query with #831's ligature fold plus punctuation-to-space, add an additive chunks_trigram FTS5 table, implement the phrase-quote/trigram fallback ladder with a degraded/query_error envelope, and make literature-briefing.sh render an honest next action. Grounding revealed three constraints research missed, each now addressed by a phase.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/833_harden_literature_retrieval_tokenization/plans/01_harden-retrieval-tokenization.md",
+      "summary": "5-phase plan: extended sanitizer (ligature fold + punctuation normalization), additive chunks_trigram schema with content-column drift repair, fallback ladder plus lazy trigram migration and result envelope in literature-search.sh, envelope-aware degraded rendering in literature-briefing.sh, end-to-end verification against the real 3746-chunk corpus."
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "implement",
+  "files_modified": [
+    "specs/833_harden_literature_retrieval_tokenization/plans/01_harden-retrieval-tokenization.md"
+  ],
+  "decisions_made": [
+    "chunks_trigram is populated lazily by literature-search.sh, not by the out-of-scope literature-build-index.sh, which rebuilds only chunks_fts",
+    "literature-schema.sql is never applied to the populated DB (it opens with DROP TABLE); live migration uses CREATE VIRTUAL TABLE IF NOT EXISTS plus rebuild-if-empty",
+    "Search stdout becomes an envelope object; literature-briefing.sh must accept both legacy array and envelope shapes, so phases 3 and 4 are strictly sequenced",
+    "schema.sql's chunks_data gains the content column that chunks_fts already references; build-index.sh's ALTER TABLE is probe-guarded so this is a safe no-op",
+    "sqlite-vec and per-chunk LLM gist deferred, not adopted, per research"
+  ],
+  "dead_ends": [
+    "Adding chunks_trigram by re-running literature-schema.sql against the live DB would delete all 3746 chunk rows",
+    "Emitting an envelope object without updating literature-briefing.sh silently degrades to [] via its jq type==array coercion plus 2>/dev/null"
+  ]
+}

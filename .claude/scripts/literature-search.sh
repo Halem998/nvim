@@ -105,6 +105,19 @@ query = "$query"
 import os
 query = os.environ.get('_SEARCH_QUERY', query)
 
+# --- Ligature fold (task #833) ---
+# Mirrors literature-convert.sh's LIGATURE_MAP (U+FB00-FB06) verbatim. Applied
+# FIRST, before any other transform, so a query containing a raw ligature
+# glyph matches the corpus's already-folded text (#831 folds ligatures at
+# conversion time; this is the query-time half of that same fold, deliberately
+# NOT blanket NFKC -- NFKC corrupts math-italic/blackboard-bold Unicode).
+LIGATURE_MAP = {
+    "ﬀ": "ff", "ﬁ": "fi", "ﬂ": "fl",
+    "ﬃ": "ffi", "ﬄ": "ffl", "ﬅ": "st", "ﬆ": "st",
+}
+_LIGATURE_RE = re.compile("[" + "".join(LIGATURE_MAP) + "]")
+query = _LIGATURE_RE.sub(lambda m: LIGATURE_MAP[m.group(0)], query)
+
 # Remove bare FTS5 operators at word boundaries (case-insensitive)
 # Allow "quoted phrases" by preserving balanced double-quote pairs
 query = re.sub(r'\bAND\b', ' ', query, flags=re.IGNORECASE)
@@ -129,7 +142,21 @@ quote_count = query.count('"')
 if quote_count % 2 != 0:
     query = query.replace('"', ' ')
 
-# Balance parentheses: if unbalanced, strip all parens
+# --- Punctuation normalization (task #833) ---
+# FTS5's query grammar treats mid-word hyphens (column-exclusion/NOT-prefix),
+# colons (column-filter), slashes, and parens (grouping -- even word-attached
+# and balanced) as syntax, not as word characters. This tool's only caller
+# passes one opaque free-text query string, never a hand-built FTS5 boolean
+# expression, so none of that syntax is ever an intended feature here: fold
+# all four to spaces rather than trying to preserve grouping/filter semantics.
+query = re.sub(r'(?<=\w)-(?=\w)', ' ', query)  # mid-word hyphen only
+query = query.replace(':', ' ')
+query = query.replace('/', ' ')
+query = query.replace('(', ' ').replace(')', ' ')
+
+# Balance parentheses: if unbalanced, strip all parens (no-op now that parens
+# are unconditionally stripped above -- kept so this stays inert rather than
+# silently wrong if the unconditional strip above is ever narrowed).
 open_count = query.count('(')
 close_count = query.count(')')
 if open_count != close_count:
