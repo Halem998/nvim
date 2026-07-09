@@ -1,0 +1,28 @@
+{
+  "phase": 4,
+  "phase_name": "Secondary Verification Gate for Non-Key-Anchored Matches",
+  "started_at": "2026-07-09T20:36:00Z",
+  "last_updated": "2026-07-09T20:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Apply year/DOI/venue secondary check to each search-candidate", "status": "done", "files_touched": ["specs/836_recover_source_pdfs_via_zotero/artifacts/resolution-manifest.json"]},
+    {"id": 2, "description": "Auto-approve rule (exact year match AND similarity >= 0.85), threshold recorded", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Route non-approved candidates to needs-confirmation/rejected with rationale", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Flag fine_2012 duplicate suspicion", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Write decisions back to manifest; verify no absent/matched-no-pdf approved", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "Build $years lookup from all index.json entries including null-id chunk-child entries", "result": "failed", "reason": "9 entries have null id; jq {(.id): .year} on a null key throws 'Cannot use null as object key', aborting the whole transform silently truncated the destination file via shell redirection before the error was caught"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "Route every other search-candidate to needs-confirmation",
+      "type": "altered",
+      "reason": "pnueli_1977 and een_2011 are unambiguous false positives (wrong author entirely / wrong subject domain via substring collision), distinct from fine_2014's genuinely ambiguous year-drift case. Routed to decision: rejected instead of needs-confirmation to avoid queuing dispositively-wrong matches for human review, while keeping fine_2014 (the one case the plan explicitly calls out as ambiguous) in needs-confirmation.",
+      "annotation": "*(deviation: fine_2014 correctly routed to needs-confirmation per spec. The other two ... routed to decision: rejected ... see plan Phase 4 task annotation)*"
+    }
+  ],
+  "incident_note": "During this phase, an intermediate jq transform attempt (with a bug: null-id entries as object keys) errored mid-pipeline, and the shell redirect truncated specs/836_recover_source_pdfs_via_zotero/artifacts/resolution-manifest.json to 0 bytes. Recovered fully from the still-intact /tmp/zotero-sweep/*.json per-doc_id sweep outputs (52 files, unaffected) by re-aggregating and re-applying the (corrected) decision transform in a scratch file, validating with `jq empty`, and only then overwriting the real manifest path. No task-dir artifact was lost as a result -- the underlying per-doc_id resolver outputs were the source of truth throughout, not the aggregated manifest file itself. No corpus file (~/Projects/Literature) was involved in this incident."
+}

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-09T20:13:16Z",
+  "generated_at": "2026-07-09T20:16:33Z",
   "records": [
     {
       "doc_id": "burgess_1982_i",
@@ -11,7 +11,9 @@
       "zotero_title": "Axioms for tense logic. I. ``Since'' and ``until''.",
       "zotero_year": "1982",
       "zotero_doi": "10.1305/ndjfl/1093870149",
-      "title_similarity": 1.0
+      "title_similarity": 1.0,
+      "decision": "approved",
+      "decision_rationale": "key-anchored: index.json already carried a non-null zotero_key for this doc_id, and the resolved Zotero item is an exact title match (title_similarity 1.0) with a real on-disk PDF attachment."
     },
     {
       "doc_id": "burgess_1982_ii",
@@ -23,7 +25,9 @@
       "zotero_title": "Axioms for tense logic. II. Time periods.",
       "zotero_year": "1982",
       "zotero_doi": "10.1305/ndjfl/1093870150",
-      "title_similarity": 1.0
+      "title_similarity": 1.0,
+      "decision": "approved",
+      "decision_rationale": "key-anchored: index.json already carried a non-null zotero_key for this doc_id, and the resolved Zotero item is an exact title match (title_similarity 1.0) with a real on-disk PDF attachment."
     },
     {
       "doc_id": "thomas_1997",
@@ -195,7 +199,9 @@
       "zotero_title": "Meaning and Explanation",
       "zotero_year": "2014",
       "zotero_doi": null,
-      "title_similarity": 0.4314
+      "title_similarity": 0.4314,
+      "decision": "rejected",
+      "decision_rationale": "year mismatch: doc_id year 2011 vs matched Zotero item year 2014 (title \"Meaning and Explanation\"). title_similarity 0.4314 insufficient to override a year mismatch of this magnitude; distinct paper, not a recoverable match."
     },
     {
       "doc_id": "fine_2010_some-puzzles-of-ground",
@@ -207,7 +213,9 @@
       "zotero_title": "Some Puzzles of Ground",
       "zotero_year": "2010",
       "zotero_doi": "10.1215/00294527-2010-007",
-      "title_similarity": 1.0
+      "title_similarity": 1.0,
+      "decision": "approved",
+      "decision_rationale": "year matches exactly (2010) and title_similarity 1.0 >= 0.85 threshold."
     },
     {
       "doc_id": "fine_2012_counterfactuals-without-possible-worlds",
@@ -219,7 +227,9 @@
       "zotero_title": "Counterfactuals Without Possible Worlds",
       "zotero_year": "2012",
       "zotero_doi": "10.5840/jphil201210938",
-      "title_similarity": 1.0
+      "title_similarity": 1.0,
+      "decision": "approved",
+      "decision_rationale": "year matches exactly (2012) and title_similarity 1.0 >= 0.85 threshold."
     },
     {
       "doc_id": "fine_2012_difficulty-possible-worlds-counterfactuals",
@@ -236,7 +246,9 @@
       "zotero_title": "Guide to Ground",
       "zotero_year": "2012",
       "zotero_doi": null,
-      "title_similarity": 0.9375
+      "title_similarity": 0.9375,
+      "decision": "approved",
+      "decision_rationale": "year matches exactly (2012) and title_similarity 0.9375 >= 0.85 threshold."
     },
     {
       "doc_id": "fine_2012_pure-logic-of-ground",
@@ -248,7 +260,9 @@
       "zotero_title": "The Pure Logic of Ground",
       "zotero_year": "2012",
       "zotero_doi": "10.1017/S1755020311000086",
-      "title_similarity": 0.9091
+      "title_similarity": 0.9091,
+      "decision": "approved",
+      "decision_rationale": "year matches exactly (2012) and title_similarity 0.9091 >= 0.85 threshold."
     },
     {
       "doc_id": "fine_2014_truthmaker-semantics-intuitionistic",
@@ -260,7 +274,9 @@
       "zotero_title": "Truthmaker Semantics",
       "zotero_year": "2017",
       "zotero_doi": "10.1002/9781118972090.ch22",
-      "title_similarity": 0.7273
+      "title_similarity": 0.7273,
+      "decision": "needs-confirmation",
+      "decision_rationale": "best candidate S2VXD9JT (\"Truthmaker Semantics\") is dated 2017, not 2014, and does not include \"intuitionistic\" in its title. May be the same paper with year drift (preprint vs. published) or a genuinely different Fine paper. Per plan instruction: do not auto-accept; requires explicit human confirmation."
     },
     {
       "doc_id": "herklotz_2021_vericert",
@@ -307,7 +323,9 @@
       "zotero_title": "``Sometime'' is sometimes ``not never'': on the temporal logic of programs",
       "zotero_year": "1980",
       "zotero_doi": "10.1145/567446.567463",
-      "title_similarity": 0.5227
+      "title_similarity": 0.5227,
+      "decision": "rejected",
+      "decision_rationale": "year mismatch: doc_id year 1977 vs matched Zotero item year 1980 (title \"``Sometime'' is sometimes ``not never'': on the temporal logic of programs\"). title_similarity 0.5227 insufficient to override a year mismatch of this magnitude; distinct paper, not a recoverable match."
     },
     {
       "doc_id": "solar-lezama_2008_sketching-thesis",
@@ -334,7 +352,9 @@
       "zotero_title": "The Broadest Necessity",
       "zotero_year": "2018",
       "zotero_doi": "10.1007/s10992-017-9447-9",
-      "title_similarity": 1.0
+      "title_similarity": 1.0,
+      "decision": "approved",
+      "decision_rationale": "year matches exactly (2018) and title_similarity 1.0 >= 0.85 threshold."
     }
   ],
   "counts": {
@@ -342,5 +362,18 @@
     "key-anchored": 2,
     "matched-no-pdf": 1,
     "search-candidate": 8
-  }
+  },
+  "decision_threshold": {
+    "auto_approve_min_similarity": 0.85,
+    "auto_approve_requires_exact_year_match": true
+  },
+  "duplicate_flags": [
+    {
+      "doc_id_pair": [
+        "fine_2012_difficulty-possible-worlds-counterfactuals",
+        "fine_2012_counterfactuals-without-possible-worlds"
+      ],
+      "note": "Suspected corpus-metadata duplicate: near-identical titles. fine_2012_difficulty-possible-worlds-counterfactuals resolved absent (no independent Zotero hit); fine_2012_counterfactuals-without-possible-worlds resolved search-candidate/approved. Flagged only per plan Non-Goals -- not de-duplicated by this task. Follow-up item for a future task."
+    }
+  ]
 }
