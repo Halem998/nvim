@@ -11,8 +11,8 @@ next_project_number: 839
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826,833,836,837,838 | -- | agent-system, literature, extensions, ... |
-| 2 | 822,827,832 | 821,826,836 | literature, extensions |
+| 1 | 78,87,821,826,832,837,838 | -- | agent-system, literature, extensions, ... |
+| 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -23,9 +23,7 @@ next_project_number: 839
 
 ### Literature
 
-833 [NOT STARTED] — Harden .claude/scripts/literature-search.sh and literature-briefi
-836 [NOT STARTED] — Recover source PDFs for the 52 central dirs under ~/Projects/Lite
-  └─ 832 [NOT STARTED] — Reconvert and validate the actionable portion of the ~/Projects/L
+832 [NOT STARTED] — Reconvert and validate the actionable portion of the ~/Projects/L
 
 ### Extensions
 
@@ -65,10 +63,13 @@ next_project_number: 839
 ---
 
 ### 836. Recover source PDFs via Zotero for PDF-less central dirs
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 835
+- **Research**: [836_recover_source_pdfs_via_zotero/reports/01_recover-source-pdfs-zotero.md]
+- **Plan**: [836_recover_source_pdfs_via_zotero/plans/01_recover-source-pdfs-zotero.md]
+- **Summary**: [836_recover_source_pdfs_via_zotero/summaries/01_recover-source-pdfs-zotero-summary.md]
 
 **Description**: Recover source PDFs for the 52 central dirs under ~/Projects/Literature/sources/ that lack a source PDF (49 chunk-bearing + 3 empty - two different populations; address all 52). Zotero is the ONLY viable recovery source: ~/Projects/Literature/zotero-library.json exists (173 KB, 400 entries) and index.json entries carry zotero_key and zotero_path fields. SCOPE: re-resolve zotero_key/zotero_path against the Zotero library and its storage dir for the 52 PDF-less dirs; repopulate ~/Projects/Literature/pdfs/ symlinks; report which of the 52 remain unrecoverable after Zotero resolution and mark them no_source_pdf, never silently retained as authoritative. Likely entry point: .claude/scripts/zotero-resolve-sqlite-path.sh already exists and is probably the right starting point. VERIFIED - do NOT re-investigate per-repo copies: they yield ZERO unique PDFs (~/Projects/BimodalLogic/specs/literature/sources = 31 pdfs but 0 unique vs central; ~/Projects/cslib/specs/literature/sources = 0 pdfs; ~/Projects/cslib-refactor-prop_logic/specs/literature/sources = 0 pdfs). There is NO ordering constraint against #834 - deleting BimodalLogic's sources/ destroys zero unique recovery sources (central-lacks-PDF intersect BimodalLogic-has-PDF = 0). DEPENDENCY: depends on #835 via file-footprint overlap - both write ~/Projects/Literature/index.json, where 835 DEFINES the provenance/fidelity enum and 836 WRITES one of its values (no_source_pdf); schema must precede population.
 
@@ -101,10 +102,13 @@ next_project_number: 839
 ---
 
 ### 833. Harden retrieval against tokenization brittleness
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 831
+- **Research**: [833_harden_literature_retrieval_tokenization/reports/01_harden-retrieval-tokenization.md]
+- **Plan**: [833_harden_literature_retrieval_tokenization/plans/01_harden-retrieval-tokenization.md]
+- **Summary**: [833_harden_literature_retrieval_tokenization/summaries/01_harden-retrieval-tokenization-summary.md]
 
 **Description**: Harden .claude/scripts/literature-search.sh and literature-briefing.sh so tokenization brittleness degrades gracefully. Triggering symptom (a symptom, not the disease): an agent dead-ended with 'FTS5 chokes on the punctuation; the research agent will read the chunk directly', surfaced while working on ~/Projects/BimodalLogic/specs/337_build_joint_multiowner_disjunct_bracketholds_engine_for_kve2_sepdisjunct/plans/04_joint-disjunct-holds-codesign.md. Normalize the search query using the SAME normalization applied to the corpus in #831; on zero-results or an FTS5 parse failure, fall back gracefully (trigram/LIKE, or sqlite-vec semantic search per the draperlaboratory/pdf2sqlite design, which would make retrieval resilient to exactly this punctuation/tokenization brittleness). Evaluate storing a per-chunk LLM-generated 'gist' alongside text for searchable summaries. Ensure literature-briefing.sh surfaces a usable next action rather than leaving the agent to improvise 'I'll just read the chunk directly.' System ALREADY has literature-schema.sql + FTS5 (chunks_fts, bm25) - this is augmentation, not a rewrite. Depends on #831; can run parallel to #832.
 

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #836
 
 - **Task**: 836 - Recover source PDFs via Zotero for PDF-less central dirs
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: #835 (COMPLETED — defines the `provenance_fidelity` enum this task consumes)
 - **Research Inputs**: `specs/836_recover_source_pdfs_via_zotero/reports/01_recover-source-pdfs-zotero.md`
