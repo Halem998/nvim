@@ -1,0 +1,31 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Planned 7 sequential phases (6.5h) to recover source PDFs from the live Zotero library into sources/<doc_id>/. Success criterion is the research-verified ~7 recoverable of 52, with the rest honestly left as no_source_pdf. Plan is snapshot-backed, dry-run-first, and idempotent because it mutates the user-owned corpus at ~/Projects/Literature/. Explicitly does NOT recreate the deliberately dissolved pdfs/ directory.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/836_recover_source_pdfs_via_zotero/plans/01_recover-source-pdfs-zotero.md",
+      "summary": "7-phase plan: snapshot/env-probe, build read-only zotero-resolve-pdf.sh, dry-run sweep of all 52 targets, secondary verification gate for non-key-anchored matches, idempotent apply, fidelity re-audit, documentation and summary."
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "implement",
+  "files_modified": [
+    "specs/836_recover_source_pdfs_via_zotero/plans/01_recover-source-pdfs-zotero.md"
+  ],
+  "decisions_made": [
+    "Do NOT recreate ~/Projects/Literature/pdfs/; it was deliberately dissolved on 2026-06-16 (commit 404bb36). Recovered PDFs go into sources/<doc_id>/.",
+    "Success is ~7 recovered of 52, not 52. The 30-entry arXiv hardware-verification cluster has zero presence in this Zotero library; marking it no_source_pdf is the correct outcome.",
+    "Target list is index.json entries with provenance_fidelity == 'no_source_pdf' (52), consumed directly; the description's '49 chunk-bearing + 3 empty' split is stale (0 dirs are empty).",
+    "Resolution is live Zotero HTTP API first; sqlite is locked while Zotero runs. zotero_key is a fast path for only 2 of 52 entries.",
+    "Storage root is derived from zotero-resolve-sqlite-path.sh's dataDir, never hardcoded to ~/Zotero/storage/ (the fetch_path3() bug).",
+    "Non-key-anchored title matches require a secondary year/DOI/venue check before apply; fine_2014 is routed to explicit confirmation, never auto-approved.",
+    "provenance_fidelity is never hand-stamped; it is recomputed by literature-fidelity-audit.sh after PDFs land."
+  ],
+  "dead_ends": [
+    "zotero-library.json (400-entry static snapshot) is not a resolution source: it carries no attachment paths and is demonstrably stale (missing bacon_2018).",
+    "sqlite3 -readonly against zotero.sqlite fails with 'database is locked' while Zotero is running; do not retry it in that state."
+  ]
+}

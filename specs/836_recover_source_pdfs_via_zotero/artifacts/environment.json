@@ -1,0 +1,16 @@
+{
+  "generated_at": "2026-07-09T20:00:45Z",
+  "corpus_git_head": "5e29b7943ef0cb62e1fd0befa401e37b41ddcc88",
+  "corpus_working_tree_clean": false,
+  "corpus_dirty_deviation": "Working tree was NOT clean at Phase 1 time. Investigated and classified as benign: (1) index.json modifications are task #835's uncommitted provenance_fidelity/word_ratio backfill across all 280 entries -- this task's own dependency, confirmed by diff sampling and by the no_source_pdf count matching the plan's expected 52 exactly; (2) .literature.db binary diff and .literature.db.bak-task833* files belong to concurrently-running task #833 (file_scope: literature-search.sh/literature-briefing.sh/literature-schema.sql), which does not touch sources/ or this task's territory; (3) six untracked top-level directories are new literature entries not yet present in index.json (verified: none of the 6 match any index.json id), unrelated to the 52-entry no_source_pdf target list. Critically, 'git diff --stat -- sources/' is empty and no untracked path is under sources/ -- this task's mutation target (sources/<doc_id>/) is untouched. Per the plan's own Rollback/Contingency section ('if that assertion was bypassed, use paths 1 and 2 instead and do not run a bulk checkout'), this deviation means bulk 'git checkout -- .' rollback is disqualified for the remainder of this task; only file-level restore (index.json.bak.836.<timestamp>) and apply-log-driven PDF removal are used.",
+  "index_json_entry_count": 280,
+  "no_source_pdf_count": 52,
+  "index_json_backup_path": "/home/benjamin/Projects/Literature/index.json.bak.836.20260709T200028Z",
+  "zotero_sqlite_path": "/home/benjamin/Documents/Zotero/zotero.sqlite",
+  "zotero_data_dir": "/home/benjamin/Documents/Zotero",
+  "zotero_storage_root": "/home/benjamin/Documents/Zotero/storage",
+  "zotero_storage_root_is_naive_hardcode_path": false,
+  "zotero_local_api_reachable": true,
+  "zotero_process_running": true,
+  "access_mode": "live-api"
+}

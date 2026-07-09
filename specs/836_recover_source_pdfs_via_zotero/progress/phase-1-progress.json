@@ -1,0 +1,25 @@
+{
+  "phase": 1,
+  "phase_name": "Snapshot, Environment Probe, and Storage-Root Derivation",
+  "started_at": "2026-07-09T19:58:00Z",
+  "last_updated": "2026-07-09T20:01:00Z",
+  "objectives": [
+    {"id": 1, "description": "Assert clean tree / investigate if dirty", "status": "done", "files_touched": ["specs/836_recover_source_pdfs_via_zotero/artifacts/environment.json"]},
+    {"id": 2, "description": "Record corpus HEAD", "status": "done", "files_touched": ["specs/836_recover_source_pdfs_via_zotero/artifacts/corpus-baseline.txt"]},
+    {"id": 3, "description": "Backup index.json", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Derive Zotero storage root", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Probe live API and record access mode", "status": "done", "files_touched": ["specs/836_recover_source_pdfs_via_zotero/artifacts/environment.json"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.1",
+      "description": "Assert clean working tree; if dirty, stop and report",
+      "type": "altered",
+      "reason": "Tree was dirty at Phase 1 time. Investigated: index.json dirt is task #835's own uncommitted provenance_fidelity/word_ratio backfill (a dependency of this task, verified counts match plan exactly: 52 no_source_pdf / 280 total); .literature.db and its backup files belong to concurrent task #833 (disjoint file_scope); six untracked top-level dirs are new entries not yet in index.json. sources/ is untouched (git diff --stat -- sources/ empty, no untracked path under sources/). Classified as benign and proceeded, with bulk-checkout rollback disqualified per the plan's own contingency clause.",
+      "annotation": "*(deviation: tree was dirty; investigated and classified benign — see artifacts/environment.json corpus_dirty_deviation. Proceeded with file-level-only rollback discipline, bulk checkout disqualified.)*"
+    }
+  ]
+}
