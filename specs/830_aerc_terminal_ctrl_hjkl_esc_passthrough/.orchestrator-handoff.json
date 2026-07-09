@@ -1,0 +1,50 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Implemented the single-phase plan for task 830 (aerc terminal C-hjkl/Esc passthrough) in lua/neotex/config/keymaps.lua's set_terminal_keymaps(). Added 'local is_aerc = bufname:match(\"aerc\") ~= nil' after the is_opencode detection block; extended the <Esc> guard to 'if not is_claude and not is_aerc then'; and inserted an intentionally-empty 'elseif is_aerc then' branch (no buf_map calls, no early return) between the is_opencode branch and the generic else in the <C-hjkl> conditional, so <C-hjkl> pass through unmapped to the aerc pty. The unconditional <M-*> resize binds and winfixbuf remain untouched. Diff matches the plan exactly (net +5/-1 lines). Headless load check (nvim --headless -c \"luafile lua/neotex/config/keymaps.lua\" -c \"q\") passed with exit code 0 and no Lua errors.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/830_aerc_terminal_ctrl_hjkl_esc_passthrough/plans/01_aerc-terminal-passthrough.md"
+    },
+    {
+      "type": "summary",
+      "path": "specs/830_aerc_terminal_ctrl_hjkl_esc_passthrough/summaries/01_aerc-terminal-passthrough-summary.md"
+    },
+    {
+      "type": "handoff",
+      "path": "specs/830_aerc_terminal_ctrl_hjkl_esc_passthrough/handoffs/phase-1-handoff-20260708T233100.md"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "complete",
+  "files_modified": [
+    "lua/neotex/config/keymaps.lua",
+    "specs/830_aerc_terminal_ctrl_hjkl_esc_passthrough/plans/01_aerc-terminal-passthrough.md",
+    "specs/830_aerc_terminal_ctrl_hjkl_esc_passthrough/summaries/01_aerc-terminal-passthrough-summary.md",
+    "specs/830_aerc_terminal_ctrl_hjkl_esc_passthrough/handoffs/phase-1-handoff-20260708T233100.md",
+    "specs/830_aerc_terminal_ctrl_hjkl_esc_passthrough/.return-meta.json"
+  ],
+  "phases_completed": 1,
+  "phases_total": 1,
+  "dependency_waves": [[1]],
+  "decisions_made": [
+    "is_aerc detection uses bufname:match('aerc') ~= nil (mirroring is_claude), placed immediately after the is_opencode detection block.",
+    "Gated <Esc> by extending the guard to 'if not is_claude and not is_aerc then'.",
+    "Gated <C-hjkl> via an intentionally-empty 'elseif is_aerc then' branch (comment only, no buf_map calls, no early return), preserving the unconditional <M-*> resize binds after the if/elseif/else block."
+  ],
+  "dead_ends": [
+    "Did not use an early-return for the is_aerc <C-hjkl> branch -- confirmed the unconditional <M-*> resize binds still execute for aerc terminals.",
+    "Did not use the is_opencode vim.b.snacks_terminal.cmd idiom for is_aerc -- toggleterm stores only an opaque toggle_number in vim.b, not a cmd string."
+  ],
+  "verification_plan": [
+    "nvim --headless load check of lua/neotex/config/keymaps.lua: PASS (exit code 0, no Lua errors)",
+    "Manual: aerc <C-hjkl>/<Esc> reach aerc -- NOT RUN (requires interactive Neovim session)",
+    "Manual regression: Claude Code and generic :terminal keep window-nav/exit behavior -- NOT RUN (requires interactive Neovim session; code review confirms is_aerc is false for these, so behavior is unchanged)",
+    "Manual: aerc <M-*> resize binds still work -- NOT RUN (requires interactive Neovim session; code review confirms resize binds are unconditional and after the if/elseif/else block)"
+  ],
+  "plan_markers_verified": true,
+  "next_action": "Manual interactive verification of aerc/Claude Code/generic-terminal keymap behavior per the plan's Testing & Validation section, then mark task 830 complete.",
+  "completion_summary": "Special-cased the aerc terminal so <C-hjkl> and <Esc> pass through to the aerc pty instead of being intercepted by Neovim window-navigation and exit-terminal-mode bindings, with no impact on Claude Code, OpenCode, or generic terminal keymaps."
+}

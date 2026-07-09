@@ -126,10 +126,12 @@ function M.setup()
       local cmd_str = type(cmd) == "table" and table.concat(cmd, " ") or tostring(cmd)
       is_opencode = cmd_str:match("opencode%s+%-%-port")
     end
+    local is_aerc = bufname:match("aerc") ~= nil
 
     -- Terminal navigation
     -- Skip escape mapping for Claude Code to allow its internal normal mode
-    if not is_claude then
+    -- Skip escape mapping for aerc to allow its own menu/mode handling
+    if not is_claude and not is_aerc then
       buf_map(0, "t", "<Esc>", "<C-\\><C-n>", "Exit terminal mode")
       -- In normal mode, Esc sends escape to the terminal app (for closing menus)
       buf_map(0, "n", "<Esc>", "i<Esc><C-\\><C-n>", "Send Esc to terminal app")
@@ -143,6 +145,8 @@ function M.setup()
       buf_map(0, "t", "<C-h>", "<Cmd>wincmd h<CR>", "Navigate left")
       buf_map(0, "t", "<C-l>", "<Cmd>wincmd l<CR>", "Navigate right")
       buf_map(0, "t", "<C-g>", "<cmd>lua require('opencode').toggle()<CR>", "Toggle Opencode")
+    elseif is_aerc then
+      -- Leave <C-hjkl> unmapped so aerc receives them for its own navigation
     else
       buf_map(0, "t", "<C-h>", "<Cmd>wincmd h<CR>", "Navigate left")
       buf_map(0, "t", "<C-j>", "<Cmd>wincmd j<CR>", "Navigate down")

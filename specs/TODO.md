@@ -11,7 +11,7 @@ next_project_number: 831
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826,830 | -- | extensions, email integration, terminal ui |
+| 1 | 78,87,821,826 | -- | extensions, email integration, terminal ui |
 | 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -26,7 +26,6 @@ next_project_number: 831
 ### Terminal Ui
 
 87 [RESEARCHED] — Investigate why the terminal working directory changes to a proje
-830 [NOT STARTED] — Special-case the aerc terminal in Neovim's terminal-mode keymap s
 
 ### Email Integration
 
@@ -35,10 +34,13 @@ next_project_number: 831
 ## Tasks
 
 ### 830. Aerc terminal ctrl hjkl esc passthrough
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: neovim
 - **Topic**: Terminal UI
 - **Dependencies**: None
+- **Research**: [830_aerc_terminal_ctrl_hjkl_esc_passthrough/reports/01_aerc-terminal-passthrough-research.md]
+- **Plan**: [830_aerc_terminal_ctrl_hjkl_esc_passthrough/plans/01_aerc-terminal-passthrough.md]
+- **Summary**: [830_aerc_terminal_ctrl_hjkl_esc_passthrough/summaries/01_aerc-terminal-passthrough-summary.md]
 
 **Description**: Special-case the aerc terminal in Neovim's terminal-mode keymap setup so <C-h/j/k/l> and <Esc> reach aerc instead of being intercepted by Neovim. This is the cross-repo companion to .dotfiles task 105 Recommendation B (aerc<->nvim/himalaya keymap alignment); it is a hard PREREQUISITE for the aerc-side <C-hjkl> folder binds in that task.
 
