@@ -1,0 +1,30 @@
+{
+  "phase": 3,
+  "phase_name": "literature-search.sh loud flagging + quarantine",
+  "started_at": "2026-07-09T19:25:00Z",
+  "last_updated": "2026-07-09T19:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add a doc_id -> provenance_fidelity lookup against $LITERATURE_DIR/index.json, fail-open on missing field", "status": "done", "files_touched": [".claude/scripts/literature-search.sh"]},
+    {"id": 2, "description": "do_search: enrich each result object with a provenance_fidelity key", "status": "done", "files_touched": [".claude/scripts/literature-search.sh"]},
+    {"id": 3, "description": "do_search: exclude unverified_summary/unverified_no_baseline from default ranking; add --include-unverified flag", "status": "done", "files_touched": [".claude/scripts/literature-search.sh"]},
+    {"id": 4, "description": "do_read: prefix content with warning banner when provenance_fidelity != verified_conversion", "status": "done", "files_touched": [".claude/scripts/literature-search.sh"]},
+    {"id": 5, "description": "do_read/do_toc result objects gain the provenance_fidelity key", "status": "done", "files_touched": [".claude/scripts/literature-search.sh"]},
+    {"id": 6, "description": "Preserve existing behavior for verified_conversion docs", "status": "done", "files_touched": [".claude/scripts/literature-search.sh"], "note": "Verified live: blackburn_2002/doets_1987 chunks return unbannered content with provenance_fidelity=verified_conversion and normal ranking."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "keyed the doc_id->provenance_fidelity map by index.json's .id (with a .parent_doc fallback for phantom-parent docs)", "result": "failed", "reason": "Live testing against .literature.db (blackburn_2002, doets_1987, thomason_1984 chunks) revealed that chunks_data.doc_id / chunks.json's doc_id is ALWAYS the bare source directory name, a namespace independent of index.json's .id field (blackburn_2002's index.json id is 'blackburn_2002_book', not 'blackburn_2002'). An .id-keyed map silently fail-opened (returned unverified_summary) for every already-chunked document whose id differs from its directory name -- i.e. most of the corpus."},
+    {"approach": "keyed the doc_id->provenance_fidelity map by directory name, derived by stripping the 'sources/' prefix from each stamped entry's .path field", "result": "verified", "reason": "Matches chunks_data.doc_id exactly for every tested case (blackburn_2002, doets_1987, thomason_1984, venema_1991). Also transparently subsumes the old id/parent_doc fallback logic, since child entries' .path values resolve to the same directory-name key as any true-root entry in the same directory -- no separate phantom-parent-fallback branch needed on the retrieval side."},
+    {"approach": "backtick-quoted inline code spans (e.g. `.id`/`.parent_doc`) inside Python docstrings/comments within unquoted bash heredocs (<< PYEOF, not << 'PYEOF')", "result": "failed", "reason": "Bash performs command substitution on backtick pairs anywhere in an unquoted heredoc body, including inside Python comments/docstrings, before python3 ever sees the text. Produced 'line N: .id: command not found' / '.parent_doc: command not found' shell errors at do_read invocation. Fixed by removing all backticks from comments inside these heredocs (plain-text field names instead, e.g. 'id/parent_doc fields')."}
+  ],
+  "deviations": [
+    {
+      "task_id": "3.1",
+      "description": "'Add a doc_id -> provenance_fidelity lookup ... mirroring get_project_doc_ids() (jq keyed by .id)'",
+      "type": "altered",
+      "reason": "Implemented as a Python-embedded loader (one index.json parse per do_search/do_read/do_toc invocation, building an in-memory dict) rather than a separate bash+jq function called per result row. Same query pattern and fail-open semantics as get_project_doc_ids(), but avoids N per-row subprocess spawns since do_search/do_read/do_toc already run inside Python heredocs. Also implements the two-tier id-then-parent_doc fallback resolution required by Phase 2's phantom-parent stamping (see phase-2-progress.json deviation 2.5) — a plain get_project_doc_ids()-style single .id match would miss doets_1987/venema_1991/etc.",
+      "annotation": "*(deviation: altered — python dict lookup with id-then-parent_doc fallback, in place of a bash+jq get_project_doc_ids()-style function)*"
+    }
+  ],
+  "handoff_count": 0
+}

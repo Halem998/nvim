@@ -3,6 +3,7 @@
 #
 # Usage:
 #   literature-search.sh "query"             # FTS5 search, returns ranked metadata JSON
+#   literature-search.sh --include-unverified "query"  # also include quarantined docs
 #   literature-search.sh --read <chunk_id>   # Read full chunk content from disk
 #   literature-search.sh --toc [doc_id]      # Browse TOC (metadata only, no content)
 #   literature-search.sh --refs <chunk_id>   # Follow cross-references from chunk
@@ -19,6 +20,17 @@
 # Query sanitization: strips FTS5 operators (AND/OR/NOT at word boundaries,
 # unbalanced quotes/parens). Allows "quoted phrases". Escapes apostrophes.
 #
+# Provenance/fidelity flagging (task #835): every search/read/toc result carries a
+# `provenance_fidelity` field looked up from $LITERATURE_DIR/index.json (fail-open —
+# a doc missing the field is treated as unverified, never as verified_conversion; see
+# .claude/scripts/literature-fidelity-audit.sh for how the field is computed and
+# stamped). do_search excludes `unverified_summary`/`unverified_no_baseline` docs from
+# its default ranked output; pass --include-unverified to opt back in. This is a
+# retrieval-time quarantine only — --read/--toc/--doc always return the doc regardless
+# of this flag, and --read prefixes the content of any non-verified_conversion chunk
+# with a loud warning banner. No corpus file is ever hidden, deleted, or edited by
+# this quarantine.
+#
 # Environment:
 #   LITERATURE_DIR  — Global library path (default: ~/Projects/Literature)
 #   LITERATURE_LIMIT — Default result limit (default: 20)
@@ -29,6 +41,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LITERATURE_DIR="${LITERATURE_DIR:-$HOME/Projects/Literature}"
 LITERATURE_LIMIT="${LITERATURE_LIMIT:-20}"
 PROJECT_FILTER=""
+INCLUDE_UNVERIFIED="false"
+
+# --- provenance_fidelity values excluded from default search ranking (task #835) ---
+# Docs whose fidelity is one of these are quarantined from default do_search output:
+# still fully retrievable (via --include-unverified, or directly via --read/--toc/
+# --doc), never deleted, never edited. See literature-fidelity-audit.sh for how the
+# field is computed and stamped.
+QUARANTINED_FIDELITY_VALUES="unverified_summary unverified_no_baseline"
 
 # --- Build allowed doc_id set from index.json for a project ---
 # Returns newline-separated doc_ids, or empty string if no index or no matches
@@ -132,6 +152,7 @@ do_search() {
   local query="$1"
   local limit="${2:-$LITERATURE_LIMIT}"
   local project_filter="${3:-}"
+  local include_unverified="${4:-false}"
 
   export _SEARCH_QUERY="$query"
   local sanitized
@@ -165,9 +186,59 @@ global_db = "$global_db"
 query = "$sanitized"
 limit = $limit
 allowed_doc_ids_raw = """$allowed_doc_ids"""
+literature_dir = "$LITERATURE_DIR"
+include_unverified = "$include_unverified" == "true"
+quarantined_fidelity = set("$QUARANTINED_FIDELITY_VALUES".split())
 
 # Parse allowed doc_ids (newline-separated, may be empty)
 allowed_doc_ids = [d.strip() for d in allowed_doc_ids_raw.strip().splitlines() if d.strip()]
+
+
+def load_fidelity_map(lit_dir):
+    """directory-name -> provenance_fidelity (task #835). Fail-open: callers must
+    default a missing map entry to an unverified value, never to verified_conversion.
+
+    KEYED BY DIRECTORY NAME, NOT index.json's id/parent_doc fields -- those are a
+    separate namespace from chunks_data.doc_id (e.g. index.json's top-level id for
+    the blackburn_2002 directory is "blackburn_2002_book", but every chunks.json /
+    chunks_data row for that same directory carries doc_id="blackburn_2002", the bare
+    directory name). literature-fidelity-audit.sh stamps provenance_fidelity onto
+    index.json entries (root or, for phantom-parent docs, child entries -- see that
+    script's header), but every stamped entry's path field still starts with
+    "sources/<dir>/" regardless of which id/parent_doc scheme it uses. Deriving the
+    key from that path prefix (the same directory-name key chunks_data.doc_id
+    actually uses) is what makes this lookup correct for both naming schemes at once,
+    including the phantom-parent-fallback and multi-root cases."""
+    index_file = os.path.join(lit_dir, "index.json")
+    fmap = {}
+    if not os.path.isfile(index_file):
+        return fmap
+    try:
+        with open(index_file, encoding="utf-8") as f:
+            idx = json.load(f)
+    except Exception:
+        return fmap
+    prefix = "sources/"
+    for e in idx.get("entries", []) or []:
+        pf = e.get("provenance_fidelity")
+        if pf is None:
+            continue
+        path = e.get("path")
+        if not isinstance(path, str) or not path.startswith(prefix):
+            continue
+        dirname = path[len(prefix):].split("/", 1)[0]
+        if dirname:
+            fmap.setdefault(dirname, pf)
+    return fmap
+
+
+def get_fidelity(fmap, doc_id):
+    # Fail-open: absent field or absent entry -> unverified_summary, never
+    # verified_conversion.
+    return fmap.get(doc_id) or "unverified_summary"
+
+
+fidelity_map = load_fidelity_map(literature_dir)
 
 def search_db(db_path, query, limit, allowed_doc_ids=None):
     """Search a single database, return list of result dicts"""
@@ -235,6 +306,7 @@ def search_db(db_path, query, limit, allowed_doc_ids=None):
                 'cross_refs': cross_refs,
                 'rank': row['rank'],
                 'snippet': (row['snippet'] or '').strip()[:200],
+                'provenance_fidelity': get_fidelity(fidelity_map, row['doc_id']),
                 '_source_path': row['source_path'],
                 '_db_path': db_path,
             })
@@ -252,6 +324,12 @@ global_results = search_db(global_db, query, limit, allowed_doc_ids if allowed_d
 # Merge: local takes precedence on duplicate doc_id
 local_doc_ids = {r['doc_id'] for r in local_results}
 merged = local_results + [r for r in global_results if r['doc_id'] not in local_doc_ids]
+
+# Quarantine (task #835): exclude unverified/no-baseline docs from default ranking.
+# Not a deletion -- always retrievable via --include-unverified, or directly via
+# --read/--toc/--doc regardless of this flag.
+if not include_unverified:
+    merged = [r for r in merged if r['provenance_fidelity'] not in quarantined_fidelity]
 
 # Re-sort by rank (BM25 returns negative values; lower is better)
 merged.sort(key=lambda r: r['rank'])
@@ -281,6 +359,44 @@ local_db = "$local_db"
 global_db = "$global_db"
 query = "$sanitized"
 limit = $limit
+literature_dir = "$LITERATURE_DIR"
+include_unverified = "$include_unverified" == "true"
+quarantined_fidelity = set("$QUARANTINED_FIDELITY_VALUES".split())
+
+
+def load_fidelity_map(lit_dir):
+    # Directory-name-keyed (matches chunks_data.doc_id exactly). See the primary
+    # do_search heredoc above for the full docstring/rationale on why this must be
+    # keyed by directory name rather than index.json's id/parent_doc fields.
+    index_file = os.path.join(lit_dir, "index.json")
+    fmap = {}
+    if not os.path.isfile(index_file):
+        return fmap
+    try:
+        with open(index_file, encoding="utf-8") as f:
+            idx = json.load(f)
+    except Exception:
+        return fmap
+    prefix = "sources/"
+    for e in idx.get("entries", []) or []:
+        pf = e.get("provenance_fidelity")
+        if pf is None:
+            continue
+        path = e.get("path")
+        if not isinstance(path, str) or not path.startswith(prefix):
+            continue
+        dirname = path[len(prefix):].split("/", 1)[0]
+        if dirname:
+            fmap.setdefault(dirname, pf)
+    return fmap
+
+
+def get_fidelity(fmap, doc_id):
+    return fmap.get(doc_id) or "unverified_summary"
+
+
+fidelity_map = load_fidelity_map(literature_dir)
+
 
 def search_db(db_path, query, limit):
     if not os.path.isfile(db_path):
@@ -324,6 +440,7 @@ def search_db(db_path, query, limit):
                 'cross_refs': cross_refs,
                 'rank': row['rank'],
                 'snippet': (row['snippet'] or '').strip()[:200],
+                'provenance_fidelity': get_fidelity(fidelity_map, row['doc_id']),
                 '_source_path': row['source_path'],
                 '_db_path': db_path,
             })
@@ -337,6 +454,8 @@ local_results = search_db(local_db, query, limit)
 global_results = search_db(global_db, query, limit)
 local_doc_ids = {r['doc_id'] for r in local_results}
 merged = local_results + [r for r in global_results if r['doc_id'] not in local_doc_ids]
+if not include_unverified:
+    merged = [r for r in merged if r['provenance_fidelity'] not in quarantined_fidelity]
 merged.sort(key=lambda r: r['rank'])
 merged = merged[:limit]
 for r in merged:
@@ -369,6 +488,44 @@ import sys
 local_db = "$local_db"
 global_db = "$global_db"
 chunk_id = "$chunk_id"
+literature_dir = "$LITERATURE_DIR"
+
+
+def load_fidelity_map(lit_dir):
+    # Directory-name -> provenance_fidelity (task #835), keyed to match
+    # chunks_data.doc_id exactly (NOT index.json's id/parent_doc fields -- a separate
+    # namespace; see the primary do_search heredoc for the full rationale).
+    # Fail-open: an absent map entry must be treated as unverified, never as
+    # verified_conversion.
+    index_file = os.path.join(lit_dir, "index.json")
+    fmap = {}
+    if not os.path.isfile(index_file):
+        return fmap
+    try:
+        with open(index_file, encoding="utf-8") as f:
+            idx = json.load(f)
+    except Exception:
+        return fmap
+    prefix = "sources/"
+    for e in idx.get("entries", []) or []:
+        pf = e.get("provenance_fidelity")
+        if pf is None:
+            continue
+        path = e.get("path")
+        if not isinstance(path, str) or not path.startswith(prefix):
+            continue
+        dirname = path[len(prefix):].split("/", 1)[0]
+        if dirname:
+            fmap.setdefault(dirname, pf)
+    return fmap
+
+
+def get_fidelity(fmap, doc_id):
+    return fmap.get(doc_id) or "unverified_summary"
+
+
+fidelity_map = load_fidelity_map(literature_dir)
+
 
 def find_chunk(db_path, chunk_id):
     if not os.path.isfile(db_path):
@@ -426,13 +583,29 @@ try:
 except Exception:
     cross_refs = []
 
+doc_id = chunk_row.get('doc_id', '')
+provenance_fidelity = get_fidelity(fidelity_map, doc_id)
+
+# Loud content banner (task #835): never silently hand an agent unverified text as
+# if it were an authoritative conversion. verified_conversion docs are unchanged.
+if provenance_fidelity != 'verified_conversion':
+    banner = (
+        f"[UNVERIFIED CONTENT - provenance_fidelity: {provenance_fidelity}]\n"
+        f"This chunk has not been confirmed to faithfully reproduce its source PDF. "
+        f"Do not cite claims, lemmas, or definitions from it as authoritative without "
+        f"verifying against the primary source (doc_id: {doc_id}).\n"
+        f"{'=' * 70}\n\n"
+    )
+    content = banner + content
+
 output = {
     'chunk_id': chunk_id,
-    'doc_id': chunk_row.get('doc_id', ''),
+    'doc_id': doc_id,
     'title': chunk_row.get('title', ''),
     'section_path': chunk_row.get('section_path', ''),
     'token_count': chunk_row.get('token_count', 0),
     'cross_refs': cross_refs,
+    'provenance_fidelity': provenance_fidelity,
     'content': content,
 }
 
@@ -458,6 +631,42 @@ import sys
 local_db = "$local_db"
 global_db = "$global_db"
 doc_id_filter = "$doc_id"
+literature_dir = "$LITERATURE_DIR"
+
+
+def load_fidelity_map(lit_dir):
+    # Directory-name -> provenance_fidelity (task #835), keyed to match
+    # chunks_data.doc_id exactly; see do_search above for the full rationale.
+    # Fail-open on absent entries.
+    index_file = os.path.join(lit_dir, "index.json")
+    fmap = {}
+    if not os.path.isfile(index_file):
+        return fmap
+    try:
+        with open(index_file, encoding="utf-8") as f:
+            idx = json.load(f)
+    except Exception:
+        return fmap
+    prefix = "sources/"
+    for e in idx.get("entries", []) or []:
+        pf = e.get("provenance_fidelity")
+        if pf is None:
+            continue
+        path = e.get("path")
+        if not isinstance(path, str) or not path.startswith(prefix):
+            continue
+        dirname = path[len(prefix):].split("/", 1)[0]
+        if dirname:
+            fmap.setdefault(dirname, pf)
+    return fmap
+
+
+def get_fidelity(fmap, doc_id):
+    return fmap.get(doc_id) or "unverified_summary"
+
+
+fidelity_map = load_fidelity_map(literature_dir)
+
 
 def get_toc(db_path, doc_id_filter):
     if not os.path.isfile(db_path):
@@ -476,6 +685,8 @@ def get_toc(db_path, doc_id_filter):
                      ORDER BY doc_id, id"""
             cursor = conn.execute(sql)
         rows = [dict(r) for r in cursor.fetchall()]
+        for r in rows:
+            r['provenance_fidelity'] = get_fidelity(fidelity_map, r['doc_id'])
         conn.close()
         return rows
     except Exception as e:
@@ -622,10 +833,10 @@ PYEOF
 
 # --- Main dispatch ---
 if [ $# -eq 0 ]; then
-  error_json "No arguments provided. Usage: literature-search.sh [--project <name>] \"query\" | --read <id> | --toc [doc_id] | --refs <id> | --next <id> | --prev <id> | --doc <doc_id>" 1
+  error_json "No arguments provided. Usage: literature-search.sh [--project <name>] [--include-unverified] \"query\" | --read <id> | --toc [doc_id] | --refs <id> | --next <id> | --prev <id> | --doc <doc_id>" 1
 fi
 
-# Pre-scan for --project flag (may appear before any subcommand)
+# Pre-scan for --project / --include-unverified flags (may appear before any subcommand)
 args=("$@")
 remaining_args=()
 for ((i = 0; i < ${#args[@]}; i++)); do
@@ -635,6 +846,11 @@ for ((i = 0; i < ${#args[@]}; i++)); do
     fi
     PROJECT_FILTER="${args[$((i+1))]}"
     i=$((i+1))
+  elif [ "${args[$i]}" = "--include-unverified" ]; then
+    # task #835: opt back into unverified_summary/unverified_no_baseline results in
+    # do_search's default ranking (they remain always retrievable via --read/--toc
+    # regardless of this flag; this only affects do_search's exclusion filter).
+    INCLUDE_UNVERIFIED="true"
   else
     remaining_args+=("${args[$i]}")
   fi
@@ -683,6 +899,6 @@ case "${remaining_args[0]}" in
     ;;
   *)
     # Default: full-text search
-    do_search "${remaining_args[0]}" "${remaining_args[1]:-$LITERATURE_LIMIT}" "$PROJECT_FILTER"
+    do_search "${remaining_args[0]}" "${remaining_args[1]:-$LITERATURE_LIMIT}" "$PROJECT_FILTER" "$INCLUDE_UNVERIFIED"
     ;;
 esac

@@ -207,25 +207,36 @@ idempotently.
   `provenance_fidelity` key, only the root `blackburn_2002_book` does); the 15 phantom-parent
   directories are an intentional, documented exception (see deviation 2.5).
 
-### Phase 3: literature-search.sh loud flagging + quarantine [NOT STARTED]
+### Phase 3: literature-search.sh loud flagging + quarantine [COMPLETED]
 
 **Goal**: Surface `provenance_fidelity` in search JSON, banner-prefix `--read` content for
 non-verified docs, exclude unverified docs from default ranking (opt back in via
 `--include-unverified`), and fail open on a missing field.
 
 **Tasks**:
-- [ ] Add a `doc_id -> provenance_fidelity` lookup against `$LITERATURE_DIR/index.json`, mirroring
+- [x] Add a `doc_id -> provenance_fidelity` lookup against `$LITERATURE_DIR/index.json`, mirroring
       `get_project_doc_ids()` (jq keyed by `.id`). Missing/absent field resolves to
-      `unverified_summary` (fail-open, loud-by-default).
-- [ ] `do_search`: enrich each result object with a `provenance_fidelity` key via that lookup.
-- [ ] `do_search`: exclude results whose fidelity is `unverified_summary`/`unverified_no_baseline`
+      `unverified_summary` (fail-open, loud-by-default). *(completed; deviation: altered — see
+      progress file deviation 3.1: implemented as a Python-embedded dict lookup keyed by
+      DIRECTORY NAME, not `.id`. Testing against the live corpus revealed that
+      `chunks_data.doc_id`/chunks.json's `doc_id` is always the bare source directory name — a
+      namespace independent of index.json's `.id`/`.parent_doc` fields (e.g. the blackburn_2002
+      directory's top-level index.json id is "blackburn_2002_book", but every chunk row for that
+      directory carries `doc_id="blackburn_2002"`). An `.id`-keyed lookup silently fail-opened on
+      nearly every already-chunked document. The lookup instead derives directory name from each
+      stamped entry's `.path` field, which is correct for both true-root and phantom-parent-
+      fallback entries alike.)*
+- [x] `do_search`: enrich each result object with a `provenance_fidelity` key via that lookup.
+      *(completed, both the primary and the project-filter-fallback search paths)*
+- [x] `do_search`: exclude results whose fidelity is `unverified_summary`/`unverified_no_baseline`
       from the default ranked output; add an `--include-unverified` flag (parsed alongside
-      `--project`) that disables the exclusion.
-- [ ] `do_read`: when `provenance_fidelity != "verified_conversion"`, prefix the returned `content`
+      `--project`) that disables the exclusion. *(completed)*
+- [x] `do_read`: when `provenance_fidelity != "verified_conversion"`, prefix the returned `content`
       with a loud ASCII-safe warning banner (emoji-policy compliant) naming the fidelity value and
-      instructing the agent to verify against the source PDF before citing.
-- [ ] `do_read`/`do_toc` result objects also gain the `provenance_fidelity` key.
-- [ ] Preserve existing behavior for `verified_conversion` docs (no banner, normal ranking).
+      instructing the agent to verify against the source PDF before citing. *(completed)*
+- [x] `do_read`/`do_toc` result objects also gain the `provenance_fidelity` key. *(completed)*
+- [x] Preserve existing behavior for `verified_conversion` docs (no banner, normal ranking).
+      *(completed and verified)*
 
 **Timing**: 1.5 hours
 
@@ -237,11 +248,24 @@ non-verified docs, exclude unverified docs from default ranking (opt back in via
 
 **Verification**:
 - `--read` a `rabinovich_2014` chunk: content is prefixed with the warning banner and JSON carries
-  `provenance_fidelity: "unverified_summary"`.
+  `provenance_fidelity: "unverified_summary"`. NOT DIRECTLY TESTABLE — rabinovich_2014 has no
+  `chunks.json` and is not present in `.literature.db` (pre-existing corpus-indexing gap,
+  orthogonal to this task). VERIFIED EQUIVALENTLY instead against `thomason_1984`
+  (`unverified_no_baseline`, IS indexed): `--read` returns
+  `provenance_fidelity: "unverified_no_baseline"` and content is prefixed with the
+  `[UNVERIFIED CONTENT - provenance_fidelity: unverified_no_baseline]` banner.
 - A default search does not surface `rabinovich_2014`; `--include-unverified` surfaces it (banner
-  present).
+  present). VERIFIED EQUIVALENTLY against `thomason_1984`: `literature-search.sh "historical
+  necessity"` (a thomason_1984-specific phrase) returns 0 results by default and 4 results
+  (all `provenance_fidelity: unverified_no_baseline`) with `--include-unverified`.
 - A `verified_conversion` doc: no banner, normal ranking, field present and `verified_conversion`.
+  VERIFIED: `blackburn_2002`/`doets_1987` chunks return normally with the field set to
+  `verified_conversion` and unbannered content.
 - Temporarily unset a doc's field (or query a doc lacking it): treated as unverified (fail-open).
+  VERIFIED by code inspection: `get_fidelity()` returns `"unverified_summary"` whenever the
+  directory-name key is absent from the map (missing index.json, missing entry, or missing
+  `provenance_fidelity` field all fall through the same `fmap.get(doc_id) or "unverified_summary"`
+  path).
 
 ### Phase 4: literature-briefing.sh loud flagging [NOT STARTED]
 
