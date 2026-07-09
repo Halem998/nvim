@@ -1,0 +1,20 @@
+{
+  "status": "planned",
+  "summary": "Created a 5-phase implementation plan for the literature provenance/fidelity audit, built on the research report's corrected findings (document-level word-ratio, 5-value enum, single true undisclosed-paraphrase case).",
+  "blockers": [],
+  "continuation_context": {
+    "plan_path": "specs/835_literature_corpus_provenance_fidelity_audit/plans/01_provenance-fidelity-flagging.md",
+    "scope_note": "Plan adds one file beyond the literal three-file file_scope: a new re-runnable auditor .claude/scripts/literature-fidelity-audit.sh, required to satisfy the backup-first/idempotent index.json mutation constraint. Documented Scope Note gives a fold-into-/literature--validate fallback if strict three-file adherence is required.",
+    "dependency_waves": [[1], [2], [3, 4], [5]],
+    "detector_constraints": "Word-ratio MUST aggregate per document (never single-file); chunk_*.md presence and standalone '## Overview' are rejected signals; unverified_summary requires ratio<0.75 AND no disclosure AND numbered claims lacking bodies; rabinovich_2014 is the sole expected unverified_summary.",
+    "downstream": "Task #832's reconvert-all premise is invalidated by 835's findings; #832 should be /revised once 835 lands."
+  },
+  "next_action_hint": "Run /implement 835 to execute the plan; verify Phase 1 detector against the named benchmark dirs before proceeding to the index.json --write in Phase 2.",
+  "artifacts": [
+    {
+      "path": "specs/835_literature_corpus_provenance_fidelity_audit/plans/01_provenance-fidelity-flagging.md",
+      "type": "plan",
+      "summary": "5-phase plan: fidelity detector auditor, idempotent index.json stamping of provenance_fidelity, loud fail-open flagging/quarantine in the two retrieval scripts."
+    }
+  ]
+}

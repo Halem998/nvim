@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "Fidelity detector core (compute-only, read-only)",
+  "started_at": "2026-07-09T19:00:00Z",
+  "last_updated": "2026-07-09T19:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create .claude/scripts/literature-fidelity-audit.sh skeleton (set -euo pipefail, LITERATURE_DIR resolution, --dry-run/report-only default)", "status": "done", "files_touched": [".claude/scripts/literature-fidelity-audit.sh"]},
+    {"id": 2, "description": "Enumerate the 97 sources/<dir>/ directories and classify presence of *.pdf/*.djvu and *.md", "status": "done", "files_touched": [".claude/scripts/literature-fidelity-audit.sh"]},
+    {"id": 3, "description": "Implement DOCUMENT-LEVEL word-ratio (sum wc -w over ALL .md / sum pdftotext -layout words over ALL PDFs)", "status": "done", "files_touched": [".claude/scripts/literature-fidelity-audit.sh"]},
+    {"id": 4, "description": "Implement classification routing (no_source_pdf/not_yet_converted/unverified_no_baseline/verified_conversion/structural sub-checks)", "status": "done", "files_touched": [".claude/scripts/literature-fidelity-audit.sh"]},
+    {"id": 5, "description": "Implement disclosure sub-check", "status": "done", "files_touched": [".claude/scripts/literature-fidelity-audit.sh"]},
+    {"id": 6, "description": "Implement proof/body-completeness sub-check", "status": "done", "files_touched": [".claude/scripts/literature-fidelity-audit.sh"]},
+    {"id": 7, "description": "Emit a TSV/JSON report to stdout", "status": "done", "files_touched": [".claude/scripts/literature-fidelity-audit.sh"]},
+    {"id": 8, "description": "REJECT chunk_*.md-presence and standalone ## Overview as signals", "status": "done", "files_touched": [".claude/scripts/literature-fidelity-audit.sh"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {"approach": "proof-completeness fraction with a simple '>=3 non-blank body lines counts as adequate' rule for ALL heading types", "result": "failed", "reason": "Counted rabinovich_2014's Lemma 3.2 (three bare unproved clauses, exactly the report's false-negative exemplar) as adequate since it has 3 non-blank lines with no Proof marker; produced proof_fraction=0.636, failing to flag rabinovich_2014 as unverified_summary."},
+    {"approach": "require explicit 'Proof' marker for Lemma/Theorem/Proposition/Corollary claim headings (Definition headings use a >=2 non-blank-line/>=15-word content bar instead) with PROOF_ADEQUACY_THRESHOLD=0.5", "result": "failed", "reason": "Correctly excludes bare unproved clauses, but rabinovich_2014's actual proof_fraction came out to 0.545 (several of its later sections DO carry real 'Proof' text) — still >= 0.5, so it was not flagged."},
+    {"approach": "same claim-vs-definition adequacy rule with PROOF_ADEQUACY_THRESHOLD=0.6", "result": "verified", "reason": "Reproduces the report's corrected population exactly: 52 no_source_pdf, 5 not_yet_converted, 4 unverified_no_baseline, 35 verified_conversion (30 healthy + 5 disclosed partials: doets_1987, libkin_2004_ch3_ch7, venema_1991, thomas_2003_reactive, hodkinson_2006), and exactly 1 unverified_summary (rabinovich_2014, proof_fraction=0.545 < 0.6). Zero false positives against the 5 named disclosed-partial benchmarks."}
+  ],
+  "deviations": [],
+  "handoff_count": 0
+}
