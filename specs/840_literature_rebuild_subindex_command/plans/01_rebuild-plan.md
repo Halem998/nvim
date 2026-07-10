@@ -204,17 +204,17 @@ Phases within the same wave can execute in parallel. Phases 1 and 2 touch differ
 
 ---
 
-### Phase 6: End-to-end verification and wrap-up [NOT STARTED]
+### Phase 6: End-to-end verification and wrap-up [COMPLETED]
 
 **Goal**: Validate the full `--rebuild` flow against the three live cases and confirm no-write / drift-guard invariants.
 
 **Tasks**:
-- [ ] Run `--rebuild --dry-run` against cslib (11 entries) and BimodalLogic (2 entries): confirm 0 dangling + 0 schema violations (structural-minimum) and BimodalLogic's extra fields not flagged.
-- [ ] Run `--rebuild` against nvim (absent sub-index): confirm it routes to the create-setup-task path, not an error and not a job-picker.
-- [ ] Run Job 4 against the live corpus: confirm it names the ~25 missing-coverage directories and audits legacy `chunks_dir` entries.
-- [ ] Confirm no job (1/2/4, and Job 3 under `--dry-run`) mutates the corpus or any sub-index without confirmation.
-- [ ] Run the #841 drift guard / `.claude/scripts/check-extension-docs.sh` to confirm source-only edits and no deploy divergence.
-- [ ] Optionally add a one-line note about `document_metadata`'s empty state to `.claude/context/project/literature/domain/literature-index.md` (per research recommendation; only if Job 4 references the table).
+- [x] Run `--rebuild --dry-run` against cslib (11 entries) and BimodalLogic (2 entries): confirm 0 dangling + 0 schema violations (structural-minimum) and BimodalLogic's extra fields not flagged. *(completed: live-executed the Job1/Job2 logic against both live sub-indexes; cslib 11 valid/0 orphans/0 violations, BimodalLogic 2 valid/0 orphans/0 violations including its `reason`/`hazard`/`citation_rule`/`known_corrections`/`audits` fields, sha256 unchanged before/after on both files)*
+- [x] Run `--rebuild` against nvim (absent sub-index): confirm it routes to the create-setup-task path, not an error and not a job-picker. *(completed with a caveat: confirmed `specs/literature-index.json` is absent and traced/executed the Step-2 absence-detection control flow live; the actual invocation of `literature-create-setup-task.sh` was intentionally NOT executed for real, since it unconditionally mutates this repo's own live `specs/state.json`/TODO.md by creating a real task — doing so as a side effect of verification would pollute this repo's actual task list. Verified instead that state.json/TODO.md sha256 are unchanged after the control-flow trace, and that the script itself is pre-existing, unmodified, and already relied upon by the `--lit` flow, so its own correctness was not in question — only the new detection/delegation code was.)*
+- [x] Run Job 4 against the live corpus: confirm it names the ~25 missing-coverage directories and audits legacy `chunks_dir` entries. *(completed: live-executed against `~/Projects/Literature` — 72 covered / 25 missing sources/<dir>/ directories matching the research baseline exactly (girard_1989, rabinovich_2014, burgess_1982_i, hodkinson_2006, tarjan_1972, thomas_1997, baier_katoen_2008, and 18 others); 11/11 legacy `chunks_dir` entries audited, 0 missing; 0 quarantine-artifact chunks found; `.literature.db`/global `index.json` sha256 unchanged before/after)*
+- [x] Confirm no job (1/2/4, and Job 3 under `--dry-run`) mutates the corpus or any sub-index without confirmation. *(completed: sha256 before/after checks on cslib's and BimodalLogic's sub-indexes (Jobs 1/2), on the global `.literature.db`/`index.json` (Job 4), and on nvim's `state.json`/`TODO.md` (absent-sub-index path) all confirm zero mutation; Job 3's append-only jq snippet was separately verified against a scratch copy — not a live sub-index — to prove the write shape is correct without touching real data)*
+- [x] Run the #841 drift guard / `.claude/scripts/check-extension-docs.sh` to confirm source-only edits and no deploy divergence. *(completed: `check-extension-docs.sh` reports the identical "FAIL: 6 issue(s) found" both before (git-stashed) and after this task's changes — all 6 are pre-existing issues in `core`/`lean`/`literature` extensions unrelated to `--rebuild` (missing `provides.scripts` manifest entries, undeployed lean sub-extensions). This task introduced zero new drift-guard failures; the two touched files, `literature.md` and `SKILL.md`, are extension-source-only edits per the task's file-scope constraint.)*
+- [x] Optionally add a one-line note about `document_metadata`'s empty state to `.claude/context/project/literature/domain/literature-index.md` (per research recommendation; only if Job 4 references the table). *(completed: added a "Sub-Index Rebuild (--rebuild)" section covering the schema-divergence finding and the `document_metadata` empty-table note, since Job 4 explicitly queries `chunks_data` instead)*
 
 **Timing**: ~1 hour
 
@@ -231,14 +231,14 @@ Phases within the same wave can execute in parallel. Phases 1 and 2 touch differ
 
 ## Testing & Validation
 
-- [ ] `--rebuild --dry-run` against cslib: 0 dangling, 0 schema violations (structural-minimum).
-- [ ] `--rebuild --dry-run` against BimodalLogic: 0 dangling, 0 schema violations; `reason`/`hazard`/`citation_rule`/`known_corrections`/`audits` NOT flagged or stripped.
-- [ ] `--rebuild` against nvim (absent sub-index): routes to `literature-create-setup-task.sh` path, not an error, no job-picker.
-- [ ] Job 4 against live corpus: names the ~25 missing-coverage directories; audits legacy `chunks_dir` entries; queries `chunks_data` not `document_metadata`.
-- [ ] Jobs 1/2/4 are read-only and idempotent (re-running produces identical output, no writes).
-- [ ] Job 3 writes only after confirm-after-diff; `--dry-run` prints diff and writes nothing; no entry rewritten/removed.
-- [ ] No `chunk_NNNN` id is referenceable as a sub-index `doc_id`.
-- [ ] `.claude/scripts/check-extension-docs.sh` / #841 drift guard passes (source-only edits).
+- [x] `--rebuild --dry-run` against cslib: 0 dangling, 0 schema violations (structural-minimum).
+- [x] `--rebuild --dry-run` against BimodalLogic: 0 dangling, 0 schema violations; `reason`/`hazard`/`citation_rule`/`known_corrections`/`audits` NOT flagged or stripped.
+- [x] `--rebuild` against nvim (absent sub-index): routes to `literature-create-setup-task.sh` path, not an error, no job-picker. *(control-flow verified live without executing the real state-mutating call — see Phase 6 task notes)*
+- [x] Job 4 against live corpus: names the ~25 missing-coverage directories; audits legacy `chunks_dir` entries; queries `chunks_data` not `document_metadata`.
+- [x] Jobs 1/2/4 are read-only and idempotent (re-running produces identical output, no writes). *(sha256-verified unchanged across two live runs each)*
+- [x] Job 3 writes only after confirm-after-diff; `--dry-run` prints diff and writes nothing; no entry rewritten/removed. *(append-only jq shape verified against a scratch copy; dry-run branch returns before any write)*
+- [x] No `chunk_NNNN` id is referenceable as a sub-index `doc_id`. *(Job 2's `^chunk_[0-9]+$` check verified 0 hits on both live sub-indexes)*
+- [x] `.claude/scripts/check-extension-docs.sh` / #841 drift guard passes (source-only edits). *(0 new failures introduced — see Phase 6 task notes for the identical before/after 6-failure baseline)*
 
 ## Artifacts & Outputs
 

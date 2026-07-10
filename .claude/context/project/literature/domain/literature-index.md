@@ -96,6 +96,27 @@ bash .claude/scripts/literature-search.sh blackburn_2002 --by-doc
 
 Returns JSON array of matching chunks with `doc_id`, `section_path`, `score`, and `snippet` fields.
 
+## Sub-Index Rebuild (`--rebuild`)
+
+`/literature --rebuild [--dry-run]` brings a repo's per-repo sub-index into conformance with the
+global corpus via four selectable jobs (dangling-ref lint, schema conformance, coverage refresh,
+chunk/search-index coverage audit). See `.claude/skills/skill-literature/SKILL.md` "Mode:
+Rebuild" for the full job implementations.
+
+**Live sub-index schemas diverge from the nominal shape documented above** (task #840 finding):
+some sub-indexes omit `source` entirely; others use `reason` instead of `relevance` plus
+additional load-bearing curation fields (e.g. `hazard`, `citation_rule`, `known_corrections`,
+`audits` documenting a citation-fidelity issue). Job 2's schema-conformance check therefore
+validates only the **structural minimum** — non-empty `doc_id` plus either `relevance` or
+`reason` — and never flags or strips extra fields. Treat the "Per-Repo Sub-Index Schema" example
+above as the *nominal* shape new entries default to, not a rigid contract every entry must match.
+
+**`document_metadata` is currently empty (0 rows)** in the live `.literature.db` despite being
+declared in the schema as a one-row-per-document table. Job 4's coverage audit queries
+`chunks_data` exclusively for this reason. Whether `document_metadata` is vestigial or should be
+populated is an open question outside `--rebuild`'s scope (task #840 research flagged it but did
+not resolve it).
+
 ## Tooling Ownership Boundary
 
 One-time/re-runnable migration tooling for importing a project's `specs/literature/` into the

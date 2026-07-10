@@ -1,21 +1,40 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "plan",
-  "status": "planned",
-  "summary": "Planned /literature --rebuild in 6 single-agent-run phases: (1) literature.md mode-detection wiring for --rebuild/--dry-run; (2) handle_rebuild() scaffold in SKILL.md with absent-sub-index deferral to literature-create-setup-task.sh and a multiSelect job-picker; (3) Job 1 dangling-ref lint (wire up existing dead Validate block) + Job 2 structural-minimum schema check; (4) Job 4 per-directory chunk-coverage audit; (5) Job 3 coverage refresh (only writer, confirm-gated); (6) end-to-end verification. All edits scoped to extension source. Jobs 1/2/4 read-only; Job 2 checks structural minimums only to preserve BimodalLogic's load-bearing curation fields.",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Implemented /literature --rebuild [--dry-run] across all 6 plan phases in .claude/extensions/literature/ source only. handle_rebuild() defers to literature-create-setup-task.sh when the sub-index is absent, else presents a multiSelect job-picker for 4 jobs: dangling-ref lint, structural-minimum schema check (never flags BimodalLogic's hazard/citation_rule/audits fields), per-directory chunk/search-index coverage audit (chunks_data-keyed on directory basename, not index.json .id), and coverage refresh (only writer, confirm-after-diff gated, append-only). Live-verified against cslib (11/0/0), BimodalLogic (2/0/0, rich fields preserved), the global corpus (72 covered/25 missing dirs, exact match to research), and nvim's absent-sub-index control flow, all with sha256 no-mutation confirmation. Drift guard shows 0 new failures.",
+  "phases_completed": 6,
+  "phases_total": 6,
+  "blockers": [],
+  "continuation_context": null,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/840_literature_rebuild_subindex_command/plans/01_rebuild-plan.md",
-      "summary": "6-phase plan (7h) for /literature --rebuild: command wiring, handle_rebuild scaffold + absent-sub-index deferral + job-picker, then the four jobs (dangling-ref lint, structural-minimum schema check, per-directory coverage audit, confirm-gated coverage refresh), then verification against cslib/BimodalLogic/nvim."
+      "type": "summary",
+      "path": "specs/840_literature_rebuild_subindex_command/summaries/01_rebuild-summary.md",
+      "summary": "Implementation summary: all 6 phases complete and live-verified; one documented plan deviation (Job 4 doc_id resolution uses directory-basename keying, not parent_doc fan-out, confirmed correct against live data)."
     }
   ],
-  "next_action_hint": "implement",
-  "decisions_made": [
-    "Job 2 checks structural minimums only (doc_id + relevance-or-reason); never strips/flags BimodalLogic's hazard/citation_rule/known_corrections/audits fields.",
-    "Job phases 3-5 sequenced (not parallel) because all append to handle_rebuild() in the same SKILL.md region; phases 1 and 2 parallel (different files).",
-    "Job 4 queries chunks_data not document_metadata (empty); convert-vs-ingest pipeline fix is out of scope (audit reports the gap only).",
-    "Absent sub-index (nvim) defers to literature-create-setup-task.sh; never duplicated, never errors."
+  "modified_files": [
+    ".claude/extensions/literature/commands/literature.md",
+    ".claude/extensions/literature/skills/skill-literature/SKILL.md",
+    ".claude/context/project/literature/domain/literature-index.md",
+    "specs/840_literature_rebuild_subindex_command/plans/01_rebuild-plan.md",
+    "specs/840_literature_rebuild_subindex_command/summaries/01_rebuild-summary.md"
   ],
-  "dead_ends": []
+  "files_modified": [
+    ".claude/extensions/literature/commands/literature.md",
+    ".claude/extensions/literature/skills/skill-literature/SKILL.md",
+    ".claude/context/project/literature/domain/literature-index.md",
+    "specs/840_literature_rebuild_subindex_command/plans/01_rebuild-plan.md",
+    "specs/840_literature_rebuild_subindex_command/summaries/01_rebuild-summary.md"
+  ],
+  "decisions_made": [
+    "Job 4 resolves chunk coverage by direct doc_id = <sources/<dir>/ basename> lookup, not literature-fidelity-audit.sh's parent_doc fan-out (that logic answers a different question); live-verified to reproduce the exact 25-directory research baseline.",
+    "Job 2 checks structural minimums only (doc_id + relevance-or-reason present); never flags/strips extra curation fields.",
+    "Absent-sub-index verification traced the detection control flow live but did not execute the real literature-create-setup-task.sh call, to avoid mutating this repo's own live task list as a side effect of testing.",
+    "check-extension-docs.sh's 6 failures are pre-existing (identical before/after via git stash); this task introduced zero new drift-guard failures."
+  ],
+  "dead_ends": [],
+  "next_action_hint": "none",
+  "plan_markers_verified": true
 }
