@@ -1,0 +1,62 @@
+{
+  "phase": 5,
+  "phase_name": "Verification",
+  "started_at": "2026-07-10T23:16:00Z",
+  "last_updated": "2026-07-10T23:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "(a) diff all 7 reconciled pairs",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "(b) grep -c unadjudicated counts on extension-source",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "(c) guard fails on injected divergence, then reverts to PASS",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/literature/scripts/literature-search.sh"
+      ],
+      "note": "Temporary injection made and reverted within this objective; final state is byte-identical to deployed copy (verified by diff)."
+    },
+    {
+      "id": 4,
+      "description": "(d) fidelity-audit --dry-run byte-identical to Phase 1 baseline",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Confirm deployed .claude/scripts/ 7 target files sha256 unchanged from Phase 1 baseline",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Run full check-extension-docs.sh once more",
+      "status": "done",
+      "files_touched": [
+        "specs/841_reconcile_literature_extension_source_drift/.baseline-fidelity-audit-dryrun.txt"
+      ],
+      "note": "[literature] extension section PASS; overall script exit 1 due to 5 pre-existing unrelated failures in core/lean extensions (confirmed present before task 841 via git stash test)."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "5.f",
+      "description": "Full check-extension-docs.sh run exits 0 (PASS)",
+      "type": "altered",
+      "reason": "The [literature] extension section itself is PASS with zero drift failures and no false-fail on never-deployed scripts, satisfying this task's actual scope. However the script-wide exit code is 1 due to 5 pre-existing, unrelated failures in the core (3: undeclared script references) and lean (2: routing_hard undeployed targets) extensions. Verified via git stash that these 5 failures exist identically with all task 841 changes reverted, i.e. they predate and are unrelated to this task.",
+      "annotation": "*(deviation: altered — full doc-lint script exit code is 1 due to pre-existing unrelated core/lean failures, not literature/guard related; [literature] section itself is PASS)*"
+    }
+  ],
+  "handoff_count": 0
+}

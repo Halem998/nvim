@@ -131,3 +131,11 @@ literature-convert.sh: DRIFT (881 diff lines)
 literature-ingest.sh: DRIFT (87 diff lines)
 literature-fidelity-audit.sh: deployed-only (not in extension source)
 ls: cannot access '.claude/extensions/literature/scripts/literature-fidelity-audit.sh': No such file or directory
+
+=== Phase 5 post-task verification results ===
+(a) diff all 7 reconciled pairs: all IDENTICAL
+(b) extension-source unadjudicated counts: search=2, briefing=3 (match deployed baseline)
+(c) guard injection test: injected divergence into extension-source literature-search.sh -> guard exit 1 with FAIL: deployed script content drift ... scripts/literature-search.sh; reverted -> guard's [literature] section PASS again
+(d) literature-fidelity-audit.sh --dry-run output: byte-identical to this baseline (diff exit 0)
+(e) deployed .claude/scripts/ 7 target files: sha256 byte-identical to pre-task baseline (untouched)
+(f) full check-extension-docs.sh: [literature] section PASS; overall script exit 1 due to 5 PRE-EXISTING unrelated failures in core/lean extensions (confirmed present identically before task 841 via git stash test), not caused by this task's changes or the new guard

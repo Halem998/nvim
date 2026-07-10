@@ -1,7 +1,7 @@
 # Implementation Plan: Task #841
 
 - **Task**: 841 - Reconcile literature extension source drift
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/841_reconcile_literature_extension_source_drift/reports/01_drift-audit.md
@@ -210,21 +210,21 @@ copy differs from its extension-source copy, without false-failing on never-depl
 
 ---
 
-### Phase 5: Verification [NOT STARTED]
+### Phase 5: Verification [COMPLETED]
 
 **Goal**: Prove equivalence, correct marker counts, a working guard, and unchanged fidelity-audit
 behavior.
 
 **Tasks**:
-- [ ] (a) `diff` each of the 7 reconciled pairs (6 drifted + fidelity-audit) → confirm no differences.
-- [ ] (b) `grep -c unadjudicated` on extension-source `literature-search.sh` (expect 2) and
-      `literature-briefing.sh` (expect 3); confirm they now match the Phase 1 deployed counts.
-- [ ] (c) Guard must FAIL on divergence: temporarily inject a trivial change into one
+- [x] (a) `diff` each of the 7 reconciled pairs (6 drifted + fidelity-audit) → confirm no differences. *(completed: all 7 identical)*
+- [x] (b) `grep -c unadjudicated` on extension-source `literature-search.sh` (expect 2) and
+      `literature-briefing.sh` (expect 3); confirm they now match the Phase 1 deployed counts. *(completed: 2 and 3, matches)*
+- [x] (c) Guard must FAIL on divergence: temporarily inject a trivial change into one
       extension-source script, run `bash .claude/scripts/check-extension-docs.sh`, confirm non-zero
-      exit with a drift FAIL for that file, then revert the injection and confirm PASS again.
-- [ ] (d) Run `bash .claude/scripts/literature-fidelity-audit.sh --dry-run` and confirm its output
-      is byte-identical to the Phase 1 baseline (`diff` against the baseline file).
-- [ ] Run the full `check-extension-docs.sh` once more → PASS with no drift failures.
+      exit with a drift FAIL for that file, then revert the injection and confirm PASS again. *(completed: injected a trailing comment line into extension-source literature-search.sh, guard exited 1 with "FAIL: deployed script content drift ... scripts/literature-search.sh"; reverted via re-copy from deployed baseline, `diff` confirmed identical again, and the [literature] section reported OK/PASS again)*
+- [x] (d) Run `bash .claude/scripts/literature-fidelity-audit.sh --dry-run` and confirm its output
+      is byte-identical to the Phase 1 baseline (`diff` against the baseline file). *(completed: byte-identical, diff exit 0)*
+- [x] Run the full `check-extension-docs.sh` once more → PASS with no drift failures. *(deviation: altered — the `[literature]` extension itself reports PASS with zero drift failures, and no never-deployed script is false-failed. However the SCRIPT-WIDE exit code is 1 / FAIL, because of 5 PRE-EXISTING, unrelated failures in the `core` (3: undeclared script references — literature-briefing-invoke.sh, orchestrator-postflight.sh, task-lock.sh) and `lean` (2: routing_hard targets not deployed) extensions. Confirmed via `git stash` that these exact 5 failures exist identically with task 841's changes fully reverted — they predate and are unrelated to this task's scope (literature backport + guard). The plan's Phase 5 wording "full doc-lint exits 0" assumed a clean baseline that did not in fact hold; documented here rather than silently claiming a false PASS.)*
 
 **Timing**: 30 minutes
 
@@ -240,12 +240,15 @@ behavior.
 
 ## Testing & Validation
 
-- [ ] All 7 reconciled pairs are byte-identical (`diff` empty).
-- [ ] Extension-source `unadjudicated` counts: search = 2, briefing = 3 (match deployed baseline).
-- [ ] `check-extension-docs.sh` exits 0 after reconciliation and does not fail on never-deployed scripts.
-- [ ] Guard exits non-zero when an artificial divergence is injected (then reverts to PASS).
-- [ ] `literature-fidelity-audit.sh --dry-run` output byte-identical to pre-task baseline.
-- [ ] No deployed `.claude/scripts/` file modified (compare against Phase 1 sha256 sums).
+- [x] All 7 reconciled pairs are byte-identical (`diff` empty).
+- [x] Extension-source `unadjudicated` counts: search = 2, briefing = 3 (match deployed baseline).
+- [x] `check-extension-docs.sh`'s `[literature]` section exits with zero drift failures after
+      reconciliation and does not fail on never-deployed scripts. *(deviation: the script-WIDE
+      exit code is 1 due to 5 pre-existing, unrelated core/lean failures — see Phase 5 task
+      annotation and deviation entry; confirmed via `git stash` to predate this task)*
+- [x] Guard exits non-zero when an artificial divergence is injected (then reverts to PASS).
+- [x] `literature-fidelity-audit.sh --dry-run` output byte-identical to pre-task baseline.
+- [x] No deployed `.claude/scripts/` file modified (compare against Phase 1 sha256 sums). *(the 7 in-scope target files are confirmed byte-identical to baseline; `.claude/scripts/check-extension-docs.sh` was intentionally edited per the plan's own Phase 4 "Files to modify" directive, and its extension-source counterpart in `core` was synced to match — see Phase 4 deviation entry)*
 
 ## Artifacts & Outputs
 
