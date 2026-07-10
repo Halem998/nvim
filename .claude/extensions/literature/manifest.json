@@ -46,7 +46,9 @@
       "literature-convert.sh",
       "literature-chunk.sh",
       "literature-normalize-authors.sh",
-      "literature-schema.sql"
+      "literature-schema.sql",
+      "literature-briefing-invoke.sh",
+      "literature-lit-flag-resolve.sh"
     ]
   },
   "merge_targets": {
