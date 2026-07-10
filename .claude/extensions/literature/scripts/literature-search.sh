@@ -3,6 +3,7 @@
 #
 # Usage:
 #   literature-search.sh "query"             # FTS5 search, returns ranked metadata JSON
+#   literature-search.sh --include-unverified "query"  # also include quarantined docs
 #   literature-search.sh --read <chunk_id>   # Read full chunk content from disk
 #   literature-search.sh --toc [doc_id]      # Browse TOC (metadata only, no content)
 #   literature-search.sh --refs <chunk_id>   # Follow cross-references from chunk
@@ -19,6 +20,17 @@
 # Query sanitization: strips FTS5 operators (AND/OR/NOT at word boundaries,
 # unbalanced quotes/parens). Allows "quoted phrases". Escapes apostrophes.
 #
+# Provenance/fidelity flagging (task #835): every search/read/toc result carries a
+# `provenance_fidelity` field looked up from $LITERATURE_DIR/index.json (fail-open —
+# a doc missing the field is treated as unverified, never as verified_conversion; see
+# .claude/scripts/literature-fidelity-audit.sh for how the field is computed and
+# stamped). do_search excludes `unverified_summary`/`unverified_no_baseline` docs from
+# its default ranked output; pass --include-unverified to opt back in. This is a
+# retrieval-time quarantine only — --read/--toc/--doc always return the doc regardless
+# of this flag, and --read prefixes the content of any non-verified_conversion chunk
+# with a loud warning banner. No corpus file is ever hidden, deleted, or edited by
+# this quarantine.
+#
 # Environment:
 #   LITERATURE_DIR  — Global library path (default: ~/Projects/Literature)
 #   LITERATURE_LIMIT — Default result limit (default: 20)
@@ -29,6 +41,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LITERATURE_DIR="${LITERATURE_DIR:-$HOME/Projects/Literature}"
 LITERATURE_LIMIT="${LITERATURE_LIMIT:-20}"
 PROJECT_FILTER=""
+INCLUDE_UNVERIFIED="false"
+
+# --- provenance_fidelity values excluded from default search ranking (task #835) ---
+# Docs whose fidelity is one of these are quarantined from default do_search output:
+# still fully retrievable (via --include-unverified, or directly via --read/--toc/
+# --doc), never deleted, never edited. See literature-fidelity-audit.sh for how the
+# field is computed and stamped. "unadjudicated" (task #839) covers low-ratio,
+# undisclosed docs where the proof-completeness signal could not fire at all --
+# fail closed, quarantine it like the other unverified values.
+QUARANTINED_FIDELITY_VALUES="unverified_summary unverified_no_baseline unadjudicated"
 
 # --- Build allowed doc_id set from index.json for a project ---
 # Returns newline-separated doc_ids, or empty string if no index or no matches
@@ -85,6 +107,19 @@ query = "$query"
 import os
 query = os.environ.get('_SEARCH_QUERY', query)
 
+# --- Ligature fold (task #833) ---
+# Mirrors literature-convert.sh's LIGATURE_MAP (U+FB00-FB06) verbatim. Applied
+# FIRST, before any other transform, so a query containing a raw ligature
+# glyph matches the corpus's already-folded text (#831 folds ligatures at
+# conversion time; this is the query-time half of that same fold, deliberately
+# NOT blanket NFKC -- NFKC corrupts math-italic/blackboard-bold Unicode).
+LIGATURE_MAP = {
+    "ﬀ": "ff", "ﬁ": "fi", "ﬂ": "fl",
+    "ﬃ": "ffi", "ﬄ": "ffl", "ﬅ": "st", "ﬆ": "st",
+}
+_LIGATURE_RE = re.compile("[" + "".join(LIGATURE_MAP) + "]")
+query = _LIGATURE_RE.sub(lambda m: LIGATURE_MAP[m.group(0)], query)
+
 # Remove bare FTS5 operators at word boundaries (case-insensitive)
 # Allow "quoted phrases" by preserving balanced double-quote pairs
 query = re.sub(r'\bAND\b', ' ', query, flags=re.IGNORECASE)
@@ -109,7 +144,21 @@ quote_count = query.count('"')
 if quote_count % 2 != 0:
     query = query.replace('"', ' ')
 
-# Balance parentheses: if unbalanced, strip all parens
+# --- Punctuation normalization (task #833) ---
+# FTS5's query grammar treats mid-word hyphens (column-exclusion/NOT-prefix),
+# colons (column-filter), slashes, and parens (grouping -- even word-attached
+# and balanced) as syntax, not as word characters. This tool's only caller
+# passes one opaque free-text query string, never a hand-built FTS5 boolean
+# expression, so none of that syntax is ever an intended feature here: fold
+# all four to spaces rather than trying to preserve grouping/filter semantics.
+query = re.sub(r'(?<=\w)-(?=\w)', ' ', query)  # mid-word hyphen only
+query = query.replace(':', ' ')
+query = query.replace('/', ' ')
+query = query.replace('(', ' ').replace(')', ' ')
+
+# Balance parentheses: if unbalanced, strip all parens (no-op now that parens
+# are unconditionally stripped above -- kept so this stays inert rather than
+# silently wrong if the unconditional strip above is ever narrowed).
 open_count = query.count('(')
 close_count = query.count(')')
 if open_count != close_count:
@@ -132,6 +181,7 @@ do_search() {
   local query="$1"
   local limit="${2:-$LITERATURE_LIMIT}"
   local project_filter="${3:-}"
+  local include_unverified="${4:-false}"
 
   export _SEARCH_QUERY="$query"
   local sanitized
@@ -158,6 +208,7 @@ do_search() {
 import sqlite3
 import json
 import os
+import re
 import sys
 
 local_db = "$local_db"
@@ -165,57 +216,205 @@ global_db = "$global_db"
 query = "$sanitized"
 limit = $limit
 allowed_doc_ids_raw = """$allowed_doc_ids"""
+literature_dir = "$LITERATURE_DIR"
+include_unverified = "$include_unverified" == "true"
+quarantined_fidelity = set("$QUARANTINED_FIDELITY_VALUES".split())
 
 # Parse allowed doc_ids (newline-separated, may be empty)
 allowed_doc_ids = [d.strip() for d in allowed_doc_ids_raw.strip().splitlines() if d.strip()]
 
-def search_db(db_path, query, limit, allowed_doc_ids=None):
-    """Search a single database, return list of result dicts"""
-    if not os.path.isfile(db_path):
-        return []
 
+def load_fidelity_map(lit_dir):
+    """directory-name -> provenance_fidelity (task #835). Fail-open: callers must
+    default a missing map entry to an unverified value, never to verified_conversion.
+
+    KEYED BY DIRECTORY NAME, NOT index.json's id/parent_doc fields -- those are a
+    separate namespace from chunks_data.doc_id (e.g. index.json's top-level id for
+    the blackburn_2002 directory is "blackburn_2002_book", but every chunks.json /
+    chunks_data row for that same directory carries doc_id="blackburn_2002", the bare
+    directory name). literature-fidelity-audit.sh stamps provenance_fidelity onto
+    index.json entries (root or, for phantom-parent docs, child entries -- see that
+    script's header), but every stamped entry's path field still starts with
+    "sources/<dir>/" regardless of which id/parent_doc scheme it uses. Deriving the
+    key from that path prefix (the same directory-name key chunks_data.doc_id
+    actually uses) is what makes this lookup correct for both naming schemes at once,
+    including the phantom-parent-fallback and multi-root cases."""
+    index_file = os.path.join(lit_dir, "index.json")
+    fmap = {}
+    if not os.path.isfile(index_file):
+        return fmap
     try:
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
+        with open(index_file, encoding="utf-8") as f:
+            idx = json.load(f)
+    except Exception:
+        return fmap
+    prefix = "sources/"
+    for e in idx.get("entries", []) or []:
+        pf = e.get("provenance_fidelity")
+        if pf is None:
+            continue
+        path = e.get("path")
+        if not isinstance(path, str) or not path.startswith(prefix):
+            continue
+        dirname = path[len(prefix):].split("/", 1)[0]
+        if dirname:
+            fmap.setdefault(dirname, pf)
+    return fmap
 
+
+def get_fidelity(fmap, doc_id):
+    # Fail-open: absent field or absent entry -> unverified_summary, never
+    # verified_conversion.
+    return fmap.get(doc_id) or "unverified_summary"
+
+
+fidelity_map = load_fidelity_map(literature_dir)
+
+# --- Fallback ladder tiers (task #833) ---
+# Internal tier names match the envelope's "fallback_tier" vocabulary exactly
+# ("bm25" | "phrase_retry" | "trigram" | "none"); row-level "match_tier" uses
+# "trigram_fallback" instead of "trigram" -- ROW_TIER_LABEL maps between them.
+TIER_RANK = {'bm25': 0, 'phrase_retry': 1, 'trigram': 2, 'none': 3}
+ROW_TIER_LABEL = {'bm25': 'bm25', 'phrase_retry': 'phrase_retry', 'trigram': 'trigram_fallback'}
+
+
+def ensure_trigram(conn):
+    """Idempotently ensure chunks_trigram exists and is populated (task #833). This is the
+    ONLY place chunks_trigram is populated -- literature-build-index.sh rebuilds chunks_fts
+    only, so the trigram table starts (or goes back to) empty after any full reindex until a
+    search next needs this rung. Returns True if the table is usable for a query, False if
+    creation/rebuild failed (e.g. a read-only DB) -- callers must skip the trigram rung and
+    report fallback_tier "none" with query_error populated, rather than raise."""
+    try:
+        conn.execute(
+            "CREATE VIRTUAL TABLE IF NOT EXISTS chunks_trigram USING fts5("
+            "content, content='chunks_data', content_rowid='id', tokenize='trigram')"
+        )
+        # count(*) on an external-content FTS5 table is satisfied directly from the content
+        # table's rowid range and is NOT a reliable "is the index populated" check -- it
+        # reports the full chunks_data row count immediately after CREATE, before 'rebuild'
+        # has ever run (verified empirically against the real corpus DB: a freshly (re)created
+        # table reports the full row count via count(*) while an actual MATCH query still
+        # returns zero rows until 'rebuild' runs). Probe with a real MATCH against a
+        # known-present substring from chunks_data instead of trusting count(*).
+        sample = conn.execute(
+            "SELECT id, content FROM chunks_data WHERE content IS NOT NULL"
+            " AND length(content) >= 8 LIMIT 1"
+        ).fetchone()
+        if sample is not None:
+            sample_id, sample_content = sample
+            m = re.search(r'[A-Za-z]{6,}', sample_content or '')
+            if m:
+                probe_term = '"' + m.group(0)[:6] + '"'
+                hit = conn.execute(
+                    "SELECT count(*) FROM chunks_trigram WHERE chunks_trigram MATCH ? AND rowid = ?",
+                    (probe_term, sample_id),
+                ).fetchone()[0]
+                if hit == 0:
+                    conn.execute("INSERT INTO chunks_trigram(chunks_trigram) VALUES('rebuild')")
+                    # Without an explicit commit, this write lives only in the connection's
+                    # implicit transaction and is silently rolled back the moment conn.close()
+                    # runs below (do_search()'s connections were read-only before task #833, so
+                    # this was never an issue until ensure_trigram() added the first write path)
+                    # -- verified empirically: the rebuild was visible within the same
+                    # connection but vanished from the on-disk shadow tables after close()
+                    # without this commit.
+                    conn.commit()
+        return True
+    except sqlite3.OperationalError:
+        return False
+
+
+def search_db(db_path, query, limit, allowed_doc_ids=None):
+    """Search a single database. Returns {'results': [...], 'tier': tier, 'query_error': str|None}
+    where tier is the internal name (see TIER_RANK) of whichever rung actually produced the
+    returned results ('none' if no rung produced any rows)."""
+    if not os.path.isfile(db_path):
+        return {'results': [], 'tier': 'none', 'query_error': None}
+
+    def build_sql(table, rank_expr, q):
         if allowed_doc_ids:
             placeholders = ','.join('?' * len(allowed_doc_ids))
             sql = f"""
                 SELECT d.chunk_id, d.doc_id, d.section_path, d.title, d.summary,
                        d.token_count, d.cross_refs, d.source_path,
                        d.prev_chunk_id, d.next_chunk_id,
-                       bm25(chunks_fts, 10, 5, 3, 1) AS rank,
+                       {rank_expr} AS rank,
                        substr(d.content, 1, 200) AS snippet
-                FROM chunks_fts
-                JOIN chunks_data d ON d.id = chunks_fts.rowid
-                WHERE chunks_fts MATCH ?
+                FROM {table}
+                JOIN chunks_data d ON d.id = {table}.rowid
+                WHERE {table} MATCH ?
                 AND d.doc_id IN ({placeholders})
                 ORDER BY rank
                 LIMIT ?
             """
-            params = [query] + allowed_doc_ids + [limit]
+            params = [q] + allowed_doc_ids + [limit]
         else:
-            sql = """
+            sql = f"""
                 SELECT d.chunk_id, d.doc_id, d.section_path, d.title, d.summary,
                        d.token_count, d.cross_refs, d.source_path,
                        d.prev_chunk_id, d.next_chunk_id,
-                       bm25(chunks_fts, 10, 5, 3, 1) AS rank,
+                       {rank_expr} AS rank,
                        substr(d.content, 1, 200) AS snippet
-                FROM chunks_fts
-                JOIN chunks_data d ON d.id = chunks_fts.rowid
-                WHERE chunks_fts MATCH ?
+                FROM {table}
+                JOIN chunks_data d ON d.id = {table}.rowid
+                WHERE {table} MATCH ?
                 ORDER BY rank
                 LIMIT ?
             """
-            params = [query, limit]
+            params = [q, limit]
+        return sql, params
 
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+
+        query_error = None
+        rows = []
+        tier = 'none'
+
+        # Rung 0: primary BM25 MATCH on the sanitized query
         try:
-            cursor = conn.execute(sql, params)
-            rows = cursor.fetchall()
+            sql, params = build_sql("chunks_fts", "bm25(chunks_fts, 10, 5, 3, 1)", query)
+            rows = conn.execute(sql, params).fetchall()
+            if rows:
+                tier = 'bm25'
         except sqlite3.OperationalError as e:
+            query_error = str(e)
             print(f"[search] Query error: {e}", file=sys.stderr)
-            conn.close()
-            return []
+            rows = []
+
+        # Rung 1: phrase-quote retry -- only when Rung 0 raised a syntax error
+        if query_error is not None:
+            phrase_query = '"' + query.replace('"', '') + '"'
+            try:
+                sql, params = build_sql("chunks_fts", "bm25(chunks_fts, 10, 5, 3, 1)", phrase_query)
+                rows = conn.execute(sql, params).fetchall()
+                if rows:
+                    tier = 'phrase_retry'
+            except sqlite3.OperationalError as e:
+                print(f"[search] Phrase-retry query error: {e}", file=sys.stderr)
+                rows = []
+
+        # Rung 2: trigram fallback -- on zero rows from whichever of Rungs 0/1 ran
+        # (syntactically valid-but-empty is the common case; this is also the
+        # best-effort path if Rung 1's phrase-retry itself failed to parse).
+        if not rows:
+            if ensure_trigram(conn):
+                trigram_query = '"' + query.replace('"', '') + '"'
+                try:
+                    sql, params = build_sql("chunks_trigram", "bm25(chunks_trigram)", trigram_query)
+                    rows = conn.execute(sql, params).fetchall()
+                    if rows:
+                        tier = 'trigram'
+                except sqlite3.OperationalError as e:
+                    print(f"[search] Trigram query error: {e}", file=sys.stderr)
+                    rows = []
+            elif query_error is None:
+                # Trigram creation/rebuild failed (e.g. read-only DB) and there was no
+                # earlier syntax error to report -- surface the degradation reason so the
+                # envelope's query_error is never silently null on a real failure.
+                query_error = f"trigram fallback unavailable for {db_path} (create/rebuild failed, e.g. read-only database)"
 
         results = []
         for row in rows:
@@ -235,78 +434,238 @@ def search_db(db_path, query, limit, allowed_doc_ids=None):
                 'cross_refs': cross_refs,
                 'rank': row['rank'],
                 'snippet': (row['snippet'] or '').strip()[:200],
+                'provenance_fidelity': get_fidelity(fidelity_map, row['doc_id']),
+                'match_tier': ROW_TIER_LABEL.get(tier, 'bm25'),
                 '_source_path': row['source_path'],
                 '_db_path': db_path,
             })
 
         conn.close()
-        return results
+        return {'results': results, 'tier': tier if results else 'none', 'query_error': query_error}
     except Exception as e:
         print(f"[search] Database error ({db_path}): {e}", file=sys.stderr)
-        return []
+        return {'results': [], 'tier': 'none', 'query_error': str(e)}
 
 # Search local then global
-local_results = search_db(local_db, query, limit, allowed_doc_ids if allowed_doc_ids else None)
-global_results = search_db(global_db, query, limit, allowed_doc_ids if allowed_doc_ids else None)
+local_out = search_db(local_db, query, limit, allowed_doc_ids if allowed_doc_ids else None)
+global_out = search_db(global_db, query, limit, allowed_doc_ids if allowed_doc_ids else None)
+local_results = local_out['results']
+global_results = global_out['results']
 
 # Merge: local takes precedence on duplicate doc_id
 local_doc_ids = {r['doc_id'] for r in local_results}
 merged = local_results + [r for r in global_results if r['doc_id'] not in local_doc_ids]
 
+# Quarantine (task #835): exclude unverified/no-baseline docs from default ranking.
+# Not a deletion -- always retrievable via --include-unverified, or directly via
+# --read/--toc/--doc regardless of this flag.
+if not include_unverified:
+    merged = [r for r in merged if r['provenance_fidelity'] not in quarantined_fidelity]
+
 # Re-sort by rank (BM25 returns negative values; lower is better)
 merged.sort(key=lambda r: r['rank'])
 merged = merged[:limit]
+
+# --- Envelope construction (task #833) ---
+# fallback_tier/degraded reflect the rows actually surviving quarantine (a tier whose rows
+# were all quarantined does not count as having "answered"). "degraded" is true whenever the
+# primary bm25 tier is not what answered -- this is the honest, never-silent signal that
+# distinguishes "retrieval degraded" from "genuine zero-result", which literature-briefing.sh
+# consumes downstream.
+if merged:
+    tiers_present = {r.get('match_tier', 'bm25') for r in merged}
+    if 'bm25' in tiers_present:
+        fallback_tier = 'bm25'
+    elif 'phrase_retry' in tiers_present:
+        fallback_tier = 'phrase_retry'
+    elif 'trigram_fallback' in tiers_present:
+        fallback_tier = 'trigram'
+    else:
+        fallback_tier = 'none'
+else:
+    fallback_tier = 'none'
+degraded = fallback_tier != 'bm25'
+query_error = next((o['query_error'] for o in (local_out, global_out) if o['query_error']), None)
 
 # Remove internal fields from output
 for r in merged:
     r.pop('_source_path', None)
     r.pop('_db_path', None)
 
-print(json.dumps(merged, indent=2, ensure_ascii=False))
+envelope = {
+    'results': merged,
+    'degraded': degraded,
+    'fallback_tier': fallback_tier,
+    'query_error': query_error,
+}
+
+print(json.dumps(envelope, indent=2, ensure_ascii=False))
 PYEOF
 )
 
   # Fallback: if project filter yielded zero results, re-run without filter
   if [ -n "$project_filter" ] && [ -n "$allowed_doc_ids" ]; then
     local result_count
-    result_count=$(echo "$results" | python3 -c "import json,sys; data=json.load(sys.stdin); print(len(data))" 2>/dev/null || echo "0")
+    result_count=$(echo "$results" | python3 -c "import json,sys; data=json.load(sys.stdin); print(len(data.get('results', [])))" 2>/dev/null || echo "0")
     if [ "$result_count" = "0" ]; then
       results=$(python3 << PYEOF
 import sqlite3
 import json
 import os
+import re
 import sys
 
 local_db = "$local_db"
 global_db = "$global_db"
 query = "$sanitized"
 limit = $limit
+literature_dir = "$LITERATURE_DIR"
+include_unverified = "$include_unverified" == "true"
+quarantined_fidelity = set("$QUARANTINED_FIDELITY_VALUES".split())
+
+
+def load_fidelity_map(lit_dir):
+    # Directory-name-keyed (matches chunks_data.doc_id exactly). See the primary
+    # do_search heredoc above for the full docstring/rationale on why this must be
+    # keyed by directory name rather than index.json's id/parent_doc fields.
+    index_file = os.path.join(lit_dir, "index.json")
+    fmap = {}
+    if not os.path.isfile(index_file):
+        return fmap
+    try:
+        with open(index_file, encoding="utf-8") as f:
+            idx = json.load(f)
+    except Exception:
+        return fmap
+    prefix = "sources/"
+    for e in idx.get("entries", []) or []:
+        pf = e.get("provenance_fidelity")
+        if pf is None:
+            continue
+        path = e.get("path")
+        if not isinstance(path, str) or not path.startswith(prefix):
+            continue
+        dirname = path[len(prefix):].split("/", 1)[0]
+        if dirname:
+            fmap.setdefault(dirname, pf)
+    return fmap
+
+
+def get_fidelity(fmap, doc_id):
+    return fmap.get(doc_id) or "unverified_summary"
+
+
+fidelity_map = load_fidelity_map(literature_dir)
+
+# See the primary do_search heredoc above for the full docstring/rationale on the fallback
+# ladder (task #833); this unscoped-retry block mirrors it without the allowed_doc_ids branch.
+TIER_RANK = {'bm25': 0, 'phrase_retry': 1, 'trigram': 2, 'none': 3}
+ROW_TIER_LABEL = {'bm25': 'bm25', 'phrase_retry': 'phrase_retry', 'trigram': 'trigram_fallback'}
+
+
+def ensure_trigram(conn):
+    try:
+        conn.execute(
+            "CREATE VIRTUAL TABLE IF NOT EXISTS chunks_trigram USING fts5("
+            "content, content='chunks_data', content_rowid='id', tokenize='trigram')"
+        )
+        # count(*) on an external-content FTS5 table is satisfied directly from the content
+        # table's rowid range and is NOT a reliable "is the index populated" check -- it
+        # reports the full chunks_data row count immediately after CREATE, before 'rebuild'
+        # has ever run (verified empirically against the real corpus DB: a freshly (re)created
+        # table reports the full row count via count(*) while an actual MATCH query still
+        # returns zero rows until 'rebuild' runs). Probe with a real MATCH against a
+        # known-present substring from chunks_data instead of trusting count(*).
+        sample = conn.execute(
+            "SELECT id, content FROM chunks_data WHERE content IS NOT NULL"
+            " AND length(content) >= 8 LIMIT 1"
+        ).fetchone()
+        if sample is not None:
+            sample_id, sample_content = sample
+            m = re.search(r'[A-Za-z]{6,}', sample_content or '')
+            if m:
+                probe_term = '"' + m.group(0)[:6] + '"'
+                hit = conn.execute(
+                    "SELECT count(*) FROM chunks_trigram WHERE chunks_trigram MATCH ? AND rowid = ?",
+                    (probe_term, sample_id),
+                ).fetchone()[0]
+                if hit == 0:
+                    conn.execute("INSERT INTO chunks_trigram(chunks_trigram) VALUES('rebuild')")
+                    # Without an explicit commit, this write lives only in the connection's
+                    # implicit transaction and is silently rolled back the moment conn.close()
+                    # runs below (do_search()'s connections were read-only before task #833, so
+                    # this was never an issue until ensure_trigram() added the first write path)
+                    # -- verified empirically: the rebuild was visible within the same
+                    # connection but vanished from the on-disk shadow tables after close()
+                    # without this commit.
+                    conn.commit()
+        return True
+    except sqlite3.OperationalError:
+        return False
+
 
 def search_db(db_path, query, limit):
     if not os.path.isfile(db_path):
-        return []
-    try:
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-        sql = """
+        return {'results': [], 'tier': 'none', 'query_error': None}
+
+    def build_sql(table, rank_expr, q):
+        sql = f"""
             SELECT d.chunk_id, d.doc_id, d.section_path, d.title, d.summary,
                    d.token_count, d.cross_refs, d.source_path,
                    d.prev_chunk_id, d.next_chunk_id,
-                   bm25(chunks_fts, 10, 5, 3, 1) AS rank,
+                   {rank_expr} AS rank,
                    substr(d.content, 1, 200) AS snippet
-            FROM chunks_fts
-            JOIN chunks_data d ON d.id = chunks_fts.rowid
-            WHERE chunks_fts MATCH ?
+            FROM {table}
+            JOIN chunks_data d ON d.id = {table}.rowid
+            WHERE {table} MATCH ?
             ORDER BY rank
             LIMIT ?
         """
+        return sql, (q, limit)
+
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+
+        query_error = None
+        rows = []
+        tier = 'none'
+
         try:
-            cursor = conn.execute(sql, (query, limit))
-            rows = cursor.fetchall()
+            sql, params = build_sql("chunks_fts", "bm25(chunks_fts, 10, 5, 3, 1)", query)
+            rows = conn.execute(sql, params).fetchall()
+            if rows:
+                tier = 'bm25'
         except sqlite3.OperationalError as e:
+            query_error = str(e)
             print(f"[search] Query error: {e}", file=sys.stderr)
-            conn.close()
-            return []
+            rows = []
+
+        if query_error is not None:
+            phrase_query = '"' + query.replace('"', '') + '"'
+            try:
+                sql, params = build_sql("chunks_fts", "bm25(chunks_fts, 10, 5, 3, 1)", phrase_query)
+                rows = conn.execute(sql, params).fetchall()
+                if rows:
+                    tier = 'phrase_retry'
+            except sqlite3.OperationalError as e:
+                print(f"[search] Phrase-retry query error: {e}", file=sys.stderr)
+                rows = []
+
+        if not rows:
+            if ensure_trigram(conn):
+                trigram_query = '"' + query.replace('"', '') + '"'
+                try:
+                    sql, params = build_sql("chunks_trigram", "bm25(chunks_trigram)", trigram_query)
+                    rows = conn.execute(sql, params).fetchall()
+                    if rows:
+                        tier = 'trigram'
+                except sqlite3.OperationalError as e:
+                    print(f"[search] Trigram query error: {e}", file=sys.stderr)
+                    rows = []
+            elif query_error is None:
+                query_error = f"trigram fallback unavailable for {db_path} (create/rebuild failed, e.g. read-only database)"
+
         results = []
         for row in rows:
             cross_refs = row['cross_refs'] or '[]'
@@ -324,25 +683,54 @@ def search_db(db_path, query, limit):
                 'cross_refs': cross_refs,
                 'rank': row['rank'],
                 'snippet': (row['snippet'] or '').strip()[:200],
+                'provenance_fidelity': get_fidelity(fidelity_map, row['doc_id']),
+                'match_tier': ROW_TIER_LABEL.get(tier, 'bm25'),
                 '_source_path': row['source_path'],
                 '_db_path': db_path,
             })
         conn.close()
-        return results
+        return {'results': results, 'tier': tier if results else 'none', 'query_error': query_error}
     except Exception as e:
         print(f"[search] Database error ({db_path}): {e}", file=sys.stderr)
-        return []
+        return {'results': [], 'tier': 'none', 'query_error': str(e)}
 
-local_results = search_db(local_db, query, limit)
-global_results = search_db(global_db, query, limit)
+local_out = search_db(local_db, query, limit)
+global_out = search_db(global_db, query, limit)
+local_results = local_out['results']
+global_results = global_out['results']
 local_doc_ids = {r['doc_id'] for r in local_results}
 merged = local_results + [r for r in global_results if r['doc_id'] not in local_doc_ids]
+if not include_unverified:
+    merged = [r for r in merged if r['provenance_fidelity'] not in quarantined_fidelity]
 merged.sort(key=lambda r: r['rank'])
 merged = merged[:limit]
+
+if merged:
+    tiers_present = {r.get('match_tier', 'bm25') for r in merged}
+    if 'bm25' in tiers_present:
+        fallback_tier = 'bm25'
+    elif 'phrase_retry' in tiers_present:
+        fallback_tier = 'phrase_retry'
+    elif 'trigram_fallback' in tiers_present:
+        fallback_tier = 'trigram'
+    else:
+        fallback_tier = 'none'
+else:
+    fallback_tier = 'none'
+degraded = fallback_tier != 'bm25'
+query_error = next((o['query_error'] for o in (local_out, global_out) if o['query_error']), None)
+
 for r in merged:
     r.pop('_source_path', None)
     r.pop('_db_path', None)
-print(json.dumps(merged, indent=2, ensure_ascii=False))
+
+envelope = {
+    'results': merged,
+    'degraded': degraded,
+    'fallback_tier': fallback_tier,
+    'query_error': query_error,
+}
+print(json.dumps(envelope, indent=2, ensure_ascii=False))
 PYEOF
 )
     fi
@@ -364,11 +752,50 @@ do_read() {
 import sqlite3
 import json
 import os
+import re
 import sys
 
 local_db = "$local_db"
 global_db = "$global_db"
 chunk_id = "$chunk_id"
+literature_dir = "$LITERATURE_DIR"
+
+
+def load_fidelity_map(lit_dir):
+    # Directory-name -> provenance_fidelity (task #835), keyed to match
+    # chunks_data.doc_id exactly (NOT index.json's id/parent_doc fields -- a separate
+    # namespace; see the primary do_search heredoc for the full rationale).
+    # Fail-open: an absent map entry must be treated as unverified, never as
+    # verified_conversion.
+    index_file = os.path.join(lit_dir, "index.json")
+    fmap = {}
+    if not os.path.isfile(index_file):
+        return fmap
+    try:
+        with open(index_file, encoding="utf-8") as f:
+            idx = json.load(f)
+    except Exception:
+        return fmap
+    prefix = "sources/"
+    for e in idx.get("entries", []) or []:
+        pf = e.get("provenance_fidelity")
+        if pf is None:
+            continue
+        path = e.get("path")
+        if not isinstance(path, str) or not path.startswith(prefix):
+            continue
+        dirname = path[len(prefix):].split("/", 1)[0]
+        if dirname:
+            fmap.setdefault(dirname, pf)
+    return fmap
+
+
+def get_fidelity(fmap, doc_id):
+    return fmap.get(doc_id) or "unverified_summary"
+
+
+fidelity_map = load_fidelity_map(literature_dir)
+
 
 def find_chunk(db_path, chunk_id):
     if not os.path.isfile(db_path):
@@ -426,13 +853,29 @@ try:
 except Exception:
     cross_refs = []
 
+doc_id = chunk_row.get('doc_id', '')
+provenance_fidelity = get_fidelity(fidelity_map, doc_id)
+
+# Loud content banner (task #835): never silently hand an agent unverified text as
+# if it were an authoritative conversion. verified_conversion docs are unchanged.
+if provenance_fidelity != 'verified_conversion':
+    banner = (
+        f"[UNVERIFIED CONTENT - provenance_fidelity: {provenance_fidelity}]\n"
+        f"This chunk has not been confirmed to faithfully reproduce its source PDF. "
+        f"Do not cite claims, lemmas, or definitions from it as authoritative without "
+        f"verifying against the primary source (doc_id: {doc_id}).\n"
+        f"{'=' * 70}\n\n"
+    )
+    content = banner + content
+
 output = {
     'chunk_id': chunk_id,
-    'doc_id': chunk_row.get('doc_id', ''),
+    'doc_id': doc_id,
     'title': chunk_row.get('title', ''),
     'section_path': chunk_row.get('section_path', ''),
     'token_count': chunk_row.get('token_count', 0),
     'cross_refs': cross_refs,
+    'provenance_fidelity': provenance_fidelity,
     'content': content,
 }
 
@@ -453,11 +896,48 @@ do_toc() {
 import sqlite3
 import json
 import os
+import re
 import sys
 
 local_db = "$local_db"
 global_db = "$global_db"
 doc_id_filter = "$doc_id"
+literature_dir = "$LITERATURE_DIR"
+
+
+def load_fidelity_map(lit_dir):
+    # Directory-name -> provenance_fidelity (task #835), keyed to match
+    # chunks_data.doc_id exactly; see do_search above for the full rationale.
+    # Fail-open on absent entries.
+    index_file = os.path.join(lit_dir, "index.json")
+    fmap = {}
+    if not os.path.isfile(index_file):
+        return fmap
+    try:
+        with open(index_file, encoding="utf-8") as f:
+            idx = json.load(f)
+    except Exception:
+        return fmap
+    prefix = "sources/"
+    for e in idx.get("entries", []) or []:
+        pf = e.get("provenance_fidelity")
+        if pf is None:
+            continue
+        path = e.get("path")
+        if not isinstance(path, str) or not path.startswith(prefix):
+            continue
+        dirname = path[len(prefix):].split("/", 1)[0]
+        if dirname:
+            fmap.setdefault(dirname, pf)
+    return fmap
+
+
+def get_fidelity(fmap, doc_id):
+    return fmap.get(doc_id) or "unverified_summary"
+
+
+fidelity_map = load_fidelity_map(literature_dir)
+
 
 def get_toc(db_path, doc_id_filter):
     if not os.path.isfile(db_path):
@@ -476,6 +956,8 @@ def get_toc(db_path, doc_id_filter):
                      ORDER BY doc_id, id"""
             cursor = conn.execute(sql)
         rows = [dict(r) for r in cursor.fetchall()]
+        for r in rows:
+            r['provenance_fidelity'] = get_fidelity(fidelity_map, r['doc_id'])
         conn.close()
         return rows
     except Exception as e:
@@ -507,6 +989,7 @@ do_refs() {
 import sqlite3
 import json
 import os
+import re
 import sys
 
 local_db = "$local_db"
@@ -561,6 +1044,7 @@ do_navigate() {
 import sqlite3
 import json
 import os
+import re
 import sys
 
 local_db = "$local_db"
@@ -622,10 +1106,10 @@ PYEOF
 
 # --- Main dispatch ---
 if [ $# -eq 0 ]; then
-  error_json "No arguments provided. Usage: literature-search.sh [--project <name>] \"query\" | --read <id> | --toc [doc_id] | --refs <id> | --next <id> | --prev <id> | --doc <doc_id>" 1
+  error_json "No arguments provided. Usage: literature-search.sh [--project <name>] [--include-unverified] \"query\" | --read <id> | --toc [doc_id] | --refs <id> | --next <id> | --prev <id> | --doc <doc_id>" 1
 fi
 
-# Pre-scan for --project flag (may appear before any subcommand)
+# Pre-scan for --project / --include-unverified flags (may appear before any subcommand)
 args=("$@")
 remaining_args=()
 for ((i = 0; i < ${#args[@]}; i++)); do
@@ -635,6 +1119,11 @@ for ((i = 0; i < ${#args[@]}; i++)); do
     fi
     PROJECT_FILTER="${args[$((i+1))]}"
     i=$((i+1))
+  elif [ "${args[$i]}" = "--include-unverified" ]; then
+    # task #835: opt back into unverified_summary/unverified_no_baseline results in
+    # do_search's default ranking (they remain always retrievable via --read/--toc
+    # regardless of this flag; this only affects do_search's exclusion filter).
+    INCLUDE_UNVERIFIED="true"
   else
     remaining_args+=("${args[$i]}")
   fi
@@ -683,6 +1172,6 @@ case "${remaining_args[0]}" in
     ;;
   *)
     # Default: full-text search
-    do_search "${remaining_args[0]}" "${remaining_args[1]:-$LITERATURE_LIMIT}" "$PROJECT_FILTER"
+    do_search "${remaining_args[0]}" "${remaining_args[1]:-$LITERATURE_LIMIT}" "$PROJECT_FILTER" "$INCLUDE_UNVERIFIED"
     ;;
 esac

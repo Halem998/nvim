@@ -193,7 +193,11 @@ def split_at_headings(content):
         if heading_match:
             # Flush current chunk
             if current_lines or current_level == 0:
-                section_path = build_section_path(section_stack, current_title)
+                # BUG 3 fix: section_stack's top entry is (current_level, current_title)
+                # itself (pushed below when this section began), so it must be excluded
+                # from the ancestor list here — otherwise current_title is appended
+                # twice, producing doubled breadcrumbs like "Doc > X > X".
+                section_path = build_section_path(section_stack[:-1], current_title)
                 flush_chunk(current_level, current_title, section_path, current_lines)
 
             heading_level = len(heading_match.group(1))
@@ -212,7 +216,9 @@ def split_at_headings(content):
 
     # Flush final chunk
     if current_lines or len(chunks) == 0:
-        section_path = build_section_path(section_stack, current_title)
+        # BUG 3 fix: same section_stack[:-1] rationale as the in-loop flush above;
+        # the empty-stack (document-level, level-0) case is unaffected: [][:-1] == [].
+        section_path = build_section_path(section_stack[:-1], current_title)
         flush_chunk(current_level, current_title, section_path, current_lines)
 
     return chunks

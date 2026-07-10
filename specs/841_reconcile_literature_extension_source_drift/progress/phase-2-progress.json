@@ -1,0 +1,44 @@
+{
+  "phase": 2,
+  "phase_name": "Backport the 6 drifted files deployed->extension-source",
+  "started_at": "2026-07-10T22:56:00Z",
+  "last_updated": "2026-07-10T23:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Copy deployed content verbatim over extension-source for 6 files",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/literature/scripts/literature-search.sh",
+        ".claude/extensions/literature/scripts/literature-briefing.sh",
+        ".claude/extensions/literature/scripts/literature-schema.sql",
+        ".claude/extensions/literature/scripts/literature-chunk.sh",
+        ".claude/extensions/literature/scripts/literature-convert.sh",
+        ".claude/extensions/literature/scripts/literature-ingest.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Confirm diff empty for all 6 pairs",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Confirm no deployed copy touched",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Check for genuine conflicting extension-only edits before overwrite",
+      "status": "done",
+      "files_touched": [],
+      "note": "Reviewed schema.sql, chunk.sh, ingest.sh diffs pre-copy; all deployed-ahead with explicit task-numbered fix comments (#831/#833). No extension-only content lost."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

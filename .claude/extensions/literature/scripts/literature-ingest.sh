@@ -20,10 +20,22 @@
 #   ZOTERO_LIBRARY_PATH — Path to zotero-library.json (default: ~/Projects/Literature/zotero-library.json)
 #
 # Exit codes:
-#   0 — success
+#   0 — success (at least one file ingested; see the printed summary for any
+#       per-file hard failures or quality-gate rejections mixed in)
 #   1 — argument error
 #   2 — no source files found
-#   3 — all conversions failed
+#   3 — all conversions failed (hard failures and/or quality-gate rejections —
+#       the printed summary and log lines distinguish which)
+#
+# Per-file conversion outcomes (task #831 Phase 5): literature-convert.sh's
+# exit code is checked explicitly per file, not swallowed by a `| tail -1`
+# pipe. Exit 3 from literature-convert.sh (quality-gate rejection — the
+# engine produced output but it failed the correctness gate) is tracked in a
+# DISTINCT "Files quality-gate-failed" counter/list, separate from "Files
+# failed" (hard failures: missing input, all engine tiers empty). Both are
+# named explicitly in the final "=== Ingestion Summary ===" block — neither
+# is silently absorbed into the other or lost in scrolled-past per-file
+# stderr.
 
 set -euo pipefail
 
@@ -150,7 +162,9 @@ mkdir -p "$LITERATURE_DIR"
 # --- Process each source file ---
 PROCESSED=0
 FAILED=0
+GATE_FAILED=0
 declare -a INGESTED_DOC_IDS=()
+declare -a GATE_FAILED_ENTRIES=()  # "file :: reason" for the final summary
 
 for source_file in "${SOURCE_FILES[@]}"; do
   log "Processing: $source_file"
@@ -185,13 +199,47 @@ print('yes' if existing else 'no')
 
   # Step 1: Convert to markdown
   TMP_MD_DIR=$(mktemp -d)
+  CONVERT_STDERR_FILE=$(mktemp)
   log "Converting: $BASENAME"
-  DOC_ID=$("$SCRIPT_DIR/literature-convert.sh" "$source_file" "$TMP_MD_DIR" 2>&1 | tail -1)
-  # The last line of stdout is the doc_id
-  DOC_ID=$(cat "$TMP_MD_DIR"/*.md 2>/dev/null | head -0; ls "$TMP_MD_DIR"/*.md 2>/dev/null | head -1 | xargs -I{} basename {} .md)
+
+  # Capture the exit code explicitly (task #831 Phase 5): literature-convert.sh
+  # now distinguishes exit 3 (quality-gate rejection) from exit 0 (success) and
+  # exit 1/2 (hard failure). The `if CONVERT_STDOUT=$(...); then` form keeps
+  # this under `set -e` safely — a plain `VAR=$(pipeline)` assignment would
+  # abort the whole ingest run on any single file's non-zero exit.
+  if CONVERT_STDOUT=$("$SCRIPT_DIR/literature-convert.sh" "$source_file" "$TMP_MD_DIR" 2>"$CONVERT_STDERR_FILE"); then
+    CONVERT_EXIT=0
+  else
+    CONVERT_EXIT=$?
+  fi
+
+  if [ "$CONVERT_EXIT" -eq 3 ]; then
+    # Quality gate rejected the output — loud failure, NOT a generic failure.
+    # Log distinctly, accumulate for the final gate-failed summary, and move on.
+    GATE_REASON=$(grep -m1 'QUALITY GATE FAILED' "$CONVERT_STDERR_FILE" 2>/dev/null || echo "QUALITY GATE FAILED (reason unavailable)")
+    log "QUALITY GATE FAILED: $BASENAME — ${GATE_REASON#*QUALITY GATE FAILED: }"
+    GATE_FAILED_ENTRIES+=("$source_file :: ${GATE_REASON#*QUALITY GATE FAILED: }")
+    GATE_FAILED=$((GATE_FAILED + 1))
+    rm -rf "$TMP_MD_DIR"
+    rm -f "$CONVERT_STDERR_FILE"
+    continue
+  elif [ "$CONVERT_EXIT" -ne 0 ]; then
+    log "ERROR: Conversion failed for $BASENAME (exit $CONVERT_EXIT)"
+    sed 's/^/[ingest]   /' "$CONVERT_STDERR_FILE" >&2
+    rm -rf "$TMP_MD_DIR"
+    rm -f "$CONVERT_STDERR_FILE"
+    FAILED=$((FAILED + 1))
+    continue
+  fi
+
+  rm -f "$CONVERT_STDERR_FILE"
+
+  # Exit 0: the last line of stdout is the doc_id, but derive it from the
+  # actual output filename too (belt-and-suspenders against stdout noise).
+  DOC_ID=$(ls "$TMP_MD_DIR"/*.md 2>/dev/null | head -1 | xargs -I{} basename {} .md)
 
   if [ -z "$DOC_ID" ] || ! ls "$TMP_MD_DIR"/*.md >/dev/null 2>&1; then
-    log "ERROR: Conversion failed for $BASENAME"
+    log "ERROR: Conversion reported success but no .md file found for $BASENAME"
     rm -rf "$TMP_MD_DIR"
     FAILED=$((FAILED + 1))
     continue
@@ -287,7 +335,11 @@ PYEOF
 done
 
 if [ "$PROCESSED" -eq 0 ]; then
-  log "All files failed to process"
+  if [ "$GATE_FAILED" -gt 0 ]; then
+    log "All files failed to process (${GATE_FAILED} rejected by the conversion quality gate, ${FAILED} hard-failed)"
+  else
+    log "All files failed to process"
+  fi
   exit 3
 fi
 
@@ -353,6 +405,13 @@ echo ""
 echo "=== Ingestion Summary ==="
 echo "Files processed: $PROCESSED"
 echo "Files failed: $FAILED"
+echo "Files quality-gate-failed: $GATE_FAILED"
+if [ "$GATE_FAILED" -gt 0 ]; then
+  echo "  (quality-gate-rejected files — NOT ingested, .rejected sibling written by literature-convert.sh):"
+  for entry in "${GATE_FAILED_ENTRIES[@]}"; do
+    echo "  - ${entry}"
+  done
+fi
 echo "Documents ingested: ${INGESTED_DOC_IDS[*]}"
 echo "Global library: $LITERATURE_DIR"
 if [ -f "$LITERATURE_DIR/.literature.db" ]; then

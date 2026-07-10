@@ -121,21 +121,21 @@ baseline before any edits, so Phase 5 can verify equivalence and no behavior cha
 
 ---
 
-### Phase 2: Backport the 6 drifted files deployed→extension-source [NOT STARTED]
+### Phase 2: Backport the 6 drifted files deployed→extension-source [COMPLETED]
 
 **Goal**: Make each of the 6 drifted extension-source files byte-identical to its deployed copy
 via verbatim copy.
 
 **Tasks**:
-- [ ] For each of the 6 files, copy the deployed `.claude/scripts/<name>` verbatim over
+- [x] For each of the 6 files, copy the deployed `.claude/scripts/<name>` verbatim over
       `.claude/extensions/literature/scripts/<name>` (`cp`, not hand-edit / re-derive):
       `literature-search.sh`, `literature-briefing.sh`, `literature-schema.sql`,
-      `literature-chunk.sh`, `literature-convert.sh`, `literature-ingest.sh`.
-- [ ] After each copy, run `diff .claude/scripts/<name> .claude/extensions/literature/scripts/<name>`
-      and confirm empty output.
-- [ ] Do NOT touch any deployed copy; do NOT execute the schema file against any DB.
-- [ ] If any target reveals a genuine conflicting extension-only edit (not expected per research),
-      STOP and report rather than clobber (quarantine-never-delete posture).
+      `literature-chunk.sh`, `literature-convert.sh`, `literature-ingest.sh`. *(completed)*
+- [x] After each copy, run `diff .claude/scripts/<name> .claude/extensions/literature/scripts/<name>`
+      and confirm empty output. *(completed: all 6 identical)*
+- [x] Do NOT touch any deployed copy; do NOT execute the schema file against any DB. *(completed: `git status --porcelain -- .claude/scripts/` empty)*
+- [x] If any target reveals a genuine conflicting extension-only edit (not expected per research),
+      STOP and report rather than clobber (quarantine-never-delete posture). *(completed: pre-copy diff review of schema/chunk/ingest confirmed unanimous deployed-ahead direction with task-numbered fixes; no extension-only content found)*
 
 **Timing**: 40 minutes
 

@@ -55,6 +55,9 @@ GLOBAL_TOP_N_DEFAULT=8
 mode="repo"
 query=""
 top_n="$GLOBAL_TOP_N_DEFAULT"
+# query_error is referenced at the shared exit point (task #833) regardless of mode; default
+# it here so repo mode (which never sets it) doesn't trip `set -u` on an unbound variable.
+query_error="null"
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -81,6 +84,39 @@ while [ $# -gt 0 ]; do
       ;;
   esac
 done
+
+# --- provenance_fidelity lookup (task #835) ---
+# doc_id -> provenance_fidelity, mirroring the existing per-repo relevance/title/
+# authors/year lookups below (all keyed by index.json's .id field -- specs/
+# literature-index.json's doc_id values are curated in that same .id namespace, e.g.
+# "rabinovich_2014", "blackburn_2002_book"). Fail-open: an absent field or entry
+# resolves to "unverified_summary".
+get_doc_fidelity() {
+  local doc_id="$1"
+  local val
+  val=$(jq -r --arg id "$doc_id" '
+    .entries[] | select(.id == $id) | .provenance_fidelity // empty
+  ' "$GLOBAL_INDEX" 2>/dev/null | head -1)
+  echo "${val:-unverified_summary}"
+}
+
+# Only unverified_summary/unverified_no_baseline/unadjudicated/absent get the loud
+# marker -- no_source_pdf (nothing to compare against) and not_yet_converted (nothing
+# converted yet, already self-evident from a 0-token entry) are not fidelity
+# failures in the same sense and are left unmarked here. "unadjudicated" (task #839)
+# is a fidelity failure (the proof-completeness signal could not fire on a low-ratio,
+# undisclosed doc) and must be marked -- omitting it here would silently repeat the
+# same fail-open bug #839 fixes, one script downstream.
+needs_fidelity_marker() {
+  case "$1" in
+    unverified_summary | unverified_no_baseline | unadjudicated) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+FIDELITY_MARKER_TEXT() {
+  echo "[UNVERIFIED - provenance_fidelity: $1 - not confirmed faithful to its source PDF; verify before citing]"
+}
 
 briefing_lines=()
 header=""
@@ -141,8 +177,8 @@ if [ "$mode" = "repo" ]; then
     ' "$GLOBAL_INDEX" 2>/dev/null | head -1)
 
     authors_raw=$(jq -r --arg id "$doc_id" '
-      .entries[] | select(.id == $id) | (.authors // []) | join(", ")
-    ' "$GLOBAL_INDEX" 2>/dev/null | head -1)
+      .entries[] | select(.id == $id) | (.authors // [] | if type == "array" then . else [.] end | join(", "))
+    ' "$GLOBAL_INDEX" 2>/dev/null | head -1) || authors_raw=""
 
     year=$(jq -r --arg id "$doc_id" '
       .entries[] | select(.id == $id) | (.year // "?") | tostring
@@ -161,12 +197,14 @@ if [ "$mode" = "repo" ]; then
       # Also include parent entry tokens if present
       parent_tokens=$(jq -r --arg id "$doc_id" '
         .entries[] | select(.id == $id) | .token_count // 0
-      ' "$GLOBAL_INDEX" 2>/dev/null | head -1)
+      ' "$GLOBAL_INDEX" 2>/dev/null | head -1) || parent_tokens=0
+      [[ "$parent_tokens" =~ ^[0-9]+$ ]] || { echo "Warning: non-numeric parent token_count for '$doc_id', defaulting to 0" >&2; parent_tokens=0; }
       total_tokens=$(( total_tokens + parent_tokens ))
     else
       total_tokens=$(jq -r --arg id "$doc_id" '
         .entries[] | select(.id == $id) | .token_count // 0
-      ' "$GLOBAL_INDEX" 2>/dev/null | head -1)
+      ' "$GLOBAL_INDEX" 2>/dev/null | head -1) || { echo "Warning: could not read token_count for '$doc_id', defaulting to 0" >&2; total_tokens=0; }
+      [[ "$total_tokens" =~ ^[0-9]+$ ]] || total_tokens=0
       chunk_count=1
     fi
 
@@ -196,6 +234,9 @@ if [ "$mode" = "repo" ]; then
       .entries[] | select(.doc_id == $id) | .relevance // ""
     ' "$SUB_INDEX" 2>/dev/null | head -1)
 
+    # provenance_fidelity lookup (task #835) -- fail-open, see get_doc_fidelity above
+    fidelity=$(get_doc_fidelity "$doc_id")
+
     doc_num=$(( doc_num + 1 ))
 
     # Format authors (truncate if long)
@@ -217,6 +258,11 @@ if [ "$mode" = "repo" ]; then
    Relevance: ${relevance}"
     fi
 
+    if needs_fidelity_marker "$fidelity"; then
+      entry="$(FIDELITY_MARKER_TEXT "$fidelity")
+${entry}"
+    fi
+
     briefing_lines+=("$entry")
   done
 
@@ -233,10 +279,32 @@ else
   # ============================================================
   repo_name="$(basename "$PROJECT_ROOT")"
 
-  results_json=$(bash "$SEARCH_SCRIPT" --project "$repo_name" "$query" 2>/dev/null) || results_json="[]"
+  # Capture stderr instead of discarding it (task #833) so a real search-script
+  # failure can be surfaced below rather than silently coerced to "no results".
+  search_err_file="$(mktemp)"
+  results_json=$(bash "$SEARCH_SCRIPT" --project "$repo_name" "$query" 2>"$search_err_file") || results_json="[]"
+  search_stderr="$(cat "$search_err_file" 2>/dev/null || true)"
+  rm -f "$search_err_file"
 
-  # Guard against error objects or malformed output from the search script
-  if ! echo "$results_json" | jq -e 'type == "array"' >/dev/null 2>&1; then
+  # --- Shape-aware parsing (task #833) ---
+  # Accepts both the legacy bare-array shape (pre-#833: degraded=false, fallback_tier=bm25,
+  # query_error=null) and the new envelope object {results, degraded, fallback_tier,
+  # query_error} literature-search.sh now emits. An unparseable payload remains a hard []
+  # fallback, but now logs a visible notice -- this task exists to remove exactly the kind
+  # of silent swallow the old unconditional coercion performed.
+  degraded="false"
+  fallback_tier="bm25"
+  query_error="null"
+
+  if echo "$results_json" | jq -e 'type == "array"' >/dev/null 2>&1; then
+    : # legacy bare-array shape; results_json already holds the array, defaults above stand
+  elif echo "$results_json" | jq -e 'type == "object" and has("results")' >/dev/null 2>&1; then
+    degraded=$(echo "$results_json" | jq -r '.degraded // false')
+    fallback_tier=$(echo "$results_json" | jq -r '.fallback_tier // "bm25"')
+    query_error=$(echo "$results_json" | jq -r 'if .query_error == null then "null" else .query_error end')
+    results_json=$(echo "$results_json" | jq -c '.results // []')
+  else
+    echo "Warning: literature-search.sh returned an unparseable payload for --global query '${query}'; treating as zero results. stderr: ${search_stderr:-<empty>}" >&2
     results_json="[]"
   fi
 
@@ -255,6 +323,9 @@ else
       title=$(echo "$seg" | jq -r '.title // "Untitled"')
       summary=$(echo "$seg" | jq -r '.summary // ""')
       token_count=$(echo "$seg" | jq -r '.token_count // 0')
+      # provenance_fidelity is already present on every do_search result object
+      # (task #835, literature-search.sh) -- no separate lookup needed here.
+      fidelity=$(echo "$seg" | jq -r '.provenance_fidelity // "unverified_summary"')
 
       doc_num=$(( doc_num + 1 ))
 
@@ -268,11 +339,37 @@ else
       entry="${entry}
    Read: \`bash .claude/scripts/literature-search.sh --read ${chunk_id}\`"
 
+      if needs_fidelity_marker "$fidelity"; then
+        entry="$(FIDELITY_MARKER_TEXT "$fidelity")
+${entry}"
+      fi
+
       briefing_lines+=("$entry")
     done < <(echo "$results_json" | jq -c '.[]')
   fi
 
   header="## Available Literature — Global Corpus Search Results for: \"${query}\" (${#briefing_lines[@]} segment(s))"
+
+  # --- Degraded-tier banner (task #833) ---
+  # When results exist but the primary bm25 tier did not answer, prefix the segment list
+  # with a visible, tier-specific notice -- following the existing FIDELITY_MARKER_TEXT
+  # "loud, never silent" precedent (#835) rather than inventing a new convention. Inserted
+  # AFTER the header's segment count is computed so the banner itself is never counted as
+  # a segment.
+  if [ "$degraded" = "true" ] && [ "${#briefing_lines[@]}" -gt 0 ]; then
+    case "$fallback_tier" in
+      trigram)
+        degraded_banner="[DEGRADED RETRIEVAL - fallback_tier: trigram] The primary full-text ranking found nothing for this query; these results come from a SUBSTRING (trigram) fallback match, not full-text ranking -- lower precision, verify relevance yourself."
+        ;;
+      phrase_retry)
+        degraded_banner="[DEGRADED RETRIEVAL - fallback_tier: phrase_retry] The original query triggered an FTS5 syntax error; these results come from a whole-query phrase retry, not the primary ranked search -- verify relevance yourself."
+        ;;
+      *)
+        degraded_banner="[DEGRADED RETRIEVAL - fallback_tier: ${fallback_tier}] The primary full-text ranking did not answer this query -- verify relevance yourself."
+        ;;
+    esac
+    briefing_lines=("$degraded_banner" "${briefing_lines[@]}")
+  fi
 fi
 
 # ============================================================
@@ -288,8 +385,25 @@ echo "$header"
 echo ""
 
 if [ "${#briefing_lines[@]}" -eq 0 ]; then
-  echo "No matching literature segments found for this query."
-  echo ""
+  # Honest zero-result messaging (task #833): a genuine zero-result (query_error null,
+  # per-repo mode always, or global mode with a syntactically valid query that matched
+  # nothing) keeps the original wording unchanged. A global-mode query that triggered an
+  # FTS5 syntax error (query_error non-null) gets a distinguishable message naming the
+  # failure and a concrete next action, instead of the same bare line -- this is the
+  # actual "usable next action" gap this task exists to close (per-repo mode never sets
+  # query_error, so its behavior here is untouched).
+  if [ "$mode" = "global" ] && [ "$query_error" != "null" ] && [ -n "$query_error" ]; then
+    echo "No matching literature segments found for \"${query}\" query."
+    echo ""
+    echo "Note: the original query triggered an FTS5 syntax error (${query_error}); a"
+    echo "punctuation-tolerant phrase retry and a trigram substring fallback both ran and"
+    echo "also found nothing. Try a shorter, plainer-language query, or browse the table of"
+    echo "contents: \`bash .claude/scripts/literature-search.sh --toc <doc_id>\`"
+    echo ""
+  else
+    echo "No matching literature segments found for this query."
+    echo ""
+  fi
 fi
 
 for line in "${briefing_lines[@]}"; do
@@ -309,5 +423,9 @@ cat <<'FOOTER'
   of a specific document: `bash .claude/scripts/literature-search.sh --toc <doc_id>`
 - **Read selectively**: Start with the most relevant chunks; do not read all chunks unless
   the task requires comprehensive coverage
+- **UNVERIFIED entries**: Entries marked `[UNVERIFIED - provenance_fidelity: ...]` above are
+  not confirmed faithful to their source PDF (hand-authored summary, or no PDF available to
+  verify against); treat any claims, lemmas, or definitions from them as provisional and
+  verify against the primary source PDF before citing in formal work
 </literature-briefing>
 FOOTER
