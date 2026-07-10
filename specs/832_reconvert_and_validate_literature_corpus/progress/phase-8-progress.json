@@ -1,0 +1,15 @@
+{
+  "phase": 8,
+  "phase_name": "Rebuild global search index",
+  "started_at": "2026-07-10T00:28:00Z",
+  "last_updated": "2026-07-10T00:29:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run literature-build-index.sh --global", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Check for specs/literature/ local mirror", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "result": {"exit_code": 0, "manifests_found": 83, "chunks_indexed": 4002, "db_size": "13.2MB", "local_mirror_needed": false}
+}

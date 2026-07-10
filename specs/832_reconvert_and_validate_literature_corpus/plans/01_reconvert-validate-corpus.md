@@ -446,18 +446,21 @@ isolated here with its own gate and checkpoint.
 
 ---
 
-### Phase 8: Rebuild global search index [NOT STARTED]
+### Phase 8: Rebuild global search index [COMPLETED]
 
 **Goal**: Rebuild the ephemeral SQLite FTS5 search DB from the updated chunk manifests, once, after
 all conversions.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/literature-build-index.sh --global` (atomic build-to-`.tmp` then
+- [x] Run `bash .claude/scripts/literature-build-index.sh --global` (atomic build-to-`.tmp` then
   rename; safe to re-run). Exit 0 = success, 1 = no chunk manifests found, 2 = sqlite3 unavailable
-  (should not occur given Phase 1's check).
-- [ ] Existence check: if any touched document is also mirrored under `specs/literature/`, also run
+  (should not occur given Phase 1's check). *(completed: exit 0, 83 manifests found, 4002 chunks
+  indexed, 13.2MB database rebuilt at ~/Projects/Literature/.literature.db)*
+- [x] Existence check: if any touched document is also mirrored under `specs/literature/`, also run
   `--local`; otherwise `--global` alone suffices (research indicates no local mirror for these
-  targets — confirm cheaply).
+  targets — confirm cheaply). *(completed: confirmed `specs/literature/` does not exist in this
+  repo and no touched document names match anything there — `--global` alone suffices, matching
+  research expectation)*
 
 **Timing**: 0.25 hours
 
