@@ -14,15 +14,16 @@
        "Projects/Literature/sources/vardi_wolper_1986/Vardi_Wolper_1986_Automata_Theoretic_Verification.pdf",
        "Projects/Literature/sources/vardi_wolper_1986/Vardi_Wolper_1986_Automata_Theoretic_Verification.md"
      ]},
-    {"id": 5, "description": "OCR gabbay_1994 (4 PDFs: full 668pp book + ch9/10/12 splits)", "status": "in_progress",
+    {"id": 5, "description": "OCR gabbay_1994 (4 PDFs: full 668pp book + ch9/10/12 splits)", "status": "done",
      "files_touched": [
        "Projects/Literature/sources/gabbay_1994/Gabbay_Hodkinson_Reynolds_1994_Temporal_Logic_Foundations_Vol1_ch9.pdf",
        "Projects/Literature/sources/gabbay_1994/Gabbay_Hodkinson_Reynolds_1994_Temporal_Logic_Foundations_Vol1_ch10.pdf",
-       "Projects/Literature/sources/gabbay_1994/Gabbay_Hodkinson_Reynolds_1994_Temporal_Logic_Foundations_Vol1_ch12.pdf"
+       "Projects/Literature/sources/gabbay_1994/Gabbay_Hodkinson_Reynolds_1994_Temporal_Logic_Foundations_Vol1_ch12.pdf",
+       "Projects/Literature/sources/gabbay_1994/Gabbay_Hodkinson_Reynolds_1994_Temporal_Logic_Foundations_Vol1.pdf"
      ],
-     "note": "3 chapter splits (75pp total) OCR'd and swapped in: ch9=5755w, ch10=7484w, ch12=12128w. Full 668pp book OCR launched in background (nohup, running in parallel with Phase 7's gabbay_2000 OCR); awaiting completion notification before finalizing this objective and re-running the dry-run to confirm burgess/thomason/vardi_wolper/gabbay_1994 all promoted."}
+     "note": "All 4 PDFs OCR'd: ch9=5755w, ch10=7484w, ch12=12128w, full 668pp book=223960w (total pdf_words=249327). Computable baseline established (goal met) but the resulting ratio (27421 md_words / 249327 pdf_words = 0.11) is LOW and disclosed=False, proof_fraction=None -> dry-run now classifies gabbay_1994 as unadjudicated (not verified_conversion). This is a genuine NEW discovery outside the plan's 3 named unadjudicated dirs: the existing 27K-word .md apparently covers only a fraction of the full 668-page book. Not remediated here (reconverting/expanding gabbay_1994's .md is out of this phase's scope, which was baseline-only); reported honestly in the Phase 9/summary for follow-up consideration."}
   ],
-  "current_objective": 5,
+  "current_objective": null,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": [
@@ -37,6 +38,7 @@
   "verification_so_far": {
     "burgess_1984": {"ratio_before": null, "ratio_after": 1.0041, "provenance_after": "verified_conversion"},
     "thomason_1984": {"ratio_before": null, "ratio_after": 1.0049, "provenance_after": "verified_conversion"},
-    "vardi_wolper_1986": {"ratio_before": null, "ratio_after": 1.0044, "provenance_after": "verified_conversion", "md_words_before": 151, "md_words_after": 7474}
+    "vardi_wolper_1986": {"ratio_before": null, "ratio_after": 1.0044, "provenance_after": "verified_conversion", "md_words_before": 151, "md_words_after": 7474},
+    "gabbay_1994": {"ratio_before": null, "ratio_after": 0.11, "provenance_after": "unadjudicated", "note": "computable baseline goal achieved; ratio reveals existing .md is a partial conversion of the 668pp book — new discovery, not remediated in this task"}
   }
 }

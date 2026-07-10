@@ -352,7 +352,7 @@ a "successful" conversion.
 
 ---
 
-### Phase 6: OCR baseline cohort (burgess_1984, gabbay_1994, thomason_1984, vardi_wolper_1986) [IN PROGRESS]
+### Phase 6: OCR baseline cohort (burgess_1984, gabbay_1994, thomason_1984, vardi_wolper_1986) [COMPLETED]
 
 **Goal**: Produce computable `pdf_words` baselines for the 4 `unverified_no_baseline` dirs (and a
 first real conversion for the `vardi_wolper_1986` stub) using the verified `nix run` OCR path.
