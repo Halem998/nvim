@@ -1,9 +1,10 @@
 ---
-next_project_number: 842
+next_project_number: 845
 ---
 
 # TODO
 
+Warning: 3 task(s) have no topic and will render under Uncategorized: 842, 843, 844 (non-fatal)
 ## Task Order
 
 *Updated 2026-07-10. Generated from state.json dependency graph.*
@@ -11,8 +12,8 @@ next_project_number: 842
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826,832,837,838 | -- | agent-system, literature, extensions, ... |
-| 2 | 822,827 | 821,826 | extensions |
+| 1 | 78,87,821,826,832,837,838,842,843 | -- | agent-system, literature, extensions, ... |
+| 2 | 822,827,844 | 821,826,842 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -40,7 +41,85 @@ next_project_number: 842
 
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
+### Uncategorized
+
+842 [NOT STARTED] — Fix the literature corpus chunk/index coverage gap surfaced (but 
+  └─ 844 [NOT STARTED] — Finish or formally defer the incomplete literature-extension inst
+843 [NOT STARTED] — Restore the `core` and `lean` sections of `.claude/scripts/check-
+
 ## Tasks
+
+### 844. Finish or defer zotero cite install
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: Task 842
+
+**Description**: Finish or formally defer the incomplete literature-extension install surfaced (out of scope) by task #841's drift audit. Ten scripts and one command exist ONLY in the extension source `.claude/extensions/literature/` and were never deployed to `.claude/scripts/` / `.claude/commands/`, and the extension is not fully wired into `.claude/extensions.json`.
+
+MEASURED (verified 2026-07-10, re-verify): extension-source-only scripts: `zotero-attach-chunks.sh`, `zotero-chunk.sh`, `zotero-index-add.sh`, `zotero-index-remove.sh`, `zotero-read.sh`, `zotero-search.sh`, `zotero-setup.sh`, `zotero-write.sh`, `cite-extract.sh`, `test-lit-pipeline.sh`. Command-source-only: `.claude/extensions/literature/commands/cite.md` (deployed `.claude/commands/cite.md` is ABSENT). The `/cite` command is documented in CLAUDE.md but its command file was never deployed.
+
+DECISION REQUIRED (this is the crux -- do not blindly deploy): for the zotero suite and `cite`, determine whether they are (a) intended-to-be-active features whose install was left unfinished, or (b) work-in-progress / experimental that should stay inactive. Base this on git history, whether they are referenced by any live skill/command, and whether the `/cite` command in CLAUDE.md is meant to be usable now.
+- If (a) ACTIVE: register them in `provides.scripts` (some already added by #841/follow-up -- avoid duplicates), ensure the deploy/sync mechanism (loader.lua `copy_scripts`) propagates them, deploy `cite.md`, and confirm `.claude/extensions.json` tracks the literature extension correctly.
+- If (b) INACTIVE: add a clear note (in the extension README/manifest) documenting them as intentionally not-yet-deployed so they stop reading as accidental drift, and ensure the #841 drift guard does not false-fail on them (it already skips entries whose deployed copy is absent -- verify).
+
+CONSTRAINTS:
+- SOURCE OF TRUTH is `.claude/extensions/literature/`.
+- `test-lit-pipeline.sh` is almost certainly test-harness-only and should NOT be deployed as a runtime script regardless -- treat separately.
+- Quarantine-never-delete.
+
+VERIFICATION: either every intended script/command is deployed AND `check-extension-docs.sh` literature section still PASSes with no drift-guard false-failures, OR the inactive ones are documented and the extension state is internally consistent (no dangling references to undeployed scripts from live skills/commands).
+
+---
+
+### 843. Fix core lean doclint failures
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: None
+
+**Description**: Restore the `core` and `lean` sections of `.claude/scripts/check-extension-docs.sh` to PASS. These are pre-existing doc-lint failures (they predate tasks #840/#841 -- verified) but they keep the overall check exiting non-zero, which blunts the value of the literature drift guard that task #841 added INSIDE this same script: a future literature regression would hide in an already-red run.
+
+MEASURED FAILURES (verified 2026-07-10, re-verify -- run `bash .claude/scripts/check-extension-docs.sh`):
+- core: `script referenced in docs/skills/agents but NOT in provides.scripts` for `task-lock.sh`, `orchestrator-postflight.sh`, and `literature-briefing-invoke.sh`.
+- lean: `routing_hard target declared but not deployed (and extension not installed)` for `skill-lean-research-hard` and `skill-lean-implementation-hard`.
+
+REQUIRED WORK: For each failure determine the correct resolution (register the script in the owning extension's `provides.scripts` if it legitimately belongs there; fix/remove a stale reference if the doc reference is wrong; or correct the lean `routing_hard` declaration / mark the lean extension appropriately if it is intentionally not installed). Do NOT paper over a real gap by deleting a valid reference -- diagnose each. Note `literature-briefing-invoke.sh` is attributed to core here; confirm which extension truly owns it (task #841's follow-up already registered it under literature -- ensure no double-ownership conflict).
+
+CONSTRAINTS:
+- SOURCE OF TRUTH is `.claude/extensions/*/` manifests -- edit there.
+- Do not alter runtime behavior of any script; this is manifest/doc hygiene only.
+
+VERIFICATION: `bash .claude/scripts/check-extension-docs.sh` exits 0 with all sections (core, lean, literature, and every other) PASS. The literature drift guard added by #841 still passes.
+
+---
+
+### 842. Literature convert chunk index coverage
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: None
+
+**Description**: Fix the literature corpus chunk/index coverage gap surfaced (but deliberately left unfixed) by task #840's Job 4. ROOT CAUSE (verified by #840, re-verify before acting): `/literature --convert` converts a PDF/DJVU to markdown but NEVER invokes the chunker or the FTS5 indexer -- only `/literature --ingest` does. As a result documents that were converted (not ingested) have zero rows in the global `.literature.db` `chunks_data` table and are SILENTLY INVISIBLE to `literature-search.sh`, even though they appear in `index.json` and on disk.
+
+MEASURED BASELINE (verified 2026-07-09/10 by #840, re-verify): 25 of 97 `sources/<dir>/` directories have zero `chunks_data` coverage, including non-quarantined docs `girard_1989`, `rabinovich_2014`, `burgess_1982_i`, `van_doorn_2015`. Task #840 added `/literature --rebuild` Job 4 which REPORTS this per-directory (use it to get the current exact list: `/literature --rebuild --dry-run` job 4). Also: the `document_metadata` table was observed EMPTY (0 rows) -- investigate whether that is the same population gap or a separate schema/population bug.
+
+REQUIRED WORK:
+1. Wire `--convert` to chunk+index the converted document the same way `--ingest` does (or make `--convert` call the ingest chunk/index path). Do NOT duplicate logic -- reuse `literature-chunk.sh` and the indexer.
+2. Backfill the 25 (or current count) uncovered `verified_conversion` directories so every converted doc has `chunks_data` rows and is searchable.
+3. Investigate and fix the empty `document_metadata` table if it is a bug.
+4. Guard: extend `/literature --rebuild` Job 4 or add a check so a converted-but-unchunked doc is caught going forward.
+
+CONSTRAINTS:
+- SOURCE OF TRUTH is `.claude/extensions/literature/` -- implement there, not in deployed `.claude/scripts/` copies (tasks #841/#840 just reconciled that drift; a guard now catches divergence).
+- EXCLUDE quarantine artifacts (`.md.bak-<UTC>`, `.md.rejected`, e.g. gabbay_2000) from chunking/indexing -- verify the chunker glob is strict; a chunked `.md.rejected` would inject a known-bad doc into search.
+- Hazard from #832: `literature-ingest.sh` may write outside `sources/<dir>/`; ensure backfilled chunks land where the indexer scans.
+- Quarantine-never-delete for any file moves. Do not mutate `index.json` entries beyond adding coverage.
+
+VERIFICATION:
+- After fix, `/literature --rebuild --dry-run` Job 4 reports 0 uncovered `verified_conversion` directories (down from 25).
+- A newly `--convert`ed test document immediately has `chunks_data` rows and is returned by `literature-search.sh` without a separate `--ingest` step.
+- `document_metadata` is populated (or the empty state is confirmed benign and documented).
+- No quarantine artifact appears in `chunks_data`.
+
+---
 
 ### 841. Reconcile literature extension source drift
 - **Status**: [COMPLETED]
