@@ -41,6 +41,7 @@
       "literature-discover.sh",
       "literature-ingest.sh",
       "literature-search.sh",
+      "literature-fidelity-audit.sh",
       "literature-build-index.sh",
       "literature-convert.sh",
       "literature-chunk.sh",

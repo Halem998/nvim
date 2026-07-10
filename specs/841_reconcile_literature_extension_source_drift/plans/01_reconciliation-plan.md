@@ -154,17 +154,17 @@ via verbatim copy.
 
 ---
 
-### Phase 3: Add literature-fidelity-audit.sh to extension source + register in manifest [NOT STARTED]
+### Phase 3: Add literature-fidelity-audit.sh to extension source + register in manifest [COMPLETED]
 
 **Goal**: Ship the fidelity/provenance producer tool in the extension source alongside its
 consumers, and declare it in the manifest.
 
 **Tasks**:
-- [ ] Copy deployed `.claude/scripts/literature-fidelity-audit.sh` verbatim to
-      `.claude/extensions/literature/scripts/literature-fidelity-audit.sh` (`cp`).
-- [ ] Add `"literature-fidelity-audit.sh"` to `.claude/extensions/literature/manifest.json`
-      `provides.scripts` (keep JSON valid; place consistently with existing ordering).
-- [ ] Confirm `diff` on the fidelity-audit pair is empty and `jq empty` accepts the edited manifest.
+- [x] Copy deployed `.claude/scripts/literature-fidelity-audit.sh` verbatim to
+      `.claude/extensions/literature/scripts/literature-fidelity-audit.sh` (`cp`). *(completed)*
+- [x] Add `"literature-fidelity-audit.sh"` to `.claude/extensions/literature/manifest.json`
+      `provides.scripts` (keep JSON valid; place consistently with existing ordering). *(completed: inserted immediately after literature-search.sh)*
+- [x] Confirm `diff` on the fidelity-audit pair is empty and `jq empty` accepts the edited manifest. *(completed)*
 
 **Timing**: 25 minutes
 

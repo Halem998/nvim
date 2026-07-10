@@ -1,0 +1,34 @@
+{
+  "phase": 3,
+  "phase_name": "Add literature-fidelity-audit.sh to extension source + register in manifest",
+  "started_at": "2026-07-10T23:01:00Z",
+  "last_updated": "2026-07-10T23:04:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Copy deployed literature-fidelity-audit.sh verbatim to extension source",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/literature/scripts/literature-fidelity-audit.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add literature-fidelity-audit.sh to manifest.json provides.scripts",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/literature/manifest.json"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Confirm diff empty and jq empty accepts manifest",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
