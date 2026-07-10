@@ -1,0 +1,42 @@
+{
+  "phase": 6,
+  "phase_name": "OCR baseline cohort (burgess_1984, gabbay_1994, thomason_1984, vardi_wolper_1986)",
+  "started_at": "2026-07-10T00:02:00Z",
+  "last_updated": "2026-07-10T00:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Cheap tooling re-confirm", "status": "done", "files_touched": []},
+    {"id": 2, "description": "OCR burgess_1984 (46pp) and replace PDF in place", "status": "done",
+     "files_touched": ["Projects/Literature/sources/burgess_1984/Burgess_1984_Basic_Tense_Logic.pdf"]},
+    {"id": 3, "description": "OCR thomason_1984 (32pp) and replace PDF in place", "status": "done",
+     "files_touched": ["Projects/Literature/sources/thomason_1984/Thomason_1984_Combinations_of_Tense_and_Modality.pdf"]},
+    {"id": 4, "description": "OCR vardi_wolper_1986 (18pp), replace PDF, convert real .md", "status": "done",
+     "files_touched": [
+       "Projects/Literature/sources/vardi_wolper_1986/Vardi_Wolper_1986_Automata_Theoretic_Verification.pdf",
+       "Projects/Literature/sources/vardi_wolper_1986/Vardi_Wolper_1986_Automata_Theoretic_Verification.md"
+     ]},
+    {"id": 5, "description": "OCR gabbay_1994 (4 PDFs: full 668pp book + ch9/10/12 splits)", "status": "in_progress",
+     "files_touched": [
+       "Projects/Literature/sources/gabbay_1994/Gabbay_Hodkinson_Reynolds_1994_Temporal_Logic_Foundations_Vol1_ch9.pdf",
+       "Projects/Literature/sources/gabbay_1994/Gabbay_Hodkinson_Reynolds_1994_Temporal_Logic_Foundations_Vol1_ch10.pdf",
+       "Projects/Literature/sources/gabbay_1994/Gabbay_Hodkinson_Reynolds_1994_Temporal_Logic_Foundations_Vol1_ch12.pdf"
+     ],
+     "note": "3 chapter splits (75pp total) OCR'd and swapped in: ch9=5755w, ch10=7484w, ch12=12128w. Full 668pp book OCR launched in background (nohup, running in parallel with Phase 7's gabbay_2000 OCR); awaiting completion notification before finalizing this objective and re-running the dry-run to confirm burgess/thomason/vardi_wolper/gabbay_1994 all promoted."}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.2",
+      "description": "gabbay_1994 OCR cohort member",
+      "type": "altered",
+      "reason": "gabbay_1994 has 4 source PDFs (full 668pp book + 3 chapter splits totaling 75pp), all extracting 0 words. OCR'd the 3 smaller chapter splits first (fast) and launched the 668pp full-book OCR as a background job (running in parallel with Phase 7's gabbay_2000 614pp job to use wall-clock time efficiently) rather than blocking sequentially; result pending, will be finalized once the background job completes.",
+      "annotation": "*(deviation: altered — see plan Task 6 note; gabbay_1994 full-book OCR running in background)*"
+    }
+  ],
+  "verification_so_far": {
+    "burgess_1984": {"ratio_before": null, "ratio_after": 1.0041, "provenance_after": "verified_conversion"},
+    "thomason_1984": {"ratio_before": null, "ratio_after": 1.0049, "provenance_after": "verified_conversion"},
+    "vardi_wolper_1986": {"ratio_before": null, "ratio_after": 1.0044, "provenance_after": "verified_conversion", "md_words_before": 151, "md_words_after": 7474}
+  }
+}

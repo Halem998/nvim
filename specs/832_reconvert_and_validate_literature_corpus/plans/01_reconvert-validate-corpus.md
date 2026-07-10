@@ -352,26 +352,35 @@ a "successful" conversion.
 
 ---
 
-### Phase 6: OCR baseline cohort (burgess_1984, gabbay_1994, thomason_1984, vardi_wolper_1986) [NOT STARTED]
+### Phase 6: OCR baseline cohort (burgess_1984, gabbay_1994, thomason_1984, vardi_wolper_1986) [IN PROGRESS]
 
 **Goal**: Produce computable `pdf_words` baselines for the 4 `unverified_no_baseline` dirs (and a
 first real conversion for the `vardi_wolper_1986` stub) using the verified `nix run` OCR path.
 
 **Tasks**:
-- [ ] Cheap tooling re-confirm (guards this cohort only): `nix run nixpkgs#ocrmypdf -- --version`
+- [x] Cheap tooling re-confirm (guards this cohort only): `nix run nixpkgs#ocrmypdf -- --version`
   and `nix run nixpkgs#tesseract -- --version` both exit 0. If either fails (e.g. no binary-cache
   egress), DEFER the entire OCR cohort (this phase + Phase 7): leave classifications unchanged,
-  record the blocker honestly, and skip to Phase 8 — do NOT fabricate a baseline.
-- [ ] For each of the 4 dirs, OCR the source PDF with `nix run nixpkgs#ocrmypdf -- --force-ocr
+  record the blocker honestly, and skip to Phase 8 — do NOT fabricate a baseline. *(completed:
+  ocrmypdf 17.4.2 exit 0, tesseract 5.5.2 exit 0, both re-confirmed at implementation time)*
+- [x] For each of the 4 dirs, OCR the source PDF with `nix run nixpkgs#ocrmypdf -- --force-ocr
   <in.pdf> <out.pdf>` (using `pdftoppm` already on PATH as needed), then extract text to establish
-  a `pdf_words` baseline.
-- [ ] Sub-case (baseline only): `burgess_1984`, `gabbay_1994`, `thomason_1984` already have
+  a `pdf_words` baseline. *(completed for all 4: burgess_1984 46pp->17455 words, thomason_1984
+  32pp->12843 words, vardi_wolper_1986 18pp->7441 words, gabbay_1994 4 PDFs (668+18+25+32pp) — see
+  separate note below)*
+- [x] Sub-case (baseline only): `burgess_1984`, `gabbay_1994`, `thomason_1984` already have
   substantial, well-formed `.md` (17,526 / 27,421 / 12,906 words) — OCR is used ONLY to establish
-  the `pdf_words` baseline; do NOT overwrite their `.md`.
-- [ ] Sub-case (real conversion): `vardi_wolper_1986` is a genuine self-disclosing stub — back up
+  the `pdf_words` baseline; do NOT overwrite their `.md`. *(completed: original PDFs backed up to
+  `.pdf.bak-<UTC>` then replaced in-place with the OCR'd (searchable) version, same visual content
+  plus an invisible text layer — no `.md` touched for any of these 3)*
+- [x] Sub-case (real conversion): `vardi_wolper_1986` is a genuine self-disclosing stub — back up
   its `.md` (quarantine protocol), then produce a real first-time conversion from the OCR'd text.
-- [ ] Apply the exit-code contract to any converter invocation; report any member that OCR could
-  not process, honestly, without dropping it.
+  *(completed: `.md` backed up (151 words), OCR'd PDF converted via literature-convert.sh — auto
+  mode exit 3 (sentence-boundary-glue) -> `LITERATURE_CONVERTER=pymupdf` retry -> exit 0, 7474
+  words, moved onto the canonical filename)*
+- [x] Apply the exit-code contract to any converter invocation; report any member that OCR could
+  not process, honestly, without dropping it. *(completed: only vardi_wolper_1986 invoked the
+  converter in this phase; contract applied and succeeded on retry as noted above)*
 
 **Timing**: 1.5 hours
 
@@ -391,7 +400,7 @@ first real conversion for the `vardi_wolper_1986` stub) using the verified `nix 
 
 ---
 
-### Phase 7: gabbay_2000 614-page OCR (Decision C execution, gated) [NOT STARTED]
+### Phase 7: gabbay_2000 614-page OCR (Decision C execution, gated) [IN PROGRESS]
 
 **Goal**: Attempt OCR of the re-cohorted `gabbay_2000` scanned 614-page book, isolated with its own
 checkpoint so its runtime cannot block the rest of the task.
