@@ -1696,13 +1696,212 @@ shell is the only place that prints the report header/footer and the `dry_run` n
     echo ""
   fi
 
-  # [ Job 1 body inserted here when run_job1=true ]
-  # [ Job 2 body inserted here when run_job2=true ]
-  # [ Job 4 body inserted here when run_job4=true ]
-  # [ Job 3 body inserted here when run_job3=true — always last: it is the only writer and its
-  #   confirm-after-diff step should reflect the read-only jobs' findings above it ]
+  [ "$run_job1" = "true" ] && rebuild_job1_dangling_ref_lint
+  [ "$run_job2" = "true" ] && rebuild_job2_schema_conformance
+  [ "$run_job4" = "true" ] && rebuild_job4_coverage_audit
+  # Job 3 always last: it is the only writer and its confirm-after-diff step should reflect the
+  # read-only jobs' findings printed above it.
+  [ "$run_job3" = "true" ] && rebuild_job3_coverage_refresh
 
 }  # end handle_rebuild()
+```
+
+### Job 1: Dangling-Ref Lint (read-only, idempotent)
+
+Reuses the "Sub-Index Management > Validate" block below almost verbatim (see that section's
+note — this is the wiring that makes it reachable for the first time), shaped for the
+multi-job report instead of a standalone command.
+
+```bash
+function rebuild_job1_dangling_ref_lint() {
+  orphans=()
+  valid=()
+
+  while IFS= read -r doc_id; do
+    [ -z "$doc_id" ] && continue
+    if jq -e --arg id "$doc_id" '.entries[] | select(.id == $id)' "$global_index" >/dev/null 2>&1; then
+      valid+=("$doc_id")
+    else
+      orphans+=("$doc_id")
+    fi
+  done < <(jq -r '.entries[].doc_id' "$sub_index" 2>/dev/null)
+
+  echo "### Job 1: Dangling-Ref Lint"
+  echo ""
+  echo "Valid entries: ${#valid[@]}"
+  echo "Dangling (orphaned) entries: ${#orphans[@]}"
+  echo ""
+  if [ "${#orphans[@]}" -gt 0 ]; then
+    echo "Orphaned doc_ids (not found in $global_index):"
+    for id in "${orphans[@]}"; do
+      echo "  - $id"
+    done
+    echo ""
+    echo "Removal is NOT automatic — dangling refs are reported only. To remove one, run the"
+    echo "Sub-Index Management > Remove operation explicitly after review."
+  else
+    echo "All entries resolve in the global index."
+  fi
+  echo ""
+}
+```
+
+### Job 2: Schema Conformance — Structural Minimum Only (read-only, idempotent)
+
+**Critical**: this job does NOT enforce the nominal `{doc_id, relevance, source}` shape. Live
+sub-indexes diverge from it in load-bearing ways — cslib omits `source` entirely; BimodalLogic
+uses `reason` instead of `relevance` plus `hazard`/`citation_rule`/`known_corrections`/`audits`
+fields documenting a real citation-fidelity issue on `rabinovich_2014`. Flagging or stripping
+those fields would destroy human curation data. The check is a structural minimum only: every
+entry must have a non-empty `doc_id` AND at least one of `relevance`/`reason` present. Extra
+fields of any kind are never flagged, never stripped, never rewritten.
+
+```bash
+function rebuild_job2_schema_conformance() {
+  violations=()
+  chunk_id_violations=()
+
+  while IFS=$'\t' read -r doc_id has_relevance_or_reason; do
+    [ -z "$doc_id" ] && continue
+    if [ -z "$doc_id" ] || [ "$has_relevance_or_reason" != "true" ]; then
+      violations+=("$doc_id")
+    fi
+    # chunk-file-conventions.md: chunk_*.md files are index-only re-splits, never an
+    # independently referenceable sub-index doc_id.
+    if [[ "$doc_id" =~ ^chunk_[0-9]+$ ]]; then
+      chunk_id_violations+=("$doc_id")
+    fi
+  done < <(jq -r '.entries[] | [
+      (.doc_id // ""),
+      ((((.relevance // "") | length) > 0) or (((.reason // "") | length) > 0) | tostring)
+    ] | @tsv' "$sub_index" 2>/dev/null)
+
+  echo "### Job 2: Schema Conformance (structural minimum only)"
+  echo ""
+  echo "Checked: doc_id non-empty AND (relevance OR reason) present. Extra fields (hazard,"
+  echo "citation_rule, known_corrections, audits, source, added, ...) are never flagged or"
+  echo "stripped — they are legitimate human curation data."
+  echo ""
+  if [ "${#violations[@]}" -gt 0 ]; then
+    echo "Entries missing the structural minimum (${#violations[@]}):"
+    for id in "${violations[@]}"; do
+      echo "  - ${id:-<empty doc_id>}"
+    done
+  else
+    echo "All entries meet the structural minimum."
+  fi
+  echo ""
+  if [ "${#chunk_id_violations[@]}" -gt 0 ]; then
+    echo "chunk_NNNN doc_ids referenced directly (${#chunk_id_violations[@]} — chunk files are"
+    echo "index-only re-splits, never independently referenceable; see"
+    echo ".claude/context/project/literature/patterns/chunk-file-conventions.md):"
+    for id in "${chunk_id_violations[@]}"; do
+      echo "  - $id"
+    done
+  else
+    echo "No sub-index doc_id references a chunk_NNNN id directly."
+  fi
+  echo ""
+}
+```
+
+### Job 4: Chunk/Search-Index Coverage Audit (read-only, idempotent)
+
+Reports, per `sources/<dir>/` directory (plus every legacy top-level `chunks_dir`-schema
+entry), whether the corpus's FTS5 search index (`chunks_data`) has any coverage at all. Queries
+`chunks_data` exclusively — **never** `document_metadata`, which is currently empty (0 rows) in
+this corpus and is not relied upon here. This job only *detects and reports* the gap; the root
+cause (`/literature --convert` never invokes the chunker/indexer — only `--ingest` does
+convert+chunk+index) is a separate, out-of-scope pipeline defect.
+
+**Directory→doc_id resolution note**: unlike `literature-fidelity-audit.sh`'s "Target entry
+resolution" (which stamps `provenance_fidelity` onto individual `index.json` chapter/section
+entries via `parent_doc` fan-out), `chunks_data.doc_id` is keyed on the **`sources/<dir>/`
+directory basename itself** (e.g. `blackburn_2002`, not `blackburn_2002_ch03_sec01-04` or
+`blackburn_2002_book`) — confirmed by reading the live corpus. Job 4 therefore checks
+`doc_id = <directory basename>` directly; it does not need the root/child fan-out logic that
+provenance-stamping requires.
+
+```bash
+function rebuild_job4_coverage_audit() {
+  echo "### Job 4: Chunk/Search-Index Coverage Audit"
+  echo ""
+
+  if [ ! -f "$literature_db" ]; then
+    echo "Global literature database not found at $literature_db — cannot audit coverage."
+    echo ""
+    return 0
+  fi
+
+  echo "_Querying chunks_data (canonical FTS5 source). document_metadata is currently empty"
+  echo "(0 rows) in this corpus and is intentionally NOT queried by this job._"
+  echo ""
+
+  missing_dirs=()
+  covered_dirs=0
+  quarantine_hits=()
+
+  lit_dir="${LITERATURE_DIR:-$HOME/Projects/Literature}"
+  if [ -d "$lit_dir/sources" ]; then
+    while IFS= read -r dirpath; do
+      dir=$(basename "$dirpath")
+      count=$(sqlite3 "$literature_db" "SELECT count(*) FROM chunks_data WHERE doc_id='$dir';" 2>/dev/null || echo 0)
+      if [ "${count:-0}" -eq 0 ]; then
+        missing_dirs+=("$dir")
+      else
+        covered_dirs=$((covered_dirs + 1))
+      fi
+      # Defensive hazard-(b) check: quarantine artifacts must never be chunked. The chunker's
+      # callers (literature-ingest.sh) glob strictly on `*.md`, which by construction excludes
+      # `*.md.bak-<UTC>` and `*.md.rejected` (neither filename ends in exactly ".md"). Verify
+      # this holds against the real chunks.json manifest rather than assuming it forever.
+      if [ -f "$dirpath/chunks.json" ] && grep -qE '\.md\.(bak-|rejected)' "$dirpath/chunks.json" 2>/dev/null; then
+        quarantine_hits+=("$dir")
+      fi
+    done < <(find "$lit_dir/sources" -mindepth 1 -maxdepth 1 -type d)
+  fi
+
+  # Legacy top-level chunks_dir-schema entries (no `path` field; live outside sources/).
+  legacy_missing=()
+  legacy_covered=0
+  while IFS= read -r legacy_id; do
+    [ -z "$legacy_id" ] && continue
+    count=$(sqlite3 "$literature_db" "SELECT count(*) FROM chunks_data WHERE doc_id='$legacy_id';" 2>/dev/null || echo 0)
+    if [ "${count:-0}" -eq 0 ]; then
+      legacy_missing+=("$legacy_id")
+    else
+      legacy_covered=$((legacy_covered + 1))
+    fi
+  done < <(jq -r '.entries[] | select(has("chunks_dir")) | .doc_id' "$global_index" 2>/dev/null)
+
+  echo "sources/<dir>/ directories audited: covered=$covered_dirs missing=${#missing_dirs[@]}"
+  if [ "${#missing_dirs[@]}" -gt 0 ]; then
+    echo ""
+    echo "Missing FTS5 coverage (chunks_data has zero rows for this directory's doc_id):"
+    for d in "${missing_dirs[@]}"; do
+      echo "  - $d"
+    done
+  fi
+  echo ""
+  echo "Legacy chunks_dir-schema entries audited: covered=$legacy_covered missing=${#legacy_missing[@]}"
+  if [ "${#legacy_missing[@]}" -gt 0 ]; then
+    echo ""
+    echo "Legacy entries with zero FTS5 coverage:"
+    for d in "${legacy_missing[@]}"; do
+      echo "  - $d"
+    done
+  fi
+  echo ""
+  if [ "${#quarantine_hits[@]}" -gt 0 ]; then
+    echo "WARNING: quarantine artifact (.md.bak-*/.md.rejected) found chunked in: ${quarantine_hits[*]}"
+  else
+    echo "No quarantine artifacts (.md.bak-*/.md.rejected) found chunked (glob-strictness assumption holds)."
+  fi
+  echo ""
+  echo "Root cause (out of scope for this job to fix): /literature --convert never invokes the"
+  echo "chunker/indexer — only --ingest does convert+chunk+index."
+  echo ""
+}
 ```
 
 ---
@@ -1832,39 +2031,12 @@ done < <(jq -r '.entries[] | [.doc_id, (.relevance // ""), .added, (.source // "
 
 ### Validate: Check All doc_ids Exist in Global Index
 
-Reports orphaned entries (doc_ids that no longer exist in the global index). Does not modify the sub-index.
-
-```bash
-global_index="${LITERATURE_DIR:-$HOME/Projects/Literature}/index.json"
-
-orphans=()
-valid=()
-
-while IFS= read -r doc_id; do
-  if jq -e --arg id "$doc_id" '.entries[] | select(.id == $id)' "$global_index" >/dev/null 2>&1; then
-    valid+=("$doc_id")
-  else
-    orphans+=("$doc_id")
-  fi
-done < <(jq -r '.entries[].doc_id' specs/literature-index.json 2>/dev/null)
-
-echo "## Sub-Index Validation"
-echo ""
-echo "Valid entries: ${#valid[@]}"
-echo "Orphaned entries: ${#orphans[@]}"
-echo ""
-
-if [ "${#orphans[@]}" -gt 0 ]; then
-  echo "### Orphaned doc_ids (not found in global index)"
-  for id in "${orphans[@]}"; do
-    echo "  - $id"
-  done
-  echo ""
-  echo "To remove an orphan: /literature --subindex remove <doc_id>"
-else
-  echo "All entries valid."
-fi
-```
+**Migrated (task #840)**: this dangling-ref check is now wired up and reachable as
+**Job 1 (`rebuild_job1_dangling_ref_lint`)** under "Mode: Rebuild" above, invoked via
+`/literature --rebuild`. It previously referenced a `--subindex` flag that was never parsed
+anywhere in `literature.md` (dead documentation). This section is kept only as a pointer so the
+Sub-Index Management catalogue stays complete; do not add a second, divergent implementation
+here — edit `rebuild_job1_dangling_ref_lint` under "Mode: Rebuild" instead.
 
 ---
 

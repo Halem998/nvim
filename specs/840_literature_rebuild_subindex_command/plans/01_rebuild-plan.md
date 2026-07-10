@@ -130,16 +130,16 @@ Phases within the same wave can execute in parallel. Phases 1 and 2 touch differ
 
 ---
 
-### Phase 3: Job 1 (dangling-ref lint) + Job 2 (structural-minimum schema conformance) [NOT STARTED]
+### Phase 3: Job 1 (dangling-ref lint) + Job 2 (structural-minimum schema conformance) [COMPLETED]
 
 **Goal**: Wire up the existing dead "Sub-Index Management > Validate" block as Job 1, and add Job 2's structural-minimum + chunk-convention checks. Both read-only.
 
 **Tasks**:
-- [ ] Lift the dead block (SKILL.md ~lines 1719-1753) into `handle_rebuild()` as **Job 1**: for each `doc_id` in `specs/literature-index.json`, assert `jq -e --arg id "$doc_id" '.entries[] | select(.id == $id)'` against `$LITERATURE_DIR/index.json`; shape output for the multi-job report (no standalone-command echo).
-- [ ] Remove/neutralize the now-migrated dead block's stale `--subindex` help text so it is not doubly-defined.
-- [ ] Add **Job 2** structural-minimum check: each entry has non-empty `doc_id` AND either `relevance` OR `reason`. Report entries missing even that minimum. Do NOT flag or strip extra fields (`hazard`, `citation_rule`, `known_corrections`, `audits`, `source`, `added`).
-- [ ] Add Job 2 `chunk-file-conventions.md` conformance check: assert no sub-index `doc_id` matches `^chunk_\d+$` or points at a `chunk_*.md` path (chunk files are index-only re-splits, never independently referenceable).
-- [ ] Ensure both jobs are gated by their picker selection and honor read-only/idempotent semantics.
+- [x] Lift the dead block (SKILL.md ~lines 1719-1753) into `handle_rebuild()` as **Job 1**: for each `doc_id` in `specs/literature-index.json`, assert `jq -e --arg id "$doc_id" '.entries[] | select(.id == $id)'` against `$LITERATURE_DIR/index.json`; shape output for the multi-job report (no standalone-command echo). *(completed: `rebuild_job1_dangling_ref_lint()`)*
+- [x] Remove/neutralize the now-migrated dead block's stale `--subindex` help text so it is not doubly-defined. *(completed: Sub-Index Management > Validate section now points to Job 1)*
+- [x] Add **Job 2** structural-minimum check: each entry has non-empty `doc_id` AND either `relevance` OR `reason`. Report entries missing even that minimum. Do NOT flag or strip extra fields (`hazard`, `citation_rule`, `known_corrections`, `audits`, `source`, `added`). *(completed: `rebuild_job2_schema_conformance()`)*
+- [x] Add Job 2 `chunk-file-conventions.md` conformance check: assert no sub-index `doc_id` matches `^chunk_\d+$` or points at a `chunk_*.md` path (chunk files are index-only re-splits, never independently referenceable). *(completed: sub-index entries carry no path field, so the check is doc_id-pattern-only, matching the plan's `^chunk_\d+$` requirement)*
+- [x] Ensure both jobs are gated by their picker selection and honor read-only/idempotent semantics. *(completed: gated via `run_job1`/`run_job2` in the aggregation shell; both jobs only read `$sub_index`/`$global_index`, never write)*
 
 **Timing**: ~1.5 hours
 
@@ -154,16 +154,16 @@ Phases within the same wave can execute in parallel. Phases 1 and 2 touch differ
 
 ---
 
-### Phase 4: Job 4 (per-directory chunk/search-index coverage audit) [NOT STARTED]
+### Phase 4: Job 4 (per-directory chunk/search-index coverage audit) [COMPLETED]
 
 **Goal**: Add read-only Job 4 that reports, per directory, which converted documents lack FTS5 coverage — handling both schema layouts and quarantine hazards.
 
 **Tasks**:
-- [ ] Add **Job 4** to `handle_rebuild()`: iterate every `sources/<dir>/` plus every legacy top-level `chunks_dir`-schema entry; check `SELECT count(*) FROM chunks_data WHERE doc_id = ...` per directory (query `chunks_data`, NOT the empty `document_metadata`).
-- [ ] Handle directory→doc_id resolution with parent/child fan-out (mirror `literature-fidelity-audit.sh`'s "Target entry resolution" root-vs-child fallback); handle legacy `chunks_dir`-keyed entries lacking a `path` field.
-- [ ] Assert (defensively) that no directory's chunk set includes a chunked `.md.bak-*` / `.md.rejected` file (hazard b), and verify the chunker glob strictness assumption; report if violated.
-- [ ] Report the per-directory missing-coverage list (expected to surface the ~25 dirs) plus a one-line flag that `document_metadata` is empty and that the root cause is `--convert` not chunking (remediation out of scope).
-- [ ] Keep Job 4 strictly read-only and idempotent.
+- [x] Add **Job 4** to `handle_rebuild()`: iterate every `sources/<dir>/` plus every legacy top-level `chunks_dir`-schema entry; check `SELECT count(*) FROM chunks_data WHERE doc_id = ...` per directory (query `chunks_data`, NOT the empty `document_metadata`). *(completed: `rebuild_job4_coverage_audit()`)*
+- [x] Handle directory→doc_id resolution with parent/child fan-out (mirror `literature-fidelity-audit.sh`'s "Target entry resolution" root-vs-child fallback); handle legacy `chunks_dir`-keyed entries lacking a `path` field. *(deviation: altered — live-data verification (see implementation summary) showed `chunks_data.doc_id` is keyed on the `sources/<dir>/` directory basename itself, not on any `index.json` entry `.id`/`parent_doc` chain; the fidelity-audit's root/child fan-out logic answers a different question (which index.json entries to stamp) and does not apply to this doc_id lookup. Implemented as direct `doc_id = <directory basename>` / `doc_id = <legacy .doc_id>` checks instead, verified against live data to produce the exact expected 25-directory list.)*
+- [x] Assert (defensively) that no directory's chunk set includes a chunked `.md.bak-*` / `.md.rejected` file (hazard b), and verify the chunker glob strictness assumption; report if violated. *(completed: grep against chunks.json manifests; live-verified 0 hits, glob-strictness assumption confirmed by reading literature-ingest.sh's `*.md` glob)*
+- [x] Report the per-directory missing-coverage list (expected to surface the ~25 dirs) plus a one-line flag that `document_metadata` is empty and that the root cause is `--convert` not chunking (remediation out of scope). *(completed: live-verified exactly 25 directories reported, matching research baseline)*
+- [x] Keep Job 4 strictly read-only and idempotent. *(completed: sqlite3 SELECT-only, jq read-only, grep read-only; no writes)*
 
 **Timing**: ~1.5 hours
 
