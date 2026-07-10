@@ -6,6 +6,9 @@
 #   - missing EXTENSION.md
 #   - missing manifest.json
 #   - manifest entries referencing nonexistent files (agents, skills, commands, rules, scripts)
+#   - deployed .claude/scripts/<name> content drift from its extension-source counterpart, for
+#     each manifest.provides.scripts entry where both copies exist (never-deployed extension-only
+#     scripts are skipped, not failed)
 #   - README.md older than manifest.json (potential drift)
 #   - commands listed in manifest but not mentioned in README.md
 #
@@ -102,6 +105,45 @@ check_manifest_entries() {
   for s in $scripts; do
     if [[ ! -f "$ext_path/scripts/$s" ]]; then
       fail "manifest script entry missing on disk: scripts/$s"
+    fi
+  done
+}
+
+# Rule F: Deployed-vs-source content drift for manifest.provides.scripts entries.
+#
+# copy_scripts()/copy_file() in lua/neotex/plugins/ai/shared/extensions/loader.lua performs a
+# byte-for-byte overwrite of .claude/scripts/<name> from <extension>/scripts/<name> on every
+# extension load/reload, with no path substitution or templating. If a script is later hotfixed
+# directly in the deployed .claude/scripts/ copy (instead of the extension source), that fix
+# silently regresses on the next sync. This check fails when a manifest.provides.scripts entry's
+# deployed copy differs in content from its extension-source copy.
+#
+# CRITICAL: only compare when BOTH copies exist. Several extension-only scripts (e.g. the
+# opposite-direction never-deployed zotero-*/cite-extract.sh/test-lit-pipeline.sh scripts) are
+# intentionally absent from .claude/scripts/ -- an absent deployed copy is NOT drift and must be
+# skipped (with an optional info note), never a FAIL.
+check_deployed_script_drift() {
+  local ext_path="$1"
+  local manifest="$ext_path/manifest.json"
+
+  local scripts
+  scripts=$(jq -r '.provides.scripts[]? // empty' "$manifest" 2>/dev/null)
+  local s deployed source
+  for s in $scripts; do
+    deployed="$REPO_ROOT/.claude/scripts/$s"
+    source="$ext_path/scripts/$s"
+
+    if [[ ! -f "$deployed" ]]; then
+      info "script not deployed, skipping drift check: $s"
+      continue
+    fi
+    if [[ ! -f "$source" ]]; then
+      # Already reported by check_manifest_entries; do not double-report here.
+      continue
+    fi
+
+    if ! cmp -s "$deployed" "$source"; then
+      fail "deployed script content drift (deployed != extension source): scripts/$s"
     fi
   done
 }
@@ -407,6 +449,7 @@ for ext_path in "$EXT_DIR"/*/; do
   if [[ -f "$ext_path/manifest.json" ]]; then
     if jq empty "$ext_path/manifest.json" 2>/dev/null; then
       check_manifest_entries "$ext_path"
+      check_deployed_script_drift "$ext_path"
       check_routing_block "$ext_path"
       check_undeclared_skills "$ext_path"
       check_routing_consistency "$ext_path"

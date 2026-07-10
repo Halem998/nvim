@@ -1,0 +1,56 @@
+{
+  "phase": 4,
+  "phase_name": "Implement the drift guard in check-extension-docs.sh",
+  "started_at": "2026-07-10T23:05:00Z",
+  "last_updated": "2026-07-10T23:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add check_deployed_script_drift function",
+      "status": "done",
+      "files_touched": [
+        ".claude/scripts/check-extension-docs.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Skip when deployed copy absent",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Wire function into main loop",
+      "status": "done",
+      "files_touched": [
+        ".claude/scripts/check-extension-docs.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Match exit-code contract using existing helpers",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Sync core extension source copy to avoid self-flagging drift",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/core/scripts/check-extension-docs.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "4.5",
+      "description": "Also sync .claude/extensions/core/scripts/check-extension-docs.sh",
+      "type": "altered",
+      "reason": "check-extension-docs.sh is itself a core provides.scripts entry; editing only the deployed copy would make the new guard immediately self-flag core with a drift FAIL. Mirrored the edit to extension source, consistent with the plan's own backport pattern.",
+      "annotation": "*(deviation: altered — additionally synced .claude/extensions/core/scripts/check-extension-docs.sh)*"
+    }
+  ],
+  "handoff_count": 0
+}

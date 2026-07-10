@@ -180,21 +180,22 @@ consumers, and declare it in the manifest.
 
 ---
 
-### Phase 4: Implement the drift guard in check-extension-docs.sh [NOT STARTED]
+### Phase 4: Implement the drift guard in check-extension-docs.sh [COMPLETED]
 
 **Goal**: Add a content-diff check that fails when a `manifest.provides.scripts` entry's deployed
 copy differs from its extension-source copy, without false-failing on never-deployed scripts.
 
 **Tasks**:
-- [ ] Add a new per-extension function (e.g. `check_deployed_script_drift`) that iterates
+- [x] Add a new per-extension function (e.g. `check_deployed_script_drift`) that iterates
       `.provides.scripts` and, for each entry where BOTH `$REPO_ROOT/.claude/scripts/<name>` and
-      `$ext_path/scripts/<name>` exist, runs `cmp -s` and calls `fail` on any difference.
-- [ ] Skip (no fail) when the deployed copy is ABSENT — that is the opposite-direction
+      `$ext_path/scripts/<name>` exist, runs `cmp -s` and calls `fail` on any difference. *(completed)*
+- [x] Skip (no fail) when the deployed copy is ABSENT — that is the opposite-direction
       never-deployed gap (`zotero-*`, `cite-extract.sh`, `test-lit-pipeline.sh`), explicitly out of
-      scope; optionally emit an `info`/WARN note.
-- [ ] Wire the new function into the main per-extension loop next to the other `check_*` calls
-      (guarded by the existing valid-manifest branch).
-- [ ] Match the existing exit-code contract (0 pass / 1 fail) and `fail`/`info` helpers.
+      scope; optionally emit an `info`/WARN note. *(completed: emits "script not deployed, skipping drift check" info note)*
+- [x] Wire the new function into the main per-extension loop next to the other `check_*` calls
+      (guarded by the existing valid-manifest branch). *(completed: called right after check_manifest_entries)*
+- [x] Match the existing exit-code contract (0 pass / 1 fail) and `fail`/`info` helpers. *(completed: reuses existing fail()/info() helpers)*
+- [x] *(deviation: altered — additionally synced `.claude/extensions/core/scripts/check-extension-docs.sh` from the newly-edited deployed copy)*. The plan only listed `.claude/scripts/check-extension-docs.sh` as a file to modify, but `check-extension-docs.sh` is itself a `core` extension `provides.scripts` entry. Editing only the deployed copy would make the brand-new guard immediately self-flag core with a drift FAIL on its own addition. Mirrored the edit into the extension source (same direction as the plan's Phase 2 backport pattern) so the guard is self-consistent from the moment it is added.
 
 **Timing**: 35 minutes
 
