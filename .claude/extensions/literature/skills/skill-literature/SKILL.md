@@ -1904,6 +1904,120 @@ function rebuild_job4_coverage_audit() {
 }
 ```
 
+### Job 3: Coverage Refresh — the ONLY Writer (confirm-after-diff gated)
+
+Proposes newly-relevant global-corpus documents that are absent from this repo's sub-index, and
+appends them **only** after an explicit `AskUserQuestion` confirmation of a shown diff.
+Additions only — never deletes or rewrites an existing entry (never touches BimodalLogic-style
+rich curation fields, never uses the "Remove" block). `--dry-run` skips the confirm+write step
+and only prints the proposed diff; Jobs 1/2/4 never write regardless of `--dry-run`.
+
+**Rebuild Job 3 Step A — Candidate generation (LLM-driven matching)**:
+
+This step requires judgment, not pure mechanical bash — no existing script performs this
+matching. Determine this repo's domain signals (repo basename via `basename "$(pwd)"`, recent
+task titles/descriptions from `specs/state.json` if present, README topic sentences), then scan
+`$global_index`'s `entries[]` for candidates whose `project_tags`, `keywords`, or `summary`
+plausibly match that domain:
+
+```bash
+# Read current sub-index doc_ids to exclude already-present entries
+existing_ids=$(jq -r '.entries[].doc_id' "$sub_index" 2>/dev/null)
+
+# Pull a lightweight candidate pool: entries whose project_tags array already names this repo,
+# unioned with entries an LLM judges keyword/summary-relevant to the domain signals above.
+# project_tags-based candidates are the highest-confidence signal (another repo's --lit or
+# discover-mode run already tagged this doc as relevant to THIS project by name).
+repo_name=$(basename "$(pwd)")
+tag_candidates=$(jq -r --arg repo "$repo_name" \
+  '.entries[] | select(.project_tags? and (.project_tags | index($repo))) | .id' \
+  "$global_index" 2>/dev/null)
+```
+
+The agent then reviews `tag_candidates` (and any keyword/summary-matched candidates it
+identifies by reading entry `keywords`/`summary`/`title` fields against the domain signals),
+excludes anything already in `$existing_ids`, and drafts a `relevance` annotation per candidate
+explaining why it belongs in this repo's sub-index.
+
+**Rebuild Job 3 Step B — Validate candidates** (reuses the "Add" block's validation half only):
+
+```bash
+# For each candidate doc_id, confirm it still resolves in the global index before proposing it
+# (mirrors the existing Sub-Index Management > Add block's validation, never its write).
+for doc_id in $candidate_doc_ids; do
+  if ! jq -e --arg id "$doc_id" '.entries[] | select(.id == $id)' "$global_index" >/dev/null 2>&1; then
+    echo "Warning: candidate '$doc_id' no longer resolves in global index — dropping" >&2
+    continue
+  fi
+done
+```
+
+**Rebuild Job 3 Step C — Confirm-after-diff gate** (always shown, even under `--dry-run`):
+
+```json
+{
+  "question": "Add these documents to specs/literature-index.json?",
+  "header": "Coverage Refresh — Proposed Additions",
+  "multiSelect": true,
+  "options": [
+    {
+      "label": "{doc_id} — {title}",
+      "description": "Proposed relevance: {relevance}. Currently absent from your sub-index."
+    }
+  ]
+}
+```
+
+If there are zero candidates, print `"No new coverage-refresh candidates found."` and skip the
+gate entirely (nothing to confirm).
+
+**Rebuild Job 3 Step D — Append-only write (skipped entirely under `--dry-run`)**:
+
+```bash
+function rebuild_job3_coverage_refresh() {
+  echo "### Job 3: Coverage Refresh"
+  echo ""
+
+  # ... Steps A-C above produce $confirmed_doc_ids (only entries the user checked) ...
+
+  if [ "$dry_run" = "true" ]; then
+    echo "_dry-run: no write performed. Proposed additions were shown above for review only._"
+    echo ""
+    return 0
+  fi
+
+  if [ -z "${confirmed_doc_ids:-}" ]; then
+    echo "No additions confirmed — sub-index unchanged."
+    echo ""
+    return 0
+  fi
+
+  today=$(date +%Y-%m-%d)
+  for doc_id in $confirmed_doc_ids; do
+    relevance="${candidate_relevance[$doc_id]:-}"
+    tmp=$(mktemp)
+    jq --arg id "$doc_id" \
+       --arg rel "$relevance" \
+       --arg today "$today" \
+       '.entries += [{
+         "doc_id": $id,
+         "relevance": (if $rel == "" then null else $rel end),
+         "added": $today,
+         "source": "rebuild"
+       }]' "$sub_index" > "$tmp" && mv "$tmp" "$sub_index"
+    echo "Added '$doc_id' to $sub_index"
+  done
+  echo ""
+  echo "Existing entries (including any BimodalLogic-style rich curation fields) were not"
+  echo "touched — this job only ever appends new entries."
+  echo ""
+}
+```
+
+Dangling-ref removals are never performed by any rebuild job — a dangling ref found by Job 1
+requires its own separate, explicitly confirmed removal action (Sub-Index Management > Remove),
+never automatic cleanup.
+
 ---
 
 ## Sub-Index Management

@@ -179,16 +179,16 @@ Phases within the same wave can execute in parallel. Phases 1 and 2 touch differ
 
 ---
 
-### Phase 5: Job 3 (coverage refresh — the only writer) [NOT STARTED]
+### Phase 5: Job 3 (coverage refresh — the only writer) [COMPLETED]
 
 **Goal**: Add Job 3: propose newly-relevant global-corpus docs absent from the sub-index, gate every write behind confirm-after-diff, and append additions-only via jq.
 
 **Tasks**:
-- [ ] Add **Job 3** to `handle_rebuild()`: generate candidates by matching this repo's domain against global-index `project_tags`/`keywords`/`summary` (new LLM-driven matching; no existing script does this).
-- [ ] For each candidate, reuse the dead "Add" block's *validation* half only (confirm `doc_id` exists in the global index before proposing).
-- [ ] Present an `AskUserQuestion`-gated diff/confirm before any write; on confirm, append via the existing append-only jq pattern, writing `relevance` (do NOT overwrite or reshape existing entries; never use the "Remove" block).
-- [ ] `--dry-run`: skip the confirm+write step; only print the proposed diff. Make explicit that `--dry-run` only changes Job 3 (1/2/4 never write regardless).
-- [ ] Ensure Job 3 never rewrites/deletes human curation and performs no automatic dangling-ref removal.
+- [x] Add **Job 3** to `handle_rebuild()`: generate candidates by matching this repo's domain against global-index `project_tags`/`keywords`/`summary` (new LLM-driven matching; no existing script does this). *(completed: Rebuild Job 3 Step A, `project_tags`-based highest-confidence signal plus agent keyword/summary judgment)*
+- [x] For each candidate, reuse the dead "Add" block's *validation* half only (confirm `doc_id` exists in the global index before proposing). *(completed: Rebuild Job 3 Step B)*
+- [x] Present an `AskUserQuestion`-gated diff/confirm before any write; on confirm, append via the existing append-only jq pattern, writing `relevance` (do NOT overwrite or reshape existing entries; never use the "Remove" block). *(completed: Rebuild Job 3 Step C/D, `rebuild_job3_coverage_refresh()`)*
+- [x] `--dry-run`: skip the confirm+write step; only print the proposed diff. Make explicit that `--dry-run` only changes Job 3 (1/2/4 never write regardless). *(completed: Step D returns before any write when dry_run=true)*
+- [x] Ensure Job 3 never rewrites/deletes human curation and performs no automatic dangling-ref removal. *(completed: `.entries +=` append-only jq; explicit closing note that dangling-ref removal is always a separate, explicitly confirmed action)*
 
 **Timing**: ~1.5 hours
 
