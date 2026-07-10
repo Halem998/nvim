@@ -1,9 +1,10 @@
 ---
-next_project_number: 840
+next_project_number: 842
 ---
 
 # TODO
 
+Warning: 2 task(s) have no topic and will render under Uncategorized: 840, 841 (non-fatal)
 ## Task Order
 
 *Updated 2026-07-10. Generated from state.json dependency graph.*
@@ -11,8 +12,8 @@ next_project_number: 840
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826,832,837,838 | -- | agent-system, literature, extensions, ... |
-| 2 | 822,827 | 821,826 | extensions |
+| 1 | 78,87,821,826,832,837,838,841 | -- | agent-system, literature, extensions, ... |
+| 2 | 822,827,840 | 821,826,841 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -40,7 +41,100 @@ next_project_number: 840
 
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
+### Uncategorized
+
+841 [NOT STARTED] — Reconcile the literature extension SOURCE OF TRUTH (`.claude/exte
+  └─ 840 [NOT STARTED] — Add a `--rebuild` flag to the `/literature` command that brings a
+
 ## Tasks
+
+### 841. Reconcile literature extension source drift
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: None
+
+**Description**: Reconcile the literature extension SOURCE OF TRUTH (`.claude/extensions/literature/`) against the DEPLOYED COPIES (`.claude/scripts/`), which have drifted ahead by at least two prior tasks. A "Load Core" / extension sync currently reverts recent correctness fixes silently. This is a live regression risk, not cosmetic.
+
+MEASURED DRIFT (verified 2026-07-09, re-verify before acting):
+- `.claude/scripts/literature-search.sh` and `.claude/extensions/literature/scripts/literature-search.sh` DIFFER. Deployed has 2 `unadjudicated` references (task #839) and task #835's entire provenance/fidelity flagging block (the `--include-unverified` flag, quarantine-from-ranked-output logic, warning-banner-on-read). Extension source has ZERO `unadjudicated` refs and is missing the #835 block.
+- `.claude/scripts/literature-briefing.sh` vs `.claude/extensions/literature/scripts/literature-briefing.sh` DIFFER. Deployed has 3 `unadjudicated` refs (task #839's `needs_fidelity_marker()` allowlist fix); extension source has 0.
+- `.claude/scripts/literature-fidelity-audit.sh` exists ONLY in `.claude/scripts/` -- it is NOT in the extension at all. Task #839 fully owns this script. Decision required: does it belong in the extension source (so it survives sync), or is it intentionally repo-local? If it belongs in the extension, add it; if repo-local, document WHY and protect it.
+
+CONSEQUENCE IF UNFIXED: next extension sync overwrites `.claude/scripts/` from the (stale) extension source. #839's fail-open fix downstream disappears -- `unadjudicated` docs stop getting warning banners in `literature-briefing.sh` and stop being quarantined from ranked search in `literature-search.sh`. #835's provenance flagging disappears entirely. The corpus index.json would still say `unadjudicated`, but no consumer would honor it. Silent re-introduction of the exact fail-open class #839 was created to eliminate.
+
+ROOT CAUSE: tasks #835 and #839 (and possibly earlier literature tasks) edited the DEPLOYED `.claude/scripts/` copies directly instead of the extension source. `.syncprotect` at project root does NOT list any of these scripts (it currently lists only `context/repo/project-overview.md` and `output/implementation-001.md`), so they are unprotected.
+
+REQUIRED WORK:
+1. AUDIT the full drift surface. Do not assume it is only the two scripts above. Diff EVERY file that exists in both `.claude/scripts/` and `.claude/extensions/literature/scripts/`, and every `.claude/commands/literature.md` (+ cite.md) vs its extension-source counterpart. Produce a complete drift manifest before changing anything. Other literature scripts (build-index, chunk, ingest, discover, retrieve, normalize-authors, lit-flag-resolve, create-setup-task) may also have drifted.
+2. For each drifted file, determine DIRECTION of truth. The deployed copies carry the newer correctness fixes (#835, #839), so in these known cases the deployed copy is authoritative and must be backported INTO the extension source. But verify per-file -- do not blindly assume deployed is always newer; a file could have been correctly edited in the extension and be behind in deploy. Use git history if needed.
+3. BACKPORT the authoritative content into `.claude/extensions/literature/` source. After backport, deployed and extension-source copies of each reconciled file must be semantically equivalent (ignoring any legitimately deploy-local path substitutions the sync performs).
+4. DECIDE and document the fate of `literature-fidelity-audit.sh` (add to extension source vs. keep repo-local-and-protected).
+5. INSTALL A GUARD so this cannot silently recur. Options to evaluate (pick and justify): (a) a doc-lint / CI check in the spirit of `.claude/scripts/check-extension-docs.sh` that fails when a deployed `.claude/scripts/literature-*.sh` diverges from its extension source; (b) adding the fidelity-critical scripts to `.syncprotect` if they are legitimately repo-local; (c) a pre-sync verification step. A guard is REQUIRED, not optional -- without it the reconciliation decays again on the next hotfix.
+
+CONSTRAINTS:
+- Do NOT alter the RUNTIME BEHAVIOR of the deployed scripts. The deployed `.claude/scripts/` copies are the ones currently exercised by the live corpus and by tasks #832/#839's verified results. This task makes the EXTENSION SOURCE match them, plus a guard -- it must not regress what is deployed. After this task, re-running `literature-fidelity-audit.sh --dry-run` must produce byte-identical classification to before.
+- Quarantine-never-delete posture for any file moves.
+- If backporting reveals a genuine conflict (extension source has an intentional change the deployed copy lacks), STOP and report it rather than clobbering.
+
+VERIFICATION:
+- Drift manifest lists every literature file compared and its verdict.
+- After backport: for each reconciled script, `diff` between deployed and extension source shows only expected/no differences.
+- `grep -c unadjudicated` on the extension-source `literature-search.sh` and `literature-briefing.sh` matches the deployed copies (2 and 3 respectively, or whatever re-verification shows).
+- The installed guard actually fails when fed an artificial divergence (test it, do not just add it).
+- `literature-fidelity-audit.sh --dry-run` classification unchanged from pre-task baseline.
+
+---
+
+### 840. Literature rebuild subindex command
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: Task 841
+
+**Description**: Add a `--rebuild` flag to the `/literature` command that brings a repo's per-repo sub-index (`specs/literature-index.json`) into conformance with the global Literature corpus and current conventions.
+
+MOTIVATION: The per-repo sub-index schema is `{"entries": [{"doc_id", "relevance", "source"}]}` -- key-based, resolved against `$LITERATURE_DIR/index.json` at read time. It caches NO `provenance_fidelity`, so old repos are NOT carrying stale fidelity stamps (verified: task #839's fail-open fix does not need backporting into sub-indexes). The real failure mode is COVERAGE DRIFT, not corruption: the global index has 273 doc ids and grew during tasks #836 (7 Zotero recoveries) and #832 (girard_1989, van_doorn_2015 added; 3 docs materially reconverted). A sub-index curated months ago has no mechanism to notice newly-relevant documents appeared. It does not go wrong -- it silently under-covers, which is harder to detect than a dangling reference.
+
+MEASURED BASELINE (verified 2026-07-09, do not assume it still holds):
+- `~/.config/nvim/specs/literature-index.json` -- ABSENT
+- `~/Projects/BimodalLogic/specs/literature-index.json` -- 2 entries, 0 dangling
+- `~/Projects/cslib/specs/literature-index.json` -- 11 entries, 0 dangling
+- global `~/Projects/Literature/index.json` -- 273 doc ids
+So dangling-ref lint currently PASSES on every live sub-index. It is a regression guard, not a fix for a present defect. Do not write the plan as though refs are currently broken.
+
+INTERFACE DECISION (settled by user, do not relitigate): implement as `/literature --rebuild`, NOT a top-level `/rebuild` command. Rationale: `/literature` already owns `--validate` (global index vs filesystem), `--scan`, `--index FILE`. `--rebuild` sits beside `--validate` with a clean distinction -- `--validate` checks global-vs-filesystem; `--rebuild` checks per-repo-sub-index-vs-global. It also pairs with the existing `literature-create-setup-task.sh`, which already handles the sub-index-MISSING case; `--rebuild` is the sub-index-EXISTS-BUT-STALE counterpart. A bare `/rebuild` is ambiguous (rebuild what -- global index? search chunks? sub-index?) and duplicates skill-literature plumbing.
+
+FOUR JOBS. On invocation, `--rebuild` MUST present an AskUserQuestion (multiSelect) letting the user choose which jobs to run. Do not hardcode running all four. Default selection may pre-check the two mechanical ones.
+
+1. DANGLING-REF LINT (mechanical, idempotent, safe, non-interactive)
+   For each `doc_id` in the sub-index, assert it resolves to an `.id` in the global index. Report unresolvable ids. Currently 0 across all live sub-indexes -- this is a guard against future reconversions renaming doc ids (e.g. #832's reconversions, venema_1991's per-chapter sub-document id namespace).
+
+2. SCHEMA CONFORMANCE CHECK (mechanical, idempotent, safe, non-interactive)
+   Verify each entry matches the current `{doc_id, relevance, source}` shape. Verify conformance to conventions that have accreted since the sub-index was authored -- notably `.claude/context/project/literature/patterns/chunk-file-conventions.md` (created by #839; documents that `chunk_NNNN.md` files are near-verbatim re-splits of the canonical `.md` and must never be double-counted). Report nonconforming entries.
+
+3. COVERAGE REFRESH (requires LLM judgment; DRY-RUN AND CONFIRM, never autonomous)
+   Scan the global index for documents newly relevant to this repo's domain but absent from the sub-index, using `project_tags`, `keywords`, and `summary` fields (the same signals `literature-create-setup-task.sh` already relies on). PROPOSE additions with a relevance annotation; do NOT write them without explicit user confirmation. `specs/literature-index.json` is a HUMAN-CURATED file -- an agent must not silently rewrite a human's curation decisions. Show a diff, then confirm.
+
+4. CHUNK / SEARCH-INDEX COVERAGE AUDIT (mechanical, read-only)
+   Assert every `verified_conversion` directory has chunk files AND corresponding search-index entries. This closes a gap left open by #832: its Phase 8 reported "4,002 chunks" as an AGGREGATE and never checked per-directory coverage. A count of 4,002 is equally consistent with "all covered" and "two silently missing". Assert per-directory, not in aggregate.
+   Two known hazards this audit must specifically check:
+   (a) `literature-ingest.sh` writes outside `sources/<dir>/` (reported by #832, worked around rather than fixed) -- newly-converted docs may land where the chunker/indexer does not scan. #832's two new conversions (girard_1989, van_doorn_2015) went through that path.
+   (b) Quarantine artifacts must be EXCLUDED from chunking/indexing. #832 created four `.md.bak-<UTC>` files and one `.md.rejected` (gabbay_2000's 1.4 MB failed conversion). The fidelity audit's `*.md` glob does not match them, but it is UNVERIFIED whether the chunker's glob is equally strict. A chunked `.md.rejected` would inject a known-bad document into search results.
+
+CONSTRAINTS:
+- Jobs 1, 2, 4 are read-only and idempotent. Job 3 is the only one that writes, and only after confirmation.
+- Never delete or rewrite a human-curated sub-index entry. Additions only; removals of dangling ids must be confirmed.
+- Support `--dry-run` for all jobs.
+- The command must work when the sub-index is ABSENT: in that case defer to the existing `literature-create-setup-task.sh` path rather than duplicating it.
+
+FILE SCOPE NOTE (read before planning): `.claude/extensions/literature/` is the SOURCE OF TRUTH. `.claude/commands/` is a DEPRECATED legacy mirror and `.claude/scripts/` holds DEPLOYED COPIES. Edits belong in the extension. Note that recent literature work (#835, #839) edited the deployed copies directly and the extension source is now behind -- see the companion drift task. Do not repeat that mistake: implement `--rebuild` in the extension source and let the deploy/sync mechanism propagate it.
+
+VERIFICATION:
+- `--rebuild --dry-run` against `~/Projects/cslib` (11 entries) and `~/Projects/BimodalLogic` (2 entries) must report 0 dangling refs and 0 schema violations, matching the measured baseline above.
+- `--rebuild` against `~/.config/nvim` (sub-index ABSENT) must route to the create-setup-task path, not error.
+- Job 4 must be run against the live corpus and must either confirm per-directory chunk coverage for all `verified_conversion` dirs or name the ones missing coverage.
+- Confirm no job mutates the corpus or the sub-index without confirmation.
+
+---
 
 ### 839. Fix fail-open classification in literature-fidelity-audit.sh
 - **Status**: [COMPLETED]
