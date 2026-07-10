@@ -1,0 +1,23 @@
+{
+  "phase": 4,
+  "phase_name": "venema_1991 disclosure banner (Decision A)",
+  "started_at": "2026-07-10T00:00:00Z",
+  "last_updated": "2026-07-10T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add truthful disclosure banner to venema_1991 index.json summaries", "status": "done",
+     "files_touched": ["Projects/Literature/index.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "disclosed_before": false,
+    "disclosed_after": true,
+    "ratio_before": 0.3737,
+    "ratio_after": 0.3737,
+    "provenance_before": "unadjudicated",
+    "provenance_after": "verified_conversion",
+    "note": "Acceptance was disclosure_check()==True per Decision A, NOT a ratio rise. Ratio deliberately unchanged."
+  }
+}

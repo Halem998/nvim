@@ -274,7 +274,7 @@ index.json entries.
 
 ---
 
-### Phase 4: venema_1991 disclosure banner — Decision A [NOT STARTED]
+### Phase 4: venema_1991 disclosure banner — Decision A [COMPLETED]
 
 **Goal**: Resolve `venema_1991` via a truthful disclosure banner (mirroring #839's
 `thomas_2003_reactive` Option A), NOT reconversion.
@@ -287,13 +287,22 @@ full-book coverage were ever wanted, that is a separate, larger scope decision (
 pages) and is explicitly out of scope here.
 
 **Tasks**:
-- [ ] Add a truthful disclosure banner to the converted `.md` file(s) (or the relevant index.json
+- [x] Add a truthful disclosure banner to the converted `.md` file(s) (or the relevant index.json
   summary text) stating that only chapter 2 and appendices A/B were intentionally selected from the
   184-page book, and the rest was deliberately not converted. The banner text MUST be truthful
-  about what was and was not converted.
-- [ ] This edit is additive (no `.md` content removed); no backup strictly required, but note the
-  pre-edit state for rollback.
-- [ ] Do NOT reconvert the ch2/app_A_B PDFs as the primary remedy.
+  about what was and was not converted. *(completed: prepended a truthful "Selective conversion:
+  only Chapter 2 and Appendices A/B (approx. 59 of the book's 184 pages)..." banner to the
+  `summary` field of all 9 index.json entries under `sources/venema_1991/` (the disclosure_check()
+  regex matches on `summary`/`.md` text combined, per `disclosure_check()` reading `index_summaries`
+  drawn from entries whose `path` starts with `sources/<dir>/`). No `.md` file content was
+  modified — the banner lives in index.json's summary field only.)*
+- [x] This edit is additive (no `.md` content removed); no backup strictly required, but note the
+  pre-edit state for rollback. *(completed: manual `index.json.bak-pre-phase4-<UTC>` snapshot taken
+  before the edit, beyond the audit script's own `--write`-time backup, as extra insurance since
+  this was a direct hand-edit of index.json rather than a script-mediated write)*
+- [x] Do NOT reconvert the ch2/app_A_B PDFs as the primary remedy. *(completed: no reconversion
+  attempted; ratio confirmed unchanged at 0.3737 post-edit, exactly as Decision A predicted —
+  acceptance was disclosure_check()==True, not a ratio rise)*
 
 **Timing**: 0.5 hours
 
@@ -310,7 +319,7 @@ pages) and is explicitly out of scope here.
 
 ---
 
-### Phase 5: negri_von_plato_2001 explicit deferral — Decision B [NOT STARTED]
+### Phase 5: negri_von_plato_2001 explicit deferral — Decision B [COMPLETED]
 
 **Goal**: Explicitly defer `negri_von_plato_2001` as a wrong-asset case, honestly, without
 converting the TOC-only PDF.
@@ -322,10 +331,13 @@ work outside this task's file_scope. DEFER it; do NOT convert as-is; do NOT let 
 a "successful" conversion.
 
 **Tasks**:
-- [ ] Make no write to `~/Projects/Literature/sources/negri_von_plato_2001/`.
-- [ ] Record the deferral explicitly for the Phase 9 summary: reason (TOC-only wrong asset), and a
+- [x] Make no write to `~/Projects/Literature/sources/negri_von_plato_2001/`. *(completed: verified
+  via `stat` — PDF mtime 2026-06-23, predates this session, confirmed untouched)*
+- [x] Record the deferral explicitly for the Phase 9 summary: reason (TOC-only wrong asset), and a
   recommendation to `/spawn` a follow-up acquisition task to source a real full-text PDF. (Spawning
   is optional and left to the implementer/orchestrator; do not auto-spawn during planning.)
+  *(completed: recorded in progress file and will be carried into the Phase 9/summary honest
+  report; no `/spawn` invoked per "optional, left to orchestrator")*
 
 **Timing**: 0.25 hours
 

@@ -1,0 +1,19 @@
+{
+  "phase": 5,
+  "phase_name": "negri_von_plato_2001 explicit deferral (Decision B)",
+  "started_at": "2026-07-10T00:05:00Z",
+  "last_updated": "2026-07-10T00:06:00Z",
+  "objectives": [
+    {"id": 1, "description": "Make no write; record deferral honestly", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "deferral_record": {
+    "dir": "negri_von_plato_2001",
+    "reason": "Only PDF present (Structural_Proof_Theory_TOC_only.pdf) is a 4-page table-of-contents-only scan, confirmed by content read, not filename alone. Converting it would produce a ~500-word TOC stub stamped as though it were the full book.",
+    "recommendation": "Consider /spawn to source a real full-text PDF; not auto-spawned per plan (optional, left to orchestrator/user).",
+    "verified_untouched": "stat mtime 2026-06-23T12:46:35, predates this implementation session"
+  }
+}
