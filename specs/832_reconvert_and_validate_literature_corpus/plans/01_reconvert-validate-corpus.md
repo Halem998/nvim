@@ -475,26 +475,48 @@ all conversions.
 
 ---
 
-### Phase 9: Re-audit, verification contract, honest partial reporting [NOT STARTED]
+### Phase 9: Re-audit, verification contract, honest partial reporting [COMPLETED]
 
 **Goal**: Re-stamp the corpus and assert the full verification contract; report every un-completable
 member honestly.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/literature-fidelity-audit.sh --dry-run > /tmp/832-audit-after.txt`
-  and diff against `/tmp/832-audit-before.txt` from Phase 1.
-- [ ] Assert each contract item (see Testing & Validation) against the AFTER dry-run; for any item
+- [x] Run `bash .claude/scripts/literature-fidelity-audit.sh --dry-run > /tmp/832-audit-after.txt`
+  and diff against `/tmp/832-audit-before.txt` from Phase 1. *(completed: full diff shows exactly
+  9 dirs changed — girard_1989, van_doorn_2015, fine_2012_guide-to-ground,
+  fine_2012_counterfactuals-without-possible-worlds, rabinovich_2014, venema_1991, burgess_1984,
+  thomason_1984, vardi_wolper_1986 — plus gabbay_1994's ratio becoming computable (new
+  unadjudicated discovery, see Phase 6 note). All 88 other dirs byte-identical.)*
+- [x] Assert each contract item (see Testing & Validation) against the AFTER dry-run; for any item
   that did not hold, record the concrete reason (partial completion acceptable, false completion
-  not).
-- [ ] Run `bash .claude/scripts/literature-fidelity-audit.sh --write` (self-backing-up: backs up
+  not). *(completed: all explicit contract items PASS — see Phase 9 progress file and
+  implementation summary for the full assertion table. Named incompletions: 1)
+  troelstra_schwichtenberg_2000 conversion failed twice (exit 3, exit 3), remains
+  `not_yet_converted`, honestly reported; 2) gabbay_2000's `.md` conversion failed twice
+  (exit 3, exit 3) though its OCR baseline fully succeeded (614/614 pages), remains
+  `not_yet_converted`, honestly reported; 3) negri_von_plato_2001 deferred by design (Decision B);
+  4) gabbay_1994 is a NEW unadjudicated discovery outside the plan's named decisions, not
+  remediated in this task, honestly reported for follow-up.)*
+- [x] Run `bash .claude/scripts/literature-fidelity-audit.sh --write` (self-backing-up: backs up
   index.json to a UTC-timestamped `.bak`, atomic write) to stamp the new
-  `provenance_fidelity`/`word_ratio`.
-- [ ] Confirm `--write` idempotency: run it a second time and confirm byte-identical output / no
-  further change.
-- [ ] Write the implementation summary honestly enumerating: completed cohort members, deferred
+  `provenance_fidelity`/`word_ratio`. *(completed: first --write run (`index.json.bak.20260710-
+  002927`) found 4 dirs "no matching index entry" including girard_1989/van_doorn_2015 — traced to
+  literature-ingest.sh creating entries in a DIFFERENT schema (`source_path`/`doc_id`, no
+  `path`/`id` fields) than `resolve_targets()` expects (`path` prefix + `id` key). Fixed by adding
+  `id`/`path` fields to those 2 entries (additive, matching the schema every other index entry
+  already uses) then re-running `--write`, which then correctly stamped 155 entries (only
+  negri_von_plato_2001 and troelstra_schwichtenberg_2000 correctly remain unmatched, since neither
+  has any converted content to stamp).)*
+- [x] Confirm `--write` idempotency: run it a second time and confirm byte-identical output / no
+  further change. *(completed: ran a third time after the corrected second run — md5sum of
+  index.json identical before and after, "changed: 0, unchanged: 155")*
+- [x] Write the implementation summary honestly enumerating: completed cohort members, deferred
   members (negri_von_plato_2001; any OCR members deferred for tooling/runtime) with reasons, and
-  the disposition of gabbay_2000.
-- [ ] Do NOT modify `literature-fidelity-audit.sh` at any point (out of scope; #839 owns it).
+  the disposition of gabbay_2000. *(completed: see
+  summaries/01_reconvert-validate-corpus-summary.md)*
+- [x] Do NOT modify `literature-fidelity-audit.sh` at any point (out of scope; #839 owns it).
+  *(completed: script never touched; the index.json schema fix above was applied to index.json's
+  DATA, not to the audit script's code)*
 
 **Timing**: 1 hour
 
@@ -520,20 +542,22 @@ member honestly.
 
 ## Testing & Validation
 
-- [ ] `command -v sqlite3` succeeds (Phase 1) before any index rebuild.
-- [ ] BEFORE and AFTER `--dry-run` snapshots captured and diffed (Phases 1, 9).
-- [ ] Every `.md`-replacing step has a corresponding `.md.bak-<UTC>` (Phases 3, 6, 7).
-- [ ] Every converter invocation checks `$?`; exit 3 handled as skip+log with one `pymupdf` retry,
-  never as success (Phases 2, 3, 6, 7).
-- [ ] 2 Fine papers promoted off `unadjudicated`, or reason recorded.
-- [ ] `venema_1991` -> `verified_conversion` via `disclosed == True` (Decision A), not a ratio rise.
-- [ ] `rabinovich_2014` promoted off `unverified_summary`, or reason recorded.
-- [ ] OCR cohort attempted members have computable `word_ratio`; deferred members recorded honestly.
-- [ ] `negri_von_plato_2001` untouched and explicitly deferred (Decision B).
-- [ ] `doets_1987`, `libkin_2004_ch3_ch7`, `thomas_2003_reactive` UNCHANGED; no silent class
-  regression anywhere.
-- [ ] `literature-fidelity-audit.sh --write` idempotent (byte-identical on re-run).
-- [ ] `literature-fidelity-audit.sh` NOT modified.
+- [x] `command -v sqlite3` succeeds (Phase 1) before any index rebuild.
+- [x] BEFORE and AFTER `--dry-run` snapshots captured and diffed (Phases 1, 9).
+- [x] Every `.md`-replacing step has a corresponding `.md.bak-<UTC>` (Phases 3, 6, 7).
+- [x] Every converter invocation checks `$?`; exit 3 handled as skip+log with one `pymupdf` retry,
+  never as success (Phases 2, 3, 6, 7). *(troelstra_schwichtenberg_2000 and gabbay_2000 both
+  exhausted the retry and were honestly reported incomplete, not stamped success)*
+- [x] 2 Fine papers promoted off `unadjudicated`, or reason recorded. *(both promoted, ratio ~0.97)*
+- [x] `venema_1991` -> `verified_conversion` via `disclosed == True` (Decision A), not a ratio rise.
+- [x] `rabinovich_2014` promoted off `unverified_summary`, or reason recorded. *(promoted, ratio 0.7949)*
+- [x] OCR cohort attempted members have computable `word_ratio`; deferred members recorded honestly.
+  *(all 4 attempted, all computable; none deferred — 0 remain unverified_no_baseline)*
+- [x] `negri_von_plato_2001` untouched and explicitly deferred (Decision B).
+- [x] `doets_1987`, `libkin_2004_ch3_ch7`, `thomas_2003_reactive` UNCHANGED; no silent class
+  regression anywhere. *(confirmed via exact diff of all 97 dirs)*
+- [x] `literature-fidelity-audit.sh --write` idempotent (byte-identical on re-run).
+- [x] `literature-fidelity-audit.sh` NOT modified.
 
 ## Artifacts & Outputs
 

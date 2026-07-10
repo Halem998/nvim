@@ -1,0 +1,43 @@
+{
+  "phase": 9,
+  "phase_name": "Re-audit, verification contract, honest partial reporting",
+  "started_at": "2026-07-10T00:29:00Z",
+  "last_updated": "2026-07-10T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run AFTER dry-run, diff against BEFORE baseline", "status": "done",
+     "files_touched": ["specs/832_reconvert_and_validate_literature_corpus/progress/audit-after.txt"]},
+    {"id": 2, "description": "Assert each verification contract item", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run --write to stamp index.json", "status": "done",
+     "files_touched": ["Projects/Literature/index.json"]},
+    {"id": 4, "description": "Confirm --write idempotency (second run)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Write implementation summary", "status": "done",
+     "files_touched": ["specs/832_reconvert_and_validate_literature_corpus/summaries/01_reconvert-validate-corpus-summary.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "9.3",
+      "description": "Run literature-fidelity-audit.sh --write to stamp provenance_fidelity/word_ratio",
+      "type": "altered",
+      "reason": "First --write run found 4 dirs with 'no matching index entry', including girard_1989 and van_doorn_2015 (which DO have valid conversions and index entries — created via literature-ingest.sh in Phase 2). Root cause: literature-ingest.sh creates entries with a doc_id/source_path schema, while literature-fidelity-audit.sh's resolve_targets() requires an id/path (relative, sources/<dir>/... prefixed) schema — the two tools use incompatible entry schemas. Fixed by adding id/path fields to those 2 entries (additive, matching the schema every other entry in this index already uses), then re-ran --write, which correctly stamped both. literature-fidelity-audit.sh itself was never modified (out of scope per #839 ownership) — only index.json's data was corrected.",
+      "annotation": "*(deviation: altered — see plan Phase 9 Task 3 note)*"
+    }
+  ],
+  "verification_contract_results": {
+    "fine_papers_promoted": {"result": "PASS", "detail": "fine_2012_guide-to-ground 0.0161->0.9665, fine_2012_counterfactuals-without-possible-worlds 0.1209->0.9652, both verified_conversion"},
+    "venema_1991_disclosed": {"result": "PASS", "detail": "disclosed True->True... actually False->True, verified_conversion, ratio unchanged 0.3737 (not a ratio rise, per Decision A)"},
+    "rabinovich_2014_promoted": {"result": "PASS", "detail": "0.2381->0.7949, unverified_summary->verified_conversion"},
+    "ocr_cohort_computable": {"result": "PASS", "detail": "burgess_1984, thomason_1984, vardi_wolper_1986 all now verified_conversion (~1.0 ratio); gabbay_1994 also computable (0.11) but landed unadjudicated -- new discovery, not a deferral, reported honestly"},
+    "do_not_touch_unchanged": {"result": "PASS", "detail": "doets_1987, libkin_2004_ch3_ch7, thomas_2003_reactive, goldblatt_2003 byte-identical before/after via exact diff"},
+    "no_silent_regression": {"result": "PASS", "detail": "full diff of all 97 dirs shows exactly the 9 intended changes, nothing else"},
+    "write_idempotent": {"result": "PASS", "detail": "md5sum identical after 2nd and 3rd --write runs, changed:0 unchanged:155"}
+  },
+  "named_incompletions": [
+    {"dir": "troelstra_schwichtenberg_2000", "status": "incomplete", "reason": "converter exit 3 twice (auto: 69 sentence-boundary-glue transitions; pymupdf retry: 89 transitions) on a genuinely two-column-laid-out PDF; both attempts exhausted per contract, not stamped success"},
+    {"dir": "negri_von_plato_2001", "status": "deferred by design", "reason": "Decision B — PDF is a 4-page TOC-only scan, wrong asset; no write made, recommend /spawn for real source acquisition"},
+    {"dir": "gabbay_2000", "status": "partially complete", "reason": "OCR baseline FULLY achieved (614/614 pages, 252253 words extractable, was 0); markdown conversion attempted twice (auto + pymupdf retry), both exit 3 (sentence-boundary-glue from OCR noise); remains not_yet_converted at directory level"},
+    {"dir": "gabbay_1994", "status": "new discovery, not remediated", "reason": "OCR baseline goal achieved (0.11 computable ratio, was unverified_no_baseline) but reveals the existing 27K-word .md covers only a fraction of the actual 668pp/249K-word book -- lands in unadjudicated, outside this task's 3 named unadjudicated dirs. Not reconverted (out of Phase 6's baseline-only scope); flagged for follow-up task consideration."}
+  ]
+}

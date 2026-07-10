@@ -1,14 +1,20 @@
 {
-  "status": "planned",
-  "summary": "9-phase plan re-derives the 13 actionable dirs into 5 execution cohorts (3 clean greenfield, 3 backup-then-reconvert, 1 disclosure banner, 5 OCR incl. re-cohorted gabbay_2000, 1 deferred) with the three named decisions made explicitly, quarantine-never-delete backups, exit-3 skip+retry handling, and a full convert/OCR -> rebuild-index -> --dry-run -> --write re-audit verification contract.",
+  "status": "partial",
+  "summary": "All 9 plan phases executed; 9 of 13 actionable literature-corpus directories promoted to verified_conversion (or resolved via disclosure), the full 614-page gabbay_2000 OCR baseline achieved, and the corpus index rebuilt+re-stamped with the complete Phase 9 verification contract passing. troelstra_schwichtenberg_2000 and gabbay_2000's markdown conversion remain genuinely incomplete (quality-gate exit 3 twice, retry exhausted), negri_von_plato_2001 was deferred by design, and gabbay_1994 surfaced a new unremediated unadjudicated discovery — all reported honestly.",
   "artifacts": [
     {
-      "path": "specs/832_reconvert_and_validate_literature_corpus/plans/01_reconvert-validate-corpus.md",
-      "type": "plan",
-      "summary": "Phased implementation plan with per-phase concrete verification commands, decisions A/B/C as named load-bearing phases, and honest partial-completion reporting."
+      "path": "specs/832_reconvert_and_validate_literature_corpus/summaries/01_reconvert-validate-corpus-summary.md",
+      "type": "summary",
+      "summary": "Honest completion/deferral report with full verification contract results and 3 recommended follow-up tasks."
     }
   ],
-  "blockers": [],
+  "blockers": [
+    "troelstra_schwichtenberg_2000: converter exit 3 twice (both auto and pymupdf-forced tiers hit sentence-boundary-glue on this two-column PDF); would need a different engine or manual cleanup to complete.",
+    "gabbay_2000: markdown conversion exit 3 twice despite a fully successful 614-page OCR baseline; OCR-noise-driven sentence-boundary-glue defects need a different engine or cleanup approach.",
+    "gabbay_1994: newly discovered to be a partial conversion of its 668-page book (0.11 ratio) once its OCR baseline became computable; not remediated, needs a follow-up reconversion task."
+  ],
   "continuation_context": null,
-  "next_action_hint": "implement"
+  "next_action_hint": "complete",
+  "phases_completed": 9,
+  "phases_total": 9
 }
