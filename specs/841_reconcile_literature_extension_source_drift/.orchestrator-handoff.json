@@ -1,0 +1,23 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "5-phase reconciliation plan created. Backports 6 drifted literature scripts deployed->extension-source (verbatim copy), adds deployed-only literature-fidelity-audit.sh to the extension source + manifest, installs a content-diff drift guard in check-extension-docs.sh, and verifies byte-identical pairs, correct unadjudicated counts (2/3), a working guard, and unchanged fidelity-audit --dry-run output. Backport direction deployed->source only; no deployed copies altered.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/841_reconcile_literature_extension_source_drift/plans/01_reconciliation-plan.md",
+      "summary": "Phased reconciliation plan for literature extension source drift with baseline capture and drift guard."
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "implement",
+  "files_modified": [],
+  "decisions_made": [
+    "Backport is verbatim deployed->source copy only; deployed .claude/scripts/ copies never edited and schema never run against live DB.",
+    "Guard extends check-extension-docs.sh with a content diff over manifest.provides.scripts, failing only when both deployed and source copies exist and differ (never-deployed scripts skipped).",
+    "literature-fidelity-audit.sh is added to extension source and manifest.provides.scripts.",
+    "Out-of-scope: zotero-*/cite-extract/test-lit-pipeline never-deployed gap and cite.md deployment gap noted but not fixed."
+  ],
+  "dead_ends": []
+}
