@@ -87,8 +87,9 @@ case "$mode" in
   index)    handle_index ;;
   search)   handle_search ;;
   ingest)   handle_ingest ;;
+  rebuild)  handle_rebuild ;;
   *)
-    echo "Error: Unknown mode '$mode'. Available: status, scan, convert, validate, index, search, ingest"
+    echo "Error: Unknown mode '$mode'. Available: status, scan, convert, validate, index, search, ingest, rebuild"
     exit 1
     ;;
 esac
@@ -1590,6 +1591,119 @@ fi
 **Processing order**: Import processes entries sequentially (one at a time) to support interactive convert prompts. Each entry completes its full import pipeline (steps 9-12) before the next entry begins.
 
 ---
+
+## Mode: Rebuild
+
+`handle_rebuild()` brings the per-repo sub-index (`specs/literature-index.json`) into
+conformance with the global Literature corpus (`$LITERATURE_DIR/index.json` +
+`$LITERATURE_DIR/.literature.db`). It offers four selectable jobs — Jobs 1, 2, and 4 are
+**read-only and idempotent**; Job 3 is the **only writer**, and only after an explicit
+confirm-after-diff `AskUserQuestion`. `--dry-run` is accepted uniformly but only meaningfully
+changes Job 3's behavior (Jobs 1/2/4 never write regardless of `--dry-run`).
+
+### Rebuild Step 1: Parse Args and Resolve Paths
+
+```bash
+function handle_rebuild() {
+  # $mode is already "rebuild" (see Step 4 dispatch); dry_run comes from the skill args
+  # ("mode=rebuild dry_run={true|false}"), parsed the same way as $mode/$file in Step 1.
+  dry_run=$(echo "$ARGUMENTS" | grep -oP 'dry_run=\K\S+' | head -1)
+  dry_run="${dry_run:-false}"
+
+  sub_index="specs/literature-index.json"
+  global_index="${LITERATURE_DIR:-$HOME/Projects/Literature}/index.json"
+  literature_db="${LITERATURE_DIR:-$HOME/Projects/Literature}/.literature.db"
+```
+
+### Rebuild Step 2: Absent-Sub-Index Deferral (checked FIRST, before any job picker)
+
+Mirrors the `--lit` flow's `PROMPT_NEEDED`/`AUTONOMOUS_GLOBAL` precedent
+(`literature-lit-flag-resolve.sh`, CLAUDE.md "Interactive Sub-Index Setup Detection") rather than
+duplicating `literature-create-setup-task.sh`'s state.json-mutation logic inline.
+
+```bash
+  if [ ! -f "$sub_index" ]; then
+    echo "## Rebuild: Sub-Index Absent"
+    echo ""
+    echo "No sub-index found at $sub_index — there is nothing to rebuild yet."
+    echo ""
+    setup_script=".claude/extensions/literature/scripts/literature-create-setup-task.sh"
+    if [ -x "$setup_script" ] || [ -f "$setup_script" ]; then
+      new_task=$("$setup_script" 2>/tmp/rebuild-setup-task-rationale.txt)
+      setup_exit=$?
+      if [ "$setup_exit" -eq 0 ] && [ -n "$new_task" ]; then
+        echo "Created task #$new_task to populate $sub_index (see literature-create-setup-task.sh)."
+        echo "Run /implement $new_task once ready, then re-run /literature --rebuild."
+      else
+        echo "Could not auto-create a setup task: $(cat /tmp/rebuild-setup-task-rationale.txt)"
+        echo "Run .claude/extensions/literature/scripts/literature-create-setup-task.sh manually,"
+        echo "or use /literature --lit on any command to trigger the same interactive setup flow."
+      fi
+    else
+      echo "literature-create-setup-task.sh not found — use /literature --lit on any command"
+      echo "to trigger the same interactive sub-index setup flow."
+    fi
+    return 0   # never error, never present the job picker with nothing to check
+  fi
+```
+
+### Rebuild Step 3: Job Picker (AskUserQuestion, multiSelect)
+
+Only reached when the sub-index exists. Jobs 1 & 2 are mechanical/read-only and pre-checked by
+default; Jobs 3 (the only writer) & 4 (broader, corpus-wide scope) are left unchecked by default.
+
+```json
+{
+  "question": "Which sub-index rebuild checks should run?",
+  "header": "Sub-Index Rebuild Jobs",
+  "multiSelect": true,
+  "options": [
+    {
+      "label": "Dangling-ref lint (default on)",
+      "description": "Mechanical, read-only. Flags doc_ids that no longer resolve in the global index."
+    },
+    {
+      "label": "Schema conformance check (default on)",
+      "description": "Mechanical, read-only. Checks structural minimums only (doc_id + relevance/reason present) — never flags or strips extra curation fields like hazard/citation_rule/known_corrections/audits."
+    },
+    {
+      "label": "Coverage refresh",
+      "description": "Requires judgment. Proposes newly-relevant docs from the global corpus; nothing is written without a follow-up confirm-after-diff. The only job that can write."
+    },
+    {
+      "label": "Chunk/search-index coverage audit",
+      "description": "Mechanical, read-only. Reports which sources/<dir>/ directories (and legacy chunks_dir entries) have zero FTS5 search coverage in chunks_data."
+    }
+  ]
+}
+```
+
+Selections determine which of `run_job1`, `run_job2`, `run_job3`, `run_job4` are `true` for the
+rest of `handle_rebuild()`.
+
+### Rebuild Step 4: Report-Aggregation Shell
+
+Each selected job appends its findings into a single multi-job report; nothing is printed
+standalone. Jobs 1/2/4 bodies live in the "Job 1", "Job 2", "Job 4" subsections below (added in
+later phases); Job 3 lives in its own "Job 3" subsection (also added in a later phase). This
+shell is the only place that prints the report header/footer and the `dry_run` note.
+
+```bash
+  echo "## Sub-Index Rebuild Report — $(basename "$(pwd)")"
+  echo ""
+  if [ "$dry_run" = "true" ]; then
+    echo "_dry-run active: Job 3 (coverage refresh), if selected, will print a proposed diff and write nothing. Jobs 1/2/4 never write regardless of --dry-run._"
+    echo ""
+  fi
+
+  # [ Job 1 body inserted here when run_job1=true ]
+  # [ Job 2 body inserted here when run_job2=true ]
+  # [ Job 4 body inserted here when run_job4=true ]
+  # [ Job 3 body inserted here when run_job3=true — always last: it is the only writer and its
+  #   confirm-after-diff step should reflect the read-only jobs' findings above it ]
+
+}  # end handle_rebuild()
+```
 
 ---
 

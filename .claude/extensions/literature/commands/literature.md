@@ -1,12 +1,12 @@
 ---
 description: Manage specs/literature/ — scan, convert PDFs/DJVUs, maintain index.json, and discover sources
 allowed-tools: Skill
-argument-hint: [N|"query"|~/path.pdf|~/dir/|--validate|--index FILE|--convert [FILE]]
+argument-hint: [N|"query"|~/path.pdf|~/dir/|--rebuild [--dry-run]|--validate|--index FILE|--convert [FILE]]
 ---
 
 # Command: /literature
 
-**Purpose**: Manages `specs/literature/` via two modes: (A) Discover — find academic sources by task number or keywords; (B) Integrate — scan/convert PDFs/DJVUs and maintain `index.json`. Also supports `--validate` for index consistency checks.
+**Purpose**: Manages `specs/literature/` via two modes: (A) Discover — find academic sources by task number or keywords; (B) Integrate — scan/convert PDFs/DJVUs and maintain `index.json`. Also supports `--validate` for index consistency checks and `--rebuild [--dry-run]` to bring the per-repo sub-index (`specs/literature-index.json`) into conformance with the global Literature corpus.
 **Layer**: 2 (Command File - Argument Parsing Agent)
 **Delegates To**: skill-literature (direct execution)
 
@@ -22,11 +22,13 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--validate|--index FILE|--convert [F
 
     **Mode Detection Priority** (first match wins):
 
-    1. `--validate` flag anywhere -> Validate mode (kept as-is)
-    2. `--index FILE` -> Index mode (kept as-is, integrate path)
-    3. `--convert [FILE]` -> Convert mode (kept as-is, integrate path)
-    4. No arguments, OR path-like argument -> Integrate mode (Mode B)
-    5. Numeric argument (task number), OR text without path characters -> Discover mode (Mode A)
+    1. `--rebuild` flag anywhere -> Rebuild mode (new; priority-0, checked before `--validate`;
+       mutually exclusive with `--validate`/`--index`/`--convert`). `--dry-run` may accompany it.
+    2. `--validate` flag anywhere -> Validate mode (kept as-is)
+    3. `--index FILE` -> Index mode (kept as-is, integrate path)
+    4. `--convert [FILE]` -> Convert mode (kept as-is, integrate path)
+    5. No arguments, OR path-like argument -> Integrate mode (Mode B)
+    6. Numeric argument (task number), OR text without path characters -> Discover mode (Mode A)
 
     **Path-like detection**: An argument is path-like if it:
     - Starts with `/`, `~`, or `.`
@@ -44,7 +46,10 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--validate|--index FILE|--convert [F
 
     args = $ARGUMENTS.split()
 
-    if "--validate" in args:
+    if "--rebuild" in args:
+      sub_mode = "rebuild"
+      dry_run = "--dry-run" in args  # threaded through as dry_run={true|false}
+    elif "--validate" in args:
       sub_mode = "validate"
     elif "--index" in args:
       sub_mode = "index"
@@ -87,6 +92,7 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--validate|--index FILE|--convert [F
     |-----------|------------------------------------------|-----------------------|
     | discover  | Numeric N, or text without path chars    | Mode A workflow below |
     | integrate | No args, or path-like arg                | skill-literature      |
+    | rebuild   | `--rebuild` flag (optional `--dry-run`)  | skill-literature      |
     | validate  | `--validate` flag                        | skill-literature      |
     | index     | `--index FILE`                           | skill-literature      |
     | convert   | `--convert [FILE]`                       | skill-literature      |
@@ -107,6 +113,7 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--validate|--index FILE|--convert [F
       |-----------|--------------|---------------------|-------------|
       | discover  | No           | Yes (task_num or query) | Source discovery via three-tier pipeline |
       | integrate | No           | No                  | Scan/convert/status (no args = status) |
+      | rebuild   | No           | No                  | Bring per-repo sub-index into conformance with the global corpus (job-picker) |
       | validate  | No           | No                  | Check index.json consistency |
       | index     | Yes          | No                  | Add/update entry for existing markdown file |
       | convert   | Optional     | No                  | Convert specific file or all unprocessed |
@@ -405,6 +412,29 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--validate|--index FILE|--convert [F
     </process>
   </step_3>
 
+  <step_3b>
+    <action>Mode: rebuild — Delegate to Literature Skill</action>
+    <process>
+      When sub_mode = "rebuild": delegate to skill-literature with `mode=rebuild` and the
+      `dry_run` value parsed in argument_parsing step_1 (defaults to `false` if `--dry-run` was
+      not present). The `file` argument is unused for this mode.
+    </process>
+    <input>
+      - skill: "skill-literature"
+      - args: "mode=rebuild dry_run={true|false}"
+    </input>
+    <expected_return>
+      {
+        "status": "completed",
+        "mode": "rebuild",
+        "dry_run": true|false,
+        "sub_index_status": "present|absent|deferred_to_setup_task",
+        "jobs_run": ["dangling_ref_lint", "schema_conformance", ...],
+        "report": "..."
+      }
+    </expected_return>
+  </step_3b>
+
   <step_4>
     <action>Modes: validate, index, convert — Delegate to Literature Skill</action>
     <input>
@@ -447,6 +477,15 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--validate|--index FILE|--convert [F
         - Show token count drift warnings (>20% change)
         - Suggest: "Run /literature --index FILE to add unindexed entries"
 
+      Rebuild mode:
+        - If the sub-index was absent: report that a setup task was created/deferred to (per
+          `handle_rebuild()`'s absent-sub-index path); no job picker was shown.
+        - Otherwise: show the multi-job aggregated report from `handle_rebuild()` — dangling-ref
+          lint results, schema-conformance results, coverage-refresh diff/confirmation outcome
+          (or "skipped — not selected"), and the coverage-audit's per-directory missing list.
+        - If `--dry-run` was active, prefix the report with a note that Job 3 (if selected) only
+          printed a proposed diff and wrote nothing.
+
       Index mode:
         - Confirm entry added/updated in index.json
         - Show keywords and summary used
@@ -460,7 +499,7 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--validate|--index FILE|--convert [F
 
 <error_handling>
   <argument_errors>
-    - Unknown flag -> "Unknown flag: {flag}. Available: --validate, --convert [FILE], --index FILE, or pass a task number N or search query for discovery"
+    - Unknown flag -> "Unknown flag: {flag}. Available: --rebuild [--dry-run], --validate, --convert [FILE], --index FILE, or pass a task number N or search query for discovery"
     - --index without FILE -> "Error: --index requires a FILE argument. Usage: /literature --index path/to/file.md"
     - discover with no terms -> "Error: discover mode requires a task number or search query. Usage: /literature 714 or /literature \"modal logic\""
     - Task N not found in state.json -> "Error: Task N not found in specs/state.json. Check the task number and try again."
