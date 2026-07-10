@@ -400,7 +400,7 @@ first real conversion for the `vardi_wolper_1986` stub) using the verified `nix 
 
 ---
 
-### Phase 7: gabbay_2000 614-page OCR (Decision C execution, gated) [IN PROGRESS]
+### Phase 7: gabbay_2000 614-page OCR (Decision C execution, gated) [PARTIAL]
 
 **Goal**: Attempt OCR of the re-cohorted `gabbay_2000` scanned 614-page book, isolated with its own
 checkpoint so its runtime cannot block the rest of the task.
@@ -410,14 +410,27 @@ re-cohorted out of `not_yet_converted` into the OCR cohort. 614 pages of OCR is 
 isolated here with its own gate and checkpoint.
 
 **Tasks**:
-- [ ] Only proceed if Phase 6's tooling re-confirm passed. If Phase 6 deferred the OCR cohort,
-  defer this phase too and report.
-- [ ] OCR `Gabbay_Reynolds_2000_Temporal_Logic_Foundations_Vol2.pdf` (614 pages) via
+- [x] Only proceed if Phase 6's tooling re-confirm passed. If Phase 6 deferred the OCR cohort,
+  defer this phase too and report. *(completed: Phase 6 tooling re-confirm passed, proceeded)*
+- [x] OCR `Gabbay_Reynolds_2000_Temporal_Logic_Foundations_Vol2.pdf` (614 pages) via
   `nix run nixpkgs#ocrmypdf -- --force-ocr <in.pdf> <out.pdf>`. If full-book runtime is
   impractical, it is acceptable to sample (e.g. OCR a bounded page range to establish a partial
   baseline) or defer entirely — but the outcome (full / sampled / deferred) MUST be reported
-  honestly. Back up any existing stub `.md` before replacing it.
-- [ ] Apply the exit-code contract to any converter invocation.
+  honestly. Back up any existing stub `.md` before replacing it. *(completed: FULL 614/614-page
+  OCR completed successfully (ran as a background job in parallel with Phase 6's gabbay_1994
+  full-book OCR to use wall-clock time efficiently), NOT sampled. Original PDF backed up to
+  `.pdf.bak-<UTC>` first, then replaced in-place with the OCR'd searchable version. Post-OCR
+  `pdftotext -layout | wc -w` = 252,253 words (was 0). No pre-existing stub `.md` existed for this
+  dir to back up — gabbay_2000 had no `.md` at all before this phase.)*
+- [x] Apply the exit-code contract to any converter invocation. *(completed: attempted a real
+  markdown conversion of the OCR'd PDF via literature-convert.sh — auto mode: exit 3
+  (sentence-boundary-glue, 10 transitions, e.g. OCR noise "Compuitationall"); one allowed
+  `LITERATURE_CONVERTER=pymupdf` retry: exit 3 AGAIN (same defect class). Both attempts exhausted
+  per contract — skip+report, `.md` NOT stamped success, `.rejected` sibling examined not left
+  unexamined. `gabbay_2000` therefore remains `not_yet_converted` at directory level (has_pdf=True,
+  has_md=False) even though the underlying OCR text layer is now real and substantial. This is
+  honestly reported as INCOMPLETE for the .md, while the OCR baseline (Decision C's primary,
+  expensive, gated deliverable) is fully achieved.)*
 
 **Timing**: 2 hours (mostly OCR runtime; may checkpoint/defer)
 

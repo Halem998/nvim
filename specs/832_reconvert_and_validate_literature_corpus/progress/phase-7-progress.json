@@ -1,0 +1,36 @@
+{
+  "phase": 7,
+  "phase_name": "gabbay_2000 614-page OCR (Decision C, gated)",
+  "started_at": "2026-07-10T00:10:00Z",
+  "last_updated": "2026-07-10T00:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Gate on Phase 6 tooling re-confirm", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Full 614pp OCR of Gabbay_Reynolds_2000_..._Vol2.pdf", "status": "done",
+     "files_touched": ["Projects/Literature/sources/gabbay_2000/Gabbay_Reynolds_2000_Temporal_Logic_Foundations_Vol2.pdf"],
+     "note": "Full OCR completed (not sampled): 252253 words extractable post-OCR, was 0 before."},
+    {"id": 3, "description": "Attempt real markdown conversion of OCR'd PDF, apply exit-code contract", "status": "blocked",
+     "files_touched": ["Projects/Literature/sources/gabbay_2000/gabbay_reynolds_2000_temporal_logic_foundations_vol2.md.rejected"],
+     "note": "auto mode exit 3 (10 sentence-boundary-glue transitions); LITERATURE_CONVERTER=pymupdf retry also exit 3 (same defect class, e.g. OCR noise 'Compuitationall'). Both attempts exhausted per contract; genuinely incomplete, not stamped success."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "nix run nixpkgs#ocrmypdf --force-ocr --jobs 4 (full 614pp, background job)", "result": "success", "reason": "252253 words extractable"},
+    {"approach": "literature-convert.sh (auto tier) on OCR'd PDF", "result": "failed", "reason": "exit 3 sentence-boundary-glue"},
+    {"approach": "LITERATURE_CONVERTER=pymupdf retry", "result": "failed", "reason": "exit 3 again, same defect class — retry exhausted per contract"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.2",
+      "description": "OCR gabbay_2000, isolated with its own checkpoint, may be sampled/deferred if runtime impractical",
+      "type": "altered",
+      "reason": "Ran the full 614pp OCR as a background job in parallel with Phase 6's gabbay_1994 668pp full-book OCR job (rather than strictly sequential per the wave dependency) to use wall-clock time efficiently; both completed successfully without needing to sample or defer.",
+      "annotation": "*(deviation: altered — ran in parallel with Phase 6's gabbay_1994 OCR; both completed fully)*"
+    }
+  ],
+  "final_state": {
+    "ocr_baseline": "FULL (614/614 pages), 252253 words extractable, PDF replaced in place (backup preserved)",
+    "md_conversion": "INCOMPLETE — 2 attempts, both exit 3 quality-gate rejection, honestly reported not fabricated",
+    "directory_classification": "remains not_yet_converted (has_pdf=True, has_md=False)"
+  }
+}
