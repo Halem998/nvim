@@ -1,7 +1,7 @@
 # Implementation Plan: Task #840
 
 - **Task**: 840 - Add `--rebuild` flag to `/literature` for per-repo sub-index conformance
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: #841 (complete — extension source now matches deployed scripts; drift guard installed)
 - **Research Inputs**: specs/840_literature_rebuild_subindex_command/reports/01_rebuild-research.md

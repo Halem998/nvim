@@ -4,7 +4,6 @@ next_project_number: 842
 
 # TODO
 
-Warning: 2 task(s) have no topic and will render under Uncategorized: 840, 841 (non-fatal)
 ## Task Order
 
 *Updated 2026-07-10. Generated from state.json dependency graph.*
@@ -12,8 +11,8 @@ Warning: 2 task(s) have no topic and will render under Uncategorized: 840, 841 (
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826,832,837,838,841 | -- | agent-system, literature, extensions, ... |
-| 2 | 822,827,840 | 821,826,841 | extensions |
+| 1 | 78,87,821,826,832,837,838 | -- | agent-system, literature, extensions, ... |
+| 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -41,17 +40,15 @@ Warning: 2 task(s) have no topic and will render under Uncategorized: 840, 841 (
 
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
-### Uncategorized
-
-841 [NOT STARTED] — Reconcile the literature extension SOURCE OF TRUTH (`.claude/exte
-  └─ 840 [NOT STARTED] — Add a `--rebuild` flag to the `/literature` command that brings a
-
 ## Tasks
 
 ### 841. Reconcile literature extension source drift
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: None
+- **Research**: [841_reconcile_literature_extension_source_drift/reports/01_drift-audit.md]
+- **Plan**: [841_reconcile_literature_extension_source_drift/plans/01_reconciliation-plan.md]
+- **Summary**: [841_reconcile_literature_extension_source_drift/summaries/01_reconciliation-summary.md]
 
 **Description**: Reconcile the literature extension SOURCE OF TRUTH (`.claude/extensions/literature/`) against the DEPLOYED COPIES (`.claude/scripts/`), which have drifted ahead by at least two prior tasks. A "Load Core" / extension sync currently reverts recent correctness fixes silently. This is a live regression risk, not cosmetic.
 
@@ -86,9 +83,12 @@ VERIFICATION:
 ---
 
 ### 840. Literature rebuild subindex command
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: Task 841
+- **Research**: [840_literature_rebuild_subindex_command/reports/01_rebuild-research.md]
+- **Plan**: [840_literature_rebuild_subindex_command/plans/01_rebuild-plan.md]
+- **Summary**: [840_literature_rebuild_subindex_command/summaries/01_rebuild-summary.md]
 
 **Description**: Add a `--rebuild` flag to the `/literature` command that brings a repo's per-repo sub-index (`specs/literature-index.json`) into conformance with the global Literature corpus and current conventions.
 

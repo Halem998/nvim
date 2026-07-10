@@ -1,0 +1,44 @@
+{
+  "session_id": "sess_1783723116_10f020",
+  "task_numbers": [
+    841,
+    840
+  ],
+  "waves": [
+    [
+      841
+    ],
+    [
+      840
+    ]
+  ],
+  "dependency_graph": {
+    "841": [],
+    "840": [
+      "841"
+    ]
+  },
+  "max_cycles": 10,
+  "cycle_count": 6,
+  "failed_tasks": [],
+  "completed_tasks": [
+    841,
+    840
+  ],
+  "current_statuses": {
+    "841": "completed",
+    "840": "completed"
+  },
+  "task_dirs": {
+    "841": "specs/841_reconcile_literature_extension_source_drift",
+    "840": "specs/840_literature_rebuild_subindex_command"
+  },
+  "research_agents": {
+    "841": "general-research-agent",
+    "840": "general-research-agent"
+  },
+  "implement_agents": {
+    "841": "general-implementation-agent",
+    "840": "general-implementation-agent"
+  }
+}
