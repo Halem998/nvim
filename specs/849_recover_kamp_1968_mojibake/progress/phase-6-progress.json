@@ -1,0 +1,27 @@
+{
+  "phase": 6,
+  "phase_name": "End-to-end verification and residual documentation",
+  "started_at": "2026-07-11T18:36:00Z",
+  "last_updated": "2026-07-11T18:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Spot-check title page + chapter headings + >=3 mid-document chunks readable English", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm FTS db returns decoded text for the document", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm all 142 backups exist and byte-identical to pre-change originals", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Scan decoded output for suspicious non-dictionary tokens, record flagged exceptions", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Document accepted residuals and scope boundary in implementation summary", "status": "done", "files_touched": ["specs/849_recover_kamp_1968_mojibake/summaries/01_kamp-1968-font-offset-decode-summary.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "verification": {
+    "title_page_readable": true,
+    "toc_readable": true,
+    "acknowledgement_readable": true,
+    "chapter_iii_heading_readable": true,
+    "mid_document_chunks_checked": ["chunk_0001", "chunk_0002", "chunk_0070", "chunk_0100", "chunk_0130", "30pct-offset", "50pct-offset", "80pct-offset"],
+    "fts_returns_decoded_content": true,
+    "fts_hit_count_acknowledgement_or_theorem": 15,
+    "backups_142_present_untouched": true,
+    "font_switch_anomaly_recurrence_scan": "jbOB anomaly occurs exactly once (title-page byline, as report predicted); all other 'Los Angeles' occurrences decode correctly -- confirmed non-recurring, left as documented flagged exception, cipher not adjusted"
+  },
+  "handoff_count": 0
+}

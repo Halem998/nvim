@@ -1,7 +1,7 @@
 # Implementation Plan: Recover Kamp 1968 Font-Offset Mojibake
 
 - **Task**: 849 - Recover the Kamp 1968 dissertation markdown from font-offset mojibake
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/849_recover_kamp_1968_mojibake/reports/01_kamp-1968-font-offset-recovery.md
@@ -278,19 +278,25 @@ recovered text.
 
 ---
 
-### Phase 6: End-to-end verification and residual documentation [NOT STARTED]
+### Phase 6: End-to-end verification and residual documentation [COMPLETED]
 
 **Goal**: Confirm all task acceptance criteria and document accepted residuals and scope boundary.
 
 **Tasks**:
-- [ ] Spot-check title page + chapter headings + >=3 mid-document chunks are readable English against
-      the known subject matter (tense logic, Main Theorem / Theorem II.3).
-- [ ] Confirm the FTS db returns decoded text for the document.
-- [ ] Confirm all 142 backups exist and are byte-identical to pre-change originals (`cmp -s` sweep).
-- [ ] Scan decoded output for suspicious non-dictionary tokens (title-page font-switch anomaly class);
-      record any as flagged manual exceptions, not cipher changes.
-- [ ] Document accepted residuals (inter-letter spacing, garbled math/logic notation) and the scope
-      boundary (audit blind spot NOT fixed) in the implementation summary.
+- [x] Spot-check title page + chapter headings + >=3 mid-document chunks are readable English against
+      the known subject matter (tense logic, Main Theorem / Theorem II.3). *(completed: title page,
+      TOC, ACKNOWLEDGEMENT, CHAPTER III heading, and 8 mid-document samples all confirmed readable)*
+- [x] Confirm the FTS db returns decoded text for the document. *(completed: 15 hits for content
+      query, confirmed matching literal decoded chunk content not just title/keyword metadata)*
+- [x] Confirm all 142 backups exist and are byte-identical to pre-change originals (`cmp -s` sweep).
+      *(completed: 142/142 present, untouched since Phase 2 creation)*
+- [x] Scan decoded output for suspicious non-dictionary tokens (title-page font-switch anomaly class);
+      record any as flagged manual exceptions, not cipher changes. *(completed: "jbOB Angeles"
+      anomaly confirmed non-recurring, occurs exactly once at the title-page byline; cipher not
+      adjusted)*
+- [x] Document accepted residuals (inter-letter spacing, garbled math/logic notation) and the scope
+      boundary (audit blind spot NOT fixed) in the implementation summary. *(completed: see
+      specs/849_recover_kamp_1968_mojibake/summaries/01_kamp-1968-font-offset-decode-summary.md)*
 
 **Timing**: 0.75 hours
 
@@ -310,14 +316,14 @@ recovered text.
 
 ## Testing & Validation
 
-- [ ] Phase 1: decoder unit test reproduces report-01 title-page ground truth; script parses, `--help`
+- [x] Phase 1: decoder unit test reproduces report-01 title-page ground truth; script parses, `--help`
       works; manifest registration present.
-- [ ] Phase 2: 142 `.bak-<UTC>` siblings created; all `cmp -s` byte-identical; originals unmodified.
-- [ ] Phase 3: decoded canonical is readable English; `*` comma residue eliminated; ambiguous-`0`
+- [x] Phase 2: 142 `.bak-<UTC>` siblings created; all `cmp -s` byte-identical; originals unmodified.
+- [x] Phase 3: decoded canonical is readable English; `*` comma residue eliminated; ambiguous-`0`
       flag report reviewed and resolved/documented.
-- [ ] Phase 4: chunks regenerated with readable content; no `.bak-*` consumed.
-- [ ] Phase 5: FTS query returns decoded text; `index.json` keywords regenerated; valid JSON.
-- [ ] Phase 6: full acceptance sweep (title page + headings + >=3 chunks readable; FTS returns
+- [x] Phase 4: chunks regenerated with readable content; no `.bak-*` consumed.
+- [x] Phase 5: FTS query returns decoded text; `index.json` keywords regenerated; valid JSON.
+- [x] Phase 6: full acceptance sweep (title page + headings + >=3 chunks readable; FTS returns
       decoded; 142 backups verified; residuals + scope boundary documented).
 
 ## Artifacts & Outputs
