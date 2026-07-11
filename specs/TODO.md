@@ -4,16 +4,16 @@ next_project_number: 845
 
 # TODO
 
-Warning: 3 task(s) have no topic and will render under Uncategorized: 842, 843, 844 (non-fatal)
+Warning: 2 task(s) have no topic and will render under Uncategorized: 843, 844 (non-fatal)
 ## Task Order
 
-*Updated 2026-07-10. Generated from state.json dependency graph.*
+*Updated 2026-07-11. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826,832,837,838,842,843 | -- | agent-system, literature, extensions, ... |
-| 2 | 822,827,844 | 821,826,842 | extensions |
+| 1 | 78,87,821,826,832,837,838,843,844 | -- | agent-system, literature, extensions, ... |
+| 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -43,9 +43,8 @@ Warning: 3 task(s) have no topic and will render under Uncategorized: 842, 843, 
 
 ### Uncategorized
 
-842 [NOT STARTED] — Fix the literature corpus chunk/index coverage gap surfaced (but 
-  └─ 844 [NOT STARTED] — Finish or formally defer the incomplete literature-extension inst
 843 [NOT STARTED] — Restore the `core` and `lean` sections of `.claude/scripts/check-
+844 [NOT STARTED] — Finish or formally defer the incomplete literature-extension inst
 
 ## Tasks
 
@@ -93,9 +92,12 @@ VERIFICATION: `bash .claude/scripts/check-extension-docs.sh` exits 0 with all se
 ---
 
 ### 842. Literature convert chunk index coverage
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: None
+- **Research**: [842_literature_convert_chunk_index_coverage/reports/01_coverage-gap-research.md]
+- **Plan**: [842_literature_convert_chunk_index_coverage/plans/01_coverage-fix-plan.md]
+- **Summary**: [842_literature_convert_chunk_index_coverage/summaries/01_coverage-fix-summary.md]
 
 **Description**: Fix the literature corpus chunk/index coverage gap surfaced (but deliberately left unfixed) by task #840's Job 4. ROOT CAUSE (verified by #840, re-verify before acting): `/literature --convert` converts a PDF/DJVU to markdown but NEVER invokes the chunker or the FTS5 indexer -- only `/literature --ingest` does. As a result documents that were converted (not ingested) have zero rows in the global `.literature.db` `chunks_data` table and are SILENTLY INVISIBLE to `literature-search.sh`, even though they appear in `index.json` and on disk.
 
