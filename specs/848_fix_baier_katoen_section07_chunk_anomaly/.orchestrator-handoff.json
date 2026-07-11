@@ -1,28 +1,42 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "plan",
-  "status": "planned",
-  "summary": "Created a 5-phase implementation plan from the research report for fixing the baier_katoen_2008 section07 chunk anomaly. Phase 1 captures the baseline (12 sibling chunk counts 128/111/106/99/110/101/1/112/107/111/113/79, 1,177 total rows, and reconfirms the stale giant-chunk chunk_id a6b60aa1fca40ca4). Phase 2 applies the fix -- removing the early `return [(chunk_content, True)]` at extension-source line 278 inside subdivide_chunk()'s oversized-atomic branch so oversized atomic-classified chunks fall through to the existing paragraph/sentence subdivision -- and keeps the extension-source and deployed copies byte-identical (diff -q, task #841 drift guard). Phase 3 re-chunks ONLY section07 (clears the stale single-chunk output, re-runs literature-chunk.sh against part07 into .chunks/section07, research-verified to produce ~94 chunks). Phase 4 explicitly DELETEs the stale chunk_id a6b60aa1fca40ca4 row from the live .literature.db (required because chunk_id is content-hashed, so re-chunking does NOT auto-replace it) and then reindexes via literature-build-index.sh --global. Phase 5 verifies section07 ~94 chunks, no regression on the other 11 sections or 93 covered dirs, drift guard (diff -q), check-extension-docs.sh exits 0, and the Job 4 94/3 covered/uncovered invariant. Waves: [[1,2],[3],[4],[5]]; estimated 2 hours.",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Executed all 5 phases of the plan. Phase 1 captured the baseline (12 sibling chunk counts 128/111/106/99/110/101/1/112/107/111/113/79 matched exactly, 1,177 total chunks_data rows, stale chunk_id a6b60aa1fca40ca4 reconfirmed at 46,176 tokens, Job 4 coverage baseline 94/3). Phase 2 removed the early `return [(chunk_content, True)]` in subdivide_chunk()'s oversized-atomic branch in the extension-source copy, synced it to the deployed copy, and verified byte-identity (diff -q). Phase 3 cleared section07's stale single-chunk output and re-ran literature-chunk.sh against part07 only, producing 94 chunks (matching the research-verified figure); all 11 sibling sections confirmed unchanged on disk. Phase 4 deleted the stale chunk_id row, then ran literature-build-index.sh --global to reindex the live corpus; total chunks_data rows for the doc landed at exactly 1270 (1177-1+94, arithmetic-verified) with max(token_count)=918 (no 46K outlier). Phase 5 verified: section07 comparable to siblings, no regression to the other 11 sections or 93 covered directories (Job 4 re-run: 94/3, identical to baseline), drift guard intact, check-extension-docs.sh exits 0. Two plan deviations were recorded and are non-blocking: (1) literature-build-index.sh --global is a full from-scratch rebuild rather than an incremental update, making the interim manual DELETE moot but harmless; (2) chunk_id is not a full-content hash, so the new first sub-chunk regenerated the same chunk_id as the old giant chunk (verified via token_count/content inspection that this is correct new content, not stale data).",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/848_fix_baier_katoen_section07_chunk_anomaly/plans/01_section07-chunk-anomaly.md",
-      "summary": "5-phase plan: baseline capture, apply subdivide_chunk() early-return removal with drift-guard sync, re-chunk section07 only, delete stale chunk_id row and reindex, verify no-regression/drift/docs-lint/Job-4 invariant."
+      "summary": "5-phase plan, all phases marked [COMPLETED] with inline task annotations."
+    },
+    {
+      "type": "summary",
+      "path": "specs/848_fix_baier_katoen_section07_chunk_anomaly/summaries/01_section07-chunk-anomaly-summary.md",
+      "summary": "Implementation summary: subdivide_chunk() early-return removal, section07 re-chunk (1 -> 94 chunks), stale DB row handling, and full no-regression verification."
     }
   ],
   "blockers": [],
-  "next_action_hint": "Run /implement 848 to execute the plan (apply the one-line early-return removal to both literature-chunk.sh copies keeping them byte-identical; re-chunk section07 only; DELETE chunk_id a6b60aa1fca40ca4 then literature-build-index.sh --global; verify sibling non-regression, drift guard, check-extension-docs.sh exit 0, and Job 4 94/3 invariant).",
+  "next_action_hint": "Task complete. No further action required. (Optional follow-up out of scope: blackburn_2002's 35 unsplit chapters, a distinct legacy-manifest-schema issue noted in the original task description as explicitly out of scope.)",
   "files_modified": [
+    ".claude/extensions/literature/scripts/literature-chunk.sh",
+    ".claude/scripts/literature-chunk.sh",
     "specs/848_fix_baier_katoen_section07_chunk_anomaly/plans/01_section07-chunk-anomaly.md",
+    "specs/848_fix_baier_katoen_section07_chunk_anomaly/summaries/01_section07-chunk-anomaly-summary.md",
+    "specs/848_fix_baier_katoen_section07_chunk_anomaly/progress/phase-1-progress.json",
+    "specs/848_fix_baier_katoen_section07_chunk_anomaly/progress/phase-2-progress.json",
+    "specs/848_fix_baier_katoen_section07_chunk_anomaly/progress/phase-3-progress.json",
+    "specs/848_fix_baier_katoen_section07_chunk_anomaly/progress/phase-4-progress.json",
+    "specs/848_fix_baier_katoen_section07_chunk_anomaly/progress/phase-5-progress.json",
     "specs/848_fix_baier_katoen_section07_chunk_anomaly/.return-meta.json",
-    "specs/848_fix_baier_katoen_section07_chunk_anomaly/.orchestrator-handoff.json"
+    "specs/848_fix_baier_katoen_section07_chunk_anomaly/.orchestrator-handoff.json",
+    "specs/state.json",
+    "specs/TODO.md"
   ],
   "decisions_made": [
-    "Structured the fix as 5 small phases with an explicit baseline-capture phase up front so no-regression can be verified against recorded sibling chunk counts and the stale chunk_id can be reconfirmed before the DB delete",
-    "Made Phase 1 (baseline) and Phase 2 (code fix) an independent first wave since capturing baseline numbers does not depend on the code edit; re-chunk (Phase 3) depends on both",
-    "Kept the DB delete + reindex in a dedicated phase (Phase 4) after re-chunk, because the stale content-hashed chunk_id must be removed explicitly before --global reindex or it persists as an orphaned 46K-token duplicate",
-    "Scoped re-chunking to section07 only (clear its output dir, re-run the chunker against part07 alone) rather than a full-corpus re-chunk, and relied on --global reindex being content-idempotent for the 93 unaffected directories",
-    "Excluded the blackburn_2002 legacy issue and the optional docstring documentation note from scope, per the research report's out-of-scope classification"
+    "Edited the extension-source copy of literature-chunk.sh first and copied it verbatim over the deployed copy to guarantee byte-identity, per the #841 drift guard",
+    "Took local scratchpad backups of the pre-change .literature.db and section07's original chunk_0001.md/chunks.json before any live-data mutation, per the plan's rollback guidance",
+    "Extracted rebuild_job4_coverage_audit() (embedded in skill-literature/SKILL.md as a bash function, not a standalone script) into a scratch runner to execute the Job 4 audit directly for baseline and post-fix comparison",
+    "Documented two plan deviations in the Phase 4 progress file and implementation summary rather than treating them as failures, since both were independently verified to satisfy the underlying correctness goal despite not matching the plan's literal check wording"
   ],
   "dead_ends": [],
   "continuation_context": null,

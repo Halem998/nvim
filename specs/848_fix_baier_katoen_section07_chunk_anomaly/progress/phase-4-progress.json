@@ -1,0 +1,31 @@
+{
+  "phase": 4,
+  "phase_name": "Delete stale DB row and reindex",
+  "started_at": "2026-07-10T00:30:00Z",
+  "last_updated": "2026-07-10T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Delete stale giant-chunk row (chunk_id a6b60aa1fca40ca4)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm row gone (0 rows)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Reindex live global DB via --global", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm new section07 chunks present, doc row count increased as expected", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.4",
+      "description": "Confirm new section07 chunks are present in chunks_data (doc row count ~1270)",
+      "type": "altered",
+      "reason": "literature-build-index.sh --global performs a full from-scratch rebuild into a .literature.db.tmp file (fresh schema, INSERT all rows found across all 117 on-disk manifests) then atomically renames it over the live DB — it is NOT an incremental INSERT-OR-REPLACE-into-existing-DB operation as the plan's Risk table assumed. Consequently the Phase 4 manual DELETE of chunk_id a6b60aa1fca40ca4 was rendered moot by the subsequent --global rebuild (the fresh rebuild reads current chunks.json manifests regardless of what the DELETE did to the prior DB). This is harmless: the correctness goal (no orphaned 46,176-token row) is independently verified via max(token_count)=918 for the doc and the exact arithmetic doc-row-count match 1177-1+94=1270.",
+      "annotation": "*(deviation: altered — --global is a full rebuild, not incremental; manual DELETE was superseded but goal still verified)*"
+    },
+    {
+      "task_id": "testing-validation-item-5",
+      "description": "SELECT count(*) FROM chunks_data WHERE doc_id='baier_katoen_2008' AND chunk_id='a6b60aa1fca40ca4' returns 0",
+      "type": "altered",
+      "reason": "chunk_id generation is deterministic on doc_id/section_path/title (not a full-content hash as the research report characterized it). The new first sub-chunk of the re-subdivided section07 (494 tokens, same 'Theorem 7.71.' opening title) regenerates the identical chunk_id a6b60aa1fca40ca4 that the old 46,176-token giant chunk held. Post --global rebuild the row exists again but now holds the new 494-token content (verified via SELECT chunk_id, token_count, content), not the stale giant content. The literal 'returns 0' check is not met, but the underlying anti-orphan-duplicate goal is satisfied.",
+      "annotation": "*(deviation: altered — chunk_id was regenerated with correct new content, not literally absent; verified via token_count and content inspection)*"
+    }
+  ]
+}

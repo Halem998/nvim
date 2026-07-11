@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Re-chunk section07 only",
+  "started_at": "2026-07-10T00:20:00Z",
+  "last_updated": "2026-07-10T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Remove stale chunk artifacts from section07 output dir (backed up to scratchpad first)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run fixed chunker against part07 only, targeting section07 dir", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm ~94 chunks generated", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm no other section directory modified", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "note": "Live corpus data regenerated: ~/Projects/Literature/sources/baier_katoen_2008/.chunks/section07/ (94 chunk_NNNN.md + chunks.json). Not part of the git repo (external corpus)."
+}
