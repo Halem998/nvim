@@ -706,7 +706,9 @@ end
 
 -- Sync the inbox of every configured account (for <leader>ms keybinding)
 function M.sync_all_accounts_inbox()
-  local accounts = config.get_all_accounts()
+  -- get_all_accounts lives on the accounts submodule (not re-exported by core/config)
+  local accounts_config = require('neotex.plugins.tools.himalaya.config.accounts')
+  local accounts = accounts_config.get_all_accounts()
   if not accounts or #accounts == 0 then
     -- Fall back to the configured default account
     local default = config.get_current_account_name()
