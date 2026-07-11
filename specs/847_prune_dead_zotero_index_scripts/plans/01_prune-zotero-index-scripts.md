@@ -1,7 +1,7 @@
 # Implementation Plan: Prune dead zotero index scripts
 
 - **Task**: 847 - Prune dead-code zotero index scripts (zotero-index-add.sh, zotero-index-remove.sh)
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 1 hour
 - **Dependencies**: Task #844 (defer-and-document; disposition source)
 - **Research Inputs**: reports/01_prune-zotero-index-scripts.md
@@ -169,18 +169,27 @@ Phases within the same wave can execute in parallel.
   reworded mentions); the quarantined script bodies (self-references inside `scripts/deprecated/`)
   are the only remaining literal matches and are outside Rule E's scanned globs.
 
-### Phase 4: Verify drift guard and quarantine integrity [NOT STARTED]
+### Phase 4: Verify drift guard and quarantine integrity [COMPLETED]
 
 - **Goal:** Prove the prune is consistent and non-destructive.
 - **Tasks:**
-  - [ ] Run `bash .claude/scripts/check-extension-docs.sh`; confirm exit code 0 and
-        `literature PASS` / `PASS: all extensions OK`.
-  - [ ] Confirm both scripts still exist at `.claude/extensions/literature/scripts/deprecated/`.
-  - [ ] Confirm the flat `scripts/` directory no longer contains the two scripts.
-  - [ ] Confirm the other five deferred zotero scripts are untouched (unchanged in git diff).
-  - [ ] Spot-check no live caller: `grep -rn 'zotero-index-add\|zotero-index-remove' .claude/`
+  - [x] Run `bash .claude/scripts/check-extension-docs.sh`; confirm exit code 0 and
+        `literature PASS` / `PASS: all extensions OK`. *(completed: exit=0, literature PASS,
+        PASS: all extensions OK)*
+  - [x] Confirm both scripts still exist at `.claude/extensions/literature/scripts/deprecated/`.
+        *(completed)*
+  - [x] Confirm the flat `scripts/` directory no longer contains the two scripts. *(completed)*
+  - [x] Confirm the other five deferred zotero scripts are untouched (unchanged in git diff).
+        *(completed: `git diff HEAD~4` on zotero-read/write/setup/chunk/attach-chunks.sh is
+        empty)*
+  - [x] Spot-check no live caller: `grep -rn 'zotero-index-add\|zotero-index-remove' .claude/`
         surfaces only quarantined self-references, doc/comment mentions that were reworded,
-        and out-of-scope hint lines — no invocation path.
+        and out-of-scope hint lines — no invocation path. *(completed: remaining hits are the
+        quarantined scripts' own self-references, the deprecated/README.md quarantine note,
+        the two out-of-scope `echo "Run: ..."` hint lines, and a stale (harmless, non-invoking)
+        path comment in literature-normalize-authors.sh:9 referencing the old pre-move path —
+        left untouched as out of the task's explicit file scope; it is a comment, not a live
+        caller, and not scanned by Rule E)*
 - **Timing:** ~15 min
 - **Depends on:** 1, 2, 3
 - **Files to modify:** none (verification only)
@@ -189,14 +198,14 @@ Phases within the same wave can execute in parallel.
 
 ## Testing & Validation
 
-- [ ] `bash .claude/scripts/check-extension-docs.sh` exits 0, `literature PASS`, `PASS: all extensions OK`.
-- [ ] `jq . .claude/extensions/literature/manifest.json` parses; `provides.scripts` no longer
+- [x] `bash .claude/scripts/check-extension-docs.sh` exits 0, `literature PASS`, `PASS: all extensions OK`.
+- [x] `jq . .claude/extensions/literature/manifest.json` parses; `provides.scripts` no longer
       lists either script; the five other deferred zotero scripts remain.
-- [ ] `ls .claude/extensions/literature/scripts/deprecated/` shows both scripts (not hard-deleted).
-- [ ] `ls .claude/extensions/literature/scripts/` no longer shows either script.
-- [ ] No undeclared `.sh` token for the two scripts remains in `README.md`, `EXTENSION.md`,
+- [x] `ls .claude/extensions/literature/scripts/deprecated/` shows both scripts (not hard-deleted).
+- [x] `ls .claude/extensions/literature/scripts/` no longer shows either script.
+- [x] No undeclared `.sh` token for the two scripts remains in `README.md`, `EXTENSION.md`,
       `agents/*.md`, or `skills/*/SKILL.md`.
-- [ ] `git diff --stat` shows no changes to `zotero-read.sh`, `zotero-write.sh`,
+- [x] `git diff --stat` shows no changes to `zotero-read.sh`, `zotero-write.sh`,
       `zotero-setup.sh`, `zotero-chunk.sh`, `zotero-attach-chunks.sh`.
 
 ## Artifacts & Outputs

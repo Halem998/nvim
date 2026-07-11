@@ -1,0 +1,43 @@
+{
+  "phase": 4,
+  "phase_name": "Verify drift guard and quarantine integrity",
+  "started_at": "2026-07-11T01:20:00Z",
+  "last_updated": "2026-07-11T01:25:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run check-extension-docs.sh; confirm exit 0 and literature PASS",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Confirm both scripts exist under scripts/deprecated/",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Confirm flat scripts/ no longer contains the two scripts",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Confirm other five deferred zotero scripts unchanged",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Spot-check no live caller via grep",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "grep spot-check found one additional out-of-scope, non-invoking comment mention at .claude/extensions/literature/scripts/literature-normalize-authors.sh:9 (and its deployed copy .claude/scripts/literature-normalize-authors.sh:9) referencing the old zotero-index-add.sh path/line numbers. This is a stale documentation comment, not a live caller, not scanned by check-extension-docs.sh Rule E (only .md doc surfaces are scanned), and outside this task's explicit file scope -- left untouched."
+}
