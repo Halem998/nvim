@@ -1,9 +1,10 @@
 ---
-next_project_number: 845
+next_project_number: 849
 ---
 
 # TODO
 
+Warning: 4 task(s) have no topic and will render under Uncategorized: 845, 846, 847, 848 (non-fatal)
 ## Task Order
 
 *Updated 2026-07-11. Generated from state.json dependency graph.*
@@ -11,7 +12,7 @@ next_project_number: 845
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826,832,837,838 | -- | agent-system, literature, extensions, ... |
+| 1 | 78,87,821,826,832,837,838,845,846,847,848 | -- | agent-system, literature, extensions, ... |
 | 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -40,7 +41,91 @@ next_project_number: 845
 
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
+### Uncategorized
+
+845 [NOT STARTED] — Implement the `--hard`/`routing_hard` 5-step precedence in `comma
+846 [NOT STARTED] — Add the missing `literature` entry to `.claude/extensions.json` s
+847 [NOT STARTED] — Prune the two confirmed dead-code zotero scripts flagged (defer-a
+848 [NOT STARTED] — Investigate and fix (or formally document as acceptable) the `bai
+
 ## Tasks
+
+### 848. Fix baier katoen section07 chunk anomaly
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: None
+
+**Description**: Investigate and fix (or formally document as acceptable) the `baier_katoen_2008` section07 chunker anomaly flagged by task #842: after the coverage backfill, section07 produced ONE giant chunk versus ~100+ chunks for sibling sections, indicating `literature-chunk.sh`'s pass-2 subdivision did not fire for that file. #842 flagged this out of scope (it was a coverage task, and touching the chunker's contract was a stated non-goal). This task owns it.
+
+RE-VERIFY / RESEARCH FIRST:
+1. Confirm the anomaly still exists: query `~/Projects/Literature/.literature.db` `chunks_data` for the `baier_katoen_2008` section07 chunk count vs sibling sections; inspect the giant chunk's size.
+2. Read `.claude/extensions/literature/scripts/literature-chunk.sh` pass-2 subdivision logic and determine why it skipped section07 -- likely an input-shape edge case (very long unbroken block, missing delimiter, encoding artifact, or a size threshold that section07 slips past).
+3. Decide whether this is a GENERAL chunker bug (would recur for any similarly-shaped input) or a one-off data quirk of this specific file.
+
+REQUIRED WORK: if a general bug, fix the pass-2 subdivision so oversized chunks are subdivided regardless of the triggering input shape, and re-chunk section07 to verify. If a one-off, re-chunk section07 correctly and document why the general path is sound. Either way section07 must end with sibling-comparable chunk granularity.
+
+CONSTRAINTS: SOURCE OF TRUTH is `.claude/extensions/literature/`; keep deployed/extension-source copies of `literature-chunk.sh` byte-identical if edited (task #841 drift guard). Quarantine-never-delete. Do not regress the other 93 covered directories' chunk counts -- re-chunk ONLY section07 (or re-verify all if the chunker logic changes). Corpus DB is live data; only add/replace section07's chunks.
+
+VERIFICATION: `baier_katoen_2008` section07 chunk count is comparable to sibling sections (not 1 giant chunk); no other directory's coverage regressed; if the chunker was edited, deployed==source and `check-extension-docs.sh` still exits 0; `/literature --rebuild --dry-run` Job 4 still reports the same covered/uncovered split (94/3) as after task #842.
+
+---
+
+### 847. Prune dead zotero index scripts
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: None
+
+**Description**: Prune the two confirmed dead-code zotero scripts flagged (defer-and-document, not pruned) by task #844: `.claude/extensions/literature/scripts/zotero-index-add.sh` and `.claude/extensions/literature/scripts/zotero-index-remove.sh`. Task #844's research confirmed `skill-literature/SKILL.md` reimplements the same index add/remove logic inline via `jq`, so these two scripts have no live callers and are pure dead code. #844 intentionally left them in place (defer-and-document) rather than pruning inline; this task removes them cleanly.
+
+RE-VERIFY FIRST: grep the deployed `.claude/` (skills, commands, agents, other scripts) and the extension source for any reference to `zotero-index-add` / `zotero-index-remove` to CONFIRM zero live callers before removing. If any live reference is found, STOP and report -- do not remove.
+
+REQUIRED WORK: apply the QUARANTINE-NEVER-DELETE posture -- move the two scripts to a quarantine location (e.g. rename with a `.removed-<UTC>` suffix or move to a deprecated/ dir per repo convention) rather than hard-deleting. Remove them from the literature `manifest.json` `provides.scripts` if listed. Update the 'Deployment Status' / inactive-artifacts note in `.claude/extensions/literature/README.md` that #844 added, moving these two from 'deferred' to 'removed'. Leave the other deferred zotero scripts (`zotero-read/write/setup/chunk/attach-chunks.sh`) untouched -- they depend on the external `zot` CLI and are a separate decision.
+
+CONSTRAINTS: SOURCE OF TRUTH is `.claude/extensions/literature/`. Quarantine-never-delete. Do not regress `check-extension-docs.sh` (exit 0) -- removing a script AND its manifest entry together keeps the drift guard happy; removing only one side would trip it. Do not touch the deployed `.claude/scripts/` copies unless the scripts were also deployed (research says they were extension-source-only -- confirm).
+
+VERIFICATION: no live reference to the two scripts remains; manifest and README updated consistently; `check-extension-docs.sh` still exits 0 with literature PASS; the quarantined files still exist (not hard-deleted).
+
+---
+
+### 846. Add literature entry to extensions json
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: None
+
+**Description**: Add the missing `literature` entry to `.claude/extensions.json` so the literature extension is properly tracked/installed like `core`, `nix`, `nvim`, and `memory`. Surfaced by task #844, which DELIBERATELY did NOT fabricate the entry because `.claude/extensions.json` is loader-owned and getting its schema wrong could break extension loading -- so it documented the gap instead. This task does it correctly.
+
+RE-VERIFY / RESEARCH FIRST (do not guess the schema):
+1. Read `.claude/extensions.json` and study the EXACT shape of the existing entries (core/nix/nvim/memory) -- field names, version, enabled flags, script/hook lists, whatever they carry.
+2. Read the extension loader (`lua/neotex/plugins/ai/shared/extensions/loader.lua` and its `init.lua`) to understand how entries in `extensions.json` are consumed -- what fields it reads, whether a missing entry means 'not loaded' or is merely cosmetic tracking, and what a malformed entry would do.
+3. Determine whether the literature extension is currently being loaded DESPITE having no entry (its scripts are clearly deployed and working), which tells you whether this entry is load-bearing or bookkeeping.
+
+REQUIRED WORK: add a correctly-formed `literature` entry matching the established schema and the loader's expectations. Do not change loader behavior; do not enable/disable other extensions.
+
+CONSTRAINTS: `.claude/extensions.json` is loader-owned -- match existing entries exactly; a malformed entry is worse than a missing one. Do not regress `check-extension-docs.sh` (currently exit 0). If adding the entry changes what gets loaded/synced, verify no literature script gets clobbered (task #841 drift guard must still pass).
+
+VERIFICATION: `.claude/extensions.json` parses; the literature entry matches sibling entries' schema; the loader accepts it (dry-run/load without error); `check-extension-docs.sh` still exits 0; no unexpected re-sync/clobber of deployed literature scripts.
+
+---
+
+### 845. Implement routing hard precedence in router
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: None
+
+**Description**: Implement the `--hard`/`routing_hard` 5-step precedence in `command-route-skill.sh` so it matches what CLAUDE.md documents and what `test-command-route-skill.sh` tests against. Surfaced by task #843's research: `command-route-skill.sh` does NOT currently implement `routing_hard` dispatch at all, yet CLAUDE.md's 'Routing Mechanism' section documents a 5-step precedence (non-core exact -> non-core compound-key -> core exact -> core compound-key -> `-hard` append fallback with an on-disk SKILL.md existence gate), and a test file asserts that behavior.
+
+THIS IS THE MOST SUBSTANTIVE of the cleanup follow-ups -- it is a real doc/code/test divergence, not cosmetic. RE-VERIFY before acting (the #843 finding was a side-observation, not the task's focus):
+1. Read `.claude/scripts/command-route-skill.sh` and its extension-source copy; confirm whether/how it resolves an `effort_flag`/`--hard` 4th argument and whether it consults `routing_hard` in any manifest.
+2. Read `.claude/scripts/test-command-route-skill.sh` (and any extension-source copy) to see exactly what precedence behavior is asserted -- the tests are the executable spec.
+3. Read the 'Routing Mechanism' 5-step precedence block in CLAUDE.md (and its merge-source EXTENSION.md) as the documented contract.
+
+REQUIRED WORK: reconcile the three (code, test, docs). Determine the source of truth -- most likely the documented+tested contract is correct and the SCRIPT is behind. Implement the 5-step precedence in `command-route-skill.sh` so the existing tests pass. If instead the tests/docs are wrong, correct them with justification. Whatever the direction, all three must agree at the end.
+
+CONSTRAINTS: SOURCE OF TRUTH is `.claude/extensions/*/`. If `command-route-skill.sh` exists in both deployed `.claude/scripts/` and an extension source, keep them byte-identical (the task #841 drift guard polices this). Do not regress the currently-green `check-extension-docs.sh` (exit 0, 19/19 PASS as of task #843). Preserve the on-disk SKILL.md existence safety gate that Step 5 requires.
+
+VERIFICATION: `bash .claude/scripts/test-command-route-skill.sh` passes; a manual trace of each of the 5 precedence steps produces the documented winner; deployed and extension-source copies byte-identical; `check-extension-docs.sh` still exits 0.
+
+---
 
 ### 844. Finish or defer zotero cite install
 - **Status**: [COMPLETED]
