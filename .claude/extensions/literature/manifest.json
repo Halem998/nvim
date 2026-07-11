@@ -44,6 +44,7 @@
       "literature-convert.sh",
       "literature-chunk.sh",
       "literature-normalize-authors.sh",
+      "literature-decode-font-offset.py",
       "literature-schema.sql",
       "literature-briefing-invoke.sh",
       "literature-lit-flag-resolve.sh"

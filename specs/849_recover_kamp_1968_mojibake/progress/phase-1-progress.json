@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "Build and unit-test the parameterized decoder",
+  "started_at": "2026-07-11T17:56:59Z",
+  "last_updated": "2026-07-11T18:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create literature-decode-font-offset.py in extensions/literature/scripts", "status": "done", "files_touched": [".claude/extensions/literature/scripts/literature-decode-font-offset.py"]},
+    {"id": 2, "description": "Mirror script to .claude/scripts/", "status": "done", "files_touched": [".claude/scripts/literature-decode-font-offset.py"]},
+    {"id": 3, "description": "Register script in manifest.json provides.scripts", "status": "done", "files_touched": [".claude/extensions/literature/manifest.json"]},
+    {"id": 4, "description": "Unit test / self-check against title-page ground truth", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "1.4",
+      "description": "Phase 1 acceptance test expects decoder output to literally contain the unspaced substrings 'Tense Logic and the Theory of Linear Order' and 'Johan Anthony Willem Kamp'.",
+      "type": "altered",
+      "reason": "Ran the decoder against the real title-page bytes (first 900 bytes of the canonical file, not the report's illustrative rendering) and confirmed output matches report 01's documented ground truth exactly, including inter-letter spacing in 'T ense L o g ic ... L i n e a r O rd e r' and 'J o h a n ... W illem'. This letter-spacing is the plan's own explicitly accepted residual (Non-Goals: 'Perfect recovery of inter-letter spacing artifacts ... acceptable known limitations'), so literal exact-substring matching for those two phrases is not achievable by the ASCII band cipher and was not expected to be. 'UNIVERSITY OF CALIFORNIA' does appear as an exact unspaced substring, matching the acceptance test literally. Comma/period normalization verified exactly as specified: 'Richard Montague, Chairman', 'C. C. Chang', 'David B. Kaplan' all correct. The documented 'Los Angeles' font-switch anomaly ('jbOB A n g e le s') also reproduced exactly as report 01 predicted, confirming the cipher needs no adjustment.",
+      "annotation": "*(deviation: altered — verified via readable-English + exact-term spot check rather than literal unspaced substring match, per the plan's own accepted letter-spacing residual)*"
+    }
+  ],
+  "handoff_count": 0
+}
