@@ -264,14 +264,14 @@
     {
       "project_number": 850,
       "project_name": "sync_untracked_core_scripts",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "Load Core sync",
       "title": "Fix Load Core leaving newly-deployed core scripts untracked downstream",
       "description": "Load Core (<leader>al) deploys core .claude/ scripts into downstream project repos via a plain filesystem write (sync.lua:406 helpers.write_file) and performs NO git operation in the target repo (verified: zero git add/commit/status/ls-files across the entire picker tree). task-lock.sh IS in the core allow-list (.claude/extensions/core/manifest.json provides.scripts, ~line 137) so it IS correctly deployed; the defect is that newly-created files (scan.lua:137 action=='copy') land untracked and the completion notification (sync.lua:480-497) reports only category counts, never filenames or tracked/untracked status. task-lock.sh postdates the downstream project's last .claude/scripts/ commit, so it is the lone stray untracked file surfaced during routine git status. FIX (in nvim source of truth, sync.lua): after sync, collect newly-copied (action=='copy') files that are untracked in the target repo git and surface them as an explicit 'newly deployed (untracked) - review and commit' list in the completion notice; advisory only, no auto-stage/commit; guard non-git projects; preserve all existing sync behavior. Alternatives: opt-in auto-stage; downstream deployed-core manifest for CI diffing. Report+acceptance criteria in reports/01_sync-untracked-core-scripts.md.",
       "dependencies": [],
       "created": "2026-07-11T20:44:36Z",
-      "last_updated": "2026-07-11T21:01:53Z",
+      "last_updated": "2026-07-11T21:09:42Z",
       "researched": "2026-07-11T20:44:36Z",
       "next_artifact_number": 2,
       "artifacts": [
@@ -284,9 +284,15 @@
           "path": "specs/850_sync_untracked_core_scripts/plans/02_surface-untracked-deployed.md",
           "type": "plan",
           "summary": "Surface newly-deployed untracked core scripts in Load Core completion notice"
+        },
+        {
+          "path": "specs/850_sync_untracked_core_scripts/summaries/02_surface-untracked-deployed-summary.md",
+          "type": "summary",
+          "summary": "Surfaced newly-deployed untracked core scripts in Load Core completion notice; advisory-only, git-guarded, sync.lua only"
         }
       ],
-      "session_id": "sess_1783803546_a4db66"
+      "session_id": "sess_1783803546_a4db66",
+      "completion_summary": "Fixed Load Core leaving newly-deployed core scripts untracked: sync.lua now threads newly-copied file paths through execute_sync and a git-guarded detect_untracked helper appends an advisory 'Newly deployed (untracked in git) - review and commit' section to the completion notice. Advisory-only (no git add/commit), non-git targets guarded, all existing sync behavior preserved. Verified 4/4 headless scenarios."
     },
     {
       "project_number": 851,
