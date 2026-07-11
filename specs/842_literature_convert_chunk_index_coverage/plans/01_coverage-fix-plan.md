@@ -1,7 +1,7 @@
 # Implementation Plan: Task #842
 
 - **Task**: 842 - Fix the literature corpus chunk/index coverage gap (convert never chunks/indexes)
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: #840 (Job 4 audit that surfaced the gap), #841 (extension/deployed drift reconciliation — still holding)
 - **Research Inputs**: specs/842_literature_convert_chunk_index_coverage/reports/01_coverage-gap-research.md
@@ -289,24 +289,42 @@ the 2 assumed by the original task description/plan** — see Phase 2's deviatio
 
 ---
 
-### Phase 5: End-to-end verification [NOT STARTED]
+### Phase 5: End-to-end verification [COMPLETED]
 
 **Goal**: Confirm forward fix, backfill, and guard all hold against the live corpus.
 
 **Tasks**:
-- [ ] Run `/literature --rebuild --dry-run` and confirm Job 4 reports the 23 backfilled dirs as
-      covered; `missing`/UNEXPECTED for `sources/<dir>/` reduces to 0, with exactly
-      `gabbay_2000` and `negri_von_plato_2001` remaining in the expected-empty bucket.
-- [ ] Convert a fresh test document via `/literature --convert <test.pdf>` (or a small fixture) and
+- [x] Run `/literature --rebuild --dry-run` and confirm Job 4 reports the backfilled dirs as
+      covered; `missing`/UNEXPECTED for `sources/<dir>/` reduces to 0.
+      *(deviation: altered — executed the real `rebuild_job4_coverage_audit()` function directly
+      against the live corpus rather than through the interactive `/literature --rebuild
+      --dry-run` CLI wrapper, since the wrapper's Job Picker gate uses `AskUserQuestion` which is
+      not available in this non-interactive implementation context; this runs the identical
+      production code, not a reimplementation. Result: `covered=94 missing=3, UNEXPECTED=0,
+      expected-empty=3` — **3 dirs remain**, not the 2 assumed by the plan: `gabbay_2000`,
+      `negri_von_plato_2001`, AND `troelstra_schwichtenberg_2000` (discovered in Phase 2 to have
+      no valid `.md` at all). All 3 are correctly excluded, UNEXPECTED bucket is empty.)*
+- [x] Convert a fresh test document via `/literature --convert <test.pdf>` (or a small fixture) and
       confirm, without any separate `--ingest`, that `chunks_data` has rows for its `doc_id` and
-      `literature-search.sh` returns it.
-- [ ] Assert no quarantine artifact appears in any `chunks_data` row / `chunks.json` manifest
+      `literature-search.sh` returns it. *(completed via disposable fixture exercising the exact
+      new Step 3h/Step 4 code; chunks_data got 3 rows immediately, `--include-unverified` search
+      found it. Default search excluded it pending a separate, out-of-scope
+      `literature-fidelity-audit.sh` stamp — pre-existing fail-open behavior, not a regression.)*
+- [x] Assert no quarantine artifact appears in any `chunks_data` row / `chunks.json` manifest
       (`grep -rLE '\.md\.(bak-|rejected)'` across touched `chunks.json`; Job 4's quarantine warning
-      stays silent).
-- [ ] Re-confirm `baier_katoen_2008` chunk count reflects all 12 sections (Phase 3 check re-run).
-- [ ] Clean up the fresh test document's artifacts if it was a throwaway fixture (leave real corpus
-      docs in place).
-- [ ] `diff -q` extension vs deployed SKILL.md one final time.
+      stays silent). *(completed: none found)*
+- [x] Re-confirm `baier_katoen_2008` chunk count reflects all 12 sections (Phase 3 check re-run).
+      *(completed: 1177 chunks_data rows, 12 `.chunks/sectionNN` subdirs, unchanged)*
+- [x] Clean up the fresh test document's artifacts if it was a throwaway fixture (leave real corpus
+      docs in place). *(completed: test dir removed, index rebuilt to purge its chunks from the DB)*
+- [x] `diff -q` extension vs deployed SKILL.md one final time. *(completed: empty diff)*
+- [x] **Additional**: `check-extension-docs.sh` re-run before vs after Phases 1-5 — byte-identical
+      output (`core` FAIL and `lean` FAIL pre-existing/unchanged, `literature` PASS in both).
+
+**Final coverage**: `sources/<dir>/` uncovered count went **25 → 3** (not 25 → 2 as originally
+assumed): `covered=72→94`, `missing=25→3`, all 3 remaining (`gabbay_2000`,
+`negri_von_plato_2001`, `troelstra_schwichtenberg_2000`) confirmed as correctly-excluded (no
+valid `.md`), `UNEXPECTED=0`.
 
 **Timing**: 0.5 hour
 
@@ -321,13 +339,18 @@ the 2 assumed by the original task description/plan** — see Phase 2's deviatio
 
 ## Testing & Validation
 
-- [ ] `/literature --rebuild --dry-run` Job 4: 0 unexpected-empty `sources/<dir>/` dirs; exactly 2
-      expected-empty (`gabbay_2000`, `negri_von_plato_2001`).
-- [ ] Fresh `--convert`ed doc has `chunks_data` rows and is returned by `literature-search.sh`
-      without a separate `--ingest`.
-- [ ] No quarantine artifact (`.md.bak-*`, `.md.rejected`) appears in any `chunks.json` / `chunks_data`.
-- [ ] `baier_katoen_2008`'s 12 files are all represented in its chunks (not clobbered to the last file).
-- [ ] Extension source and deployed SKILL.md are byte-identical (`diff -q` empty).
+- [x] `/literature --rebuild --dry-run` Job 4: 0 unexpected-empty `sources/<dir>/` dirs; exactly 2
+      expected-empty (`gabbay_2000`, `negri_von_plato_2001`). *(deviation: actual result is 0
+      UNEXPECTED, 3 expected-empty — `gabbay_2000`, `negri_von_plato_2001`, AND
+      `troelstra_schwichtenberg_2000`, the last discovered mid-Phase-2 to have no valid `.md`.
+      See Phase 5.)*
+- [x] Fresh `--convert`ed doc has `chunks_data` rows and is returned by `literature-search.sh`
+      without a separate `--ingest`. *(completed, see Phase 5 — returned via
+      `--include-unverified`; default filtering by provenance_fidelity is pre-existing,
+      out-of-scope behavior shared with all newly-converted docs regardless of pipeline)*
+- [x] No quarantine artifact (`.md.bak-*`, `.md.rejected`) appears in any `chunks.json` / `chunks_data`. *(completed)*
+- [x] `baier_katoen_2008`'s 12 files are all represented in its chunks (not clobbered to the last file). *(completed: 1177 distinct-content chunks across 12 subdirs)*
+- [x] Extension source and deployed SKILL.md are byte-identical (`diff -q` empty). *(completed)*
 
 ## Artifacts & Outputs
 

@@ -1,0 +1,42 @@
+{
+  "phase": 5,
+  "phase_name": "End-to-end verification",
+  "started_at": "2026-07-11T00:46:00Z",
+  "last_updated": "2026-07-11T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Job 4 (dry-run equivalent) reports backfilled dirs covered, missing reduced to quarantined-only", "status": "done", "files_touched": [],
+     "note": "Extracted and executed the real rebuild_job4_coverage_audit() function from the deployed SKILL.md against the live corpus (AskUserQuestion-gated interactive job-picker not invokable from this non-interactive agent context, so the underlying function was run directly rather than through the full /literature --rebuild --dry-run CLI wrapper -- this executes the identical production code, not a reimplementation). Result: covered=94 missing=3, UNEXPECTED=0, expected-empty=3."},
+    {"id": 2, "description": "Fresh --convert test doc has chunks_data rows and is searchable without separate --ingest", "status": "done", "files_touched": [],
+     "note": "Created disposable sources/task842_verify_test_doc/task842_verify_test_doc.md and ran the exact new Step 3h (literature-chunk.sh) + Step 4 (literature-build-index.sh --global) invocations added in Phase 1. chunks_data got 3 rows for doc_id=task842_verify_test_doc with zero --ingest calls. literature-search.sh --include-unverified found it immediately. Default (non---include-unverified) search excluded it because provenance_fidelity is stamped by the separate literature-fidelity-audit.sh tool (pre-existing, out of task 842's scope) and fails open to 'unverified' for any doc without a fidelity-audit stamp yet -- this is identical pre-existing behavior for docs added via --ingest too, not a task-842 regression."},
+    {"id": 3, "description": "No quarantine artifact appears in any chunks_data row / chunks.json manifest", "status": "done", "files_touched": [],
+     "note": "grep -rlE across all chunks.json under sources/ for .md.bak-*/.md.rejected: none found."},
+    {"id": 4, "description": "Re-confirm baier_katoen_2008 12 sections still represented", "status": "done", "files_touched": [],
+     "note": "chunks_data count=1177 for doc_id=baier_katoen_2008, 12 .chunks/sectionNN subdirs present -- unchanged from Phase 3."},
+    {"id": 5, "description": "Clean up fresh test document artifacts (throwaway fixture)", "status": "done", "files_touched": [],
+     "note": "rm -rf sources/task842_verify_test_doc/, then re-ran literature-build-index.sh --global to purge its 3 chunks from the ephemeral DB. Confirmed 0 rows remain for that doc_id. No real corpus docs touched."},
+    {"id": 6, "description": "Final diff -q extension vs deployed SKILL.md", "status": "done", "files_touched": [], "note": "Empty diff (hardlinked path)."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.overall",
+      "description": "Expected end-state stated by the plan/task description: 'sources/<dir>/ uncovered count goes 25 -> 2, exactly gabbay_2000 and negri_von_plato_2001 remaining'",
+      "type": "altered",
+      "reason": "Live-verified actual final state is 25 -> 3 missing (94 of 97 covered), with troelstra_schwichtenberg_2000 as a THIRD correctly-excluded dir discovered during Phase 2 backfill (it has zero valid .md -- only a quarantined proof_theory_lectures.md.rejected -- so the plan's premise that all 22 listed single-file dirs each had exactly one valid .md did not hold for this one directory). All 3 excluded dirs (gabbay_2000, negri_von_plato_2001, troelstra_schwichtenberg_2000) are legitimately un-backfillable: no valid full-text .md exists for any of them. This is the honest, fully-verified end state, not the originally assumed 2.",
+      "annotation": null
+    }
+  ],
+  "final_coverage": {
+    "before": {"covered": 72, "missing": 25, "total_sources_dirs": 97},
+    "after": {"covered": 94, "missing": 3, "total_sources_dirs": 97},
+    "missing_after": ["gabbay_2000", "negri_von_plato_2001", "troelstra_schwichtenberg_2000"],
+    "unexpected_after": 0
+  },
+  "check_extension_docs": {
+    "before_summary": "core FAIL, lean FAIL, literature PASS (18 other extensions PASS) -- 4 issues total",
+    "after_summary": "core FAIL, lean FAIL, literature PASS (18 other extensions PASS) -- 4 issues total",
+    "diff": "byte-identical before vs after full log output -- no new failures anywhere, literature section unaffected/PASS in both"
+  }
+}
