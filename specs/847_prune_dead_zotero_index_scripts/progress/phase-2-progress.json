@@ -1,0 +1,34 @@
+{
+  "phase": 2,
+  "phase_name": "Remove both entries from manifest.json provides.scripts",
+  "started_at": "2026-07-11T01:10:00Z",
+  "last_updated": "2026-07-11T01:12:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Remove zotero-index-add.sh from provides.scripts",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/literature/manifest.json"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Remove zotero-index-remove.sh from provides.scripts",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/literature/manifest.json"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Confirm JSON stays valid with jq . manifest.json",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

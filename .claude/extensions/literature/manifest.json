@@ -33,8 +33,6 @@
       "zotero-setup.sh",
       "zotero-chunk.sh",
       "zotero-attach-chunks.sh",
-      "zotero-index-add.sh",
-      "zotero-index-remove.sh",
       "literature-briefing.sh",
       "literature-create-setup-task.sh",
       "test-lit-pipeline.sh",

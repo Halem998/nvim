@@ -112,14 +112,14 @@ Phases within the same wave can execute in parallel.
 - **Verification:** Both files exist under `scripts/deprecated/` and are gone from the flat
   `scripts/` directory; `git status` shows renames (R), not deletes.
 
-### Phase 2: Remove both entries from manifest.json provides.scripts [NOT STARTED]
+### Phase 2: Remove both entries from manifest.json provides.scripts [COMPLETED]
 
 - **Goal:** Drop the two dead scripts from the `provides.scripts` array so no other check
   expects them deployed, and so Rule E no longer counts them as "declared".
 - **Tasks:**
-  - [ ] Remove `"zotero-index-add.sh"` (line 36) from `provides.scripts`.
-  - [ ] Remove `"zotero-index-remove.sh"` (line 37) from `provides.scripts`.
-  - [ ] Confirm JSON stays valid (trailing-comma correctness) with `jq . manifest.json`.
+  - [x] Remove `"zotero-index-add.sh"` (line 36) from `provides.scripts`. *(completed)*
+  - [x] Remove `"zotero-index-remove.sh"` (line 37) from `provides.scripts`. *(completed)*
+  - [x] Confirm JSON stays valid (trailing-comma correctness) with `jq . manifest.json`. *(completed: jq . parses cleanly, index() returns null for both entries)*
 - **Timing:** ~10 min
 - **Depends on:** none
 - **Files to modify:**
