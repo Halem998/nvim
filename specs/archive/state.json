@@ -32089,6 +32089,862 @@
       "session_id": "sess_1782868693_adc8b1",
       "completion_summary": "Right-sized model: frontmatter across 12 slash-command sources: removed the field from 6 pure-delegation commands (fix-it, spawn, project-overview, refresh, tag, vet) and downgraded 6 inline-mechanical commands to sonnet (merge, errors, task, todo, review, pr). Kept opus on the 6 context-accumulating orchestrator/deep-reasoning commands (research, plan, implement, orchestrate, meta, revise). Fixed the root cause: meta.md's embedded command scaffold template no longer hardcodes opus. Reconciled creating-commands.md and command-template.md docs. All grep verifications pass. USER ACTION REQUIRED: run the Neovim extension-picker resync twice (nvim + dotfiles projects) to propagate edits into generated .claude/commands/.",
       "archived": "2026-07-01T01:50:41Z"
+    },
+    {
+      "project_number": 829,
+      "project_name": "add_leader_vl_piper_tts_read_buffer",
+      "status": "completed",
+      "task_type": "neovim",
+      "description": "Add <leader>vl toggle mapping that uses piper TTS to read the current buffer aloud from the cursor position to end of buffer, stopping playback when toggled off",
+      "topic": "neovim",
+      "created": "2026-07-08T22:33:07Z",
+      "last_updated": "2026-07-08T22:57:40Z",
+      "session_id": "sess_1783550656_p829",
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/829_add_leader_vl_piper_tts_read_buffer/reports/01_piper-tts-toggle-research.md",
+          "summary": "Research on <leader>vl piper TTS toggle: keymap/module placement conventions, empirically-verified jobstart/jobstop process-group teardown of the piper|play pipeline, text extraction, and toggle-state handling."
+        },
+        {
+          "type": "plan",
+          "path": "specs/829_add_leader_vl_piper_tts_read_buffer/plans/01_piper-tts-toggle.md",
+          "summary": "3-phase plan for <leader>vl piper TTS cursor-to-EOF toggle: core module + helpers, playback engine (jobstop/on_exit/VimLeave cleanup), which-key wiring."
+        }
+      ],
+      "next_artifact_number": 2,
+      "plan_metadata": {
+        "phases": 3,
+        "total_effort_hours": 2,
+        "complexity": "simple",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_piper-tts-toggle-research.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-07-08"
+          }
+        ]
+      },
+      "completion_summary": "Added a <leader>vl toggle (lua/neotex/util/tts.lua + which-key entry) that reads the current buffer aloud from the cursor to end-of-buffer via a piper|play pipeline, stopping playback immediately on a second press, with auto-reset on natural completion and orphan-free cleanup on Neovim exit.",
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 817,
+      "project_name": "reconcile_email_stale_multiaccount_gating",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "extensions",
+      "priority": "critical",
+      "description": "Reconcile the email/ extension's stale multi-account gating language with the now-verified wrapper contract. Ground truth: .dotfiles task 79 landed + switched in and was live-verified by .dotfiles task 80 (9/9 contract rows PASS), so wrapper-contracts.md is authoritative. Findings 1,2,7 from review-2026-07-04: (1 CRITICAL) strip the obsolete 'wrapper reserves --account gmail / hard error / pending task 79' gating language from commands/email.md (~41-44,67-72,204-208), EXTENSION.md (~29,72-77), skill-email-cleanup/SKILL.md (~45-60), skill-email-sync/SKILL.md (~58-61); (2 HIGH) convert the skill-email-cleanup precondition gate from a 'wrapper is gmail-only, STOP' gate into a light liveness check, and fix the probe: 'email-census --account logos --help' short-circuits before flag validation — use a real read-only probe like 'email-census --account logos' and check exit/stderr; (7 LOW) align gate naming ('step-1' vs 'Phase-1'). Ref: specs/reviews/review-2026-07-04.md. Verify: agent reading /email --logos gets one consistent, non-contradictory story; check-extension-docs.sh [email] still PASS.",
+      "parent_task": 816,
+      "created": "2026-07-05T04:44:07Z",
+      "last_updated": "2026-07-05T05:17:40Z",
+      "session_id": "sess_1783227911_33260c_817",
+      "artifacts": [
+        {
+          "path": "specs/817_reconcile_email_stale_multiaccount_gating/plans/01_reconcile-multiaccount-gating.md",
+          "type": "plan",
+          "summary": "Reconcile multi-account gating plan"
+        }
+      ],
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 818,
+      "project_name": "email_extension_doc_consistency_sweep",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "extensions",
+      "priority": "medium",
+      "description": "Email/ extension documentation consistency sweep (findings 3,4,5,6 from review-2026-07-04). (3 MED) Finish account-generalizing archive-mode-risk.md: title still says 'All Mail Scope' (line 1), Blast-Radius table hardcodes ~64,000 msgs with no Logos row (12-17), Gate #1 hardcodes 'All Mail' (61), Gate #3 hardcodes 'mbsync gmail' (68) — make them match the account-generic tables in skill-email-cleanup/SKILL.md. (4 MED) Hardcode ONE pilot-ack file convention in skill-email-cleanup/SKILL.md (428-442) — single 'account'-keyed file with the gate always checking that path — instead of leaving it to per-invocation agent judgment. (5 MED) Refresh README.md (16-17,106-125): still describes /email as Gmail-only with no --account/--logos. (6 MED) Add a --sync channel/account mismatch warning in Stage 3 confirm (commands/email.md ~32-34, skill-email-sync/SKILL.md ~64-66). Ref: specs/reviews/review-2026-07-04.md.",
+      "parent_task": 816,
+      "created": "2026-07-05T04:44:07Z",
+      "last_updated": "2026-07-05T05:32:34Z",
+      "session_id": "sess_1783227911_33260c_818",
+      "artifacts": [
+        {
+          "path": "{\n  \"type\": \"report\",\n  \"path\": \"specs/818_email_extension_doc_consistency_sweep/reports/01_email-doc-consistency-findings.md\",\n  \"summary\": \"Current on-disk (post-task-817) exact edit locations and precise fix text for review-2026-07-04 findings 3-6, all scoped to .claude/extensions/email/.\"\n}",
+          "type": "report",
+          "summary": "Email doc consistency findings"
+        },
+        {
+          "path": "specs/818_email_extension_doc_consistency_sweep/plans/01_email-doc-consistency-sweep.md",
+          "type": "plan",
+          "summary": "Email doc consistency sweep plan"
+        }
+      ],
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 819,
+      "project_name": "load_email_extension_in_extensions_json",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "extensions",
+      "priority": "medium",
+      "description": "Add the email extension to .claude/extensions.json so it is actually loaded and its EXTENSION.md content propagates into .claude/CLAUDE.md (pre-existing gap flagged in review-2026-07-04: check-extension-docs.sh warns 'routing target not deployed: skill-email-implementation', and EXTENSION.md->CLAUDE.md merge is unobservable because 'email' is absent from extensions.json). Only do this if the email extension is intended to be loaded in this repo. Verify: extension loads without routing warnings, EXTENSION.md [email] section propagates to CLAUDE.md via the merge mechanism.",
+      "created": "2026-07-05T04:44:07Z",
+      "last_updated": "2026-07-05T05:44:16Z",
+      "session_id": "sess_1783227911_33260c_819",
+      "artifacts": [
+        {
+          "path": "specs/819_load_email_extension_in_extensions_json/reports/01_intent-and-mechanics.md",
+          "type": "report",
+          "summary": "Intent gating: do NOT load email ext in this repo (no-op)"
+        },
+        {
+          "path": "specs/819_load_email_extension_in_extensions_json/plans/01_document-no-op-decision.md",
+          "type": "plan",
+          "summary": "Document no-op decision plan"
+        }
+      ],
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 820,
+      "project_name": "email_all_resurface_classified_gap",
+      "status": "completed",
+      "task_type": "meta",
+      "language": null,
+      "effort": "2 hours",
+      "priority": "medium",
+      "created": "2026-07-05T00:00:00Z",
+      "last_updated": "2026-07-05T21:00:00Z",
+      "session_id": "sess_1783283834_70bd2d",
+      "description": "/email --all cannot re-surface an already-fully-classified mailbox for review: email-classify is emit-on-change, email-census takes no query, and mutation wrappers plan over an approved manifest not proposed-* tags, so there is no wrapper-only read-out of tagged messages. Fix spans the email extension skill (--all Stage 2) and the .dotfiles wrapper binaries (a read-only --emit-tagged / candidate rebuild). See reports/01_wrapper-gap-seed.md.",
+      "cross_repo_dependency": ".dotfiles email wrapper binaries (cf. tasks 72, 79)",
+      "artifacts": [
+        {
+          "path": "specs/820_email_all_resurface_classified_gap/reports/01_wrapper-gap-seed.md",
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/820_email_all_resurface_classified_gap/plans/02_email-all-emit-tagged.md",
+          "type": "plan",
+          "summary": ""
+        },
+        {
+          "path": "~/.dotfiles/modules/home/email/agent-tools/classify.nix",
+          "type": "implementation",
+          "summary": ""
+        }
+      ],
+      "completion_summary": "Added read-only email-classify --emit-tagged mode (.dotfiles classify.nix) that rebuilds candidate-manifest.jsonl strictly from existing +proposed-* tags without re-tagging; switched skill-email-cleanup --all Stage 1/2 residual paths to it and added a '0 new, all residual' status; corrected the 'emit-on-change' mischaracterization in wrapper-contracts.md. Closes the wrapper-only read-out gap so /email --all can re-surface a fully-classified mailbox.",
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 823,
+      "project_name": "email_notmuch_staleness_detection_gate",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "extensions",
+      "priority": "high",
+      "title": "Add notmuch-staleness detection gate to skill-email-cleanup",
+      "description": "/email --all promises whole-mailbox coverage but classification reads notmuch (email-classify) while mailbox ground truth is maildir/himalaya (email-census); a stale notmuch index silently degrades --all to partial coverage (observed: census=62 vs notmuch folder:Logos=12 for the Logos INBOX). Add a wrapper-only staleness precondition to skill-email-cleanup that, before an --all sweep (and surfaced in default mode), compares the maildir ground-truth count from email-census against the notmuch indexed count for the same account/folder via the email-classify --limit 0 count-oracle (wrapper-contracts.md §10); on divergence beyond a small threshold, WARN or BLOCK with an actionable message rather than presenting partial coverage as whole-mailbox. Research must verify which source email-census actually counts from (maildir vs notmuch) so the comparison is meaningful. Add domain/staleness-detection.md documenting the check, count sources, and threshold. Wrapper-only compliant (both are wrapper calls); no .dotfiles change.",
+      "file_scope": [
+        ".claude/extensions/email/skills/skill-email-cleanup/SKILL.md",
+        ".claude/extensions/email/context/project/email/domain/"
+      ],
+      "dependencies": [],
+      "estimated_effort": "2 hours",
+      "created": "2026-07-05T15:47:50-07:00",
+      "last_updated": "2026-07-05T16:05:44-07:00",
+      "session_id": "sess_1783291670_meta823",
+      "artifacts": [
+        {
+          "path": "specs/823_email_notmuch_staleness_detection_gate/reports/01_staleness-detection-research.md",
+          "type": "report",
+          "summary": "email-census reads notmuch not maildir; naive file count unreliable; detection needs himalaya-aware count (likely .dotfiles change)"
+        }
+      ],
+      "cross_repo_dependency": "~/.dotfiles email-census wrapper (frozen, task 72): census reports notmuch counts only; a trustworthy maildir/server ground-truth count line must be added there for wrapper-only detection",
+      "completion_summary": "Added a notmuch-staleness detection gate to skill-email-cleanup --all Stage 1. Research (report 01) invalidated the original premise: email-census reads notmuch for all counts (not maildir), and raw file counts are unreliable, so detection needed a himalaya-authoritative on-disk count. Implemented via a .dotfiles change (census.nix) adding an INBOX freshness line (on-disk vs notmuch-indexed, [ok|STALE]); the skill parses it and refuses whole-mailbox coverage claims while STALE. Requires home-manager switch to activate the census change (uncommitted .dotfiles diff for user review).",
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 824,
+      "project_name": "email_sanctioned_notmuch_reindex_path",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "extensions",
+      "priority": "high",
+      "title": "Provide a sanctioned notmuch reindex remediation path for /email",
+      "description": "When staleness is detected (task 823) the skill currently dead-ends: notmuch new is treated as forbidden raw notmuch, so there is no sanctioned remediation. But notmuch new is index-only and non-mutating — exactly analogous to mbsync, which IS sanctioned via skill-email-sync (not a wrapper binary, passes mail-guard.sh, human-confirmed). Research how notmuch reindexing is actually wired for these maildirs (post-mbsync notmuch new hook? systemd path/timer? manual). Then add a sanctioned remediation mirroring the mbsync precedent: fold a reindex step into skill-email-sync or a documented /email --sync behavior, or document the exact sanctioned command, so the skill can remediate rather than dead-end. Reconcile wrapper-contracts.md §8 (two-layer enforcement) and mail-guard.sh reasoning to distinguish index-only notmuch new (sanctioned, like mbsync) from forbidden raw notmuch/himalaya MUTATION and tag commands; ensure skill MUST-NOT text stays consistent. May surface a .dotfiles handoff recommendation if reindex belongs in the frozen wrapper layer.",
+      "file_scope": [
+        ".claude/extensions/email/skills/skill-email-sync/SKILL.md",
+        ".claude/extensions/email/skills/skill-email-cleanup/SKILL.md",
+        ".claude/extensions/email/hooks/mail-guard.sh",
+        ".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"
+      ],
+      "dependencies": [
+        823
+      ],
+      "estimated_effort": "3 hours",
+      "created": "2026-07-05T15:47:50-07:00",
+      "last_updated": "2026-07-05T16:05:44-07:00",
+      "session_id": "sess_1783291670_meta823",
+      "artifacts": [],
+      "cross_repo_dependency": "~/.dotfiles notmuch.nix/mbsync.nix (frozen, task 72): sanctioned reindex is `notmuch new --no-hooks` (plain notmuch new triggers preNew mbsync -a); optional new email-reindex operator helper mirrors email-freeze/thaw",
+      "completion_summary": "Provided a sanctioned reindex remediation: new email-reindex operator helper (.dotfiles mbsync.nix, notmuch new --no-hooks, freeze-safe, index-only) mirroring email-freeze/thaw. skill-email-cleanup gained a Staleness Remediation section and a reconciled MUST-NOT that exempts email-reindex (like mbsync) while still forbidding raw notmuch new (which triggers mbsync -a). Documented in wrapper-contracts.md §13. Requires home-manager switch to activate (uncommitted .dotfiles diff).",
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 825,
+      "project_name": "email_all_coverage_contract_docs",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "extensions",
+      "priority": "medium",
+      "title": "Wire detect->remediate->re-run into the --all coverage contract and docs",
+      "description": "Synthesis/documentation task closing the loop opened by 823 (detection) and 824 (remediation). Update commands/email.md (add the staleness->remediation flow to Workflow Execution and Error Handling), EXTENSION.md, README.md, and the archive-mode-risk.md / bulk-bucket-review.md context so the --all whole-mailbox coverage promise is EXPLICITLY conditioned on a fresh notmuch index, and the end-to-end flow (detect staleness -> recommend/run sanctioned reindex or --sync -> re-run --all) is documented consistently across command, skill, and context layers. Ensure no residual doc claims --all covers the whole mailbox unconditionally.",
+      "file_scope": [
+        ".claude/extensions/email/commands/email.md",
+        ".claude/extensions/email/EXTENSION.md",
+        ".claude/extensions/email/README.md",
+        ".claude/extensions/email/context/project/email/domain/archive-mode-risk.md",
+        ".claude/extensions/email/context/project/email/patterns/bulk-bucket-review.md"
+      ],
+      "dependencies": [
+        823,
+        824
+      ],
+      "estimated_effort": "2 hours",
+      "created": "2026-07-05T15:47:50-07:00",
+      "last_updated": "2026-07-05T16:05:44-07:00",
+      "session_id": "sess_1783291670_meta823",
+      "artifacts": [],
+      "completion_summary": "Wired detect->remediate->re-run into the --all coverage contract and docs: conditioned the --all coverage promise on a fresh index in commands/email.md (Input + Error Handling), added domain/staleness-detection.md (registered in index-entries.json), and cross-referenced from EXTENSION.md, README.md, archive-mode-risk.md, and wrapper-contracts.md §13.",
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 828,
+      "project_name": "logos_trash_archive_uid_collision_repair",
+      "title": "Resolve Logos Trash/Archive UID collisions via live IMAP verification",
+      "status": "completed",
+      "task_type": "nix",
+      "description": "Build and run a live-IMAP-verified, rename-only repair for the 862 duplicate-UID pairs left unresolved by task 826's Phase 5 (860 in ~/Mail/Logos/.Trash/cur, 2 in ~/Mail/Logos/.Archive/cur). Task 826's implementation verified that all 862 pairs have DIFFERENT Message-Id values between the two colliding files -- these are distinct, irreplaceable real messages that collided on the same local U=NNN slot due to a corrupted, non-monotonic Near-side UID counter from the 2026-02-09 import (see specs/826_logos_maildir_duplication_mbsync_repair/handoffs/phase-5-blocker-report.md). No Message-Id-based delete is safe.\n\nScope: For each colliding UID, perform a live IMAP UID FETCH/Message-Id lookup against the ProtonMail Bridge server for the current Far-side UID assignment of the affected folder (.Trash or .Archive), compare it against each local candidate file's Message-Id, and where a match is found on one member of the pair, rename the OTHER (non-matching) member's Maildir filename to a fresh, non-colliding U=NNN token. Rename only -- never delete either file, never write/push anything to the server via this task's own script. Build a dry-run mode that lists all planned renames before executing any of them. Validate the technique end-to-end on the 2 tractable .Archive pairs first, then apply the same script to the 860 .Trash pairs. Use the existing Phase 1 backup at ~/Mail/.logos-backup-20260706/ (tarballs, mbsyncstate/uidvalidity snapshots, baseline counts) as the rollback source, and log every rename decision (matched/renamed, which file, old and new UID token) to a new artifact under that backup directory.\n\nExplicitly out of scope (left for task 826 to resume afterward): running `mbsync logos`, clearing/resetting .mbsyncstate or .uidvalidity, lifting email-freeze, notmuch reindexing. Do not re-verify Message-Id distinctness (already established) or re-run Phase 3's Labels-mirror analysis (separate, already-decided concern). Ground the implementation in specs/826_logos_maildir_duplication_mbsync_repair/handoffs/phase-5-blocker-report.md (resolution path 1) and the Phase 5 section of specs/826_logos_maildir_duplication_mbsync_repair/plans/01_logos-mbsync-maildir-repair.md.\n\nDefinition of done: `ls ~/Mail/Logos/.Trash/cur | grep -oE 'U=[0-9]+' | sort | uniq -d` and the equivalent for .Archive/cur both return nothing (one physical file per UID), zero files deleted, zero server-side writes performed by this task's script, and a decision log written to the Phase 1 backup directory documenting every rename.",
+      "effort": "3-4 hours",
+      "parent_task": 826,
+      "topic": "extensions",
+      "dependencies": [],
+      "file_scope": [
+        "~/Mail/Logos/.Trash/cur/",
+        "~/Mail/Logos/.Archive/cur/",
+        "~/Mail/.logos-backup-20260706/"
+      ],
+      "created": "2026-07-06T02:58:03Z",
+      "last_updated": "2026-07-06T03:20:00Z",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/826_logos_maildir_duplication_mbsync_repair/reports/02_spawn-analysis.md",
+          "summary": "Spawn analysis from parent task 826"
+        },
+        {
+          "path": "specs/828_logos_trash_archive_uid_collision_repair/plans/01_logos-uid-collision-repair.md",
+          "type": "plan",
+          "summary": "6-phase rename-only, live-IMAP-verified UID collision repair plan"
+        },
+        {
+          "type": "summary",
+          "path": "specs/828_logos_trash_archive_uid_collision_repair/summaries/01_logos-uid-collision-repair-summary.md",
+          "summary": "Implementation summary: all 862 UID collisions resolved, 0 deletes, 0 server writes"
+        }
+      ],
+      "session_id": "sess_1783306877_438377_828",
+      "completion_summary": "Resolved all 862 duplicate-U=NNN Maildir collisions (860 .Trash, 2 .Archive) via live read-only IMAP verification against ProtonMail Bridge: renamed the non-matching member of each colliding pair to a fresh U=NNN token, preserving both original messages. Zero files deleted, zero server-side writes. Full decision log and handoff to task 826 written under ~/Mail/.logos-backup-20260706/task-828/.",
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 830,
+      "project_name": "aerc_terminal_ctrl_hjkl_esc_passthrough",
+      "status": "completed",
+      "task_type": "neovim",
+      "topic": "Terminal UI",
+      "dependencies": [],
+      "description": "Special-case the aerc terminal in Neovim's terminal-mode keymap setup so <C-h/j/k/l> and <Esc> reach aerc instead of being intercepted by Neovim. This is the cross-repo companion to .dotfiles task 105 Recommendation B (aerc<->nvim/himalaya keymap alignment); it is a hard PREREQUISITE for the aerc-side <C-hjkl> folder binds in that task.\n\nBACKGROUND: aerc is launched via <leader>me into a floating toggleterm (lua/neotex/plugins/tools/mail.lua, cmd=\"aerc\"). Every terminal matches the term://* TermOpen autocmd (lua/neotex/config/autocmds.lua:25) which calls set_terminal_keymaps() (lua/neotex/config/keymaps.lua:116). aerc is neither the is_claude nor is_opencode special case, so it falls through to the generic else branch (keymaps.lua:147-150) that maps terminal-mode <C-h/j/k/l> -> wincmd h/j/k/l, and the <Esc> -> <C-\\><C-n> exit-terminal map (keymaps.lua:133). Result: aerc NEVER receives <C-hjkl> (they navigate Neovim windows) or <Esc> (it drops to Neovim normal mode instead of cancelling aerc's :prompt / :search / selection).\n\nCHANGE: add an is_aerc detection alongside is_claude/is_opencode (match the terminal bufname/cmd for 'aerc'), and for aerc terminals (1) SKIP the <C-h/j/k/l>->wincmd remaps so they pass through to aerc, and (2) SKIP the <Esc>->exit-terminal remap (extend the existing `if not is_claude` guard to also exempt aerc) so aerc prompts cancel with Esc. This is safe because the aerc window is a fullscreen float with no sibling Neovim windows, so wincmd h/j/k/l do nothing useful there anyway. The change MUST be strictly gated on is_aerc: claude, opencode, and generic terminals keep their current <C-hjkl>/<Esc> behavior unchanged.\n\nAFTER THIS LANDS: the .dotfiles task 105 side binds aerc's <C-h>/<C-l> = :prev-folder/:next-folder (or <C-j>/<C-k> = message nav) in modules/home/email/aerc.nix. That aerc-side edit is out of scope here.\n\nFILES: lua/neotex/config/keymaps.lua (set_terminal_keymaps, ~L116-158). Reference only: lua/neotex/config/autocmds.lua:25 (the term://* trigger), lua/neotex/plugins/tools/mail.lua (the <leader>me launcher).\n\nVERIFICATION: open aerc via <leader>me; confirm (once the aerc.nix binds exist) <C-hjkl> reach aerc and <Esc> cancels an aerc :prompt from inside the float; confirm a Claude Code terminal and a general :terminal STILL have working <C-hjkl> window-nav and <Esc> exit (no regression from the is_aerc gate).\n\nCROSS-REPO: research + rationale in ~/.dotfiles/specs/105_aerc_keybindings_nvim_himalaya_alignment/reports/01_aerc-keymap-alignment.md (esp. §4 reachability table and §6.2 Recommendation B). Companion .dotfiles task 105.",
+      "next_artifact_number": 1,
+      "artifacts": [
+        {
+          "path": "specs/830_aerc_terminal_ctrl_hjkl_esc_passthrough/reports/01_aerc-terminal-passthrough-research.md",
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/830_aerc_terminal_ctrl_hjkl_esc_passthrough/plans/01_aerc-terminal-passthrough.md",
+          "type": "plan",
+          "summary": ""
+        },
+        {
+          "path": "specs/830_aerc_terminal_ctrl_hjkl_esc_passthrough/summaries/01_aerc-terminal-passthrough-summary.md",
+          "type": "summary",
+          "summary": "Implemented the single-phase plan for task 830 (aerc terminal C-hjkl/Esc passthrough) in lua/neotex/config/keymaps.lua's set_terminal_keymaps(). Added 'local is_aerc = bufname:match(\"aerc\") ~= nil' after the is_opencode detection block; extended the <Esc> guard to 'if not is_claude and not is_aerc then'; and inserted an intentionally-empty 'elseif is_aerc then' branch (no buf_map calls, no early return) between the is_opencode branch and the generic else in the <C-hjkl> conditional, so <C-hjkl> pass through unmapped to the aerc pty. The unconditional <M-*> resize binds and winfixbuf remain untouched. Diff matches the plan exactly (net +5/-1 lines). Headless load check (nvim --headless -c \"luafile lua/neotex/config/keymaps.lua\" -c \"q\") passed with exit code 0 and no Lua errors."
+        }
+      ],
+      "last_updated": "2026-07-09T06:32:50Z",
+      "session_id": "sess_1783578231_0e8733",
+      "completion_summary": "Special-cased aerc terminal in set_terminal_keymaps() (lua/neotex/config/keymaps.lua): added is_aerc = bufname:match('aerc'), gated <Esc> exit-terminal map with 'not is_aerc', and added empty elseif is_aerc branch so <C-hjkl> pass through to aerc's pty. Claude/opencode/generic terminals unchanged. Prerequisite for .dotfiles task 105 aerc-side folder binds.",
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 831,
+      "project_name": "fix_literature_conversion_pipeline_correctness",
+      "status": "completed",
+      "task_type": "meta",
+      "title": "Fix literature conversion pipeline correctness (BUGS 1-4)",
+      "description": "Fix silent conversion-correctness bugs in .claude/scripts/literature-convert.sh. BUG 1 (ROOT CAUSE): converter prefers marker/marker_single, but marker_single is NOT installed on this machine, so every corpus doc fell back to `pdftotext -layout`, which glues two-column academic layouts side-by-side into semantic garbage (verified in ~/Projects/Literature/sources/alur_2013_syntax-guided-synthesis/chunk_0012.md). Make converter selection explicit and LOUD, never silently degrade to a layout-destroying engine. Evaluate/require marker, or pymupdf4llm/docling/nougat, or replace the -layout path with column-aware PyMuPDF page.get_text(\"blocks\"/\"dict\") reading-order extraction (never -layout on multi-column). BUG 2: literature-convert.sh:171 `for pg in range(start_page, min(end_page, start_page + 3))` silently truncates each TOC section to its first 3 pages (unbounded data loss) - remove it. BUG 3: 2,351 chunk files match `^(.+) > \\1$` (doubled breadcrumb headers); no-TOC docs derive headings from sentence fragments (e.g. ~/Projects/Literature/wdb.cariani.santorio/chunk_0010.md begins 'indeterminacy. > indeterminacy.'). Fix heading derivation and doubled breadcrumbs. BUG 4: 64 markdown files contain raw U+FB00-U+FB06 ligatures (swordﬁsh, identiﬁ) that FTS5 unicode61 won't decompose; add NFKC/ligature folding, dehyphenation across line breaks, and soft-wrap rejoining. Add a conversion-quality gate that FAILS LOUDLY rather than emitting corrupt markdown: column-interleaving heuristic, page-coverage assertion against len(doc), ligature scan. HIGH priority - blocks #832 and #833. Evidence pre-verified; no need to re-derive.",
+      "topic": "literature",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/831_fix_literature_conversion_pipeline_correctness/reports/01_conversion-pipeline-fix.md",
+          "summary": "Engine evaluation + empirical tests (pdftotext -layout vs plain pdftotext vs PyMuPDF default vs PyMuPDF sort=True vs custom column-clustering vs pymupdf4llm) against the real Alur SyGuS source PDF; concrete fixes for BUG2/BUG3/BUG4 with reproductions; quality-gate spec; NixOS packaging findings including an existing disabled pymupdf4llm nix package whose version blocker is now stale; #831/#832/#833 scope triage for pdf2sqlite design ideas."
+        },
+        {
+          "type": "plan",
+          "path": "specs/831_fix_literature_conversion_pipeline_correctness/plans/01_conversion-pipeline-fix.md",
+          "summary": "Implementation plan"
+        },
+        {
+          "path": "specs/831_fix_literature_conversion_pipeline_correctness/summaries/01_conversion-pipeline-fix-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for BUGS 1-4, quality gate, and #832/#833 interface contracts."
+        }
+      ],
+      "last_updated": "2026-07-09T18:48:53Z",
+      "session_id": "sess_1783620265_b5399e_831",
+      "file_scope": [
+        ".claude/scripts/literature-convert.sh",
+        ".claude/scripts/literature-chunk.sh"
+      ],
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 833,
+      "project_name": "harden_literature_retrieval_tokenization",
+      "status": "completed",
+      "task_type": "meta",
+      "title": "Harden retrieval against tokenization brittleness",
+      "description": "Harden .claude/scripts/literature-search.sh and literature-briefing.sh so tokenization brittleness degrades gracefully. Triggering symptom (a symptom, not the disease): an agent dead-ended with 'FTS5 chokes on the punctuation; the research agent will read the chunk directly', surfaced while working on ~/Projects/BimodalLogic/specs/337_build_joint_multiowner_disjunct_bracketholds_engine_for_kve2_sepdisjunct/plans/04_joint-disjunct-holds-codesign.md. Normalize the search query using the SAME normalization applied to the corpus in #831; on zero-results or an FTS5 parse failure, fall back gracefully (trigram/LIKE, or sqlite-vec semantic search per the draperlaboratory/pdf2sqlite design, which would make retrieval resilient to exactly this punctuation/tokenization brittleness). Evaluate storing a per-chunk LLM-generated 'gist' alongside text for searchable summaries. Ensure literature-briefing.sh surfaces a usable next action rather than leaving the agent to improvise 'I'll just read the chunk directly.' System ALREADY has literature-schema.sql + FTS5 (chunks_fts, bm25) - this is augmentation, not a rewrite. Depends on #831; can run parallel to #832.",
+      "topic": "literature",
+      "dependencies": [
+        831
+      ],
+      "artifacts": [
+        {
+          "path": "specs/833_harden_literature_retrieval_tokenization/reports/01_harden-retrieval-tokenization.md",
+          "type": "report",
+          "summary": "FTS5 query-path hardening design: extended sanitizer, phrase-quote retry, trigram fallback tier, degraded-signal contract for briefing.sh; sqlite-vec and LLM gist evaluated as defer."
+        },
+        {
+          "path": "specs/833_harden_literature_retrieval_tokenization/plans/01_harden-retrieval-tokenization.md",
+          "type": "plan",
+          "summary": "5-phase plan: extended sanitizer (ligature fold + punctuation normalization), additive chunks_trigram schema with content-column drift repair, fallback ladder plus lazy trigram migration and result envelope in literature-search.sh, envelope-aware degraded rendering in literature-briefing.sh, end-to-end verification against the real 3746-chunk corpus."
+        },
+        {
+          "path": "specs/833_harden_literature_retrieval_tokenization/summaries/01_harden-retrieval-tokenization-summary.md",
+          "type": "summary",
+          "summary": ""
+        }
+      ],
+      "file_scope": [
+        ".claude/scripts/literature-search.sh",
+        ".claude/scripts/literature-briefing.sh",
+        ".claude/scripts/literature-schema.sql"
+      ],
+      "last_updated": "2026-07-09T20:30:51Z",
+      "session_id": "sess_1783626090_1b5169_833",
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 834,
+      "project_name": "retire_stale_per_repo_literature_copies",
+      "status": "completed",
+      "task_type": "meta",
+      "title": "Retire stale per-repo literature copies (FINDING 6)",
+      "description": "Retire the stale per-repo literature copies. FINDING 6: the architecture is ALREADY correct (central store + per-repo index, no document duplication) - the cleanup simply never happened. ~/Projects/BimodalLogic/specs/literature/ is 181 MB with 27 source dirs, and ALL 27 already exist in ~/Projects/Literature/sources/ (97 dirs total). A DEPRECATED.md there records migration completed 2026-06-14 under task 710, and LITERATURE_DIR is already wired into both .claude/settings.json and home.nix. Verify content equivalence of the 27 BimodalLogic source dirs against central, confirm the per-repo specs/literature-index.json sub-index convention works end-to-end (currently unclear whether it is populated anywhere), then delete ~/Projects/BimodalLogic/specs/literature/sources/. Sweep ~/Projects/ for other stale specs/literature/ copies. Keep DEPRECATED.md in place. Scope as verify-then-delete + confirm the sub-index convention works, NOT as a re-migration. Independent - no dependencies.",
+      "topic": "literature",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/834_retire_stale_per_repo_literature_copies/reports/01_retire-stale-literature-copies.md",
+          "summary": "27-dir equivalence table (all EQUIVALENT, no data loss), metadata comparison (central is a superset), live-tested sub-index resolution against central, git-tracking/recoverability profile (176MB of PDFs gitignored, 4.8MB tracked), sweep of ~/Projects for other stale copies (cslib and its worktree found with identical pattern, flagged as follow-up, not touched), and a proposed reversible deletion procedure."
+        },
+        {
+          "type": "plan",
+          "path": "specs/834_retire_stale_per_repo_literature_copies/plans/01_retire-stale-literature-copies.md",
+          "summary": "Implementation plan"
+        },
+        {
+          "path": "specs/834_retire_stale_per_repo_literature_copies/summaries/01_retire-stale-literature-copies-summary.md",
+          "type": "summary",
+          "summary": "Equivalence-verification evidence, backup lifecycle, deletion record, and ~/Projects/ sweep findings."
+        }
+      ],
+      "last_updated": "2026-07-09T18:48:54Z",
+      "session_id": "sess_1783620265_b5399e_834",
+      "file_scope": [
+        "~/Projects/BimodalLogic/specs/literature/"
+      ],
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 835,
+      "project_name": "literature_corpus_provenance_fidelity_audit",
+      "status": "completed",
+      "task_type": "meta",
+      "title": "Literature corpus provenance and fidelity audit",
+      "description": "Provenance/fidelity defect orthogonal to #831's four extraction bugs. Many literature dirs are not badly converted - they were never converted; the .md is a hand-authored paraphrase that reads as authoritative and the index blesses it with a token count, so agents ground formal work on a summary that never contained the lemma it cites. VERIFIED: of 97 dirs under ~/Projects/Literature/sources/, populations are: 0 healthy (PDF AND chunks), 45 PDF+zero-chunks (never converted; .md is a hand-written stand-in), 49 chunks+no-PDF (converted but source PDF absent, not reconvertible), 3 neither. Word-ratio (md_words/pdf_words) on PDF-bearing dirs shows systematic summary-substitution: blackburn_2002=0.03, baier_katoen_2008=0.10, caleiro_2013=0.09, doets_1987=0.11, gabbay_1993=0.15, goldblatt_2003=0.25, rabinovich_2014=0.29, doets_1989=0.36, derijke_1995=0.44, hodkinson_2006=0.57. Concrete exemplar: rabinovich_2014 .md = 245 lines / 2,093 words (opens '## Overview\\nProvides a simple, self-contained proof of Kamp's theorem...' - editorial prose), sibling PDF = 16 pages / 7,296 words, index.json holds ONE entry id=rabinovich_2014 token_count=2721; Lemma 3.2(1) is a single unproved sentence, Definition 7.13 is one line. SCOPE: (1) classify every dir into the four populations; (2) build a detector for 'md is a hand-authored summary, not a conversion of the sibling PDF' using word-ratio threshold, absence of chunk_*.md, prose markers (leading '## Overview'), absence of the PDF's section headings, missing numbered lemma/definition bodies; (3) record a provenance/fidelity field per index.json entry with values verified_conversion / unverified_summary / no_source_pdf; (4) make literature-briefing.sh and literature-search.sh LOUDLY flag low-fidelity entries rather than serving them as authoritative; (5) quarantine, never delete. KEY INSIGHT to record for downstream: corrupt column-interleaved text announces itself, a fluent hand-written summary does not - which is exactly why fidelity needs its own gate, the fidelity analogue of #831's quality gate. Independent of #831-#834. NOTE: #832's 'reconvert all 97 dirs' premise is invalidated by this finding (52 have no PDF; 45 need .md replacement, not re-derivation) - #832 carries deps [835,836] as a premise interlock and should be /revised once 835/836 land.",
+      "topic": "literature",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "path": "specs/835_literature_corpus_provenance_fidelity_audit/reports/01_provenance-fidelity-audit.md",
+          "type": "report",
+          "summary": "Corrected population classification, detector design, schema design, script-flagging design."
+        },
+        {
+          "path": "specs/835_literature_corpus_provenance_fidelity_audit/plans/01_provenance-fidelity-flagging.md",
+          "type": "plan",
+          "summary": "5-phase plan: detector core, idempotent stamping, script flagging, verification."
+        },
+        {
+          "path": "specs/835_literature_corpus_provenance_fidelity_audit/summaries/01_provenance-fidelity-flagging-summary.md",
+          "type": "summary",
+          "summary": "Fidelity detector, index.json stamping, quarantine flagging in search/briefing scripts."
+        }
+      ],
+      "next_artifact_number": 1,
+      "session_id": "sess_1783620265_b5399e_835",
+      "created": "2026-07-09T00:00:00Z",
+      "last_updated": "2026-07-09T19:28:50Z",
+      "file_scope": [
+        ".claude/scripts/literature-briefing.sh",
+        ".claude/scripts/literature-search.sh",
+        "~/Projects/Literature/index.json"
+      ],
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 836,
+      "project_name": "recover_source_pdfs_via_zotero",
+      "status": "completed",
+      "task_type": "meta",
+      "title": "Recover source PDFs via Zotero for PDF-less central dirs",
+      "description": "Recover source PDFs for the 52 central dirs under ~/Projects/Literature/sources/ that lack a source PDF (49 chunk-bearing + 3 empty - two different populations; address all 52). Zotero is the ONLY viable recovery source: ~/Projects/Literature/zotero-library.json exists (173 KB, 400 entries) and index.json entries carry zotero_key and zotero_path fields. SCOPE: re-resolve zotero_key/zotero_path against the Zotero library and its storage dir for the 52 PDF-less dirs; repopulate ~/Projects/Literature/pdfs/ symlinks; report which of the 52 remain unrecoverable after Zotero resolution and mark them no_source_pdf, never silently retained as authoritative. Likely entry point: .claude/scripts/zotero-resolve-sqlite-path.sh already exists and is probably the right starting point. VERIFIED - do NOT re-investigate per-repo copies: they yield ZERO unique PDFs (~/Projects/BimodalLogic/specs/literature/sources = 31 pdfs but 0 unique vs central; ~/Projects/cslib/specs/literature/sources = 0 pdfs; ~/Projects/cslib-refactor-prop_logic/specs/literature/sources = 0 pdfs). There is NO ordering constraint against #834 - deleting BimodalLogic's sources/ destroys zero unique recovery sources (central-lacks-PDF intersect BimodalLogic-has-PDF = 0). DEPENDENCY: depends on #835 via file-footprint overlap - both write ~/Projects/Literature/index.json, where 835 DEFINES the provenance/fidelity enum and 836 WRITES one of its values (no_source_pdf); schema must precede population.",
+      "topic": "literature",
+      "dependencies": [
+        835
+      ],
+      "artifacts": [
+        {
+          "path": "specs/836_recover_source_pdfs_via_zotero/reports/01_recover-source-pdfs-zotero.md",
+          "type": "report",
+          "summary": "Empirically verified 52-dir population, pdfs/ dissolution history, live-API-confirmed recoverability list (7 confirmed, 2 HTML-only, 1 needs disambiguation, ~41 confirmed absent), and resolver-script design constraints (live API preferred, sqlite locked while Zotero runs, storage-path derivation bug found in existing export script)."
+        },
+        {
+          "path": "specs/836_recover_source_pdfs_via_zotero/plans/01_recover-source-pdfs-zotero.md",
+          "type": "plan",
+          "summary": "7-phase plan: snapshot/env-probe, build read-only zotero-resolve-pdf.sh, dry-run sweep of all 52 targets, secondary verification gate for non-key-anchored matches, idempotent apply, fidelity re-audit, documentation and summary."
+        },
+        {
+          "path": "specs/836_recover_source_pdfs_via_zotero/summaries/01_recover-source-pdfs-zotero-summary.md",
+          "type": "summary",
+          "summary": "Full 52-entry disposition table (7 recovered, 1 html-only, 1 needs-disambiguation, 43 absent-from-zotero including 2 rejected false positives), decisions, plan deviations, and verification evidence."
+        }
+      ],
+      "next_artifact_number": 1,
+      "session_id": "sess_1783626090_1b5169_836",
+      "created": "2026-07-09T00:00:00Z",
+      "last_updated": "2026-07-09T20:30:53Z",
+      "file_scope": [
+        "~/Projects/Literature/pdfs/",
+        "~/Projects/Literature/index.json",
+        ".claude/scripts/zotero-resolve-sqlite-path.sh"
+      ],
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 839,
+      "project_name": "fix_fidelity_audit_fail_open",
+      "status": "completed",
+      "task_type": "meta",
+      "title": "Fix fail-open classification in literature-fidelity-audit.sh",
+      "description": "Fix the fail-open classification bug in .claude/scripts/literature-fidelity-audit.sh, which silently stamps provenance_fidelity=\"verified_conversion\" onto documents it could not actually adjudicate.\n\nTHE BUG (verified by reading the script and by running `literature-fidelity-audit.sh --dry-run` against the live corpus):\n\nAt lines 367-374, classify_dir() takes this branch:\n\n    frac, adequate, total = proof_completeness_fraction(md_texts)\n    if frac is None:\n        # \"this corpus is formal-math-heavy and every low-ratio case observed\n        #  carries numbered statements\"\n        result[\"provenance_fidelity\"] = \"verified_conversion\"\n        return result\n\nSo a document with word_ratio far below RATIO_THRESHOLD (0.75), disclosed=False, and NO numbered statements to check gets labeled verified_conversion by default. The signal that would have caught it cannot fire, and the absence of that signal is read as a pass.\n\nThe inline comment justifies this by asserting \"every low-ratio case observed carries numbered statements.\" That assumption was true of the corpus #835 measured. It is now FALSIFIED: task #836 recovered PDFs for prose philosophy papers that carry no numbered theorems.\n\nMEASURED VICTIMS (disclosed=False, proof_fraction=None, stamped verified_conversion):\n  fine_2012_guide-to-ground                         word_ratio=0.0327   (677 md words vs 20,701 pdf words)\n  fine_2012_counterfactuals-without-possible-worlds word_ratio=0.2455   (2,960 vs 12,056)\n  venema_1991                                       word_ratio=0.3737   (22,623 vs 60,541)\n\nA 677-word stub against a 20,701-word PDF is a hand-written summary, not a verified conversion. The corpus currently asserts otherwise.\n\nDO NOT BREAK THE LEGITIMATE BRANCH: doets_1987 (ratio=0.2378) and libkin_2004_ch3_ch7 (ratio=0.0187) are also low-ratio, but have disclosed=True. These are the documented partial conversions from #835. The disclosure branch (line 361) is correct and must keep passing them.\n\nREQUIRED FIX: when the proof-completeness signal cannot fire (frac is None) on a low-ratio, undisclosed document, the honest result is a distinct value meaning \"could not adjudicate\" -- NOT verified_conversion. Introduce a sixth enum value (suggested: `unadjudicated`) rather than overloading unverified_summary, which asserts a positive finding the audit did not make. Fail closed, never open.\n\nCONSEQUENT WORK:\n- Update the five-value enum contract (currently documented at the script header, ~line 38) to six values, and update every consumer of provenance_fidelity. Known consumers: `.claude/scripts/literature-build-index.sh`, `literature-search.sh` (surfaces provenance_fidelity in result rows), and task #832 s cohort logic.\n- Re-run `--write` after the fix so the 3 victim dirs are re-stamped honestly.\n- #835 s report (`01_provenance-fidelity-audit.md`) documents this branch as accepted residual risk. Update that record; the risk is now realized, not residual.\n\nSECONDARY DEFECT (same file, lower severity, no upper ratio bound): the `ratio >= RATIO_THRESHOLD` test at line 354 has no upper bound, so a markdown file with FAR MORE words than its PDF passes unexamined. Observed: fine_2010_some-puzzles-of-ground (2.08), fine_2012_pure-logic-of-ground (1.91), bacon_2018_broadest-necessity (1.78). Plausibly pdftotext under-extracting two-column math rather than corrupted markdown -- but nothing checks, and a ratio of 2.08 is not evidence of a faithful conversion. Investigate; add an upper sanity bound or an explicit documented exemption.\n\nVERIFICATION: `--dry-run` is report-only and never writes index.json -- use it freely. After the fix, `--dry-run` must show the 3 victim dirs as unadjudicated (or equivalent), doets_1987 and libkin_2004_ch3_ch7 still verified_conversion via disclosure, and rabinovich_2014 still unverified_summary (proof_fraction=0.545 < 0.6). Confirm `--write` remains idempotent.\n\nCONTEXT: discovered while orchestrating #836 (Zotero PDF recovery) and preparing the second /revise of #832. Task #832 was explicitly amended to WORK AROUND this bug (treating the 3 unadjudicated dirs as reconversion candidates) rather than fix it, because the audit script is outside #832 s file_scope. This task is the real fix.",
+      "topic": "literature",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/839_fix_fidelity_audit_fail_open/reports/01_fidelity-audit-fail-open.md"
+        },
+        {
+          "type": "plan",
+          "path": "specs/839_fix_fidelity_audit_fail_open/plans/01_fix-fidelity-audit-fail-open.md"
+        },
+        {
+          "type": "summary",
+          "path": "specs/839_fix_fidelity_audit_fail_open/summaries/01_fix-fidelity-audit-fail-open-summary.md"
+        }
+      ],
+      "file_scope": [
+        ".claude/scripts/literature-fidelity-audit.sh",
+        ".claude/scripts/literature-search.sh",
+        ".claude/scripts/literature-briefing.sh"
+      ],
+      "last_updated": "2026-07-10T00:06:00Z",
+      "plan_metadata": {
+        "phases": 7,
+        "total_effort_hours": 5,
+        "complexity": "medium",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1,
+            3
+          ],
+          [
+            2
+          ],
+          [
+            4
+          ],
+          [
+            5
+          ],
+          [
+            6
+          ],
+          [
+            7
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "specs/839_fix_fidelity_audit_fail_open/reports/01_fidelity-audit-fail-open.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-07-09"
+          }
+        ]
+      },
+      "completion_summary": "Fixed the fail-open classification bug in literature-fidelity-audit.sh: introduced a sixth enum value `unadjudicated` (fail closed) for the frac-is-None branch, widened literature-search.sh and literature-briefing.sh to treat it as a fidelity failure, fixed a chunk_*.md word-count double-count in the ratio computation, resolved thomas_2003_reactive via a truthful disclosure banner, re-stamped the live corpus idempotently via --write, and corrected #835's stale report records.",
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 840,
+      "project_name": "literature_rebuild_subindex_command",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "Add a `--rebuild` flag to the `/literature` command that brings a repo's per-repo sub-index (`specs/literature-index.json`) into conformance with the global Literature corpus and current conventions.\n\nMOTIVATION: The per-repo sub-index schema is `{\"entries\": [{\"doc_id\", \"relevance\", \"source\"}]}` -- key-based, resolved against `$LITERATURE_DIR/index.json` at read time. It caches NO `provenance_fidelity`, so old repos are NOT carrying stale fidelity stamps (verified: task #839's fail-open fix does not need backporting into sub-indexes). The real failure mode is COVERAGE DRIFT, not corruption: the global index has 273 doc ids and grew during tasks #836 (7 Zotero recoveries) and #832 (girard_1989, van_doorn_2015 added; 3 docs materially reconverted). A sub-index curated months ago has no mechanism to notice newly-relevant documents appeared. It does not go wrong -- it silently under-covers, which is harder to detect than a dangling reference.\n\nMEASURED BASELINE (verified 2026-07-09, do not assume it still holds):\n- `~/.config/nvim/specs/literature-index.json` -- ABSENT\n- `~/Projects/BimodalLogic/specs/literature-index.json` -- 2 entries, 0 dangling\n- `~/Projects/cslib/specs/literature-index.json` -- 11 entries, 0 dangling\n- global `~/Projects/Literature/index.json` -- 273 doc ids\nSo dangling-ref lint currently PASSES on every live sub-index. It is a regression guard, not a fix for a present defect. Do not write the plan as though refs are currently broken.\n\nINTERFACE DECISION (settled by user, do not relitigate): implement as `/literature --rebuild`, NOT a top-level `/rebuild` command. Rationale: `/literature` already owns `--validate` (global index vs filesystem), `--scan`, `--index FILE`. `--rebuild` sits beside `--validate` with a clean distinction -- `--validate` checks global-vs-filesystem; `--rebuild` checks per-repo-sub-index-vs-global. It also pairs with the existing `literature-create-setup-task.sh`, which already handles the sub-index-MISSING case; `--rebuild` is the sub-index-EXISTS-BUT-STALE counterpart. A bare `/rebuild` is ambiguous (rebuild what -- global index? search chunks? sub-index?) and duplicates skill-literature plumbing.\n\nFOUR JOBS. On invocation, `--rebuild` MUST present an AskUserQuestion (multiSelect) letting the user choose which jobs to run. Do not hardcode running all four. Default selection may pre-check the two mechanical ones.\n\n1. DANGLING-REF LINT (mechanical, idempotent, safe, non-interactive)\n   For each `doc_id` in the sub-index, assert it resolves to an `.id` in the global index. Report unresolvable ids. Currently 0 across all live sub-indexes -- this is a guard against future reconversions renaming doc ids (e.g. #832's reconversions, venema_1991's per-chapter sub-document id namespace).\n\n2. SCHEMA CONFORMANCE CHECK (mechanical, idempotent, safe, non-interactive)\n   Verify each entry matches the current `{doc_id, relevance, source}` shape. Verify conformance to conventions that have accreted since the sub-index was authored -- notably `.claude/context/project/literature/patterns/chunk-file-conventions.md` (created by #839; documents that `chunk_NNNN.md` files are near-verbatim re-splits of the canonical `.md` and must never be double-counted). Report nonconforming entries.\n\n3. COVERAGE REFRESH (requires LLM judgment; DRY-RUN AND CONFIRM, never autonomous)\n   Scan the global index for documents newly relevant to this repo's domain but absent from the sub-index, using `project_tags`, `keywords`, and `summary` fields (the same signals `literature-create-setup-task.sh` already relies on). PROPOSE additions with a relevance annotation; do NOT write them without explicit user confirmation. `specs/literature-index.json` is a HUMAN-CURATED file -- an agent must not silently rewrite a human's curation decisions. Show a diff, then confirm.\n\n4. CHUNK / SEARCH-INDEX COVERAGE AUDIT (mechanical, read-only)\n   Assert every `verified_conversion` directory has chunk files AND corresponding search-index entries. This closes a gap left open by #832: its Phase 8 reported \"4,002 chunks\" as an AGGREGATE and never checked per-directory coverage. A count of 4,002 is equally consistent with \"all covered\" and \"two silently missing\". Assert per-directory, not in aggregate.\n   Two known hazards this audit must specifically check:\n   (a) `literature-ingest.sh` writes outside `sources/<dir>/` (reported by #832, worked around rather than fixed) -- newly-converted docs may land where the chunker/indexer does not scan. #832's two new conversions (girard_1989, van_doorn_2015) went through that path.\n   (b) Quarantine artifacts must be EXCLUDED from chunking/indexing. #832 created four `.md.bak-<UTC>` files and one `.md.rejected` (gabbay_2000's 1.4 MB failed conversion). The fidelity audit's `*.md` glob does not match them, but it is UNVERIFIED whether the chunker's glob is equally strict. A chunked `.md.rejected` would inject a known-bad document into search results.\n\nCONSTRAINTS:\n- Jobs 1, 2, 4 are read-only and idempotent. Job 3 is the only one that writes, and only after confirmation.\n- Never delete or rewrite a human-curated sub-index entry. Additions only; removals of dangling ids must be confirmed.\n- Support `--dry-run` for all jobs.\n- The command must work when the sub-index is ABSENT: in that case defer to the existing `literature-create-setup-task.sh` path rather than duplicating it.\n\nFILE SCOPE NOTE (read before planning): `.claude/extensions/literature/` is the SOURCE OF TRUTH. `.claude/commands/` is a DEPRECATED legacy mirror and `.claude/scripts/` holds DEPLOYED COPIES. Edits belong in the extension. Note that recent literature work (#835, #839) edited the deployed copies directly and the extension source is now behind -- see the companion drift task. Do not repeat that mistake: implement `--rebuild` in the extension source and let the deploy/sync mechanism propagate it.\n\nVERIFICATION:\n- `--rebuild --dry-run` against `~/Projects/cslib` (11 entries) and `~/Projects/BimodalLogic` (2 entries) must report 0 dangling refs and 0 schema violations, matching the measured baseline above.\n- `--rebuild` against `~/.config/nvim` (sub-index ABSENT) must route to the create-setup-task path, not error.\n- Job 4 must be run against the live corpus and must either confirm per-directory chunk coverage for all `verified_conversion` dirs or name the ones missing coverage.\n- Confirm no job mutates the corpus or the sub-index without confirmation.",
+      "dependencies": [
+        841
+      ],
+      "file_scope": [
+        ".claude/extensions/literature/commands/literature.md",
+        ".claude/extensions/literature/skills/skill-literature/",
+        ".claude/extensions/literature/scripts/",
+        ".claude/extensions/literature/manifest.json"
+      ],
+      "last_updated": "2026-07-10T23:22:24Z",
+      "session_id": "sess_1783723116_10f020_840",
+      "artifacts": [
+        {
+          "path": "specs/840_literature_rebuild_subindex_command/reports/01_rebuild-research.md",
+          "type": "report",
+          "summary": "Rebuild command research: insertion point, schema divergence, Job 4 coverage gap"
+        },
+        {
+          "path": "specs/840_literature_rebuild_subindex_command/plans/01_rebuild-plan.md",
+          "type": "plan",
+          "summary": "6-phase /literature --rebuild plan"
+        },
+        {
+          "path": "specs/840_literature_rebuild_subindex_command/summaries/01_rebuild-summary.md",
+          "type": "summary",
+          "summary": "/literature --rebuild implementation summary"
+        }
+      ],
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 841,
+      "project_name": "reconcile_literature_extension_source_drift",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "Reconcile the literature extension SOURCE OF TRUTH (`.claude/extensions/literature/`) against the DEPLOYED COPIES (`.claude/scripts/`), which have drifted ahead by at least two prior tasks. A \"Load Core\" / extension sync currently reverts recent correctness fixes silently. This is a live regression risk, not cosmetic.\n\nMEASURED DRIFT (verified 2026-07-09, re-verify before acting):\n- `.claude/scripts/literature-search.sh` and `.claude/extensions/literature/scripts/literature-search.sh` DIFFER. Deployed has 2 `unadjudicated` references (task #839) and task #835's entire provenance/fidelity flagging block (the `--include-unverified` flag, quarantine-from-ranked-output logic, warning-banner-on-read). Extension source has ZERO `unadjudicated` refs and is missing the #835 block.\n- `.claude/scripts/literature-briefing.sh` vs `.claude/extensions/literature/scripts/literature-briefing.sh` DIFFER. Deployed has 3 `unadjudicated` refs (task #839's `needs_fidelity_marker()` allowlist fix); extension source has 0.\n- `.claude/scripts/literature-fidelity-audit.sh` exists ONLY in `.claude/scripts/` -- it is NOT in the extension at all. Task #839 fully owns this script. Decision required: does it belong in the extension source (so it survives sync), or is it intentionally repo-local? If it belongs in the extension, add it; if repo-local, document WHY and protect it.\n\nCONSEQUENCE IF UNFIXED: next extension sync overwrites `.claude/scripts/` from the (stale) extension source. #839's fail-open fix downstream disappears -- `unadjudicated` docs stop getting warning banners in `literature-briefing.sh` and stop being quarantined from ranked search in `literature-search.sh`. #835's provenance flagging disappears entirely. The corpus index.json would still say `unadjudicated`, but no consumer would honor it. Silent re-introduction of the exact fail-open class #839 was created to eliminate.\n\nROOT CAUSE: tasks #835 and #839 (and possibly earlier literature tasks) edited the DEPLOYED `.claude/scripts/` copies directly instead of the extension source. `.syncprotect` at project root does NOT list any of these scripts (it currently lists only `context/repo/project-overview.md` and `output/implementation-001.md`), so they are unprotected.\n\nREQUIRED WORK:\n1. AUDIT the full drift surface. Do not assume it is only the two scripts above. Diff EVERY file that exists in both `.claude/scripts/` and `.claude/extensions/literature/scripts/`, and every `.claude/commands/literature.md` (+ cite.md) vs its extension-source counterpart. Produce a complete drift manifest before changing anything. Other literature scripts (build-index, chunk, ingest, discover, retrieve, normalize-authors, lit-flag-resolve, create-setup-task) may also have drifted.\n2. For each drifted file, determine DIRECTION of truth. The deployed copies carry the newer correctness fixes (#835, #839), so in these known cases the deployed copy is authoritative and must be backported INTO the extension source. But verify per-file -- do not blindly assume deployed is always newer; a file could have been correctly edited in the extension and be behind in deploy. Use git history if needed.\n3. BACKPORT the authoritative content into `.claude/extensions/literature/` source. After backport, deployed and extension-source copies of each reconciled file must be semantically equivalent (ignoring any legitimately deploy-local path substitutions the sync performs).\n4. DECIDE and document the fate of `literature-fidelity-audit.sh` (add to extension source vs. keep repo-local-and-protected).\n5. INSTALL A GUARD so this cannot silently recur. Options to evaluate (pick and justify): (a) a doc-lint / CI check in the spirit of `.claude/scripts/check-extension-docs.sh` that fails when a deployed `.claude/scripts/literature-*.sh` diverges from its extension source; (b) adding the fidelity-critical scripts to `.syncprotect` if they are legitimately repo-local; (c) a pre-sync verification step. A guard is REQUIRED, not optional -- without it the reconciliation decays again on the next hotfix.\n\nCONSTRAINTS:\n- Do NOT alter the RUNTIME BEHAVIOR of the deployed scripts. The deployed `.claude/scripts/` copies are the ones currently exercised by the live corpus and by tasks #832/#839's verified results. This task makes the EXTENSION SOURCE match them, plus a guard -- it must not regress what is deployed. After this task, re-running `literature-fidelity-audit.sh --dry-run` must produce byte-identical classification to before.\n- Quarantine-never-delete posture for any file moves.\n- If backporting reveals a genuine conflict (extension source has an intentional change the deployed copy lacks), STOP and report it rather than clobbering.\n\nVERIFICATION:\n- Drift manifest lists every literature file compared and its verdict.\n- After backport: for each reconciled script, `diff` between deployed and extension source shows only expected/no differences.\n- `grep -c unadjudicated` on the extension-source `literature-search.sh` and `literature-briefing.sh` matches the deployed copies (2 and 3 respectively, or whatever re-verification shows).\n- The installed guard actually fails when fed an artificial divergence (test it, do not just add it).\n- `literature-fidelity-audit.sh --dry-run` classification unchanged from pre-task baseline.",
+      "dependencies": [],
+      "file_scope": [
+        ".claude/extensions/literature/scripts/",
+        ".claude/extensions/literature/commands/literature.md",
+        ".claude/scripts/literature-search.sh",
+        ".claude/scripts/literature-briefing.sh",
+        ".claude/scripts/literature-fidelity-audit.sh",
+        ".syncprotect"
+      ],
+      "last_updated": "2026-07-10T22:59:34Z",
+      "session_id": "sess_1783723116_10f020_841",
+      "artifacts": [
+        {
+          "path": "specs/841_reconcile_literature_extension_source_drift/reports/01_drift-audit.md",
+          "type": "report",
+          "summary": "Drift manifest and reconciliation plan recommendations"
+        },
+        {
+          "path": "specs/841_reconcile_literature_extension_source_drift/plans/01_reconciliation-plan.md",
+          "type": "plan",
+          "summary": "5-phase reconciliation + guard plan"
+        },
+        {
+          "path": "specs/841_reconcile_literature_extension_source_drift/summaries/01_reconciliation-summary.md",
+          "type": "summary",
+          "summary": "Reconciliation + guard implementation summary"
+        }
+      ],
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 842,
+      "project_name": "literature_convert_chunk_index_coverage",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "Fix the literature corpus chunk/index coverage gap surfaced (but deliberately left unfixed) by task #840's Job 4. ROOT CAUSE (verified by #840, re-verify before acting): `/literature --convert` converts a PDF/DJVU to markdown but NEVER invokes the chunker or the FTS5 indexer -- only `/literature --ingest` does. As a result documents that were converted (not ingested) have zero rows in the global `.literature.db` `chunks_data` table and are SILENTLY INVISIBLE to `literature-search.sh`, even though they appear in `index.json` and on disk.\n\nMEASURED BASELINE (verified 2026-07-09/10 by #840, re-verify): 25 of 97 `sources/<dir>/` directories have zero `chunks_data` coverage, including non-quarantined docs `girard_1989`, `rabinovich_2014`, `burgess_1982_i`, `van_doorn_2015`. Task #840 added `/literature --rebuild` Job 4 which REPORTS this per-directory (use it to get the current exact list: `/literature --rebuild --dry-run` job 4). Also: the `document_metadata` table was observed EMPTY (0 rows) -- investigate whether that is the same population gap or a separate schema/population bug.\n\nREQUIRED WORK:\n1. Wire `--convert` to chunk+index the converted document the same way `--ingest` does (or make `--convert` call the ingest chunk/index path). Do NOT duplicate logic -- reuse `literature-chunk.sh` and the indexer.\n2. Backfill the 25 (or current count) uncovered `verified_conversion` directories so every converted doc has `chunks_data` rows and is searchable.\n3. Investigate and fix the empty `document_metadata` table if it is a bug.\n4. Guard: extend `/literature --rebuild` Job 4 or add a check so a converted-but-unchunked doc is caught going forward.\n\nCONSTRAINTS:\n- SOURCE OF TRUTH is `.claude/extensions/literature/` -- implement there, not in deployed `.claude/scripts/` copies (tasks #841/#840 just reconciled that drift; a guard now catches divergence).\n- EXCLUDE quarantine artifacts (`.md.bak-<UTC>`, `.md.rejected`, e.g. gabbay_2000) from chunking/indexing -- verify the chunker glob is strict; a chunked `.md.rejected` would inject a known-bad doc into search.\n- Hazard from #832: `literature-ingest.sh` may write outside `sources/<dir>/`; ensure backfilled chunks land where the indexer scans.\n- Quarantine-never-delete for any file moves. Do not mutate `index.json` entries beyond adding coverage.\n\nVERIFICATION:\n- After fix, `/literature --rebuild --dry-run` Job 4 reports 0 uncovered `verified_conversion` directories (down from 25).\n- A newly `--convert`ed test document immediately has `chunks_data` rows and is returned by `literature-search.sh` without a separate `--ingest` step.\n- `document_metadata` is populated (or the empty state is confirmed benign and documented).\n- No quarantine artifact appears in `chunks_data`.",
+      "dependencies": [],
+      "file_scope": [
+        ".claude/extensions/literature/scripts/",
+        ".claude/extensions/literature/skills/skill-literature/",
+        ".claude/extensions/literature/commands/literature.md"
+      ],
+      "last_updated": "2026-07-11T00:11:21Z",
+      "session_id": "sess_1783727261_4a4b8c_842",
+      "artifacts": [
+        {
+          "path": "specs/842_literature_convert_chunk_index_coverage/reports/01_coverage-gap-research.md",
+          "type": "report",
+          "summary": "Coverage-gap root cause (handle_convert never chunks), 23/25 backfillable"
+        },
+        {
+          "path": "specs/842_literature_convert_chunk_index_coverage/plans/01_coverage-fix-plan.md",
+          "type": "plan",
+          "summary": "5-phase convert-chunk fix + backfill plan"
+        },
+        {
+          "path": "specs/842_literature_convert_chunk_index_coverage/summaries/01_coverage-fix-summary.md",
+          "type": "summary",
+          "summary": "Convert-chunk fix + backfill (25->3 uncovered, UNEXPECTED=0)"
+        }
+      ],
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 843,
+      "project_name": "fix_core_lean_doclint_failures",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "Restore the `core` and `lean` sections of `.claude/scripts/check-extension-docs.sh` to PASS. These are pre-existing doc-lint failures (they predate tasks #840/#841 -- verified) but they keep the overall check exiting non-zero, which blunts the value of the literature drift guard that task #841 added INSIDE this same script: a future literature regression would hide in an already-red run.\n\nMEASURED FAILURES (verified 2026-07-10, re-verify -- run `bash .claude/scripts/check-extension-docs.sh`):\n- core: `script referenced in docs/skills/agents but NOT in provides.scripts` for `task-lock.sh`, `orchestrator-postflight.sh`, and `literature-briefing-invoke.sh`.\n- lean: `routing_hard target declared but not deployed (and extension not installed)` for `skill-lean-research-hard` and `skill-lean-implementation-hard`.\n\nREQUIRED WORK: For each failure determine the correct resolution (register the script in the owning extension's `provides.scripts` if it legitimately belongs there; fix/remove a stale reference if the doc reference is wrong; or correct the lean `routing_hard` declaration / mark the lean extension appropriately if it is intentionally not installed). Do NOT paper over a real gap by deleting a valid reference -- diagnose each. Note `literature-briefing-invoke.sh` is attributed to core here; confirm which extension truly owns it (task #841's follow-up already registered it under literature -- ensure no double-ownership conflict).\n\nCONSTRAINTS:\n- SOURCE OF TRUTH is `.claude/extensions/*/` manifests -- edit there.\n- Do not alter runtime behavior of any script; this is manifest/doc hygiene only.\n\nVERIFICATION: `bash .claude/scripts/check-extension-docs.sh` exits 0 with all sections (core, lean, literature, and every other) PASS. The literature drift guard added by #841 still passes.",
+      "dependencies": [],
+      "file_scope": [
+        ".claude/extensions/core/manifest.json",
+        ".claude/extensions/lean/manifest.json",
+        ".claude/scripts/check-extension-docs.sh"
+      ],
+      "last_updated": "2026-07-11T00:28:53Z",
+      "session_id": "sess_1783728731_72f337_843",
+      "artifacts": [
+        {
+          "path": "specs/843_fix_core_lean_doclint_failures/reports/01_doclint-diagnosis.md",
+          "type": "report",
+          "summary": "Doc-lint diagnosis: 4 FAILs; lean is an accidental WARN-regression"
+        },
+        {
+          "path": "specs/843_fix_core_lean_doclint_failures/plans/01_doclint-fix-plan.md",
+          "type": "plan",
+          "summary": "3-phase doc-lint fix (core backport+register, lean WARN restore)"
+        },
+        {
+          "path": "specs/843_fix_core_lean_doclint_failures/summaries/01_doclint-fix-summary.md",
+          "type": "summary",
+          "summary": "Doc-lint now exits 0, all 19 sections PASS"
+        }
+      ],
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 844,
+      "project_name": "finish_or_defer_zotero_cite_install",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "Finish or formally defer the incomplete literature-extension install surfaced (out of scope) by task #841's drift audit. Ten scripts and one command exist ONLY in the extension source `.claude/extensions/literature/` and were never deployed to `.claude/scripts/` / `.claude/commands/`, and the extension is not fully wired into `.claude/extensions.json`.\n\nMEASURED (verified 2026-07-10, re-verify): extension-source-only scripts: `zotero-attach-chunks.sh`, `zotero-chunk.sh`, `zotero-index-add.sh`, `zotero-index-remove.sh`, `zotero-read.sh`, `zotero-search.sh`, `zotero-setup.sh`, `zotero-write.sh`, `cite-extract.sh`, `test-lit-pipeline.sh`. Command-source-only: `.claude/extensions/literature/commands/cite.md` (deployed `.claude/commands/cite.md` is ABSENT). The `/cite` command is documented in CLAUDE.md but its command file was never deployed.\n\nDECISION REQUIRED (this is the crux -- do not blindly deploy): for the zotero suite and `cite`, determine whether they are (a) intended-to-be-active features whose install was left unfinished, or (b) work-in-progress / experimental that should stay inactive. Base this on git history, whether they are referenced by any live skill/command, and whether the `/cite` command in CLAUDE.md is meant to be usable now.\n- If (a) ACTIVE: register them in `provides.scripts` (some already added by #841/follow-up -- avoid duplicates), ensure the deploy/sync mechanism (loader.lua `copy_scripts`) propagates them, deploy `cite.md`, and confirm `.claude/extensions.json` tracks the literature extension correctly.\n- If (b) INACTIVE: add a clear note (in the extension README/manifest) documenting them as intentionally not-yet-deployed so they stop reading as accidental drift, and ensure the #841 drift guard does not false-fail on them (it already skips entries whose deployed copy is absent -- verify).\n\nCONSTRAINTS:\n- SOURCE OF TRUTH is `.claude/extensions/literature/`.\n- `test-lit-pipeline.sh` is almost certainly test-harness-only and should NOT be deployed as a runtime script regardless -- treat separately.\n- Quarantine-never-delete.\n\nVERIFICATION: either every intended script/command is deployed AND `check-extension-docs.sh` literature section still PASSes with no drift-guard false-failures, OR the inactive ones are documented and the extension state is internally consistent (no dangling references to undeployed scripts from live skills/commands).",
+      "dependencies": [
+        842
+      ],
+      "file_scope": [
+        ".claude/extensions/literature/scripts/",
+        ".claude/extensions/literature/commands/cite.md",
+        ".claude/extensions/literature/manifest.json",
+        ".claude/extensions.json"
+      ],
+      "last_updated": "2026-07-11T00:35:04Z",
+      "session_id": "sess_1783728731_72f337_844",
+      "artifacts": [
+        {
+          "path": "specs/844_finish_or_defer_zotero_cite_install/reports/01_install-status-research.md",
+          "type": "report",
+          "summary": "Zotero/cite install status: 3 groups (activate /cite+zotero-search, defer rest)"
+        },
+        {
+          "path": "specs/844_finish_or_defer_zotero_cite_install/plans/01_install-plan.md",
+          "type": "plan",
+          "summary": "4-phase activate /cite+zotero-search, defer rest"
+        },
+        {
+          "path": "specs/844_finish_or_defer_zotero_cite_install/summaries/01_install-summary.md",
+          "type": "summary",
+          "summary": "Activated /cite+zotero-search, deferred rest; doc-lint stays green"
+        }
+      ],
+      "completion_summary": "Activated the /cite trio (cite-extract.sh, skill-cite, cite.md) and zotero-search.sh via byte-for-byte deployment from extension source; defer-and-documented the 7 remaining zotero scripts in the literature README with named reasons; documented the extensions.json tracking gap as a follow-up. check-extension-docs.sh verified exit 0 with all 19 extensions PASS.",
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 845,
+      "project_name": "implement_routing_hard_precedence_in_router",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "Implement the `--hard`/`routing_hard` 5-step precedence in `command-route-skill.sh` so it matches what CLAUDE.md documents and what `test-command-route-skill.sh` tests against. Surfaced by task #843's research: `command-route-skill.sh` does NOT currently implement `routing_hard` dispatch at all, yet CLAUDE.md's 'Routing Mechanism' section documents a 5-step precedence (non-core exact -> non-core compound-key -> core exact -> core compound-key -> `-hard` append fallback with an on-disk SKILL.md existence gate), and a test file asserts that behavior.\n\nTHIS IS THE MOST SUBSTANTIVE of the cleanup follow-ups -- it is a real doc/code/test divergence, not cosmetic. RE-VERIFY before acting (the #843 finding was a side-observation, not the task's focus):\n1. Read `.claude/scripts/command-route-skill.sh` and its extension-source copy; confirm whether/how it resolves an `effort_flag`/`--hard` 4th argument and whether it consults `routing_hard` in any manifest.\n2. Read `.claude/scripts/test-command-route-skill.sh` (and any extension-source copy) to see exactly what precedence behavior is asserted -- the tests are the executable spec.\n3. Read the 'Routing Mechanism' 5-step precedence block in CLAUDE.md (and its merge-source EXTENSION.md) as the documented contract.\n\nREQUIRED WORK: reconcile the three (code, test, docs). Determine the source of truth -- most likely the documented+tested contract is correct and the SCRIPT is behind. Implement the 5-step precedence in `command-route-skill.sh` so the existing tests pass. If instead the tests/docs are wrong, correct them with justification. Whatever the direction, all three must agree at the end.\n\nCONSTRAINTS: SOURCE OF TRUTH is `.claude/extensions/*/`. If `command-route-skill.sh` exists in both deployed `.claude/scripts/` and an extension source, keep them byte-identical (the task #841 drift guard polices this). Do not regress the currently-green `check-extension-docs.sh` (exit 0, 19/19 PASS as of task #843). Preserve the on-disk SKILL.md existence safety gate that Step 5 requires.\n\nVERIFICATION: `bash .claude/scripts/test-command-route-skill.sh` passes; a manual trace of each of the 5 precedence steps produces the documented winner; deployed and extension-source copies byte-identical; `check-extension-docs.sh` still exits 0.",
+      "dependencies": [],
+      "file_scope": [
+        ".claude/scripts/command-route-skill.sh",
+        ".claude/extensions/core/scripts/command-route-skill.sh",
+        ".claude/scripts/test-command-route-skill.sh"
+      ],
+      "last_updated": "2026-07-11T01:08:47Z",
+      "session_id": "sess_1783731064_fd2024_845",
+      "artifacts": [
+        {
+          "path": "specs/845_implement_routing_hard_precedence_in_router/reports/01_routing-hard-precedence.md",
+          "type": "report",
+          "summary": "Research report establishing that the routing_hard 5-step precedence is a regression (task #768 implemented it correctly but only patched the deployed script copy; a later extension sync reverted it via the stale extension-source copy), documenting exact current script behavior, exact test assertions (6 PASS/8 FAIL live), the correct restoration path via git commit 574bf515a, the byte-identical drift constraint, and an out-of-scope follow-up finding about commands/research.md and commands/plan.md not calling the script at all for hard-mode routing."
+        },
+        {
+          "path": "specs/845_implement_routing_hard_precedence_in_router/plans/01_routing-hard-precedence.md",
+          "type": "plan",
+          "summary": "Implementation plan with 3 sequential phases (restore extension-source, byte-sync deployed, verify) and dependency analysis"
+        }
+      ],
+      "completion_summary": "Restored the --hard/routing_hard 5-step precedence resolution in command-route-skill.sh by recovering the verbatim implementation from commit 574bf515a, applying it to the extension-source copy, and byte-syncing it to the deployed copy. Test suite now fully passes (12/12, up from 6/14).",
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 846,
+      "project_name": "add_literature_entry_to_extensions_json",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "Add the missing `literature` entry to `.claude/extensions.json` so the literature extension is properly tracked/installed like `core`, `nix`, `nvim`, and `memory`. Surfaced by task #844, which DELIBERATELY did NOT fabricate the entry because `.claude/extensions.json` is loader-owned and getting its schema wrong could break extension loading -- so it documented the gap instead. This task does it correctly.\n\nRE-VERIFY / RESEARCH FIRST (do not guess the schema):\n1. Read `.claude/extensions.json` and study the EXACT shape of the existing entries (core/nix/nvim/memory) -- field names, version, enabled flags, script/hook lists, whatever they carry.\n2. Read the extension loader (`lua/neotex/plugins/ai/shared/extensions/loader.lua` and its `init.lua`) to understand how entries in `extensions.json` are consumed -- what fields it reads, whether a missing entry means 'not loaded' or is merely cosmetic tracking, and what a malformed entry would do.\n3. Determine whether the literature extension is currently being loaded DESPITE having no entry (its scripts are clearly deployed and working), which tells you whether this entry is load-bearing or bookkeeping.\n\nREQUIRED WORK: add a correctly-formed `literature` entry matching the established schema and the loader's expectations. Do not change loader behavior; do not enable/disable other extensions.\n\nCONSTRAINTS: `.claude/extensions.json` is loader-owned -- match existing entries exactly; a malformed entry is worse than a missing one. Do not regress `check-extension-docs.sh` (currently exit 0). If adding the entry changes what gets loaded/synced, verify no literature script gets clobbered (task #841 drift guard must still pass).\n\nVERIFICATION: `.claude/extensions.json` parses; the literature entry matches sibling entries' schema; the loader accepts it (dry-run/load without error); `check-extension-docs.sh` still exits 0; no unexpected re-sync/clobber of deployed literature scripts.",
+      "dependencies": [],
+      "file_scope": [
+        ".claude/extensions.json",
+        "lua/neotex/plugins/ai/shared/extensions/loader.lua"
+      ],
+      "last_updated": "2026-07-11T01:12:55Z",
+      "session_id": "sess_1783731064_fd2024_846",
+      "artifacts": [
+        {
+          "path": "specs/846_add_literature_entry_to_extensions_json/reports/01_literature-extensions-entry.md",
+          "type": "report",
+          "summary": "Exact extensions.json schema, loader/init.lua consumption semantics, load-bearing-vs-cosmetic determination, and the recommended literature JSON entry with rationale for empty file-ownership arrays."
+        },
+        {
+          "path": "specs/846_add_literature_entry_to_extensions_json/plans/01_literature-extensions-entry.md",
+          "type": "plan",
+          "summary": "2-phase plan to add the literature entry to .claude/extensions.json"
+        }
+      ],
+      "completion_summary": "Added the missing literature entry to .claude/extensions.json matching the sibling 8-field schema (status=active, version=2.0.0, correct source_dir), with empty ownership arrays to avoid fabricating file ownership the real loader never deployed.",
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 847,
+      "project_name": "prune_dead_zotero_index_scripts",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "Prune the two confirmed dead-code zotero scripts flagged (defer-and-document, not pruned) by task #844: `.claude/extensions/literature/scripts/zotero-index-add.sh` and `.claude/extensions/literature/scripts/zotero-index-remove.sh`. Task #844's research confirmed `skill-literature/SKILL.md` reimplements the same index add/remove logic inline via `jq`, so these two scripts have no live callers and are pure dead code. #844 intentionally left them in place (defer-and-document) rather than pruning inline; this task removes them cleanly.\n\nRE-VERIFY FIRST: grep the deployed `.claude/` (skills, commands, agents, other scripts) and the extension source for any reference to `zotero-index-add` / `zotero-index-remove` to CONFIRM zero live callers before removing. If any live reference is found, STOP and report -- do not remove.\n\nREQUIRED WORK: apply the QUARANTINE-NEVER-DELETE posture -- move the two scripts to a quarantine location (e.g. rename with a `.removed-<UTC>` suffix or move to a deprecated/ dir per repo convention) rather than hard-deleting. Remove them from the literature `manifest.json` `provides.scripts` if listed. Update the 'Deployment Status' / inactive-artifacts note in `.claude/extensions/literature/README.md` that #844 added, moving these two from 'deferred' to 'removed'. Leave the other deferred zotero scripts (`zotero-read/write/setup/chunk/attach-chunks.sh`) untouched -- they depend on the external `zot` CLI and are a separate decision.\n\nCONSTRAINTS: SOURCE OF TRUTH is `.claude/extensions/literature/`. Quarantine-never-delete. Do not regress `check-extension-docs.sh` (exit 0) -- removing a script AND its manifest entry together keeps the drift guard happy; removing only one side would trip it. Do not touch the deployed `.claude/scripts/` copies unless the scripts were also deployed (research says they were extension-source-only -- confirm).\n\nVERIFICATION: no live reference to the two scripts remains; manifest and README updated consistently; `check-extension-docs.sh` still exits 0 with literature PASS; the quarantined files still exist (not hard-deleted).",
+      "dependencies": [],
+      "file_scope": [
+        ".claude/extensions/literature/scripts/zotero-index-add.sh",
+        ".claude/extensions/literature/scripts/zotero-index-remove.sh",
+        ".claude/extensions/literature/manifest.json",
+        ".claude/extensions/literature/README.md"
+      ],
+      "last_updated": "2026-07-11T01:13:25Z",
+      "session_id": "sess_1783731064_fd2024_847",
+      "artifacts": [
+        {
+          "path": "specs/847_prune_dead_zotero_index_scripts/reports/01_prune-zotero-index-scripts.md",
+          "type": "report",
+          "summary": "Research report confirming zero live callers, extension-source-only location, manifest declaration, exact README rows, recommended quarantine convention, and a critical file_scope gap (EXTENSION.md/literature-agent.md/SKILL.md) that must be closed to keep check-extension-docs.sh passing."
+        },
+        {
+          "path": "specs/847_prune_dead_zotero_index_scripts/plans/01_prune-zotero-index-scripts.md",
+          "type": "plan",
+          "summary": "4-phase QUARANTINE-NEVER-DELETE prune plan: git mv scripts to scripts/deprecated/, remove manifest provides.scripts entries, reconcile all four Rule-E doc surfaces (README + widened-scope EXTENSION.md/literature-agent.md/SKILL.md), verify check-extension-docs.sh exits 0 with literature PASS and quarantined files preserved."
+        },
+        {
+          "path": "specs/847_prune_dead_zotero_index_scripts/summaries/01_prune-zotero-index-scripts-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: both scripts quarantined via git mv into scripts/deprecated/, manifest.json and four doc surfaces reconciled, check-extension-docs.sh verified PASS, five other deferred zotero scripts confirmed untouched."
+        }
+      ],
+      "completion_summary": "Quarantined zotero-index-add.sh and zotero-index-remove.sh (zero live callers) into a new scripts/deprecated/ subdirectory via git mv, removed both from manifest.json provides.scripts, and reconciled README.md/EXTENSION.md/literature-agent.md/SKILL.md so check-extension-docs.sh Rule E remains PASS.",
+      "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 848,
+      "project_name": "fix_baier_katoen_section07_chunk_anomaly",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "Investigate and fix (or formally document as acceptable) the `baier_katoen_2008` section07 chunker anomaly flagged by task #842: after the coverage backfill, section07 produced ONE giant chunk versus ~100+ chunks for sibling sections, indicating `literature-chunk.sh`'s pass-2 subdivision did not fire for that file. #842 flagged this out of scope (it was a coverage task, and touching the chunker's contract was a stated non-goal). This task owns it.\n\nRE-VERIFY / RESEARCH FIRST:\n1. Confirm the anomaly still exists: query `~/Projects/Literature/.literature.db` `chunks_data` for the `baier_katoen_2008` section07 chunk count vs sibling sections; inspect the giant chunk's size.\n2. Read `.claude/extensions/literature/scripts/literature-chunk.sh` pass-2 subdivision logic and determine why it skipped section07 -- likely an input-shape edge case (very long unbroken block, missing delimiter, encoding artifact, or a size threshold that section07 slips past).\n3. Decide whether this is a GENERAL chunker bug (would recur for any similarly-shaped input) or a one-off data quirk of this specific file.\n\nREQUIRED WORK: if a general bug, fix the pass-2 subdivision so oversized chunks are subdivided regardless of the triggering input shape, and re-chunk section07 to verify. If a one-off, re-chunk section07 correctly and document why the general path is sound. Either way section07 must end with sibling-comparable chunk granularity.\n\nCONSTRAINTS: SOURCE OF TRUTH is `.claude/extensions/literature/`; keep deployed/extension-source copies of `literature-chunk.sh` byte-identical if edited (task #841 drift guard). Quarantine-never-delete. Do not regress the other 93 covered directories' chunk counts -- re-chunk ONLY section07 (or re-verify all if the chunker logic changes). Corpus DB is live data; only add/replace section07's chunks.\n\nVERIFICATION: `baier_katoen_2008` section07 chunk count is comparable to sibling sections (not 1 giant chunk); no other directory's coverage regressed; if the chunker was edited, deployed==source and `check-extension-docs.sh` still exits 0; `/literature --rebuild --dry-run` Job 4 still reports the same covered/uncovered split (94/3) as after task #842.",
+      "dependencies": [],
+      "file_scope": [
+        ".claude/extensions/literature/scripts/literature-chunk.sh"
+      ],
+      "last_updated": "2026-07-11T01:13:45Z",
+      "session_id": "sess_1783731064_fd2024_848",
+      "artifacts": [
+        {
+          "path": "specs/848_fix_baier_katoen_section07_chunk_anomaly/reports/01_section07-chunk-anomaly.md",
+          "type": "report",
+          "summary": "Confirms anomaly with exact numbers, root-causes it in literature-chunk.sh pass-2 with live reproduction, classifies as general bug, recommends and verifies a minimal fix, and documents all stated constraints (drift guard, no-regression, live-DB chunk_id replacement mechanics, Job 4 invariant)."
+        },
+        {
+          "path": "specs/848_fix_baier_katoen_section07_chunk_anomaly/plans/01_section07-chunk-anomaly.md",
+          "type": "plan",
+          "summary": "5-phase plan: baseline capture, apply subdivide_chunk() early-return removal with drift-guard sync, re-chunk section07 only, delete stale chunk_id row and reindex, verify no-regression/drift/docs-lint/Job-4 invariant."
+        },
+        {
+          "path": "specs/848_fix_baier_katoen_section07_chunk_anomaly/summaries/01_section07-chunk-anomaly-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: subdivide_chunk() early-return removal, section07 re-chunk (1 -> 94 chunks), stale DB row handling, and full no-regression verification."
+        }
+      ],
+      "completion_summary": "Fixed literature-chunk.sh's subdivide_chunk() oversized-atomic-block branch to fall through to size-based subdivision instead of returning unsplit; re-chunked baier_katoen_2008 section07 from 1 giant 46,176-token chunk to 94 correctly-sized chunks matching siblings, with no regression to the other 11 sections or 93 other covered directories.",
+      "archived": "2026-07-11T00:00:00Z"
     }
   ],
   "abandoned_projects": []
