@@ -4,7 +4,6 @@ next_project_number: 850
 
 # TODO
 
-Warning: 1 task(s) have no topic and will render under Uncategorized: 849 (non-fatal)
 ## Task Order
 
 *Updated 2026-07-11. Generated from state.json dependency graph.*
@@ -12,7 +11,7 @@ Warning: 1 task(s) have no topic and will render under Uncategorized: 849 (non-f
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826,837,838,849 | -- | agent-system, extensions, email integration, ... |
+| 1 | 78,87,821,826,837,838 | -- | agent-system, extensions, email integration, ... |
 | 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -37,16 +36,15 @@ Warning: 1 task(s) have no topic and will render under Uncategorized: 849 (non-f
 
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
-### Uncategorized
-
-849 [NOT STARTED] — Recover the Kamp 1968 dissertation markdown from font-offset moji
-
 ## Tasks
 
 ### 849. Recover kamp 1968 mojibake
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: None
+- **Research**: [849_recover_kamp_1968_mojibake/reports/01_kamp-1968-font-offset-recovery.md]
+- **Plan**: [849_recover_kamp_1968_mojibake/plans/01_kamp-1968-font-offset-decode.md]
+- **Summary**: [849_recover_kamp_1968_mojibake/summaries/01_kamp-1968-font-offset-decode-summary.md]
 
 **Description**: Recover the Kamp 1968 dissertation markdown from font-offset mojibake in the ~/Projects/Literature corpus. The document `kamp_1968_tense-logic-linear-order` (sources/kamp_1968_tense-logic-linear-order/, 252KB canonical .md + 141 chunk_*.md files) is stamped `verified_conversion` by literature-fidelity-audit.sh because its word count is healthy, but every word is glyph-shifted garbage (e.g. "RKFSBOPFQV LC @>IFCLOKF>"). This is a defect class the word-ratio audit structurally cannot detect (ratio is fine; content is unreadable).
 
