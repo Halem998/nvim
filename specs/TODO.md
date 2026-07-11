@@ -48,6 +48,7 @@ next_project_number: 845
 - **Dependencies**: Task 842
 - **Research**: [844_finish_or_defer_zotero_cite_install/reports/01_install-status-research.md]
 - **Plan**: [844_finish_or_defer_zotero_cite_install/plans/01_install-plan.md]
+- **Summary**: [844_finish_or_defer_zotero_cite_install/summaries/01_install-summary.md]
 
 **Description**: Finish or formally defer the incomplete literature-extension install surfaced (out of scope) by task #841's drift audit. Ten scripts and one command exist ONLY in the extension source `.claude/extensions/literature/` and were never deployed to `.claude/scripts/` / `.claude/commands/`, and the extension is not fully wired into `.claude/extensions.json`.
 

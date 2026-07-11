@@ -957,6 +957,11 @@
           "path": "specs/844_finish_or_defer_zotero_cite_install/plans/01_install-plan.md",
           "type": "plan",
           "summary": "4-phase activate /cite+zotero-search, defer rest"
+        },
+        {
+          "path": "specs/844_finish_or_defer_zotero_cite_install/summaries/01_install-summary.md",
+          "type": "summary",
+          "summary": "Activated /cite+zotero-search, deferred rest; doc-lint stays green"
         }
       ],
       "completion_summary": "Activated the /cite trio (cite-extract.sh, skill-cite, cite.md) and zotero-search.sh via byte-for-byte deployment from extension source; defer-and-documented the 7 remaining zotero scripts in the literature README with named reasons; documented the extensions.json tracking gap as a follow-up. check-extension-docs.sh verified exit 0 with all 19 extensions PASS."
