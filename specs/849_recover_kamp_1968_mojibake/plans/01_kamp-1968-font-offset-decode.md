@@ -217,15 +217,19 @@ flag report for any rule-4 ambiguous `0`.
 
 ---
 
-### Phase 4: Re-chunk from the decoded canonical [NOT STARTED]
+### Phase 4: Re-chunk from the decoded canonical [COMPLETED]
 
 **Goal**: Regenerate the 141 chunk files from the decoded canonical so chunk content matches the
 recovered text.
 
 **Tasks**:
-- [ ] Confirm quarantine backups (`.bak-<UTC>`) for the existing chunks are present (Phase 2).
-- [ ] Run `literature-chunk.sh <decoded-canonical.md> <source-dir>/ --doc-id kamp_1968_tense-logic-linear-order`.
-- [ ] Confirm the chunker overwrote `chunk_*.md` with decoded content and did not touch `.bak-*` files.
+- [x] Confirm quarantine backups (`.bak-<UTC>`) for the existing chunks are present (Phase 2).
+      *(completed)*
+- [x] Run `literature-chunk.sh <decoded-canonical.md> <source-dir>/ --doc-id kamp_1968_tense-logic-linear-order`.
+      *(completed: generated 140 chunks, chunks.json manifest written)*
+- [x] Confirm the chunker overwrote `chunk_*.md` with decoded content and did not touch `.bak-*` files.
+      *(deviation: altered — 140 chunks generated (not 141); orphaned chunk_0141.md quarantined via
+      .bak- rename since it was left un-overwritten and stale; see progress file deviations)*
 
 **Timing**: 0.5 hours
 

@@ -1,0 +1,32 @@
+{
+  "phase": 4,
+  "phase_name": "Re-chunk from the decoded canonical",
+  "started_at": "2026-07-11T18:20:00Z",
+  "last_updated": "2026-07-11T18:22:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm quarantine backups for existing chunks present", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run literature-chunk.sh on decoded canonical", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm chunker overwrote chunk_*.md with decoded content, did not touch .bak-* files", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "4.2",
+      "description": "literature-chunk.sh regenerated 140 chunks (chunk_0001.md-chunk_0140.md) from the decoded canonical, one fewer than the prior 141-chunk scheme, since chunk boundaries are recomputed from token counts of the (slightly shorter, post-normalization) decoded text.",
+      "type": "altered",
+      "reason": "This left chunk_0141.md (the old 141st chunk) un-overwritten and orphaned -- not referenced in the regenerated chunks.json (verified: 140 manifest entries, 0 references to '0141'), and byte-identical to its own Phase-2 pre-decode backup (verified via cmp -s), confirming it was untouched stale mojibake, not silently corrupted. Quarantined it (renamed, not deleted) to chunk_0141.md.orphaned-pre-decode.bak-<TS2> using the same *.bak-* naming convention the pipeline's quarantine-hazard detection already recognizes, so it will never be picked up by literature-build-index.sh (which reads chunks.json, not a chunk_*.md glob) or any future re-chunk pass. Original bytes remain fully preserved in the Phase-2 backup regardless.",
+      "annotation": "*(deviation: altered — re-chunk produced 140 chunks not 141; orphaned chunk_0141.md quarantined via .bak- rename, original preserved in Phase 2 backup)*"
+    }
+  ],
+  "verification": {
+    "chunks_generated": 140,
+    "chunk_0001_readable": true,
+    "chunk_0002_readable": true,
+    "chunk_0070_readable": true,
+    "backups_all_142_present_and_untouched": true,
+    "chunker_did_not_write_to_bak_paths": true,
+    "orphan_quarantined": "chunk_0141.md.orphaned-pre-decode.bak-20260711-180618"
+  },
+  "handoff_count": 0
+}
