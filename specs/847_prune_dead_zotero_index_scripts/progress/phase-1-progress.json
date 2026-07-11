@@ -1,0 +1,42 @@
+{
+  "phase": 1,
+  "phase_name": "Quarantine both scripts into scripts/deprecated/",
+  "started_at": "2026-07-11T01:07:19Z",
+  "last_updated": "2026-07-11T01:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "mkdir -p scripts/deprecated/",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "git mv zotero-index-add.sh into scripts/deprecated/",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/literature/scripts/deprecated/zotero-index-add.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "git mv zotero-index-remove.sh into scripts/deprecated/",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/literature/scripts/deprecated/zotero-index-remove.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Add optional scripts/deprecated/README.md quarantine note",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/literature/scripts/deprecated/README.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

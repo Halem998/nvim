@@ -1,0 +1,14 @@
+{
+  "status": "planned",
+  "summary": "Created a 4-phase implementation plan for pruning the two confirmed dead-code scripts (zotero-index-add.sh, zotero-index-remove.sh) under a QUARANTINE-NEVER-DELETE posture, integrating research report 01. Phase 1: git mv both scripts into a new .claude/extensions/literature/scripts/deprecated/ subdirectory (history-preserving, byte-identical; mirrors the repo's lua/neotex/deprecated/ precedent, NOT a .removed-<UTC> rename). Phase 2: remove both provides.scripts entries from manifest.json (lines 36-37). Phase 3: reconcile all four check-extension-docs.sh Rule E doc surfaces -- README.md (4 rows + fix the 'seven zotero scripts' count to five), plus the three WIDENED-SCOPE files flagged by research finding 6 that the task's original file_scope omitted: EXTENSION.md (lines 81-82), agents/literature-agent.md (lines 172-173), skills/skill-literature/SKILL.md (line 422). Phase 4: verify check-extension-docs.sh exits 0 with literature PASS, both scripts still exist under scripts/deprecated/ (not hard-deleted), and the other five deferred zotero scripts (read/write/setup/chunk/attach-chunks.sh) are untouched. The plan's effective file_scope covers 7 source files: manifest.json, README.md, EXTENSION.md, literature-agent.md, skill-literature/SKILL.md, and the two quarantined scripts.",
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "Run /implement 847 to execute the plan. Implementation MUST run check-extension-docs.sh as the phase-4 gate (not visual inspection), MUST use git mv (never rm) to preserve the quarantined scripts, and MUST leave the five other deferred zotero scripts and their echo hint lines untouched.",
+  "artifacts": [
+    {
+      "path": "specs/847_prune_dead_zotero_index_scripts/plans/01_prune-zotero-index-scripts.md",
+      "type": "plan",
+      "summary": "4-phase QUARANTINE-NEVER-DELETE prune plan: git mv scripts to scripts/deprecated/, remove manifest provides.scripts entries, reconcile all four Rule-E doc surfaces (README + widened-scope EXTENSION.md/literature-agent.md/SKILL.md), verify check-extension-docs.sh exits 0 with literature PASS and quarantined files preserved."
+    }
+  ]
+}
