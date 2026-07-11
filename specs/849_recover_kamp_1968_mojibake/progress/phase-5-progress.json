@@ -1,0 +1,31 @@
+{
+  "phase": 5,
+  "phase_name": "Rebuild FTS index and regenerate index.json keywords",
+  "started_at": "2026-07-11T18:25:00Z",
+  "last_updated": "2026-07-11T18:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run literature-build-index.sh --global to rebuild .literature.db", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Regenerate keywords array for the document entry in index.json", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm index.json remains valid JSON after keyword edit", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "5.2",
+      "description": "Plan step scoped the index.json fix to the 'keywords' array only.",
+      "type": "altered",
+      "reason": "Also found the document entry's 'summary' field was the same class of mojibake defect (extracted pre-decode: '> ` e o o a n p ] p e k j oq ^ i eppa...') and 'chunk_count' was stale (141, from the pre-decode chunking scheme; Phase 4 regenerated 140 chunks). Fixed both alongside keywords for full metadata consistency, since leaving them would recreate the exact defect class this task exists to repair. Backed up index.json to index.json.bak.<UTC> (cmp -s verified) before editing, per the plan's own Rollback/Contingency section. Verified via full entry-by-entry diff that only the kamp_1968 entry changed; all 281 other entries and all top-level keys are byte-identical to the pre-edit backup.",
+      "annotation": "*(deviation: altered — also regenerated the mojibake 'summary' field and corrected stale chunk_count to 140, beyond the plan's literal keywords-only scope, for full metadata consistency)*"
+    }
+  ],
+  "verification": {
+    "fts_rebuild_exit_code": 0,
+    "fts_chunks_indexed_global": 6240,
+    "fts_content_match_test": "MATCH 'ACKNOWLEDGEMENT' against chunks_fts returns decoded kamp_1968 chunk content (not just title/keyword metadata)",
+    "index_json_valid_after_edit": true,
+    "index_json_only_kamp_entry_changed": true,
+    "index_json_backup": "~/Projects/Literature/index.json.bak.20260711-180938 (cmp -s verified)"
+  },
+  "handoff_count": 0
+}

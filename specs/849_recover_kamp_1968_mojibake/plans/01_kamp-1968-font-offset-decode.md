@@ -247,17 +247,19 @@ recovered text.
 
 ---
 
-### Phase 5: Rebuild FTS index and regenerate index.json keywords [NOT STARTED]
+### Phase 5: Rebuild FTS index and regenerate index.json keywords [COMPLETED]
 
 **Goal**: Make the decoded text searchable and repair the mojibake keyword metadata for the document.
 
 **Tasks**:
-- [ ] Run `literature-build-index.sh --global` to rebuild `~/Projects/Literature/.literature.db` from
-      the decoded chunks.
-- [ ] Regenerate the `keywords` array for the `kamp_1968_tense-logic-linear-order` entry in
+- [x] Run `literature-build-index.sh --global` to rebuild `~/Projects/Literature/.literature.db` from
+      the decoded chunks. *(completed: 6240 chunks indexed globally, exit 0)*
+- [x] Regenerate the `keywords` array for the `kamp_1968_tense-logic-linear-order` entry in
       `~/Projects/Literature/index.json` from the decoded content (replace `"qdaj"`/`"okia"`-style
-      mojibake with real terms, e.g. tense logic, linear order, temporal logic, Kamp).
-- [ ] Confirm `index.json` remains valid JSON after the keyword edit.
+      mojibake with real terms, e.g. tense logic, linear order, temporal logic, Kamp). *(deviation:
+      altered — also regenerated the equally-mojibake `summary` field and corrected stale
+      `chunk_count` (141->140); backed up index.json first; verified only this one entry changed)*
+- [x] Confirm `index.json` remains valid JSON after the keyword edit. *(completed: `jq empty` exits 0)*
 
 **Timing**: 0.75 hours
 
