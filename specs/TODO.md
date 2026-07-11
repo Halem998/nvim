@@ -1,9 +1,10 @@
 ---
-next_project_number: 849
+next_project_number: 850
 ---
 
 # TODO
 
+Warning: 1 task(s) have no topic and will render under Uncategorized: 849 (non-fatal)
 ## Task Order
 
 *Updated 2026-07-11. Generated from state.json dependency graph.*
@@ -11,7 +12,7 @@ next_project_number: 849
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826,837,838 | -- | agent-system, extensions, email integration, ... |
+| 1 | 78,87,821,826,837,838,849 | -- | agent-system, extensions, email integration, ... |
 | 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -36,7 +37,43 @@ next_project_number: 849
 
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
+### Uncategorized
+
+849 [NOT STARTED] — Recover the Kamp 1968 dissertation markdown from font-offset moji
+
 ## Tasks
+
+### 849. Recover kamp 1968 mojibake
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: None
+
+**Description**: Recover the Kamp 1968 dissertation markdown from font-offset mojibake in the ~/Projects/Literature corpus. The document `kamp_1968_tense-logic-linear-order` (sources/kamp_1968_tense-logic-linear-order/, 252KB canonical .md + 141 chunk_*.md files) is stamped `verified_conversion` by literature-fidelity-audit.sh because its word count is healthy, but every word is glyph-shifted garbage (e.g. "RKFSBOPFQV LC @>IFCLOKF>"). This is a defect class the word-ratio audit structurally cannot detect (ratio is fine; content is unreadable).
+
+VALIDATED CIPHER (confirmed by decoding known content — title page yields "University of California / Tense Logic and the Theory of Linear Order / Johan Anthony Willem Kamp", body yields clean English prose on tense logic and the Main Theorem / Theorem II.3): a deterministic ASCII font-offset on disjoint encoded bands —
+- encoded byte in [62,87] (>..W)  -> +3  (recovers uppercase A-Z)
+- encoded byte in [93,118] (]..v) -> +4  (recovers lowercase a-z)
+- encoded byte in [44,53]  (,..5) -> +4  (recovers digits 0-9)
+- spaces/newlines and out-of-band punctuation pass through unchanged.
+A proof-of-concept decoder (scratchpad/kamp_decode.py from session sess_1783783033_7ee917) recovers all LETTERS perfectly.
+
+RESIDUALS a pure decode does NOT fix (must be handled by a cleanup pass):
+1. Punctuation collisions: decoded output shows periods as `0` (e.g. "i0e0"->"i.e.", "moments0"->"moments.") and commas as `*` (e.g. "NOT* AND* SINCE"->"NOT, AND, SINCE"). Needs a context-aware normalization pass (standalone 0/* between letters -> ./,).
+2. Inter-letter spacing artifacts from the original PDF extraction ("t e n s e" for "tense") — pervasive, from kerning-to-space extraction, independent of the cipher.
+3. Logic/math notation in formulae is partially garbled and will remain imperfect after decode (the symbol glyphs were never cleanly extracted).
+
+NO SOURCE PDF EXISTS for kamp_1968 (find sources/kamp_1968... -iname "*.pdf" is empty), so software decode is the ONLY text-recovery path short of re-sourcing the dissertation (recorded in ~/Projects/Literature/SOURCES.md entry #5, ProQuest/UCLA — a clean PDF would also fix the math notation).
+
+REQUIRED WORK:
+- Build a validated decoder implementing the cipher above, plus a punctuation-normalization cleanup pass for the 0->. and *->, collisions (and any others discovered).
+- Quarantine-never-delete: back up the canonical .md and all 141 chunk_*.md (.bak-<UTC> siblings) BEFORE writing.
+- Decode the canonical .md and re-chunk via literature-chunk.sh (do NOT hand-edit the 141 existing chunks if a re-chunk from the decoded canonical is cleaner; decide during planning).
+- Rebuild the search index via literature-build-index.sh --global so the decoded text is searchable.
+- VERIFICATION: decoded output must be readable English (spot-check the title page, chapter headings, and >=3 mid-document chunks against the known subject matter); confirm the FTS db returns the decoded text; confirm backups exist and are byte-matched to pre-change originals.
+
+SCOPE BOUNDARY: this task does NOT fix the audit blind spot (word-ratio passing mojibake) — that mirrors the #839-class fail-open concern and belongs to a separate audit-hardening task if desired. file_scope: ~/Projects/Literature/sources/kamp_1968_tense-logic-linear-order/ and a decoder script (location TBD in planning). Discovered as a side finding during task #832 orchestration.
+
+---
 
 ### 838. Fix planner clobbering researcher .return-meta.json (merge not overwrite)
 - **Status**: [NOT STARTED]
