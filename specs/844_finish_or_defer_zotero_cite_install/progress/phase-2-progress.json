@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Activate zotero-search.sh",
+  "started_at": "2026-07-11T00:30:00Z",
+  "last_updated": "2026-07-11T00:30:44Z",
+  "objectives": [
+    {"id": 1, "description": "Copy zotero-search.sh to .claude/scripts/, chmod +x", "status": "done", "files_touched": [".claude/scripts/zotero-search.sh"]},
+    {"id": 2, "description": "Confirm zotero-search.sh already declared in manifest.json (no edit)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Note skill-literature fallback now resolves to deployed copy", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

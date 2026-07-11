@@ -901,7 +901,7 @@
     {
       "project_number": 843,
       "project_name": "fix_core_lean_doclint_failures",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "description": "Restore the `core` and `lean` sections of `.claude/scripts/check-extension-docs.sh` to PASS. These are pre-existing doc-lint failures (they predate tasks #840/#841 -- verified) but they keep the overall check exiting non-zero, which blunts the value of the literature drift guard that task #841 added INSIDE this same script: a future literature regression would hide in an already-red run.\n\nMEASURED FAILURES (verified 2026-07-10, re-verify -- run `bash .claude/scripts/check-extension-docs.sh`):\n- core: `script referenced in docs/skills/agents but NOT in provides.scripts` for `task-lock.sh`, `orchestrator-postflight.sh`, and `literature-briefing-invoke.sh`.\n- lean: `routing_hard target declared but not deployed (and extension not installed)` for `skill-lean-research-hard` and `skill-lean-implementation-hard`.\n\nREQUIRED WORK: For each failure determine the correct resolution (register the script in the owning extension's `provides.scripts` if it legitimately belongs there; fix/remove a stale reference if the doc reference is wrong; or correct the lean `routing_hard` declaration / mark the lean extension appropriately if it is intentionally not installed). Do NOT paper over a real gap by deleting a valid reference -- diagnose each. Note `literature-briefing-invoke.sh` is attributed to core here; confirm which extension truly owns it (task #841's follow-up already registered it under literature -- ensure no double-ownership conflict).\n\nCONSTRAINTS:\n- SOURCE OF TRUTH is `.claude/extensions/*/` manifests -- edit there.\n- Do not alter runtime behavior of any script; this is manifest/doc hygiene only.\n\nVERIFICATION: `bash .claude/scripts/check-extension-docs.sh` exits 0 with all sections (core, lean, literature, and every other) PASS. The literature drift guard added by #841 still passes.",
       "dependencies": [],
@@ -909,12 +909,31 @@
         ".claude/extensions/core/manifest.json",
         ".claude/extensions/lean/manifest.json",
         ".claude/scripts/check-extension-docs.sh"
+      ],
+      "last_updated": "2026-07-11T00:28:53Z",
+      "session_id": "sess_1783728731_72f337_843",
+      "artifacts": [
+        {
+          "path": "specs/843_fix_core_lean_doclint_failures/reports/01_doclint-diagnosis.md",
+          "type": "report",
+          "summary": "Doc-lint diagnosis: 4 FAILs; lean is an accidental WARN-regression"
+        },
+        {
+          "path": "specs/843_fix_core_lean_doclint_failures/plans/01_doclint-fix-plan.md",
+          "type": "plan",
+          "summary": "3-phase doc-lint fix (core backport+register, lean WARN restore)"
+        },
+        {
+          "path": "specs/843_fix_core_lean_doclint_failures/summaries/01_doclint-fix-summary.md",
+          "type": "summary",
+          "summary": "Doc-lint now exits 0, all 19 sections PASS"
+        }
       ]
     },
     {
       "project_number": 844,
       "project_name": "finish_or_defer_zotero_cite_install",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "description": "Finish or formally defer the incomplete literature-extension install surfaced (out of scope) by task #841's drift audit. Ten scripts and one command exist ONLY in the extension source `.claude/extensions/literature/` and were never deployed to `.claude/scripts/` / `.claude/commands/`, and the extension is not fully wired into `.claude/extensions.json`.\n\nMEASURED (verified 2026-07-10, re-verify): extension-source-only scripts: `zotero-attach-chunks.sh`, `zotero-chunk.sh`, `zotero-index-add.sh`, `zotero-index-remove.sh`, `zotero-read.sh`, `zotero-search.sh`, `zotero-setup.sh`, `zotero-write.sh`, `cite-extract.sh`, `test-lit-pipeline.sh`. Command-source-only: `.claude/extensions/literature/commands/cite.md` (deployed `.claude/commands/cite.md` is ABSENT). The `/cite` command is documented in CLAUDE.md but its command file was never deployed.\n\nDECISION REQUIRED (this is the crux -- do not blindly deploy): for the zotero suite and `cite`, determine whether they are (a) intended-to-be-active features whose install was left unfinished, or (b) work-in-progress / experimental that should stay inactive. Base this on git history, whether they are referenced by any live skill/command, and whether the `/cite` command in CLAUDE.md is meant to be usable now.\n- If (a) ACTIVE: register them in `provides.scripts` (some already added by #841/follow-up -- avoid duplicates), ensure the deploy/sync mechanism (loader.lua `copy_scripts`) propagates them, deploy `cite.md`, and confirm `.claude/extensions.json` tracks the literature extension correctly.\n- If (b) INACTIVE: add a clear note (in the extension README/manifest) documenting them as intentionally not-yet-deployed so they stop reading as accidental drift, and ensure the #841 drift guard does not false-fail on them (it already skips entries whose deployed copy is absent -- verify).\n\nCONSTRAINTS:\n- SOURCE OF TRUTH is `.claude/extensions/literature/`.\n- `test-lit-pipeline.sh` is almost certainly test-harness-only and should NOT be deployed as a runtime script regardless -- treat separately.\n- Quarantine-never-delete.\n\nVERIFICATION: either every intended script/command is deployed AND `check-extension-docs.sh` literature section still PASSes with no drift-guard false-failures, OR the inactive ones are documented and the extension state is internally consistent (no dangling references to undeployed scripts from live skills/commands).",
       "dependencies": [
@@ -925,7 +944,22 @@
         ".claude/extensions/literature/commands/cite.md",
         ".claude/extensions/literature/manifest.json",
         ".claude/extensions.json"
-      ]
+      ],
+      "last_updated": "2026-07-11T00:35:04Z",
+      "session_id": "sess_1783728731_72f337_844",
+      "artifacts": [
+        {
+          "path": "specs/844_finish_or_defer_zotero_cite_install/reports/01_install-status-research.md",
+          "type": "report",
+          "summary": "Zotero/cite install status: 3 groups (activate /cite+zotero-search, defer rest)"
+        },
+        {
+          "path": "specs/844_finish_or_defer_zotero_cite_install/plans/01_install-plan.md",
+          "type": "plan",
+          "summary": "4-phase activate /cite+zotero-search, defer rest"
+        }
+      ],
+      "completion_summary": "Activated the /cite trio (cite-extract.sh, skill-cite, cite.md) and zotero-search.sh via byte-for-byte deployment from extension source; defer-and-documented the 7 remaining zotero scripts in the literature README with named reasons; documented the extensions.json tracking gap as a follow-up. check-extension-docs.sh verified exit 0 with all 19 extensions PASS."
     }
   ],
   "completed_projects": [],

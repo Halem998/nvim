@@ -136,17 +136,69 @@ Scripts are in `.claude/extensions/literature/scripts/zotero-*.sh`.
 
 ### Available Scripts
 
-| Script | Purpose |
-|--------|---------|
-| `zotero-search.sh` | Search CSL-JSON export by keyword (used by Mode A) |
-| `zotero-read.sh` | Read item metadata and PDFs via `zot` CLI |
-| `zotero-write.sh` | Write/attach files to Zotero items |
-| `zotero-setup.sh` | Setup wizard: detect data dir, validate, configure |
-| `zotero-chunk.sh` | Extract PDF text and chunk into sections |
-| `zotero-attach-chunks.sh` | Upload chunks as Zotero child attachments |
-| `zotero-index-add.sh` | Add item to per-repo `specs/literature-index.json` |
-| `zotero-index-remove.sh` | Remove item from per-repo index |
-| `cite-extract.sh` | Extract citation patterns from markdown artifacts |
+| Script | Purpose | Deployed |
+|--------|---------|----------|
+| `zotero-search.sh` | Search CSL-JSON export by keyword (used by Mode A) | Yes |
+| `zotero-read.sh` | Read item metadata and PDFs via `zot` CLI | No — inactive, see below |
+| `zotero-write.sh` | Write/attach files to Zotero items | No — inactive, see below |
+| `zotero-setup.sh` | Setup wizard: detect data dir, validate, configure | No — inactive, see below |
+| `zotero-chunk.sh` | Extract PDF text and chunk into sections | No — inactive, see below |
+| `zotero-attach-chunks.sh` | Upload chunks as Zotero child attachments | No — inactive, see below |
+| `zotero-index-add.sh` | Add item to per-repo `specs/literature-index.json` | No — inactive, see below |
+| `zotero-index-remove.sh` | Remove item from per-repo index | No — inactive, see below |
+| `cite-extract.sh` | Extract citation patterns from markdown artifacts | Yes |
+
+### Deployment Status (task 844)
+
+As of task 844, the zotero/cite surface is split into two dispositions. This section is the
+authoritative record of which artifacts are live vs. intentionally undeployed, and why.
+
+**Active (deployed byte-for-byte from this directory to `.claude/scripts/`, `.claude/skills/`,
+`.claude/commands/`)**:
+- `cite-extract.sh`, `skill-cite/`, `cite.md` — the `/cite` trio, built end-to-end across tasks
+  716/717/718 but never deployed until task 844 closed the gap.
+- `zotero-search.sh` — already load-bearing via a source-path fallback in
+  `skill-literature/SKILL.md`; deployed for consistency with the other live scripts.
+
+**Inactive (intentionally NOT deployed as part of the zotero suite — remain source-only in this
+directory)**:
+
+| Artifact | Reason |
+|----------|--------|
+| `zotero-index-add.sh` | Superseded — dead code; add-to-index logic is reimplemented inline via `jq` in `skill-literature/SKILL.md`. Prune candidate for a future task; quarantined, not deleted. |
+| `zotero-index-remove.sh` | Superseded — same as above (inline `jq` remove logic in `skill-literature/SKILL.md`). Prune candidate for a future task; quarantined, not deleted. |
+| `zotero-read.sh` | Blocked on external `zot` CLI (`zotero-cli-cc`), which is not installed in this environment. No live caller. |
+| `zotero-write.sh` | Blocked on external `zot` CLI, not installed. No live caller. |
+| `zotero-setup.sh` | Blocked on external `zot` CLI, not installed. No live caller. |
+| `zotero-chunk.sh` | Superseded by the read-only briefing+tools design adopted in task 758; write-back-to-Zotero chunking is orthogonal to the current pipeline. No live caller. |
+| `zotero-attach-chunks.sh` | Superseded by the same task-758 read-only design. No live caller. |
+
+Seven zotero scripts above remain declared in `manifest.json` `provides.scripts` but are
+absent from `.claude/scripts/` — this is intentional. The task-841 drift guard
+(`check-extension-docs.sh` `check_deployed_script_drift()`) skips scripts whose deployed copy is
+absent (it only `FAIL`s on *content mismatch* when both source and deployed copies exist), so
+leaving these undeployed produces an expected `info "script not deployed, skipping drift check"`
+line, not a failure.
+
+**Correction to task-844 research (`reports/01_install-status-research.md`)**: that report
+characterized `test-lit-pipeline.sh` as source-only/never-deployed alongside the seven zotero
+scripts above. Verification during task 844 implementation found this is no longer accurate:
+`test-lit-pipeline.sh` **is** deployed at `.claude/scripts/test-lit-pipeline.sh`, byte-identical
+to this source copy, added by task 763 ("add --lit integration test script", commit `eb84ce9f8`,
+2026-06-23) as a standalone 33-check integration-test harness for the `--lit` pipeline — an
+unrelated concern to the zotero/cite surface this task addresses. Task 844 did not deploy it and
+leaves it as-is (deployed, task-763-owned); the drift guard compares it against source and finds
+no mismatch, so it does not appear in the "skipping drift check" list above. Its `provides.scripts`
+declaration and deployed copy are consistent, not drift.
+
+### Extension Tracking Gap
+
+The literature extension has no entry in the root `.claude/extensions.json` despite this
+substantial partial deployment (the `/cite` trio and `zotero-search.sh` are now live). Task 844
+intentionally does **not** fabricate an `extensions.json` entry here: that file's
+`merged_sections` metadata is loader-owned state, and hand-authoring it risks introducing the
+exact kind of drift this task is closing. Proper registration of the literature extension via
+the extension-loader flow is a named follow-up, not part of this task's scope.
 
 ---
 

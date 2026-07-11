@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Verification",
+  "started_at": "2026-07-11T00:31:00Z",
+  "last_updated": "2026-07-11T00:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run check-extension-docs.sh, confirm [literature] section PASS", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm total failure set unchanged/no new failures", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Re-run 4 cmp -s byte-identity checks", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm 7 deferred zotero scripts + test-lit-pipeline.sh absent from .claude/scripts/", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm /cite wiring resolves statically", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm README defer note names all 8 inactive artifacts with reasons", "status": "done", "files_touched": [".claude/extensions/literature/README.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.4",
+      "description": "Confirm the seven deferred zotero scripts and test-lit-pipeline.sh are still ABSENT from .claude/scripts/",
+      "type": "altered",
+      "reason": "test-lit-pipeline.sh is NOT absent from .claude/scripts/ -- it was already deployed by an unrelated prior task (task 763, commit eb84ce9f8, 'add --lit integration test script', 2026-06-23), before task 844 began. The task-844 research report (reports/01_install-status-research.md) incorrectly characterized it as source-only/never-deployed alongside the seven zotero scripts; this was stale by the time of implementation. Task 844 did not deploy test-lit-pipeline.sh and does not touch it (quarantine-never-delete plus out-of-scope: it's a distinct --lit pipeline test harness, not part of the zotero/cite surface this task addresses). The drift guard still passes for it (deployed == source, byte-identical), so check-extension-docs.sh remains exit 0. Documented the correction in the literature README's Deployment Status section.",
+      "annotation": "*(deviation: altered -- the 7 zotero scripts are confirmed absent; test-lit-pipeline.sh is NOT absent, pre-existing from task 763, out of this task's scope, does not affect drift-guard PASS)*"
+    }
+  ]
+}

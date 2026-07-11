@@ -4,7 +4,6 @@ next_project_number: 845
 
 # TODO
 
-Warning: 2 task(s) have no topic and will render under Uncategorized: 843, 844 (non-fatal)
 ## Task Order
 
 *Updated 2026-07-11. Generated from state.json dependency graph.*
@@ -12,7 +11,7 @@ Warning: 2 task(s) have no topic and will render under Uncategorized: 843, 844 (
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826,832,837,838,843,844 | -- | agent-system, literature, extensions, ... |
+| 1 | 78,87,821,826,832,837,838 | -- | agent-system, literature, extensions, ... |
 | 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -41,17 +40,14 @@ Warning: 2 task(s) have no topic and will render under Uncategorized: 843, 844 (
 
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
-### Uncategorized
-
-843 [NOT STARTED] — Restore the `core` and `lean` sections of `.claude/scripts/check-
-844 [NOT STARTED] — Finish or formally defer the incomplete literature-extension inst
-
 ## Tasks
 
 ### 844. Finish or defer zotero cite install
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: Task 842
+- **Research**: [844_finish_or_defer_zotero_cite_install/reports/01_install-status-research.md]
+- **Plan**: [844_finish_or_defer_zotero_cite_install/plans/01_install-plan.md]
 
 **Description**: Finish or formally defer the incomplete literature-extension install surfaced (out of scope) by task #841's drift audit. Ten scripts and one command exist ONLY in the extension source `.claude/extensions/literature/` and were never deployed to `.claude/scripts/` / `.claude/commands/`, and the extension is not fully wired into `.claude/extensions.json`.
 
@@ -71,9 +67,12 @@ VERIFICATION: either every intended script/command is deployed AND `check-extens
 ---
 
 ### 843. Fix core lean doclint failures
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: None
+- **Research**: [843_fix_core_lean_doclint_failures/reports/01_doclint-diagnosis.md]
+- **Plan**: [843_fix_core_lean_doclint_failures/plans/01_doclint-fix-plan.md]
+- **Summary**: [843_fix_core_lean_doclint_failures/summaries/01_doclint-fix-summary.md]
 
 **Description**: Restore the `core` and `lean` sections of `.claude/scripts/check-extension-docs.sh` to PASS. These are pre-existing doc-lint failures (they predate tasks #840/#841 -- verified) but they keep the overall check exiting non-zero, which blunts the value of the literature drift guard that task #841 added INSIDE this same script: a future literature regression would hide in an already-red run.
 

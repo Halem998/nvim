@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Defer-and-document the inactive zotero suite + test harness",
+  "started_at": "2026-07-11T00:30:00Z",
+  "last_updated": "2026-07-11T00:30:44Z",
+  "objectives": [
+    {"id": 1, "description": "Update Zotero Integration section of README.md with inactive-status table naming each of 8 artifacts + reason", "status": "done", "files_touched": [".claude/extensions/literature/README.md"]},
+    {"id": 2, "description": "Add Extension tracking gap note (extensions.json)", "status": "done", "files_touched": [".claude/extensions/literature/README.md"]},
+    {"id": 3, "description": "No manifest.json change, no deployment of deferred artifacts", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

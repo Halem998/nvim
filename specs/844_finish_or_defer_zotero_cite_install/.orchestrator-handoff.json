@@ -1,0 +1,22 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Planned the split disposition of the literature zotero/cite surface in 4 phases. Activate the /cite trio (cite-extract.sh + skill-cite + cite.md) and zotero-search.sh via byte-for-byte deploy from extension source (manifest already declares all; no manifest edits). Defer-and-document the 7 remaining zotero scripts + test-lit-pipeline.sh in the README with reasons; document the extensions.json tracking gap as a follow-up rather than fabricating loader state. Phase 4 verifies check-extension-docs.sh literature PASS with no drift-guard false-failures.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/844_finish_or_defer_zotero_cite_install/plans/01_install-plan.md"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "implement",
+  "files_modified": [],
+  "decisions_made": [
+    "Manifest already declares all ACTIVATE items; activate phases are pure deployment with no manifest edits",
+    "skill-cite is direct-execution (no subagent_type), so deploying it does not trip drift-guard Rule D",
+    "Do NOT fabricate a .claude/extensions.json literature entry (loader-owned merged_sections); document the gap and name a follow-up",
+    "Do NOT hand-edit generated CLAUDE.md; merge-source EXTENSION.md already lists skill-cite and /cite"
+  ],
+  "dead_ends": []
+}
