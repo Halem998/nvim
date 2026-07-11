@@ -549,7 +549,7 @@ function M._perform_sync(mbsync_target, display_name, callback)
   local sync_manager = require('neotex.plugins.tools.himalaya.sync.manager')
   local mbsync = require('neotex.plugins.tools.himalaya.sync.mbsync')
   
-  notify.himalaya('Starting sync for ' .. display_name .. '...', notify.categories.STATUS)
+  notify.himalaya('Starting sync for ' .. display_name .. '...', notify.categories.USER_ACTION)
   
   -- Start sync through manager
   sync_manager.start_sync('full', {
@@ -684,7 +684,8 @@ end
 
 -- Sync inbox only (for <leader>ms keybinding)
 function M.sync_inbox()
-  local account = state.get_current_account()
+  -- Fall back to the configured default account if the UI hasn't been opened yet
+  local account = state.get_current_account() or config.get_current_account_name()
   if not account then
     notify.himalaya('No email account configured', notify.categories.ERROR)
     return
@@ -703,9 +704,54 @@ function M.sync_inbox()
   M._perform_sync(channel, 'inbox')
 end
 
+-- Sync the inbox of every configured account (for <leader>ms keybinding)
+function M.sync_all_accounts_inbox()
+  local accounts = config.get_all_accounts()
+  if not accounts or #accounts == 0 then
+    -- Fall back to the configured default account
+    local default = config.get_current_account_name()
+    accounts = default and { default } or {}
+  end
+  if #accounts == 0 then
+    notify.himalaya('No email account configured', notify.categories.ERROR)
+    return
+  end
+
+  -- Stable, predictable order across runs
+  table.sort(accounts)
+
+  -- Sync each account's inbox sequentially. The sync manager tracks only one
+  -- sync at a time, so we chain via _perform_sync's completion callback rather
+  -- than starting them concurrently.
+  local index = 0
+  local function sync_next()
+    index = index + 1
+    local account = accounts[index]
+    if not account then
+      notify.himalaya('All accounts synced', notify.categories.USER_ACTION)
+      return
+    end
+
+    local account_config = config.get_account(account)
+    local channel = account_config and account_config.mbsync and account_config.mbsync.inbox_channel
+    if not channel then
+      notify.himalaya('No inbox channel configured for ' .. account .. ', skipping', notify.categories.WARNING)
+      sync_next()
+      return
+    end
+
+    M._perform_sync(channel, account .. ' inbox', function()
+      sync_next()
+    end)
+  end
+
+  sync_next()
+end
+
 -- Sync all folders (for <leader>mS and HimalayaSyncFull command)
 function M.sync_all()
-  local account = state.get_current_account()
+  -- Fall back to the configured default account if the UI hasn't been opened yet
+  local account = state.get_current_account() or config.get_current_account_name()
   if not account then
     notify.himalaya('No email account configured', notify.categories.ERROR)
     return

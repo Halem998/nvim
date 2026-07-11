@@ -624,12 +624,17 @@ return {
     wk.add({
       { "<leader>m", group = "mail", icon = "󰇮" },
       { "<leader>mA", "<cmd>HimalayaAccounts<CR>", desc = "switch account", icon = "󰌏" },
+      -- aerc / notmuch bindings (real mappings live in neotex/plugins/tools/mail.lua;
+      -- these are annotation-only so they show in the menu without overriding).
+      { "<leader>me", desc = "open aerc (+ sync all)", icon = "󰇮" },
       { "<leader>mf", "<cmd>HimalayaFolder<CR>", desc = "change folder", icon = "󰉋" },
       { "<leader>mF", "<cmd>HimalayaRecreateFolders<CR>", desc = "recreate folders", icon = "󰝰" },
       { "<leader>mh", "<cmd>HimalayaHealth<CR>", desc = "health check", icon = "󰸉" },
       { "<leader>mi", "<cmd>HimalayaSyncInfo<CR>", desc = "sync status", icon = "󰋼" },
       { "<leader>mm", "<cmd>HimalayaToggle<CR>", desc = "toggle sidebar", icon = "󰊫" },
-      { "<leader>ms", "<cmd>HimalayaSyncInbox<CR>", desc = "sync inbox", icon = "󰜉" },
+      { "<leader>mn", desc = "notmuch search", icon = "󰍉" },
+      { "<leader>mN", desc = "sync all (mbsync -a + notmuch)", icon = "󰜉" },
+      { "<leader>ms", "<cmd>HimalayaSyncAllInbox<CR>", desc = "sync all inboxes", icon = "󰜉" },
       { "<leader>mS", "<cmd>HimalayaSyncFull<CR>", desc = "full sync", icon = "󰜉" },
       { "<leader>mr", "<cmd>TermExec cmd='find ~/Mail/Logos -name .mbsyncstate -delete; find ~/Mail/Logos -name .uidvalidity -delete; rm -f /home/benjamin/Mail/.claude/output/email.md; mbsync logos'<CR><C-w>l", desc = "maildir resync", icon = "󰔟" },
       { "<leader>mt", "<cmd>HimalayaAutoSyncToggle<CR>", desc = "toggle auto-sync", icon = "󰑖" },
@@ -656,8 +661,8 @@ return {
       { "<leader>nh", "<cmd>TermExec cmd='home-manager switch --flake ~/.dotfiles/'<CR><C-w>l", desc = "home-manager", icon = "󰋜" },
       { "<leader>nm", "<cmd>TermExec cmd='brave https://mynixos.com' open=0<CR>", desc = "my-nixos", icon = "󰖟" },
       { "<leader>np", "<cmd>TermExec cmd='brave https://search.nixos.org/packages' open=0<CR>", desc = "packages", icon = "󰏖" },
-      { "<leader>nr", "<cmd>TermExec cmd='~/.dotfiles/update.sh'<CR><C-w>l", desc = "rebuild nix", icon = "󰜉" },
-      { "<leader>nu", "<cmd>TermExec cmd='cd ~/.dotfiles && ./update.sh --update'<CR><C-w>j", desc = "update inputs + rebuild", icon = "󰚰" },
+      { "<leader>nr", "<cmd>TermExec cmd='cd ~/.dotfiles && ./scripts/update.sh'<CR><C-w>l", desc = "rebuild nix", icon = "󰜉" },
+      { "<leader>nu", "<cmd>TermExec cmd='cd ~/.dotfiles && ./scripts/update.sh --update'<CR><C-w>j", desc = "update inputs + rebuild", icon = "󰚰" },
     })
 
     -- ============================================================================

@@ -28,6 +28,16 @@ function M.setup(registry)
     }
   }
   
+  commands.HimalayaSyncAllInbox = {
+    fn = function()
+      local main = require('neotex.plugins.tools.himalaya.ui.main')
+      main.sync_all_accounts_inbox()
+    end,
+    opts = {
+      desc = 'Sync inbox folder for all configured accounts'
+    }
+  }
+
   commands.HimalayaSyncFull = {
     fn = function()
       local main = require('neotex.plugins.tools.himalaya.ui.main')

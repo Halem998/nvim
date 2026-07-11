@@ -280,7 +280,7 @@ function M.update_folder_counts()
       end
     else
       logger.warn('Cannot update folder count: missing account or folder')
-      notify.himalaya('Cannot update count: missing account/folder', notify.categories.ERROR)
+      notify.himalaya('Cannot update count: missing account/folder', notify.categories.BACKGROUND)
     end
   end, 100)  -- Minimal 100ms delay just for file operations
 end

@@ -10,9 +10,13 @@
 -- for a comprehensive email workflow.
 --
 -- Keybindings:
---   <leader>me - Open aerc email client
---   <leader>mS - Sync mail (mbsync + notmuch)
---   <leader>mf - Search mail with notmuch (telescope)
+--   <leader>me - Open aerc email client (also triggers a background sync of all accounts)
+--   <leader>mN - Sync all accounts (mbsync -a + notmuch new)
+--   <leader>mn - Search mail with notmuch (telescope)
+--
+-- Note: the <leader>m* prefix is shared with the himalaya plugin (see
+-- neotex/plugins/editor/which-key.lua). aerc/notmuch bindings use e/n/N to
+-- avoid colliding with himalaya's f (change folder) and S (full sync).
 --
 -- Dependencies:
 --   - aerc (terminal email client)
@@ -20,6 +24,31 @@
 --   - mbsync (IMAP sync)
 --   - toggleterm.nvim (terminal integration)
 -----------------------------------------------------------
+
+-- Sync all accounts (mbsync -a) and reindex notmuch, with progress notifications.
+-- Shared by <leader>me (open aerc) and <leader>mS (explicit sync).
+local function sync_all_mail(on_done)
+  vim.notify("Syncing all accounts...", vim.log.levels.INFO)
+  vim.fn.jobstart({ "mbsync", "-a" }, {
+    on_exit = function(_, code)
+      if code == 0 then
+        vim.fn.jobstart({ "notmuch", "new" }, {
+          on_exit = function(_, notmuch_code)
+            if notmuch_code == 0 then
+              vim.notify("All accounts synced", vim.log.levels.INFO)
+            else
+              vim.notify("notmuch indexing failed", vim.log.levels.ERROR)
+            end
+            if on_done then on_done(notmuch_code == 0) end
+          end,
+        })
+      else
+        vim.notify("mbsync failed with code " .. code, vim.log.levels.ERROR)
+        if on_done then on_done(false) end
+      end
+    end,
+  })
+end
 
 return {
   -- Toggleterm for aerc integration
@@ -29,6 +58,8 @@ return {
       {
         "<leader>me",
         function()
+          -- Refresh all accounts in the background before/while aerc opens
+          sync_all_mail()
           local Terminal = require("toggleterm.terminal").Terminal
           local aerc = Terminal:new({
             cmd = "aerc",
@@ -55,28 +86,11 @@ return {
         desc = "Open aerc email client",
       },
       {
-        "<leader>mS",
+        "<leader>mN",
         function()
-          vim.notify("Syncing mail...", vim.log.levels.INFO)
-          vim.fn.jobstart({ "mbsync", "-a" }, {
-            on_exit = function(_, code)
-              if code == 0 then
-                vim.fn.jobstart({ "notmuch", "new" }, {
-                  on_exit = function(_, notmuch_code)
-                    if notmuch_code == 0 then
-                      vim.notify("Mail synced successfully", vim.log.levels.INFO)
-                    else
-                      vim.notify("notmuch indexing failed", vim.log.levels.ERROR)
-                    end
-                  end,
-                })
-              else
-                vim.notify("mbsync failed with code " .. code, vim.log.levels.ERROR)
-              end
-            end,
-          })
+          sync_all_mail()
         end,
-        desc = "Sync mail (mbsync + notmuch)",
+        desc = "Sync all accounts (mbsync -a + notmuch)",
       },
     },
   },
@@ -87,7 +101,7 @@ return {
     optional = true,
     keys = {
       {
-        "<leader>mf",
+        "<leader>mn",
         function()
           -- Simple notmuch search using Telescope's grep_string as template
           local pickers = require("telescope.pickers")
