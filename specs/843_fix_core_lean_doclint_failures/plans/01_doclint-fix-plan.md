@@ -130,24 +130,24 @@ on-disk source file.
 
 ---
 
-### Phase 2: Restore lean routing_hard WARN classification (both copies) [IN PROGRESS]
+### Phase 2: Restore lean routing_hard WARN classification (both copies) [COMPLETED]
 
 **Goal**: Restore task #771's deliberate WARN-when-uninstalled classification for undeployed
 `routing_hard` targets in the uninstalled-extension branch, applied identically to both the
 deployed and extension-source copies of `check-extension-docs.sh`.
 
 **Tasks**:
-- [ ] In `.claude/scripts/check-extension-docs.sh`, in `check_routing_consistency`'s routing_hard
+- [x] In `.claude/scripts/check-extension-docs.sh`, in `check_routing_consistency`'s routing_hard
       loop, change the final `else` branch (currently ~lines 299-303) from `fail "routing_hard
       target declared but not deployed (and extension not installed): $t"` to a `warn "..."` call,
       and update the preceding comment to reflect #771's reasoning (uninstalled extension with
       undeployed routing_hard targets is the expected state, not a live correctness bug;
       `command-route-skill.sh` does not implement routing_hard dispatch, so no unconditional
       dispatch occurs). Leave the `installed -eq 1` branch (line ~297) as FAIL and the
-      not-resolvable branch (line ~294) as FAIL unchanged.
-- [ ] Apply the byte-identical edit to `.claude/extensions/core/scripts/check-extension-docs.sh`.
-- [ ] Verify byte-identity: `diff -q .claude/scripts/check-extension-docs.sh .claude/extensions/core/scripts/check-extension-docs.sh` reports no difference.
-- [ ] Confirm the script still parses: `bash -n .claude/scripts/check-extension-docs.sh`.
+      not-resolvable branch (line ~294) as FAIL unchanged. *(completed; used `info "WARN: ..."` to match the existing WARN-emission convention used by the parallel `routing` uninstalled branch a few lines above)*
+- [x] Apply the byte-identical edit to `.claude/extensions/core/scripts/check-extension-docs.sh`. *(completed via `cp` of the fully-edited deployed file, since no other content differed)*
+- [x] Verify byte-identity: `diff -q .claude/scripts/check-extension-docs.sh .claude/extensions/core/scripts/check-extension-docs.sh` reports no difference. *(completed: identical)*
+- [x] Confirm the script still parses: `bash -n .claude/scripts/check-extension-docs.sh`. *(completed: syntax OK, both copies)*
 
 **Timing**: 30 minutes
 

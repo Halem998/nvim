@@ -191,17 +191,19 @@ check_undeclared_skills() {
 
 # Rules B + C: Routing target consistency and deployment
 #
-# Policy rationale (documented per plan Phase 2):
+# Policy rationale (restored per task #771, re-applied by task #843 after #792 sync regression):
 #   Both routing and routing_hard share the same deployment-dimension severity rule:
 #     - FAIL if the extension is installed but the target is not deployed
 #     - WARN (info) if the extension is not installed (expected undeployed state)
-#   routing_hard adds TWO stricter requirements beyond the deployment dimension:
+#   routing_hard adds ONE stricter requirement beyond the deployment dimension:
 #     1. Source-grounding: the target must exist in some extension's SOURCE provides.skills
-#     2. Unconditional-dispatch FAIL: command-route-skill.sh steps 4a-4d scan routing_hard
-#        across ALL manifests without an install guard. A routing_hard target that exists
-#        in source but is undeployed because its extension is uninstalled is a correctness
-#        bug regardless of installation. This is the lean case -- FAIL for routing_hard
-#        targets that exist in source but are undeployed.
+#   task #771 deliberately downgraded the uninstalled-extension case for routing_hard from
+#   FAIL to WARN: command-route-skill.sh does not implement routing_hard dispatch at all (it
+#   takes 3 positional args and never reads .routing_hard), so the "unconditional dispatch"
+#   rationale that previously justified FAIL here is false -- an uninstalled extension with a
+#   source-grounded but undeployed routing_hard target is the expected state, not a live
+#   correctness bug. Task #792's sync reverted this from the stale extension-source copy;
+#   task #843 restores it in both copies.
 #   Rule B (resolvability): any routing or routing_hard target that does not exist in any
 #   extension's provides.skills AND is not deployed is a FAIL (manifest typo/stale entry).
 check_routing_consistency() {
@@ -296,10 +298,11 @@ check_routing_consistency() {
         # Rule C (routing_hard, installed): deployment violation
         fail "routing_hard target not deployed (extension is installed): $t"
       else
-        # Rule C extra for routing_hard (unconditional-dispatch FAIL clause):
-        # routing_hard is scanned by command-route-skill.sh with no install guard --
-        # a source-grounded but undeployed routing_hard target is a live correctness bug.
-        fail "routing_hard target declared but not deployed (and extension not installed): $t"
+        # Rule C (routing_hard, uninstalled): warn only. command-route-skill.sh does not
+        # implement routing_hard dispatch at all, so an uninstalled extension with a
+        # source-grounded but undeployed routing_hard target is expected, not a live bug
+        # (task #771; restored here after #792's stale-source-copy regression).
+        info "WARN: routing_hard target declared but not deployed (extension not installed): $t"
       fi
     fi
   done
