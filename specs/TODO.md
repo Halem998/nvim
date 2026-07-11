@@ -4,7 +4,7 @@ next_project_number: 849
 
 # TODO
 
-Warning: 4 task(s) have no topic and will render under Uncategorized: 845, 846, 847, 848 (non-fatal)
+Warning: 3 task(s) have no topic and will render under Uncategorized: 846, 847, 848 (non-fatal)
 ## Task Order
 
 *Updated 2026-07-11. Generated from state.json dependency graph.*
@@ -12,7 +12,7 @@ Warning: 4 task(s) have no topic and will render under Uncategorized: 845, 846, 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826,832,837,838,845,846,847,848 | -- | agent-system, literature, extensions, ... |
+| 1 | 78,87,821,826,832,837,838,846,847,848 | -- | agent-system, literature, extensions, ... |
 | 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -43,17 +43,18 @@ Warning: 4 task(s) have no topic and will render under Uncategorized: 845, 846, 
 
 ### Uncategorized
 
-845 [NOT STARTED] — Implement the `--hard`/`routing_hard` 5-step precedence in `comma
-846 [NOT STARTED] — Add the missing `literature` entry to `.claude/extensions.json` s
-847 [NOT STARTED] — Prune the two confirmed dead-code zotero scripts flagged (defer-a
-848 [NOT STARTED] — Investigate and fix (or formally document as acceptable) the `bai
+846 [PLANNED] — Add the missing `literature` entry to `.claude/extensions.json` s
+847 [PLANNED] — Prune the two confirmed dead-code zotero scripts flagged (defer-a
+848 [PLANNED] — Investigate and fix (or formally document as acceptable) the `bai
 
 ## Tasks
 
 ### 848. Fix baier katoen section07 chunk anomaly
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Dependencies**: None
+- **Research**: [848_fix_baier_katoen_section07_chunk_anomaly/reports/01_section07-chunk-anomaly.md]
+- **Plan**: [848_fix_baier_katoen_section07_chunk_anomaly/plans/01_section07-chunk-anomaly.md]
 
 **Description**: Investigate and fix (or formally document as acceptable) the `baier_katoen_2008` section07 chunker anomaly flagged by task #842: after the coverage backfill, section07 produced ONE giant chunk versus ~100+ chunks for sibling sections, indicating `literature-chunk.sh`'s pass-2 subdivision did not fire for that file. #842 flagged this out of scope (it was a coverage task, and touching the chunker's contract was a stated non-goal). This task owns it.
 
@@ -71,9 +72,11 @@ VERIFICATION: `baier_katoen_2008` section07 chunk count is comparable to sibling
 ---
 
 ### 847. Prune dead zotero index scripts
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Dependencies**: None
+- **Research**: [847_prune_dead_zotero_index_scripts/reports/01_prune-zotero-index-scripts.md]
+- **Plan**: [847_prune_dead_zotero_index_scripts/plans/01_prune-zotero-index-scripts.md]
 
 **Description**: Prune the two confirmed dead-code zotero scripts flagged (defer-and-document, not pruned) by task #844: `.claude/extensions/literature/scripts/zotero-index-add.sh` and `.claude/extensions/literature/scripts/zotero-index-remove.sh`. Task #844's research confirmed `skill-literature/SKILL.md` reimplements the same index add/remove logic inline via `jq`, so these two scripts have no live callers and are pure dead code. #844 intentionally left them in place (defer-and-document) rather than pruning inline; this task removes them cleanly.
 
@@ -88,9 +91,11 @@ VERIFICATION: no live reference to the two scripts remains; manifest and README 
 ---
 
 ### 846. Add literature entry to extensions json
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Dependencies**: None
+- **Research**: [846_add_literature_entry_to_extensions_json/reports/01_literature-extensions-entry.md]
+- **Plan**: [846_add_literature_entry_to_extensions_json/plans/01_literature-extensions-entry.md]
 
 **Description**: Add the missing `literature` entry to `.claude/extensions.json` so the literature extension is properly tracked/installed like `core`, `nix`, `nvim`, and `memory`. Surfaced by task #844, which DELIBERATELY did NOT fabricate the entry because `.claude/extensions.json` is loader-owned and getting its schema wrong could break extension loading -- so it documented the gap instead. This task does it correctly.
 
@@ -108,9 +113,11 @@ VERIFICATION: `.claude/extensions.json` parses; the literature entry matches sib
 ---
 
 ### 845. Implement routing hard precedence in router
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: None
+- **Research**: [845_implement_routing_hard_precedence_in_router/reports/01_routing-hard-precedence.md]
+- **Plan**: [845_implement_routing_hard_precedence_in_router/plans/01_routing-hard-precedence.md]
 
 **Description**: Implement the `--hard`/`routing_hard` 5-step precedence in `command-route-skill.sh` so it matches what CLAUDE.md documents and what `test-command-route-skill.sh` tests against. Surfaced by task #843's research: `command-route-skill.sh` does NOT currently implement `routing_hard` dispatch at all, yet CLAUDE.md's 'Routing Mechanism' section documents a 5-step precedence (non-core exact -> non-core compound-key -> core exact -> core compound-key -> `-hard` append fallback with an on-disk SKILL.md existence gate), and a test file asserts that behavior.
 
