@@ -1,7 +1,7 @@
 # Implementation Plan: Restore core and lean doc-lint sections to PASS
 
 - **Task**: 843 - Restore the `core` and `lean` sections of `check-extension-docs.sh` to PASS
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/843_fix_core_lean_doclint_failures/reports/01_doclint-diagnosis.md
@@ -164,21 +164,21 @@ deployed and extension-source copies of `check-extension-docs.sh`.
 
 ---
 
-### Phase 3: Full verification [NOT STARTED]
+### Phase 3: Full verification [COMPLETED]
 
 **Goal**: Prove all four failures are resolved, no regression was introduced, and the drift
 guard is intact.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh; echo "exit=$?"` — must print `exit=0`.
-- [ ] Confirm the summary reports 0 FAILs and all sections (core, lean, literature, every other) PASS.
-- [ ] Confirm the two lean targets (`skill-lean-research-hard`, `skill-lean-implementation-hard`)
-      now appear as WARN, not FAIL.
-- [ ] Confirm the literature section still PASSes (no regression) and Rule F reports no drift.
-- [ ] Confirm drift guard byte-identity for every touched script:
+- [x] Run `bash .claude/scripts/check-extension-docs.sh; echo "exit=$?"` — must print `exit=0`. *(completed: exit=0)*
+- [x] Confirm the summary reports 0 FAILs and all sections (core, lean, literature, every other) PASS. *(completed: all 19 extensions PASS, "PASS: all extensions OK")*
+- [x] Confirm the two lean targets (`skill-lean-research-hard`, `skill-lean-implementation-hard`)
+      now appear as WARN, not FAIL. *(completed: both emit "WARN: routing_hard target declared but not deployed (extension not installed): ...")*
+- [x] Confirm the literature section still PASSes (no regression) and Rule F reports no drift. *(completed: [literature] section OK/PASS, no literature files modified per git status)*
+- [x] Confirm drift guard byte-identity for every touched script:
       `diff -q .claude/scripts/check-extension-docs.sh .claude/extensions/core/scripts/check-extension-docs.sh`,
       `diff -q .claude/scripts/orchestrator-postflight.sh .claude/extensions/core/scripts/orchestrator-postflight.sh`,
-      `diff -q .claude/scripts/task-lock.sh .claude/extensions/core/scripts/task-lock.sh` — all report identical.
+      `diff -q .claude/scripts/task-lock.sh .claude/extensions/core/scripts/task-lock.sh` — all report identical. *(completed: all three identical)*
 
 **Timing**: 30 minutes
 
@@ -193,12 +193,12 @@ guard is intact.
 
 ## Testing & Validation
 
-- [ ] `bash .claude/scripts/check-extension-docs.sh` exits 0.
-- [ ] Summary line reports 0 FAILs; core, lean, literature, and every other section PASS.
-- [ ] `skill-lean-research-hard` and `skill-lean-implementation-hard` emit WARN (not FAIL).
-- [ ] `diff -q` deployed-vs-source is identical for `check-extension-docs.sh`, `orchestrator-postflight.sh`, and `task-lock.sh` (Rule F intact).
-- [ ] `jq empty .claude/extensions/core/manifest.json` succeeds (valid JSON).
-- [ ] No literature file was modified (`git status` shows no changes under `specs/literature/` or literature extension paths).
+- [x] `bash .claude/scripts/check-extension-docs.sh` exits 0. *(verified)*
+- [x] Summary line reports 0 FAILs; core, lean, literature, and every other section PASS. *(verified: all 19 PASS)*
+- [x] `skill-lean-research-hard` and `skill-lean-implementation-hard` emit WARN (not FAIL). *(verified)*
+- [x] `diff -q` deployed-vs-source is identical for `check-extension-docs.sh`, `orchestrator-postflight.sh`, and `task-lock.sh` (Rule F intact). *(verified: all identical)*
+- [x] `jq empty .claude/extensions/core/manifest.json` succeeds (valid JSON). *(verified)*
+- [x] No literature file was modified (`git status` shows no changes under `specs/literature/` or literature extension paths). *(verified: none)*
 
 ## Artifacts & Outputs
 
