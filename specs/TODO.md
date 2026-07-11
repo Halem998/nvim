@@ -34,16 +34,17 @@ next_project_number: 852
 
 ### Mail Sync + Keymaps
 
-851 [RESEARCHED] — Fixes across the nvim mail stack, ALREADY IMPLEMENTED AND COMMITT
+851 [BLOCKED] — Fixes across the nvim mail stack, ALREADY IMPLEMENTED AND COMMITT
 
 ## Tasks
 
 ### 851. Himalaya/aerc mail sync + keymap fixes (multi-account sync, account fallback, mS/mf conflict)
-- **Status**: [RESEARCHED]
+- **Status**: [BLOCKED]
 - **Task Type**: neovim
 - **Topic**: mail sync + keymaps
 - **Dependencies**: None
 - **Research**: [851_himalaya_mail_sync_and_keymap_fixes/reports/01_himalaya-mail-sync-keymaps.md]
+- **Plan**: [851_himalaya_mail_sync_and_keymap_fixes/plans/01_mail-sync-keymap-verification.md]
 
 **Description**: Fixes across the nvim mail stack, ALREADY IMPLEMENTED AND COMMITTED (master: bcb662549, a1c64151b). (1) sync_inbox/sync_all fall back to config.get_current_account_name() when the sidebar has not been opened, fixing spurious "No email account configured". (2) new sync_all_accounts_inbox()+HimalayaSyncAllInbox; <leader>ms now syncs every account inbox (gmail-inbox, logos-inbox) sequentially. (3) fixed nil crash: get_all_accounts is on the config.accounts submodule, not re-exported by core/config. (4) "Starting sync" notice made visible (USER_ACTION); harmless "Cannot update count" downgraded ERROR->BACKGROUND. (5) <leader>me opens aerc AND triggers background mbsync -a + notmuch new via shared sync_all_mail(). (6) resolved <leader>mS/<leader>mf collisions between mail.lua and which-key.lua by relocating notmuch search->mn and notmuch full sync->mN, with annotation-only which-key entries. REMAINING: live end-to-end sync verification against Gmail + Proton Bridge servers (headless tests stubbed mbsync). See reports/01_himalaya-mail-sync-keymaps.md for root causes, per-file changes, verification performed/gaps, and acceptance criteria.
 
