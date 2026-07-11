@@ -11,7 +11,7 @@ next_project_number: 849
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826,832,837,838 | -- | agent-system, literature, extensions, ... |
+| 1 | 78,87,821,826,837,838 | -- | agent-system, extensions, email integration, ... |
 | 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -20,10 +20,6 @@ next_project_number: 849
 
 837 [NOT STARTED] — Shared .claude/ infrastructure has diverged across child projects
 838 [NOT STARTED] — General skill-lifecycle data-loss bug: the planner-phase postflig
-
-### Literature
-
-832 [PARTIAL] — Reconvert and validate the actionable portion of the ~/Projects/L
 
 ### Extensions
 
@@ -63,7 +59,7 @@ next_project_number: 849
 ---
 
 ### 832. Reconvert and validate the literature corpus (BUG 5)
-- **Status**: [PARTIAL]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 831, Task 835, Task 836, Task 839

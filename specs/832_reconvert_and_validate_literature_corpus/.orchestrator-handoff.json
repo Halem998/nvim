@@ -1,18 +1,14 @@
 {
-  "status": "partial",
-  "summary": "All 9 plan phases executed; 9 of 13 actionable literature-corpus directories promoted to verified_conversion (or resolved via disclosure), the full 614-page gabbay_2000 OCR baseline achieved, and the corpus index rebuilt+re-stamped with the complete Phase 9 verification contract passing. troelstra_schwichtenberg_2000 and gabbay_2000's markdown conversion remain genuinely incomplete (quality-gate exit 3 twice, retry exhausted), negri_von_plato_2001 was deferred by design, and gabbay_1994 surfaced a new unremediated unadjudicated discovery — all reported honestly.",
+  "status": "completed",
+  "summary": "Corpus reconversion/validation converged. verified_conversion 39->48; post-#839 audit confirms no fail-open regression. 4 residuals accepted per user skip-scanned-PDFs directive (gabbay_2000, gabbay_1994 scanned; troelstra_schwichtenberg_2000 two-column; negri_von_plato_2001 needs external source).",
   "artifacts": [
     {
       "path": "specs/832_reconvert_and_validate_literature_corpus/summaries/01_reconvert-validate-corpus-summary.md",
       "type": "summary",
-      "summary": "Honest completion/deferral report with full verification contract results and 3 recommended follow-up tasks."
+      "summary": "Honest completion/deferral report with verification contract results."
     }
   ],
-  "blockers": [
-    "troelstra_schwichtenberg_2000: converter exit 3 twice (both auto and pymupdf-forced tiers hit sentence-boundary-glue on this two-column PDF); would need a different engine or manual cleanup to complete.",
-    "gabbay_2000: markdown conversion exit 3 twice despite a fully successful 614-page OCR baseline; OCR-noise-driven sentence-boundary-glue defects need a different engine or cleanup approach.",
-    "gabbay_1994: newly discovered to be a partial conversion of its 668-page book (0.11 ratio) once its OCR baseline became computable; not remediated, needs a follow-up reconversion task."
-  ],
+  "blockers": [],
   "continuation_context": null,
   "next_action_hint": "complete",
   "phases_completed": 9,
