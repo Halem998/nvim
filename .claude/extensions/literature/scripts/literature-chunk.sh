@@ -273,9 +273,9 @@ def subdivide_chunk(chunk_content, title, section_path, target_tokens, atom_cap)
         if total_tokens <= atom_cap:
             return [(chunk_content, True)]  # Return as single atomic chunk
         else:
-            # Warn and return as single chunk (do not split atomic blocks)
-            print(f"[chunk] WARNING: Atomic block exceeds {atom_cap} token cap ({total_tokens} tokens): {title[:50]}", file=sys.stderr)
-            return [(chunk_content, True)]
+            # Oversized atomic block: warn, then fall through to size-based
+            # subdivision below instead of returning unsplit.
+            print(f"[chunk] WARNING: Atomic block exceeds {atom_cap} token cap ({total_tokens} tokens) - subdividing anyway: {title[:50]}", file=sys.stderr)
 
     if total_tokens <= target_tokens:
         return [(chunk_content, False)]
