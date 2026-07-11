@@ -418,8 +418,8 @@ while IFS= read -r entry_path; do
     # The "possibly-comma-joined" heuristic is conservative: it flags an array element only
     # when it contains 2+ ", " occurrences, or exactly one ", " followed by a second
     # non-initial capitalized name-like token (2+ letters). This avoids false positives on
-    # legitimate single-author "Last, First" or "Last, First M." formatting (the pattern
-    # zotero-index-add.sh itself produces), while still catching packed multi-author strings
+    # legitimate single-author "Last, First" or "Last, First M." formatting (the pattern the
+    # former zotero index-add script itself produced), while still catching packed multi-author strings
     # like "Patrick Blackburn, Maarten de Rijke, Yde Venema" or two-author strings like
     # "Patrick Blackburn, Maarten de Rijke". Mirror this same heuristic in
     # .claude/scripts/literature-normalize-authors.sh so validate and normalize stay consistent.

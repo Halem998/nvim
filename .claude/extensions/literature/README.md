@@ -144,8 +144,6 @@ Scripts are in `.claude/extensions/literature/scripts/zotero-*.sh`.
 | `zotero-setup.sh` | Setup wizard: detect data dir, validate, configure | No — inactive, see below |
 | `zotero-chunk.sh` | Extract PDF text and chunk into sections | No — inactive, see below |
 | `zotero-attach-chunks.sh` | Upload chunks as Zotero child attachments | No — inactive, see below |
-| `zotero-index-add.sh` | Add item to per-repo `specs/literature-index.json` | No — inactive, see below |
-| `zotero-index-remove.sh` | Remove item from per-repo index | No — inactive, see below |
 | `cite-extract.sh` | Extract citation patterns from markdown artifacts | Yes |
 
 ### Deployment Status (task 844)
@@ -165,15 +163,19 @@ directory)**:
 
 | Artifact | Reason |
 |----------|--------|
-| `zotero-index-add.sh` | Superseded — dead code; add-to-index logic is reimplemented inline via `jq` in `skill-literature/SKILL.md`. Prune candidate for a future task; quarantined, not deleted. |
-| `zotero-index-remove.sh` | Superseded — same as above (inline `jq` remove logic in `skill-literature/SKILL.md`). Prune candidate for a future task; quarantined, not deleted. |
 | `zotero-read.sh` | Blocked on external `zot` CLI (`zotero-cli-cc`), which is not installed in this environment. No live caller. |
 | `zotero-write.sh` | Blocked on external `zot` CLI, not installed. No live caller. |
 | `zotero-setup.sh` | Blocked on external `zot` CLI, not installed. No live caller. |
 | `zotero-chunk.sh` | Superseded by the read-only briefing+tools design adopted in task 758; write-back-to-Zotero chunking is orthogonal to the current pipeline. No live caller. |
 | `zotero-attach-chunks.sh` | Superseded by the same task-758 read-only design. No live caller. |
 
-Seven zotero scripts above remain declared in `manifest.json` `provides.scripts` but are
+**Removed (task 847)**: the former zotero index-add and index-remove scripts — dead code;
+their add/remove-from-index logic is reimplemented inline via `jq` in
+`skill-literature/SKILL.md`. Both were quarantined via `git mv` (never hard-deleted) into
+`.claude/extensions/literature/scripts/deprecated/` and dropped from `manifest.json`
+`provides.scripts`; see `scripts/deprecated/README.md` for the quarantine note.
+
+Five zotero scripts above remain declared in `manifest.json` `provides.scripts` but are
 absent from `.claude/scripts/` — this is intentional. The task-841 drift guard
 (`check-extension-docs.sh` `check_deployed_script_drift()`) skips scripts whose deployed copy is
 absent (it only `FAIL`s on *content mismatch* when both source and deployed copies exist), so

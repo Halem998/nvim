@@ -1,0 +1,81 @@
+{
+  "phase": 3,
+  "phase_name": "Reconcile all doc surfaces (README + 3 widened-scope files)",
+  "started_at": "2026-07-11T01:12:00Z",
+  "last_updated": "2026-07-11T01:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "README.md Available Scripts table: remove/reword the two rows",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/literature/README.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "README.md Deployment Status Inactive table: reword rows to Removed",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/literature/README.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "README.md count sentence Seven -> Five",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/literature/README.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "EXTENSION.md lines 81-82 de-literalize",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/literature/EXTENSION.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "agents/literature-agent.md lines 172-173 de-literalize",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/literature/agents/literature-agent.md"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "skills/skill-literature/SKILL.md line 422 reword comment",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/literature/skills/skill-literature/SKILL.md"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Verify zotero-chunk.sh / zotero-attach-chunks.sh hint lines untouched",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.1",
+      "description": "README.md 'Available Scripts' table: remove or reword the two rows.",
+      "type": "altered",
+      "reason": "Plan gave a choice (remove or reword); rows were removed entirely since the scripts are no longer available/deployed at all (quarantined), so a row implying availability would be misleading.",
+      "annotation": "*(completed: removed both rows)*"
+    },
+    {
+      "task_id": "3.2",
+      "description": "README.md 'Deployment Status -> Inactive' table (~lines 168-169): change the two rows' Reason text only.",
+      "type": "altered",
+      "reason": "The plan's literal instruction (reword only the Reason column) would have left the Artifact column's literal `zotero-index-add.sh`/`zotero-index-remove.sh` `.sh` tokens in README.md, which still match check-extension-docs.sh Rule E's regex and would FAIL now that the scripts are no longer declared in any manifest.json provides.scripts. Removed the two table rows entirely and added a prose 'Removed (task 847)' note below the table (referencing scripts/deprecated/README.md) to preserve the documentation intent without leaving an undeclared .sh token.",
+      "annotation": "*(completed: removed the two literal-.sh table rows entirely and added a prose note)*"
+    }
+  ]
+}

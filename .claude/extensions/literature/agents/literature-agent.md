@@ -169,8 +169,6 @@ extension). Scripts available in `.claude/extensions/literature/scripts/`:
 | `zotero-setup.sh` | Setup wizard: detect data dir, validate, configure |
 | `zotero-chunk.sh` | Extract PDF text and chunk into sections |
 | `zotero-attach-chunks.sh` | Upload chunks as Zotero child attachments |
-| `zotero-index-add.sh` | Add item to per-repo `specs/literature-index.json` |
-| `zotero-index-remove.sh` | Remove item from per-repo index |
 
 ## Related Files
 

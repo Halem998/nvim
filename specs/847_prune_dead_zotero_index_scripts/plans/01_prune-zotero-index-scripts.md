@@ -128,26 +128,35 @@ Phases within the same wave can execute in parallel.
   returns null/false; `jq .` parses cleanly; the other five deferred zotero scripts remain in
   the array.
 
-### Phase 3: Reconcile all doc surfaces (README + 3 widened-scope files) [NOT STARTED]
+### Phase 3: Reconcile all doc surfaces (README + 3 widened-scope files) [COMPLETED]
 
 - **Goal:** Remove/reword every literal `zotero-index-add.sh` / `zotero-index-remove.sh` `.sh`
   mention so no undeclared token survives Rule E, and record the quarantine in the README's
   Deployment Status section.
 - **Tasks:**
-  - [ ] `README.md` "Available Scripts" table (~lines 147-148): remove or reword the two rows.
-  - [ ] `README.md` "Deployment Status → Inactive" table (~lines 168-169): change the two rows
+  - [x] `README.md` "Available Scripts" table (~lines 147-148): remove or reword the two rows.
+        *(completed: removed both rows)*
+  - [x] `README.md` "Deployment Status → Inactive" table (~lines 168-169): change the two rows
         from "Prune candidate for a future task; quarantined, not deleted." to
-        "Removed (quarantined in `scripts/deprecated/`, task #847)."
-  - [ ] `README.md` count sentence (~lines 176-181): change "Seven zotero scripts... remain
-        declared" to "Five zotero scripts...".
-  - [ ] `EXTENSION.md` lines 81-82: remove or de-literalize the two "Available Scripts" rows
+        "Removed (quarantined in `scripts/deprecated/`, task #847)." *(completed: removed the
+        two literal-`.sh` table rows entirely and added a "Removed (task 847)" prose note
+        below the table referencing `scripts/deprecated/README.md`, since keeping the literal
+        `zotero-index-add.sh`/`zotero-index-remove.sh` tokens anywhere in README.md — even in
+        the Reason column only — would still match Rule E's regex and FAIL now that the
+        scripts are no longer declared in any manifest.json)*
+  - [x] `README.md` count sentence (~lines 176-181): change "Seven zotero scripts... remain
+        declared" to "Five zotero scripts...". *(completed)*
+  - [x] `EXTENSION.md` lines 81-82: remove or de-literalize the two "Available Scripts" rows
         (drop the `.sh` suffix or remove the rows) so the tokens no longer match Rule E's regex.
-  - [ ] `agents/literature-agent.md` lines 172-173: same treatment as EXTENSION.md.
-  - [ ] `skills/skill-literature/SKILL.md` line 422: reword the comment to avoid the literal
+        *(completed: removed both rows)*
+  - [x] `agents/literature-agent.md` lines 172-173: same treatment as EXTENSION.md.
+        *(completed: removed both rows)*
+  - [x] `skills/skill-literature/SKILL.md` line 422: reword the comment to avoid the literal
         `zotero-index-add.sh` token (e.g., "the pattern the former zotero-index-add script
-        produced") while keeping the surrounding logic intact.
-  - [ ] Do NOT touch the `echo "Run: zotero-index-add.sh $KEY"` hint lines in `zotero-chunk.sh`
+        produced") while keeping the surrounding logic intact. *(completed)*
+  - [x] Do NOT touch the `echo "Run: zotero-index-add.sh $KEY"` hint lines in `zotero-chunk.sh`
         / `zotero-attach-chunks.sh` (out of scope; inside `.sh` files Rule E does not scan).
+        *(completed: verified untouched)*
 - **Timing:** ~20 min
 - **Depends on:** 1, 2
 - **Files to modify:**
