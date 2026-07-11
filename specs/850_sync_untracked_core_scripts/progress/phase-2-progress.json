@@ -1,0 +1,42 @@
+{
+  "phase": 2,
+  "phase_name": "Detect untracked new files and add completion-notice section",
+  "started_at": "2026-07-11T14:20:00Z",
+  "last_updated": "2026-07-11T14:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add detect_untracked file-local helper with empty-input short circuit and work-tree guard via rev-parse --is-inside-work-tree",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua"]
+    },
+    {
+      "id": 2,
+      "description": "Run single git status --porcelain --untracked-files=normal scoped to base_dir; parse ?? lines into untracked set with directory-prefix handling",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua"]
+    },
+    {
+      "id": 3,
+      "description": "Convert copied_paths to project-relative and intersect with untracked set; return sorted relative-path list",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua"]
+    },
+    {
+      "id": 4,
+      "description": "Call detect_untracked in execute_sync and append capped 'Newly deployed (untracked in git)' section to notification",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua"]
+    },
+    {
+      "id": 5,
+      "description": "Confirm existing total_synced > 0 gate is sufficient (no widening needed)",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

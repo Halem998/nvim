@@ -424,6 +424,78 @@ local function sync_files(files, preserve_perms, merge_only, protected_paths, ba
   return success_count, protected_count, copied
 end
 
+--- Detect which newly-copied files are untracked in the target repo's git index.
+--- Runs at most two git subprocesses total (not per file): a work-tree guard, then
+--- a single `git status --porcelain` scoped to base_dir. Advisory only -- never
+--- mutates the target repo's git state (no add/commit/stage). Returns an empty
+--- list immediately when copied_paths is empty, or silently when project_dir is
+--- not a git work tree (or git is unavailable).
+--- @param project_dir string Project directory path (git repo root, or non-git dir)
+--- @param base_dir string Base directory name relative to project_dir (e.g. ".claude")
+--- @param copied_paths table Array of absolute local_path strings for newly-copied files
+--- @return table untracked Array of project-relative paths that are untracked (sorted)
+local function detect_untracked(project_dir, base_dir, copied_paths)
+  if not copied_paths or #copied_paths == 0 then
+    return {}
+  end
+
+  -- Guard: skip silently if project_dir is not inside a git work tree (or git is absent)
+  vim.fn.system(
+    string.format("git -C %s rev-parse --is-inside-work-tree", vim.fn.shellescape(project_dir))
+  )
+  if vim.v.shell_error ~= 0 then
+    return {}
+  end
+
+  -- Single git query scoped to base_dir; porcelain untracked entries start with "?? "
+  local porcelain = vim.fn.system(
+    string.format(
+      "git -C %s status --porcelain --untracked-files=normal -- %s",
+      vim.fn.shellescape(project_dir),
+      vim.fn.shellescape(base_dir)
+    )
+  )
+  if vim.v.shell_error ~= 0 then
+    return {}
+  end
+
+  local untracked_set = {}
+  for line in porcelain:gmatch("[^\n]+") do
+    local rel = line:match("^%?%? (.+)$")
+    if rel then
+      untracked_set[rel] = true
+      -- git reports an untracked directory as a single "dir/" entry rather than
+      -- listing each file inside it; track the directory prefix separately so
+      -- copied files nested under it can still be matched below.
+      local dir_prefix = rel:match("^(.+)/$")
+      if dir_prefix then
+        untracked_set[dir_prefix] = "dir"
+      end
+    end
+  end
+
+  local result = {}
+  for _, local_path in ipairs(copied_paths) do
+    local rel_path = local_path
+    if rel_path:sub(1, #project_dir + 1) == project_dir .. "/" then
+      rel_path = rel_path:sub(#project_dir + 2)
+    end
+    if untracked_set[rel_path] then
+      table.insert(result, rel_path)
+    else
+      for prefix, kind in pairs(untracked_set) do
+        if kind == "dir" and rel_path:sub(1, #prefix + 1) == prefix .. "/" then
+          table.insert(result, rel_path)
+          break
+        end
+      end
+    end
+  end
+
+  table.sort(result)
+  return result
+end
+
 --- Perform sync with the chosen strategy
 --- @param project_dir string Project directory path
 --- @param all_artifacts table Map of artifact type -> array of files
@@ -506,6 +578,27 @@ local function execute_sync(project_dir, all_artifacts, merge_only, base_dir, pr
     local _, doc_subdir = count_by_depth(all_artifacts.docs or {})
     local _, skill_subdir = count_by_depth(all_artifacts.skills or {})
 
+    -- Detect newly-deployed core files that are untracked in the target repo's
+    -- git index and surface them as an advisory follow-up. Advisory only: no
+    -- git add/commit is performed here or anywhere in this module.
+    local untracked = detect_untracked(project_dir, base_dir, newly_copied)
+    local untracked_msg = ""
+    if #untracked > 0 then
+      local lines = { "\nNewly deployed (untracked in git) - review and commit:" }
+      local shown = 0
+      for _, rel_path in ipairs(untracked) do
+        if shown >= 5 then
+          break
+        end
+        table.insert(lines, "  " .. rel_path)
+        shown = shown + 1
+      end
+      if #untracked > 5 then
+        table.insert(lines, string.format("  ... and %d more", #untracked - 5))
+      end
+      untracked_msg = table.concat(lines, "\n")
+    end
+
     helpers.notify(
       string.format(
         "Synced %d artifacts%s:\n" ..
@@ -513,14 +606,14 @@ local function execute_sync(project_dir, all_artifacts, merge_only, base_dir, pr
         "  Lib: %d (%d nested) | Docs: %d (%d nested)\n" ..
         "  Scripts: %d | Tests: %d | Skills: %d (%d nested)\n" ..
         "  Agents: %d | Rules: %d | Context: %d\n" ..
-        "  Systemd: %d | Settings: %d | Root Files: %d%s",
+        "  Systemd: %d | Settings: %d | Root Files: %d%s%s",
         total_synced, strategy_msg,
         counts.commands, counts.hooks, counts.templates,
         counts.lib, lib_subdir, counts.docs, doc_subdir,
         counts.scripts, counts.tests, counts.skills, skill_subdir,
         counts.agents, counts.rules, counts.context,
         counts.systemd, counts.settings, counts.root_files,
-        protect_msg
+        protect_msg, untracked_msg
       ),
       "INFO"
     )

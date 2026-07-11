@@ -109,31 +109,31 @@ Phases within the same wave can execute in parallel. This plan is a linear chain
 
 ---
 
-### Phase 2: Detect untracked new files and add completion-notice section [NOT STARTED]
+### Phase 2: Detect untracked new files and add completion-notice section [COMPLETED]
 
 **Goal**: After all writes, run one git query against the target repo, intersect its untracked entries with
 `newly_copied`, and append an advisory section to the completion notification. Guard non-git targets.
 
 **Tasks**:
-- [ ] Add a file-local helper `local function detect_untracked(project_dir, base_dir, copied_paths)` that:
+- [x] Add a file-local helper `local function detect_untracked(project_dir, base_dir, copied_paths)` that:
       returns `{}` immediately when `copied_paths` is empty; runs
       `git -C <project_dir> rev-parse --is-inside-work-tree` via `vim.fn.system` with `vim.fn.shellescape`
-      (mirror sync.lua:128) and returns `{}` if `vim.v.shell_error ~= 0` (non-git or git absent).
-- [ ] In the helper, run a single `git -C <project_dir> status --porcelain --untracked-files=normal -- <base_dir>`;
+      (mirror sync.lua:128) and returns `{}` if `vim.v.shell_error ~= 0` (non-git or git absent). *(completed)*
+- [x] In the helper, run a single `git -C <project_dir> status --porcelain --untracked-files=normal -- <base_dir>`;
       parse lines beginning with `?? ` into a set of project-relative untracked paths (strip the `?? ` prefix;
-      handle a possible trailing slash for directory entries by prefix-matching).
-- [ ] Convert each `copied_paths` absolute `local_path` to project-relative (strip `project_dir .. "/"`,
+      handle a possible trailing slash for directory entries by prefix-matching). *(completed)*
+- [x] Convert each `copied_paths` absolute `local_path` to project-relative (strip `project_dir .. "/"`,
       reuse the audit precedent at sync.lua:1146-1148) and keep those present in the untracked set. Return the
-      resulting relative-path list (sorted for stable output).
-- [ ] In `execute_sync`, after `total_synced` is computed and before/within the existing notify block
+      resulting relative-path list (sorted for stable output). *(completed)*
+- [x] In `execute_sync`, after `total_synced` is computed and before/within the existing notify block
       (sync.lua:480-497), call `detect_untracked(project_dir, base_dir, newly_copied)`. If the result is
       non-empty, append a section to the notification string:
       `"Newly deployed (untracked in git) - review and commit:"` followed by up to 5 indented relative paths
       and a `"  ... and N more"` line when the list exceeds 5 (reuse the content-audit capping pattern at
-      sync.lua:1138-1155).
-- [ ] Ensure the section is appended even when the base notify currently only fires under
+      sync.lua:1138-1155). *(completed)*
+- [x] Ensure the section is appended even when the base notify currently only fires under
       `total_synced > 0 or total_protected > 0` - a new untracked file always implies `total_synced > 0`, so
-      the existing gate is sufficient; do not widen it.
+      the existing gate is sufficient; do not widen it. *(completed: verified gate unchanged)*
 
 **Timing**: 1.0 hours
 
