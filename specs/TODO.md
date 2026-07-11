@@ -34,7 +34,7 @@ next_project_number: 850
 
 ### Email Integration
 
-78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
+78 [RESEARCHED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
 
@@ -209,11 +209,13 @@ DEPENDENCIES: 831 (COMPLETE — fixed converter), 835 (COMPLETE — provenance/f
 
 ### 78. Fix Himalaya SMTP authentication failure when sending emails
 - **Effort**: 1-2 hours
-- **Status**: [PLANNED]
+- **Status**: [RESEARCHED]
 - **Task Type**: neovim
 - **Topic**: Email Integration
 - **Dependencies**: None
-- **Research**: [078_fix_himalaya_smtp_authentication_failure/reports/research-001.md]
+- **Research**:
+  - [078_fix_himalaya_smtp_authentication_failure/reports/research-001.md]
+  - [078_fix_himalaya_smtp_authentication_failure/reports/02_himalaya-smtp-auth-recheck.md]
 - **Plan**: [078_fix_himalaya_smtp_authentication_failure/plans/implementation-001.md]
 
 **Description**: Fix Gmail SMTP authentication failure when sending emails via Himalaya (<leader>me). Error: Authentication failed: Code: 535, Enhanced code: 5.7.8, Message: Username and Password not accepted. The error occurs with TLS connection attempts and persists through multiple retry attempts. Identify and fix the root cause of the SMTP credential configuration.
