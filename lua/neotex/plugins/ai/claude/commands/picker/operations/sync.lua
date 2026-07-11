@@ -336,9 +336,11 @@ end
 --- @param global_dir string|nil Global source directory for extension stripping
 --- @return number success_count Number of successfully synced files
 --- @return number protected_count Number of files skipped due to protection
+--- @return table copied Array of local_path strings for newly-created ("copy" action) files
 local function sync_files(files, preserve_perms, merge_only, protected_paths, base_path, global_dir)
   local success_count = 0
   local protected_count = 0
+  local copied = {}
   merge_only = merge_only or false
   protected_paths = protected_paths or {}
 
@@ -410,13 +412,16 @@ local function sync_files(files, preserve_perms, merge_only, protected_paths, ba
           helpers.copy_file_permissions(file.global_path, file.local_path)
         end
         success_count = success_count + 1
+        if file.action == "copy" then
+          table.insert(copied, file.local_path)
+        end
       end
     end
 
     ::continue::
   end
 
-  return success_count, protected_count
+  return success_count, protected_count, copied
 end
 
 --- Perform sync with the chosen strategy
@@ -440,23 +445,47 @@ local function execute_sync(project_dir, all_artifacts, merge_only, base_dir, pr
     return sync_files(files, preserve_perms, merge_only, protected_paths, base_path, global_dir)
   end
 
+  -- Accumulator for newly-created ("copy" action) file paths across all artifact
+  -- types, used downstream to detect which of them are untracked in git.
+  local newly_copied = {}
+  local function collect(list)
+    for _, p in ipairs(list) do
+      table.insert(newly_copied, p)
+    end
+  end
+
   -- Sync all artifact types
   local counts = {}
   local protect_counts = {}
-  counts.commands, protect_counts.commands = sync_with_protect(all_artifacts.commands or {}, false)
-  counts.hooks, protect_counts.hooks = sync_with_protect(all_artifacts.hooks or {}, true)
-  counts.templates, protect_counts.templates = sync_with_protect(all_artifacts.templates or {}, false)
-  counts.lib, protect_counts.lib = sync_with_protect(all_artifacts.lib or {}, true)
-  counts.docs, protect_counts.docs = sync_with_protect(all_artifacts.docs or {}, false)
-  counts.scripts, protect_counts.scripts = sync_with_protect(all_artifacts.scripts or {}, true)
-  counts.tests, protect_counts.tests = sync_with_protect(all_artifacts.tests or {}, true)
-  counts.skills, protect_counts.skills = sync_with_protect(all_artifacts.skills or {}, true)
-  counts.agents, protect_counts.agents = sync_with_protect(all_artifacts.agents or {}, false)
-  counts.rules, protect_counts.rules = sync_with_protect(all_artifacts.rules or {}, false)
-  counts.context, protect_counts.context = sync_with_protect(all_artifacts.context or {}, false)
-  counts.systemd, protect_counts.systemd = sync_with_protect(all_artifacts.systemd or {}, false)
-  counts.settings, protect_counts.settings = sync_with_protect(all_artifacts.settings or {}, false)
-  counts.root_files, protect_counts.root_files = sync_with_protect(all_artifacts.root_files or {}, false)
+  local copied
+  counts.commands, protect_counts.commands, copied = sync_with_protect(all_artifacts.commands or {}, false)
+  collect(copied)
+  counts.hooks, protect_counts.hooks, copied = sync_with_protect(all_artifacts.hooks or {}, true)
+  collect(copied)
+  counts.templates, protect_counts.templates, copied = sync_with_protect(all_artifacts.templates or {}, false)
+  collect(copied)
+  counts.lib, protect_counts.lib, copied = sync_with_protect(all_artifacts.lib or {}, true)
+  collect(copied)
+  counts.docs, protect_counts.docs, copied = sync_with_protect(all_artifacts.docs or {}, false)
+  collect(copied)
+  counts.scripts, protect_counts.scripts, copied = sync_with_protect(all_artifacts.scripts or {}, true)
+  collect(copied)
+  counts.tests, protect_counts.tests, copied = sync_with_protect(all_artifacts.tests or {}, true)
+  collect(copied)
+  counts.skills, protect_counts.skills, copied = sync_with_protect(all_artifacts.skills or {}, true)
+  collect(copied)
+  counts.agents, protect_counts.agents, copied = sync_with_protect(all_artifacts.agents or {}, false)
+  collect(copied)
+  counts.rules, protect_counts.rules, copied = sync_with_protect(all_artifacts.rules or {}, false)
+  collect(copied)
+  counts.context, protect_counts.context, copied = sync_with_protect(all_artifacts.context or {}, false)
+  collect(copied)
+  counts.systemd, protect_counts.systemd, copied = sync_with_protect(all_artifacts.systemd or {}, false)
+  collect(copied)
+  counts.settings, protect_counts.settings, copied = sync_with_protect(all_artifacts.settings or {}, false)
+  collect(copied)
+  counts.root_files, protect_counts.root_files, copied = sync_with_protect(all_artifacts.root_files or {}, false)
+  collect(copied)
 
   local total_synced = 0
   local total_protected = 0
