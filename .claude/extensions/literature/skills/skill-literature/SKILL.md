@@ -1855,9 +1855,22 @@ function rebuild_job2_schema_conformance() {
 Reports, per `sources/<dir>/` directory (plus every legacy top-level `chunks_dir`-schema
 entry), whether the corpus's FTS5 search index (`chunks_data`) has any coverage at all. Queries
 `chunks_data` exclusively — **never** `document_metadata`, which is currently empty (0 rows) in
-this corpus and is not relied upon here. This job only *detects and reports* the gap; the root
-cause (`/literature --convert` never invokes the chunker/indexer — only `--ingest` does
-convert+chunk+index) is a separate, out-of-scope pipeline defect.
+this corpus and is not relied upon here (orphaned table, explicit non-goal — see task #842).
+
+**Expected-empty vs unexpected-empty (task #842)**: as of task #842, `/literature --convert`
+chunks and indexes every `.md` it writes (Convert Step 3h/Step 4), so a `sources/<dir>/` with a
+valid `.md` and zero `chunks_data` rows is no longer explained by the old "`--convert` never
+chunks" root cause — it now signals either a **regression** in the Step 3h/Step 4 wiring or a
+**new, un-wired path** that writes `.md` files without going through `handle_convert()` or
+`handle_ingest()`. Job 4 therefore cross-checks each `missing_dirs` entry against the filesystem
+and buckets it as:
+- **UNEXPECTED** — a valid `.md` exists (`find "$dirpath" -maxdepth 1 -name '*.md' -not -name
+  'chunk_*.md'`, excluding `.md.bak-*` / `.md.rejected` by construction) but `chunks_data` has
+  zero rows for it. A non-empty UNEXPECTED bucket is a regression signal worth investigating.
+- **expected-empty (quarantined)** — no valid `.md` exists (only a `.pdf`/`.djvu` awaiting
+  conversion, or only quarantine artifacts like `.md.bak-*` / `.md.rejected`, e.g.
+  `gabbay_2000`, `negri_von_plato_2001`, `troelstra_schwichtenberg_2000`). This is the expected,
+  correctly-excluded state — not a failure.
 
 **Directory→doc_id resolution note**: unlike `literature-fidelity-audit.sh`'s "Target entry
 resolution" (which stamps `provenance_fidelity` onto individual `index.json` chapter/section
@@ -1897,14 +1910,28 @@ function rebuild_job4_coverage_audit() {
         covered_dirs=$((covered_dirs + 1))
       fi
       # Defensive hazard-(b) check: quarantine artifacts must never be chunked. The chunker's
-      # callers (literature-ingest.sh) glob strictly on `*.md`, which by construction excludes
-      # `*.md.bak-<UTC>` and `*.md.rejected` (neither filename ends in exactly ".md"). Verify
-      # this holds against the real chunks.json manifest rather than assuming it forever.
+      # callers (literature-ingest.sh, handle_convert() as of #842) glob strictly on `*.md`,
+      # which by construction excludes `*.md.bak-<UTC>` and `*.md.rejected` (neither filename
+      # ends in exactly ".md"). Verify this holds against the real chunks.json manifest rather
+      # than assuming it forever.
       if [ -f "$dirpath/chunks.json" ] && grep -qE '\.md\.(bak-|rejected)' "$dirpath/chunks.json" 2>/dev/null; then
         quarantine_hits+=("$dir")
       fi
     done < <(find "$lit_dir/sources" -mindepth 1 -maxdepth 1 -type d)
   fi
+
+  # Classify each missing_dirs entry: UNEXPECTED (has a valid .md, wiring regressed) vs
+  # expected-empty (quarantined: no valid .md, only source PDF/DJVU and/or .md.bak-*/.md.rejected).
+  unexpected_dirs=()
+  expected_empty_dirs=()
+  for d in "${missing_dirs[@]}"; do
+    valid_md=$(find "$lit_dir/sources/$d" -maxdepth 1 -name '*.md' -not -name 'chunk_*.md' 2>/dev/null | grep -vE '\.md\.(bak-|rejected)$')
+    if [ -n "$valid_md" ]; then
+      unexpected_dirs+=("$d")
+    else
+      expected_empty_dirs+=("$d")
+    fi
+  done
 
   # Legacy top-level chunks_dir-schema entries (no `path` field; live outside sources/).
   legacy_missing=()
@@ -1920,10 +1947,20 @@ function rebuild_job4_coverage_audit() {
   done < <(jq -r '.entries[] | select(has("chunks_dir")) | .doc_id' "$global_index" 2>/dev/null)
 
   echo "sources/<dir>/ directories audited: covered=$covered_dirs missing=${#missing_dirs[@]}"
-  if [ "${#missing_dirs[@]}" -gt 0 ]; then
+  echo "  of which UNEXPECTED (valid .md, zero chunks_data — possible regression)=${#unexpected_dirs[@]}"
+  echo "  of which expected-empty (quarantined, no valid .md)=${#expected_empty_dirs[@]}"
+  if [ "${#unexpected_dirs[@]}" -gt 0 ]; then
     echo ""
-    echo "Missing FTS5 coverage (chunks_data has zero rows for this directory's doc_id):"
-    for d in "${missing_dirs[@]}"; do
+    echo "UNEXPECTED — valid .md exists but chunks_data has zero rows (investigate: wiring"
+    echo "regression in handle_convert()/handle_ingest(), or a new un-wired write path):"
+    for d in "${unexpected_dirs[@]}"; do
+      echo "  - $d"
+    done
+  fi
+  if [ "${#expected_empty_dirs[@]}" -gt 0 ]; then
+    echo ""
+    echo "Expected-empty (quarantined — no valid .md; correctly excluded, not a failure):"
+    for d in "${expected_empty_dirs[@]}"; do
       echo "  - $d"
     done
   fi
@@ -1943,8 +1980,10 @@ function rebuild_job4_coverage_audit() {
     echo "No quarantine artifacts (.md.bak-*/.md.rejected) found chunked (glob-strictness assumption holds)."
   fi
   echo ""
-  echo "Root cause (out of scope for this job to fix): /literature --convert never invokes the"
-  echo "chunker/indexer — only --ingest does convert+chunk+index."
+  echo "As of task #842, /literature --convert chunks and indexes every .md it writes (Convert"
+  echo "Step 3h/Step 4), so this job's UNEXPECTED bucket is the regression signal to watch —"
+  echo "not a known root cause anymore. document_metadata remains an orphaned, always-empty"
+  echo "table (explicit non-goal; not queried here)."
   echo ""
 }
 ```

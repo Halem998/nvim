@@ -244,7 +244,7 @@ single `doc_id=baier_katoen_2008`, with no section clobbering another.
 
 ---
 
-### Phase 4: Extend Job 4 to distinguish expected vs unexpected empty [NOT STARTED]
+### Phase 4: Extend Job 4 to distinguish expected vs unexpected empty [COMPLETED]
 
 **Goal**: Job 4 self-diagnoses future regressions: a `missing_dirs` entry that has a valid `.md`
 but zero `chunks_data` rows is flagged as **unexpected** (wiring regressed / new convert path),
@@ -252,18 +252,27 @@ while a dir with no valid `.md` (e.g. `gabbay_2000`, `negri_von_plato_2001`) is 
 **expected-empty (quarantined)**.
 
 **Tasks**:
-- [ ] In `rebuild_job4_coverage_audit()` (SKILL.md ~lines 1826-1904), for each `missing_dirs`
+- [x] In `rebuild_job4_coverage_audit()`, for each `missing_dirs`
       entry cross-check `find "$dirpath" -maxdepth 1 -name '*.md' -not -name 'chunk_*.md'`
       (excluding `.md.bak-*` / `.md.rejected`): if a valid `.md` exists → classify **UNEXPECTED**;
-      else → **expected-empty (quarantined)**.
-- [ ] Emit the two buckets separately in the report output so a non-empty UNEXPECTED bucket is an
-      obvious regression signal.
-- [ ] Update the now-stale root-cause footer (SKILL.md lines ~1901-1902) which currently states
+      else → **expected-empty (quarantined)**. *(completed)*
+- [x] Emit the two buckets separately in the report output so a non-empty UNEXPECTED bucket is an
+      obvious regression signal. *(completed)*
+- [x] Update the now-stale root-cause footer which currently states
       `/literature --convert never invokes the chunker/indexer`: reword to note that `--convert`
       now chunks+indexes (as of task #842) and that a non-empty UNEXPECTED bucket indicates a
       regression or a new un-wired convert path. Keep the `document_metadata` non-goal note.
-- [ ] Keep Job 4 read-only and idempotent (no writes; Job 3 remains the only writer).
-- [ ] Sync the deployed copy (`cp` + assert `diff -q` empty), as in Phase 1.
+      *(completed)*
+- [x] Keep Job 4 read-only and idempotent (no writes; Job 3 remains the only writer). *(completed:
+      verified — only reads via sqlite3 SELECT/find/grep)*
+- [x] Sync the deployed copy (`cp` + assert `diff -q` empty), as in Phase 1. *(completed: hardlinked
+      path, diff -q confirmed empty)*
+
+**Live verification**: ran the extracted function against the live corpus after Phases 1-3 —
+`covered=94 missing=3, UNEXPECTED=0, expected-empty=3` (`gabbay_2000`, `negri_von_plato_2001`,
+`troelstra_schwichtenberg_2000`). This confirms the actual final excluded-dir count is **3, not
+the 2 assumed by the original task description/plan** — see Phase 2's deviation entry for
+`troelstra_schwichtenberg_2000`.
 
 **Timing**: 0.75 hour
 

@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Extend Job 4 to distinguish expected vs unexpected empty",
+  "started_at": "2026-07-11T00:33:00Z",
+  "last_updated": "2026-07-11T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Cross-check each missing_dirs entry for a valid .md, classify UNEXPECTED vs expected-empty", "status": "done",
+     "files_touched": [".claude/extensions/literature/skills/skill-literature/SKILL.md"]},
+    {"id": 2, "description": "Emit the two buckets separately in report output", "status": "done",
+     "files_touched": [".claude/extensions/literature/skills/skill-literature/SKILL.md"]},
+    {"id": 3, "description": "Reword stale root-cause footer to reflect #842 fix; keep document_metadata non-goal note", "status": "done",
+     "files_touched": [".claude/extensions/literature/skills/skill-literature/SKILL.md"]},
+    {"id": 4, "description": "Keep Job 4 read-only/idempotent (no writes)", "status": "done", "files_touched": [],
+     "note": "Verified: function only reads (sqlite3 SELECT, find, grep -q), never writes to any file or DB."},
+    {"id": 5, "description": "Sync deployed copy (cp + diff -q)", "status": "done", "files_touched": [".claude/skills/skill-literature/SKILL.md"],
+     "note": "Hardlinked path, diff -q confirmed empty automatically."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "syntax_check": "bash -n on extracted function body: OK",
+    "live_execution": "Ran rebuild_job4_coverage_audit() against the live ~/Projects/Literature corpus after Phases 1-3: covered=94 missing=3, UNEXPECTED=0, expected-empty=3 (gabbay_2000, negri_von_plato_2001, troelstra_schwichtenberg_2000). Confirms the honest final count is 3 excluded dirs, not the 2 originally assumed by the plan/task description -- troelstra_schwichtenberg_2000 was discovered during Phase 2 to have no valid .md (only a quarantined .md.rejected)."
+  }
+}
