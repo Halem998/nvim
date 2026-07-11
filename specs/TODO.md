@@ -4,7 +4,7 @@ next_project_number: 849
 
 # TODO
 
-Warning: 3 task(s) have no topic and will render under Uncategorized: 846, 847, 848 (non-fatal)
+Warning: 1 task(s) have no topic and will render under Uncategorized: 848 (non-fatal)
 ## Task Order
 
 *Updated 2026-07-11. Generated from state.json dependency graph.*
@@ -12,7 +12,7 @@ Warning: 3 task(s) have no topic and will render under Uncategorized: 846, 847, 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826,832,837,838,846,847,848 | -- | agent-system, literature, extensions, ... |
+| 1 | 78,87,821,826,832,837,838,848 | -- | agent-system, literature, extensions, ... |
 | 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -43,8 +43,6 @@ Warning: 3 task(s) have no topic and will render under Uncategorized: 846, 847, 
 
 ### Uncategorized
 
-846 [PLANNED] — Add the missing `literature` entry to `.claude/extensions.json` s
-847 [PLANNED] — Prune the two confirmed dead-code zotero scripts flagged (defer-a
 848 [PLANNED] — Investigate and fix (or formally document as acceptable) the `bai
 
 ## Tasks
@@ -72,7 +70,7 @@ VERIFICATION: `baier_katoen_2008` section07 chunk count is comparable to sibling
 ---
 
 ### 847. Prune dead zotero index scripts
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [847_prune_dead_zotero_index_scripts/reports/01_prune-zotero-index-scripts.md]
@@ -91,7 +89,7 @@ VERIFICATION: no live reference to the two scripts remains; manifest and README 
 ---
 
 ### 846. Add literature entry to extensions json
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [846_add_literature_entry_to_extensions_json/reports/01_literature-extensions-entry.md]

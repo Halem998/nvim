@@ -997,7 +997,7 @@
     {
       "project_number": 846,
       "project_name": "add_literature_entry_to_extensions_json",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "description": "Add the missing `literature` entry to `.claude/extensions.json` so the literature extension is properly tracked/installed like `core`, `nix`, `nvim`, and `memory`. Surfaced by task #844, which DELIBERATELY did NOT fabricate the entry because `.claude/extensions.json` is loader-owned and getting its schema wrong could break extension loading -- so it documented the gap instead. This task does it correctly.\n\nRE-VERIFY / RESEARCH FIRST (do not guess the schema):\n1. Read `.claude/extensions.json` and study the EXACT shape of the existing entries (core/nix/nvim/memory) -- field names, version, enabled flags, script/hook lists, whatever they carry.\n2. Read the extension loader (`lua/neotex/plugins/ai/shared/extensions/loader.lua` and its `init.lua`) to understand how entries in `extensions.json` are consumed -- what fields it reads, whether a missing entry means 'not loaded' or is merely cosmetic tracking, and what a malformed entry would do.\n3. Determine whether the literature extension is currently being loaded DESPITE having no entry (its scripts are clearly deployed and working), which tells you whether this entry is load-bearing or bookkeeping.\n\nREQUIRED WORK: add a correctly-formed `literature` entry matching the established schema and the loader's expectations. Do not change loader behavior; do not enable/disable other extensions.\n\nCONSTRAINTS: `.claude/extensions.json` is loader-owned -- match existing entries exactly; a malformed entry is worse than a missing one. Do not regress `check-extension-docs.sh` (currently exit 0). If adding the entry changes what gets loaded/synced, verify no literature script gets clobbered (task #841 drift guard must still pass).\n\nVERIFICATION: `.claude/extensions.json` parses; the literature entry matches sibling entries' schema; the loader accepts it (dry-run/load without error); `check-extension-docs.sh` still exits 0; no unexpected re-sync/clobber of deployed literature scripts.",
       "dependencies": [],
@@ -1005,7 +1005,7 @@
         ".claude/extensions.json",
         "lua/neotex/plugins/ai/shared/extensions/loader.lua"
       ],
-      "last_updated": "2026-07-11T01:05:49Z",
+      "last_updated": "2026-07-11T01:12:55Z",
       "session_id": "sess_1783731064_fd2024_846",
       "artifacts": [
         {
@@ -1018,12 +1018,13 @@
           "type": "plan",
           "summary": "2-phase plan to add the literature entry to .claude/extensions.json"
         }
-      ]
+      ],
+      "completion_summary": "Added the missing literature entry to .claude/extensions.json matching the sibling 8-field schema (status=active, version=2.0.0, correct source_dir), with empty ownership arrays to avoid fabricating file ownership the real loader never deployed."
     },
     {
       "project_number": 847,
       "project_name": "prune_dead_zotero_index_scripts",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "description": "Prune the two confirmed dead-code zotero scripts flagged (defer-and-document, not pruned) by task #844: `.claude/extensions/literature/scripts/zotero-index-add.sh` and `.claude/extensions/literature/scripts/zotero-index-remove.sh`. Task #844's research confirmed `skill-literature/SKILL.md` reimplements the same index add/remove logic inline via `jq`, so these two scripts have no live callers and are pure dead code. #844 intentionally left them in place (defer-and-document) rather than pruning inline; this task removes them cleanly.\n\nRE-VERIFY FIRST: grep the deployed `.claude/` (skills, commands, agents, other scripts) and the extension source for any reference to `zotero-index-add` / `zotero-index-remove` to CONFIRM zero live callers before removing. If any live reference is found, STOP and report -- do not remove.\n\nREQUIRED WORK: apply the QUARANTINE-NEVER-DELETE posture -- move the two scripts to a quarantine location (e.g. rename with a `.removed-<UTC>` suffix or move to a deprecated/ dir per repo convention) rather than hard-deleting. Remove them from the literature `manifest.json` `provides.scripts` if listed. Update the 'Deployment Status' / inactive-artifacts note in `.claude/extensions/literature/README.md` that #844 added, moving these two from 'deferred' to 'removed'. Leave the other deferred zotero scripts (`zotero-read/write/setup/chunk/attach-chunks.sh`) untouched -- they depend on the external `zot` CLI and are a separate decision.\n\nCONSTRAINTS: SOURCE OF TRUTH is `.claude/extensions/literature/`. Quarantine-never-delete. Do not regress `check-extension-docs.sh` (exit 0) -- removing a script AND its manifest entry together keeps the drift guard happy; removing only one side would trip it. Do not touch the deployed `.claude/scripts/` copies unless the scripts were also deployed (research says they were extension-source-only -- confirm).\n\nVERIFICATION: no live reference to the two scripts remains; manifest and README updated consistently; `check-extension-docs.sh` still exits 0 with literature PASS; the quarantined files still exist (not hard-deleted).",
       "dependencies": [],
@@ -1033,7 +1034,7 @@
         ".claude/extensions/literature/manifest.json",
         ".claude/extensions/literature/README.md"
       ],
-      "last_updated": "2026-07-11T01:05:50Z",
+      "last_updated": "2026-07-11T01:13:25Z",
       "session_id": "sess_1783731064_fd2024_847",
       "artifacts": [
         {
