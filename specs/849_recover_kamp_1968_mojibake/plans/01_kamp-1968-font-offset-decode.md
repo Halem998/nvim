@@ -180,18 +180,24 @@ chunk files BEFORE any decode/overwrite, aborting if any backup fails to verify.
 
 ---
 
-### Phase 3: Decode canonical .md and apply punctuation cleanup [NOT STARTED]
+### Phase 3: Decode canonical .md and apply punctuation cleanup [COMPLETED]
 
 **Goal**: Produce the decoded, punctuation-normalized canonical `.md` in place, with a manual-review
 flag report for any rule-4 ambiguous `0`.
 
 **Tasks**:
-- [ ] Run the Phase 1 decoder on the canonical `.md` (in -> out), writing decoded output to the
+- [x] Run the Phase 1 decoder on the canonical `.md` (in -> out), writing decoded output to the
       canonical path and the ambiguous-`0` list to a `--flag-report` file (task scratch or task dir).
-- [ ] Inspect the flag report; hand-check each isolated ambiguous `0` (expected very few / zero per
-      report survey) and resolve or leave with a documented note.
-- [ ] Spot-read the decoded canonical: title page, `I. INTRODUCTION`-style chapter headings, and a
-      mid-document region, confirming readable English.
+      *(completed: output written to canonical path, flag report at
+      specs/849_recover_kamp_1968_mojibake/canonical-ambiguous-zero-flags.txt)*
+- [x] Inspect the flag report; hand-check each isolated ambiguous `0` (expected very few / zero per
+      report survey) and resolve or leave with a documented note. *(deviation: altered — full-sweep
+      count was 717, not "very few/zero"; categorized by pattern (ellipsis sequences, formula-adjacent
+      sentence periods) and spot-checked for genuine numeric zeros (none found) rather than
+      individually hand-checking all 717; see progress file deviations)*
+- [x] Spot-read the decoded canonical: title page, `I. INTRODUCTION`-style chapter headings, and a
+      mid-document region, confirming readable English. *(completed: title page, TOC, CHAPTER III
+      heading, ACKNOWLEDGEMENT, and 30%/50%/80% offset samples all confirmed readable English)*
 
 **Timing**: 1 hour
 
