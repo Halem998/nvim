@@ -195,27 +195,38 @@ invocation, so converted documents are immediately searchable.
 
 ---
 
-### Phase 3: Backfill baier_katoen_2008 (12-file book) [NOT STARTED]
+### Phase 3: Backfill baier_katoen_2008 (12-file book) [COMPLETED]
 
 **Goal**: All 12 section `.md` files of `baier_katoen_2008` are represented in `chunks_data` under a
 single `doc_id=baier_katoen_2008`, with no section clobbering another.
 
 **Tasks**:
-- [ ] Enumerate the 12 section files:
+- [x] Enumerate the 12 section files:
       `find "$LITERATURE_DIR/sources/baier_katoen_2008" -maxdepth 1 -name '*.md' -not -name 'chunk_*.md'`
-      (expect 12; confirm none is a quarantine artifact).
-- [ ] For each section file, chunk into a **distinct subdirectory** to avoid `chunks.json` /
+      (expect 12; confirm none is a quarantine artifact). *(completed: confirmed exactly 12, no
+      quarantine artifacts)*
+- [x] For each section file, chunk into a **distinct subdirectory** to avoid `chunks.json` /
       `chunk_*.md` clobbering, e.g.
       `literature-chunk.sh "<sectionNN.md>" "$LITERATURE_DIR/sources/baier_katoen_2008/.chunks/sectionNN" --doc-id "baier_katoen_2008"`.
       Pass the shared `--doc-id baier_katoen_2008` on every call so all sections' chunks carry the
-      same in-manifest `doc_id`.
-- [ ] Run one `literature-build-index.sh --global` rebuild; it recursively discovers all 12
+      same in-manifest `doc_id`. *(completed: 12 manifests written, chunk counts
+      128,111,106,99,110,101,1,112,107,111,113,79 — deviation: section07 produced only 1 chunk,
+      see below)*
+- [x] Run one `literature-build-index.sh --global` rebuild; it recursively discovers all 12
       per-section `chunks.json` and aggregates every chunk under `doc_id=baier_katoen_2008` (no
       manifest merge or chunker change needed — confirmed against `literature-build-index.sh` lines
-      90-91 and 152).
-- [ ] Confirm the subdir layout keeps `chunk_*.md` name-detectable (so the whole-document
+      90-91 and 152). *(completed: 117 manifests found, 6148 chunks indexed)*
+- [x] Confirm the subdir layout keeps `chunk_*.md` name-detectable (so the whole-document
       double-count exclusion in `chunk-file-conventions.md`, which filters by `-iname 'chunk_*.md'`
-      regardless of depth, still holds).
+      regardless of depth, still holds). *(completed)*
+- [x] **Deviation**: section07's chunk manifest has only 1 chunk (46176 tokens) instead of ~100+
+      like its siblings — a pre-existing `literature-chunk.sh` pass-2 subdivision edge case (none
+      of the 12 parts contain markdown `#` headings; pass-1 heading detection found none in any
+      part, and pass-2 paragraph/sentence subdivision worked for 11/12 but not part07). The
+      section IS represented in `chunks_data` (nonzero, searchable) so the coverage goal holds;
+      fixing the chunker's subdivision algorithm is out of scope per this task's explicit non-goal
+      (no `literature-chunk.sh` contract changes). Flagged, not fixed.
+      *(deviation: altered — see progress file for full detail)*
 
 **Timing**: 1 hour
 
