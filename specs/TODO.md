@@ -197,6 +197,8 @@ DEPENDENCIES: 831 (COMPLETE — fixed converter), 835 (COMPLETE — provenance/f
 - **Task Type**: neovim
 - **Topic**: Terminal UI
 - **Dependencies**: None
-- **Research**: [087_investigate_wezterm_terminal_directory_change/reports/research-001.md]
+- **Research**:
+  - [087_investigate_wezterm_terminal_directory_change/reports/research-001.md]
+  - [087_investigate_wezterm_terminal_directory_change/reports/02_wezterm-cwd-change.md]
 
 **Description**: Investigate why the terminal working directory changes to a project root when opening neovim sessions in wezterm from the home directory (~). Determine whether this behavior is caused by neovim or wezterm (configured in ~/.dotfiles/config/). Identify if any functionality depends on this behavior before modifying it. Goal is to avoid changing the terminal directory unless necessary.
