@@ -2,20 +2,49 @@
   "schema_version": "1.0",
   "task_number": 850,
   "session_id": "sess_1783803546_a4db66",
-  "stage": "plan",
-  "status": "planned",
+  "stage": "implement",
+  "status": "implemented",
+  "phases_completed": 3,
+  "phases_total": 3,
   "plan_path": "specs/850_sync_untracked_core_scripts/plans/02_surface-untracked-deployed.md",
-  "phase_count": 3,
-  "estimated_hours": 2.5,
-  "dependency_waves": [
-    {"wave": 1, "phases": [1]},
-    {"wave": 2, "phases": [2]},
-    {"wave": 3, "phases": [3]}
-  ],
+  "summary": "Threaded newly-copied file paths from sync_files through execute_sync, added a git-guarded detect_untracked helper (one status query per sync, no per-file subprocess), and appended an advisory 'Newly deployed (untracked in git) - review and commit' section to the Load Core completion notice. Confined entirely to sync.lua; no git add/commit performed; non-git targets guarded and skipped silently; all existing sync behavior (counts, .syncprotect, extension preservation, merge re-injection) verified unchanged via a headless test harness (4/4 scenarios pass: git-backed untracked listing, non-git clean completion, tracked-file exclusion, empty-input short circuit).",
+  "blockers": [],
   "target_files": [
     "lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua"
   ],
-  "next_action": "implement",
-  "next_command": "/implement 850",
-  "notes": "Confined to sync.lua. Advisory-only: no git add/commit in target repo. Git query guarded by rev-parse --is-inside-work-tree. Established subprocess pattern is vim.fn.system + vim.fn.shellescape (sync.lua:128). Six acceptance criteria in reports/01."
+  "continuation_context": {
+    "is_successor": false,
+    "resume_needed": false,
+    "notes": "All 3 phases complete, plan checklist fully checked off, summary written. No further /implement dispatch needed for this task."
+  },
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/850_sync_untracked_core_scripts/plans/02_surface-untracked-deployed.md",
+      "summary": "3-phase plan, all phases marked [COMPLETED], all checklist items checked off"
+    },
+    {
+      "type": "summary",
+      "path": "specs/850_sync_untracked_core_scripts/summaries/02_surface-untracked-deployed-summary.md",
+      "summary": "Implementation summary covering what changed, decisions, plan deviations, and verification results"
+    },
+    {
+      "type": "progress",
+      "path": "specs/850_sync_untracked_core_scripts/progress/phase-1-progress.json",
+      "summary": "Phase 1 objectives (sync_files/execute_sync threading) all done"
+    },
+    {
+      "type": "progress",
+      "path": "specs/850_sync_untracked_core_scripts/progress/phase-2-progress.json",
+      "summary": "Phase 2 objectives (detect_untracked helper + notification section) all done"
+    },
+    {
+      "type": "progress",
+      "path": "specs/850_sync_untracked_core_scripts/progress/phase-3-progress.json",
+      "summary": "Phase 3 objectives (end-to-end verification) all done; includes one deviation record for the test-harness notify interception approach"
+    }
+  ],
+  "next_action": "complete",
+  "next_command": null,
+  "notes": "Implementation complete and verified. No downstream repo or task-lock.sh changes made. Ready for task status transition to [COMPLETED] by the orchestrator/postflight pipeline."
 }
