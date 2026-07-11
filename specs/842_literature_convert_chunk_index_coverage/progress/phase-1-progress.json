@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Wire handle_convert() to chunk + index",
+  "started_at": "2026-07-10T23:59:00Z",
+  "last_updated": "2026-07-11T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add per-output-file chunk call after Convert Step 3g", "status": "done", "files_touched": [".claude/extensions/literature/skills/skill-literature/SKILL.md"]},
+    {"id": 2, "description": "Add end-of-Step-4 single build-index rebuild branching on lit_dir", "status": "done", "files_touched": [".claude/extensions/literature/skills/skill-literature/SKILL.md"]},
+    {"id": 3, "description": "Update Convert Step 4 summary text (optional minimal)", "status": "done", "files_touched": [".claude/extensions/literature/skills/skill-literature/SKILL.md"]},
+    {"id": 4, "description": "Sync deployed copy via cp + diff -q", "status": "done", "files_touched": [".claude/skills/skill-literature/SKILL.md"], "note": "Files are hardlinked (same inode 3039) so edits to the extension source automatically apply to the deployed copy; diff -q confirms empty diff."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

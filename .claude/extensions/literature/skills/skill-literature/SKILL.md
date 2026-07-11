@@ -954,20 +954,65 @@ else
 fi
 ```
 
+#### 3h: Chunk and Index (task #842)
+
+Immediately after Convert Step 3g writes `output_md` and its `index.json` entry for this output
+file, chunk it so the document is searchable without a separate `--ingest`. Use the shared
+per-document `basename_no_ext` as `--doc-id` for **every** output file of this source (not
+Step 3g's per-section `entry_id`), so multi-section conversions land all sections under one
+`doc_id` — matching Job 4's `doc_id = <sources/dir basename>` check.
+
+```bash
+# Resolve literature-chunk.sh via the same SCRIPT_DIR/scripts convention Ingest Step 2 uses.
+SCRIPT_DIR="$(dirname "$0")/../../scripts"
+CHUNK_SCRIPT="$SCRIPT_DIR/literature-chunk.sh"
+
+# output_md and basename_no_ext are already set from Steps 3d/3a above for this output file.
+# dirname "$output_md" is already sources/<dir>-prefixed by construction (Step 3d's mkdir -p
+# "$(dirname "$output_md")") — never introduce a $LITERATURE_DIR/$DOC_ID/ top-level path here.
+chunk_count=0
+if [ -x "$CHUNK_SCRIPT" ]; then
+  # Guarded assignment (mirrors literature-ingest.sh's CHUNK_COUNT pattern): a chunking
+  # failure is logged but never aborts the rest of the convert loop.
+  chunk_count=$("$CHUNK_SCRIPT" "$output_md" "$(dirname "$output_md")" --doc-id "$basename_no_ext" 2>/dev/null || echo 0)
+  if [ "${chunk_count:-0}" -eq 0 ]; then
+    echo "Warning: chunking produced 0 chunks for $output_md (non-fatal; index rebuild at Step 4 will not cover it)."
+  fi
+else
+  echo "Warning: literature-chunk.sh not found at $CHUNK_SCRIPT — skipping chunk step for $output_md (non-fatal)."
+fi
+```
+
 ### Convert Step 4: Display Summary
+
+After all target files have been processed (all Step 3 iterations, including 3h, complete),
+rebuild the search index exactly once per invocation so every chunk written above is queryable.
+Branch on the same condition Step 2 already used to set `sources_prefix`:
+
+```bash
+if [ -n "${LITERATURE_DIR:-}" ] && [ "$lit_dir" = "$LITERATURE_DIR" ]; then
+  "$SCRIPT_DIR/literature-build-index.sh" --global 2>&1 | sed 's/^/[convert] /' >&2 || \
+    echo "Warning: literature-build-index.sh --global failed (non-fatal; chunks are on disk, index rebuild can be retried via /literature --rebuild)."
+else
+  "$SCRIPT_DIR/literature-build-index.sh" --local 2>&1 | sed 's/^/[convert] /' >&2 || \
+    echo "Warning: literature-build-index.sh --local failed (non-fatal; chunks are on disk, index rebuild can be retried)."
+fi
+```
 
 ```
 ## Conversion Complete
 
 **Files Converted**: {N}
 
-| Output File | Lines | Tokens | Status |
-|-------------|-------|--------|--------|
-| {file1.md}  | 1-4000      | 3,500  | Written |
-| {file2.md}  | 4001-8000   | 3,200  | Written |
+| Output File | Lines | Tokens | Chunks | Status |
+|-------------|-------|--------|--------|--------|
+| {file1.md}  | 1-4000      | 3,500  | {chunk_count1} | Written, indexed |
+| {file2.md}  | 4001-8000   | 3,200  | {chunk_count2} | Written, indexed |
 ...
 
 **Index Updated**: specs/literature/index.json ({entry_count} entries)
+**Search Index**: rebuilt ({global|local}) — converted documents are immediately searchable via
+`literature-search.sh` with no separate `--ingest` step required.
 
 **Skipped Files**:
 - {file.djvu} — djvutxt not installed (install: nix-env -iA nixpkgs.djvulibre)

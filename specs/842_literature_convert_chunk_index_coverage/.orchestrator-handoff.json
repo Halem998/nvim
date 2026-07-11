@@ -1,0 +1,23 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Created 5-phase plan for task 842. Forward fix wires literature-chunk.sh + literature-build-index.sh into handle_convert() (SKILL.md, not literature-convert.sh). Backfill covers 23 dirs (22 single-file + baier_katoen_2008 12-file book via distinct-subdir + recursive index aggregation); gabbay_2000/negri_von_plato_2001 stay excluded. Job 4 extended to flag unexpected-empty. document_metadata is an explicit non-goal.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/842_literature_convert_chunk_index_coverage/plans/01_coverage-fix-plan.md",
+      "summary": "5-phase coverage-gap fix plan with dependency waves [[1,2],[3,4],[5]]"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "implement",
+  "files_modified": [],
+  "decisions_made": [
+    "Fix located in handle_convert() (SKILL.md), not literature-convert.sh",
+    "baier_katoen_2008: chunk each of 12 sections into a distinct subdir with shared --doc-id; build-index aggregates recursively (no chunker change)",
+    "SKILL.md edits synced to deployed copy via cp + diff -q to satisfy the #841 drift guard",
+    "document_metadata dead table is out of scope (explicit non-goal)"
+  ],
+  "dead_ends": []
+}
