@@ -153,16 +153,17 @@ known ground-truth sample to clean English, without touching corpus files.
 
 ---
 
-### Phase 2: Quarantine all 142 files with cmp verification [NOT STARTED]
+### Phase 2: Quarantine all 142 files with cmp verification [COMPLETED]
 
 **Goal**: Create byte-identical `.bak-<UTC>` sibling backups of the canonical `.md` and all 141
 chunk files BEFORE any decode/overwrite, aborting if any backup fails to verify.
 
 **Tasks**:
-- [ ] Compute one UTC timestamp: `TS=$(date -u +%Y%m%d-%H%M%S)`.
-- [ ] For the canonical `.md` and each `chunk_*.md` (142 files): `cp <file> <file>.bak-$TS`, then
+- [x] Compute one UTC timestamp: `TS=$(date -u +%Y%m%d-%H%M%S)`. *(completed: TS=20260711-180106)*
+- [x] For the canonical `.md` and each `chunk_*.md` (142 files): `cp <file> <file>.bak-$TS`, then
       `cmp -s <file> <file>.bak-$TS`; abort the whole phase with no further writes if any `cmp` fails.
-- [ ] Record the backup count and timestamp; confirm 142 `.bak-$TS` siblings exist.
+      *(completed: 142/142 verified, 0 mismatches)*
+- [x] Record the backup count and timestamp; confirm 142 `.bak-$TS` siblings exist. *(completed)*
 
 **Timing**: 0.5 hours
 
