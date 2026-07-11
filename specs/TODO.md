@@ -1,5 +1,5 @@
 ---
-next_project_number: 850
+next_project_number: 852
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 850
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 87,821,826,837,838 | -- | agent-system, extensions, terminal ui |
+| 1 | 87,821,826,837,838,850,851 | -- | agent-system, extensions, load core sync, ... |
 | 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -32,7 +32,38 @@ next_project_number: 850
 
 87 [RESEARCHED] — Investigate why the terminal working directory changes to a proje
 
+### Load Core Sync
+
+850 [PLANNED] — Load Core (<leader>al) deploys core .claude/ scripts into downstr
+
+### Mail Sync + Keymaps
+
+851 [RESEARCHED] — Fixes across the nvim mail stack, ALREADY IMPLEMENTED AND COMMITT
+
 ## Tasks
+
+### 851. Himalaya/aerc mail sync + keymap fixes (multi-account sync, account fallback, mS/mf conflict)
+- **Status**: [RESEARCHED]
+- **Task Type**: neovim
+- **Topic**: mail sync + keymaps
+- **Dependencies**: None
+- **Research**: [851_himalaya_mail_sync_and_keymap_fixes/reports/01_himalaya-mail-sync-keymaps.md]
+
+**Description**: Fixes across the nvim mail stack, ALREADY IMPLEMENTED AND COMMITTED (master: bcb662549, a1c64151b). (1) sync_inbox/sync_all fall back to config.get_current_account_name() when the sidebar has not been opened, fixing spurious "No email account configured". (2) new sync_all_accounts_inbox()+HimalayaSyncAllInbox; <leader>ms now syncs every account inbox (gmail-inbox, logos-inbox) sequentially. (3) fixed nil crash: get_all_accounts is on the config.accounts submodule, not re-exported by core/config. (4) "Starting sync" notice made visible (USER_ACTION); harmless "Cannot update count" downgraded ERROR->BACKGROUND. (5) <leader>me opens aerc AND triggers background mbsync -a + notmuch new via shared sync_all_mail(). (6) resolved <leader>mS/<leader>mf collisions between mail.lua and which-key.lua by relocating notmuch search->mn and notmuch full sync->mN, with annotation-only which-key entries. REMAINING: live end-to-end sync verification against Gmail + Proton Bridge servers (headless tests stubbed mbsync). See reports/01_himalaya-mail-sync-keymaps.md for root causes, per-file changes, verification performed/gaps, and acceptance criteria.
+
+---
+
+### 850. Fix Load Core leaving newly-deployed core scripts untracked downstream
+- **Status**: [PLANNED]
+- **Task Type**: meta
+- **Topic**: Load Core sync
+- **Dependencies**: None
+- **Research**: [850_sync_untracked_core_scripts/reports/01_sync-untracked-core-scripts.md]
+- **Plan**: [850_sync_untracked_core_scripts/plans/02_surface-untracked-deployed.md]
+
+**Description**: Load Core (<leader>al) deploys core .claude/ scripts into downstream project repos via a plain filesystem write (sync.lua:406 helpers.write_file) and performs NO git operation in the target repo (verified: zero git add/commit/status/ls-files across the entire picker tree). task-lock.sh IS in the core allow-list (.claude/extensions/core/manifest.json provides.scripts, ~line 137) so it IS correctly deployed; the defect is that newly-created files (scan.lua:137 action=='copy') land untracked and the completion notification (sync.lua:480-497) reports only category counts, never filenames or tracked/untracked status. task-lock.sh postdates the downstream project's last .claude/scripts/ commit, so it is the lone stray untracked file surfaced during routine git status. FIX (in nvim source of truth, sync.lua): after sync, collect newly-copied (action=='copy') files that are untracked in the target repo git and surface them as an explicit 'newly deployed (untracked) - review and commit' list in the completion notice; advisory only, no auto-stage/commit; guard non-git projects; preserve all existing sync behavior. Alternatives: opt-in auto-stage; downstream deployed-core manifest for CI diffing. Report+acceptance criteria in reports/01_sync-untracked-core-scripts.md.
+
+---
 
 ### 849. Recover kamp 1968 mojibake
 - **Status**: [COMPLETED]
