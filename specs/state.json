@@ -24,38 +24,6 @@
       "dependencies": []
     },
     {
-      "project_number": 78,
-      "project_name": "fix_himalaya_smtp_authentication_failure",
-      "status": "researched",
-      "task_type": "neovim",
-      "effort": "1-2 hours",
-      "created": "2026-02-13T18:01:13Z",
-      "last_updated": "2026-07-11T20:01:55Z",
-      "dependencies": [],
-      "artifacts": [
-        {
-          "type": "research",
-          "path": "specs/078_fix_himalaya_smtp_authentication_failure/reports/research-001.md",
-          "summary": "Research report documenting OAuth2 token expiration as root cause and fix procedure"
-        },
-        {
-          "path": "specs/078_fix_himalaya_smtp_authentication_failure/plans/implementation-001.md",
-          "type": "plan",
-          "summary": "3-phase implementation plan for fixing Gmail OAuth2 authentication"
-        },
-        {
-          "type": "research",
-          "path": "specs/078_fix_himalaya_smtp_authentication_failure/reports/02_himalaya-smtp-auth-recheck.md",
-          "summary": "Re-research (Fable): OAuth2 root cause obsolete; himalaya now uses valid Gmail app password (live SMTP AUTH 235 Accepted); config home-manager-managed from ~/.dotfiles/; defect no longer reproduces."
-        }
-      ],
-      "session_id": "sess_1783799611_4a2d51",
-      "planned": "2026-02-13T18:10:48Z",
-      "title": "Fix Himalaya SMTP authentication failure when sending emails",
-      "description": "Fix Gmail SMTP authentication failure when sending emails via Himalaya (<leader>me). Error: Authentication failed: Code: 535, Enhanced code: 5.7.8, Message: Username and Password not accepted. The error occurs with TLS connection attempts and persists through multiple retry attempts. Identify and fix the root cause of the SMTP credential configuration.",
-      "topic": "Email Integration"
-    },
-    {
       "project_number": 821,
       "project_name": "email_to_memory_contribution_architecture",
       "status": "researched",
