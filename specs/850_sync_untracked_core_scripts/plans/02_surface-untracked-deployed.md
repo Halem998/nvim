@@ -1,7 +1,7 @@
 # Implementation Plan: Task #850
 
 - **Task**: 850 - Fix Load Core leaving newly-deployed core scripts untracked downstream
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/850_sync_untracked_core_scripts/reports/01_sync-untracked-core-scripts.md
@@ -151,24 +151,32 @@ Phases within the same wave can execute in parallel. This plan is a linear chain
 
 ---
 
-### Phase 3: End-to-end verification and guard validation [NOT STARTED]
+### Phase 3: End-to-end verification and guard validation [COMPLETED]
 
 **Goal**: Prove the acceptance criteria hold: untracked new files are listed in a git target; non-git targets
 complete cleanly; existing behavior unchanged.
 
 **Tasks**:
-- [ ] Create a throwaway git repo under the scratchpad, seed it with a `.claude/` that lacks one core script,
+- [x] Create a throwaway git repo under the scratchpad, seed it with a `.claude/` that lacks one core script,
       run the Load Core path (or a headless harness that calls `execute_sync` with a synthetic `all_artifacts`
       containing one `action == "copy"` file), and confirm the new file appears in the "newly deployed
-      (untracked)" section.
-- [ ] Repeat in a non-git directory (no `.git`) and confirm the sync completes with no git error and no
-      untracked section.
-- [ ] Add/repeat a case where a `copy` file is written then `git add`-ed manually, and confirm it does NOT
-      appear (tracked files excluded).
-- [ ] Confirm existing category counts, `.syncprotect` protection, and merge re-injection are unchanged
-      (diff the notification for an all-tracked sync against pre-change behavior).
-- [ ] Run `luacheck`/lint if available on the modified file; ensure 2-space indent and <=100 col per
-      neovim-lua.md.
+      (untracked)" section. *(completed: headless harness via dofile of a scratch copy with `_test` exports;
+      `helpers.notify` intercepted directly since the pre-existing notify-category system drops "INFO"/"WARN"
+      level strings to a debug_only category unrelated to this change; message contained
+      `.claude/scripts/task-lock.sh` under "Newly deployed (untracked in git)")*
+- [x] Repeat in a non-git directory (no `.git`) and confirm the sync completes with no git error and no
+      untracked section. *(completed: pcall-wrapped call succeeded, total_synced == 1, no "Newly deployed"
+      substring in notification)*
+- [x] Add/repeat a case where a `copy` file is written then `git add`-ed manually, and confirm it does NOT
+      appear (tracked files excluded). *(completed: `detect_untracked` returned an empty list for a
+      committed path)*
+- [x] Confirm existing category counts, `.syncprotect` protection, and merge re-injection are unchanged
+      (diff the notification for an all-tracked sync against pre-change behavior). *(completed: notification
+      format/fields unchanged; only the appended untracked section is new, and it is empty/absent when there
+      is nothing to report)*
+- [x] Run `luacheck`/lint if available on the modified file; ensure 2-space indent and <=100 col per
+      neovim-lua.md. *(completed: luacheck not installed in this environment; verified via `git diff` that no
+      added line exceeds 100 columns and no added line uses a tab)*
 
 **Timing**: 0.75 hours
 
@@ -183,13 +191,13 @@ complete cleanly; existing behavior unchanged.
 
 ## Testing & Validation
 
-- [ ] Module `sync.lua` loads headless with no syntax/runtime error after each phase.
-- [ ] Git-backed target: a newly-copied core file that is untracked is listed by project-relative path.
-- [ ] `task-lock.sh`-style scenario (file previously absent) surfaces in the untracked list.
-- [ ] Non-git target completes with no git error and no untracked section.
-- [ ] Already-tracked synced files are excluded from the list.
-- [ ] No `git add`/`git commit` anywhere in the picker tree; downstream git index unchanged.
-- [ ] Category counts, `.syncprotect`, extension section preservation, and merge re-injection unchanged.
+- [x] Module `sync.lua` loads headless with no syntax/runtime error after each phase.
+- [x] Git-backed target: a newly-copied core file that is untracked is listed by project-relative path.
+- [x] `task-lock.sh`-style scenario (file previously absent) surfaces in the untracked list.
+- [x] Non-git target completes with no git error and no untracked section.
+- [x] Already-tracked synced files are excluded from the list.
+- [x] No `git add`/`git commit` anywhere in the picker tree; downstream git index unchanged.
+- [x] Category counts, `.syncprotect`, extension section preservation, and merge re-injection unchanged.
 
 ## Artifacts & Outputs
 
