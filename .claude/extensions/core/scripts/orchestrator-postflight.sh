@@ -1,0 +1,382 @@
+#!/usr/bin/env bash
+# orchestrator-postflight.sh — Shared postflight pipeline for research, plan, and implement operations
+#
+# Usage:
+#   bash .claude/scripts/orchestrator-postflight.sh \
+#       TASK_NUMBER PROJECT_NAME PADDED_NUM SESSION_ID OPERATION_TYPE [TASK_TYPE]
+#
+# Arguments:
+#   TASK_NUMBER     Unpadded task number (e.g. 657)
+#   PROJECT_NAME    Task slug from state.json (e.g. create_shared_orchestrator_postflight)
+#   PADDED_NUM      Zero-padded task number (e.g. 657)
+#   SESSION_ID      Session identifier (e.g. sess_1736700000_abc123)
+#   OPERATION_TYPE  One of: research | plan | implement
+#   TASK_TYPE       (Optional) Task type for meta-skip logic (e.g. meta, general). Used by implement
+#                   to decide whether to write roadmap_items.
+#
+# Operation Mappings:
+#   research  -> success_status: "researched",  artifact_type: "research",  artifact_kind: "report"
+#                git commit: NO (matches existing researcher behavior)
+#                stage 7a: increment next_artifact_number
+#   plan      -> success_status: "planned",     artifact_type: "plan",      artifact_kind: "plan"
+#                git commit: YES
+#   implement -> success_status: "implemented", artifact_type: "summary",   artifact_kind: "summary"
+#                git commit: YES
+#                note: for implement, status update + completion_data + roadmap_items + memory_candidates
+#                      must be handled INLINE in the skill before calling this script.
+#                      This script handles: link artifacts, generate-todo, TTS, git commit, cleanup.
+#
+# Stages (implemented inside this script):
+#   Stage 6:  Read .return-meta.json (status, artifact_path, artifact_type, artifact_summary,
+#             memory_candidates; implement also reads completion_summary, roadmap_items, handoff_path)
+#   Stage 6a: Validate artifact via validate-artifact.sh (non-blocking)
+#   Stage 7:  Call update-task-status.sh postflight (research and plan only; implement does inline)
+#   Stage 7a: Increment next_artifact_number via python3 (research only)
+#   Stage 7b: Write completion_summary + roadmap_items to state.json (implement only)
+#   Stage 7c: Propagate memory_candidates via python3 (all operations)
+#   Stage 8:  Link artifacts in state.json via two-step jq with --arg atype (Issue #1132 safe)
+#   Stage 8a: Regenerate TODO.md via generate-todo.sh (non-blocking)
+#   Stage 8b: Fire TTS lifecycle notification via lifecycle-notify.sh in background (non-blocking)
+#   Stage 9:  Git commit with operation-specific message (plan and implement only; non-blocking)
+#   Stage 10: Cleanup marker files (.postflight-pending, .postflight-loop-guard, .return-meta.json,
+#             .continuation-loop-guard for implement)
+#
+# Error handling:
+#   - Non-success status: skips status update and git commit; still runs cleanup
+#   - Missing metadata file: sets status="failed", still runs cleanup
+#   - All postflight steps except status update are non-blocking (|| true or background)
+#
+# jq Safety:
+#   - All jq filter expressions use --arg / --argjson to avoid Issue #1132
+#   - select(.type == "X" | not) is used instead of select(.type != "X")
+#
+# Exit codes:
+#   0 - Postflight completed (even if status was non-success — cleanup always runs)
+#   1 - Fatal: missing required arguments
+#
+# Downstream dependencies:
+#   - skill-researcher/SKILL.md calls this for Stages 6-9 (no git commit)
+#   - skill-planner/SKILL.md calls this for Stages 6-10
+#   - skill-implementer/SKILL.md calls this for Stages 8-10 only (inline Stages 6-7 handle rest)
+
+set -euo pipefail
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Argument parsing
+# ─────────────────────────────────────────────────────────────────────────────
+if [ $# -lt 5 ]; then
+  echo "Usage: $0 TASK_NUMBER PROJECT_NAME PADDED_NUM SESSION_ID OPERATION_TYPE [TASK_TYPE]" >&2
+  echo "" >&2
+  echo "Arguments:" >&2
+  echo "  TASK_NUMBER     Unpadded task number" >&2
+  echo "  PROJECT_NAME    Task slug from state.json" >&2
+  echo "  PADDED_NUM      Zero-padded task number" >&2
+  echo "  SESSION_ID      Session identifier" >&2
+  echo "  OPERATION_TYPE  research | plan | implement" >&2
+  echo "  TASK_TYPE       (Optional) task type; used by implement to skip roadmap_items for meta" >&2
+  exit 1
+fi
+
+task_number="$1"
+project_name="$2"
+padded_num="$3"
+session_id="$4"
+operation_type="$5"
+task_type="${6:-general}"
+
+task_dir="specs/${padded_num}_${project_name}"
+metadata_file="${task_dir}/.return-meta.json"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Operation type mapping
+# ─────────────────────────────────────────────────────────────────────────────
+case "$operation_type" in
+  research)
+    success_status="researched"
+    artifact_type="research"
+    artifact_kind="report"
+    do_git_commit="false"
+    do_status_update="true"
+    do_artifact_increment="true"
+    commit_message="task ${task_number}: complete research"
+    ;;
+  plan)
+    success_status="planned"
+    artifact_type="plan"
+    artifact_kind="plan"
+    do_git_commit="true"
+    do_status_update="true"
+    do_artifact_increment="false"
+    commit_message="task ${task_number}: create implementation plan"
+    ;;
+  implement)
+    success_status="implemented"
+    artifact_type="summary"
+    artifact_kind="summary"
+    do_git_commit="true"
+    do_status_update="false"
+    do_artifact_increment="false"
+    commit_message="task ${task_number}: complete implementation"
+    ;;
+  *)
+    echo "Error: Unknown operation type '${operation_type}'. Expected: research, plan, implement" >&2
+    exit 1
+    ;;
+esac
+
+# Guard: ensure specs/tmp/ exists
+mkdir -p specs/tmp
+
+echo "[postflight] Starting postflight for task ${task_number} (${operation_type})"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 6: Read .return-meta.json
+# ─────────────────────────────────────────────────────────────────────────────
+status="failed"
+artifact_path=""
+artifact_type_from_meta=""
+artifact_summary=""
+memory_candidates="[]"
+completion_summary=""
+roadmap_items="[]"
+handoff_path=""
+
+if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
+  status=$(jq -r '.status' "$metadata_file")
+  artifact_path=$(jq -r '.artifacts[0].path // ""' "$metadata_file")
+  artifact_type_from_meta=$(jq -r '.artifacts[0].type // ""' "$metadata_file")
+  artifact_summary=$(jq -r '.artifacts[0].summary // ""' "$metadata_file")
+  memory_candidates=$(jq -c '.memory_candidates // []' "$metadata_file")
+
+  # implement-specific fields (safe to read for all operations — will be empty for non-implement)
+  completion_summary=$(jq -r '.completion_data.completion_summary // ""' "$metadata_file")
+  roadmap_items=$(jq -c '.completion_data.roadmap_items // []' "$metadata_file")
+  handoff_path=$(jq -r '.partial_progress.handoff_path // ""' "$metadata_file")
+else
+  echo "[postflight] WARNING: Invalid or missing metadata file: ${metadata_file}" >&2
+  echo "[postflight] Setting status=failed and proceeding to cleanup"
+  status="failed"
+fi
+
+echo "[postflight] Subagent status: ${status}"
+
+# Use artifact_type from operation mapping if not overridden by metadata
+if [ -z "$artifact_type_from_meta" ]; then
+  artifact_type_from_meta="$artifact_type"
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 6a: Validate artifact (non-blocking)
+# ─────────────────────────────────────────────────────────────────────────────
+if [ "$status" = "$success_status" ] || [ "$status" = "partial" ]; then
+  if [ -n "$artifact_path" ] && [ -f "$artifact_path" ]; then
+    echo "[postflight] Validating ${artifact_kind} artifact: ${artifact_path}"
+    if ! bash .claude/scripts/validate-artifact.sh "$artifact_path" "$artifact_kind" --fix 2>/dev/null; then
+      echo "[postflight] WARNING: ${artifact_kind} artifact has format issues (non-blocking). Review output above." >&2
+    fi
+  fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 7: Update task status (postflight) — research and plan only
+# implement does this inline in skill-implementer before calling this script
+# ─────────────────────────────────────────────────────────────────────────────
+if [ "$do_status_update" = "true" ] && [ "$status" = "$success_status" ]; then
+  echo "[postflight] Updating task status via update-task-status.sh..."
+  bash .claude/scripts/update-task-status.sh postflight "$task_number" "$operation_type" "$session_id" \
+    || echo "[postflight] WARNING: update-task-status.sh failed (non-blocking)" >&2
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 7a: Increment next_artifact_number (research only)
+# ─────────────────────────────────────────────────────────────────────────────
+if [ "$do_artifact_increment" = "true" ] && [ "$status" = "$success_status" ]; then
+  echo "[postflight] Incrementing next_artifact_number..."
+  python3 -c "
+import json
+with open('specs/state.json', 'r') as f:
+    state = json.load(f)
+for p in state['active_projects']:
+    if p['project_number'] == ${task_number}:
+        p['next_artifact_number'] = p.get('next_artifact_number', 1) + 1
+        break
+with open('specs/state.json', 'w') as f:
+    json.dump(state, f, indent=2)
+    f.write('\n')
+" || echo "[postflight] WARNING: Failed to increment next_artifact_number (non-blocking)" >&2
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 7b: Write completion_summary + roadmap_items (implement only)
+# NOTE: For implement, the skill's inline Stage 7 already handles this.
+# This block is here as a safety net when the shared script is called for implement
+# and the inline stage did NOT already write these fields.
+# The skill controls whether this runs by setting SKIP_COMPLETION_DATA=true before calling.
+# ─────────────────────────────────────────────────────────────────────────────
+if [ "$operation_type" = "implement" ] && [ "${SKIP_COMPLETION_DATA:-false}" != "true" ]; then
+  if [ "$status" = "implemented" ] && [ -n "$completion_summary" ]; then
+    echo "[postflight] Writing completion_summary to state.json..."
+    python3 -c "
+import json
+with open('specs/state.json', 'r') as f:
+    state = json.load(f)
+for p in state['active_projects']:
+    if p['project_number'] == ${task_number}:
+        p['completion_summary'] = '''${completion_summary}'''
+        break
+with open('specs/state.json', 'w') as f:
+    json.dump(state, f, indent=2)
+    f.write('\n')
+" || echo "[postflight] WARNING: Failed to write completion_summary (non-blocking)" >&2
+  fi
+
+  if [ "$status" = "implemented" ] && [ "$task_type" != "meta" ] && [ "$roadmap_items" != "[]" ] && [ -n "$roadmap_items" ]; then
+    echo "[postflight] Writing roadmap_items to state.json..."
+    python3 -c "
+import json
+with open('specs/state.json', 'r') as f:
+    state = json.load(f)
+new_items = json.loads('''${roadmap_items}''')
+for p in state['active_projects']:
+    if p['project_number'] == ${task_number}:
+        p['roadmap_items'] = new_items
+        break
+with open('specs/state.json', 'w') as f:
+    json.dump(state, f, indent=2)
+    f.write('\n')
+" || echo "[postflight] WARNING: Failed to write roadmap_items (non-blocking)" >&2
+  fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 7c: Propagate memory_candidates (all operations, append semantics)
+# ─────────────────────────────────────────────────────────────────────────────
+if [ "$memory_candidates" != "[]" ] && [ -n "$memory_candidates" ]; then
+  echo "[postflight] Propagating memory_candidates to state.json..."
+  python3 -c "
+import json
+with open('specs/state.json', 'r') as f:
+    state = json.load(f)
+new_candidates = json.loads('''${memory_candidates}''')
+for p in state['active_projects']:
+    if p['project_number'] == ${task_number}:
+        existing = p.get('memory_candidates', [])
+        p['memory_candidates'] = existing + new_candidates
+        break
+with open('specs/state.json', 'w') as f:
+    json.dump(state, f, indent=2)
+    f.write('\n')
+" || echo "[postflight] WARNING: Failed to propagate memory_candidates (non-blocking)" >&2
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 8: Link artifacts in state.json (two-step jq, Issue #1132 safe)
+# ─────────────────────────────────────────────────────────────────────────────
+if [ -n "$artifact_path" ]; then
+  echo "[postflight] Linking artifact: ${artifact_path} (type: ${artifact_type_from_meta})"
+
+  # Step 1: Filter out existing artifacts of the same type
+  # Uses --arg atype pattern (Issue #1132 safe) + "| not" instead of !=
+  jq --arg atype "$artifact_type_from_meta" \
+    --argjson num "$task_number" \
+    '(.active_projects[] | select(.project_number == $num)).artifacts =
+      [(.active_projects[] | select(.project_number == $num)).artifacts // [] | .[] | select(.type == $atype | not)]' \
+    specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json \
+    || echo "[postflight] WARNING: Step 1 artifact filter failed (non-blocking)" >&2
+
+  # Step 2: Add new artifact entry
+  jq --arg path "$artifact_path" \
+     --arg atype "$artifact_type_from_meta" \
+     --arg summary "$artifact_summary" \
+     --argjson num "$task_number" \
+    '(.active_projects[] | select(.project_number == $num)).artifacts += [{"path": $path, "type": $atype, "summary": $summary}]' \
+    specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json \
+    || echo "[postflight] WARNING: Step 2 artifact add failed (non-blocking)" >&2
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 8a: Regenerate TODO.md (non-blocking)
+# ─────────────────────────────────────────────────────────────────────────────
+echo "[postflight] Regenerating TODO.md..."
+bash .claude/scripts/generate-todo.sh || echo "[postflight] WARNING: generate-todo.sh failed (non-fatal)" >&2
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 8b: Lifecycle TTS notification (non-blocking, background)
+# Fires lifecycle notification for tab color and TTS. TTS is automatically
+# suppressed during orchestration via the orchestrate-active marker in
+# lifecycle-notify.sh. Standalone completions fire TTS unconditionally.
+# implemented->completed: wezterm.lua only has "completed" in its color table.
+# ─────────────────────────────────────────────────────────────────────────────
+lifecycle_script=".claude/scripts/lifecycle-notify.sh"
+if [ -f "$lifecycle_script" ]; then
+  notify_status="$status"
+  [ "$notify_status" = "implemented" ] && notify_status="completed"
+  bash "$lifecycle_script" "$notify_status" &
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 9: Git commit (plan and implement only; non-blocking)
+# Targeted, work-scoped staging per .claude/context/standards/git-staging-scope.md —
+# never stage the entire working tree. Fail-safe direction is to under-stage with a loud
+# warning rather than over-stage and pull in a concurrent session's stray edits.
+# ─────────────────────────────────────────────────────────────────────────────
+if [ "$do_git_commit" = "true" ]; then
+  echo "[postflight] Creating git commit (targeted staging): ${commit_message}"
+
+  # Base scope for both plan and implement: the task directory + shared index files.
+  stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
+
+  if [ "$operation_type" = "implement" ]; then
+    # Explicitly include the plan file (already covered by task_dir/ above; staged
+    # explicitly too per the git-staging-scope.md contract).
+    plan_file=$(ls "${task_dir}"/plans/*.md 2>/dev/null | head -1)
+    if [ -n "$plan_file" ]; then
+      stage_paths+=("$plan_file")
+    fi
+
+    # Agent self-reported modified_files (implement-specific; see return-metadata-file.md).
+    modified_files_count=0
+    while IFS= read -r f; do
+      if [ -n "$f" ]; then
+        stage_paths+=("$f")
+        modified_files_count=$((modified_files_count + 1))
+      fi
+    done < <(jq -r '.modified_files[]? // empty' "$metadata_file" 2>/dev/null)
+
+    if [ "$modified_files_count" -eq 0 ]; then
+      echo "[postflight] WARNING: no modified_files reported; source-file changes NOT committed automatically. Review and commit manually." >&2
+    fi
+  fi
+
+  if git add "${stage_paths[@]}"; then
+    git commit -m "${commit_message}
+
+Session: ${session_id}
+" || echo "[postflight] NOTE: Nothing to commit or git commit failed (non-blocking)" >&2
+  else
+    echo "[postflight] WARNING: git add failed for one or more staged paths (non-blocking)" >&2
+  fi
+
+  # Surface any residual uncommitted changes rather than silently ignoring them.
+  residual="$(git status --porcelain 2>/dev/null)"
+  if [ -n "$residual" ]; then
+    echo "[postflight] WARNING: working tree has uncommitted changes after targeted commit. Review and commit manually if needed:" >&2
+    echo "$residual" >&2
+  fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 10: Cleanup marker files
+# ─────────────────────────────────────────────────────────────────────────────
+echo "[postflight] Cleaning up marker files..."
+rm -f "${task_dir}/.postflight-pending" \
+      "${task_dir}/.postflight-loop-guard" \
+      "${task_dir}/.return-meta.json" 2>/dev/null || true
+
+# Cleanup continuation-loop-guard for implement operation
+if [ "$operation_type" = "implement" ]; then
+  rm -f "${task_dir}/.continuation-loop-guard" 2>/dev/null || true
+fi
+
+echo "[postflight] Postflight complete for task ${task_number} (${operation_type}: ${status})"
+exit 0

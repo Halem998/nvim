@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Core script backport and manifest registration",
+  "started_at": "2026-07-10T00:00:00Z",
+  "last_updated": "2026-07-10T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Backport orchestrator-postflight.sh into extension source byte-identically", "status": "done", "files_touched": [".claude/extensions/core/scripts/orchestrator-postflight.sh"]},
+    {"id": 2, "description": "Register task-lock.sh and orchestrator-postflight.sh in core manifest provides.scripts", "status": "done", "files_touched": [".claude/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -133,7 +133,9 @@
       "verify-lean-mcp.sh",
       "lint/lint-postflight-boundary.sh",
       "lifecycle-notify.sh",
-      "reconcile-artifacts.sh"
+      "reconcile-artifacts.sh",
+      "task-lock.sh",
+      "orchestrator-postflight.sh"
     ],
     "hooks": [
       "claude-stop-notify.sh",

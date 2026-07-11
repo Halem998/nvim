@@ -1,0 +1,27 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Wrote a 3-phase plan to clear all 4 doc-lint FAILs. Phase 1 (core): backport orchestrator-postflight.sh byte-identically into extension source, then register it plus task-lock.sh in core provides.scripts. Phase 2 (lean): restore task #771's WARN classification for the two -hard routing_hard targets in BOTH byte-identical copies of check-extension-docs.sh. Phase 3: verify exit 0, all sections PASS, WARN-not-FAIL for lean, and Rule F drift byte-identity. Plan owns the deviation from the task's manifest-only framing and records the command-route-skill.sh routing_hard drift as out-of-scope.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/843_fix_core_lean_doclint_failures/plans/01_doclint-fix-plan.md",
+      "summary": "3-phase plan: core script backport + manifest registration; lean WARN restoration in both check-extension-docs.sh copies; full verification with Rule F drift and literature no-regression checks."
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "implement",
+  "files_modified": [],
+  "decisions_made": [
+    "3 phases: (1) core backport+register, (2) lean WARN restoration in both copies, (3) verification; phases 1 and 2 are independent (disjoint files) and can run in parallel, phase 3 depends on both",
+    "orchestrator-postflight.sh backport uses byte-identical cp before manifest registration to avoid a new missing-on-disk FAIL",
+    "lean fix restores WARN in BOTH deployed and extension-source copies of check-extension-docs.sh to preserve Rule F byte-identity; only the uninstalled-branch fail->warn changes, installed and not-resolvable branches stay FAIL",
+    "Explicitly deviates from the task's manifest-only framing for the lean fix and justifies it via research evidence (accidental #792 regression; command-route-skill.sh does not implement routing_hard dispatch)"
+  ],
+  "dead_ends": [
+    "Deploying/half-installing the lean -hard skills (rejected: lean not installed; partial install trips other lint checks)",
+    "Removing the lean routing_hard manifest declarations (rejected: papers over a real, source-grounded capability)",
+    "Manifest-only edit for orchestrator-postflight.sh (rejected: trips a new missing-on-disk FAIL without the source backport)"
+  ]
+}

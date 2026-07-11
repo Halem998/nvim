@@ -1,0 +1,13 @@
+{
+  "phase": 2,
+  "phase_name": "Restore lean routing_hard WARN classification (both copies)",
+  "started_at": "2026-07-10T00:00:00Z",
+  "last_updated": "2026-07-10T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Edit deployed check-extension-docs.sh: fail -> warn for uninstalled-branch routing_hard targets", "status": "not_started", "files_touched": []},
+    {"id": 2, "description": "Apply identical edit to extension-source check-extension-docs.sh", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
