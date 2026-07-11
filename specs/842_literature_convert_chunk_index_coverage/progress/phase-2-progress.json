@@ -1,0 +1,49 @@
+{
+  "phase": 2,
+  "phase_name": "Backfill the 22 single-file uncovered directories",
+  "started_at": "2026-07-11T00:06:00Z",
+  "last_updated": "2026-07-11T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Enumerate 22 target dirs and confirm exactly one valid .md each", "status": "done", "files_touched": [],
+     "note": "Enumeration surfaced 2 discrepancies from the plan's premise: troelstra_schwichtenberg_2000 has ZERO valid .md (only a quarantined .md.rejected) and must be excluded like gabbay_2000/negri_von_plato_2001; thomas_2003_reactive has TWO valid .md files (ch01, ch03), not one, requiring baier_katoen_2008-style distinct-subdirectory chunking to avoid chunks.json clobber."},
+    {"id": 2, "description": "Chunk each of the 20 genuinely single-file dirs via literature-chunk.sh", "status": "done",
+     "files_touched": [
+       "$LITERATURE_DIR/sources/burgess_1982_i/chunks.json","$LITERATURE_DIR/sources/burgess_1982_ii/chunks.json",
+       "$LITERATURE_DIR/sources/courcoubetis_1992/chunks.json","$LITERATURE_DIR/sources/gerth_1995/chunks.json",
+       "$LITERATURE_DIR/sources/girard_1989/chunks.json","$LITERATURE_DIR/sources/hodkinson_2006/chunks.json",
+       "$LITERATURE_DIR/sources/kupferman_vardi_2001/chunks.json","$LITERATURE_DIR/sources/libkin_2004_ch3_ch7/chunks.json",
+       "$LITERATURE_DIR/sources/piterman_2007/chunks.json","$LITERATURE_DIR/sources/rabinovich_2014/chunks.json",
+       "$LITERATURE_DIR/sources/schewe_2009/chunks.json","$LITERATURE_DIR/sources/schwoon_esparza_2005/chunks.json",
+       "$LITERATURE_DIR/sources/tarjan_1972/chunks.json","$LITERATURE_DIR/sources/thomas_1997/chunks.json",
+       "$LITERATURE_DIR/sources/thomas_1997_languages/chunks.json","$LITERATURE_DIR/sources/van_doorn_2015/chunks.json",
+       "$LITERATURE_DIR/sources/vardi_1996/chunks.json","$LITERATURE_DIR/sources/vardi_wolper_1986/chunks.json",
+       "$LITERATURE_DIR/sources/yan_2008/chunks.json","$LITERATURE_DIR/sources/zielonka_1998/chunks.json"
+     ]},
+    {"id": "2b", "description": "Deviation: chunk thomas_2003_reactive's 2 files into distinct .chunks/<name>/ subdirs sharing --doc-id thomas_2003_reactive (baier_katoen_2008-style)", "status": "done",
+     "files_touched": [
+       "$LITERATURE_DIR/sources/thomas_2003_reactive/.chunks/Thomas_2003_ch01_omega_automata/chunks.json",
+       "$LITERATURE_DIR/sources/thomas_2003_reactive/.chunks/Thomas_2003_ch03_deterministic_omega/chunks.json"
+     ]},
+    {"id": 3, "description": "Single literature-build-index.sh --global rebuild after all chunk calls", "status": "done", "files_touched": ["$LITERATURE_DIR/.literature.db"]},
+    {"id": 4, "description": "Spot-check chunks_data count > 0 for all 21 covered dirs", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.1",
+      "description": "troelstra_schwichtenberg_2000 backfill (originally listed as 1 of the 22 single-file targets)",
+      "type": "skipped",
+      "reason": "Live corpus inspection found only a quarantined proof_theory_lectures.md.rejected in this dir (no valid .md, and no index.json entry exists for it either) — the plan's premise that all 22 listed dirs have exactly one valid .md did not hold for this one. Treated identically to gabbay_2000/negri_von_plato_2001: correctly excluded, not force-chunked.",
+      "annotation": "*(deviation: skipped — no valid .md, only .md.rejected; treated as a 3rd correctly-excluded dir alongside gabbay_2000/negri_von_plato_2001)*"
+    },
+    {
+      "task_id": "2.2",
+      "description": "thomas_2003_reactive backfill (originally listed as 1 of the 22 single-file targets, single literature-chunk.sh call)",
+      "type": "altered",
+      "reason": "Live corpus inspection found TWO valid .md files (ch01, ch03) in this dir, not one. A single flat literature-chunk.sh call per additional file would have overwritten chunks.json (literature-chunk.sh writes in mode 'w'), clobbering the first chapter — the same hazard Phase 3 mitigates for baier_katoen_2008. Applied the identical distinct-subdirectory technique (chunk each file into sources/thomas_2003_reactive/.chunks/<name>/, sharing --doc-id thomas_2003_reactive) instead of a single top-level chunk call.",
+      "annotation": "*(deviation: altered — 2 valid .md files found, not 1; used baier_katoen_2008-style distinct-subdir chunking to avoid clobber)*"
+    }
+  ]
+}

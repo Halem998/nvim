@@ -144,28 +144,41 @@ invocation, so converted documents are immediately searchable.
 
 ---
 
-### Phase 2: Backfill the 22 single-file uncovered directories [NOT STARTED]
+### Phase 2: Backfill the 22 single-file uncovered directories [COMPLETED]
 
 **Goal**: Every single-file uncovered `sources/<dir>/` gains a `chunks.json` + `chunk_*.md` and
 `chunks_data` rows, from its existing `.md` with no re-conversion.
 
 **Tasks**:
-- [ ] Enumerate the 22 target dirs (all 25 uncovered minus `baier_katoen_2008`, `gabbay_2000`,
+- [x] Enumerate the 22 target dirs (all 25 uncovered minus `baier_katoen_2008`, `gabbay_2000`,
       `negri_von_plato_2001`): `burgess_1982_i`, `burgess_1982_ii`, `courcoubetis_1992`,
       `gerth_1995`, `girard_1989`, `hodkinson_2006`, `kupferman_vardi_2001`, `libkin_2004_ch3_ch7`,
       `piterman_2007`, `rabinovich_2014`, `schewe_2009`, `schwoon_esparza_2005`, `tarjan_1972`,
       `thomas_1997`, `thomas_1997_languages`, `thomas_2003_reactive`,
       `troelstra_schwichtenberg_2000`, `van_doorn_2015`, `vardi_1996`, `vardi_wolper_1986`,
-      `yan_2008`, `zielonka_1998`.
-- [ ] For each dir, resolve the single valid `.md` explicitly:
+      `yan_2008`, `zielonka_1998`. *(completed)*
+- [x] For each dir, resolve the single valid `.md` explicitly:
       `find "$LITERATURE_DIR/sources/<dir>" -maxdepth 1 -name '*.md' -not -name 'chunk_*.md'` and
       confirm exactly one result whose name does not end in `.md.bak-*` / `.md.rejected` (skip and
       report any dir that fails this check rather than force-chunking).
-- [ ] Run `literature-chunk.sh "<that.md>" "$LITERATURE_DIR/sources/<dir>" --doc-id "<dir>"` for
+      *(deviation: altered — enumeration found 2 of the 22 did not have exactly one valid .md:
+      `troelstra_schwichtenberg_2000` has zero (only `.md.rejected`, no index.json entry) and was
+      skipped/excluded per this task's own instruction; `thomas_2003_reactive` has two (ch01,
+      ch03) and was handled with distinct-subdirectory chunking instead of a single flat call —
+      see task 2b below)*
+- [x] Run `literature-chunk.sh "<that.md>" "$LITERATURE_DIR/sources/<dir>" --doc-id "<dir>"` for
       each (idempotent; only reads the `.md`, writes `chunk_*.md` + `chunks.json` alongside it).
-- [ ] After all 22 chunk calls, run a single `literature-build-index.sh --global` rebuild.
-- [ ] Spot-check `sqlite3 "$LITERATURE_DIR/.literature.db" "SELECT count(*) FROM chunks_data WHERE doc_id='<dir>';"`
-      returns > 0 for a sample of the 22.
+      *(completed: ran for the 20 genuinely single-file dirs)*
+- [x] **Task 2b** (not in original plan): `thomas_2003_reactive`'s 2 files chunked into distinct
+      `sources/thomas_2003_reactive/.chunks/<name>/` subdirs, both passing `--doc-id
+      thomas_2003_reactive`, mirroring Phase 3's baier_katoen_2008 technique.
+      *(completed: deviation, see progress file)*
+- [x] After all chunk calls, run a single `literature-build-index.sh --global` rebuild. *(completed:
+      105 manifests, 4970 chunks indexed)*
+- [x] Spot-check `sqlite3 "$LITERATURE_DIR/.literature.db" "SELECT count(*) FROM chunks_data WHERE doc_id='<dir>';"`
+      returns > 0 for a sample of the 22. *(completed: verified all 21 covered dirs — the 20
+      single-file dirs plus thomas_2003_reactive — return > 0; troelstra_schwichtenberg_2000
+      correctly remains 0/excluded)*
 
 **Timing**: 0.75 hour
 
