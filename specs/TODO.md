@@ -4,7 +4,6 @@ next_project_number: 849
 
 # TODO
 
-Warning: 1 task(s) have no topic and will render under Uncategorized: 848 (non-fatal)
 ## Task Order
 
 *Updated 2026-07-11. Generated from state.json dependency graph.*
@@ -12,7 +11,7 @@ Warning: 1 task(s) have no topic and will render under Uncategorized: 848 (non-f
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,821,826,832,837,838,848 | -- | agent-system, literature, extensions, ... |
+| 1 | 78,87,821,826,832,837,838 | -- | agent-system, literature, extensions, ... |
 | 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -41,18 +40,15 @@ Warning: 1 task(s) have no topic and will render under Uncategorized: 848 (non-f
 
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
-### Uncategorized
-
-848 [PLANNED] — Investigate and fix (or formally document as acceptable) the `bai
-
 ## Tasks
 
 ### 848. Fix baier katoen section07 chunk anomaly
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [848_fix_baier_katoen_section07_chunk_anomaly/reports/01_section07-chunk-anomaly.md]
 - **Plan**: [848_fix_baier_katoen_section07_chunk_anomaly/plans/01_section07-chunk-anomaly.md]
+- **Summary**: [848_fix_baier_katoen_section07_chunk_anomaly/summaries/01_section07-chunk-anomaly-summary.md]
 
 **Description**: Investigate and fix (or formally document as acceptable) the `baier_katoen_2008` section07 chunker anomaly flagged by task #842: after the coverage backfill, section07 produced ONE giant chunk versus ~100+ chunks for sibling sections, indicating `literature-chunk.sh`'s pass-2 subdivision did not fire for that file. #842 flagged this out of scope (it was a coverage task, and touching the chunker's contract was a stated non-goal). This task owns it.
 
@@ -75,6 +71,7 @@ VERIFICATION: `baier_katoen_2008` section07 chunk count is comparable to sibling
 - **Dependencies**: None
 - **Research**: [847_prune_dead_zotero_index_scripts/reports/01_prune-zotero-index-scripts.md]
 - **Plan**: [847_prune_dead_zotero_index_scripts/plans/01_prune-zotero-index-scripts.md]
+- **Summary**: [847_prune_dead_zotero_index_scripts/summaries/01_prune-zotero-index-scripts-summary.md]
 
 **Description**: Prune the two confirmed dead-code zotero scripts flagged (defer-and-document, not pruned) by task #844: `.claude/extensions/literature/scripts/zotero-index-add.sh` and `.claude/extensions/literature/scripts/zotero-index-remove.sh`. Task #844's research confirmed `skill-literature/SKILL.md` reimplements the same index add/remove logic inline via `jq`, so these two scripts have no live callers and are pure dead code. #844 intentionally left them in place (defer-and-document) rather than pruning inline; this task removes them cleanly.
 
