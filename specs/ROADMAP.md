@@ -17,6 +17,17 @@
 
 ## Phase 2: Medium-Term Improvements
 
+### Email/Memory Integration
+
+- [ ] **Preference-memory read-back for email-classify**: read the `email/preferences/{key}`
+  vault memory at classify time to advise (never auto-set) the Stage 2.5 bucket review with a
+  stored-preference summary lean (e.g. "archive x14, delete x2 -> lean archive"), per task 821's
+  named `email_preference_lookup` read-back contract. Candidate for task 823.
+- [ ] **Generalize confirmed-decision harvest beyond email**: extend the post-Stage-6-Verify
+  opt-in harvest pattern (tasks 821/822) to other confirmed-decision domains (fix-it triage,
+  task-abandonment reasons, PR-review nits) once a second real client justifies extraction, per
+  task 821's deferred design note.
+
 - [x] **Literature centralization**: Centralized `~/Projects/Literature/` repository shared across all projects via `LITERATURE_DIR` env var, with Zotero/Better BibTeX CSL-JSON integration, v2 index schema (`zotero_key`, `zotero_path`, `project_tags`), two-tier fallback preserving per-project `specs/literature/` directories, and migration of 183 BimodalLogic entries. *(Completed: 2026-06-14, task 710)*
 - [ ] **Extension hot-reload**: Allow `<leader>ac` to reload an already-loaded extension without restarting Neovim
 - [ ] **Context discovery caching**: Cache the output of the adaptive context query in `~/.claude/cache/` to speed up agent spawn time

@@ -1,0 +1,25 @@
+{
+  "phase": 5,
+  "phase_name": "Retrieval/distill guardrails, feedback-loop caps, gate, and scope decisions",
+  "started_at": "2026-07-12T00:00:00Z",
+  "last_updated": "2026-07-12T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "G4 distill zero-retrieval exemption", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]},
+    {"id": 2, "description": "G4 memory-retrieve.sh cross-contamination fix", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]},
+    {"id": 3, "description": "G6 feedback-loop guardrails", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]},
+    {"id": 4, "description": "Gate behavior spec", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]},
+    {"id": 5, "description": "822-scope recommendation (fold-in vs 823/824)", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "5.5",
+      "description": "Scope decision requires a clear recommendation for the user/822 to act on",
+      "type": "altered",
+      "reason": "Per explicit orchestrator instruction, took the plan's documented default (fold revocation UX / cross-account scoping / success metric into 822) rather than blocking on interactive user confirmation, since task 822 is queued in the same batch and depends on 821.",
+      "annotation": "*(deviation: altered -- took documented default fold-into-822 recommendation without interactive user confirmation, per orchestrator instruction)*"
+    }
+  ],
+  "handoff_count": 0
+}

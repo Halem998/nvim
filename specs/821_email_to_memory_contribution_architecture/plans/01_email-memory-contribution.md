@@ -1,7 +1,7 @@
 # Implementation Plan: Task #821
 
 - **Task**: 821 - Email-to-memory contribution architecture
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: None (research complete; task 822 will consume this design)
 - **Research Inputs**: specs/821_email_to_memory_contribution_architecture/reports/01_team-research.md
@@ -250,29 +250,37 @@ the reserved namespace (G5, G7, Conflict-2 synthesis).
 
 ---
 
-### Phase 5: Retrieval/distill guardrails, feedback-loop caps, gate, and scope decisions [NOT STARTED]
+### Phase 5: Retrieval/distill guardrails, feedback-loop caps, gate, and scope decisions [COMPLETED]
 
 **Goal**: Close the safety gaps (G4, G6), specify the opt-in gate, and make the explicit 822
 scope / follow-on-task recommendation.
 
 **Tasks**:
-- [ ] **G4 distill exemption**: specify that `/distill`'s zero-retrieval purge
+- [x] **G4 distill exemption**: specify that `/distill`'s zero-retrieval purge
   (`retrieval_count==0 AND age>30d`) must exempt the `email/preferences/*` topic prefix OR that
-  email-side reads increment `retrieval_count`. Name the chosen mechanism.
-- [ ] **G4 cross-contamination**: specify a `memory-retrieve.sh` fix -- namespace de-weighting or
+  email-side reads increment `retrieval_count`. Name the chosen mechanism. *(completed: design
+  doc §5.1 -- topic-prefix exemption on the purge filter chosen over email-side retrieval
+  increment)*
+- [x] **G4 cross-contamination**: specify a `memory-retrieve.sh` fix -- namespace de-weighting or
   a task-type/topic filter so `email/preferences/*` memories do not leak into unrelated tasks'
   `<memory-context>` (note the >4-char/stopword filter does not drop proper nouns like `github`,
-  `google`, `notifications`).
-- [ ] **G6 feedback-loop guardrails**: cap the confidence a stored preference may contribute to
+  `google`, `notifications`). *(completed: design doc §5.2 -- topic-prefix pre-filter in the
+  scoring block, verified no `task_type=="email"` caller exists today)*
+- [x] **G6 feedback-loop guardrails**: cap the confidence a stored preference may contribute to
   `proposed_action`; require the gate to *surface evidence* ("junked N, kept M") rather than
-  pre-selecting an action; note the Phase-4 tally is itself the reversal mechanism.
-- [ ] **Gate behavior**: specify the opt-in prompt reusing skill-todo's harvest->dedup->tiered
+  pre-selecting an action; note the Phase-4 tally is itself the reversal mechanism. *(completed:
+  design doc §5.3)*
+- [x] **Gate behavior**: specify the opt-in prompt reusing skill-todo's harvest->dedup->tiered
   `AskUserQuestion`->batch-regen *logic* (not its `state.json` substrate) as one consolidated,
-  non-silent prompt adjacent to the just-approved action; independent of `--clean`.
-- [ ] **Scope decision**: recommend whether to fold revocation/edit UX, cross-account (gmail vs
+  non-silent prompt adjacent to the just-approved action; independent of `--clean`. *(completed:
+  design doc §5.4)*
+- [x] **Scope decision**: recommend whether to fold revocation/edit UX, cross-account (gmail vs
   logos) scoping, archive-scope isolation, and a minimal success-signal/test phase into 822, OR
   to keep 822 lean and spawn **task 823** (read-back "preference engine") and **task 824**
   (measurement/audit). State a clear recommendation for the user/`/plan 822` to act on.
+  *(completed: design doc §5.5 -- recommend folding all four into 822 (queued, depends on 821 per
+  specs/state.json); read-back engine remains the sole standalone task-823 candidate, per the
+  orchestrator's documented default rather than blocking on user confirmation)*
 
 **Timing**: ~1.5 hours
 
@@ -287,29 +295,30 @@ scope / follow-on-task recommendation.
 
 ---
 
-### Phase 6: Assemble design deliverable + ROADMAP entries [NOT STARTED]
+### Phase 6: Assemble design deliverable + ROADMAP entries [COMPLETED]
 
 **Goal**: Consolidate the phase drafts into one durable design specification document and add the
 hand-authored ROADMAP entries.
 
 **Tasks**:
-- [ ] Assemble Phases 1-5 into a single design specification document at a durable,
+- [x] Assemble Phases 1-5 into a single design specification document at a durable,
   agent-visible location readable by future email/memory tasks, e.g.
   `.claude/extensions/email/context/project/email/design/email-to-memory-preferences.md`
   (create the `design/` subdir lazily). Include the G1-G8 resolution, the verified identity key
   and its verification appendix, the schema, dedup/operation, guardrails, gate, and scope
-  sections.
-- [ ] Add a **"Future: read-back contract (not in 822)"** section (G8/D1): a named lookup contract
+  sections. *(completed)*
+- [x] Add a **"Future: read-back contract (not in 822)"** section (G8/D1): a named lookup contract
   so 822's write schema is designed lookup-ready (the vault must become a preference *engine*,
-  not just a *log*); file as the seed for task 823.
-- [ ] Add a **deferred design notes** section (D4/D5): generalize the confirmed-decision->preference
+  not just a *log*); file as the seed for task 823. *(completed: design doc §6)*
+- [x] Add a **deferred design notes** section (D4/D5): generalize the confirmed-decision->preference
   harvest beyond email only after a second real client justifies extraction; flag notmuch-ruleset
-  export and local-model training-data as speculative (do not adopt).
-- [ ] Add ROADMAP.md entries by hand (meta tasks do not auto-annotate):
+  export and local-model training-data as speculative (do not adopt). *(completed: design doc §7)*
+- [x] Add ROADMAP.md entries by hand (meta tasks do not auto-annotate):
   "Preference-memory read-back for email-classify" and
-  "Generalize confirmed-decision harvest beyond email."
-- [ ] Note the `email-preferences.md` static classifier rule table as a distinct, parallel layer
-  that must never be auto-written by the vault path.
+  "Generalize confirmed-decision harvest beyond email." *(completed: specs/ROADMAP.md, new
+  "Email/Memory Integration" subsection under Phase 2)*
+- [x] Note the `email-preferences.md` static classifier rule table as a distinct, parallel layer
+  that must never be auto-written by the vault path. *(completed: design doc §8)*
 
 **Timing**: ~0.5 hour
 
@@ -328,15 +337,25 @@ hand-authored ROADMAP entries.
 
 ## Testing & Validation
 
-- [ ] Design document exists at the durable extension-context path and is internally consistent
-  (schema fields match the operations that read/write them).
-- [ ] Identity-key rule (G2) shows evidence of verification against a real
-  `email-census`/`email-classify` sample, with observed edge-case examples.
-- [ ] Every gap G1-G8 has an addressable, named resolution in the document.
-- [ ] `/distill` zero-retrieval exemption and `memory-retrieve.sh` cross-contamination fix each
-  name a concrete mechanism.
-- [ ] Two ROADMAP.md entries added; 822 scope recommendation is explicit (fold-in vs 823/824).
-- [ ] No production code written; `email-preferences.md` static table untouched.
+- [x] Design document exists at the durable extension-context path and is internally consistent
+  (schema fields match the operations that read/write them). *(verified: file written to
+  `.claude/extensions/email/context/project/email/design/email-to-memory-preferences.md`;
+  §3.5 body template fields map 1:1 to §4.3 operation reads/writes)*
+- [x] Identity-key rule (G2) shows evidence of verification against a real
+  `email-census`/`email-classify` sample, with observed edge-case examples. *(verified: §2.3,
+  real read-only `--emit-tagged` sample, 2128 messages/751 senders, concrete examples per edge
+  class)*
+- [x] Every gap G1-G8 has an addressable, named resolution in the document. *(verified: design
+  doc "Summary: G1-G8 Resolution Index" table)*
+- [x] `/distill` zero-retrieval exemption and `memory-retrieve.sh` cross-contamination fix each
+  name a concrete mechanism. *(verified: §5.1 topic-prefix purge exemption; §5.2 topic-prefix
+  scoring pre-filter)*
+- [x] Two ROADMAP.md entries added; 822 scope recommendation is explicit (fold-in vs 823/824).
+  *(verified: specs/ROADMAP.md "Email/Memory Integration" subsection; design doc §5.5)*
+- [x] No production code written; `email-preferences.md` static table untouched. *(verified: only
+  files touched this task are the design doc, plan, progress files, summary, and ROADMAP.md;
+  `email-preferences.md` was read-only referenced, never edited; the only live-system
+  interaction was the read-only `--emit-tagged` verification call in §2.3)*
 
 ## Artifacts & Outputs
 
