@@ -2319,6 +2319,228 @@
           "/meta"
         ]
       }
+    },
+    {
+      "path": "contracts/adversarial-verification.md",
+      "domain": "core",
+      "subdomain": "contracts",
+      "summary": "H4 adversarial verification contract: Claim Verification Bar, Confidence Level Taxonomy, Contradiction Resolution Protocol, Forbidden Verification Outputs, and domain specialization for cslib/lean4",
+      "line_count": 103,
+      "keywords": [
+        "adversarial-verification",
+        "claim-verification-bar",
+        "confidence-taxonomy",
+        "contradiction-resolution",
+        "hard-mode",
+        "H4"
+      ],
+      "topics": [
+        "hard-mode",
+        "adversarial-verification",
+        "contracts",
+        "research"
+      ],
+      "load_when": {
+        "agents": [
+          "general-research-hard-agent",
+          "cslib-research-hard-agent",
+          "lean-research-hard-agent"
+        ],
+        "commands": [],
+        "task_types": []
+      }
+    },
+    {
+      "path": "contracts/anti-analysis.md",
+      "domain": "core",
+      "subdomain": "contracts",
+      "summary": "H2 anti-analysis contract: read budget enforcement, forbidden conclusions, defect bar, settled-design preamble protocol",
+      "line_count": 68,
+      "keywords": [
+        "anti-analysis",
+        "read-budget",
+        "defect-bar",
+        "hard-mode",
+        "H2",
+        "forbidden-conclusions"
+      ],
+      "topics": [
+        "hard-mode",
+        "anti-analysis",
+        "contracts",
+        "implementation"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-hard-agent",
+          "general-research-hard-agent"
+        ],
+        "commands": [],
+        "task_types": []
+      }
+    },
+    {
+      "path": "contracts/convergence.md",
+      "domain": "core",
+      "subdomain": "contracts",
+      "summary": "H6 convergence policing contract: churn detection, three-strikes rule, user-authorization for architectural pivots",
+      "line_count": 73,
+      "keywords": [
+        "convergence",
+        "churn",
+        "three-strikes",
+        "hard-mode",
+        "H6",
+        "divergence-audit"
+      ],
+      "topics": [
+        "hard-mode",
+        "convergence",
+        "contracts",
+        "orchestration"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [],
+        "task_types": []
+      }
+    },
+    {
+      "path": "contracts/orchestrator-discipline.md",
+      "domain": "core",
+      "subdomain": "contracts",
+      "summary": "Orchestrator-role discipline contract: prohibits inline design/proof analysis, reading implementation source, running builds, and mid-cycle strategy reconsideration by the orchestrator itself; defines the two allowed responses (fresh dispatch or escalation) and the burnout circuit-breaker forced-handoff mechanism",
+      "line_count": 86,
+      "keywords": [
+        "orchestrator-discipline",
+        "burnout",
+        "circuit-breaker",
+        "hard-mode",
+        "H-orch"
+      ],
+      "topics": [
+        "hard-mode",
+        "contracts",
+        "orchestration"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [],
+        "task_types": []
+      }
+    },
+    {
+      "path": "contracts/recovery.md",
+      "domain": "core",
+      "subdomain": "contracts",
+      "summary": "Fix-forward recovery contract: disambiguates 'reach green'/'restore green' as fix-forward-only, and defines the 3-rung Recovery Ladder (fix forward -> strategic-sorry skeleton -> snapshot-then-smallest-scope-rollback)",
+      "line_count": 82,
+      "keywords": [
+        "fix-forward",
+        "recovery-ladder",
+        "strategic-sorry",
+        "snapshot",
+        "restore-green",
+        "rollback"
+      ],
+      "topics": [
+        "hard-mode",
+        "recovery",
+        "contracts",
+        "implementation"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-hard-agent"
+        ],
+        "commands": [],
+        "task_types": []
+      }
+    },
+    {
+      "path": "contracts/reference-grounding.md",
+      "domain": "core",
+      "subdomain": "contracts",
+      "summary": "H3 reference grounding contract: three tiers (literature, documentation, implementation) with source-to-implementation mapping and per-tier Source-Coverage Minimums (no single-source conclusions)",
+      "line_count": 94,
+      "keywords": [
+        "reference-grounding",
+        "transcription",
+        "source-mapping",
+        "hard-mode",
+        "H3",
+        "prior-art"
+      ],
+      "topics": [
+        "hard-mode",
+        "reference-grounding",
+        "contracts",
+        "research"
+      ],
+      "load_when": {
+        "agents": [
+          "general-research-hard-agent",
+          "planner-hard-agent"
+        ],
+        "commands": [],
+        "task_types": []
+      }
+    },
+    {
+      "path": "contracts/territory.md",
+      "domain": "core",
+      "subdomain": "contracts",
+      "summary": "H7 territory contract: file ownership, plan-section territory, commit protocol for parallel dispatch",
+      "line_count": 82,
+      "keywords": [
+        "territory",
+        "file-ownership",
+        "parallel-dispatch",
+        "hard-mode",
+        "H7",
+        "commit-protocol"
+      ],
+      "topics": [
+        "hard-mode",
+        "territory",
+        "contracts",
+        "parallel-dispatch"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-hard-agent"
+        ],
+        "commands": [],
+        "task_types": []
+      }
+    },
+    {
+      "path": "contracts/wrap-up.md",
+      "domain": "core",
+      "subdomain": "contracts",
+      "summary": "H9 wrap-up and handoff contract: orchestrator handoff JSON schema, continuation markdown, incremental commit discipline",
+      "line_count": 94,
+      "keywords": [
+        "wrap-up",
+        "handoff",
+        "incremental-commits",
+        "hard-mode",
+        "H9",
+        "build-green"
+      ],
+      "topics": [
+        "hard-mode",
+        "wrap-up",
+        "contracts",
+        "handoff"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-hard-agent"
+        ],
+        "commands": [],
+        "task_types": []
+      }
     }
   ]
 }

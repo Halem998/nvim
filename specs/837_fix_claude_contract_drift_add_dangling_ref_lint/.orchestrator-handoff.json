@@ -1,0 +1,14 @@
+{
+  "task_number": 837,
+  "status": "planned",
+  "summary": "Created a 5-phase plan that fixes contract drift at its root in this (healthy) source-of-truth repo by registering \"contracts\" in core/manifest.json provides.context and migrating the 8 core contract files into the core extension source, extends check-extension-docs.sh with provides.context disk-existence validation and a deployed-file dangling-contract-reference scan, wires the validator into sync.lua's Load Core path with loud non-silent failure, and documents the provides.context sync contract plus a downstream reconciliation procedure (no direct edits to other child repos).",
+  "artifacts": [
+    {
+      "path": "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/plans/01_contract-drift-lint-wiring.md",
+      "type": "plan",
+      "summary": "5 phases (waves [[1,2],[3],[4],[5]], ~5h): Phase 1 register+migrate contracts to core extension source and reconcile index-entries.json (context-hygiene.md stays lean-scoped); Phase 2 provides.context disk-existence check; Phase 3 dangling .claude/context/contracts/*.md reference scan across deployed skills/agents/rules; Phase 4 wire validator into sync.lua with loud failure; Phase 5 document provides.context contract and downstream reconciliation as a propagation step."
+    }
+  ],
+  "blockers": [],
+  "next_steps": "Run /implement 837 to execute the plan."
+}

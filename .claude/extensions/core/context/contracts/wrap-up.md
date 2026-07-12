@@ -1,0 +1,128 @@
+# Wrap-Up and Handoff Contract (H9)
+
+This contract implements H9: Handoff and Commit Discipline. Every hard-mode implementation
+dispatch ends with a complete handoff artifact and a set of green-build incremental commits.
+The orchestrator relies on handoff JSON to drive the next dispatch cycle; incomplete handoffs
+break the pipeline.
+
+**`--hard`-only**: This entire contract is loaded exclusively by hard-mode dispatch paths
+(`skill-implementer-hard`, `general-implementation-hard-agent`, `skill-orchestrate-hard`);
+STANDARD mode never loads this file.
+
+## Orchestrator Handoff JSON Schema
+
+Every hard-mode implementation dispatch MUST write `.orchestrator-handoff.json` before
+terminating. Maximum 400 tokens. Required fields:
+
+```json
+{
+  "status": "implemented | partial | blocked",
+  "skeleton": false,
+  "phases_completed": 2,
+  "phases_total": 5,
+  "sorry_inventory": [],
+  "blockers": [
+    {
+      "phase": 3,
+      "target": "exact description of what was attempted",
+      "verbatim_goal": "exact text from plan checklist item",
+      "what_was_tried": "one sentence",
+      "why_it_failed": "one sentence"
+    }
+  ],
+  "continuation_path": "specs/{NNN}_{SLUG}/handoffs/phase-{P}-handoff-{TS}.md"
+}
+```
+
+**Field semantics**:
+- `skeleton`: Boolean, default `false`. `true` ONLY when `status == "implemented"` and
+  completeness rests on one or more strategic sorries meeting the `anti-analysis.md`
+  strategic-sorry policy — the "implemented (skeleton)" outcome. MUST be `false` or absent when
+  `status` is `"partial"` or `"blocked"` (see the status/skeleton interaction table below).
+- `sorry_inventory`: Array of entries, one per sorry introduced, with the canonical schema
+  `{file, line, statement, strategic, assumption, why_deferred, follow_up_task}`:
+  - `file`, `line`, `statement`: location and verbatim statement of the sorry (as before).
+  - `strategic`: boolean — `true` if the sorry qualifies as strategic under `anti-analysis.md`'s
+    five-condition test; `false` for an ordinary leaf sub-sorry.
+  - `assumption`: what the sorry stands in for / assumes.
+  - `why_deferred`: why it was deferred rather than completed in this dispatch.
+  - `follow_up_task`: the owning follow-up task number or sub-phase that will discharge it.
+    REQUIRED (non-null) when `strategic: true` — an untracked strategic sorry is a defect, not a
+    skeleton success.
+- `blockers`: MUST include verbatim goal text (from the plan checklist) for each blocker.
+  Paraphrasing is a defect -- the orchestrator uses verbatim text for re-dispatch prompts.
+- `continuation_path`: Path to the handoff markdown artifact if `status != "implemented"`.
+  Null when status is "implemented".
+
+**status / skeleton interaction**:
+
+| `status` | `skeleton` | Meaning |
+|----------|------------|---------|
+| `implemented` | `false` (or absent) | Fully complete, no outstanding sorries (unchanged baseline) |
+| `implemented` | `true` | Build-green with only tracked strategic sorries — "implemented (skeleton)" |
+| `partial` / `blocked` | `true` | **Invalid combination.** `skeleton: true` requires `status: "implemented"` |
+
+## Continuation Handoff Markdown
+
+When `status = "partial"` or `status = "blocked"`, the agent MUST also write a handoff
+markdown artifact at `continuation_path`. Required sections:
+
+1. **Immediate Next Action**: Exactly what the next agent should do first (1-3 sentences)
+2. **Current State**: What files exist, what was completed, what is in an inconsistent state
+3. **Key Decisions Made**: Architectural choices made during this dispatch that bind successors
+4. **What NOT to Try**: Approaches attempted and failed, with brief failure reasons
+5. **Remaining Goals** (verbatim from plan): Copy checklist items for incomplete work
+6. **References**: Plan path, progress file path, key files
+
+The handoff markdown is read by the successor agent, not the orchestrator. Write it for
+an agent with no prior context about this task.
+
+## Incremental Commit Discipline
+
+Hard-mode agents commit at every green-build milestone. Never accumulate all changes into
+a single end-of-dispatch commit.
+
+**Commit triggers**:
+- A new file is complete and syntactically valid
+- A phase checklist item is verified done
+- A test passes that previously failed
+- Any other "green checkpoint"
+
+**Commit format**:
+```bash
+git commit -m "task {N} phase {P}: {step description}
+
+Session: {session_id}"
+```
+
+**Before each commit**:
+1. Verify the build is green (or explicitly note "no build applicable for task type")
+2. Check that no previously-passing tests now fail
+3. Verify no sorry was introduced without being in the sorry_inventory
+
+## Build-Green Invariant
+
+At every commit, the following invariants hold:
+
+1. **No regressions**: Completed work (phases marked [COMPLETED]) continues to pass its
+   verification criteria
+2. **Syntactically valid**: All modified files are syntactically valid for their language
+3. **No leftover scaffolding**: No TODO-stubs, placeholder functions, or half-written code
+   blocks, EXCEPT — under `--hard` only — documented strategic sorries that meet the
+   `anti-analysis.md` strategic-sorry policy (deliberate skeleton division point, tightly
+   scoped, documented, tracked in `sorry_inventory` with `strategic: true` and a non-null
+   `follow_up_task`, and still build-green). STANDARD mode's invariant is unchanged and
+   absolute: it has no strategic-sorry exception, and no leftover scaffolding of any kind is
+   acceptable outside `--hard`.
+
+Violating the build-green invariant is a critical defect. Do not commit broken work and
+"continue in the next dispatch." Fix the regression before committing.
+
+## Domain Specialization
+
+- **lean4**: sorry_inventory is mandatory and must be populated. Each sorry includes
+  the statement (verbatim from source), the location (file:line), and the justification. Under
+  `--hard`, a sorry additionally counted as a strategic skeleton division point requires
+  `strategic: true` and a non-null `follow_up_task` in its `sorry_inventory` entry (see the
+  canonical entry schema above and the five-condition test in `anti-analysis.md`).
+- **z3**: handoff JSON includes `assertion_inventory` with any un-verified assertions
