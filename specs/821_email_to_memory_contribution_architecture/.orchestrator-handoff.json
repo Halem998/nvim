@@ -1,0 +1,13 @@
+{
+  "status": "planned",
+  "summary": "Created a 6-phase design plan for task 821 that fixes the post-Stage-6 in-skill capture point, an empirically-verified normalized identity key, the email/preferences/{key} memory schema with a per-action tally, deterministic exact-key dedup with tally-based CREATE/UPDATE/EXTEND, retrieval/distill guardrails, opt-in gate, and hand-authored ROADMAP entries, resolving research gaps G1-G8.",
+  "artifact": {
+    "path": "specs/821_email_to_memory_contribution_architecture/plans/01_email-memory-contribution.md",
+    "type": "plan",
+    "summary": "6-phase, ~7-hour meta design plan producing a durable email-to-memory preference architecture spec resolving G1-G8; waves [[1,2],[3],[4],[5],[6]]."
+  },
+  "blockers": [
+    "Phase 2 requires read-only access to a real email-census/email-classify sample to verify the identity-key normalization; if unavailable, the key ships provisional-unverified and verification folds into task 822.",
+    "Scope decision in Phase 5 (fold revocation UX / cross-account scoping / success-metric into 822 vs spawn tasks 823/824) needs user or /plan 822 confirmation."
+  ]
+}

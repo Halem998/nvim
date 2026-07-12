@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Capture point, harvest trigger, and evidentiary rules",
+  "started_at": "2026-07-12T00:00:00Z",
+  "last_updated": "2026-07-12T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Specify capture point (post-Stage-6-Verify)", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]},
+    {"id": 2, "description": "Specify harvest unit (bucket/sender key)", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]},
+    {"id": 3, "description": "Record rejected alternatives (hooks, /todo substrate)", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]},
+    {"id": 4, "description": "Specify evidentiary threshold (G1/C1)", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]},
+    {"id": 5, "description": "Specify mixed-sender handling (C2)", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

@@ -1,0 +1,26 @@
+{
+  "phase": 2,
+  "phase_name": "Identity key normalization + real-sample verification",
+  "started_at": "2026-07-12T00:00:00Z",
+  "last_updated": "2026-07-12T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm manifest sender is bare/unnormalized", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]},
+    {"id": 2, "description": "Define normalization rule", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]},
+    {"id": 3, "description": "Run real email-classify --emit-tagged sample and verify", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]},
+    {"id": 4, "description": "Finalize key rule, document residual edge cases", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Verify identity key against a real read-only email-classify --emit-tagged sample instead of falling back to provisional-unverified", "result": "succeeded", "reason": "email-census/email-classify binaries were on PATH and --emit-tagged is genuinely read-only (no notmuch tag call); 2128 real tagged messages / 751 unique senders were available from prior classify passes"}
+  ],
+  "deviations": [
+    {
+      "task_id": "2.2",
+      "description": "prefer List-Id over From for lists",
+      "type": "altered",
+      "reason": "The email-classify manifest schema (wrapper-contracts.md sec3) has no List-Id field at all; verified during the real-sample check. The rule could not be defined as originally worded and was instead documented as a hard, schema-level limitation (design doc sec2.3-2.4) rather than a soft preference.",
+      "annotation": "*(deviation: altered -- List-Id preference documented as not implementable from the current manifest schema)*"
+    }
+  ],
+  "handoff_count": 0
+}
