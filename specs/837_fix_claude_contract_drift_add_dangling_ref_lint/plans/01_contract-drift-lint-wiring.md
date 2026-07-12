@@ -1,7 +1,7 @@
 # Implementation Plan: Fix Contract Drift and Add Dangling-Reference Lint
 
 - **Task**: 837 - fix_claude_contract_drift_add_dangling_ref_lint
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: None (independent of #831-#836)
 - **Research Inputs**: specs/837_fix_claude_contract_drift_add_dangling_ref_lint/reports/01_contract-drift-dangling-ref-lint.md
@@ -211,21 +211,25 @@ Phases within the same wave can execute in parallel.
   - Introduce a temporary dangling reference; the sync path surfaces a LOUD, visible failure; revert.
   - `nvim --headless` smoke check that `sync.lua` loads without error after the edit.
 
-### Phase 5: Document the provides.context contract and downstream reconciliation [NOT STARTED]
+### Phase 5: Document the provides.context contract and downstream reconciliation [COMPLETED]
 
 - **Goal:** Document why `provides.context` registration is mandatory for cross-project distribution,
   and give a reproducible procedure for reconciling downstream child-project drift (as a
   propagation step, not direct edits).
 - **Tasks:**
-  - [ ] Add a short section to `.claude/docs/guides/creating-extensions.md` documenting the
+  - [x] Add a short section to `.claude/docs/guides/creating-extensions.md` documenting the
         `provides.context` contract and its role in `copy_context_dirs()` / the allow-list sync,
-        using `contracts/` as the worked cautionary example.
-  - [ ] Document the downstream reconciliation procedure (out of this repo's editable scope): from
+        using `contracts/` as the worked cautionary example. *(completed: new "## The
+        provides.context Sync Contract" section, cross-referencing loader.lua:242 and
+        sync.lua's run_contract_drift_validator/load_all_globally)*
+  - [x] Document the downstream reconciliation procedure (out of this repo's editable scope): from
         each affected child repo (BimodalLogic, cslib, Logos/Hardware, and the un-inspected set —
         ModelChecker, Logos/{ModelChecker,Website,Vision,Theory}, protocol, ModelBuilder,
         theorem_proving_in_lean4, ProofChecker.bak, Repos/provability-fabric), run the new validator
         to detect drift, then re-run "Load Core" to pull the now-registered core contracts.
-  - [ ] Note that the new validator is the systematic sweep tool (replacing manual enumeration).
+        *(completed: "### Downstream Reconciliation Procedure" subsection)*
+  - [x] Note that the new validator is the systematic sweep tool (replacing manual enumeration).
+        *(completed)*
 - **Timing:** 0.75 hour
 - **Depends on:** 1, 4
 - **Files to modify:**
@@ -238,17 +242,19 @@ Phases within the same wave can execute in parallel.
 
 ## Testing & Validation
 
-- [ ] `jq '.provides.context' .claude/extensions/core/manifest.json` includes `"contracts"`.
-- [ ] `.claude/extensions/core/context/contracts/` contains the 8 core contract files, byte-identical
+- [x] `jq '.provides.context' .claude/extensions/core/manifest.json` includes `"contracts"`.
+- [x] `.claude/extensions/core/context/contracts/` contains the 8 core contract files, byte-identical
       to the deployed `.claude/context/contracts/`.
-- [ ] `context-hygiene.md` is absent from core (present only in the `lean` extension).
-- [ ] `bash .claude/scripts/check-extension-docs.sh` exits 0 in this repo (healthy source of truth).
-- [ ] Temporary injected bogus `provides.context` entry -> script FAILs; reverted.
-- [ ] Temporary injected dangling `.claude/context/contracts/*.md` reference -> script FAILs loudly;
+- [x] `context-hygiene.md` is absent from core (present only in the `lean` extension).
+- [x] `bash .claude/scripts/check-extension-docs.sh` exits 0 in this repo (healthy source of truth).
+- [x] Temporary injected bogus `provides.context` entry -> script FAILs; reverted.
+- [x] Temporary injected dangling `.claude/context/contracts/*.md` reference -> script FAILs loudly;
       reverted.
-- [ ] Both script copies (`.claude/extensions/core/scripts/` and `.claude/scripts/`) are identical.
-- [ ] "Load Core" sync runs the validator and surfaces PASS/FAIL visibly.
-- [ ] `nvim --headless -c "luafile <sync.lua path>" -c "q"` (or module require) loads without error.
+- [x] Both script copies (`.claude/extensions/core/scripts/` and `.claude/scripts/`) are identical.
+- [x] "Load Core" sync runs the validator and surfaces PASS/FAIL visibly. *(verified via headless
+      functional test of run_contract_drift_validator's underlying exit-code/FAIL-line logic; the
+      interactive vim.fn.confirm dialog itself was not driven end-to-end)*
+- [x] `nvim --headless -c "luafile <sync.lua path>" -c "q"` (or module require) loads without error.
 
 ## Artifacts & Outputs
 

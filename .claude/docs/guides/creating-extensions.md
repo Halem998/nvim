@@ -246,6 +246,88 @@ For complete resource-only extension patterns, see [Extension System Architectur
 
 ---
 
+## The provides.context Sync Contract
+
+`manifest.json`'s `provides.context` array is not decorative -- it is the ONLY signal that tells
+the sync pipeline which context subdirectories/files belong to an extension and must propagate to
+child repos. Two independent consumers read it:
+
+1. **`M.copy_context_dirs()`** (`lua/neotex/plugins/ai/shared/extensions/loader.lua:242`), invoked
+   when an extension is loaded via the picker's per-extension install flow. It iterates
+   `manifest.provides.context` and, for each entry, copies `<extension>/context/<entry>` (file or
+   directory) into `.claude/context/<entry>` in the target repo.
+2. **The "Load Core" full-sync path** (`M.load_all_globally()` in
+   `lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua`), which syncs the `core`
+   extension's context using the same allow-list mechanism: only paths listed in `core`'s
+   `provides.context` are eligible to sync.
+
+**The failure mode this guards against**: if a category of context files exists on disk under an
+extension's `context/` directory but its name is never added to `provides.context`, those files
+are architecturally invisible to both consumers above. They will never be created in a child repo
+via "Load Core" or an extension install, no matter how many times sync runs -- there is no
+fallback "copy everything under context/" behavior. If a skill, agent, or rule in the SOURCE repo
+already references those files directly (e.g. by manually adding them to the deployed
+`.claude/context/` layer outside the sync pipeline, bypassing `provides.context` entirely), the
+source repo looks healthy while every child repo that only ever runs "Load Core" silently never
+receives the referenced files. The reference then dangles in every downstream repo without any
+error, until an agent tries to read the missing file at runtime.
+
+**Worked cautionary example (task 837)**: nvim's 8 hard-mode contract files lived in
+`.claude/context/contracts/` and were referenced by 6 lines in
+`.claude/skills/skill-orchestrate-hard/SKILL.md`. `core/manifest.json`'s `provides.context` array
+never listed `"contracts"`, and no `.claude/extensions/core/context/contracts/` source directory
+existed -- the deployed files had been added directly to the deployed layer, bypassing the
+extension source entirely. The result: `contracts/` never flowed to any child repo through
+`copy_context_dirs()` / "Load Core", producing dangling
+`.claude/context/contracts/*.md` references in every downstream copy of
+`skill-orchestrate-hard/SKILL.md` that had run "Load Core" (confirmed live in BimodalLogic and
+cslib). The fix was two-part and is now the template for any future context category: (1) add the
+missing category name to `provides.context`, and (2) create the matching
+`<extension>/context/<category>/` source directory containing the actual files, so the extension
+source becomes the propagation origin instead of the deployed copy being a dead end.
+
+**Validation**: `bash .claude/scripts/check-extension-docs.sh` now catches both failure directions
+for this contract (task 837, Phases 2-3):
+- A `provides.context` entry with no matching file/directory under `<extension>/context/` FAILs
+  (per-extension disk-existence check, mirroring the pre-existing agents/skills/commands/rules/
+  scripts checks).
+- A deployed skill/agent/rule/command referencing a `.claude/context/contracts/*.md` path that
+  does not exist in the current project FAILs loudly (project-wide dangling-reference scan,
+  scoped to `contracts/*.md` references specifically; see the check's own header comment for why a
+  broader generic `@.claude/...` scan is deliberately not implemented).
+
+As of task 837, `check-extension-docs.sh` also runs automatically at the end of every "Load Core"
+sync (`run_contract_drift_validator()` in `sync.lua`) and surfaces FAIL output via a prominent
+`ERROR`-level notification -- drift is no longer a silent, discover-later failure mode.
+
+### Downstream Reconciliation Procedure
+
+The validator above is a detection tool; it does not edit other repos. Reconciling contract drift
+in a child repo is a propagation/deployment step run FROM that repo, not a set of direct edits
+made from this (nvim) repo. From each affected child repo:
+
+```bash
+# 1. Detect drift: run the validator (deployed into every repo that has synced core's scripts)
+bash .claude/scripts/check-extension-docs.sh
+
+# 2. If it FAILs on a missing provides.context entry or a dangling contracts/*.md reference,
+#    re-run "Load Core" (or reload the relevant extension) from that repo's picker to pull the
+#    now-registered core contracts (or the specific extension's now-corrected provides.context).
+
+# 3. Re-run the validator to confirm the drift is resolved.
+bash .claude/scripts/check-extension-docs.sh
+```
+
+This is a systematic sweep, replacing the manual enumeration that originally surfaced this defect.
+It applies to any child repo that has ever run "Load Core" against this project's `.claude/`
+source, including (at minimum, as of task 837) BimodalLogic, cslib, Logos/Hardware, and the
+un-inspected set: ModelChecker, Logos/{ModelChecker,Website,Vision,Theory}, protocol,
+ModelBuilder, theorem_proving_in_lean4, ProofChecker.bak, and Repos/provability-fabric. None of
+these repos are edited directly by this task or from this repo -- the procedure above is
+self-contained and runnable from any child repo without requiring further changes here.
+
+---
+
 ## Creating Agents
 
 ### Research Agent
