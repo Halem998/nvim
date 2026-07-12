@@ -158,6 +158,47 @@ Collision handling appends `-2`, `-3`, etc.
 | `topic` | string | Hierarchical path, e.g. `python/libs/requests` |
 | `source` | string | Origin: "user input", "file: /path", etc. |
 | `modified` | date | Last modification date |
+| `keywords` | list | 3-5 significant terms used for retrieval-scoring keyword overlap |
+| `summary` | string | 1-2 sentence summary, shown in `<memory-context>` retrieval output |
+| `retrieval_count` | number | How many times auto-retrieval has selected this memory (starts at 0) |
+| `last_retrieved` | date/null | Date of the most recent auto-retrieval selection (`null` until first retrieval) |
+| `status` | string | Absent (defaults to `active`) or `tombstoned` — see Tombstoning below |
+| `tombstoned_at` | date | Present only when `status: tombstoned` — the date the tombstone was applied |
+| `tombstone_reason` | string | Present only when `status: tombstoned` — e.g. `"merged_into:{id}"`, `"user_revoked"` |
+| `category` | string | Optional. When present, takes priority over the tags-derived category heuristic used by `memory-index.json` regeneration and `/distill`. First real use: `category: preference` for `email/preferences/*` memories (see Reserved Topic Namespaces below) |
+
+#### Tombstoning
+
+Memories are never hard-deleted by `/distill --purge` or `/distill --merge`; instead their
+frontmatter gains `status: tombstoned`, `tombstoned_at`, and `tombstone_reason`. Tombstoned
+memories are excluded from active listings (`index.md`, retrieval scoring) but retained in
+`memory-index.json` with their tombstoned status, and are hard-deleted only by `/distill --gc`
+after a 7-day grace period.
+
+#### Reserved Topic Namespaces
+
+`email/preferences/{account}/{key}` is a reserved topic namespace (task 822, grounded in the
+task 821 design at
+`.claude/extensions/email/context/project/email/design/email-to-memory-preferences.md`):
+sender/domain-aggregated preference memories written by `skill-email-cleanup`'s opt-in Stage 7
+harvest, evolving via CREATE/EXTEND/UPDATE tally arithmetic instead of full-content
+replacement. Memories in this namespace carry `category: preference` and get special treatment
+in `skill-memory`:
+
+- **Exact-key dedup**: an exact `topic ==` match short-circuits classification straight to
+  UPDATE/EXTEND, bypassing the fuzzy keyword-overlap thresholds used elsewhere.
+- **Retrieval exclusion**: `memory-retrieve.sh` excludes this namespace from general
+  `/research`/`/plan`/`/implement` auto-retrieval (a topic-prefix pre-filter), so these memories
+  never leak into unrelated task context.
+- **Purge/scoring exemption**: `/distill`'s zero-retrieval penalty and purge candidate selection
+  both exempt this namespace — a low `retrieval_count` is expected here (auto-retrieval never
+  selects it), not a staleness signal.
+- **Hashed local-part**: the domain stays plaintext, but the local-part of an address is
+  replaced by a stable, non-reversible `sha256(local-part)[:12]` hash before it is ever written
+  into a stored key, title, or body — plaintext email addresses are never written into the
+  vault. This is defense-in-depth against the keyword-overlap retrieval path (rather than a
+  training-data-anonymization guarantee): debugging only needs hash *consistency* (same input ->
+  same hash), not reversibility.
 
 ### Index Structure
 
@@ -172,6 +213,17 @@ you manually add or delete files.
 ---
 
 ## Configuration
+
+### Lifecycle Hooks (unused)
+
+`manifest.json` declares `"hooks": {}` — the extension lifecycle-hook slot (preflight,
+context_injection, verification, postflight scripts run via `skill-base.sh`) is schema-ready but
+intentionally unused. This was evaluated and explicitly rejected as a task 822 harvest
+dependency (design §1.3): neither this extension nor the email extension has ever exercised this
+slot, so its failure-isolation contract is unproven; the harvest instead reads/writes the vault
+directly from `skill-email-cleanup`'s Stage 7 via Bash/jq. JSON cannot carry an inline comment,
+so this note documents the empty object's intent in prose. Revisit only if a second real hook
+consumer emerges.
 
 ### MCP Server Setup
 

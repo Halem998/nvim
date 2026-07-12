@@ -39,6 +39,8 @@ execute the approved archive/delete/unsubscribe-extract actions. The agent never
 | `context/project/email/domain/wrapper-contracts.md` | Ground-truth-verified wrapper contract (incl. classify pagination contract and folder tokens) |
 | `context/project/email/domain/archive-mode-risk.md` | Account archive blast radius, reversible-vs-hard boundary, asymmetric confidence policy |
 | `context/project/email/patterns/bulk-bucket-review.md` | Sender/domain bucket bulk-approval pattern (`--all` mode review gate) |
+| `context/project/email/design/email-to-memory-preferences.md` | Authoritative design (task 821) for routing wrapper-confirmed cleanup decisions into `email/preferences/{account}/{key}` memory-vault preference memories — resolves G1-G8, verified against real mail; implemented by task 822's Stage 7 harvest below |
+| `scripts/email-preference-harvest.sh` | Deterministic normalization/redaction/tally/dedup helper for the Stage 7 harvest (pure subcommands: `normalize`, `freemail`, `identity`, `dedup`, `tally-op`, `dominant`, `threshold`) |
 
 A fourth new doc lives at the agent-system layer (domain-agnostic):
 `.claude/context/patterns/batch-drain-loop.md` — one approval draining many capped batches,
@@ -134,6 +136,24 @@ mailbox account the modes/flags below apply to:
   full-scale `--archive` for a given account is refused until that account's bounded pilot pass
   has been run, verified, and explicitly acknowledged. See
   `context/project/email/domain/archive-mode-risk.md`.
+
+### Preference harvest (opt-in Stage 7, both modes)
+
+After Stage 6 (Verify) in either mode, `skill-email-cleanup` offers an **opt-in, never-silent**
+Stage 7 harvest: it routes wrapper-**executed** decisions from this pass into the memory vault
+(when the `memory` extension is loaded) as sender/domain-aggregated
+`email/preferences/{account}/{key}` preference memories that evolve via CREATE/EXTEND/UPDATE
+tally arithmetic — never one memory per message. Only Message-IDs the wrapper itself confirms as
+`executed` count as evidence; nothing from Stage 2/3/4 (unconfirmed or approved-but-unexecuted)
+is ever harvested. A single consolidated `AskUserQuestion` gate (mirroring `skill-todo`'s
+harvest -> dedup -> tiered-gate -> batch-regen *logic*, never its `state.json` substrate)
+presents Tier 1 (threshold-met this round) and Tier 2 (newly crossing the rolling-N threshold)
+candidates for confirmation before anything is written. The vault stays **strictly advisory**:
+harvested preferences never mutate `proposed_action` or raise `confidence` on any future
+classify pass — this is a write-only preference log today, not a read-back engine (a
+read-back consumer is seeded, not implemented, for a future task). See
+`context/project/email/design/email-to-memory-preferences.md` for the full design and
+`skill-email-cleanup/SKILL.md`'s Stage 7 sections for the executable procedure.
 
 ### `/email --sync [channel]` — reconcile the cleanup to the account's server
 

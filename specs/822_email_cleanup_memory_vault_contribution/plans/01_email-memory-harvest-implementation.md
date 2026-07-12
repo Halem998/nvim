@@ -1,7 +1,7 @@
 # Implementation Plan: Task #822
 
 - **Task**: 822 - Implement email cleanup to memory vault contribution
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: 821 (COMPLETED — design deliverable consumed)
 - **Research Inputs**: specs/822_email_cleanup_memory_vault_contribution/reports/01_email-memory-harvest-implementation.md
@@ -268,40 +268,59 @@ blocked by 1, 3. Wave 3: Phase 6 blocked by 4 (and depends on 2's contract being
 - **Timing:** ~1 hour
 - **Depends on:** 1, 3
 
-### Phase 6: Documentation updates + doc-lint [NOT STARTED]
+### Phase 6: Documentation updates + doc-lint [COMPLETED]
 
 - **Goal:** Update both extensions' READMEs to reflect the harvest and new schema, and pass
   doc-lint.
 - **Tasks:**
-  - [ ] `email/README.md`: add a File Inventory row for
+  - [x] `email/README.md`: add a File Inventory row for
     `context/project/email/design/email-to-memory-preferences.md`; add a "Using `/email`"
     subsection describing the opt-in Stage 7 harvest gate (mirroring how the `--sync` confirmation
-    gate is documented).
-  - [ ] `memory/README.md`: add a `category` row to the Frontmatter Fields table; opportunistically
+    gate is documented). *(completed: File Inventory rows for the design doc + the new
+    `scripts/email-preference-harvest.sh`; new "Preference harvest (opt-in Stage 7, both modes)"
+    subsection)*
+  - [x] `memory/README.md`: add a `category` row to the Frontmatter Fields table; opportunistically
     fix the pre-existing gap (add `keywords, summary, retrieval_count, last_retrieved`,
     tombstone/`status` fields already in real use); add a short "Reserved Topic Namespaces" callout
     documenting the `email/preferences/*` convention and the hashed local-part rationale.
-  - [ ] Note in prose (README/EXTENSION.md) that the `memory` manifest's `hooks: {}` lifecycle slot
+    *(completed)*
+  - [x] Note in prose (README/EXTENSION.md) that the `memory` manifest's `hooks: {}` lifecycle slot
     is intentionally unused (design §1.3 rejection), since JSON cannot carry a comment.
-  - [ ] Confirm no manifest structural changes are needed (no new skills/commands); `provides.context`
-    globs already cover the new `design/` subdirectory.
-  - [ ] Run `bash .claude/scripts/check-extension-docs.sh` and resolve any reported failures.
+    *(completed: new "Lifecycle Hooks (unused)" subsection in memory/README.md's Configuration
+    section)*
+  - [x] Confirm no manifest structural changes are needed (no new skills/commands); `provides.context`
+    globs already cover the new `design/` subdirectory. *(confirmed: only `provides.scripts` in
+    the email manifest changed, adding `email-preference-harvest.sh`; no skill/command/context
+    structural changes)*
+  - [x] Run `bash .claude/scripts/check-extension-docs.sh` and resolve any reported failures.
+    *(completed: exit 0, all 20 extensions PASS — email and memory both clean; the one email WARN
+    is the pre-existing "extension not installed" notice, unrelated to this task's changes)*
 - **Timing:** ~0.75 hours
 - **Depends on:** 4
 
 ## Testing & Validation
 
-- [ ] `.claude/tests/test-email-preference-harvest.sh` passes all assertions (normalization edge
-  cases, tally transitions, exact-key dedup, retrieve-filter inclusion/exclusion).
-- [ ] `jq` compiles the new `memory-retrieve.sh` filter without error; a general-task-type
+- [x] `.claude/tests/test-email-preference-harvest.sh` passes all assertions (normalization edge
+  cases, tally transitions, exact-key dedup, retrieve-filter inclusion/exclusion). *(35/35 pass)*
+- [x] `jq` compiles the new `memory-retrieve.sh` filter without error; a general-task-type
   retrieval against a fixture containing an `email/preferences/*` entry returns no leak.
-- [ ] `bash .claude/scripts/check-extension-docs.sh` exits zero after doc updates.
-- [ ] Manual dry-run walkthrough (documented in the summary): synthetic Default-mode Stage 6
+  *(verified against a synthetic 2-entry fixture)*
+- [x] `bash .claude/scripts/check-extension-docs.sh` exits zero after doc updates. *(exit 0, all
+  20 extensions PASS)*
+- [x] Manual dry-run walkthrough (documented in the summary): synthetic Default-mode Stage 6
   executed diff and synthetic `--all` bucket set each produce the expected Tier 1/Tier 2 gate
   presentation and, on confirm, the expected CREATE/EXTEND/UPDATE with a single batch index regen.
-- [ ] Verify the other 19 existing memories (no `category:` field) still derive category via the
-  tags-based fallback after the Phase 2 recognition change.
-- [ ] Confirm the frozen wrapper and `email-preferences.md` are unmodified (`git diff` scope check).
+  *(completed: full Default-mode CREATE -> EXTEND -> UPDATE round-trip run against a scratch
+  `.memory/` directory, including a rendered memory file matching the §3.5 template and a
+  regenerated index; `--all` mode's Stage 7 differs only in key derivation — Step 1 — which
+  reuses the identical `identity` subcommand, so Steps 2-11 are covered by the same walkthrough)*
+- [x] Verify the other 19 existing memories (no `category:` field) still derive category via the
+  tags-based fallback after the Phase 2 recognition change. *(verified: 18 memories currently on
+  disk, 0 have a `category:` field, all exercise the fallback path; spot-checked one file's
+  derivation manually)*
+- [x] Confirm the frozen wrapper and `email-preferences.md` are unmodified (`git diff` scope check).
+  *(confirmed: neither file appears in any task-822 commit; the wrapper lives outside this repo
+  entirely)*
 
 ## Artifacts & Outputs
 
