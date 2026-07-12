@@ -1,0 +1,16 @@
+{
+  "phase": 4,
+  "phase_name": "Deterministic dedup + operation mapping",
+  "started_at": "2026-07-12T00:00:00Z",
+  "last_updated": "2026-07-12T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Specify exact-key dedup short-circuit", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]},
+    {"id": 2, "description": "Retain fuzzy search as near-miss suggestion", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]},
+    {"id": 3, "description": "Specify CREATE/EXTEND/UPDATE operation mapping", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]},
+    {"id": 4, "description": "Specify batch index regeneration", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

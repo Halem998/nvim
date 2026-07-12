@@ -1,0 +1,25 @@
+{
+  "phase": 3,
+  "phase_name": "Memory schema, tally model, and topic namespace",
+  "started_at": "2026-07-12T00:00:00Z",
+  "last_updated": "2026-07-12T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Specify reserved topic namespace", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]},
+    {"id": 2, "description": "Specify per-action tally", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]},
+    {"id": 3, "description": "Make redaction decision (G5)", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]},
+    {"id": 4, "description": "Specify category:preference field (G7)", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]},
+    {"id": 5, "description": "Define memory body template", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "3.1",
+      "description": "Specify the reserved topic namespace email/preferences/{key}",
+      "type": "altered",
+      "reason": "Account-prefixed to email/preferences/{account}/{key} to satisfy the Phase 5 cross-account scoping recommendation (gmail vs logos must not collapse by default).",
+      "annotation": "*(deviation: altered -- account-prefixed to email/preferences/{account}/{key})*"
+    }
+  ],
+  "handoff_count": 0
+}

@@ -179,27 +179,30 @@ mail** (G2) -- the load-bearing empirical step the research insists must happen 
 
 ---
 
-### Phase 3: Memory schema, tally model, and topic namespace [NOT STARTED]
+### Phase 3: Memory schema, tally model, and topic namespace [COMPLETED]
 
 **Goal**: Specify the stored memory's schema, the per-action tally, the redaction decision, and
 the reserved namespace (G5, G7, Conflict-2 synthesis).
 
 **Tasks**:
-- [ ] Specify the reserved topic namespace `email/preferences/{key}` where `{key}` is the Phase 2
-  normalized identity.
-- [ ] Specify the per-action tally stored in the memory body:
+- [x] Specify the reserved topic namespace `email/preferences/{key}` where `{key}` is the Phase 2
+  normalized identity. *(completed: design doc §3.1; deviation -- account-prefixed to
+  `email/preferences/{account}/{key}` per the Phase 5 cross-account scoping recommendation)*
+- [x] Specify the per-action tally stored in the memory body:
   `{delete_count, archive_count, keep_count, last_seen}`; dominant action is a *derived* function
   of the tally (not a stored scalar). Reference Mem0's mark-superseded framing for the `## History`
-  convention.
-- [ ] Make the **redaction decision** (G5): plaintext address vs `domain + stable sender-hash`.
+  convention. *(completed: design doc §3.2)*
+- [x] Make the **redaction decision** (G5): plaintext address vs `domain + stable sender-hash`.
   State the choice and its rationale (PII exposure in `<memory-context>` vs debuggability); this
-  choice determines the schema.
-- [ ] Specify the forward-compat **`category: preference`** frontmatter field (G7): schema-additive,
+  choice determines the schema. *(completed: design doc §3.3 -- domain plaintext, local-part
+  sha256-hashed)*
+- [x] Specify the forward-compat **`category: preference`** frontmatter field (G7): schema-additive,
   non-breaking, recognized where present by `index.md`/`/distill`, not required. Cross-check
   against the current frontmatter set (`title, created, tags, topic, source, modified`;
-  `memory/README.md:151-160`).
-- [ ] Define the memory body template (title, tally block, `## History` lines, evidence summary
-  "junked N, kept M") consistent with the redaction choice.
+  `memory/README.md:151-160`). *(completed: design doc §3.4 -- verified 0 of 19 existing memory
+  files have a `category:` field; this is the first real use)*
+- [x] Define the memory body template (title, tally block, `## History` lines, evidence summary
+  "junked N, kept M") consistent with the redaction choice. *(completed: design doc §3.5)*
 
 **Timing**: ~1 hour
 
@@ -214,25 +217,25 @@ the reserved namespace (G5, G7, Conflict-2 synthesis).
 
 ---
 
-### Phase 4: Deterministic dedup + operation mapping [NOT STARTED]
+### Phase 4: Deterministic dedup + operation mapping [COMPLETED]
 
 **Goal**: Specify how a harvested candidate maps to CREATE/UPDATE/EXTEND with deterministic dedup
 (G3) and tally-based contradiction handling.
 
 **Tasks**:
-- [ ] Specify the **deterministic exact-key dedup** short-circuit: look up
+- [x] Specify the **deterministic exact-key dedup** short-circuit: look up
   `topic == "email/preferences/{key}"` in `memory-index.json` (jq filter) *before* the existing
   fuzzy keyword-overlap path. Explicitly document this as a sanctioned deviation from
-  skill-memory's 60%/30% fuzzy contract.
-- [ ] Retain fuzzy search only as a near-miss *suggestion* (`mail.foo.com` vs `foo.com`),
-  defaulting to CREATE when no exact key matches.
-- [ ] Specify the operation mapping: first sighting -> CREATE; same dominant action reconfirmed
+  skill-memory's 60%/30% fuzzy contract. *(completed: design doc §4.1)*
+- [x] Retain fuzzy search only as a near-miss *suggestion* (`mail.foo.com` vs `foo.com`),
+  defaulting to CREATE when no exact key matches. *(completed: design doc §4.2)*
+- [x] Specify the operation mapping: first sighting -> CREATE; same dominant action reconfirmed
   -> EXTEND (append dated `## History` line, bump the matching counter); contradicting action ->
   UPDATE (increment the opposite counter, which shifts the derived dominant-action ratio; move
   prior summary to `## History`). Emphasize contradiction handling is tally arithmetic -- no new
-  skill-memory API verb, no bespoke decay/EWMA math.
-- [ ] Specify batch index regeneration after a harvest round (reuse skill-todo's batch-regen
-  logic, not its storage substrate).
+  skill-memory API verb, no bespoke decay/EWMA math. *(completed: design doc §4.3)*
+- [x] Specify batch index regeneration after a harvest round (reuse skill-todo's batch-regen
+  logic, not its storage substrate). *(completed: design doc §4.4)*
 
 **Timing**: ~1 hour
 
