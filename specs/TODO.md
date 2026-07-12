@@ -11,18 +11,13 @@ next_project_number: 852
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 87,822,826,837 | -- | agent-system, extensions, terminal ui |
+| 1 | 87,826 | -- | extensions, terminal ui |
 | 2 | 827 | 826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
-### Agent System
-
-837 [PLANNED] — Shared .claude/ infrastructure has diverged across child projects
-
 ### Extensions
 
-822 [NOT STARTED] — Implement the email->memory contribution per the #821 design. Add
 826 [BLOCKED] — Root-cause and fix the pre-existing Logos (Protonmail Bridge) mai
   └─ 827 [BLOCKED] — The freshness gate shipped in tasks 823-825 is defective: email-c
 
@@ -106,12 +101,13 @@ SCOPE BOUNDARY: this task does NOT fix the audit blind spot (word-ratio passing 
 ---
 
 ### 837. Fix .claude/ cross-project contract drift and add dangling-reference lint
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [837_fix_claude_contract_drift_add_dangling_ref_lint/reports/01_contract-drift-dangling-ref-lint.md]
 - **Plan**: [837_fix_claude_contract_drift_add_dangling_ref_lint/plans/01_contract-drift-lint-wiring.md]
+- **Summary**: [837_fix_claude_contract_drift_add_dangling_ref_lint/summaries/01_contract-drift-lint-wiring-summary.md]
 
 **Description**: Shared .claude/ infrastructure has diverged across child projects and nothing detects dangling references at sync/load time - the same silent-degradation failure mode as #831's missing marker. IMPORTANT correction of the original bug report, which was MISATTRIBUTED to nvim: this repo (~/.config/nvim/.claude/) is HEALTHY - context/contracts/ contains all 8 of adversarial-verification, anti-analysis, convergence, orchestrator-discipline, recovery, reference-grounding, territory, wrap-up; its skill-orchestrate-hard/SKILL.md references 6, all present. The real defect is in ~/Projects/BimodalLogic/.claude/ - a SEPARATE COPY, not a symlink - whose skill-orchestrate-hard references 5 contracts it LACKS, so H5/H6/H7/H9 are silently un-injected. Drift is BIDIRECTIONAL: only-in-BimodalLogic = context-hygiene.md; only-in-nvim = convergence.md, orchestrator-discipline.md, recovery.md, territory.md, wrap-up.md. SCOPE: (1) reconcile contracts/ across ~/.config/nvim/.claude/ and ~/Projects/BimodalLogic/.claude/, sweeping other child projects (e.g. cslib); (2) decide the canonical set (is context-hygiene.md a real contract nvim should adopt?); (3) add a validator - extend check-extension-docs.sh or add a sibling script - that FAILS when any skill/agent/rule references a contracts/*.md, @.claude/... path, or context file absent in that project; (4) wire it into the sync path (.syncprotect / 'Load Core') so drift is caught at load time. LOUD-FAILURE requirement: a missing contract must not silently no-op. Fully independent of #831-#836 and #838.
 
@@ -199,10 +195,13 @@ DEPENDENCIES: 831 (COMPLETE — fixed converter), 835 (COMPLETE — provenance/f
 ---
 
 ### 822. Implement email cleanup to memory vault contribution
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 821
+- **Research**: [822_email_cleanup_memory_vault_contribution/reports/01_email-memory-harvest-implementation.md]
+- **Plan**: [822_email_cleanup_memory_vault_contribution/plans/01_email-memory-harvest-implementation.md]
+- **Summary**: [822_email_cleanup_memory_vault_contribution/summaries/01_email-memory-harvest-implementation-summary.md]
 
 **Description**: Implement the email->memory contribution per the #821 design. Add a harvest step to skill-email-cleanup (or a memory lifecycle hook) that, when junk/keep decisions are confirmed, creates or UPDATEs a sender/domain-aggregated preference memory in the vault (CREATE/UPDATE/EXTEND with dedup against memory-index.json). Include an opt-in/gate consistent with skill-todo's harvest pattern, tests, and documentation updates to both extensions' READMEs/manifests.
 

@@ -69,7 +69,7 @@
     {
       "project_number": 822,
       "project_name": "email_cleanup_memory_vault_contribution",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "extensions",
       "priority": "medium",
@@ -84,9 +84,26 @@
       ],
       "estimated_effort": "3 hours",
       "created": "2026-07-05T21:19:39Z",
-      "last_updated": "2026-07-05T21:19:39Z",
-      "session_id": "sess_1783284700_meta820",
-      "artifacts": []
+      "last_updated": "2026-07-12T18:58:40Z",
+      "session_id": "sess_1783879475_193202_822",
+      "artifacts": [
+        {
+          "path": "specs/822_email_cleanup_memory_vault_contribution/reports/01_email-memory-harvest-implementation.md",
+          "type": "report",
+          "summary": "Grounds 822 impl in completed 821 design; pinpoints exact edit sites in skill-email-cleanup Stage 7, skill-memory dedup, memory-retrieve.sh filter; skill-todo gate pattern; test strategy"
+        },
+        {
+          "path": "specs/822_email_cleanup_memory_vault_contribution/plans/01_email-memory-harvest-implementation.md",
+          "type": "plan",
+          "summary": "6-phase plan: email-preference-harvest.sh helper, skill-memory dedup/purge-exemption, memory-retrieve.sh filter, skill-email-cleanup Stage 7 opt-in gate, tests, docs"
+        },
+        {
+          "path": "specs/822_email_cleanup_memory_vault_contribution/summaries/01_email-memory-harvest-implementation-summary.md",
+          "type": "summary",
+          "summary": "6 phases: email-preference-harvest.sh helper (35 tests), skill-memory dedup/tally/purge-exemption, memory-retrieve.sh filter, skill-email-cleanup Stage 7 opt-in gate, docs"
+        }
+      ],
+      "completion_summary": "Implemented the email->memory preference contribution per the 821 design: deterministic email-preference-harvest.sh helper (7 pure subcommands, 35 passing assertions); skill-memory exact-key dedup + tally-arithmetic UPDATE/EXTEND + category recognition + zero-retrieval purge exemption; memory-retrieve.sh cross-contamination filter; opt-in Stage 7 harvest gate in skill-email-cleanup (Default + --all modes) mirroring skill-todo; README/manifest doc updates. check-extension-docs.sh passes."
     },
     {
       "project_number": 826,
@@ -209,7 +226,7 @@
     {
       "project_number": 837,
       "project_name": "fix_claude_contract_drift_add_dangling_ref_lint",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "title": "Fix .claude/ cross-project contract drift and add dangling-reference lint",
       "description": "Shared .claude/ infrastructure has diverged across child projects and nothing detects dangling references at sync/load time - the same silent-degradation failure mode as #831's missing marker. IMPORTANT correction of the original bug report, which was MISATTRIBUTED to nvim: this repo (~/.config/nvim/.claude/) is HEALTHY - context/contracts/ contains all 8 of adversarial-verification, anti-analysis, convergence, orchestrator-discipline, recovery, reference-grounding, territory, wrap-up; its skill-orchestrate-hard/SKILL.md references 6, all present. The real defect is in ~/Projects/BimodalLogic/.claude/ - a SEPARATE COPY, not a symlink - whose skill-orchestrate-hard references 5 contracts it LACKS, so H5/H6/H7/H9 are silently un-injected. Drift is BIDIRECTIONAL: only-in-BimodalLogic = context-hygiene.md; only-in-nvim = convergence.md, orchestrator-discipline.md, recovery.md, territory.md, wrap-up.md. SCOPE: (1) reconcile contracts/ across ~/.config/nvim/.claude/ and ~/Projects/BimodalLogic/.claude/, sweeping other child projects (e.g. cslib); (2) decide the canonical set (is context-hygiene.md a real contract nvim should adopt?); (3) add a validator - extend check-extension-docs.sh or add a sibling script - that FAILS when any skill/agent/rule references a contracts/*.md, @.claude/... path, or context file absent in that project; (4) wire it into the sync path (.syncprotect / 'Load Core') so drift is caught at load time. LOUD-FAILURE requirement: a missing contract must not silently no-op. Fully independent of #831-#836 and #838.",
@@ -225,16 +242,22 @@
           "path": "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/plans/01_contract-drift-lint-wiring.md",
           "type": "plan",
           "summary": "5-phase plan: add contracts to provides.context, extend check-extension-docs.sh with dangling-ref scan, wire LOUD validator into sync.lua Load Core"
+        },
+        {
+          "path": "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/summaries/01_contract-drift-lint-wiring-summary.md",
+          "type": "summary",
+          "summary": "5 phases: contracts registered as core-owned context, check-extension-docs.sh gains provides.context + dangling-ref checks, validator wired into sync.lua Load Core with loud failure"
         }
       ],
       "next_artifact_number": 1,
       "session_id": "sess_1783879475_193202_837",
       "created": "2026-07-09T00:00:00Z",
-      "last_updated": "2026-07-12T18:24:54Z",
+      "last_updated": "2026-07-12T18:38:13Z",
       "file_scope": [
         ".claude/scripts/check-extension-docs.sh",
         ".claude/context/contracts/"
-      ]
+      ],
+      "completion_summary": "Fixed root cause of .claude/ contract drift: registered contracts/ as a core-owned context category (core manifest provides.context + migrated 8 canonical files + index-entries) so they propagate via sync; extended check-extension-docs.sh with provides.context disk-existence and project-wide dangling-contract-reference checks (both loud, exit 1); wired the validator into sync.lua Load Core path at ERROR level; documented the sync contract and downstream reconciliation procedure. context-hygiene.md kept lean-scoped."
     },
     {
       "project_number": 838,
