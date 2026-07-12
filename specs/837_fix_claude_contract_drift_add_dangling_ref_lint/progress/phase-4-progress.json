@@ -1,0 +1,36 @@
+{
+  "phase": 4,
+  "phase_name": "Wire the validator into the sync path with loud failure",
+  "started_at": "2026-07-12T19:00:00Z",
+  "last_updated": "2026-07-12T19:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Invoke check-extension-docs.sh after Load Core full-sync completes",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua"]
+    },
+    {
+      "id": 2,
+      "description": "Surface FAIL output prominently via notify at ERROR level",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua"]
+    },
+    {
+      "id": 3,
+      "description": "Non-zero exit does not corrupt sync; distinct from audit_synced_content()",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Confirm reference-driven behavior via headless functional test",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

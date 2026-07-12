@@ -825,6 +825,61 @@ local function audit_synced_content(project_dir, all_artifacts, audit_patterns, 
   return matches
 end
 
+--- Run the deployed check-extension-docs.sh doc-lint / contract-drift validator after a full
+--- sync and surface FAIL output prominently (task 837). Distinct from audit_synced_content()
+--- above, which greps synced files for repo-specific reference patterns: this instead runs the
+--- actual validator script, which as of task 837 includes a provides.context disk-existence
+--- check (Phase 2) and a project-wide dangling `.claude/context/contracts/*.md` reference scan
+--- (Phase 3). A missing core contract -- the exact drift defect this task fixes -- now produces
+--- a LOUD, visible failure at "Load Core" time instead of silently degrading hard-mode contracts
+--- later at agent-dispatch time.
+---
+--- Reference-driven, never presence-driven: the script only fails on references that a deployed
+--- file actually cites, so a legitimate partial sync (e.g. a project not loading `lean`) does
+--- not spuriously fail. A non-zero exit here does NOT corrupt or half-apply the sync -- files are
+--- already written by the time this runs; the validator is a post-sync report only.
+--- @param project_dir string Project directory path
+--- @param base_dir string Base directory name (e.g. ".claude")
+local function run_contract_drift_validator(project_dir, base_dir)
+  local script_path = project_dir .. "/" .. base_dir .. "/scripts/check-extension-docs.sh"
+  if vim.fn.filereadable(script_path) ~= 1 then
+    -- Validator not deployed in this repo (e.g. a repo that has never synced core's scripts
+    -- category via "Load Core"). Nothing to run, nothing to report.
+    return
+  end
+
+  local output = vim.fn.system(string.format("bash %s --quiet", vim.fn.shellescape(script_path)))
+  local exit_code = vim.v.shell_error
+
+  if exit_code ~= 0 then
+    -- FAIL lines are always emitted by check-extension-docs.sh regardless of --quiet; extract
+    -- them for a concise, prominent notification (full script output can be long).
+    local fail_lines = {}
+    for line in output:gmatch("[^\n]+") do
+      if line:match("FAIL:") then
+        table.insert(fail_lines, line)
+      end
+    end
+
+    local lines = { "Contract/doc validator FAILED after sync (check-extension-docs.sh):" }
+    local shown = 0
+    for _, l in ipairs(fail_lines) do
+      if shown >= 10 then
+        break
+      end
+      table.insert(lines, "  " .. l)
+      shown = shown + 1
+    end
+    if #fail_lines > 10 then
+      table.insert(lines, string.format("  ... and %d more", #fail_lines - 10))
+    end
+    table.insert(lines, string.format("Run: bash %s/scripts/check-extension-docs.sh", base_dir))
+    helpers.notify(table.concat(lines, "\n"), "ERROR")
+  else
+    helpers.notify("Contract/doc validator: PASS (check-extension-docs.sh)", "INFO")
+  end
+end
+
 --- Scan all artifact types from global directory
 --- Filters extension artifacts via manifest-driven allow-list (preferred) or blocklist (fallback)
 --- to ensure only core artifacts are synced.
@@ -1287,6 +1342,15 @@ function M.load_all_globally(config)
   if not merge_only and total_synced > 0 then
     local extension_cfg = get_extension_config(base_dir, scan.get_global_dir())
     reinject_loaded_extensions(project_dir, extension_cfg)
+  end
+
+  -- Post-sync contract/doc-lint validator (task 837): surfaces dangling `.claude/context/
+  -- contracts/*.md` references and manifest provides.context drift LOUDLY, not silently. Runs
+  -- for both full and merge-only syncs (unlike the re-injection step above, which only applies
+  -- to full syncs) since either path can introduce new deployed content that references
+  -- contracts. Never blocks the sync itself -- it only reports after files are already written.
+  if total_synced > 0 then
+    run_contract_drift_validator(project_dir, base_dir)
   end
 
   return total_synced

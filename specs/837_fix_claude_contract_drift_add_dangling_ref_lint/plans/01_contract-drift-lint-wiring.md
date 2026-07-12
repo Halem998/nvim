@@ -181,20 +181,26 @@ Phases within the same wave can execute in parallel.
   - A temporary test reference to a nonexistent contract triggers a loud FAIL, then is reverted.
   - Script exits non-zero when any dangling contract reference is present.
 
-### Phase 4: Wire the validator into the sync path with loud failure [NOT STARTED]
+### Phase 4: Wire the validator into the sync path with loud failure [COMPLETED]
 
 - **Goal:** Ensure `check-extension-docs.sh` runs automatically after a full sync / "Load Core" and
   surfaces FAIL output prominently, satisfying the LOUD-FAILURE requirement.
 - **Tasks:**
-  - [ ] In `lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua`, invoke
+  - [x] In `lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua`, invoke
         `check-extension-docs.sh` after `execute_sync` / the "Load Core" full-sync completes.
-  - [ ] Surface FAIL output prominently (notify/echo the failing lines, not just a swallowed exit
+        *(completed: new `run_contract_drift_validator()` called at the end of
+        `M.load_all_globally`, after `reinject_loaded_extensions`)*
+  - [x] Surface FAIL output prominently (notify/echo the failing lines, not just a swallowed exit
         code); a missing contract must produce a visible message at load time, not a silent no-op.
-  - [ ] Ensure a non-zero exit does not corrupt or half-apply the sync, but is clearly reported to
+        *(completed: `helpers.notify` at "ERROR" level with up to 10 extracted FAIL lines)*
+  - [x] Ensure a non-zero exit does not corrupt or half-apply the sync, but is clearly reported to
         the user (distinct from the existing `audit_synced_content()` grep-pattern audit, which
-        stays unchanged).
-  - [ ] Confirm the validator is reference-driven so a legitimate partial sync (project not loading
-        `lean`) does not spuriously fail.
+        stays unchanged). *(completed: validator runs strictly after sync files are already
+        written; audit_synced_content untouched)*
+  - [x] Confirm the validator is reference-driven so a legitimate partial sync (project not loading
+        `lean`) does not spuriously fail. *(completed: inherited from Phase 3's reference-driven
+        design; verified via headless functional test — healthy exit 0, injected dangling ref
+        exit 1 with correct FAIL line, reverted exit 0 again)*
 - **Timing:** 1 hour
 - **Depends on:** 2, 3
 - **Files to modify:**
