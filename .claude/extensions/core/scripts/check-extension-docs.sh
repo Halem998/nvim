@@ -452,6 +452,47 @@ check_referenced_scripts_declared() {
   done
 }
 
+# Rule G: Project-wide dangling .claude/context/contracts/*.md reference scan (task 837).
+#
+# NOT per-extension: deployed skills/agents/rules/commands across the WHOLE project may
+# reference a specific contracts/*.md file by path (e.g. skill-orchestrate-hard/SKILL.md citing
+# `.claude/context/contracts/territory.md`). If the referenced path does not exist under this
+# project's `.claude/` root, the reference is dangling -- this is the exact BimodalLogic/cslib
+# defect: a downstream repo's skill-orchestrate-hard referenced contracts absent from that
+# repo's deployed layer because core's `provides.context` never registered `contracts` (fixed in
+# Phase 1), so the contracts never propagated through "Load Core". This check is reference-driven
+# (only validates what deployed content actually cites in THIS project), never presence-driven,
+# so a project that references nothing missing passes even if it lacks some contracts files
+# entirely (e.g. a project not loading `lean`, correctly lacking lean-only contract overrides).
+#
+# Scoped strictly to `.claude/context/contracts/*.md`-shaped references per task 837's
+# Non-Goals -- a broader generic `@.claude/...` dangling-path linter is deliberately NOT
+# implemented here (left as a documented, disabled extension point below) to avoid false
+# positives on legitimately extension-conditional references (e.g. lean-only context files
+# referenced only from lean-scoped skills, which are correctly absent in non-lean projects).
+check_dangling_contract_references() {
+  local f ref refs
+  for f in "$REPO_ROOT"/.claude/skills/*/SKILL.md \
+           "$REPO_ROOT"/.claude/agents/*.md \
+           "$REPO_ROOT"/.claude/rules/*.md \
+           "$REPO_ROOT"/.claude/commands/*.md; do
+    [[ -f "$f" ]] || continue
+    refs=$(grep -oE '\.claude/context/contracts/[a-zA-Z0-9_-]+\.md' "$f" 2>/dev/null | sort -u)
+    for ref in $refs; do
+      if [[ ! -f "$REPO_ROOT/$ref" ]]; then
+        fail "dangling contract reference in ${f#"$REPO_ROOT"/}: $ref"
+      fi
+    done
+  done
+
+  # Extension point (NOT enabled -- stretch goal, see task 837 Non-Goals): a future generic
+  # dangling-path scan could widen the pattern above to `@\.claude/[a-zA-Z0-9_/.-]+\.md`
+  # broadly across the same file set. This is intentionally left unimplemented; wiring it in
+  # without first auditing every extension-conditional `@.claude/...` reference in this repo
+  # would produce false-positive FAILs on references that are valid only when a specific
+  # extension is loaded.
+}
+
 echo "Checking .claude/extensions/ documentation..."
 echo
 
@@ -488,6 +529,16 @@ for ext_path in "$EXT_DIR"/*/; do
   fi
   echo
 done
+
+# Project-wide checks (not scoped to a single extension).
+CURRENT_EXT="project-wide"
+EXTENSION_STATUS["project-wide"]="PASS"
+echo "[project-wide]"
+check_dangling_contract_references
+if [[ "${EXTENSION_STATUS[project-wide]}" == "PASS" ]]; then
+  info "OK"
+fi
+echo
 
 # Summary table
 echo "====================================="

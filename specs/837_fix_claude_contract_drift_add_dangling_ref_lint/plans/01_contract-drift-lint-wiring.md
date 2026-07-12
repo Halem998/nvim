@@ -156,19 +156,21 @@ Phases within the same wave can execute in parallel.
   - `diff .claude/extensions/core/scripts/check-extension-docs.sh .claude/scripts/check-extension-docs.sh`
     shows no differences.
 
-### Phase 3: Add deployed dangling-contract-reference scan [NOT STARTED]
+### Phase 3: Add deployed dangling-contract-reference scan [COMPLETED]
 
 - **Goal:** Add a project-wide check that catches dangling `.claude/context/contracts/*.md`
   references in deployed skills/agents/rules — the exact BimodalLogic/cslib defect.
 - **Tasks:**
-  - [ ] Add a new project-wide (not per-extension) check that scans `.claude/skills/*/SKILL.md`,
+  - [x] Add a new project-wide (not per-extension) check that scans `.claude/skills/*/SKILL.md`,
         `.claude/agents/*.md`, `.claude/rules/*.md` (and optionally `.claude/commands/*.md`) for
-        `.claude/context/contracts/[a-z-]+\.md`-shaped references.
-  - [ ] For each referenced path, verify it exists under the current project's `.claude/` root;
-        FAIL loudly (visible message listing file + missing reference) when absent.
-  - [ ] Scope strictly to `contracts/*.md` references (per Non-Goals); leave a clearly-commented
-        extension point for a future generic `@.claude/...` scan without enabling it.
-  - [ ] Re-sync the deployed copy so both script copies remain identical.
+        `.claude/context/contracts/[a-z-]+\.md`-shaped references. *(completed: included
+        commands/*.md too)*
+  - [x] For each referenced path, verify it exists under the current project's `.claude/` root;
+        FAIL loudly (visible message listing file + missing reference) when absent. *(completed)*
+  - [x] Scope strictly to `contracts/*.md` references (per Non-Goals); leave a clearly-commented
+        extension point for a future generic `@.claude/...` scan without enabling it. *(completed)*
+  - [x] Re-sync the deployed copy so both script copies remain identical. *(completed: diff
+        confirms identical)*
 - **Timing:** 1.5 hours
 - **Depends on:** 2
 - **Files to modify:**

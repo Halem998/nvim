@@ -1,0 +1,36 @@
+{
+  "phase": 3,
+  "phase_name": "Add deployed dangling-contract-reference scan",
+  "started_at": "2026-07-12T18:50:00Z",
+  "last_updated": "2026-07-12T18:58:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add project-wide check_dangling_contract_references() scanning skills/agents/rules/commands",
+      "status": "done",
+      "files_touched": [".claude/extensions/core/scripts/check-extension-docs.sh"]
+    },
+    {
+      "id": 2,
+      "description": "FAIL loudly with file + missing reference when a contract path is absent",
+      "status": "done",
+      "files_touched": [".claude/extensions/core/scripts/check-extension-docs.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Scope strictly to contracts/*.md; leave a documented, disabled extension point for generic scan",
+      "status": "done",
+      "files_touched": [".claude/extensions/core/scripts/check-extension-docs.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Re-sync deployed copy to remain identical to canonical source",
+      "status": "done",
+      "files_touched": [".claude/scripts/check-extension-docs.sh"]
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
