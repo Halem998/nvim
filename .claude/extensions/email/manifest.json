@@ -16,7 +16,7 @@
     "commands": ["email.md"],
     "rules": [],
     "context": ["project/email"],
-    "scripts": [],
+    "scripts": ["email-preference-harvest.sh"],
     "hooks": ["mail-guard.sh"]
   },
   "routing": {

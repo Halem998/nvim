@@ -1,0 +1,22 @@
+{
+  "phase": 1,
+  "phase_name": "Deterministic harvest helper (normalization + tally + exact-key dedup)",
+  "started_at": "2026-07-12T00:00:00Z",
+  "last_updated": "2026-07-12T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create .claude/scripts/email-preference-harvest.sh with normalize/identity/dedup/tally-op/dominant/threshold subcommands",
+      "status": "done",
+      "files_touched": [
+        ".claude/scripts/email-preference-harvest.sh",
+        ".claude/extensions/email/scripts/email-preference-harvest.sh",
+        ".claude/extensions/email/manifest.json"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
