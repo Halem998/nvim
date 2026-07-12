@@ -246,25 +246,25 @@ blocked by 1, 3. Wave 3: Phase 6 blocked by 4 (and depends on 2's contract being
 - **Timing:** ~1.5 hours
 - **Depends on:** 1, 2
 
-### Phase 5: Bash test script for deterministic logic [NOT STARTED]
+### Phase 5: Bash test script for deterministic logic [COMPLETED]
 
 - **Goal:** Provide the "tests" deliverable using this repo's existing bash-assertion convention,
   exercising the Phase 1 helper and the Phase 3 retrieve filter.
 - **Tasks:**
-  - [ ] Create `.claude/tests/test-email-preference-harvest.sh` in the style of
+  - [x] Create `.claude/tests/test-email-preference-harvest.sh` in the style of
     `.claude/tests/test-command-route-skill.sh` (pure-bash assertions, no bats/spec framework).
-  - [ ] Assert normalization of the four verified §2.3 edge cases: freemail multiplicity (gmail
+  - [x] Assert normalization of the four verified §2.3 edge cases: freemail multiplicity (gmail
     addresses never rolled up), sender-side plus-addressing strip
     (`invoice+statements@stripe.com` -> `invoice@stripe.com`), DMARC "via" relay keying (key
     resolves to the relay/list address), case-insensitivity (`CorrAdmin1@spi-global.com`).
-  - [ ] Assert CREATE/EXTEND/UPDATE tally transitions per the §4.3 table (including the
+  - [x] Assert CREATE/EXTEND/UPDATE tally transitions per the §4.3 table (including the
     opposite-counter increment flipping the derived dominant action).
-  - [ ] Assert the exact-key jq lookup (§4.1) against a synthetic `memory-index.json` fixture
+  - [x] Assert the exact-key jq lookup (§4.1) against a synthetic `memory-index.json` fixture
     (hit -> short-circuit; miss -> CREATE default).
-  - [ ] Assert the `memory-retrieve.sh` topic-prefix exclusion against a small fixture index:
+  - [x] Assert the `memory-retrieve.sh` topic-prefix exclusion against a small fixture index:
     `task_type=general` -> email-preference entry NOT returned; `task_type=email` -> entry IS
     returned (§5.2 future-compat carve-out).
-  - [ ] Run the test script and confirm all assertions pass.
+  - [x] Run the test script and confirm all assertions pass. *(completed: 35/35 assertions pass)*
 - **Timing:** ~1 hour
 - **Depends on:** 1, 3
 
