@@ -5,7 +5,10 @@
 #   - missing README.md
 #   - missing EXTENSION.md
 #   - missing manifest.json
-#   - manifest entries referencing nonexistent files (agents, skills, commands, rules, scripts)
+#   - manifest entries referencing nonexistent files (agents, skills, commands, rules, scripts,
+#     context)
+#   - dangling .claude/context/contracts/*.md references in deployed skills/agents/rules that do
+#     not resolve to an existing file in this project (project-wide, not per-extension)
 #   - deployed .claude/scripts/<name> content drift from its extension-source counterpart, for
 #     each manifest.provides.scripts entry where both copies exist (never-deployed extension-only
 #     scripts are skipped, not failed)
@@ -105,6 +108,22 @@ check_manifest_entries() {
   for s in $scripts; do
     if [[ ! -f "$ext_path/scripts/$s" ]]; then
       fail "manifest script entry missing on disk: scripts/$s"
+    fi
+  done
+
+  # context (file OR directory references, e.g. "README.md" or "contracts")
+  #
+  # Mirrors the agents/skills/commands/rules/scripts pattern above for the one manifest.provides
+  # category previously left unchecked: context. A declared provides.context entry must exist on
+  # disk under <ext_path>/context/<entry>; otherwise the extension's context never propagates
+  # through copy_context_dirs() / the "Load Core" allow-list, and downstream repos silently never
+  # receive it. Confirmed live in cslib's stale `lean` extension copy (task 837).
+  local context_entries
+  context_entries=$(jq -r '.provides.context[]? // empty' "$manifest" 2>/dev/null)
+  local ce
+  for ce in $context_entries; do
+    if [[ ! -e "$ext_path/context/$ce" ]]; then
+      fail "manifest provides.context entry missing on disk: context/$ce"
     fi
   done
 }

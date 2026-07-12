@@ -11,20 +11,18 @@ next_project_number: 852
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 87,821,826,837,838 | -- | agent-system, extensions, terminal ui |
-| 2 | 822,827 | 821,826 | extensions |
+| 1 | 87,822,826,837 | -- | agent-system, extensions, terminal ui |
+| 2 | 827 | 826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-837 [NOT STARTED] — Shared .claude/ infrastructure has diverged across child projects
-838 [NOT STARTED] — General skill-lifecycle data-loss bug: the planner-phase postflig
+837 [PLANNED] — Shared .claude/ infrastructure has diverged across child projects
 
 ### Extensions
 
-821 [RESEARCHED] — Route confirmed email-cleanup decisions (junk vs keep) from the e
-  └─ 822 [NOT STARTED] — Implement the email->memory contribution per the #821 design. Add
+822 [NOT STARTED] — Implement the email->memory contribution per the #821 design. Add
 826 [BLOCKED] — Root-cause and fix the pre-existing Logos (Protonmail Bridge) mai
   └─ 827 [BLOCKED] — The freshness gate shipped in tasks 823-825 is defective: email-c
 
@@ -95,20 +93,25 @@ SCOPE BOUNDARY: this task does NOT fix the audit blind spot (word-ratio passing 
 ---
 
 ### 838. Fix planner clobbering researcher .return-meta.json (merge not overwrite)
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [838_fix_planner_return_meta_clobber/reports/01_planner-return-meta-clobber.md]
+- **Plan**: [838_fix_planner_return_meta_clobber/plans/01_planner-return-meta-fix.md]
+- **Summary**: [838_fix_planner_return_meta_clobber/summaries/01_planner-return-meta-fix-summary.md]
 
 **Description**: General skill-lifecycle data-loss bug: the planner-phase postflight OVERWRITES the researcher's specs/{NNN}_*/.return-meta.json wholesale instead of MERGING, silently dropping memory_candidates the research agent emitted. Concrete instance: on task #831 the planner clobbered .return-meta.json, destroying 3 memory_candidates the research agent produced - (a) nix-ld/libstdc++ shim, (b) PyMuPDF sort=True reproduces the column-glue extraction bug, (c) NFKC normalization corrupts math Unicode. This affects EVERY task where research emits memory_candidates and a later phase rewrites the file, not just literature work - which is why it warrants its own task rather than folding into #835-#837 (all unrelated in scope). FIX SITE: .claude/context/formats/return-metadata-file.md (the contract) plus the skill postflight metadata-handling code - change semantics from overwrite to merge-not-overwrite so later phases preserve earlier phases' memory_candidates and other accumulated fields. Fully independent of #831-#837.
 
 ---
 
 ### 837. Fix .claude/ cross-project contract drift and add dangling-reference lint
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [837_fix_claude_contract_drift_add_dangling_ref_lint/reports/01_contract-drift-dangling-ref-lint.md]
+- **Plan**: [837_fix_claude_contract_drift_add_dangling_ref_lint/plans/01_contract-drift-lint-wiring.md]
 
 **Description**: Shared .claude/ infrastructure has diverged across child projects and nothing detects dangling references at sync/load time - the same silent-degradation failure mode as #831's missing marker. IMPORTANT correction of the original bug report, which was MISATTRIBUTED to nvim: this repo (~/.config/nvim/.claude/) is HEALTHY - context/contracts/ contains all 8 of adversarial-verification, anti-analysis, convergence, orchestrator-discipline, recovery, reference-grounding, territory, wrap-up; its skill-orchestrate-hard/SKILL.md references 6, all present. The real defect is in ~/Projects/BimodalLogic/.claude/ - a SEPARATE COPY, not a symlink - whose skill-orchestrate-hard references 5 contracts it LACKS, so H5/H6/H7/H9 are silently un-injected. Drift is BIDIRECTIONAL: only-in-BimodalLogic = context-hygiene.md; only-in-nvim = convergence.md, orchestrator-discipline.md, recovery.md, territory.md, wrap-up.md. SCOPE: (1) reconcile contracts/ across ~/.config/nvim/.claude/ and ~/Projects/BimodalLogic/.claude/, sweeping other child projects (e.g. cslib); (2) decide the canonical set (is context-hygiene.md a real contract nvim should adopt?); (3) add a validator - extend check-extension-docs.sh or add a sibling script - that FAILS when any skill/agent/rule references a contracts/*.md, @.claude/... path, or context file absent in that project; (4) wire it into the sync path (.syncprotect / 'Load Core') so drift is caught at load time. LOUD-FAILURE requirement: a missing contract must not silently no-op. Fully independent of #831-#836 and #838.
 
@@ -206,11 +209,13 @@ DEPENDENCIES: 831 (COMPLETE — fixed converter), 835 (COMPLETE — provenance/f
 ---
 
 ### 821. Research and design email-to-memory contribution architecture
-- **Status**: [RESEARCHED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [821_email_to_memory_contribution_architecture/reports/01_team-research.md]
+- **Plan**: [821_email_to_memory_contribution_architecture/plans/01_email-memory-contribution.md]
+- **Summary**: [821_email_to_memory_contribution_architecture/summaries/01_email-memory-contribution-summary.md]
 
 **Description**: Route confirmed email-cleanup decisions (junk vs keep) from the email extension into the memory vault so the system learns sender/domain preferences over time. RESEARCH PHASE FIRST: survey July-2026 best practices for email-triage to preference/memory-learning systems (sender reputation, preference capture, vault-bloat avoidance, aggregation strategies, dedup, feedback loops), plus the concrete integration surfaces already identified: capture point = skill-email-cleanup human review gate (Stage 3 per-message / Stage 2.5 bucket approval in --all mode) where the JSONL candidate manifest (Message-ID keyed, proposed_action delete|archive|keep|unsure + confidence) is confirmed; memory API = skill-memory CREATE/UPDATE/EXTEND with content-mapping + MCP dedup against .memory/memory-index.json; reusable pattern = skill-todo's harvest->dedup->user-gated-create flow (Stage ~181+); hook surface = memory extension manifest.json empty hooks object as an alternative capture path. DESIGN DECISION ALREADY MADE BY USER: memories are SENDER/DOMAIN-AGGREGATED (one evolving preference memory per sender or domain, UPDATE/EXTEND as more mail is seen -- NOT per-message), chosen to avoid vault bloat; the research should refine the aggregation/dedup/schema mechanics within that decision, not relitigate it. Output: chosen capture point, memory schema/tags, dedup + update strategy, and opt-in/gate behavior.
 

@@ -130,19 +130,20 @@ Phases within the same wave can execute in parallel.
   - All 6 `contracts/` references in `.claude/skills/skill-orchestrate-hard/SKILL.md` still resolve
     to existing deployed files.
 
-### Phase 2: Add provides.context disk-existence validation to check-extension-docs.sh [NOT STARTED]
+### Phase 2: Add provides.context disk-existence validation to check-extension-docs.sh [COMPLETED]
 
 - **Goal:** Close the gap where a manifest can claim a `provides.context` subdir that does not exist
   on disk (confirmed live in cslib's stale `lean` extension copy).
 - **Tasks:**
-  - [ ] Extend `check_manifest_entries()` (or add a sibling `check_context_entries()`) to iterate
+  - [x] Extend `check_manifest_entries()` (or add a sibling `check_context_entries()`) to iterate
         `provides.context` and verify each entry exists as a file OR directory under
         `<ext_path>/context/<entry>`, mirroring the existing agents/skills/commands/rules/scripts
-        pattern.
-  - [ ] Emit a FAIL (non-zero contribution) with a clear message when a declared context entry is
-        missing on disk.
-  - [ ] Apply the edit to the canonical source `.claude/extensions/core/scripts/check-extension-docs.sh`
+        pattern. *(completed: added inline to check_manifest_entries(), not a sibling function)*
+  - [x] Emit a FAIL (non-zero contribution) with a clear message when a declared context entry is
+        missing on disk. *(completed)*
+  - [x] Apply the edit to the canonical source `.claude/extensions/core/scripts/check-extension-docs.sh`
         and re-sync the deployed copy `.claude/scripts/check-extension-docs.sh` so both remain identical.
+        *(completed: diff confirms identical)*
 - **Timing:** 0.75 hour
 - **Depends on:** none
 - **Files to modify:**

@@ -31,7 +31,7 @@
     {
       "project_number": 821,
       "project_name": "email_to_memory_contribution_architecture",
-      "status": "researched",
+      "status": "completed",
       "task_type": "meta",
       "topic": "extensions",
       "priority": "medium",
@@ -43,17 +43,28 @@
       "dependencies": [],
       "estimated_effort": "2 hours",
       "created": "2026-07-05T21:19:39Z",
-      "last_updated": "2026-07-05T21:35:42Z",
-      "session_id": "sess_1783286925_28f248",
+      "last_updated": "2026-07-12T18:24:53Z",
+      "session_id": "sess_1783879475_193202_821",
       "artifacts": [
         {
           "path": "specs/821_email_to_memory_contribution_architecture/reports/01_team-research.md",
           "type": "research",
           "summary": "Team research (4 teammates): email->memory contribution architecture"
+        },
+        {
+          "path": "specs/821_email_to_memory_contribution_architecture/plans/01_email-memory-contribution.md",
+          "type": "plan",
+          "summary": "6-phase design plan: capture point, identity key, email/preferences schema, dedup, opt-in gate"
+        },
+        {
+          "path": "specs/821_email_to_memory_contribution_architecture/summaries/01_email-memory-contribution-summary.md",
+          "type": "summary",
+          "summary": "6-phase design implemented: email-to-memory-preferences.md design doc, identity key empirically verified against 2128 tagged msgs, ROADMAP entries"
         }
       ],
       "researched": "2026-07-05T21:35:42Z",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Designed the email->memory preference-contribution architecture: sender/domain-aggregated preference memories, empirically-verified normalized identity key (validated against 2,128 tagged real messages), email/preferences/{key} schema with per-action tally, deterministic dedup with CREATE/UPDATE/EXTEND, retrieval/distill guardrails, and opt-in gate. Deliverable: email-to-memory-preferences.md design doc. Implementation follows in task 822."
     },
     {
       "project_number": 822,
@@ -198,17 +209,28 @@
     {
       "project_number": 837,
       "project_name": "fix_claude_contract_drift_add_dangling_ref_lint",
-      "status": "not_started",
+      "status": "planned",
       "task_type": "meta",
       "title": "Fix .claude/ cross-project contract drift and add dangling-reference lint",
       "description": "Shared .claude/ infrastructure has diverged across child projects and nothing detects dangling references at sync/load time - the same silent-degradation failure mode as #831's missing marker. IMPORTANT correction of the original bug report, which was MISATTRIBUTED to nvim: this repo (~/.config/nvim/.claude/) is HEALTHY - context/contracts/ contains all 8 of adversarial-verification, anti-analysis, convergence, orchestrator-discipline, recovery, reference-grounding, territory, wrap-up; its skill-orchestrate-hard/SKILL.md references 6, all present. The real defect is in ~/Projects/BimodalLogic/.claude/ - a SEPARATE COPY, not a symlink - whose skill-orchestrate-hard references 5 contracts it LACKS, so H5/H6/H7/H9 are silently un-injected. Drift is BIDIRECTIONAL: only-in-BimodalLogic = context-hygiene.md; only-in-nvim = convergence.md, orchestrator-discipline.md, recovery.md, territory.md, wrap-up.md. SCOPE: (1) reconcile contracts/ across ~/.config/nvim/.claude/ and ~/Projects/BimodalLogic/.claude/, sweeping other child projects (e.g. cslib); (2) decide the canonical set (is context-hygiene.md a real contract nvim should adopt?); (3) add a validator - extend check-extension-docs.sh or add a sibling script - that FAILS when any skill/agent/rule references a contracts/*.md, @.claude/... path, or context file absent in that project; (4) wire it into the sync path (.syncprotect / 'Load Core') so drift is caught at load time. LOUD-FAILURE requirement: a missing contract must not silently no-op. Fully independent of #831-#836 and #838.",
       "topic": "agent-system",
       "dependencies": [],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/reports/01_contract-drift-dangling-ref-lint.md",
+          "type": "report",
+          "summary": "Root cause: core/manifest.json omits contracts from provides.context; two gaps in check-extension-docs.sh; recommend against promoting context-hygiene.md"
+        },
+        {
+          "path": "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/plans/01_contract-drift-lint-wiring.md",
+          "type": "plan",
+          "summary": "5-phase plan: add contracts to provides.context, extend check-extension-docs.sh with dangling-ref scan, wire LOUD validator into sync.lua Load Core"
+        }
+      ],
       "next_artifact_number": 1,
-      "session_id": "sess_1783618900_prov4c",
+      "session_id": "sess_1783879475_193202_837",
       "created": "2026-07-09T00:00:00Z",
-      "last_updated": "2026-07-09T00:00:00Z",
+      "last_updated": "2026-07-12T18:24:54Z",
       "file_scope": [
         ".claude/scripts/check-extension-docs.sh",
         ".claude/context/contracts/"
@@ -217,20 +239,65 @@
     {
       "project_number": 838,
       "project_name": "fix_planner_return_meta_clobber",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "title": "Fix planner clobbering researcher .return-meta.json (merge not overwrite)",
       "description": "General skill-lifecycle data-loss bug: the planner-phase postflight OVERWRITES the researcher's specs/{NNN}_*/.return-meta.json wholesale instead of MERGING, silently dropping memory_candidates the research agent emitted. Concrete instance: on task #831 the planner clobbered .return-meta.json, destroying 3 memory_candidates the research agent produced - (a) nix-ld/libstdc++ shim, (b) PyMuPDF sort=True reproduces the column-glue extraction bug, (c) NFKC normalization corrupts math Unicode. This affects EVERY task where research emits memory_candidates and a later phase rewrites the file, not just literature work - which is why it warrants its own task rather than folding into #835-#837 (all unrelated in scope). FIX SITE: .claude/context/formats/return-metadata-file.md (the contract) plus the skill postflight metadata-handling code - change semantics from overwrite to merge-not-overwrite so later phases preserve earlier phases' memory_candidates and other accumulated fields. Fully independent of #831-#837.",
       "topic": "agent-system",
       "dependencies": [],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/838_fix_planner_return_meta_clobber/reports/01_planner-return-meta-clobber.md",
+          "type": "report",
+          "summary": "skill-planner/SKILL.md is sole lifecycle skill missing memory_candidates read+propagate; targeted field-extraction fix from skill-researcher:433-446"
+        },
+        {
+          "path": "specs/838_fix_planner_return_meta_clobber/plans/01_planner-return-meta-fix.md",
+          "type": "plan",
+          "summary": "4-phase plan: add memory_candidates read+Stage7a propagate to skill-planner, fix dangling ref in skill-planner-hard:475, document contract"
+        },
+        {
+          "path": "specs/838_fix_planner_return_meta_clobber/summaries/01_planner-return-meta-fix-summary.md",
+          "type": "summary",
+          "summary": "Added memory_candidates read+Stage 7a propagate to skill-planner, verified skill-planner-hard reference, documented propagate-before-cleanup contract"
+        }
+      ],
       "next_artifact_number": 1,
-      "session_id": "sess_1783618900_prov4c",
+      "session_id": "sess_1783879475_193202_838",
       "created": "2026-07-09T00:00:00Z",
-      "last_updated": "2026-07-09T00:00:00Z",
+      "last_updated": "2026-07-12T18:29:09Z",
       "file_scope": [
         ".claude/context/formats/return-metadata-file.md",
         ".claude/skills/"
+      ],
+      "completion_summary": "Fixed skill-planner postflight to propagate memory_candidates via a new Stage 7a before .return-meta.json cleanup, verified the skill-planner-hard cross-reference, and documented the propagate-before-cleanup contract in return-metadata-file.md.",
+      "memory_candidates": [
+        {
+          "content": "When a set of sibling skills (e.g. skill-researcher, skill-planner, skill-implementer and their -hard variants) is supposed to implement an identical postflight pattern (like memory_candidates propagation), audit ALL siblings with a single grep across the family rather than assuming parity -- one skill silently diverging (skill-planner lacked the Stage 7a read+append that its five siblings had) can persist for a long time because postflight failures are silent (no error, just discarded data).",
+          "category": "PATTERN",
+          "source_artifact": "specs/838_fix_planner_return_meta_clobber/summaries/01_planner-return-meta-fix-summary.md",
+          "confidence": 0.8,
+          "suggested_keywords": [
+            "postflight",
+            "memory_candidates",
+            "skill-parity",
+            "return-meta",
+            "audit"
+          ]
+        },
+        {
+          "content": "In this repo's hard-mode skills (skill-researcher-hard, skill-planner-hard, skill-implementer-hard), a terse 'Same as `skill-{base}` Stage N' cross-reference is the established house style for postflight stages that are structurally identical to the base skill (e.g. Stage 7a memory_candidates propagation, Stage 8 artifact linking) -- inlining a duplicate block in the hard variant would be inconsistent with this convention, not an improvement.",
+          "category": "CONFIG",
+          "source_artifact": "specs/838_fix_planner_return_meta_clobber/summaries/01_planner-return-meta-fix-summary.md",
+          "confidence": 0.75,
+          "suggested_keywords": [
+            "skill-hard",
+            "postflight",
+            "cross-reference",
+            "house-style",
+            "stage-7a"
+          ]
+        }
       ]
     },
     {

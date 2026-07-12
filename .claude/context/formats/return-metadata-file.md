@@ -36,7 +36,6 @@ Example: `specs/1_setup_lsp_config/.return-meta.json`
     "delegation_depth": 1,
     "delegation_path": ["orchestrator", "research", "general-research-agent"]
   },
-  "modified_files": ["path/to/file/touched/during/implement.ext"],
   "memory_candidates": [
     {
       "content": "Description of reusable knowledge",
@@ -157,35 +156,6 @@ Contains fields needed for task completion processing. Skills extract this data 
 - `roadmap_items` is optional and only relevant for non-meta tasks
 - Skills propagate these fields to state.json for use by `/todo` command
 
-### modified_files (optional)
-
-**Type**: array of strings
-**Include if**: agent_type is an implementation agent (e.g. `general-implementation-agent`) and
-`operation_type` is `implement`
-
-Repo-relative paths of every source file the agent `Write` or `Edit`-ed during execution
-(accumulated from each phase's progress-file `files_touched` field — see
-`.claude/context/formats/progress-file.md`). This is the authoritative self-report that the
-`orchestrator-postflight.sh` Stage 9 git commit (and the two inline `implement`-path staging
-sites) use for targeted staging instead of `git add -A`. See
-`.claude/context/standards/git-staging-scope.md` for the full commit-scope contract this field
-feeds.
-
-Like `completion_data` and `memory_candidates`, all jq reads of this field MUST use the `// []`
-fallback for backward compatibility with agents/metadata predating this field:
-
-```bash
-jq -r '.modified_files[]? // empty' "$metadata_file"
-```
-
-**Notes**:
-- Absence or an empty array is valid — the staging fallback (fixed task-dir paths only, plus a
-  loud warning) applies; this is the fail-safe "under-stage" direction, never `git add -A`.
-- Paths should be repo-relative (e.g. `.claude/skills/skill-foo/SKILL.md`), matching what `git
-  add` expects.
-- Duplicate paths across phases are harmless (git add is idempotent); agents need not
-  deduplicate before writing this field.
-
 ### memory_candidates (optional)
 
 **Type**: array of objects (0-3 items)
@@ -220,6 +190,35 @@ Each candidate object:
 - Skill postflight propagates candidates to state.json task entries with append semantics
 - `/todo` consumes candidates during archival (task 447 scope)
 - The field uses `// []` fallback in all jq reads for backward compatibility
+
+### Merge Semantics: Propagate Before Cleanup
+
+`.return-meta.json` is a **single-phase scratch file**: written fresh by the agent, read once by
+the skill's postflight, and deleted (see Cleanup below). It is NOT a cross-phase-merged document
+-- each agent invocation overwrites it completely, and no historical merging of the JSON file
+itself is performed or desired.
+
+The "merge" happens one level up, at the state.json extraction step: postflight MUST fully read
+`.return-meta.json` and extract every accumulate-type field into `state.json` **before** the file
+is deleted. Skipping a field's read silently discards that data on every run of the affected
+operation, even though the scratch-file overwrite-per-phase design itself is correct. (This was
+the exact defect in `skill-planner`, which read `artifacts` but not `memory_candidates`.)
+
+**Accumulate-type fields** (append semantics into `state.json`; never overwritten wholesale by a
+single operation):
+- `memory_candidates` -- appended to the task's `state.json` array with a `// []` fallback (see
+  each lifecycle skill's "Stage 7a: Propagate Memory Candidates")
+- `artifacts` -- accumulated by `type` via the two-step filter-out-then-append jq pattern (see
+  each lifecycle skill's "Stage 8: Link Artifacts")
+
+**Phase-owned fields** (represent only the current operation's result; read and consumed
+directly by postflight, never accumulated across phases):
+- `status`, `next_steps`, `partial_progress`, `metadata`, `completion_data`, `errors`
+
+Every lifecycle skill's postflight (`skill-researcher`, `skill-researcher-hard`,
+`skill-planner`, `skill-planner-hard`, `skill-implementer`, `skill-implementer-hard`) MUST
+implement the read-plus-append pattern for every accumulate-type field present in its metadata
+schema, in the correct order relative to Cleanup (read/propagate first, delete last).
 
 ### errors (optional)
 
@@ -285,6 +284,12 @@ After postflight, delete the metadata file:
 ```bash
 rm -f "specs/${padded_num}_${task_slug}/.return-meta.json"
 ```
+
+**Ordering requirement**: This cleanup step MUST run only after every accumulate-type field has
+been propagated into `state.json` (see "Merge Semantics: Propagate Before Cleanup" above --
+`memory_candidates` via Stage 7a, `artifacts` via Stage 8). Deleting `.return-meta.json` before
+propagation permanently discards that operation's data; there is no other durable copy of the
+scratch file's contents.
 
 ## Examples
 

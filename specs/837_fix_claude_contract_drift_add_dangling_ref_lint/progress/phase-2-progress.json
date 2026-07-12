@@ -1,0 +1,38 @@
+{
+  "phase": 2,
+  "phase_name": "Add provides.context disk-existence validation to check-extension-docs.sh",
+  "started_at": "2026-07-12T18:40:00Z",
+  "last_updated": "2026-07-12T18:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Extend check_manifest_entries() with provides.context disk-existence check",
+      "status": "done",
+      "files_touched": [".claude/extensions/core/scripts/check-extension-docs.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Emit FAIL for missing context entries",
+      "status": "done",
+      "files_touched": [".claude/extensions/core/scripts/check-extension-docs.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Re-sync deployed copy to remain identical to canonical source",
+      "status": "done",
+      "files_touched": [".claude/scripts/check-extension-docs.sh"]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.1",
+      "description": "Extend check_manifest_entries() (or add a sibling check_context_entries())",
+      "type": "altered",
+      "reason": "Added the check inline as a new block at the end of check_manifest_entries() rather than as a separate sibling function, since it mirrors the existing agents/skills/commands/rules/scripts blocks in that same function and keeps the single call site pattern used by the other categories.",
+      "annotation": "*(deviation: altered — added inline to check_manifest_entries(), not a sibling function)*"
+    }
+  ]
+}
