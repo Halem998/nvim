@@ -180,6 +180,87 @@ candidates for senders the user flagged.
 Diff the wrapper's own execution-state output (never re-derived) against the approved manifest
 to confirm which IDs were actually mutated. Report this diff to the user.
 
+### Stage 7: Harvest (opt-in, never-silent)
+
+An opt-in step that routes wrapper-confirmed decisions from this pass into the memory vault as
+sender/domain-aggregated `email/preferences/{account}/{key}` preference memories. Grounded in
+the authoritative design at
+`context/project/email/design/email-to-memory-preferences.md` (task 821/822) — see that document
+for the full rationale; this section is the executable prose. Fires ONLY after Stage 6, reading
+ONLY the Stage 6 *executed* diff — never the Stage 2 candidate manifest (`proposed_action`,
+unconfirmed) and never an approved-but-not-yet-executed manifest.
+
+1. **Key derivation (default mode)**: for every Message-ID the Stage 6 diff confirms as
+   `executed` this pass, look up its `sender` field in the approved manifest and derive its
+   identity via `.claude/scripts/email-preference-harvest.sh identity "<sender>"` (add
+   `--rollup` only for a caller-chosen non-freemail domain rollup — never for freemail/shared
+   domains). Group executed IDs by the resulting `.key`, prefixed by the resolved account:
+   `email/preferences/${ACCOUNT}/${KEY}`. Never key on Stage 2/3/4 unconfirmed lines.
+2. **Mixed-sender handling (design §1.5)** is a first-class branch, not an edge case: when a
+   group's confirmed actions this pass are heterogeneous with no uniform majority, either split
+   by a subject/category token into distinct keys, or decline to aggregate that portion this
+   pass (leave it as unresolved tally noise) — never average into a false scalar action.
+3. **Per-key dedup + tally update**: for each key's group, determine this round's action-count
+   breakdown (e.g. `{archive: 6}` for a uniform group, or split per mixed-sender handling), then:
+   ```bash
+   EXISTING=$(bash .claude/scripts/email-preference-harvest.sh dedup .memory/memory-index.json \
+     "email/preferences/${ACCOUNT}/${KEY}")
+   EXISTING_TALLY=$(echo "$EXISTING" | jq -c '.tally // null' 2>/dev/null || echo null)
+   RESULT=$(bash .claude/scripts/email-preference-harvest.sh tally-op "$EXISTING_TALLY" \
+     "$ACTION" "$COUNT" "$(date -u +%Y-%m-%d)")
+   OPERATION=$(echo "$RESULT" | jq -r '.operation')   # CREATE | EXTEND | UPDATE
+   NEW_TALLY=$(echo "$RESULT" | jq -c '.tally')
+   ```
+   (Note: a real memory file's tally block, not `.tally` on the raw index entry, is the ground
+   truth — read it from the memory file body if the index entry alone is insufficient; the
+   `dedup` subcommand's index lookup is for the exact-key hit/miss decision, per
+   `skill-memory/SKILL.md`'s "Exact-Key Dedup for Reserved Namespaces".)
+4. **Evidentiary threshold gate**: only keys/operations meeting
+   `.claude/scripts/email-preference-harvest.sh threshold "$NEW_TALLY" "$UNIFORM"` (uniform-batch
+   this round, or rolling N>=3 at >=80% against the post-update tally) become Tier 1 candidates
+   below; a single isolated confirm below both bars is still tallied (Step 3) but is not
+   presented as a strong preference this round.
+5. **Archive-scope isolation**: if this pass's scope is `scope=archive`, record the tally delta
+   in the memory's `### Archive-scope tally` sub-section (per `skill-memory/SKILL.md`'s
+   Namespace-Scoped Tally-Arithmetic subsection) instead of the inbox-scope tally — never merge
+   the two.
+6. **One consolidated, never-silent gate** (`AskUserQuestion`, root session), mirroring
+   `skill-todo`'s harvest -> dedup -> tiered-gate -> batch-regen *logic only* (never its
+   `state.json`/`project_number` substrate):
+   - **Tier 1** (pre-selected): keys meeting the evidentiary threshold outright this round (Step
+     4).
+   - **Tier 2** (shown, not pre-selected): keys newly crossing the rolling-N threshold this
+     round.
+   - **Fuzzy near-miss suggestions** (skill-memory's retained fuzzy path, §4.2): surfaced as a
+     labeled option, never auto-selected.
+   - Skip the gate entirely (no prompt) if this pass produced zero candidates in any tier —
+     harvest is opt-in per-round, not a mandatory stop when there is nothing to offer.
+7. **Write on confirm — Bash/jq file-write path** (this skill's `allowed-tools` is `Bash, Read,
+   AskUserQuestion`; memory files are written via Bash heredoc/`jq`, never via a `Write`/`Edit`
+   tool call or a `skill-memory`/`/learn` dispatch): for each user-confirmed key, write or update
+   `.memory/10-Memories/MEM-email-pref-{key-slug}.md` using the body template from
+   `skill-memory/SKILL.md`'s Namespace-Scoped Tally-Arithmetic subsection (frontmatter incl.
+   `topic: "email/preferences/${ACCOUNT}/${KEY}"`, `category: preference`; CREATE writes the
+   full template, EXTEND appends a dated `## History` line, UPDATE additionally moves the prior
+   summary line to `## History` marked `(superseded)`).
+8. **Batch index regeneration** (design §4.4): regenerate `.memory/memory-index.json` **once**
+   after the entire harvest round (all confirmed keys in one gate response), never per
+   individual CREATE/UPDATE/EXTEND — independent of the `--clean` flag (`--clean` only suppresses
+   `/research`/`/plan`/`/implement` auto-retrieval; it has no relationship to this write-side
+   gate).
+9. **Feedback-loop cap (design §5.3, MUST NOT)**: the harvest never mutates `proposed_action` or
+   raises `confidence` on any future classify pass — it may only ever contribute as a surfaced
+   tally at a future gate/read-back. The vault stays strictly advisory relative to the frozen
+   classifier.
+10. **Revocation/edit UX (design §5.5)**: a user-invoked "forget this preference" option, offered
+    alongside the harvest gate or on request, reuses the existing tombstone pattern
+    (`status: tombstoned`, `tombstoned_at`, `tombstone_reason: "user_revoked"`) or a tally reset —
+    distinct from `/distill --purge` (automatic, staleness-driven) and never automatic.
+11. **Minimal success-signal logging (design §5.5)**: for keys with a pre-existing memory prior
+    to this round, log a per-round agreement rate (confirmed action == the memory's pre-round
+    derived dominant action) as one harvest log line — no new dashboard, enough visibility for a
+    future audit to detect drift.
+
 ---
 
 ## `--all` Mode (`mode=all`): Whole-Mailbox Sweep, One Bucket Approval, Sub-50 Drain
@@ -401,6 +482,27 @@ As in default mode: diff the per-split execution-state files (never re-derived) 
 approved manifest across ALL splits and report totals — executed, failed (with wrapper error
 text), skipped-as-already-executed, and expired-unexecuted residual.
 
+### Stage 7 (`--all`): Harvest (opt-in, never-silent)
+
+Same opt-in harvest -> dedup -> tiered-gate -> Bash/jq batch-regen procedure as Default Mode
+Stage 7 above (Steps 2-11 apply verbatim: mixed-sender handling, per-key dedup/tally,
+evidentiary threshold, archive-scope isolation, the consolidated gate, the Bash/jq write path,
+batch index regen, the feedback-loop cap, revocation/edit UX, and success-signal logging). The
+ONLY difference is key derivation (Step 1):
+
+1. **Key derivation (`--all` mode)**: key off the Stage 2.5 bucket grouping (domain, or full
+   address for freemail/shared domains) as the harvest trigger/start key, cross-referenced
+   against the per-split Stage 6 executed totals — only bucket members whose Message-ID is
+   confirmed `executed` in some split's state-file diff count as evidence; approved-but-expired
+   or failed IDs within an otherwise-executed bucket contribute nothing. Derive each executed
+   member's identity the same way as default mode
+   (`.claude/scripts/email-preference-harvest.sh identity "<sender>"`) and group by the
+   resulting key — the Stage 2.5 bucket is the harvest *trigger*, not itself the memory key; one
+   review bucket may fan out into multiple memory-write candidates (design §1.5).
+
+Run this Stage 7 pass once, after Stage 6 totals are final for the whole `--all` sweep (all
+splits), not per-split.
+
 ---
 
 ## Archive Scope (`scope=archive`): Account's Archive Folder with Extra-Caution Gates
@@ -551,6 +653,8 @@ unprompted or claiming whole-mailbox coverage.
    on expiry.
 6. Run every AskUserQuestion gate and every execute/drain call in the ROOT SESSION via direct
    execution.
+7. Run the opt-in Stage 7 harvest gate after Stage 6, on wrapper-executed IDs only (never on
+   Stage 2/3/4 unconfirmed or approved-but-unexecuted IDs) — see Stage 7 (Harvest).
 
 **MUST NOT**:
 1. Call raw `himalaya`, `notmuch`, `msmtp`, or `secret-tool` — including raw `notmuch new`. The
@@ -566,3 +670,6 @@ unprompted or claiming whole-mailbox coverage.
    re-timestamp an expired manifest/split.
 7. Auto-chain `/email --sync` after a cleanup (especially an archive drain).
 8. Run full-scale `--archive` before the pilot gate is satisfied.
+9. Let the Stage 7 harvest mutate `proposed_action` or raise `confidence` on any future classify
+   pass — the vault stays strictly advisory relative to the frozen classifier (see Stage 7
+   (Harvest), Step 9).

@@ -205,40 +205,44 @@ blocked by 1, 3. Wave 3: Phase 6 blocked by 4 (and depends on 2's contract being
 - **Timing:** ~0.5 hours
 - **Depends on:** none
 
-### Phase 4: skill-email-cleanup Stage 7 harvest (both modes) + folded-in scope [NOT STARTED]
+### Phase 4: skill-email-cleanup Stage 7 harvest (both modes) + folded-in scope [COMPLETED]
 
 - **Goal:** Add the opt-in, never-silent Stage 7 harvest gate after Stage 6 (Verify) in both
   Default and `--all` modes, wiring the Phase 1 helper and the Phase 2 skill-memory contract. This
   phase exclusively owns `skill-email-cleanup/SKILL.md`.
 - **Tasks:**
-  - [ ] Re-`Read` both Stage 6 (Verify) sections (Default ~`:178-181`; `--all` ~`:398-402`) and
+  - [x] Re-`Read` both Stage 6 (Verify) sections (Default ~`:178-181`; `--all` ~`:398-402`) and
     insert a new Stage 7 (Harvest) after each, before the following `---` section break.
-  - [ ] Default mode Stage 7: derive keys post-hoc per executed Message-ID from the approved
+  - [x] Default mode Stage 7: derive keys post-hoc per executed Message-ID from the approved
     manifest's `sender` field (§1.2), grouped by the Phase 2/normalization key across all
     Stage-6-executed IDs; read only the Stage 6 *executed* diff (never Stage 2/3/4 unconfirmed).
-  - [ ] `--all` mode Stage 7: key off the Stage 2.5 bucket grouping cross-referenced against the
+  - [x] `--all` mode Stage 7: key off the Stage 2.5 bucket grouping cross-referenced against the
     per-split Stage 6 executed totals; only actually-executed bucket members count as evidence.
-  - [ ] Implement the harvest -> dedup -> tiered `AskUserQuestion` -> batch-regen flow mirroring
+    *(completed: `--all` Stage 7 reuses Default Stage 7's Steps 2-11 verbatim by reference and
+    overrides only Step 1, key derivation)*
+  - [x] Implement the harvest -> dedup -> tiered `AskUserQuestion` -> batch-regen flow mirroring
     `skill-todo` Stages 7-9 + 14 *logic only* (never `state.json`/`project_number` substrate):
-    - [ ] Tier 1 pre-selected: keys meeting the evidentiary threshold (§1.4) this round.
-    - [ ] Tier 2 shown-not-preselected: keys newly crossing the rolling-N threshold this round.
-    - [ ] Fuzzy near-miss suggestions (§4.2) as a labeled, non-pre-selected option.
-    - [ ] One consolidated non-silent prompt; batch-regenerate `memory-index.json` once after the
+    - [x] Tier 1 pre-selected: keys meeting the evidentiary threshold (§1.4) this round.
+    - [x] Tier 2 shown-not-preselected: keys newly crossing the rolling-N threshold this round.
+    - [x] Fuzzy near-miss suggestions (§4.2) as a labeled, non-pre-selected option.
+    - [x] One consolidated non-silent prompt; batch-regenerate `memory-index.json` once after the
       whole round (§4.4), independent of the `--clean` flag (§5.4).
-  - [ ] Mixed-sender handling (§1.5) as a first-class branch: split by subject/category token into
+  - [x] Mixed-sender handling (§1.5) as a first-class branch: split by subject/category token into
     distinct keys OR decline to aggregate that portion this pass — never average into a false
     scalar.
-  - [ ] Feedback-loop cap (§5.3): the harvest MUST NOT mutate `proposed_action` or raise
+  - [x] Feedback-loop cap (§5.3): the harvest MUST NOT mutate `proposed_action` or raise
     `confidence`; the vault stays strictly advisory relative to the frozen classifier.
-  - [ ] Revocation/edit UX (§5.5): a user-invoked "forget this preference" action reusing the
+  - [x] Revocation/edit UX (§5.5): a user-invoked "forget this preference" action reusing the
     tombstone pattern (or a tally reset), distinct from `/distill --purge`, never automatic.
-  - [ ] Minimal success-signal logging (§5.5): log a per-round agreement rate (confirmed action ==
+  - [x] Minimal success-signal logging (§5.5): log a per-round agreement rate (confirmed action ==
     memory's pre-round derived dominant, when a memory pre-existed) as a harvest log line.
-  - [ ] Update the Critical Requirements lists (~`:540-568`): add a MUST-DO ("run the opt-in
+  - [x] Update the Critical Requirements lists (~`:540-568`): add a MUST-DO ("run the opt-in
     harvest gate after Stage 6, on wrapper-executed IDs only") and a MUST-NOT ("harvest never
-    mutates `proposed_action`/confidence").
-  - [ ] Confirm `allowed-tools` frontmatter (`Bash, Read, AskUserQuestion`) remains sufficient
+    mutates `proposed_action`/confidence"). *(completed: MUST-DO item 7, MUST-NOT item 9)*
+  - [x] Confirm `allowed-tools` frontmatter (`Bash, Read, AskUserQuestion`) remains sufficient
     (Bash/jq/file-write path); change only if the chosen implementation requires `Write`/`Edit`.
+    *(completed: confirmed sufficient, no frontmatter change — Stage 7 Step 7 documents the
+    Bash/jq heredoc file-write path explicitly)*
 - **Timing:** ~1.5 hours
 - **Depends on:** 1, 2
 

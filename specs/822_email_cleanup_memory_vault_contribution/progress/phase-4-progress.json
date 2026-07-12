@@ -1,0 +1,30 @@
+{
+  "phase": 4,
+  "phase_name": "skill-email-cleanup Stage 7 harvest (both modes) + folded-in scope",
+  "started_at": "2026-07-12T01:15:00Z",
+  "last_updated": "2026-07-12T02:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Default mode Stage 7: full harvest procedure (key derivation, mixed-sender, dedup/tally, threshold, archive isolation, tiered gate, Bash/jq write path, batch regen, feedback cap, revocation UX, success logging)",
+      "status": "done",
+      "files_touched": [".claude/extensions/email/skills/skill-email-cleanup/SKILL.md"]
+    },
+    {
+      "id": 2,
+      "description": "--all mode Stage 7: bucket-cross-referenced key derivation, delegating shared steps to Default mode Stage 7",
+      "status": "done",
+      "files_touched": [".claude/extensions/email/skills/skill-email-cleanup/SKILL.md"]
+    },
+    {
+      "id": 3,
+      "description": "Critical Requirements MUST-DO/MUST-NOT updates",
+      "status": "done",
+      "files_touched": [".claude/extensions/email/skills/skill-email-cleanup/SKILL.md"]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
