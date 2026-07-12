@@ -108,7 +108,7 @@
     {
       "project_number": 826,
       "project_name": "logos_maildir_duplication_mbsync_repair",
-      "status": "blocked",
+      "status": "completed",
       "task_type": "nix",
       "topic": "extensions",
       "priority": "high",
@@ -154,12 +154,13 @@
         "Phase 7 (mbsync logos reconcile): Phase 5's duplicate-UID corruption IS resolved (task 828). But attempting the reconcile surfaced two new findings: (1) logos-sent/logos-archive are drastically under-synced with the live server (~62,000-message pull scope explosion, unplanned by this task), and (2) only ~22 of task 828's 862 renamed messages are confirmed to already carry Trash/Archive folder membership server-side -- pushing the rest risks creating server-side duplicates via undocumented ProtonMail Bridge APPEND-dedup behavior that cannot be verified via read-only inspection. See handoffs/phase-7-blocker-report.md. No destructive action taken; freeze/backup intact.",
         "Phase 4 (Labels-mirror cleanup): 98-100% of .Labels.* content has no copy elsewhere -- real unique mail, left inert per plan Abort-criteria fallback. Confirmed non-goal, not a blocker to completion."
       ],
-      "previous_status": "implementing"
+      "previous_status": "implementing",
+      "completion_summary": "Resolved via the 2026-07-06 full reclone (wiped the duplication-contaminated local Logos tree and re-downloaded from the verified-clean Proton server) plus a 2026-07-12 verified sync. Read-only live IMAP probe confirmed active folders are clean and small (Sent 202, Archive 115) — the feared 26k/36k Sent/Archive backlog does not exist; it was an accidental Gmail Easy-Switch import now isolated inert in All Mail (68,459), which no mbsync channel targets. Ran full bidirectional 'mbsync logos' after a fresh maildir snapshot: local now exactly mirrors the server on every folder (INBOX 341, Sent 202, Drafts 24, Trash 15, Archive 115); 110 pulled, 248 flag updates pushed, 52 local-only leftover messages reconciled/deleted (all preserved in .logos-presync-20260712 snapshot + .logos-backup-20260706). No duplication; mailbox clean and synced. notmuch reindexed."
     },
     {
       "project_number": 827,
       "project_name": "email_staleness_detector_redesign",
-      "status": "blocked",
+      "status": "not_started",
       "task_type": "meta",
       "topic": "extensions",
       "priority": "medium",

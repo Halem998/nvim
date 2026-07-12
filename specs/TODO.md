@@ -11,15 +11,13 @@ next_project_number: 852
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 87,826 | -- | extensions, terminal ui |
-| 2 | 827 | 826 | extensions |
+| 1 | 87,827 | -- | extensions, terminal ui |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Extensions
 
-826 [BLOCKED] — Root-cause and fix the pre-existing Logos (Protonmail Bridge) mai
-  └─ 827 [BLOCKED] — The freshness gate shipped in tasks 823-825 is defective: email-c
+827 [NOT STARTED] — The freshness gate shipped in tasks 823-825 is defective: email-c
 
 ### Terminal Ui
 
@@ -168,7 +166,7 @@ DEPENDENCIES: 831 (COMPLETE — fixed converter), 835 (COMPLETE — provenance/f
 ---
 
 ### 827. Redesign the /email staleness detector - stop equating maildir files with deduped messages
-- **Status**: [BLOCKED]
+- **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 826
@@ -178,7 +176,7 @@ DEPENDENCIES: 831 (COMPLETE — fixed converter), 835 (COMPLETE — provenance/f
 ---
 
 ### 826. Investigate Logos maildir file-duplication and repair broken mbsync logos sync
-- **Status**: [BLOCKED]
+- **Status**: [COMPLETED]
 - **Task Type**: nix
 - **Topic**: extensions
 - **Dependencies**: None
