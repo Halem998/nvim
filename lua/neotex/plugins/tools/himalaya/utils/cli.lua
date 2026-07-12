@@ -177,15 +177,34 @@ function M.execute_himalaya(args, opts)
         return nil, error_msg
       end
     else
-      -- Other errors
+      -- Other errors.
+      -- While an mbsync run is in flight, himalaya reads the Maildir concurrently
+      -- with mbsync's writes (new/->cur/ moves, expunges), so a read can fail
+      -- transiently even though the sync itself is fine. The mid-sync refresh timer
+      -- and the post-sync refresh both recover on their next tick, so downgrade these
+      -- expected races from a loud ERROR to a quiet debug log -- otherwise every
+      -- <leader>ms spams "Himalaya command failed" once per account. A genuinely
+      -- persistent failure still surfaces loudly on the post-sync refresh, when no
+      -- sync is running.
+      local sync_state = require('neotex.plugins.tools.himalaya.core.state')
+      local sync_in_flight = sync_state.is_syncing()
+
       if not _G.HIMALAYA_TEST_MODE then
-        logger.error('Himalaya command failed', { 
-          error = error_msg, 
-          exit_code = exit_code,
-          cmd = table.concat(cmd, ' ')
-        })
+        if sync_in_flight then
+          logger.debug('Himalaya command failed during active sync (transient, ignored)', {
+            error = error_msg,
+            exit_code = exit_code,
+            cmd = table.concat(cmd, ' ')
+          })
+        else
+          logger.error('Himalaya command failed', {
+            error = error_msg,
+            exit_code = exit_code,
+            cmd = table.concat(cmd, ' ')
+          })
+        end
       end
-      
+
       -- User-friendly error messages
       if error_msg:match('no such file or directory') then
         error_msg = 'Himalaya not found. Please install himalaya CLI.'
@@ -196,12 +215,13 @@ function M.execute_himalaya(args, opts)
       elseif error_msg:match('timeout') then
         error_msg = 'Request timed out. Try again later.'
       end
-      
-      -- Only show error notification if not in test mode
-      if show_loading and not _G.HIMALAYA_TEST_MODE then
+
+      -- Only show error notification if not in test mode and not a transient
+      -- in-flight-sync race (the refresh recovers on its next tick).
+      if show_loading and not _G.HIMALAYA_TEST_MODE and not sync_in_flight then
         notify.himalaya(error_msg, notify.categories.ERROR)
       end
-      
+
       return nil, error_msg
     end
   end
