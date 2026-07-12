@@ -197,6 +197,31 @@ Where:
 - memory_terms = keywords extracted from memory content (same algorithm)
 ```
 
+### Exact-Key Dedup for Reserved Namespaces
+
+The reserved topic namespace `email/preferences/*` (task 822 — see
+`.claude/extensions/email/context/project/email/design/email-to-memory-preferences.md`) is a
+**sanctioned, explicitly documented deviation** from the fuzzy Classification Thresholds below.
+For a segment/candidate whose `topic` matches `email/preferences/*`, an **exact `topic ==` match**
+against `.memory/memory-index.json` short-circuits classification straight to UPDATE/EXTEND
+(disambiguated by the namespace-scoped tally-arithmetic variant two sections below) WITHOUT ever
+computing keyword overlap:
+
+```bash
+jq --arg k "email/preferences/${ACCOUNT}/${KEY}" \
+  '.entries[] | select(.topic == $k)' .memory/memory-index.json
+```
+
+Rationale: for this namespace the identity key (sender/domain normalization, computed
+deterministically by `.claude/scripts/email-preference-harvest.sh`) is already a verified,
+deterministic identity — re-deriving it via fuzzy keyword overlap would be strictly *fuzzier*
+than the key itself. A miss (no exact match) falls through to CREATE by default; the ordinary
+fuzzy path below still runs afterward as a **near-miss suggestion only** (e.g. flagging
+`email/preferences/gmail/mail.foo.com` as a near-miss of an existing
+`email/preferences/gmail/foo.com` entry) — presented to the human at gate time, never
+auto-applied. This exact-key short-circuit applies ONLY to the reserved `email/preferences/*`
+namespace; all other topics continue to use the Classification Thresholds below unchanged.
+
 ### Classification Thresholds
 
 | Overlap Score | Classification | Action |
@@ -204,6 +229,76 @@ Where:
 | >60% | HIGH | UPDATE - Replace memory content |
 | 30-60% | MEDIUM | EXTEND - Append new section |
 | <30% | LOW | CREATE - New memory |
+
+### Namespace-Scoped Tally-Arithmetic UPDATE/EXTEND (`email/preferences/*` only)
+
+Distinct from the generic wholesale UPDATE/EXTEND templates elsewhere in this skill (which
+replace/append full memory *content*), the reserved `email/preferences/*` namespace's
+UPDATE/EXTEND operations mutate a small structured **tally block** in the memory body instead:
+
+- **EXTEND** (this round's dominant confirmed action matches the memory's stored dominant
+  action): append a dated `## History` line (`- {date}: +{action} (n={n_this_round},
+  scope={inbox|archive})`) and bump the matching action's counter and `last_seen`. Existing
+  content is never rewritten.
+- **UPDATE** (this round's dominant action contradicts the stored dominant action): increment
+  the *opposite* counter (never overwrite/reset the matching one — the contradicting action's
+  own count and `last_seen` are what change), which can flip the *derived* dominant action per
+  the tie-break rule below; move the prior summary line to `## History` marked `(superseded)`.
+
+Both operations reuse the exact same tally arithmetic (`.claude/scripts/email-preference-harvest.sh
+tally-op`) — the EXTEND/UPDATE distinction is purely about which body sections get touched
+(History append vs. superseded-summary move), not about a different counter-update rule.
+
+**Dominant action** is always *derived*, never a stored scalar:
+`dominant = argmax(delete_count, archive_count, keep_count)`, ties broken by whichever action has
+the more recent per-action `last_seen` (`.claude/scripts/email-preference-harvest.sh dominant`).
+
+**Memory body template** (§3.5 of the design; schema fields map 1:1 to what these operations
+read/write):
+
+```markdown
+---
+title: "Email preference: {domain-or-hash-key}"
+created: {today}
+tags: [email, preference, {domain}]
+topic: "email/preferences/{account}/{key}"
+source: "skill-email-cleanup harvest"
+modified: {today}
+keywords: [{domain}, email, preference]
+summary: "Confirmed-decision tally for {domain-or-hash-key}: {dominant_action} ({dominant_count}/{total})"
+retrieval_count: 0
+last_retrieved:
+category: preference
+---
+
+# Email preference: {domain-or-hash-key}
+
+**Tally**: delete={delete_count} (last: {delete_last_seen}), archive={archive_count}
+(last: {archive_last_seen}), keep={keep_count} (last: {keep_last_seen})
+**Dominant action** (derived): {dominant_action}
+**Evidence**: junked {delete_count + archive_count}, kept {keep_count}
+
+## History
+
+- {date}: +{action} (n={n_this_round}, scope={inbox|archive})
+
+## Connections
+<!-- Add links to related memories using [[MEM-filename]] syntax -->
+```
+
+**Archive-scope tally isolation**: archive-scope-sourced confirms (from `skill-email-cleanup
+--archive`) are recorded in a distinct `### Archive-scope tally` sub-section within the SAME
+memory (never a separate memory) — this preserves the "one evolving memory per sender/domain"
+invariant while preventing a burst of old archive-triage confirms from silently dominating a
+sender's current-inbox dominant action. The archive-scope sub-section carries its own
+`{delete_count, archive_count, keep_count, last_seen}` tally, computed and derived identically to
+the inbox-scope tally above, but never merged into it.
+
+**Revocation/edit UX**: a user-invoked "forget this preference" action reuses the existing
+tombstone pattern documented under Tombstone Application below (`status: tombstoned`,
+`tombstoned_at`, `tombstone_reason`) — set `tombstone_reason: "user_revoked"` for this case. This
+is distinct from `/distill --purge` (automatic, staleness-driven) and is never automatic;
+`skill-email-cleanup`'s Stage 7 wires the user-invoked trigger for it.
 
 ### Search Result Presentation -- MANDATORY STOP
 
@@ -483,8 +578,14 @@ for mem in $memories; do
   token_count=$(echo "$word_count * 1.3" | bc | cut -d. -f1)
   # Derive id from filename: MEM-{slug}.md -> MEM-{slug}
   id=$(basename "$mem" .md)
-  # Derive category from first tag
-  category=$(grep -m1 "^tags:" "$mem" | sed 's/^tags: *\[//' | cut -d, -f1 | tr -d '] ')
+  # category: prefer an explicit frontmatter `category:` field when present (task 822, design
+  # §3.4 — first real use of this field, e.g. `category: preference` for email/preferences/*
+  # memories); fall back to the existing tags-derived heuristic when absent. Non-breaking for
+  # the pre-822 memory population, none of which has a `category:` field.
+  category=$(grep -m1 "^category:" "$mem" | sed 's/^category: *//' | tr -d '"')
+  if [ -z "$category" ]; then
+    category=$(grep -m1 "^tags:" "$mem" | sed 's/^tags: *\[//' | cut -d, -f1 | tr -d '] ')
+  fi
 done
 
 # 3. Build JSON structure
@@ -508,7 +609,7 @@ done
 | `title` | string | Frontmatter `title` |
 | `summary` | string | Frontmatter `summary` |
 | `topic` | string | Frontmatter `topic` |
-| `category` | string | First tag from frontmatter `tags` |
+| `category` | string | Frontmatter `category:` field when present (e.g. `preference`), else first tag from frontmatter `tags` |
 | `keywords` | array | Frontmatter `keywords` |
 | `token_count` | number | Word count * 1.3, rounded down |
 | `created` | string | Frontmatter `created` (ISO date) |
@@ -992,13 +1093,20 @@ if retrieval_count > 0 AND days_since_created > 60:
 Penalizes memories that have never been retrieved after a grace period.
 
 ```
-if retrieval_count == 0 AND days_since_created > 30:
+if topic starts_with "email/preferences/":
+  zero_retrieval = 0.0   # reserved-namespace exemption (task 822, design §5.1) -- these
+                          # memories are intentionally never read back by /research /plan
+                          # /implement auto-retrieval (see memory-retrieve.sh's topic-prefix
+                          # pre-filter), so a zero retrieval_count is expected, not a staleness
+                          # signal
+elif retrieval_count == 0 AND days_since_created > 30:
   zero_retrieval = 1.0
 else:
   zero_retrieval = 0.0
 ```
 
-- Binary: 0.0 (has retrievals or too new) or 1.0 (never retrieved, older than 30 days)
+- Binary: 0.0 (has retrievals, too new, or `email/preferences/*` exempt) or 1.0 (never retrieved,
+  older than 30 days, and not in the exempt namespace)
 
 #### Component 3: Size Penalty (weight: 0.2)
 
@@ -1707,15 +1815,20 @@ for each memory in non_tombstoned_memories:
       })
 
   # 5. Category reclassification
-  content_category = infer_category_from_content(memory.content)
-  if content_category != memory.category:
-    tier2_fixes.append({
-      "memory": memory.id,
-      "fix": "category_reclassify",
-      "description": "Category may not match content",
-      "current_category": memory.category,
-      "suggested_category": content_category
-    })
+  # Skip entirely when the memory has an explicit frontmatter `category:` field (task 822,
+  # design §3.4) -- an explicit category is authoritative and never content-inferred; this
+  # only fires for the tags-derivation fallback path (pre-822 memories, and any future memory
+  # without a `category:` field).
+  if not memory.has_explicit_category_field:
+    content_category = infer_category_from_content(memory.content)
+    if content_category != memory.category:
+      tier2_fixes.append({
+        "memory": memory.id,
+        "fix": "category_reclassify",
+        "description": "Category may not match content",
+        "current_category": memory.category,
+        "suggested_category": content_category
+      })
 
   # 6. Topic path correction
   cluster_topics = get_topic_patterns_from_cluster(memory.topic)
@@ -2046,6 +2159,12 @@ purge_candidates = []
 for each memory in scored_memories:
   if memory.status == "tombstoned":
     skip  # Already tombstoned
+  if memory.topic starts_with "email/preferences/":
+    skip  # reserved-namespace purge exemption (task 822, design §5.1) -- gates the WHOLE
+          # OR-condition below, not just the zero-retrieval leg (Component 2 above already
+          # zeroes zero_retrieval_penalty for this namespace; this second, independent gate is
+          # defense-in-depth so a high staleness_score alone can never purge one of these
+          # memories either)
   if memory.zero_retrieval_penalty == 1.0 OR memory.staleness_score > 0.8:
     purge_candidates.append(memory)
 ```

@@ -139,50 +139,54 @@ blocked by 1, 3. Wave 3: Phase 6 blocked by 4 (and depends on 2's contract being
 - **Timing:** ~1 hour
 - **Depends on:** none
 
-### Phase 2: skill-memory dedup, category recognition, and purge exemption [NOT STARTED]
+### Phase 2: skill-memory dedup, category recognition, and purge exemption [COMPLETED]
 
 - **Goal:** Make `skill-memory/SKILL.md` aware of the reserved `email/preferences/*` namespace:
   exact-key short-circuit, namespace-scoped tally UPDATE/EXTEND variant, `category:` frontmatter
   recognition, and the zero-retrieval purge/scoring exemption. This phase exclusively owns all
   edits to `skill-memory/SKILL.md`.
 - **Tasks:**
-  - [ ] Re-`Read` around the Classification Thresholds table (~`:200-206`) and add a new
+  - [x] Re-`Read` around the Classification Thresholds table (~`:200-206`) and add a new
     subsection ("Exact-Key Dedup for Reserved Namespaces") immediately before it, scoped to
     `topic` values matching `email/preferences/*`: a `topic ==` exact match short-circuits
     straight to UPDATE/EXTEND without computing keyword overlap (design §4.1). Document this as a
     sanctioned deviation from the fuzzy 60%/30% contract; retain the fuzzy path as a labeled
-    near-miss *suggestion* only (§4.2).
-  - [ ] Document the namespace-scoped UPDATE/EXTEND *tally-arithmetic* variant (§4.3) as distinct
+    near-miss *suggestion* only (§4.2). *(completed)*
+  - [x] Document the namespace-scoped UPDATE/EXTEND *tally-arithmetic* variant (§4.3) as distinct
     from the generic wholesale UPDATE/EXTEND templates: EXTEND appends a dated `## History` line
     and bumps one counter; UPDATE increments the opposite counter and moves the prior summary line
     to `## History` marked `(superseded)`. Include the §3.5 memory body template (tally block,
-    `## History`, evidence line, `category: preference`).
-  - [ ] Add `category: preference` frontmatter recognition (§3.4): `index.md`/`/distill` prefer a
+    `## History`, evidence line, `category: preference`). *(completed: new "Namespace-Scoped
+    Tally-Arithmetic UPDATE/EXTEND" subsection)*
+  - [x] Add `category: preference` frontmatter recognition (§3.4): `index.md`/`/distill` prefer a
     present `category:` field over the tags-derived heuristic and fall back to tags-derivation when
-    absent (non-breaking for the existing 19 memories).
-  - [ ] Add the zero-retrieval exemption (§5.1) at BOTH sites after re-`Read`ing them: the
+    absent (non-breaking for the existing 19 memories). *(completed: JSON Index Maintenance loop +
+    Schema Fields table + refine Tier-2 category_reclassify guard)*
+  - [x] Add the zero-retrieval exemption (§5.1) at BOTH sites after re-`Read`ing them: the
     Zero-Retrieval Penalty scoring component (~`:990-999`) and the Purge Candidate OR-condition
     (~`:2042-2050`). The exemption `AND NOT topic startswith "email/preferences/"` must gate the
     whole purge OR-condition (`zero_retrieval_penalty == 1.0 OR staleness_score > 0.8`), not just
-    the zero-retrieval leg.
-  - [ ] Document the archive-scope tally isolation contract (§5.5): archive-scope-sourced confirms
+    the zero-retrieval leg. *(completed: both sites edited)*
+  - [x] Document the archive-scope tally isolation contract (§5.5): archive-scope-sourced confirms
     recorded in a distinct `### Archive-scope tally` sub-section within the same memory (never a
-    separate memory), preserving "one evolving memory per sender/domain."
-  - [ ] Note the revocation/edit UX reuses the existing tombstone pattern (`status: tombstoned`,
+    separate memory), preserving "one evolving memory per sender/domain." *(completed: folded into
+    the Namespace-Scoped Tally-Arithmetic subsection)*
+  - [x] Note the revocation/edit UX reuses the existing tombstone pattern (`status: tombstoned`,
     `tombstoned_at`, `tombstone_reason`); reference it here so Phase 4 can wire the user-invoked
-    "forget this preference" action.
+    "forget this preference" action. *(completed: folded into the same subsection, with
+    `tombstone_reason: "user_revoked"`)*
 - **Timing:** ~1.25 hours
 - **Depends on:** none
 
-### Phase 3: memory-retrieve.sh cross-contamination pre-filter [NOT STARTED]
+### Phase 3: memory-retrieve.sh cross-contamination pre-filter [COMPLETED]
 
 - **Goal:** Prevent `email/preferences/*` memories from leaking into unrelated
   `/research`/`/plan`/`/implement` auto-retrieval. This phase exclusively owns
   `memory-retrieve.sh`.
 - **Tasks:**
-  - [ ] Re-`Read` the scoring block (~lines 74-102) and confirm the tombstone pre-filter line
+  - [x] Re-`Read` the scoring block (~lines 74-102) and confirm the tombstone pre-filter line
     (~line 77: `map(select((.status // "active") == "active")) |`).
-  - [ ] Add a second `map(select(...))` stage immediately after it (design §5.2):
+  - [x] Add a second `map(select(...))` stage immediately after it (design §5.2):
     ```
     map(select(
       ((.topic // "") | startswith("email/preferences/")) and ($tt != "email")
@@ -191,9 +195,13 @@ blocked by 1, 3. Wave 3: Phase 6 blocked by 4 (and depends on 2's contract being
     ```
     Keep it on its own line for easy revert. This is an effectively unconditional exclusion today
     (no `email` task type exists in core routing) while leaving the door open for a deliberate
-    future email-side reader passing `task_type="email"`.
-  - [ ] Sanity-check the jq filter compiles against a minimal synthetic index before committing
-    (full fixture assertions live in Phase 5).
+    future email-side reader passing `task_type="email"`. *(completed: applied verbatim to both
+    `.claude/scripts/memory-retrieve.sh` and its extension-source copy
+    `.claude/extensions/core/scripts/memory-retrieve.sh` to avoid deployed-vs-source drift)*
+  - [x] Sanity-check the jq filter compiles against a minimal synthetic index before committing
+    (full fixture assertions live in Phase 5). *(completed: verified against a synthetic
+    2-entry fixture -- task_type=general excludes the email/preferences/* entry, task_type=email
+    includes it)*
 - **Timing:** ~0.5 hours
 - **Depends on:** none
 

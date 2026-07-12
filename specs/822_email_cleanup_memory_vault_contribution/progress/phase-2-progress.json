@@ -1,0 +1,30 @@
+{
+  "phase": 2,
+  "phase_name": "skill-memory dedup, category recognition, and purge exemption",
+  "started_at": "2026-07-12T00:30:00Z",
+  "last_updated": "2026-07-12T01:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Exact-key dedup short-circuit subsection + namespace-scoped tally-arithmetic UPDATE/EXTEND subsection (incl. archive-scope isolation + revocation UX)",
+      "status": "done",
+      "files_touched": [".claude/extensions/memory/skills/skill-memory/SKILL.md"]
+    },
+    {
+      "id": 2,
+      "description": "category: preference frontmatter recognition with tags-derivation fallback",
+      "status": "done",
+      "files_touched": [".claude/extensions/memory/skills/skill-memory/SKILL.md"]
+    },
+    {
+      "id": 3,
+      "description": "Zero-retrieval exemption at both the scoring component and the purge OR-condition",
+      "status": "done",
+      "files_touched": [".claude/extensions/memory/skills/skill-memory/SKILL.md"]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

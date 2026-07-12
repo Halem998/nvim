@@ -1,0 +1,21 @@
+{
+  "phase": 3,
+  "phase_name": "memory-retrieve.sh cross-contamination pre-filter",
+  "started_at": "2026-07-12T01:00:00Z",
+  "last_updated": "2026-07-12T01:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add topic-prefix cross-contamination map(select(...)) filter after the tombstone pre-filter",
+      "status": "done",
+      "files_touched": [
+        ".claude/scripts/memory-retrieve.sh",
+        ".claude/extensions/core/scripts/memory-retrieve.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

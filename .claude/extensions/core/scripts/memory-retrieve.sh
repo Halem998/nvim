@@ -75,6 +75,14 @@ scored_entries=$(jq --argjson kw "$keywords_json" --arg tt "$task_type" '
   .entries // [] |
   # Pre-filter: exclude tombstoned memories (absent status defaults to "active")
   map(select((.status // "active") == "active")) |
+  # Pre-filter: exclude reserved email/preferences/* namespace from general auto-retrieval
+  # (task 822, design §5.2) -- effectively unconditional today since no "email" task_type
+  # exists in core routing, but leaves the door open for a deliberate future email-side
+  # reader passing task_type="email" explicitly.
+  map(select(
+    ((.topic // "") | startswith("email/preferences/")) and ($tt != "email")
+    | not
+  )) |
   map(
     . as $entry |
     ($entry.keywords // []) as $entry_kw |
