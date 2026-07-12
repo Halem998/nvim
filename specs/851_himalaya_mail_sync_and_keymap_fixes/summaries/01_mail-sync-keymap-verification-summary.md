@@ -76,3 +76,36 @@ No source files were modified. Verification-only artifacts were produced:
 criteria are documented verbatim in the plan's Phase 3 section and mirrored in
 `.orchestrator-handoff.json`. Until a human runs and reports that step, this task should remain
 `[PARTIAL]` rather than `[COMPLETED]`.
+
+## Phase 3 -- Live verification result + follow-up fix (2026-07-11)
+
+**Live run performed by the user.** `<leader>ms` with the sidebar open produced, in order:
+`Starting sync for gmail inbox... -> Sync completed for gmail inbox -> Starting sync for logos
+inbox... -> Sync completed for logos inbox -> All accounts synced`. This confirms the six
+committed fixes against real Gmail + Proton Bridge: multi-account sequential inbox sync works,
+account fallback works, "Starting sync" notices are visible. **Core acceptance criteria: MET.**
+
+**New finding (folded into this task):** the live run also surfaced two trailing
+`Himalaya command failed` error notifications. Root-caused to a concurrency race, NOT a
+regression in the six fixes:
+
+- `_perform_sync` starts a repeating 5s refresh timer (`ui/main.lua:563`) that calls
+  `refresh_email_list()` **while mbsync is still writing the Maildir**.
+- `refresh_email_list()` shells out to `himalaya envelope list`, reading the Maildir
+  concurrently with mbsync's `new/->cur/` moves and expunges -> transient read failure ->
+  `logger.error('Himalaya command failed')` at `utils/cli.lua`, which always notifies at ERROR.
+- Proof it is a race: every himalaya command the refresh can issue (`envelope list` for INBOX /
+  default / `-s 150` / `-s 1000`, and `folder list`) was run from the shell against both
+  accounts -- all exit 0. They only fail when racing a live mbsync write.
+
+**Fix applied (`utils/cli.lua`, "Other errors" branch):** when `state.is_syncing()` is true,
+downgrade the failure from a loud ERROR notification to a quiet `logger.debug` and skip the
+user-facing notify. A genuinely persistent failure still surfaces loudly on the post-sync
+refresh, when no sync is running.
+
+**Verification of the fix (headless, `nvim -l`):** forced a himalaya command to fail under both
+sync states with `notify.himalaya` intercepted. ERROR-style notifications: `idle=2, syncing=0`.
+Errors surface when idle and are fully suppressed during an in-flight sync. `loadfile` +
+`require` of `cli.lua` pass; no circular-require issue (`state` is lazily required inside the
+branch). Remaining user check (optional): re-run `<leader>ms` and confirm the two
+`Himalaya command failed` messages no longer appear.

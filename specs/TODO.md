@@ -6,12 +6,12 @@ next_project_number: 852
 
 ## Task Order
 
-*Updated 2026-07-11. Generated from state.json dependency graph.*
+*Updated 2026-07-12. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 87,821,826,837,838,851 | -- | agent-system, extensions, mail sync + keymaps, ... |
+| 1 | 87,821,826,837,838 | -- | agent-system, extensions, terminal ui |
 | 2 | 822,827 | 821,826 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -32,14 +32,10 @@ next_project_number: 852
 
 87 [RESEARCHED] — Investigate why the terminal working directory changes to a proje
 
-### Mail Sync + Keymaps
-
-851 [BLOCKED] — Fixes across the nvim mail stack, ALREADY IMPLEMENTED AND COMMITT
-
 ## Tasks
 
 ### 851. Himalaya/aerc mail sync + keymap fixes (multi-account sync, account fallback, mS/mf conflict)
-- **Status**: [BLOCKED]
+- **Status**: [COMPLETED]
 - **Task Type**: neovim
 - **Topic**: mail sync + keymaps
 - **Dependencies**: None

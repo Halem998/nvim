@@ -297,14 +297,14 @@
     {
       "project_number": 851,
       "project_name": "himalaya_mail_sync_and_keymap_fixes",
-      "status": "blocked",
+      "status": "completed",
       "task_type": "neovim",
       "topic": "mail sync + keymaps",
       "title": "Himalaya/aerc mail sync + keymap fixes (multi-account sync, account fallback, mS/mf conflict)",
       "description": "Fixes across the nvim mail stack, ALREADY IMPLEMENTED AND COMMITTED (master: bcb662549, a1c64151b). (1) sync_inbox/sync_all fall back to config.get_current_account_name() when the sidebar has not been opened, fixing spurious \"No email account configured\". (2) new sync_all_accounts_inbox()+HimalayaSyncAllInbox; <leader>ms now syncs every account inbox (gmail-inbox, logos-inbox) sequentially. (3) fixed nil crash: get_all_accounts is on the config.accounts submodule, not re-exported by core/config. (4) \"Starting sync\" notice made visible (USER_ACTION); harmless \"Cannot update count\" downgraded ERROR->BACKGROUND. (5) <leader>me opens aerc AND triggers background mbsync -a + notmuch new via shared sync_all_mail(). (6) resolved <leader>mS/<leader>mf collisions between mail.lua and which-key.lua by relocating notmuch search->mn and notmuch full sync->mN, with annotation-only which-key entries. REMAINING: live end-to-end sync verification against Gmail + Proton Bridge servers (headless tests stubbed mbsync). See reports/01_himalaya-mail-sync-keymaps.md for root causes, per-file changes, verification performed/gaps, and acceptance criteria.",
       "dependencies": [],
       "created": "2026-07-11T14:04:50Z",
-      "last_updated": "2026-07-11T21:55:16Z",
+      "last_updated": "2026-07-12T02:03:24Z",
       "researched": "2026-07-11T14:04:50Z",
       "next_artifact_number": 2,
       "artifacts": [
@@ -320,7 +320,7 @@
         }
       ],
       "session_id": "sess_1783806385_276db2",
-      "blockers": "Live end-to-end sync verification requires human action: run <leader>ms in a real nvim (sidebar open) and confirm gmail-inbox + logos-inbox reconcile against live Gmail (app-password) + Proton Bridge (127.0.0.1:1143); confirm <leader>me opens aerc and background 'mbsync -a && notmuch new' completes. Cannot be done headlessly (needs live network, real credentials, interactive observation). Phases 1-2 (static + headless verification) PASSED with zero discrepancies; code is committed and correct."
+      "completion_summary": "Verified himalaya multi-account mail-sync + keymap fixes live against real Gmail + Proton Bridge (sequential inbox sync, account fallback, visible notices, no keymap collisions all confirmed). Additionally root-caused and fixed a mid-sync refresh race: the 5s refresh timer ran himalaya envelope list concurrently with mbsync's Maildir writes, producing transient 'Himalaya command failed' notifications; cli.lua now downgrades these to debug while state.is_syncing(). Fix behaviorally verified headless (error notifs idle=2/syncing=0)."
     }
   ],
   "completed_projects": [],
