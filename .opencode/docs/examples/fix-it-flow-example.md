@@ -71,7 +71,7 @@ OpenCode reads `.opencode/commands/fix-it.md` and sees:
 ---
 description: Scan files for FIX:, NOTE:, TODO: tags and create structured tasks interactively
 allowed-tools: Skill
-argument-hint: [PATH...]
+argument-hint: "[PATH...]"
 ---
 ```
 

@@ -1,7 +1,7 @@
 ---
 description: Interactive system builder that creates TASKS for agent architecture changes (never implements directly)
 allowed-tools: Skill
-argument-hint: [PROMPT] | --analyze
+argument-hint: "[PROMPT] | --analyze"
 ---
 
 > **COMMAND EXECUTION MODE** — You have been invoked as this command with arguments: `$ARGUMENTS`. Execute the workflow below immediately. Do not summarize this file, ask what to do with it, or describe its contents. Start execution now.

@@ -29,7 +29,7 @@ Researched the command file format used in this extension system to create `cite
 ---
 description: <one-line description shown in /help>
 allowed-tools: Skill
-argument-hint: [mode1|mode2|...] [ARGS]
+argument-hint: "[mode1|mode2|...] [ARGS]"
 ---
 ```
 

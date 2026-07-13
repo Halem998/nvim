@@ -1,6 +1,6 @@
 ---
 description: Create and push semantic version tags for CI/CD deployment (user-only)
-argument-hint: [--patch|--minor|--major] [--force] [--dry-run]
+argument-hint: "[--patch|--minor|--major] [--force] [--dry-run]"
 ---
 
 # Command: /tag

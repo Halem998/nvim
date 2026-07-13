@@ -63,7 +63,7 @@ For `/literature`, Pattern B (direct execution) is correct because:
 ---
 description: Scan files for FIX:, NOTE:, TODO:, QUESTION: tags and create structured tasks interactively
 allowed-tools: Skill
-argument-hint: [PATH...]
+argument-hint: "[PATH...]"
 model: opus
 ---
 ```
@@ -247,7 +247,7 @@ Purpose: Argument parsing and dispatch.
 ---
 description: Manage specs/literature/ — scan, convert PDFs/DJVUs, and maintain index.json
 allowed-tools: Skill
-argument-hint: [--scan|--convert [FILE]|--validate|--index FILE]
+argument-hint: "[--scan|--convert [FILE]|--validate|--index FILE]"
 ---
 ```
 
