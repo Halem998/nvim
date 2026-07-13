@@ -1,12 +1,46 @@
 ---
-next_project_number: 852
+next_project_number: 854
 ---
 
 # TODO
 
-INFO: No active non-terminal tasks found in /home/benjamin/.config/nvim/specs/state.json
+## Task Order
+
+*Updated 2026-07-13. Generated from state.json dependency graph.*
+
+**Dependency Waves**:
+| Wave | Tasks | Blocked by | Topics |
+|------|-------|------------|--------|
+| 1 | 852,853 | -- | extensions |
+
+**Grouped by Topic** (indented = depends on parent):
+
+### Extensions
+
+852 [NOT STARTED] — During task 827 (email staleness detector redesign), live diagnos
+853 [NOT STARTED] — During task 827, confirmed a bug affecting all five email wrapper
 
 ## Tasks
+
+### 853. Fix email wrapper binaries silently ignoring positional account arg
+- **Status**: [NOT STARTED]
+- **Task Type**: email
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: During task 827, confirmed a bug affecting all five email wrapper binaries (email-census, email-classify, email-reindex, email-archive-confirmed, email-delete-confirmed): the shared 'mkPreamble' argument-parsing loop in ~/.dotfiles/modules/home/email/agent-tools/lib.nix only honors '--account <gmail|logos>'; a positional invocation like 'email-census logos' is SILENTLY DISCARDED (appended to ARGS[] and ignored) and the wrapper defaults to ACCOUNT=gmail. This produced misleading output during 827 diagnosis (running 'email-census logos' actually censused gmail). Fix: make the wrappers either (a) accept a positional account arg as an alias for --account, or (b) reject/warn on an unrecognized positional arg instead of silently defaulting. Prefer failing loudly over silent wrong-account operation, especially for the mutating wrappers (archive/delete). The fix is a small change to the mkPreamble getopts loop in lib.nix; all five binaries inherit it. Cross-repo: change lands in ~/.dotfiles and requires a home-manager rebuild (user applies). Do NOT run home-manager switch or commit/push in ~/.dotfiles.
+
+---
+
+### 852. Investigate 22 Logos INBOX files that notmuch never indexes
+- **Status**: [NOT STARTED]
+- **Task Type**: email
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: During task 827 (email staleness detector redesign), live diagnosis of the Logos INBOX freshness gap revealed an independent anomaly: 22 of the 23-file divergence between himalaya on-disk INBOX (341) and notmuch-indexed messages (318-319) are files that notmuch has NEVER indexed at all — verified via 'notmuch id:' lookups returning zero hits for those specific files. Only 1 of the 23 is genuine Message-ID dedup. Two sanctioned 'email-reindex' runs (notmuch new --no-hooks), INCLUDING one after forcing the maildir directory mtime forward, failed to index these 22 files. This is NOT staleness and NOT duplication (task 826 established these are real distinct messages) — it is an unexplained notmuch indexing failure specific to these files. Investigate root cause: candidates include notmuch 'new.ignore'/'new.tags' config, maildir flag/filename anomalies on those 22 files, non-mail content notmuch skips, permissions, or a notmuch database inconsistency. Determine why 'notmuch new' skips them and how to get them indexed. Read-only diagnosis first (identify the 22 files, inspect their filenames/headers/permissions, check notmuch config); do NOT mutate mail. Cross-repo: notmuch config lives in ~/.dotfiles. The 827 report (specs/827_email_staleness_detector_redesign/reports/01_staleness-detector-redesign.md) documents the dead-ends already ruled out — read it first.
+
+---
 
 ### 851. Himalaya/aerc mail sync + keymap fixes (multi-account sync, account fallback, mS/mf conflict)
 - **Status**: [COMPLETED]
