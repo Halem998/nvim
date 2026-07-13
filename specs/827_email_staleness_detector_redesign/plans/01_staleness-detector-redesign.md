@@ -331,20 +331,28 @@ context-discovery relevance and user-facing description, and re-verify #5.
 
 ---
 
-### Phase 6: Verify the new gate reaches [ok] for both accounts (live) [NOT STARTED]
+### Phase 6: Verify the new gate reaches [ok] for both accounts (live) [COMPLETED]
 
 **Goal**: Prove the redesigned gate is reachable for BOTH Gmail and Logos on the current mailbox,
 without requiring a `home-manager` rebuild.
 
 **Tasks**:
-- [ ] Run the standalone verification snippet below (read-only; replicates the Phase-2 census.nix
-      logic) against the live mailbox for both accounts and capture the output.
-- [ ] Confirm Gmail lands `[ok]` (expected `on-disk=128 indexed-files=128 divergence=0`) and Logos
-      lands `[ok]` (expected `on-disk=341 indexed-files≈319 divergence≈22 tol≈35`).
-- [ ] Confirm the SKILL.md gate parser (Phase 4) reads the exact field names the snippet emits.
-- [ ] Record in the summary that the DEPLOYED census.nix result must be re-verified by the user
+- [x] Run the standalone verification snippet below (read-only; replicates the Phase-2 census.nix
+      logic) against the live mailbox for both accounts and capture the output. *(completed —
+      actual output: `Gmail on-disk=128 indexed-files=128 divergence=0 tol=13 [ok]` /
+      `Logos on-disk=341 indexed-files=319 divergence=22 tol=35 [ok]`)*
+- [x] Confirm Gmail lands `[ok]` (expected `on-disk=128 indexed-files=128 divergence=0`) and Logos
+      lands `[ok]` (expected `on-disk=341 indexed-files≈319 divergence≈22 tol≈35`). *(confirmed
+      exactly: Gmail divergence=0 tol=13 [ok]; Logos divergence=22 tol=35 [ok])*
+- [x] Confirm the SKILL.md gate parser (Phase 4) reads the exact field names the snippet emits.
+      *(confirmed: on-disk, indexed-files, divergence, tol match; SKILL.md additionally parses
+      reindex=<ISO|never>, which the standalone snippet omits since it has no marker file to read
+      — census.nix itself does emit that field)*
+- [x] Record in the summary that the DEPLOYED census.nix result must be re-verified by the user
       after `home-manager switch`, and that the reindex marker path is created on the next
-      `email-reindex` run.
+      `email-reindex` run. *(completed — see implementation summary; confirmed live that
+      ~/.local/state/email-agent/last-reindex does not yet exist, will be created by the next
+      email-reindex run post-rebuild)*
 
 Standalone verification snippet (read-only, no rebuild needed):
 

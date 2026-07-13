@@ -1,0 +1,37 @@
+{
+  "phase": 6,
+  "phase_name": "Verify the new gate reaches [ok] for both accounts (live)",
+  "started_at": "2026-07-13T16:05:00Z",
+  "last_updated": "2026-07-13T16:07:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run standalone verification snippet against live mailbox for both accounts",
+      "status": "done",
+      "files_touched": [],
+      "note": "Gmail on-disk=128 indexed-files=128 divergence=0 tol=13 [ok]; Logos on-disk=341 indexed-files=319 divergence=22 tol=35 [ok]"
+    },
+    {
+      "id": 2,
+      "description": "Confirm both accounts land [ok] matching expected numbers",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Confirm SKILL.md gate parser field names match snippet output",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Record deployed-census re-verification note and reindex marker path creation note",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
