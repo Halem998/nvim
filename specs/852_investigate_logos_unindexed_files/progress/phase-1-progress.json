@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Capture read-only baseline of the 22 unindexed files",
+  "started_at": "2026-07-13T17:28:00Z",
+  "last_updated": "2026-07-13T17:32:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extract 22 target filenames/Message-IDs into working list", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Reproduce on-disk-vs-indexed diff confirming 22 unindexed", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm zero whole-DB hits for 5+ representative tokens", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Record baseline counts (notmuch count, on-disk file count)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Snapshot mail-file integrity (size+mtime+sha256) of the 22 target files", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Baseline: notmuch count '*' = 65253 total messages. On-disk Logos file count = 340. comm -23 diff lists 27 unindexed files: the 22 anomaly targets plus 5 secondary staleness files (1783801045.17445_9/_10, 1783961921.3113802_1/_2/_3) noted in plan as out-of-scope. All 5 representative tokens (145,159,163,189,305) return zero whole-DB hits. Mail-file snapshot (size+mtime+sha256) captured for all 22 targets in scratchpad /tmp .../852-mail-before.txt and 852-mail-before-sha256.txt."
+}
