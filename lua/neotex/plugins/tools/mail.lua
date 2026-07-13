@@ -34,6 +34,20 @@ local function run_notmuch_new(cb)
   })
 end
 
+-- Reconcile the notmuch index with the maildir on disk, without running any
+-- pre/post hooks (so no server sync is triggered). This is the launch gate:
+-- it completes in ~0.2 s on a settled maildir and reports success to
+-- cb(boolean). Files first indexed here carry only tag:new until the
+-- background hook-ful pass retags them (safety-neutral; see background
+-- pipeline notes).
+local function reconcile_index(cb)
+  vim.fn.jobstart({ "notmuch", "new", "--no-hooks" }, {
+    on_exit = function(_, code)
+      cb(code == 0)
+    end,
+  })
+end
+
 -- Sync all accounts (mbsync -a) and reindex notmuch, with progress notifications.
 -- Shared by <leader>me (open aerc) and <leader>mN (explicit sync).
 --
@@ -76,32 +90,6 @@ local function sync_all_mail(on_done)
   })
 end
 
--- Authoritative freshness check via the email-census wrapper's freshness line
--- ("INBOX freshness ... [ok|STALE]"). Used as the fallback launch barrier when
--- the sync+reindex chain did not complete cleanly. Returns true only when the
--- freshness line is present and reads [ok] for the given account.
---
--- Signal quality is owned by the external wrapper (see ~/.dotfiles
--- modules/home/email/agent-tools/census.nix): the freshness line is a
--- count-with-tolerance proxy that cannot detect flag renames or phantom
--- drift. Improving that signal is a dotfiles-side follow-up, out of scope
--- for this module.
-local function census_freshness_ok(account)
-  if vim.fn.executable("email-census") ~= 1 then
-    return false
-  end
-  local out = vim.fn.systemlist({ "email-census", "--account", account })
-  if vim.v.shell_error ~= 0 then
-    return false
-  end
-  for _, line in ipairs(out) do
-    if line:find("INBOX freshness", 1, true) then
-      return line:find("[ok]", 1, true) ~= nil
-    end
-  end
-  return false
-end
-
 return {
   -- Toggleterm for aerc integration
   {
@@ -135,43 +123,35 @@ return {
             aerc:toggle()
           end
 
-          -- Authoritative launch barrier (decision record:
+          -- Launch barrier (decision record:
           -- ~/Mail/.claude/context/project/email/domain/index-architecture.md).
-          -- Opening aerc before mbsync + notmuch new finish races notmuch's index
-          -- against the maildir on disk ("could not get MessageInfo" errors), and
-          -- Xapian reader-vs-writer serialization makes mid-reindex reads unsafe.
-          -- The gate therefore requires an authoritative freshness signal, not
-          -- just async ordering:
-          --   1. the sync+reindex chain completing cleanly (exit 0 on both
-          --      mbsync -a and notmuch new) is the primary barrier marker; else
-          --   2. the email-census freshness line must read [ok] for BOTH
-          --      accounts (fallback authoritative check, reusing the wrapper's
-          --      freshness-line contract).
-          -- If neither holds, the open is REFUSED with remediation guidance --
-          -- never a fail-open launch onto a possibly-stale index.
-          sync_all_mail(function(ok)
-            if ok then
-              open_aerc()
+          -- The gate marker is "foreground index reconcile completed": a
+          -- hook-free `notmuch new --no-hooks` run to completion before aerc
+          -- opens. That is exactly the invariant aerc needs -- a notmuch index
+          -- reconciled with the maildir on disk (Xapian reader-vs-writer
+          -- serialization makes mid-reindex reads unsafe, so the reconcile is
+          -- foreground and completes first).
+          -- The gate is explicitly DECOUPLED from server-sync health: it never
+          -- consults sync exit codes and never shells out to external
+          -- freshness checkers. Those signals can be permanently wedged by
+          -- faults orthogonal to read-safety (e.g. a duplicate-UID collision
+          -- on one channel, or a false-STALE freshness reading), and a launch
+          -- gate keyed to them refuses the client forever while the index
+          -- itself is perfectly readable.
+          -- Server syncing happens after the open, in the background pipeline.
+          reconcile_index(function(ok)
+            if not ok then
+              vim.notify(
+                "aerc launch deferred: notmuch reindex failed (another indexer may be mid-write). "
+                  .. "Retry <leader>me in a moment.",
+                vim.log.levels.WARN
+              )
               return
             end
-            vim.notify(
-              "Sync/reindex did not complete cleanly -- checking index freshness via email-census...",
-              vim.log.levels.WARN
-            )
-            if census_freshness_ok("gmail") and census_freshness_ok("logos") then
-              vim.notify("Index freshness [ok] on both accounts -- opening aerc", vim.log.levels.INFO)
-              open_aerc()
-            else
-              vim.notify(
-                "aerc launch blocked: sync failed and index freshness is not [ok].\n"
-                  .. "Remediate: fix the sync (<leader>mN or mbsync <group>), run email-reindex "
-                  .. "if only the index lags, then retry <leader>me.",
-                vim.log.levels.ERROR
-              )
-            end
+            open_aerc()
           end)
         end,
-        desc = "Open aerc email client (opens after sync completes)",
+        desc = "Open aerc email client (fast index reconcile, sync in background)",
       },
       {
         "<leader>mN",

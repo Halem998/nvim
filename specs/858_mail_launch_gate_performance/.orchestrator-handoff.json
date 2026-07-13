@@ -1,0 +1,77 @@
+{
+  "task_number": 858,
+  "task_slug": "mail_launch_gate_performance",
+  "session_id": "sess_1783979541_058844",
+  "stage": "plan",
+  "status": "planned",
+  "plan_path": "specs/858_mail_launch_gate_performance/plans/02_fast-responsive-aerc-launch.md",
+  "research_inputs": [
+    "specs/858_mail_launch_gate_performance/reports/02_hard-research-fast-responsive-launch.md",
+    "specs/858_mail_launch_gate_performance/reports/01_launch-gate-performance-diagnosis.md"
+  ],
+  "plan_metadata": {
+    "phases": 4,
+    "total_effort_hours": 4,
+    "complexity": "medium",
+    "research_integrated": true,
+    "plan_version": 1,
+    "dependency_waves": [[1, 3], [2], [4]],
+    "reports_integrated": [
+      {
+        "path": "reports/02_hard-research-fast-responsive-launch.md",
+        "integrated_in_plan_version": 1,
+        "integrated_date": "2026-07-13"
+      },
+      {
+        "path": "reports/01_launch-gate-performance-diagnosis.md",
+        "integrated_in_plan_version": 1,
+        "integrated_date": "2026-07-13"
+      }
+    ],
+    "skeleton": false,
+    "follow_up_tasks": []
+  },
+  "phase_summaries": [
+    {
+      "phase": 1,
+      "name": "Replace the launch gate with an index-only reconcile",
+      "files": ["lua/neotex/plugins/tools/mail.lua"],
+      "depends_on": []
+    },
+    {
+      "phase": 2,
+      "name": "Single deduplicated background sync pipeline; rewire <leader>mN",
+      "files": ["lua/neotex/plugins/tools/mail.lua"],
+      "depends_on": [1]
+    },
+    {
+      "phase": 3,
+      "name": "Suppress the himalaya auto-sync contention layer",
+      "files": [
+        "lua/neotex/plugins/tools/himalaya/config/init.lua",
+        "lua/neotex/plugins/tools/himalaya/ui/main.lua"
+      ],
+      "depends_on": [],
+      "note": "ui/main.lua is verify-only; the minimal edit lands in config/init.lua defaults (file_scope divergence recorded in plan)"
+    },
+    {
+      "phase": 4,
+      "name": "Behavioral verification and testing",
+      "files": [],
+      "depends_on": [1, 2, 3]
+    }
+  ],
+  "key_constraints": [
+    "Never invoke mbsync directly from mail.lua in any form; mbsync -a is deleted",
+    "Launch gate = foreground `notmuch new --no-hooks` to completion only; never mbsync exit codes, never email-census",
+    "Background pipeline = hook-ful `notmuch new` (preNew = mail-sync both), deduplicated by an in-flight guard; failures WARN, never block",
+    "Each phase boundary leaves mail.lua loadable with both keymaps functional",
+    "Must work with the duplicate-UID-15 collision unrepaired (non-goal to fix it)",
+    "No task-number citations in deliverable lua files (rule: no-task-references-in-deliverables)"
+  ],
+  "next_action": "Run /implement 858 to execute the plan",
+  "risks_to_watch": [
+    "Confirm notmuch new --no-hooks fails fast (not hangs) under a held write lock (plan Phase 4, report 02 section 6.5)",
+    "tag:new tagging gap for gate-indexed files closed by the background hook-ful pass (report 02 section 4.4)"
+  ]
+}
