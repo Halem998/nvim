@@ -177,25 +177,39 @@ decision gate depends on the prior phase's evidence.
   - A definite classification (a/b/c) is recorded with supporting trace excerpts.
   - sha256 spot-check confirms no mail-file content change from the debug run.
 
-### Phase 3: Tier 1 decision gate and targeted notmuch-native fix (conditional) [NOT STARTED]
+### Phase 3: Tier 1 decision gate and targeted notmuch-native fix (conditional) [COMPLETED]
 
 - **Goal**: Decide, on Phase 2 evidence, whether a targeted notmuch-native fix is warranted; if so,
   attempt the single most targeted such fix and re-verify. This phase contains the Tier 1 -> Tier 2
   decision gate.
 - **Tasks**:
-  - [ ] **Decision gate**: If the Phase 2 trace revealed a concrete, actionable skip reason that a
+  - [x] **Decision gate**: If the Phase 2 trace revealed a concrete, actionable skip reason that a
     notmuch-native (index-only, hook-free, no-mail-mutation) action could address, proceed to the
     fix tasks below. Otherwise, record "Tier 1 inconclusive" with the reasoning and route to
-    Phase 4 (Tier 2) WITHOUT attempting any speculative fix.
+    Phase 4 (Tier 2) WITHOUT attempting any speculative fix. *(completed: GATE DECISION = "Tier 1
+    inconclusive -> Tier 2". Phase 2 found no concrete, stated skip reason -- only that Logos/cur
+    and Logos/new produce zero trace lines while every sibling subfolder does, which is
+    inconclusive between "silently skipped" and "never entered" given the trace format's total
+    absence of directory-level logging. No notmuch-native action is evidence-directed by this
+    finding alone, since we do not know which of (b)/(c) is true, or what a targeted fix would even
+    target. Per the plan's explicit instruction, no speculative fix (e.g. blind `--full-scan`
+    retry) is attempted -- `--full-scan` was already proven ineffective in task 852.)*
   - [ ] (Conditional) Apply the single most targeted notmuch-native fix suggested by the evidence
     (e.g. a scoped re-scan or a notmuch-native directory-state refresh consistent with the trace).
     Do NOT re-run a bare `--full-scan` as a blind retry; the action must be evidence-directed.
+    *(deviation: skipped — decision gate routed to Tier 2; no evidence-directed fix exists to
+    attempt)*
   - [ ] (Conditional) Re-run `notmuch new --no-hooks --full-scan`, then repeat task 852's Phase 3
     verification: whole-DB token grep for the 22 UIDs, `id:` lookups on a sample, and the
-    `comm -23` on-disk-vs-indexed diff.
-  - [ ] Re-verify sha256 of all 22 files against the Phase 1 baseline.
-  - [ ] Record the outcome. If all 22 are now indexed and queryable, mark Tier 1 resolved and route
+    `comm -23` on-disk-vs-indexed diff. *(deviation: skipped — conditional on the fix task above,
+    which did not run; re-running `--full-scan` blind would just repeat task 852's already-proven-
+    ineffective action)*
+  - [x] Re-verify sha256 of all 22 files against the Phase 1 baseline. *(completed: full 22-file
+    re-check, see below -- all byte-identical, no drift beyond the already-disclosed `..._145`
+    mtime touch)*
+  - [x] Record the outcome. If all 22 are now indexed and queryable, mark Tier 1 resolved and route
     directly to Phase 6 (Tier 2 phases are skipped). If not resolved, route to Phase 4.
+    *(completed: not resolved -- routing to Phase 4/Tier 2)*
 - **Timing**: 1 hour
 - **Depends on**: 3 -> 2
 - **Files to modify**: notmuch index only, and only if the conditional fix runs (index-only

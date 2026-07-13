@@ -1,0 +1,33 @@
+{
+  "phase": 3,
+  "phase_name": "Tier 1 decision gate and targeted notmuch-native fix (conditional)",
+  "started_at": "2026-07-13T00:25:00Z",
+  "last_updated": "2026-07-13T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Decision gate: Tier 1 concrete fix vs Tier 1 inconclusive -> Tier 2", "status": "done", "files_touched": []},
+    {"id": 2, "description": "(Conditional) Apply targeted notmuch-native fix", "status": "not_applicable", "files_touched": []},
+    {"id": 3, "description": "(Conditional) Re-run --full-scan and repeat 852 Phase 3 verification", "status": "not_applicable", "files_touched": []},
+    {"id": 4, "description": "Re-verify sha256 of all 22 files against Phase 1 baseline", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Record outcome and route decision (Phase 6 vs Phase 4)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "3.2",
+      "description": "Apply the single most targeted notmuch-native fix suggested by the evidence",
+      "type": "skipped",
+      "reason": "Decision gate (objective 1) determined Tier 1 was inconclusive -- no concrete, evidence-directed fix target exists. Attempting any fix here would be speculative (a blind retry), which the plan explicitly forbids.",
+      "annotation": "*(deviation: skipped — decision gate routed to Tier 2; no evidence-directed fix exists to attempt)*"
+    },
+    {
+      "task_id": "3.3",
+      "description": "Re-run notmuch new --no-hooks --full-scan and repeat 852 Phase 3 verification",
+      "type": "skipped",
+      "reason": "Conditional on 3.2 (the fix) which did not run. --full-scan was already proven ineffective in task 852; re-running it again without a new evidence-directed action would just repeat that already-documented negative result.",
+      "annotation": "*(deviation: skipped — conditional on 3.2, which did not run)*"
+    }
+  ],
+  "handoff_count": 0,
+  "notes": "GATE DECISION: Tier 1 inconclusive -> route to Phase 4 (Tier 2). Rationale: Phase 2's trace showed Logos/cur and Logos/new produce zero lines while every sibling Logos subfolder is explicitly represented, but notmuch 0.40's --debug --verbose output contains no directory-level entry/skip/mtime logging at all (confirmed zero 'mtime' substring matches across the full 1837-line trace), so this evidence cannot discriminate between classification (b) 'directory visited, files silently skipped' and (c) 'directory never entered'. Without knowing which is true, there is no concrete, notmuch-native, evidence-directed fix to attempt -- and the plan explicitly forbids a blind --full-scan retry (already proven ineffective in task 852: notmuch count 65253->65258, +5 unrelated files only, all 22 targets still zero-hit). Per the plan's Rollback/Contingency for conditional index actions, no index-mutating action was taken in this phase. Re-verified sha256 of all 22 files against the Phase 1 baseline (full 22, not a sample): all byte-identical, zero drift, no new mtime/ctime changes beyond the already-disclosed _145 touch from task 852. Routing to Phase 4 (Tier 2 read-only Xapian inspection)."
+}
