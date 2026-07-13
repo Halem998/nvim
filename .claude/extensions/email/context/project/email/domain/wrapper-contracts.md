@@ -1,13 +1,13 @@
-# Wrapper Contracts (Frozen, Task 72 §1-§9)
+# Wrapper Contracts (Frozen — summarizes `.dotfiles` handoff `wrapper-contract.md` §1-§9)
 
 Summary of the frozen wrapper contract this extension authors and executes against. The
-contract itself lives in the `.dotfiles` repo (Task 72 handoff, FROZEN); this file records the
+contract itself lives in the `.dotfiles` repo (`wrapper-contract.md` handoff, FROZEN); this file records the
 parts an `email`-typed agent/skill needs at runtime. Cross-repo coupling is
 documentation-only — this extension declares no machine dependency on `.dotfiles`.
 
 **Ground-truth verification**: every claim below marked with a line reference was re-verified
-verbatim against `~/.dotfiles/modules/home/email/agent-tools.nix` (718 lines) on 2026-07-03
-(task 805, Phase 1). The wrapper is frozen: nothing in this extension may modify it, add flags
+verbatim against `~/.dotfiles/modules/home/email/agent-tools.nix` (718 lines) on 2026-07-03.
+The wrapper is frozen: nothing in this extension may modify it, add flags
 to it, or raise its constants (in particular `MAX_BATCH_SIZE=50` — split/loop instead).
 
 ## 1. The Five Binaries
@@ -15,7 +15,7 @@ to it, or raise its constants (in particular `MAX_BATCH_SIZE=50` — split/loop 
 | Binary | Verb | Safety class | Mutates? |
 |--------|------|--------------|----------|
 | `email-census` | report sender/folder/date census | read-only | no |
-| `email-classify` | apply provisional `+proposed-*` notmuch tags; emit candidate manifest; `--append-approved`; `--emit-tagged` (read-only tag-derived re-emit, task 820 — see §10) | local-tags-only (default mode); `--emit-tagged` is **read-only** | notmuch tags only (never maildir/IMAP); `--emit-tagged` makes NO `notmuch tag` call |
+| `email-classify` | apply provisional `+proposed-*` notmuch tags; emit candidate manifest; `--append-approved`; `--emit-tagged` (read-only tag-derived re-emit — see §10) | local-tags-only (default mode); `--emit-tagged` is **read-only** | notmuch tags only (never maildir/IMAP); `--emit-tagged` makes NO `notmuch tag` call |
 | `email-unsubscribe-extract` | extract `List-Unsubscribe` headers to a review list | read-only | no (never fetches/POSTs URLs) |
 | `email-archive-confirmed` | move approved-`archive` IDs to All Mail | mutation | yes (maildir move) |
 | `email-delete-confirmed` | move approved-`delete` IDs to Trash; `--expunge-trash` permanently removes | mutation | yes (maildir move + expunge) |
@@ -30,7 +30,7 @@ to it, or raise its constants (in particular `MAX_BATCH_SIZE=50` — split/loop 
 - **`--account <gmail|logos>` (also `--account=<value>` form) on all five.** Default when
   omitted is `gmail` (preserves pre-multi-account behavior byte-for-byte). Unknown values are
   rejected with an actionable stderr error and a non-zero exit — never silently coerced to
-  Gmail (verified `.dotfiles` task 80, `verify_logos_wrapper_contract_close_phase6`: all 9
+  Gmail (verified via `verify_logos_wrapper_contract_close_phase6`: all 9
   contract rows PASS, zero divergence).
 - **`--manifest-dir <path>`** overrides manifest storage.
 - **`--manifest <path>`** (mutation binaries) points at an arbitrary approved-manifest file;
@@ -55,7 +55,7 @@ Per-Message-ID execution status, kept separate from the approved manifest so the
 manifest's bytes (and sha256) stay immutable across a run. `--execute` skips IDs already
 `executed` and records `failed` with error text — safely re-runnable.
 
-Verified details (task 805 Phase 1):
+Verified details (line-referenced against `agent-tools.nix`):
 
 - The state-file path is **derived per manifest path**: `STATE_FILE="${MANIFEST_FILE}.state.jsonl"`
   (line 111). A split sub-manifest at `splits/split-03.jsonl` therefore gets its own
@@ -125,7 +125,7 @@ lines 473-474).
    approved manifest.
 3. Mutation wrappers consume ONLY approved manifests — never `email-classify`'s raw candidate
    output (from either default mode or `--emit-tagged`).
-4. `email-classify --emit-tagged` (task 820, §10) is **not** an approval or classification act —
+4. `email-classify --emit-tagged` (§10) is **not** an approval or classification act —
    it re-populates the candidate manifest from durable `+proposed-*` tags applied by a prior
    default-mode call, purely so a later review pass (e.g. `skill-email-cleanup`'s `--all`
    residual pass) can re-surface an already-tagged message set without a second classify+retag
@@ -165,10 +165,10 @@ containing the wrapper module. Agents/skills in this extension must check
 `command -v email-census` (and peers) and fail with an actionable message
 ("run `home-manager switch`") rather than a raw "command not found".
 
-## 10. email-classify Pagination Contract (verified, task 805 Phase 1)
+## 10. email-classify Pagination Contract (verified against `agent-tools.nix`)
 
-**Correction (task 820, verified against `classify.nix`): `email-classify`'s default mode is
-NOT emit-on-change.** Every message matched by `QUERY` (up to `--limit`) is unconditionally
+**Correction (verified against `classify.nix`):** `email-classify`'s default mode is
+NOT emit-on-change. Every message matched by `QUERY` (up to `--limit`) is unconditionally
 re-emitted to the candidate manifest and re-tagged with `+proposed-<action>` on every call,
 including messages that already carry a `+proposed-*` tag from a prior call — there is no
 "only emit if the tag/action changed" short-circuit anywhere in the default-mode branch. This
@@ -212,7 +212,7 @@ These facts govern any multi-pass ("sweep") design built on top of `email-classi
   design is **not implementable wrapper-only**; sweep designs must paginate via the QUERY
   positional (date windows and/or tag exclusion) with `--limit`, per the count oracle above.
 
-### 10a. `--emit-tagged`: read-only tag-derived re-emit (task 820, `.dotfiles` addendum §12)
+### 10a. `--emit-tagged`: read-only tag-derived re-emit (`.dotfiles` addendum §12)
 
 `email-classify --emit-tagged "<QUERY>"` is a distinct, genuinely read-only mode, verified
 against the `.dotfiles` `classify.nix` implementation:
@@ -238,7 +238,7 @@ against the `.dotfiles` `classify.nix` implementation:
 - **Idempotent and side-effect-free**: repeated `--emit-tagged` calls against the same `QUERY`
   leave durable `+proposed-*` tag counts unchanged and simply rebuild the manifest from current
   tag state — safe to re-run any number of times.
-- **Consumer**: `skill-email-cleanup`'s `--all` mode (task 820) uses `--emit-tagged` for its
+- **Consumer**: `skill-email-cleanup`'s `--all` mode uses `--emit-tagged` for its
   Stage 1 residual count-probe and Stage 2 residual pass in place of the destructive default
   mode, per `skill-email-cleanup/SKILL.md`.
 
@@ -260,8 +260,8 @@ archive-scoped (`--archive`) operations, passed as (part of) the `email-classify
 positional — no wrapper flag exists or is needed for folder scoping.
 
 With the `--account` enum (§2) covering both `gmail` and `logos`, the tokens above are the
-`gmail`-account case specifically. Verified per-account folder-token summary (`.dotfiles` task
-80, `verify_logos_wrapper_contract_close_phase6`, all 9 contract rows PASS, zero divergence):
+`gmail`-account case specifically. Verified per-account folder-token summary via
+`verify_logos_wrapper_contract_close_phase6` (all 9 contract rows PASS, zero divergence):
 
 | Account | Inbox query | Archive query | Real folders |
 |---------|-------------|----------------|---------------|
@@ -282,7 +282,7 @@ post-mutation reconcile (§7a) invokes the group scoped to the `--account` in ef
 Never `mbsync -a` in either code path (`agent-tools.nix:282-283` explicitly comments against
 this).
 
-## 13. Index Freshness, Reindex, and the Absence of an Auto-Indexer (tasks 823-824)
+## 13. Index Freshness, Reindex, and the Absence of an Auto-Indexer
 
 **The blind spot.** `email-classify` operates on notmuch's index; `email-census` also reports
 `notmuch count` for every folder line. When the notmuch index lags the on-disk maildir, BOTH
@@ -300,13 +300,13 @@ hook = `mbsync -a`, aerc's `$` keybind = `mbsync -a && notmuch new`, and manual 
 Consequently the notmuch index lags the maildir whenever mail lands and none of those paths has
 run since — staleness is expected and intermittent, not exceptional.
 
-**Freshness disclosure (tasks 823, 827).** `email-census` emits an
+**Freshness disclosure** (full mechanism in `staleness-detection.md`). `email-census` emits an
 `INBOX freshness  on-disk=<D>  indexed-files=<F>  divergence=<Δ>  tol=<T>  reindex=<ISO|never>
 [ok|STALE]` line (`census.nix`), where `on-disk` is `himalaya envelope list -f INBOX | jq length`
 and `indexed-files` is a **path-prefix post-filtered** `notmuch --output=files` FILE count for the
 exact maildir path (`path:<ACCOUNT_FOLDER>/cur` / `path:<ACCOUNT_FOLDER>/new`, grepped to that
 literal path) — a file-vs-file comparison, not the deduped-Message-ID `notmuch count
-folder:<ACCOUNT_FOLDER>` used before task 827 (see staleness-detection.md for why the deduped
+folder:<ACCOUNT_FOLDER>` used previously (see staleness-detection.md for why the deduped
 count is structurally unreachable for any account with real Message-ID duplication, and for the
 `--output=files` cross-folder/cross-account duplicate-inclusion quirk that the naive form of this
 query falls into). `[ok]` is `Δ ≤ T` where `Δ = |on-disk − indexed-files|` and
@@ -315,7 +315,7 @@ is an informational secondary signal (see below); it does not itself flip `[ok]`
 `skill-email-cleanup`'s `--all` Stage 1 staleness gate parses this line and refuses to claim
 whole-mailbox coverage while it reads `[STALE]`.
 
-**Sanctioned reindex: `email-reindex` (tasks 824, 827).** A sixth operator helper (`mbsync.nix`,
+**Sanctioned reindex: `email-reindex`.** A sixth operator helper (`mbsync.nix`,
 alongside `email-freeze`/`email-thaw`; **NOT** one of the five contract binaries) runs
 `notmuch new --no-hooks`:
 - `--no-hooks` skips `preNew = mbsync -a` (preserving the never-`mbsync -a` invariant and staying
@@ -329,13 +329,13 @@ alongside `email-freeze`/`email-thaw`; **NOT** one of the five contract binaries
   because it triggers `mbsync -a`.
 - `email-reindex` does NOT sync the server; if the maildir itself is behind the server, run
   `mbsync <group>` / `email-thaw` / `/email --sync` first, then `email-reindex`.
-- `email-reindex` also writes the reindex-ran marker (task 827): after `notmuch new --no-hooks`
+- `email-reindex` also writes the reindex-ran marker: after `notmuch new --no-hooks`
   completes, it writes an ISO-8601 timestamp to
   `${XDG_STATE_HOME:-$HOME/.local/state}/email-agent/last-reindex`, which `email-census` reads
   back as the `reindex=<ISO|never>` field above.
 
-**Known hazard: raw `notmuch new` self-triggered hook race can permanently strand files
-(task 852).** A raw (non-`--no-hooks`) `notmuch new` invocation fires its own `preNew` hook
+**Known hazard: raw `notmuch new` self-triggered hook race can permanently strand files.** A raw
+(non-`--no-hooks`) `notmuch new` invocation fires its own `preNew` hook
 (`mbsync -a` / `mbsync gmail`), which can *deliver new mail into the very maildir `notmuch new`
 is scanning*, mid-scan. If that `preNew` `mbsync` subprocess then fails partway through (e.g. an
 unrelated channel error), the files it delivered can be left behind by the scan's per-directory
@@ -343,11 +343,11 @@ mtime-based bookkeeping without ever being examined — they are not merely stal
 **unknown to notmuch under any query** (no message document exists at all; confirmed via
 whole-database `notmuch search --output=files '*' | grep <token>` returning zero hits, not just a
 `folder:`-scoped miss). This was the exact root cause of 22 permanently-unindexed Logos INBOX
-files traced to `logos-reclone.sh` invoking a raw `notmuch new` at its reindex step (task 852
-research report). The first-line remediation is `notmuch new --no-hooks --full-scan` (`--no-hooks`
+files traced to `logos-reclone.sh` invoking a raw `notmuch new` at its reindex step. The
+first-line remediation is `notmuch new --no-hooks --full-scan` (`--no-hooks`
 prevents re-triggering the hook; `--full-scan` disables the mtime-based directory-skip
 optimization so every directory is fully re-examined) — but this is not guaranteed to succeed:
-in the task 852 live run, `--full-scan` successfully cleared 5 unrelated ordinary-staleness files
+in that live run, `--full-scan` successfully cleared 5 unrelated ordinary-staleness files
 in the same maildir but did **not** recover the 22 hook-race files, indicating the scan
 bookkeeping inconsistency for those specific files sits deeper than a directory-mtime skip (likely
 Xapian directory-record state) and needs `notmuch dump`/Xapian-delve-level inspection as a
@@ -356,7 +356,7 @@ any script or wrapper that touches a live maildir — always use `--no-hooks` (p
 existing `email-reindex` contract), so `notmuch new` cannot trigger its own hook and race its own
 scan.
 
-**Follow-up finding (task 854): the "22 permanently-unindexed files" were a false positive —
+**Follow-up finding: the "22 permanently-unindexed files" were a false positive —
 `search.exclude_tags` diff hazard, not a Xapian ghost record.** The Tier 1 -> Tier 2 escalation
 this section called for (`notmuch dump`/Xapian-delve-level inspection) was performed. Read-only
 `xapian-check` (ephemeral `nix shell nixpkgs#xapian`, no `--fix`) found the Xapian glass-backend
@@ -369,7 +369,7 @@ default (non-`--exclude=false`) `notmuch search`/`count`/`--output=files` invoca
 omits every message carrying an excluded tag** — confirmed via `notmuch count 'path:Logos/cur and
 tag:trash'` = 22 (exactly the target set) vs `notmuch count 'path:Logos/cur'` = 316, a
 trash-excluding default search for the 22 returning 0 hits, and `--exclude=false` lookups for each
-of the 22 individually returning the expected file path. Task 852's on-disk-vs-indexed diff
+of the 22 individually returning the expected file path. The earlier on-disk-vs-indexed diff
 (`find ~/Mail/Logos/cur` MINUS `notmuch search --output=files ...`) used exactly such a
 trash-excluding search as its "indexed set" probe, so every `tag:trash` file appeared as "on disk
 but not indexed" when it was in fact indexed-but-search-excluded — `--full-scan` "failed to
@@ -378,9 +378,8 @@ on-disk-vs-indexed audit**: never use a default (excluded-tag-honoring) search/o
 as the "indexed set" side of such a diff. Use an excluded-tag-inclusive query instead, e.g.
 `notmuch search --exclude=false --output=files '*'` scoped to the folder, or an explicit
 `(tag:trash or not tag:trash)` construction, or per-directory `notmuch count 'path:<folder>'`
-(which is not tag-filtered) as the indexed-side ground truth. Task 852's "22 permanently-unindexed
+(which is not tag-filtered) as the indexed-side ground truth. The earlier "22 permanently-unindexed
 files" conclusion is corrected by this finding: those files were never unindexed. No repair was
-needed or attempted in task 854; no mail file was mutated and no message-document surgery was
-performed (see `specs/854_.../summaries/01_diagnose-repair-xapian-ghost-summary.md` for full
-evidence). Whether these 22 messages *should* carry `tag:trash` remains an open mail-triage
+needed or attempted; no mail file was mutated and no message-document surgery was performed.
+Whether these 22 messages *should* carry `tag:trash` remains an open mail-triage
 question, out of scope for indexing diagnostics.

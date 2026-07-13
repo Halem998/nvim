@@ -1,0 +1,26 @@
+{
+  "phase": 1,
+  "phase_name": "Apply durable-anchor rewrites to all 24 citations",
+  "started_at": "2026-07-13T00:00:00Z",
+  "last_updated": "2026-07-13T19:33:31Z",
+  "objectives": [
+    {"id": 1, "description": "Findings #1-2: Task 72 heading + intro sentence", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"]},
+    {"id": 2, "description": "Findings #3, #6, #8: task 805 Phase 1 occurrences", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"]},
+    {"id": 3, "description": "Findings #5, #12: .dotfiles task 80 occurrences (incl. line-wrapped)", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"]},
+    {"id": 4, "description": "Findings #4, #7, #9, #10, #11: task 820 occurrences", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"]},
+    {"id": 5, "description": "Findings #13-17: tasks 823-824/823,827/824,827/827", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"]},
+    {"id": 6, "description": "Findings #18-24: task 852/854 narrative + specs/854 path", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.4",
+      "description": "Finding #9 (task 820, verified against classify.nix, line 170)",
+      "type": "altered",
+      "reason": "Copying the report's Recommended block verbatim for line 170 alone would have left a dangling unmatched '**' bold-close marker on line 171 (the original bold span 'Correction (task 820...): ... NOT emit-on-change.' closed on line 171). Moved the bold-close to right after the parenthetical on line 170 and removed the now-redundant marker on line 171 to keep markdown valid. No technical content changed.",
+      "annotation": "*(deviation: altered — fixed markdown bold-span matching across the two-line edit)*"
+    }
+  ]
+}

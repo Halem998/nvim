@@ -17,16 +17,18 @@ next_project_number: 857
 
 ### Meta
 
-856 [NOT STARTED] — Retroactive cleanup of pre-existing task-number citations in the 
+856 [PLANNED] — Retroactive cleanup of pre-existing task-number citations in the 
 
 ## Tasks
 
 ### 856. Scrub task number leaks from wrapper contracts
 - **Effort**: 1-2 hours
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: meta
 - **Dependencies**: None
+- **Research**: [856_scrub_task_number_leaks_from_wrapper_contracts/reports/01_task-citation-inventory.md]
+- **Plan**: [856_scrub_task_number_leaks_from_wrapper_contracts/plans/01_scrub-task-citations.md]
 
 **Description**: Retroactive cleanup of pre-existing task-number citations in the deliverable file .claude/extensions/email/context/project/email/domain/wrapper-contracts.md, bringing it into compliance with the rule .claude/rules/no-task-references-in-deliverables.md (deliverables outside specs/ must not cite task numbers). This is the follow-up cleanup deferred when the anti-leakage guardrail was built; the guardrail now prevents NEW leaks, this task removes EXISTING ones.
 
