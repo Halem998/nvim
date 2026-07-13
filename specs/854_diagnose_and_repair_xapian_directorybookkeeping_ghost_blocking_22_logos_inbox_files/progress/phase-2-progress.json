@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Tier 1 read-only notmuch debug diagnosis",
+  "started_at": "2026-07-13T00:10:00Z",
+  "last_updated": "2026-07-13T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm no concurrent notmuch/mbsync/timer process running", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run notmuch new --debug --verbose --no-hooks, capture full trace", "status": "done", "files_touched": ["specs/854_diagnose_and_repair_xapian_directorybookkeeping_ghost_blocking_22_logos_inbox_files/progress/phase2-debug-trace.txt"]},
+    {"id": 3, "description": "Grep trace for Logos/cur: entered/scanned? filenames/UIDs mentioned?", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Classify outcome (a/b/c) with supporting trace excerpts", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Spot-check sha256 on 2-3 files to confirm no mutation from debug run", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "grep trace for 'Logos/cur' and 'Logos' generally", "result": "inconclusive", "reason": "zero lines mention Logos/cur or Logos/new at all, while every other Logos subfolder (.Archive, .Drafts, .Labels.*, .Sent, .Trash, top-level .mbsyncstate) does appear -- but the trace format itself never logs directory-level entry/skip/mtime decisions (confirmed: zero 'mtime' mentions in the whole 1837-line trace; only two (D) message types exist, both about .mbsyncstate file exclusion, unrelated to directory-level scan skip logic), so absence of Logos/cur lines cannot be distinguished from 'visited but all files silently unchanged/skipped' vs 'never entered' -- notmuch 0.40's --debug --verbose only logs per-file add/ignore events, never directory-level bookkeeping decisions"}
+  ],
+  "handoff_count": 0,
+  "notes": "CLASSIFICATION: Tier 1 inconclusive (routes to Phase 3 gate -> Phase 4/Tier 2). Ran `notmuch new --debug --verbose --no-hooks` (no --full-scan, per plan Phase 2 exact instruction). Trace: 1837 lines, 888 total files processed, 1 new message added (a genuine new Sent-folder message, /home/benjamin/Mail/Logos/.Sent/cur/1783965313.3232687_1.hamsa,U=213:2, plus 2 unrelated already-known-staleness files under Gmail/Logos cur -- none of the 22 targets). notmuch count '*' went 65236 -> 65237 (+1, the new Sent message; unrelated to the 22-file anomaly). Key evidence: grep for 'Logos' (42 total hits) shows every Logos subfolder (.Archive, .Drafts, six .Labels.*, .Sent, .Trash, top-level .mbsyncstate) explicitly represented via '(D) add_files, pass 1/2: explicitly ignoring .../.mbsyncstate' and/or a numbered .uidvalidity processing line -- but Logos/cur and Logos/new (the INBOX top-level maildir housing the 22 targets) produce ZERO lines of any kind. This is consistent with either (b) directory visited but the 22 files silently skipped with no logged reason, or (c) directory never entered at all -- the two are NOT distinguishable from this trace format, because notmuch 0.40's --debug --verbose output contains no directory-level mtime-skip or entry/exit logging (verified: zero 'mtime' substring matches in the entire 1837-line trace; the only (D)-prefixed debug lines concern .mbsyncstate exclusion, not directory scan decisions). No concrete, actionable, notmuch-native skip reason was surfaced by Tier 1. sha256 spot-check on 3 files (_145, _200, _305) against Phase 1 baseline: all three byte-identical, confirming the debug run mutated no mail content."
+}

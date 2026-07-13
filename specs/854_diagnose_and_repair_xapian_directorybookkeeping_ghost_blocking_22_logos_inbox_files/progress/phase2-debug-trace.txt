@@ -1,0 +1,1837 @@
+1/0: /home/benjamin/Mail/.claude/agents/code-reviewer-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/code-reviewer-agent.md
+2/0: /home/benjamin/Mail/.claude/agents/general-implementation-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/general-implementation-agent.md
+3/0: /home/benjamin/Mail/.claude/agents/general-research-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/general-research-agent.md
+4/0: /home/benjamin/Mail/.claude/agents/meta-builder-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/meta-builder-agent.md
+5/0: /home/benjamin/Mail/.claude/agents/planner-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/planner-agent.md
+6/0: /home/benjamin/Mail/.claude/agents/reviser-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/reviser-agent.md
+7/0: /home/benjamin/Mail/.claude/agents/spawn-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/spawn-agent.md
+8/0: /home/benjamin/Mail/.claude/agents/synthesis-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/synthesis-agent.md
+9/0: /home/benjamin/Mail/.claude/agents/general-research-hard-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/general-research-hard-agent.md
+10/0: /home/benjamin/Mail/.claude/agents/general-implementation-hard-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/general-implementation-hard-agent.md
+11/0: /home/benjamin/Mail/.claude/agents/planner-hard-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/planner-hard-agent.md
+12/0: /home/benjamin/Mail/.claude/agents/document-converter-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/document-converter-agent.md
+13/0: /home/benjamin/Mail/.claude/agents/latex-implementation-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/latex-implementation-agent.md
+14/0: /home/benjamin/Mail/.claude/agents/typst-implementation-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/typst-implementation-agent.md
+15/0: /home/benjamin/Mail/.claude/agents/email-implementation-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/email-implementation-agent.md
+16/0: /home/benjamin/Mail/.claude/agents/nix-research-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/nix-research-agent.md
+17/0: /home/benjamin/Mail/.claude/agents/nix-implementation-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/nix-implementation-agent.md
+18/0: /home/benjamin/Mail/.claude/agents/neovim-research-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/neovim-research-agent.md
+19/0: /home/benjamin/Mail/.claude/agents/neovim-implementation-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/neovim-implementation-agent.md
+20/0: /home/benjamin/Mail/.claude/agents/python-research-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/python-research-agent.md
+21/0: /home/benjamin/Mail/.claude/agents/python-implementation-agent.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/agents/python-implementation-agent.md
+22/0: /home/benjamin/Mail/.claude/commands/errors.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/errors.md
+23/0: /home/benjamin/Mail/.claude/commands/fix-it.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/fix-it.md
+24/0: /home/benjamin/Mail/.claude/commands/implement.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/implement.md
+25/0: /home/benjamin/Mail/.claude/commands/merge.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/merge.md
+26/0: /home/benjamin/Mail/.claude/commands/meta.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/meta.md
+27/0: /home/benjamin/Mail/.claude/commands/orchestrate.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/orchestrate.md
+28/0: /home/benjamin/Mail/.claude/commands/plan.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/plan.md
+29/0: /home/benjamin/Mail/.claude/commands/refresh.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/refresh.md
+30/0: /home/benjamin/Mail/.claude/commands/research.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/research.md
+31/0: /home/benjamin/Mail/.claude/commands/review.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/review.md
+32/0: /home/benjamin/Mail/.claude/commands/revise.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/revise.md
+33/0: /home/benjamin/Mail/.claude/commands/spawn.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/spawn.md
+34/0: /home/benjamin/Mail/.claude/commands/tag.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/tag.md
+35/0: /home/benjamin/Mail/.claude/commands/task.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/task.md
+36/0: /home/benjamin/Mail/.claude/commands/todo.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/todo.md
+37/0: /home/benjamin/Mail/.claude/commands/zulip.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/zulip.md
+38/0: /home/benjamin/Mail/.claude/commands/project-overview.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/project-overview.md
+39/0: /home/benjamin/Mail/.claude/commands/convert.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/convert.md
+40/0: /home/benjamin/Mail/.claude/commands/email.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/email.md
+41/0: /home/benjamin/Mail/.claude/commands/learn.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/learn.md
+42/0: /home/benjamin/Mail/.claude/commands/distill.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/commands/distill.md
+43/0: /home/benjamin/Mail/.claude/context/architecture/component-checklist.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/architecture/component-checklist.md
+44/0: /home/benjamin/Mail/.claude/context/architecture/context-layers.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/architecture/context-layers.md
+45/0: /home/benjamin/Mail/.claude/context/architecture/generation-guidelines.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/architecture/generation-guidelines.md
+46/0: /home/benjamin/Mail/.claude/context/architecture/system-overview.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/architecture/system-overview.md
+47/0: /home/benjamin/Mail/.claude/context/checkpoints/README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/checkpoints/README.md
+48/0: /home/benjamin/Mail/.claude/context/checkpoints/checkpoint-commit.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/checkpoints/checkpoint-commit.md
+49/0: /home/benjamin/Mail/.claude/context/checkpoints/checkpoint-gate-in.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/checkpoints/checkpoint-gate-in.md
+50/0: /home/benjamin/Mail/.claude/context/checkpoints/checkpoint-gate-out.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/checkpoints/checkpoint-gate-out.md
+51/0: /home/benjamin/Mail/.claude/context/contracts/adversarial-verification.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/contracts/adversarial-verification.md
+52/0: /home/benjamin/Mail/.claude/context/contracts/anti-analysis.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/contracts/anti-analysis.md
+53/0: /home/benjamin/Mail/.claude/context/contracts/convergence.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/contracts/convergence.md
+54/0: /home/benjamin/Mail/.claude/context/contracts/orchestrator-discipline.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/contracts/orchestrator-discipline.md
+55/0: /home/benjamin/Mail/.claude/context/contracts/recovery.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/contracts/recovery.md
+56/0: /home/benjamin/Mail/.claude/context/contracts/reference-grounding.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/contracts/reference-grounding.md
+57/0: /home/benjamin/Mail/.claude/context/contracts/territory.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/contracts/territory.md
+58/0: /home/benjamin/Mail/.claude/context/contracts/wrap-up.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/contracts/wrap-up.md
+59/0: /home/benjamin/Mail/.claude/context/formats/command-output.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/formats/command-output.md
+60/0: /home/benjamin/Mail/.claude/context/formats/command-structure.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/formats/command-structure.md
+61/0: /home/benjamin/Mail/.claude/context/formats/frontmatter.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/formats/frontmatter.md
+62/0: /home/benjamin/Mail/.claude/context/formats/handoff-artifact.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/formats/handoff-artifact.md
+63/0: /home/benjamin/Mail/.claude/context/formats/plan-format.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/formats/plan-format.md
+64/0: /home/benjamin/Mail/.claude/context/formats/progress-file.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/formats/progress-file.md
+65/0: /home/benjamin/Mail/.claude/context/formats/report-format.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/formats/report-format.md
+66/0: /home/benjamin/Mail/.claude/context/formats/return-metadata-file.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/formats/return-metadata-file.md
+67/0: /home/benjamin/Mail/.claude/context/formats/roadmap-format.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/formats/roadmap-format.md
+68/0: /home/benjamin/Mail/.claude/context/formats/subagent-return.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/formats/subagent-return.md
+69/0: /home/benjamin/Mail/.claude/context/formats/summary-format.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/formats/summary-format.md
+70/0: /home/benjamin/Mail/.claude/context/formats/task-order-format.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/formats/task-order-format.md
+71/0: /home/benjamin/Mail/.claude/context/formats/team-metadata-extension.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/formats/team-metadata-extension.md
+72/0: /home/benjamin/Mail/.claude/context/guides/extension-development.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/guides/extension-development.md
+73/0: /home/benjamin/Mail/.claude/context/guides/loader-reference.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/guides/loader-reference.md
+74/0: /home/benjamin/Mail/.claude/context/meta/context-revision-guide.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/meta/context-revision-guide.md
+75/0: /home/benjamin/Mail/.claude/context/meta/domain-patterns.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/meta/domain-patterns.md
+76/0: /home/benjamin/Mail/.claude/context/meta/meta-guide.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/meta/meta-guide.md
+77/0: /home/benjamin/Mail/.claude/context/orchestration/architecture.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/orchestration/architecture.md
+78/0: /home/benjamin/Mail/.claude/context/orchestration/delegation.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/orchestration/delegation.md
+79/0: /home/benjamin/Mail/.claude/context/orchestration/orchestration-core.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/orchestration/orchestration-core.md
+80/0: /home/benjamin/Mail/.claude/context/orchestration/orchestration-reference.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/orchestration/orchestration-reference.md
+81/0: /home/benjamin/Mail/.claude/context/orchestration/orchestration-validation.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/orchestration/orchestration-validation.md
+82/0: /home/benjamin/Mail/.claude/context/orchestration/orchestrator.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/orchestration/orchestrator.md
+83/0: /home/benjamin/Mail/.claude/context/orchestration/postflight-pattern.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/orchestration/postflight-pattern.md
+84/0: /home/benjamin/Mail/.claude/context/orchestration/preflight-pattern.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/orchestration/preflight-pattern.md
+85/0: /home/benjamin/Mail/.claude/context/orchestration/sessions.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/orchestration/sessions.md
+86/0: /home/benjamin/Mail/.claude/context/orchestration/state-management.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/orchestration/state-management.md
+87/0: /home/benjamin/Mail/.claude/context/orchestration/subagent-validation.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/orchestration/subagent-validation.md
+88/0: /home/benjamin/Mail/.claude/context/orchestration/validation.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/orchestration/validation.md
+89/0: /home/benjamin/Mail/.claude/context/patterns/anti-stop-patterns.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/anti-stop-patterns.md
+90/0: /home/benjamin/Mail/.claude/context/patterns/artifact-linking-todo.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/artifact-linking-todo.md
+91/0: /home/benjamin/Mail/.claude/context/patterns/checkpoint-before-overflow.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/checkpoint-before-overflow.md
+92/0: /home/benjamin/Mail/.claude/context/patterns/checkpoint-execution.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/checkpoint-execution.md
+93/0: /home/benjamin/Mail/.claude/context/patterns/context-discovery.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/context-discovery.md
+94/0: /home/benjamin/Mail/.claude/context/patterns/context-exhaustion-detection.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/context-exhaustion-detection.md
+95/0: /home/benjamin/Mail/.claude/context/patterns/early-metadata-pattern.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/early-metadata-pattern.md
+96/0: /home/benjamin/Mail/.claude/context/patterns/file-footprint-overlap.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/file-footprint-overlap.md
+97/0: /home/benjamin/Mail/.claude/context/patterns/file-metadata-exchange.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/file-metadata-exchange.md
+98/0: /home/benjamin/Mail/.claude/context/patterns/inline-status-update.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/inline-status-update.md
+99/0: /home/benjamin/Mail/.claude/context/patterns/jq-escaping-workarounds.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/jq-escaping-workarounds.md
+100/0: /home/benjamin/Mail/.claude/context/patterns/mcp-tool-recovery.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/mcp-tool-recovery.md
+101/0: /home/benjamin/Mail/.claude/context/patterns/metadata-file-return.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/metadata-file-return.md
+102/0: /home/benjamin/Mail/.claude/context/patterns/multi-task-operations.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/multi-task-operations.md
+103/0: /home/benjamin/Mail/.claude/context/patterns/postflight-control.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/postflight-control.md
+104/0: /home/benjamin/Mail/.claude/context/patterns/roadmap-update.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/roadmap-update.md
+105/0: /home/benjamin/Mail/.claude/context/patterns/skill-lifecycle.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/skill-lifecycle.md
+106/0: /home/benjamin/Mail/.claude/context/patterns/subagent-continuation-loop.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/subagent-continuation-loop.md
+107/0: /home/benjamin/Mail/.claude/context/patterns/task-lock.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/task-lock.md
+108/0: /home/benjamin/Mail/.claude/context/patterns/team-orchestration.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/team-orchestration.md
+109/0: /home/benjamin/Mail/.claude/context/patterns/thin-wrapper-skill.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/patterns/thin-wrapper-skill.md
+110/0: /home/benjamin/Mail/.claude/context/processes/implementation-workflow.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/processes/implementation-workflow.md
+111/0: /home/benjamin/Mail/.claude/context/processes/planning-workflow.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/processes/planning-workflow.md
+112/0: /home/benjamin/Mail/.claude/context/processes/research-workflow.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/processes/research-workflow.md
+113/0: /home/benjamin/Mail/.claude/context/reference/README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/reference/README.md
+114/0: /home/benjamin/Mail/.claude/context/reference/artifact-templates.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/reference/artifact-templates.md
+115/0: /home/benjamin/Mail/.claude/context/reference/skill-agent-mapping.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/reference/skill-agent-mapping.md
+116/0: /home/benjamin/Mail/.claude/context/reference/state-management-schema.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/reference/state-management-schema.md
+117/0: /home/benjamin/Mail/.claude/context/reference/team-wave-helpers.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/reference/team-wave-helpers.md
+118/0: /home/benjamin/Mail/.claude/context/reference/workflow-diagrams.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/reference/workflow-diagrams.md
+119/0: /home/benjamin/Mail/.claude/context/repo/project-overview.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/repo/project-overview.md
+120/0: /home/benjamin/Mail/.claude/context/repo/self-healing-implementation-details.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/repo/self-healing-implementation-details.md
+121/0: /home/benjamin/Mail/.claude/context/repo/update-project.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/repo/update-project.md
+122/0: /home/benjamin/Mail/.claude/context/schemas/frontmatter-schema.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/schemas/frontmatter-schema.json
+123/0: /home/benjamin/Mail/.claude/context/schemas/subagent-frontmatter.yaml
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/schemas/subagent-frontmatter.yaml
+124/0: /home/benjamin/Mail/.claude/context/standards/analysis-framework.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/standards/analysis-framework.md
+125/0: /home/benjamin/Mail/.claude/context/standards/ci-workflow.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/standards/ci-workflow.md
+126/0: /home/benjamin/Mail/.claude/context/standards/code-patterns.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/standards/code-patterns.md
+127/0: /home/benjamin/Mail/.claude/context/standards/documentation-standards.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/standards/documentation-standards.md
+128/0: /home/benjamin/Mail/.claude/context/standards/error-handling.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/standards/error-handling.md
+129/0: /home/benjamin/Mail/.claude/context/standards/git-integration.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/standards/git-integration.md
+130/0: /home/benjamin/Mail/.claude/context/standards/git-safety.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/standards/git-safety.md
+131/0: /home/benjamin/Mail/.claude/context/standards/git-staging-scope.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/standards/git-staging-scope.md
+132/0: /home/benjamin/Mail/.claude/context/standards/interactive-selection.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/standards/interactive-selection.md
+133/0: /home/benjamin/Mail/.claude/context/standards/postflight-tool-restrictions.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/standards/postflight-tool-restrictions.md
+134/0: /home/benjamin/Mail/.claude/context/standards/status-markers.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/standards/status-markers.md
+135/0: /home/benjamin/Mail/.claude/context/standards/task-management.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/standards/task-management.md
+136/0: /home/benjamin/Mail/.claude/context/standards/testing.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/standards/testing.md
+137/0: /home/benjamin/Mail/.claude/context/standards/xml-structure.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/standards/xml-structure.md
+138/0: /home/benjamin/Mail/.claude/context/templates/agent-template.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/templates/agent-template.md
+139/0: /home/benjamin/Mail/.claude/context/templates/command-template.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/templates/command-template.md
+140/0: /home/benjamin/Mail/.claude/context/templates/delegation-context.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/templates/delegation-context.md
+141/0: /home/benjamin/Mail/.claude/context/templates/orchestrator-template.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/templates/orchestrator-template.md
+142/0: /home/benjamin/Mail/.claude/context/templates/state-template.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/templates/state-template.json
+143/0: /home/benjamin/Mail/.claude/context/templates/subagent-template.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/templates/subagent-template.md
+144/0: /home/benjamin/Mail/.claude/context/templates/thin-wrapper-skill.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/templates/thin-wrapper-skill.md
+145/0: /home/benjamin/Mail/.claude/context/troubleshooting/workflow-interruptions.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/troubleshooting/workflow-interruptions.md
+146/0: /home/benjamin/Mail/.claude/context/workflows/command-lifecycle.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/workflows/command-lifecycle.md
+147/0: /home/benjamin/Mail/.claude/context/workflows/preflight-postflight.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/workflows/preflight-postflight.md
+148/0: /home/benjamin/Mail/.claude/context/workflows/review-process.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/workflows/review-process.md
+149/0: /home/benjamin/Mail/.claude/context/workflows/task-breakdown.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/workflows/task-breakdown.md
+150/0: /home/benjamin/Mail/.claude/context/core/architecture/component-checklist.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/architecture/component-checklist.md
+151/0: /home/benjamin/Mail/.claude/context/core/architecture/generation-guidelines.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/architecture/generation-guidelines.md
+152/0: /home/benjamin/Mail/.claude/context/core/architecture/system-overview.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/architecture/system-overview.md
+153/0: /home/benjamin/Mail/.claude/context/core/checkpoints/README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/checkpoints/README.md
+154/0: /home/benjamin/Mail/.claude/context/core/checkpoints/checkpoint-commit.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/checkpoints/checkpoint-commit.md
+155/0: /home/benjamin/Mail/.claude/context/core/checkpoints/checkpoint-gate-in.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/checkpoints/checkpoint-gate-in.md
+156/0: /home/benjamin/Mail/.claude/context/core/checkpoints/checkpoint-gate-out.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/checkpoints/checkpoint-gate-out.md
+157/0: /home/benjamin/Mail/.claude/context/core/formats/command-output.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/formats/command-output.md
+158/0: /home/benjamin/Mail/.claude/context/core/formats/command-structure.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/formats/command-structure.md
+159/0: /home/benjamin/Mail/.claude/context/core/formats/frontmatter.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/formats/frontmatter.md
+160/0: /home/benjamin/Mail/.claude/context/core/formats/plan-format.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/formats/plan-format.md
+161/0: /home/benjamin/Mail/.claude/context/core/formats/report-format.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/formats/report-format.md
+162/0: /home/benjamin/Mail/.claude/context/core/formats/return-metadata-file.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/formats/return-metadata-file.md
+163/0: /home/benjamin/Mail/.claude/context/core/formats/roadmap-format.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/formats/roadmap-format.md
+164/0: /home/benjamin/Mail/.claude/context/core/formats/subagent-return.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/formats/subagent-return.md
+165/0: /home/benjamin/Mail/.claude/context/core/formats/summary-format.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/formats/summary-format.md
+166/0: /home/benjamin/Mail/.claude/context/core/orchestration/architecture.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/orchestration/architecture.md
+167/0: /home/benjamin/Mail/.claude/context/core/orchestration/delegation.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/orchestration/delegation.md
+168/0: /home/benjamin/Mail/.claude/context/core/orchestration/orchestration-core.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/orchestration/orchestration-core.md
+169/0: /home/benjamin/Mail/.claude/context/core/orchestration/orchestration-reference.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/orchestration/orchestration-reference.md
+170/0: /home/benjamin/Mail/.claude/context/core/orchestration/orchestration-validation.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/orchestration/orchestration-validation.md
+171/0: /home/benjamin/Mail/.claude/context/core/orchestration/orchestrator.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/orchestration/orchestrator.md
+172/0: /home/benjamin/Mail/.claude/context/core/orchestration/postflight-pattern.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/orchestration/postflight-pattern.md
+173/0: /home/benjamin/Mail/.claude/context/core/orchestration/preflight-pattern.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/orchestration/preflight-pattern.md
+174/0: /home/benjamin/Mail/.claude/context/core/orchestration/routing.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/orchestration/routing.md
+175/0: /home/benjamin/Mail/.claude/context/core/orchestration/sessions.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/orchestration/sessions.md
+176/0: /home/benjamin/Mail/.claude/context/core/orchestration/state-management.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/orchestration/state-management.md
+177/0: /home/benjamin/Mail/.claude/context/core/orchestration/subagent-validation.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/orchestration/subagent-validation.md
+178/0: /home/benjamin/Mail/.claude/context/core/orchestration/validation.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/orchestration/validation.md
+179/0: /home/benjamin/Mail/.claude/context/core/patterns/anti-stop-patterns.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/patterns/anti-stop-patterns.md
+180/0: /home/benjamin/Mail/.claude/context/core/patterns/checkpoint-execution.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/patterns/checkpoint-execution.md
+181/0: /home/benjamin/Mail/.claude/context/core/patterns/early-metadata-pattern.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/patterns/early-metadata-pattern.md
+182/0: /home/benjamin/Mail/.claude/context/core/patterns/file-metadata-exchange.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/patterns/file-metadata-exchange.md
+183/0: /home/benjamin/Mail/.claude/context/core/patterns/inline-status-update.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/patterns/inline-status-update.md
+184/0: /home/benjamin/Mail/.claude/context/core/patterns/jq-escaping-workarounds.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/patterns/jq-escaping-workarounds.md
+185/0: /home/benjamin/Mail/.claude/context/core/patterns/metadata-file-return.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/patterns/metadata-file-return.md
+186/0: /home/benjamin/Mail/.claude/context/core/patterns/postflight-control.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/patterns/postflight-control.md
+187/0: /home/benjamin/Mail/.claude/context/core/patterns/roadmap-update.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/patterns/roadmap-update.md
+188/0: /home/benjamin/Mail/.claude/context/core/patterns/skill-lifecycle.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/patterns/skill-lifecycle.md
+189/0: /home/benjamin/Mail/.claude/context/core/patterns/thin-wrapper-skill.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/patterns/thin-wrapper-skill.md
+190/0: /home/benjamin/Mail/.claude/context/core/standards/analysis-framework.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/standards/analysis-framework.md
+191/0: /home/benjamin/Mail/.claude/context/core/standards/ci-workflow.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/standards/ci-workflow.md
+192/0: /home/benjamin/Mail/.claude/context/core/standards/code-patterns.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/standards/code-patterns.md
+193/0: /home/benjamin/Mail/.claude/context/core/standards/documentation-standards.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/standards/documentation-standards.md
+194/0: /home/benjamin/Mail/.claude/context/core/standards/documentation.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/standards/documentation.md
+195/0: /home/benjamin/Mail/.claude/context/core/standards/error-handling.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/standards/error-handling.md
+196/0: /home/benjamin/Mail/.claude/context/core/standards/git-integration.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/standards/git-integration.md
+197/0: /home/benjamin/Mail/.claude/context/core/standards/git-safety.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/standards/git-safety.md
+198/0: /home/benjamin/Mail/.claude/context/core/standards/status-markers.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/standards/status-markers.md
+199/0: /home/benjamin/Mail/.claude/context/core/standards/task-management.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/standards/task-management.md
+200/0: /home/benjamin/Mail/.claude/context/core/standards/testing.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/standards/testing.md
+201/0: /home/benjamin/Mail/.claude/context/core/standards/xml-structure.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/standards/xml-structure.md
+202/0: /home/benjamin/Mail/.claude/context/core/templates/agent-template.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/templates/agent-template.md
+203/0: /home/benjamin/Mail/.claude/context/core/templates/command-template.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/templates/command-template.md
+204/0: /home/benjamin/Mail/.claude/context/core/templates/delegation-context.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/templates/delegation-context.md
+205/0: /home/benjamin/Mail/.claude/context/core/templates/orchestrator-template.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/templates/orchestrator-template.md
+206/0: /home/benjamin/Mail/.claude/context/core/templates/subagent-template.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/templates/subagent-template.md
+207/0: /home/benjamin/Mail/.claude/context/core/templates/thin-wrapper-skill.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/templates/thin-wrapper-skill.md
+208/0: /home/benjamin/Mail/.claude/context/core/templates/state-template.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/templates/state-template.json
+209/0: /home/benjamin/Mail/.claude/context/core/troubleshooting/workflow-interruptions.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/troubleshooting/workflow-interruptions.md
+210/0: /home/benjamin/Mail/.claude/context/core/workflows/command-lifecycle.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/workflows/command-lifecycle.md
+211/0: /home/benjamin/Mail/.claude/context/core/workflows/preflight-postflight.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/workflows/preflight-postflight.md
+212/0: /home/benjamin/Mail/.claude/context/core/workflows/review-process.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/workflows/review-process.md
+213/0: /home/benjamin/Mail/.claude/context/core/workflows/status-transitions.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/workflows/status-transitions.md
+214/0: /home/benjamin/Mail/.claude/context/core/workflows/task-breakdown.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/workflows/task-breakdown.md
+215/0: /home/benjamin/Mail/.claude/context/core/schemas/frontmatter-schema.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/schemas/frontmatter-schema.json
+216/0: /home/benjamin/Mail/.claude/context/core/schemas/subagent-frontmatter.yaml
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/schemas/subagent-frontmatter.yaml
+217/0: /home/benjamin/Mail/.claude/context/core/routing.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/routing.md
+218/0: /home/benjamin/Mail/.claude/context/core/validation.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/core/validation.md
+219/0: /home/benjamin/Mail/.claude/context/project/memory/domain/memory-reference.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/memory/domain/memory-reference.md
+220/0: /home/benjamin/Mail/.claude/context/project/memory/README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/memory/README.md
+221/0: /home/benjamin/Mail/.claude/context/project/memory/distill-usage.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/memory/distill-usage.md
+222/0: /home/benjamin/Mail/.claude/context/project/memory/knowledge-capture-usage.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/memory/knowledge-capture-usage.md
+223/0: /home/benjamin/Mail/.claude/context/project/memory/learn-usage.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/memory/learn-usage.md
+224/0: /home/benjamin/Mail/.claude/context/project/memory/memory-setup.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/memory/memory-setup.md
+225/0: /home/benjamin/Mail/.claude/context/project/memory/memory-troubleshooting.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/memory/memory-troubleshooting.md
+226/0: /home/benjamin/Mail/.claude/context/project/python/domain/model-checker-api.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/python/domain/model-checker-api.md
+227/0: /home/benjamin/Mail/.claude/context/project/python/domain/theory-lib-patterns.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/python/domain/theory-lib-patterns.md
+228/0: /home/benjamin/Mail/.claude/context/project/python/patterns/semantic-evaluation.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/python/patterns/semantic-evaluation.md
+229/0: /home/benjamin/Mail/.claude/context/project/python/patterns/testing-patterns.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/python/patterns/testing-patterns.md
+230/0: /home/benjamin/Mail/.claude/context/project/python/standards/code-style.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/python/standards/code-style.md
+231/0: /home/benjamin/Mail/.claude/context/project/python/README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/python/README.md
+232/0: /home/benjamin/Mail/.claude/context/project/nix/domain/flakes.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/nix/domain/flakes.md
+233/0: /home/benjamin/Mail/.claude/context/project/nix/domain/home-manager.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/nix/domain/home-manager.md
+234/0: /home/benjamin/Mail/.claude/context/project/nix/domain/nix-language.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/nix/domain/nix-language.md
+235/0: /home/benjamin/Mail/.claude/context/project/nix/domain/nixos-modules.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/nix/domain/nixos-modules.md
+236/0: /home/benjamin/Mail/.claude/context/project/nix/patterns/derivation-patterns.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/nix/patterns/derivation-patterns.md
+237/0: /home/benjamin/Mail/.claude/context/project/nix/patterns/module-patterns.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/nix/patterns/module-patterns.md
+238/0: /home/benjamin/Mail/.claude/context/project/nix/patterns/overlay-patterns.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/nix/patterns/overlay-patterns.md
+239/0: /home/benjamin/Mail/.claude/context/project/nix/standards/nix-style-guide.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/nix/standards/nix-style-guide.md
+240/0: /home/benjamin/Mail/.claude/context/project/nix/tools/home-manager-guide.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/nix/tools/home-manager-guide.md
+241/0: /home/benjamin/Mail/.claude/context/project/nix/tools/nixos-rebuild-guide.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/nix/tools/nixos-rebuild-guide.md
+242/0: /home/benjamin/Mail/.claude/context/project/nix/README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/nix/README.md
+243/0: /home/benjamin/Mail/.claude/context/project/hooks/wezterm-integration.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/hooks/wezterm-integration.md
+244/0: /home/benjamin/Mail/.claude/context/project/latex/patterns/cross-references.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/latex/patterns/cross-references.md
+245/0: /home/benjamin/Mail/.claude/context/project/latex/patterns/theorem-environments.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/latex/patterns/theorem-environments.md
+246/0: /home/benjamin/Mail/.claude/context/project/latex/standards/document-structure.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/latex/standards/document-structure.md
+247/0: /home/benjamin/Mail/.claude/context/project/latex/standards/latex-style-guide.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/latex/standards/latex-style-guide.md
+248/0: /home/benjamin/Mail/.claude/context/project/latex/standards/notation-conventions.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/latex/standards/notation-conventions.md
+249/0: /home/benjamin/Mail/.claude/context/project/latex/templates/subfile-template.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/latex/templates/subfile-template.md
+250/0: /home/benjamin/Mail/.claude/context/project/latex/tools/compilation-guide.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/latex/tools/compilation-guide.md
+251/0: /home/benjamin/Mail/.claude/context/project/latex/README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/latex/README.md
+252/0: /home/benjamin/Mail/.claude/context/project/meta/architecture-principles.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/meta/architecture-principles.md
+253/0: /home/benjamin/Mail/.claude/context/project/meta/context-revision-guide.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/meta/context-revision-guide.md
+254/0: /home/benjamin/Mail/.claude/context/project/meta/domain-patterns.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/meta/domain-patterns.md
+255/0: /home/benjamin/Mail/.claude/context/project/meta/interview-patterns.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/meta/interview-patterns.md
+256/0: /home/benjamin/Mail/.claude/context/project/meta/meta-guide.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/meta/meta-guide.md
+257/0: /home/benjamin/Mail/.claude/context/project/meta/standards-checklist.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/meta/standards-checklist.md
+258/0: /home/benjamin/Mail/.claude/context/project/neovim/guides/neovim-integration.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/guides/neovim-integration.md
+259/0: /home/benjamin/Mail/.claude/context/project/neovim/guides/tts-stt-integration.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/guides/tts-stt-integration.md
+260/0: /home/benjamin/Mail/.claude/context/project/neovim/hooks/wezterm-integration.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/hooks/wezterm-integration.md
+261/0: /home/benjamin/Mail/.claude/context/project/neovim/domain/lsp-overview.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/domain/lsp-overview.md
+262/0: /home/benjamin/Mail/.claude/context/project/neovim/domain/lua-patterns.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/domain/lua-patterns.md
+263/0: /home/benjamin/Mail/.claude/context/project/neovim/domain/neovim-api.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/domain/neovim-api.md
+264/0: /home/benjamin/Mail/.claude/context/project/neovim/domain/plugin-ecosystem.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/domain/plugin-ecosystem.md
+265/0: /home/benjamin/Mail/.claude/context/project/neovim/patterns/autocommand-patterns.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/patterns/autocommand-patterns.md
+266/0: /home/benjamin/Mail/.claude/context/project/neovim/patterns/ftplugin-patterns.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/patterns/ftplugin-patterns.md
+267/0: /home/benjamin/Mail/.claude/context/project/neovim/patterns/keymap-patterns.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/patterns/keymap-patterns.md
+268/0: /home/benjamin/Mail/.claude/context/project/neovim/patterns/plugin-spec.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/patterns/plugin-spec.md
+269/0: /home/benjamin/Mail/.claude/context/project/neovim/standards/box-drawing-guide.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/standards/box-drawing-guide.md
+270/0: /home/benjamin/Mail/.claude/context/project/neovim/standards/documentation-policy.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/standards/documentation-policy.md
+271/0: /home/benjamin/Mail/.claude/context/project/neovim/standards/emoji-policy.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/standards/emoji-policy.md
+272/0: /home/benjamin/Mail/.claude/context/project/neovim/standards/lua-assertion-patterns.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/standards/lua-assertion-patterns.md
+273/0: /home/benjamin/Mail/.claude/context/project/neovim/standards/lua-style-guide.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/standards/lua-style-guide.md
+274/0: /home/benjamin/Mail/.claude/context/project/neovim/standards/testing-patterns.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/standards/testing-patterns.md
+275/0: /home/benjamin/Mail/.claude/context/project/neovim/templates/ftplugin-template.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/templates/ftplugin-template.md
+276/0: /home/benjamin/Mail/.claude/context/project/neovim/templates/plugin-template.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/templates/plugin-template.md
+277/0: /home/benjamin/Mail/.claude/context/project/neovim/tools/lazy-nvim-guide.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/tools/lazy-nvim-guide.md
+278/0: /home/benjamin/Mail/.claude/context/project/neovim/tools/telescope-guide.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/tools/telescope-guide.md
+279/0: /home/benjamin/Mail/.claude/context/project/neovim/tools/treesitter-guide.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/tools/treesitter-guide.md
+280/0: /home/benjamin/Mail/.claude/context/project/neovim/README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/neovim/README.md
+281/0: /home/benjamin/Mail/.claude/context/project/processes/implementation-workflow.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/processes/implementation-workflow.md
+282/0: /home/benjamin/Mail/.claude/context/project/processes/planning-workflow.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/processes/planning-workflow.md
+283/0: /home/benjamin/Mail/.claude/context/project/processes/research-workflow.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/processes/research-workflow.md
+284/0: /home/benjamin/Mail/.claude/context/project/repo/project-overview.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/repo/project-overview.md
+285/0: /home/benjamin/Mail/.claude/context/project/repo/self-healing-implementation-details.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/repo/self-healing-implementation-details.md
+286/0: /home/benjamin/Mail/.claude/context/project/typst/patterns/cross-references.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/typst/patterns/cross-references.md
+287/0: /home/benjamin/Mail/.claude/context/project/typst/patterns/theorem-environments.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/typst/patterns/theorem-environments.md
+288/0: /home/benjamin/Mail/.claude/context/project/typst/standards/document-structure.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/typst/standards/document-structure.md
+289/0: /home/benjamin/Mail/.claude/context/project/typst/standards/notation-conventions.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/typst/standards/notation-conventions.md
+290/0: /home/benjamin/Mail/.claude/context/project/typst/standards/typst-style-guide.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/typst/standards/typst-style-guide.md
+291/0: /home/benjamin/Mail/.claude/context/project/typst/templates/chapter-template.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/typst/templates/chapter-template.md
+292/0: /home/benjamin/Mail/.claude/context/project/typst/tools/compilation-guide.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/typst/tools/compilation-guide.md
+293/0: /home/benjamin/Mail/.claude/context/project/typst/README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/typst/README.md
+294/0: /home/benjamin/Mail/.claude/context/project/email/domain/archive-mode-risk.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/email/domain/archive-mode-risk.md
+295/0: /home/benjamin/Mail/.claude/context/project/email/domain/staleness-detection.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/email/domain/staleness-detection.md
+296/0: /home/benjamin/Mail/.claude/context/project/email/domain/wrapper-contracts.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/email/domain/wrapper-contracts.md
+297/0: /home/benjamin/Mail/.claude/context/project/email/patterns/bulk-bucket-review.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/email/patterns/bulk-bucket-review.md
+298/0: /home/benjamin/Mail/.claude/context/project/email/patterns/propose-review-confirm-execute.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/email/patterns/propose-review-confirm-execute.md
+299/0: /home/benjamin/Mail/.claude/context/project/email/standards/recall-on-keep-bias.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/email/standards/recall-on-keep-bias.md
+300/0: /home/benjamin/Mail/.claude/context/project/email/design/email-to-memory-preferences.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/email/design/email-to-memory-preferences.md
+301/0: /home/benjamin/Mail/.claude/context/project/email/email-plan-format.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/email/email-plan-format.md
+302/0: /home/benjamin/Mail/.claude/context/project/email/himalaya-integration.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/email/himalaya-integration.md
+303/0: /home/benjamin/Mail/.claude/context/project/email/email-patterns.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/email/email-patterns.md
+304/0: /home/benjamin/Mail/.claude/context/project/email/ai-triage-prompts.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/email/ai-triage-prompts.md
+305/0: /home/benjamin/Mail/.claude/context/project/email/task-integration.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/email/task-integration.md
+306/0: /home/benjamin/Mail/.claude/context/project/email/email-preferences.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/project/email/email-preferences.md
+307/0: /home/benjamin/Mail/.claude/context/README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/README.md
+308/0: /home/benjamin/Mail/.claude/context/routing.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/routing.md
+309/0: /home/benjamin/Mail/.claude/context/validation.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/validation.md
+310/0: /home/benjamin/Mail/.claude/context/index.schema.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/index.schema.json
+311/0: /home/benjamin/Mail/.claude/context/index.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/index.json
+312/0: /home/benjamin/Mail/.claude/context/index.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/context/index.md
+313/0: /home/benjamin/Mail/.claude/docs/architecture/architecture-spec.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/architecture/architecture-spec.md
+314/0: /home/benjamin/Mail/.claude/docs/architecture/extension-system.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/architecture/extension-system.md
+315/0: /home/benjamin/Mail/.claude/docs/architecture/handoff-schema.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/architecture/handoff-schema.md
+316/0: /home/benjamin/Mail/.claude/docs/architecture/orchestrate-state-machine.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/architecture/orchestrate-state-machine.md
+317/0: /home/benjamin/Mail/.claude/docs/architecture/system-overview.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/architecture/system-overview.md
+318/0: /home/benjamin/Mail/.claude/docs/examples/learn-flow-example.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/examples/learn-flow-example.md
+319/0: /home/benjamin/Mail/.claude/docs/examples/fix-it-flow-example.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/examples/fix-it-flow-example.md
+320/0: /home/benjamin/Mail/.claude/docs/examples/research-flow-example.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/examples/research-flow-example.md
+321/0: /home/benjamin/Mail/.claude/docs/guides/development/context-index-migration.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/guides/development/context-index-migration.md
+322/0: /home/benjamin/Mail/.claude/docs/guides/neovim-integration.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/guides/neovim-integration.md
+323/0: /home/benjamin/Mail/.claude/docs/guides/adding-domains.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/guides/adding-domains.md
+324/0: /home/benjamin/Mail/.claude/docs/guides/component-selection.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/guides/component-selection.md
+325/0: /home/benjamin/Mail/.claude/docs/guides/context-loading-best-practices.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/guides/context-loading-best-practices.md
+326/0: /home/benjamin/Mail/.claude/docs/guides/copy-claude-directory.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/guides/copy-claude-directory.md
+327/0: /home/benjamin/Mail/.claude/docs/guides/creating-agents.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/guides/creating-agents.md
+328/0: /home/benjamin/Mail/.claude/docs/guides/creating-commands.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/guides/creating-commands.md
+329/0: /home/benjamin/Mail/.claude/docs/guides/creating-extensions.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/guides/creating-extensions.md
+330/0: /home/benjamin/Mail/.claude/docs/guides/creating-skills.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/guides/creating-skills.md
+331/0: /home/benjamin/Mail/.claude/docs/guides/permission-configuration.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/guides/permission-configuration.md
+332/0: /home/benjamin/Mail/.claude/docs/guides/user-guide.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/guides/user-guide.md
+333/0: /home/benjamin/Mail/.claude/docs/guides/user-installation.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/guides/user-installation.md
+334/0: /home/benjamin/Mail/.claude/docs/reference/standards/agent-frontmatter-standard.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/reference/standards/agent-frontmatter-standard.md
+335/0: /home/benjamin/Mail/.claude/docs/reference/standards/extension-slim-standard.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/reference/standards/extension-slim-standard.md
+336/0: /home/benjamin/Mail/.claude/docs/reference/standards/multi-task-creation-standard.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/reference/standards/multi-task-creation-standard.md
+337/0: /home/benjamin/Mail/.claude/docs/templates/README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/templates/README.md
+338/0: /home/benjamin/Mail/.claude/docs/templates/agent-template.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/templates/agent-template.md
+339/0: /home/benjamin/Mail/.claude/docs/templates/command-template.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/templates/command-template.md
+340/0: /home/benjamin/Mail/.claude/docs/README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/README.md
+341/0: /home/benjamin/Mail/.claude/docs/docs-README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/docs/docs-README.md
+342/0: /home/benjamin/Mail/.claude/extensions/core/manifest.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/extensions/core/manifest.json
+343/0: /home/benjamin/Mail/.claude/extensions/email/manifest.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/extensions/email/manifest.json
+344/0: /home/benjamin/Mail/.claude/extensions/memory/manifest.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/extensions/memory/manifest.json
+345/0: /home/benjamin/Mail/.claude/extensions/nix/manifest.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/extensions/nix/manifest.json
+346/0: /home/benjamin/Mail/.claude/extensions/nvim/manifest.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/extensions/nvim/manifest.json
+347/0: /home/benjamin/Mail/.claude/extensions/python/manifest.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/extensions/python/manifest.json
+348/0: /home/benjamin/Mail/.claude/hooks/wezterm-clear-status.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/hooks/wezterm-clear-status.sh
+349/0: /home/benjamin/Mail/.claude/hooks/claude-stop-notify.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/hooks/claude-stop-notify.sh
+350/0: /home/benjamin/Mail/.claude/hooks/guard-destructive-git.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/hooks/guard-destructive-git.sh
+351/0: /home/benjamin/Mail/.claude/hooks/log-session.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/hooks/log-session.sh
+352/0: /home/benjamin/Mail/.claude/hooks/memory-nudge.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/hooks/memory-nudge.sh
+353/0: /home/benjamin/Mail/.claude/hooks/post-command.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/hooks/post-command.sh
+354/0: /home/benjamin/Mail/.claude/hooks/subagent-postflight.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/hooks/subagent-postflight.sh
+355/0: /home/benjamin/Mail/.claude/hooks/tts-notify.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/hooks/tts-notify.sh
+356/0: /home/benjamin/Mail/.claude/hooks/validate-meta-write.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/hooks/validate-meta-write.sh
+357/0: /home/benjamin/Mail/.claude/hooks/validate-plan-write.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/hooks/validate-plan-write.sh
+358/0: /home/benjamin/Mail/.claude/hooks/validate-state-sync.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/hooks/validate-state-sync.sh
+359/0: /home/benjamin/Mail/.claude/hooks/wezterm-clear-task-number.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/hooks/wezterm-clear-task-number.sh
+360/0: /home/benjamin/Mail/.claude/hooks/wezterm-notify.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/hooks/wezterm-notify.sh
+361/0: /home/benjamin/Mail/.claude/hooks/wezterm-preflight-status.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/hooks/wezterm-preflight-status.sh
+362/0: /home/benjamin/Mail/.claude/hooks/wezterm-task-number.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/hooks/wezterm-task-number.sh
+363/0: /home/benjamin/Mail/.claude/hooks/wezterm-utils.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/hooks/wezterm-utils.sh
+364/0: /home/benjamin/Mail/.claude/hooks/mail-guard.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/hooks/mail-guard.sh
+365/0: /home/benjamin/Mail/.claude/logs/generate-todo.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/logs/generate-todo.log
+366/0: /home/benjamin/Mail/.claude/logs/sessions.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/logs/sessions.log
+367/0: /home/benjamin/Mail/.claude/logs/subagent-postflight.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/logs/subagent-postflight.log
+368/0: /home/benjamin/Mail/.claude/rules/artifact-formats.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/rules/artifact-formats.md
+369/0: /home/benjamin/Mail/.claude/rules/error-handling.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/rules/error-handling.md
+370/0: /home/benjamin/Mail/.claude/rules/git-workflow.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/rules/git-workflow.md
+371/0: /home/benjamin/Mail/.claude/rules/plan-format-enforcement.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/rules/plan-format-enforcement.md
+372/0: /home/benjamin/Mail/.claude/rules/state-management.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/rules/state-management.md
+373/0: /home/benjamin/Mail/.claude/rules/workflows.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/rules/workflows.md
+374/0: /home/benjamin/Mail/.claude/rules/project-overview-detection.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/rules/project-overview-detection.md
+375/0: /home/benjamin/Mail/.claude/rules/latex.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/rules/latex.md
+376/0: /home/benjamin/Mail/.claude/rules/nix.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/rules/nix.md
+377/0: /home/benjamin/Mail/.claude/rules/neovim-lua.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/rules/neovim-lua.md
+378/0: /home/benjamin/Mail/.claude/scripts/lint/lint-postflight-boundary.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/lint/lint-postflight-boundary.sh
+379/0: /home/benjamin/Mail/.claude/scripts/email/__pycache__/email_analyze.cpython-312.pyc
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/email/__pycache__/email_analyze.cpython-312.pyc
+380/0: /home/benjamin/Mail/.claude/scripts/email/__pycache__/email_triage.cpython-312.pyc
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/email/__pycache__/email_triage.cpython-312.pyc
+381/0: /home/benjamin/Mail/.claude/scripts/email/__pycache__/email_filter.cpython-312.pyc
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/email/__pycache__/email_filter.cpython-312.pyc
+382/0: /home/benjamin/Mail/.claude/scripts/archive-task.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/archive-task.sh
+383/0: /home/benjamin/Mail/.claude/scripts/check-extension-docs.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/check-extension-docs.sh
+384/0: /home/benjamin/Mail/.claude/scripts/check-vault-threshold.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/check-vault-threshold.sh
+385/0: /home/benjamin/Mail/.claude/scripts/claude-cleanup.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/claude-cleanup.sh
+386/0: /home/benjamin/Mail/.claude/scripts/claude-project-cleanup.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/claude-project-cleanup.sh
+387/0: /home/benjamin/Mail/.claude/scripts/claude-refresh.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/claude-refresh.sh
+388/0: /home/benjamin/Mail/.claude/scripts/command-gate-in.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/command-gate-in.sh
+389/0: /home/benjamin/Mail/.claude/scripts/command-gate-out.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/command-gate-out.sh
+390/0: /home/benjamin/Mail/.claude/scripts/command-route-skill.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/command-route-skill.sh
+391/0: /home/benjamin/Mail/.claude/scripts/export-to-markdown.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/export-to-markdown.sh
+392/0: /home/benjamin/Mail/.claude/scripts/generate-task-order.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/generate-task-order.sh
+393/0: /home/benjamin/Mail/.claude/scripts/generate-todo.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/generate-todo.sh
+394/0: /home/benjamin/Mail/.claude/scripts/git-snapshot.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/git-snapshot.sh
+395/0: /home/benjamin/Mail/.claude/scripts/install-aliases.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/install-aliases.sh
+396/0: /home/benjamin/Mail/.claude/scripts/install-extension.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/install-extension.sh
+397/0: /home/benjamin/Mail/.claude/scripts/install-systemd-timer.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/install-systemd-timer.sh
+398/0: /home/benjamin/Mail/.claude/scripts/issue-grouping.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/issue-grouping.sh
+399/0: /home/benjamin/Mail/.claude/scripts/literature-retrieve.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/literature-retrieve.sh
+400/0: /home/benjamin/Mail/.claude/scripts/manage-topics.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/manage-topics.sh
+401/0: /home/benjamin/Mail/.claude/scripts/memory-harvest.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/memory-harvest.sh
+402/0: /home/benjamin/Mail/.claude/scripts/memory-retrieve.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/memory-retrieve.sh
+403/0: /home/benjamin/Mail/.claude/scripts/migrate-directory-padding.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/migrate-directory-padding.sh
+404/0: /home/benjamin/Mail/.claude/scripts/orphan-detection.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/orphan-detection.sh
+405/0: /home/benjamin/Mail/.claude/scripts/parse-command-args.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/parse-command-args.sh
+406/0: /home/benjamin/Mail/.claude/scripts/rename-session.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/rename-session.sh
+407/0: /home/benjamin/Mail/.claude/scripts/roadmap-integration.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/roadmap-integration.sh
+408/0: /home/benjamin/Mail/.claude/scripts/roadmap-sync.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/roadmap-sync.sh
+409/0: /home/benjamin/Mail/.claude/scripts/setup-lean-mcp.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/setup-lean-mcp.sh
+410/0: /home/benjamin/Mail/.claude/scripts/reconcile-task-status.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/reconcile-task-status.sh
+411/0: /home/benjamin/Mail/.claude/scripts/skill-base.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/skill-base.sh
+412/0: /home/benjamin/Mail/.claude/scripts/tier-selection.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/tier-selection.sh
+413/0: /home/benjamin/Mail/.claude/scripts/uninstall-extension.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/uninstall-extension.sh
+414/0: /home/benjamin/Mail/.claude/scripts/update-phase-status.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/update-phase-status.sh
+415/0: /home/benjamin/Mail/.claude/scripts/update-plan-status.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/update-plan-status.sh
+416/0: /home/benjamin/Mail/.claude/scripts/update-task-status.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/update-task-status.sh
+417/0: /home/benjamin/Mail/.claude/scripts/validate-artifact.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/validate-artifact.sh
+418/0: /home/benjamin/Mail/.claude/scripts/validate-context-budgets.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/validate-context-budgets.sh
+419/0: /home/benjamin/Mail/.claude/scripts/validate-context-index.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/validate-context-index.sh
+420/0: /home/benjamin/Mail/.claude/scripts/validate-extension-index.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/validate-extension-index.sh
+421/0: /home/benjamin/Mail/.claude/scripts/validate-index.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/validate-index.sh
+422/0: /home/benjamin/Mail/.claude/scripts/validate-wiring.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/validate-wiring.sh
+423/0: /home/benjamin/Mail/.claude/scripts/vault-operation.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/vault-operation.sh
+424/0: /home/benjamin/Mail/.claude/scripts/postflight-implement.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/postflight-implement.sh
+425/0: /home/benjamin/Mail/.claude/scripts/postflight-plan.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/postflight-plan.sh
+426/0: /home/benjamin/Mail/.claude/scripts/postflight-research.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/postflight-research.sh
+427/0: /home/benjamin/Mail/.claude/scripts/verify-lean-mcp.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/verify-lean-mcp.sh
+428/0: /home/benjamin/Mail/.claude/scripts/lifecycle-notify.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/lifecycle-notify.sh
+429/0: /home/benjamin/Mail/.claude/scripts/reconcile-artifacts.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/reconcile-artifacts.sh
+430/0: /home/benjamin/Mail/.claude/scripts/task-lock.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/task-lock.sh
+431/0: /home/benjamin/Mail/.claude/scripts/orchestrator-postflight.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/orchestrator-postflight.sh
+432/0: /home/benjamin/Mail/.claude/scripts/email-preference-harvest.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/scripts/email-preference-harvest.sh
+433/0: /home/benjamin/Mail/.claude/skills/skill-fix-it/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-fix-it/SKILL.md
+434/0: /home/benjamin/Mail/.claude/skills/skill-orchestrate/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-orchestrate/SKILL.md
+435/0: /home/benjamin/Mail/.claude/skills/skill-reviser/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-reviser/SKILL.md
+436/0: /home/benjamin/Mail/.claude/skills/skill-spawn/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-spawn/SKILL.md
+437/0: /home/benjamin/Mail/.claude/skills/skill-tag/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-tag/SKILL.md
+438/0: /home/benjamin/Mail/.claude/skills/skill-team-implement/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-team-implement/SKILL.md
+439/0: /home/benjamin/Mail/.claude/skills/skill-team-plan/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-team-plan/SKILL.md
+440/0: /home/benjamin/Mail/.claude/skills/skill-team-research/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-team-research/SKILL.md
+441/0: /home/benjamin/Mail/.claude/skills/skill-todo/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-todo/SKILL.md
+442/0: /home/benjamin/Mail/.claude/skills/skill-zulip/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-zulip/SKILL.md
+443/0: /home/benjamin/Mail/.claude/skills/skill-project-overview/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-project-overview/SKILL.md
+444/0: /home/benjamin/Mail/.claude/skills/skill-researcher-hard/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-researcher-hard/SKILL.md
+445/0: /home/benjamin/Mail/.claude/skills/skill-planner-hard/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-planner-hard/SKILL.md
+446/0: /home/benjamin/Mail/.claude/skills/skill-implementer-hard/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-implementer-hard/SKILL.md
+447/0: /home/benjamin/Mail/.claude/skills/skill-orchestrate-hard/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-orchestrate-hard/SKILL.md
+448/0: /home/benjamin/Mail/.claude/skills/skill-document-converter/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-document-converter/SKILL.md
+449/0: /home/benjamin/Mail/.claude/skills/skill-git-workflow/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-git-workflow/SKILL.md
+450/0: /home/benjamin/Mail/.claude/skills/skill-implementer/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-implementer/SKILL.md
+451/0: /home/benjamin/Mail/.claude/skills/skill-latex-implementation/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-latex-implementation/SKILL.md
+452/0: /home/benjamin/Mail/.claude/skills/skill-learn/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-learn/SKILL.md
+453/0: /home/benjamin/Mail/.claude/skills/skill-meta/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-meta/SKILL.md
+454/0: /home/benjamin/Mail/.claude/skills/skill-neovim-implementation/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-neovim-implementation/SKILL.md
+455/0: /home/benjamin/Mail/.claude/skills/skill-neovim-research/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-neovim-research/SKILL.md
+456/0: /home/benjamin/Mail/.claude/skills/skill-orchestrator/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-orchestrator/SKILL.md
+457/0: /home/benjamin/Mail/.claude/skills/skill-orchestrator/SKILL.md.archived
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-orchestrator/SKILL.md.archived
+458/0: /home/benjamin/Mail/.claude/skills/skill-planner/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-planner/SKILL.md
+459/0: /home/benjamin/Mail/.claude/skills/skill-refresh/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-refresh/SKILL.md
+460/0: /home/benjamin/Mail/.claude/skills/skill-researcher/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-researcher/SKILL.md
+461/0: /home/benjamin/Mail/.claude/skills/skill-status-sync/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-status-sync/SKILL.md
+462/0: /home/benjamin/Mail/.claude/skills/skill-typst-implementation/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-typst-implementation/SKILL.md
+463/0: /home/benjamin/Mail/.claude/skills/skill-email-implementation/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-email-implementation/SKILL.md
+464/0: /home/benjamin/Mail/.claude/skills/skill-email-cleanup/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-email-cleanup/SKILL.md
+465/0: /home/benjamin/Mail/.claude/skills/skill-email-sync/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-email-sync/SKILL.md
+466/0: /home/benjamin/Mail/.claude/skills/skill-memory/README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-memory/README.md
+467/0: /home/benjamin/Mail/.claude/skills/skill-memory/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-memory/SKILL.md
+468/0: /home/benjamin/Mail/.claude/skills/skill-nix-research/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-nix-research/SKILL.md
+469/0: /home/benjamin/Mail/.claude/skills/skill-nix-implementation/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-nix-implementation/SKILL.md
+470/0: /home/benjamin/Mail/.claude/skills/skill-python-research/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-python-research/SKILL.md
+471/0: /home/benjamin/Mail/.claude/skills/skill-python-implementation/SKILL.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/skills/skill-python-implementation/SKILL.md
+472/0: /home/benjamin/Mail/.claude/systemd/claude-refresh.service
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/systemd/claude-refresh.service
+473/0: /home/benjamin/Mail/.claude/systemd/claude-refresh.timer
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/systemd/claude-refresh.timer
+474/0: /home/benjamin/Mail/.claude/templates/claudemd-header.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/templates/claudemd-header.md
+475/0: /home/benjamin/Mail/.claude/templates/extension-readme-template.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/templates/extension-readme-template.md
+476/0: /home/benjamin/Mail/.claude/templates/settings.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/templates/settings.json
+477/0: /home/benjamin/Mail/.claude/tmp/mail-guard-audit.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.claude/tmp/mail-guard-audit.log
+478/0: /home/benjamin/Mail/.git/hooks/applypatch-msg.sample
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/hooks/applypatch-msg.sample
+479/0: /home/benjamin/Mail/.git/hooks/pre-rebase.sample
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/hooks/pre-rebase.sample
+480/0: /home/benjamin/Mail/.git/hooks/fsmonitor-watchman.sample
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/hooks/fsmonitor-watchman.sample
+481/0: /home/benjamin/Mail/.git/hooks/pre-applypatch.sample
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/hooks/pre-applypatch.sample
+482/0: /home/benjamin/Mail/.git/hooks/pre-receive.sample
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/hooks/pre-receive.sample
+483/0: /home/benjamin/Mail/.git/hooks/prepare-commit-msg.sample
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/hooks/prepare-commit-msg.sample
+484/0: /home/benjamin/Mail/.git/hooks/pre-commit.sample
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/hooks/pre-commit.sample
+485/0: /home/benjamin/Mail/.git/hooks/pre-push.sample
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/hooks/pre-push.sample
+486/0: /home/benjamin/Mail/.git/hooks/post-update.sample
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/hooks/post-update.sample
+487/0: /home/benjamin/Mail/.git/hooks/pre-merge-commit.sample
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/hooks/pre-merge-commit.sample
+488/0: /home/benjamin/Mail/.git/hooks/sendemail-validate.sample
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/hooks/sendemail-validate.sample
+489/0: /home/benjamin/Mail/.git/hooks/push-to-checkout.sample
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/hooks/push-to-checkout.sample
+490/0: /home/benjamin/Mail/.git/hooks/commit-msg.sample
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/hooks/commit-msg.sample
+491/0: /home/benjamin/Mail/.git/hooks/update.sample
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/hooks/update.sample
+492/0: /home/benjamin/Mail/.git/info/refs
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/info/refs
+493/0: /home/benjamin/Mail/.git/info/exclude
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/info/exclude
+494/0: /home/benjamin/Mail/.git/refs/heads/main
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/refs/heads/main
+495/0: /home/benjamin/Mail/.git/objects/8b/05aae3308e6c85132eed27896bc2b463d2ea36
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/objects/8b/05aae3308e6c85132eed27896bc2b463d2ea36
+496/0: /home/benjamin/Mail/.git/objects/7e/a1e79b103070819f3c8361abf90e774222eb9f
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/objects/7e/a1e79b103070819f3c8361abf90e774222eb9f
+497/0: /home/benjamin/Mail/.git/objects/b6/38318e911855fda8ffbfe8385448bca0602943
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/objects/b6/38318e911855fda8ffbfe8385448bca0602943
+498/0: /home/benjamin/Mail/.git/objects/77/0def793ba0ea37f838a2e3922c13ecaa058dad
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/objects/77/0def793ba0ea37f838a2e3922c13ecaa058dad
+499/0: /home/benjamin/Mail/.git/objects/c4/419ba34d9fee16052cf344de9a2063078724d6
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/objects/c4/419ba34d9fee16052cf344de9a2063078724d6
+500/0: /home/benjamin/Mail/.git/objects/14/08e3472d5de7f5871766f3bc5cc1552904e6f9
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/objects/14/08e3472d5de7f5871766f3bc5cc1552904e6f9
+501/0: /home/benjamin/Mail/.git/objects/dc/820e6f2569bac8a52c0a1ed42600c789188349
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/objects/dc/820e6f2569bac8a52c0a1ed42600c789188349
+502/0: /home/benjamin/Mail/.git/objects/pack/pack-614fbd2e6b71393cf96920e66b4173a5198fc70f.pack
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/objects/pack/pack-614fbd2e6b71393cf96920e66b4173a5198fc70f.pack
+503/0: /home/benjamin/Mail/.git/objects/pack/pack-614fbd2e6b71393cf96920e66b4173a5198fc70f.idx
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/objects/pack/pack-614fbd2e6b71393cf96920e66b4173a5198fc70f.idx
+504/0: /home/benjamin/Mail/.git/objects/pack/pack-614fbd2e6b71393cf96920e66b4173a5198fc70f.rev
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/objects/pack/pack-614fbd2e6b71393cf96920e66b4173a5198fc70f.rev
+505/0: /home/benjamin/Mail/.git/objects/pack/pack-16fc89ef396941abce825e1224bf318469f8f543.pack
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/objects/pack/pack-16fc89ef396941abce825e1224bf318469f8f543.pack
+506/0: /home/benjamin/Mail/.git/objects/pack/pack-16fc89ef396941abce825e1224bf318469f8f543.idx
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/objects/pack/pack-16fc89ef396941abce825e1224bf318469f8f543.idx
+507/0: /home/benjamin/Mail/.git/objects/pack/pack-16fc89ef396941abce825e1224bf318469f8f543.rev
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/objects/pack/pack-16fc89ef396941abce825e1224bf318469f8f543.rev
+508/0: /home/benjamin/Mail/.git/objects/pack/multi-pack-index
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/objects/pack/multi-pack-index
+509/0: /home/benjamin/Mail/.git/objects/info/commit-graphs/commit-graph-chain
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/objects/info/commit-graphs/commit-graph-chain
+510/0: /home/benjamin/Mail/.git/objects/info/commit-graphs/graph-61e7ae16404494fcf61cd62e1ac840e461a8562b.graph
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/objects/info/commit-graphs/graph-61e7ae16404494fcf61cd62e1ac840e461a8562b.graph
+511/0: /home/benjamin/Mail/.git/objects/info/packs
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/objects/info/packs
+512/0: /home/benjamin/Mail/.git/logs/refs/heads/main
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/logs/refs/heads/main
+513/0: /home/benjamin/Mail/.git/logs/HEAD
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/logs/HEAD
+514/0: /home/benjamin/Mail/.git/index
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/index
+515/0: /home/benjamin/Mail/.git/description
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/description
+516/0: /home/benjamin/Mail/.git/config
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/config
+517/0: /home/benjamin/Mail/.git/HEAD
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/HEAD
+518/0: /home/benjamin/Mail/.git/COMMIT_EDITMSG
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/COMMIT_EDITMSG
+519/0: /home/benjamin/Mail/.git/opencode
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/opencode
+520/0: /home/benjamin/Mail/.git/ORIG_HEAD
+Note: Ignoring non-mail file: /home/benjamin/Mail/.git/ORIG_HEAD
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.mbsyncstate
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.[Gmail]-Spam/.mbsyncstate
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.[Gmail]-Spam/.mbsyncstate
+521/0: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.[Gmail]-Spam/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.[Gmail]-Spam/.uidvalidity
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Drafts/.mbsyncstate
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Drafts/.mbsyncstate
+522/0: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Drafts/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Drafts/.uidvalidity
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Trash/.mbsyncstate
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Trash/.mbsyncstate
+523/0: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Trash/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Trash/.uidvalidity
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.[Gmail]-Trash/.mbsyncstate
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.[Gmail]-Trash/.mbsyncstate
+524/0: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.[Gmail]-Trash/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.[Gmail]-Trash/.uidvalidity
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.[Imap]-Trash/.mbsyncstate
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.[Imap]-Trash/.mbsyncstate
+525/0: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.[Imap]-Trash/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.[Imap]-Trash/.uidvalidity
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.CrazyTown/.mbsyncstate
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.CrazyTown/.mbsyncstate
+526/0: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.CrazyTown/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.CrazyTown/.uidvalidity
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.Letters/.mbsyncstate
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.Letters/.mbsyncstate
+527/0: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.Letters/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.Letters/.uidvalidity
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.Important/.mbsyncstate
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.Important/.mbsyncstate
+528/0: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.Important/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.Important/.uidvalidity
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Sent/.mbsyncstate
+529/0: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Sent/.mbsyncstate.new
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Sent/.mbsyncstate.new
+530/0: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Sent/.mbsyncstate.journal
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Sent/.mbsyncstate.journal
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Sent/.mbsyncstate
+531/0: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Sent/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Sent/.uidvalidity
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.EuroTrip/.mbsyncstate
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.EuroTrip/.mbsyncstate
+532/0: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.EuroTrip/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.EuroTrip/.uidvalidity
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Archive/.mbsyncstate
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Archive/.mbsyncstate
+533/0: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Archive/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Archive/.uidvalidity
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.[Imap]-Spam/.mbsyncstate
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.[Imap]-Spam/.mbsyncstate
+534/0: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.[Imap]-Spam/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.Labels.[Imap]-Spam/.uidvalidity
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.mbsyncstate
+535/0: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/mbsyncstate/.uidvalidity
+536/0: /home/benjamin/Mail/.logos-backup-20260706/phase3/canonical_all.msgids.sorted
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase3/canonical_all.msgids.sorted
+537/0: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_Important.msgids.tsv
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_Important.msgids.tsv
+538/0: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_Letters.msgids.tsv
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_Letters.msgids.tsv
+539/0: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_EuroTrip.msgids.tsv
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_EuroTrip.msgids.tsv
+540/0: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_CrazyTown.msgids.tsv
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_CrazyTown.msgids.tsv
+541/0: /home/benjamin/Mail/.logos-backup-20260706/phase3/canonical_Archive.msgids.tsv
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase3/canonical_Archive.msgids.tsv
+542/0: /home/benjamin/Mail/.logos-backup-20260706/phase3/canonical_Sent.msgids.tsv
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase3/canonical_Sent.msgids.tsv
+543/0: /home/benjamin/Mail/.logos-backup-20260706/phase3/canonical_Drafts.msgids.tsv
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase3/canonical_Drafts.msgids.tsv
+544/0: /home/benjamin/Mail/.logos-backup-20260706/phase3/canonical_Trash.msgids.tsv
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase3/canonical_Trash.msgids.tsv
+545/0: /home/benjamin/Mail/.logos-backup-20260706/phase3/canonical_INBOX_root.msgids.tsv
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase3/canonical_INBOX_root.msgids.tsv
+546/0: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_Important.msgids.sorted
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_Important.msgids.sorted
+547/0: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_Important.label-only.msgids
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_Important.label-only.msgids
+548/0: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_Letters.msgids.sorted
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_Letters.msgids.sorted
+549/0: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_Letters.label-only.msgids
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_Letters.label-only.msgids
+550/0: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_EuroTrip.msgids.sorted
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_EuroTrip.msgids.sorted
+551/0: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_EuroTrip.label-only.msgids
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_EuroTrip.label-only.msgids
+552/0: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_CrazyTown.msgids.sorted
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_CrazyTown.msgids.sorted
+553/0: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_CrazyTown.label-only.msgids
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase3/Labels_CrazyTown.label-only.msgids
+554/0: /home/benjamin/Mail/.logos-backup-20260706/phase5/trash-dup-anomalies.txt
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase5/trash-dup-anomalies.txt
+555/0: /home/benjamin/Mail/.logos-backup-20260706/phase5/trash-dup-uids.txt
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase5/trash-dup-uids.txt
+556/0: /home/benjamin/Mail/.logos-backup-20260706/phase5/trash-dup-pairs.tsv
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase5/trash-dup-pairs.tsv
+557/0: /home/benjamin/Mail/.logos-backup-20260706/phase5/trash-dup-pairs-raw.txt
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase5/trash-dup-pairs-raw.txt
+558/0: /home/benjamin/Mail/.logos-backup-20260706/phase5/trash-dup-analysis.tsv
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/phase5/trash-dup-analysis.tsv
+559/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T051326Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T051326Z.log
+560/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T051252Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T051252Z.log
+561/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T051252Z.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T051252Z.jsonl
+562/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-dry-run-20260706T050220Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-dry-run-20260706T050220Z.log
+563/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T050728Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T050728Z.log
+564/0: /home/benjamin/Mail/.logos-backup-20260706/purge/dry-run-plan-20260706T050220Z.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/dry-run-plan-20260706T050220Z.json
+565/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T051035Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T051035Z.log
+566/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T050728Z.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T050728Z.jsonl
+567/0: /home/benjamin/Mail/.logos-backup-20260706/purge/label-set.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/label-set.json
+568/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T050854Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T050854Z.log
+569/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T050854Z.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T050854Z.jsonl
+570/0: /home/benjamin/Mail/.logos-backup-20260706/purge/logos-purge-gmail.py
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/logos-purge-gmail.py
+571/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T051035Z.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T051035Z.jsonl
+572/0: /home/benjamin/Mail/.logos-backup-20260706/purge/logos-purge-drive.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/logos-purge-drive.sh
+573/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T051326Z.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T051326Z.jsonl
+574/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T051503Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T051503Z.log
+575/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T051503Z.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T051503Z.jsonl
+576/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T051547Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T051547Z.log
+577/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T051547Z.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T051547Z.jsonl
+578/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T051457Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T051457Z.log
+579/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T051457Z.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T051457Z.jsonl
+580/0: /home/benjamin/Mail/.logos-backup-20260706/purge/drive.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/drive.log
+581/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T052259Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T052259Z.log
+582/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T052259Z.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T052259Z.jsonl
+583/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T053009Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T053009Z.log
+584/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T053009Z.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T053009Z.jsonl
+585/0: /home/benjamin/Mail/.logos-backup-20260706/purge/empty-trash.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/empty-trash.log
+586/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T060714Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T060714Z.log
+587/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T060714Z.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T060714Z.jsonl
+588/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T060715Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-execute-20260706T060715Z.log
+589/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T060715Z.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T060715Z.jsonl
+590/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-empty-trash-20260706T060838Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-empty-trash-20260706T060838Z.log
+591/0: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T060838Z.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/purge-decisions-20260706T060838Z.jsonl
+592/0: /home/benjamin/Mail/.logos-backup-20260706/purge/probe.py
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/probe.py
+593/0: /home/benjamin/Mail/.logos-backup-20260706/purge/empty-trash-incremental.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/empty-trash-incremental.log
+594/0: /home/benjamin/Mail/.logos-backup-20260706/purge/logos-empty-trash-incremental.py
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/purge/logos-empty-trash-incremental.py
+595/0: /home/benjamin/Mail/.logos-backup-20260706/reclone/logos-reclone.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/reclone/logos-reclone.sh
+596/0: /home/benjamin/Mail/.logos-backup-20260706/reclone/reclone-20260706T045520Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/reclone/reclone-20260706T045520Z.log
+597/0: /home/benjamin/Mail/.logos-backup-20260706/reclone/reclone-20260706T045444Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/reclone/reclone-20260706T045444Z.log
+598/0: /home/benjamin/Mail/.logos-backup-20260706/reclone/bridge-3.25-test.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/reclone/bridge-3.25-test.log
+599/0: /home/benjamin/Mail/.logos-backup-20260706/reclone/hm-switch.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/reclone/hm-switch.log
+600/0: /home/benjamin/Mail/.logos-backup-20260706/reclone/notmuch-reindex.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/reclone/notmuch-reindex.log
+601/0: /home/benjamin/Mail/.logos-backup-20260706/reclone/reclone-live.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/reclone/reclone-live.log
+602/0: /home/benjamin/Mail/.logos-backup-20260706/reclone/reclone-20260706T160927Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/reclone/reclone-20260706T160927Z.log
+603/0: /home/benjamin/Mail/.logos-backup-20260706/reclone/pre-reclone-snapshot-20260706T160927Z.txt
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/reclone/pre-reclone-snapshot-20260706T160927Z.txt
+604/0: /home/benjamin/Mail/.logos-backup-20260706/reclone/vault-rebuild-live.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/reclone/vault-rebuild-live.log
+605/0: /home/benjamin/Mail/.logos-backup-20260706/reclone/logos-bridge-vault-rebuild.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/reclone/logos-bridge-vault-rebuild.sh
+606/0: /home/benjamin/Mail/.logos-backup-20260706/reclone/vault-rebuild-20260706T131248Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/reclone/vault-rebuild-20260706T131248Z.log
+607/0: /home/benjamin/Mail/.logos-backup-20260706/reclone/vault-rebuild-20260706T130200Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/reclone/vault-rebuild-20260706T130200Z.log
+608/0: /home/benjamin/Mail/.logos-backup-20260706/reclone/logos-server-state.py
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/reclone/logos-server-state.py
+609/0: /home/benjamin/Mail/.logos-backup-20260706/reclone/RUNBOOK.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/reclone/RUNBOOK.md
+610/0: /home/benjamin/Mail/.logos-backup-20260706/reclone/reclone-20260706T130201Z.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/reclone/reclone-20260706T130201Z.log
+611/0: /home/benjamin/Mail/.logos-backup-20260706/reclone/pre-reclone-snapshot-20260706T130201Z.txt
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/reclone/pre-reclone-snapshot-20260706T130201Z.txt
+612/0: /home/benjamin/Mail/.logos-backup-20260706/reclone/notmuch-reindex2.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/reclone/notmuch-reindex2.log
+613/0: /home/benjamin/Mail/.logos-backup-20260706/reclone/repull.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/reclone/repull.log
+614/0: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/local-msgids.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/local-msgids.json
+615/0: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/imap-crosscheck.py
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/imap-crosscheck.py
+616/0: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/crosscheck-results.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/crosscheck-results.json
+617/0: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/imap-broadsearch.py
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/imap-broadsearch.py
+618/0: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/imap-broadsearch2.py
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/imap-broadsearch2.py
+619/0: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/mailbox-counts.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/mailbox-counts.json
+620/0: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/imap-fullcheck.py
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/imap-fullcheck.py
+621/0: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/final-disposition.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/final-disposition.json
+622/0: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/imap-allmail.py
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/imap-allmail.py
+623/0: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/allmail-check.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/allmail-check.json
+624/0: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/imap-labelcheck.py
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/imap-labelcheck.py
+625/0: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/labelcheck.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/precheck/labelcheck.json
+626/0: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/mbsync-dryrun-trash-archive.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-826-phase7/mbsync-dryrun-trash-archive.log
+627/0: /home/benjamin/Mail/.logos-backup-20260706/task-828/pre-repair-snapshot.txt
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-828/pre-repair-snapshot.txt
+628/0: /home/benjamin/Mail/.logos-backup-20260706/task-828/imap-probe.py
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-828/imap-probe.py
+629/0: /home/benjamin/Mail/.logos-backup-20260706/task-828/imap-probe.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-828/imap-probe.log
+630/0: /home/benjamin/Mail/.logos-backup-20260706/task-828/imap-verb.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-828/imap-verb.log
+631/0: /home/benjamin/Mail/.logos-backup-20260706/task-828/post-repair-verification.txt
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-828/post-repair-verification.txt
+632/0: /home/benjamin/Mail/.logos-backup-20260706/task-828/decision-log.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-828/decision-log.jsonl
+633/0: /home/benjamin/Mail/.logos-backup-20260706/task-828/repair-uid-collisions.py
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-828/repair-uid-collisions.py
+634/0: /home/benjamin/Mail/.logos-backup-20260706/task-828/final-verify.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-828/final-verify.log
+635/0: /home/benjamin/Mail/.logos-backup-20260706/task-828/final-verify.py
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-828/final-verify.py
+636/0: /home/benjamin/Mail/.logos-backup-20260706/task-828/handoff-to-826.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-backup-20260706/task-828/handoff-to-826.md
+637/0: /home/benjamin/Mail/.logos-presync-20260712T132632Z/Logos-maildir.tar.gz
+Note: Ignoring non-mail file: /home/benjamin/Mail/.logos-presync-20260712T132632Z/Logos-maildir.tar.gz
+638/0: /home/benjamin/Mail/.memory/00-Inbox/README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.memory/00-Inbox/README.md
+639/0: /home/benjamin/Mail/.memory/10-Memories/README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.memory/10-Memories/README.md
+640/0: /home/benjamin/Mail/.memory/20-Indices/README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.memory/20-Indices/README.md
+641/0: /home/benjamin/Mail/.memory/20-Indices/index.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.memory/20-Indices/index.md
+642/0: /home/benjamin/Mail/.memory/30-Templates/README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.memory/30-Templates/README.md
+643/0: /home/benjamin/Mail/.memory/30-Templates/memory-template.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.memory/30-Templates/memory-template.md
+644/0: /home/benjamin/Mail/.memory/README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/.memory/README.md
+645/0: /home/benjamin/Mail/.syncstate-backups/mbsyncstate-20260706T021944Z.tar.gz
+Note: Ignoring non-mail file: /home/benjamin/Mail/.syncstate-backups/mbsyncstate-20260706T021944Z.tar.gz
+646/0: /home/benjamin/Mail/Contacts/contacts.vcf
+Note: Ignoring non-mail file: /home/benjamin/Mail/Contacts/contacts.vcf
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Gmail/.All_Mail/.mbsyncstate
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Gmail/.CrazyTown/.mbsyncstate
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Gmail/.Drafts/.mbsyncstate
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Gmail/.EuroTrip/.mbsyncstate
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Gmail/.Letters/.mbsyncstate
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Gmail/.Sent/.mbsyncstate
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Gmail/.Spam/.mbsyncstate
+647/0: /home/benjamin/Mail/Gmail/.Spam/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/Gmail/.Spam/.uidvalidity
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/Gmail/.Spam/.mbsyncstate
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Gmail/.mbsyncstate
+648/0: /home/benjamin/Mail/Gmail/cur/1783965340.3234226_1.hamsa,U=5209:2,S
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/Gmail/.mbsyncstate
+649/0: /home/benjamin/Mail/Gmail/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/Gmail/.uidvalidity
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Logos/.Archive/.mbsyncstate
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/Logos/.Archive/.mbsyncstate
+650/0: /home/benjamin/Mail/Logos/.Archive/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/Logos/.Archive/.uidvalidity
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Logos/.Drafts/.mbsyncstate
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Logos/.Labels.CrazyTown/.mbsyncstate
+651/0: /home/benjamin/Mail/Logos/.Labels.CrazyTown/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/Logos/.Labels.CrazyTown/.uidvalidity
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/Logos/.Labels.CrazyTown/.mbsyncstate
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Logos/.Labels.EuroTrip/.mbsyncstate
+652/0: /home/benjamin/Mail/Logos/.Labels.EuroTrip/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/Logos/.Labels.EuroTrip/.uidvalidity
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/Logos/.Labels.EuroTrip/.mbsyncstate
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Logos/.Labels.Important/.mbsyncstate
+653/0: /home/benjamin/Mail/Logos/.Labels.Important/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/Logos/.Labels.Important/.uidvalidity
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/Logos/.Labels.Important/.mbsyncstate
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Logos/.Labels.Letters/.mbsyncstate
+654/0: /home/benjamin/Mail/Logos/.Labels.Letters/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/Logos/.Labels.Letters/.uidvalidity
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/Logos/.Labels.Letters/.mbsyncstate
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Logos/.Labels.[Gmail]-Spam/.mbsyncstate
+655/0: /home/benjamin/Mail/Logos/.Labels.[Gmail]-Spam/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/Logos/.Labels.[Gmail]-Spam/.uidvalidity
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/Logos/.Labels.[Gmail]-Spam/.mbsyncstate
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Logos/.Labels.[Gmail]-Trash/.mbsyncstate
+656/0: /home/benjamin/Mail/Logos/.Labels.[Gmail]-Trash/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/Logos/.Labels.[Gmail]-Trash/.uidvalidity
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/Logos/.Labels.[Gmail]-Trash/.mbsyncstate
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Logos/.Labels.[Imap]-Spam/.mbsyncstate
+657/0: /home/benjamin/Mail/Logos/.Labels.[Imap]-Spam/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/Logos/.Labels.[Imap]-Spam/.uidvalidity
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/Logos/.Labels.[Imap]-Spam/.mbsyncstate
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Logos/.Labels.[Imap]-Trash/.mbsyncstate
+658/0: /home/benjamin/Mail/Logos/.Labels.[Imap]-Trash/.uidvalidity
+Note: Ignoring non-mail file: /home/benjamin/Mail/Logos/.Labels.[Imap]-Trash/.uidvalidity
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/Logos/.Labels.[Imap]-Trash/.mbsyncstate
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Logos/.Sent/.mbsyncstate
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Logos/.Trash/.mbsyncstate
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/Logos/.mbsyncstate
+659/0: /home/benjamin/Mail/Wedding/IPHONE_PROPOSED_contacts_review.csv
+Note: Ignoring non-mail file: /home/benjamin/Mail/Wedding/IPHONE_PROPOSED_contacts_review.csv
+660/0: /home/benjamin/Mail/Wedding/IPHONE_REVIEW.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/Wedding/IPHONE_REVIEW.md
+661/0: /home/benjamin/Mail/Wedding/Wedding_Invites_Total.backup-iphone-20260713-160154.xlsx
+Note: Ignoring non-mail file: /home/benjamin/Mail/Wedding/Wedding_Invites_Total.backup-iphone-20260713-160154.xlsx
+662/0: /home/benjamin/Mail/Wedding/Wedding_Invites_Total.xlsx
+Note: Ignoring non-mail file: /home/benjamin/Mail/Wedding/Wedding_Invites_Total.xlsx
+663/0: /home/benjamin/Mail/Wedding/PROPOSED_contacts_review.csv
+Note: Ignoring non-mail file: /home/benjamin/Mail/Wedding/PROPOSED_contacts_review.csv
+664/0: /home/benjamin/Mail/Wedding/REVIEW.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/Wedding/REVIEW.md
+665/0: /home/benjamin/Mail/Wedding/Wedding_Invites_Total.backup-pre-contacts-20260712.xlsx
+Note: Ignoring non-mail file: /home/benjamin/Mail/Wedding/Wedding_Invites_Total.backup-pre-contacts-20260712.xlsx
+666/0: /home/benjamin/Mail/Wedding/Wedding_Invites_Total.backup-round31-131506.xlsx
+Note: Ignoring non-mail file: /home/benjamin/Mail/Wedding/Wedding_Invites_Total.backup-round31-131506.xlsx
+667/0: /home/benjamin/Mail/Wedding/contacts.csv
+Note: Ignoring non-mail file: /home/benjamin/Mail/Wedding/contacts.csv
+668/0: /home/benjamin/Mail/docs/README.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/docs/README.md
+669/0: /home/benjamin/Mail/docs/usage-guide.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/docs/usage-guide.md
+670/0: /home/benjamin/Mail/docs/troubleshooting.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/docs/troubleshooting.md
+671/0: /home/benjamin/Mail/docs/architecture.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/docs/architecture.md
+672/0: /home/benjamin/Mail/docs/email-command.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/docs/email-command.md
+673/0: /home/benjamin/Mail/email_plans/cleanup_2026-02-17_001.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/email_plans/cleanup_2026-02-17_001.json
+674/0: /home/benjamin/Mail/email_reports/.return-meta.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/email_reports/.return-meta.json
+675/0: /home/benjamin/Mail/specs/tmp/claude-tts-notify.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/tmp/claude-tts-notify.log
+676/0: /home/benjamin/Mail/specs/029_gmail_backlog_purge_and_ongoing_hygiene/reports/01_backlog-purge-seed.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/029_gmail_backlog_purge_and_ongoing_hygiene/reports/01_backlog-purge-seed.md
+(D) add_files, pass 1: explicitly ignoring /home/benjamin/Mail/specs/035_decide_email_stack_architecture_direction/.lock
+677/0: /home/benjamin/Mail/specs/035_decide_email_stack_architecture_direction/reports/01_teammate-c-findings.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/035_decide_email_stack_architecture_direction/reports/01_teammate-c-findings.md
+678/0: /home/benjamin/Mail/specs/035_decide_email_stack_architecture_direction/reports/01_teammate-d-findings.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/035_decide_email_stack_architecture_direction/reports/01_teammate-d-findings.md
+679/0: /home/benjamin/Mail/specs/035_decide_email_stack_architecture_direction/reports/01_teammate-b-findings.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/035_decide_email_stack_architecture_direction/reports/01_teammate-b-findings.md
+680/0: /home/benjamin/Mail/specs/035_decide_email_stack_architecture_direction/reports/01_teammate-a-findings.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/035_decide_email_stack_architecture_direction/reports/01_teammate-a-findings.md
+(D) add_files, pass 2: explicitly ignoring /home/benjamin/Mail/specs/035_decide_email_stack_architecture_direction/.lock
+681/0: /home/benjamin/Mail/specs/035_decide_email_stack_architecture_direction/.return-meta.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/035_decide_email_stack_architecture_direction/.return-meta.json
+682/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-accumulator-logos-inbox-20260705T164650.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-accumulator-logos-inbox-20260705T164650.jsonl
+683/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-logos-inbox-20260705T000000.sh
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-logos-inbox-20260705T000000.sh
+684/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-accumulator-logos-inbox.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-accumulator-logos-inbox.jsonl
+685/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-accumulator-logos-inbox.jsonl.progress.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-accumulator-logos-inbox.jsonl.progress.log
+686/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/candidate-manifest.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/candidate-manifest.jsonl
+687/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-logos-inbox-20260705T172429-split-01.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-logos-inbox-20260705T172429-split-01.jsonl.state.jsonl
+688/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-logos-inbox-20260705T172429.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-logos-inbox-20260705T172429.jsonl
+689/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-logos-inbox-20260705T172429-split-01.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-logos-inbox-20260705T172429-split-01.jsonl
+690/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-accumulator-logos-inbox-20260705T164650.jsonl.progress.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-accumulator-logos-inbox-20260705T164650.jsonl.progress.log
+691/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-accumulator-logos-inbox-20260705T164650.jsonl.dedup.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-accumulator-logos-inbox-20260705T164650.jsonl.dedup.jsonl
+692/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-logos-inbox-20260705T172429-split-02.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-logos-inbox-20260705T172429-split-02.jsonl
+693/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-logos-inbox-20260705T172429-split-03.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-logos-inbox-20260705T172429-split-03.jsonl
+694/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-logos-inbox-20260705T172429-split-04.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-logos-inbox-20260705T172429-split-04.jsonl
+695/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-logos-inbox-20260705T172429-split-02.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-logos-inbox-20260705T172429-split-02.jsonl.state.jsonl
+696/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-logos-inbox-20260705T172429-split-03.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-logos-inbox-20260705T172429-split-03.jsonl.state.jsonl
+697/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-logos-inbox-20260705T172429-split-04.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-logos-inbox-20260705T172429-split-04.jsonl.state.jsonl
+698/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-final-20260704T071858.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-final-20260704T071858.jsonl
+699/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-accumulator-20260704T071858.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-accumulator-20260704T071858.jsonl
+700/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-accumulator-20260704T071858.jsonl.progress.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-accumulator-20260704T071858.jsonl.progress.log
+701/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-accumulator-20260704T071858.jsonl.DONE
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/sweep-accumulator-20260704T071858.jsonl.DONE
+702/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858.jsonl
+703/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-01.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-01.jsonl
+704/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-02.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-02.jsonl
+705/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-03.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-03.jsonl
+706/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-04.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-04.jsonl
+707/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-05.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-05.jsonl
+708/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-06.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-06.jsonl
+709/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-07.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-07.jsonl
+710/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-08.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-08.jsonl
+711/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-09.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-09.jsonl
+712/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-10.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-10.jsonl
+713/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-11.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-11.jsonl
+714/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-12.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-12.jsonl
+715/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-13.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-13.jsonl
+716/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-14.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-14.jsonl
+717/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-01.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-01.jsonl.state.jsonl
+718/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-02.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-02.jsonl.state.jsonl
+719/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-03.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-03.jsonl.state.jsonl
+720/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-04.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-04.jsonl.state.jsonl
+721/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-05.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-05.jsonl.state.jsonl
+722/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-06.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-06.jsonl.state.jsonl
+723/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-07.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-07.jsonl.state.jsonl
+724/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-08.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-08.jsonl.state.jsonl
+725/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-09.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-09.jsonl.state.jsonl
+726/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-10.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-10.jsonl.state.jsonl
+727/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-11.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-11.jsonl.state.jsonl
+728/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-12.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-12.jsonl.state.jsonl
+729/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-13.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-13.jsonl.state.jsonl
+730/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-14.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-all-20260704T071858-split-14.jsonl.state.jsonl
+731/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-06.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-06.jsonl.state.jsonl
+732/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-01.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-01.jsonl
+733/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-04.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-04.jsonl.state.jsonl
+734/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858.jsonl
+735/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-03.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-03.jsonl.state.jsonl
+736/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-02.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-02.jsonl
+737/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-03.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-03.jsonl
+738/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-04.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-04.jsonl
+739/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-05.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-05.jsonl
+740/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-06.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-06.jsonl
+741/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-01.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-01.jsonl.state.jsonl
+742/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-02.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-02.jsonl.state.jsonl
+743/0: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-05.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/072_email_workflow_infrastructure_prereqs/manifests/approved-tail-20260704T071858-split-05.jsonl.state.jsonl
+744/0: /home/benjamin/Mail/specs/028_fix_pass_initialization_protonmail_bridge/reports/research-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/028_fix_pass_initialization_protonmail_bridge/reports/research-001.md
+745/0: /home/benjamin/Mail/specs/028_fix_pass_initialization_protonmail_bridge/reports/research-002.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/028_fix_pass_initialization_protonmail_bridge/reports/research-002.md
+746/0: /home/benjamin/Mail/specs/028_fix_pass_initialization_protonmail_bridge/reports/research-003.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/028_fix_pass_initialization_protonmail_bridge/reports/research-003.md
+747/0: /home/benjamin/Mail/specs/028_fix_pass_initialization_protonmail_bridge/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/028_fix_pass_initialization_protonmail_bridge/plans/implementation-001.md
+748/0: /home/benjamin/Mail/specs/028_fix_pass_initialization_protonmail_bridge/plans/implementation-002.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/028_fix_pass_initialization_protonmail_bridge/plans/implementation-002.md
+749/0: /home/benjamin/Mail/specs/028_fix_pass_initialization_protonmail_bridge/plans/implementation-003.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/028_fix_pass_initialization_protonmail_bridge/plans/implementation-003.md
+750/0: /home/benjamin/Mail/specs/028_fix_pass_initialization_protonmail_bridge/summaries/implementation-summary-20260220.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/028_fix_pass_initialization_protonmail_bridge/summaries/implementation-summary-20260220.md
+751/0: /home/benjamin/Mail/specs/archive/013_email_plan_format/reports/research-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/013_email_plan_format/reports/research-001.md
+752/0: /home/benjamin/Mail/specs/archive/013_email_plan_format/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/013_email_plan_format/plans/implementation-001.md
+753/0: /home/benjamin/Mail/specs/archive/013_email_plan_format/summaries/implementation-summary-20260218.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/013_email_plan_format/summaries/implementation-summary-20260218.md
+754/0: /home/benjamin/Mail/specs/archive/014_remove_email_approve_mode/reports/research-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/014_remove_email_approve_mode/reports/research-001.md
+755/0: /home/benjamin/Mail/specs/archive/014_remove_email_approve_mode/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/014_remove_email_approve_mode/plans/implementation-001.md
+756/0: /home/benjamin/Mail/specs/archive/014_remove_email_approve_mode/summaries/implementation-summary-20260218.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/014_remove_email_approve_mode/summaries/implementation-summary-20260218.md
+757/0: /home/benjamin/Mail/specs/archive/015_email_preferences_system/reports/research-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/015_email_preferences_system/reports/research-001.md
+758/0: /home/benjamin/Mail/specs/archive/015_email_preferences_system/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/015_email_preferences_system/plans/implementation-001.md
+759/0: /home/benjamin/Mail/specs/archive/015_email_preferences_system/plans/implementation-002.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/015_email_preferences_system/plans/implementation-002.md
+760/0: /home/benjamin/Mail/specs/archive/015_email_preferences_system/summaries/implementation-summary-20260218.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/015_email_preferences_system/summaries/implementation-summary-20260218.md
+761/0: /home/benjamin/Mail/specs/archive/016_email_argument_refactor/reports/research-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/016_email_argument_refactor/reports/research-001.md
+762/0: /home/benjamin/Mail/specs/archive/016_email_argument_refactor/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/016_email_argument_refactor/plans/implementation-001.md
+763/0: /home/benjamin/Mail/specs/archive/016_email_argument_refactor/summaries/implementation-summary-20260218.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/016_email_argument_refactor/summaries/implementation-summary-20260218.md
+764/0: /home/benjamin/Mail/specs/archive/017_email_cleanup_logos_20260218/plans/cleanup-001.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/017_email_cleanup_logos_20260218/plans/cleanup-001.json
+765/0: /home/benjamin/Mail/specs/archive/017_email_cleanup_logos_20260218/plans/cleanup-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/017_email_cleanup_logos_20260218/plans/cleanup-001.md
+766/0: /home/benjamin/Mail/specs/archive/017_email_cleanup_logos_20260218/plans/cleanup-002.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/017_email_cleanup_logos_20260218/plans/cleanup-002.md
+767/0: /home/benjamin/Mail/specs/archive/017_email_cleanup_logos_20260218/plans/cleanup-002.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/017_email_cleanup_logos_20260218/plans/cleanup-002.json
+768/0: /home/benjamin/Mail/specs/archive/017_email_cleanup_logos_20260218/summaries/implementation-summary-20260218.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/017_email_cleanup_logos_20260218/summaries/implementation-summary-20260218.md
+769/0: /home/benjamin/Mail/specs/archive/017_email_cleanup_logos_20260218/summaries/execution-20260218.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/017_email_cleanup_logos_20260218/summaries/execution-20260218.json
+770/0: /home/benjamin/Mail/specs/archive/017_email_cleanup_logos_20260218/data/envelopes.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/017_email_cleanup_logos_20260218/data/envelopes.json
+771/0: /home/benjamin/Mail/specs/archive/018_email_preference_learning/reports/research-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/018_email_preference_learning/reports/research-001.md
+772/0: /home/benjamin/Mail/specs/archive/018_email_preference_learning/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/018_email_preference_learning/plans/implementation-001.md
+773/0: /home/benjamin/Mail/specs/archive/018_email_preference_learning/summaries/implementation-summary-20260218.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/018_email_preference_learning/summaries/implementation-summary-20260218.md
+774/0: /home/benjamin/Mail/specs/archive/019_email_preference_docs/reports/research-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/019_email_preference_docs/reports/research-001.md
+775/0: /home/benjamin/Mail/specs/archive/019_email_preference_docs/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/019_email_preference_docs/plans/implementation-001.md
+776/0: /home/benjamin/Mail/specs/archive/019_email_preference_docs/summaries/implementation-summary-20260218.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/019_email_preference_docs/summaries/implementation-summary-20260218.md
+777/0: /home/benjamin/Mail/specs/archive/001_research_himalaya_email_system_documentation/reports/research-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/001_research_himalaya_email_system_documentation/reports/research-001.md
+778/0: /home/benjamin/Mail/specs/archive/001_research_himalaya_email_system_documentation/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/001_research_himalaya_email_system_documentation/plans/implementation-001.md
+779/0: /home/benjamin/Mail/specs/archive/001_research_himalaya_email_system_documentation/plans/implementation-002.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/001_research_himalaya_email_system_documentation/plans/implementation-002.md
+780/0: /home/benjamin/Mail/specs/archive/001_research_himalaya_email_system_documentation/summaries/implementation-summary-20260217.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/001_research_himalaya_email_system_documentation/summaries/implementation-summary-20260217.md
+781/0: /home/benjamin/Mail/specs/archive/003_update_documentation_with_neovim_keymappings/reports/research-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/003_update_documentation_with_neovim_keymappings/reports/research-001.md
+782/0: /home/benjamin/Mail/specs/archive/003_update_documentation_with_neovim_keymappings/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/003_update_documentation_with_neovim_keymappings/plans/implementation-001.md
+783/0: /home/benjamin/Mail/specs/archive/003_update_documentation_with_neovim_keymappings/summaries/implementation-summary-20260217.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/003_update_documentation_with_neovim_keymappings/summaries/implementation-summary-20260217.md
+784/0: /home/benjamin/Mail/specs/archive/002_research_ai_email_cleanup_best_practices/reports/research-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/002_research_ai_email_cleanup_best_practices/reports/research-001.md
+785/0: /home/benjamin/Mail/specs/archive/002_research_ai_email_cleanup_best_practices/reports/research-002.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/002_research_ai_email_cleanup_best_practices/reports/research-002.md
+786/0: /home/benjamin/Mail/specs/archive/002_research_ai_email_cleanup_best_practices/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/002_research_ai_email_cleanup_best_practices/plans/implementation-001.md
+787/0: /home/benjamin/Mail/specs/archive/002_research_ai_email_cleanup_best_practices/plans/implementation-002.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/002_research_ai_email_cleanup_best_practices/plans/implementation-002.md
+788/0: /home/benjamin/Mail/specs/archive/002_research_ai_email_cleanup_best_practices/summaries/implementation-summary-20260218.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/002_research_ai_email_cleanup_best_practices/summaries/implementation-summary-20260218.md
+789/0: /home/benjamin/Mail/specs/archive/004_refactor_email_workflow_task_integration/reports/research-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/004_refactor_email_workflow_task_integration/reports/research-001.md
+790/0: /home/benjamin/Mail/specs/archive/004_refactor_email_workflow_task_integration/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/004_refactor_email_workflow_task_integration/plans/implementation-001.md
+791/0: /home/benjamin/Mail/specs/archive/004_refactor_email_workflow_task_integration/plans/implementation-002.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/004_refactor_email_workflow_task_integration/plans/implementation-002.md
+792/0: /home/benjamin/Mail/specs/archive/004_refactor_email_workflow_task_integration/summaries/implementation-summary-20260218.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/004_refactor_email_workflow_task_integration/summaries/implementation-summary-20260218.md
+793/0: /home/benjamin/Mail/specs/archive/005_email_cleanup_logos_20260217/plans/cleanup-001.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/005_email_cleanup_logos_20260217/plans/cleanup-001.json
+794/0: /home/benjamin/Mail/specs/archive/005_email_cleanup_logos_20260217/plans/cleanup-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/005_email_cleanup_logos_20260217/plans/cleanup-001.md
+795/0: /home/benjamin/Mail/specs/archive/005_email_cleanup_logos_20260217/summaries/execution-20260217.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/005_email_cleanup_logos_20260217/summaries/execution-20260217.json
+796/0: /home/benjamin/Mail/specs/archive/006_convert_cleanup_json_to_markdown/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/006_convert_cleanup_json_to_markdown/plans/implementation-001.md
+797/0: /home/benjamin/Mail/specs/archive/006_convert_cleanup_json_to_markdown/summaries/implementation-summary-20260217.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/006_convert_cleanup_json_to_markdown/summaries/implementation-summary-20260217.md
+798/0: /home/benjamin/Mail/specs/archive/007_add_markdown_report_to_email_workflow/reports/research-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/007_add_markdown_report_to_email_workflow/reports/research-001.md
+799/0: /home/benjamin/Mail/specs/archive/007_add_markdown_report_to_email_workflow/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/007_add_markdown_report_to_email_workflow/plans/implementation-001.md
+800/0: /home/benjamin/Mail/specs/archive/007_add_markdown_report_to_email_workflow/summaries/implementation-summary-20260217.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/007_add_markdown_report_to_email_workflow/summaries/implementation-summary-20260217.md
+801/0: /home/benjamin/Mail/specs/archive/008_fix_email_message_limits/reports/research-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/008_fix_email_message_limits/reports/research-001.md
+802/0: /home/benjamin/Mail/specs/archive/008_fix_email_message_limits/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/008_fix_email_message_limits/plans/implementation-001.md
+803/0: /home/benjamin/Mail/specs/archive/008_fix_email_message_limits/summaries/implementation-summary-20260218.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/008_fix_email_message_limits/summaries/implementation-summary-20260218.md
+804/0: /home/benjamin/Mail/specs/archive/021_email_triage_logos_20260218/plans/triage-001.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/021_email_triage_logos_20260218/plans/triage-001.json
+805/0: /home/benjamin/Mail/specs/archive/021_email_triage_logos_20260218/plans/triage-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/021_email_triage_logos_20260218/plans/triage-001.md
+806/0: /home/benjamin/Mail/specs/archive/021_email_triage_logos_20260218/summaries/implementation-summary-20260218.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/021_email_triage_logos_20260218/summaries/implementation-summary-20260218.md
+807/0: /home/benjamin/Mail/specs/archive/021_email_triage_logos_20260218/data/envelopes.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/021_email_triage_logos_20260218/data/envelopes.json
+808/0: /home/benjamin/Mail/specs/archive/009_email_cleanup_logos_20260218/plans/cleanup-001.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/009_email_cleanup_logos_20260218/plans/cleanup-001.json
+809/0: /home/benjamin/Mail/specs/archive/009_email_cleanup_logos_20260218/plans/cleanup-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/009_email_cleanup_logos_20260218/plans/cleanup-001.md
+810/0: /home/benjamin/Mail/specs/archive/010_update_email_cleanup_rules_delete_transactional/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/010_update_email_cleanup_rules_delete_transactional/plans/implementation-001.md
+811/0: /home/benjamin/Mail/specs/archive/011_update_email_agent_cleanup_documentation/reports/research-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/011_update_email_agent_cleanup_documentation/reports/research-001.md
+812/0: /home/benjamin/Mail/specs/archive/011_update_email_agent_cleanup_documentation/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/011_update_email_agent_cleanup_documentation/plans/implementation-001.md
+813/0: /home/benjamin/Mail/specs/archive/020_implement_preflight_status_fix/reports/research-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/020_implement_preflight_status_fix/reports/research-001.md
+814/0: /home/benjamin/Mail/specs/archive/020_implement_preflight_status_fix/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/020_implement_preflight_status_fix/plans/implementation-001.md
+815/0: /home/benjamin/Mail/specs/archive/020_implement_preflight_status_fix/summaries/implementation-summary-20260218.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/020_implement_preflight_status_fix/summaries/implementation-summary-20260218.md
+816/0: /home/benjamin/Mail/specs/archive/012_email_cleanup_logos_20260218_v2/plans/cleanup-001.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/012_email_cleanup_logos_20260218_v2/plans/cleanup-001.json
+817/0: /home/benjamin/Mail/specs/archive/012_email_cleanup_logos_20260218_v2/plans/cleanup-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/012_email_cleanup_logos_20260218_v2/plans/cleanup-001.md
+818/0: /home/benjamin/Mail/specs/archive/012_email_cleanup_logos_20260218_v2/.return-meta.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/012_email_cleanup_logos_20260218_v2/.return-meta.json
+819/0: /home/benjamin/Mail/specs/archive/022_add_checkboxes_to_email_plans/reports/research-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/022_add_checkboxes_to_email_plans/reports/research-001.md
+820/0: /home/benjamin/Mail/specs/archive/022_add_checkboxes_to_email_plans/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/022_add_checkboxes_to_email_plans/plans/implementation-001.md
+821/0: /home/benjamin/Mail/specs/archive/022_add_checkboxes_to_email_plans/summaries/implementation-summary-20260218.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/022_add_checkboxes_to_email_plans/summaries/implementation-summary-20260218.md
+822/0: /home/benjamin/Mail/specs/archive/023_revise_parse_checked_items/reports/research-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/023_revise_parse_checked_items/reports/research-001.md
+823/0: /home/benjamin/Mail/specs/archive/023_revise_parse_checked_items/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/023_revise_parse_checked_items/plans/implementation-001.md
+824/0: /home/benjamin/Mail/specs/archive/023_revise_parse_checked_items/summaries/implementation-summary-20260218.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/023_revise_parse_checked_items/summaries/implementation-summary-20260218.md
+825/0: /home/benjamin/Mail/specs/archive/024_checkbox_workflow_docs/reports/research-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/024_checkbox_workflow_docs/reports/research-001.md
+826/0: /home/benjamin/Mail/specs/archive/024_checkbox_workflow_docs/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/024_checkbox_workflow_docs/plans/implementation-001.md
+827/0: /home/benjamin/Mail/specs/archive/024_checkbox_workflow_docs/summaries/implementation-summary-20260218.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/024_checkbox_workflow_docs/summaries/implementation-summary-20260218.md
+828/0: /home/benjamin/Mail/specs/archive/state.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/archive/state.json
+829/0: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/plans/cleanup-002.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/plans/cleanup-002.json
+830/0: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/plans/cleanup-003.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/plans/cleanup-003.json
+831/0: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/plans/cleanup-004.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/plans/cleanup-004.json
+832/0: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/plans/cleanup-001.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/plans/cleanup-001.json
+833/0: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/plans/cleanup-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/plans/cleanup-001.md
+834/0: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/plans/cleanup-002.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/plans/cleanup-002.md
+835/0: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/plans/cleanup-003.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/plans/cleanup-003.md
+836/0: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/plans/cleanup-004.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/plans/cleanup-004.md
+837/0: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/summaries/implementation-summary-20260218.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/summaries/implementation-summary-20260218.md
+838/0: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/data/envelopes.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/025_email_cleanup_logos_20260218/data/envelopes.json
+839/0: /home/benjamin/Mail/specs/026_fix_email_rendering_himalaya/reports/research-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/026_fix_email_rendering_himalaya/reports/research-001.md
+840/0: /home/benjamin/Mail/specs/026_fix_email_rendering_himalaya/reports/research-002.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/026_fix_email_rendering_himalaya/reports/research-002.md
+841/0: /home/benjamin/Mail/specs/026_fix_email_rendering_himalaya/reports/research-004.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/026_fix_email_rendering_himalaya/reports/research-004.md
+842/0: /home/benjamin/Mail/specs/026_fix_email_rendering_himalaya/reports/research-003.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/026_fix_email_rendering_himalaya/reports/research-003.md
+843/0: /home/benjamin/Mail/specs/026_fix_email_rendering_himalaya/plans/implementation-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/026_fix_email_rendering_himalaya/plans/implementation-001.md
+844/0: /home/benjamin/Mail/specs/026_fix_email_rendering_himalaya/summaries/implementation-summary-20260219.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/026_fix_email_rendering_himalaya/summaries/implementation-summary-20260219.md
+845/0: /home/benjamin/Mail/specs/027_email_cleanup_logos_20260219/plans/cleanup-001.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/027_email_cleanup_logos_20260219/plans/cleanup-001.json
+846/0: /home/benjamin/Mail/specs/027_email_cleanup_logos_20260219/plans/cleanup-001.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/027_email_cleanup_logos_20260219/plans/cleanup-001.md
+847/0: /home/benjamin/Mail/specs/027_email_cleanup_logos_20260219/data/envelopes.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/027_email_cleanup_logos_20260219/data/envelopes.json
+848/0: /home/benjamin/Mail/specs/email-manifests/logos/sweep-dedup-20260704T144743.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/email-manifests/logos/sweep-dedup-20260704T144743.jsonl
+849/0: /home/benjamin/Mail/specs/email-manifests/logos/sweep-accumulator-20260704T144743.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/email-manifests/logos/sweep-accumulator-20260704T144743.jsonl
+850/0: /home/benjamin/Mail/specs/email-manifests/logos/candidate-manifest.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/email-manifests/logos/candidate-manifest.jsonl
+851/0: /home/benjamin/Mail/specs/email-manifests/logos/sweep-accumulator-20260704T144743.jsonl.progress.log
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/email-manifests/logos/sweep-accumulator-20260704T144743.jsonl.progress.log
+852/0: /home/benjamin/Mail/specs/email-manifests/logos/approved-all-20260704T150951.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/email-manifests/logos/approved-all-20260704T150951.jsonl
+853/0: /home/benjamin/Mail/specs/email-manifests/logos/approved-all-20260704T150951.jsonl.state.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/email-manifests/logos/approved-all-20260704T150951.jsonl.state.jsonl.state.jsonl
+854/0: /home/benjamin/Mail/specs/email-manifests/logos/approved-all-20260704T150951.jsonl.state.jsonl
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/email-manifests/logos/approved-all-20260704T150951.jsonl.state.jsonl
+855/0: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/reports/01_email-systems-coordination.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/reports/01_email-systems-coordination.md
+856/0: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/plans/01_decouple-email-stacks.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/plans/01_decouple-email-stacks.md
+857/0: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/summaries/01_decouple-email-stacks-summary.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/summaries/01_decouple-email-stacks-summary.md
+858/0: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/progress/phase-5-progress.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/progress/phase-5-progress.json
+859/0: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/progress/phase-2-progress.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/progress/phase-2-progress.json
+860/0: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/progress/phase-1-progress.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/progress/phase-1-progress.json
+861/0: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/progress/phase-3-progress.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/progress/phase-3-progress.json
+862/0: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/progress/phase-4-progress.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/progress/phase-4-progress.json
+863/0: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/progress/phase-6-progress.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/progress/phase-6-progress.json
+864/0: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/.orchestrator-handoff.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/.orchestrator-handoff.json
+865/0: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/.return-meta.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/034_decouple_aerc_and_himalaya_email_stacks/.return-meta.json
+866/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/parse_vcards.py
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/parse_vcards.py
+867/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/vcards.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/vcards.json
+868/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/parse_xlsx_guests.py
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/parse_xlsx_guests.py
+869/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/guests.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/guests.json
+870/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/build_matches.py
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/build_matches.py
+871/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/matches.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/matches.json
+872/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/emit_review.py
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/emit_review.py
+873/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/apply_to_xlsx.py
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/apply_to_xlsx.py
+874/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/apply_summary.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/apply_summary.json
+875/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/verify_apply.py
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/verify_apply.py
+876/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/verify_report.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/scripts/verify_report.json
+877/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/progress/phase-1-progress.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/progress/phase-1-progress.json
+878/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/progress/phase-2-progress.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/progress/phase-2-progress.json
+879/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/progress/phase-3-progress.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/progress/phase-3-progress.json
+880/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/progress/phase-4-progress.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/progress/phase-4-progress.json
+881/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/progress/phase-5-progress.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/progress/phase-5-progress.json
+882/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/summaries/01_iphone-vcard-merge-summary.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/summaries/01_iphone-vcard-merge-summary.md
+883/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/reports/01_vcard-merge-research.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/reports/01_vcard-merge-research.md
+884/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/plans/01_iphone-vcard-merge.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/plans/01_iphone-vcard-merge.md
+885/0: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/.return-meta.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/033_merge_iphone_vcard_contacts/.return-meta.json
+886/0: /home/benjamin/Mail/specs/TODO.md
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/TODO.md
+887/0: /home/benjamin/Mail/specs/.meta-return.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/.meta-return.json
+888/0: /home/benjamin/Mail/specs/state.json
+Note: Ignoring non-mail file: /home/benjamin/Mail/specs/state.json
+Processed 888 total files in almost no time.
+Added 1 new message to the database.

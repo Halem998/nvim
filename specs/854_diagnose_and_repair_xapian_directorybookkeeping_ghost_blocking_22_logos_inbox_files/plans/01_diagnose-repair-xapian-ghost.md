@@ -143,23 +143,31 @@ decision gate depends on the prior phase's evidence.
   - `comm -23` diff still lists all 22 as unindexed; sample token greps return zero hits.
   - Baseline snapshot file written and complete (22 entries).
 
-### Phase 2: Tier 1 read-only notmuch debug diagnosis [NOT STARTED]
+### Phase 2: Tier 1 read-only notmuch debug diagnosis [COMPLETED]
 
 - **Goal**: Capture and analyze a full `notmuch new --debug --verbose --no-hooks` trace to
   determine whether `~/Mail/Logos/cur` is visited during the scan and whether the 22 target
   filenames are mentioned, skipped (with a reason), or entirely absent from the trace.
 - **Tasks**:
-  - [ ] Confirm no concurrent `notmuch`/`mbsync`/timer process is running (`ps aux`,
+  - [x] Confirm no concurrent `notmuch`/`mbsync`/timer process is running (`ps aux`,
     `systemctl --user list-timers`) before invoking, to avoid trace contamination.
-  - [ ] Run `notmuch new --debug --verbose --no-hooks` and capture full stdout+stderr to a
+    *(completed: none found)*
+  - [x] Run `notmuch new --debug --verbose --no-hooks` and capture full stdout+stderr to a
     trace file in the task's progress area. Keep `--no-hooks` to avoid re-triggering the mbsync
-    hook (the original hazard).
-  - [ ] Grep the trace for `Logos/cur`: determine whether the directory is entered/scanned, and
+    hook (the original hazard). *(completed: progress/phase2-debug-trace.txt, 1837 lines)*
+  - [x] Grep the trace for `Logos/cur`: determine whether the directory is entered/scanned, and
     whether any of the 22 filenames or their UIDs appear (as processed, skipped, or ignored).
-  - [ ] Classify the outcome: (a) directory visited + files skipped with a concrete stated reason;
+    *(completed: zero hits for Logos/cur or Logos/new, while every sibling Logos subfolder does
+    appear)*
+  - [x] Classify the outcome: (a) directory visited + files skipped with a concrete stated reason;
     (b) directory visited but files never enumerated; (c) directory not visited at all. Record the
-    exact trace excerpts that support the classification.
-  - [ ] Re-verify (spot-check sha256 on 2-3 files) that the debug run mutated no mail content.
+    exact trace excerpts that support the classification. *(completed: classified as Tier 1
+    inconclusive -- (b) and (c) are indistinguishable from this trace, because notmuch 0.40's
+    `--debug --verbose` never logs directory-level entry/skip/mtime decisions, only file-level
+    add/ignore events; zero "mtime" substring matches in the whole trace. See
+    progress/phase-2-progress.json for full excerpts.)*
+  - [x] Re-verify (spot-check sha256 on 2-3 files) that the debug run mutated no mail content.
+    *(completed: 3 files spot-checked (_145, _200, _305), all byte-identical to Phase 1 baseline)*
 - **Timing**: 1 hour
 - **Depends on**: 2 -> 1
 - **Files to modify**: none (mail store read-only). Writes only the trace file to the task's
