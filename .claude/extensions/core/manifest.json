@@ -146,6 +146,7 @@
       "subagent-postflight.sh",
       "tts-notify.sh",
       "validate-meta-write.sh",
+      "validate-no-task-references.sh",
       "validate-plan-write.sh",
       "validate-state-sync.sh",
       "wezterm-clear-task-number.sh",

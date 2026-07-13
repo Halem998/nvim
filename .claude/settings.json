@@ -150,6 +150,15 @@
           }
         ],
         "matcher": "Write|Edit"
+      },
+      {
+        "hooks": [
+          {
+            "command": "bash .claude/hooks/validate-no-task-references.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          }
+        ],
+        "matcher": "Write|Edit"
       }
     ],
     "UserPromptSubmit": [

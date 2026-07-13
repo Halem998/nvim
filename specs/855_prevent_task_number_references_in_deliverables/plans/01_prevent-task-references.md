@@ -135,12 +135,12 @@ interdependencies; Phase 5 validates the combined result and depends on all of t
   - `test -f .claude/rules/no-task-references-in-deliverables.md` succeeds and the file contains
     the `## Path Pattern`, `## Exceptions`, and `## Enforcement` headings.
 
-### Phase 2: Advisory Hook and settings.json Wiring [NOT STARTED]
+### Phase 2: Advisory Hook and settings.json Wiring [COMPLETED]
 
 - **Goal:** Create the non-blocking `PostToolUse` hook and wire it into the live `settings.json`,
   with hand-verified presence and a functional test.
 - **Tasks:**
-  - [ ] Create `.claude/hooks/validate-no-task-references.sh` transcribing the full script body
+  - [x] Create `.claude/hooks/validate-no-task-references.sh` transcribing the full script body
     from the research report's "Layer 2" section verbatim: `set -uo pipefail`; stdin/TTY
     `file_path` parsing (mirroring `validate-plan-write.sh` / `validate-meta-write.sh`); early
     `echo '{}'; exit 0` when `$FILE` is empty; `case "$FILE" in specs/*|*/specs/*)` skip; `[ ! -f "$FILE" ]`
@@ -148,16 +148,17 @@ interdependencies; Phase 5 validates the combined result and depends on all of t
     `{"additionalContext": "..."}` advisory payload that names the file, the matches, and points at
     `.claude/rules/no-task-references-in-deliverables.md`; final `echo '{}'; exit 0`. The hook reads
     on-disk content (post-write), never `tool_input.content`/`new_string`, and always `exit 0`
-    (never blocks).
-  - [ ] `chmod +x .claude/hooks/validate-no-task-references.sh`.
-  - [ ] Edit `.claude/settings.json`: add a THIRD `PostToolUse` array element (sibling after the
+    (never blocks). *(completed)*
+  - [x] `chmod +x .claude/hooks/validate-no-task-references.sh`. *(completed)*
+  - [x] Edit `.claude/settings.json`: add a THIRD `PostToolUse` array element (sibling after the
     existing `validate-plan-write.sh` entry, before `UserPromptSubmit`), matcher `"Write|Edit"`,
     command `bash .claude/hooks/validate-no-task-references.sh 2>/dev/null || echo '{}'` -- exactly
-    per the report's JSON block.
-  - [ ] Add `"validate-no-task-references.sh"` to `.claude/extensions/core/manifest.json`'s
+    per the report's JSON block. *(completed: hand-verified via grep, see below)*
+  - [x] Add `"validate-no-task-references.sh"` to `.claude/extensions/core/manifest.json`'s
     `provides.hooks` array (alongside `validate-meta-write.sh`, `validate-plan-write.sh`).
-  - [ ] Add `validate-no-task-references.sh` to `.claude/extensions.json`'s deployed-files
-    inventory, mirroring the existing `validate-meta-write.sh` entry pattern.
+    *(completed)*
+  - [x] Add `validate-no-task-references.sh` to `.claude/extensions.json`'s deployed-files
+    inventory, mirroring the existing `validate-meta-write.sh` entry pattern. *(completed)*
 - **Timing:** ~60 min
 - **Depends on:** none
 - **Files to modify:**

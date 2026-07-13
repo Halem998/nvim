@@ -388,6 +388,7 @@
         ".claude/hooks/subagent-postflight.sh",
         ".claude/hooks/tts-notify.sh",
         ".claude/hooks/validate-meta-write.sh",
+        ".claude/hooks/validate-no-task-references.sh",
         ".claude/hooks/validate-plan-write.sh",
         ".claude/hooks/validate-state-sync.sh",
         ".claude/hooks/wezterm-clear-task-number.sh",
