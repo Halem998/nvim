@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 854,
+  "next_project_number": 855,
   "active_projects": [
     {
       "project_number": 87,
@@ -437,18 +437,20 @@
     {
       "project_number": 852,
       "project_name": "investigate_logos_unindexed_files",
-      "status": "partial",
+      "status": "blocked",
       "task_type": "email",
       "topic": "extensions",
       "priority": "medium",
       "title": "Investigate 22 Logos INBOX files that notmuch never indexes",
       "description": "During task 827 (email staleness detector redesign), live diagnosis of the Logos INBOX freshness gap revealed an independent anomaly: 22 of the 23-file divergence between himalaya on-disk INBOX (341) and notmuch-indexed messages (318-319) are files that notmuch has NEVER indexed at all — verified via 'notmuch id:' lookups returning zero hits for those specific files. Only 1 of the 23 is genuine Message-ID dedup. Two sanctioned 'email-reindex' runs (notmuch new --no-hooks), INCLUDING one after forcing the maildir directory mtime forward, failed to index these 22 files. This is NOT staleness and NOT duplication (task 826 established these are real distinct messages) — it is an unexplained notmuch indexing failure specific to these files. Investigate root cause: candidates include notmuch 'new.ignore'/'new.tags' config, maildir flag/filename anomalies on those 22 files, non-mail content notmuch skips, permissions, or a notmuch database inconsistency. Determine why 'notmuch new' skips them and how to get them indexed. Read-only diagnosis first (identify the 22 files, inspect their filenames/headers/permissions, check notmuch config); do NOT mutate mail. Cross-repo: notmuch config lives in ~/.dotfiles. The 827 report (specs/827_email_staleness_detector_redesign/reports/01_staleness-detector-redesign.md) documents the dead-ends already ruled out — read it first.",
       "file_scope": [],
-      "dependencies": [],
+      "dependencies": [
+        854
+      ],
       "estimated_effort": "2-3 hours",
       "created": "2026-07-13T16:55:45Z",
-      "last_updated": "2026-07-13T17:26:44Z",
-      "session_id": "sess_1783962236_292cee_852",
+      "last_updated": "2026-07-13T18:02:42Z",
+      "session_id": "sess_1783965726_aeab14",
       "cross_repo_dependency": "~/.dotfiles notmuch/mbsync config; investigation touches ~/Mail/Logos data (read-only)",
       "parent_task": 827,
       "artifacts": [
@@ -467,7 +469,8 @@
           "type": "summary",
           "summary": "Root cause investigated; notmuch new --no-hooks --full-scan ran (index-only) but 22 anomaly files remain unindexed (only 5 unrelated staleness files indexed). Mail byte-identical. logos-reclone.sh --no-hooks patch produced (proposal only). Recommends Xapian-level follow-up."
         }
-      ]
+      ],
+      "previous_status": "partial"
     },
     {
       "project_number": 853,
@@ -504,6 +507,30 @@
         }
       ],
       "completion_summary": "Fixed silent-wrong-account bug in mkPreamble (~/.dotfiles lib.nix): bare gmail|logos token now aliases to --account with a loud NOTE, gated so classify/unsubscribe-extract [QUERY] use is preserved. Verified via nix eval + built-derivation scenarios. User must run home-manager switch to deploy."
+    },
+    {
+      "project_number": 854,
+      "project_name": "diagnose_and_repair_xapian_directorybookkeeping_ghost_blocking_22_logos_inbox_files",
+      "status": "researched",
+      "task_type": "email",
+      "description": "Root cause (from specs/852_investigate_logos_unindexed_files/reports/01_notmuch-unindexed-files-root-cause.md and 02_spawn-analysis.md): 22 Logos INBOX files at ~/Mail/Logos/cur/178335487{3,4}.4003086_<N>.hamsa,U=<N>:2, (full list in report 01's Appendix) were delivered by a racy, hook-triggered `notmuch new` during the task 826/828 Logos reclone and have never been indexed. `notmuch new --no-hooks --full-scan` (task 852's remediation attempt) did not recover them, ruling out a simple directory-mtime scan-skip cause. Suspected cause: a stuck/inconsistent Xapian directory-document record for ~/Mail/Logos/cur that survives both mtime-forcing and --full-scan.\n\nTier 1 (read-only, notmuch-only, do first): Run `notmuch new --debug --verbose --no-hooks` (keep --no-hooks to avoid re-triggering the mbsync hook) and capture full output; check whether ~/Mail/Logos/cur is visited and whether the 22 target filenames are mentioned/skipped/absent from the scan trace. Re-verify sha256 content integrity of all 22 files against the snapshot recorded in specs/852_investigate_logos_unindexed_files/summaries/01_reindex-unindexed-logos-fullscan-summary.md before any further action. If the debug trace reveals a concrete, actionable skip reason, attempt the most targeted notmuch-native fix suggested by that evidence before moving to Tier 2.\n\nTier 2 (only if Tier 1 inconclusive): Obtain Xapian CLI tools ephemerally via `nix shell nixpkgs#xapian` (do not install permanently). Use xapian-delve and/or xapian-check (read-only inspection first) against the glass-backend database at /home/benjamin/Mail/.notmuch/xapian/ to locate the directory document for Logos/cur and inspect its recorded file list/mtime/inode bookkeeping for an orphaned or ghost entry consistent with the 2026-07-06 hook-race (report 01, Finding 4). Identify the minimal, targeted, non-destructive way to reset just that directory's bookkeeping so a subsequent notmuch new --no-hooks --full-scan will re-scan it fresh. This must NOT be message-document surgery and must NOT mutate any mail file. After the reset, re-run notmuch new --no-hooks --full-scan and repeat task 852's Phase 3 verification (whole-DB token grep, id: lookups, comm -23 diff) to confirm all 22 files are indexed and queryable.\n\nConstraints: read-only diagnosis first, no mail file mutation at any point (re-verify byte-identical sha256 content before/after any Tier 2 action); notmuch/mbsync config lives in ~/.dotfiles -- no home-manager switch, no commit/push there, any config recommendation is a proposal only (matching the existing logos-reclone-no-hooks.patch handoff pattern); if Tier 2 also fails or no non-destructive reset path is found, stop and document the residual state honestly rather than attempting message-document-level surgery. Document the final root cause and resolution in a task summary, and extend .claude/extensions/email/context/project/email/domain/wrapper-contracts.md section 13's existing hazard note with the concrete finding.",
+      "effort": "2-4 hours",
+      "parent_task": 852,
+      "topic": "extensions",
+      "dependencies": [],
+      "file_scope": [
+        "specs/852_investigate_logos_unindexed_files/",
+        ".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"
+      ],
+      "created": "2026-07-13T18:05:36Z",
+      "last_updated": "2026-07-13T18:05:36Z",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/852_investigate_logos_unindexed_files/reports/02_spawn-analysis.md",
+          "summary": "Spawn analysis from parent task 852"
+        }
+      ]
     }
   ],
   "completed_projects": [],

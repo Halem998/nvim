@@ -1,5 +1,5 @@
 ---
-next_project_number: 854
+next_project_number: 855
 ---
 
 # TODO
@@ -11,15 +11,35 @@ next_project_number: 854
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 852 | -- | extensions |
+| 1 | 854 | -- | extensions |
+| 2 | 852 | 854 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Extensions
 
-852 [PARTIAL] — During task 827 (email staleness detector redesign), live diagnos
+854 [RESEARCHED] — Root cause (from specs/852_investigate_logos_unindexed_files/repo
+  └─ 852 [BLOCKED] — During task 827 (email staleness detector redesign), live diagnos
 
 ## Tasks
+
+### 854. Diagnose and repair xapian directorybookkeeping ghost blocking 22 logos inbox files
+- **Effort**: 2-4 hours
+- **Status**: [RESEARCHED]
+- **Task Type**: email
+- **Topic**: extensions
+- **Dependencies**: None
+- **Research**: [852_investigate_logos_unindexed_files/reports/02_spawn-analysis.md]
+
+**Description**: Root cause (from specs/852_investigate_logos_unindexed_files/reports/01_notmuch-unindexed-files-root-cause.md and 02_spawn-analysis.md): 22 Logos INBOX files at ~/Mail/Logos/cur/178335487{3,4}.4003086_<N>.hamsa,U=<N>:2, (full list in report 01's Appendix) were delivered by a racy, hook-triggered `notmuch new` during the task 826/828 Logos reclone and have never been indexed. `notmuch new --no-hooks --full-scan` (task 852's remediation attempt) did not recover them, ruling out a simple directory-mtime scan-skip cause. Suspected cause: a stuck/inconsistent Xapian directory-document record for ~/Mail/Logos/cur that survives both mtime-forcing and --full-scan.
+
+Tier 1 (read-only, notmuch-only, do first): Run `notmuch new --debug --verbose --no-hooks` (keep --no-hooks to avoid re-triggering the mbsync hook) and capture full output; check whether ~/Mail/Logos/cur is visited and whether the 22 target filenames are mentioned/skipped/absent from the scan trace. Re-verify sha256 content integrity of all 22 files against the snapshot recorded in specs/852_investigate_logos_unindexed_files/summaries/01_reindex-unindexed-logos-fullscan-summary.md before any further action. If the debug trace reveals a concrete, actionable skip reason, attempt the most targeted notmuch-native fix suggested by that evidence before moving to Tier 2.
+
+Tier 2 (only if Tier 1 inconclusive): Obtain Xapian CLI tools ephemerally via `nix shell nixpkgs#xapian` (do not install permanently). Use xapian-delve and/or xapian-check (read-only inspection first) against the glass-backend database at /home/benjamin/Mail/.notmuch/xapian/ to locate the directory document for Logos/cur and inspect its recorded file list/mtime/inode bookkeeping for an orphaned or ghost entry consistent with the 2026-07-06 hook-race (report 01, Finding 4). Identify the minimal, targeted, non-destructive way to reset just that directory's bookkeeping so a subsequent notmuch new --no-hooks --full-scan will re-scan it fresh. This must NOT be message-document surgery and must NOT mutate any mail file. After the reset, re-run notmuch new --no-hooks --full-scan and repeat task 852's Phase 3 verification (whole-DB token grep, id: lookups, comm -23 diff) to confirm all 22 files are indexed and queryable.
+
+Constraints: read-only diagnosis first, no mail file mutation at any point (re-verify byte-identical sha256 content before/after any Tier 2 action); notmuch/mbsync config lives in ~/.dotfiles -- no home-manager switch, no commit/push there, any config recommendation is a proposal only (matching the existing logos-reclone-no-hooks.patch handoff pattern); if Tier 2 also fails or no non-destructive reset path is found, stop and document the residual state honestly rather than attempting message-document-level surgery. Document the final root cause and resolution in a task summary, and extend .claude/extensions/email/context/project/email/domain/wrapper-contracts.md section 13's existing hazard note with the concrete finding.
+
+---
 
 ### 853. Fix email wrapper binaries silently ignoring positional account arg
 - **Status**: [COMPLETED]
@@ -35,10 +55,10 @@ next_project_number: 854
 ---
 
 ### 852. Investigate 22 Logos INBOX files that notmuch never indexes
-- **Status**: [PARTIAL]
+- **Status**: [BLOCKED]
 - **Task Type**: email
 - **Topic**: extensions
-- **Dependencies**: None
+- **Dependencies**: Task 854
 - **Research**: [852_investigate_logos_unindexed_files/reports/01_notmuch-unindexed-files-root-cause.md]
 - **Plan**: [852_investigate_logos_unindexed_files/plans/01_reindex-unindexed-logos-fullscan.md]
 - **Summary**: [852_investigate_logos_unindexed_files/summaries/01_reindex-unindexed-logos-fullscan-summary.md]
