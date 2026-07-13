@@ -159,7 +159,7 @@ opens aerc -- no mbsync, no census, no exit-code coupling on the launch path.
 
 ---
 
-### Phase 3: Suppress the himalaya auto-sync contention layer [NOT STARTED]
+### Phase 3: Suppress the himalaya auto-sync contention layer [COMPLETED]
 
 **Goal**: The himalaya auto-sync timer (2 s startup delay + 15 min interval, currently
 default-enabled via the `config.get('ui.auto_sync_enabled', true)` fallback) no longer fires by
@@ -167,17 +167,18 @@ default, eliminating the third concurrent mbsync entry point that contends with 
 flock under a disjoint lock namespace. Manual himalaya sync paths remain fully functional.
 
 **Tasks**:
-- [ ] Locate the himalaya config defaults consumed by `config.get('ui.auto_sync_enabled', true)` (`lua/neotex/plugins/tools/himalaya/sync/manager.lua:320`); there is currently no explicit `ui.auto_sync_enabled` default in `himalaya/config/init.lua`, so the truthy fallback wins
-- [ ] Add an explicit `auto_sync_enabled = false` default in the appropriate `ui` defaults table of `lua/neotex/plugins/tools/himalaya/config/init.lua` (create the key alongside existing ui settings), with a short comment explaining that mail-sync-driven background sync from the aerc launch flow supersedes the periodic timer and that `:HimalayaAutoSyncToggle` / manual sync remain available
-- [ ] Verify `M.start_auto_sync()` (`sync/manager.lua:304-350`) now takes the disabled branch at startup, and that `:HimalayaSyncInbox` and the sidebar `s` keymap still trigger `M.sync_inbox()` (`himalaya/ui/main.lua:686`) manually
-- [ ] Note: task `file_scope` anticipated `himalaya/ui/main.lua`; the minimal correct edit is in `config/init.lua` (defaults) -- `ui/main.lua` itself needs no change since its sync functions are manual entry points we keep. Record this divergence in the implementation summary
+- [x] Locate the himalaya config defaults consumed by `config.get('ui.auto_sync_enabled', true)` (`lua/neotex/plugins/tools/himalaya/sync/manager.lua:320`); there is currently no explicit `ui.auto_sync_enabled` default in `himalaya/config/init.lua`, so the truthy fallback wins *(completed; defaults come from `config/ui.lua` via `ui = ui.defaults` -- key added by non-mutating merge in init.lua)*
+- [x] Add an explicit `auto_sync_enabled = false` default in the appropriate `ui` defaults table of `lua/neotex/plugins/tools/himalaya/config/init.lua` (create the key alongside existing ui settings), with a short comment explaining that mail-sync-driven background sync from the aerc launch flow supersedes the periodic timer and that `:HimalayaAutoSyncToggle` / manual sync remain available *(deviation: altered -- also fixed `M.get`'s falsy handling in the same file: the prior `value ~= nil and value or default` returned the default for a stored `false`, which would have silently defeated this setting)*
+- [x] Verify `M.start_auto_sync()` (`sync/manager.lua:304-350`) now takes the disabled branch at startup, and that `:HimalayaSyncInbox` and the sidebar `s` keymap still trigger `M.sync_inbox()` (`himalaya/ui/main.lua:686`) manually *(completed; headless check: `config.get('ui.auto_sync_enabled', true)` returns `false`; `ui/main.lua` untouched. Deviation: altered -- `HimalayaAutoSyncToggle` in `commands/sync.lua` now flips the live `config.config.ui.auto_sync_enabled` before start/stop, since `start_auto_sync()` reads config (not state) and would otherwise early-return on re-enable)*
+- [x] Note: task `file_scope` anticipated `himalaya/ui/main.lua`; the minimal correct edit is in `config/init.lua` (defaults) -- `ui/main.lua` itself needs no change since its sync functions are manual entry points we keep. Record this divergence in the implementation summary *(completed)*
 
 **Timing**: 0.5 hours
 
 **Depends on**: none
 
 **Files to modify**:
-- `lua/neotex/plugins/tools/himalaya/config/init.lua` - explicit `auto_sync_enabled = false` default
+- `lua/neotex/plugins/tools/himalaya/config/init.lua` - explicit `auto_sync_enabled = false` default; `M.get` falsy-value fix
+- `lua/neotex/plugins/tools/himalaya/commands/sync.lua` - toggle flips live config so re-enable works *(added during implementation)*
 - `lua/neotex/plugins/tools/himalaya/ui/main.lua` - no change expected (verify-only; manual sync paths untouched)
 
 **Verification**:

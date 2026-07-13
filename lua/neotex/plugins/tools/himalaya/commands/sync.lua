@@ -182,11 +182,16 @@ function M.setup(registry)
       
       if manager.is_auto_sync_running() then
         manager.stop_auto_sync()
+        config.config.ui.auto_sync_enabled = false
         state.set('ui.auto_sync_enabled', false)
         notify.himalaya('Auto-sync disabled', notify.categories.USER_ACTION)
       else
-        manager.start_auto_sync()
+        -- start_auto_sync() consults config.get('ui.auto_sync_enabled'),
+        -- which defaults to false; flip the live config first so the toggle
+        -- can actually re-enable the timer.
+        config.config.ui.auto_sync_enabled = true
         state.set('ui.auto_sync_enabled', true)
+        manager.start_auto_sync()
         notify.himalaya('Auto-sync enabled', notify.categories.USER_ACTION)
       end
     end,

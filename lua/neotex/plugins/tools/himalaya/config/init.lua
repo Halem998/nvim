@@ -50,7 +50,15 @@ M.defaults = {
   },
   
   -- UI settings (merged from ui module)
-  ui = ui.defaults,
+  ui = vim.tbl_deep_extend('force', ui.defaults, {
+    -- Periodic auto-sync is off by default: background mail syncing is driven
+    -- by the aerc launch flow's mail-sync pipeline (see
+    -- neotex/plugins/tools/mail.lua), which supersedes this timer and avoids a
+    -- second concurrent sync layer contending for the same channels.
+    -- Re-enable per-session with :HimalayaAutoSyncToggle; manual syncs
+    -- (:HimalayaSyncInbox, sidebar `s`) are unaffected.
+    auto_sync_enabled = false,
+  }),
   
   -- Binary paths
   binaries = {
@@ -270,7 +278,14 @@ function M.get(path, default)
     end
     value = value[segment]
   end
-  return value ~= nil and value or default
+  -- Only nil falls back to the default: a stored `false` must be returned
+  -- as-is (the previous `value ~= nil and value or default` expression
+  -- silently replaced stored booleans that were false with the default,
+  -- making explicit `x = false` settings unreadable through this accessor).
+  if value == nil then
+    return default
+  end
+  return value
 end
 
 -- Setup buffer keymaps (delegate to ui module)
