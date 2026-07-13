@@ -1,7 +1,7 @@
 # Implementation Plan: Task #853
 
 - **Task**: 853 - Fix email wrapper binaries silently ignoring positional account arg
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 1 hour
 - **Dependencies**: Parent task 827 (email staleness detector redesign) — this is its Finding-5 follow-up
 - **Research Inputs**: specs/853_fix_email_wrapper_account_arg/reports/01_wrapper-account-arg-parsing.md

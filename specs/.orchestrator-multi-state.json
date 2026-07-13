@@ -1,0 +1,42 @@
+{
+  "session_id": "sess_1783962236_292cee",
+  "task_numbers": [
+    852,
+    853
+  ],
+  "waves": [
+    [
+      852,
+      853
+    ]
+  ],
+  "dependency_graph": {
+    "852": [],
+    "853": []
+  },
+  "max_cycles": 10,
+  "cycle_count": 3,
+  "failed_tasks": [],
+  "completed_tasks": [
+    853
+  ],
+  "current_statuses": {
+    "852": "partial",
+    "853": "completed"
+  },
+  "task_dirs": {
+    "852": "specs/852_investigate_logos_unindexed_files",
+    "853": "specs/853_fix_email_wrapper_account_arg"
+  },
+  "research_agents": {
+    "852": "general-research-agent",
+    "853": "general-research-agent"
+  },
+  "implement_agents": {
+    "852": "general-implementation-agent",
+    "853": "general-implementation-agent"
+  },
+  "partial_tasks": [
+    852
+  ]
+}

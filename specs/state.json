@@ -437,7 +437,7 @@
     {
       "project_number": 852,
       "project_name": "investigate_logos_unindexed_files",
-      "status": "not_started",
+      "status": "partial",
       "task_type": "email",
       "topic": "extensions",
       "priority": "medium",
@@ -447,15 +447,32 @@
       "dependencies": [],
       "estimated_effort": "2-3 hours",
       "created": "2026-07-13T16:55:45Z",
-      "last_updated": "2026-07-13T16:55:45Z",
-      "session_id": "sess_1783956653_c15ff2",
+      "last_updated": "2026-07-13T17:26:44Z",
+      "session_id": "sess_1783962236_292cee_852",
       "cross_repo_dependency": "~/.dotfiles notmuch/mbsync config; investigation touches ~/Mail/Logos data (read-only)",
-      "parent_task": 827
+      "parent_task": 827,
+      "artifacts": [
+        {
+          "path": "specs/852_investigate_logos_unindexed_files/reports/01_notmuch-unindexed-files-root-cause.md",
+          "type": "report",
+          "summary": "Root-caused: 22 Logos INBOX files delivered by notmuch new's own pre-new hook during a raw (non --no-hooks) notmuch new in logos-reclone.sh, which raced/short-circuited the scan. Remediation: notmuch new --no-hooks --full-scan (disables mtime scan-skip). Read-only diagnosis; not executed."
+        },
+        {
+          "path": "specs/852_investigate_logos_unindexed_files/plans/01_reindex-unindexed-logos-fullscan.md",
+          "type": "plan",
+          "summary": "5 phases (waves [[1,4],[2],[3],[5]]): baseline snapshot + reclone-patch proposal in parallel, then notmuch new --no-hooks --full-scan (index-only), verify 22 files queryable, document. Cross-repo dotfiles changes are diff-only (no switch/commit/push)."
+        },
+        {
+          "path": "specs/852_investigate_logos_unindexed_files/summaries/01_reindex-unindexed-logos-fullscan-summary.md",
+          "type": "summary",
+          "summary": "Root cause investigated; notmuch new --no-hooks --full-scan ran (index-only) but 22 anomaly files remain unindexed (only 5 unrelated staleness files indexed). Mail byte-identical. logos-reclone.sh --no-hooks patch produced (proposal only). Recommends Xapian-level follow-up."
+        }
+      ]
     },
     {
       "project_number": 853,
       "project_name": "fix_email_wrapper_account_arg",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "email",
       "topic": "extensions",
       "priority": "low",
@@ -465,10 +482,28 @@
       "dependencies": [],
       "estimated_effort": "1 hour",
       "created": "2026-07-13T16:55:45Z",
-      "last_updated": "2026-07-13T16:55:45Z",
-      "session_id": "sess_1783956653_c15ff2",
+      "last_updated": "2026-07-13T17:52:01Z",
+      "session_id": "sess_1783962236_292cee_853",
       "cross_repo_dependency": "~/.dotfiles/modules/home/email/agent-tools/lib.nix (mkPreamble arg-parsing); requires home-manager rebuild",
-      "parent_task": 827
+      "parent_task": 827,
+      "artifacts": [
+        {
+          "path": "specs/853_fix_email_wrapper_account_arg/reports/01_wrapper-account-arg-parsing.md",
+          "type": "report",
+          "summary": "Root-caused mkPreamble missing positional-arg case arm in ~/.dotfiles lib.nix; corrected binary list (email-reindex unaffected; email-unsubscribe-extract is the real 5th); exact minimal diff aliases bare gmail/logos to --account with loud log() note, gated to preserve classify/unsubscribe-extract [QUERY] positional use."
+        },
+        {
+          "path": "specs/853_fix_email_wrapper_account_arg/plans/01_wrapper-account-arg-fix.md",
+          "type": "plan",
+          "summary": "3 sequential phases: apply gmail|logos alias arm to mkPreamble in lib.nix (ACCOUNT_EXPLICIT gate + loud log NOTE), verify via nix flake check/eval, document user-applied home-manager rebuild + verification matrix. No switch/commit/push in dotfiles."
+        },
+        {
+          "path": "specs/853_fix_email_wrapper_account_arg/summaries/01_wrapper-account-arg-fix-summary.md",
+          "type": "summary",
+          "summary": "Applied ACCOUNT_EXPLICIT-gated gmail|logos alias arm to mkPreamble in ~/.dotfiles lib.nix; verified via nix eval + built-derivation exercise across 5 scenarios; [QUERY] positional preserved. home-manager switch is user-applied."
+        }
+      ],
+      "completion_summary": "Fixed silent-wrong-account bug in mkPreamble (~/.dotfiles lib.nix): bare gmail|logos token now aliases to --account with a loud NOTE, gated so classify/unsubscribe-extract [QUERY] use is preserved. Verified via nix eval + built-derivation scenarios. User must run home-manager switch to deploy."
     }
   ],
   "completed_projects": [],
