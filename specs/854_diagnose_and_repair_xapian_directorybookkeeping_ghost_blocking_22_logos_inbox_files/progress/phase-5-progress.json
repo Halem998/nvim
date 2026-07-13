@@ -1,0 +1,36 @@
+{
+  "phase": 5,
+  "phase_name": "Tier 2 decision gate and minimal non-destructive reset (conditional)",
+  "started_at": "2026-07-13T01:10:00Z",
+  "last_updated": "2026-07-13T01:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Decision gate / hard stop: does a minimal non-destructive directory-bookkeeping reset exist", "status": "done", "files_touched": []},
+    {"id": 2, "description": "(Conditional) Re-verify sha256 of all 22 files against Phase 1 baseline immediately before any reset action", "status": "not_applicable", "files_touched": []},
+    {"id": 3, "description": "(Conditional) Apply the minimal non-destructive directory-bookkeeping reset", "status": "not_applicable", "files_touched": []},
+    {"id": 4, "description": "(Conditional) Re-run notmuch new --no-hooks --full-scan", "status": "not_applicable", "files_touched": []},
+    {"id": 5, "description": "(Conditional) Repeat task 852 Phase 3 verification in full", "status": "not_applicable", "files_touched": []},
+    {"id": 6, "description": "(Conditional) Re-verify sha256 of all 22 files against Phase 1 baseline after the reset; disclose drift", "status": "not_applicable", "files_touched": []},
+    {"id": 7, "description": "Final sha256 spot-check to close the integrity loop (superseding conditional pre/post-reset checks, since no reset occurred)", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Record the final resolution state", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "5.1",
+      "description": "Decision gate / hard stop: determine whether a minimal non-destructive reset of Logos/cur directory bookkeeping exists",
+      "type": "altered",
+      "reason": "Phase 4 evidence disproved the plan's working premise entirely: there is no ghost/stuck directory record to reset. xapian-check found the DB fully healthy (no errors across all B-tree tables), and all 22 target UIDs already have live, correctly-tagged message documents. The database requires no repair of any kind. This resolves the decision gate as a clean NO-OP -- not a 'no non-destructive path found -> STOP' failure mode, but a 'nothing is broken, no repair needed or appropriate' resolution. No index-mutating action was taken.",
+      "annotation": "*(deviation: altered — gate resolved as NO-OP: DB is healthy, files already fully indexed; no reset needed or possible because there is nothing to reset)*"
+    },
+    {
+      "task_id": "5.2-5.6",
+      "description": "Conditional pre/post-reset sha256 checks, reset application, --full-scan re-run, and 852 Phase 3 verification repeat",
+      "type": "skipped",
+      "reason": "All five tasks are conditional on a reset being applied at 5.1's decision gate. Since 5.1 resolved as NO-OP (nothing to reset), none of these conditional tasks apply. A final unconditional sha256 spot-check (objective 7) was performed instead to close the integrity loop, matching the plan's overall integrity-attestation intent without a redundant reset-specific check pair.",
+      "annotation": "*(deviation: skipped — conditional on a reset being applied; 5.1 resolved as NO-OP so no reset occurred)*"
+    }
+  ],
+  "handoff_count": 0,
+  "notes": "PHASE 5 RESOLUTION: No reset/repair is needed or appropriate. The Xapian database is fully healthy (xapian-check: 'No errors found' across docdata/termlist/postlist/position) and all 22 target files already carry live, correctly-tagged message documents (docid + PLogos/cur path term + full tag set including tag:trash). No index-mutating action was taken in this phase -- this is the clean 'no repair needed' resolution the plan's Phase 5 goal anticipates as one of its sanctioned terminal outcomes, distinct from the 'no non-destructive path found -> STOP' hard-stop outcome (which presupposes something IS broken but cannot safely be fixed). Final integrity spot-check: sha256 for 3 files (_145, _200, _305) re-verified against the Phase 1 baseline -- all three byte-identical, zero drift. No mail file was added, removed, renamed, or modified at any point in Phases 1-5; no message-document surgery was performed; all Xapian tooling used was ephemeral (nix shell nixpkgs#xapian) and read-only (xapian-check without --fix, xapian-delve). Final root cause: the 22 files are indexed and correctly tagged tag:trash; notmuch's search.exclude_tags (deleted, spam, trash) causes default searches to omit them, and task 852's on-disk-vs-indexed diff methodology used a trash-excluding search as its 'indexed set' probe, producing a false-positive 'unindexed' classification. Routing to Phase 6 for documentation."
+}

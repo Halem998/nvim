@@ -1,0 +1,27 @@
+docdata:
+blocksize=8K items=38 firstunused=3 revision=6067 levels=0 root=2
+B-tree checked okay
+docdata table structure checked OK
+
+termlist:
+blocksize=8K items=224452 firstunused=65675 revision=6067 levels=2 root=43406
+B-tree checked okay
+termlist table structure checked OK
+
+postlist:
+blocksize=8K items=1314065 firstunused=129889 revision=6067 levels=2 root=59428
+B-tree checked okay
+postlist table structure checked OK
+
+position:
+blocksize=8K items=16274469 firstunused=144296 revision=6067 levels=2 root=40069
+B-tree checked okay
+position table structure checked OK
+
+spelling:
+Lazily created, and not yet used.
+
+synonym:
+Lazily created, and not yet used.
+
+No errors found

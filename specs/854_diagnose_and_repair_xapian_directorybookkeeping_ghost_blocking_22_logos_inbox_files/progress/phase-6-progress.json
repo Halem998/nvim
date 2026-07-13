@@ -1,0 +1,25 @@
+{
+  "phase": 6,
+  "phase_name": "Document root cause and extend wrapper-contracts.md section 13",
+  "started_at": "2026-07-13T18:38:00Z",
+  "last_updated": "2026-07-13T18:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write the task summary covering Tier 1/Tier 2 findings, decision gates, integrity attestation, and resolution", "status": "done", "files_touched": ["specs/854_diagnose_and_repair_xapian_directorybookkeeping_ghost_blocking_22_logos_inbox_files/summaries/01_diagnose-repair-xapian-ghost-summary.md"]},
+    {"id": 2, "description": "Extend wrapper-contracts.md section 13 hazard note with the concrete finding", "status": "done", "files_touched": [".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"]},
+    {"id": 3, "description": "Record cross-repo config change as proposal only, if implied", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Ensure summary states no-mail-mutation and no-message-document-surgery guarantees explicitly", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "6.3",
+      "description": "If a cross-repo (~/.dotfiles) config change is implied by the finding, record it as a proposal only",
+      "type": "altered",
+      "reason": "No cross-repo config change is implied by this finding. The Xapian database is healthy and the search.exclude_tags configuration is working exactly as designed; the issue was diagnostic methodology (task 852's diff approach), not a configuration defect. Nothing to propose to ~/.dotfiles.",
+      "annotation": "*(completed: no cross-repo config change is implied by this finding — the database and configuration are both healthy; nothing to propose)*"
+    }
+  ],
+  "handoff_count": 0,
+  "notes": "Phase 6 deliverables complete: task summary written to summaries/01_diagnose-repair-xapian-ghost-summary.md; wrapper-contracts.md section 13 extended with a 'Follow-up finding (task 854)' paragraph appended after the existing task-852 hazard note (not rewritten), documenting the search.exclude_tags diff hazard and corrected audit guidance for future on-disk-vs-indexed audits. No ~/.dotfiles changes made or proposed (none needed). All six plan phases now [COMPLETED]; plan top-level Status updated to [COMPLETED]. Task 854 is fully resolved: no repair was needed because nothing was broken -- the 22 Logos INBOX files were always fully indexed, and task 852's 'unindexed' conclusion is corrected by this finding."
+}

@@ -11,25 +11,25 @@ next_project_number: 855
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 854 | -- | extensions |
-| 2 | 852 | 854 | extensions |
+| 1 | 852 | -- | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Extensions
 
-854 [RESEARCHED] — Root cause (from specs/852_investigate_logos_unindexed_files/repo
-  └─ 852 [BLOCKED] — During task 827 (email staleness detector redesign), live diagnos
+852 [BLOCKED] — During task 827 (email staleness detector redesign), live diagnos
 
 ## Tasks
 
 ### 854. Diagnose and repair xapian directorybookkeeping ghost blocking 22 logos inbox files
 - **Effort**: 2-4 hours
-- **Status**: [RESEARCHED]
+- **Status**: [COMPLETED]
 - **Task Type**: email
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [852_investigate_logos_unindexed_files/reports/02_spawn-analysis.md]
+- **Plan**: [854_diagnose_and_repair_xapian_directorybookkeeping_ghost_blocking_22_logos_inbox_files/plans/01_diagnose-repair-xapian-ghost.md]
+- **Summary**: [854_diagnose_and_repair_xapian_directorybookkeeping_ghost_blocking_22_logos_inbox_files/summaries/01_diagnose-repair-xapian-ghost-summary.md]
 
 **Description**: Root cause (from specs/852_investigate_logos_unindexed_files/reports/01_notmuch-unindexed-files-root-cause.md and 02_spawn-analysis.md): 22 Logos INBOX files at ~/Mail/Logos/cur/178335487{3,4}.4003086_<N>.hamsa,U=<N>:2, (full list in report 01's Appendix) were delivered by a racy, hook-triggered `notmuch new` during the task 826/828 Logos reclone and have never been indexed. `notmuch new --no-hooks --full-scan` (task 852's remediation attempt) did not recover them, ruling out a simple directory-mtime scan-skip cause. Suspected cause: a stuck/inconsistent Xapian directory-document record for ~/Mail/Logos/cur that survives both mtime-forcing and --full-scan.
 

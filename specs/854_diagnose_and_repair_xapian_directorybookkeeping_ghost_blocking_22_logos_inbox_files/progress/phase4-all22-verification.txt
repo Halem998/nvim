@@ -1,0 +1,66 @@
+=== UID 145: 1783354873.4003086_145.hamsa,U=145:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354873.4003086_145.hamsa,U=145:2,
+=== UID 159: 1783354873.4003086_159.hamsa,U=159:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354873.4003086_159.hamsa,U=159:2,
+=== UID 163: 1783354873.4003086_163.hamsa,U=163:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354873.4003086_163.hamsa,U=163:2,
+=== UID 189: 1783354874.4003086_189.hamsa,U=189:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354874.4003086_189.hamsa,U=189:2,
+=== UID 200: 1783354874.4003086_200.hamsa,U=200:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354874.4003086_200.hamsa,U=200:2,
+=== UID 212: 1783354874.4003086_212.hamsa,U=212:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354874.4003086_212.hamsa,U=212:2,
+=== UID 213: 1783354874.4003086_213.hamsa,U=213:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354874.4003086_213.hamsa,U=213:2,
+=== UID 214: 1783354874.4003086_214.hamsa,U=214:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354874.4003086_214.hamsa,U=214:2,
+=== UID 215: 1783354874.4003086_215.hamsa,U=215:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354874.4003086_215.hamsa,U=215:2,
+=== UID 256: 1783354874.4003086_256.hamsa,U=256:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354874.4003086_256.hamsa,U=256:2,
+=== UID 258: 1783354874.4003086_258.hamsa,U=258:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354874.4003086_258.hamsa,U=258:2,
+=== UID 266: 1783354874.4003086_266.hamsa,U=266:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354874.4003086_266.hamsa,U=266:2,
+=== UID 271: 1783354874.4003086_271.hamsa,U=271:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354874.4003086_271.hamsa,U=271:2,
+=== UID 274: 1783354874.4003086_274.hamsa,U=274:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354874.4003086_274.hamsa,U=274:2,
+=== UID 277: 1783354874.4003086_277.hamsa,U=277:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354874.4003086_277.hamsa,U=277:2,
+=== UID 279: 1783354874.4003086_279.hamsa,U=279:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354874.4003086_279.hamsa,U=279:2,
+=== UID 280: 1783354874.4003086_280.hamsa,U=280:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354874.4003086_280.hamsa,U=280:2,
+=== UID 282: 1783354874.4003086_282.hamsa,U=282:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354874.4003086_282.hamsa,U=282:2,
+=== UID 287: 1783354874.4003086_287.hamsa,U=287:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354874.4003086_287.hamsa,U=287:2,
+=== UID 295: 1783354874.4003086_295.hamsa,U=295:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354874.4003086_295.hamsa,U=295:2,
+=== UID 300: 1783354874.4003086_300.hamsa,U=300:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354874.4003086_300.hamsa,U=300:2,
+=== UID 305: 1783354874.4003086_305.hamsa,U=305:2, ===
+--exclude=false search for this exact file:
+/home/benjamin/Mail/Logos/cur/1783354874.4003086_305.hamsa,U=305:2,

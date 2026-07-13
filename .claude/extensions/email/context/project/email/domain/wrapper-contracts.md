@@ -355,3 +355,32 @@ follow-up, not repeated `--full-scan` retries. **Prevention**: never invoke a ra
 any script or wrapper that touches a live maildir — always use `--no-hooks` (per this section's
 existing `email-reindex` contract), so `notmuch new` cannot trigger its own hook and race its own
 scan.
+
+**Follow-up finding (task 854): the "22 permanently-unindexed files" were a false positive —
+`search.exclude_tags` diff hazard, not a Xapian ghost record.** The Tier 1 -> Tier 2 escalation
+this section called for (`notmuch dump`/Xapian-delve-level inspection) was performed. Read-only
+`xapian-check` (ephemeral `nix shell nixpkgs#xapian`, no `--fix`) found the Xapian glass-backend
+DB fully healthy — "No errors found" across all four B-tree tables (docdata, termlist, postlist,
+position); there is no ghost or stuck directory-bookkeeping record for `Logos/cur`. Delve-level
+lookups for all 22 previously-"unindexed" UIDs found live, well-formed message documents with
+correct docids and a `PLogos/cur` path term, each carrying `tag:trash` (among others). The real
+mechanism: `notmuch config get search.exclude_tags` returns `deleted, spam, trash`, and **any
+default (non-`--exclude=false`) `notmuch search`/`count`/`--output=files` invocation silently
+omits every message carrying an excluded tag** — confirmed via `notmuch count 'path:Logos/cur and
+tag:trash'` = 22 (exactly the target set) vs `notmuch count 'path:Logos/cur'` = 316, a
+trash-excluding default search for the 22 returning 0 hits, and `--exclude=false` lookups for each
+of the 22 individually returning the expected file path. Task 852's on-disk-vs-indexed diff
+(`find ~/Mail/Logos/cur` MINUS `notmuch search --output=files ...`) used exactly such a
+trash-excluding search as its "indexed set" probe, so every `tag:trash` file appeared as "on disk
+but not indexed" when it was in fact indexed-but-search-excluded — `--full-scan` "failed to
+recover" the 22 because there was nothing to recover. **Corrected guidance for any future
+on-disk-vs-indexed audit**: never use a default (excluded-tag-honoring) search/output-files/count
+as the "indexed set" side of such a diff. Use an excluded-tag-inclusive query instead, e.g.
+`notmuch search --exclude=false --output=files '*'` scoped to the folder, or an explicit
+`(tag:trash or not tag:trash)` construction, or per-directory `notmuch count 'path:<folder>'`
+(which is not tag-filtered) as the indexed-side ground truth. Task 852's "22 permanently-unindexed
+files" conclusion is corrected by this finding: those files were never unindexed. No repair was
+needed or attempted in task 854; no mail file was mutated and no message-document surgery was
+performed (see `specs/854_.../summaries/01_diagnose-repair-xapian-ghost-summary.md` for full
+evidence). Whether these 22 messages *should* carry `tag:trash` remains an open mail-triage
+question, out of scope for indexing diagnostics.

@@ -1,0 +1,9 @@
+UUID = 1bd29b5e-7ebc-4ef3-bc44-0a77d42fc4bf
+number of documents = 112226
+average document length = 2604.84
+document length lower bound = 14
+document length upper bound = 672549
+highest document id ever used = 116286
+has positional information = true
+revision = 6067
+currently open for writing = false

@@ -1,0 +1,176 @@
+--- UID 145 ---
+docid=73596
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 159 ---
+docid=73843
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 163 ---
+docid=73847
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 189 ---
+docid=73850
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 200 ---
+docid=73851
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 212 ---
+docid=73614
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 213 ---
+docid=73616
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 214 ---
+docid=73618
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 215 ---
+docid=73852
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 256 ---
+docid=73854
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 258 ---
+docid=73856
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 266 ---
+docid=73858
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 271 ---
+docid=73862
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 274 ---
+docid=73863
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 277 ---
+docid=73864
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 279 ---
+docid=73865
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 280 ---
+docid=73866
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 282 ---
+docid=73631
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 287 ---
+docid=73869
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 295 ---
+docid=73874
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 300 ---
+docid=73879
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
+--- UID 305 ---
+docid=73889
+Kgmail
+Klogos
+Kproposed-archive
+Ktrash
+Kunread
+PLogos/cur 
