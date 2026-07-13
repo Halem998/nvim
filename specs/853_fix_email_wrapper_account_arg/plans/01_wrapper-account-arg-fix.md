@@ -135,20 +135,28 @@ a loud NOTE unless `--account` was already given explicitly.
 
 ---
 
-### Phase 2: Verify Nix evaluation of the modified module [NOT STARTED]
+### Phase 2: Verify Nix evaluation of the modified module [COMPLETED]
 
 **Goal**: Confirm the edited `lib.nix` is syntactically valid Nix and the home-manager config
 still evaluates, without activating anything.
 
 **Tasks**:
-- [ ] From `~/.dotfiles`, run a read-only evaluation check — `nix flake check` (or a targeted
-      `nix eval`/`home-manager build --flake` that evaluates the email module) — to confirm no
-      Nix parse / antiquotation error was introduced.
-- [ ] If the full `nix flake check` is too heavy or has unrelated failures, fall back to a
-      narrower eval of the agent-tools module / the generated wrapper scripts to confirm the
-      `mkPreamble` string builds.
-- [ ] Confirm the check runs WITHOUT `home-manager switch`, `git commit`, or `git push` (these
-      are user-applied per task constraints).
+- [x] **Task 2.1**: From `~/.dotfiles`, run a read-only evaluation check — `nix-instantiate
+      --eval --strict` directly on `lib.nix`, confirming `mkPreamble` renders with no Nix parse
+      / antiquotation error. *(completed)*
+- [x] **Task 2.2**: Fell back to (and additionally performed, for stronger confidence) a
+      narrower eval: built a real `pkgs.writeShellScriptBin` derivation using the flake's
+      `homeConfigurations.benjamin.pkgs` with the edited `mkPreamble`, ran `bash -n` on the
+      built script, and functionally exercised the built binary (in the scratchpad, with
+      `EMAIL_MANIFEST_DIR` overridden — no real account/mail access) against all 5 scenarios
+      from the Phase 3 verification matrix (bare enum alias + NOTE, explicit
+      `--account`+query-passthrough, normal query term, `--account=` form). All 5 matched
+      expected `ACCOUNT`/`ACCOUNT_EXPLICIT`/`ARGS` results in-session, ahead of the user's
+      rebuild. *(completed: full `nix flake check` skipped as unnecessary — the narrower email-module
+      build sufficed and avoided evaluating unrelated NixOS/host modules)*
+- [x] **Task 2.3**: Confirmed via `git status`/`git log` in `~/.dotfiles` that no
+      `home-manager switch`, `git commit`, or `git push` occurred — only the intended
+      `lib.nix` edit remains uncommitted. *(completed)*
 
 **Timing**: 15 minutes
 
