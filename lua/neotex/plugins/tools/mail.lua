@@ -58,32 +58,44 @@ return {
       {
         "<leader>me",
         function()
-          -- Refresh all accounts in the background before/while aerc opens
-          sync_all_mail()
           local Terminal = require("toggleterm.terminal").Terminal
-          local aerc = Terminal:new({
-            cmd = "aerc",
-            direction = "float",
-            float_opts = {
-              border = "curved",
-              width = function()
-                return math.floor(vim.o.columns * 0.9)
+          local function open_aerc()
+            local aerc = Terminal:new({
+              cmd = "aerc",
+              direction = "float",
+              float_opts = {
+                border = "curved",
+                width = function()
+                  return math.floor(vim.o.columns * 0.9)
+                end,
+                height = function()
+                  return math.floor(vim.o.lines * 0.85)
+                end,
+              },
+              on_open = function(term)
+                vim.cmd("startinsert!")
+                -- Close with q in normal mode
+                vim.keymap.set("n", "q", function()
+                  term:close()
+                end, { buffer = term.bufnr, noremap = true, silent = true })
               end,
-              height = function()
-                return math.floor(vim.o.lines * 0.85)
-              end,
-            },
-            on_open = function(term)
-              vim.cmd("startinsert!")
-              -- Close with q in normal mode
-              vim.keymap.set("n", "q", function()
-                term:close()
-              end, { buffer = term.bufnr, noremap = true, silent = true })
-            end,
-          })
-          aerc:toggle()
+            })
+            aerc:toggle()
+          end
+
+          -- Task 34 (decouple aerc/himalaya stacks, F2): gate the aerc open on sync
+          -- completion instead of firing immediately. Opening aerc before mbsync +
+          -- notmuch new finish races notmuch's index against the maildir on disk,
+          -- producing "could not get MessageInfo" errors. The sync itself stays
+          -- asynchronous (non-blocking); only the *open* is gated on its on_done
+          -- callback. Bounded fallback: on sync error, sync_all_mail already
+          -- surfaces an ERROR notice -- still open aerc afterward rather than
+          -- leaving the keymap hanging with no window.
+          sync_all_mail(function(_)
+            open_aerc()
+          end)
         end,
-        desc = "Open aerc email client",
+        desc = "Open aerc email client (opens after sync completes)",
       },
       {
         "<leader>mN",
