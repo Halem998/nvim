@@ -1,6 +1,6 @@
 ---
 description: Create and push semantic version tags for CI/CD deployment (user-only)
-argument-hint: [--patch|--minor|--major] [--force] [--dry-run]
+argument-hint: "[--patch|--minor|--major] [--force] [--dry-run]"
 ---
 
 > **COMMAND EXECUTION MODE** — You have been invoked as this command with arguments: `$ARGUMENTS`. Execute the workflow below immediately. Do not summarize this file, ask what to do with it, or describe its contents. Start execution now.

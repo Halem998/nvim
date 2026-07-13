@@ -86,7 +86,7 @@ argument-hint: TASK_NUMBERS [--team [--team-size N]] [--force] [--fast|--hard] [
 ---
 description: Review code and create analysis reports
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), TaskCreate, TaskUpdate, AskUserQuestion
-argument-hint: [SCOPE] [--create-tasks]
+argument-hint: "[SCOPE] [--create-tasks]"
 ---
 ```
 **Recommended**: Add `model: opus` after `description` line.
@@ -96,7 +96,7 @@ argument-hint: [SCOPE] [--create-tasks]
 ---
 description: Analyze errors and create fix plans
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), TaskCreate, TaskUpdate, Task
-argument-hint: [--fix TASK_NUMBER]
+argument-hint: "[--fix TASK_NUMBER]"
 ---
 ```
 **Recommended**: Add `model: opus` after `description` line.
@@ -106,7 +106,7 @@ argument-hint: [--fix TASK_NUMBER]
 ---
 description: Manage Claude Code resources - terminate orphaned processes and clean up files
 allowed-tools: Bash, Read, Glob, AskUserQuestion
-argument-hint: [--dry-run] [--force]
+argument-hint: "[--dry-run] [--force]"
 ---
 ```
 **Recommended**: Add `model: opus` after `description` line (and also fix "Claude Code" -> "OpenCode" per Task 522).
@@ -116,7 +116,7 @@ argument-hint: [--dry-run] [--force]
 ---
 description: Archive completed and abandoned tasks
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), Bash(mv:*), Bash(mkdir:*), Bash(ls:*), Bash(find:*), Bash(jq:*), TaskCreate, TaskUpdate, AskUserQuestion
-argument-hint: [--dry-run]
+argument-hint: "[--dry-run]"
 ---
 ```
 **Recommended**: Add `model: opus` after `description` line.
@@ -126,7 +126,7 @@ argument-hint: [--dry-run]
 ---
 description: System builder for .opencode/ changes
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), TaskCreate, TaskUpdate
-argument-hint: [COMPONENT] [--preview]
+argument-hint: "[COMPONENT] [--preview]"
 ---
 ```
 **Recommended**: Add `model: opus` after `description` line.
@@ -146,7 +146,7 @@ argument-hint: TASK_NUMBER [--expand]
 ---
 description: Merge pull requests with platform detection
 allowed-tools: Bash, Read, AskUserQuestion
-argument-hint: [PR_NUMBER] [--dry-run]
+argument-hint: "[PR_NUMBER] [--dry-run]"
 ---
 ```
 **Recommended**: Add `model: opus` after `description` line.
@@ -182,7 +182,7 @@ description: Create and push semantic version tags
 ---
 description: Create and manage tasks
 allowed-tools: Skill, Bash(jq:*), Bash(git:*), Read, Edit, AskUserQuestion
-argument-hint: [DESCRIPTION] [--expand] [--recover] [--sync] [--abandon]
+argument-hint: "[DESCRIPTION] [--expand] [--recover] [--sync] [--abandon]"
 ---
 ```
 **Recommended**: Add `model: opus` after `description` line.
@@ -208,7 +208,7 @@ description: Distill and maintain memory vault
 ---
 description: Scan for FIX:/NOTE:/TODO:/QUESTION: tags
 allowed-tools: Read, Grep, Glob, Bash(git:*), TaskCreate, TaskUpdate, AskUserQuestion
-argument-hint: [PATH...]
+argument-hint: "[PATH...]"
 ---
 ```
 **Recommended**: Add `model: opus` after `description` line.

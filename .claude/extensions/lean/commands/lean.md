@@ -1,7 +1,7 @@
 ---
 description: Manage Lean toolchain and Mathlib versions
 allowed-tools: Bash, Read, Write, Edit, AskUserQuestion
-argument-hint: [check|upgrade|rollback] [--dry-run] [--version VERSION]
+argument-hint: "[check|upgrade|rollback] [--dry-run] [--version VERSION]"
 ---
 
 # /lean Command
