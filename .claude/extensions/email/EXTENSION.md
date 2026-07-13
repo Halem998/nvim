@@ -37,8 +37,10 @@ All mutation goes through five nix-built wrapper binaries; the extension itself 
   (`/email --sync`) and the `email-reindex` operator helper (index-only `notmuch new --no-hooks`).
 - **Index-freshness gate**: because classification reads notmuch and there is no auto-indexer,
   `--all` runs a staleness gate before claiming whole-mailbox coverage — comparing the
-  `email-census` freshness line (on-disk vs notmuch-indexed) and reconciling with `email-reindex`
-  on divergence (tasks 823-824; see `domain/staleness-detection.md`, `wrapper-contracts.md` §13).
+  `email-census` freshness line's on-disk file count against a path-prefix post-filtered
+  indexed-files count (a file-vs-file comparison within a bounded tolerance, not strict equality)
+  and reconciling with `email-reindex` when the divergence exceeds tolerance (tasks 823-824-827;
+  see `domain/staleness-detection.md`, `wrapper-contracts.md` §13).
 - **Two-layer enforcement**: the `mail-guard.sh` PreToolUse hook (social/technical layer 1,
   per-machine, may be gitignored) plus the nix-built wrapper source itself (layer 2, always
   present). Neither layer is sufficient alone.

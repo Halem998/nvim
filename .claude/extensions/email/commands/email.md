@@ -25,8 +25,10 @@ see the Accounts subsection below.
   sweep), then ONE consolidated sender/domain bucket approval, then a mechanical sub-50 execute
   drain with progress-only reporting. **Coverage is conditioned on a fresh notmuch index**:
   because classification reads notmuch (not the maildir directly) and there is no auto-indexer,
-  `--all` first runs a staleness gate (skill-email-cleanup Stage 1, task 823) comparing the
-  census freshness line's on-disk vs notmuch-indexed INBOX counts. On divergence it will not claim
+  `--all` first runs a staleness gate (skill-email-cleanup Stage 1, tasks 823, 827) comparing the
+  census freshness line's on-disk file count against a path-prefix post-filtered indexed-files
+  count (a file-vs-file comparison, within a bounded tolerance — `[ok]` when the divergence is
+  within tolerance, not exact equality). On divergence beyond tolerance it will not claim
   whole-mailbox coverage until the index is reconciled with the sanctioned `email-reindex` helper
   (task 824) — see Error Handling and `context/project/email/domain/staleness-detection.md`.
 - `--archive`: scope flag — operate on the account's archive folder instead of INBOX
@@ -217,11 +219,14 @@ always a single, explicit group.
       instead. This is a transient/environmental failure branch, not a permanent gate — the
       contract itself accepts `--account logos`.
     - Stale notmuch index detected before an `--all` sweep (census freshness line reads
-      `[STALE]`: on-disk INBOX count diverges from notmuch-indexed) -> Do NOT claim whole-mailbox
-      coverage. Report the divergence and route to the sanctioned reindex `email-reindex`
-      (index-only `notmuch new --no-hooks`; task 824). Interactive: offer to run it, then
-      re-census and re-check. Autonomous/orchestrator: STOP and report the divergence plus the
-      `email-reindex` command — never reindex unprompted, never silently sweep a partial index.
+      `[STALE]`: the on-disk file count and the path-prefix post-filtered indexed-files count
+      diverge beyond the bounded tolerance) -> Do NOT claim whole-mailbox coverage. Report the
+      divergence and route to the sanctioned reindex `email-reindex` (index-only `notmuch new
+      --no-hooks`; task 824). Interactive: offer to run it, then re-census and re-check.
+      Autonomous/orchestrator: use the `reindex=<ISO|never>` marker — `reindex=never` STOPs and
+      reports the divergence plus the `email-reindex` command; `reindex=<ISO>` (already ran)
+      reports the persistent residual as a follow-up instead of looping — never reindex
+      unprompted, never silently sweep a partial index.
       Never run a raw `notmuch new` (it triggers `mbsync -a`). See
       `context/project/email/domain/staleness-detection.md`.
     - Skill failure -> Return error details, no mutation performed

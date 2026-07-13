@@ -229,20 +229,20 @@ date -Iseconds > "''${XDG_STATE_HOME:-$HOME/.local/state}/email-agent/last-reind
 
 ---
 
-### Phase 3: Propagate to wrapper-contracts.md §13 (frozen-fact restatement) [NOT STARTED]
+### Phase 3: Propagate to wrapper-contracts.md §13 (frozen-fact restatement) [COMPLETED]
 
 **Goal**: Update the terse frozen-fact restatement of the gate so it does not drift from
 staleness-detection.md.
 
 **Tasks**:
-- [ ] Update §13 "Freshness disclosure" in
+- [x] Update §13 "Freshness disclosure" in
       `.claude/extensions/email/context/project/email/domain/wrapper-contracts.md` to state the
       new file-vs-file comparison, the tolerance rule, the reindex marker, and the new canonical
-      line format.
-- [ ] Replace the stale "`on-disk == notmuch-indexed`" pass condition with the `Δ ≤ T` tolerance
-      condition.
-- [ ] Keep the `email-reindex` sanctioned-non-wrapper description intact; add the one-line note
-      that `email-reindex` now also writes the reindex marker read by `email-census`.
+      line format. *(completed)*
+- [x] Replace the stale "`on-disk == notmuch-indexed`" pass condition with the `Δ ≤ T` tolerance
+      condition. *(completed)*
+- [x] Keep the `email-reindex` sanctioned-non-wrapper description intact; add the one-line note
+      that `email-reindex` now also writes the reindex marker read by `email-census`. *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -257,25 +257,26 @@ staleness-detection.md.
 
 ---
 
-### Phase 4: Update the Stage 1 gate + Staleness Remediation in SKILL.md [NOT STARTED]
+### Phase 4: Update the Stage 1 gate + Staleness Remediation in SKILL.md [COMPLETED]
 
 **Goal**: Update the `--all` mandatory gate logic and remediation flow to parse the new line and
 apply the new pass/fail condition, including reindex-marker handling and autonomous-mode behavior.
 
 **Tasks**:
-- [ ] Update the Stage 1 "Census + Staleness Gate" section (~lines 304-323) of
+- [x] Update the Stage 1 "Census + Staleness Gate" section (~lines 304-323) of
       `.claude/extensions/email/skills/skill-email-cleanup/SKILL.md`: parse the new
       `INBOX freshness … on-disk=<D> indexed-files=<F> divergence=<Δ> tol=<T> reindex=<…> [ok|STALE]`
       line; define `[ok]` as `Δ ≤ T` (file-vs-file within tolerance), not exact equality.
-- [ ] Describe how the `reindex=<ISO|never>` marker is surfaced and used: it is informational and
+      *(completed)*
+- [x] Describe how the `reindex=<ISO|never>` marker is surfaced and used: it is informational and
       does not flip the gate, but in autonomous/orchestrator mode "reindex=never AND `[STALE]`"
       routes to STOP-with-`email-reindex`-command, whereas "reindex ran recently AND `[STALE]`"
       is reported as a persistent residual (candidate follow-up), distinguishing "never attempted"
-      from "attempted, gap persists".
-- [ ] Update the "Staleness Remediation" section (~lines 608-640) to match: the reindex still runs
+      from "attempted, gap persists". *(completed)*
+- [x] Update the "Staleness Remediation" section (~lines 608-640) to match: the reindex still runs
       via `email-reindex`, but the re-check now uses the tolerance condition, and the marker makes
-      "reindex ran, residual within tolerance" a first-class `[ok]` outcome.
-- [ ] Keep the "line absent (older email-census)" unverified-coverage fallback wording.
+      "reindex ran, residual within tolerance" a first-class `[ok]` outcome. *(completed)*
+- [x] Keep the "line absent (older email-census)" unverified-coverage fallback wording. *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -292,22 +293,25 @@ apply the new pass/fail condition, including reindex-marker handling and autonom
 
 ---
 
-### Phase 5: Propagate to lower-stakes doc sites [NOT STARTED]
+### Phase 5: Propagate to lower-stakes doc sites [COMPLETED]
 
 **Goal**: Keep the remaining enumerated sites (Finding 4 sites #5, #7, #8, #9, #10) accurate for
 context-discovery relevance and user-facing description, and re-verify #5.
 
 **Tasks**:
-- [ ] `.claude/extensions/email/EXTENSION.md` — update the "on-disk vs notmuch-indexed" summary
-      blurb to the file-vs-file + tolerance wording.
-- [ ] `.claude/extensions/email/README.md` — update the `[ok|STALE]` line-format description and
-      reconciliation flow.
-- [ ] `.claude/extensions/email/commands/email.md` — update the Stage 1 gate behavior description
-      (interactive + autonomous).
-- [ ] `.claude/extensions/email/index-entries.json` — update any "on-disk vs indexed"
-      descriptions/summaries so context-discovery matching stays accurate.
-- [ ] `.claude/extensions/email/context/project/email/domain/archive-mode-risk.md` — re-verify the
+- [x] `.claude/extensions/email/EXTENSION.md` — update the "on-disk vs notmuch-indexed" summary
+      blurb to the file-vs-file + tolerance wording. *(completed)*
+- [x] `.claude/extensions/email/README.md` — update the `[ok|STALE]` line-format description and
+      reconciliation flow. *(completed)*
+- [x] `.claude/extensions/email/commands/email.md` — update the Stage 1 gate behavior description
+      (interactive + autonomous). *(completed, both sites: description block + Error Handling)*
+- [x] `.claude/extensions/email/index-entries.json` — update any "on-disk vs indexed"
+      descriptions/summaries so context-discovery matching stays accurate. *(completed; also
+      corrected stale line_count fields for staleness-detection.md and wrapper-contracts.md)*
+- [x] `.claude/extensions/email/context/project/email/domain/archive-mode-risk.md` — re-verify the
       Stage 1 gate reference; update wording only if it asserts the old equality semantics.
+      *(verified: no equality assertion present — wording already generic ("index reads
+      `[STALE]`"), consistent with the new gate; no change needed)*
 
 **Timing**: 0.5 hours
 

@@ -304,23 +304,35 @@ Pilot Gate section).
 ### Stage 1 (`--all`): Census + Staleness Gate + Pre-Sweep Estimate
 
 1. Run `email-census --account <account>` for the folder/sender/date overview.
-2. **Staleness gate (task 823 — MANDATORY before an `--all` coverage claim)**: `--all` promises
-   whole-mailbox coverage, but `email-classify` only sees what notmuch has indexed. When the
-   notmuch index lags the on-disk maildir (no auto-indexer exists — wrapper-contracts.md §13),
+2. **Staleness gate (tasks 823, 827 — MANDATORY before an `--all` coverage claim)**: `--all`
+   promises whole-mailbox coverage, but `email-classify` only sees what notmuch has indexed. When
+   the notmuch index lags the on-disk maildir (no auto-indexer exists — wrapper-contracts.md §13),
    the sweep silently covers only the indexed subset. Parse the census output's
-   `INBOX freshness  on-disk=<D>  notmuch-indexed=<I>  [ok|STALE]` line (added to `email-census`
-   per task 823; `on-disk` is himalaya's authoritative maildir count, `notmuch-indexed` is what
-   classification sees):
-   - **`[ok]`** (`on-disk == notmuch-indexed`): proceed to the count probe (step 3).
-   - **`[STALE]`** (the two diverge): DO NOT silently proceed — a bucket approval over the indexed
-     subset would misrepresent the mailbox. Surface the divergence explicitly (both numbers) and
-     route to the **staleness remediation** below (task 824): offer to run the sanctioned reindex
-     `email-reindex`, then re-run census and re-check freshness. Only continue the `--all` sweep
-     once freshness reads `[ok]`, OR the user explicitly acknowledges partial coverage over the
-     indexed subset for this run. In autonomous/orchestrator mode (no human to prompt), STOP with
-     the divergence reported rather than claim whole-mailbox coverage. If the census freshness
-     line is absent (an older `email-census` predating task 823), emit a visible notice that
-     staleness could not be verified and treat coverage as unverified — never assume fresh.
+   `INBOX freshness  on-disk=<D>  indexed-files=<F>  divergence=<Δ>  tol=<T>  reindex=<ISO|never>
+   [ok|STALE]` line (`email-census`, task 827 redesign; `on-disk` is himalaya's authoritative
+   maildir FILE count, `indexed-files` is a path-prefix post-filtered `notmuch --output=files`
+   FILE count for the exact maildir path — a file-vs-file comparison, never a deduped-message
+   count; see staleness-detection.md for the full rationale):
+   - **`[ok]`** (`Δ ≤ T`, i.e. `divergence <= tol` — a bounded tolerance, NOT strict equality):
+     proceed to the count probe (step 3).
+   - **`[STALE]`** (`Δ > T`): DO NOT silently proceed — a bucket approval over the indexed
+     subset would misrepresent the mailbox. Surface the divergence explicitly (on-disk,
+     indexed-files, divergence, tolerance) and route to the **staleness remediation** below (task
+     824/827): offer to run the sanctioned reindex `email-reindex`, then re-run census and
+     re-check freshness. Only continue the `--all` sweep once freshness reads `[ok]`, OR the user
+     explicitly acknowledges partial coverage over the indexed subset for this run.
+     - **Reindex marker and autonomous-mode behavior**: use the `reindex=<ISO|never>` field to
+       distinguish "reindex never attempted" from "reindex ran, residual persists." In
+       interactive mode this only changes the messaging (offer `email-reindex` either way). In
+       **autonomous/orchestrator mode** (no human to prompt): if `reindex=never` AND `[STALE]`,
+       STOP and report the divergence plus the `email-reindex` command to run — reindex has not
+       been attempted this cycle. If `reindex=<ISO>` (recently ran) AND still `[STALE]`, do NOT
+       STOP-loop on a repeat reindex; instead report the persistent residual as a candidate
+       follow-up (the gap survived a reindex, so re-running it again is unlikely to help) and
+       proceed per the interactive-mode acknowledgment path or continue to flag for the user.
+   - If the census freshness line is absent (an older `email-census` predating task 827), emit a
+     visible notice that staleness could not be verified and treat coverage as unverified — never
+     assume fresh.
 3. **Count probe** (wrapper-only count oracle, wrapper-contracts.md §10, §12): run
    `email-classify --account <account> --limit 0 "<SCOPE_QUERY> and not tag:proposed-... (all
    four)"` and parse the `NOTE: query matched <total> message(s)` line for the new-message count
@@ -605,15 +617,16 @@ own pilot independently.
 - `CHUNK_SIZE = 1000` — skill-side sweep chunk size (`--all` Stage 2); provisional until the
   `--archive` pilot confirms or adjusts it.
 
-## Staleness Remediation (task 824 — sanctioned reindex)
+## Staleness Remediation (tasks 824, 827 — sanctioned reindex)
 
-When the Stage 1 staleness gate reports `[STALE]`, the fix is to reconcile the notmuch index to
-the on-disk maildir. The sanctioned path is the **`email-reindex`** operator helper, which runs
-`notmuch new --no-hooks` internally (`.dotfiles` `mbsync.nix`, task 824). This mirrors how
-`mbsync` is treated by `skill-email-sync`: `email-reindex` is **not** one of the five wrapper
-binaries, but it is a sanctioned, index-only, non-mutating operation — it touches no maildir/IMAP
-mail, only the local search index. It is therefore exempt from the "never call raw notmuch"
-prohibition below, exactly as the group-scoped `mbsync` reconcile is.
+When the Stage 1 staleness gate reports `[STALE]` (`Δ > T`, the bounded-tolerance file-vs-file
+divergence — see Stage 1 above and staleness-detection.md), the fix is to reconcile the notmuch
+index to the on-disk maildir. The sanctioned path is the **`email-reindex`** operator helper,
+which runs `notmuch new --no-hooks` internally (`.dotfiles` `mbsync.nix`, tasks 824, 827). This
+mirrors how `mbsync` is treated by `skill-email-sync`: `email-reindex` is **not** one of the five
+wrapper binaries, but it is a sanctioned, index-only, non-mutating operation — it touches no
+maildir/IMAP mail, only the local search index. It is therefore exempt from the "never call raw
+notmuch" prohibition below, exactly as the group-scoped `mbsync` reconcile is.
 
 **Why `email-reindex` and not raw `notmuch new`**:
 - Plain `notmuch new` fires the `preNew` hook `mbsync -a`, which violates the never-`mbsync -a`
@@ -623,21 +636,31 @@ prohibition below, exactly as the group-scoped `mbsync` reconcile is.
   classification (`folder:Gmail` / `folder:Logos`, which this skill uses) is made current;
   tag-based views may lag until a later full `notmuch new` runs. This is acceptable for the
   sweep, which is folder-scoped.
+- `email-reindex` also writes the reindex-ran marker (task 827) that `email-census` surfaces as
+  `reindex=<ISO|never>`, so a subsequent census run can tell "reindex just ran" from "reindex
+  never attempted."
 
 **Remediation flow** (interactive, root session):
-1. Report the divergence from the census freshness line (`on-disk=<D>`, `notmuch-indexed=<I>`).
+1. Report the divergence from the census freshness line (`on-disk=<D>`, `indexed-files=<F>`,
+   `divergence=<Δ>`, `tol=<T>`).
 2. If the on-disk count also looks behind the *server* (rare; the maildir itself is stale), the
    user should first run `/email --sync` (or `mbsync <group>` / `email-thaw`) to pull server
    mail, since `email-reindex` does NOT sync. Otherwise go straight to step 3.
 3. Offer to run `email-reindex` (an AskUserQuestion gate — it is fast and non-mutating, but keep
    the human in the loop). On approval, run it, then re-run `email-census` and re-check the
-   freshness line.
-4. Proceed with the `--all` sweep only once freshness reads `[ok]`, or the user explicitly
-   accepts partial coverage over the indexed subset for this run.
+   freshness line (`reindex=<ISO>` should now reflect a recent run; re-evaluate `Δ ≤ T`).
+4. Proceed with the `--all` sweep once freshness reads `[ok]` (`Δ ≤ T`). If it still reads
+   `[STALE]` after a reindex just ran (`reindex=<ISO>` recent), treat the residual as a
+   first-class "reindex ran, residual persists" outcome — the user may still choose to accept
+   partial coverage over the indexed subset for this run, or investigate the persistent gap as a
+   follow-up (do not loop on repeated `email-reindex` calls; it already ran).
 
-In autonomous/orchestrator mode there is no human to approve `email-reindex`; STOP with the
-divergence and the exact remediation command (`email-reindex`) reported, rather than reindexing
-unprompted or claiming whole-mailbox coverage.
+In autonomous/orchestrator mode there is no human to approve `email-reindex`. Use the
+`reindex=<ISO|never>` field to decide the response: if `reindex=never` AND `[STALE]`, STOP with
+the divergence and the exact remediation command (`email-reindex`) reported — reindex has not
+been attempted this cycle. If `reindex=<ISO>` (a reindex already ran) AND still `[STALE]`, do not
+STOP-loop on a repeat reindex; report the persistent residual as a candidate follow-up rather than
+claiming whole-mailbox coverage or re-invoking `email-reindex` unprompted.
 
 ## Critical Requirements
 

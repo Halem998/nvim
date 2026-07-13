@@ -300,13 +300,22 @@ hook = `mbsync -a`, aerc's `$` keybind = `mbsync -a && notmuch new`, and manual 
 Consequently the notmuch index lags the maildir whenever mail lands and none of those paths has
 run since — staleness is expected and intermittent, not exceptional.
 
-**Freshness disclosure (task 823).** `email-census` emits an
-`INBOX freshness  on-disk=<D>  notmuch-indexed=<I>  [ok|STALE]` line (`census.nix`), where
-`on-disk` is `himalaya envelope list -f INBOX | jq length` and `notmuch-indexed` is
-`notmuch count folder:<ACCOUNT_FOLDER>`. `skill-email-cleanup`'s `--all` Stage 1 staleness gate
-parses this line and refuses to claim whole-mailbox coverage while it reads `[STALE]`.
+**Freshness disclosure (tasks 823, 827).** `email-census` emits an
+`INBOX freshness  on-disk=<D>  indexed-files=<F>  divergence=<Δ>  tol=<T>  reindex=<ISO|never>
+[ok|STALE]` line (`census.nix`), where `on-disk` is `himalaya envelope list -f INBOX | jq length`
+and `indexed-files` is a **path-prefix post-filtered** `notmuch --output=files` FILE count for the
+exact maildir path (`path:<ACCOUNT_FOLDER>/cur` / `path:<ACCOUNT_FOLDER>/new`, grepped to that
+literal path) — a file-vs-file comparison, not the deduped-Message-ID `notmuch count
+folder:<ACCOUNT_FOLDER>` used before task 827 (see staleness-detection.md for why the deduped
+count is structurally unreachable for any account with real Message-ID duplication, and for the
+`--output=files` cross-folder/cross-account duplicate-inclusion quirk that the naive form of this
+query falls into). `[ok]` is `Δ ≤ T` where `Δ = |on-disk − indexed-files|` and
+`T = max(5, ceil(0.10 × on-disk))` — a bounded tolerance, not strict equality. `reindex=<ISO|never>`
+is an informational secondary signal (see below); it does not itself flip `[ok]`/`[STALE]`.
+`skill-email-cleanup`'s `--all` Stage 1 staleness gate parses this line and refuses to claim
+whole-mailbox coverage while it reads `[STALE]`.
 
-**Sanctioned reindex: `email-reindex` (task 824).** A sixth operator helper (`mbsync.nix`,
+**Sanctioned reindex: `email-reindex` (tasks 824, 827).** A sixth operator helper (`mbsync.nix`,
 alongside `email-freeze`/`email-thaw`; **NOT** one of the five contract binaries) runs
 `notmuch new --no-hooks`:
 - `--no-hooks` skips `preNew = mbsync -a` (preserving the never-`mbsync -a` invariant and staying
@@ -320,3 +329,7 @@ alongside `email-freeze`/`email-thaw`; **NOT** one of the five contract binaries
   because it triggers `mbsync -a`.
 - `email-reindex` does NOT sync the server; if the maildir itself is behind the server, run
   `mbsync <group>` / `email-thaw` / `/email --sync` first, then `email-reindex`.
+- `email-reindex` also writes the reindex-ran marker (task 827): after `notmuch new --no-hooks`
+  completes, it writes an ISO-8601 timestamp to
+  `${XDG_STATE_HOME:-$HOME/.local/state}/email-agent/last-reindex`, which `email-census` reads
+  back as the `reindex=<ISO|never>` field above.

@@ -1,0 +1,36 @@
+{
+  "phase": 3,
+  "phase_name": "Propagate to wrapper-contracts.md §13 (frozen-fact restatement)",
+  "started_at": "2026-07-13T15:59:00Z",
+  "last_updated": "2026-07-13T16:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Update §13 Freshness disclosure to new file-vs-file + tolerance + marker + canonical line format",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Replace stale on-disk == notmuch-indexed pass condition with Delta<=T tolerance condition",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Keep email-reindex sanctioned-non-wrapper description intact; add reindex marker note",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

@@ -66,8 +66,11 @@ the raw bytes of a human-reviewed, git-tracked manifest.
 `mbsync` reconcile (`/email --sync`) and `email-reindex` (index-only `notmuch new --no-hooks`,
 alongside the `email-freeze`/`email-thaw` operator helpers). Because classification reads notmuch
 and no auto-indexer exists, `--all` runs an index-freshness gate before claiming whole-mailbox
-coverage: `email-census` prints an `INBOX freshness … [ok|STALE]` line, and a `[STALE]` divergence
-is reconciled with `email-reindex` (tasks 823-824; see `context/project/email/domain/staleness-detection.md`).
+coverage: `email-census` prints an `INBOX freshness  on-disk=<D>  indexed-files=<F>
+divergence=<Δ>  tol=<T>  reindex=<ISO|never>  [ok|STALE]` line — a file-vs-file comparison within
+a bounded tolerance (`[ok]` when `Δ ≤ T`), not strict equality — and a `[STALE]` divergence beyond
+tolerance is reconciled with `email-reindex` (tasks 823-824-827; see
+`context/project/email/domain/staleness-detection.md`).
 
 ## Workflow: Propose -> Review -> Confirm -> Execute
 

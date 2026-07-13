@@ -20,7 +20,7 @@
     },
     {
       "path": "project/email/domain/wrapper-contracts.md",
-      "description": "The five wrapper binaries, safety classes, global flag contract, constants, classify pagination contract (limit/no-offset, count oracle), and folder-scope query tokens",
+      "description": "The five wrapper binaries, safety classes, global flag contract, constants, classify pagination contract (limit/no-offset, count oracle), folder-scope query tokens, and index-freshness gate (file-vs-file comparison, bounded tolerance, reindex marker)",
       "load_when": {
         "agents": [
           "email-implementation-agent"
@@ -31,14 +31,14 @@
         ],
         "commands": []
       },
-      "line_count": 322,
+      "line_count": 335,
       "domain": "project",
       "subdomain": "email",
       "summary": "Frozen wrapper contract summary for the five email agent tools, ground-truth verified"
     },
     {
       "path": "project/email/domain/staleness-detection.md",
-      "description": "notmuch index staleness: census freshness line (on-disk vs indexed), why file counts are unreliable, no auto-indexer, and the sanctioned email-reindex remediation for --all coverage",
+      "description": "notmuch index staleness (task 827 redesign): census freshness line compares on-disk files vs a path-prefix post-filtered indexed-files count within a bounded tolerance (not strict equality), the notmuch --output=files cross-folder/cross-account duplicate quirk, the reindex-ran marker, no auto-indexer, and the sanctioned email-reindex remediation for --all coverage",
       "load_when": {
         "agents": [
           "email-implementation-agent"
@@ -49,10 +49,10 @@
         ],
         "commands": []
       },
-      "line_count": 72,
+      "line_count": 134,
       "domain": "project",
       "subdomain": "email",
-      "summary": "notmuch staleness detection (census freshness line) and email-reindex remediation for --all coverage"
+      "summary": "notmuch staleness detection (file-vs-file census freshness line + bounded tolerance + reindex marker) and email-reindex remediation for --all coverage"
     },
     {
       "path": "project/email/domain/archive-mode-risk.md",
