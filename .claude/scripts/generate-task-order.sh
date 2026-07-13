@@ -121,7 +121,7 @@ declare -A task_status     # task_num -> status string (raw from state.json)
 declare -A task_deps       # task_num -> space-separated active dep IDs
 declare -A task_successors # task_num -> space-separated active successor IDs (inverse of task_deps)
 declare -A task_desc       # task_num -> description
-declare -a all_task_nums   # ordered list of all active task IDs
+declare -a all_task_nums=()   # ordered list of all active task IDs
 
 build_graph() {
   local raw_data

@@ -188,6 +188,11 @@
           "type": "plan",
           "path": "specs/827_email_staleness_detector_redesign/plans/01_staleness-detector-redesign.md",
           "summary": "7-phase plan: new file-vs-file+tolerance+reindex-marker freshness semantics defined in staleness-detection.md, propagated to census.nix/mbsync.nix (cross-repo), wrapper-contracts §13, skill-email-cleanup, plus follow-up spawns."
+        },
+        {
+          "type": "summary",
+          "path": "specs/827_email_staleness_detector_redesign/summaries/01_staleness-detector-redesign-summary.md",
+          "summary": "Full implementation summary: 7 phases, live verification, follow-up recommendations."
         }
       ],
       "blockers": [],

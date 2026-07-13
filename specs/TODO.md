@@ -4,24 +4,7 @@ next_project_number: 852
 
 # TODO
 
-## Task Order
-
-*Updated 2026-07-12. Generated from state.json dependency graph.*
-
-**Dependency Waves**:
-| Wave | Tasks | Blocked by | Topics |
-|------|-------|------------|--------|
-| 1 | 87,827 | -- | extensions, terminal ui |
-
-**Grouped by Topic** (indented = depends on parent):
-
-### Extensions
-
-827 [NOT STARTED] — The freshness gate shipped in tasks 823-825 is defective: email-c
-
-### Terminal Ui
-
-87 [RESEARCHED] — Investigate why the terminal working directory changes to a proje
+INFO: No active non-terminal tasks found in /home/benjamin/.config/nvim/specs/state.json
 
 ## Tasks
 
@@ -166,12 +149,17 @@ DEPENDENCIES: 831 (COMPLETE — fixed converter), 835 (COMPLETE — provenance/f
 ---
 
 ### 827. Redesign the /email staleness detector - stop equating maildir files with deduped messages
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: Task 826
+- **Dependencies**: None
+- **Research**: [827_email_staleness_detector_redesign/reports/01_staleness-detector-redesign.md]
+- **Plan**: [827_email_staleness_detector_redesign/plans/01_staleness-detector-redesign.md]
+- **Summary**: [827_email_staleness_detector_redesign/summaries/01_staleness-detector-redesign-summary.md]
 
 **Description**: The freshness gate shipped in tasks 823-825 is defective: email-census compares `himalaya -f INBOX` maildir FILE count against `notmuch count folder:X` deduped-MESSAGE count. These are incomparable (different file sets; heavy label-folder duplication; Message-ID dedup), so the line reads [STALE] even immediately after a full email-reindex (observed live: on-disk=3736 vs notmuch-indexed=3735, and `notmuch count --output=files folder:Logos`=11075 - none agree). As a hard gate requiring [ok] it is unreachable, forcing a manual 'Proceed, accept N' override on every --all run. Redesign options to evaluate: (a) compare comparable file sets - on-disk files vs `notmuch count --output=files` for the EXACT indexed path (path:<acct>/cur); (b) downgrade from a hard equality gate to a 'notmuch grossly behind disk' ratio/threshold heuristic that can actually reach a passing state and only blocks on large lags; (c) make the real gate 'was email-reindex run this session?' rather than a count comparison. Update census.nix (freshness line), skill-email-cleanup Stage 1 gate, staleness-detection.md, and wrapper-contracts.md section 13. Depends on 826 because the correct true count depends on resolving the Logos maildir duplication first. Cross-repo: census.nix change lands in ~/.dotfiles.
+
+VERIFIED 2026-07-13 (post-826-reclone + fresh email-reindex): premise confirmed live. Gmail freshness reads on-disk=128 notmuch-indexed=128 [ok], but Logos reads on-disk=341 notmuch-indexed=318 [STALE] even on a clean, fully-synced, freshly-reindexed mailbox. Three counts of the same Logos INBOX all disagree: himalaya envelope list=341 (files), notmuch count folder:Logos=318 (deduped Message-IDs), notmuch count --output=files folder:Logos=403 (different file set). 826 established the 23-message gap is REAL DISTINCT MESSAGES, not duplicates, so on-disk==notmuch-indexed is structurally unreachable for Logos regardless of syncing/reindexing. The equality gate is therefore permanently [STALE] for Logos and inconsistent across accounts (Gmail passes, Logos cannot). Fix direction (a) compare comparable file sets via notmuch --output=files on the exact indexed path, or (b) a lag-ratio heuristic, is confirmed correct. Additional finding: email-census only honors --account <acct> (positional arg is silently ignored and defaults to gmail) — relevant since the redesign touches census.nix.
 
 ---
 
@@ -220,7 +208,7 @@ DEPENDENCIES: 831 (COMPLETE — fixed converter), 835 (COMPLETE — provenance/f
 
 ### 87. Investigate terminal directory change when opening neovim in wezterm
 - **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Status**: [ABANDONED]
 - **Task Type**: neovim
 - **Topic**: Terminal UI
 - **Dependencies**: None
