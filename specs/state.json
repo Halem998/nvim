@@ -437,7 +437,7 @@
     {
       "project_number": 852,
       "project_name": "investigate_logos_unindexed_files",
-      "status": "blocked",
+      "status": "completed",
       "task_type": "email",
       "topic": "extensions",
       "priority": "medium",
@@ -449,7 +449,7 @@
       ],
       "estimated_effort": "2-3 hours",
       "created": "2026-07-13T16:55:45Z",
-      "last_updated": "2026-07-13T18:02:42Z",
+      "last_updated": "2026-07-13T18:44:07Z",
       "session_id": "sess_1783965726_aeab14",
       "cross_repo_dependency": "~/.dotfiles notmuch/mbsync config; investigation touches ~/Mail/Logos data (read-only)",
       "parent_task": 827,
@@ -470,7 +470,8 @@
           "summary": "Root cause investigated; notmuch new --no-hooks --full-scan ran (index-only) but 22 anomaly files remain unindexed (only 5 unrelated staleness files indexed). Mail byte-identical. logos-reclone.sh --no-hooks patch produced (proposal only). Recommends Xapian-level follow-up."
         }
       ],
-      "previous_status": "partial"
+      "previous_status": "partial",
+      "completion_summary": "Resolved by task 854 (its sole dependency). Task 854's read-only diagnosis proved 852's premise false: the 22 Logos INBOX files were never unindexed. All 22 are fully indexed in a structurally healthy Xapian DB (xapian-check: no errors, no ghost directory record); they carry tag:trash, which is in notmuch's search.exclude_tags, so default searches omit them. 852's own on-disk-vs-indexed comm -23 diff used such a trash-excluding search as its indexed-set probe, producing the false 'unindexed' positive; --full-scan 'failed to recover' them because nothing was broken. No reindex needed or possible. See specs/854_.../summaries/01_diagnose-repair-xapian-ghost-summary.md and wrapper-contracts.md section 13."
     },
     {
       "project_number": 853,

@@ -4,20 +4,7 @@ next_project_number: 855
 
 # TODO
 
-## Task Order
-
-*Updated 2026-07-13. Generated from state.json dependency graph.*
-
-**Dependency Waves**:
-| Wave | Tasks | Blocked by | Topics |
-|------|-------|------------|--------|
-| 1 | 852 | -- | extensions |
-
-**Grouped by Topic** (indented = depends on parent):
-
-### Extensions
-
-852 [BLOCKED] — During task 827 (email staleness detector redesign), live diagnos
+INFO: No active non-terminal tasks found in /home/benjamin/.config/nvim/specs/state.json
 
 ## Tasks
 
@@ -55,7 +42,7 @@ Constraints: read-only diagnosis first, no mail file mutation at any point (re-v
 ---
 
 ### 852. Investigate 22 Logos INBOX files that notmuch never indexes
-- **Status**: [BLOCKED]
+- **Status**: [COMPLETED]
 - **Task Type**: email
 - **Topic**: extensions
 - **Dependencies**: Task 854
