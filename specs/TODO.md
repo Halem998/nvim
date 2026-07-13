@@ -1,5 +1,5 @@
 ---
-next_project_number: 855
+next_project_number: 856
 ---
 
 # TODO
@@ -7,6 +7,31 @@ next_project_number: 855
 INFO: No active non-terminal tasks found in /home/benjamin/.config/nvim/specs/state.json
 
 ## Tasks
+
+### 855. Prevent task number references in deliverables
+- **Effort**: 3-5 hours
+- **Status**: [COMPLETED]
+- **Task Type**: meta
+- **Topic**: meta
+- **Dependencies**: None
+- **Research**: [855_prevent_task_number_references_in_deliverables/reports/01_task-reference-leakage.md]
+- **Plan**: [855_prevent_task_number_references_in_deliverables/plans/01_prevent-task-references.md]
+
+**Description**: Systematically prevent agents from embedding TASK-NUMBER references (e.g. '(tasks 823-824)', '**Architecture context (task 35)**', 'task N:') into DELIVERABLE files -- the actual work product -- while preserving task numbers where they legitimately belong. Task numbers are ephemeral work-management metadata: they exist only to manage work, they get renumbered during vault operations (next_project_number > 1000 subtracts 1000), and they are meaningless to a future reader of a context/standard/code file. Deliverables must be self-contained and reference DURABLE anchors (sibling doc filenames, section headings, decision-record names) rather than 'task N'. Observed leak example: .claude/context/project/email/domain/wrapper-contracts.md had a section heading '## 13. ... (tasks 823-824)' and an inserted line '**Architecture context (task 35)**: ...'.
+
+PRINCIPLE TO ENCODE: Files OUTSIDE specs/ must not mention task numbers. Task numbers are permitted ONLY in specs/** artifacts (reports, plans, summaries, TODO.md, state.json), git commit messages, and PR/branch metadata. When citing provenance or prior work in a deliverable, reference the durable artifact instead of the task that produced it.
+
+SCOPE (4 enforcement layers -- /plan to phase them):
+1. New rule .claude/rules/no-task-references-in-deliverables.md stating the principle, allowed exceptions (specs/**, commit messages, PR/branch metadata), and the 'reference durable anchors instead' guidance; auto-applied by path to non-specs deliverable targets.
+2. Advisory (non-blocking) PostToolUse hook .claude/hooks/validate-no-task-references.sh wired in .claude/settings.json under matcher 'Write|Edit', following the validate-plan-write.sh / validate-meta-write.sh precedent: on detecting a task-number citation in a non-specs Write/Edit target, emit corrective context; NEVER block. Must not fire on specs/ paths. Regex must be carefully bounded to numeric-citation shapes ('(task N)', '(tasks N-N)', '(tasks N, N)', 'task N:', 'task N' / 'tasks N' followed by non-word) and MUST NOT false-positive on 'task queue', 'task type', 'async task', 'background task', 'TaskCreate', etc.
+3. Reinforcement snippets referencing the new rule in the implementer skills/agents (general-implementation-agent, general-implementation-hard-agent, and the domain implementers: neovim, nix, cslib) and in researcher/planner skills+agents insofar as they author context files.
+4. Update documentation-policy standards (.claude/context/project/neovim/standards/documentation-policy.md and the nvim extension copy .claude/extensions/nvim/context/project/neovim/standards/documentation-policy.md) to state deliverables must not cite task numbers.
+
+DECISIONS (user-confirmed at task creation): single cohesive meta task; the runtime hook is ADVISORY / non-blocking (matches existing validator hooks, avoids false-positive friction).
+
+OUT OF SCOPE: retroactively scrubbing existing task-number references from already-written deliverables (a separate cleanup pass could be spawned later); the git-workflow.md 'task {N}:' commit convention stays as-is (it is the ALLOWED use).
+
+---
 
 ### 854. Diagnose and repair xapian directorybookkeeping ghost blocking 22 logos inbox files
 - **Effort**: 2-4 hours

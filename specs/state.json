@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 855,
+  "next_project_number": 856,
   "active_projects": [
     {
       "project_number": 87,
@@ -544,6 +544,41 @@
       ],
       "session_id": "sess_1783966056_78885b",
       "completion_summary": "Diagnosed the 22 'unindexed' Logos INBOX files: original premise was false. All 22 were already fully indexed in a structurally healthy Xapian DB (xapian-check: no errors); tag:trash + notmuch search.exclude_tags caused default searches to omit them, and task 852's on-disk-vs-indexed diff used exactly such a search as its indexed-set probe. No repair needed or performed; no mail/DB mutation. Documented root cause in summary and extended wrapper-contracts.md section 13 with corrected audit guidance."
+    },
+    {
+      "project_number": 855,
+      "project_name": "prevent_task_number_references_in_deliverables",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "Systematically prevent agents from embedding TASK-NUMBER references (e.g. '(tasks 823-824)', '**Architecture context (task 35)**', 'task N:') into DELIVERABLE files -- the actual work product -- while preserving task numbers where they legitimately belong. Task numbers are ephemeral work-management metadata: they exist only to manage work, they get renumbered during vault operations (next_project_number > 1000 subtracts 1000), and they are meaningless to a future reader of a context/standard/code file. Deliverables must be self-contained and reference DURABLE anchors (sibling doc filenames, section headings, decision-record names) rather than 'task N'. Observed leak example: .claude/context/project/email/domain/wrapper-contracts.md had a section heading '## 13. ... (tasks 823-824)' and an inserted line '**Architecture context (task 35)**: ...'.\n\nPRINCIPLE TO ENCODE: Files OUTSIDE specs/ must not mention task numbers. Task numbers are permitted ONLY in specs/** artifacts (reports, plans, summaries, TODO.md, state.json), git commit messages, and PR/branch metadata. When citing provenance or prior work in a deliverable, reference the durable artifact instead of the task that produced it.\n\nSCOPE (4 enforcement layers -- /plan to phase them):\n1. New rule .claude/rules/no-task-references-in-deliverables.md stating the principle, allowed exceptions (specs/**, commit messages, PR/branch metadata), and the 'reference durable anchors instead' guidance; auto-applied by path to non-specs deliverable targets.\n2. Advisory (non-blocking) PostToolUse hook .claude/hooks/validate-no-task-references.sh wired in .claude/settings.json under matcher 'Write|Edit', following the validate-plan-write.sh / validate-meta-write.sh precedent: on detecting a task-number citation in a non-specs Write/Edit target, emit corrective context; NEVER block. Must not fire on specs/ paths. Regex must be carefully bounded to numeric-citation shapes ('(task N)', '(tasks N-N)', '(tasks N, N)', 'task N:', 'task N' / 'tasks N' followed by non-word) and MUST NOT false-positive on 'task queue', 'task type', 'async task', 'background task', 'TaskCreate', etc.\n3. Reinforcement snippets referencing the new rule in the implementer skills/agents (general-implementation-agent, general-implementation-hard-agent, and the domain implementers: neovim, nix, cslib) and in researcher/planner skills+agents insofar as they author context files.\n4. Update documentation-policy standards (.claude/context/project/neovim/standards/documentation-policy.md and the nvim extension copy .claude/extensions/nvim/context/project/neovim/standards/documentation-policy.md) to state deliverables must not cite task numbers.\n\nDECISIONS (user-confirmed at task creation): single cohesive meta task; the runtime hook is ADVISORY / non-blocking (matches existing validator hooks, avoids false-positive friction).\n\nOUT OF SCOPE: retroactively scrubbing existing task-number references from already-written deliverables (a separate cleanup pass could be spawned later); the git-workflow.md 'task {N}:' commit convention stays as-is (it is the ALLOWED use).",
+      "effort": "3-5 hours",
+      "topic": "meta",
+      "dependencies": [],
+      "file_scope": [
+        ".claude/rules/no-task-references-in-deliverables.md",
+        ".claude/hooks/validate-no-task-references.sh",
+        ".claude/settings.json",
+        ".claude/agents/general-implementation-agent.md",
+        ".claude/agents/general-implementation-hard-agent.md",
+        ".claude/context/project/neovim/standards/documentation-policy.md",
+        ".claude/extensions/nvim/context/project/neovim/standards/documentation-policy.md"
+      ],
+      "created": "2026-07-13T00:00:00Z",
+      "last_updated": "2026-07-13T19:11:40Z",
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/855_prevent_task_number_references_in_deliverables/reports/01_task-reference-leakage.md",
+          "summary": "4-layer leakage-prevention research: rule, advisory hook + regex, agent reinforcements, doc-policy updates"
+        },
+        {
+          "type": "plan",
+          "path": "specs/855_prevent_task_number_references_in_deliverables/plans/01_prevent-task-references.md",
+          "summary": "5-phase plan: rule+registration, advisory hook+wiring, six-agent reinforcement, both doc-policy copies, end-to-end validation"
+        }
+      ],
+      "session_id": "sess_1783968617_ea7ceb",
+      "completion_summary": "Encoded a system-wide prohibition on task-number citations in deliverable files (everything outside specs/), keeping them only where they belong: specs/** artifacts, commit messages, PR/branch metadata. Four enforcement layers shipped: (1) rule .claude/rules/no-task-references-in-deliverables.md registered via the CLAUDE.md merge-source; (2) advisory non-blocking PostToolUse hook validate-no-task-references.sh (regex \\btasks?[:,]?[[:space:]]+[0-9], case-insensitive) live-wired in settings.json line 157 and JSON-verified, emitting additionalContext advisories and never blocking; (3) MUST NOT reinforcement clauses in all six implementation agents; (4) the deliverables-must-not-cite-task-numbers clause added to both documentation-policy.md copies. Validation: 10/10 positive regex matches, 0/13 false positives (task queue, TaskCreate, task_number, task-lock all clean); hook no-ops on specs/ paths. Out of scope follow-up: 9+ pre-existing leaks in wrapper-contracts.md await a retroactive cleanup task."
     }
   ],
   "completed_projects": [],
