@@ -1,0 +1,60 @@
+{
+  "phase": 1,
+  "phase_name": "Define the new freshness-line semantics (authoritative doc)",
+  "started_at": "2026-07-13T15:51:00Z",
+  "last_updated": "2026-07-13T15:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Rewrite Ground truth vs. index section to state file-vs-file model",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/email/context/project/email/domain/staleness-detection.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Document --output=files cross-folder/cross-account duplicate-inclusion quirk with man-page quote and verified numbers",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/email/context/project/email/domain/staleness-detection.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Define tolerance rule (b): Delta = |on-disk - indexed-files|, T = max(5, ceil(0.10*on-disk))",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/email/context/project/email/domain/staleness-detection.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Define reindex marker (c): last-reindex timestamp file and reindex=<ISO|never> field",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/email/context/project/email/domain/staleness-detection.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Fix canonical freshness-line format string",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/email/context/project/email/domain/staleness-detection.md"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Update end-to-end flow diagram and live-example numbers",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/email/context/project/email/domain/staleness-detection.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

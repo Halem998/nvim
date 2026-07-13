@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "summary": "Seven-phase plan redesigns the email-census freshness gate from strict on-disk-files-vs-deduped-messages equality to a reachable file-vs-file comparison ((a) path-prefix post-filtered notmuch --output=files) plus a bounded tolerance ((b) Delta<=max(5, ceil(10% of on-disk))) and a reindex-ran marker ((c)), defined once in staleness-detection.md then propagated to census.nix/mbsync.nix (cross-repo) and all enumerated in-repo doc/skill sites, verified [ok] live for both Gmail and Logos, with the 22-unindexed-Logos-files anomaly and the --account positional-arg bug handed off as separate follow-up tasks.",
+  "blockers": [],
+  "phases_total": 7,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/827_email_staleness_detector_redesign/plans/01_staleness-detector-redesign.md",
+      "summary": "Phased implementation plan: (1) define new freshness-line semantics (file-vs-file + tolerance + reindex marker + canonical line format) in the authoritative staleness-detection.md; (2) cross-repo census.nix freshness block + mbsync.nix reindex marker (write-only, no rebuild/commit/push); (3) wrapper-contracts.md §13; (4) skill-email-cleanup SKILL.md Stage 1 gate + remediation; (5) lower-stakes docs; (6) live verification reaching [ok] for Gmail and Logos; (7) spawn follow-ups for the 22 unindexed files and the --account bug."
+    }
+  ],
+  "next_steps": "Run /implement 827 to execute the plan",
+  "task_number": 827,
+  "session_id": "sess_1783303000_research827"
+}
