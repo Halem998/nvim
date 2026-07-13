@@ -4,31 +4,19 @@ next_project_number: 857
 
 # TODO
 
-## Task Order
-
-*Updated 2026-07-13. Generated from state.json dependency graph.*
-
-**Dependency Waves**:
-| Wave | Tasks | Blocked by | Topics |
-|------|-------|------------|--------|
-| 1 | 856 | -- | meta |
-
-**Grouped by Topic** (indented = depends on parent):
-
-### Meta
-
-856 [PLANNED] — Retroactive cleanup of pre-existing task-number citations in the 
+INFO: No active non-terminal tasks found in /home/benjamin/.config/nvim/specs/state.json
 
 ## Tasks
 
 ### 856. Scrub task number leaks from wrapper contracts
 - **Effort**: 1-2 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: meta
 - **Dependencies**: None
 - **Research**: [856_scrub_task_number_leaks_from_wrapper_contracts/reports/01_task-citation-inventory.md]
 - **Plan**: [856_scrub_task_number_leaks_from_wrapper_contracts/plans/01_scrub-task-citations.md]
+- **Summary**: [856_scrub_task_number_leaks_from_wrapper_contracts/summaries/01_scrub-task-citations-summary.md]
 
 **Description**: Retroactive cleanup of pre-existing task-number citations in the deliverable file .claude/extensions/email/context/project/email/domain/wrapper-contracts.md, bringing it into compliance with the rule .claude/rules/no-task-references-in-deliverables.md (deliverables outside specs/ must not cite task numbers). This is the follow-up cleanup deferred when the anti-leakage guardrail was built; the guardrail now prevents NEW leaks, this task removes EXISTING ones.
 

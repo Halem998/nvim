@@ -583,7 +583,7 @@
     {
       "project_number": 856,
       "project_name": "scrub_task_number_leaks_from_wrapper_contracts",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "description": "Retroactive cleanup of pre-existing task-number citations in the deliverable file .claude/extensions/email/context/project/email/domain/wrapper-contracts.md, bringing it into compliance with the rule .claude/rules/no-task-references-in-deliverables.md (deliverables outside specs/ must not cite task numbers). This is the follow-up cleanup deferred when the anti-leakage guardrail was built; the guardrail now prevents NEW leaks, this task removes EXISTING ones.\n\nScope: exactly ONE file (the only copy of wrapper-contracts.md; no deployed/synced duplicate exists). At creation time `grep -niE '\\btasks?[:,]?[[:space:]]+[0-9]'` found 23 matching lines (headings, inline citations, and a section title '## 13. ... (tasks 823-824)').\n\nThis is a JUDGMENT task, not a mechanical delete. Each citation must be REWRITTEN to reference the DURABLE anchor it actually stands for, or dropped only when it adds nothing:\n- Provenance that is load-bearing -> replace with the durable thing: e.g. 'Task 72 §1-§9' / 'Task 72 handoff, FROZEN' -> reference the frozen .dotfiles wrapper-contract handoff by its durable name/section (the contract lives in the .dotfiles repo), not the task number; 'verified .dotfiles task 80, verify_logos_wrapper_contract_close_phase6' -> keep the named verification function verify_logos_wrapper_contract_close_phase6 (that IS the durable anchor) and drop 'task 80'.\n- Cross-references to sibling docs (staleness-detection.md, index-architecture.md, etc.) -> cite the doc filename/section instead of the task that produced it.\n- Wrapper/operator behavior attributed to 'task N' -> state the behavior and, if provenance matters, cite the config source (classify.nix, mbsync.nix, .dotfiles addendum §N) rather than the task.\n- Where a task reference adds no durable information, delete it cleanly so prose still reads well.\n\nConstraints: edit ONLY wrapper-contracts.md; do not alter the wrapper behavior it documents; preserve all technical content and section numbering; the file's own illustrative bad-examples (if any) must be phrased so they don't read as real citations. After editing, re-run the hook regex to confirm 0 remaining real citations (allow only quoted anti-pattern examples if intentionally present). Verify the advisory hook validate-no-task-references.sh no-ops or only flags intentional example lines. Small task: no separate research phase needed -- the anchors are discoverable inline and from sibling docs in the same domain/ directory.",
       "effort": "1-2 hours",
@@ -593,7 +593,7 @@
         ".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"
       ],
       "created": "2026-07-13T00:00:00Z",
-      "last_updated": "2026-07-13T19:29:42Z",
+      "last_updated": "2026-07-13T19:34:47Z",
       "artifacts": [
         {
           "path": "specs/856_scrub_task_number_leaks_from_wrapper_contracts/reports/01_task-citation-inventory.md",
@@ -604,9 +604,15 @@
           "path": "specs/856_scrub_task_number_leaks_from_wrapper_contracts/plans/01_scrub-task-citations.md",
           "type": "plan",
           "summary": "Two-phase plan (edit + verify) to rewrite/delete all 24 task-number citations in wrapper-contracts.md using durable-anchor replacements from the research inventory; verification includes a manual-read step for the line-wrapped citation the hook regex cannot catch."
+        },
+        {
+          "path": "specs/856_scrub_task_number_leaks_from_wrapper_contracts/summaries/01_scrub-task-citations-summary.md",
+          "type": "summary",
+          "summary": "Scrubbed all 24 task-number citations from wrapper-contracts.md using durable-anchor replacements; verified clean via hook regex, manual read, and advisory-hook simulation."
         }
       ],
-      "session_id": "sess_1783970466_298292"
+      "session_id": "sess_1783970466_298292",
+      "completion_summary": "Scrubbed all 24 pre-existing task-number citations from wrapper-contracts.md (the sole in-scope deliverable), rewriting each to its durable anchor (sibling-doc section, named verify function, or config source) or deleting cleanly where it added nothing. Verified via hook regex (0 matches), whole-word grep, specs/854 path-leak grep, manual read, and advisory-hook simulation (no-op). Section numbering and technical content preserved."
     }
   ],
   "completed_projects": [],

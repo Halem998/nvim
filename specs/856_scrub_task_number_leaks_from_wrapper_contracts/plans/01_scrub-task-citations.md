@@ -1,7 +1,7 @@
 # Implementation Plan: Scrub Task-Number Citations from wrapper-contracts.md
 
 - **Task**: 856 - Retroactive cleanup of pre-existing task-number citations in wrapper-contracts.md
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: reports/01_task-citation-inventory.md
