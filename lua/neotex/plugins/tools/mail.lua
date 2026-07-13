@@ -50,6 +50,26 @@ local function sync_all_mail(on_done)
   })
 end
 
+-- Authoritative freshness check via the email-census wrapper's freshness line
+-- ("INBOX freshness ... [ok|STALE]"). Used as the fallback launch barrier when
+-- the sync+reindex chain did not complete cleanly. Returns true only when the
+-- freshness line is present and reads [ok] for the given account.
+local function census_freshness_ok(account)
+  if vim.fn.executable("email-census") ~= 1 then
+    return false
+  end
+  local out = vim.fn.systemlist({ "email-census", "--account", account })
+  if vim.v.shell_error ~= 0 then
+    return false
+  end
+  for _, line in ipairs(out) do
+    if line:find("INBOX freshness", 1, true) then
+      return line:find("[ok]", 1, true) ~= nil
+    end
+  end
+  return false
+end
+
 return {
   -- Toggleterm for aerc integration
   {
@@ -83,16 +103,40 @@ return {
             aerc:toggle()
           end
 
-          -- Task 34 (decouple aerc/himalaya stacks, F2): gate the aerc open on sync
-          -- completion instead of firing immediately. Opening aerc before mbsync +
-          -- notmuch new finish races notmuch's index against the maildir on disk,
-          -- producing "could not get MessageInfo" errors. The sync itself stays
-          -- asynchronous (non-blocking); only the *open* is gated on its on_done
-          -- callback. Bounded fallback: on sync error, sync_all_mail already
-          -- surfaces an ERROR notice -- still open aerc afterward rather than
-          -- leaving the keymap hanging with no window.
-          sync_all_mail(function(_)
-            open_aerc()
+          -- Authoritative launch barrier (decision record:
+          -- ~/Mail/.claude/context/project/email/domain/index-architecture.md).
+          -- Opening aerc before mbsync + notmuch new finish races notmuch's index
+          -- against the maildir on disk ("could not get MessageInfo" errors), and
+          -- Xapian reader-vs-writer serialization makes mid-reindex reads unsafe.
+          -- The gate therefore requires an authoritative freshness signal, not
+          -- just async ordering:
+          --   1. the sync+reindex chain completing cleanly (exit 0 on both
+          --      mbsync -a and notmuch new) is the primary barrier marker; else
+          --   2. the email-census freshness line must read [ok] for BOTH
+          --      accounts (fallback authoritative check, reusing the wrapper's
+          --      freshness-line contract).
+          -- If neither holds, the open is REFUSED with remediation guidance --
+          -- never a fail-open launch onto a possibly-stale index.
+          sync_all_mail(function(ok)
+            if ok then
+              open_aerc()
+              return
+            end
+            vim.notify(
+              "Sync/reindex did not complete cleanly -- checking index freshness via email-census...",
+              vim.log.levels.WARN
+            )
+            if census_freshness_ok("gmail") and census_freshness_ok("logos") then
+              vim.notify("Index freshness [ok] on both accounts -- opening aerc", vim.log.levels.INFO)
+              open_aerc()
+            else
+              vim.notify(
+                "aerc launch blocked: sync failed and index freshness is not [ok].\n"
+                  .. "Remediate: fix the sync (<leader>mN or mbsync <group>), run email-reindex "
+                  .. "if only the index lags, then retry <leader>me.",
+                vim.log.levels.ERROR
+              )
+            end
           end)
         end,
         desc = "Open aerc email client (opens after sync completes)",
