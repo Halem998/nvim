@@ -210,20 +210,21 @@ interdependencies; Phase 5 validates the combined result and depends on all of t
   - Each edited `**MUST NOT**:` list still has sequential-enough numbering and the new clause is
     the final item.
 
-### Phase 4: Documentation-Policy Standard (Both Copies) [NOT STARTED]
+### Phase 4: Documentation-Policy Standard (Both Copies) [COMPLETED]
 
 - **Goal:** Add the "deliverables must not cite task numbers" clause under `## Style Guidelines` in
   the canonical source and the deployed copy identically.
 - **Tasks:**
-  - [ ] Edit the CANONICAL source first:
+  - [x] Edit the CANONICAL source first:
     `.claude/extensions/nvim/context/project/neovim/standards/documentation-policy.md`. Under
     `## Style Guidelines`, insert a new final bullet after the existing
     `- Document any dependencies or requirements` line (exact text from the report's "Layer 4"):
     `- Do not cite task numbers ("task N", "tasks N-M") in README or standards content -- task numbers are ephemeral work-management metadata (see .claude/rules/no-task-references-in-deliverables.md); reference the relevant module, file, or section instead`
-  - [ ] Mirror the identical edit into the deployed copy
+    *(completed)*
+  - [x] Mirror the identical edit into the deployed copy
     `.claude/context/project/neovim/standards/documentation-policy.md` in the same commit (the two
     must stay byte-identical; `documentation-policy.md` is not in `.syncprotect`, so a later sync
-    would otherwise overwrite the deployed copy from source).
+    would otherwise overwrite the deployed copy from source). *(completed; diff confirms byte-identical)*
 - **Timing:** ~20 min
 - **Depends on:** none
 - **Files to modify:**

@@ -35,3 +35,6 @@ Description of what this module does and its key functions.
 - Maintain consistent formatting across all README files
 - Link to relevant keymaps and commands where applicable
 - Document any dependencies or requirements
+- Do not cite task numbers ("task N", "tasks N-M") in README or standards content -- task
+  numbers are ephemeral work-management metadata (see .claude/rules/no-task-references-in-deliverables.md);
+  reference the relevant module, file, or section instead

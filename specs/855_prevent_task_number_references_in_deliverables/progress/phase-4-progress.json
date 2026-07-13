@@ -1,0 +1,15 @@
+{
+  "phase": 4,
+  "phase_name": "Documentation-Policy Standard (Both Copies)",
+  "started_at": "2026-07-13T19:59:00Z",
+  "last_updated": "2026-07-13T20:02:00Z",
+  "objectives": [
+    {"id": 1, "description": "Edit canonical extensions/nvim documentation-policy.md", "status": "done", "files_touched": [".claude/extensions/nvim/context/project/neovim/standards/documentation-policy.md"]},
+    {"id": 2, "description": "Mirror edit into deployed context/project/neovim documentation-policy.md", "status": "done", "files_touched": [".claude/context/project/neovim/standards/documentation-policy.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "diff of the two copies produced no output (byte-identical) after edits; grep -c returned 1 for each copy."
+}
