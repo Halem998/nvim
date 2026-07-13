@@ -131,18 +131,18 @@ opens aerc -- no mbsync, no census, no exit-code coupling on the launch path.
 
 ---
 
-### Phase 2: Single deduplicated background sync pipeline; rewire `<leader>mN` [NOT STARTED]
+### Phase 2: Single deduplicated background sync pipeline; rewire `<leader>mN` [COMPLETED]
 
 **Goal**: All server syncing goes through one backgrounded, in-flight-guarded, hook-ful
 `notmuch new` pipeline (preNew = `mail-sync both`) shared by `<leader>me` (quiet) and
 `<leader>mN` (loud); `mbsync -a` is deleted from the codebase.
 
 **Tasks**:
-- [ ] Add module-local `sync_in_flight` boolean and `background_sync(loud)` per report 02 §5.2: early-return when in flight (INFO "Mail sync already running" only when loud); `vim.fn.jobstart({ "notmuch", "new" })` (hook-ful -- preNew runs `mail-sync both`); on exit 0 notify INFO "Mail sync + reindex complete"; on non-zero notify WARN that the background sync did not complete cleanly, aerc is unaffected, the index remains consistent, and remediation is `mail-sync` output / `<leader>mN`
-- [ ] In the `<leader>me` handler success branch, call `background_sync(false)` immediately after `open_aerc()`
-- [ ] Rewire `<leader>mN` to `background_sync(true)`; update its `desc` to "Sync all accounts (mail-sync both + notmuch)"
-- [ ] Delete `sync_all_mail` and `run_notmuch_new` (both superseded); confirm no `mbsync` string remains anywhere in `mail.lua`
-- [ ] Update the module header comment (keybinding descriptions and the mbsync/notmuch dependency notes) to describe the new architecture: index-only launch gate, single background `mail-sync` pipeline via notmuch preNew, never `mbsync -a`
+- [x] Add module-local `sync_in_flight` boolean and `background_sync(loud)` per report 02 §5.2: early-return when in flight (INFO "Mail sync already running" only when loud); `vim.fn.jobstart({ "notmuch", "new" })` (hook-ful -- preNew runs `mail-sync both`); on exit 0 notify INFO "Mail sync + reindex complete"; on non-zero notify WARN that the background sync did not complete cleanly, aerc is unaffected, the index remains consistent, and remediation is `mail-sync` output / `<leader>mN` *(completed)*
+- [x] In the `<leader>me` handler success branch, call `background_sync(false)` immediately after `open_aerc()` *(completed)*
+- [x] Rewire `<leader>mN` to `background_sync(true)`; update its `desc` to "Sync all accounts (mail-sync both + notmuch)" *(completed)*
+- [x] Delete `sync_all_mail` and `run_notmuch_new` (both superseded); confirm no `mbsync` string remains anywhere in `mail.lua` *(completed; grep for mbsync/sync_all_mail/run_notmuch_new returns nothing)*
+- [x] Update the module header comment (keybinding descriptions and the mbsync/notmuch dependency notes) to describe the new architecture: index-only launch gate, single background `mail-sync` pipeline via notmuch preNew, never `mbsync -a` *(completed)*
 
 **Timing**: 1 hour
 

@@ -3,15 +3,27 @@
 --
 -- Provides keybindings for email workflow integration:
 -- - Open aerc in toggleterm floating window
--- - Quick mail sync (mbsync + notmuch)
+-- - Background mail sync through the mail-sync wrapper
 -- - notmuch search from within Neovim
 --
 -- This module works alongside the existing himalaya plugin
 -- for a comprehensive email workflow.
 --
+-- Architecture:
+--   - Launch gate: <leader>me runs a foreground, hook-free index reconcile
+--     (`notmuch new --no-hooks`, ~0.2 s) and opens aerc as soon as it
+--     completes. The gate never consults server-sync health.
+--   - Sync pipeline: ALL server syncing routes through one backgrounded,
+--     deduplicated, hook-ful `notmuch new` run. Its preNew hook invokes the
+--     `mail-sync both` wrapper (the single sanctioned sync entry point;
+--     this module never invokes an IMAP sync binary directly), and its
+--     postNew hook retags freshly indexed `tag:new` mail. Pipeline failures
+--     surface as warnings and never block the client.
+--
 -- Keybindings:
---   <leader>me - Open aerc email client (also triggers a background sync of all accounts)
---   <leader>mN - Sync all accounts (mbsync -a + notmuch new)
+--   <leader>me - Open aerc email client (fast index reconcile, then quiet
+--                background sync of all accounts)
+--   <leader>mN - Sync all accounts (mail-sync both + notmuch, loud)
 --   <leader>mn - Search mail with notmuch (telescope)
 --
 -- Note: the <leader>m* prefix is shared with the himalaya plugin (see
@@ -20,19 +32,9 @@
 --
 -- Dependencies:
 --   - aerc (terminal email client)
---   - notmuch (email indexer)
---   - mbsync (IMAP sync)
+--   - notmuch (email indexer; its preNew hook runs `mail-sync both`)
 --   - toggleterm.nvim (terminal integration)
 -----------------------------------------------------------
-
--- Run `notmuch new` asynchronously and report success to cb(boolean).
-local function run_notmuch_new(cb)
-  vim.fn.jobstart({ "notmuch", "new" }, {
-    on_exit = function(_, code)
-      cb(code == 0)
-    end,
-  })
-end
 
 -- Reconcile the notmuch index with the maildir on disk, without running any
 -- pre/post hooks (so no server sync is triggered). This is the launch gate:
@@ -48,43 +50,40 @@ local function reconcile_index(cb)
   })
 end
 
--- Sync all accounts (mbsync -a) and reindex notmuch, with progress notifications.
--- Shared by <leader>me (open aerc) and <leader>mN (explicit sync).
---
--- notmuch new runs on BOTH mbsync outcomes: an aborted mbsync -a may have fully
--- synced some mailboxes before failing, and those messages must be indexed
--- before any freshness decision reads the notmuch database. A failed mbsync
--- still reports on_done(false) -- reindexing reconciles the index with what
--- landed on disk, but it never certifies the sync itself as clean.
-local function sync_all_mail(on_done)
-  vim.notify("Syncing all accounts...", vim.log.levels.INFO)
-  vim.fn.jobstart({ "mbsync", "-a" }, {
+-- Guard so repeated presses of <leader>me / <leader>mN never stack sync
+-- pipelines: only one background run at a time, per Neovim instance.
+local sync_in_flight = false
+
+-- The single background sync pipeline, shared by <leader>me (quiet) and
+-- <leader>mN (loud). Hook-ful `notmuch new` IS the pipeline: its preNew hook
+-- runs `mail-sync both` (the canonical, flock-serialized wrapper for both
+-- accounts), and its postNew hook retags any `tag:new` mail -- including
+-- files first indexed by the hook-free launch gate. Failure semantics are
+-- warn-never-block: aerc (if open) keeps reading a consistent index, and a
+-- non-zero exit means the SYNC was unclean, not the index.
+local function background_sync(loud)
+  if sync_in_flight then
+    if loud then
+      vim.notify("Mail sync already running", vim.log.levels.INFO)
+    end
+    return
+  end
+  sync_in_flight = true
+  if loud then
+    vim.notify("Syncing all accounts (mail-sync both + notmuch)...", vim.log.levels.INFO)
+  end
+  vim.fn.jobstart({ "notmuch", "new" }, {
     on_exit = function(_, code)
+      sync_in_flight = false
       if code == 0 then
-        run_notmuch_new(function(indexed)
-          if indexed then
-            vim.notify("All accounts synced", vim.log.levels.INFO)
-          else
-            vim.notify("notmuch indexing failed", vim.log.levels.ERROR)
-          end
-          if on_done then on_done(indexed) end
-        end)
+        vim.notify("Mail sync + reindex complete", vim.log.levels.INFO)
       else
         vim.notify(
-          "mbsync failed with code " .. code .. " -- reindexing notmuch anyway",
-          vim.log.levels.ERROR
+          "Background mail sync did not complete cleanly (exit " .. code .. "). "
+            .. "aerc is unaffected and the notmuch index remains consistent. "
+            .. "Inspect `mail-sync` output or retry with <leader>mN.",
+          vim.log.levels.WARN
         )
-        run_notmuch_new(function(indexed)
-          if indexed then
-            vim.notify(
-              "notmuch index refreshed (mbsync still failed -- sync is not clean)",
-              vim.log.levels.WARN
-            )
-          else
-            vim.notify("notmuch indexing failed after mbsync failure", vim.log.levels.ERROR)
-          end
-          if on_done then on_done(false) end
-        end)
       end
     end,
   })
@@ -149,6 +148,7 @@ return {
               return
             end
             open_aerc()
+            background_sync(false)
           end)
         end,
         desc = "Open aerc email client (fast index reconcile, sync in background)",
@@ -156,9 +156,9 @@ return {
       {
         "<leader>mN",
         function()
-          sync_all_mail()
+          background_sync(true)
         end,
-        desc = "Sync all accounts (mbsync -a + notmuch)",
+        desc = "Sync all accounts (mail-sync both + notmuch)",
       },
     },
   },
