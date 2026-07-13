@@ -25,26 +25,52 @@
 --   - toggleterm.nvim (terminal integration)
 -----------------------------------------------------------
 
+-- Run `notmuch new` asynchronously and report success to cb(boolean).
+local function run_notmuch_new(cb)
+  vim.fn.jobstart({ "notmuch", "new" }, {
+    on_exit = function(_, code)
+      cb(code == 0)
+    end,
+  })
+end
+
 -- Sync all accounts (mbsync -a) and reindex notmuch, with progress notifications.
--- Shared by <leader>me (open aerc) and <leader>mS (explicit sync).
+-- Shared by <leader>me (open aerc) and <leader>mN (explicit sync).
+--
+-- notmuch new runs on BOTH mbsync outcomes: an aborted mbsync -a may have fully
+-- synced some mailboxes before failing, and those messages must be indexed
+-- before any freshness decision reads the notmuch database. A failed mbsync
+-- still reports on_done(false) -- reindexing reconciles the index with what
+-- landed on disk, but it never certifies the sync itself as clean.
 local function sync_all_mail(on_done)
   vim.notify("Syncing all accounts...", vim.log.levels.INFO)
   vim.fn.jobstart({ "mbsync", "-a" }, {
     on_exit = function(_, code)
       if code == 0 then
-        vim.fn.jobstart({ "notmuch", "new" }, {
-          on_exit = function(_, notmuch_code)
-            if notmuch_code == 0 then
-              vim.notify("All accounts synced", vim.log.levels.INFO)
-            else
-              vim.notify("notmuch indexing failed", vim.log.levels.ERROR)
-            end
-            if on_done then on_done(notmuch_code == 0) end
-          end,
-        })
+        run_notmuch_new(function(indexed)
+          if indexed then
+            vim.notify("All accounts synced", vim.log.levels.INFO)
+          else
+            vim.notify("notmuch indexing failed", vim.log.levels.ERROR)
+          end
+          if on_done then on_done(indexed) end
+        end)
       else
-        vim.notify("mbsync failed with code " .. code, vim.log.levels.ERROR)
-        if on_done then on_done(false) end
+        vim.notify(
+          "mbsync failed with code " .. code .. " -- reindexing notmuch anyway",
+          vim.log.levels.ERROR
+        )
+        run_notmuch_new(function(indexed)
+          if indexed then
+            vim.notify(
+              "notmuch index refreshed (mbsync still failed -- sync is not clean)",
+              vim.log.levels.WARN
+            )
+          else
+            vim.notify("notmuch indexing failed after mbsync failure", vim.log.levels.ERROR)
+          end
+          if on_done then on_done(false) end
+        end)
       end
     end,
   })
@@ -54,6 +80,12 @@ end
 -- ("INBOX freshness ... [ok|STALE]"). Used as the fallback launch barrier when
 -- the sync+reindex chain did not complete cleanly. Returns true only when the
 -- freshness line is present and reads [ok] for the given account.
+--
+-- Signal quality is owned by the external wrapper (see ~/.dotfiles
+-- modules/home/email/agent-tools/census.nix): the freshness line is a
+-- count-with-tolerance proxy that cannot detect flag renames or phantom
+-- drift. Improving that signal is a dotfiles-side follow-up, out of scope
+-- for this module.
 local function census_freshness_ok(account)
   if vim.fn.executable("email-census") ~= 1 then
     return false
