@@ -1,0 +1,35 @@
+{
+  "phase": 2,
+  "phase_name": "Implement the freshness line in census.nix + reindex marker in mbsync.nix (cross-repo)",
+  "started_at": "2026-07-13T15:56:00Z",
+  "last_updated": "2026-07-13T15:58:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Replace freshness block in ~/.dotfiles census.nix with new (a)+(b)+(c) logic",
+      "status": "done",
+      "files_touched": [
+        "../.dotfiles/modules/home/email/agent-tools/census.nix"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add reindex-marker write to email-reindex in ~/.dotfiles mbsync.nix",
+      "status": "done",
+      "files_touched": [
+        "../.dotfiles/modules/home/email/mbsync.nix"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Cross-check email-freeze/email-thaw wording for old semantics",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "notes": "Cross-repo edits written to ~/.dotfiles (separate git repo, NOT committed here per hard constraint). User must review, home-manager switch, and commit/push in ~/.dotfiles separately."
+}

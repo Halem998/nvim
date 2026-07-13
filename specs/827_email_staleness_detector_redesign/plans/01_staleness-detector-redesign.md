@@ -1,7 +1,7 @@
 # Implementation Plan: Task #827
 
 - **Task**: 827 - Redesign the /email staleness detector — stop equating maildir files with deduped messages
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: 826 (completed — Logos maildir reclone + full sync)
 - **Research Inputs**: reports/01_staleness-detector-redesign.md
@@ -152,7 +152,7 @@ downstream site propagates from a single source of truth.
 
 ---
 
-### Phase 2: Implement the freshness line in census.nix + reindex marker in mbsync.nix (cross-repo) [NOT STARTED]
+### Phase 2: Implement the freshness line in census.nix + reindex marker in mbsync.nix (cross-repo) [COMPLETED]
 
 **Goal**: Implement the Phase-1 semantics in the authoritative code in `~/.dotfiles`.
 
@@ -163,14 +163,16 @@ user applies and rebuilds. If writing into `~/.dotfiles` is not safe/desired, th
 records the exact edited content in the implementation summary for the user to apply.
 
 **Tasks**:
-- [ ] Replace the freshness block in
+- [x] Replace the freshness block in
       `~/.dotfiles/modules/home/email/agent-tools/census.nix` (lines ~40-49) with the new logic
-      below. Preserve Nix string-interpolation escaping (`''${...}`).
-- [ ] Add the reindex-marker write to the `email-reindex` definition in
+      below. Preserve Nix string-interpolation escaping (`''${...}`). *(completed)*
+- [x] Add the reindex-marker write to the `email-reindex` definition in
       `~/.dotfiles/modules/home/email/mbsync.nix` (Finding 4 site #2): after the `notmuch new
-      --no-hooks` call, write the timestamp marker.
-- [ ] Cross-check `email-freeze`/`email-thaw` operator-facing messages in `mbsync.nix` for any
+      --no-hooks` call, write the timestamp marker. *(completed)*
+- [x] Cross-check `email-freeze`/`email-thaw` operator-facing messages in `mbsync.nix` for any
       wording that references the old freshness semantics; update for consistency if present.
+      *(completed: no freeze/thaw wording referenced the old on-disk==notmuch-indexed semantics;
+      verified via grep, no changes needed there)*
 
 Concrete census.nix freshness block (implements (a) post-filter, (b) tolerance, (c) marker read):
 
