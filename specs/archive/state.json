@@ -32945,6 +32945,617 @@
       ],
       "completion_summary": "Fixed literature-chunk.sh's subdivide_chunk() oversized-atomic-block branch to fall through to size-based subdivision instead of returning unsplit; re-chunked baier_katoen_2008 section07 from 1 giant 46,176-token chunk to 94 correctly-sized chunks matching siblings, with no regression to the other 11 sections or 93 other covered directories.",
       "archived": "2026-07-11T00:00:00Z"
+    },
+    {
+      "project_number": 821,
+      "project_name": "email_to_memory_contribution_architecture",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "extensions",
+      "priority": "medium",
+      "title": "Research and design email-to-memory contribution architecture",
+      "description": "Route confirmed email-cleanup decisions (junk vs keep) from the email extension into the memory vault so the system learns sender/domain preferences over time. RESEARCH PHASE FIRST: survey July-2026 best practices for email-triage to preference/memory-learning systems (sender reputation, preference capture, vault-bloat avoidance, aggregation strategies, dedup, feedback loops), plus the concrete integration surfaces already identified: capture point = skill-email-cleanup human review gate (Stage 3 per-message / Stage 2.5 bucket approval in --all mode) where the JSONL candidate manifest (Message-ID keyed, proposed_action delete|archive|keep|unsure + confidence) is confirmed; memory API = skill-memory CREATE/UPDATE/EXTEND with content-mapping + MCP dedup against .memory/memory-index.json; reusable pattern = skill-todo's harvest->dedup->user-gated-create flow (Stage ~181+); hook surface = memory extension manifest.json empty hooks object as an alternative capture path. DESIGN DECISION ALREADY MADE BY USER: memories are SENDER/DOMAIN-AGGREGATED (one evolving preference memory per sender or domain, UPDATE/EXTEND as more mail is seen -- NOT per-message), chosen to avoid vault bloat; the research should refine the aggregation/dedup/schema mechanics within that decision, not relitigate it. Output: chosen capture point, memory schema/tags, dedup + update strategy, and opt-in/gate behavior.",
+      "file_scope": [
+        "specs/821_*/"
+      ],
+      "dependencies": [],
+      "estimated_effort": "2 hours",
+      "created": "2026-07-05T21:19:39Z",
+      "last_updated": "2026-07-12T18:24:53Z",
+      "session_id": "sess_1783879475_193202_821",
+      "artifacts": [
+        {
+          "path": "specs/821_email_to_memory_contribution_architecture/reports/01_team-research.md",
+          "type": "research",
+          "summary": "Team research (4 teammates): email->memory contribution architecture"
+        },
+        {
+          "path": "specs/821_email_to_memory_contribution_architecture/plans/01_email-memory-contribution.md",
+          "type": "plan",
+          "summary": "6-phase design plan: capture point, identity key, email/preferences schema, dedup, opt-in gate"
+        },
+        {
+          "path": "specs/821_email_to_memory_contribution_architecture/summaries/01_email-memory-contribution-summary.md",
+          "type": "summary",
+          "summary": "6-phase design implemented: email-to-memory-preferences.md design doc, identity key empirically verified against 2128 tagged msgs, ROADMAP entries"
+        }
+      ],
+      "researched": "2026-07-05T21:35:42Z",
+      "next_artifact_number": 2,
+      "completion_summary": "Designed the email->memory preference-contribution architecture: sender/domain-aggregated preference memories, empirically-verified normalized identity key (validated against 2,128 tagged real messages), email/preferences/{key} schema with per-action tally, deterministic dedup with CREATE/UPDATE/EXTEND, retrieval/distill guardrails, and opt-in gate. Deliverable: email-to-memory-preferences.md design doc. Implementation follows in task 822.",
+      "archived": "2026-07-13T19:38:43Z"
+    },
+    {
+      "project_number": 822,
+      "project_name": "email_cleanup_memory_vault_contribution",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "extensions",
+      "priority": "medium",
+      "title": "Implement email cleanup to memory vault contribution",
+      "description": "Implement the email->memory contribution per the #821 design. Add a harvest step to skill-email-cleanup (or a memory lifecycle hook) that, when junk/keep decisions are confirmed, creates or UPDATEs a sender/domain-aggregated preference memory in the vault (CREATE/UPDATE/EXTEND with dedup against memory-index.json). Include an opt-in/gate consistent with skill-todo's harvest pattern, tests, and documentation updates to both extensions' READMEs/manifests.",
+      "file_scope": [
+        ".claude/extensions/email/",
+        ".claude/extensions/memory/"
+      ],
+      "dependencies": [
+        821
+      ],
+      "estimated_effort": "3 hours",
+      "created": "2026-07-05T21:19:39Z",
+      "last_updated": "2026-07-12T18:58:40Z",
+      "session_id": "sess_1783879475_193202_822",
+      "artifacts": [
+        {
+          "path": "specs/822_email_cleanup_memory_vault_contribution/reports/01_email-memory-harvest-implementation.md",
+          "type": "report",
+          "summary": "Grounds 822 impl in completed 821 design; pinpoints exact edit sites in skill-email-cleanup Stage 7, skill-memory dedup, memory-retrieve.sh filter; skill-todo gate pattern; test strategy"
+        },
+        {
+          "path": "specs/822_email_cleanup_memory_vault_contribution/plans/01_email-memory-harvest-implementation.md",
+          "type": "plan",
+          "summary": "6-phase plan: email-preference-harvest.sh helper, skill-memory dedup/purge-exemption, memory-retrieve.sh filter, skill-email-cleanup Stage 7 opt-in gate, tests, docs"
+        },
+        {
+          "path": "specs/822_email_cleanup_memory_vault_contribution/summaries/01_email-memory-harvest-implementation-summary.md",
+          "type": "summary",
+          "summary": "6 phases: email-preference-harvest.sh helper (35 tests), skill-memory dedup/tally/purge-exemption, memory-retrieve.sh filter, skill-email-cleanup Stage 7 opt-in gate, docs"
+        }
+      ],
+      "completion_summary": "Implemented the email->memory preference contribution per the 821 design: deterministic email-preference-harvest.sh helper (7 pure subcommands, 35 passing assertions); skill-memory exact-key dedup + tally-arithmetic UPDATE/EXTEND + category recognition + zero-retrieval purge exemption; memory-retrieve.sh cross-contamination filter; opt-in Stage 7 harvest gate in skill-email-cleanup (Default + --all modes) mirroring skill-todo; README/manifest doc updates. check-extension-docs.sh passes.",
+      "archived": "2026-07-13T19:38:43Z"
+    },
+    {
+      "project_number": 826,
+      "project_name": "logos_maildir_duplication_mbsync_repair",
+      "status": "completed",
+      "task_type": "nix",
+      "topic": "extensions",
+      "priority": "high",
+      "title": "Investigate Logos maildir file-duplication and repair broken mbsync logos sync",
+      "description": "Root-cause and fix the pre-existing Logos (Protonmail Bridge) mail infrastructure problem exposed by /email --logos --all (2026-07-05). Symptoms: (1) severe maildir file duplication - path:Logos/cur holds 8448 files for only 2869 unique Message-IDs (~3x), and folder:Logos spans 3735 messages / 11075 files; the Gmail-labels-over-IMAP pattern stores one message under many .Labels.* folders. (2) `mbsync logos` reconcile exits non-zero after mutations with: duplicate UIDs in .Trash/.Archive, a Maildir++ dotted-folder problem on `.Labels.benbrastmckie@gmail.com` (a dot in the folder name), and a draft with a missing Date header. Consequence: 161 local deletes from the recent cleanup are staged in local Logos Trash but CANNOT be pushed to the Proton server. Investigate ~/.dotfiles/modules/home/email/mbsync.nix (logos group/channels), notmuch.nix, and protonmail.nix; determine whether the .Labels.* folders should be excluded from the logos mbsync channels, whether Bridge label-folders are double-synced, and how to resolve the duplicate-UID and dotted-folder errors. Cross-repo: fixes land in ~/.dotfiles (deliberate handoff). Deliver a diagnosis + a concrete mbsync/notmuch config fix and a maildir de-duplication/cleanup plan. Do NOT run /email --logos --sync until this is fixed.",
+      "file_scope": [
+        "specs/826_logos_maildir_duplication_mbsync_repair/"
+      ],
+      "dependencies": [],
+      "estimated_effort": "4 hours",
+      "created": "2026-07-05T18:43:19-07:00",
+      "last_updated": "2026-07-06T20:45:00Z",
+      "session_id": "sess_1783306877_438377_826",
+      "cross_repo_dependency": "~/.dotfiles/modules/home/email/{mbsync.nix,notmuch.nix,protonmail.nix} and the live ~/Mail/Logos maildir",
+      "artifacts": [
+        {
+          "path": "specs/826_logos_maildir_duplication_mbsync_repair/reports/01_logos-maildir-mbsync-diagnosis.md",
+          "type": "report",
+          "summary": "Logos maildir/mbsync diagnosis"
+        },
+        {
+          "path": "specs/826_logos_maildir_duplication_mbsync_repair/plans/01_logos-mbsync-maildir-repair.md",
+          "type": "plan",
+          "summary": "Logos mbsync/maildir repair plan"
+        },
+        {
+          "path": "specs/826_logos_maildir_duplication_mbsync_repair/summaries/01_logos-mbsync-maildir-repair-summary.md",
+          "type": "summary",
+          "summary": "Logos mbsync/maildir repair (PARTIAL, 2 blockers)"
+        },
+        {
+          "path": "specs/826_logos_maildir_duplication_mbsync_repair/handoffs/phase-7-blocker-report.md",
+          "type": "report",
+          "summary": "Phase 7 reconcile blocker: Sent/Archive scope explosion + unresolved duplicate-push risk"
+        },
+        {
+          "path": "specs/826_logos_maildir_duplication_mbsync_repair/summaries/02_phase7-reconcile-attempt-summary.md",
+          "type": "summary",
+          "summary": "Phase 7 reconcile attempt: preconditions re-verified, dry-run + read-only IMAP investigation, new blocker found"
+        }
+      ],
+      "blockers": [
+        "Phase 7 (mbsync logos reconcile): Phase 5's duplicate-UID corruption IS resolved (task 828). But attempting the reconcile surfaced two new findings: (1) logos-sent/logos-archive are drastically under-synced with the live server (~62,000-message pull scope explosion, unplanned by this task), and (2) only ~22 of task 828's 862 renamed messages are confirmed to already carry Trash/Archive folder membership server-side -- pushing the rest risks creating server-side duplicates via undocumented ProtonMail Bridge APPEND-dedup behavior that cannot be verified via read-only inspection. See handoffs/phase-7-blocker-report.md. No destructive action taken; freeze/backup intact.",
+        "Phase 4 (Labels-mirror cleanup): 98-100% of .Labels.* content has no copy elsewhere -- real unique mail, left inert per plan Abort-criteria fallback. Confirmed non-goal, not a blocker to completion."
+      ],
+      "previous_status": "implementing",
+      "completion_summary": "Resolved via the 2026-07-06 full reclone (wiped the duplication-contaminated local Logos tree and re-downloaded from the verified-clean Proton server) plus a 2026-07-12 verified sync. Read-only live IMAP probe confirmed active folders are clean and small (Sent 202, Archive 115) — the feared 26k/36k Sent/Archive backlog does not exist; it was an accidental Gmail Easy-Switch import now isolated inert in All Mail (68,459), which no mbsync channel targets. Ran full bidirectional 'mbsync logos' after a fresh maildir snapshot: local now exactly mirrors the server on every folder (INBOX 341, Sent 202, Drafts 24, Trash 15, Archive 115); 110 pulled, 248 flag updates pushed, 52 local-only leftover messages reconciled/deleted (all preserved in .logos-presync-20260712 snapshot + .logos-backup-20260706). No duplication; mailbox clean and synced. notmuch reindexed.",
+      "archived": "2026-07-13T19:38:43Z"
+    },
+    {
+      "project_number": 827,
+      "project_name": "email_staleness_detector_redesign",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "extensions",
+      "priority": "medium",
+      "title": "Redesign the /email staleness detector - stop equating maildir files with deduped messages",
+      "description": "The freshness gate shipped in tasks 823-825 is defective: email-census compares `himalaya -f INBOX` maildir FILE count against `notmuch count folder:X` deduped-MESSAGE count. These are incomparable (different file sets; heavy label-folder duplication; Message-ID dedup), so the line reads [STALE] even immediately after a full email-reindex (observed live: on-disk=3736 vs notmuch-indexed=3735, and `notmuch count --output=files folder:Logos`=11075 - none agree). As a hard gate requiring [ok] it is unreachable, forcing a manual 'Proceed, accept N' override on every --all run. Redesign options to evaluate: (a) compare comparable file sets - on-disk files vs `notmuch count --output=files` for the EXACT indexed path (path:<acct>/cur); (b) downgrade from a hard equality gate to a 'notmuch grossly behind disk' ratio/threshold heuristic that can actually reach a passing state and only blocks on large lags; (c) make the real gate 'was email-reindex run this session?' rather than a count comparison. Update census.nix (freshness line), skill-email-cleanup Stage 1 gate, staleness-detection.md, and wrapper-contracts.md section 13. Depends on 826 because the correct true count depends on resolving the Logos maildir duplication first. Cross-repo: census.nix change lands in ~/.dotfiles.\n\nVERIFIED 2026-07-13 (post-826-reclone + fresh email-reindex): premise confirmed live. Gmail freshness reads on-disk=128 notmuch-indexed=128 [ok], but Logos reads on-disk=341 notmuch-indexed=318 [STALE] even on a clean, fully-synced, freshly-reindexed mailbox. Three counts of the same Logos INBOX all disagree: himalaya envelope list=341 (files), notmuch count folder:Logos=318 (deduped Message-IDs), notmuch count --output=files folder:Logos=403 (different file set). 826 established the 23-message gap is REAL DISTINCT MESSAGES, not duplicates, so on-disk==notmuch-indexed is structurally unreachable for Logos regardless of syncing/reindexing. The equality gate is therefore permanently [STALE] for Logos and inconsistent across accounts (Gmail passes, Logos cannot). Fix direction (a) compare comparable file sets via notmuch --output=files on the exact indexed path, or (b) a lag-ratio heuristic, is confirmed correct. Additional finding: email-census only honors --account <acct> (positional arg is silently ignored and defaults to gmail) — relevant since the redesign touches census.nix.",
+      "file_scope": [
+        ".claude/extensions/email/context/project/email/domain/staleness-detection.md",
+        ".claude/extensions/email/context/project/email/domain/wrapper-contracts.md",
+        ".claude/extensions/email/skills/skill-email-cleanup/SKILL.md"
+      ],
+      "dependencies": [],
+      "estimated_effort": "3 hours",
+      "created": "2026-07-05T18:43:19-07:00",
+      "last_updated": "2026-07-13T16:20:22Z",
+      "session_id": "sess_1783957885_sv2g0b",
+      "cross_repo_dependency": "~/.dotfiles/modules/home/email/agent-tools/census.nix (freshness line)",
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/827_email_staleness_detector_redesign/reports/01_staleness-detector-redesign.md",
+          "summary": "Confirmed on-disk-files-vs-deduped-messages bug; found 22-file Logos indexing anomaly; recommends (a)+(b)+(c) combined with concrete census.nix sketch; enumerated 10 doc/code sites."
+        },
+        {
+          "type": "plan",
+          "path": "specs/827_email_staleness_detector_redesign/plans/01_staleness-detector-redesign.md",
+          "summary": "7-phase plan: new file-vs-file+tolerance+reindex-marker freshness semantics defined in staleness-detection.md, propagated to census.nix/mbsync.nix (cross-repo), wrapper-contracts §13, skill-email-cleanup, plus follow-up spawns."
+        },
+        {
+          "type": "summary",
+          "path": "specs/827_email_staleness_detector_redesign/summaries/01_staleness-detector-redesign-summary.md",
+          "summary": "Full implementation summary: 7 phases, live verification, follow-up recommendations."
+        }
+      ],
+      "blockers": [],
+      "verification": {
+        "date": "2026-07-13",
+        "result": "premise confirmed live; 826 dependency resolved (completed)",
+        "gmail_freshness": "on-disk=128 notmuch-indexed=128 [ok]",
+        "logos_freshness": "on-disk=341 notmuch-indexed=318 [STALE]",
+        "logos_files_count": 403
+      },
+      "completion_summary": "Redesigned the /email staleness detector from an unreachable on-disk-files-vs-deduped-messages equality gate to a reachable file-vs-file comparison with bounded tolerance and a reindex-ran marker, propagated across staleness-detection.md, cross-repo census.nix/mbsync.nix (written, not built), wrapper-contracts.md, skill-email-cleanup SKILL.md, and lower-stakes docs, verified live to reach [ok] for both Gmail and Logos; two independent anomalies (22 unindexed Logos files, --account positional-arg bug) recommended as follow-up tasks.",
+      "archived": "2026-07-13T19:38:44Z"
+    },
+    {
+      "project_number": 832,
+      "project_name": "reconvert_and_validate_literature_corpus",
+      "status": "completed",
+      "task_type": "meta",
+      "title": "Reconvert and validate the literature corpus (BUG 5)",
+      "description": "Reconvert and validate the actionable portion of the ~/Projects/Literature corpus, driven by the measured provenance/fidelity classification that task #835 established and stamped onto ~/Projects/Literature/index.json, as corrected by the re-derivation performed after #836 landed. The original \"reconvert and validate all 97 source dirs\" premise is dead, and so are the earlier \"verified facts\" that replaced it: the \"ZERO are healthy / 45 dirs are hand-written summaries\" figures and the cited word-ratios (blackburn_2002 = 0.03, rabinovich_2014 = 0.29) were artifacts of a single-file-sampling bug (comparing one arbitrary .md file against the entire PDF). Aggregated at the whole-document level, nearly every cited case is a healthy conversion, and blackburn_2002 is in fact a verified conversion. Drop all of those numbers rather than restating them.\n\nMEASURED CLASSIFICATION (authoritative, re-derived post-#836 via `literature-fidelity-audit.sh --dry-run`). Two real granularities exist; state which you mean and never conflate them.\nAt DIRECTORY level (97 dirs total):\n- 45 no_source_pdf         — no PDF present; cannot be reconverted\n- 42 verified_conversion   — stamped healthy, but see the UNADJUDICATED caveat below\n- 5  not_yet_converted     — PDF present, zero markdown (already self-disclosed)\n- 4  unverified_no_baseline — PDF present but `pdftotext -layout` extracts 0 words; ratio undeterminable\n- 1  unverified_summary    — rabinovich_2014, the ONLY confirmed undisclosed paraphrase\nAt index-ENTRY level (153 entries): 91 verified_conversion, 45 no_source_pdf, 15 unverified_no_baseline, 1 not_yet_converted, 1 unverified_summary.\n\nTHE STAMP IS NOT FULLY TRUSTWORTHY (read before acting on any classification). `.claude/scripts/literature-fidelity-audit.sh` FAILS OPEN at lines 367-374: when a document has word_ratio < 0.75, disclosed = False, AND proof_fraction = None (no numbered statements available to check), it defaults the document to `verified_conversion`. Its inline comment justifies this by assuming \"every low-ratio case observed carries numbered statements\" — an assumption FALSIFIED by the PDFs #836 recovered, which include prose philosophy papers with no numbered theorems. Three directories are therefore stamped `verified_conversion` while being genuinely UNADJUDICATED:\n- fine_2012_guide-to-ground                         ratio = 0.0327 (677 md words vs 20,701 pdf words)\n- fine_2012_counterfactuals-without-possible-worlds ratio = 0.2455 (2,960 vs 12,056)\n- venema_1991                                       ratio = 0.3737 (22,623 vs 60,541)\nTwo other low-ratio dirs — doets_1987 (0.2378) and libkin_2004_ch3_ch7 (0.0187) — carry disclosed = True. Those are the LEGITIMATE documented partial conversions. Do not touch them.\n\nREMAINING WORK — 13 ACTIONABLE DIRS, SCOPED PER COHORT (touch only the cohorts that need work):\n- 5 not_yet_converted dirs (gabbay_2000, girard_1989, negri_von_plato_2001, troelstra_schwichtenberg_2000, van_doorn_2015) — the only greenfield conversion work. Run the fixed converter from #831 (COMPLETE). Treat converter exit code 3 as skip+log (a loud quality-gate failure), NEVER as success. Goldblatt/Hodkinson/Venema 2003 is a known document that fails the primary tier and must be routed with LITERATURE_CONVERTER=pymupdf.\n- 3 unadjudicated dirs (fine_2012_guide-to-ground, fine_2012_counterfactuals-without-possible-worlds, venema_1991) — RECONVERSION CANDIDATES despite their `verified_conversion` stamp. The two Fine papers have real PDFs thanks to #836; venema_1991 had a PDF all along. Reconvert from the PDF and compare.\n- 4 unverified_no_baseline dirs (burgess_1984, gabbay_1994, thomason_1984, vardi_wolper_1986) — NOT reconversion. Their PDFs yield 0 words under pdftotext (scanned/image PDFs), so they need a baseline-extraction fix (OCR-based re-extraction, e.g. ocrmypdf/pytesseract) so a ratio becomes computable; then re-run the fidelity audit to confirm/promote.\n- 1 unverified_summary dir (rabinovich_2014) — REPLACE its .md with a real conversion derived from its sibling PDF (a PDF is present), then re-run `literature-fidelity-audit.sh` to reclassify.\n- Remaining verified_conversion dirs (the 42 minus the 3 unadjudicated above) — no action.\n- 45 no_source_pdf dirs — OUT OF SCOPE. #836 RAN and resolved the question: it recovered 7 of the original 52 from Zotero, and the remaining 45 are CONFIRMED ABSENT from the Zotero library (not merely unmatched). They are not \"gated pending #836\"; they need a different acquisition route entirely, which belongs to a separate sourcing task.\n\nREVALIDATION HALF (still real, still worth doing): now that a fixed converter (#831) and a provenance field (#835) both exist, rebuild/validate the corpus index via `.claude/scripts/literature-build-index.sh`, and re-run the fidelity audit after any conversion so newly-converted dirs receive a fresh `provenance_fidelity` + `word_ratio` stamp. Any residue that still lacks a PDF stays no_source_pdf.\n\nCONSTRAINTS:\n- Trust #835's stamped `provenance_fidelity` EXCEPT where (word_ratio < 0.75 AND disclosed = False AND proof_fraction = None). Those entries are UNADJUDICATED, not verified, and must be treated as reconversion candidates.\n- Aggregate word-ratio at the WHOLE-DOCUMENT level, never single-file.\n- Quarantine-never-delete posture throughout.\n- Converter exit code 3 = skip + log, never success.\n- Goldblatt/Hodkinson/Venema 2003 must route with LITERATURE_CONVERTER=pymupdf.\n- The 45 no_source_pdf dirs are out of scope for this task.\n\nSCOPE BOUNDARY: fixing the fail-open in `literature-fidelity-audit.sh` is task #839 (Fix fail-open classification in literature-fidelity-audit.sh). 832's file_scope is `~/Projects/Literature/sources/` and `.claude/scripts/literature-build-index.sh`; the audit script is NOT in scope. 832 must WORK AROUND the fail-open by treating the 3 unadjudicated dirs as reconversion candidates — do not fix the script here. Re-run the audit only AFTER #839 lands; otherwise accept that re-running it will re-stamp those 3 dirs as `verified_conversion` again.\n\nRESIDUAL RISK (note, not work): the audit has no UPPER ratio bound — fine_2010_some-puzzles-of-ground (2.08), fine_2012_pure-logic-of-ground (1.91), and bacon_2018 (1.78) pass unexamined because they clear the >= 0.75 floor. Plausibly pdftotext under-extracting math, but nothing checks.\n\nSTATUS: BLOCKED on #839 (audit fail-open fix). #831/#835/#836 are all complete, so the corpus work itself is fully specified and ready; the remaining gate is #839, which also serializes on the shared file `.claude/scripts/literature-build-index.sh`. All 13 actionable dirs (5 not_yet_converted + 3 unadjudicated + 4 unverified_no_baseline + 1 unverified_summary) can be executed against #831's fixed converter and #835's classification, with the unadjudicated caveat applied.\n\nDEPENDENCIES: 831 (COMPLETE — fixed converter), 835 (COMPLETE — provenance/fidelity classification), 836 (COMPLETE — Zotero PDF recovery; 7 recovered, 45 confirmed absent), 839 (NOT STARTED — audit fail-open fix; both a correctness prerequisite for the final re-audit and a file_scope conflict on literature-build-index.sh).",
+      "topic": "literature",
+      "dependencies": [
+        831,
+        835,
+        836,
+        839
+      ],
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/832_reconvert_and_validate_literature_corpus/reports/01_reconvert-validate-corpus.md",
+          "summary": "Live re-derivation of the 13-dir/4-cohort actionable set (5 not_yet_converted, 3 unadjudicated, 4 unverified_no_baseline, 1 unverified_summary) with per-document execution research and OCR-tooling-absence confirmation."
+        },
+        {
+          "type": "plan",
+          "path": "specs/832_reconvert_and_validate_literature_corpus/plans/01_reconvert-validate-corpus.md",
+          "summary": "9-phase plan: 5 re-derived execution cohorts, three named decisions (venema disclosure banner, negri deferral, gabbay_2000 OCR re-cohort), quarantine backups, exit-3 handling, full re-audit verification contract."
+        },
+        {
+          "type": "summary",
+          "path": "specs/832_reconvert_and_validate_literature_corpus/summaries/01_reconvert-validate-corpus-summary.md",
+          "summary": "Honest completion/deferral report: 9/13 dirs promoted, 3 genuinely incomplete/deferred, 1 new discovery flagged for follow-up, full verification contract passed."
+        }
+      ],
+      "file_scope": [
+        "~/Projects/Literature/sources/",
+        ".claude/scripts/literature-build-index.sh"
+      ],
+      "revision_required": [],
+      "revision_reason": "Second revision (post-#836). Cohort table re-derived: no_source_pdf 52->45, verified_conversion 35->42; actionable set 10->13 dirs. #835's stamped provenance_fidelity is no longer trustworthy on its own: literature-fidelity-audit.sh fails open (lines 367-374), stamping verified_conversion on low-ratio, undisclosed docs whose proof-completeness signal cannot fire (fine_2012_guide-to-ground ratio=0.0327, 677 md words vs 20,701 pdf words). The prior revision_reason -- \"52 of 97 dirs have no source PDF; 45 hold hand-written summaries\" -- was itself falsified and is superseded by this one. Now gated on #839 (audit fail-open fix; also a file_scope overlap on literature-build-index.sh).",
+      "last_updated": "2026-07-10T00:45:00Z",
+      "completion_summary": "Reconverted/validated the actionable literature corpus: verified_conversion dirs rose 39->48. Promoted the 2 Fine papers and rabinovich_2014 out of unadjudicated/unverified_summary, resolved venema_1991 via truthful disclosure banner, and OCR-baselined burgess_1984/thomason_1984/vardi_wolper_1986 to verified. Corpus index rebuilt+re-stamped (idempotent); fresh post-#839 audit confirms no fail-open regression (gabbay_1994 correctly held at unadjudicated). 4 residuals accepted per user directive: gabbay_2000 & gabbay_1994 (scanned/OCR PDFs whose md conversion fails on OCR noise — user authorized skipping); troelstra_schwichtenberg_2000 (two-column text PDF, converter exit-3 twice, needs a different engine); negri_von_plato_2001 (only source is a 4-page TOC-only scan, needs external sourcing). All quarantine-never-delete; backups preserved.",
+      "archived": "2026-07-13T19:38:44Z"
+    },
+    {
+      "project_number": 837,
+      "project_name": "fix_claude_contract_drift_add_dangling_ref_lint",
+      "status": "completed",
+      "task_type": "meta",
+      "title": "Fix .claude/ cross-project contract drift and add dangling-reference lint",
+      "description": "Shared .claude/ infrastructure has diverged across child projects and nothing detects dangling references at sync/load time - the same silent-degradation failure mode as #831's missing marker. IMPORTANT correction of the original bug report, which was MISATTRIBUTED to nvim: this repo (~/.config/nvim/.claude/) is HEALTHY - context/contracts/ contains all 8 of adversarial-verification, anti-analysis, convergence, orchestrator-discipline, recovery, reference-grounding, territory, wrap-up; its skill-orchestrate-hard/SKILL.md references 6, all present. The real defect is in ~/Projects/BimodalLogic/.claude/ - a SEPARATE COPY, not a symlink - whose skill-orchestrate-hard references 5 contracts it LACKS, so H5/H6/H7/H9 are silently un-injected. Drift is BIDIRECTIONAL: only-in-BimodalLogic = context-hygiene.md; only-in-nvim = convergence.md, orchestrator-discipline.md, recovery.md, territory.md, wrap-up.md. SCOPE: (1) reconcile contracts/ across ~/.config/nvim/.claude/ and ~/Projects/BimodalLogic/.claude/, sweeping other child projects (e.g. cslib); (2) decide the canonical set (is context-hygiene.md a real contract nvim should adopt?); (3) add a validator - extend check-extension-docs.sh or add a sibling script - that FAILS when any skill/agent/rule references a contracts/*.md, @.claude/... path, or context file absent in that project; (4) wire it into the sync path (.syncprotect / 'Load Core') so drift is caught at load time. LOUD-FAILURE requirement: a missing contract must not silently no-op. Fully independent of #831-#836 and #838.",
+      "topic": "agent-system",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "path": "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/reports/01_contract-drift-dangling-ref-lint.md",
+          "type": "report",
+          "summary": "Root cause: core/manifest.json omits contracts from provides.context; two gaps in check-extension-docs.sh; recommend against promoting context-hygiene.md"
+        },
+        {
+          "path": "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/plans/01_contract-drift-lint-wiring.md",
+          "type": "plan",
+          "summary": "5-phase plan: add contracts to provides.context, extend check-extension-docs.sh with dangling-ref scan, wire LOUD validator into sync.lua Load Core"
+        },
+        {
+          "path": "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/summaries/01_contract-drift-lint-wiring-summary.md",
+          "type": "summary",
+          "summary": "5 phases: contracts registered as core-owned context, check-extension-docs.sh gains provides.context + dangling-ref checks, validator wired into sync.lua Load Core with loud failure"
+        }
+      ],
+      "next_artifact_number": 1,
+      "session_id": "sess_1783879475_193202_837",
+      "created": "2026-07-09T00:00:00Z",
+      "last_updated": "2026-07-12T18:38:13Z",
+      "file_scope": [
+        ".claude/scripts/check-extension-docs.sh",
+        ".claude/context/contracts/"
+      ],
+      "completion_summary": "Fixed root cause of .claude/ contract drift: registered contracts/ as a core-owned context category (core manifest provides.context + migrated 8 canonical files + index-entries) so they propagate via sync; extended check-extension-docs.sh with provides.context disk-existence and project-wide dangling-contract-reference checks (both loud, exit 1); wired the validator into sync.lua Load Core path at ERROR level; documented the sync contract and downstream reconciliation procedure. context-hygiene.md kept lean-scoped.",
+      "archived": "2026-07-13T19:38:44Z"
+    },
+    {
+      "project_number": 838,
+      "project_name": "fix_planner_return_meta_clobber",
+      "status": "completed",
+      "task_type": "meta",
+      "title": "Fix planner clobbering researcher .return-meta.json (merge not overwrite)",
+      "description": "General skill-lifecycle data-loss bug: the planner-phase postflight OVERWRITES the researcher's specs/{NNN}_*/.return-meta.json wholesale instead of MERGING, silently dropping memory_candidates the research agent emitted. Concrete instance: on task #831 the planner clobbered .return-meta.json, destroying 3 memory_candidates the research agent produced - (a) nix-ld/libstdc++ shim, (b) PyMuPDF sort=True reproduces the column-glue extraction bug, (c) NFKC normalization corrupts math Unicode. This affects EVERY task where research emits memory_candidates and a later phase rewrites the file, not just literature work - which is why it warrants its own task rather than folding into #835-#837 (all unrelated in scope). FIX SITE: .claude/context/formats/return-metadata-file.md (the contract) plus the skill postflight metadata-handling code - change semantics from overwrite to merge-not-overwrite so later phases preserve earlier phases' memory_candidates and other accumulated fields. Fully independent of #831-#837.",
+      "topic": "agent-system",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "path": "specs/838_fix_planner_return_meta_clobber/reports/01_planner-return-meta-clobber.md",
+          "type": "report",
+          "summary": "skill-planner/SKILL.md is sole lifecycle skill missing memory_candidates read+propagate; targeted field-extraction fix from skill-researcher:433-446"
+        },
+        {
+          "path": "specs/838_fix_planner_return_meta_clobber/plans/01_planner-return-meta-fix.md",
+          "type": "plan",
+          "summary": "4-phase plan: add memory_candidates read+Stage7a propagate to skill-planner, fix dangling ref in skill-planner-hard:475, document contract"
+        },
+        {
+          "path": "specs/838_fix_planner_return_meta_clobber/summaries/01_planner-return-meta-fix-summary.md",
+          "type": "summary",
+          "summary": "Added memory_candidates read+Stage 7a propagate to skill-planner, verified skill-planner-hard reference, documented propagate-before-cleanup contract"
+        }
+      ],
+      "next_artifact_number": 1,
+      "session_id": "sess_1783879475_193202_838",
+      "created": "2026-07-09T00:00:00Z",
+      "last_updated": "2026-07-12T18:29:09Z",
+      "file_scope": [
+        ".claude/context/formats/return-metadata-file.md",
+        ".claude/skills/"
+      ],
+      "completion_summary": "Fixed skill-planner postflight to propagate memory_candidates via a new Stage 7a before .return-meta.json cleanup, verified the skill-planner-hard cross-reference, and documented the propagate-before-cleanup contract in return-metadata-file.md.",
+      "memory_candidates": [
+        {
+          "content": "When a set of sibling skills (e.g. skill-researcher, skill-planner, skill-implementer and their -hard variants) is supposed to implement an identical postflight pattern (like memory_candidates propagation), audit ALL siblings with a single grep across the family rather than assuming parity -- one skill silently diverging (skill-planner lacked the Stage 7a read+append that its five siblings had) can persist for a long time because postflight failures are silent (no error, just discarded data).",
+          "category": "PATTERN",
+          "source_artifact": "specs/838_fix_planner_return_meta_clobber/summaries/01_planner-return-meta-fix-summary.md",
+          "confidence": 0.8,
+          "suggested_keywords": [
+            "postflight",
+            "memory_candidates",
+            "skill-parity",
+            "return-meta",
+            "audit"
+          ]
+        },
+        {
+          "content": "In this repo's hard-mode skills (skill-researcher-hard, skill-planner-hard, skill-implementer-hard), a terse 'Same as `skill-{base}` Stage N' cross-reference is the established house style for postflight stages that are structurally identical to the base skill (e.g. Stage 7a memory_candidates propagation, Stage 8 artifact linking) -- inlining a duplicate block in the hard variant would be inconsistent with this convention, not an improvement.",
+          "category": "CONFIG",
+          "source_artifact": "specs/838_fix_planner_return_meta_clobber/summaries/01_planner-return-meta-fix-summary.md",
+          "confidence": 0.75,
+          "suggested_keywords": [
+            "skill-hard",
+            "postflight",
+            "cross-reference",
+            "house-style",
+            "stage-7a"
+          ]
+        }
+      ],
+      "archived": "2026-07-13T19:38:44Z"
+    },
+    {
+      "project_number": 849,
+      "project_name": "recover_kamp_1968_mojibake",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "Recover the Kamp 1968 dissertation markdown from font-offset mojibake in the ~/Projects/Literature corpus. The document `kamp_1968_tense-logic-linear-order` (sources/kamp_1968_tense-logic-linear-order/, 252KB canonical .md + 141 chunk_*.md files) is stamped `verified_conversion` by literature-fidelity-audit.sh because its word count is healthy, but every word is glyph-shifted garbage (e.g. \"RKFSBOPFQV LC @>IFCLOKF>\"). This is a defect class the word-ratio audit structurally cannot detect (ratio is fine; content is unreadable).\n\nVALIDATED CIPHER (confirmed by decoding known content — title page yields \"University of California / Tense Logic and the Theory of Linear Order / Johan Anthony Willem Kamp\", body yields clean English prose on tense logic and the Main Theorem / Theorem II.3): a deterministic ASCII font-offset on disjoint encoded bands —\n- encoded byte in [62,87] (>..W)  -> +3  (recovers uppercase A-Z)\n- encoded byte in [93,118] (]..v) -> +4  (recovers lowercase a-z)\n- encoded byte in [44,53]  (,..5) -> +4  (recovers digits 0-9)\n- spaces/newlines and out-of-band punctuation pass through unchanged.\nA proof-of-concept decoder (scratchpad/kamp_decode.py from session sess_1783783033_7ee917) recovers all LETTERS perfectly.\n\nRESIDUALS a pure decode does NOT fix (must be handled by a cleanup pass):\n1. Punctuation collisions: decoded output shows periods as `0` (e.g. \"i0e0\"->\"i.e.\", \"moments0\"->\"moments.\") and commas as `*` (e.g. \"NOT* AND* SINCE\"->\"NOT, AND, SINCE\"). Needs a context-aware normalization pass (standalone 0/* between letters -> ./,).\n2. Inter-letter spacing artifacts from the original PDF extraction (\"t e n s e\" for \"tense\") — pervasive, from kerning-to-space extraction, independent of the cipher.\n3. Logic/math notation in formulae is partially garbled and will remain imperfect after decode (the symbol glyphs were never cleanly extracted).\n\nNO SOURCE PDF EXISTS for kamp_1968 (find sources/kamp_1968... -iname \"*.pdf\" is empty), so software decode is the ONLY text-recovery path short of re-sourcing the dissertation (recorded in ~/Projects/Literature/SOURCES.md entry #5, ProQuest/UCLA — a clean PDF would also fix the math notation).\n\nREQUIRED WORK:\n- Build a validated decoder implementing the cipher above, plus a punctuation-normalization cleanup pass for the 0->. and *->, collisions (and any others discovered).\n- Quarantine-never-delete: back up the canonical .md and all 141 chunk_*.md (.bak-<UTC> siblings) BEFORE writing.\n- Decode the canonical .md and re-chunk via literature-chunk.sh (do NOT hand-edit the 141 existing chunks if a re-chunk from the decoded canonical is cleaner; decide during planning).\n- Rebuild the search index via literature-build-index.sh --global so the decoded text is searchable.\n- VERIFICATION: decoded output must be readable English (spot-check the title page, chapter headings, and >=3 mid-document chunks against the known subject matter); confirm the FTS db returns the decoded text; confirm backups exist and are byte-matched to pre-change originals.\n\nSCOPE BOUNDARY: this task does NOT fix the audit blind spot (word-ratio passing mojibake) — that mirrors the #839-class fail-open concern and belongs to a separate audit-hardening task if desired. file_scope: ~/Projects/Literature/sources/kamp_1968_tense-logic-linear-order/ and a decoder script (location TBD in planning). Discovered as a side finding during task #832 orchestration.",
+      "dependencies": [],
+      "last_updated": "2026-07-11T18:14:35Z",
+      "session_id": "sess_1783791606_228bd7",
+      "artifacts": [
+        {
+          "path": "specs/849_recover_kamp_1968_mojibake/reports/01_kamp-1968-font-offset-recovery.md",
+          "type": "report",
+          "summary": "Validated cipher, root-caused punctuation collisions, located tooling"
+        },
+        {
+          "path": "specs/849_recover_kamp_1968_mojibake/plans/01_kamp-1968-font-offset-decode.md",
+          "type": "plan",
+          "summary": "6-phase font-offset decode + punctuation cleanup + re-chunk + re-index + verification"
+        },
+        {
+          "path": "specs/849_recover_kamp_1968_mojibake/summaries/01_kamp-1968-font-offset-decode-summary.md",
+          "type": "summary",
+          "summary": "Recovered Kamp 1968 dissertation from font-offset mojibake: built reusable decoder, quarantined 142 files, decoded canonical + re-chunked + rebuilt FTS index; all acceptance criteria verified"
+        }
+      ],
+      "completion_summary": "Recovered Kamp 1968 dissertation from font-offset mojibake. Built reusable parameterized band-cipher decoder + four-tier punctuation normalizer (.claude/extensions/literature/scripts/literature-decode-font-offset.py, mirrored + manifest-registered). Quarantined all 142 corpus files (.bak siblings, cmp-verified), decoded canonical .md to readable English, re-chunked to 140 chunks, rebuilt FTS index (searchable). Known residuals: inter-letter spacing, garbled math notation, ambiguous digit-0/period. Audit blind-spot fix out of scope.",
+      "archived": "2026-07-13T19:38:44Z"
+    },
+    {
+      "project_number": 850,
+      "project_name": "sync_untracked_core_scripts",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "Load Core sync",
+      "title": "Fix Load Core leaving newly-deployed core scripts untracked downstream",
+      "description": "Load Core (<leader>al) deploys core .claude/ scripts into downstream project repos via a plain filesystem write (sync.lua:406 helpers.write_file) and performs NO git operation in the target repo (verified: zero git add/commit/status/ls-files across the entire picker tree). task-lock.sh IS in the core allow-list (.claude/extensions/core/manifest.json provides.scripts, ~line 137) so it IS correctly deployed; the defect is that newly-created files (scan.lua:137 action=='copy') land untracked and the completion notification (sync.lua:480-497) reports only category counts, never filenames or tracked/untracked status. task-lock.sh postdates the downstream project's last .claude/scripts/ commit, so it is the lone stray untracked file surfaced during routine git status. FIX (in nvim source of truth, sync.lua): after sync, collect newly-copied (action=='copy') files that are untracked in the target repo git and surface them as an explicit 'newly deployed (untracked) - review and commit' list in the completion notice; advisory only, no auto-stage/commit; guard non-git projects; preserve all existing sync behavior. Alternatives: opt-in auto-stage; downstream deployed-core manifest for CI diffing. Report+acceptance criteria in reports/01_sync-untracked-core-scripts.md.",
+      "dependencies": [],
+      "created": "2026-07-11T20:44:36Z",
+      "last_updated": "2026-07-11T21:09:42Z",
+      "researched": "2026-07-11T20:44:36Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/850_sync_untracked_core_scripts/reports/01_sync-untracked-core-scripts.md",
+          "type": "research",
+          "summary": "Root-caused task-lock.sh untracked-downstream: Load Core writes files but never git-adds; manifest is not the gap; fix = surface newly-deployed untracked files in the completion notice"
+        },
+        {
+          "path": "specs/850_sync_untracked_core_scripts/plans/02_surface-untracked-deployed.md",
+          "type": "plan",
+          "summary": "Surface newly-deployed untracked core scripts in Load Core completion notice"
+        },
+        {
+          "path": "specs/850_sync_untracked_core_scripts/summaries/02_surface-untracked-deployed-summary.md",
+          "type": "summary",
+          "summary": "Surfaced newly-deployed untracked core scripts in Load Core completion notice; advisory-only, git-guarded, sync.lua only"
+        }
+      ],
+      "session_id": "sess_1783803546_a4db66",
+      "completion_summary": "Fixed Load Core leaving newly-deployed core scripts untracked: sync.lua now threads newly-copied file paths through execute_sync and a git-guarded detect_untracked helper appends an advisory 'Newly deployed (untracked in git) - review and commit' section to the completion notice. Advisory-only (no git add/commit), non-git targets guarded, all existing sync behavior preserved. Verified 4/4 headless scenarios.",
+      "archived": "2026-07-13T19:38:44Z"
+    },
+    {
+      "project_number": 851,
+      "project_name": "himalaya_mail_sync_and_keymap_fixes",
+      "status": "completed",
+      "task_type": "neovim",
+      "topic": "mail sync + keymaps",
+      "title": "Himalaya/aerc mail sync + keymap fixes (multi-account sync, account fallback, mS/mf conflict)",
+      "description": "Fixes across the nvim mail stack, ALREADY IMPLEMENTED AND COMMITTED (master: bcb662549, a1c64151b). (1) sync_inbox/sync_all fall back to config.get_current_account_name() when the sidebar has not been opened, fixing spurious \"No email account configured\". (2) new sync_all_accounts_inbox()+HimalayaSyncAllInbox; <leader>ms now syncs every account inbox (gmail-inbox, logos-inbox) sequentially. (3) fixed nil crash: get_all_accounts is on the config.accounts submodule, not re-exported by core/config. (4) \"Starting sync\" notice made visible (USER_ACTION); harmless \"Cannot update count\" downgraded ERROR->BACKGROUND. (5) <leader>me opens aerc AND triggers background mbsync -a + notmuch new via shared sync_all_mail(). (6) resolved <leader>mS/<leader>mf collisions between mail.lua and which-key.lua by relocating notmuch search->mn and notmuch full sync->mN, with annotation-only which-key entries. REMAINING: live end-to-end sync verification against Gmail + Proton Bridge servers (headless tests stubbed mbsync). See reports/01_himalaya-mail-sync-keymaps.md for root causes, per-file changes, verification performed/gaps, and acceptance criteria.",
+      "dependencies": [],
+      "created": "2026-07-11T14:04:50Z",
+      "last_updated": "2026-07-12T02:03:24Z",
+      "researched": "2026-07-11T14:04:50Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/851_himalaya_mail_sync_and_keymap_fixes/reports/01_himalaya-mail-sync-keymaps.md",
+          "type": "research",
+          "summary": "Root causes + committed per-file changes for himalaya multi-account sync, account fallback, notification categories, aerc-open sync, and mS/mf keymap conflict resolution; remaining = live server sync verification"
+        },
+        {
+          "path": "specs/851_himalaya_mail_sync_and_keymap_fixes/plans/01_mail-sync-keymap-verification.md",
+          "type": "plan",
+          "summary": "3-phase verification plan: static code checks, headless keymap/command checks, and human-only live server sync verification"
+        }
+      ],
+      "session_id": "sess_1783806385_276db2",
+      "completion_summary": "Verified himalaya multi-account mail-sync + keymap fixes live against real Gmail + Proton Bridge (sequential inbox sync, account fallback, visible notices, no keymap collisions all confirmed). Additionally root-caused and fixed a mid-sync refresh race: the 5s refresh timer ran himalaya envelope list concurrently with mbsync's Maildir writes, producing transient 'Himalaya command failed' notifications; cli.lua now downgrades these to debug while state.is_syncing(). Fix behaviorally verified headless (error notifs idle=2/syncing=0).",
+      "archived": "2026-07-13T19:38:44Z"
+    },
+    {
+      "project_number": 852,
+      "project_name": "investigate_logos_unindexed_files",
+      "status": "completed",
+      "task_type": "email",
+      "topic": "extensions",
+      "priority": "medium",
+      "title": "Investigate 22 Logos INBOX files that notmuch never indexes",
+      "description": "During task 827 (email staleness detector redesign), live diagnosis of the Logos INBOX freshness gap revealed an independent anomaly: 22 of the 23-file divergence between himalaya on-disk INBOX (341) and notmuch-indexed messages (318-319) are files that notmuch has NEVER indexed at all — verified via 'notmuch id:' lookups returning zero hits for those specific files. Only 1 of the 23 is genuine Message-ID dedup. Two sanctioned 'email-reindex' runs (notmuch new --no-hooks), INCLUDING one after forcing the maildir directory mtime forward, failed to index these 22 files. This is NOT staleness and NOT duplication (task 826 established these are real distinct messages) — it is an unexplained notmuch indexing failure specific to these files. Investigate root cause: candidates include notmuch 'new.ignore'/'new.tags' config, maildir flag/filename anomalies on those 22 files, non-mail content notmuch skips, permissions, or a notmuch database inconsistency. Determine why 'notmuch new' skips them and how to get them indexed. Read-only diagnosis first (identify the 22 files, inspect their filenames/headers/permissions, check notmuch config); do NOT mutate mail. Cross-repo: notmuch config lives in ~/.dotfiles. The 827 report (specs/827_email_staleness_detector_redesign/reports/01_staleness-detector-redesign.md) documents the dead-ends already ruled out — read it first.",
+      "file_scope": [],
+      "dependencies": [
+        854
+      ],
+      "estimated_effort": "2-3 hours",
+      "created": "2026-07-13T16:55:45Z",
+      "last_updated": "2026-07-13T18:44:07Z",
+      "session_id": "sess_1783965726_aeab14",
+      "cross_repo_dependency": "~/.dotfiles notmuch/mbsync config; investigation touches ~/Mail/Logos data (read-only)",
+      "parent_task": 827,
+      "artifacts": [
+        {
+          "path": "specs/852_investigate_logos_unindexed_files/reports/01_notmuch-unindexed-files-root-cause.md",
+          "type": "report",
+          "summary": "Root-caused: 22 Logos INBOX files delivered by notmuch new's own pre-new hook during a raw (non --no-hooks) notmuch new in logos-reclone.sh, which raced/short-circuited the scan. Remediation: notmuch new --no-hooks --full-scan (disables mtime scan-skip). Read-only diagnosis; not executed."
+        },
+        {
+          "path": "specs/852_investigate_logos_unindexed_files/plans/01_reindex-unindexed-logos-fullscan.md",
+          "type": "plan",
+          "summary": "5 phases (waves [[1,4],[2],[3],[5]]): baseline snapshot + reclone-patch proposal in parallel, then notmuch new --no-hooks --full-scan (index-only), verify 22 files queryable, document. Cross-repo dotfiles changes are diff-only (no switch/commit/push)."
+        },
+        {
+          "path": "specs/852_investigate_logos_unindexed_files/summaries/01_reindex-unindexed-logos-fullscan-summary.md",
+          "type": "summary",
+          "summary": "Root cause investigated; notmuch new --no-hooks --full-scan ran (index-only) but 22 anomaly files remain unindexed (only 5 unrelated staleness files indexed). Mail byte-identical. logos-reclone.sh --no-hooks patch produced (proposal only). Recommends Xapian-level follow-up."
+        }
+      ],
+      "previous_status": "partial",
+      "completion_summary": "Resolved by task 854 (its sole dependency). Task 854's read-only diagnosis proved 852's premise false: the 22 Logos INBOX files were never unindexed. All 22 are fully indexed in a structurally healthy Xapian DB (xapian-check: no errors, no ghost directory record); they carry tag:trash, which is in notmuch's search.exclude_tags, so default searches omit them. 852's own on-disk-vs-indexed comm -23 diff used such a trash-excluding search as its indexed-set probe, producing the false 'unindexed' positive; --full-scan 'failed to recover' them because nothing was broken. No reindex needed or possible. See specs/854_.../summaries/01_diagnose-repair-xapian-ghost-summary.md and wrapper-contracts.md section 13.",
+      "archived": "2026-07-13T19:38:44Z"
+    },
+    {
+      "project_number": 853,
+      "project_name": "fix_email_wrapper_account_arg",
+      "status": "completed",
+      "task_type": "email",
+      "topic": "extensions",
+      "priority": "low",
+      "title": "Fix email wrapper binaries silently ignoring positional account arg",
+      "description": "During task 827, confirmed a bug affecting all five email wrapper binaries (email-census, email-classify, email-reindex, email-archive-confirmed, email-delete-confirmed): the shared 'mkPreamble' argument-parsing loop in ~/.dotfiles/modules/home/email/agent-tools/lib.nix only honors '--account <gmail|logos>'; a positional invocation like 'email-census logos' is SILENTLY DISCARDED (appended to ARGS[] and ignored) and the wrapper defaults to ACCOUNT=gmail. This produced misleading output during 827 diagnosis (running 'email-census logos' actually censused gmail). Fix: make the wrappers either (a) accept a positional account arg as an alias for --account, or (b) reject/warn on an unrecognized positional arg instead of silently defaulting. Prefer failing loudly over silent wrong-account operation, especially for the mutating wrappers (archive/delete). The fix is a small change to the mkPreamble getopts loop in lib.nix; all five binaries inherit it. Cross-repo: change lands in ~/.dotfiles and requires a home-manager rebuild (user applies). Do NOT run home-manager switch or commit/push in ~/.dotfiles.",
+      "file_scope": [],
+      "dependencies": [],
+      "estimated_effort": "1 hour",
+      "created": "2026-07-13T16:55:45Z",
+      "last_updated": "2026-07-13T17:52:01Z",
+      "session_id": "sess_1783962236_292cee_853",
+      "cross_repo_dependency": "~/.dotfiles/modules/home/email/agent-tools/lib.nix (mkPreamble arg-parsing); requires home-manager rebuild",
+      "parent_task": 827,
+      "artifacts": [
+        {
+          "path": "specs/853_fix_email_wrapper_account_arg/reports/01_wrapper-account-arg-parsing.md",
+          "type": "report",
+          "summary": "Root-caused mkPreamble missing positional-arg case arm in ~/.dotfiles lib.nix; corrected binary list (email-reindex unaffected; email-unsubscribe-extract is the real 5th); exact minimal diff aliases bare gmail/logos to --account with loud log() note, gated to preserve classify/unsubscribe-extract [QUERY] positional use."
+        },
+        {
+          "path": "specs/853_fix_email_wrapper_account_arg/plans/01_wrapper-account-arg-fix.md",
+          "type": "plan",
+          "summary": "3 sequential phases: apply gmail|logos alias arm to mkPreamble in lib.nix (ACCOUNT_EXPLICIT gate + loud log NOTE), verify via nix flake check/eval, document user-applied home-manager rebuild + verification matrix. No switch/commit/push in dotfiles."
+        },
+        {
+          "path": "specs/853_fix_email_wrapper_account_arg/summaries/01_wrapper-account-arg-fix-summary.md",
+          "type": "summary",
+          "summary": "Applied ACCOUNT_EXPLICIT-gated gmail|logos alias arm to mkPreamble in ~/.dotfiles lib.nix; verified via nix eval + built-derivation exercise across 5 scenarios; [QUERY] positional preserved. home-manager switch is user-applied."
+        }
+      ],
+      "completion_summary": "Fixed silent-wrong-account bug in mkPreamble (~/.dotfiles lib.nix): bare gmail|logos token now aliases to --account with a loud NOTE, gated so classify/unsubscribe-extract [QUERY] use is preserved. Verified via nix eval + built-derivation scenarios. User must run home-manager switch to deploy.",
+      "archived": "2026-07-13T19:38:44Z"
+    },
+    {
+      "project_number": 854,
+      "project_name": "diagnose_and_repair_xapian_directorybookkeeping_ghost_blocking_22_logos_inbox_files",
+      "status": "completed",
+      "task_type": "email",
+      "description": "Root cause (from specs/852_investigate_logos_unindexed_files/reports/01_notmuch-unindexed-files-root-cause.md and 02_spawn-analysis.md): 22 Logos INBOX files at ~/Mail/Logos/cur/178335487{3,4}.4003086_<N>.hamsa,U=<N>:2, (full list in report 01's Appendix) were delivered by a racy, hook-triggered `notmuch new` during the task 826/828 Logos reclone and have never been indexed. `notmuch new --no-hooks --full-scan` (task 852's remediation attempt) did not recover them, ruling out a simple directory-mtime scan-skip cause. Suspected cause: a stuck/inconsistent Xapian directory-document record for ~/Mail/Logos/cur that survives both mtime-forcing and --full-scan.\n\nTier 1 (read-only, notmuch-only, do first): Run `notmuch new --debug --verbose --no-hooks` (keep --no-hooks to avoid re-triggering the mbsync hook) and capture full output; check whether ~/Mail/Logos/cur is visited and whether the 22 target filenames are mentioned/skipped/absent from the scan trace. Re-verify sha256 content integrity of all 22 files against the snapshot recorded in specs/852_investigate_logos_unindexed_files/summaries/01_reindex-unindexed-logos-fullscan-summary.md before any further action. If the debug trace reveals a concrete, actionable skip reason, attempt the most targeted notmuch-native fix suggested by that evidence before moving to Tier 2.\n\nTier 2 (only if Tier 1 inconclusive): Obtain Xapian CLI tools ephemerally via `nix shell nixpkgs#xapian` (do not install permanently). Use xapian-delve and/or xapian-check (read-only inspection first) against the glass-backend database at /home/benjamin/Mail/.notmuch/xapian/ to locate the directory document for Logos/cur and inspect its recorded file list/mtime/inode bookkeeping for an orphaned or ghost entry consistent with the 2026-07-06 hook-race (report 01, Finding 4). Identify the minimal, targeted, non-destructive way to reset just that directory's bookkeeping so a subsequent notmuch new --no-hooks --full-scan will re-scan it fresh. This must NOT be message-document surgery and must NOT mutate any mail file. After the reset, re-run notmuch new --no-hooks --full-scan and repeat task 852's Phase 3 verification (whole-DB token grep, id: lookups, comm -23 diff) to confirm all 22 files are indexed and queryable.\n\nConstraints: read-only diagnosis first, no mail file mutation at any point (re-verify byte-identical sha256 content before/after any Tier 2 action); notmuch/mbsync config lives in ~/.dotfiles -- no home-manager switch, no commit/push there, any config recommendation is a proposal only (matching the existing logos-reclone-no-hooks.patch handoff pattern); if Tier 2 also fails or no non-destructive reset path is found, stop and document the residual state honestly rather than attempting message-document-level surgery. Document the final root cause and resolution in a task summary, and extend .claude/extensions/email/context/project/email/domain/wrapper-contracts.md section 13's existing hazard note with the concrete finding.",
+      "effort": "2-4 hours",
+      "parent_task": 852,
+      "topic": "extensions",
+      "dependencies": [],
+      "file_scope": [
+        "specs/852_investigate_logos_unindexed_files/",
+        ".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"
+      ],
+      "created": "2026-07-13T18:05:36Z",
+      "last_updated": "2026-07-13T18:41:46Z",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/852_investigate_logos_unindexed_files/reports/02_spawn-analysis.md",
+          "summary": "Spawn analysis from parent task 852"
+        },
+        {
+          "path": "specs/854_diagnose_and_repair_xapian_directorybookkeeping_ghost_blocking_22_logos_inbox_files/plans/01_diagnose-repair-xapian-ghost.md",
+          "type": "plan",
+          "summary": "6-phase escalation plan with Tier 1/Tier 2 decision gates, read-only-first diagnosis, before/after sha256 verification, and terminal documentation"
+        },
+        {
+          "path": "specs/854_diagnose_and_repair_xapian_directorybookkeeping_ghost_blocking_22_logos_inbox_files/summaries/01_diagnose-repair-xapian-ghost-summary.md",
+          "type": "summary",
+          "summary": "Documents the false 'unindexed' premise, the read-only Tier 1/Tier 2 diagnostic path, the definitive root cause (indexed + tag:trash + search.exclude_tags), and the no-repair resolution."
+        }
+      ],
+      "session_id": "sess_1783966056_78885b",
+      "completion_summary": "Diagnosed the 22 'unindexed' Logos INBOX files: original premise was false. All 22 were already fully indexed in a structurally healthy Xapian DB (xapian-check: no errors); tag:trash + notmuch search.exclude_tags caused default searches to omit them, and task 852's on-disk-vs-indexed diff used exactly such a search as its indexed-set probe. No repair needed or performed; no mail/DB mutation. Documented root cause in summary and extended wrapper-contracts.md section 13 with corrected audit guidance.",
+      "archived": "2026-07-13T19:38:44Z"
+    },
+    {
+      "project_number": 855,
+      "project_name": "prevent_task_number_references_in_deliverables",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "Systematically prevent agents from embedding TASK-NUMBER references (e.g. '(tasks 823-824)', '**Architecture context (task 35)**', 'task N:') into DELIVERABLE files -- the actual work product -- while preserving task numbers where they legitimately belong. Task numbers are ephemeral work-management metadata: they exist only to manage work, they get renumbered during vault operations (next_project_number > 1000 subtracts 1000), and they are meaningless to a future reader of a context/standard/code file. Deliverables must be self-contained and reference DURABLE anchors (sibling doc filenames, section headings, decision-record names) rather than 'task N'. Observed leak example: .claude/context/project/email/domain/wrapper-contracts.md had a section heading '## 13. ... (tasks 823-824)' and an inserted line '**Architecture context (task 35)**: ...'.\n\nPRINCIPLE TO ENCODE: Files OUTSIDE specs/ must not mention task numbers. Task numbers are permitted ONLY in specs/** artifacts (reports, plans, summaries, TODO.md, state.json), git commit messages, and PR/branch metadata. When citing provenance or prior work in a deliverable, reference the durable artifact instead of the task that produced it.\n\nSCOPE (4 enforcement layers -- /plan to phase them):\n1. New rule .claude/rules/no-task-references-in-deliverables.md stating the principle, allowed exceptions (specs/**, commit messages, PR/branch metadata), and the 'reference durable anchors instead' guidance; auto-applied by path to non-specs deliverable targets.\n2. Advisory (non-blocking) PostToolUse hook .claude/hooks/validate-no-task-references.sh wired in .claude/settings.json under matcher 'Write|Edit', following the validate-plan-write.sh / validate-meta-write.sh precedent: on detecting a task-number citation in a non-specs Write/Edit target, emit corrective context; NEVER block. Must not fire on specs/ paths. Regex must be carefully bounded to numeric-citation shapes ('(task N)', '(tasks N-N)', '(tasks N, N)', 'task N:', 'task N' / 'tasks N' followed by non-word) and MUST NOT false-positive on 'task queue', 'task type', 'async task', 'background task', 'TaskCreate', etc.\n3. Reinforcement snippets referencing the new rule in the implementer skills/agents (general-implementation-agent, general-implementation-hard-agent, and the domain implementers: neovim, nix, cslib) and in researcher/planner skills+agents insofar as they author context files.\n4. Update documentation-policy standards (.claude/context/project/neovim/standards/documentation-policy.md and the nvim extension copy .claude/extensions/nvim/context/project/neovim/standards/documentation-policy.md) to state deliverables must not cite task numbers.\n\nDECISIONS (user-confirmed at task creation): single cohesive meta task; the runtime hook is ADVISORY / non-blocking (matches existing validator hooks, avoids false-positive friction).\n\nOUT OF SCOPE: retroactively scrubbing existing task-number references from already-written deliverables (a separate cleanup pass could be spawned later); the git-workflow.md 'task {N}:' commit convention stays as-is (it is the ALLOWED use).",
+      "effort": "3-5 hours",
+      "topic": "meta",
+      "dependencies": [],
+      "file_scope": [
+        ".claude/rules/no-task-references-in-deliverables.md",
+        ".claude/hooks/validate-no-task-references.sh",
+        ".claude/settings.json",
+        ".claude/agents/general-implementation-agent.md",
+        ".claude/agents/general-implementation-hard-agent.md",
+        ".claude/context/project/neovim/standards/documentation-policy.md",
+        ".claude/extensions/nvim/context/project/neovim/standards/documentation-policy.md"
+      ],
+      "created": "2026-07-13T00:00:00Z",
+      "last_updated": "2026-07-13T19:11:40Z",
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/855_prevent_task_number_references_in_deliverables/reports/01_task-reference-leakage.md",
+          "summary": "4-layer leakage-prevention research: rule, advisory hook + regex, agent reinforcements, doc-policy updates"
+        },
+        {
+          "type": "plan",
+          "path": "specs/855_prevent_task_number_references_in_deliverables/plans/01_prevent-task-references.md",
+          "summary": "5-phase plan: rule+registration, advisory hook+wiring, six-agent reinforcement, both doc-policy copies, end-to-end validation"
+        }
+      ],
+      "session_id": "sess_1783968617_ea7ceb",
+      "completion_summary": "Encoded a system-wide prohibition on task-number citations in deliverable files (everything outside specs/), keeping them only where they belong: specs/** artifacts, commit messages, PR/branch metadata. Four enforcement layers shipped: (1) rule .claude/rules/no-task-references-in-deliverables.md registered via the CLAUDE.md merge-source; (2) advisory non-blocking PostToolUse hook validate-no-task-references.sh (regex \\btasks?[:,]?[[:space:]]+[0-9], case-insensitive) live-wired in settings.json line 157 and JSON-verified, emitting additionalContext advisories and never blocking; (3) MUST NOT reinforcement clauses in all six implementation agents; (4) the deliverables-must-not-cite-task-numbers clause added to both documentation-policy.md copies. Validation: 10/10 positive regex matches, 0/13 false positives (task queue, TaskCreate, task_number, task-lock all clean); hook no-ops on specs/ paths. Out of scope follow-up: 9+ pre-existing leaks in wrapper-contracts.md await a retroactive cleanup task.",
+      "archived": "2026-07-13T19:38:44Z"
+    },
+    {
+      "project_number": 856,
+      "project_name": "scrub_task_number_leaks_from_wrapper_contracts",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "Retroactive cleanup of pre-existing task-number citations in the deliverable file .claude/extensions/email/context/project/email/domain/wrapper-contracts.md, bringing it into compliance with the rule .claude/rules/no-task-references-in-deliverables.md (deliverables outside specs/ must not cite task numbers). This is the follow-up cleanup deferred when the anti-leakage guardrail was built; the guardrail now prevents NEW leaks, this task removes EXISTING ones.\n\nScope: exactly ONE file (the only copy of wrapper-contracts.md; no deployed/synced duplicate exists). At creation time `grep -niE '\\btasks?[:,]?[[:space:]]+[0-9]'` found 23 matching lines (headings, inline citations, and a section title '## 13. ... (tasks 823-824)').\n\nThis is a JUDGMENT task, not a mechanical delete. Each citation must be REWRITTEN to reference the DURABLE anchor it actually stands for, or dropped only when it adds nothing:\n- Provenance that is load-bearing -> replace with the durable thing: e.g. 'Task 72 §1-§9' / 'Task 72 handoff, FROZEN' -> reference the frozen .dotfiles wrapper-contract handoff by its durable name/section (the contract lives in the .dotfiles repo), not the task number; 'verified .dotfiles task 80, verify_logos_wrapper_contract_close_phase6' -> keep the named verification function verify_logos_wrapper_contract_close_phase6 (that IS the durable anchor) and drop 'task 80'.\n- Cross-references to sibling docs (staleness-detection.md, index-architecture.md, etc.) -> cite the doc filename/section instead of the task that produced it.\n- Wrapper/operator behavior attributed to 'task N' -> state the behavior and, if provenance matters, cite the config source (classify.nix, mbsync.nix, .dotfiles addendum §N) rather than the task.\n- Where a task reference adds no durable information, delete it cleanly so prose still reads well.\n\nConstraints: edit ONLY wrapper-contracts.md; do not alter the wrapper behavior it documents; preserve all technical content and section numbering; the file's own illustrative bad-examples (if any) must be phrased so they don't read as real citations. After editing, re-run the hook regex to confirm 0 remaining real citations (allow only quoted anti-pattern examples if intentionally present). Verify the advisory hook validate-no-task-references.sh no-ops or only flags intentional example lines. Small task: no separate research phase needed -- the anchors are discoverable inline and from sibling docs in the same domain/ directory.",
+      "effort": "1-2 hours",
+      "topic": "meta",
+      "dependencies": [],
+      "file_scope": [
+        ".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"
+      ],
+      "created": "2026-07-13T00:00:00Z",
+      "last_updated": "2026-07-13T19:34:47Z",
+      "artifacts": [
+        {
+          "path": "specs/856_scrub_task_number_leaks_from_wrapper_contracts/reports/01_task-citation-inventory.md",
+          "type": "report",
+          "summary": "Line-by-line inventory of all 24 task-number citations in wrapper-contracts.md with a specific durable-anchor replacement (or clean-delete verdict) for each."
+        },
+        {
+          "path": "specs/856_scrub_task_number_leaks_from_wrapper_contracts/plans/01_scrub-task-citations.md",
+          "type": "plan",
+          "summary": "Two-phase plan (edit + verify) to rewrite/delete all 24 task-number citations in wrapper-contracts.md using durable-anchor replacements from the research inventory; verification includes a manual-read step for the line-wrapped citation the hook regex cannot catch."
+        },
+        {
+          "path": "specs/856_scrub_task_number_leaks_from_wrapper_contracts/summaries/01_scrub-task-citations-summary.md",
+          "type": "summary",
+          "summary": "Scrubbed all 24 task-number citations from wrapper-contracts.md using durable-anchor replacements; verified clean via hook regex, manual read, and advisory-hook simulation."
+        }
+      ],
+      "session_id": "sess_1783970466_298292",
+      "completion_summary": "Scrubbed all 24 pre-existing task-number citations from wrapper-contracts.md (the sole in-scope deliverable), rewriting each to its durable anchor (sibling-doc section, named verify function, or config source) or deleting cleanly where it added nothing. Verified via hook regex (0 matches), whole-word grep, specs/854 path-leak grep, manual read, and advisory-hook simulation (no-op). Section numbering and technical content preserved.",
+      "archived": "2026-07-13T19:38:44Z"
+    },
+    {
+      "project_number": 78,
+      "project_name": "fix_himalaya_smtp_authentication_failure",
+      "status": "orphan_archived",
+      "archived": "2026-07-13T19:38:44Z",
+      "source": "orphan_recovery",
+      "detected_artifacts": [
+        "reports/",
+        "plans/"
+      ]
     }
   ],
   "abandoned_projects": [],
@@ -32982,6 +33593,34 @@
       "topic": "Email Integration",
       "abandonment_reason": "Already resolved: the SMTP 535 failure was fixed by the 2026-02-13 migration from Gmail OAuth2 to an app password (dotfiles task 72). Re-research (report 02) confirmed live SMTP AUTH returns 235 Accepted and the defect no longer reproduces. No implementation needed.",
       "completion_summary": "Resolved prior to implementation by app-password migration; verified via re-research 2026-07-11."
+    },
+    {
+      "project_number": 87,
+      "project_name": "investigate_wezterm_terminal_directory_change",
+      "status": "abandoned",
+      "task_type": "neovim",
+      "created": "2026-02-13T21:37:24Z",
+      "last_updated": "2026-07-13T15:19:17Z",
+      "session_id": "sess_1783801807_7ec502",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/087_investigate_wezterm_terminal_directory_change/reports/research-001.md",
+          "summary": "Comprehensive analysis of Neovim and WezTerm configurations showing no automatic directory-changing behavior"
+        },
+        {
+          "type": "research",
+          "path": "specs/087_investigate_wezterm_terminal_directory_change/reports/02_wezterm-cwd-change.md",
+          "summary": "Definitive root cause: WezTerm-side stale OSC-7 cwd propagation (no VimLeavePre re-emit); LEADER+c SpawnTab inherits stale dir. Two minimal fix options (wezterm-side / nvim-side). Live-reproduced via /proc cwd inspection."
+        }
+      ],
+      "title": "Investigate terminal directory change when opening neovim in wezterm",
+      "description": "Investigate why the terminal working directory changes to a project root when opening neovim sessions in wezterm from the home directory (~). Determine whether this behavior is caused by neovim or wezterm (configured in ~/.dotfiles/config/). Identify if any functionality depends on this behavior before modifying it. Goal is to avoid changing the terminal directory unless necessary.",
+      "effort": "TBD",
+      "topic": "Terminal UI",
+      "dependencies": [],
+      "abandonment_reason": "Research complete (root cause: stale OSC-7 cwd, no VimLeavePre re-emit). Recommended fix never applied. Cosmetic/QoL only (terminal cwd shows project root instead of ~ after quitting nvim). Abandoned per user 2026-07-13 as not worth implementing.",
+      "archived": "2026-07-13T19:38:43Z"
     }
   ]
 }
