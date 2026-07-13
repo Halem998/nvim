@@ -236,30 +236,35 @@ interdependencies; Phase 5 validates the combined result and depends on all of t
   - `grep -c "Do not cite task numbers" .claude/context/project/neovim/standards/documentation-policy.md .claude/extensions/nvim/context/project/neovim/standards/documentation-policy.md`
     returns 1 for each.
 
-### Phase 5: End-to-End Validation [NOT STARTED]
+### Phase 5: End-to-End Validation [COMPLETED]
 
 - **Goal:** Confirm all four layers are present and behave correctly, including the regex
   positive/negative tables and advisory-only hook behavior.
 - **Tasks:**
-  - [ ] **Regex smoke test**: run `grep -Eino '\btasks?[:,]?[[:space:]]+[0-9]'` against a temp file
+  - [x] **Regex smoke test**: run `grep -Eino '\btasks?[:,]?[[:space:]]+[0-9]'` against a temp file
     holding the report's POSITIVE strings (`(task 35)`, `(tasks 823-824)`, `(tasks 823, 824)`,
     `task 823:`, `tasks 823-824`, `Architecture context (task 35): ...`, `task 35's fix`,
     `Task 92 fixed a bug`, `meta-task 12 was closed`, `tasks: 823, 824`) -- expect all to match --
     and against the NEGATIVE strings (`task queue`, `task type`, `async task`, `background task`,
     `TaskCreate and TaskUpdate tools`, `a task`, `the task`, `task list`, `task_number`,
     `task-lock`, `task directory`, `2026-07-06 is a date`, `version 2.3.0 released`) -- expect zero
-    matches.
-  - [ ] **Rule registration**: confirm `no-task-references-in-deliverables.md` exists and its
+    matches. *(completed: 10/10 positives matched, 0/13 negatives matched)*
+  - [x] **Rule registration**: confirm `no-task-references-in-deliverables.md` exists and its
     bullet appears in both `.claude/extensions/core/merge-sources/claudemd.md` and the deployed
-    `.claude/CLAUDE.md` "Rules References" list (re-run Phase 1 verification greps).
-  - [ ] **Hook advisory-only**: re-confirm `grep -n "validate-no-task-references" .claude/settings.json`
+    `.claude/CLAUDE.md` "Rules References" list (re-run Phase 1 verification greps). *(completed)*
+  - [x] **Hook advisory-only**: re-confirm `grep -n "validate-no-task-references" .claude/settings.json`
     matches; re-run the Phase 2 functional positive test (non-`specs/` `(task 35)` -> advisory,
     exit 0) and the negative tests (`specs/` path -> `{}`; benign `task queue` / `TaskCreate` ->
-    `{}`); confirm the hook never emits a `permissionDecision`/deny and always exits 0.
-  - [ ] **Agent + doc coverage**: `grep -rl "no-task-references-in-deliverables" .claude/agents/`
+    `{}`); confirm the hook never emits a `permissionDecision`/deny and always exits 0. *(completed:
+    re-run confirmed positive -> additionalContext exit 0, specs/ path -> {}, benign -> {}; no
+    permissionDecision field present in any hook output)*
+  - [x] **Agent + doc coverage**: `grep -rl "no-task-references-in-deliverables" .claude/agents/`
     lists all six; both `documentation-policy.md` copies contain the clause and remain identical.
-  - [ ] Record the retroactive-cleanup follow-up (wrapper-contracts.md 9+ leaks) as a note in the
-    implementation summary -- do NOT perform it here.
+    *(completed: 4 non-symlinked agent files matched by grep -r directly; the 2 symlinked cslib
+    agent files verified via direct grep -l against the symlink paths, since grep -r does not
+    follow symlinks by default -- all 6 confirmed. doc copies diff empty.)*
+  - [x] Record the retroactive-cleanup follow-up (wrapper-contracts.md 9+ leaks) as a note in the
+    implementation summary -- do NOT perform it here. *(completed: recorded in summary Notes)*
 - **Timing:** ~30 min
 - **Depends on:** 1, 2, 3, 4
 - **Verification:**
@@ -269,16 +274,16 @@ interdependencies; Phase 5 validates the combined result and depends on all of t
 
 ## Testing & Validation
 
-- [ ] Regex positive table: 10/10 strings match `\btasks?[:,]?[[:space:]]+[0-9]` (case-insensitive).
-- [ ] Regex negative table: 0/13 benign strings match (no false positives).
-- [ ] `grep -n "no-task-references" .claude/CLAUDE.md .claude/extensions/core/merge-sources/claudemd.md`
+- [x] Regex positive table: 10/10 strings match `\btasks?[:,]?[[:space:]]+[0-9]` (case-insensitive).
+- [x] Regex negative table: 0/13 benign strings match (no false positives).
+- [x] `grep -n "no-task-references" .claude/CLAUDE.md .claude/extensions/core/merge-sources/claudemd.md`
       -- both show the rule bullet.
-- [ ] `grep -n "validate-no-task-references" .claude/settings.json` -- returns a match (hook wired).
-- [ ] Hook functional positive: non-`specs/` file with `(task 35)` -> `{"additionalContext": ...}`, exit 0.
-- [ ] Hook functional negatives: `specs/` path -> `{}`; `task queue` / `TaskCreate` -> `{}`.
-- [ ] Hook is executable (`test -x`) and never blocks (always exit 0, no `permissionDecision`).
-- [ ] `grep -rl "no-task-references-in-deliverables" .claude/agents/` lists all six implementation agents.
-- [ ] Both `documentation-policy.md` copies contain the new clause and are byte-identical (`diff` empty).
+- [x] `grep -n "validate-no-task-references" .claude/settings.json` -- returns a match (hook wired).
+- [x] Hook functional positive: non-`specs/` file with `(task 35)` -> `{"additionalContext": ...}`, exit 0.
+- [x] Hook functional negatives: `specs/` path -> `{}`; `task queue` / `TaskCreate` -> `{}`.
+- [x] Hook is executable (`test -x`) and never blocks (always exit 0, no `permissionDecision`).
+- [x] `grep -rl "no-task-references-in-deliverables" .claude/agents/` lists all six implementation agents.
+- [x] Both `documentation-policy.md` copies contain the new clause and are byte-identical (`diff` empty).
 
 ## Success Criteria
 
