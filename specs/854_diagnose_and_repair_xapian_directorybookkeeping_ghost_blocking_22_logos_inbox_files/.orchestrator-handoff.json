@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "summary": "Created a 6-phase Tier 1 (read-only notmuch debug) -> Tier 2 (ephemeral read-only Xapian delve/check + minimal non-destructive directory-bookkeeping reset) plan to diagnose and repair the stuck Xapian directory record blocking 22 Logos INBOX files, with sha256 integrity gates and a hard stop that forbids message-document surgery.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/854_diagnose_and_repair_xapian_directorybookkeeping_ghost_blocking_22_logos_inbox_files/plans/01_diagnose-repair-xapian-ghost.md",
+      "summary": "6-phase escalation plan with Tier 1/Tier 2 decision gates, read-only-first diagnosis, before/after sha256 verification, and terminal documentation of root cause plus a wrapper-contracts.md section 13 extension"
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "implement"
+}

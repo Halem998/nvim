@@ -1,0 +1,26 @@
+{
+  "phase": 1,
+  "phase_name": "Baseline integrity snapshot and unindexed-set re-confirmation",
+  "started_at": "2026-07-13T00:00:00Z",
+  "last_updated": "2026-07-13T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Enumerate the 22 target files from report 01 Appendix; confirm all 22 exist on disk", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Capture baseline sha256/stat snapshot for each; compare vs 852 summary claims; record mtime/ctime drift", "status": "done", "files_touched": ["specs/854_diagnose_and_repair_xapian_directorybookkeeping_ghost_blocking_22_logos_inbox_files/progress/phase1-baseline-snapshot.txt"]},
+    {"id": 3, "description": "Reproduce on-disk-vs-indexed diff (comm -23); confirm 22 files present in unindexed set", "status": "done", "files_touched": ["specs/854_diagnose_and_repair_xapian_directorybookkeeping_ghost_blocking_22_logos_inbox_files/progress/phase1-unindexed-diff.txt"]},
+    {"id": 4, "description": "Record notmuch count '*' and whole-DB token grep for sample/all UIDs to reconfirm zero message documents", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Write baseline snapshot to task progress area for reuse by Phases 5/6", "status": "done", "files_touched": ["specs/854_diagnose_and_repair_xapian_directorybookkeeping_ghost_blocking_22_logos_inbox_files/progress/phase1-baseline-snapshot.txt"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "1.2",
+      "description": "Compare sha256 against the values recorded in task 852's summary.md",
+      "type": "altered",
+      "reason": "Task 852's summary.md narratively asserts all 22 files are byte-identical before/after but does not literally record the sha256 hash values (they were written only to an ephemeral /tmp scratchpad file from that session, which no longer exists). This task's own Phase 1 snapshot (phase1-baseline-snapshot.txt) is therefore established as the definitive, durable baseline anchor for all subsequent before/after integrity checks in this task, consistent with 852's own on-disk-count and content-integrity findings.",
+      "annotation": "*(deviation: altered — 852's summary lacks literal recorded hash values to diff against; this task's Phase 1 snapshot becomes the durable baseline instead)*"
+    }
+  ],
+  "handoff_count": 0,
+  "notes": "All 22 target files present on disk, confirmed unindexed (comm -23 diff lists exactly these 22, matching 852's residual set exactly). Whole-DB token grep for all 22 UIDs (not just a sample) returns zero hits, reconfirming zero message documents. notmuch count '*' = 65236 (baseline for this task). On-disk Logos file count = 339 (cur+new). File 1783354873.4003086_145.hamsa,U=145:2, again shows mtime=ctime=1783963940 (the same anomalous touch disclosed and left unresolved by task 852) -- content sha256 recorded fresh in this task's own baseline; no further metadata drift observed since 852's snapshot for this file (timestamp matches 852's disclosed touch, not a new event). All other 21 files show original 2026-07-06 delivery mtime (1783354873/874) with ctime=1783355097/098 (Xapian-neutral; unrelated to this investigation)."
+}
