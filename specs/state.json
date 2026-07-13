@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 858,
+  "next_project_number": 859,
   "active_projects": [
     {
       "project_number": 857,
@@ -37,6 +37,48 @@
       "last_updated": "2026-07-13T19:58:31Z",
       "session_id": "sess_1783972043_17c8e3",
       "completion_summary": "Added reindex-on-failure to sync_all_mail() in mail.lua: extracted run_notmuch_new(cb) and chained it in both mbsync on_exit branches so notmuch new runs even when mbsync -a fails; on_done(false) is hard-coded on failure (never fail-open), so the existing refuse-and-report aerc gate now evaluates a reconciled index. Added a census.nix signal-quality doc note and fixed a header keymap typo. Gate logic unchanged; census.nix signal improvement remains an external ~/.dotfiles follow-up."
+    },
+    {
+      "project_number": 858,
+      "project_name": "mail_launch_gate_performance",
+      "title": "Fast, responsive, non-failing <leader>me aerc launch",
+      "status": "completed",
+      "task_type": "neovim",
+      "topic": "neovim",
+      "effort": "medium",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "path": "specs/858_mail_launch_gate_performance/reports/01_launch-gate-performance-diagnosis.md",
+          "type": "report",
+          "summary": "Seed diagnosis: three overlapping sync layers on the launch-blocking path, mbsync -a worst-case slowness, the 857+109 interaction that doubles sync work, and the core design flaw (gate conflates mbsync success with index-read safety, permanently blocking aerc on an unrepairable-by-sync duplicate-UID). Includes design desiderata and open questions for --hard research."
+        },
+        {
+          "path": "specs/858_mail_launch_gate_performance/reports/02_hard-research-fast-responsive-launch.md",
+          "type": "report",
+          "summary": "Hard-mode (fable) research. CONFIRMED: 2 serial full-sync layers on the launch path (mbsync -a + hook-triggered mail-sync both); gate couples launch to mbsync exit code (mail.lua:49,72). NEW: block is over-determined — census logos fallback is FALSE [STALE] due to census.nix honoring search.exclude_tags (22 trash-tagged INBOX msgs dropped; 337=337 under --exclude=false), violating wrapper-contracts.md audit rule. himalaya inbox sync REFUTED as a per-press trigger (independent 15-min autosync). notmuch new --no-hooks measured 0.194s. Recommends: gate launch on foreground notmuch new --no-hooks (~0.2s) only, open aerc immediately, background one deduplicated hook-ful sync that warns-not-blocks, delete mbsync -a, drop census from launch path."
+        },
+        {
+          "path": "specs/858_mail_launch_gate_performance/plans/02_fast-responsive-aerc-launch.md",
+          "type": "plan",
+          "summary": "4-phase plan: gate <leader>me launch on foreground notmuch new --no-hooks only, add one deduplicated background hook-ful notmuch new pipeline shared quiet/loud by <leader>me/<leader>mN with warn-never-block semantics, delete mbsync -a and census fallback, disable the himalaya auto-sync timer default, then verify the resilience matrix with the duplicate-UID collision unrepaired."
+        },
+        {
+          "path": "specs/858_mail_launch_gate_performance/summaries/02_fast-responsive-aerc-launch-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification evidence and plan deviations (lock-wait finding, pre-new || true contract, config.get falsy fix)"
+        }
+      ],
+      "created": "2026-07-13T21:36:39Z",
+      "next_artifact_number": 3,
+      "file_scope": [
+        "lua/neotex/plugins/tools/mail.lua",
+        "lua/neotex/plugins/tools/himalaya/ui/main.lua"
+      ],
+      "description": "The <leader>me aerc launch workflow in lua/neotex/plugins/tools/mail.lua has become slow and now permanently refuses to open aerc. A single press triggers THREE overlapping sync layers -- (1) a himalaya-plugin inbox sync, (2) mail.lua sync_all_mail running the forbidden all-channels `mbsync -a` (which syncs Gmail All_Mail ~64k messages and fails code 1 on a pre-existing duplicate-UID collision), and (3) run_notmuch_new calling hook-ful `notmuch new`, whose preNew hook is now `mail-sync both` (dotfiles task 109), recursively driving a full serialized gmail+logos mbsync -- plus two email-census scans. All of it runs synchronously on the launch-blocking critical path, so the user waits for the slowest full sync before anything appears. The gate then refuses to open aerc because it conflates \"mbsync succeeded\" with \"index is safe to read\": the primary barrier requires mbsync -a + notmuch new to exit 0 (impossible while the duplicate-UID persists -- a manual data repair, not a sync fix), and the census fallback honestly reports [STALE]. Net effect: a sync-independent data fault permanently denies the mail client even though, after notmuch new reconciles the index, opening aerc would be safe. GOAL: redesign <leader>me for fast, responsive, non-failing launch -- open aerc promptly on a cheaply-reconciled index (notmuch new --no-hooks) with mbsync deferred/backgrounded and never on the launch-blocking path; decouple launch from mbsync exit code (warn, do not block); eliminate the redundant sync layers (route through the single mail-sync wrapper, use --no-hooks to avoid recursive re-sync, reconcile/suppress the himalaya double-sync); never use mbsync -a; keep the full explicit sync on <leader>mN. Must remain safe against opening onto a genuinely stale/mid-write Xapian index (no return of \"could not get MessageInfo\" races). Non-goal: the one-time duplicate-UID-15 maildir data repair, but the fix must make <leader>me usable despite an unrepaired collision. See reports/01_launch-gate-performance-diagnosis.md for the seed diagnosis; deep study to be produced by a fable --hard researcher.",
+      "last_updated": "2026-07-13T22:17:19Z",
+      "session_id": "sess_1783979541_058844",
+      "completion_summary": "Redesigned <leader>me: launch now gates only on foreground 'notmuch new --no-hooks' (~0.14-0.58s) and opens aerc immediately. Deleted mbsync -a, sync_all_mail, run_notmuch_new, and census fallback. Added a single deduplicated background hook-ful notmuch new pipeline (preNew=mail-sync both) shared quiet/loud by <leader>me/<leader>mN with warn-never-block semantics; disabled the himalaya auto-sync timer default (fixing an M.get falsy-value bug and the toggle command). Works with the duplicate-UID-15 collision unrepaired; 16/16 behavioral checks pass."
     }
   ],
   "completed_projects": [],

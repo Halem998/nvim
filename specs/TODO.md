@@ -1,5 +1,5 @@
 ---
-next_project_number: 858
+next_project_number: 859
 ---
 
 # TODO
@@ -7,6 +7,22 @@ next_project_number: 858
 INFO: No active non-terminal tasks found in /home/benjamin/.config/nvim/specs/state.json
 
 ## Tasks
+
+### 858. Fast, responsive, non-failing <leader>me aerc launch
+- **Effort**: medium
+- **Status**: [COMPLETED]
+- **Task Type**: neovim
+- **Topic**: neovim
+- **Dependencies**: None
+- **Research**:
+  - [858_mail_launch_gate_performance/reports/01_launch-gate-performance-diagnosis.md]
+  - [858_mail_launch_gate_performance/reports/02_hard-research-fast-responsive-launch.md]
+- **Plan**: [858_mail_launch_gate_performance/plans/02_fast-responsive-aerc-launch.md]
+- **Summary**: [858_mail_launch_gate_performance/summaries/02_fast-responsive-aerc-launch-summary.md]
+
+**Description**: The <leader>me aerc launch workflow in lua/neotex/plugins/tools/mail.lua has become slow and now permanently refuses to open aerc. A single press triggers THREE overlapping sync layers -- (1) a himalaya-plugin inbox sync, (2) mail.lua sync_all_mail running the forbidden all-channels `mbsync -a` (which syncs Gmail All_Mail ~64k messages and fails code 1 on a pre-existing duplicate-UID collision), and (3) run_notmuch_new calling hook-ful `notmuch new`, whose preNew hook is now `mail-sync both` (dotfiles task 109), recursively driving a full serialized gmail+logos mbsync -- plus two email-census scans. All of it runs synchronously on the launch-blocking critical path, so the user waits for the slowest full sync before anything appears. The gate then refuses to open aerc because it conflates "mbsync succeeded" with "index is safe to read": the primary barrier requires mbsync -a + notmuch new to exit 0 (impossible while the duplicate-UID persists -- a manual data repair, not a sync fix), and the census fallback honestly reports [STALE]. Net effect: a sync-independent data fault permanently denies the mail client even though, after notmuch new reconciles the index, opening aerc would be safe. GOAL: redesign <leader>me for fast, responsive, non-failing launch -- open aerc promptly on a cheaply-reconciled index (notmuch new --no-hooks) with mbsync deferred/backgrounded and never on the launch-blocking path; decouple launch from mbsync exit code (warn, do not block); eliminate the redundant sync layers (route through the single mail-sync wrapper, use --no-hooks to avoid recursive re-sync, reconcile/suppress the himalaya double-sync); never use mbsync -a; keep the full explicit sync on <leader>mN. Must remain safe against opening onto a genuinely stale/mid-write Xapian index (no return of "could not get MessageInfo" races). Non-goal: the one-time duplicate-UID-15 maildir data repair, but the fix must make <leader>me usable despite an unrepaired collision. See reports/01_launch-gate-performance-diagnosis.md for the seed diagnosis; deep study to be produced by a fable --hard researcher.
+
+---
 
 ### 857. Reindex-on-failure for the aerc launch gate
 - **Effort**: small
