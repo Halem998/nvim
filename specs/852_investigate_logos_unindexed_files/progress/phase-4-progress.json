@@ -1,0 +1,15 @@
+{
+  "phase": 4,
+  "phase_name": "Prepare logos-reclone.sh recurrence-prevention patch (propose, do not apply)",
+  "started_at": "2026-07-13T17:35:00Z",
+  "last_updated": "2026-07-13T17:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Locate live reclone script under ~/.dotfiles (fallback to backup copy)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Identify offending line and compose minimal diff to --no-hooks", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Write proposed patch/diff and apply instructions as task artifact", "status": "done", "files_touched": ["specs/852_investigate_logos_unindexed_files/logos-reclone-no-hooks.patch"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "No live logos-reclone.sh found anywhere under ~/.dotfiles (searched by name and by grep for 'notmuch new'). Only the preserved backup copy at ~/Mail/.logos-backup-20260706/reclone/logos-reclone.sh exists, confirming the plan's risk note. Patch composed against that reference copy's line 92 (`run \"notmuch new\"` -> `run \"notmuch new --no-hooks\"`), written to specs/852_investigate_logos_unindexed_files/logos-reclone-no-hooks.patch, clearly marked as user-applied (no ~/.dotfiles write, no home-manager switch, no commit/push performed by this agent)."
+}

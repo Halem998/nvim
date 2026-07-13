@@ -179,22 +179,22 @@ mutating anything.
 
 ---
 
-### Phase 4: Prepare logos-reclone.sh recurrence-prevention patch (propose, do not apply) [NOT STARTED]
+### Phase 4: Prepare logos-reclone.sh recurrence-prevention patch (propose, do not apply) [COMPLETED]
 
 **Goal**: Produce a concrete patch that makes `logos-reclone.sh` use `notmuch new --no-hooks` at its
 reindex step, so the hook-race cannot recur — as a proposal for the user to apply in `~/.dotfiles`.
 
 **Tasks**:
-- [ ] Locate the live reclone script under `~/.dotfiles` (e.g.
+- [x] Locate the live reclone script under `~/.dotfiles` (e.g.
       `find ~/.dotfiles -name 'logos-reclone.sh'`). If not present, use the preserved backup at
       `~/Mail/.logos-backup-20260706/reclone/logos-reclone.sh` as the reference source and note the
-      live script's absence.
-- [ ] Identify the offending line (research: line 92, `run "notmuch new"`) and compose the minimal
+      live script's absence. *(completed: no live script found anywhere under ~/.dotfiles by name or by grep for "notmuch new"; used the preserved backup copy as reference)*
+- [x] Identify the offending line (research: line 92, `run "notmuch new"`) and compose the minimal
       diff changing it to `run "notmuch new --no-hooks"` (with `mbsync` invoked explicitly and
-      separately, sequentially, if a pull is actually needed at that step).
-- [ ] Write the proposed patch/diff and apply instructions into the task summary (or a patch file
+      separately, sequentially, if a pull is actually needed at that step). *(completed: line 92 confirmed verbatim; mbsync already runs separately at step 6/line 88, so no additional mbsync call needed)*
+- [x] Write the proposed patch/diff and apply instructions into the task summary (or a patch file
       under `specs/852_investigate_logos_unindexed_files/`), clearly marked "user applies in
-      ~/.dotfiles; then home-manager switch".
+      ~/.dotfiles; then home-manager switch". *(completed: written to specs/852_investigate_logos_unindexed_files/logos-reclone-no-hooks.patch)*
 
 **Timing**: 20 minutes
 

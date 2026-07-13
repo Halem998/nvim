@@ -1,0 +1,17 @@
+--- a/logos-reclone.sh
++++ b/logos-reclone.sh
+@@ -88,8 +88,11 @@
+ run "mbsync logos"
+
+ # --- 7. Reindex notmuch ----------------------------------------------------------
+-say "reindexing notmuch (detects removed Logos files, indexes fresh ones)"
+-run "notmuch new"
++# Task 852 fix: raw `notmuch new` (no --no-hooks) triggers notmuch's own pre-new hook
++# (`mbsync gmail logos`), which raced/short-circuited the directory scan on 2026-07-06
++# and left 22 freshly-delivered files permanently unindexed. Use --no-hooks so notmuch
++# only scans/indexes here; any needed mbsync pull already happened in step 6 above.
++say "reindexing notmuch (detects removed Logos files, indexes fresh ones; --no-hooks per task 852)"
++run "notmuch new --no-hooks"
+
+ # --- 8. Post-reclone verification ------------------------------------------------
+ if [ "$DRYRUN" -eq 0 ]; then
