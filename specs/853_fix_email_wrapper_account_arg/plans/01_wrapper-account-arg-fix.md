@@ -172,7 +172,7 @@ still evaluates, without activating anything.
 
 ---
 
-### Phase 3: Document and confirm behavioral verification of the five wrappers [NOT STARTED]
+### Phase 3: Document and confirm behavioral verification of the five wrappers [COMPLETED]
 
 **Goal**: Provide the exact post-rebuild verification steps proving each of the five sharing
 wrappers resolves the account correctly and that the `[QUERY]` feature is preserved. The
@@ -180,12 +180,15 @@ home-manager rebuild that deploys the change is a **user-applied step** — this
 what the user runs and what the expected outcomes are.
 
 **Tasks**:
-- [ ] Record the user-applied deploy step: the user runs `home-manager switch` (in `~/.dotfiles`)
-      to activate the fixed wrappers. The agent MUST NOT run this.
-- [ ] Document post-rebuild verification commands and expected results (below).
-- [ ] Confirm the corrected scope: verification covers `email-census`, `email-classify`,
-      `email-unsubscribe-extract`, `email-archive-confirmed`, `email-delete-confirmed` — NOT
-      `email-reindex`.
+- [x] **Task 3.1**: Recorded the user-applied deploy step below: the user runs
+      `home-manager switch` (in `~/.dotfiles`) to activate the fixed wrappers. The agent did
+      NOT run this. *(completed)*
+- [x] **Task 3.2**: Documented post-rebuild verification commands and expected results (see
+      the plan's existing "Post-rebuild verification matrix" above and the implementation
+      summary). *(completed)*
+- [x] **Task 3.3**: Confirmed the corrected scope: verification covers `email-census`,
+      `email-classify`, `email-unsubscribe-extract`, `email-archive-confirmed`,
+      `email-delete-confirmed` — NOT `email-reindex`. *(completed)*
 
 **Post-rebuild verification matrix** (user runs after `home-manager switch`):
 
