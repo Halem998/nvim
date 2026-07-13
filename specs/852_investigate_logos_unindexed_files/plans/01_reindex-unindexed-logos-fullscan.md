@@ -122,16 +122,16 @@ mutating anything.
 
 ---
 
-### Phase 2: Execute the index-only full-scan remediation [NOT STARTED]
+### Phase 2: Execute the index-only full-scan remediation [COMPLETED]
 
 **Goal**: Run the one untested, sanctioned remediation to index the 22 files — index-only, hook-free.
 
 **Tasks**:
-- [ ] Confirm the command reads exactly `notmuch new --no-hooks --full-scan` (verify `--no-hooks`
-      is present so the `pre-new` `mbsync gmail logos` hook does NOT fire).
-- [ ] Run `notmuch new --no-hooks --full-scan` and capture full stdout/stderr to a log
-      (e.g. `/tmp/852-fullscan.log`).
-- [ ] Note the reported counts (added/removed messages) from the command output.
+- [x] Confirm the command reads exactly `notmuch new --no-hooks --full-scan` (verify `--no-hooks`
+      is present so the `pre-new` `mbsync gmail logos` hook does NOT fire). *(completed)*
+- [x] Run `notmuch new --no-hooks --full-scan` and capture full stdout/stderr to a log
+      (e.g. `/tmp/852-fullscan.log`). *(completed: exit 0; log preserved in scratchpad)*
+- [x] Note the reported counts (added/removed messages) from the command output. *(completed: notmuch count '*' rose 65253 -> 65258 (+5); the 5 secondary staleness files cleared, but the 22 primary anomaly files did NOT get indexed — see Phase 3 verification and Rollback/Contingency)*
 
 **Timing**: 15 minutes (scan of full mail_root with mtime optimization disabled may take a few minutes)
 
@@ -148,20 +148,20 @@ mutating anything.
 
 ---
 
-### Phase 3: Verify remediation and confirm mail files untouched [NOT STARTED]
+### Phase 3: Verify remediation and confirm mail files untouched [COMPLETED]
 
 **Goal**: Prove the 22 files are now queryable and that only the index — not the mail — changed.
 
 **Tasks**:
-- [ ] Re-run the whole-DB token greps from Phase 1 (`4003086_145`, `_159`, `_163`, `_189`, `_305`,
-      and the rest of the 22): each must now return a hit.
-- [ ] Confirm via Message-ID: for a sample of the 22, `notmuch count 'id:<message-id>'` returns 1.
-- [ ] Re-run the `comm -23` on-disk-vs-indexed diff: the 22 target files must no longer appear as
-      unindexed.
-- [ ] Confirm total-message count increased by the expected number vs the Phase 1 baseline.
-- [ ] Confirm mail files untouched: re-capture size+mtime (and sha256 if taken) of the 22 targets
+- [x] Re-run the whole-DB token greps from Phase 1 (`4003086_145`, `_159`, `_163`, `_189`, `_305`,
+      and the rest of the 22): each must now return a hit. *(deviation: altered — re-ran all 22 tokens, not just the 5 sample; ALL 22 still return zero hits, i.e. `--full-scan` did NOT resolve the anomaly)*
+- [x] Confirm via Message-ID: for a sample of the 22, `notmuch count 'id:<message-id>'` returns 1. *(completed: sampled 3 Message-IDs, all return 0, confirming no message document exists)*
+- [x] Re-run the `comm -23` on-disk-vs-indexed diff: the 22 target files must no longer appear as
+      unindexed. *(deviation: altered — diff after remediation still lists exactly these same 22 files (the 5 secondary staleness files did clear, count 27->22))*
+- [x] Confirm total-message count increased by the expected number vs the Phase 1 baseline. *(completed: 65253 -> 65258, +5 — matches only the 5 secondary staleness files, not the 22)*
+- [x] Confirm mail files untouched: re-capture size+mtime (and sha256 if taken) of the 22 targets
       and diff against `/tmp/852-mail-before.txt` — expect no differences; on-disk Logos file count
-      unchanged.
+      unchanged. *(deviation: altered — on-disk file count unchanged (340/340) and all 22 files byte-identical by sha256, but one file (`..._145...`) shows an unexplained mtime/ctime metadata touch to the current session window; see Rollback/Contingency and implementation summary for full disclosure — content integrity is proven via sha256, no data loss)*
 
 **Timing**: 20 minutes
 
@@ -269,3 +269,16 @@ diagnosed fast) and finalize the task record.
 - The `logos-reclone.sh` patch is a proposal only; if the user declines to apply it, the recurrence
   risk is documented (hazard note + summary) but no repository or `~/.dotfiles` state is left
   inconsistent.
+
+**OUTCOME (this contingency triggered)**: `notmuch new --no-hooks --full-scan` ran cleanly
+(exit 0, no hook/mbsync activity, `notmuch count '*'` 65253 -> 65258) but did **not** index any of
+the 22 primary anomaly files — all 22 remain zero-hit on whole-DB token search and via `id:` lookup
+after the scan. Only the 5 secondary staleness files cleared. Per this section, no Xapian-level
+surgery was attempted inline. The residual set (all 22, unchanged from the original list) is
+recorded in `progress/phase-3-progress.json` and in the implementation summary, with a follow-up
+task recommended to inspect the Xapian directory-scan bookkeeping directly (`notmuch dump`, Xapian
+delve) — see summary for the specific recommendation. Additionally, one target file
+(`1783354873.4003086_145.hamsa,U=145:2,`) was found with an mtime/ctime metadata touch to the
+current session window (content byte-identical via sha256, no data loss, no attributable write
+command from this session, no competing process found running) — disclosed as an unresolved
+residual anomaly, not remediated further.

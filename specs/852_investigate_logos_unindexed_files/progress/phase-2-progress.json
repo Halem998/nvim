@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Execute the index-only full-scan remediation",
+  "started_at": "2026-07-13T17:42:00Z",
+  "last_updated": "2026-07-13T17:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm command reads exactly notmuch new --no-hooks --full-scan", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run notmuch new --no-hooks --full-scan, capture stdout/stderr to log", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Note reported counts (added/removed messages) from output", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "notmuch new --no-hooks --full-scan", "result": "partial", "reason": "Command ran cleanly (exit 0, no hook/mbsync activity, index-only) and cleared the 5 secondary staleness files (count 65253 -> 65258), but did NOT index the 22 primary anomaly files — they remain zero-hit on whole-DB token search after the full-scan. This is the plan's documented residual-risk contingency, not an execution error."}
+  ],
+  "handoff_count": 0,
+  "notes": "Log at scratchpad/852-fullscan.log: 'Processed 1129 total files in almost no time. No new mail' printed as the final summary line even though 5 new messages were in fact added per notmuch count delta (65253->65258) and per the Logos missing-file diff (27->22, the 5 secondary files cleared). No pre-new/post-new hook or mbsync activity anywhere in the log (only false-positive substring matches against unrelated file paths containing the word 'hooks', e.g. .claude/hooks/*.sh being listed as ignored non-mail files). --no-hooks confirmed effective. The 22 target anomaly files were re-checked immediately after via the same 5 representative-token whole-DB gres (145,159,163,189,305): all still zero hits."
+}

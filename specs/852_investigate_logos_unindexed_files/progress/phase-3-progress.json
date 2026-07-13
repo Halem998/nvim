@@ -1,0 +1,40 @@
+{
+  "phase": 3,
+  "phase_name": "Verify remediation and confirm mail files untouched",
+  "started_at": "2026-07-13T17:46:00Z",
+  "last_updated": "2026-07-13T17:52:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run whole-DB token greps for all 22 targets", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm via Message-ID sample that notmuch count id:<mid> returns 1", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Re-run comm -23 on-disk-vs-indexed diff", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm total-message count delta vs Phase 1 baseline", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm mail files untouched (size+mtime+sha256 diff vs Phase 1 snapshot)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "3.1",
+      "description": "Re-run whole-DB token greps; expected all 22 to now return hits",
+      "type": "altered",
+      "reason": "All 22 tokens returned zero hits after --full-scan; the remediation did not resolve the primary anomaly (only the 5 secondary staleness files cleared)",
+      "annotation": "*(deviation: altered — re-ran all 22 tokens, not just the 5 sample; ALL 22 still return zero hits, i.e. `--full-scan` did NOT resolve the anomaly)*"
+    },
+    {
+      "task_id": "3.3",
+      "description": "Re-run comm -23 diff; expected 22 targets to no longer appear",
+      "type": "altered",
+      "reason": "Diff after remediation still lists exactly the same 22 files as unindexed",
+      "annotation": "*(deviation: altered — diff after remediation still lists exactly these same 22 files (the 5 secondary staleness files did clear, count 27->22))*"
+    },
+    {
+      "task_id": "3.5",
+      "description": "Confirm mail files untouched via size+mtime+sha256 diff",
+      "type": "altered",
+      "reason": "Content (sha256) is byte-identical for all 22 files and on-disk count is unchanged, but file 1783354873.4003086_145.hamsa,U=145:2, shows an mtime/ctime metadata touch to the current session window with no attributable write command in this session and no competing process found",
+      "annotation": "*(deviation: altered — on-disk file count unchanged (340/340) and all 22 files byte-identical by sha256, but one file (`..._145...`) shows an unexplained mtime/ctime metadata touch to the current session window; see Rollback/Contingency and implementation summary for full disclosure — content integrity is proven via sha256, no data loss)*"
+    }
+  ],
+  "handoff_count": 0,
+  "notes": "RESULT: all 22 primary anomaly files REMAIN UNINDEXED after --full-scan (all 22 token greps zero hits; 3 sampled id: lookups all return 0; comm -23 diff after remediation lists exactly the same 22 paths, no more no less). Only the 5 secondary staleness files cleared (count 65253->65258, +5; diff went from 27 missing to 22 missing). Per plan Rollback/Contingency, this is a documented possible outcome: 'If any of the 22 remain unindexed after --full-scan, stop and follow Rollback/Contingency (record outcome, recommend Xapian-level follow-up) rather than attempting deeper surgery inline.' No further inline remediation attempted. MAIL-FILE INTEGRITY: on-disk Logos file count unchanged (340 before, 340 after); all 22 target files verified byte-identical via sha256 (content unchanged, no data loss). ANOMALY FOUND AND DISCLOSED: file 1783354873.4003086_145.hamsa,U=145:2, shows a metadata-only change -- mtime and ctime both moved from the original 2026-07-06 delivery timestamp (1783354873) to a timestamp matching this session's execution window (1783963940, ~2026-07-13 10:32 local); size and sha256 content hash are unchanged (byte-identical). No write/touch/rename command was issued against any mail file by this agent in this session (only stat, sha256sum, notmuch search/count, find, and the single sanctioned `notmuch new --no-hooks --full-scan`). No competing mbsync/notmuch/systemd-timer process was found running during the investigation window. Root cause of the single-file metadata touch is UNRESOLVED and is called out explicitly in the implementation summary as a residual anomaly for follow-up investigation -- not attributed definitively to the sanctioned remediation command, and not treated as content mutation (sha256 proves content integrity)."
+}
