@@ -455,6 +455,7 @@ Core rules (auto-applied by file path):
 - @.claude/rules/artifact-formats.md - Report/plan formats (specs/**)
 - @.claude/rules/workflows.md - Command lifecycle (.claude/**)
 - @.claude/rules/plan-format-enforcement.md - Plan format checklist (specs/**)
+- @.claude/rules/no-task-references-in-deliverables.md - No task-number citations outside specs/**
 
 **Extension Rules**: When extensions are loaded, additional rules are added (e.g., {domain}-rules.md for domain-specific development).
 
