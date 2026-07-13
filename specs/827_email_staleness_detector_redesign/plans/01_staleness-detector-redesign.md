@@ -1,7 +1,7 @@
 # Implementation Plan: Task #827
 
 - **Task**: 827 - Redesign the /email staleness detector — stop equating maildir files with deduped messages
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: 826 (completed — Logos maildir reclone + full sync)
 - **Research Inputs**: reports/01_staleness-detector-redesign.md
@@ -381,23 +381,34 @@ done
 
 ---
 
-### Phase 7: Hand off the two independent anomalies as follow-up tasks [NOT STARTED]
+### Phase 7: Hand off the two independent anomalies as follow-up tasks [COMPLETED]
 
 **Goal**: Record and recommend the two out-of-scope items as separate tasks, preserving this
 task's scope discipline.
 
 **Tasks**:
-- [ ] Recommend spawning a follow-up task for the **22 unindexed Logos files** anomaly
+- [x] Recommend spawning a follow-up task for the **22 unindexed Logos files** anomaly
       (Finding 3), including the diagnostic dead-ends already ruled out (id: lookup returns zero;
       two `email-reindex` runs including one after forcing `Logos/cur` mtime forward, both no-op;
       `new.ignore` patterns and hardlink/inode dedup ruled out; files mtime 2026-07-06 coincide
       with the task-826/828 reclone + UID-collision repair) so a future investigator does not
-      repeat them. Suggested via `/spawn 827` or `/task`.
-- [ ] Recommend spawning a follow-up task for the **`--account` positional-argument bug**
+      repeat them. Suggested via `/spawn 827` or `/task`. *(completed: recommendation recorded in
+      the implementation summary with full diagnostic context; not created via /task/spawn — see
+      deviation note below)*
+- [x] Recommend spawning a follow-up task for the **`--account` positional-argument bug**
       (Finding 5) in the shared `~/.dotfiles/.../lib.nix` `mkPreamble` arg-parsing loop, noting it
       affects all five wrapper binaries plus `email-census` and touches the frozen preamble — hence
-      deliberately deferred from this task.
-- [ ] State the deferral decisions explicitly in the implementation summary.
+      deliberately deferred from this task. *(completed: recommendation recorded in the
+      implementation summary)*
+- [x] State the deferral decisions explicitly in the implementation summary. *(completed)*
+
+**Deviation note**: Per this phase's own "Files to modify: none (recommendations recorded in the
+summary; task creation is a follow-up action)" spec, the two follow-ups were recorded as concrete,
+actionable recommendations in the implementation summary rather than created as live TODO.md/
+state.json task entries — `/task` task creation requires an interactive AskUserQuestion
+confirmation gate not available to this non-interactive implementation agent. The user (or a
+subsequent `/spawn 827` invocation) can create the two tasks directly from the summary's
+recommendations.
 
 **Timing**: 0.25 hours
 
@@ -411,16 +422,22 @@ action).
 
 ## Testing & Validation
 
-- [ ] Phase 6 snippet shows `[ok]` for BOTH Gmail and Logos on the current mailbox.
-- [ ] The canonical freshness-line format string is identical across staleness-detection.md,
-      census.nix (`printf`), wrapper-contracts.md §13, and the SKILL.md parser.
-- [ ] `grep -rn "on-disk == notmuch-indexed\|D == I\|on-disk=%s  notmuch-indexed" .claude/extensions/email/`
-      returns no residual strict-equality gate assertion.
-- [ ] The `--output=files` post-filter (path-prefix grep) is present in the census.nix logic, not a
-      raw `notmuch count --output=files folder:X`.
-- [ ] SKILL.md Stage 1 parses the emitted field names verbatim; `[ok]` is the tolerance condition.
-- [ ] Cross-repo guardrail respected: no `home-manager switch` / `nixos-rebuild` run, no commit or
-      push in `~/.dotfiles`.
+- [x] Phase 6 snippet shows `[ok]` for BOTH Gmail and Logos on the current mailbox. *(verified:
+      Gmail on-disk=128 indexed-files=128 divergence=0 tol=13 [ok]; Logos on-disk=341
+      indexed-files=319 divergence=22 tol=35 [ok])*
+- [x] The canonical freshness-line format string is identical across staleness-detection.md,
+      census.nix (`printf`), wrapper-contracts.md §13, and the SKILL.md parser. *(verified via
+      grep — all four quote `INBOX freshness  on-disk=<D>  indexed-files=<F>  divergence=<Δ>
+      tol=<T>  reindex=<ISO|never>  [ok|STALE]` verbatim)*
+- [x] `grep -rn "on-disk == notmuch-indexed\|D == I\|on-disk=%s  notmuch-indexed" .claude/extensions/email/`
+      returns no residual strict-equality gate assertion. *(verified: zero matches)*
+- [x] The `--output=files` post-filter (path-prefix grep) is present in the census.nix logic, not a
+      raw `notmuch count --output=files folder:X`. *(verified in the written census.nix content)*
+- [x] SKILL.md Stage 1 parses the emitted field names verbatim; `[ok]` is the tolerance condition.
+      *(verified)*
+- [x] Cross-repo guardrail respected: no `home-manager switch` / `nixos-rebuild` run, no commit or
+      push in `~/.dotfiles`. *(respected throughout — census.nix/mbsync.nix content was written
+      via Edit only; no build/VCS command was run in ~/.dotfiles)*
 
 ## Artifacts & Outputs
 
