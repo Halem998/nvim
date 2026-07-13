@@ -5,10 +5,10 @@
     {
       "project_number": 87,
       "project_name": "investigate_wezterm_terminal_directory_change",
-      "status": "researched",
+      "status": "abandoned",
       "task_type": "neovim",
       "created": "2026-02-13T21:37:24Z",
-      "last_updated": "2026-07-11T20:30:34Z",
+      "last_updated": "2026-07-13T15:19:17Z",
       "session_id": "sess_1783801807_7ec502",
       "artifacts": [
         {
@@ -26,7 +26,8 @@
       "description": "Investigate why the terminal working directory changes to a project root when opening neovim sessions in wezterm from the home directory (~). Determine whether this behavior is caused by neovim or wezterm (configured in ~/.dotfiles/config/). Identify if any functionality depends on this behavior before modifying it. Goal is to avoid changing the terminal directory unless necessary.",
       "effort": "TBD",
       "topic": "Terminal UI",
-      "dependencies": []
+      "dependencies": [],
+      "abandonment_reason": "Research complete (root cause: stale OSC-7 cwd, no VimLeavePre re-emit). Recommended fix never applied. Cosmetic/QoL only (terminal cwd shows project root instead of ~ after quitting nvim). Abandoned per user 2026-07-13 as not worth implementing."
     },
     {
       "project_number": 821,
@@ -160,29 +161,44 @@
     {
       "project_number": 827,
       "project_name": "email_staleness_detector_redesign",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "extensions",
       "priority": "medium",
       "title": "Redesign the /email staleness detector - stop equating maildir files with deduped messages",
-      "description": "The freshness gate shipped in tasks 823-825 is defective: email-census compares `himalaya -f INBOX` maildir FILE count against `notmuch count folder:X` deduped-MESSAGE count. These are incomparable (different file sets; heavy label-folder duplication; Message-ID dedup), so the line reads [STALE] even immediately after a full email-reindex (observed live: on-disk=3736 vs notmuch-indexed=3735, and `notmuch count --output=files folder:Logos`=11075 - none agree). As a hard gate requiring [ok] it is unreachable, forcing a manual 'Proceed, accept N' override on every --all run. Redesign options to evaluate: (a) compare comparable file sets - on-disk files vs `notmuch count --output=files` for the EXACT indexed path (path:<acct>/cur); (b) downgrade from a hard equality gate to a 'notmuch grossly behind disk' ratio/threshold heuristic that can actually reach a passing state and only blocks on large lags; (c) make the real gate 'was email-reindex run this session?' rather than a count comparison. Update census.nix (freshness line), skill-email-cleanup Stage 1 gate, staleness-detection.md, and wrapper-contracts.md section 13. Depends on 826 because the correct true count depends on resolving the Logos maildir duplication first. Cross-repo: census.nix change lands in ~/.dotfiles.",
+      "description": "The freshness gate shipped in tasks 823-825 is defective: email-census compares `himalaya -f INBOX` maildir FILE count against `notmuch count folder:X` deduped-MESSAGE count. These are incomparable (different file sets; heavy label-folder duplication; Message-ID dedup), so the line reads [STALE] even immediately after a full email-reindex (observed live: on-disk=3736 vs notmuch-indexed=3735, and `notmuch count --output=files folder:Logos`=11075 - none agree). As a hard gate requiring [ok] it is unreachable, forcing a manual 'Proceed, accept N' override on every --all run. Redesign options to evaluate: (a) compare comparable file sets - on-disk files vs `notmuch count --output=files` for the EXACT indexed path (path:<acct>/cur); (b) downgrade from a hard equality gate to a 'notmuch grossly behind disk' ratio/threshold heuristic that can actually reach a passing state and only blocks on large lags; (c) make the real gate 'was email-reindex run this session?' rather than a count comparison. Update census.nix (freshness line), skill-email-cleanup Stage 1 gate, staleness-detection.md, and wrapper-contracts.md section 13. Depends on 826 because the correct true count depends on resolving the Logos maildir duplication first. Cross-repo: census.nix change lands in ~/.dotfiles.\n\nVERIFIED 2026-07-13 (post-826-reclone + fresh email-reindex): premise confirmed live. Gmail freshness reads on-disk=128 notmuch-indexed=128 [ok], but Logos reads on-disk=341 notmuch-indexed=318 [STALE] even on a clean, fully-synced, freshly-reindexed mailbox. Three counts of the same Logos INBOX all disagree: himalaya envelope list=341 (files), notmuch count folder:Logos=318 (deduped Message-IDs), notmuch count --output=files folder:Logos=403 (different file set). 826 established the 23-message gap is REAL DISTINCT MESSAGES, not duplicates, so on-disk==notmuch-indexed is structurally unreachable for Logos regardless of syncing/reindexing. The equality gate is therefore permanently [STALE] for Logos and inconsistent across accounts (Gmail passes, Logos cannot). Fix direction (a) compare comparable file sets via notmuch --output=files on the exact indexed path, or (b) a lag-ratio heuristic, is confirmed correct. Additional finding: email-census only honors --account <acct> (positional arg is silently ignored and defaults to gmail) — relevant since the redesign touches census.nix.",
       "file_scope": [
         ".claude/extensions/email/context/project/email/domain/staleness-detection.md",
         ".claude/extensions/email/context/project/email/domain/wrapper-contracts.md",
         ".claude/extensions/email/skills/skill-email-cleanup/SKILL.md"
       ],
-      "dependencies": [
-        826
-      ],
+      "dependencies": [],
       "estimated_effort": "3 hours",
       "created": "2026-07-05T18:43:19-07:00",
-      "last_updated": "2026-07-05T18:43:19-07:00",
-      "session_id": "sess_1783302199_meta826",
+      "last_updated": "2026-07-13T16:20:22Z",
+      "session_id": "sess_1783957885_sv2g0b",
       "cross_repo_dependency": "~/.dotfiles/modules/home/email/agent-tools/census.nix (freshness line)",
-      "artifacts": [],
-      "blockers": [
-        "Predecessor task 826 (Logos maildir/mbsync repair) is BLOCKED: the true Logos count depends on resolving maildir duplication, which 826 found to be largely irreducible (real distinct messages, not dupes) pending live IMAP verification. Staleness-detector redesign should proceed only once 826 establishes the final count semantics."
-      ]
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/827_email_staleness_detector_redesign/reports/01_staleness-detector-redesign.md",
+          "summary": "Confirmed on-disk-files-vs-deduped-messages bug; found 22-file Logos indexing anomaly; recommends (a)+(b)+(c) combined with concrete census.nix sketch; enumerated 10 doc/code sites."
+        },
+        {
+          "type": "plan",
+          "path": "specs/827_email_staleness_detector_redesign/plans/01_staleness-detector-redesign.md",
+          "summary": "7-phase plan: new file-vs-file+tolerance+reindex-marker freshness semantics defined in staleness-detection.md, propagated to census.nix/mbsync.nix (cross-repo), wrapper-contracts §13, skill-email-cleanup, plus follow-up spawns."
+        }
+      ],
+      "blockers": [],
+      "verification": {
+        "date": "2026-07-13",
+        "result": "premise confirmed live; 826 dependency resolved (completed)",
+        "gmail_freshness": "on-disk=128 notmuch-indexed=128 [ok]",
+        "logos_freshness": "on-disk=341 notmuch-indexed=318 [STALE]",
+        "logos_files_count": 403
+      },
+      "completion_summary": "Redesigned the /email staleness detector from an unreachable on-disk-files-vs-deduped-messages equality gate to a reachable file-vs-file comparison with bounded tolerance and a reindex-ran marker, propagated across staleness-detection.md, cross-repo census.nix/mbsync.nix (written, not built), wrapper-contracts.md, skill-email-cleanup SKILL.md, and lower-stakes docs, verified live to reach [ok] for both Gmail and Logos; two independent anomalies (22 unindexed Logos files, --account positional-arg bug) recommended as follow-up tasks."
     },
     {
       "project_number": 832,
