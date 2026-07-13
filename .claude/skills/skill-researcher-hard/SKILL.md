@@ -172,7 +172,7 @@ if [ "$lit_flag" = "true" ] && [ ! -f "specs/literature-index.json" ]; then
     #     echo "Created task $new_task_num. Populating specs/literature-index.json inline via fork agent..."
     #     # Fork dispatch: inline population of sub-index (see Stage 4a-fork below)
     #     # After fork completes and sub-index exists:
-    #     lit_context=$(bash .claude/scripts/literature-briefing-invoke.sh) || lit_context=""
+    #     lit_context=$(bash .claude/scripts/literature-briefing.sh 2>/dev/null) || lit_context=""
     :
   fi
 fi
@@ -198,20 +198,19 @@ When the user selects "Create task and run now", after calling `literature-creat
    - Call `bash .claude/scripts/generate-todo.sh` after updating state.json
 
 2. After the fork returns, check if `specs/literature-index.json` was created:
-   - If yes: run `lit_context=$(bash .claude/scripts/literature-briefing-invoke.sh) || lit_context=""`
+   - If yes: run `lit_context=$(bash .claude/scripts/literature-briefing.sh 2>/dev/null) || lit_context=""`
    - If no (fork failed or timed out): log a warning, report the task number, suggest `/orchestrate N`, set `lit_context=""`
 
 ```bash
 # Literature briefing injection (runs if sub-index already exists OR was just created by fork)
 if [ "$lit_flag" = "true" ] && [ -f "specs/literature-index.json" ]; then
-  lit_context=$(bash .claude/scripts/literature-briefing-invoke.sh) || lit_context=""
+  lit_context=$(bash .claude/scripts/literature-briefing.sh 2>/dev/null) || lit_context=""
 fi
 
 # lit_context will be empty string if:
 # - lit_flag is not "true" (skipped)
 # - specs/literature-index.json is empty or missing (after all detection/setup above)
-# - literature-briefing.sh exited non-zero (wrapper already emitted a visible
-#   "[lit] briefing generation failed (exit N)" notice to stderr above)
+# - script exited with error
 ```
 
 **Note**: `lit_flag` is independent of `clean_flag`. Using `--clean --lit` suppresses memory retrieval but still injects literature briefing. Literature briefing is gated solely on `lit_flag == "true"`.

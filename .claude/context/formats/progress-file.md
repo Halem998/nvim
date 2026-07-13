@@ -53,8 +53,7 @@ specs/{N}_{SLUG}/
       "id": 2,
       "description": "Implement field validators",
       "status": "in_progress",
-      "note": "3 of 5 validators completed (string, number, boolean)",
-      "files_touched": ["src/validators/string.ext", "src/validators/number.ext", "src/validators/boolean.ext"]
+      "note": "3 of 5 validators completed (string, number, boolean)"
     },
     {
       "id": 3,
@@ -114,26 +113,8 @@ Each objective:
 | `description` | string | Yes | Brief description of the objective |
 | `status` | string | Yes | `not_started`, `in_progress`, `done`, `blocked` |
 | `note` | string | No | Additional context (partial completion, blockers) |
-| `files_touched` | array of strings | No (additive) | Repo-relative paths of files `Write`/`Edit`-ed while working this objective |
 
-**Immutability**: Objective `id` and `description` are immutable once created. Only `status`, `note`, and `files_touched` change during execution.
-
-### files_touched (optional, per-objective, additive)
-
-**Type**: array of strings
-**Description**: Repo-relative paths of every file the agent `Write` or `Edit`-ed while working
-on this objective. Appended to (never overwritten) as the agent touches files during the
-objective's execution.
-
-**Purpose**: Implementation agents (e.g. `general-implementation-agent`) accumulate
-`files_touched` across all phases' progress files and sum them into the `modified_files` field
-of the final `.return-meta.json` (see `.claude/context/formats/return-metadata-file.md`). This
-feeds the targeted git-staging commit-scope contract documented in
-`.claude/context/standards/git-staging-scope.md` — it lets the commit pipeline stage exactly the
-files this task's `implement` operation touched, instead of `git add -A`.
-
-**Backward compatibility**: Absent on progress files predating this field; treat as `[]` when
-summing.
+**Immutability**: Objective `id` and `description` are immutable once created. Only `status` and `note` change during execution.
 
 ### current_objective (required)
 
