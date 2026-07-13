@@ -180,22 +180,22 @@ interdependencies; Phase 5 validates the combined result and depends on all of t
     benign strings `task queue`, `TaskCreate and TaskUpdate tools` -- no regex match.
   - `test -x .claude/hooks/validate-no-task-references.sh` succeeds.
 
-### Phase 3: Implementation-Agent Reinforcement [NOT STARTED]
+### Phase 3: Implementation-Agent Reinforcement [COMPLETED]
 
 - **Goal:** Add a `MUST NOT reference task numbers in deliverables` clause to the six
   implementation agents that author non-`specs/` files.
 - **Tasks:**
-  - [ ] Append a new numbered item to the `**MUST NOT**:` list in each of the six agent files
+  - [x] Append a new numbered item to the `**MUST NOT**:` list in each of the six agent files
     (keep last for minimal diff), pointing at the new rule. Use the exact anchors from the report's
     "Layer 3" section; the clause text is:
     `Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead`
-    - `.claude/agents/general-implementation-agent.md` (after `5. Skip Stage 0 early metadata creation`)
-    - `.claude/agents/general-implementation-hard-agent.md` (after `5. Use status value "completed" ...`; this list is NOT inherited -- edit explicitly)
-    - `.claude/agents/neovim-implementation-agent.md` (after item `9. Skip Stage 0 early metadata creation ...`, renumber `10.`)
-    - `.claude/agents/nix-implementation-agent.md` (after item `10. Use deprecated overlay variables ...`, renumber `11.`)
-    - `.claude/agents/cslib-implementation-agent.md` (append after the LAST item in its `**MUST NOT**:` list -- read the full list first; it extends past line 508)
-    - `.claude/agents/cslib-implementation-hard-agent.md` (after item `6. Return implemented status if any new axiom ...`, renumber `7.`; own list, not inherited)
-  - [ ] (Optional, low-cost) Add a `` `@.claude/rules/no-task-references-in-deliverables.md` - Deliverable content standard `` line to each agent's `## Context References` list for extra visibility. The `**MUST NOT**:` addition is the load-bearing edit.
+    - `.claude/agents/general-implementation-agent.md` (after `5. Skip Stage 0 early metadata creation`) *(completed, item 6)*
+    - `.claude/agents/general-implementation-hard-agent.md` (after `5. Use status value "completed" ...`; this list is NOT inherited -- edit explicitly) *(completed, item 6)*
+    - `.claude/agents/neovim-implementation-agent.md` (after item `9. Skip Stage 0 early metadata creation ...`, renumber `10.`) *(completed)*
+    - `.claude/agents/nix-implementation-agent.md` (after item `10. Use deprecated overlay variables ...`, renumber `11.`) *(completed, item 13 since list had 12 items not 10)*
+    - `.claude/agents/cslib-implementation-agent.md` (append after the LAST item in its `**MUST NOT**:` list -- read the full list first; it extends past line 508) *(completed, item 20 -- symlinked to .claude/extensions/cslib/agents/cslib-implementation-agent.md, edited at the real target)*
+    - `.claude/agents/cslib-implementation-hard-agent.md` (after item `6. Return implemented status if any new axiom ...`, renumber `7.`; own list, not inherited) *(completed, item 11 since list had 10 items not 6 -- symlinked to .claude/extensions/cslib/agents/cslib-implementation-hard-agent.md, edited at the real target)*
+  - [ ] (Optional, low-cost) Add a `` `@.claude/rules/no-task-references-in-deliverables.md` - Deliverable content standard `` line to each agent's `## Context References` list for extra visibility. The `**MUST NOT**:` addition is the load-bearing edit. *(deviation: skipped -- optional per plan; the load-bearing MUST NOT edit is complete in all six files)*
 - **Timing:** ~45 min
 - **Depends on:** none
 - **Files to modify:**

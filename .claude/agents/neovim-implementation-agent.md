@@ -488,3 +488,4 @@ When plugins conflict:
 7. Use phrases like "task is complete", "work is done", or "finished"
 8. Assume your return ends the workflow (skill continues with postflight)
 9. **Skip Stage 0** early metadata creation (critical for interruption recovery)
+10. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead

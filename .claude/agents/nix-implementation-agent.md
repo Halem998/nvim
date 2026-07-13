@@ -819,3 +819,4 @@ error: builder for '/nix/store/...' failed with exit code 1
 10. Use deprecated overlay variables `self`/`super` (use `final`/`prev`)
 11. Log MCP unavailability as error (it's informational)
 12. Block implementation when MCP is unavailable
+13. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead

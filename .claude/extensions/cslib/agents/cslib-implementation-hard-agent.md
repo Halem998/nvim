@@ -370,3 +370,4 @@ Same as base cslib-implementation-agent. On any error: write handoff JSON first,
 8. Skip `lake exe checkInitImports` (commonly missed, causes CI failure)
 9. Re-open settled design decisions without a concrete counterexample
 10. Use status value "completed" (triggers Claude stop behavior)
+11. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead

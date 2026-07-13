@@ -1,0 +1,27 @@
+{
+  "phase": 3,
+  "phase_name": "Implementation-Agent Reinforcement",
+  "started_at": "2026-07-13T19:51:00Z",
+  "last_updated": "2026-07-13T19:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add MUST NOT clause to general-implementation-agent.md", "status": "done", "files_touched": [".claude/agents/general-implementation-agent.md"]},
+    {"id": 2, "description": "Add MUST NOT clause to general-implementation-hard-agent.md", "status": "done", "files_touched": [".claude/agents/general-implementation-hard-agent.md"]},
+    {"id": 3, "description": "Add MUST NOT clause to neovim-implementation-agent.md", "status": "done", "files_touched": [".claude/agents/neovim-implementation-agent.md"]},
+    {"id": 4, "description": "Add MUST NOT clause to nix-implementation-agent.md", "status": "done", "files_touched": [".claude/agents/nix-implementation-agent.md"]},
+    {"id": 5, "description": "Add MUST NOT clause to cslib-implementation-agent.md (symlinked)", "status": "done", "files_touched": [".claude/extensions/cslib/agents/cslib-implementation-agent.md"]},
+    {"id": 6, "description": "Add MUST NOT clause to cslib-implementation-hard-agent.md (symlinked)", "status": "done", "files_touched": [".claude/extensions/cslib/agents/cslib-implementation-hard-agent.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.7",
+      "description": "Optional Context References line addition in each agent's ## Context References list",
+      "type": "skipped",
+      "reason": "Plan marks this optional/low-cost; the load-bearing MUST NOT edit is complete in all six files, so this was skipped to minimize diff per the plan's own guidance.",
+      "annotation": "*(deviation: skipped -- optional per plan; the load-bearing MUST NOT edit is complete in all six files)*"
+    }
+  ],
+  "notes": "cslib-implementation-agent.md and cslib-implementation-hard-agent.md are symlinks under .claude/agents/ pointing to .claude/extensions/cslib/agents/*.md; edited the real target files (Edit tool refuses to write through symlinks). grep -rl (non-following) on .claude/agents/ only shows the 4 non-symlinked files; grep -l against the two symlink paths directly confirms both cslib files carry the clause -- full six-file coverage verified."
+}

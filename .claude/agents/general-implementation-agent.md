@@ -543,5 +543,6 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
 3. Use status value "completed" (triggers Claude stop behavior)
 4. Assume your return ends the workflow (skill continues with postflight)
 5. Skip Stage 0 early metadata creation
+6. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
 
 **Partial Results**: Return `status: "partial"` with `partial_progress` when work cannot be completed within timeout or after unrecoverable errors. Partial results with accurate metadata are preferred over forced or incomplete completion. The caller (skill-implementer) will report partial status to the user, who can re-run `/implement` to resume.
