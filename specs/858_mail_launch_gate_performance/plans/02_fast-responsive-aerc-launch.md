@@ -1,7 +1,7 @@
 # Implementation Plan: Fast, responsive, non-failing `<leader>me` aerc launch
 
 - **Task**: 858 - Fast, responsive, non-failing `<leader>me` aerc launch
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**:
@@ -188,19 +188,19 @@ flock under a disjoint lock namespace. Manual himalaya sync paths remain fully f
 
 ---
 
-### Phase 4: Behavioral verification and testing [NOT STARTED]
+### Phase 4: Behavioral verification and testing [COMPLETED]
 
 **Goal**: Confirm the resilience matrix of report 02 §5.4 end to end with the duplicate-UID
 collision still unrepaired, and confirm the rare-branch UX assumptions flagged in §6.5.
 
 **Tasks**:
-- [ ] Headless load checks: `dofile` both modified files (`mail.lua` returns a plugin-spec table; himalaya `config/init.lua` loads) and run `nvim --headless "+Lazy! load toggleterm.nvim" +q` (or equivalent) to confirm no startup errors
-- [ ] Launch test: press `<leader>me` -- aerc must open in ~0.2-0.5 s; the background pipeline then runs; expect exactly one WARN about the unclean background sync (duplicate-UID persists) and no launch refusal
-- [ ] Dedup test: press `<leader>me`, then immediately `<leader>mN` -- expect "Mail sync already running"; after pipeline exit, `<leader>mN` runs loud and warns (not errors) on the known failure
-- [ ] Tagging-gap test: after the background pass completes, confirm newly delivered logos mail appears in aerc's INBOX view (postNew retag closed the `tag:new` gap)
-- [ ] Lock-held gate test (§6.5): hold a notmuch write open (e.g. run `notmuch new` in a terminal against a large `--full-scan`, or `notmuch tag` in a loop) and press `<leader>me`; confirm the gate warns-and-defers promptly rather than hanging, and a retry succeeds
-- [ ] Optional soak (report 02 §6.4): with aerc open via `<leader>me`, run `mail-sync both` two or three times; watch aerc for "could not get MessageInfo" errors (expect none)
-- [ ] Confirm no notification storm: repeated presses within one pipeline run produce no duplicate WARNs
+- [x] Headless load checks: `dofile` both modified files (`mail.lua` returns a plugin-spec table; himalaya `config/init.lua` loads) and run `nvim --headless "+Lazy! load toggleterm.nvim" +q` (or equivalent) to confirm no startup errors *(completed; all exit 0)*
+- [x] Launch test: press `<leader>me` -- aerc must open in ~0.2-0.5 s; the background pipeline then runs; expect exactly one WARN about the unclean background sync (duplicate-UID persists) and no launch refusal *(completed via stubbed-handler harness (16/16 PASS: gate cmd, open ordering, quiet pipeline start) + real runs: gate `notmuch new --no-hooks` 0.14-0.58 s exit 0 with duplicate-UID unrepaired; real hook-ful pipeline ran 7.84 s. Deviation: observed pipeline exit is 0, not a WARN -- the deployed pre-new hook is `mail-sync both || true`, so the gmail duplicate-UID sync failure is intentionally non-fatal at the hook layer (visible in mail-sync logs, gmail leg failed, logos leg + reindex OK). The module WARN branch fires only when the pipeline itself (reindex) fails; no launch refusal in any case, and no per-press warn fatigue)*
+- [x] Dedup test: press `<leader>me`, then immediately `<leader>mN` -- expect "Mail sync already running"; after pipeline exit, `<leader>mN` runs loud and warns (not errors) on the known failure *(completed via harness: exactly one "Mail sync already running" INFO, no second jobstart, guard releases on exit, failure path is WARN never ERROR)*
+- [x] Tagging-gap test: after the background pass completes, confirm newly delivered logos mail appears in aerc's INBOX view (postNew retag closed the `tag:new` gap) *(deviation: altered -- verified by proxy: `notmuch count tag:new` is 0 after the real hook-ful pipeline run (postNew retag closed the gap); deterministic live-delivery of new logos mail is not reproducible headlessly)*
+- [x] Lock-held gate test (§6.5): hold a notmuch write open (e.g. run `notmuch new` in a terminal against a large `--full-scan`, or `notmuch tag` in a loop) and press `<leader>me`; confirm the gate warns-and-defers promptly rather than hanging, and a retry succeeds *(completed with a materially different finding: `notmuch new` WAITS on a held write lock rather than exiting non-zero (observed 58.6 s wait behind a bulk 65k-message tag write, then exit 0). Crucially, the write lock is FREE during the pipeline's long preNew (mail-sync) phase -- verified with a sleeping pre-new hook and against the live pipeline (gate 0.18-0.26 s while preNew active) -- so real-world waits are sub-second. Fix-forward: added a 2 s deferred INFO notice in the `<leader>me` handler so a rare long lock wait is never silent; the WARN branch remains for genuine failures)*
+- [x] Optional soak (report 02 §6.4): with aerc open via `<leader>me`, run `mail-sync both` two or three times; watch aerc for "could not get MessageInfo" errors (expect none) *(deviation: altered -- soaked without an interactive aerc: concurrent gate runs + tag writes during a real hook-ful pipeline produced no errors; the in-aerc MessageInfo observation requires a live terminal session and is left to normal use)*
+- [x] Confirm no notification storm: repeated presses within one pipeline run produce no duplicate WARNs *(completed via harness: one pipeline, exactly one WARN on failure exit, quiet dedup on repeated presses)*
 
 **Timing**: 1 hour
 
@@ -214,15 +214,15 @@ collision still unrepaired, and confirm the rare-branch UX assumptions flagged i
 
 ## Testing & Validation
 
-- [ ] `nvim --headless -c "lua assert(type(dofile('lua/neotex/plugins/tools/mail.lua')) == 'table')" -c "q"` passes after Phases 1 and 2
-- [ ] `grep -c "mbsync -a\|email-census" lua/neotex/plugins/tools/mail.lua` is 0 after Phase 2
-- [ ] `<leader>me` opens aerc sub-second with the duplicate-UID collision unrepaired (resilience matrix row 1)
-- [ ] Background sync failure surfaces as WARN, never blocks the client
-- [ ] In-flight guard prevents stacked pipelines on repeated presses
-- [ ] `<leader>mN` performs the explicit loud full sync through `mail-sync both` (via hook-ful `notmuch new`)
-- [ ] No himalaya auto-sync fires at startup; manual himalaya sync still works
-- [ ] Gate fails fast (warn + retry guidance) when the notmuch DB is write-locked
-- [ ] No "could not get MessageInfo" errors during the optional soak test
+- [x] `nvim --headless -c "lua assert(type(dofile('lua/neotex/plugins/tools/mail.lua')) == 'table')" -c "q"` passes after Phases 1 and 2
+- [x] `grep -c "mbsync -a\|email-census" lua/neotex/plugins/tools/mail.lua` is 0 after Phase 2 *(0 -- no `mbsync` or census string at all)*
+- [x] `<leader>me` opens aerc sub-second with the duplicate-UID collision unrepaired (resilience matrix row 1) *(gate measured 0.14-0.58 s, exit 0, collision unrepaired)*
+- [x] Background sync failure surfaces as WARN, never blocks the client *(harness-verified for non-zero pipeline exits; note the deployed pre-new hook is `mail-sync both || true`, so a sync-leg failure alone yields exit 0 / INFO by the wrapper's own contract)*
+- [x] In-flight guard prevents stacked pipelines on repeated presses *(harness-verified)*
+- [x] `<leader>mN` performs the explicit loud full sync through `mail-sync both` (via hook-ful `notmuch new`) *(harness-verified: loud start, hook-ful cmd, completion INFO)*
+- [x] No himalaya auto-sync fires at startup; manual himalaya sync still works *(headless: `is_auto_sync_running() == false` after `start_auto_sync()`; `M.sync_inbox` untouched at `ui/main.lua:686`; toggle re-enables via live config flip)*
+- [x] Gate fails fast (warn + retry guidance) when the notmuch DB is write-locked *(finding: notmuch WAITS on the lock instead of failing; lock is free during preNew so waits are sub-second in practice; added a 2 s deferred "waiting on the notmuch index" notice; the warn+retry branch covers genuine non-zero exits)*
+- [x] No "could not get MessageInfo" errors during the optional soak test *(no errors during concurrent gate/tag/pipeline runs; in-aerc observation deferred to normal interactive use)*
 
 ## Artifacts & Outputs
 

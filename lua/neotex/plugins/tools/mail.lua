@@ -138,7 +138,26 @@ return {
           -- gate keyed to them refuses the client forever while the index
           -- itself is perfectly readable.
           -- Server syncing happens after the open, in the background pipeline.
+          --
+          -- Lock semantics (verified empirically): if another writer holds the
+          -- notmuch write lock, `notmuch new` WAITS for it rather than exiting
+          -- non-zero -- the gate then opens aerc as soon as the writer
+          -- finishes. The background pipeline does NOT hold the lock during
+          -- its long preNew (mail-sync) phase, only during its brief indexing
+          -- phase, so waits are sub-second in practice. The deferred notice
+          -- below keeps a rare longer wait from being silent.
+          local gate_done = false
+          vim.defer_fn(function()
+            if not gate_done then
+              vim.notify(
+                "Waiting on the notmuch index (another indexer holds the write lock). "
+                  .. "aerc opens as soon as the reconcile completes.",
+                vim.log.levels.INFO
+              )
+            end
+          end, 2000)
           reconcile_index(function(ok)
+            gate_done = true
             if not ok then
               vim.notify(
                 "aerc launch deferred: notmuch reindex failed (another indexer may be mid-write). "
