@@ -211,21 +211,21 @@ reindex step, so the hook-race cannot recur — as a proposal for the user to ap
 
 ---
 
-### Phase 5: Document the hook-race hazard and record outcomes [NOT STARTED]
+### Phase 5: Document the hook-race hazard and record outcomes [COMPLETED]
 
 **Goal**: Capture the specific failure mode in-repo (so a future accidental hooked `notmuch new` is
 diagnosed fast) and finalize the task record.
 
 **Tasks**:
-- [ ] Add a short "known hazard" note to
+- [x] Add a short "known hazard" note to
       `.claude/extensions/email/context/project/email/domain/wrapper-contracts.md` (Index Freshness
       section) documenting: raw `notmuch new` -> `pre-new` `mbsync` delivers mail -> hook fails ->
       files delivered mid-scan can stay permanently unindexed; remediation is
-      `notmuch new --no-hooks --full-scan`. (This file is in THIS repo — in-repo edit, allowed.)
-- [ ] Record the remediation outcome (count of files indexed, whether all 22 cleared) and the
-      Phase 4 patch proposal in the implementation summary.
-- [ ] Note the 5 secondary staleness files as expected-to-clear on next routine `email-reindex`
-      (no action taken here).
+      `notmuch new --no-hooks --full-scan`. (This file is in THIS repo — in-repo edit, allowed.) *(completed: added under §13, includes the observed --full-scan limitation)*
+- [x] Record the remediation outcome (count of files indexed, whether all 22 cleared) and the
+      Phase 4 patch proposal in the implementation summary. *(completed: 5/27 cleared, 22 residual, documented in summary)*
+- [x] Note the 5 secondary staleness files as expected-to-clear on next routine `email-reindex`
+      (no action taken here). *(completed: confirmed they did in fact clear via this run's --full-scan)*
 
 **Timing**: 15 minutes
 

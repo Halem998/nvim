@@ -333,3 +333,25 @@ alongside `email-freeze`/`email-thaw`; **NOT** one of the five contract binaries
   completes, it writes an ISO-8601 timestamp to
   `${XDG_STATE_HOME:-$HOME/.local/state}/email-agent/last-reindex`, which `email-census` reads
   back as the `reindex=<ISO|never>` field above.
+
+**Known hazard: raw `notmuch new` self-triggered hook race can permanently strand files
+(task 852).** A raw (non-`--no-hooks`) `notmuch new` invocation fires its own `preNew` hook
+(`mbsync -a` / `mbsync gmail`), which can *deliver new mail into the very maildir `notmuch new`
+is scanning*, mid-scan. If that `preNew` `mbsync` subprocess then fails partway through (e.g. an
+unrelated channel error), the files it delivered can be left behind by the scan's per-directory
+mtime-based bookkeeping without ever being examined — they are not merely stale, they are
+**unknown to notmuch under any query** (no message document exists at all; confirmed via
+whole-database `notmuch search --output=files '*' | grep <token>` returning zero hits, not just a
+`folder:`-scoped miss). This was the exact root cause of 22 permanently-unindexed Logos INBOX
+files traced to `logos-reclone.sh` invoking a raw `notmuch new` at its reindex step (task 852
+research report). The first-line remediation is `notmuch new --no-hooks --full-scan` (`--no-hooks`
+prevents re-triggering the hook; `--full-scan` disables the mtime-based directory-skip
+optimization so every directory is fully re-examined) — but this is not guaranteed to succeed:
+in the task 852 live run, `--full-scan` successfully cleared 5 unrelated ordinary-staleness files
+in the same maildir but did **not** recover the 22 hook-race files, indicating the scan
+bookkeeping inconsistency for those specific files sits deeper than a directory-mtime skip (likely
+Xapian directory-record state) and needs `notmuch dump`/Xapian-delve-level inspection as a
+follow-up, not repeated `--full-scan` retries. **Prevention**: never invoke a raw `notmuch new` in
+any script or wrapper that touches a live maildir — always use `--no-hooks` (per this section's
+existing `email-reindex` contract), so `notmuch new` cannot trigger its own hook and race its own
+scan.
