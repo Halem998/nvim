@@ -6,18 +6,37 @@
       "project_number": 857,
       "project_name": "mail_reindex_on_failure_gate",
       "title": "Reindex-on-failure for the aerc launch gate",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "neovim",
       "topic": "neovim",
       "effort": "small",
       "dependencies": [],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/857_mail_reindex_on_failure_gate/reports/01_reindex-on-failure-gate.md",
+          "type": "report",
+          "summary": "Research report with verified line-numbered snippets, exact before/after Lua for sync_all_mail(), callback-contract decision (on_done(false) on mbsync failure regardless of reindex outcome), call-site safety confirmation (only <leader>me and <leader>mN, both safe), and the census_freshness_ok doc-comment text."
+        },
+        {
+          "path": "specs/857_mail_reindex_on_failure_gate/plans/01_reindex-on-failure-gate.md",
+          "type": "plan",
+          "summary": "2-phase plan (1h total) with exact before/after Lua snippets for the sync_all_mail replacement and the census_freshness_ok comment extension, explicit success-criteria checklist, gate-untouched guarantee, and rollback via single-file revert."
+        },
+        {
+          "path": "specs/857_mail_reindex_on_failure_gate/summaries/01_reindex-on-failure-gate-summary.md",
+          "type": "summary",
+          "summary": "Execution summary: both-branch reindex helper, verification results, constraint confirmation"
+        }
+      ],
       "created": "2026-07-13T19:43:53Z",
       "next_artifact_number": 1,
       "file_scope": [
         "lua/neotex/plugins/tools/mail.lua"
       ],
-      "description": "Harden the <leader>me aerc launch gate in lua/neotex/plugins/tools/mail.lua so a failed `mbsync -a` no longer leaves notmuch stale before the freshness decision, providing a minimal, durable fix without unnecessary complexity.\n\nCURRENT BEHAVIOR (verified in mail.lua): sync_all_mail() runs `notmuch new` ONLY when `mbsync -a` exits 0; on mbsync failure it notifies the error and returns via on_done(false) WITHOUT reindexing. The gate itself already refuses-and-reports rather than failing open -- it opens aerc only on a clean sync+reindex, or when census_freshness_ok() reads [ok] on BOTH accounts, otherwise it refuses with remediation guidance. That refuse-and-report barrier is sound and must be preserved.\n\nGAP TO FIX (the real durable change): on the mbsync-failure path, run `notmuch new` BEFORE the freshness decision, so maildir files that already landed on disk -- or mailboxes that synced before an abort such as a duplicate-UID collision -- get reconciled into the index. Then let the existing authoritative barrier make the launch decision against a freshly reindexed state instead of a stale one.\n\nSCOPE CONSTRAINTS:\n- Keep the change minimal and cohesive (one function/gate); do not duplicate freshness logic that belongs in the external census wrapper.\n- Preserve the existing refuse-and-report barrier and its remediation messaging.\n- The fallback signal census_freshness_ok() reads the \"INBOX freshness ... [ok]\" line, a count-with-tolerance proxy that cannot detect flag-renames or phantom drift -- this is what produced the false green. Making that signal authoritative is an EXTERNAL follow-up in ~/.dotfiles modules/home/email/agent-tools/census.nix (rename/deletion-aware freshness) and is intentionally OUT OF SCOPE here. Document the dependency in the gate's comment so a future reader knows the barrier's trustworthiness rests on that external signal.\n\nOUT OF SCOPE (context only, no repo change, no commit): one-time ~/Mail data repair for the duplicate UID 15 collision in Gmail/.All_Mail, and the one-time `notmuch new` index reconciliation of the ~38-file INBOX phantom drift. These are manual mail-data operations, not code."
+      "description": "Harden the <leader>me aerc launch gate in lua/neotex/plugins/tools/mail.lua so a failed `mbsync -a` no longer leaves notmuch stale before the freshness decision, providing a minimal, durable fix without unnecessary complexity.\n\nCURRENT BEHAVIOR (verified in mail.lua): sync_all_mail() runs `notmuch new` ONLY when `mbsync -a` exits 0; on mbsync failure it notifies the error and returns via on_done(false) WITHOUT reindexing. The gate itself already refuses-and-reports rather than failing open -- it opens aerc only on a clean sync+reindex, or when census_freshness_ok() reads [ok] on BOTH accounts, otherwise it refuses with remediation guidance. That refuse-and-report barrier is sound and must be preserved.\n\nGAP TO FIX (the real durable change): on the mbsync-failure path, run `notmuch new` BEFORE the freshness decision, so maildir files that already landed on disk -- or mailboxes that synced before an abort such as a duplicate-UID collision -- get reconciled into the index. Then let the existing authoritative barrier make the launch decision against a freshly reindexed state instead of a stale one.\n\nSCOPE CONSTRAINTS:\n- Keep the change minimal and cohesive (one function/gate); do not duplicate freshness logic that belongs in the external census wrapper.\n- Preserve the existing refuse-and-report barrier and its remediation messaging.\n- The fallback signal census_freshness_ok() reads the \"INBOX freshness ... [ok]\" line, a count-with-tolerance proxy that cannot detect flag-renames or phantom drift -- this is what produced the false green. Making that signal authoritative is an EXTERNAL follow-up in ~/.dotfiles modules/home/email/agent-tools/census.nix (rename/deletion-aware freshness) and is intentionally OUT OF SCOPE here. Document the dependency in the gate's comment so a future reader knows the barrier's trustworthiness rests on that external signal.\n\nOUT OF SCOPE (context only, no repo change, no commit): one-time ~/Mail data repair for the duplicate UID 15 collision in Gmail/.All_Mail, and the one-time `notmuch new` index reconciliation of the ~38-file INBOX phantom drift. These are manual mail-data operations, not code.",
+      "last_updated": "2026-07-13T19:58:31Z",
+      "session_id": "sess_1783972043_17c8e3",
+      "completion_summary": "Added reindex-on-failure to sync_all_mail() in mail.lua: extracted run_notmuch_new(cb) and chained it in both mbsync on_exit branches so notmuch new runs even when mbsync -a fails; on_done(false) is hard-coded on failure (never fail-open), so the existing refuse-and-report aerc gate now evaluates a reconciled index. Added a census.nix signal-quality doc note and fixed a header keymap typo. Gate logic unchanged; census.nix signal improvement remains an external ~/.dotfiles follow-up."
     }
   ],
   "completed_projects": [],

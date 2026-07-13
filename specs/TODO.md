@@ -4,29 +4,19 @@ next_project_number: 858
 
 # TODO
 
-## Task Order
-
-*Updated 2026-07-13. Generated from state.json dependency graph.*
-
-**Dependency Waves**:
-| Wave | Tasks | Blocked by | Topics |
-|------|-------|------------|--------|
-| 1 | 857 | -- | neovim |
-
-**Grouped by Topic** (indented = depends on parent):
-
-### Neovim
-
-857 [NOT STARTED] — Harden the <leader>me aerc launch gate in lua/neotex/plugins/tool
+INFO: No active non-terminal tasks found in /home/benjamin/.config/nvim/specs/state.json
 
 ## Tasks
 
 ### 857. Reindex-on-failure for the aerc launch gate
 - **Effort**: small
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: neovim
 - **Topic**: neovim
 - **Dependencies**: None
+- **Research**: [857_mail_reindex_on_failure_gate/reports/01_reindex-on-failure-gate.md]
+- **Plan**: [857_mail_reindex_on_failure_gate/plans/01_reindex-on-failure-gate.md]
+- **Summary**: [857_mail_reindex_on_failure_gate/summaries/01_reindex-on-failure-gate-summary.md]
 
 **Description**: Harden the <leader>me aerc launch gate in lua/neotex/plugins/tools/mail.lua so a failed `mbsync -a` no longer leaves notmuch stale before the freshness decision, providing a minimal, durable fix without unnecessary complexity.
 
