@@ -67,9 +67,18 @@ All mutation goes through five nix-built wrapper binaries; the extension itself 
   `/email --sync` after a drain.
 - **Account isolation, folder-scoped only**: multi-account support (`--account <gmail|logos>` /
   `--logos`, default `gmail`) is resolved once per invocation and threaded unchanged through every
-  wrapper call. Account scoping is expressed EXCLUSIVELY as `folder:` query tokens
-  (`folder:Gmail*` vs `folder:Logos*`) — a `tag:<account>` scheme exists in the notmuch database
-  but is confirmed inert (always 0 matches) and must never be relied on. No path for either
+  wrapper call. Account scoping is expressed EXCLUSIVELY as `folder:` query tokens, whose three
+  verified forms are (live-verified; see `domain/index-architecture.md`):
+
+  | Form | Example | Live behavior |
+  |------|---------|---------------|
+  | Glob (broken, never in wrapper source) | `folder:Gmail*` | 0 matches — notmuch `folder:` does not glob |
+  | Bare exact-match (the `/email` wrappers, by design) | `folder:Gmail` | INBOX-only exact maildir-folder match |
+  | Regex (aerc querymap) | `folder:/Gmail/` | Whole-account match across all folders |
+
+  A `tag:<account>` scheme (`tag:gmail`/`tag:logos`) is live — populated by the
+  `postNew` hook and exactly matching `folder:/Gmail/` / `folder:/Logos/` — but the wrappers
+  deliberately scope by `folder:` tokens only and never rely on it. No path for either
   account ever resolves to a whole-mailbox `mbsync -a`; the channel is always a single, explicit
   group (`gmail` or `logos`).
 - **Per-account `--archive` semantics**: Gmail's archive-of-record is the `All Mail` label-folder

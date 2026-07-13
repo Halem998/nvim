@@ -183,8 +183,18 @@ folders these calls target, never the safety gates around them.
   The mutation wrappers already run their own group-scoped `mbsync <account-channel>` reconcile
   internally; `--sync` is a separate, human-confirmed operation.
 - **Accounts are isolated by folder, never by tag**: all account scoping is expressed as
-  `folder:` query tokens (`folder:Gmail*` vs `folder:Logos*`); a `tag:<account>` scheme exists in
-  the notmuch database but is confirmed inert (always 0 matches) and must never be relied on.
+  `folder:` query tokens. Verified forms (live-verified; see
+  `domain/index-architecture.md`):
+
+  | Form | Example | Live behavior |
+  |------|---------|---------------|
+  | Glob (broken, never in wrapper source) | `folder:Gmail*` | 0 matches — notmuch `folder:` does not glob |
+  | Bare exact-match (the `/email` wrappers, by design) | `folder:Gmail` | INBOX-only exact maildir-folder match |
+  | Regex (aerc querymap) | `folder:/Gmail/` | Whole-account match across all folders |
+
+  A `tag:<account>` scheme (`tag:gmail`/`tag:logos`) is live (populated by the
+  `postNew` hook, exactly matching `folder:/Gmail/` / `folder:/Logos/`) but the wrappers
+  deliberately never rely on it — scoping is `folder:`-token-only by design.
 - **`--logos` is a live, accepted account**: `/email --logos` (any mode/scope) is parsed, its
   queries are constructed, and it is routed through a light step-1 liveness check (see Error
   Handling) before any wrapper call. It never silently falls back to operating on Gmail, and an

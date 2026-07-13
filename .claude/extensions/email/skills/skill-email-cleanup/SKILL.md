@@ -88,8 +88,8 @@ Resolve the branch before any binary call:
    unchanged (same value) to every wrapper call, the pilot gate, and both `BASE_QUERY` branches
    below for the rest of this invocation — never re-resolved mid-flow.
 1. **Base query from account + scope** (folder: tokens ONLY — never `tag:<account>`, which is
-   confirmed inert in the live notmuch database; no fallthrough to a Gmail token for a non-gmail
-   account):
+   live but deliberately not relied on for wrapper scoping; no fallthrough to a
+   Gmail token for a non-gmail account):
 
    | `account` | `scope=inbox` | `scope=archive` |
    |-----------|---------------|------------------|
@@ -97,8 +97,21 @@ Resolve the branch before any binary call:
    | `logos` | `BASE_QUERY="folder:Logos"` (bare root = INBOX) | `BASE_QUERY="folder:Logos/.Archive"` (the real Proton Archive folder — Logos has no `.All_Mail`/`.Spam`) |
 
    These are the exact tokens from wrapper-contracts.md §11 (gmail) and the Logos ground-truth
-   folder census (task 815 research) — folder scoping is ONLY ever expressed as (part of) the
+   folder census — folder scoping is ONLY ever expressed as (part of) the
    `email-classify` QUERY positional; no wrapper flag exists for it.
+
+   The verified `folder:`-syntax forms (live-verified; see
+   `domain/index-architecture.md`):
+
+   | Form | Example | Live behavior |
+   |------|---------|---------------|
+   | Glob (broken, never in wrapper source) | `folder:Gmail*` | 0 matches — notmuch `folder:` does not glob |
+   | Bare exact-match (the `/email` wrappers, by design) | `folder:Gmail` | INBOX-only exact maildir-folder match |
+   | Regex (aerc querymap) | `folder:/Gmail/` | Whole-account match across all folders |
+
+   A `tag:<account>` scheme (`tag:gmail`/`tag:logos`) is live (populated by the
+   `postNew` hook, exactly matching `folder:/Gmail/` / `folder:/Logos/`) but wrapper scoping
+   deliberately never relies on it.
 2. **Focus terms**: translate `focus_hint` (if any) into additional notmuch query terms
    (e.g. `from:github.com`) appended to `BASE_QUERY` with `and`.
 3. **Branch on mode**: `mode=default` -> Default Mode flow below; `mode=all` -> `--all` Mode
@@ -152,7 +165,9 @@ sweep re-surfaces them); the default cursor intentionally skips them.
 
 **Cursor rule stays account-agnostic by construction**: `CURSOR_QUERY` is built on top of the
 now-account-aware `BASE_QUERY` (Stage 0), which already confines every account to its own
-disjoint `folder:Gmail*` / `folder:Logos*` subtree. The `+proposed-*` tags themselves are
+disjoint folder subtree (exact-match `folder:Gmail`/`folder:Gmail/.<Sub>` vs
+`folder:Logos`/`folder:Logos/.<Sub>` tokens — notmuch `folder:` does not glob). The
+`+proposed-*` tags themselves are
 per-message notmuch tags, not account-scoped, but because the two accounts' folders never
 overlap, a Gmail pass and a Logos pass can never tag, cursor-exclude, or collide on the same
 message — no additional account qualifier is needed in the tag-exclusion terms.
