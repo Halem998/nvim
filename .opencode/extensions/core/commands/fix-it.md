@@ -1,7 +1,7 @@
 ---
 description: Scan files for FIX:, NOTE:, TODO:, QUESTION: tags and create structured tasks interactively
 allowed-tools: Skill
-argument-hint: [PATH...]
+argument-hint: "[PATH...]"
 ---
 
 > **COMMAND EXECUTION MODE** — You have been invoked as this command with arguments: `$ARGUMENTS`. Execute the workflow below immediately. Do not summarize this file, ask what to do with it, or describe its contents. Start execution now.

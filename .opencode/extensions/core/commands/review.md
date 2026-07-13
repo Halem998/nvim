@@ -1,7 +1,7 @@
 ---
 description: Review code and create analysis reports
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), TaskCreate, TaskUpdate, AskUserQuestion
-argument-hint: [SCOPE] [--create-tasks]
+argument-hint: "[SCOPE] [--create-tasks]"
 ---
 
 > **COMMAND EXECUTION MODE** — You have been invoked as this command with arguments: `$ARGUMENTS`. Execute the workflow below immediately. Do not summarize this file, ask what to do with it, or describe its contents. Start execution now.

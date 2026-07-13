@@ -60,7 +60,7 @@ Commands in this system use a YAML frontmatter header followed by a Markdown bod
 ---
 description: One-line description
 allowed-tools: Bash(git:*), Bash(gh:*), AskUserQuestion, Read, Write, Edit
-argument-hint: [mode] [--options]
+argument-hint: "[mode] [--options]"
 ---
 ```
 

@@ -1,7 +1,7 @@
 ---
 description: Scan files for FIX:, NOTE:, TODO:, QUESTION: tags and create structured tasks interactively
 allowed-tools: Skill
-argument-hint: [PATH...]
+argument-hint: "[PATH...]"
 ---
 
 # /fix-it Command
