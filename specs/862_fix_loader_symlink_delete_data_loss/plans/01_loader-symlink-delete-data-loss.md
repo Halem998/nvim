@@ -281,7 +281,7 @@ point. No loader execution in this phase at all.
 
 ---
 
-### Phase 2: Scratch-only verification of the removal fix [NOT STARTED]
+### Phase 2: Scratch-only verification of the removal fix [COMPLETED]
 
 **Goal**: Prove empirically, against real code, that the source file survives — reproducing the
 research report's three cases plus a regression check, entirely in scratch.
@@ -294,38 +294,86 @@ pure function over plain path arrays — it can be called directly without `mana
 
 **Tasks**:
 
-- [ ] Create the scratch fixture root at
+- [x] Create the scratch fixture root at
       `/tmp/claude-1000/-home-benjamin--config-nvim/86fe22e3-6df8-4d8d-bcaa-b7402fdaeefc/scratchpad/loader-symlink-test/`
       and treat it as `project_dir` for all calls.
-- [ ] Build the Case A fixture (the data-loss path): a real source file at
+- [x] Build the Case A fixture (the data-loss path): a real source file at
       `<scratch>/.claude/extensions/fakeext/skills/skill-fake/SKILL.md` with recognizable content,
       and a deployed symlink `<scratch>/.claude/skills/skill-fake` pointing at
       `<scratch>/.claude/extensions/fakeext/skills/skill-fake`, mirroring `install-extension.sh`'s
       output.
-- [ ] Build the Case B fixture: a real source file
+- [x] Build the Case B fixture: a real source file
       `<scratch>/.claude/extensions/fakeext/agents/fake-agent.md` and a deployed file-level symlink
       `<scratch>/.claude/agents/fake-agent.md` pointing at it.
-- [ ] Build the regression fixture: an ordinary deployed regular file
+- [x] Build the regression fixture: an ordinary deployed regular file
       `<scratch>/.claude/commands/plain.md` with no symlink anywhere in its path.
-- [ ] Write a headless Lua test script that calls `M.remove_installed_files` directly with an
-      `installed_files` array holding the deployed paths for all three fixtures and
-      `opts = { project_dir = <scratch> }`.
-- [ ] **Assert Case A**: `vim.fn.filereadable("<scratch>/.claude/extensions/fakeext/skills/skill-fake/SKILL.md") == 1`
-      — the source file SURVIVES. This is the assertion the whole task exists for; it must fail
-      against the pre-fix code and pass against the post-fix code.
-- [ ] **Assert Case A (link intact)**: `vim.fn.getftype("<scratch>/.claude/skills/skill-fake") == "link"`
-      — the deployed symlink is left in place per the ownership rule.
-- [ ] **Assert Case B**: the deployed symlink `<scratch>/.claude/agents/fake-agent.md` still
-      resolves and the source `fake-agent.md` is readable — skipped, not unlinked.
-- [ ] **Assert regression**: `<scratch>/.claude/commands/plain.md` IS deleted (`filereadable == 0`)
-      and is counted in `removed_count`. This guards the over-skip failure mode where the ancestor
-      walk escapes its bound and unload becomes a silent no-op.
-- [ ] **Assert counts**: `removed_count == 1` and `skipped_count == 2`.
-- [ ] Confirm the test fails on the pre-fix code path by stashing the Phase 1 change or by running
-      the equivalent raw `vim.fn.delete()` against a fresh Case A fixture, so the test is proven to
-      have discriminating power rather than passing vacuously.
-- [ ] Run with `nvim --headless -u NONE -c "luafile <script>" -c "q"` and capture the transcript
+- [x] Write a headless Lua test script (`<scratch>/run_test.lua`) that calls
+      `M.remove_installed_files` directly with an `installed_files` array holding the deployed
+      paths for all three fixtures and `opts = { project_dir = <scratch> }`.
+- [x] **Assert Case A**: `vim.fn.filereadable("<scratch>/.claude/extensions/fakeext/skills/skill-fake/SKILL.md") == 1`
+      — the source file SURVIVES. PASSED post-fix, FAILED pre-fix (see transcript below).
+- [x] **Assert Case A (link intact)**: `vim.fn.getftype("<scratch>/.claude/skills/skill-fake") == "link"`
+      — the deployed symlink is left in place per the ownership rule. PASSED post-fix.
+- [x] **Assert Case B**: the deployed symlink `<scratch>/.claude/agents/fake-agent.md` still
+      resolves and the source `fake-agent.md` is readable — skipped, not unlinked. PASSED post-fix.
+- [x] **Assert regression**: `<scratch>/.claude/commands/plain.md` IS deleted (`filereadable == 0`)
+      and is counted in `removed_count`. PASSED post-fix (both runs).
+- [x] **Assert counts**: `removed_count == 1` and `skipped_count == 2`. PASSED post-fix.
+- [x] Confirm the test fails on the pre-fix code path. Implemented via a `loadfile()`-based shadow
+      override (see phase notes below) rather than git-stashing the tracked file, so the real
+      tracked `loader.lua` was never modified at any point.
+- [x] Run with `nvim --headless -u NONE -c "luafile <script>" -c "q"` and capture the transcript
       into the phase notes.
+
+**Phase notes — discriminating-power methodology and gotcha found**: the original plan to
+git-stash Phase 1 or to prepend a shadow directory to `package.path` did not work as expected:
+Neovim's `require()` consults a runtimepath-based loader that includes `~/.config/nvim` even under
+`-u NONE`, and this loader takes precedence over ordinary `package.path` search order — so a
+`package.path`-prepended shadow copy was silently ignored and the real (already-fixed) file kept
+loading regardless of mode. Verified via `debug.getinfo(loader.remove_installed_files, "S")`,
+which printed the real repo path even in "prefix" mode. Fixed by extracting the pre-Phase-1
+content via `git show HEAD~1:lua/neotex/plugins/ai/shared/extensions/loader.lua` into a
+scratch-only shadow file, then loading it directly with `loadfile()` and pre-populating
+`package.loaded["neotex.plugins.ai.shared.extensions.loader"]` before calling `require()` — this
+bypasses the runtimepath loader entirely and is deterministic. The real tracked `loader.lua` file
+was never edited, stashed, or checked out at any point during this phase.
+
+**Transcript — pre-fix (shadow, buggy) run**, fixtures freshly rebuilt beforehand:
+```
+remove_installed_files loaded from: @<scratch>/prefix_shadow/lua/neotex/plugins/ai/shared/extensions/loader.lua
+[mode=prefix] calling M.remove_installed_files ...
+removed_count = 3
+skipped_count = nil
+CASE_A_SOURCE_SURVIVES = false      <-- BUG REPRODUCED: real source destroyed
+CASE_A_LINK_INTACT = true
+CASE_B_SOURCE_SURVIVES = true
+CASE_B_LINK_PRESENT = false
+REGRESSION_DELETED = true
+COUNTS_OK = false
+ALL_PASS = false
+```
+
+**Transcript — post-fix (real repo) run**, fixtures freshly rebuilt beforehand:
+```
+remove_installed_files loaded from: @/home/benjamin/.config/nvim/lua/neotex/plugins/ai/shared/extensions/loader.lua
+[mode=postfix] calling M.remove_installed_files ...
+removed_count = 1
+skipped_count = 2
+CASE_A_SOURCE_SURVIVES = true
+CASE_A_LINK_INTACT = true
+CASE_B_SOURCE_SURVIVES = true
+CASE_B_LINK_PRESENT = true
+REGRESSION_DELETED = true
+COUNTS_OK = true
+ALL_PASS = true
+```
+
+The Case A assertion is the discriminating one: `false` pre-fix (source destroyed, proving the
+test catches the exact incident this task exists to fix), `true` post-fix (source survives). All
+six assertions pass post-fix. `git status` on the real repository showed no changes to
+`lua/neotex/plugins/ai/shared/extensions/` or the real `.claude/skills`, `.claude/agents`,
+`.claude/commands`, `.claude/extensions` trees beyond what already existed uncommitted before this
+session began.
 
 **Timing**: 1 hour
 
