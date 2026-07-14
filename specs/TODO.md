@@ -1,11 +1,43 @@
 ---
-next_project_number: 861
+next_project_number: 862
 ---
 
 # TODO
 
+## Task Order
+
+*Updated 2026-07-14. Generated from state.json dependency graph.*
+
+**Dependency Waves**:
+| Wave | Tasks | Blocked by | Topics |
+|------|-------|------------|--------|
+| 1 | 861 | -- | agent-system |
+
+**Grouped by Topic** (indented = depends on parent):
+
+### Agent System
+
+861 [NOT STARTED] — Add a deployed-vs-source content drift check for extension rules 
 
 ## Tasks
+
+### 861. Add rule drift check to extension lint
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Add a deployed-vs-source content drift check for extension rules in check-extension-docs.sh. The script's check_deployed_script_drift covers manifest.provides.scripts only, comparing the deployed .claude/scripts/<name> against the extension source <ext>/scripts/<name>. There is no equivalent check for provides.rules, so a rule file whose deployed .claude/rules/<name>.md has diverged from its extension source is invisible to lint.
+
+This is not hypothetical. core/rules/pr-prohibition.md had silently accumulated 35 lines in its deployed copy (the "/pr --review Workflow" section) that were absent from the extension source. The divergence survived precisely because the rule was unregistered in provides.rules, so the loader never overwrote the deployed copy. Once registered, the loader's byte-for-byte copy_file() overwrite would have destroyed that content -- the reconciliation had to be performed by hand first. A drift check would have surfaced this years earlier.
+
+Implement check_deployed_rule_drift mirroring check_deployed_script_drift: for each manifest.provides.rules entry where BOTH the deployed .claude/rules/<name> and the extension source <ext>/rules/<name> exist, fail on content mismatch; skip with an info note (never fail) when the deployed copy is absent, since an extension's rules are not deployed in every consuming repo.
+
+Also evaluate whether the same deployed-vs-source asymmetry applies to provides.agents, provides.commands, and provides.context, and whether a single drift helper parameterized by category is warranted rather than adding a fourth near-duplicate function.
+
+Note: check-extension-docs.sh is itself declared in core's provides.scripts, so any edit must be written to BOTH .claude/scripts/ and .claude/extensions/core/scripts/ or the drift check will flag the change itself.
+
+---
 
 ### 860. Enforce plan compliance rule
 - **Status**: [COMPLETED]

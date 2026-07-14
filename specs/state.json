@@ -1,7 +1,22 @@
 {
   "version": "1.1.0",
-  "next_project_number": 861,
+  "next_project_number": 862,
   "active_projects": [
+    {
+      "project_number": 861,
+      "project_name": "add_rule_drift_check_to_extension_lint",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "description": "Add a deployed-vs-source content drift check for extension rules in check-extension-docs.sh. The script's check_deployed_script_drift covers manifest.provides.scripts only, comparing the deployed .claude/scripts/<name> against the extension source <ext>/scripts/<name>. There is no equivalent check for provides.rules, so a rule file whose deployed .claude/rules/<name>.md has diverged from its extension source is invisible to lint.\n\nThis is not hypothetical. core/rules/pr-prohibition.md had silently accumulated 35 lines in its deployed copy (the \"/pr --review Workflow\" section) that were absent from the extension source. The divergence survived precisely because the rule was unregistered in provides.rules, so the loader never overwrote the deployed copy. Once registered, the loader's byte-for-byte copy_file() overwrite would have destroyed that content -- the reconciliation had to be performed by hand first. A drift check would have surfaced this years earlier.\n\nImplement check_deployed_rule_drift mirroring check_deployed_script_drift: for each manifest.provides.rules entry where BOTH the deployed .claude/rules/<name> and the extension source <ext>/rules/<name> exist, fail on content mismatch; skip with an info note (never fail) when the deployed copy is absent, since an extension's rules are not deployed in every consuming repo.\n\nAlso evaluate whether the same deployed-vs-source asymmetry applies to provides.agents, provides.commands, and provides.context, and whether a single drift helper parameterized by category is warranted rather than adding a fourth near-duplicate function.\n\nNote: check-extension-docs.sh is itself declared in core's provides.scripts, so any edit must be written to BOTH .claude/scripts/ and .claude/extensions/core/scripts/ or the drift check will flag the change itself.",
+      "dependencies": [],
+      "file_scope": [
+        ".claude/scripts/check-extension-docs.sh",
+        ".claude/extensions/core/scripts/check-extension-docs.sh"
+      ],
+      "created": "2026-07-14T21:14:41Z",
+      "last_updated": "2026-07-14T21:14:41Z"
+    },
     {
       "project_number": 859,
       "project_name": "fix_task_order_topic_case_indentation",
