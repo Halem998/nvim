@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Fix the origin renderer via the shared normalizer (core extension source)",
+  "started_at": "2026-07-14T16:15:00Z",
+  "last_updated": "2026-07-14T16:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add normalize_topic() to core extension generate-task-order.sh", "status": "done", "files_touched": [".claude/extensions/core/scripts/generate-task-order.sh"]},
+    {"id": 2, "description": "Normalize grouping key (lines 430, 441, 456) in core source", "status": "done", "files_touched": [".claude/extensions/core/scripts/generate-task-order.sh"]},
+    {"id": 3, "description": "Fix comparison guards (lines 553, 578) in core source", "status": "done", "files_touched": [".claude/extensions/core/scripts/generate-task-order.sh"]},
+    {"id": 4, "description": "Mirror identical change to deployed .claude/scripts/generate-task-order.sh", "status": "done", "files_touched": [".claude/scripts/generate-task-order.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_note": "Fixture (scratchpad, not real state.json) with Title-Case 'Modal Logic' chain 1->2->3->4 plus task 4 stored as 'modal-logic' rendered exactly ONE '### Modal Logic' heading with 3 '└─' indented lines under it. Real specs/state.json and specs/TODO.md confirmed untouched (git diff clean)."
+}

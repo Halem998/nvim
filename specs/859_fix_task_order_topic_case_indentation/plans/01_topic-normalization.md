@@ -162,30 +162,30 @@ normalize_topic() {
 
 ---
 
-### Phase 2: Fix the origin renderer via the shared normalizer (core extension source) [NOT STARTED]
+### Phase 2: Fix the origin renderer via the shared normalizer (core extension source) [COMPLETED]
 
 **Goal**: Route the renderer's grouping key and both comparison guards through `normalize_topic()`
 so the tree renders correctly for any casing and case/separator variants collapse into one heading.
 
 **Tasks**:
-- [ ] Add the byte-identical `normalize_topic()` block (from Phase 1) to
-      `.claude/extensions/core/scripts/generate-task-order.sh`.
-- [ ] Replace the ad-hoc grouping-key lowercasing with `normalize_topic` calls:
+- [x] Add the byte-identical `normalize_topic()` block (from Phase 1) to
+      `.claude/extensions/core/scripts/generate-task-order.sh`. *(completed)*
+- [x] Replace the ad-hoc grouping-key lowercasing with `normalize_topic` calls:
       line 430 (`local t_key="${t,,}"`), line 441 (`local tp_key="${tp,,}"`), and the membership
       test at line 456 (`[[ "${tp,,}" == "$topic" ]]`) — so the grouping key is the fully canonical
       form (collapsing `-`/space/underscore variants, not just case). This alone removes the
-      duplicate-heading risk (`Modal Logic` vs `modal-logic` collapse to one section).
-- [ ] Fix the two comparison guards so both sides are normalized:
+      duplicate-heading risk (`Modal Logic` vs `modal-logic` collapse to one section). *(completed)*
+- [x] Fix the two comparison guards so both sides are normalized:
       line 553 (`"$task_topic_val" != "$_current_section_topic"`) and
       line 578 (`"$dep_topic" != "$_current_section_topic"`). Because `_current_section_topic` is
       set from the already-canonical grouping key (line 470), normalize the right-hand raw value:
       compare `"$(normalize_topic "$dep_topic")"` / `"$(normalize_topic "$task_topic_val")"` against
-      `_current_section_topic`. After this, `!=` is correct without special-casing.
-- [ ] Keep the deployed `.claude/scripts/generate-task-order.sh` in sync: apply the identical change
+      `_current_section_topic`. After this, `!=` is correct without special-casing. *(completed)*
+- [x] Keep the deployed `.claude/scripts/generate-task-order.sh` in sync: apply the identical change
       to it (or trigger its regeneration from the core source), since `generate-todo.sh` invokes the
-      deployed copy. Note in a comment that the core extension source is authoritative on load.
-- [ ] Do NOT add any task-number reference in new comments; do not touch the pre-existing `task 796`
-      comment at line 499.
+      deployed copy. Note in a comment that the core extension source is authoritative on load. *(completed)*
+- [x] Do NOT add any task-number reference in new comments; do not touch the pre-existing `task 796`
+      comment at line 499. *(completed: verified, task 796 comment untouched, no new task-number refs)*
 
 **Timing**: 1 hour
 
