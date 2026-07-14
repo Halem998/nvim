@@ -1,7 +1,7 @@
 # Implementation Plan: Rule Drift Check for Extension Lint
 
 - **Task**: 861 - Add a deployed-vs-source content drift check for extension rules in check-extension-docs.sh
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 1 hour
 - **Dependencies**: None
 - **Research Inputs**: `specs/861_add_rule_drift_check_to_extension_lint/reports/01_rule-drift-check-lint.md`

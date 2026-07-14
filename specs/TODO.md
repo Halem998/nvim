@@ -4,32 +4,17 @@ next_project_number: 863
 
 # TODO
 
-## Task Order
-
-*Updated 2026-07-14. Generated from state.json dependency graph.*
-
-**Dependency Waves**:
-| Wave | Tasks | Blocked by | Topics |
-|------|-------|------------|--------|
-| 1 | 861,862 | -- | agent-system, extensions |
-
-**Grouped by Topic** (indented = depends on parent):
-
-### Agent System
-
-861 [NOT STARTED] — Add a deployed-vs-source content drift check for extension rules 
-
-### Extensions
-
-862 [NOT STARTED] — Fix data loss in the extension loader: remove_installed_files() d
 
 ## Tasks
 
 ### 862. Fix loader symlink delete data loss
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: neovim
 - **Topic**: extensions
 - **Dependencies**: None
+- **Research**: [862_fix_loader_symlink_delete_data_loss/reports/01_loader-symlink-delete-data-loss.md]
+- **Plan**: [862_fix_loader_symlink_delete_data_loss/plans/01_loader-symlink-delete-data-loss.md]
+- **Summary**: [862_fix_loader_symlink_delete_data_loss/summaries/01_loader-symlink-delete-data-loss-summary.md]
 
 **Description**: Fix data loss in the extension loader: remove_installed_files() deletes through symlinks, destroying tracked extension-source files.
 
@@ -48,10 +33,13 @@ REQUIRED: make the removal path symlink-aware so it never deletes through a syml
 ---
 
 ### 861. Add rule drift check to extension lint
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [861_add_rule_drift_check_to_extension_lint/reports/01_rule-drift-check-lint.md]
+- **Plan**: [861_add_rule_drift_check_to_extension_lint/plans/01_rule-drift-check-lint.md]
+- **Summary**: [861_add_rule_drift_check_to_extension_lint/summaries/01_rule-drift-check-lint-summary.md]
 
 **Description**: Add a deployed-vs-source content drift check for extension rules in check-extension-docs.sh. The script's check_deployed_script_drift covers manifest.provides.scripts only, comparing the deployed .claude/scripts/<name> against the extension source <ext>/scripts/<name>. There is no equivalent check for provides.rules, so a rule file whose deployed .claude/rules/<name>.md has diverged from its extension source is invisible to lint.
 

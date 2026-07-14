@@ -5,21 +5,40 @@
     {
       "project_number": 862,
       "project_name": "fix_loader_symlink_delete_data_loss",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "neovim",
       "topic": "extensions",
       "description": "Fix data loss in the extension loader: remove_installed_files() deletes through symlinks, destroying tracked extension-source files.\n\nOBSERVED DATA LOSS: an extension reload deleted .claude/extensions/literature/skills/skill-literature/SKILL.md (2265 lines, git-tracked). Evidence: a check-extension-docs.sh run immediately before the reload recorded \"literature PASS\"; immediately after, \"literature FAIL: manifest skill entry missing on disk: skills/skill-literature/SKILL.md\". The extension-source directory mtime matched the reload timestamp to the second. The file was recovered from git HEAD; /literature was broken until then.\n\nROOT CAUSE: deployed skills are symlinks into extension sources, e.g. .claude/skills/skill-literature -> ../extensions/literature/skills/skill-literature. The unload step in lua/neotex/plugins/ai/shared/extensions/loader.lua (remove_installed_files, approx lines 755-784) iterates installed_files and calls vim.fn.delete(filepath) on the DEPLOYED path. Because the deployed path resolves through the symlink, the delete lands on the real extension-source file. The subsequent copy step then has nothing to copy and leaves an empty directory. Deployed and source are the same inode, so \"remove the deployed copy\" means \"destroy the source\".\n\nSTILL LIVE: the symlink is unchanged, so another reload destroys the file again. Nine other deployed skills are symlinks into extension sources and are exposed whenever their extension unloads: skill-cslib-implementation, skill-cslib-implementation-hard, skill-cslib-research, skill-cslib-research-hard, skill-cslib-vet, skill-pr-implementation, skill-pr-review-implementation, skill-pr-review-research, skill-zotero.\n\nSECOND GAP: remove_installed_files() takes no protected_paths argument, so .syncprotect does not guard the delete path at all. copy_file() honors protected_paths; the removal path does not. A user who lists a file in .syncprotect is protected on sync but not on unload.\n\nTHIRD SYMPTOM (same interaction, lower severity): the reload replaced .claude/agents/literature-agent.md and .claude/commands/literature.md, which are mode 120000 (symlinks) in HEAD, with regular files. Content was preserved but the symlink setup was silently flattened; these show as typechanges (T) in git status.\n\nREQUIRED: make the removal path symlink-aware so it never deletes through a symlink into an extension source -- e.g. skip paths where the deployed entry is a symlink (or resolves outside the deployed tree), or unlink the symlink itself rather than its target. Decide and document whether the symlink deploy mode is supported: if supported, both copy and remove must handle it; if not, the loader should refuse to install over a symlink rather than silently destroying it. Also thread protected_paths/.syncprotect through remove_installed_files() so protection is symmetric across copy and remove. Verify with nvim --headless: reload an extension whose deployed skill is a symlink and assert the source file survives.",
       "dependencies": [],
       "file_scope": [
-        "lua/neotex/plugins/ai/shared/extensions/loader.lua"
+        "lua/neotex/plugins/ai/shared/extensions/loader.lua",
+        "lua/neotex/plugins/ai/shared/extensions/init.lua"
       ],
       "created": "2026-07-14T21:24:17Z",
-      "last_updated": "2026-07-14T21:24:17Z"
+      "last_updated": "2026-07-14T22:25:26Z",
+      "session_id": "sess_1784064322_70bafc_862",
+      "artifacts": [
+        {
+          "path": "specs/862_fix_loader_symlink_delete_data_loss/reports/01_loader-symlink-delete-data-loss.md",
+          "type": "report",
+          "summary": "Loader symlink delete research"
+        },
+        {
+          "path": "specs/862_fix_loader_symlink_delete_data_loss/plans/01_loader-symlink-delete-data-loss.md",
+          "type": "plan",
+          "summary": "Loader symlink fix plan"
+        },
+        {
+          "path": "specs/862_fix_loader_symlink_delete_data_loss/summaries/01_loader-symlink-delete-data-loss-summary.md",
+          "type": "summary",
+          "summary": "Loader symlink fix"
+        }
+      ]
     },
     {
       "project_number": 861,
       "project_name": "add_rule_drift_check_to_extension_lint",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "description": "Add a deployed-vs-source content drift check for extension rules in check-extension-docs.sh. The script's check_deployed_script_drift covers manifest.provides.scripts only, comparing the deployed .claude/scripts/<name> against the extension source <ext>/scripts/<name>. There is no equivalent check for provides.rules, so a rule file whose deployed .claude/rules/<name>.md has diverged from its extension source is invisible to lint.\n\nThis is not hypothetical. core/rules/pr-prohibition.md had silently accumulated 35 lines in its deployed copy (the \"/pr --review Workflow\" section) that were absent from the extension source. The divergence survived precisely because the rule was unregistered in provides.rules, so the loader never overwrote the deployed copy. Once registered, the loader's byte-for-byte copy_file() overwrite would have destroyed that content -- the reconciliation had to be performed by hand first. A drift check would have surfaced this years earlier.\n\nImplement check_deployed_rule_drift mirroring check_deployed_script_drift: for each manifest.provides.rules entry where BOTH the deployed .claude/rules/<name> and the extension source <ext>/rules/<name> exist, fail on content mismatch; skip with an info note (never fail) when the deployed copy is absent, since an extension's rules are not deployed in every consuming repo.\n\nAlso evaluate whether the same deployed-vs-source asymmetry applies to provides.agents, provides.commands, and provides.context, and whether a single drift helper parameterized by category is warranted rather than adding a fourth near-duplicate function.\n\nNote: check-extension-docs.sh is itself declared in core's provides.scripts, so any edit must be written to BOTH .claude/scripts/ and .claude/extensions/core/scripts/ or the drift check will flag the change itself.",
@@ -29,7 +48,25 @@
         ".claude/extensions/core/scripts/check-extension-docs.sh"
       ],
       "created": "2026-07-14T21:14:41Z",
-      "last_updated": "2026-07-14T21:14:41Z"
+      "last_updated": "2026-07-14T21:41:33Z",
+      "session_id": "sess_1784064322_70bafc_861",
+      "artifacts": [
+        {
+          "path": "specs/861_add_rule_drift_check_to_extension_lint/reports/01_rule-drift-check-lint.md",
+          "type": "report",
+          "summary": "Rule drift check research"
+        },
+        {
+          "path": "specs/861_add_rule_drift_check_to_extension_lint/plans/01_rule-drift-check-lint.md",
+          "type": "plan",
+          "summary": "Rule drift check plan"
+        },
+        {
+          "path": "specs/861_add_rule_drift_check_to_extension_lint/summaries/01_rule-drift-check-lint-summary.md",
+          "type": "summary",
+          "summary": "Rule drift check implementation"
+        }
+      ]
     },
     {
       "project_number": 859,
