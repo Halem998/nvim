@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 860,
+  "next_project_number": 861,
   "active_projects": [
     {
       "project_number": 859,
@@ -116,6 +116,38 @@
       "last_updated": "2026-07-13T22:17:19Z",
       "session_id": "sess_1783979541_058844",
       "completion_summary": "Redesigned <leader>me: launch now gates only on foreground 'notmuch new --no-hooks' (~0.14-0.58s) and opens aerc immediately. Deleted mbsync -a, sync_all_mail, run_notmuch_new, and census fallback. Added a single deduplicated background hook-ful notmuch new pipeline (preNew=mail-sync both) shared quiet/loud by <leader>me/<leader>mN with warn-never-block semantics; disabled the himalaya auto-sync timer default (fixing an M.get falsy-value bug and the toggle command). Works with the duplicate-UID-15 collision unrepaired; 16/16 behavioral checks pass."
+    },
+    {
+      "project_number": 860,
+      "project_name": "enforce_plan_compliance_rule",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "description": "Add a .claude/rules/ rule enforcing strict plan compliance for lean-implementation-agent and other formal implementation agents. The rule should: (1) Prohibit agents from \"assessing what's truly minimal\" or inventing alternative approaches when a plan exists. (2) Require agents to follow the plan's exact task sequence step-by-step, in order. (3) Explicitly ban common divergence patterns: skipping intermediate theorems, inlining proofs instead of following the plan's decomposition, routing through different helper lemmas than specified, and \"cleaner approach\" rationalizations. (4) Be auto-applied via glob pattern to formal proof files (e.g. Theories/**, **/*.lean); the glob must generalize across consuming repos rather than hard-coding one project's layout. (5) Reference the repeated failures in BimodalLogic task 157 (8 plan versions, agents diverging every time) as motivation. The rule should be concise but firm -- agents must treat the plan as a contract, not a suggestion.\n\nProvenance: relocated from BimodalLogic task 162 (2026-07-14). Authored here in the agent-system source of truth so the rule syncs out to consuming repos, rather than living only in BimodalLogic/.claude/.",
+      "dependencies": [],
+      "file_scope": [
+        ".claude/rules/"
+      ],
+      "created": "2026-07-14T20:20:03Z",
+      "last_updated": "2026-07-14T20:54:41Z",
+      "session_id": "sess_1784060858_701891",
+      "artifacts": [
+        {
+          "path": "specs/860_enforce_plan_compliance_rule/reports/01_plan-compliance-rule.md",
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/860_enforce_plan_compliance_rule/plans/01_plan-compliance-rule.md",
+          "type": "plan",
+          "summary": ""
+        },
+        {
+          "path": "specs/860_enforce_plan_compliance_rule/summaries/01_plan-compliance-rule-summary.md",
+          "type": "summary",
+          "summary": ""
+        }
+      ]
     }
   ],
   "completed_projects": [],
