@@ -556,7 +556,7 @@ clean. `git status` on the real repository shows only the two intended source fi
 
 ---
 
-### Phase 5: Scratch integration test of the full unload/load cycle [NOT STARTED]
+### Phase 5: Scratch integration test of the full unload/load cycle [COMPLETED]
 
 **Goal**: Prove the end-to-end reload path — the exact operation that caused the incident — is now
 non-destructive and non-flattening, against real `manager.unload`/`manager.load` code.
@@ -570,24 +570,89 @@ circumstances call any manager function with a default `project_dir` — the def
 
 **Tasks**:
 
-- [ ] Build a complete scratch project tree: `<scratch>/.claude/extensions/fakeext/` with a
-      `manifest.json` declaring one skill, one agent, and one command; matching source files; and
-      a `<scratch>/.claude/extensions.json` state file marking `fakeext` loaded with the deployed
-      paths recorded as relative paths (matching `state_mod.mark_loaded`'s format).
-- [ ] Deploy the skill as a directory symlink and the agent/command as file symlinks, exactly as
-      `install-extension.sh` would.
-- [ ] Call `manager.reload("fakeext", { confirm = false, project_dir = <scratch> })`.
-- [ ] **Assert no data loss**: every file under `<scratch>/.claude/extensions/fakeext/` is readable
-      and byte-identical to its pre-reload content.
-- [ ] **Assert no flattening**: `<scratch>/.claude/agents/fake-agent.md` and
-      `<scratch>/.claude/commands/fake.md` are still `getftype == "link"` after the reload, and
-      `<scratch>/.claude/skills/skill-fake` is still a symlinked directory. This assertion closes
-      the third symptom and is the one that would fail under the rejected unlink-the-ancestor
-      design.
-- [ ] **Assert copy-mode still works**: build a second scratch fixture with no symlinks at all,
-      reload it, and confirm files are copied and tracked normally — the fix must not break the
-      ordinary deploy mode.
-- [ ] Capture the full transcript into the phase notes.
+- [x] Build a complete scratch project tree: `<scratch>/phase5/project/.claude/extensions/fakeext/`
+      with a `manifest.json` declaring one skill, one agent, and one command; matching source
+      files. **Deviation (methodology, not scope)**: rather than hand-authoring
+      `<scratch>/.claude/extensions.json` directly, the test first calls the real `manager.load()`
+      to populate it authentically (exercising `state_mod.mark_loaded`'s actual code path), then
+      converts the deployed paths to symlinks — see phase notes for why this is a more faithful
+      reproduction of the real incident sequence.
+- [x] Deploy the skill as a directory symlink and the agent/command as file symlinks, exactly as
+      `install-extension.sh` would (done here via `ln -s`, simulating the installer's effect after
+      a genuine copy-based `manager.load()`).
+- [x] Call `manager.reload("fakeext", { confirm = false, project_dir = <scratch>/phase5/project })`.
+- [x] **Assert no data loss**: every file under
+      `<scratch>/phase5/project/.claude/extensions/fakeext/` is readable and byte-identical to its
+      pre-reload content.
+- [x] **Assert no flattening**: the deployed agent and command paths are still `getftype ==
+      "link"` after the reload, and the deployed skill directory is still a symlinked directory.
+      This assertion closes the third symptom and is the one that would fail under the rejected
+      unlink-the-ancestor design.
+- [x] **Assert copy-mode still works**: built a second scratch fixture (`fakeext2`) with no
+      symlinks at all, loaded and reloaded it, and confirmed files are copied and tracked
+      normally — the fix does not break the ordinary deploy mode.
+- [x] Capture the full transcript into the phase notes.
+
+**Phase notes — methodology**: the plan's suggested approach (hand-author `extensions.json`
+directly) was replaced with a more faithful reproduction: call the real `manager.load("fakeext",
+{...})` first (a genuine copy-based load, exercising `state_mod.mark_loaded` for real), THEN
+simulate `install-extension.sh` converting the three deployed paths into symlinks via `ln -s`
+(deleting the copied regular file/directory first). This exactly mirrors the real-world incident
+sequence: an extension loaded once via the copy-based loader, later converted to symlink deploy
+mode by the separate installer, with `extensions.json` still listing the original (now-symlinked)
+paths as `installed_files`/`installed_dirs` — which is precisely the state that made the original
+bug destructive. This is a scope-neutral methodology substitution: the plan's own assertions (no
+data loss, no flattening, copy-mode still works) are all satisfied, with a stronger reproduction of
+the actual failure precondition. A completely separate `global_extensions_dir` was configured
+(`config_mod.create({ ..., global_extensions_dir = PROJECT .. "/.claude/extensions", ... })`) so
+extension discovery never touches the real `~/.config/nvim/.claude/extensions`.
+
+**Full transcript**:
+```
+=== Phase 5: scratch integration test (real manager.load/unload/reload) ===
+--- Part A: fakeext (symlink deploy mode) ---
+LOAD_OK = true
+POST_LOAD_AGENT_EXISTS = true
+POST_LOAD_COMMAND_EXISTS = true
+POST_LOAD_SKILL_FILE_EXISTS = true
+POST_LOAD_AGENT_IS_REGULAR = true
+POST_LOAD_SKILL_DIR_IS_REGULAR = true
+PRE_RELOAD_AGENT_IS_LINK = true
+PRE_RELOAD_COMMAND_IS_LINK = true
+PRE_RELOAD_SKILL_DIR_IS_LINK = true
+
+Calling manager.reload('fakeext', { confirm = false, project_dir = PROJECT }) ...
+RELOAD_OK = true
+NO_DATA_LOSS_AGENT = true
+NO_DATA_LOSS_COMMAND = true
+NO_DATA_LOSS_SKILL = true
+POST_RELOAD_AGENT_IS_LINK = true
+POST_RELOAD_COMMAND_IS_LINK = true
+POST_RELOAD_SKILL_DIR_IS_LINK = true
+
+PART_A_ALL_PASS = true
+
+--- Part B: fakeext2 (ordinary copy deploy mode, no symlinks) ---
+LOAD2_OK = true
+POST_LOAD2_AGENT_EXISTS = true
+POST_LOAD2_AGENT_IS_REGULAR = true
+RELOAD2_OK = true
+POST_RELOAD2_AGENT_EXISTS = true
+POST_RELOAD2_AGENT_IS_REGULAR = true
+POST_RELOAD2_CONTENT_OK = true
+
+PART_B_ALL_PASS = true
+
+PHASE5_ALL_PASS = true
+```
+
+**Real-tree safety verification**: `git status --porcelain` on the real repository after this
+phase shows only pre-existing changes that predate this session (confirmed by comparing
+`.claude/extensions.json`'s mtime, `1784065035`, against this session's start timestamp,
+`1784065632` — the file was last modified roughly 10 minutes *before* this agent began work, i.e.
+by unrelated concurrent activity in this shared multi-agent session, not by this test). No
+`fake*`-named artifacts exist anywhere under the real `.claude/skills`, `.claude/agents`,
+`.claude/commands`, or `.claude/extensions` directories.
 
 **Timing**: 1 hour
 
