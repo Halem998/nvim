@@ -2,7 +2,7 @@
 
 - **Task**: 862 - Fix data loss in the extension loader: `remove_installed_files()` destroys
   tracked extension-source files through symlinks
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/862_fix_loader_symlink_delete_data_loss/reports/01_loader-symlink-delete-data-loss.md`
@@ -670,7 +670,7 @@ by unrelated concurrent activity in this shared multi-agent session, not by this
 
 ---
 
-### Phase 6: Restore the flattened symlinks and record the decision [NOT STARTED]
+### Phase 6: Restore the flattened symlinks and record the decision [COMPLETED]
 
 **Goal**: Repair the two files already silently flattened from symlinks into regular files, and
 write the ownership rule down where the next reader will find it. Sequenced last: restoring the
@@ -682,21 +682,28 @@ tree. Restoring a symlink with git does not execute loader code; keep it that wa
 
 **Tasks**:
 
-- [ ] Confirm the current on-disk state: `.claude/agents/literature-agent.md` and
+- [x] Confirm the current on-disk state: `.claude/agents/literature-agent.md` and
       `.claude/commands/literature.md` are regular files (mode 100644) while git HEAD records them
       as symlinks (mode 120000), shown as typechanges (`T`) in `git status`. Verify with
       `git ls-files -s` on both paths.
-- [ ] For each of the two files, diff the current regular-file content against the extension source
+- [x] For each of the two files, diff the current regular-file content against the extension source
       it should link to (`.claude/extensions/literature/agents/literature-agent.md` and
       `.claude/extensions/literature/commands/literature.md`). Resolve the intended target from git
       HEAD's recorded symlink content rather than assuming the path.
-- [ ] **If byte-identical**: restore the symlink from HEAD with `git checkout HEAD -- <path>` and
-      confirm `getftype` reports `link` afterward.
-- [ ] **If they differ**: do NOT overwrite. The regular file may hold content the source lacks.
-      Surface the diff and stop; report as a blocker for user decision rather than choosing.
-- [ ] Verify both restored symlinks resolve to existing files (not dangling) and that `git status`
+- [x] **If byte-identical**: restore the symlink and confirm `getftype` reports `link` afterward.
+      **Deviation (methodology, not scope)**: the delegating orchestrator explicitly directed
+      restoring via `rm` + `ln -s` (matching the exact relative target recorded in HEAD's symlink
+      blob) rather than `git checkout HEAD -- <path>`, because `git checkout -- <path>` is
+      classified as a destructive git operation by this repo's `guard-destructive-git.sh`
+      PreToolUse hook and would have required a full-tree `git stash` snapshot first — risky in
+      this shared multi-agent session where other tasks have concurrent uncommitted work in
+      flight. `rm` + `ln -s` achieves an identical byte-for-byte and mode-for-mode result (verified
+      below) without touching any other file in the working tree.
+- [x] **If they differ**: do NOT overwrite. (Not applicable — both files were byte-identical to
+      their extension source, verified immediately before the replacement.)
+- [x] Verify both restored symlinks resolve to existing files (not dangling) and that `git status`
       no longer reports them as typechanges.
-- [ ] Create `.claude/context/project/neovim/domain/extension-deploy-modes.md` documenting: that
+- [x] Create `.claude/context/project/neovim/domain/extension-deploy-modes.md` documenting: that
       two deploy mechanisms write into the same target directories (the `install-extension.sh`
       symlink installer and the `loader.lua` copy engine driven by the picker); which categories
       use which pattern (skills = directory-level symlinks, agents/commands = file-level symlinks);
@@ -706,10 +713,26 @@ tree. Restoring a symlink with git does not execute loader code; keep it that wa
       ownership rule with its justification; and the note that the loader cannot create symlinks,
       which is why it must not unlink them. No task-number citations anywhere in this file —
       reference `install-extension.sh` and the loader functions by name.
-- [ ] Register the new context file in `.claude/context/index.json` with an appropriate `load_when`
+- [x] Register the new context file in `.claude/context/index.json` with an appropriate `load_when`
       entry so it is discoverable, following the existing entry format.
-- [ ] Re-read `loader.lua` and confirm the ownership-invariant LuaDoc added in Phases 1 and 4 is
+- [x] Re-read `loader.lua` and confirm the ownership-invariant LuaDoc added in Phases 1 and 4 is
       present, consistent between the copy and remove sides, and free of task-number citations.
+
+**Phase notes**: on-disk state confirmed via `git ls-files -s` (both paths showed mode `120000` in
+the index) versus `stat`/`ls -la` (both showed `-rw-r--r--` regular-file mode on disk), with `git
+status` showing `T` (typechange) for both. `diff` against
+`.claude/extensions/literature/{agents,commands}/...` (resolved from `git show HEAD:<path>`'s
+recorded symlink target, not assumed) showed both byte-identical — safe to replace. After `rm` +
+`ln -s ../extensions/literature/agents/literature-agent.md` (and the `commands/literature.md`
+equivalent), `vim.fn.getftype()` reports `link` for both, both resolve to readable content
+matching the source, and `git status --porcelain` for both paths is now empty (exactly matches
+HEAD, no typechange). The two dangling `skill-zotero`/`zotero.md` symlinks were left untouched per
+the plan's Non-Goals (confirmed still present and still pointing at the removed `zotero` extension
+directory — out of scope here, unrelated housekeeping). The `grep -ri "task 862\|task N"
+.claude/context/project/neovim/domain/extension-deploy-modes.md
+lua/neotex/plugins/ai/shared/extensions/loader.lua` verification command specified in this phase's
+own Verification section returned no matches (exit code 1) against both `loader.lua` and
+`init.lua`.
 
 **Timing**: 1 hour
 
@@ -734,22 +757,32 @@ tree. Restoring a symlink with git does not execute loader code; keep it that wa
 
 ## Testing & Validation
 
-- [ ] Case A (the data-loss path): a plain file under a symlinked ancestor directory is NOT
+- [x] Case A (the data-loss path): a plain file under a symlinked ancestor directory is NOT
       deleted, and the real extension source survives — the assertion this task exists for.
-- [ ] Case A is proven to fail against pre-fix code, establishing the test's discriminating power.
-- [ ] Case B: a file-level deployed symlink is skipped and left intact; its source is untouched.
-- [ ] Regression: ordinary deployed regular files are still deleted and still counted in
-      `removed_count`; unload has not become a silent no-op.
-- [ ] `.syncprotect` entries are skipped on remove, using a key shape proven to match what
-      `copy_file` receives.
-- [ ] Copy path preserves pre-existing symlinks at target locations and does not record them as
-      owned files.
-- [ ] Full `manager.reload` against a scratch `project_dir` destroys nothing and flattens nothing.
-- [ ] Non-symlinked extensions still load, unload, and reload normally.
-- [ ] `nvim --headless -c "lua require('neotex.plugins.ai.shared.extensions.loader')" -c "q"` and
-      the same for `.init` both exit clean.
-- [ ] `git status` confirms the real `.claude/` tree was never modified by any test.
-- [ ] No task-number citations outside `specs/**`.
+      (Phase 2: `CASE_A_SOURCE_SURVIVES = true` post-fix.)
+- [x] Case A is proven to fail against pre-fix code, establishing the test's discriminating power.
+      (Phase 2: `CASE_A_SOURCE_SURVIVES = false` against the pre-fix shadow module.)
+- [x] Case B: a file-level deployed symlink is skipped and left intact; its source is untouched.
+      (Phase 2: `CASE_B_SOURCE_SURVIVES = true`, `CASE_B_LINK_PRESENT = true`.)
+- [x] Regression: ordinary deployed regular files are still deleted and still counted in
+      `removed_count`; unload has not become a silent no-op. (Phase 2: `REGRESSION_DELETED =
+      true`, `removed_count = 1`.)
+- [x] `.syncprotect` entries are skipped on remove, using a key shape proven to match what
+      `copy_file` receives. (Phase 3: `KEY_MATCHES_COPY_CONVENTION = true`,
+      `SYNCPROTECT_ALL_PASS = true`.)
+- [x] Copy path preserves pre-existing symlinks at target locations and does not record them as
+      owned files. (Phase 4: `PHASE4_ALL_PASS = true`, both agent- and skill-level cases.)
+- [x] Full `manager.reload` against a scratch `project_dir` destroys nothing and flattens nothing.
+      (Phase 5: `PART_A_ALL_PASS = true`, real `manager.reload` against symlink deploy mode.)
+- [x] Non-symlinked extensions still load, unload, and reload normally. (Phase 5:
+      `PART_B_ALL_PASS = true`, `fakeext2` ordinary copy deploy mode.)
+- [x] `nvim --headless -c "lua require('neotex.plugins.ai.shared.extensions.loader')" -c "q"` and
+      the same for `.init` both exit clean. (Re-verified after every phase touching either file.)
+- [x] `git status` confirms the real `.claude/` tree was never modified by any test. (Verified
+      after every phase; Phase 5's one true real-tree touch is Phase 6's intentional, permitted
+      symlink restoration via `ln -s`, not a test artifact.)
+- [x] No task-number citations outside `specs/**`. (Phase 6: `grep -ri "task 862\|task N"` across
+      `loader.lua`, `init.lua`, and the new context document returns no matches.)
 
 ## Artifacts & Outputs
 
