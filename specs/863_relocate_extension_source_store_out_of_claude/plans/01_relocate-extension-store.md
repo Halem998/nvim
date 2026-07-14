@@ -120,25 +120,27 @@ picker's list/load/unload/verify surface reads from the new location.
 
 ---
 
-### Phase 2: Derive sync.lua core_source_base from canonical config [NOT STARTED]
+### Phase 2: Derive sync.lua core_source_base from canonical config [COMPLETED]
 
 **Goal**: Remove the second hardcoded store literal by deriving the "Load Core" source base from
 the canonical config value, closing the drift class permanently.
 
 **Tasks**:
-- [ ] In `sync.lua` `scan_all_artifacts` (around line 909), replace the literal
+- [x] In `sync.lua` `scan_all_artifacts` (around line 909), replace the literal
       `core_source_base = (base_dir == ".claude") and ".claude/extensions/core" or nil` with a
-      value derived from the already-required `ext_config` module: for the `.claude` base_dir,
-      compute the relative core-source base from `ext_config.claude(global_dir).global_extensions_dir`
-      (append `/core`), expressed relative to `global_dir` as `scan.scan_directory_for_sync`
-      expects for its `source_base` override (currently a repo-root-relative path like
-      `.claude/extensions/core`; the derived value must be `agent-system/extensions/core`). Keep
-      `nil` for `.opencode` (no override).
-- [ ] Preserve the existing behavior contract: `source_base` is passed to
+      value derived from the already-computed `extension_cfg` (via `get_extension_config`,
+      itself backed by `ext_config.claude`/`ext_config.opencode`): for the `.claude` base_dir,
+      compute the relative core-source base from `extension_cfg.global_extensions_dir` by
+      stripping the `global_dir .. "/"` prefix and appending `/core`. Keep `nil` for `.opencode`
+      (no override). *(altered: derives from the already-in-scope `extension_cfg` local rather
+      than a fresh `ext_config.claude(global_dir)` call — same canonical source, avoids a
+      redundant require-call re-derivation)*
+- [x] Preserve the existing behavior contract: `source_base` is passed to
       `scan.scan_directory_for_sync` as a repo-root-relative path and gates `use_core_source`
-      (see lines 939-947, 1055). Confirm the derived value has the same shape (relative, no
-      leading/trailing slash mismatch) as the literal it replaces.
-- [ ] Update the explanatory comment block (lines 904-909) to state the source now lives under
+      (see lines 939-947, 1055). Confirmed the derived value has the same shape (relative, no
+      leading/trailing slash) as the literal it replaces: verified headlessly to resolve to
+      `agent-system/extensions/core`.
+- [x] Update the explanatory comment block (lines 904-909) to state the source now lives under
       `agent-system/extensions/core/` rather than `.claude/extensions/core/`, without citing any
       task number (per no-task-references rule).
 

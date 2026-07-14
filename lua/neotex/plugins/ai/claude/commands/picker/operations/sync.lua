@@ -902,11 +902,25 @@ function M.scan_all_artifacts(global_dir, project_dir, config)
   local blocklist = manifest.aggregate_extension_artifacts(extension_cfg)
 
   -- For .claude base_dir, core artifact categories (agents, commands, rules, skills, etc.)
-  -- are now physically located in extensions/core/ after the Phase 2 migration.
-  -- We read from {global_dir}/.claude/extensions/core/{subdir} but write to
+  -- are now physically located under the global source store (agent-system/extensions/core/,
+  -- relocated out of any deployed .claude/ tree). We read from
+  -- {global_dir}/agent-system/extensions/core/{subdir} but write to
   -- {project_dir}/.claude/{subdir} to maintain the standard project layout.
+  -- Derived from extension_cfg.global_extensions_dir (the single canonical config value,
+  -- config.lua's M.claude preset) rather than a duplicated literal, so this path can never
+  -- drift from the canonical default.
   -- For .opencode, no core extension migration has occurred, so paths are unchanged.
-  local core_source_base = (base_dir == ".claude") and ".claude/extensions/core" or nil
+  local core_source_base
+  if base_dir == ".claude" then
+    local global_prefix = global_dir .. "/"
+    local global_extensions_dir = extension_cfg.global_extensions_dir
+    local relative_extensions_dir = global_extensions_dir:sub(1, #global_prefix) == global_prefix
+        and global_extensions_dir:sub(#global_prefix + 1)
+      or global_extensions_dir
+    core_source_base = relative_extensions_dir .. "/core"
+  else
+    core_source_base = nil
+  end
 
   -- Helper to scan with base_dir and filtering threaded through.
   -- When an allow-list exists for the category, files are post-filtered to only
