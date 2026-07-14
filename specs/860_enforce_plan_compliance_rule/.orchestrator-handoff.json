@@ -1,0 +1,36 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Created a 4-phase plan (2h, serial) to author a plan-compliance rule for formal proof files. Resolved the research's open placement question with verified evidence: the rule goes in the lean extension (all three Lean-consuming repos load lean active; cslib depends on lean transitively; core would ship a dead **/*.lean rule everywhere). Registration in lean's manifest provides.rules is the load-bearing step and gets a dedicated phase plus an end-to-end propagation proof using pr-prohibition.md as a live counterexample. Caveat: the plan deliberately deviates from task requirement (5) by dropping the task-number citation, documented with rationale.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/860_enforce_plan_compliance_rule/plans/01_plan-compliance-rule.md"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "implement",
+  "files_modified": [
+    "specs/860_enforce_plan_compliance_rule/plans/01_plan-compliance-rule.md",
+    "specs/860_enforce_plan_compliance_rule/.orchestrator-handoff.json",
+    "specs/860_enforce_plan_compliance_rule/.return-meta.json"
+  ],
+  "decisions_made": [
+    "Extension placement = lean (.claude/extensions/lean/rules/plan-compliance.md), registered in lean's manifest provides.rules. Verified: BimodalLogic, cslib, and theorem_proving_in_lean4 all load lean active; cslib's manifest declares dependencies including lean so it inherits transitively; BimodalLogic does NOT load cslib, so cslib placement would miss the primary consumer; core placement would ship an inert **/*.lean rule to every non-Lean consumer.",
+    "Glob = paths: \"**/*.lean\" bare-string frontmatter, matching lean4.md:2 and cslib.md:2. Theories/** explicitly rejected; Phase 1 verification greps for and fails on any 'Theories' occurrence.",
+    "Bind by role via glob, never by agent name — sidesteps lean-implementation-agent not being live in this repo and stays forward-compatible.",
+    "Deliberate deviation from task requirement (5): the rule will NOT cite the BimodalLogic task number, because no-task-references-in-deliverables.md prohibits task-number citations outside specs/** and a rule file is such a deliverable. Motivation preserved via durable-anchor phrasing (repeated plan-divergence across successive plan versions in a formal-proof repo). Documented as Decision 3 in the plan with rationale.",
+    "No live .claude/rules/ copy written: lean is not active in this repo (active = nvim, filetypes, core, nix, memory, literature) and there are no .lean files here; the extension loader owns that copy. Phase 3 verification actively fails if a live copy is forged.",
+    "No .claude/CLAUDE.md or core claudemd.md edit: CLAUDE.md is generated and guarded by validate-meta-write.sh, and its Rules References section lists core rules only with an existing 'Extension Rules' catch-all note. The correct surface is .claude/extensions/lean/EXTENSION.md, which lean's manifest declares as merge_targets.claudemd source (section_id extension_lean).",
+    "Phase 4 is a verification-only phase proving propagation: reverse disk-vs-manifest reconciliation over lean rules (the direction check-extension-docs.sh:98-101 does NOT cover, which is exactly how pr-prohibition.md got stranded), plus a positive control that registered lean4.md IS present in BimodalLogic's live .claude/rules/ while unregistered pr-prohibition.md is NOT.",
+    "Rule must include a '## Relationship to Plan Deviations' section stating it narrows the sanctioned skip/alter/defer annotation mechanism for .lean files only (raise a blocker, don't silently annotate), and cross-reference Literature Fidelity and H2 anti-analysis as adjacent-but-distinct without duplicating them."
+  ],
+  "dead_ends": [
+    "Core extension placement (.claude/extensions/core/rules/): rejected — the **/*.lean glob is inert in every non-Lean consumer (nvim, nix, Literature repos), and core placement is also where the pr-prohibition.md registration gap already lives.",
+    "cslib extension placement: rejected — BimodalLogic, the repo whose failure history motivates the rule, does not load cslib; placement there would miss the primary intended consumer.",
+    "Writing .claude/rules/plan-compliance.md directly in this repo: rejected — lean is not active here, so this would forge a loader-owned deployment artifact and reproduce the orphaned-file drift already visible in the stale cslib-*-agent.md files.",
+    "Editing .claude/CLAUDE.md or core's merge-sources/claudemd.md: rejected — CLAUDE.md is auto-generated from merge-sources and hook-guarded; the core fragment lists core rules only."
+  ],
+  "plan_markers_verified": true
+}
