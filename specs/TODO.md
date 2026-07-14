@@ -1,12 +1,26 @@
 ---
-next_project_number: 860
+next_project_number: 861
 ---
 
 # TODO
 
-INFO: No active non-terminal tasks found in /home/benjamin/.config/nvim/specs/state.json
 
 ## Tasks
+
+### 860. Enforce plan compliance rule
+- **Status**: [COMPLETED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+- **Research**: [860_enforce_plan_compliance_rule/reports/01_plan-compliance-rule.md]
+- **Plan**: [860_enforce_plan_compliance_rule/plans/01_plan-compliance-rule.md]
+- **Summary**: [860_enforce_plan_compliance_rule/summaries/01_plan-compliance-rule-summary.md]
+
+**Description**: Add a .claude/rules/ rule enforcing strict plan compliance for lean-implementation-agent and other formal implementation agents. The rule should: (1) Prohibit agents from "assessing what's truly minimal" or inventing alternative approaches when a plan exists. (2) Require agents to follow the plan's exact task sequence step-by-step, in order. (3) Explicitly ban common divergence patterns: skipping intermediate theorems, inlining proofs instead of following the plan's decomposition, routing through different helper lemmas than specified, and "cleaner approach" rationalizations. (4) Be auto-applied via glob pattern to formal proof files (e.g. Theories/**, **/*.lean); the glob must generalize across consuming repos rather than hard-coding one project's layout. (5) Reference the repeated failures in BimodalLogic task 157 (8 plan versions, agents diverging every time) as motivation. The rule should be concise but firm -- agents must treat the plan as a contract, not a suggestion.
+
+Provenance: relocated from BimodalLogic task 162 (2026-07-14). Authored here in the agent-system source of truth so the rule syncs out to consuming repos, rather than living only in BimodalLogic/.claude/.
+
+---
 
 ### 859. Fix generate-task-order.sh: dependency tree renders flat for non-lowercase topic strings (topic-key case mismatch)
 - **Effort**: low

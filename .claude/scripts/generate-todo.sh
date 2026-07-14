@@ -325,12 +325,29 @@ generate_todo() {
   # generate-task-order.sh --print uses its own default state.json path.
   # We pass our STATE_FILE via a temporary symlink workaround if it differs, but
   # normally both scripts share the same PROJECT_ROOT/specs/state.json default.
-  local task_order_output
-  if task_order_output=$("${SCRIPT_DIR}/generate-task-order.sh" --print 2>&1); then
-    printf '%s\n' "$task_order_output"
+  # Capture stdout and stderr SEPARATELY. Merging them (2>&1) conflates diagnostics with
+  # document content: generate-task-order.sh writes non-fatal notes to stderr (the
+  # "No active non-terminal tasks found" INFO on the empty-graph path, and the
+  # "task(s) have no topic" Warning), and a merged capture embeds those lines verbatim into
+  # TODO.md where the Task Order section belongs. stderr is for the log, never the document.
+  local task_order_output task_order_err err_file
+  err_file=$(mktemp -p "$(dirname "$TODO_FILE")" "task-order-err.XXXXXX")
+  if task_order_output=$("${SCRIPT_DIR}/generate-task-order.sh" --print 2>"$err_file"); then
+    # Empty stdout is legitimate: the empty-graph path exits 0 having printed nothing, in
+    # which case the Task Order section is simply omitted rather than rendered blank.
+    if [[ -n "$task_order_output" ]]; then
+      printf '%s\n' "$task_order_output"
+    fi
+    task_order_err=$(<"$err_file")
+    if [[ -n "$task_order_err" ]]; then
+      log "INFO" "generate-task-order.sh: ${task_order_err}"
+    fi
+    rm -f "$err_file"
   else
     local exit_code=$?
-    log_error "generate-task-order.sh failed with exit code ${exit_code}: ${task_order_output}"
+    task_order_err=$(<"$err_file")
+    rm -f "$err_file"
+    log_error "generate-task-order.sh failed with exit code ${exit_code}: ${task_order_err}"
     exit 1
   fi
 

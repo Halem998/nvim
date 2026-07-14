@@ -133,7 +133,12 @@ declare -A task_status     # task_num -> status string (raw from state.json)
 declare -A task_deps       # task_num -> space-separated active dep IDs
 declare -A task_successors # task_num -> space-separated active successor IDs (inverse of task_deps)
 declare -A task_desc       # task_num -> description
-declare -a all_task_nums   # ordered list of all active task IDs
+# Initialized to an explicit empty array, not bare-declared: under `set -u` (line 27), a
+# bare `declare -a x` leaves x unset, and the empty-graph guard's `${#all_task_nums[@]}` at
+# the Main section below then aborts with "unbound variable" instead of reporting the empty
+# case it exists to detect. This fires whenever build_graph appends nothing -- i.e. when every
+# active task is terminal (completed/abandoned/expanded), which is a normal state, not an error.
+declare -a all_task_nums=()   # ordered list of all active task IDs
 
 build_graph() {
   local raw_data
