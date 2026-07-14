@@ -52,7 +52,7 @@ function M.claude(global_dir)
     config_file = "CLAUDE.md",
     section_prefix = "extension_",
     state_file = "extensions.json",
-    global_extensions_dir = global_dir .. "/.claude/extensions",
+    global_extensions_dir = global_dir .. "/agent-system/extensions",
     merge_target_key = "claudemd",
     agents_subdir = "agents",
   })
