@@ -1,7 +1,7 @@
 # Implementation Plan: Relocate Extension Source Store Out of .claude/
 
 - **Task**: 863 - Relocate extension source store out of .claude/
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: None (this is the unlocking/foundation change)
 - **Research Inputs**: specs/863_relocate_extension_source_store_out_of_claude/reports/01_relocate-extension-source-store.md
@@ -226,34 +226,64 @@ their now-relocated source copies and their deployed copies, keeping the pairs b
 
 ---
 
-### Phase 5: Scratchpad verification of the three acceptance properties [NOT STARTED]
+### Phase 5: Scratchpad verification of the three acceptance properties [COMPLETED]
 
 **Goal**: Prove the picker lists from the new location, arbitrary-CWD deploy still works, and
 `~/.config/nvim` self-rebuilds -- all against scratchpad fake project dirs, NEVER the real
 `~/.config/nvim/.claude` tree.
 
 **Tasks**:
-- [ ] **Picker lists from new location**: in a headless nvim instance, call
-      `manifest.list_extensions(config.claude())` and confirm all 19 extensions return with
-      `path` fields under `agent-system/extensions/{name}`.
-- [ ] **Deploy into an arbitrary fake `$CWD/.claude`**: create `$SCRATCHPAD/fake-project-1/`,
-      run `manager.load("nvim", {project_dir = "$SCRATCHPAD/fake-project-1"})` headless, and
-      confirm files land under `$SCRATCHPAD/fake-project-1/.claude/` and that
-      `$SCRATCHPAD/fake-project-1/.claude/extensions/nvim/manifest.json` (the deployed stub) is
-      written at the TARGET path (confirms the deployed-stub concept is unaffected).
-- [ ] **Self-rebuild property**: make a FULL COPY of `~/.config/nvim` into
-      `$SCRATCHPAD/nvim-selfhost/` (copy, never operate on the real tree), `rm -rf` that copy's
-      `.claude/`, then run the picker "Load Core" path (`sync.M.scan_all_artifacts` + execute)
-      plus one representative extension load against `project_dir = $SCRATCHPAD/nvim-selfhost`,
-      and confirm `.claude/` is regenerated with core + the extension, with source reads coming
-      from `agent-system/extensions/` (not the just-deleted `.claude/extensions/`).
-- [ ] **Shell scripts pass with non-vacuous output**: run
-      `.claude/scripts/check-extension-docs.sh` and `.claude/scripts/validate-extension-index.sh`
-      against the real repo (read-only lint, safe) and confirm exit 0 AND that their output
-      reflects a non-zero extension count (catch the silent vacuous-pass failure mode).
-- [ ] **Test suite**: run the `manifest_spec.lua` plenary/busted harness and confirm it passes
-      with the updated fixture.
-- [ ] Record all verification commands and results in the implementation summary.
+- [x] **Picker lists from new location**: headless nvim, `manifest.list_extensions(config.claude())`
+      returned count=19, and all 19 matched `agent%-system/extensions/<name>$` (ok_count=19,
+      zero mismatches).
+- [x] **Deploy into an arbitrary fake `$CWD/.claude`**: created
+      `$SCRATCHPAD/fake-project-1/`, ran `manager.load("nvim", {confirm=false, project_dir=...})`
+      headless (`load ok=true`); confirmed the full `.claude/` layout (agents, commands, context,
+      docs, rules, scripts, skills, systemd, templates, extensions.json, CLAUDE.md) landed under
+      the fake project dir, and that
+      `$SCRATCHPAD/fake-project-1/.claude/extensions/nvim/manifest.json` (plus the auto-loaded
+      `core` dependency's own stub at `.claude/extensions/core/manifest.json`) was written at the
+      target path with correct content -- confirms the deployed-stub concept is fully unaffected
+      by the source relocation.
+- [x] **Self-rebuild property**: `rsync -a --exclude='.git'` copied `~/.config/nvim` (344M) into
+      `$SCRATCHPAD/nvim-selfhost/` in ~2s (copy only, real tree never touched), `rm -rf` that
+      copy's `.claude/`, then called `manager.load("core", ...)` followed by
+      `manager.load("nvim", ...)` with both `global_dir` and `project_dir` pointed at the scratch
+      copy (`config.claude(scratch)`). Both loads returned `ok=true`. Confirmed: `.claude/` fully
+      regenerated (14 top-level entries including CLAUDE.md at 632 lines, agents/ with 13 files,
+      extensions.json listing `["nvim","core"]`); the freshly written `extensions.json`
+      `source_dir` fields for both correctly point at
+      `$SCRATCHPAD/nvim-selfhost/agent-system/extensions/{core,nvim}` (proving new loads no
+      longer produce the stale `.claude/extensions/...` value); and `agent-system/extensions/core`
+      still existed in the scratch copy as the read source (the copy's own `.claude/extensions/`
+      was the thing deleted and never re-read from). *(altered: the plan's suggested
+      `sync.scan_all_artifacts` + execute path goes through `sync.load_all_globally()`, which
+      hard-codes `project_dir = vim.fn.getcwd()` and gates on an interactive `vim.fn.confirm()`
+      dialog unsuitable for non-interactive headless verification; used the equivalent
+      `manager.load("core"/"nvim", ...)` extension-load path instead, which exercises the exact
+      same `manifest.lua` / `loader.lua` source-resolution code as the sync path and is the
+      mechanism actually exercised by the property-2 task above, while accepting an injectable
+      `project_dir`/`global_dir` for scratch-only operation)*
+- [x] **Shell scripts pass with non-vacuous output**: `.claude/scripts/check-extension-docs.sh`
+      exited 0 with per-extension PASS lines for all 20 categories (core, cslib, email,
+      epidemiology, filetypes, formal, founder, latex, lean, literature, memory, nix, nvim,
+      present, project-wide, python, slidev, typst, web, z3) -- "PASS: all extensions OK".
+      `.claude/scripts/validate-extension-index.sh` exited 0, validating 19 `.claude`-side
+      index-entries.json files (real non-zero entry counts, e.g. core: 105 entries, formal: 46,
+      founder: 34) plus 16 `.opencode`-side files (untouched glob, confirmed unaffected), with
+      "Errors: 0 / Warnings: 0 / PASSED". Neither script vacuous-passed.
+- [x] **Test suite**: `nvim --headless -c "PlenaryBustedFile lua/neotex/plugins/ai/claude/extensions/manifest_spec.lua"`
+      ran 17 assertions: 16 Success, 1 pre-existing unrelated failure ("should reject manifest
+      with invalid merge_targets type" -- a `merge_targets`-type-validation assertion in
+      `manifest.lua`'s `validate()` unconnected to any path or store-location logic; confirmed by
+      inspection that the only edit this task made to the spec file was the `lean_path` fixture
+      on line 192, and this failing test predates and is untouched by that edit). The specific
+      fixture-dependent test -- "manifest read should read and validate lean extension manifest"
+      -- **passed**, confirming the updated `agent-system/extensions/lean` fixture path resolves
+      correctly. *(deviation: skipped — fixing the pre-existing unrelated `merge_targets`
+      validation failure; out of scope for a source-store relocation task and not touched)*
+- [x] Recorded all verification commands and results above and in
+      `summaries/01_relocate-extension-store-summary.md`.
 
 **Timing**: 1.5 hours
 
@@ -347,20 +377,26 @@ alone.
 
 ## Testing & Validation
 
-- [ ] `git status` shows Phase 1 move as history-preserving renames.
-- [ ] Headless: `config.claude().global_extensions_dir` ends with `/agent-system/extensions`.
-- [ ] Headless: `manifest.list_extensions(config.claude())` returns all 19 extensions with
-      `agent-system/extensions/{name}` paths.
-- [ ] Deploy into `$SCRATCHPAD/fake-project-1/.claude/` succeeds; deployed stub manifest written
+- [x] `git status` shows Phase 1 move as history-preserving renames (981 files, `R` status).
+- [x] Headless: `config.claude().global_extensions_dir` ends with `/agent-system/extensions`.
+- [x] Headless: `manifest.list_extensions(config.claude())` returns all 19 extensions with
+      `agent-system/extensions/{name}` paths (count=19, ok_count=19).
+- [x] Deploy into `$SCRATCHPAD/fake-project-1/.claude/` succeeds; deployed stub manifest written
       at target.
-- [ ] Scratch full-copy of `~/.config/nvim` deletes and regenerates its own `.claude/` from the
-      relocated store.
-- [ ] `check-extension-docs.sh` and `validate-extension-index.sh` exit 0 with non-vacuous output.
-- [ ] `manifest_spec.lua` passes.
-- [ ] `diff -q` confirms both shell-script source/deployed pairs are byte-identical.
-- [ ] No `.claude/extensions/core` literal remains in `sync.lua`.
-- [ ] No task-number citations in any file outside `specs/**`.
-- [ ] The real `~/.config/nvim/.claude` tree was never destructively touched.
+- [x] Scratch full-copy of `~/.config/nvim` deletes and regenerates its own `.claude/` from the
+      relocated store (verified via `manager.load` for core + nvim against the scratch copy).
+- [x] `check-extension-docs.sh` and `validate-extension-index.sh` exit 0 with non-vacuous output
+      (20 categories PASS; 19+16 index files with real entry counts).
+- [x] `manifest_spec.lua` passes (16/17; the 1 failure is a pre-existing, unrelated
+      `merge_targets` validation assertion -- the fixture-dependent lean-manifest test passed).
+- [x] `diff -q` confirms both shell-script source/deployed pairs are byte-identical.
+- [x] No `.claude/extensions/core` literal remains in `sync.lua`.
+- [x] No task-number citations introduced in any file outside `specs/**` by this task's edits
+      (pre-existing citations from other tasks, e.g. task 837/793 references in
+      `check-extension-docs.sh` and `system-overview.md`, predate this task and are out of scope).
+- [x] The real `~/.config/nvim/.claude` tree was never destructively touched (all destructive
+      loader tests ran against scratchpad copies only; verified `git status --short .claude/`
+      shows only pre-existing unrelated modifications, no new changes from testing).
 
 ## Artifacts & Outputs
 

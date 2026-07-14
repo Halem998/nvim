@@ -11,16 +11,14 @@ next_project_number: 866
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 863 | -- | extensions |
-| 2 | 864,865 | 863 | extensions |
+| 1 | 864,865 | -- | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Extensions
 
-863 [NOT STARTED] — Relocate the extension source store OUT of any deployed .claude/ 
-  └─ 864 [NOT STARTED] — Enforce the invariant "every deployed file has a source" by exten
-  └─ 865 [NOT STARTED] — Make a .claude/ wipe lossless and one-keystroke regenerable by li
+864 [NOT STARTED] — Enforce the invariant "every deployed file has a source" by exten
+865 [NOT STARTED] — Make a .claude/ wipe lossless and one-keystroke regenerable by li
 
 ## Tasks
 
@@ -61,10 +59,13 @@ CROSS-CUTTING CONSTRAINTS: Copy-deploy only, no symlink farm. All destructive lo
 ---
 
 ### 863. Relocate extension source store out of .claude/
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: neovim
 - **Topic**: extensions
 - **Dependencies**: None
+- **Research**: [863_relocate_extension_source_store_out_of_claude/reports/01_relocate-extension-source-store.md]
+- **Plan**: [863_relocate_extension_source_store_out_of_claude/plans/01_relocate-extension-store.md]
+- **Summary**: [863_relocate_extension_source_store_out_of_claude/summaries/01_relocate-extension-store-summary.md]
 
 **Description**: Relocate the extension source store OUT of any deployed .claude/ tree so that .claude/ can become a pure, disposable copy-deploy build artifact regenerable from the <leader>al picker after deletion. This is the UNLOCKING change and must land FIRST.
 
