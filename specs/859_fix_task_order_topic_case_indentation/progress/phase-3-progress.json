@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Mirror the renderer fix to .opencode/ (render-side parity only)",
+  "started_at": "2026-07-14T16:31:00Z",
+  "last_updated": "2026-07-14T16:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add normalize_topic() to .opencode/scripts/generate-task-order.sh", "status": "done", "files_touched": [".opencode/scripts/generate-task-order.sh"]},
+    {"id": 2, "description": "Normalize grouping key and topic_tasks membership test", "status": "done", "files_touched": [".opencode/scripts/generate-task-order.sh"]},
+    {"id": 3, "description": "Fix the two comparison guards (task_topic_val, dep_topic)", "status": "done", "files_touched": [".opencode/scripts/generate-task-order.sh"]},
+    {"id": 4, "description": "Flag .opencode/ write-side parity as an explicit out-of-scope follow-up", "status": "done", "files_touched": [".opencode/scripts/generate-task-order.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_note": "Ran both .claude/scripts/generate-task-order.sh --print and .opencode/scripts/generate-task-order.sh --print against the same fixture (scratchpad copy, not real state.json). diff of the Grouped-by-Topic sections is IDENTICAL: single '### Modal Logic' heading, matching indentation for all 4 tasks including the modal-logic-cased task 4."
+}

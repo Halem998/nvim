@@ -209,24 +209,24 @@ so the tree renders correctly for any casing and case/separator variants collaps
 
 ---
 
-### Phase 3: Mirror the renderer fix to `.opencode/` (render-side parity only) [NOT STARTED]
+### Phase 3: Mirror the renderer fix to `.opencode/` (render-side parity only) [COMPLETED]
 
 **Goal**: Make `.opencode/scripts/generate-task-order.sh` behaviorally identical to the `.claude/`
 renderer by applying the same normalizer; explicitly scope out `.opencode/` write-side parity.
 
 **Tasks**:
-- [ ] Add the byte-identical `normalize_topic()` block to `.opencode/scripts/generate-task-order.sh`.
-- [ ] Normalize the grouping key: the `.opencode/` renderer currently does NO normalization
+- [x] Add the byte-identical `normalize_topic()` block to `.opencode/scripts/generate-task-order.sh`. *(completed)*
+- [x] Normalize the grouping key: the `.opencode/` renderer currently does NO normalization
       (raw `topics_to_render+=("$t")` at 368/380 and `[[ "$tp" == "$topic" ]]` at line 393). Route
-      these through `normalize_topic` so grouping matches `.claude/` behavior.
-- [ ] Fix the two guards: line 481 (`"$task_topic_val" != "$_current_section_topic"`) and
+      these through `normalize_topic` so grouping matches `.claude/` behavior. *(completed)*
+- [x] Fix the two guards: line 481 (`"$task_topic_val" != "$_current_section_topic"`) and
       line 506 (`"$dep_topic" != "$_current_section_topic"`) by normalizing both sides, exactly as in
-      Phase 2.
-- [ ] Add a short, explicit comment (in the plan summary and optionally the script header) recording
+      Phase 2. *(completed)*
+- [x] Add a short, explicit comment (in the plan summary and optionally the script header) recording
       that `.opencode/` write-side topic-assignment parity (no `manage-topics.sh`, no
       `topic-assignment-pattern.md`, no `/task` topic step) is OUT OF SCOPE for this task and is a
-      recommended follow-up — do NOT silently skip it, flag it.
-- [ ] Do NOT add any task-number reference to `.opencode/` deliverable files.
+      recommended follow-up — do NOT silently skip it, flag it. *(completed: comment added to script header, also flagged in the execution summary's follow-up section)*
+- [x] Do NOT add any task-number reference to `.opencode/` deliverable files. *(completed: verified clean)*
 
 **Timing**: 0.75 hours
 

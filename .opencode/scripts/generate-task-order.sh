@@ -31,6 +31,22 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 TODO_FILE="${PROJECT_ROOT}/specs/TODO.md"
 STATE_FILE="${PROJECT_ROOT}/specs/state.json"
 
+# normalize_topic: canonical topic form (lowercase kebab-case).
+# CANONICAL DEFINITION -- keep byte-identical across manage-topics.sh and both
+# generate-task-order.sh copies (core extension + .opencode). No task-number references.
+# NOTE: .opencode/ write-side topic-assignment parity (no manage-topics.sh, no
+# topic-assignment-pattern.md, no /task topic step) is OUT OF SCOPE here -- this is a
+# render-side-only mirror of the .claude/ renderer fix. Write-side parity for .opencode/
+# is a recommended follow-up, flagged but not implemented in this change.
+normalize_topic() {
+  local t="${1,,}"
+  t="${t//_/-}"
+  t="$(printf '%s' "$t" | tr -s '[:space:]' '-')"
+  t="$(printf '%s' "$t" | tr -s '-')"
+  t="${t#-}"; t="${t%-}"
+  printf '%s' "$t"
+}
+
 # ============================================================================
 # Parse Arguments
 # ============================================================================
@@ -362,23 +378,31 @@ generate_grouped_section() {
 
   # Build ordered list of topics to render
   # Use active_topics_order if available, then add any extra topics found in tasks
+  # Topics are grouped by canonical form (see normalize_topic above): the grouping
+  # key is the normalized lowercase-kebab-case topic string, so e.g. "Literature",
+  # "literature", and separator variants of the same topic collapse into a single
+  # section (the heading is title-cased for display below).
   local -a topics_to_render=()
+  declare -A seen_topics=()
   if [[ ${#active_topics_order[@]} -gt 0 ]]; then
     for t in "${active_topics_order[@]}"; do
-      topics_to_render+=("$t")
+      local t_key
+      t_key="$(normalize_topic "$t")"
+      if [[ -z "${seen_topics[$t_key]+x}" ]]; then
+        topics_to_render+=("$t_key")
+        seen_topics["$t_key"]=1
+      fi
     done
   fi
 
   # Collect any topics in tasks that aren't in active_topics_order
-  declare -A seen_topics=()
-  for t in "${topics_to_render[@]}"; do
-    seen_topics["$t"]=1
-  done
   for tn in "${all_task_nums[@]}"; do
     local tp="${task_topic[$tn]:-}"
-    if [[ -n "$tp" && -z "${seen_topics[$tp]+x}" ]]; then
-      topics_to_render+=("$tp")
-      seen_topics["$tp"]=1
+    local tp_key
+    tp_key="$(normalize_topic "$tp")"
+    if [[ -n "$tp" && -z "${seen_topics[$tp_key]+x}" ]]; then
+      topics_to_render+=("$tp_key")
+      seen_topics["$tp_key"]=1
     fi
   done
 
@@ -390,7 +414,7 @@ generate_grouped_section() {
     local -a topic_tasks=()
     for tn in $(printf '%s\n' "${all_task_nums[@]}" | sort -n); do
       local tp="${task_topic[$tn]:-}"
-      [[ "$tp" == "$topic" ]] && topic_tasks+=("$tn")
+      [[ "$(normalize_topic "$tp")" == "$topic" ]] && topic_tasks+=("$tn")
     done
 
     [[ ${#topic_tasks[@]} -eq 0 ]] && continue
@@ -478,7 +502,7 @@ _print_topic_node() {
   # Cross-topic: if this task was already visited globally (in another topic section)
   if [[ -n "${_globally_visited[$task_num]+x}" && "$depth" -gt 0 ]]; then
     local task_topic_val="${task_topic[$task_num]:-}"
-    if [[ -n "$task_topic_val" && "$task_topic_val" != "$_current_section_topic" ]]; then
+    if [[ -n "$task_topic_val" && "$(normalize_topic "$task_topic_val")" != "$_current_section_topic" ]]; then
       # Shorten desc to first 40 chars for cross-topic annotation
       local short_desc="${desc:0:40}"
       echo "${prefix}${task_num} [${status_display}] — (${task_topic_val}: ${short_desc}) (see above)"
@@ -503,7 +527,7 @@ _print_topic_node() {
       [[ -z "$dep" ]] && continue
       if [[ -n "${task_status[$dep]+x}" ]]; then
         local dep_topic="${task_topic[$dep]:-}"
-        if [[ -n "$_current_section_topic" && -n "$dep_topic" && "$dep_topic" != "$_current_section_topic" ]]; then
+        if [[ -n "$_current_section_topic" && -n "$dep_topic" && "$(normalize_topic "$dep_topic")" != "$_current_section_topic" ]]; then
           continue
         fi
         _print_topic_node "$dep" $((depth + 1))
