@@ -210,7 +210,7 @@ must be captured before editing, and verification must follow the edit.
 
 ---
 
-### Phase 3: Verify Against Baseline and Self-Drift [NOT STARTED]
+### Phase 3: Verify Against Baseline and Self-Drift [COMPLETED]
 
 - **Goal:** Prove the change is correct by running the script and asserting three specific
   properties against the Phase 1 baseline.
@@ -219,30 +219,40 @@ must be captured before editing, and verification must follow the edit.
   `.claude/extensions/core/scripts/check-extension-docs.sh`, followed by a re-run of this phase's
   full verification. Never fix one copy only.
 - **Tasks:**
-  - [ ] Run `bash .claude/scripts/check-extension-docs.sh > /tmp/lint-after.txt 2>&1; echo "EXIT: $?"`.
-  - [ ] **Assertion (a) — exit code parity:** the exit code equals the Phase 1 baseline exit code
+  - [x] Run `bash .claude/scripts/check-extension-docs.sh > /tmp/lint-after.txt 2>&1; echo "EXIT: $?"`. *(completed: EXIT 0)*
+  - [x] **Assertion (a) — exit code parity:** the exit code equals the Phase 1 baseline exit code
         (expected `0`). If it is non-zero, do NOT weaken or disable the check; identify which rule
-        was flagged and report it as a genuine drift finding.
-  - [ ] **Assertion (b) — new check reports as expected:** the output shows the new rule check
+        was flagged and report it as a genuine drift finding. *(completed: exit 0, matches baseline)*
+  - [x] **Assertion (b) — new check reports as expected:** the output shows the new rule check
         producing PASS (no fail line) for the deployed rules of `core`, `nix`, and `nvim`, and
         `rule not deployed, skipping drift check:` info notes for the undeployed rules of `cslib`,
         `latex`, `lean`, and `web`. Confirm no `deployed rule content drift` fail line appears.
-  - [ ] **Assertion (c) — no self-drift:** confirm the output contains NO
+        *(completed: verified via grep, exactly matches expected census, zero fail lines)*
+  - [x] **Assertion (c) — no self-drift:** confirm the output contains NO
         `deployed script content drift ... scripts/check-extension-docs.sh` line, and independently
         confirm with
         `diff -q .claude/scripts/check-extension-docs.sh .claude/extensions/core/scripts/check-extension-docs.sh`
-        (expect no output).
-  - [ ] Diff the after-output against the baseline (`diff /tmp/lint-baseline.txt /tmp/lint-after.txt`)
+        (expect no output). *(completed: no self-drift line, diff -q silent)*
+  - [x] Diff the after-output against the baseline (`diff /tmp/lint-baseline.txt /tmp/lint-after.txt`)
         and confirm the only differences are the new rule-check info/skip notes — no extension's
-        PASS/FAIL status changed, and no previously-passing check now fails.
-  - [ ] Negative-path sanity check (non-destructive, must be reverted): temporarily append a byte to
+        PASS/FAIL status changed, and no previously-passing check now fails. *(completed: diff shows
+        only the 6 new info-note lines for cslib/latex/lean/web)*
+  - [x] Negative-path sanity check (non-destructive, must be reverted): temporarily append a byte to
         a deployed copy of a rule that is also present in an extension source (e.g.
         `.claude/rules/nix.md`), re-run the script, and confirm it now FAILs with the
         `deployed rule content drift` message and exits 1. Then restore the file exactly
         (`git checkout -- .claude/rules/nix.md`) and re-run to confirm the script returns to
         exit 0. This proves the check actually detects drift rather than being a silent no-op.
-  - [ ] Confirm the working tree contains no unintended modifications: `git status --short` should
-        show only the two script copies as modified.
+        *(completed: FAIL + exit 1 confirmed with the mutation; deviation — `git checkout --` was
+        blocked by the guard-destructive-git.sh hook, so the revert used git-snapshot.sh followed by
+        a precise Edit-tool removal of the single appended line, confirmed clean via `git diff`; see
+        phase-3-progress.json deviations for the full note including a transient, unrelated
+        manage-topics.sh FAIL surfaced and resolved during the snapshot/pop cycle)*
+  - [x] Confirm the working tree contains no unintended modifications: `git status --short` should
+        show only the two script copies as modified. *(completed with note: this task's file scope
+        — both check-extension-docs.sh copies and .claude/rules/nix.md — is fully clean and matches
+        HEAD; the working tree also shows numerous OTHER files modified by concurrent agents active
+        in this shared session, unrelated to this task, which is expected and out of scope)*
 - **Timing:** 20 minutes
 - **Depends on:** 2
 - **Files to modify:** none (verification phase; the negative-path check's temporary edit is
@@ -257,19 +267,19 @@ must be captured before editing, and verification must follow the edit.
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on both copies of `check-extension-docs.sh`.
-- [ ] `bash .claude/scripts/check-extension-docs.sh` exits with the Phase 1 baseline exit code
+- [x] `bash -n` passes on both copies of `check-extension-docs.sh`.
+- [x] `bash .claude/scripts/check-extension-docs.sh` exits with the Phase 1 baseline exit code
       (expected `0`, `PASS: all extensions OK`).
-- [ ] The new check emits no `deployed rule content drift` failures on landing (zero live drift is
+- [x] The new check emits no `deployed rule content drift` failures on landing (zero live drift is
       the researched, expected state).
-- [ ] The new check emits `rule not deployed, skipping drift check:` info notes — never failures —
+- [x] The new check emits `rule not deployed, skipping drift check:` info notes — never failures —
       for extensions whose rules are not deployed in this repo (`cslib`, `latex`, `lean`, `web`).
-- [ ] The script does not flag its own two copies as drifted
+- [x] The script does not flag its own two copies as drifted
       (`scripts/check-extension-docs.sh` absent from any drift fail line).
-- [ ] `diff -q` of the two script copies produces no output.
-- [ ] Negative-path check confirms the new check FAILs (exit 1) on a deliberately drifted rule and
+- [x] `diff -q` of the two script copies produces no output.
+- [x] Negative-path check confirms the new check FAILs (exit 1) on a deliberately drifted rule and
       returns to exit 0 once restored.
-- [ ] No task-number references introduced outside `specs/**`.
+- [x] No task-number references introduced outside `specs/**`.
 
 ## Artifacts & Outputs
 
