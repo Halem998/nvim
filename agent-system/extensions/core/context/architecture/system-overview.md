@@ -411,7 +411,7 @@ Complete mapping of all commands to their skill and agent paths:
 | `/orchestrate` | Autonomous | skill-orchestrate | (dispatches multiple) | C |
 | `/refresh` | Direct | skill-refresh | (no agent) | B |
 
-**Note**: Additional commands (/convert) available via extensions in `.claude/extensions/`.
+**Note**: Additional commands (/convert) available via extensions in `agent-system/extensions/`.
 
 **Pattern Legend**:
 - **A**: Delegating skill with internal postflight (spawns subagent)

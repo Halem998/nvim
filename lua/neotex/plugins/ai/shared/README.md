@@ -101,7 +101,7 @@ opencode_ext.load("lean", { confirm = true })
 
 ### Extension Locations
 
-- Claude: `~/.config/nvim/.claude/extensions/`
+- Claude: `~/.config/nvim/agent-system/extensions/`
 - OpenCode: `~/.config/nvim/.opencode/extensions/`
 
 ## Keymaps

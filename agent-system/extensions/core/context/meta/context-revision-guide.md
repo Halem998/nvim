@@ -158,7 +158,7 @@ Split an existing file when:
 **Situation**: Adding a new domain extension (e.g., Typst)
 **Action**: Create new extension directory
 **Steps**:
-1. Create `.claude/extensions/typst/` with manifest.json
+1. Create `agent-system/extensions/typst/` with manifest.json
 2. Create domain-specific context files
 3. Add index entries via `index-entries.json`
 4. Register routing in manifest

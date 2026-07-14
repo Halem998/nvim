@@ -14,14 +14,14 @@ For complete architecture details, see [Extension System Architecture](../../doc
 
 ### Source vs Loaded Vocabulary
 
-> **Extension source**: Files in `.claude/extensions/*/` -- edit these when developing extensions.
+> **Extension source**: Files in `agent-system/extensions/*/` -- edit these when developing extensions.
 >
 > **Loaded runtime**: Files in `.claude/{agents,skills,rules,...}/` -- copies made by the loader.
 > Do not edit runtime files directly; they are overwritten on reload.
 
 ## Extension Structure
 
-Each extension lives under `.claude/extensions/{name}/` with three key files:
+Each extension lives under `agent-system/extensions/{name}/` with three key files:
 - `manifest.json` -- Extension metadata and file inventory
 - `EXTENSION.md` -- Content included in CLAUDE.md via `generate_claudemd()`
 - `index-entries.json` -- Context discovery entries merged into `.claude/context/index.json`
@@ -117,7 +117,7 @@ Extension context entries from `index-entries.json` are merged into `.claude/con
 There are two patterns for providing CLAUDE.md content:
 
 - **Standard extensions** (all domain extensions): use `EXTENSION.md` at the extension root. The manifest specifies `"source": "EXTENSION.md"` in `merge_targets.claudemd`.
-- **Core extension** (`.claude/extensions/core/`): uses `merge-sources/claudemd.md` as its CLAUDE.md source. This allows the core extension to maintain its CLAUDE.md content separately from a potential top-level `EXTENSION.md`. The manifest specifies `"source": "merge-sources/claudemd.md"`.
+- **Core extension** (`agent-system/extensions/core/`): uses `merge-sources/claudemd.md` as its CLAUDE.md source. This allows the core extension to maintain its CLAUDE.md content separately from a potential top-level `EXTENSION.md`. The manifest specifies `"source": "merge-sources/claudemd.md"`.
 
 When `generate_claudemd()` runs, it reads each loaded extension's `merge_targets.claudemd.source` file and concatenates them: core first, then all other extensions in sorted order.
 
@@ -137,7 +137,7 @@ The function detects which case applies by checking `vim.fn.isdirectory()` first
 Consequences for script authors:
 - All path references between sibling scripts (or from commands/skills to scripts) must resolve against the flat `{base_dir}/scripts/` location, not a nested `extensions/{name}/scripts/` path -- the latter only exists in the extension's own source tree, never in a deployed target.
 - Non-`.sh` files (e.g. `.sql` schema files) can be packaged via `provides.scripts` too: `copy_file` only special-cases `%.sh$` for chmod/executable-bit preservation; any other filename is copied verbatim with default permissions. Use `provides.data` only for whole *directories* with merge-preserve (copy-if-absent) semantics meant for user-owned mutable state -- not for versioned static assets like a schema file.
-- The extension's own `scripts/` directory (under `.claude/extensions/{name}/scripts/`) is the canonical **source**; a repo that also happens to consume its own extension (as this repo does) maintains a git-tracked, regenerable flat deployment copy in `.claude/scripts/` -- keep both in sync after edits (edit the canonical source, then re-copy/reload to refresh the flat copy).
+- The extension's own `scripts/` directory (under `agent-system/extensions/{name}/scripts/`) is the canonical **source**; a repo that also happens to consume its own extension (as this repo does) maintains a git-tracked, regenerable flat deployment copy in `.claude/scripts/` -- keep both in sync after edits (edit the canonical source, then re-copy/reload to refresh the flat copy).
 
 This distinction is easy to miss: two real bugs (nested-path candidate lists in `literature-discover.sh` and `skill-literature/SKILL.md` referencing a location that is never populated in a deployed repo) were caused by assuming the nested `extensions/{name}/scripts/` path resolves at runtime in a consumer.
 
@@ -146,7 +146,7 @@ This distinction is easy to miss: two real bugs (nested-path candidate lists in 
 For a complete step-by-step creation guide with file templates, agent templates, skill templates, and testing checklists, see [Creating Extensions](../../docs/guides/creating-extensions.md).
 
 **Quick checklist**:
-1. `mkdir -p .claude/extensions/{name}/{agents,skills,rules,context/project/{domain}}`
+1. `mkdir -p agent-system/extensions/{name}/{agents,skills,rules,context/project/{domain}}`
 2. Create `manifest.json` (see Manifest Format above)
 3. Create `EXTENSION.md` with routing tables and skill-agent mapping
 4. Create `index-entries.json` with context load conditions

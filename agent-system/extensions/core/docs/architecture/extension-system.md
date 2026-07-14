@@ -10,7 +10,7 @@ The extension system enables modular domain support that can be loaded and unloa
 
 ```
 Extension Source                           Target Project
-(.claude/extensions/)                      (.claude/)
+(agent-system/extensions/)                      (.claude/)
 
 ┌────────────────────┐                    ┌──────────────────┐
 │ latex/             │                    │ agents/          │
@@ -68,7 +68,7 @@ The extension system operates at two distinct layers that serve different audien
 ```
 
 **Vocabulary**:
-- **Source**: Files living in `.claude/extensions/{name}/` -- the authoritative extension definition
+- **Source**: Files living in `agent-system/extensions/{name}/` -- the authoritative extension definition
 - **Loaded**: Files copied into `.claude/` -- the runtime-active state visible to Claude Code
 
 Claude Code has no knowledge of Layer 1. It only sees the standard `.claude/` directory structure populated by the loader.
@@ -79,10 +79,10 @@ Claude Code has no knowledge of Layer 1. It only sees the standard `.claude/` di
 
 ### Extension Layout
 
-Each extension lives in `.claude/extensions/{name}/`:
+Each extension lives in `agent-system/extensions/{name}/`:
 
 ```
-.claude/extensions/{name}/
+agent-system/extensions/{name}/
 ├── manifest.json              # Extension metadata (REQUIRED)
 ├── EXTENSION.md               # Content included via generate_claudemd() (REQUIRED)
 ├── index-entries.json         # Context index entries (optional)
@@ -128,7 +128,7 @@ When extensions are loaded, state is tracked in `.claude/extensions.json`:
     "latex": {
       "version": "1.0.0",
       "loaded_at": "2026-01-15T10:30:00Z",
-      "source_dir": "$PROJECT_ROOT/.claude/extensions/latex",
+      "source_dir": "$PROJECT_ROOT/agent-system/extensions/latex",
       "installed_files": [
         ".claude/agents/latex-implementation-agent.md",
         ".claude/agents/latex-research-agent.md"
@@ -323,7 +323,7 @@ Configuration presets for different agent systems:
   config_file = "CLAUDE.md",
   section_prefix = "extension_",
   state_file = "extensions.json",
-  global_extensions_dir = "$PROJECT_ROOT/.claude/extensions",
+  global_extensions_dir = "$PROJECT_ROOT/agent-system/extensions",
   merge_target_key = "claudemd"
 }
 ```
@@ -534,7 +534,7 @@ If unloading an extension that is required by another loaded extension:
 
 ### Recovery
 
-Extension files are tracked by git. Use `git checkout HEAD -- .claude/extensions/{ext}/` to recover any extension file, or `git log --oneline -- .claude/extensions/` to find when changes occurred.
+Extension files are tracked by git. Use `git checkout HEAD -- agent-system/extensions/{ext}/` to recover any extension file, or `git log --oneline -- agent-system/extensions/` to find when changes occurred.
 
 ### State Consistency
 - State is only updated after successful operations

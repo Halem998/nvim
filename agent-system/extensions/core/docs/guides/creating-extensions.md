@@ -22,19 +22,19 @@ Extensions are self-contained packages that add domain-specific support (agents,
 ### 1. Create Extension Directory
 
 ```bash
-mkdir -p .claude/extensions/your-domain/{agents,skills,rules,context/project/your-domain}
+mkdir -p agent-system/extensions/your-domain/{agents,skills,rules,context/project/your-domain}
 ```
 
 ### 2. Create Required Files
 
 ```bash
 # Required files
-touch .claude/extensions/your-domain/manifest.json
-touch .claude/extensions/your-domain/EXTENSION.md
-touch .claude/extensions/your-domain/README.md
+touch agent-system/extensions/your-domain/manifest.json
+touch agent-system/extensions/your-domain/EXTENSION.md
+touch agent-system/extensions/your-domain/README.md
 
 # Optional but recommended
-touch .claude/extensions/your-domain/index-entries.json
+touch agent-system/extensions/your-domain/index-entries.json
 ```
 
 ### 3. Populate Files
@@ -759,13 +759,13 @@ exit 0
 
 1. Create `scripts/` directory in your extension:
    ```bash
-   mkdir -p .claude/extensions/your-domain/scripts
+   mkdir -p agent-system/extensions/your-domain/scripts
    ```
 
 2. Create and make executable:
    ```bash
-   touch .claude/extensions/your-domain/scripts/your-domain-preflight.sh
-   chmod +x .claude/extensions/your-domain/scripts/your-domain-preflight.sh
+   touch agent-system/extensions/your-domain/scripts/your-domain-preflight.sh
+   chmod +x agent-system/extensions/your-domain/scripts/your-domain-preflight.sh
    ```
 
 3. Update `manifest.json`:
@@ -779,7 +779,7 @@ exit 0
 
 4. Verify with jq:
    ```bash
-   jq '.hooks' .claude/extensions/your-domain/manifest.json
+   jq '.hooks' agent-system/extensions/your-domain/manifest.json
    ```
 
 ---
@@ -790,12 +790,12 @@ exit 0
 
 1. Check manifest.json exists and is valid JSON:
    ```bash
-   cat .claude/extensions/your-domain/manifest.json | jq .
+   cat agent-system/extensions/your-domain/manifest.json | jq .
    ```
 
 2. Verify extension directory is in the correct location:
    ```bash
-   ls .claude/extensions/your-domain/
+   ls agent-system/extensions/your-domain/
    ```
 
 ### Load Fails with Conflicts
@@ -835,9 +835,9 @@ The loader detected existing files that would be overwritten and showed a confir
 
 Refer to existing extensions for complete examples:
 
-- `.claude/extensions/latex/` - LaTeX document development
-- `.claude/extensions/lean/` - Lean theorem prover
-- `.claude/extensions/typst/` - Typst document preparation
+- `agent-system/extensions/latex/` - LaTeX document development
+- `agent-system/extensions/lean/` - Lean theorem prover
+- `agent-system/extensions/typst/` - Typst document preparation
 
 ---
 

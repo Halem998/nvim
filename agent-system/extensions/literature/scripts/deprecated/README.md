@@ -31,7 +31,7 @@ To reactivate a quarantined script:
 
 1. Review the script to understand its original purpose and interface.
 2. Confirm no equivalent inline logic already covers the same behavior.
-3. If needed, `git mv` the script back to `.claude/extensions/literature/scripts/` and re-add
+3. If needed, `git mv` the script back to `agent-system/extensions/literature/scripts/` and re-add
    it to `manifest.json` `provides.scripts`.
 4. Test thoroughly before committing.
 

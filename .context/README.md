@@ -16,7 +16,7 @@ Files are indexed in `index.json` for automated discovery by agents.
 | Content type | Correct location |
 |---|---|
 | Agent system patterns (orchestration, formats, workflows) | `.claude/context/` |
-| Language-specific standards and tool references | Extensions (`.claude/extensions/*/context/`) |
+| Language-specific standards and tool references | Extensions (`agent-system/extensions/*/context/`) |
 | Learned facts from development work | `.memory/` |
 | User preferences and behavioral corrections | Claude auto-memory (`~/.claude/projects/`) |
 

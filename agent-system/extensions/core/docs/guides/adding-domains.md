@@ -36,12 +36,12 @@ Is this the repository's PRIMARY domain?
 
 ## Extension Approach (Recommended)
 
-For most new domains, create an extension. Extensions live in `.claude/extensions/{domain}/` and are loaded via the the extension picker.
+For most new domains, create an extension. Extensions live in `agent-system/extensions/{domain}/` and are loaded via the the extension picker.
 
 ### Directory Structure
 
 ```
-.claude/extensions/your-domain/
+agent-system/extensions/your-domain/
 ├── manifest.json              # Extension metadata (required)
 ├── EXTENSION.md               # CLAUDE.md merge content (required)
 ├── index-entries.json         # Context index entries (optional)

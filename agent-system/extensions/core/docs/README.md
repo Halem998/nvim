@@ -112,7 +112,7 @@ User-invocable operations with checkpoint-based execution:
 
 The extension system provides task-type-specific support. Extensions are loaded via the extension picker. The core agent system itself is packaged as a real extension (`core`) that installs all base commands, agents, rules, skills, scripts, hooks, context, docs, and templates into the target `.claude/` directory.
 
-**Available Extensions** (`.claude/extensions/`):
+**Available Extensions** (`agent-system/extensions/`):
 
 | Extension | Domain | Provides |
 |-----------|--------|----------|
@@ -131,7 +131,7 @@ The extension system provides task-type-specific support. Extensions are loaded 
 | present | Grant writing | Grant proposal development |
 | memory | Knowledge management | Learning and memory patterns |
 
-The `core` extension is the foundational layer. All other extensions declare `"dependencies": ["core"]` to ensure it is loaded first. Core files live in `.claude/extensions/core/` and are installed to the standard `.claude/` layout when loaded. Sync (`Load Core Agent System`) sources core artifacts from `extensions/core/` in the global repository.
+The `core` extension is the foundational layer. All other extensions declare `"dependencies": ["core"]` to ensure it is loaded first. Core files live in `agent-system/extensions/core/` and are installed to the standard `.claude/` layout when loaded. Sync (`Load Core Agent System`) sources core artifacts from `agent-system/extensions/core/` in the global repository.
 
 **Extension documentation**: [docs/architecture/extension-system.md](docs/architecture/extension-system.md)
 

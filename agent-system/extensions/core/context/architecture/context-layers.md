@@ -28,7 +28,7 @@ The system uses three independent context layers. Each has a distinct owner, lif
 The extension loader assembles this directory during extension loading:
 
 - **Core files**: Agent system patterns, templates, reference docs (always present)
-- **Extension files**: Language-specific context copied from `.claude/extensions/*/context/` during load
+- **Extension files**: Language-specific context copied from `agent-system/extensions/*/context/` during load
 
 The loader calls `copy_context_dirs()` to copy extension context into `.claude/context/` and `append_index_entries()` to merge extension entries into the single `index.json`. After loading, all agent context (core + extensions) is queryable from one index.
 

@@ -120,7 +120,7 @@ Verification results are shown via notification.
 
 ## Creating New Extensions
 
-1. Create extension directory in `.claude/extensions/{name}/`
+1. Create extension directory in `agent-system/extensions/{name}/`
 2. Create manifest.json with name, version, description, provides
 3. Create EXTENSION.md with content that will appear in CLAUDE.md when loaded
 4. Create index-entries.json with context index entries (use canonical paths)
