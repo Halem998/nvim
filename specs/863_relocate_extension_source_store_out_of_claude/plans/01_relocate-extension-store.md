@@ -201,16 +201,16 @@ their now-relocated source copies and their deployed copies, keeping the pairs b
 
 ---
 
-### Phase 4: Update test fixture [NOT STARTED]
+### Phase 4: Update test fixture [COMPLETED]
 
 **Goal**: Point the plenary test fixture at the new store location.
 
 **Tasks**:
-- [ ] Edit `manifest_spec.lua:192`: change
+- [x] Edit `manifest_spec.lua:192`: changed
       `lean_path = global_dir .. "/.claude/extensions/lean"` to
       `global_dir .. "/agent-system/extensions/lean"`.
-- [ ] Scan the rest of the spec file for any other `.claude/extensions` fixture literals and
-      update them consistently.
+- [x] Scanned the rest of the spec file for any other `.claude/extensions` fixture literals;
+      line 192 was the only occurrence, none remain.
 
 **Timing**: 0.25 hours
 

@@ -189,7 +189,7 @@ describe("manifest", function()
   describe("read", function()
     it("should read and validate lean extension manifest", function()
       local global_dir = vim.fn.expand("~/.config/nvim")
-      local lean_path = global_dir .. "/.claude/extensions/lean"
+      local lean_path = global_dir .. "/agent-system/extensions/lean"
 
       local m, err = manifest.read(lean_path)
       assert.is_not_nil(m)
