@@ -17,6 +17,11 @@ This project includes Lean 4 theorem prover support via the lean extension.
 | skill-lake-repair | lean-implementation-agent | Lake build repair |
 | skill-lean-version | (direct execution) | Lean version management |
 
+### Rules
+
+- lean4.md - Lean 4 coding conventions and MCP tool guidance (**/*.lean)
+- plan-compliance.md - Strict plan-sequence compliance when an implementation plan exists (**/*.lean)
+
 ### MCP Integration
 
 The `lean-lsp` MCP server provides:

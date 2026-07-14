@@ -1,0 +1,29 @@
+{
+  "phase": 3,
+  "phase_name": "Update lean extension documentation surfaces",
+  "started_at": "2026-07-14T00:11:00Z",
+  "last_updated": "2026-07-14T00:16:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add ### Rules section to EXTENSION.md and update README.md directory tree",
+      "status": "done",
+      "files_touched": [
+        ".claude/extensions/lean/EXTENSION.md",
+        ".claude/extensions/lean/README.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.verification",
+      "description": "Phase 3 verification block's guard `git diff --name-only | grep -qx '.claude/CLAUDE.md'` failed",
+      "type": "altered",
+      "reason": "The guard fails because .claude/CLAUDE.md has a pre-existing uncommitted diff from an unrelated prior task (855's rule registration), not from this task's work. Confirmed via `git log --oneline -1 -- .claude/CLAUDE.md` (last commit touching it was task 855, not any commit in this task's chain) and `git show --stat` on this task's phase 1-3 commits (neither touches .claude/CLAUDE.md). All other Phase 3 verification assertions pass, including the substantive ones (rule mentioned in EXTENSION.md and README.md, no live .claude/rules/ copy forged, no leak into core claudemd merge-source, doc-lint exits 0). This is a pre-existing dirty-tree condition outside this task's scope, not a violation of Decision 2.",
+      "annotation": "*(deviation: altered — verification guard tripped by a pre-existing unrelated dirty .claude/CLAUDE.md from task 855, confirmed not touched by this task)*"
+    }
+  ]
+}

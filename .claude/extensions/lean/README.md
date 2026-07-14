@@ -98,7 +98,8 @@ lean/
 │   └── lean-implementation-agent.md # Lean proof implementation
 │
 ├── rules/
-│   └── lean4.md               # Lean 4 coding conventions (auto-applied)
+│   ├── lean4.md               # Lean 4 coding conventions (auto-applied)
+│   └── plan-compliance.md     # Strict plan-sequence compliance (auto-applied)
 │
 └── context/
     └── project/

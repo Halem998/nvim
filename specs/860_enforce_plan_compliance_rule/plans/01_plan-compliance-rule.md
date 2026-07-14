@@ -266,21 +266,25 @@ echo "PASS: Phase 2"
 
 ---
 
-### Phase 3: Update lean extension documentation surfaces [NOT STARTED]
+### Phase 3: Update lean extension documentation surfaces [COMPLETED]
 
 **Goal**: Surface the rule in the CLAUDE.md fragment consuming repos actually receive, and keep
 the README tree accurate.
 
 **Tasks**:
-- [ ] Add a `### Rules` entry to `.claude/extensions/lean/EXTENSION.md` naming
+- [x] Add a `### Rules` entry to `.claude/extensions/lean/EXTENSION.md` naming
       `plan-compliance.md` with a one-line description and its glob — this is lean's
       `merge_targets.claudemd` source (`section_id: extension_lean`), so it lands in consuming
       repos' generated `.claude/CLAUDE.md`. Mirror the nvim extension's `### Rules` style.
       If `EXTENSION.md` already lists `lean4.md`, extend that list rather than duplicating it.
-- [ ] Update the directory tree in `.claude/extensions/lean/README.md` (around line 101, which
-      currently lists only `lean4.md`) to include `plan-compliance.md`
-- [ ] Do NOT touch `.claude/CLAUDE.md`, `.claude/extensions/core/merge-sources/claudemd.md`,
-      or `.claude/rules/` (Decision 2)
+      *(completed: EXTENSION.md had no prior `### Rules` section at all, so a new one was added
+      listing both `lean4.md` and `plan-compliance.md`, mirroring nvim's `### Rules` style)*
+- [x] Update the directory tree in `.claude/extensions/lean/README.md` (around line 101, which
+      currently lists only `lean4.md`) to include `plan-compliance.md` *(completed)*
+- [x] Do NOT touch `.claude/CLAUDE.md`, `.claude/extensions/core/merge-sources/claudemd.md`,
+      or `.claude/rules/` (Decision 2) *(completed — confirmed via `git log -- .claude/CLAUDE.md`
+      that its only pre-existing uncommitted diff predates this task (task 855's unrelated
+      registration edit); this phase's own commit touches none of these three paths)*
 
 **Timing**: 25 minutes
 
