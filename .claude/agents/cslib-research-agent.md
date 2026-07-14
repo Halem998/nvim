@@ -1,1 +1,1 @@
-../extensions/cslib/agents/cslib-research-agent.md
+../../agent-system/extensions/cslib/agents/cslib-research-agent.md

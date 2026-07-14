@@ -1,1 +1,1 @@
-../extensions/cslib/commands/pr.md
+../../agent-system/extensions/cslib/commands/pr.md

@@ -1,0 +1,27 @@
+{
+  "phase": 1,
+  "phase_name": "Repair broken symlink-deploy regression",
+  "started_at": "2026-07-14T23:52:45Z",
+  "last_updated": "2026-07-15T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Live broken-symlink audit", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Fix rel_path in both install-extension.sh copies", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/install-extension.sh", ".claude/scripts/install-extension.sh"]},
+    {"id": 3, "description": "Confirm byte-identical copies", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Delete broken cslib/literature/pr-review symlinks", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Re-run install-extension.sh for cslib and literature", "status": "done", "files_touched": [".claude/agents/cslib-implementation-agent.md", ".claude/agents/cslib-implementation-hard-agent.md", ".claude/agents/cslib-research-agent.md", ".claude/agents/cslib-research-hard-agent.md", ".claude/agents/cslib-vet-agent.md", ".claude/agents/literature-agent.md", ".claude/agents/pr-review-implementation-agent.md", ".claude/agents/pr-review-research-agent.md", ".claude/commands/literature.md", ".claude/commands/pr.md", ".claude/commands/vet.md", ".claude/skills/skill-cslib-implementation", ".claude/skills/skill-cslib-implementation-hard", ".claude/skills/skill-cslib-research", ".claude/skills/skill-cslib-research-hard", ".claude/skills/skill-cslib-vet", ".claude/skills/skill-literature", ".claude/skills/skill-pr-implementation", ".claude/skills/skill-pr-review-implementation", ".claude/skills/skill-pr-review-research", ".claude/context/index.json"]},
+    {"id": 6, "description": "Delete dead zotero symlinks", "status": "done", "files_touched": [".claude/commands/zotero.md", ".claude/skills/skill-zotero"]},
+    {"id": 7, "description": "Verify all symlinks resolve, spot-check literature-agent.md and literature.md", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.5",
+      "description": "Re-run install-extension.sh for cslib and literature",
+      "type": "altered",
+      "reason": "install-extension.sh's merge_index_entries function (an unrelated side effect that runs automatically as part of the script, not something Phase 1 asked to modify) transiently dropped one pre-existing context/index.json entry (project/neovim/domain/extension-deploy-modes.md) during the cslib merge step for reasons not fully root-caused (a faithful sandbox replica of the same jq logic did not reproduce the drop). Detected via a before/after git-diff of all entry paths in context/index.json, which showed exactly one unexpected removal alongside the 15 expected cslib additions. Manually restored the exact original JSON object for the dropped entry (verified byte-for-byte from git show HEAD) rather than attempting to fix the underlying merge_index_entries script, since that function is out of this task's declared scope (context/index.json is a merge_targets output explicitly excluded from the new orphan checks per the plan and research report).",
+      "annotation": "*(deviation: altered — restored one entry the merge step transiently dropped; root cause not fixed, out of scope)*"
+    }
+  ]
+}

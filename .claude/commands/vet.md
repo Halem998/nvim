@@ -1,1 +1,1 @@
-../extensions/cslib/commands/vet.md
+../../agent-system/extensions/cslib/commands/vet.md

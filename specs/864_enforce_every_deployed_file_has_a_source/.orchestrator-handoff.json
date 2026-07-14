@@ -1,0 +1,26 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Created a 6-phase implementation plan for enforcing 'every deployed file has a source' as a hard gate. The plan sequences remediation before enforcement: Wave 1 runs four independent, disjoint-territory phases in parallel -- (1) repair the 19 broken install-extension.sh symlinks (fix the hardcoded '../extensions/$EXT_NAME/' relative target to '../../agent-system/extensions/$EXT_NAME/' byte-identically in BOTH copies of install-extension.sh, then delete-and-recreate the broken cslib/literature/pr-review symlinks since the script cannot self-repair them, and delete the dead zotero symlinks); (2) backfill the 4 genuinely core-owned orphans (no-task-references-in-deliverables.md, commands/README.md with a content rewrite, lint-contract-compliance.sh, validate-handoff.sh); (3) backfill the 8 literature-owned orphans and resolve literature-organization.md ownership to literature; (4) backfill the nvim orphan (extension-deploy-modes.md) plus the remaining core context/patterns orphans and resolve the fork-patterns.md duplicate via content diff. Wave 2 (Phase 5) extends check-extension-docs.sh with per-category orphan checks (agents/commands/context/scripts, honoring agents_subdir, recursive context comparison, scripts subdir entries, and merge_targets/index.json exclusion) plus a distinct broken-deployed-symlink check, at advisory level, and confirms 0 orphans / 0 broken symlinks on the remediated tree. Wave 3 (Phase 6) promotes those checks to blocking (FAILURES-contributing, non-zero exit) and verifies a clean exit-0 run. All check-extension-docs.sh and install-extension.sh edits are byte-identical dual-writes; all destructive check-logic testing happens in scratchpad against fake dirs.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/864_enforce_every_deployed_file_has_a_source/plans/01_deployed-file-source-hard-gate.md",
+      "summary": "6-phase plan with a 3-wave dependency structure (Wave 1: phases 1-4 parallel remediation; Wave 2: phase 5 advisory checks; Wave 3: phase 6 hard-gate promotion), full per-phase file territory, verification steps, and rollback."
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "Run /implement 864. Dispatch Wave 1 (phases 1-4) in parallel -- they touch disjoint file territories (Phase 1: install-extension.sh + symlink tree; Phase 2: core manifest+sources; Phase 3: literature manifest+sources; Phase 4: nvim manifest + core context/patterns + fork-patterns decision) with no write conflicts. Phase 1 is the highest-priority repair (a live regression breaking /literature); do it early so the eventual hard gate is green for the right reason. Do NOT flip the gate to blocking (Phase 6) until Phase 5 confirms 0 orphans and 0 broken symlinks in advisory mode. Two implementation-critical facts discovered during planning: (a) install-extension.sh is ITSELF a byte-identical dual-write file (declared in core provides.scripts) -- fix both copies and diff-verify empty; (b) install-extension.sh cannot self-repair existing broken symlinks (commands/skills only warn on mismatch; agents never validate an existing symlink target), so Phase 1 must delete broken symlinks before re-running it. The correct relative target is '../../agent-system/extensions/$EXT_NAME/...' (verified via os.path.relpath from .claude/commands/).",
+  "decisions_made": [
+    "Structured as 6 phases in 3 waves. Wave 1 parallelizes symlink repair and all backfill because they touch disjoint file territories (different extensions' manifests/source trees plus the symlink tree) with no overlap.",
+    "Sequenced symlink repair (Phase 1) into Wave 1 alongside backfill, and the advisory check (Phase 5) strictly before the hard-gate promotion (Phase 6), so the gate's first blocking run is green for the right reason -- per the research risk that a permanently-red gate trains agents to bypass it.",
+    "Split check extension into advisory-first (Phase 5) then promote-to-blocking (Phase 6) rather than one phase, giving an explicit verify-clean checkpoint before enforcement and keeping each phase to ~1-2h.",
+    "Assigned orphans to their CORRECT owning extension (4 core, 8 literature, ~2 nvim + core context/patterns) rather than defaulting all to core as the stale task description assumed; folded the literature-organization.md guides-ownership decision into the literature phase and the fork-patterns.md content-diff decision into the nvim/ambiguous phase.",
+    "Treated zotero.md and skill-zotero as deletion targets in Phase 1 (dead, superseded functionality with no extension), not sourcing targets.",
+    "Elevated the install-extension.sh dual-write nature and its inability to self-repair broken symlinks to first-class implementation constraints after verifying both facts on disk during planning."
+  ],
+  "dead_ends": [],
+  "phases_completed": 0,
+  "phases_total": 6
+}

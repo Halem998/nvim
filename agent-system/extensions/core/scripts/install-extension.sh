@@ -90,7 +90,7 @@ install_commands() {
       if [ -L "$target" ]; then
         # Already a symlink, check if it points to the right place
         local current_target=$(readlink "$target")
-        local expected_target="../extensions/$EXT_NAME/commands/$cmd_name"
+        local expected_target="../../agent-system/extensions/$EXT_NAME/commands/$cmd_name"
         if [ "$current_target" = "$expected_target" ]; then
           log_info "Command symlink already exists: $cmd_name"
         else
@@ -100,7 +100,7 @@ install_commands() {
         log_warn "Command file exists (not a symlink): $cmd_name"
       else
         # Create symlink
-        local rel_path="../extensions/$EXT_NAME/commands/$cmd_name"
+        local rel_path="../../agent-system/extensions/$EXT_NAME/commands/$cmd_name"
         ln -s "$rel_path" "$target"
         log_info "Created command symlink: $cmd_name -> $rel_path"
       fi
@@ -126,7 +126,7 @@ install_skills() {
       if [ -L "$target" ]; then
         # Already a symlink, check if it points to the right place
         local current_target=$(readlink "$target")
-        local expected_target="../extensions/$EXT_NAME/skills/$skill_name"
+        local expected_target="../../agent-system/extensions/$EXT_NAME/skills/$skill_name"
         if [ "$current_target" = "$expected_target" ]; then
           log_info "Skill symlink already exists: $skill_name"
         else
@@ -136,7 +136,7 @@ install_skills() {
         log_warn "Skill directory exists (not a symlink): $skill_name"
       else
         # Create symlink
-        local rel_path="../extensions/$EXT_NAME/skills/$skill_name"
+        local rel_path="../../agent-system/extensions/$EXT_NAME/skills/$skill_name"
         ln -s "$rel_path" "$target"
         log_info "Created skill symlink: $skill_name -> $rel_path"
       fi
@@ -165,7 +165,7 @@ install_agents() {
         log_warn "Agent file exists (not a symlink): $agent_name"
       else
         # Create symlink
-        local rel_path="../extensions/$EXT_NAME/agents/$agent_name"
+        local rel_path="../../agent-system/extensions/$EXT_NAME/agents/$agent_name"
         ln -s "$rel_path" "$target"
         log_info "Created agent symlink: $agent_name -> $rel_path"
       fi

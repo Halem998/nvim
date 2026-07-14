@@ -1,1 +1,1 @@
-../extensions/literature/commands/literature.md
+../../agent-system/extensions/literature/commands/literature.md
