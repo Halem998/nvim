@@ -514,7 +514,26 @@ function M.create(config)
 
     -- Rollback on failure
     if not load_ok then
-      loader_mod.remove_installed_files(all_files, all_dirs)
+      -- Filter out any .syncprotect-protected path before rollback removal,
+      -- symmetric with copy_file's own protection check (defense in depth:
+      -- copy_file already excludes protected paths from all_files/all_dirs
+      -- under normal operation, so this filter is a belt-and-suspenders
+      -- guard rather than the primary protection mechanism here).
+      local rollback_files = {}
+      for _, path in ipairs(all_files) do
+        local key = path:sub(#target_dir + 2)
+        if not protected_paths[key] then
+          table.insert(rollback_files, path)
+        end
+      end
+      local rollback_dirs = {}
+      for _, path in ipairs(all_dirs) do
+        local key = path:sub(#target_dir + 2)
+        if not protected_paths[key] then
+          table.insert(rollback_dirs, path)
+        end
+      end
+      loader_mod.remove_installed_files(rollback_files, rollback_dirs, { project_dir = project_dir })
       reverse_merge_targets(ext_manifest, merged_sections, project_dir, config)
       return false, "Extension load failed: " .. tostring(load_err)
     end
@@ -648,25 +667,52 @@ function M.create(config)
       reverse_merge_targets(extension.manifest, merged_sections, project_dir, config)
     end
 
-    -- Convert relative paths back to absolute for file removal
+    -- Load .syncprotect so removal honors the same protection as copy
+    -- (manager.load does this at load time; unload never did until now).
+    local protected_paths = loader_mod.load_syncprotect(project_dir, config.base_dir)
+    local protected_skip_count = 0
+
+    -- Convert relative paths back to absolute for file removal, filtering
+    -- out any path protected by .syncprotect. installed_files/installed_dirs
+    -- are project-root-relative (e.g. ".claude/agents/foo.md"), while
+    -- .syncprotect keys are base-dir-relative (e.g. "agents/foo.md"), so the
+    -- base_dir prefix is stripped before checking protected_paths.
     local abs_files = {}
     for _, rel_path in ipairs(installed_files) do
-      table.insert(abs_files, project_dir .. "/" .. rel_path)
+      local syncprotect_key = rel_path:sub(#config.base_dir + 2)
+      if protected_paths[syncprotect_key] then
+        protected_skip_count = protected_skip_count + 1
+      else
+        table.insert(abs_files, project_dir .. "/" .. rel_path)
+      end
     end
     -- Also add data skeleton files (these are safe to remove - they're extension-provided)
     for _, rel_path in ipairs(data_skeleton_files) do
-      table.insert(abs_files, project_dir .. "/" .. rel_path)
+      local syncprotect_key = rel_path:sub(#config.base_dir + 2)
+      if protected_paths[syncprotect_key] then
+        protected_skip_count = protected_skip_count + 1
+      else
+        table.insert(abs_files, project_dir .. "/" .. rel_path)
+      end
     end
     local abs_dirs = {}
     for _, rel_path in ipairs(installed_dirs) do
-      table.insert(abs_dirs, project_dir .. "/" .. rel_path)
+      local syncprotect_key = rel_path:sub(#config.base_dir + 2)
+      if protected_paths[syncprotect_key] then
+        protected_skip_count = protected_skip_count + 1
+      else
+        table.insert(abs_dirs, project_dir .. "/" .. rel_path)
+      end
     end
 
     -- Remove files (includes both regular files and data skeleton files)
     -- User-created files in data directories are NOT in the abs_files list,
     -- so they will be preserved. The remove_installed_files function only
     -- removes empty directories, so user data directories will also be preserved.
-    local removed_count = loader_mod.remove_installed_files(abs_files, abs_dirs)
+    -- project_dir bounds the symlink-ancestor walk (see loader.lua).
+    local removed_count, symlink_skip_count = loader_mod.remove_installed_files(
+      abs_files, abs_dirs, { project_dir = project_dir }
+    )
 
     -- Update state
     state = state_mod.mark_unloaded(state, extension_name)
@@ -690,8 +736,20 @@ function M.create(config)
       end)
     end
 
+    local skip_notes = {}
+    if protected_skip_count > 0 then
+      table.insert(skip_notes, string.format("%d protected (.syncprotect)", protected_skip_count))
+    end
+    if symlink_skip_count and symlink_skip_count > 0 then
+      table.insert(skip_notes, string.format(
+        "%d symlinked (left in place; use uninstall-extension.sh to remove)",
+        symlink_skip_count
+      ))
+    end
+    local skip_note = #skip_notes > 0 and (" (" .. table.concat(skip_notes, ", ") .. " skipped)") or ""
+
     helpers.notify(
-      string.format("Unloaded extension '%s' (%d files removed)", extension_name, removed_count),
+      string.format("Unloaded extension '%s' (%d files removed%s)", extension_name, removed_count, skip_note),
       "INFO"
     )
 

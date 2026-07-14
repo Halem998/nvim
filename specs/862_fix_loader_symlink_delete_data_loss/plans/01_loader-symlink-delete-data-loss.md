@@ -393,7 +393,7 @@ session began.
 
 ---
 
-### Phase 3: Filter `.syncprotect` at the `init.lua` call sites [NOT STARTED]
+### Phase 3: Filter `.syncprotect` at the `init.lua` call sites [COMPLETED]
 
 **Goal**: Make protection symmetric across copy and remove. `copy_file()` honors
 `protected_paths`; the remove path currently never receives it at either call site.
@@ -407,26 +407,56 @@ Scope section — the expansion is unavoidable because `manager.unload` never ca
 
 **Tasks**:
 
-- [ ] In `manager.unload`, call `loader_mod.load_syncprotect(project_dir, config.base_dir)` to
+- [x] In `manager.unload`, call `loader_mod.load_syncprotect(project_dir, config.base_dir)` to
       obtain `protected_paths`. This call does not exist on the unload path today; the load path's
       equivalent is at `init.lua:389`.
-- [ ] In the absolute-path conversion loop (`init.lua:652-663`), derive the `.syncprotect` key from
+- [x] In the absolute-path conversion loop (`init.lua:652-663`), derive the `.syncprotect` key from
       the loop's `rel_path` with `rel_path:sub(#config.base_dir + 2)` and skip appending the path
       to `abs_files` when `protected_paths[key]` is truthy. The prefix strip is required: keys in
       `.syncprotect` are base-dir-relative (`context/repo/project-overview.md`) while
       `installed_files` are project-root-relative (`.claude/agents/literature-agent.md`) — verified
-      during planning.
-- [ ] Apply the same filtering to the `data_skeleton_files` loop (`init.lua:657-659`) and to
+      during planning, and re-verified with a scratch test in this phase (see phase notes).
+- [x] Apply the same filtering to the `data_skeleton_files` loop (`init.lua:657-659`) and to
       `abs_dirs` (`init.lua:660-663`).
-- [ ] Count protected skips locally in `init.lua` for reporting.
-- [ ] Pass `{ project_dir = project_dir }` as the third argument at the `manager.unload` call site
+- [x] Count protected skips locally in `init.lua` for reporting.
+- [x] Pass `{ project_dir = project_dir }` as the third argument at the `manager.unload` call site
       (`init.lua:669`) so Phase 1's ancestor walk is bounded.
-- [ ] Pass the same `opts` at the rollback call site (`init.lua:517`). This call site is inside
+- [x] Pass the same `opts` at the rollback call site (`init.lua:517`). This call site is inside
       `manager.load`, which already has `protected_paths` in scope from `init.lua:389`; apply the
       same filtering to `all_files`/`all_dirs` before the rollback call.
-- [ ] Extend the unload notification (`init.lua:693-696`) to report the protected-skip and
+      **Note**: under normal operation `copy_file()` already excludes protected paths from
+      `all_files`/`all_dirs` (it returns `skipped=true` and callers only insert on `ok=true`), so
+      this rollback-site filtering is a defense-in-depth guard rather than the primary protection
+      mechanism there; `opts.project_dir` threading is the load-bearing part of this call site.
+- [x] Extend the unload notification (`init.lua:693-696`) to report the protected-skip and
       symlink-skip counts alongside `removed_count`, naming `uninstall-extension.sh` as the tool
       for symlink-installed extensions when the symlink-skip count is non-zero.
+
+**Phase notes**: extended the Phase 2 scratch script (`<scratch>/run_test.lua`) with a `.syncprotect`
+section that replicates `manager.unload`'s exact key-derivation and filtering logic (rather than
+invoking the full manager stack, which Phase 5 covers end-to-end) — see the transcript below. This
+directly confirms the derived key shape (`commands/protected.md`) matches what `copy_simple_files`
+passes as `rel_path` (`target_category_name .. "/" .. filename`), that `M.load_syncprotect` parses
+the scratch `.syncprotect` file correctly, and that the filtering loop excludes the protected path
+from `abs_files` before it ever reaches `remove_installed_files` — protection is enforced upstream,
+symmetric with copy.
+
+```
+=== Phase 3: .syncprotect filtering ===
+KEY_PROTECTED = commands/protected.md
+KEY_MATCHES_COPY_CONVENTION = true
+PROTECTED_ENTRY_LOADED = true
+PROTECTED_SKIP_COUNT = 1
+ABS_FILES_C_COUNT = 1
+REMOVED_C = 1
+PROTECTED_SURVIVES = true
+UNPROTECTED_DELETED = true
+SYNCPROTECT_ALL_PASS = true
+```
+
+All Phase 2 assertions (`ALL_PASS = true`) were re-run in the same session and are unaffected,
+since Phase 3 only edits `init.lua` (`loader.lua` is unchanged from Phase 1/2). `nvim --headless -c
+"lua require('neotex.plugins.ai.shared.extensions.init')" -c "q"` exits clean.
 
 **Timing**: 1 hour
 
