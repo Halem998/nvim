@@ -123,7 +123,13 @@ local function scan_directory_recursive(dir)
   return files
 end
 
---- Copy simple files (agents, commands, rules)
+--- Copy simple files (agents, commands, rules).
+---
+--- Ownership invariant (mirrors `M.remove_installed_files`): this copy engine
+--- owns only paths it created as regular files. A pre-existing symlink at a
+--- deployed target belongs to `install-extension.sh` and is never written
+--- through here -- the copy is skipped entirely rather than self-overwriting
+--- through the symlink, and the path is not recorded in `copied_files`.
 --- @param manifest table Extension manifest
 --- @param source_dir string Extension source directory
 --- @param target_dir string Target base directory (.claude or .opencode)
@@ -134,13 +140,17 @@ end
 --- @return table copied_files Array of copied file paths
 --- @return table created_dirs Array of created directory paths
 --- @return number skipped_count Number of files skipped due to .syncprotect
+--- @return number symlink_skipped_count Number of files skipped because the
+---   deployed target is a pre-existing symlink (distinct from
+---   `skipped_count`, which counts `.syncprotect` skips only)
 function M.copy_simple_files(manifest, source_dir, target_dir, category, extension, agents_subdir, protected_paths)
   local copied_files = {}
   local created_dirs = {}
   local skipped_count = 0
+  local symlink_skipped_count = 0
 
   if not manifest.provides or not manifest.provides[category] then
-    return copied_files, created_dirs, skipped_count
+    return copied_files, created_dirs, skipped_count, symlink_skipped_count
   end
 
   local source_category_dir = source_dir .. "/" .. category
@@ -160,20 +170,33 @@ function M.copy_simple_files(manifest, source_dir, target_dir, category, extensi
     local rel_path = target_category_name .. "/" .. filename
 
     if vim.fn.filereadable(source_path) == 1 then
-      local preserve_perms = filename:match("%.sh$")
-      local ok, skipped = copy_file(source_path, target_path, preserve_perms, protected_paths, rel_path)
-      if skipped then
-        skipped_count = skipped_count + 1
-      elseif ok then
-        table.insert(copied_files, target_path)
+      if vim.fn.getftype(target_path) == "link" then
+        symlink_skipped_count = symlink_skipped_count + 1
+      else
+        local preserve_perms = filename:match("%.sh$")
+        local ok, skipped = copy_file(source_path, target_path, preserve_perms, protected_paths, rel_path)
+        if skipped then
+          skipped_count = skipped_count + 1
+        elseif ok then
+          table.insert(copied_files, target_path)
+        end
       end
     end
   end
 
-  return copied_files, created_dirs, skipped_count
+  return copied_files, created_dirs, skipped_count, symlink_skipped_count
 end
 
---- Copy skill directories (recursive)
+--- Copy skill directories (recursive).
+---
+--- Ownership invariant (mirrors `M.remove_installed_files`): this copy engine
+--- owns only paths it created as regular files/directories. A pre-existing
+--- symlink at a deployed skill directory belongs to `install-extension.sh`
+--- and is never written through here. Note that `vim.fn.isdirectory()`
+--- returns 1 for a symlink-to-directory, so it only guards directory
+--- *creation* -- the per-file copy loop below would otherwise always run
+--- regardless of whether the target is a symlink; `getftype()` is checked
+--- explicitly to skip the whole skill when the target is a symlink.
 --- @param manifest table Extension manifest
 --- @param source_dir string Extension source directory
 --- @param target_dir string Target base directory
@@ -181,13 +204,17 @@ end
 --- @return table copied_files Array of copied file paths
 --- @return table created_dirs Array of created directory paths
 --- @return number skipped_count Number of files skipped due to .syncprotect
+--- @return number symlink_skipped_count Number of skills skipped because the
+---   deployed skill directory is a pre-existing symlink (distinct from
+---   `skipped_count`, which counts `.syncprotect` skips only)
 function M.copy_skill_dirs(manifest, source_dir, target_dir, protected_paths)
   local copied_files = {}
   local created_dirs = {}
   local skipped_count = 0
+  local symlink_skipped_count = 0
 
   if not manifest.provides or not manifest.provides.skills then
-    return copied_files, created_dirs, skipped_count
+    return copied_files, created_dirs, skipped_count, symlink_skipped_count
   end
 
   local source_skills_dir = source_dir .. "/skills"
@@ -204,31 +231,35 @@ function M.copy_skill_dirs(manifest, source_dir, target_dir, protected_paths)
     local target_skill_dir = target_skills_dir .. "/" .. skill_name
 
     if vim.fn.isdirectory(source_skill_dir) == 1 then
-      -- Create skill directory
-      if vim.fn.isdirectory(target_skill_dir) ~= 1 then
-        helpers.ensure_directory(target_skill_dir)
-        table.insert(created_dirs, target_skill_dir)
-      end
+      if vim.fn.getftype(target_skill_dir) == "link" then
+        symlink_skipped_count = symlink_skipped_count + 1
+      else
+        -- Create skill directory
+        if vim.fn.isdirectory(target_skill_dir) ~= 1 then
+          helpers.ensure_directory(target_skill_dir)
+          table.insert(created_dirs, target_skill_dir)
+        end
 
-      -- Copy all files in skill directory
-      local files = scan_directory_recursive(source_skill_dir)
-      for _, file_rel_path in ipairs(files) do
-        local source_path = source_skill_dir .. "/" .. file_rel_path
-        local target_path = target_skill_dir .. "/" .. file_rel_path
-        local preserve_perms = file_rel_path:match("%.sh$")
-        local rel_path = "skills/" .. skill_name .. "/" .. file_rel_path
+        -- Copy all files in skill directory
+        local files = scan_directory_recursive(source_skill_dir)
+        for _, file_rel_path in ipairs(files) do
+          local source_path = source_skill_dir .. "/" .. file_rel_path
+          local target_path = target_skill_dir .. "/" .. file_rel_path
+          local preserve_perms = file_rel_path:match("%.sh$")
+          local rel_path = "skills/" .. skill_name .. "/" .. file_rel_path
 
-        local ok, skipped = copy_file(source_path, target_path, preserve_perms, protected_paths, rel_path)
-        if skipped then
-          skipped_count = skipped_count + 1
-        elseif ok then
-          table.insert(copied_files, target_path)
+          local ok, skipped = copy_file(source_path, target_path, preserve_perms, protected_paths, rel_path)
+          if skipped then
+            skipped_count = skipped_count + 1
+          elseif ok then
+            table.insert(copied_files, target_path)
+          end
         end
       end
     end
   end
 
-  return copied_files, created_dirs, skipped_count
+  return copied_files, created_dirs, skipped_count, symlink_skipped_count
 end
 
 --- Copy context directories (preserving structure)

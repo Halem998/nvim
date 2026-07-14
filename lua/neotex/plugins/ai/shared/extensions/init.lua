@@ -395,34 +395,39 @@ function M.create(config)
     local merged_sections = {}
     local data_skeleton_files = {}
     local total_skipped = 0
+    local total_symlink_skipped = 0
 
     -- Wrap copy+merge in pcall for atomic rollback on failure
     local load_ok, load_err = pcall(function()
-      local skipped
+      local skipped, symlink_skipped
       -- Copy agents (use configured agents_subdir for target path)
       local files, dirs
-      files, dirs, skipped = loader_mod.copy_simple_files(ext_manifest, source_dir, target_dir, "agents", ".md", config.agents_subdir, protected_paths)
+      files, dirs, skipped, symlink_skipped = loader_mod.copy_simple_files(ext_manifest, source_dir, target_dir, "agents", ".md", config.agents_subdir, protected_paths)
       vim.list_extend(all_files, files)
       vim.list_extend(all_dirs, dirs)
       total_skipped = total_skipped + skipped
+      total_symlink_skipped = total_symlink_skipped + symlink_skipped
 
       -- Copy commands
-      files, dirs, skipped = loader_mod.copy_simple_files(ext_manifest, source_dir, target_dir, "commands", ".md", nil, protected_paths)
+      files, dirs, skipped, symlink_skipped = loader_mod.copy_simple_files(ext_manifest, source_dir, target_dir, "commands", ".md", nil, protected_paths)
       vim.list_extend(all_files, files)
       vim.list_extend(all_dirs, dirs)
       total_skipped = total_skipped + skipped
+      total_symlink_skipped = total_symlink_skipped + symlink_skipped
 
       -- Copy rules
-      files, dirs, skipped = loader_mod.copy_simple_files(ext_manifest, source_dir, target_dir, "rules", ".md", nil, protected_paths)
+      files, dirs, skipped, symlink_skipped = loader_mod.copy_simple_files(ext_manifest, source_dir, target_dir, "rules", ".md", nil, protected_paths)
       vim.list_extend(all_files, files)
       vim.list_extend(all_dirs, dirs)
       total_skipped = total_skipped + skipped
+      total_symlink_skipped = total_symlink_skipped + symlink_skipped
 
       -- Copy skills
-      files, dirs, skipped = loader_mod.copy_skill_dirs(ext_manifest, source_dir, target_dir, protected_paths)
+      files, dirs, skipped, symlink_skipped = loader_mod.copy_skill_dirs(ext_manifest, source_dir, target_dir, protected_paths)
       vim.list_extend(all_files, files)
       vim.list_extend(all_dirs, dirs)
       total_skipped = total_skipped + skipped
+      total_symlink_skipped = total_symlink_skipped + symlink_skipped
 
       -- Copy context
       files, dirs, skipped = loader_mod.copy_context_dirs(ext_manifest, source_dir, target_dir, protected_paths)
@@ -568,11 +573,16 @@ function M.create(config)
       end)
     end
 
-    local protected_note = total_skipped > 0
-      and string.format(", %d skipped (.syncprotect)", total_skipped)
-      or ""
+    local load_skip_parts = {}
+    if total_skipped > 0 then
+      table.insert(load_skip_parts, string.format("%d skipped (.syncprotect)", total_skipped))
+    end
+    if total_symlink_skipped > 0 then
+      table.insert(load_skip_parts, string.format("%d skipped (symlinked, preserved)", total_symlink_skipped))
+    end
+    local load_skip_note = #load_skip_parts > 0 and (", " .. table.concat(load_skip_parts, ", ")) or ""
     helpers.notify(
-      string.format("Loaded extension '%s' (%d files%s)", extension_name, #all_files, protected_note),
+      string.format("Loaded extension '%s' (%d files%s)", extension_name, #all_files, load_skip_note),
       "INFO"
     )
 

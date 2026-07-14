@@ -481,7 +481,7 @@ since Phase 3 only edits `init.lua` (`loader.lua` is unchanged from Phase 1/2). 
 
 ---
 
-### Phase 4: Preserve symlinks on the copy path [NOT STARTED]
+### Phase 4: Preserve symlinks on the copy path [COMPLETED]
 
 **Goal**: Stop the silent flattening. Without this, agents/commands symlinks degrade into regular
 files on every load, even with the remove path fixed.
@@ -491,20 +491,49 @@ files on every load, even with the remove path fixed.
 
 **Tasks**:
 
-- [ ] In `M.copy_simple_files` (`loader.lua:137-174`), before calling `copy_file`, check
+- [x] In `M.copy_simple_files` (`loader.lua:137-174`), before calling `copy_file`, check
       `vim.fn.getftype(target_path) == "link"`. If it is a symlink, skip the copy entirely and do
       NOT append `target_path` to `copied_files` — the copy engine does not own it.
-- [ ] In `M.copy_skill_dirs` (`loader.lua:184-232`), check `vim.fn.getftype(target_skill_dir) ==
+- [x] In `M.copy_skill_dirs` (`loader.lua:184-232`), check `vim.fn.getftype(target_skill_dir) ==
       "link"` before the per-file copy loop at `loader.lua:214-227`. If the deployed skill
       directory is a symlink, skip the whole skill and record nothing. Note why the existing guard
       is insufficient: `isdirectory(target_skill_dir) ~= 1` at `loader.lua:208` returns 1 for a
       symlink-to-directory, so it only guards directory *creation* — the copy loop always runs.
-- [ ] Count symlink-skipped copies separately from `.syncprotect` skips (`skipped_count` currently
+- [x] Count symlink-skipped copies separately from `.syncprotect` skips (`skipped_count` currently
       means protected-skips only) so user-facing reporting can distinguish "protected" from
       "symlinked". State the choice in the LuaDoc.
-- [ ] Add a LuaDoc note on both functions restating the ownership invariant, mirroring Phase 1's
+- [x] Add a LuaDoc note on both functions restating the ownership invariant, mirroring Phase 1's
       wording. No task-number citations.
-- [ ] Update the load-side notification in `init.lua` to surface the symlink-skipped count.
+- [x] Update the load-side notification in `init.lua` to surface the symlink-skipped count.
+
+**Phase notes**: extended the scratch script with a `phase4/` fixture set: a file-level deployed
+symlink pointing at a *different* real file (not the extension source, to unambiguously detect
+any write-through), and a symlinked deployed skill directory pointing at a different real
+directory. See the transcript below — all assertions pass, including that the pointed-to content
+is byte-identical before and after (no accidental write-through) and that a non-symlinked sibling
+target still copies normally and is recorded in `copied_files`.
+
+```
+=== Phase 4: copy-path symlink preservation ===
+FOO_STILL_LINK = true
+LINKED_AGENT_CONTENT_UNTOUCHED = true
+FOO_NOT_IN_COPIED_FILES = true
+SYMLINK_SKIPPED_COUNT_A = 1
+BAR_COPIED_NORMALLY = true
+BAR_CONTENT_OK = true
+SKILLX_STILL_LINK = true
+LINKED_SKILL_CONTENT_UNTOUCHED = true
+NO_COPIED_FILES_UNDER_SKILLX = true
+SYMLINK_SKIPPED_COUNT_S = 1
+PHASE4_ALL_PASS = true
+```
+
+All Phase 2/3 assertions were re-run in the same session and remain green (`ALL_PASS = true`,
+`SYNCPROTECT_ALL_PASS = true`), confirming no regression. `nvim --headless -c "lua
+require('neotex.plugins.ai.shared.extensions.loader')" -c "q"` and the same for `.init` both exit
+clean. `git status` on the real repository shows only the two intended source files modified
+(`loader.lua`, `init.lua`) — no unintended changes to the real `.claude/skills`, `.claude/agents`,
+`.claude/commands`, or `.claude/extensions` trees.
 
 **Timing**: 1.5 hours
 
