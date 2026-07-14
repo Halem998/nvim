@@ -1,7 +1,7 @@
 # Implementation Plan: Task #859
 
 - **Task**: 859 - Fix generate-task-order.sh: dependency tree renders flat for non-lowercase topic strings (topic-key case mismatch)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/859_fix_task_order_topic_case_indentation/reports/01_topic-standardization.md
@@ -308,24 +308,25 @@ canonical form and its write-time enforcement.
 
 ---
 
-### Phase 6: Local verification — confirm no migration needed and behavior is correct [NOT STARTED]
+### Phase 6: Local verification — confirm no migration needed and behavior is correct [COMPLETED]
 
 **Goal**: Confirm (not migrate) that this repository's existing topic data is already canonical and
 that the full change leaves `specs/state.json` byte-unchanged, and run the end-to-end render check.
 
 **Tasks**:
-- [ ] Write a throwaway verification loop (scratchpad) that runs `normalize_topic` over every entry
+- [x] Write a throwaway verification loop (scratchpad) that runs `normalize_topic` over every entry
       in `active_topics` and every `active_projects[].topic` in the live `specs/state.json` and
       asserts each is already a fixed point (normalize(x) == x) — expecting ZERO differences
       (Finding 8). If any differ, STOP and report (would indicate a migration is actually needed).
-- [ ] Run `bash .claude/scripts/generate-todo.sh` against the real repo and confirm the live
+      *(completed: 0 non-fixed-point values found across 3 active_topics entries and 3 active_projects[].topic values)*
+- [x] Run `bash .claude/scripts/generate-todo.sh` against the real repo and confirm the live
       Grouped-by-Topic tree still renders correctly (existing all-lowercase topics unaffected) and
-      `specs/TODO.md` regenerates cleanly.
-- [ ] Confirm `git diff specs/state.json` shows no topic-data change attributable to this work (all
-      fixture testing used copies).
-- [ ] Record in the summary that migration scope for this repository is zero tasks (verification
+      `specs/TODO.md` regenerates cleanly. *(completed: exit 0, no diff to specs/TODO.md)*
+- [x] Confirm `git diff specs/state.json` shows no topic-data change attributable to this work (all
+      fixture testing used copies). *(completed: git diff clean)*
+- [x] Record in the summary that migration scope for this repository is zero tasks (verification
       only), and that the fix is preventive/structural, landing in the shared core source for other
-      repos.
+      repos. *(completed: see summary)*
 
 **Timing**: 0.5 hours
 
@@ -341,18 +342,18 @@ that the full change leaves `specs/state.json` byte-unchanged, and run the end-t
 
 ## Testing & Validation
 
-- [ ] `manage-topics.sh add`/`set` store canonical (lowercase kebab-case) values; variants of the
+- [x] `manage-topics.sh add`/`set` store canonical (lowercase kebab-case) values; variants of the
       same topic collapse to one `active_topics` entry (Phase 1).
-- [ ] Origin bug fixed: a Title-Case topic renders with `└─` indentation under a single heading;
+- [x] Origin bug fixed: a Title-Case topic renders with `└─` indentation under a single heading;
       case/separator variants collapse to one section (Phase 2).
-- [ ] `.claude/` and `.opencode/` renderers produce identical Grouped-by-Topic output on the same
+- [x] `.claude/` and `.opencode/` renderers produce identical Grouped-by-Topic output on the same
       fixture (Phase 3).
-- [ ] `topic-assignment-pattern.md` documents an autonomous deterministic-default directive with a
+- [x] `topic-assignment-pattern.md` documents an autonomous deterministic-default directive with a
       visible notice and no `AskUserQuestion` (Phase 4).
-- [ ] `state-management-schema.md` documents `topic` and `active_topics` with canonical form (Phase 5).
-- [ ] Live `specs/state.json` topic data is an unchanged fixed point under `normalize_topic`; no
+- [x] `state-management-schema.md` documents `topic` and `active_topics` with canonical form (Phase 5).
+- [x] Live `specs/state.json` topic data is an unchanged fixed point under `normalize_topic`; no
       migration performed (Phase 6).
-- [ ] No task-number references introduced in any deliverable file outside `specs/**`.
+- [x] No task-number references introduced in any deliverable file outside `specs/**`.
 
 ## Artifacts & Outputs
 

@@ -1,0 +1,36 @@
+{
+  "task_number": 859,
+  "outcome": "completed",
+  "final_status": "completed",
+  "phases_completed": 6,
+  "phases_total": 6,
+  "dependency_waves_executed": [[1, 4, 5], [2, 3], [6]],
+  "blockers": [],
+  "modified_files": [
+    ".claude/scripts/manage-topics.sh",
+    ".claude/extensions/core/scripts/generate-task-order.sh",
+    ".claude/scripts/generate-task-order.sh",
+    ".opencode/scripts/generate-task-order.sh",
+    ".claude/context/patterns/topic-assignment-pattern.md",
+    ".claude/context/reference/state-management-schema.md"
+  ],
+  "summary": "All 6 phases of the topic-normalization plan completed and verified. Introduced a single canonical normalize_topic() helper (lowercase kebab-case) enforced at the manage-topics.sh write chokepoint and routed through both generate-task-order.sh renderers (.claude core extension source + deployed mirror + .opencode render-side mirror), fixing the origin bug where the dependency tree rendered flat for any non-lowercase topic. Added an autonomous-context deterministic-default directive to topic-assignment-pattern.md and documented the topic/active_topics schema fields in state-management-schema.md. Phase 6 confirmed zero migration was needed: this repository's existing topic data (3 active_topics entries, 3 active_projects[].topic values) was already a fixed point under normalize_topic, and generate-todo.sh regenerated specs/TODO.md cleanly with no topic-data mutation to specs/state.json.",
+  "verification_evidence": {
+    "phase_1_manage_topics": "Fixture test: add 'Modal Logic' -> stores 'modal-logic'; repeated add with 'modal_logic'/'modal-logic' variants are idempotent no-ops; set stores 'code-hygiene' for 'Code Hygiene'; validate 'Modal Logic' exits 0. Real specs/state.json confirmed untouched.",
+    "phase_2_origin_renderer": "Fixture test: 4-task chain (1->2->3->4) with topics 'Modal Logic' (x3) and 'modal-logic' (x1) rendered as exactly ONE '### Modal Logic' heading with 3 '└─' indented lines -- origin bug fixed, no duplicate heading.",
+    "phase_3_opencode_mirror": "Fixture test: .claude and .opencode renderers produced byte-identical Grouped-by-Topic sections (diff clean) against the same fixture.",
+    "phase_4_autonomous_directive": "grep -n orchestrator_mode topic-assignment-pattern.md returns the new directive naming the deterministic default and forbidding AskUserQuestion.",
+    "phase_5_schema_docs": "grep -n active_topics and grep -n topic against state-management-schema.md confirm both fields documented with canonical-form note.",
+    "phase_6_local_verification": "Fixed-point loop: 0 non-canonical values found in live specs/state.json. generate-todo.sh exit 0, no diff to specs/TODO.md. git diff specs/state.json clean of topic-data mutations.",
+    "no_task_number_leakage": "Repo-wide grep across all 6 modified deliverable files for 'task 859' returned clean."
+  },
+  "follow_ups_flagged": [
+    ".opencode/ write-side topic-assignment parity (manage-topics.sh equivalent, topic-assignment-pattern.md equivalent, /task topic step) remains out of scope and is a recommended follow-up task, flagged in a script-header comment in .opencode/scripts/generate-task-order.sh and in the execution summary's Notes section."
+  ],
+  "state_sync": {
+    "state_json_status": "completed",
+    "todo_md_regenerated": true,
+    "completion_summary_populated": true
+  },
+  "session_id": "sess_859_implement_topic_normalization"
+}

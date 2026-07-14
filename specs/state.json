@@ -6,7 +6,7 @@
       "project_number": 859,
       "project_name": "fix_task_order_topic_case_indentation",
       "title": "Fix generate-task-order.sh: dependency tree renders flat for non-lowercase topic strings (topic-key case mismatch)",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "effort": "low",
@@ -21,6 +21,11 @@
           "type": "plan",
           "path": "specs/859_fix_task_order_topic_case_indentation/plans/01_topic-normalization.md",
           "summary": "6-phase plan: single normalize_topic() helper (lowercase kebab-case) applied at manage-topics.sh write chokepoint and both generate-task-order.sh renderers (.claude core + .opencode), autonomous-context directive, schema docs, and local verification (no migration)"
+        },
+        {
+          "type": "summary",
+          "path": "specs/859_fix_task_order_topic_case_indentation/summaries/01_topic-normalization-summary.md",
+          "summary": "Execution summary: normalize_topic() spine applied at write chokepoint and both renderers; autonomous-context directive; schema docs; zero-migration verification"
         }
       ],
       "created": "2026-07-14T15:37:34Z",
@@ -30,8 +35,9 @@
         ".opencode/scripts/generate-task-order.sh"
       ],
       "description": "generate-task-order.sh renders the Grouped-by-Topic dependency tree FLAT (no indented '└─' children) for any topic whose raw string is not already all-lowercase. ROOT CAUSE: topic sections are grouped under a LOWERCASED key (`_current_section_topic` = the lowercased topic, set from the grouping key at generate_grouped_section), but the two guards that decide child recursion / cross-topic annotation compare that lowercased key against the RAW topic string from state.json. In .claude/extensions/core/scripts/generate-task-order.sh: line 578 `\"$dep_topic\" != \"$_current_section_topic\"` (successor-skip in _print_topic_node) and line 553 `\"$task_topic_val\" != \"$_current_section_topic\"` (cross-topic 'see above' annotation). For a task with topic 'Modal Logic', dep_topic='Modal Logic' but _current_section_topic='modal logic', so the strings never match, every successor is skipped, and the tree collapses to a flat list. Only all-lowercase topics (e.g. 'modal-logic') ever showed the tree; Title-Case topics ('Modal Logic', 'Code Hygiene', etc.) always rendered flat. FIX (already validated live in the deployed Projects/cslib copy): lowercase both sides of both comparisons — line 578 -> `\"${dep_topic,,}\" != \"$_current_section_topic\"` and line 553 -> `\"${task_topic_val,,}\" != \"$_current_section_topic\"`. After the fix the 491->495->496->484 chain indents correctly under a single Modal Logic heading. APPLY TO: (1) source-of-truth .claude/extensions/core/scripts/generate-task-order.sh (lines 553, 578); (2) mirror the same two-line change to .opencode/scripts/generate-task-order.sh (lines 481, 506) for OpenCode parity. The deployed .claude/scripts/generate-task-order.sh is regenerated from the core extension on load, so editing the core source is what persists; do not rely on the standalone .claude/scripts copy. VERIFY: after editing, run `bash .claude/scripts/generate-todo.sh` (or a fixture) on a state.json containing a Title-Case topic with an intra-topic dependency chain and confirm the '└─' indentation appears. RELATED REFINEMENT (optional, same file): the topic grouping key lowercases but does NOT normalize separators, so 'Modal Logic' and 'modal-logic' hash to different keys ('modal logic' vs 'modal-logic') and produce TWO identical-looking '### Modal Logic' headings. Consider normalizing hyphen<->space (and maybe collapsing whitespace) in the grouping key so case- and separator-variant topic strings collapse into one section, preventing duplicate headings. CONTEXT: discovered in Projects/cslib while normalizing kebab-case topic values to Title-Case, which merged two duplicate Modal Logic sections but exposed this latent case-sensitivity bug.",
-      "last_updated": "2026-07-14T15:57:43Z",
-      "session_id": "sess_859_implement_topic_normalization"
+      "last_updated": "2026-07-14T16:14:03Z",
+      "session_id": "sess_859_implement_topic_normalization",
+      "completion_summary": "Introduced a single canonical normalize_topic() helper (lowercase kebab-case) and routed it through manage-topics.sh (write) and both generate-task-order.sh renderers (.claude core + .opencode, read/grouping), fixing the origin case-mismatch bug, preventing duplicate case/separator headings, adding an autonomous-context directive, and documenting the topic/active_topics schema fields. Verified zero migration needed for this repo's existing topic data."
     },
     {
       "project_number": 857,
