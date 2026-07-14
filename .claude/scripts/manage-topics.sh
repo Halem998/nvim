@@ -47,6 +47,18 @@ fi
 # --- Ensure tmp directory exists ---
 mkdir -p "$TMP_DIR"
 
+# normalize_topic: canonical topic form (lowercase kebab-case).
+# CANONICAL DEFINITION -- keep byte-identical across manage-topics.sh and both
+# generate-task-order.sh copies (core extension + .opencode). No task-number references.
+normalize_topic() {
+  local t="${1,,}"
+  t="${t//_/-}"
+  t="$(printf '%s' "$t" | tr -s '[:space:]' '-')"
+  t="$(printf '%s' "$t" | tr -s '-')"
+  t="${t#-}"; t="${t%-}"
+  printf '%s' "$t"
+}
+
 # --- Subcommand dispatch ---
 SUBCMD="${1:-}"
 
@@ -68,6 +80,7 @@ case "$SUBCMD" in
       echo "Usage: $0 add TOPIC" >&2
       exit 1
     fi
+    TOPIC="$(normalize_topic "$TOPIC")"
 
     # Use index($t) == null pattern (safe under Claude Code Issue #1132 — no != operator)
     jq --arg t "$TOPIC" \
@@ -105,6 +118,7 @@ case "$SUBCMD" in
       echo "Error: TASK_NUM must be a positive integer, got '$TASK_NUM'" >&2
       exit 1
     fi
+    TOPIC="$(normalize_topic "$TOPIC")"
 
     # Validate task exists
     task_exists=$(jq -r --arg num "$TASK_NUM" \
@@ -147,6 +161,8 @@ case "$SUBCMD" in
       echo "Usage: $0 validate TOPIC" >&2
       exit 1
     fi
+    # Normalize before comparison so e.g. validate "Modal Logic" matches a stored "modal-logic".
+    TOPIC="$(normalize_topic "$TOPIC")"
 
     found=$(jq -r --arg t "$TOPIC" \
       'if ((.active_topics // []) | index($t)) == null then "no" else "yes" end' \
