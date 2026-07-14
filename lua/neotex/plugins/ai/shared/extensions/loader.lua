@@ -748,22 +748,90 @@ function M.check_conflicts(manifest, target_dir, project_dir)
   return conflicts
 end
 
---- Remove installed files
+--- Find the first symlinked ancestor directory of a path, bounded below root.
+--- Walks upward from the path's parent directory. Stops without inspecting
+--- `root` itself (or anything above it): the walk only ever tests strict
+--- descendants of `root`. This bound is load-bearing -- an unbounded walk
+--- would find a symlinked project root (a common stow/dotfiles setup) and
+--- classify every deployed file as symlink-descended, silently turning
+--- unload into a no-op.
+--- @param path string Path whose ancestor directories are inspected
+--- @param root string Directory the walk must not reach or cross
+--- @return string|nil ancestor The first symlinked ancestor found, or nil
+local function find_symlinked_ancestor(path, root)
+  local root_norm = root:gsub("/+$", "")
+  local current = vim.fn.fnamemodify(path, ":h")
+
+  while current ~= root_norm and current:sub(1, #root_norm + 1) == root_norm .. "/" do
+    if vim.fn.getftype(current) == "link" then
+      return current
+    end
+    local parent = vim.fn.fnamemodify(current, ":h")
+    if parent == current then
+      -- Filesystem-root guard: stop rather than loop forever.
+      return nil
+    end
+    current = parent
+  end
+
+  return nil
+end
+
+--- Remove installed files.
+---
+--- Ownership invariant: this copy engine owns only paths it created as
+--- regular files. Symlinked deployed paths -- whether the deployed path
+--- itself is a symlink, or a plain file reached through a symlinked
+--- ancestor directory -- belong to install-extension.sh and are never
+--- deleted here. This distinction matters because of POSIX unlink()
+--- semantics: deleting a symlink-to-file removes only the link (safe), but
+--- deleting a plain file reached through a symlinked ancestor directory
+--- destroys the real target, since only the final path component's own
+--- symlink-ness is consulted during deletion and ancestor-directory
+--- symlinks are followed transparently by path resolution.
 --- @param installed_files table Array of file paths to remove
 --- @param installed_dirs table Array of directory paths to remove
+--- @param opts table|nil Options: { project_dir = string|nil }. When
+---   `project_dir` is set, the ancestor walk is bounded strictly below it.
+---   When absent, the walk cannot be safely bounded, so any path involving
+---   a symlink anywhere (`vim.fn.resolve(path) ~= path`) is skipped rather
+---   than walked -- refusing to delete is always the safe direction.
 --- @return number removed_count Number of files removed
-function M.remove_installed_files(installed_files, installed_dirs)
+--- @return number skipped_count Number of files skipped for symlink reasons
+function M.remove_installed_files(installed_files, installed_dirs, opts)
+  opts = opts or {}
   local removed_count = 0
+  local skipped_count = 0
 
   -- Remove files first
   for _, filepath in ipairs(installed_files) do
     if vim.fn.filereadable(filepath) == 1 then
-      vim.fn.delete(filepath)
-      removed_count = removed_count + 1
+      local is_symlink = vim.fn.getftype(filepath) == "link"
+      local ancestor_symlinked = false
+
+      if not is_symlink then
+        if opts.project_dir then
+          ancestor_symlinked = find_symlinked_ancestor(filepath, opts.project_dir) ~= nil
+        else
+          -- Fail-safe: no project_dir to bound the walk, so skip anything
+          -- symlink-involved rather than deleting through an unbounded walk.
+          ancestor_symlinked = vim.fn.resolve(filepath) ~= filepath
+        end
+      end
+
+      if is_symlink or ancestor_symlinked then
+        skipped_count = skipped_count + 1
+      else
+        vim.fn.delete(filepath)
+        removed_count = removed_count + 1
+      end
     end
   end
 
-  -- Remove directories (in reverse order to handle nested dirs)
+  -- Remove directories (in reverse order to handle nested dirs).
+  -- vim.fn.readdir() on a symlinked directory reports the target
+  -- directory's contents, so a non-empty result here already prevents
+  -- removal -- no additional symlink check is needed in this loop.
   local sorted_dirs = {}
   for _, dir in ipairs(installed_dirs) do
     table.insert(sorted_dirs, dir)
@@ -781,7 +849,7 @@ function M.remove_installed_files(installed_files, installed_dirs)
     end
   end
 
-  return removed_count
+  return removed_count, skipped_count
 end
 
 return M
