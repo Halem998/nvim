@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Add and Wire check_deployed_rule_drift (DUAL WRITE)",
+  "started_at": "2026-07-14T00:05:00Z",
+  "last_updated": "2026-07-14T00:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add check_deployed_rule_drift() to .claude/scripts/check-extension-docs.sh", "status": "done", "files_touched": [".claude/scripts/check-extension-docs.sh"]},
+    {"id": 2, "description": "Add doc comment above new function", "status": "done", "files_touched": [".claude/scripts/check-extension-docs.sh"]},
+    {"id": 3, "description": "Wire check_deployed_rule_drift into dispatch block near check_undeclared_rules", "status": "done", "files_touched": [".claude/scripts/check-extension-docs.sh"]},
+    {"id": 4, "description": "Verify bash -n on edited copy", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Dual write: cp to extension source copy", "status": "done", "files_touched": [".claude/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 6, "description": "Dual write confirmation: diff -q no output", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Confirm no task-number references introduced", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

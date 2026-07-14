@@ -14,6 +14,9 @@
 #   - deployed .claude/scripts/<name> content drift from its extension-source counterpart, for
 #     each manifest.provides.scripts entry where both copies exist (never-deployed extension-only
 #     scripts are skipped, not failed)
+#   - deployed .claude/rules/<name> content drift from its extension-source counterpart, for
+#     each manifest.provides.rules entry where both copies exist (never-deployed extension-only
+#     rules are skipped, not failed)
 #   - README.md older than manifest.json (potential drift)
 #   - commands listed in manifest but not mentioned in README.md
 #
@@ -165,6 +168,42 @@ check_deployed_script_drift() {
 
     if ! cmp -s "$deployed" "$source"; then
       fail "deployed script content drift (deployed != extension source): scripts/$s"
+    fi
+  done
+}
+
+# Rule I: Deployed-vs-source content drift for manifest.provides.rules entries.
+#
+# Mirrors check_deployed_script_drift (Rule F) for the rules category. Rules deploy by
+# byte-for-byte copy from <extension>/rules/<name> to .claude/rules/<name> via the same sync
+# mechanism as scripts. If a rule is later hotfixed directly in the deployed .claude/rules/
+# copy (instead of the extension source), that fix silently regresses on the next sync.
+#
+# CRITICAL: only compare when BOTH copies exist. An extension's rules are not deployed in
+# every consuming repo -- an absent deployed copy is NOT drift and must be skipped (with an
+# info note), never a FAIL.
+check_deployed_rule_drift() {
+  local ext_path="$1"
+  local manifest="$ext_path/manifest.json"
+
+  local rules
+  rules=$(jq -r '.provides.rules[]? // empty' "$manifest" 2>/dev/null)
+  local r deployed source
+  for r in $rules; do
+    deployed="$REPO_ROOT/.claude/rules/$r"
+    source="$ext_path/rules/$r"
+
+    if [[ ! -f "$deployed" ]]; then
+      info "rule not deployed, skipping drift check: $r"
+      continue
+    fi
+    if [[ ! -f "$source" ]]; then
+      # Already reported by check_manifest_entries; do not double-report here.
+      continue
+    fi
+
+    if ! cmp -s "$deployed" "$source"; then
+      fail "deployed rule content drift (deployed != extension source): rules/$r"
     fi
   done
 }
@@ -548,6 +587,7 @@ for ext_path in "$EXT_DIR"/*/; do
       check_routing_block "$ext_path"
       check_undeclared_skills "$ext_path"
       check_undeclared_rules "$ext_path"
+      check_deployed_rule_drift "$ext_path"
       check_routing_consistency "$ext_path"
       check_deployed_skill_agents "$ext_path"
       check_readme_vs_manifest "$ext_path"
