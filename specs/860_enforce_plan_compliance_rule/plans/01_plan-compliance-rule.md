@@ -230,15 +230,16 @@ echo "PASS: Phase 1"
 
 ---
 
-### Phase 2: Register the rule in the lean manifest [NOT STARTED]
+### Phase 2: Register the rule in the lean manifest [COMPLETED]
 
 **Goal**: Make the rule actually propagate. This is the load-bearing phase.
 
 **Tasks**:
-- [ ] Add `"plan-compliance.md"` to `.claude/extensions/lean/manifest.json` →
-      `provides.rules` (currently `["lean4.md"]`)
-- [ ] Preserve JSON formatting/indentation consistent with the file's existing style
-- [ ] Run the doc-lint script and confirm no new failures
+- [x] Add `"plan-compliance.md"` to `.claude/extensions/lean/manifest.json` →
+      `provides.rules` (currently `["lean4.md"]`) *(completed)*
+- [x] Preserve JSON formatting/indentation consistent with the file's existing style *(completed)*
+- [x] Run the doc-lint script and confirm no new failures *(completed: exit 0, only pre-existing
+      "extension not installed" WARNs, no new FAILs)*
 
 **Timing**: 20 minutes
 

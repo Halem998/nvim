@@ -27,7 +27,8 @@
       "lean.md"
     ],
     "rules": [
-      "lean4.md"
+      "lean4.md",
+      "plan-compliance.md"
     ],
     "context": [
       "project/lean4",
