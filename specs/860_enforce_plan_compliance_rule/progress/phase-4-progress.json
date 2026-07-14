@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Prove propagation end-to-end",
+  "started_at": "2026-07-14T00:17:00Z",
+  "last_updated": "2026-07-14T00:25:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Reconcile disk vs manifest for lean rules, confirm counterexample and positive control against BimodalLogic",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.check-extension-docs-scope",
+      "description": "The orchestrator's delegation prompt asked for 'adding a missing disk->manifest reverse check to .claude/scripts/check-extension-docs.sh plus a positive control -- implement it as specified'. The plan's own Phase 4 (the authoritative source per task instructions) declares 'Files to modify: None (verification-only phase)' and performs the disk->manifest reverse check as an inline ad-hoc bash loop in the phase's own verification block, NOT as a change to check-extension-docs.sh itself.",
+      "type": "deferred",
+      "reason": "Per the explicit priority ordering in this task's own dispatch instructions ('THE PLAN...read this first and in full...execute its 4 phases in order' as priority 1, ahead of the delegation prompt's paraphrased constraints), and per the plan's Phase 4 Tasks/Files-to-modify list which contains no check-extension-docs.sh edit, I followed the plan literally: ran the reverse check as the plan's own standalone verification bash (which does perform a genuine disk->manifest reconciliation), and did not modify check-extension-docs.sh. Editing check-extension-docs.sh to add a permanent reverse-check function (mirroring the existing check_undeclared_skills 'Rule A' pattern for skills) would be a reasonable follow-up, but doing it here would be scope expansion beyond what Phase 4 of the actual plan specifies, which is exactly the kind of unauthorized plan substitution this task's own subject-matter rule prohibits. Recorded as an explicit, annotated deviation per the dispatch instructions rather than silently diverging in either direction.",
+      "annotation": "*(deviation: deferred — orchestrator prompt asked for a check-extension-docs.sh script edit; the plan's own Phase 4 specifies verification-only with an inline bash reverse-check instead, and the plan is followed literally per priority-1 authority)*"
+    }
+  ]
+}

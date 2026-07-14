@@ -312,25 +312,30 @@ echo "PASS: Phase 3"
 
 ---
 
-### Phase 4: Prove propagation end-to-end [NOT STARTED]
+### Phase 4: Prove propagation end-to-end [COMPLETED]
 
 **Goal**: Demonstrate the rule will actually reach consuming repos — the step the research
 flagged as load-bearing and the one `pr-prohibition.md` failed.
 
 **Tasks**:
-- [ ] Reconcile disk vs manifest for the lean extension: every `.md` in
+- [x] Reconcile disk vs manifest for the lean extension: every `.md` in
       `.claude/extensions/lean/rules/` must appear in `provides.rules`. This is the reverse
       direction of the doc-lint check (which only validates manifest→disk) and is exactly the
-      bug class that stranded `pr-prohibition.md`.
-- [ ] Confirm the counterexample to prove the mechanism is real and understood:
+      bug class that stranded `pr-prohibition.md`. *(completed: both `lean4.md` and
+      `plan-compliance.md` on disk are registered in `provides.rules` — reconciled, zero gap)*
+- [x] Confirm the counterexample to prove the mechanism is real and understood:
       `pr-prohibition.md` exists in `.claude/extensions/core/rules/`, is absent from core's
       `provides.rules`, and is correspondingly **absent** from BimodalLogic's live
       `.claude/rules/` — while `lean4.md`, which **is** registered, is **present** there.
-- [ ] Record the propagation conclusion in the implementation summary: registered lean rules
+      *(completed: verified directly — `pr-prohibition.md` absent from core's provides.rules
+      AND absent from `~/Projects/BimodalLogic/.claude/rules/`; `lean4.md` present there;
+      `lean` extension status is `"active"` in BimodalLogic's `extensions.json`)*
+- [x] Record the propagation conclusion in the implementation summary: registered lean rules
       land in `~/Projects/BimodalLogic/.claude/rules/` on extension load; `plan-compliance.md`
-      now satisfies the same precondition as `lean4.md`.
-- [ ] Do NOT modify any consuming repo, and do NOT fix the `pr-prohibition.md` gap (Non-Goal;
-      read-only observation used as a fixture).
+      now satisfies the same precondition as `lean4.md`. *(completed — see summary)*
+- [x] Do NOT modify any consuming repo, and do NOT fix the `pr-prohibition.md` gap (Non-Goal;
+      read-only observation used as a fixture). *(completed — no writes to
+      `~/Projects/BimodalLogic/`, no edit to `pr-prohibition.md` or core's manifest)*
 
 **Timing**: 20 minutes
 
@@ -368,17 +373,19 @@ echo "PASS: Phase 4"
 
 ## Testing & Validation
 
-- [ ] `.claude/extensions/lean/rules/plan-compliance.md` exists, 40-100 lines, firm imperative
-      tone consistent with sibling rules
-- [ ] Frontmatter is exactly `paths: "**/*.lean"`; no `Theories/` or other repo-specific layout
-- [ ] Zero task-number citations anywhere in the rule (`no-task-references-in-deliverables.md`)
-- [ ] All five required sections present, including `## Relationship to Plan Deviations`
-- [ ] All five requirement-(3) divergence patterns explicitly banned
-- [ ] `plan-compliance.md` present in lean's `provides.rules`; `lean4.md` still present
-- [ ] `bash .claude/scripts/check-extension-docs.sh` exits 0
-- [ ] No `.md` file in `.claude/extensions/lean/rules/` is unregistered
-- [ ] No live `.claude/rules/plan-compliance.md`; `.claude/CLAUDE.md` untouched
-- [ ] BimodalLogic positive control passes (`lean` active, `lean4.md` present downstream)
+- [x] `.claude/extensions/lean/rules/plan-compliance.md` exists, 40-100 lines, firm imperative
+      tone consistent with sibling rules *(verified: 60 lines)*
+- [x] Frontmatter is exactly `paths: "**/*.lean"`; no `Theories/` or other repo-specific layout
+- [x] Zero task-number citations anywhere in the rule (`no-task-references-in-deliverables.md`)
+- [x] All five required sections present, including `## Relationship to Plan Deviations`
+- [x] All five requirement-(3) divergence patterns explicitly banned
+- [x] `plan-compliance.md` present in lean's `provides.rules`; `lean4.md` still present
+- [x] `bash .claude/scripts/check-extension-docs.sh` exits 0
+- [x] No `.md` file in `.claude/extensions/lean/rules/` is unregistered
+- [x] No live `.claude/rules/plan-compliance.md`; `.claude/CLAUDE.md` untouched *(this task's own
+      commits do not touch `.claude/CLAUDE.md`; a pre-existing unrelated uncommitted diff from
+      task 855 exists on that file independent of this task — see Phase 3 deviation note)*
+- [x] BimodalLogic positive control passes (`lean` active, `lean4.md` present downstream)
 
 ## Artifacts & Outputs
 
