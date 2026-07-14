@@ -7,6 +7,8 @@
 #   - missing manifest.json
 #   - manifest entries referencing nonexistent files (agents, skills, commands, rules, scripts,
 #     context)
+#   - rule files present in an extension's rules/ but absent from its provides.rules (reverse
+#     direction: an unregistered rule never deploys and never reaches consuming repos)
 #   - dangling .claude/context/contracts/*.md references in deployed skills/agents/rules that do
 #     not resolve to an existing file in this project (project-wide, not per-extension)
 #   - deployed .claude/scripts/<name> content drift from its extension-source counterpart, for
@@ -204,6 +206,36 @@ check_undeclared_skills() {
     if ! jq -e --arg s "$skill_name" '.provides.skills[]? | select(. == $s)' \
         "$manifest" > /dev/null 2>&1; then
       fail "skill dir on disk NOT in provides.skills: $skill_name"
+    fi
+  done
+}
+
+# Rule H: Undeclared rule files in extension source not in provides.rules.
+#
+# Reverse direction of check_manifest_entries' rules loop, which only validates that declared
+# entries exist on disk. This catches the opposite bug: a rule file that exists on disk but was
+# never added to provides.rules, so copy_file()/the "Load Core" allow-list never deploys it and
+# consuming repos silently never receive it. Mirrors check_undeclared_skills (Rule A) for the
+# rules category.
+#
+# Motivating case: core/rules/pr-prohibition.md existed on disk, was absent from core's
+# provides.rules, and was correspondingly absent from every consuming repo's .claude/rules/ --
+# meaning the rule barring agents from creating PRs and pushing to remotes never propagated
+# downstream. Because it was unregistered, the loader also never overwrote its deployed copy, so
+# the live version silently accumulated 35 lines of content absent from the extension source.
+check_undeclared_rules() {
+  local ext_path="$1"
+  local manifest="$ext_path/manifest.json"
+
+  [[ -d "$ext_path/rules" ]] || return 0
+
+  local rule_file rule_name
+  for rule_file in "$ext_path/rules/"*.md; do
+    [[ -f "$rule_file" ]] || continue
+    rule_name=$(basename "$rule_file")
+    if ! jq -e --arg r "$rule_name" '.provides.rules[]? | select(. == $r)' \
+        "$manifest" > /dev/null 2>&1; then
+      fail "rule file on disk NOT in provides.rules: rules/$rule_name"
     fi
   done
 }
@@ -515,6 +547,7 @@ for ext_path in "$EXT_DIR"/*/; do
       check_deployed_script_drift "$ext_path"
       check_routing_block "$ext_path"
       check_undeclared_skills "$ext_path"
+      check_undeclared_rules "$ext_path"
       check_routing_consistency "$ext_path"
       check_deployed_skill_agents "$ext_path"
       check_readme_vs_manifest "$ext_path"
