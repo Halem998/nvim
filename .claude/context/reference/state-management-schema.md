@@ -13,6 +13,7 @@ Complete schema reference for state.json, TODO.md, and artifact formats. For beh
       "project_name": "task_slug_here",
       "status": "planned",
       "task_type": "general",
+      "topic": "agent-system",
       "effort": "4 hours",
       "created": "2026-01-08T10:00:00Z",
       "last_updated": "2026-01-08T14:30:00Z",
@@ -28,6 +29,7 @@ Complete schema reference for state.json, TODO.md, and artifact formats. For beh
       "roadmap_items": ["Optional explicit roadmap item text to match"]
     }
   ],
+  "active_topics": ["agent-system", "neovim", "nix-config"],
   "repository_health": {
     "last_assessed": "2026-01-29T18:38:22Z",
     "status": "healthy"
@@ -63,6 +65,7 @@ Complete schema reference for state.json, TODO.md, and artifact formats. For beh
 | `project_name` | string | Yes | Snake_case slug from title |
 | `status` | string | Yes | Current status (see Status Values) |
 | `task_type` | string | Yes | Task type for routing (see Task Type Values). Bare values (`meta`, `general`) or compound `extension:subtype` (`present:grant`, `founder:deck`) |
+| `topic` | string | Yes | Canonical topic grouping key, lowercase kebab-case (e.g. `agent-system`). Normalized and maintained exclusively via `manage-topics.sh` — see Topic Fields below |
 | `effort` | string | No | Estimated effort |
 | `created` | string | Yes | ISO8601 creation timestamp |
 | `last_updated` | string | Yes | ISO8601 last update timestamp |
@@ -109,6 +112,29 @@ The `task_type` field is the unified routing field for all tasks. It replaces th
 | `markdown` | Documentation tasks |
 
 **Extension Task Types** (when extensions loaded): See `.claude/extensions/*/manifest.json`.
+
+### Topic Fields (`topic`, `active_topics`)
+
+Two related, mandatory-in-practice fields group tasks for the Grouped-by-Topic dependency tree
+rendered by `generate-task-order.sh`:
+
+| Field | Location | Type | Description |
+|-------|----------|------|--------------|
+| `topic` | per-project entry (`active_projects[].topic`) | string | The task's assigned topic |
+| `active_topics` | top-level array | array of strings | The registry of all topics currently in use across tasks |
+
+**Canonical form**: lowercase kebab-case (e.g. `agent-system`, `modal-logic`) — lowercase,
+whitespace/underscores collapsed to a single `-`, repeated `-` collapsed, no leading/trailing
+`-`. This form is enforced, not merely a hint: both fields are normalized at write time by
+`manage-topics.sh` (`add`/`set`/`validate` subcommands), which is the sole chokepoint for
+mutating either field. Never write `topic` or `active_topics` via inline `jq` in a command or
+skill — always call `manage-topics.sh`.
+
+Normalization at the write chokepoint keeps case- and separator-variant spellings of the same
+topic (e.g. `Modal Logic`, `modal_logic`, `modal-logic`) from creating duplicate `active_topics`
+entries or duplicate headings in the rendered dependency tree. See
+`.claude/context/patterns/topic-assignment-pattern.md` for the full assignment-mode picker
+(Interactive / Inherit / Suggest) and the autonomous-context deterministic-default directive.
 
 ### Unified Artifact Numbering (next_artifact_number)
 

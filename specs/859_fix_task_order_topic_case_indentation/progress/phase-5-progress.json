@@ -1,0 +1,13 @@
+{
+  "phase": 5,
+  "phase_name": "Document topic and active_topics in the schema reference",
+  "started_at": "2026-07-14T16:11:00Z",
+  "last_updated": "2026-07-14T16:14:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add topic field row and active_topics documentation to state-management-schema.md", "status": "done", "files_touched": [".claude/context/reference/state-management-schema.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

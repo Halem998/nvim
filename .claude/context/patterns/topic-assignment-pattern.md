@@ -216,6 +216,32 @@ fi
 
 ---
 
+## Autonomous Context
+
+When `orchestrator_mode == true` (e.g. `/orchestrate`), no human is available to answer an
+`AskUserQuestion` prompt, so callers of Mode A (including its universal-fallback invocations
+from Mode B and Mode C) MUST NOT invoke `AskUserQuestion` for topic assignment. This mirrors the
+`--lit` flag's deterministic-default directive for the equivalent autonomous-context gap (see
+CLAUDE.md's Literature Mode section, "Global index exists, sub-index missing, autonomous
+context" subsection, directive `AUTONOMOUS_GLOBAL`).
+
+**Deterministic default** (apply in order, stop at the first that resolves):
+
+1. **Inherit** — if a parent/source topic exists (the Mode B path), use it.
+2. **Infer** — else, if the Mode C path heuristic resolves a topic from the relevant file path,
+   use it.
+3. **Sentinel + notice** — else, leave the task's `topic` field unset (do not fabricate a value)
+   and emit a visible `[topic:auto]` notice to the transcript stating that topic assignment was
+   skipped because no parent topic could be inherited, no path heuristic matched, and no human
+   was available to prompt. This is never a silent no-op.
+
+This directive is currently latent: no autonomous caller reaches the topic picker today (all
+`/spawn`, `/fix-it`, and `/review` invocations run in interactive contexts). It is documented
+here so a future autonomous caller has a defined path instead of dead-ending on
+`AskUserQuestion`. It does not require any change to `/spawn`, `/fix-it`, or `/review` today.
+
+---
+
 ## State Update Reference
 
 All state mutations go through `manage-topics.sh`. Never write jq topic snippets inline.

@@ -245,23 +245,23 @@ renderer by applying the same normalizer; explicitly scope out `.opencode/` writ
 
 ---
 
-### Phase 4: Autonomous-context deterministic-default directive for topic assignment [NOT STARTED]
+### Phase 4: Autonomous-context deterministic-default directive for topic assignment [COMPLETED]
 
 **Goal**: Add a minimal deterministic-default fallback so a future autonomous task-creation path
 never dead-ends on `AskUserQuestion`, mirroring the `--lit` flag's `AUTONOMOUS_GLOBAL` pattern.
 
 **Tasks**:
-- [ ] In `.claude/context/patterns/topic-assignment-pattern.md`, add a short "Autonomous Context"
+- [x] In `.claude/context/patterns/topic-assignment-pattern.md`, add a short "Autonomous Context"
       subsection: when `orchestrator_mode == true`, callers MUST NOT invoke `AskUserQuestion`. The
       deterministic default is: (1) inherit the parent topic if one exists (Mode B), else (2) apply
       the Mode C path heuristic if it resolves, else (3) assign a documented sentinel/leave
       unassigned and emit a visible `[topic:auto]` notice to the transcript. This is never a silent
-      no-op — mirror the `[lit:auto]` notice contract.
-- [ ] Keep it a documented directive only (the gap is latent — no autonomous caller reaches the
-      picker today, per Finding 5). Do NOT rewire `/spawn`, `/fix-it`, or `/review`.
-- [ ] Cross-reference the `--lit` `AUTONOMOUS_GLOBAL` directive by durable anchor (its section name),
-      not by any task number.
-- [ ] Do NOT add any task-number reference.
+      no-op — mirror the `[lit:auto]` notice contract. *(completed)*
+- [x] Keep it a documented directive only (the gap is latent — no autonomous caller reaches the
+      picker today, per Finding 5). Do NOT rewire `/spawn`, `/fix-it`, or `/review`. *(completed: directive only, no callers rewired)*
+- [x] Cross-reference the `--lit` `AUTONOMOUS_GLOBAL` directive by durable anchor (its section name),
+      not by any task number. *(completed)*
+- [x] Do NOT add any task-number reference. *(completed: verified clean)*
 
 **Timing**: 0.75 hours
 
@@ -277,21 +277,21 @@ never dead-ends on `AskUserQuestion`, mirroring the `--lit` flag's `AUTONOMOUS_G
 
 ---
 
-### Phase 5: Document `topic` and `active_topics` in the schema reference [NOT STARTED]
+### Phase 5: Document `topic` and `active_topics` in the schema reference [COMPLETED]
 
 **Goal**: Close the schema documentation gap so both mandatory fields are documented, including the
 canonical form and its write-time enforcement.
 
 **Tasks**:
-- [ ] In `.claude/context/reference/state-management-schema.md`, add a `topic` row to the "Project
+- [x] In `.claude/context/reference/state-management-schema.md`, add a `topic` row to the "Project
       Entry Fields" table (string; the canonical topic, lowercase kebab-case; maintained via
-      `manage-topics.sh`; normalized at write time).
-- [ ] Add `active_topics` to the "state.json Full Structure" JSON example (top-level array) and add a
+      `manage-topics.sh`; normalized at write time). *(completed)*
+- [x] Add `active_topics` to the "state.json Full Structure" JSON example (top-level array) and add a
       short `active_topics` subsection: top-level array, canonical form lowercase kebab-case,
       maintained exclusively through `manage-topics.sh`, normalized on write so case/separator
-      variants cannot diverge.
-- [ ] Note the canonical form once, authoritatively, and reference `manage-topics.sh` by filename
-      (durable anchor). Do NOT add any task-number reference.
+      variants cannot diverge. *(completed: added Topic Fields subsection)*
+- [x] Note the canonical form once, authoritatively, and reference `manage-topics.sh` by filename
+      (durable anchor). Do NOT add any task-number reference. *(completed: verified clean)*
 
 **Timing**: 0.5 hours
 
