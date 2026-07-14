@@ -1,7 +1,68 @@
 {
   "version": "1.1.0",
-  "next_project_number": 863,
+  "next_project_number": 866,
   "active_projects": [
+    {
+      "project_number": 863,
+      "project_name": "relocate_extension_source_store_out_of_claude",
+      "status": "not_started",
+      "task_type": "neovim",
+      "topic": "extensions",
+      "title": "Relocate extension source store out of .claude/",
+      "description": "Relocate the extension source store OUT of any deployed .claude/ tree so that .claude/ can become a pure, disposable copy-deploy build artifact regenerable from the <leader>al picker after deletion. This is the UNLOCKING change and must land FIRST.\n\nCONTEXT: The loader already deploys into the current working directory (lua/neotex/plugins/ai/shared/extensions/init.lua:238 `local project_dir = opts.project_dir or vim.fn.getcwd()`; deploy target = project_dir .. \"/\" .. config.base_dir = $CWD/.claude, init.lua:79). Sources are read from a GLOBAL root `global_extensions_dir` defaulting to ~/.config/nvim/.claude/extensions (config.lua:55 in the M.claude preset; global_dir defaults to vim.fn.expand(\"~/.config/nvim\")). The picker `list_extensions` reads from config.global_extensions_dir and returns empty if that dir is absent (manifest.lua:171-178). The ONLY reason ~/.config/nvim cannot self-rebuild today is that its source store (.claude/extensions/) physically lives INSIDE its own deploy target; every OTHER working directory can already delete-and-regenerate because source and target are different trees.\n\nREQUIRED: Physically move .claude/extensions/ to a sibling location NOT under any deployed .claude/ (candidate: ~/.config/nvim/agent-system/extensions/, or another non-.claude path the research phase should evaluate). Repoint global_extensions_dir in config.lua:55 (M.claude preset) to the new store. Adjust how manifest.lua and init.lua resolve the store ONLY if needed. Verify: (1) the picker lists extensions from the new location; (2) deploying into an arbitrary $CWD/.claude still works; (3) ~/.config/nvim itself now rebuilds like any other project (its .claude/ is a disposable deploy target with no source inside it).\n\nFILE SCOPE centers on lua/neotex/plugins/ai/shared/extensions/config.lua plus the physical relocation of the store; touches manifest.lua/init.lua store-resolution only if required.\n\nCROSS-CUTTING CONSTRAINTS: Copy-deploy only, NO symlink farm (the user explicitly rejected symlinks; absolute source paths would also leak across arbitrary project directories). All destructive loader testing happens in the scratchpad against fake project dirs, NEVER against the real ~/.config/nvim/.claude tree (this loader had a live data-loss bug recently). Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.\n\nDESIRED END STATE (shared across this sequence): .claude/ in any CWD is 100% disposable build output (nothing hand-authored, no source, no state, no orphans); one global source store lives OUTSIDE any .claude/; the invariant `.claude/ == deploy(store, selection)` holds. Foundation already landed and MUST be built on, not recreated: a deployed-vs-source rule drift check (check_deployed_rule_drift) and a symlink-safe remove path in loader.lua.",
+      "dependencies": [],
+      "file_scope": [
+        "lua/neotex/plugins/ai/shared/extensions/config.lua",
+        "lua/neotex/plugins/ai/shared/extensions/manifest.lua",
+        "lua/neotex/plugins/ai/shared/extensions/init.lua"
+      ],
+      "created": "2026-07-14T22:58:04Z",
+      "last_updated": "2026-07-14T22:58:04Z",
+      "session_id": "sess_1784069750_5427d7",
+      "artifacts": []
+    },
+    {
+      "project_number": 864,
+      "project_name": "enforce_every_deployed_file_has_a_source",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "extensions",
+      "title": "Enforce every deployed file has a source (hard drift gate)",
+      "description": "Enforce the invariant \"every deployed file has a source\" by extending the deployed-vs-source drift check into a hard gate, and by giving every deployed-only orphan a real source home in the core extension. Order this AFTER the store-relocation task (the check compares deployed output against the relocated store).\n\nCONTEXT: The existing rule-drift check (check_deployed_rule_drift in .claude/scripts/check-extension-docs.sh) currently covers only provides.rules. Deployed-only ORPHANS with no source exist today and would vanish on a clean rebuild: .claude/rules/no-task-references-in-deliverables.md (declared in core manifest but no source file under core/rules/), .claude/commands/README.md, and ~4 standalone scripts under .claude/scripts/.\n\nREQUIRED: (1) Extend the deployed-vs-source drift check in .claude/scripts/check-extension-docs.sh beyond provides.rules to ALL provides categories (agents, commands, context, scripts), following the per-category convention divergences already documented: agents needs an agents_subdir parameter; context needs recursive directory comparison. (2) Give the deployed-only orphans a source home in the core extension so nothing deployed is unsourced: no-task-references-in-deliverables.md, commands/README.md, and the ~4 standalone scripts. (3) Make the check a HARD gate (exit non-zero on any unsourced deployed file), proving the disposable-output invariant holds.\n\nDUAL-WRITE HAZARD (mandatory): check-extension-docs.sh has a dual copy at .claude/extensions/core/scripts/check-extension-docs.sh and the script lints itself. Every edit must land BYTE-IDENTICAL in both .claude/scripts/check-extension-docs.sh and .claude/extensions/core/scripts/check-extension-docs.sh.\n\nCROSS-CUTTING CONSTRAINTS: Copy-deploy only, no symlink farm. All destructive loader testing in the scratchpad against fake project dirs, never against the real .claude tree. Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**. Build on (do not recreate) the already-landed check_deployed_rule_drift and the symlink-safe remove path in loader.lua.",
+      "dependencies": [
+        863
+      ],
+      "file_scope": [
+        ".claude/scripts/check-extension-docs.sh",
+        ".claude/extensions/core/scripts/check-extension-docs.sh",
+        ".claude/extensions/core/rules/no-task-references-in-deliverables.md",
+        ".claude/extensions/core/commands/README.md"
+      ],
+      "created": "2026-07-14T22:58:04Z",
+      "last_updated": "2026-07-14T22:58:04Z",
+      "session_id": "sess_1784069750_5427d7",
+      "artifacts": []
+    },
+    {
+      "project_number": 865,
+      "project_name": "make_claude_wipe_lossless_and_regenerable",
+      "status": "not_started",
+      "task_type": "neovim",
+      "topic": "extensions",
+      "title": "Make .claude/ wipe lossless and one-keystroke regenerable",
+      "description": "Make a .claude/ wipe lossless and one-keystroke regenerable by lifting all wipe-surviving state OUT of .claude/. Depends on the store-relocation task (the deploy/target model); can land in parallel with or after the drift-check-hardening task.\n\nCONTEXT: Selection/state is currently written INSIDE the deployed tree, so a wipe destroys it. get_state_path = project_dir .. \"/\" .. config.base_dir .. \"/\" .. config.state_file = $CWD/.claude/extensions.json (state.lua:71). settings.json and logs/ also currently live under .claude/ but are input/runtime, not build output. specs/ is already correctly at project root and is the model to follow.\n\nREQUIRED: (1) Move the selection manifest extensions.json from $CWD/.claude/extensions.json to a project-root location that survives a wipe (candidate: $CWD/.agent-extensions.json; research to confirm the name) so regenerate can skip re-picking, and so a project can optionally commit the file to pin its extension set. (2) Move settings.json and logs/ out of .claude/ (they are input/runtime, not output). (3) Update state.lua get_state_path and ALL readers/writers of the moved state. (4) Include a headless-nvim verification that constructs a FAKE project dir in the scratchpad, deploys, deletes .claude/, and regenerates identically from the surviving selection.\n\nTESTING SAFETY (mandatory): NEVER run destructive testing against the real ~/.config/nvim/.claude tree. This loader had a live data-loss bug recently; ALL destructive testing is scratch-only, against fake project dirs constructed in the scratchpad.\n\nCROSS-CUTTING CONSTRAINTS: Copy-deploy only, no symlink farm. Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**. Build on (do not recreate) the already-landed check_deployed_rule_drift and the symlink-safe remove path in loader.lua. DESIRED END STATE: after a .claude/ wipe, nothing hand-authored or stateful is lost; regenerate from the surviving selection reproduces .claude/ identically, upholding `.claude/ == deploy(store, selection)`.",
+      "dependencies": [
+        863
+      ],
+      "file_scope": [
+        "lua/neotex/plugins/ai/shared/extensions/state.lua",
+        "lua/neotex/plugins/ai/shared/extensions/init.lua"
+      ],
+      "created": "2026-07-14T22:58:04Z",
+      "last_updated": "2026-07-14T22:58:04Z",
+      "session_id": "sess_1784069750_5427d7",
+      "artifacts": []
+    },
     {
       "project_number": 862,
       "project_name": "fix_loader_symlink_delete_data_loss",
