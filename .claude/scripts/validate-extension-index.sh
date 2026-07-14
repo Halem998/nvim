@@ -140,7 +140,7 @@ echo ""
 
 # Check .claude extensions
 echo "=== .claude extensions ==="
-for file in "$PROJECT_DIR"/.claude/extensions/*/index-entries.json; do
+for file in "$PROJECT_DIR"/agent-system/extensions/*/index-entries.json; do
     if [[ -f "$file" ]]; then
         check_index_file "$file" "claude" || true
     fi

@@ -36,7 +36,7 @@ if [[ "${1:-}" == "--quiet" ]]; then
 fi
 
 REPO_ROOT="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
-EXT_DIR="${EXT_DIR:-$REPO_ROOT/.claude/extensions}"
+EXT_DIR="${EXT_DIR:-$REPO_ROOT/agent-system/extensions}"
 
 if [[ ! -d "$EXT_DIR" ]]; then
   echo "ERROR: $EXT_DIR does not exist" >&2

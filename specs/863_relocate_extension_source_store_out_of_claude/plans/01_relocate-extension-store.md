@@ -160,28 +160,29 @@ the canonical config value, closing the drift class permanently.
 
 ---
 
-### Phase 3: Repoint shell-script store defaults (source + deployed copies) [NOT STARTED]
+### Phase 3: Repoint shell-script store defaults (source + deployed copies) [COMPLETED]
 
 **Goal**: Update the two shell scripts that independently default to the old store path, in both
 their now-relocated source copies and their deployed copies, keeping the pairs byte-identical.
 
 **Tasks**:
-- [ ] `check-extension-docs.sh` (source copy now at `agent-system/extensions/core/scripts/`,
-      deployed copy at `.claude/scripts/`): change the `EXT_DIR` default (line 39) from
+- [x] `check-extension-docs.sh` (source copy now at `agent-system/extensions/core/scripts/`,
+      deployed copy at `.claude/scripts/`): changed the `EXT_DIR` default (line 39) from
       `"${EXT_DIR:-$REPO_ROOT/.claude/extensions}"` to
-      `"${EXT_DIR:-$REPO_ROOT/agent-system/extensions}"`. Keep the `EXT_DIR` env-var override
-      mechanism intact. Do NOT change the `$REPO_ROOT/.claude/rules`, `.claude/skills`,
+      `"${EXT_DIR:-$REPO_ROOT/agent-system/extensions}"`. Kept the `EXT_DIR` env-var override
+      mechanism intact. Did NOT change the `$REPO_ROOT/.claude/rules`, `.claude/skills`,
       `.claude/agents`, `.claude/scripts` deployed-comparison paths (those are deploy targets and
       stay put).
-- [ ] `validate-extension-index.sh` (source copy now at `agent-system/extensions/core/scripts/`,
-      deployed copy at `.claude/scripts/`): change the `.claude` glob (line 143) from
+- [x] `validate-extension-index.sh` (source copy now at `agent-system/extensions/core/scripts/`,
+      deployed copy at `.claude/scripts/`): changed the `.claude` glob (line 143) from
       `"$PROJECT_DIR"/.claude/extensions/*/index-entries.json` to
-      `"$PROJECT_DIR"/agent-system/extensions/*/index-entries.json`. Leave the `.opencode`
-      counterpart glob (line 153) unchanged (out of scope). Optionally add an `EXT_DIR`-style
-      override for parity with `check-extension-docs.sh`.
-- [ ] After editing, ensure each source/deployed pair is byte-identical:
+      `"$PROJECT_DIR"/agent-system/extensions/*/index-entries.json`. Left the `.opencode`
+      counterpart glob (line 153) unchanged (out of scope). *(deviation: skipped — optional
+      EXT_DIR-style override for parity was not added; not required by acceptance criteria and
+      keeps the diff minimal)*
+- [x] After editing, confirmed each source/deployed pair is byte-identical:
       `diff -q agent-system/extensions/core/scripts/check-extension-docs.sh .claude/scripts/check-extension-docs.sh`
-      and the same for `validate-extension-index.sh` must report no differences.
+      and the same for `validate-extension-index.sh` reported no differences.
 
 **Timing**: 1 hour
 
