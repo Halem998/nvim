@@ -1,5 +1,5 @@
 ---
-next_project_number: 862
+next_project_number: 863
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 862
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 861 | -- | agent-system |
+| 1 | 861,862 | -- | agent-system, extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -19,7 +19,33 @@ next_project_number: 862
 
 861 [NOT STARTED] — Add a deployed-vs-source content drift check for extension rules 
 
+### Extensions
+
+862 [NOT STARTED] — Fix data loss in the extension loader: remove_installed_files() d
+
 ## Tasks
+
+### 862. Fix loader symlink delete data loss
+- **Status**: [NOT STARTED]
+- **Task Type**: neovim
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: Fix data loss in the extension loader: remove_installed_files() deletes through symlinks, destroying tracked extension-source files.
+
+OBSERVED DATA LOSS: an extension reload deleted .claude/extensions/literature/skills/skill-literature/SKILL.md (2265 lines, git-tracked). Evidence: a check-extension-docs.sh run immediately before the reload recorded "literature PASS"; immediately after, "literature FAIL: manifest skill entry missing on disk: skills/skill-literature/SKILL.md". The extension-source directory mtime matched the reload timestamp to the second. The file was recovered from git HEAD; /literature was broken until then.
+
+ROOT CAUSE: deployed skills are symlinks into extension sources, e.g. .claude/skills/skill-literature -> ../extensions/literature/skills/skill-literature. The unload step in lua/neotex/plugins/ai/shared/extensions/loader.lua (remove_installed_files, approx lines 755-784) iterates installed_files and calls vim.fn.delete(filepath) on the DEPLOYED path. Because the deployed path resolves through the symlink, the delete lands on the real extension-source file. The subsequent copy step then has nothing to copy and leaves an empty directory. Deployed and source are the same inode, so "remove the deployed copy" means "destroy the source".
+
+STILL LIVE: the symlink is unchanged, so another reload destroys the file again. Nine other deployed skills are symlinks into extension sources and are exposed whenever their extension unloads: skill-cslib-implementation, skill-cslib-implementation-hard, skill-cslib-research, skill-cslib-research-hard, skill-cslib-vet, skill-pr-implementation, skill-pr-review-implementation, skill-pr-review-research, skill-zotero.
+
+SECOND GAP: remove_installed_files() takes no protected_paths argument, so .syncprotect does not guard the delete path at all. copy_file() honors protected_paths; the removal path does not. A user who lists a file in .syncprotect is protected on sync but not on unload.
+
+THIRD SYMPTOM (same interaction, lower severity): the reload replaced .claude/agents/literature-agent.md and .claude/commands/literature.md, which are mode 120000 (symlinks) in HEAD, with regular files. Content was preserved but the symlink setup was silently flattened; these show as typechanges (T) in git status.
+
+REQUIRED: make the removal path symlink-aware so it never deletes through a symlink into an extension source -- e.g. skip paths where the deployed entry is a symlink (or resolves outside the deployed tree), or unlink the symlink itself rather than its target. Decide and document whether the symlink deploy mode is supported: if supported, both copy and remove must handle it; if not, the loader should refuse to install over a symlink rather than silently destroying it. Also thread protected_paths/.syncprotect through remove_installed_files() so protection is symmetric across copy and remove. Verify with nvim --headless: reload an extension whose deployed skill is a symlink and assert the source file survives.
+
+---
 
 ### 861. Add rule drift check to extension lint
 - **Status**: [NOT STARTED]
