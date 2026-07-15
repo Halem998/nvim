@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Timed pilot and strategy decision",
+  "started_at": "2026-07-15T18:00:00Z",
+  "last_updated": "2026-07-15T18:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Snapshot self-exclusion sessionId and confirm transcript exists", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Time jq-only is_error pass over nvim slice", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Time claude-code-log over nvim slice", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Cross-check oracle on 3+ sessions", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Verify history.jsonl whole-stream jq read", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Write decision note to scratchpad", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "bare jq -c '.. | objects | select(has(\"is_error\"))' per-file without -s slurp", "result": "failed", "reason": "jq applies filter once per top-level JSON value (once per jsonl line) rather than once for the whole file, producing hundreds of tiny arrays instead of one file-level count; fixed by adding -s to slurp first"},
+    {"approach": "bare jq whole-stream read of history.jsonl", "result": "failed", "reason": "jq aborts (exit 5) at the first embedded-raw-newline parse error rather than skipping it, recovering only 23321 of ~23775 records; replaced with Python json.JSONDecoder().raw_decode skip-and-continue loop, which recovered 23775 records with only 1 failure"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

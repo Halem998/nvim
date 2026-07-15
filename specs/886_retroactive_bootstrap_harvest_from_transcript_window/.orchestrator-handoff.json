@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "summary": "Six-phase plan for the one-shot retroactive transcript harvest, built on the settled extraction design. Phase 1 is a timed pilot on the nvim slice (110 transcripts) that decides bulk strategy empirically before any harvest logic is written; it also snapshots the $CLAUDE_CODE_SESSION_ID self-exclusion key and verifies the whole-stream jq read of history.jsonl against the confirmed embedded-newline record. One refinement of the research's hybrid is made explicit: subagent-to-parent linkage is already free from directory structure (<parent-sessionId>/subagents/ sits under its parent) and cwd is already free from the records, so claude-code-log is demoted to a pilot-only correctness ORACLE (cross-checking our jq-derived linkage/cwd against a maintained parser) rather than a load-bearing full-corpus dependency whose scale performance was never measured beyond one file. Phases 2 and 3 run in parallel (transcript pass; durable history.jsonl spine -- different sources, no shared state). Phase 4 is the .meta.json attribution join, held to the established ~63% ceiling with honest nulls and no regex widening. Phase 5 writes the orchestrator, makes the inferred_outcome MODELING DECISION explicit and reviewable (closed label set trivial/clean/mixed/high_error, a provisional 0.10 rate threshold stated plainly against the known 2.9% corpus density, with raw numerator and denominator retained on every row so labels can be recomputed WITHOUT re-mining), and actually executes the harvest. Phase 6 registers the scripts. A live check surfaced a concrete gap the plan closes: the memory extension's manifest has NO provides.scripts key at all (only commands/skills/context/data/hooks), and loader.lua:copy_scripts() returns early without it -- so new scripts would silently never deploy. READ-ONLY against ~/.claude/ is restated as a binding constraint in every phase touching the corpus, with a rollback section noting there is nothing to roll back on the source side by construction. Verification criteria throughout demand observed numbers (measured attribution rate, measured outcome distribution, measured decode failures) and explicitly forbid tuning thresholds to produce expected-looking results or copying counts from the inventory.",
+  "artifacts": [
+    {
+      "path": "specs/886_retroactive_bootstrap_harvest_from_transcript_window/plans/01_transcript-corpus-harvest.md",
+      "type": "plan",
+      "summary": "Six-phase plan (5.75h, waves: [1], [2,3], [4], [5], [6]) for the one-shot read-only transcript harvest: timed pilot and strategy decision, transcript is_error pass, durable history.jsonl spine, .meta.json attribution join, orchestrated execution with an explicit outcome-inference modeling decision, and manifest/doc-lint registration."
+    }
+  ],
+  "blockers": [],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "modified_files": [
+    "specs/886_retroactive_bootstrap_harvest_from_transcript_window/plans/01_transcript-corpus-harvest.md"
+  ],
+  "next_action_hint": "Run /implement 886 to execute the plan. It should proceed to completion today: this mines already-existing data with no dependency on future accumulation, and the 30-day window rolls daily. Phase 1 is a cheap timed pilot whose measured result determines the bulk strategy -- do not skip it, but do not let it expand either. The perishable critical path is Phase 5's transcript harvest; the history.jsonl spine (Phase 3) is durable and independently shippable if the transcript pass fails partway."
+}
