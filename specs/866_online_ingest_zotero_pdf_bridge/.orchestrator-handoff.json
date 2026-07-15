@@ -1,0 +1,36 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Built the online-discovery -> Zotero+PDF -> ingest bridge for the literature extension across all 7 planned phases. Added a new item-add operation to zotero-write.sh (wrapping zot add --pdf, following the note-add/tag-add/attach-file pattern, with the mandatory-KEY argument check special-cased for the create-item operation) and a new literature-ingest-online.sh entry point with a documented STABLE CONTRACT header (input schema, 8 directive tokens, exit codes 0/1/2/3/4/5/6/64). The script classifies a discovery record via (status, arxiv_id, pdf_url), downloads and %PDF-magic-byte-verifies the PDF before any Zotero write, creates or attaches the Zotero item, re-points at the durable Zotero storage copy (defensively, across several plausible envelope field-name candidates, since the real zot add --pdf envelope shape is an unconfirmed empirical unknown in this environment), delegates to the unmodified literature-ingest.sh for convert/chunk/index, patches the resulting index.json entry with real metadata, and upserts specs/literature-index.json. Handles the separable in_zotero_no_pdf attach-to-existing sub-path via the unmodified zotero-resolve-pdf.sh plus an Unpaywall DOI lookup. Wired into commands/literature.md Mode A as a new opt-in offer (step 3.5) and documented in EXTENSION.md, README.md, manifest.json, index-entries.json, and a new zotero-item-creation.md pattern doc. Verified end-to-end with a stub zot executable and a hand-built minimal valid PDF through the real, unmodified conversion/chunking/indexing pipeline; found and fixed a real doc_id-extraction bug along the way. Core pipeline scripts (literature-ingest.sh, literature-convert.sh, literature-chunk.sh, literature-build-index.sh) remain byte-for-byte unmodified (confirmed via git diff --stat), and check-extension-docs.sh passes for all extensions.",
+  "artifacts": [
+    {"type": "report", "path": "specs/866_online_ingest_zotero_pdf_bridge/reports/01_online-ingest-zotero-bridge.md"},
+    {"type": "plan", "path": "specs/866_online_ingest_zotero_pdf_bridge/plans/01_online-ingest-zotero-bridge.md"},
+    {"type": "summary", "path": "specs/866_online_ingest_zotero_pdf_bridge/summaries/01_online-ingest-zotero-bridge-summary.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "complete",
+  "files_modified": [
+    "agent-system/extensions/literature/scripts/zotero-write.sh",
+    "agent-system/extensions/literature/scripts/literature-ingest-online.sh",
+    "agent-system/extensions/literature/commands/literature.md",
+    "agent-system/extensions/literature/EXTENSION.md",
+    "agent-system/extensions/literature/README.md",
+    "agent-system/extensions/literature/manifest.json",
+    "agent-system/extensions/literature/index-entries.json",
+    "agent-system/extensions/literature/context/project/literature/patterns/zotero-item-creation.md",
+    "specs/866_online_ingest_zotero_pdf_bridge/plans/01_online-ingest-zotero-bridge.md",
+    "specs/866_online_ingest_zotero_pdf_bridge/summaries/01_online-ingest-zotero-bridge-summary.md"
+  ],
+  "decisions_made": [
+    "Phase 1: no real zot CLI or configured Zotero account is available in this environment, so item-add's empirical envelope verification used a stub zot executable (command construction, --dry-run echo, argument passthrough all confirmed) rather than a genuine live call; real data.* field names are a documented follow-up in zotero-item-creation.md, mitigated in code via defensive multi-jq-path field extraction rather than assumed field names.",
+    "Phase 4: fixed a real bug found during end-to-end testing -- literature-ingest.sh's log_out() prefixes stdout with '[ingest] ', so the original '^Ingested: ' doc_id-extraction regex never matched and silently fell back to the wrong doc_id, making the metadata patch a no-op. Fixed to match '^\\[ingest\\] Ingested: ' with a '^Documents ingested: ' fallback.",
+    "Phase 6: a real, already-running Zotero instance was discovered bound to 127.0.0.1:23119 on this development machine (via a failed mock-server bind attempt that returned real library data); further live-API mocking was abandoned to avoid any risk to the user's real Zotero library. Verified the honest tier=absent stop safely (read-only) against the real API with a fabricated non-matching title; the full resolved-and-attached success sub-path relies on helpers already fully verified by the Phase 4/5 create-item test plus the Phase 1 attach-file regression, not an independent live end-to-end run.",
+    "Phase 7: numbered the new Mode A command branch '3.5' rather than '3b' to avoid colliding with the unrelated pre-existing top-level <step_3b> XML tag (rebuild mode) in commands/literature.md."
+  ],
+  "dead_ends": [
+    "Attempting to mock the Zotero live API on 127.0.0.1:23119 for a full Phase 6 attach-path end-to-end test -- the port is already owned by a real, running Zotero instance on this machine; abandoned in favor of a narrower, safe verification scope (see decisions above)."
+  ],
+  "phases_completed": 7,
+  "phases_total": 7
+}
