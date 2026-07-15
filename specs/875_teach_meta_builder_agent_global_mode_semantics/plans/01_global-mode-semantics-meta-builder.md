@@ -272,7 +272,7 @@ CWD happens to be.
 
 ---
 
-### Phase 4: Retarget Task-Creation Paths to the Source Store (Category C) [NOT STARTED]
+### Phase 4: Retarget Task-Creation Paths to the Source Store (Category C) [COMPLETED]
 
 **Goal**: Tasks this agent creates must name source-store edit targets. A created task pointing at
 `.claude/**` would have its work silently wiped by the next regeneration.

@@ -283,6 +283,12 @@ Let's begin!
 - Keywords: "command", "skill", "agent", "meta", ".claude/" -> task_type = "meta"
 - Otherwise -> task_type = "general"
 
+**Note**: the literal `.claude/` string stays in this *keyword* list intentionally — a user typing
+`.claude/` still signals a meta task. This is independent of `file_scope`/`affected_area`, which
+Component 4a and Stage 3.5 always populate with `agent-system/extensions/core/**` source-store
+paths, never `.claude/**`. Do not "fix" this keyword into `agent-system/extensions/core/` — the
+keyword and the produced file_scope are deliberately different strings serving different purposes.
+
 ### Interview Stage 3: IdentifyUseCases
 
 **Question 3** (via AskUserQuestion):
@@ -430,10 +436,15 @@ for task_idx, ext_deps in external_dependencies:
      paths directly.
    - Otherwise, infer `file_scope` via a keyword-to-directory heuristic over the task's
      title/description: match domain keywords (e.g. "skill", "agent", "command", "rule",
-     "context pattern") against their corresponding `.claude/` subdirectories (`skills/`,
-     `agents/`, `commands/`, `rules/`, `context/patterns/`, etc.) and any explicit file paths
-     already mentioned in the interview transcript. Bias toward the broader directory prefix
-     when uncertain — over-declaring only costs parallelism, never correctness.
+     "context pattern") against their corresponding source-store subdirectories under
+     `agent-system/extensions/core/` (`skills/`, `agents/`, `commands/`, `rules/`,
+     `context/patterns/`, etc.) — **never** `.claude/`, which is a disposable deploy tree — and any
+     explicit file paths already mentioned in the interview transcript. Bias toward the broader
+     directory prefix when uncertain — over-declaring only costs parallelism, never correctness.
+     **Known limitation**: `agent-system/extensions/core/` is the documented default; the heuristic
+     has no reliable signal to distinguish core scope from an extension's own source directory
+     (e.g. `agent-system/extensions/email/...`) without parsing extension manifests, so
+     extension-scoped tasks require human correction rather than a guess.
 2. **Run the shared overlap algorithm** (`.claude/context/patterns/file-footprint-overlap.md`,
    referenced by path — do not restate the rule) pairwise across `task_list[]`'s `file_scope`
    entries.
@@ -460,7 +471,7 @@ This runs automatically (no AskUserQuestion gate) and re-validates the augmented
 For each task in task_list, extract:
 - **Key Terms**: Significant words (nouns, verbs) from title/description, ignoring stop words (a, the, in, on, for, to, and, or)
 - **Component Type**: Identify component (command, skill, agent, rule, context, documentation)
-- **Affected Area**: Parse for directory mentions (.claude/commands/, .claude/skills/, .claude/agents/, etc.)
+- **Affected Area**: Parse for directory mentions and map to source-store paths (agent-system/extensions/core/commands/, agent-system/extensions/core/skills/, agent-system/extensions/core/agents/, etc.) — never the `.claude/` deploy tree; see the Known limitation note under Component 4a above (defaults to `core`, extension-scoped tasks need human correction)
 - **Action Type**: Categorize by action (create, modify, fix, document, refactor, test)
 
 **Example Extraction**:
@@ -468,13 +479,13 @@ For each task in task_list, extract:
 Task: "Create a new /export command for documentation"
   -> key_terms: ["export", "command", "documentation"]
   -> component_type: "command"
-  -> affected_area: ".claude/commands/"
+  -> affected_area: "agent-system/extensions/core/commands/"
   -> action_type: "create"
 
 Task: "Add export skill to handle PDF generation"
   -> key_terms: ["export", "skill", "PDF", "generation"]
   -> component_type: "skill"
-  -> affected_area: ".claude/skills/"
+  -> affected_area: "agent-system/extensions/core/skills/"
   -> action_type: "create"
 ```
 
