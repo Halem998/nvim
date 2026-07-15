@@ -1,7 +1,7 @@
 # Implementation Plan: Record Markdown-Retention Decision for Literature Segmentation
 
 - **Task**: 868 - Evaluate whether Typst segmentation is superior AND just-as-convenient versus the current markdown chunking, and implement conditionally
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 1.25 hours
 - **Dependencies**: 866 (complete)
 - **Research Inputs**: reports/01_typst-segmentation-decision.md

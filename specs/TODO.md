@@ -11,17 +11,12 @@ next_project_number: 873
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 867,868,869 | -- | extensions, memory-improvement-loop |
+| 1 | 869 | -- | memory-improvement-loop |
 | 2 | 870 | 869 | memory-improvement-loop |
 | 3 | 871 | 870 | memory-improvement-loop |
 | 4 | 872 | 871 | memory-improvement-loop |
 
 **Grouped by Topic** (indented = depends on parent):
-
-### Extensions
-
-867 [PLANNED] — Add sparse-literature detection to --lit and reconcile the drifte
-868 [NOT STARTED] — Evaluate whether Typst segmentation is "superior AND just as conv
 
 ### Memory Improvement Loop
 
@@ -73,22 +68,26 @@ next_project_number: 873
 ---
 
 ### 868. Typst segmentation evaluation
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 866
+- **Research**: [868_typst_segmentation_evaluation/reports/01_typst-segmentation-decision.md]
+- **Plan**: [868_typst_segmentation_evaluation/plans/01_markdown-retention-decision.md]
+- **Summary**: [868_typst_segmentation_evaluation/summaries/01_markdown-retention-decision-summary.md]
 
 **Description**: Evaluate whether Typst segmentation is "superior AND just as convenient" versus the current markdown chunking, and implement conditionally. Current pipeline is markdown-only: literature-convert.sh emits {doc_id}.md (pdftotext + PyMuPDF; marker/pandoc explicitly evaluated and rejected), literature-chunk.sh does markdown-heading-driven ('# ## ###') two-pass hierarchical chunking into chunk_NNNN.md + chunks.json, indexed via literature-schema.sql / literature-build-index.sh (SQLite FTS5). The typst extension is authoring-only (no scripts, no converter, no chunker). The FTS5 index is largely format-agnostic (a source_format column already exists; .typ chunks are feasible with minor chunk-file glob and --read path changes), but a PDF->typst converter and a typst-aware segmenter (typst '=' / '==' headings and #heading[] / #theorem[] functions) would be NEW greenfield work. Deliverables: (a) a clear decision -- is typst superior and just-as-convenient for segmentation? If NO, record a durable decision (referencing durable anchors, no task-number citations) to keep markdown, with rationale; (b) if YES, implement a typst conversion/segmentation path and make the ingest pipeline (especially the task 866 bridge plus literature-convert.sh / literature-chunk.sh) format-configurable, with minimal index-schema changes. A "no format change" outcome is valid and expected if convenience parity is not met. Depends on task 866 (modifies the same convert/chunk stage the bridge uses).
 
 ---
 
 ### 867. Sparse lit detection stage4a
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 866
 - **Research**: [867_sparse_lit_detection_stage4a/reports/01_sparse-lit-detection-design.md]
 - **Plan**: [867_sparse_lit_detection_stage4a/plans/01_sparse-lit-stage4a-wiring.md]
+- **Summary**: [867_sparse_lit_detection_stage4a/summaries/01_sparse-lit-stage4a-wiring-summary.md]
 
 **Description**: Add sparse-literature detection to --lit and reconcile the drifted Stage 4a flow so that when a run "does not find much" literature it offers to search online and ingest (via the task 866 bridge). Current gaps: literature-lit-flag-resolve.sh classifies purely on file existence (5 directives: LIT_DISABLED / SUBINDEX_PRESENT / GLOBAL_MISSING / PROMPT_NEEDED / AUTONOMOUS_GLOBAL) with NO count or threshold; literature-briefing.sh computes an internal seg_count but never surfaces it to callers; and the deployed skills' Stage 4a is DRIFTED -- skill-researcher and its peers do not actually call literature-lit-flag-resolve.sh and never offer the designed "Use global corpus now" option. This task: (1) surface a machine-readable coverage/segment count and a `sparse` signal from literature-briefing.sh, following the established loud-banner precedent (never silent); (2) add a configurable sparsity threshold with a sensible default; (3) introduce a new directive (e.g. SPARSE_PROMPT_NEEDED) that fires on sparse-OR-absent coverage on BOTH the SUBINDEX_PRESENT path (sub-index exists but returns few relevant chunks) AND the global-search path; (4) reconcile and complete the Stage 4a wiring across ALL SIX --lit skills (skill-researcher / skill-planner / skill-implementer and their -hard variants) so they call the resolver and present a new interactive option "Search online to ingest" that invokes the task 866 bridge; (5) preserve the autonomous/orchestrator contract with a deterministic, visible [lit:auto] fallback -- never a silent no-op. Keep EXTENSION.md / merge-source docs in sync (CLAUDE.md is auto-generated). Depends on task 866 (the "search online" option must invoke the ingest bridge).
 
