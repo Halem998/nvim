@@ -26,6 +26,8 @@ description: Analyze memory vault health, score memories for maintenance, and ru
     5. `--refine` -> Refine mode (improve memory quality) [available - task 452]
     6. `--gc` -> Garbage collection (hard-delete tombstoned memories past grace period) [available - task 450]
     7. `--auto` -> Automated distillation (Tier 1 refine only) [available - task 452]
+    8. `--dream` -> Dream mode (event-store-informed memory review/revision plus improvement
+       proposals) [Available]
 
     **Additional Flags**:
     - `--dry-run` -> Show what would happen without making changes
@@ -44,6 +46,8 @@ description: Analyze memory vault health, score memories for maintenance, and ru
       sub_mode = "refine"
     elif "--gc" in $ARGUMENTS:
       sub_mode = "gc"
+    elif "--dream" in $ARGUMENTS:
+      sub_mode = "dream"
     elif "--auto" in $ARGUMENTS:
       sub_mode = "auto"
 
@@ -72,6 +76,7 @@ description: Analyze memory vault health, score memories for maintenance, and ru
       | refine | Available | 452 |
       | gc | Available | 450 |
       | auto | Available | 452 |
+      | dream | Available | Event-store review |
 
       All sub-modes are now available.
     </process>
@@ -142,6 +147,19 @@ description: Analyze memory vault health, score memories for maintenance, and ru
         - Display change summary table
         - Log refine operation to distill-log.json (type: "refine", notes: "auto mode")
         - Update memory_health in state.json
+
+      Dream mode:
+        - Ingest the unified event store via events-query.sh (never hand-rolled jq)
+        - If no events exist yet, display the "no events yet" notice as a normal outcome (not
+          an error) and continue using the scoring engine alone with zero correlations
+        - Display the two output sections as clearly distinct deliverables:
+          1. Memory revisions -- corroborated/contradicted/gap classification with evidence
+             citations, applied via existing UPDATE/EXTEND/CREATE/tombstone primitives behind
+             a mandatory AskUserQuestion stop
+          2. Improvement proposals -- recurring event patterns surfaced separately via
+             AskUserQuestion (Create as task / Note in dream report only / Skip)
+        - Log the dream operation to .memory/dream-log.json (type: "dream")
+        - Update memory_health (last_dream, dream_count) in state.json
     </process>
   </step_3>
 
@@ -162,8 +180,8 @@ description: Analyze memory vault health, score memories for maintenance, and ru
 
 <error_handling>
   <argument_errors>
-    - Unknown flag -> "Unknown flag: {flag}. Available: --purge, --merge, --compress, --refine, --gc, --auto, --dry-run, --verbose"
-    - Unknown sub-mode -> "Unknown sub-mode. Available: /distill (report), /distill --purge, --merge, --compress, --refine, --gc, --auto"
+    - Unknown flag -> "Unknown flag: {flag}. Available: --purge, --merge, --compress, --refine, --gc, --auto, --dream, --dry-run, --verbose"
+    - Unknown sub-mode -> "Unknown sub-mode. Available: /distill (report), /distill --purge, --merge, --compress, --refine, --gc, --auto, --dream"
   </argument_errors>
 
   <execution_errors>
@@ -184,14 +202,17 @@ description: Analyze memory vault health, score memories for maintenance, and ru
     - .memory/10-Memories/*.md (validation, content analysis)
     - .memory/distill-log.json (operation history)
     - specs/state.json (current memory_health)
+    - specs/events.jsonl (dream mode only, via events-query.sh -- never hand-rolled jq)
+    - .memory/dream-log.json (dream mode only, prior run history for --since {last_dream})
   </reads>
 
   <writes>
     - .memory/distill-log.json (operation log entries)
     - specs/state.json (memory_health field updates)
-    - .memory/10-Memories/*.md (frontmatter mutation for purge/refine; deletion for gc; content merge for merge; content compression for compress)
-    - .memory/memory-index.json (status field updates for purge; entry removal for gc; regeneration for merge/compress/refine/auto)
-    - .memory/20-Indices/index.md (regeneration for merge/compress/refine/auto)
-    - .memory/10-Memories/README.md (regeneration for merge/compress/refine/auto)
+    - .memory/10-Memories/*.md (frontmatter mutation for purge/refine; deletion for gc; content merge for merge; content compression for compress; dream-mode frontmatter/content mutation via the same UPDATE/EXTEND/tombstone primitives)
+    - .memory/memory-index.json (status field updates for purge; entry removal for gc; regeneration for merge/compress/refine/auto/dream)
+    - .memory/20-Indices/index.md (regeneration for merge/compress/refine/auto/dream)
+    - .memory/10-Memories/README.md (regeneration for merge/compress/refine/auto/dream)
+    - .memory/dream-log.json (dream mode only, operation log entries)
   </writes>
 </state_management>
