@@ -242,21 +242,23 @@ existing AskUserQuestion prompt.
 
 ---
 
-### Phase 4: Extend /learn --task to include reflection [NOT STARTED]
+### Phase 4: Extend /learn --task to include reflection [COMPLETED]
 
 **Goal**: Make `/learn --task N` functionally surface a present `reflection` field as an
 additional reviewable segment, and document it.
 
 **Tasks**:
-- [ ] `agent-system/extensions/memory/skills/skill-memory/SKILL.md`, Task Mode Execution, Step 2
+- [x] `agent-system/extensions/memory/skills/skill-memory/SKILL.md`, Task Mode Execution, Step 2
   "Scan Artifacts": after the existing `find "$task_dir" -type f -name "*.md"` scan, add a read
   of the task's `reflection` field from `specs/state.json` (jq selector on
   `active_projects[] | select(.project_number == N) | .reflection // null`); when present,
   present it as an additional pseudo-artifact/segment alongside the markdown artifacts. Keep the
   change small (~15 lines) and consistent with the existing segment-presentation pattern.
-- [ ] `agent-system/extensions/memory/commands/learn.md`, Task Mode "Scan Artifacts" workflow
+  *(completed: also touched Step 3's option list and Step 4's content-read note for the
+  pseudo-artifact to be functionally selectable/processable, not just read)*
+- [x] `agent-system/extensions/memory/commands/learn.md`, Task Mode "Scan Artifacts" workflow
   step: document that when the task's `state.json` entry has a `reflection` field, it is included
-  as an additional reviewable segment alongside the markdown artifacts.
+  as an additional reviewable segment alongside the markdown artifacts. *(completed)*
 
 **Timing**: 45 min
 

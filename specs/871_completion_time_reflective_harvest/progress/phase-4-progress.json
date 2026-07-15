@@ -1,0 +1,13 @@
+{
+  "phase": 4,
+  "phase_name": "Extend /learn --task to include reflection",
+  "started_at": "2026-07-15T00:30:00Z",
+  "last_updated": "2026-07-15T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "skill-memory/SKILL.md Step 2/3/4: functional reflection read and presentation as pseudo-artifact segment", "status": "done", "files_touched": ["agent-system/extensions/memory/skills/skill-memory/SKILL.md"]},
+    {"id": 2, "description": "learn.md Task Mode Scan Artifacts step: document reflection inclusion", "status": "done", "files_touched": ["agent-system/extensions/memory/commands/learn.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
