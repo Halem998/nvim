@@ -1,0 +1,16 @@
+{
+  "phase": 5,
+  "phase_name": "DEFECT A — wire the base agent to own every phase transition",
+  "started_at": "2026-07-15T22:20:00Z",
+  "last_updated": "2026-07-15T22:26:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace Stage 4A with update-phase-status.sh IN_PROGRESS call + Edit-tool fallback + project_name/task_number derivation note", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 2, "description": "Replace Stage 4D with update-phase-status.sh COMPLETED call + Edit-tool fallback", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 3, "description": "Add Stage 5a marker-verification backstop loop", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 4, "description": "Structural checks (grep counts, IN_PROGRESS/COMPLETED presence, fallback presence, derivation note) + live fixture proof for phases 2 and 3 with phase-transitions.log", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Mirror to .claude/agents/general-implementation-agent.md", "status": "done", "files_touched": [".claude/agents/general-implementation-agent.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

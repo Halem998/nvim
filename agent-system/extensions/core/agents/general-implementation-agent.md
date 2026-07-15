@@ -117,9 +117,20 @@ Throughout execution, monitor for signs of context pressure:
 - **Before starting any operation that reads 3+ files**, check if a handoff would be safer
 - **If tool calls exceed ~50** and the phase is not nearly complete, proactively write a handoff
 
+**Derive `project_name` and `task_number` before first use**: delegation context supplies
+`plan_path` (`specs/{NNN}_{SLUG}/plans/...`). Derive `project_name` as the `{SLUG}` portion of
+that path component (strip the zero-padded `{NNN}_` prefix), and `task_number` as `{NNN}` with
+the zero-padding stripped (unpadded). Both values are required by every `update-phase-status.sh`
+call in Stage 4A, Stage 4D, and the Stage 5a backstop below.
+
 **A. Mark Phase In Progress**
-Edit plan file heading to show the phase is active.
-Use the Edit tool with:
+Call `update-phase-status.sh` to mark the phase active:
+
+```bash
+bash .claude/scripts/update-phase-status.sh "$task_number" "$project_name" "$phase_num" IN_PROGRESS
+```
+
+**Fallback**: If the script is unavailable, use the Edit tool with:
 - old_string: `### Phase {P}: {Phase Name} [NOT STARTED]`
 - new_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
 
@@ -223,8 +234,13 @@ Run phase verification criteria:
 - Content validation
 
 **D. Mark Phase Complete**
-Edit plan file heading to show the phase is finished.
-Use the Edit tool with:
+Call `update-phase-status.sh` to mark the phase finished:
+
+```bash
+bash .claude/scripts/update-phase-status.sh "$task_number" "$project_name" "$phase_num" COMPLETED
+```
+
+**Fallback**: If the script is unavailable, use the Edit tool with:
 - old_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
 - new_string: `### Phase {P}: {Phase Name} [COMPLETED]`
 
@@ -339,6 +355,25 @@ After all phases complete:
 - Run full build (if applicable)
 - Run tests (if applicable)
 - Verify all created files exist
+
+### Stage 5a: Verify and Repair Plan Markers
+
+**Backstop**: after all phases complete, perform a fresh read of the plan file to confirm every
+completed phase heading carries `[COMPLETED]`. This guarantees phases 2..N converge even if a
+per-phase `update-phase-status.sh` call in Stage 4A/4D above was missed for any reason.
+
+```bash
+# Count stale phase headings (NOT STARTED, IN PROGRESS, PARTIAL)
+stale_total=$(grep -cE '^### Phase [0-9]+.*\[(NOT STARTED|IN PROGRESS|PARTIAL)\]' "$plan_file" 2>/dev/null || echo 0)
+
+# Repair each stale heading via update-phase-status.sh
+if [ "$stale_total" -gt 0 ]; then
+  grep -nE '^### Phase [0-9]+.*\[(NOT STARTED|IN PROGRESS|PARTIAL)\]' "$plan_file" | while IFS=: read -r linenum content; do
+    phase_num=$(echo "$content" | grep -oE "Phase [0-9]+" | grep -oE "[0-9]+")
+    bash .claude/scripts/update-phase-status.sh "$task_number" "$project_name" "$phase_num" COMPLETED
+  done
+fi
+```
 
 ### Stage 6: Create Implementation Summary
 

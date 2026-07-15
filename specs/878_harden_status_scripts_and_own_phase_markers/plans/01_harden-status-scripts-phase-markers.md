@@ -393,7 +393,7 @@ permanent, externally-invisible disagreement becomes fatal.
 
 ---
 
-### Phase 5: DEFECT A — wire the base agent to own every phase transition [NOT STARTED]
+### Phase 5: DEFECT A — wire the base agent to own every phase transition [COMPLETED]
 
 **Goal**: Give phase markers an owning mechanism covering phases 2..N. The script's per-phase
 interface is already adequate; the base agent is the missing caller. Mirror
@@ -402,17 +402,17 @@ fallback.
 
 **Tasks**:
 
-- [ ] In `agent-system/extensions/core/agents/general-implementation-agent.md`, replace the Stage 4 **A. Mark Phase In Progress** block (lines ~120-126) — currently an Edit-tool-only instruction — with a `update-phase-status.sh ... IN_PROGRESS` call, keeping the Edit-tool instruction as an explicit "if the script is unavailable" fallback, exactly as the hard agent does at its lines 152-158.
-- [ ] Replace the Stage 4 **D. Mark Phase Complete** block (lines ~225-231) with a `... COMPLETED` call plus the same Edit-tool fallback, mirroring the hard agent's lines 168-174.
-- [ ] Use the phase-heading vocabulary (`IN_PROGRESS`, `COMPLETED`), never the plan-level vocabulary. The two are deliberately distinct and each script enforces its own; do not harmonize them.
-- [ ] Preserve the existing directive "Phase status lives ONLY in the heading. Do NOT add or edit a separate `**Status**:` line per phase." in both blocks.
-- [ ] Preserve the task-lock heartbeat block that follows **D** (line ~237) unchanged and in place.
-- [ ] **Specify `project_name` derivation explicitly** — do not copy the hard agent's gap. The hard agent references `$project_name` at its lines 155/171/233 without ever defining it; the base agent must not inherit that. Both agents receive `plan_path` (`specs/{NNN}_{SLUG}/plans/...`), so instruct the agent to derive `project_name` as the `{SLUG}` portion of that path component (strip the zero-padded `{NNN}_` prefix), and `task_number` from `{NNN}` (unpadded). State this once, near Stage 4A's first use.
-- [ ] Add a marker-verification step near Stage 5 (Run Final Verification), modeled on the hard agent's Stage 5a self-repair loop (its lines 220-236): after all phases complete, scan the plan file for any residual `[NOT STARTED|IN PROGRESS|PARTIAL]` phase heading and repair each via a per-phase `update-phase-status.sh ... COMPLETED` call, deriving `phase_num` from the grep match. This is the backstop that guarantees phases 2..N converge even if a per-phase call was missed.
-- [ ] Leave `update-phase-status.sh` itself unmodified — its `phase_number` argument and exact `^### Phase {n}:` lookup already support arbitrary per-phase calls.
-- [ ] Leave `update-task-status.sh`'s first-phase auto-advance snippet in place. It becomes redundant once the agent owns all transitions, but the script's own idempotency check (lines 90-94) makes the overlap a safe no-op; removing it is unnecessary churn.
-- [ ] Verify no task-number citations were introduced (this file is outside `specs/**`).
-- [ ] Mirror to `.claude/agents/general-implementation-agent.md`; confirm `diff -q` is silent.
+- [x] In `agent-system/extensions/core/agents/general-implementation-agent.md`, replace the Stage 4 **A. Mark Phase In Progress** block (lines ~120-126) — currently an Edit-tool-only instruction — with a `update-phase-status.sh ... IN_PROGRESS` call, keeping the Edit-tool instruction as an explicit "if the script is unavailable" fallback, exactly as the hard agent does at its lines 152-158. *(completed)*
+- [x] Replace the Stage 4 **D. Mark Phase Complete** block (lines ~225-231) with a `... COMPLETED` call plus the same Edit-tool fallback, mirroring the hard agent's lines 168-174. *(completed)*
+- [x] Use the phase-heading vocabulary (`IN_PROGRESS`, `COMPLETED`), never the plan-level vocabulary. The two are deliberately distinct and each script enforces its own; do not harmonize them. *(completed)*
+- [x] Preserve the existing directive "Phase status lives ONLY in the heading. Do NOT add or edit a separate `**Status**:` line per phase." in both blocks. *(completed)*
+- [x] Preserve the task-lock heartbeat block that follows **D** (line ~237) unchanged and in place. *(completed: verified unchanged and still immediately following D)*
+- [x] **Specify `project_name` derivation explicitly** — do not copy the hard agent's gap. The hard agent references `$project_name` at its lines 155/171/233 without ever defining it; the base agent must not inherit that. Both agents receive `plan_path` (`specs/{NNN}_{SLUG}/plans/...`), so instruct the agent to derive `project_name` as the `{SLUG}` portion of that path component (strip the zero-padded `{NNN}_` prefix), and `task_number` from `{NNN}` (unpadded). State this once, near Stage 4A's first use. *(completed)*
+- [x] Add a marker-verification step near Stage 5 (Run Final Verification), modeled on the hard agent's Stage 5a self-repair loop (its lines 220-236): after all phases complete, scan the plan file for any residual `[NOT STARTED|IN PROGRESS|PARTIAL]` phase heading and repair each via a per-phase `update-phase-status.sh ... COMPLETED` call, deriving `phase_num` from the grep match. This is the backstop that guarantees phases 2..N converge even if a per-phase call was missed. *(completed: added as new "Stage 5a: Verify and Repair Plan Markers" section between Stage 5 and Stage 6)*
+- [x] Leave `update-phase-status.sh` itself unmodified — its `phase_number` argument and exact `^### Phase {n}:` lookup already support arbitrary per-phase calls. *(completed: no changes made in this phase)*
+- [x] Leave `update-task-status.sh`'s first-phase auto-advance snippet in place. It becomes redundant once the agent owns all transitions, but the script's own idempotency check (lines 90-94) makes the overlap a safe no-op; removing it is unnecessary churn. *(completed: left in place)*
+- [x] Verify no task-number citations were introduced (this file is outside `specs/**`). *(completed: grep found zero NEW citations; one pre-existing citation at "see task 788 Phase 3 deviation note" predates this phase's edits and is outside this plan's scope)*
+- [x] Mirror to `.claude/agents/general-implementation-agent.md`; confirm `diff -q` is silent. *(completed)*
 
 **Timing**: 0.75 hours
 
