@@ -253,22 +253,22 @@ files (and message pattern-matching as fallback) and emits a lifecycle event; al
 
 ---
 
-### Phase 5: Register hooks in manifest.json and root-files/settings.json [NOT STARTED]
+### Phase 5: Register hooks in manifest.json and root-files/settings.json [COMPLETED]
 
 **Goal**: Wire the two new hook scripts so they are copied on deploy and fire on the right Claude Code
 events.
 
 **Tasks**:
-- [ ] Add `events-log-artifact.sh` and `events-log-lifecycle.sh` to `manifest.json`
-      `provides.hooks` (16 → 18 entries), preserving array ordering conventions.
-- [ ] In `root-files/settings.json`: append an `events-log-artifact.sh` hook to the existing
+- [x] Add `events-log-artifact.sh` and `events-log-lifecycle.sh` to `manifest.json`
+      `provides.hooks` (16 → 18 entries), preserving array ordering conventions. *(completed)*
+- [x] In `root-files/settings.json`: append an `events-log-artifact.sh` hook to the existing
       `PostToolUse` `Write|Edit` matcher (or add a dedicated `Write` matcher), following the
-      `bash .claude/hooks/<name> 2>/dev/null || echo '{}'` idiom.
-- [ ] Append `events-log-lifecycle.sh` to the existing `Stop` matcher's hooks array and to the
-      `SubagentStop` matcher's hooks array.
-- [ ] Confirm every added command uses the `|| echo '{}'` fallback so a hook failure never blocks.
-- [ ] Note (do not require): `merge-sources/settings-hooks.json` is a stale subset; leave a plan
-      note that updating it is optional/secondary and not needed to make the hooks live in this repo.
+      `bash .claude/hooks/<name> 2>/dev/null || echo '{}'` idiom. *(completed)*
+- [x] Append `events-log-lifecycle.sh` to the existing `Stop` matcher's hooks array and to the
+      `SubagentStop` matcher's hooks array. *(completed)*
+- [x] Confirm every added command uses the `|| echo '{}'` fallback so a hook failure never blocks. *(completed)*
+- [x] Note (do not require): `merge-sources/settings-hooks.json` is a stale subset; leave a plan
+      note that updating it is optional/secondary and not needed to make the hooks live in this repo. *(completed)*
 
 **Timing**: 30 minutes
 

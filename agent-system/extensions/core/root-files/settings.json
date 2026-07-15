@@ -70,6 +70,10 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/validate-plan-write.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/events-log-artifact.sh 2>/dev/null || echo '{}'"
           }
         ]
       }
@@ -113,6 +117,10 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/memory-nudge.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'"
           }
         ]
       }
@@ -140,6 +148,10 @@
             "type": "command",
             "command": "bash .claude/hooks/subagent-postflight.sh 2>/dev/null || echo '{}'",
             "timeout": 30000
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'"
           }
         ]
       }

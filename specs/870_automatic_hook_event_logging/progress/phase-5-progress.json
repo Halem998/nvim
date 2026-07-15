@@ -1,0 +1,23 @@
+{
+  "phase": 5,
+  "phase_name": "Register hooks in manifest.json and root-files/settings.json",
+  "started_at": "2026-07-15T09:30:00Z",
+  "last_updated": "2026-07-15T09:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add both new hook filenames to manifest.json provides.hooks (16 -> 18)", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 2, "description": "Wire events-log-artifact.sh into PostToolUse Write|Edit matcher, events-log-lifecycle.sh into Stop and SubagentStop matchers in root-files/settings.json", "status": "done", "files_touched": ["agent-system/extensions/core/root-files/settings.json"]},
+    {"id": 3, "description": "jq -e verification that both hooks are present in manifest.json and settings.json; jq empty on both files", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.note",
+      "description": "check-extension-docs.sh now reports script content drift for scripts/skill-base.sh and scripts/orchestrator-postflight.sh (deployed .claude/scripts/ copy vs agent-system source)",
+      "type": "deferred",
+      "reason": "This drift is caused by Phase 1/2's edits to already-deployed core scripts, combined with this task's explicit Non-Goal 'Do NOT deploy/sync agent-system/extensions/core/ to the live .claude/ tree (out of scope, consistent with 869)'. Verified via git history that the agent-system source and deployed .claude/ copies were byte-identical before this task's edits, so the drift is solely attributable to the intentional non-sync scope boundary, not to careless work. Deferred to a future, separate sync task (out of this task's file scope).",
+      "annotation": "*(deviation: deferred to a future sync task — check-extension-docs.sh drift on skill-base.sh/orchestrator-postflight.sh is an expected consequence of the explicit no-deploy-to-.claude/ Non-Goal)*"
+    }
+  ]
+}

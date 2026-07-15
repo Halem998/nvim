@@ -146,6 +146,8 @@
     ],
     "hooks": [
       "claude-stop-notify.sh",
+      "events-log-artifact.sh",
+      "events-log-lifecycle.sh",
       "guard-destructive-git.sh",
       "log-session.sh",
       "memory-nudge.sh",
