@@ -1,0 +1,69 @@
+{
+  "session_id": "sess_1784135810_7e6755",
+  "task_numbers": [
+    873,
+    874,
+    875,
+    885,
+    886
+  ],
+  "waves": [
+    [
+      873,
+      874,
+      886
+    ],
+    [
+      875,
+      885
+    ]
+  ],
+  "dependency_graph": {
+    "873": [],
+    "874": [],
+    "875": [
+      "873"
+    ],
+    "885": [
+      "874"
+    ],
+    "886": []
+  },
+  "max_cycles": 25,
+  "cycle_count": 6,
+  "failed_tasks": [],
+  "completed_tasks": [
+    874,
+    875,
+    886
+  ],
+  "current_statuses": {
+    "873": "partial",
+    "874": "completed",
+    "875": "completed",
+    "885": "partial",
+    "886": "completed",
+    "887": "researched"
+  },
+  "task_dirs": {
+    "873": "specs/873_global_default_target_resolution_for_meta",
+    "874": "specs/874_fix_stale_self_sync_guard_blocking_regeneration",
+    "875": "specs/875_teach_meta_builder_agent_global_mode_semantics",
+    "885": "specs/885_enable_and_verify_passive_signal_capture",
+    "886": "specs/886_retroactive_bootstrap_harvest_from_transcript_window"
+  },
+  "research_agents": {
+    "873": "general-research-agent",
+    "874": "general-research-agent",
+    "875": "general-research-agent",
+    "885": "general-research-agent",
+    "886": "general-research-agent"
+  },
+  "implement_agents": {
+    "873": "general-implementation-agent",
+    "874": "general-implementation-agent",
+    "875": "general-implementation-agent",
+    "885": "general-implementation-agent",
+    "886": "general-implementation-agent"
+  }
+}

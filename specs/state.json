@@ -604,7 +604,7 @@
     {
       "project_number": 873,
       "project_name": "global_default_target_resolution_for_meta",
-      "status": "not_started",
+      "status": "partial",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Add global-default target resolution and --local flag to /meta",
@@ -616,14 +616,27 @@
         "agent-system/extensions/core/scripts/parse-command-args.sh"
       ],
       "created": "2026-07-15T00:00:00Z",
-      "last_updated": "2026-07-15T00:00:00Z",
-      "session_id": "sess_1784134399_cc86b7",
-      "artifacts": []
+      "last_updated": "2026-07-15T17:42:56Z",
+      "session_id": "sess_1784135810_7e6755_873",
+      "artifacts": [
+        {
+          "path": "specs/873_global_default_target_resolution_for_meta/reports/01_global_default_target_resolution.md",
+          "type": "report",
+          "summary": "Research report: global-default /meta target resolution"
+        },
+        {
+          "path": "specs/873_global_default_target_resolution_for_meta/plans/01_global_default_target_resolution.md",
+          "type": "plan",
+          "summary": "5-phase implementation plan: LOCAL_FLAG in parse-command-args.sh; GLOBAL_ROOT resolution, mode/root threading, and chained postflight commit in skill-meta/SKILL.md; global-default semantics documentation in commands/meta.md; shell-level chained-cd verification; live cross-repo /meta verification with mandatory cleanup."
+        }
+      ],
+      "updated": "2026-07-15T18:43:38Z",
+      "completion_summary": "Phases 1-4 complete and committed: --local flag in parse-command-args.sh, GLOBAL_ROOT resolution + mode/root threading + chained cd postflight in skill-meta, and global-default semantics documented in commands/meta.md. Chained-cd mechanism empirically verified (single chained Bash call resolves to global root; cd does not persist across separate Bash calls). Phase 5 (live cross-repo /meta verification) BLOCKED: Claude Code non-interactive workspace-trust dialog fires before mode detection for any freshly-created cwd under claude -p. Requires a human running Claude Code interactively; manual procedure recorded in the plan Phase 5 section. Consequence: meta-builder-agent path-qualification coupling remains unverified."
     },
     {
       "project_number": 874,
       "project_name": "fix_stale_self_sync_guard_blocking_regeneration",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Fix stale self-sync guard blocking nvim deploy-tree regeneration",
@@ -633,14 +646,25 @@
         "lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua"
       ],
       "created": "2026-07-15T00:00:00Z",
-      "last_updated": "2026-07-15T00:00:00Z",
-      "session_id": "sess_1784134399_cc86b7",
-      "artifacts": []
+      "last_updated": "2026-07-15T18:31:35Z",
+      "session_id": "sess_1784135810_7e6755_874",
+      "artifacts": [
+        {
+          "path": "specs/874_fix_stale_self_sync_guard_blocking_regeneration/reports/01_stale-self-sync-guard-fix.md",
+          "type": "report",
+          "summary": "Full research findings: guard location and exact behavior, empirical scan-path verification (commands vs lib/tests self-referential difference), read/write-safety verification, root_files/settings non-issue confirmation, recommended surgical fix with suggested code comment, and appendix of exact test commands/output."
+        },
+        {
+          "path": "specs/874_fix_stale_self_sync_guard_blocking_regeneration/plans/01_remove-stale-self-sync-guard.md",
+          "type": "plan",
+          "summary": "Five-phase, four-wave implementation plan; all phases marked [COMPLETED] with per-task completion annotations and one documented execution-order deviation (Phase 2 edits made before Phase 1 harness build, within the same declared wave)."
+        }
+      ]
     },
     {
       "project_number": 875,
       "project_name": "teach_meta_builder_agent_global_mode_semantics",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Teach meta-builder-agent global-mode semantics",
@@ -652,9 +676,25 @@
         "agent-system/extensions/core/agents/meta-builder-agent.md"
       ],
       "created": "2026-07-15T00:00:00Z",
-      "last_updated": "2026-07-15T00:00:00Z",
-      "session_id": "sess_1784134399_cc86b7",
-      "artifacts": []
+      "last_updated": "2026-07-15T19:49:15Z",
+      "session_id": "sess_1784135810_7e6755_875",
+      "artifacts": [
+        {
+          "path": "specs/875_teach_meta_builder_agent_global_mode_semantics/reports/01_global-mode-semantics-for-meta-builder.md",
+          "type": "report",
+          "summary": "Research report: full per-line classification of target file's specs//.claude/ references, script path-resolution finding, SCOPE BOUNDARY reframing recommendation, and static-vs-manual verification boundary."
+        },
+        {
+          "path": "specs/875_teach_meta_builder_agent_global_mode_semantics/plans/01_global-mode-semantics-meta-builder.md",
+          "type": "plan",
+          "summary": "6-phase implementation plan (est. 4h) with dependency waves [[1],[2,3,4,5],[6]]. Wave 2 phases are logically independent but MUST run sequentially in one agent (all edit the same single file). Adopts the research report's 5-category classification as-is; path-qualification strategy is absolute paths by default with chained cd for git only; verification is static-only with a documented manual user procedure."
+        },
+        {
+          "path": "specs/875_teach_meta_builder_agent_global_mode_semantics/summaries/01_global-mode-semantics-meta-builder-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary with OBSERVED/NOT OBSERVED verification table and the manual live-test procedure for the user."
+        }
+      ]
     },
     {
       "project_number": 876,
@@ -813,7 +853,7 @@
     {
       "project_number": 885,
       "project_name": "enable_and_verify_passive_signal_capture",
-      "status": "not_started",
+      "status": "partial",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Enable and verify passive signal capture",
@@ -832,14 +872,27 @@
         "agent-system/extensions/core/scripts/check-extension-docs.sh"
       ],
       "created": "2026-07-15",
-      "last_updated": "2026-07-15",
-      "session_id": "sess_1784134595_aaf8dd",
-      "artifacts": []
+      "last_updated": "2026-07-15T19:36:36Z",
+      "session_id": "sess_1784135810_7e6755_885",
+      "artifacts": [
+        {
+          "path": "specs/885_enable_and_verify_passive_signal_capture/reports/01_enable-verify-passive-signal-capture.md",
+          "type": "report",
+          "summary": "Full research report: regeneration-feasibility findings, exact manual <leader>al procedure with success criteria, live check-extension-docs.sh evidence for scope item 6, dotfiles-vs-repo settlement for scope items 3/4, verified cleanupPeriodDays:0 claim, and cwd-vs-cc_session_id schema recommendation aligned with but not over-committing to sibling report 887."
+        },
+        {
+          "path": "specs/885_enable_and_verify_passive_signal_capture/plans/01_passive-signal-capture-deploy.md",
+          "type": "plan",
+          "summary": "6-phase plan. Waves: [1,3,4] parallel (landable, disjoint files), [2] after 1 (shares the two hooks), [5] after 1-4 ([BLOCKED] manual regeneration), [6] after 5 ([BLOCKED] event-flow verification). Terminus [PARTIAL]."
+        }
+      ],
+      "updated": "2026-07-15T20:16:11Z",
+      "completion_summary": "Phases 1-4 complete and committed: replaced the || true silent-fail idiom at all 10 events-append.sh call sites with an observable non-fatal wrapper (fixed a real set -e abort bug in the process); added nullable cwd field to events-schema.json + threading, with repo derived at query time in events-query.sh; extended check-extension-docs.sh with an ADVISORY (non-blocking) core deploy-drift lane; added a source-store no-headless-regeneration note and a HANDOFF.md. Phases 5-6 BLOCKED: end-to-end verification needs a manual <leader>al Sync-all regeneration (no headless path exists — load_all_globally calls vim.fn.confirm, execute_sync is a module-local closure) in nvim plus one other repo, THEN accumulated real usage before event flow can be observed. OTel/cleanupPeriodDays (scope 3/4) handed off to ~/.dotfiles as a copy-pasteable snippet (cleanupPeriodDays: 365, never 0). See specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md."
     },
     {
       "project_number": 886,
       "project_name": "retroactive_bootstrap_harvest_from_transcript_window",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Retroactive bootstrap harvest from the transcript window",
@@ -850,14 +903,25 @@
         "specs/"
       ],
       "created": "2026-07-15",
-      "last_updated": "2026-07-15",
-      "session_id": "sess_1784134595_aaf8dd",
-      "artifacts": []
+      "last_updated": "2026-07-15T20:03:03Z",
+      "session_id": "sess_1784135810_7e6755_886",
+      "artifacts": [
+        {
+          "path": "specs/886_retroactive_bootstrap_harvest_from_transcript_window/reports/01_extraction-design.md",
+          "type": "report",
+          "summary": "Extraction design: parser reuse strategy, self-exclusion mechanism, cwd/attribution join design, output-location decision, corpus schema, and risks (including a newly-found history.jsonl corruption issue and unverified full-corpus claude-code-log performance)."
+        },
+        {
+          "path": "specs/886_retroactive_bootstrap_harvest_from_transcript_window/plans/01_transcript-corpus-harvest.md",
+          "type": "plan",
+          "summary": "Six-phase plan, all phases marked [COMPLETED] with per-task completion/deviation annotations; Testing & Validation checklist fully checked off with observed numbers and honest divergence notes."
+        }
+      ]
     },
     {
       "project_number": 887,
       "project_name": "research_telemetry_source_architecture_and_distill_redesign",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Research: telemetry source architecture and /distill redesign",
@@ -873,9 +937,15 @@
         "agent-system/extensions/memory/index-entries.json"
       ],
       "created": "2026-07-15",
-      "last_updated": "2026-07-15",
-      "session_id": "sess_1784134595_aaf8dd",
-      "artifacts": []
+      "last_updated": "2026-07-15T17:49:47Z",
+      "session_id": "sess_1784135810_7e6755_887",
+      "artifacts": [
+        {
+          "path": "specs/887_research_telemetry_source_architecture_and_distill_redesign/reports/01_telemetry-source-architecture.md",
+          "type": "report",
+          "summary": "Research report: telemetry source architecture and /distill redesign"
+        }
+      ]
     }
   ],
   "completed_projects": [],

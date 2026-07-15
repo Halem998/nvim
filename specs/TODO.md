@@ -11,19 +11,17 @@ next_project_number: 888
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,874,876,877,880,882,883,884,886 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
-| 2 | 875,878,881,885,887 | 873,874,877,880 | agent-system, commit-scoping-concurrency, status-marker-lifecycle |
+| 1 | 873,876,877,880,882,883,884,885 | -- | agent-system, commit-scoping-concurrency, status-marker-lifecycle |
+| 2 | 878,881,887 | 873,877,880 | agent-system, commit-scoping-concurrency, status-marker-lifecycle |
 | 3 | 879 | 876,878 | status-marker-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-873 [NOT STARTED] — Make /meta create tasks in the GLOBAL agent-system root by defaul
-  └─ 875 [NOT STARTED] — Update meta-builder-agent so it operates correctly at a resolved 
-  └─ 887 [NOT STARTED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
-886 [NOT STARTED] — TIME-SENSITIVE / HIGH PRIORITY. The 30-day window rolls daily and
-885 [NOT STARTED] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
+873 [PARTIAL] — Make /meta create tasks in the GLOBAL agent-system root by defaul
+  └─ 887 [RESEARCHED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
+885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
 
 ### Commit Scoping Concurrency
 
@@ -32,10 +30,6 @@ next_project_number: 888
 882 [NOT STARTED] — RESEARCH-FIRST BY EXPLICIT USER DECISION. This task must NOT lock
 883 [NOT STARTED] — The staging contract written to avoid committing unrelated state 
 884 [NOT STARTED] — The staging prohibition is prose-only. Three documents forbid `gi
-
-### Extensions
-
-874 [NOT STARTED] — Remove or rework the stale self-sync guard that prevents the nvim
 
 ### Status Marker Lifecycle
 
@@ -48,10 +42,11 @@ next_project_number: 888
 ## Tasks
 
 ### 887. Research: telemetry source architecture and /distill redesign
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 873
+- **Research**: [887_research_telemetry_source_architecture_and_distill_redesign/reports/01_telemetry-source-architecture.md]
 
 **Description**: RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The user will /revise this and then /expand it into implementation tasks. Do NOT jump to implementation.
 
@@ -94,10 +89,12 @@ DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside s
 ---
 
 ### 886. Retroactive bootstrap harvest from the transcript window
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [886_retroactive_bootstrap_harvest_from_transcript_window/reports/01_extraction-design.md]
+- **Plan**: [886_retroactive_bootstrap_harvest_from_transcript_window/plans/01_transcript-corpus-harvest.md]
 
 **Description**: TIME-SENSITIVE / HIGH PRIORITY. The 30-day window rolls daily and ~88% of history is ALREADY unrecoverable. Independent of the capture task -- can run in parallel, no dependencies.
 
@@ -130,10 +127,12 @@ DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside s
 ---
 
 ### 885. Enable and verify passive signal capture
-- **Status**: [NOT STARTED]
+- **Status**: [PARTIAL]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 874
+- **Research**: [885_enable_and_verify_passive_signal_capture/reports/01_enable-verify-passive-signal-capture.md]
+- **Plan**: [885_enable_and_verify_passive_signal_capture/plans/01_passive-signal-capture-deploy.md]
 
 **Description**: URGENT / HIGH PRIORITY. The 30-day transcript window is reaped daily, so every day without capture is permanently lost data.
 
@@ -410,10 +409,13 @@ DELIVERABLE RULE: honor no-task-references-in-deliverables; cite durable anchors
 ---
 
 ### 875. Teach meta-builder-agent global-mode semantics
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 873
+- **Research**: [875_teach_meta_builder_agent_global_mode_semantics/reports/01_global-mode-semantics-for-meta-builder.md]
+- **Plan**: [875_teach_meta_builder_agent_global_mode_semantics/plans/01_global-mode-semantics-meta-builder.md]
+- **Summary**: [875_teach_meta_builder_agent_global_mode_semantics/summaries/01_global-mode-semantics-meta-builder-summary.md]
 
 **Description**: Update meta-builder-agent so it operates correctly at a resolved global root and so the tasks it CREATES name source-store paths rather than deploy-tree paths.
 
@@ -434,10 +436,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 874. Fix stale self-sync guard blocking nvim deploy-tree regeneration
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
+- **Research**: [874_fix_stale_self_sync_guard_blocking_regeneration/reports/01_stale-self-sync-guard-fix.md]
+- **Plan**: [874_fix_stale_self_sync_guard_blocking_regeneration/plans/01_remove-stale-self-sync-guard.md]
 
 **Description**: Remove or rework the stale self-sync guard that prevents the nvim repo from regenerating its OWN .claude/ deploy tree via the <leader>al picker.
 
@@ -461,10 +465,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 873. Add global-default target resolution and --local flag to /meta
-- **Status**: [NOT STARTED]
+- **Status**: [PARTIAL]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [873_global_default_target_resolution_for_meta/reports/01_global_default_target_resolution.md]
+- **Plan**: [873_global_default_target_resolution_for_meta/plans/01_global_default_target_resolution.md]
 
 **Description**: Make /meta create tasks in the GLOBAL agent-system root by default, with `--local` as the only opt-out. There is NO interactive prompt.
 
