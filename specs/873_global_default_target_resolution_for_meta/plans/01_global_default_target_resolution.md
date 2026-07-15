@@ -255,28 +255,40 @@ parallel-defaults note, and the settings dependency.
 
 ---
 
-### Phase 4: Shell-level verification of the chained-cd mechanism [NOT STARTED]
+### Phase 4: Shell-level verification of the chained-cd mechanism [COMPLETED]
 
 **Goal**: Empirically prove — before spending effort on the end-to-end run — that a chained
 `cd "$GLOBAL_ROOT" && git ...` from a foreign cwd operates on the global repo, and that an unchained
 `cd` does not persist. This validates the research's central refinement.
 
 **Tasks**:
-- [ ] From a foreign repo cwd (e.g. `~/Projects/cslib`), in a SINGLE Bash call, run:
+- [x] From a foreign repo cwd (e.g. `~/Projects/cslib`), in a SINGLE Bash call, run:
       `cd ~/Projects/cslib && GLOBAL_ROOT="${CLAUDE_AGENT_GLOBAL_ROOT:-$HOME/.config/nvim}" && cd "$GLOBAL_ROOT" && git rev-parse --show-toplevel`
-      Record the actual output. Expected: `/home/benjamin/.config/nvim`.
-- [ ] In a SEPARATE Bash call, run `git rev-parse --show-toplevel` with no `cd` and record the output.
+      Record the actual output. Expected: `/home/benjamin/.config/nvim`. *(completed: deviation — used
+      `$SCRATCH/fake-foreign-repo` instead of `~/Projects/cslib` to avoid side effects in a real
+      external repo, per the plan's own "e.g." framing. OBSERVED output: `/home/benjamin/.config/nvim`
+      — matches expected.)*
+- [x] In a SEPARATE Bash call, run `git rev-parse --show-toplevel` with no `cd` and record the output.
       This demonstrates whether the prior call's `cd` persisted. Record the observed behavior verbatim
-      whichever way it resolves — this is the empirical check on the research's claim.
-- [ ] Confirm the `--local` path: with `target_root` = foreign repo, the same chained block resolves to the
-      foreign repo, not the global root.
-- [ ] Confirm the no-op path: run the chained block with cwd already `~/.config/nvim` and confirm it
-      resolves to `~/.config/nvim` (same code path, no special-casing).
-- [ ] Re-confirm source/deploy identity for the three changed files
+      whichever way it resolves — this is the empirical check on the research's claim. *(completed:
+      OBSERVED — a follow-up separate Bash call's `pwd` reverted to `/home/benjamin/.config/nvim` (the
+      session's default cwd) even after an explicit `cd "$SCRATCH/fake-foreign-repo"` in the prior,
+      separate call. Confirms cwd does NOT persist across separate Bash tool invocations — the
+      research's central refinement is empirically validated.)*
+- [x] Confirm the `--local` path: with `target_root` = foreign repo, the same chained block resolves to the
+      foreign repo, not the global root. *(completed: OBSERVED — `TARGET_ROOT="$SCRATCH/fake-foreign-repo" && cd "$TARGET_ROOT" && git rev-parse --show-toplevel` returned the scratch foreign-repo path, not the global root.)*
+- [x] Confirm the no-op path: run the chained block with cwd already `~/.config/nvim` and confirm it
+      resolves to `~/.config/nvim` (same code path, no special-casing). *(completed: OBSERVED — returned
+      `/home/benjamin/.config/nvim`.)*
+- [x] Re-confirm source/deploy identity for the three changed files
       (`diff agent-system/extensions/core/<f> .claude/<f>`) and record which now differ — after Wave 1 they
-      SHOULD differ, proving edits landed in the source store and not the deploy tree.
-- [ ] Record every command and its actual output in the phase notes. Do not paraphrase expected output as
-      observed output.
+      SHOULD differ, proving edits landed in the source store and not the deploy tree. *(completed:
+      OBSERVED — all three files now differ: `parse-command-args.sh` (diff exit 1, 14 lines of diff),
+      `skill-meta/SKILL.md` (diff exit 1, 70 lines), `commands/meta.md` (diff exit 1, 55 lines). All
+      three are byte-identical to `.claude/` copies pre-Wave-1 and now diverge, confirming edits landed
+      exclusively in the source store.)*
+- [x] Record every command and its actual output in the phase notes. Do not paraphrase expected output as
+      observed output. *(completed: recorded in the implementation summary.)*
 
 **Timing**: 0.75 hours
 
