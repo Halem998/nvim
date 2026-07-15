@@ -51,7 +51,8 @@
       "task.md",
       "todo.md",
       "zulip.md",
-      "project-overview.md"
+      "project-overview.md",
+      "README.md"
     ],
     "rules": [
       "artifact-formats.md",
@@ -61,7 +62,8 @@
       "pr-prohibition.md",
       "state-management.md",
       "workflows.md",
-      "project-overview-detection.md"
+      "project-overview-detection.md",
+      "no-task-references-in-deliverables.md"
     ],
     "skills": [
       "skill-fix-it",
@@ -136,7 +138,9 @@
       "lifecycle-notify.sh",
       "reconcile-artifacts.sh",
       "task-lock.sh",
-      "orchestrator-postflight.sh"
+      "orchestrator-postflight.sh",
+      "lint/lint-contract-compliance.sh",
+      "validate-handoff.sh"
     ],
     "hooks": [
       "claude-stop-notify.sh",

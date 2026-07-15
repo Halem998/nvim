@@ -155,29 +155,32 @@ copies of `install-extension.sh` so future deploys are correct.
 
 ---
 
-### Phase 2: Backfill core-owned orphans [NOT STARTED]
+### Phase 2: Backfill core-owned orphans [COMPLETED]
 
 **Goal**: Give the four genuinely core-owned orphans a source under `agent-system/extensions/core/`
 and declare them in core's manifest.
 
 **Tasks**:
-- [ ] `rules/no-task-references-in-deliverables.md`: copy the deployed file to
+- [x] `rules/no-task-references-in-deliverables.md`: copy the deployed file to
       `agent-system/extensions/core/rules/no-task-references-in-deliverables.md`; add
-      `"no-task-references-in-deliverables.md"` to core's `provides.rules`.
-- [ ] `commands/README.md`: create `agent-system/extensions/core/commands/README.md` and add
+      `"no-task-references-in-deliverables.md"` to core's `provides.rules`. *(completed)*
+- [x] `commands/README.md`: create `agent-system/extensions/core/commands/README.md` and add
       `"README.md"` to core's `provides.commands`. **Rewrite** the content — the deployed copy
       stales-claims `.claude/commands/` is a "Legacy Mirror Directory" superseded by
       `.opencode/commands/`, which is backwards; `.claude/` is the primary Claude Code deploy tree.
       Then overwrite the deployed `.claude/commands/README.md` from the new source so both match.
-- [ ] `scripts/lint/lint-contract-compliance.sh`: copy to
+      *(completed: rewritten to state .claude/ is the primary/active tree, .opencode/ a secondary
+      mirror with its own extension-source layer)*
+- [x] `scripts/lint/lint-contract-compliance.sh`: copy to
       `agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh` (sibling of the
       already-sourced `lint/lint-postflight-boundary.sh`); add
-      `"lint/lint-contract-compliance.sh"` to core's `provides.scripts`.
-- [ ] `scripts/validate-handoff.sh`: copy to
+      `"lint/lint-contract-compliance.sh"` to core's `provides.scripts`. *(completed)*
+- [x] `scripts/validate-handoff.sh`: copy to
       `agent-system/extensions/core/scripts/validate-handoff.sh`; add `"validate-handoff.sh"` to
-      core's `provides.scripts`.
-- [ ] Confirm each new source file is byte-identical to its deployed counterpart (except
-      `commands/README.md`, which is deliberately rewritten in both places).
+      core's `provides.scripts`. *(completed)*
+- [x] Confirm each new source file is byte-identical to its deployed counterpart (except
+      `commands/README.md`, which is deliberately rewritten in both places). *(completed: diff
+      empty for all 4)*
 
 **Timing**: 1 hour
 

@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Backfill core-owned orphans",
+  "started_at": "2026-07-15T00:10:00Z",
+  "last_updated": "2026-07-15T00:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Source no-task-references-in-deliverables.md", "status": "done", "files_touched": ["agent-system/extensions/core/rules/no-task-references-in-deliverables.md", "agent-system/extensions/core/manifest.json"]},
+    {"id": 2, "description": "Source and rewrite commands/README.md", "status": "done", "files_touched": ["agent-system/extensions/core/commands/README.md", ".claude/commands/README.md", "agent-system/extensions/core/manifest.json"]},
+    {"id": 3, "description": "Source lint-contract-compliance.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh", "agent-system/extensions/core/manifest.json"]},
+    {"id": 4, "description": "Source validate-handoff.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-handoff.sh", "agent-system/extensions/core/manifest.json"]},
+    {"id": 5, "description": "Confirm byte-identical", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
