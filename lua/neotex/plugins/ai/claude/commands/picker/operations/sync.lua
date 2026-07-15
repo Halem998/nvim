@@ -599,6 +599,20 @@ local function execute_sync(project_dir, all_artifacts, merge_only, base_dir, pr
       untracked_msg = table.concat(lines, "\n")
     end
 
+    -- Self-load: lib/tests were skipped (see scan_all_artifacts) rather than
+    -- synced, because they have no durable core-store source and would
+    -- otherwise resolve to a degenerate copy-onto-itself. Surface that
+    -- explicitly so "Lib: 0 | Tests: 0" is never mistaken for a complete
+    -- regeneration. Empty string (no change to existing output) when the key
+    -- is absent, i.e. every non-self-load sync.
+    local self_load_msg = ""
+    if all_artifacts._self_load_skipped then
+      self_load_msg = string.format(
+        "\n  Note: %s skipped (self-load; no core-store source)",
+        table.concat(all_artifacts._self_load_skipped, "/")
+      )
+    end
+
     helpers.notify(
       string.format(
         "Synced %d artifacts%s:\n" ..
@@ -606,14 +620,14 @@ local function execute_sync(project_dir, all_artifacts, merge_only, base_dir, pr
         "  Lib: %d (%d nested) | Docs: %d (%d nested)\n" ..
         "  Scripts: %d | Tests: %d | Skills: %d (%d nested)\n" ..
         "  Agents: %d | Rules: %d | Context: %d\n" ..
-        "  Systemd: %d | Settings: %d | Root Files: %d%s%s",
+        "  Systemd: %d | Settings: %d | Root Files: %d%s%s%s",
         total_synced, strategy_msg,
         counts.commands, counts.hooks, counts.templates,
         counts.lib, lib_subdir, counts.docs, doc_subdir,
         counts.scripts, counts.tests, counts.skills, skill_subdir,
         counts.agents, counts.rules, counts.context,
         counts.systemd, counts.settings, counts.root_files,
-        protect_msg, untracked_msg
+        protect_msg, untracked_msg, self_load_msg
       ),
       "INFO"
     )
@@ -891,6 +905,14 @@ function M.scan_all_artifacts(global_dir, project_dir, config)
   local base_dir = (config and config.base_dir) or ".claude"
   local artifacts = {}
 
+  -- Self-load: project_dir and global_dir are the same repo (e.g. running the
+  -- sync picker from inside the global source repo itself). Core-sourced
+  -- categories still resolve to distinct read/write paths in this case (source
+  -- is agent-system/extensions/core/, destination is base_dir), so self-load is
+  -- safe for them. lib/tests are the exception -- see the base_dir == ".claude"
+  -- branch below.
+  local is_self_load = project_dir == global_dir
+
   -- Load source-side exclusions from .sync-exclude (if present)
   local sync_exclude_set, audit_patterns = load_sync_exclude(global_dir)
   local sync_exclude_array = set_to_array(sync_exclude_set)
@@ -1062,8 +1084,20 @@ function M.scan_all_artifacts(global_dir, project_dir, config)
   -- .claude-specific artifacts (directories that don't exist in .opencode/)
   -- lib and tests are not core extension categories; read from base_dir root
   if base_dir == ".claude" then
-    artifacts.lib = sync_scan("lib", "*.sh", true, nil, nil, false)
-    artifacts.tests = sync_scan("tests", "test_*.sh", true, nil, nil, false)
+    -- lib/tests pass use_core_source=false above, so their source path is
+    -- {global_dir}/.claude/{lib,tests} -- the exact same location sync_scan
+    -- writes back to under a self-load (project_dir == global_dir). There is no
+    -- durable core-store source for these two categories, so a self-load would
+    -- only ever copy a file onto itself. Skip them on self-load rather than
+    -- perform that degenerate copy, and record the skip so callers (the sync
+    -- summary notification, the picker preview) can surface it non-silently
+    -- instead of it reading as a completed "Lib: 0 | Tests: 0" regeneration.
+    if is_self_load then
+      artifacts._self_load_skipped = { "lib", "tests" }
+    else
+      artifacts.lib = sync_scan("lib", "*.sh", true, nil, nil, false)
+      artifacts.tests = sync_scan("tests", "test_*.sh", true, nil, nil, false)
+    end
     -- Settings: now in extensions/core/root-files/, copied by loader on extension load
     -- For .opencode, settings may still be at root
     if not core_source_base then
@@ -1142,12 +1176,6 @@ function M.load_all_globally(config)
   local project_dir = vim.fn.getcwd()
   local global_dir = scan.get_global_dir()
   local base_dir = (config and config.base_dir) or ".claude"
-
-  -- Don't load if we're in the global directory
-  if project_dir == global_dir then
-    helpers.notify("Already in the global directory", "INFO")
-    return 0
-  end
 
   -- Scan all artifact types using config-appropriate base_dir
   local all_artifacts = M.scan_all_artifacts(global_dir, project_dir, config)
