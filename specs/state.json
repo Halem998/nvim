@@ -438,7 +438,7 @@
     {
       "project_number": 869,
       "project_name": "unified_event_reflection_store",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "memory-improvement-loop",
       "title": "Unified event/reflection JSONL store + schema + reader API",
@@ -453,14 +453,30 @@
         "agent-system/extensions/core/index-entries.json"
       ],
       "created": "2026-07-15T07:43:49Z",
-      "last_updated": "2026-07-15T07:43:49Z",
-      "session_id": "sess_1784101429_7c3fb31c",
-      "artifacts": []
+      "last_updated": "2026-07-15T08:30:27Z",
+      "session_id": "sess_1784102843_ae113e_869",
+      "artifacts": [
+        {
+          "path": "specs/869_unified_event_reflection_store/reports/01_event-store-schema-design.md",
+          "type": "report",
+          "summary": "Full event store design"
+        },
+        {
+          "path": "specs/869_unified_event_reflection_store/plans/01_event-store-plumbing.md",
+          "type": "plan",
+          "summary": "Event store plumbing plan"
+        },
+        {
+          "path": "specs/869_unified_event_reflection_store/plans/01_event-store-plumbing.md",
+          "type": "summary",
+          "summary": "Event store plumbing implementation"
+        }
+      ]
     },
     {
       "project_number": 870,
       "project_name": "automatic_hook_event_logging",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "memory-improvement-loop",
       "title": "Automatic hook-based lifecycle event logging",
@@ -478,14 +494,30 @@
         "agent-system/extensions/core/index-entries.json"
       ],
       "created": "2026-07-15T07:43:49Z",
-      "last_updated": "2026-07-15T07:43:49Z",
-      "session_id": "sess_1784101429_7c3fb31c",
-      "artifacts": []
+      "last_updated": "2026-07-15T08:59:26Z",
+      "session_id": "sess_1784102843_ae113e_870",
+      "artifacts": [
+        {
+          "path": "specs/870_automatic_hook_event_logging/reports/01_automatic-hook-event-logging.md",
+          "type": "report",
+          "summary": "Automatic hook event logging research"
+        },
+        {
+          "path": "specs/870_automatic_hook_event_logging/plans/01_hook-event-instrumentation.md",
+          "type": "plan",
+          "summary": "Hook event instrumentation plan"
+        },
+        {
+          "path": "specs/870_automatic_hook_event_logging/summaries/01_hook-event-instrumentation-summary.md",
+          "type": "summary",
+          "summary": "Hook event instrumentation implementation"
+        }
+      ]
     },
     {
       "project_number": 871,
       "project_name": "completion_time_reflective_harvest",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "memory-improvement-loop",
       "title": "Completion-time reflective harvest (/todo + /learn)",
@@ -506,14 +538,30 @@
         "agent-system/extensions/core/manifest.json"
       ],
       "created": "2026-07-15T07:43:49Z",
-      "last_updated": "2026-07-15T07:43:49Z",
-      "session_id": "sess_1784101429_7c3fb31c",
-      "artifacts": []
+      "last_updated": "2026-07-15T15:15:27Z",
+      "session_id": "sess_1784102843_ae113e_871",
+      "artifacts": [
+        {
+          "path": "specs/871_completion_time_reflective_harvest/reports/01_completion_time_reflective_harvest.md",
+          "type": "report",
+          "summary": "Completion-time reflective harvest research"
+        },
+        {
+          "path": "specs/871_completion_time_reflective_harvest/plans/01_reflective-harvest.md",
+          "type": "plan",
+          "summary": "Reflective harvest plan"
+        },
+        {
+          "path": "specs/871_completion_time_reflective_harvest/summaries/01_reflective-harvest-summary.md",
+          "type": "summary",
+          "summary": "Reflective harvest implementation"
+        }
+      ]
     },
     {
       "project_number": 872,
       "project_name": "distill_review_revise_dream_mode",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "memory-improvement-loop",
       "title": "/distill review/revise (dream) mode",
@@ -532,9 +580,26 @@
         "agent-system/extensions/memory/index-entries.json"
       ],
       "created": "2026-07-15T07:43:49Z",
-      "last_updated": "2026-07-15T07:43:49Z",
-      "session_id": "sess_1784101429_7c3fb31c",
-      "artifacts": []
+      "last_updated": "2026-07-15T15:42:19Z",
+      "session_id": "sess_1784102843_ae113e_872",
+      "artifacts": [
+        {
+          "path": "specs/872_distill_review_revise_dream_mode/reports/01_dream_mode_research.md",
+          "type": "report",
+          "summary": "Dream mode research"
+        },
+        {
+          "path": "specs/872_distill_review_revise_dream_mode/plans/01_distill-dream-mode.md",
+          "type": "plan",
+          "summary": "Distill dream mode plan"
+        },
+        {
+          "path": "specs/872_distill_review_revise_dream_mode/summaries/01_distill-dream-mode-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for /distill --dream mode"
+        }
+      ],
+      "completion_summary": "Added /distill --dream as an 8th sub-mode: ingests the unified event store via events-query.sh, correlates events to memories (task-number match then keyword overlap), classifies corroborated/contradicted/gap, revises the vault through existing UPDATE/EXTEND/CREATE/tombstone primitives behind a mandatory AskUserQuestion stop, and surfaces a separate improvement-proposal deliverable. Documentation-only change across six memory-extension files; agent-system/extensions/core/ untouched."
     }
   ],
   "completed_projects": [],

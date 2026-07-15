@@ -4,64 +4,56 @@ next_project_number: 873
 
 # TODO
 
-## Task Order
-
-*Updated 2026-07-15. Generated from state.json dependency graph.*
-
-**Dependency Waves**:
-| Wave | Tasks | Blocked by | Topics |
-|------|-------|------------|--------|
-| 1 | 869 | -- | memory-improvement-loop |
-| 2 | 870 | 869 | memory-improvement-loop |
-| 3 | 871 | 870 | memory-improvement-loop |
-| 4 | 872 | 871 | memory-improvement-loop |
-
-**Grouped by Topic** (indented = depends on parent):
-
-### Memory Improvement Loop
-
-869 [NOT STARTED] — Define the append-only JSONL store (proposed specs/events.jsonl, 
-  └─ 870 [NOT STARTED] — Emit structured events into the unified store automatically: inst
-    └─ 871 [NOT STARTED] — Add a structured reflective capture at task completion (what work
-      └─ 872 [NOT STARTED] — Add a new review/revise (dream) mode to the existing /distill com
 
 ## Tasks
 
 ### 872. /distill review/revise (dream) mode
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: memory-improvement-loop
 - **Dependencies**: Task 869, Task 870, Task 871
+- **Research**: [872_distill_review_revise_dream_mode/reports/01_dream_mode_research.md]
+- **Plan**: [872_distill_review_revise_dream_mode/plans/01_distill-dream-mode.md]
+- **Summary**: [872_distill_review_revise_dream_mode/summaries/01_distill-dream-mode-summary.md]
 
 **Description**: Add a new review/revise (dream) mode to the existing /distill command (NOT a separate /dream command) that ingests the unified store, re-reviews and revises ALL memories in light of the captured logs, and synthesizes concrete agent-system improvement proposals (which may become tasks or documentation edits). Reuse /distill's existing score/merge/compress/refine/purge/gc primitives internally and the skill-memory distill sub_mode dispatch; this is the loop-closing consumer. Depends on the store plus both capture layers so it operates over real captured data. Keep the memory EXTENSION.md, manifest.json, index-entries.json, and distill-usage context in sync (CLAUDE.md is auto-generated).
 
 ---
 
 ### 871. Completion-time reflective harvest (/todo + /learn)
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: memory-improvement-loop
 - **Dependencies**: Task 869, Task 870
+- **Research**: [871_completion_time_reflective_harvest/reports/01_completion_time_reflective_harvest.md]
+- **Plan**: [871_completion_time_reflective_harvest/plans/01_reflective-harvest.md]
+- **Summary**: [871_completion_time_reflective_harvest/summaries/01_reflective-harvest-summary.md]
 
 **Description**: Add a structured reflective capture at task completion (what worked / what was hard / what was missed / successes) by extending the existing skill-todo Stage 7/9 harvest and the /learn --task flow rather than replacing them. Persist the reflection as a new field alongside memory_candidates/completion_summary in the task's state.json entry, written at the orchestrator-postflight.sh completion seam, and surface it via the existing AskUserQuestion interactive prompt; the reflection also lands in the unified store for distillation. Depends on the store contract. This task shares orchestrator-postflight.sh and the core EXTENSION.md/manifest.json surfaces with the hook-logging task, so it is intentionally serialized after it (user chose the serialized/safe ordering). Keep the memory and core EXTENSION.md / manifest / index-entries in sync (CLAUDE.md is auto-generated).
 
 ---
 
 ### 870. Automatic hook-based lifecycle event logging
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: memory-improvement-loop
 - **Dependencies**: Task 869
+- **Research**: [870_automatic_hook_event_logging/reports/01_automatic-hook-event-logging.md]
+- **Plan**: [870_automatic_hook_event_logging/plans/01_hook-event-instrumentation.md]
+- **Summary**: [870_automatic_hook_event_logging/summaries/01_hook-event-instrumentation-summary.md]
 
 **Description**: Emit structured events into the unified store automatically: instrument the four skill-base.sh lifecycle stage functions (preflight/context_injection/verification/postflight) for timings and success milestones, and add a PostToolUse plus Stop/SubagentStop logger hook capturing command/agent lifecycle events, deviations, and blockers, cross-linked with errors.json via the shared session_id/task keys. Reuse the existing provides.hooks + settings.json wiring convention; note there is currently no live functioning top-level lifecycle hook, so this also establishes that pattern for real. Handle the lazy absence of errors.json gracefully (do not assume it exists). Depends on the store contract for its append helper. Keep the core EXTENSION.md, manifest.json, and index-entries.json in sync (CLAUDE.md is auto-generated).
 
 ---
 
 ### 869. Unified event/reflection JSONL store + schema + reader API
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: memory-improvement-loop
 - **Dependencies**: None
+- **Research**: [869_unified_event_reflection_store/reports/01_event-store-schema-design.md]
+- **Plan**: [869_unified_event_reflection_store/plans/01_event-store-plumbing.md]
+- **Summary**: [869_unified_event_reflection_store/plans/01_event-store-plumbing.md]
 
 **Description**: Define the append-only JSONL store (proposed specs/events.jsonl, created lazily like errors.json) that both capture layers write and the memory distillation reads. Specify the event schema (event_type, timestamp, duration, session_id, task, checkpoint, category for deviation/blocker/milestone/success, and cross-link to errors.json), and ship a shared append helper plus a query/reader helper so no subsystem hand-rolls jq. This is the foundational contract and is sequenced first (build inversion of the runtime data flow) so the producer layers have a validated write target and the distillation consumer has a stable reader; it implements only the store plumbing and its documented format, no agent-behavioral capture itself. Reuse the errors.json entry-schema conventions and the shared session_id/task cross-link keys. Keep the core EXTENSION.md, manifest.json, and index-entries.json in sync (CLAUDE.md is auto-generated, never hand-edited).
 
