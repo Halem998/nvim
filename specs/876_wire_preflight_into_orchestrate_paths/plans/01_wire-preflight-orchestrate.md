@@ -133,22 +133,24 @@ in `skill-orchestrate/SKILL.md` and rename the Stage 2 heading.
 
 ---
 
-### Phase 2: Base skill multi-task Stage MT-4 preflights [NOT STARTED]
+### Phase 2: Base skill multi-task Stage MT-4 preflights [COMPLETED]
 
 **Goal**: Add per-task preflight before each group's dispatch in the multi-task dispatch stage.
 
 **Tasks**:
-- [ ] Re-verify line numbers before editing.
-- [ ] In Stage MT-4 (`### Stage MT-4: Phase-Aware Dispatch and Per-Task Postflight`, currently
+- [x] Re-verify line numbers before editing. *(completed: Stage MT-4 anchors drifted slightly to
+      line 673 / dispatch region 711-724, still matched plan's description; applied to both the
+      canonical source and the deployed .claude/ copy)*
+- [x] In Stage MT-4 (`### Stage MT-4: Phase-Aware Dispatch and Per-Task Postflight`, currently
       line 655), in the "Dispatch all groups in ONE message" region (currently 693-705), add a
       per-task `skill_preflight_update` call before each group's Agent dispatch, using
       `"${session_id}_${task_num}"` as the session id (matching the existing per-task postflight
-      convention in this stage):
-  - [ ] `research_tasks` loop (currently 695-696): `skill_preflight_update "$task_num" "research" "${session_id}_${task_num}"`
-  - [ ] `plan_tasks` loop (currently 698-700): `skill_preflight_update "$task_num" "plan" "${session_id}_${task_num}"`
-  - [ ] `implement_tasks` loop (currently 702-705): `skill_preflight_update "$task_num" "implement" "${session_id}_${task_num}"`
-- [ ] Note in the edited text that these preflights run per task before the single batched
-      dispatch message (consistent with the BATCHING RULE) and are idempotent.
+      convention in this stage): *(completed)*
+  - [x] `research_tasks` loop (currently 695-696): `skill_preflight_update "$task_num" "research" "${session_id}_${task_num}"` *(completed)*
+  - [x] `plan_tasks` loop (currently 698-700): `skill_preflight_update "$task_num" "plan" "${session_id}_${task_num}"` *(completed)*
+  - [x] `implement_tasks` loop (currently 702-705): `skill_preflight_update "$task_num" "implement" "${session_id}_${task_num}"` *(completed)*
+- [x] Note in the edited text that these preflights run per task before the single batched
+      dispatch message (consistent with the BATCHING RULE) and are idempotent. *(completed)*
 
 **Timing**: 25 minutes
 

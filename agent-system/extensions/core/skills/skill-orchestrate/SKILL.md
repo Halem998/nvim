@@ -708,18 +708,25 @@ the wave-split check's defer-not-fail behavior in Stage MT-3 step 4.5) and log:
 [orchestrate] WARNING: Task #{task_num} is locked by another session; deferring to a later cycle.
 ```
 
-**Dispatch all groups in ONE message**:
+**Dispatch all groups in ONE message**: the preflight calls below run per task, immediately
+before that task's Agent dispatch is composed into the single batched message — they are not a
+separate round-trip and do not violate the BATCHING RULE above. `update-task-status.sh` is
+idempotent, so calling it once per task per cycle is always safe, including repeated
+continuation-resume cycles.
 
 For each task in `research_tasks`:
+- `skill_preflight_update "$task_num" "research" "${session_id}_${task_num}"`
 - Invoke Agent tool: `subagent_type = research_agents[task_num]`, prompt = "Research task $task_num: $description", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, lit_flag }`
 
 For each task in `plan_tasks`:
 - Read `research_artifact` path from `state.json` artifacts (type=report)
+- `skill_preflight_update "$task_num" "plan" "${session_id}_${task_num}"`
 - Invoke Agent tool: `subagent_type = "planner-agent"`, prompt = "Create implementation plan for task $task_num", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag }`
 
 For each task in `implement_tasks`:
 - Read `plan_path` from `task_dir/plans/` (latest .md)
 - Read `continuation` from `task_dir/.orchestrator-handoff.json` (or null)
+- `skill_preflight_update "$task_num" "implement" "${session_id}_${task_num}"`
 - Invoke Agent tool: `subagent_type = implement_agents[task_num]`, prompt = "Implement task $task_num following the plan", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, plan_path, continuation_context: continuation, lit_flag }`
 
 **After all Agent tool calls complete**, read handoffs and run per-task postflight for each dispatched task:
