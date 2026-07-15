@@ -542,7 +542,7 @@ context_loading:
   index: ".claude/context/index.json"
   telemetry:
     enabled: true
-    log_file: ".claude/logs/context-loading.log"
+    log_file: ".agent-logs/context-loading.log"
     metrics:
       - context_size
       - loading_time

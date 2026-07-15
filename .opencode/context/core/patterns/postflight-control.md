@@ -168,7 +168,7 @@ Return a brief 3-6 bullet summary (NO JSON).
 ### View Hook Logs
 
 ```bash
-cat .opencode/logs/subagent-postflight.log
+cat .agent-logs/subagent-postflight.log
 ```
 
 ### Check Marker State

@@ -35,7 +35,7 @@ jq '.hooks.SubagentStop' .claude/settings.json
 ls -la .claude/hooks/subagent-postflight.sh
 
 # Check hook logs
-cat .claude/logs/subagent-postflight.log
+cat .agent-logs/subagent-postflight.log
 ```
 
 **Fix**:
@@ -307,14 +307,14 @@ git checkout HEAD~1 -- .claude/skills/skill-problematic/SKILL.md
 
 ### Enable Hook Logging
 
-The hook script writes logs to `.claude/logs/subagent-postflight.log`:
+The hook script writes logs to `.agent-logs/subagent-postflight.log`:
 
 ```bash
 # View recent log entries
-tail -50 .claude/logs/subagent-postflight.log
+tail -50 .agent-logs/subagent-postflight.log
 
 # Watch logs in real-time
-tail -f .claude/logs/subagent-postflight.log
+tail -f .agent-logs/subagent-postflight.log
 ```
 
 ### Log Format

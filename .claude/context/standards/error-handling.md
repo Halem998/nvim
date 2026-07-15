@@ -773,7 +773,7 @@ def parseConfig (json : Json) : Except ParseError Config :=
 
 ### Error Log Format
 
-**File**: `.claude/logs/errors.json`
+**File**: `.agent-logs/errors.json`
 
 **Structure**:
 ```json

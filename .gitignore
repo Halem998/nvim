@@ -1,4 +1,7 @@
 **/.return-meta.json
+# Runtime logs relocated out of .claude/.opencode so they survive a wipe (see
+# agent-system/extensions/core/docs/architecture/extension-system.md)
+/.agent-logs/
 /specs/tmp
 /.claude/tmp/
 /.opencode/tmp/

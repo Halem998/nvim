@@ -35,7 +35,7 @@ jq '.hooks.SubagentStop' .opencode/settings.json
 ls -la .opencode/hooks/subagent-postflight.sh
 
 # Check hook logs
-cat .opencode/logs/subagent-postflight.log
+cat .agent-logs/subagent-postflight.log
 ```
 
 **Fix**:
@@ -305,14 +305,14 @@ git checkout HEAD~1 -- .opencode/skills/skill-problematic/SKILL.md
 
 ### Enable Hook Logging
 
-The hook script writes logs to `.opencode/logs/subagent-postflight.log`:
+The hook script writes logs to `.agent-logs/subagent-postflight.log`:
 
 ```bash
 # View recent log entries
-tail -50 .opencode/logs/subagent-postflight.log
+tail -50 .agent-logs/subagent-postflight.log
 
 # Watch logs in real-time
-tail -f .opencode/logs/subagent-postflight.log
+tail -f .agent-logs/subagent-postflight.log
 ```
 
 ### Log Format

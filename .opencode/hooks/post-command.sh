@@ -2,7 +2,7 @@
 # Post-command cleanup and logging
 # Called on Stop event
 
-LOG_DIR=".opencode/logs"
+LOG_DIR=".agent-logs"
 LOG_FILE="$LOG_DIR/sessions.log"
 
 # Create log directory if needed

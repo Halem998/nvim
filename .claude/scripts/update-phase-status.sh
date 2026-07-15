@@ -6,7 +6,7 @@
 # Outputs: Updated plan file path on success, empty on failure/no-op
 #
 # Phase heading format: ### Phase N: {name} [STATUS]
-# Logs transitions to: .claude/logs/phase-transitions.log
+# Logs transitions to: .agent-logs/phase-transitions.log
 
 set -euo pipefail
 
@@ -107,7 +107,7 @@ if [[ "$updated_status" != "$new_status_display" ]]; then
 fi
 
 # Ensure log directory exists
-log_dir="${repo_root}/.claude/logs"
+log_dir="${repo_root}/.agent-logs"
 mkdir -p "$log_dir"
 log_file="${log_dir}/phase-transitions.log"
 

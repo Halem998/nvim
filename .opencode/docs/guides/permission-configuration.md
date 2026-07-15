@@ -405,7 +405,7 @@ deny:
 
 ### Identifying Denials
 
-Permission denials are logged to `.opencode/logs/errors.json`:
+Permission denials are logged to `.agent-logs/errors.json`:
 
 ```json
 {
@@ -446,7 +446,7 @@ Permission denials are logged to `.opencode/logs/errors.json`:
 
 ### Debugging Workflow
 
-1. **Check error log**: Review `.opencode/logs/errors.json` for denial details
+1. **Check error log**: Review `.agent-logs/errors.json` for denial details
 2. **Review agent frontmatter**: Check allow and deny lists
 3. **Verify pattern match**: Test glob pattern against denied path
 4. **Assess legitimacy**: Is this operation needed for agent function?
@@ -630,7 +630,7 @@ Before committing permission changes:
 /research 123  # or appropriate command
 
 # Check for permission denials
-grep "permission_denied" .opencode/logs/errors.json
+grep "permission_denied" .agent-logs/errors.json
 
 # Test dangerous operation is blocked
 # (should fail with permission denied)
@@ -719,10 +719,10 @@ Regularly review denial logs:
 
 ```bash
 # Check recent denials
-jq '.[] | select(.error_type == "permission_denied")' .opencode/logs/errors.json
+jq '.[] | select(.error_type == "permission_denied")' .agent-logs/errors.json
 
 # Group by agent
-jq 'group_by(.agent) | map({agent: .[0].agent, count: length})' .opencode/logs/errors.json
+jq 'group_by(.agent) | map({agent: .[0].agent, count: length})' .agent-logs/errors.json
 ```
 
 ### 6. Test Rollback Scenarios
@@ -768,7 +768,7 @@ git status
 
 If you encounter permission issues not covered in this guide, please:
 
-1. Document the issue in `.opencode/logs/errors.json`
+1. Document the issue in `.agent-logs/errors.json`
 2. Create a task with `/task` command
 3. Include permission denial details
 4. Suggest solution if known

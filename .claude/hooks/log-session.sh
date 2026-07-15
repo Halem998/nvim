@@ -2,7 +2,7 @@
 # Log session events
 # Called on SessionStart
 
-LOG_DIR=".claude/logs"
+LOG_DIR=".agent-logs"
 LOG_FILE="$LOG_DIR/sessions.log"
 
 # Create log directory if needed

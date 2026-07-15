@@ -32,7 +32,7 @@ find_marker() {
 
 # Log function for debugging
 log_debug() {
-    local LOG_DIR=".claude/logs"
+    local LOG_DIR=".agent-logs"
     local LOG_FILE="$LOG_DIR/subagent-postflight.log"
     mkdir -p "$LOG_DIR"
     echo "[$(date -Iseconds)] $1" >> "$LOG_FILE"

@@ -9,7 +9,7 @@
 #   --todo FILE       Path to output TODO.md (default: specs/TODO.md)
 #   --state FILE      Path to state.json (default: specs/state.json)
 #   --dry-run         Print generated content to stdout; do not write file
-#   --log FILE        Path to log file (default: .claude/logs/generate-todo.log)
+#   --log FILE        Path to log file (default: .agent-logs/generate-todo.log)
 #   --no-log          Suppress all log output
 #
 # The generated file contains:
@@ -21,7 +21,7 @@
 # Terminal tasks (completed/abandoned/expanded) appear in ## Tasks but not ## Task Order.
 # Atomic write via mktemp + mv ensures no partial/corrupted output.
 #
-# Logging: append-only to .claude/logs/generate-todo.log with ISO timestamps.
+# Logging: append-only to .agent-logs/generate-todo.log with ISO timestamps.
 
 set -euo pipefail
 
@@ -35,7 +35,7 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 TODO_FILE="${PROJECT_ROOT}/specs/TODO.md"
 STATE_FILE="${PROJECT_ROOT}/specs/state.json"
 DRY_RUN=0
-LOG_FILE="${PROJECT_ROOT}/.claude/logs/generate-todo.log"
+LOG_FILE="${PROJECT_ROOT}/.agent-logs/generate-todo.log"
 NO_LOG=0
 
 # ============================================================================
