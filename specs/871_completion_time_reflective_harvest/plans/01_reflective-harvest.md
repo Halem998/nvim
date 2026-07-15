@@ -1,7 +1,7 @@
 # Implementation Plan: Task #871
 
 - **Task**: 871 - Completion-time reflective harvest (/todo + /learn)
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: Task 869 (event store, COMPLETE), Task 870 (hook event logging, COMPLETE)
 - **Research Inputs**: specs/871_completion_time_reflective_harvest/reports/01_completion_time_reflective_harvest.md
@@ -321,23 +321,29 @@ are accurate.
 
 ---
 
-### Phase 6: End-to-end verification [NOT STARTED]
+### Phase 6: End-to-end verification [COMPLETED]
 
 **Goal**: Confirm consistency across all edited files and enforce project rules.
 
 **Tasks**:
-- [ ] `bash -n` on `orchestrator-postflight.sh` and `memory-harvest.sh`.
-- [ ] `jq empty` on `core/manifest.json`.
-- [ ] Grep all edited files outside `specs/**` for task-number citation patterns (e.g. "task
+- [x] `bash -n` on `orchestrator-postflight.sh` and `memory-harvest.sh`. *(completed: both pass)*
+- [x] `jq empty` on `core/manifest.json`. *(completed: passes)*
+- [x] Grep all edited files outside `specs/**` for task-number citation patterns (e.g. "task
   871", "task 8", "tasks ") and confirm none were introduced — every provenance reference uses a
-  durable anchor.
-- [ ] Cross-check field-name consistency: `what_worked` / `what_was_hard` / `what_was_missed` /
+  durable anchor. *(completed: zero citations introduced by this task's edits; five pre-existing
+  "task 822" citations found in skill-memory/SKILL.md predate this task and are outside its diff,
+  confirmed via git diff against the pre-implementation commit)*
+- [x] Cross-check field-name consistency: `what_worked` / `what_was_hard` / `what_was_missed` /
   `successes` spelled identically across `return-metadata-file.md`, `state-management-schema.md`,
   `orchestrator-postflight.sh`, `skill-todo/SKILL.md`, `skill-memory/SKILL.md`, and matching the
-  `detail` shape documented in `events-format.md`.
-- [ ] Confirm `events-schema.json` / `events-format.md` / `events-append.sh` were NOT modified.
-- [ ] Note (do not fix) the expected `.claude/`/`.opencode/` deployment drift as an accepted
-  finding per the task 870 precedent.
+  `detail` shape documented in `events-format.md`. *(completed: all four field names spelled
+  identically everywhere they appear; orchestrator-postflight.sh treats reflection as an opaque
+  jq object and does not name individual fields, which is correct/expected — it never needs to)*
+- [x] Confirm `events-schema.json` / `events-format.md` / `events-append.sh` were NOT modified.
+  *(completed: `git diff` against the pre-implementation commit for all three files is empty)*
+- [x] Note (do not fix) the expected `.claude/`/`.opencode/` deployment drift as an accepted
+  finding per the precedent set by the prior sibling task in this same effort. *(completed: noted,
+  not fixed — no `.claude/` or `.opencode/` files were touched by this task)*
 
 **Timing**: 30 min
 
@@ -352,17 +358,19 @@ are accurate.
 
 ## Testing & Validation
 
-- [ ] `bash -n agent-system/extensions/core/scripts/orchestrator-postflight.sh` passes.
-- [ ] `bash -n agent-system/extensions/core/scripts/memory-harvest.sh` passes.
-- [ ] `jq empty agent-system/extensions/core/manifest.json` passes.
-- [ ] The four reflection sub-field names are spelled identically across all producing/consuming
+- [x] `bash -n agent-system/extensions/core/scripts/orchestrator-postflight.sh` passes.
+- [x] `bash -n agent-system/extensions/core/scripts/memory-harvest.sh` passes.
+- [x] `jq empty agent-system/extensions/core/manifest.json` passes.
+- [x] The four reflection sub-field names are spelled identically across all producing/consuming
   files and match `events-format.md`'s documented `detail` shape.
-- [ ] Manual trace of `orchestrator-postflight.sh`: reflection present + `status=implemented` ->
-  one `reflection` event + state.json write; reflection absent -> neither.
-- [ ] `skill-todo` Stage 9 prompt is additive (no new selectable options); empty
+- [x] Manual trace of `orchestrator-postflight.sh`: reflection present + `status=implemented` ->
+  one `reflection` event + state.json write; reflection absent -> neither. (traced by reading the
+  Stage 6/6b/7d guards: all three gate on `[ "$reflection" != "null" ]`, and Stage 7d additionally
+  gates on `operation_type == "implement" && status == "implemented"`)
+- [x] `skill-todo` Stage 9 prompt is additive (no new selectable options); empty
   `harvest_reflections` omits the reflection section cleanly.
-- [ ] No task-number citations in any file outside `specs/**`.
-- [ ] `events-schema.json`, `events-format.md`, `events-append.sh` unchanged.
+- [x] No task-number citations in any file outside `specs/**`.
+- [x] `events-schema.json`, `events-format.md`, `events-append.sh` unchanged.
 
 ## Artifacts & Outputs
 
