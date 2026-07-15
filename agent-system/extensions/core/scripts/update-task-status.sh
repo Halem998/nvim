@@ -279,7 +279,16 @@ update_plan_file() {
 
       if [[ -d "$plan_dir" ]]; then
         local plan_file
-        plan_file=$(ls -t "$plan_dir"/*.md 2>/dev/null | head -1 || echo "")
+        # Version-ordered selection (not mtime-ordered), same two-tier rule as
+        # update-plan-status.sh and update-phase-status.sh: prefer the MM_{short-slug}.md
+        # convention (artifact-formats.md), highest sequence wins; fall back to a plain name
+        # sort only when no conforming file exists. Not reusing update-plan-status.sh's
+        # stdout here: its idempotent no-op branch exits 0 emitting nothing, so its stdout is
+        # empty on a successful no-op and unusable as a path source.
+        plan_file=$(ls "$plan_dir"/[0-9][0-9]_*.md 2>/dev/null | sort | tail -1 || echo "")
+        if [[ -z "$plan_file" ]]; then
+          plan_file=$(ls "$plan_dir"/*.md 2>/dev/null | sort | tail -1 || echo "")
+        fi
         if [[ -n "$plan_file" ]]; then
           local first_phase
           first_phase=$(grep -m1 "^### Phase [0-9]*:.*\[NOT STARTED\]" "$plan_file" \

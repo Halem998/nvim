@@ -257,7 +257,7 @@ the writer changes.
 
 ---
 
-### Phase 2: DEFECT C — version-ordered plan selection at all three sites [NOT STARTED]
+### Phase 2: DEFECT C — version-ordered plan selection at all three sites [COMPLETED]
 
 **Goal**: Replace mtime-ordered plan selection (`ls -t | head -1`) with the two-tier
 version-ordered rule at all three sites, including the third site the task description omitted.
@@ -277,13 +277,13 @@ version-ordered rule at all three sites, including the third site the task descr
   fi
   ```
 
-- [ ] Apply at site 1: `update-plan-status.sh` line 48. Preserve the existing empty-result guard (lines 49-52) unchanged.
-- [ ] Apply at site 2: `update-phase-status.sh` line 63. Preserve the existing empty-result guard (lines 64-67) unchanged.
-- [ ] Apply at site 3 (undocumented in the task description): `update-task-status.sh` line 274, inside the auto-advance snippet. Preserve its `|| echo ""` fallback semantics and the `if [[ -n "$plan_file" ]]` guard.
-- [ ] Do NOT attempt to reuse the path returned by `update-plan-status.sh` at site 3: its idempotent no-op branch (line 58) exits 0 emitting nothing, so its stdout is empty on a successful no-op and unusable as a path source. Record this as the reason.
-- [ ] Confirm `set -euo pipefail` interaction: each `ls` is guarded by `2>/dev/null` and `|| true`, so an empty directory yields an empty string rather than aborting.
-- [ ] Verify no task-number citations were introduced in any comment.
-- [ ] Mirror all three scripts to `.claude/scripts/`; confirm all three `diff -q` checks are silent.
+- [x] Apply at site 1: `update-plan-status.sh` line 48. Preserve the existing empty-result guard (lines 49-52) unchanged. *(completed)*
+- [x] Apply at site 2: `update-phase-status.sh` line 63. Preserve the existing empty-result guard (lines 64-67) unchanged. *(completed)*
+- [x] Apply at site 3 (undocumented in the task description): `update-task-status.sh` line 274, inside the auto-advance snippet. Preserve its `|| echo ""` fallback semantics and the `if [[ -n "$plan_file" ]]` guard. *(completed)*
+- [x] Do NOT attempt to reuse the path returned by `update-plan-status.sh` at site 3: its idempotent no-op branch (line 58) exits 0 emitting nothing, so its stdout is empty on a successful no-op and unusable as a path source. Record this as the reason. *(completed: recorded as a comment at the site 3 edit)*
+- [x] Confirm `set -euo pipefail` interaction: each `ls` is guarded by `2>/dev/null` and `|| true`/`|| echo ""`, so an empty directory yields an empty string rather than aborting. *(completed: verified via empty-dir fixture test, both sites exit 1 cleanly rather than aborting on set -e)*
+- [x] Verify no task-number citations were introduced in any comment. *(completed: grep returned zero hits across all three scripts)*
+- [x] Mirror all three scripts to `.claude/scripts/`; confirm all three `diff -q` checks are silent. *(completed)*
 
 **Timing**: 0.75 hours
 

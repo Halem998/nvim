@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "DEFECT C — version-ordered plan selection at all three sites",
+  "started_at": "2026-07-15T21:56:00Z",
+  "last_updated": "2026-07-15T21:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "Apply two-tier version-ordered selection at site 1 (update-plan-status.sh:48)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-plan-status.sh"]},
+    {"id": 2, "description": "Apply two-tier version-ordered selection at site 2 (update-phase-status.sh:63)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-phase-status.sh"]},
+    {"id": 3, "description": "Apply two-tier version-ordered selection at site 3 (update-task-status.sh:274 auto-advance snippet)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 4, "description": "Verify against conforming/mixed/legacy-only/empty directory shapes at all three sites", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Mirror all three scripts to .claude/scripts/", "status": "done", "files_touched": [".claude/scripts/update-plan-status.sh", ".claude/scripts/update-phase-status.sh", ".claude/scripts/update-task-status.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -59,8 +59,15 @@ if [[ ! -d "$plan_dir" ]]; then
     exit 1
 fi
 
-# Get latest plan file
-plan_file=$(ls -t "$plan_dir"/*.md 2>/dev/null | head -1)
+# Get latest plan file, version-ordered (not mtime-ordered).
+# Prefer the MM_{short-slug}.md convention (artifact-formats.md); highest sequence wins.
+# Fall back to a plain name sort only when no conforming file exists, so legacy-named
+# plans never outrank a conforming one (a plain sort would rank "implementation-001.md"
+# above "02_revised.md" because "i" sorts after "0").
+plan_file=$(ls "$plan_dir"/[0-9][0-9]_*.md 2>/dev/null | sort | tail -1 || true)
+if [[ -z "$plan_file" ]]; then
+    plan_file=$(ls "$plan_dir"/*.md 2>/dev/null | sort | tail -1 || true)
+fi
 if [[ -z "$plan_file" ]]; then
     echo "No plan file found in $plan_dir" >&2
     exit 1
