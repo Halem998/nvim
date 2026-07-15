@@ -699,7 +699,7 @@
     {
       "project_number": 876,
       "project_name": "wire_preflight_into_orchestrate_paths",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "status-marker-lifecycle",
       "title": "Wire status preflight into both /orchestrate paths",
@@ -709,12 +709,30 @@
         ".claude/skills/skill-orchestrate/SKILL.md",
         ".claude/skills/skill-orchestrate-hard/SKILL.md"
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/876_wire_preflight_into_orchestrate_paths/reports/01_wire-preflight-orchestrate.md",
+          "type": "report",
+          "summary": "Recommends option (b): call skill_preflight_update() before each orchestrate Agent dispatch; wires existing update-task-status.sh, no new scripts."
+        },
+        {
+          "path": "specs/876_wire_preflight_into_orchestrate_paths/plans/01_wire-preflight-orchestrate.md",
+          "type": "plan",
+          "summary": "5 phases: insert skill_preflight_update() before each Agent dispatch in both orchestrate skills; heading renames; doc note; manual verification."
+        },
+        {
+          "path": "specs/876_wire_preflight_into_orchestrate_paths/summaries/01_wire-preflight-orchestrate-summary.md",
+          "type": "summary",
+          "summary": "Wired skill_preflight_update() into all dispatch sites on both /orchestrate paths; renamed misleading Stage 2 headings; documented transition in state-machine doc."
+        }
+      ],
+      "last_updated": "2026-07-15T21:33:45Z",
+      "session_id": "sess_1784149091_763a58_876"
     },
     {
       "project_number": 877,
       "project_name": "settle_plan_status_marker_vocabulary",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "status-marker-lifecycle",
       "title": "Settle the plan-level status marker vocabulary (script vs spec)",
@@ -727,16 +745,34 @@
         ".claude/rules/plan-format-enforcement.md",
         ".claude/rules/artifact-formats.md"
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/877_settle_plan_status_marker_vocabulary/reports/01_settle-plan-status-vocabulary.md",
+          "type": "report",
+          "summary": "Recommends resolution (b): extend plan-format vocabulary to {NOT STARTED, IMPLEMENTING, PARTIAL, BLOCKED, ABANDONED, COMPLETED}; plan/phase marker asymmetry is intentional."
+        },
+        {
+          "path": "specs/877_settle_plan_status_marker_vocabulary/plans/01_settle-plan-status-vocabulary.md",
+          "type": "plan",
+          "summary": "4 phases: extend plan-format vocabulary, widen update-plan-status.sh accept-set, document intentional plan/phase asymmetry, verify."
+        },
+        {
+          "path": "specs/877_settle_plan_status_marker_vocabulary/summaries/01_settle-plan-status-vocabulary-summary.md",
+          "type": "summary",
+          "summary": "Extended plan-format vocabulary and widened update-plan-status.sh accept-set; documented intentional plan/phase marker asymmetry."
+        }
+      ],
+      "last_updated": "2026-07-15T21:33:49Z",
+      "session_id": "sess_1784149091_763a58_877"
     },
     {
       "project_number": 878,
       "project_name": "harden_status_scripts_and_own_phase_markers",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "status-marker-lifecycle",
       "title": "Harden the status scripts and give phase markers a real owner",
-      "description": "Addresses the 'plan says NOT STARTED while it is being worked on or even after it is completed' half of the report. Four defects in three existing scripts, plus one never-wired script. NO NEW SCRIPTS.\n\nDEFECT A - PHASE MARKERS HAVE NO OWNING MECHANISM:\n- Every plan is BORN with all phases [NOT STARTED] (plan-format.md:173,180), so markers are only ever correct if something actively advances them.\n- update-task-status.sh:260-287 advances ONLY THE FIRST [NOT STARTED] phase (`grep -m1` at :277). Phases 2..N are never touched by any script. This is the exact signature of the observed 'first phase COMPLETED, rest NOT STARTED' desync class.\n- The base agent (general-implementation-agent.md:123-126, 228-231) instructs the LLM to HAND-EDIT the heading via the Edit tool. That is a prompt instruction, not code: it fails silently when the model skips it or the string does not match.\n- Only general-implementation-hard-agent.md (:155,171,233) calls update-phase-status.sh. The base agent has ZERO references to it.\n- HARD PROOF IT HAS NEVER RUN: update-phase-status.sh:116 logs every transition to .agent-logs/phase-transitions.log. That directory is live and actively written (generate-todo.log, sessions.log, subagent-postflight.log all written today) but phase-transitions.log DOES NOT EXIST. The script has never completed a single transition in this working tree.\n=> Wire update-phase-status.sh into the base implementation agent so phase advancement is mechanical, and make the advance cover all phases rather than only the first.\n\nDEFECT B - EVERY FAILURE IS SILENT:\n- update-task-status.sh:256-258,280-283 swallow plan/phase errors as warnings; :209-211 treats TODO.md regeneration failure as a warning.\n- update-plan-status.sh:58 uses sed against a `^- \\*\\*Status\\*\\*:` anchor and silently no-ops when the anchor is missing.\n- Net effect: state.json marches to completed while the plan records nothing. generate-todo.sh reads ONLY state.json, never plan files, so NO user-visible surface ever reveals the divergence. Decide (research) which failures should be fatal vs. loudly warned; a plan-write failure during implement is a strong fatal candidate.\n\nDEFECT C - PLAN SELECTION IS MTIME-ORDERED, NOT VERSION-ORDERED:\n- update-plan-status.sh:44 and update-phase-status.sh:63 both select the plan via `ls -t \"$plan_dir\"/*.md | head -1`. Merely EDITING an older plan re-targets both scripts at the wrong file. Select by version/sequence instead.\n\nDEFECT D - IDEMPOTENCY SHORT-CIRCUIT SKIPS THE PLAN UPDATE:\n- update-task-status.sh:133-144 exits 0 early when state.json already equals the target status, which ALSO skips the plan-file update. If state.json reached `implementing` by any other path, a later correct preflight becomes a silent no-op and the plan never updates. Make the early-exit cover state.json only, not the plan/phase side effects.\n\nDEPENDS ON the vocabulary task: the marker set must be settled before wiring a writer to it, or this task hardcodes a contested vocabulary. Shares update-plan-status.sh with that task (file overlap -> serialized).\n\nCONSTRAINT: no new scripts; fix and wire the three that exist.\n\nDELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside specs/**.",
+      "description": "Addresses the 'plan says NOT STARTED while it is being worked on or even after it is completed' half of the report. Four defects in three existing scripts, plus one never-wired script. NO NEW SCRIPTS.\n\nDEFECT A - PHASE MARKERS HAVE NO OWNING MECHANISM:\n- Every plan is BORN with all phases [NOT STARTED] (plan-format.md:173,180), so markers are only ever correct if something actively advances them.\n- update-task-status.sh:260-287 advances ONLY THE FIRST [NOT STARTED] phase (`grep -m1` at :277). Phases 2..N are never touched by any script. This is the exact signature of the observed 'first phase COMPLETED, rest NOT STARTED' desync class.\n- The base agent (general-implementation-agent.md:123-126, 228-231) instructs the LLM to HAND-EDIT the heading via the Edit tool. That is a prompt instruction, not code: it fails silently when the model skips it or the string does not match.\n- Only general-implementation-hard-agent.md (:155,171,233) calls update-phase-status.sh. The base agent has ZERO references to it.\n- HARD PROOF IT HAS NEVER RUN: update-phase-status.sh:116 logs every transition to .agent-logs/phase-transitions.log. That directory is live and actively written (generate-todo.log, sessions.log, subagent-postflight.log all written today) but phase-transitions.log DOES NOT EXIST. The script has never completed a single transition in this working tree.\n=> Wire update-phase-status.sh into the base implementation agent so phase advancement is mechanical, and make the advance cover all phases rather than only the first.\n\nDEFECT B - EVERY FAILURE IS SILENT:\n- update-task-status.sh:256-258,280-283 swallow plan/phase errors as warnings; :209-211 treats TODO.md regeneration failure as a warning.\n- update-plan-status.sh:58 uses sed against a `^- \\*\\*Status\\*\\*:` anchor and silently no-ops when the anchor is missing.\n- Net effect: state.json marches to completed while the plan records nothing. generate-todo.sh reads ONLY state.json, never plan files, so NO user-visible surface ever reveals the divergence. Decide (research) which failures should be fatal vs. loudly warned; a plan-write failure during implement is a strong fatal candidate.\n\nDEFECT C - PLAN SELECTION IS MTIME-ORDERED, NOT VERSION-ORDERED:\n- update-plan-status.sh:44 and update-phase-status.sh:63 both select the plan via `ls -t \"$plan_dir\"/*.md | head -1`. Merely EDITING an older plan re-targets both scripts at the wrong file. Select by version/sequence instead.\n\nDEFECT D - IDEMPOTENCY SHORT-CIRCUIT SKIPS THE PLAN UPDATE:\n- update-task-status.sh:133-144 exits 0 early when state.json already equals the target status, which ALSO skips the plan-file update. If state.json reached `implementing` by any other path, a later correct preflight becomes a silent no-op and the plan never updates. Make the early-exit cover state.json only, not the plan/phase side effects.\n\nDEPENDS ON the vocabulary task: the marker set must be settled before wiring a writer to it, or this task hardcodes a contested vocabulary. Shares update-plan-status.sh with that task (file overlap -> serialized).\n\nCONSTRAINT: no new scripts; fix and wire the three that exist.\n\nDELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside specs/**.\n\nDEFECT E - NO TASK-LEVEL PARTIAL/BLOCKED TERMINUS (added after an orchestrate run hit this live): update-task-status.sh map_status (lines ~89-102) has exactly ONE implement-phase outcome, postflight:implement -> STATE_STATUS=completed, and the target_status validation (line ~69) admits only research|plan|implement|pr_ready. So there is NO sanctioned path to set a task to partial or blocked -- a genuinely partial or blocked task must either be silently left at 'planned'/'implementing' (hiding real work) or falsely stamped 'completed'. generate-todo.sh ALREADY renders partial->PARTIAL and blocked->BLOCKED, so the renderer is not the blocker; only the writer is. Fix: admit 'partial' and 'blocked' as target_status values (line 69) and add map_status cases postflight:partial -> partial/PARTIAL and postflight:blocked -> blocked/BLOCKED. This MUST sit OUTSIDE the DEFECT D idempotency early-exit, or a partial/blocked write becomes a silent no-op. Observed: two tasks in a single orchestrate batch could only be recorded honestly by hand-editing state.json because this path did not exist.",
       "dependencies": [
         877
       ],
@@ -746,7 +782,26 @@
         ".claude/scripts/update-phase-status.sh",
         ".claude/agents/general-implementation-agent.md"
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/878_harden_status_scripts_and_own_phase_markers/reports/01_harden-status-scripts-phase-markers.md",
+          "type": "report",
+          "summary": "Verified defects A-E line-by-line; flagged agent-system/ vs .claude/ source-of-truth requirement"
+        },
+        {
+          "path": "specs/878_harden_status_scripts_and_own_phase_markers/plans/01_harden-status-scripts-phase-markers.md",
+          "type": "plan",
+          "summary": "Six-phase plan fixing defects A-E, ordered E -> C -> D -> B -> A -> integration"
+        },
+        {
+          "path": "specs/878_harden_status_scripts_and_own_phase_markers/summaries/01_harden-status-scripts-phase-markers-summary.md",
+          "type": "summary",
+          "summary": "Six phases: defects A-E fixed across three status scripts + base agent, both trees mirrored"
+        }
+      ],
+      "last_updated": "2026-07-15T22:10:41Z",
+      "session_id": "sess_1784151328_c3716f_878",
+      "completion_summary": "Fixed five verified defects (A-E) across update-task-status.sh, update-plan-status.sh, update-phase-status.sh, and general-implementation-agent.md: added partial/blocked task-level termini, replaced mtime-ordered plan selection with version-ordered at all three sites, scoped the idempotency early-exit to state.json only so plan/phase side effects still fire, encoded a fatal-vs-warn decision table instead of discarding stderr, and wired the base implementation agent to own every phase transition via update-phase-status.sh. Canonical agent-system/ tree and .claude/ mirror verified byte-identical; phase-transitions.log now records transitions for the first time."
     },
     {
       "project_number": 879,

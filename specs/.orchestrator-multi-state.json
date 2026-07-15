@@ -1,0 +1,43 @@
+{
+  "session_id": "sess_1784151328_c3716f",
+  "task_numbers": [
+    878,
+    879
+  ],
+  "waves": [
+    [
+      878
+    ],
+    [
+      879
+    ]
+  ],
+  "dependency_graph": {
+    "878": [],
+    "879": [
+      "878"
+    ]
+  },
+  "max_cycles": 10,
+  "cycle_count": 3,
+  "failed_tasks": [],
+  "completed_tasks": [
+    878
+  ],
+  "current_statuses": {
+    "878": "completed",
+    "879": "not_started"
+  },
+  "task_dirs": {
+    "878": "specs/878_harden_status_scripts_and_own_phase_markers",
+    "879": "specs/879_wire_reconcile_task_status_safety_net"
+  },
+  "research_agents": {
+    "878": "general-research-agent",
+    "879": "general-research-agent"
+  },
+  "implement_agents": {
+    "878": "general-implementation-agent",
+    "879": "general-implementation-agent"
+  }
+}

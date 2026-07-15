@@ -11,9 +11,8 @@ next_project_number: 888
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,876,877,880,882,883,884,885 | -- | agent-system, commit-scoping-concurrency, status-marker-lifecycle |
-| 2 | 878,881,887 | 873,877,880 | agent-system, commit-scoping-concurrency, status-marker-lifecycle |
-| 3 | 879 | 876,878 | status-marker-lifecycle |
+| 1 | 873,879,880,882,883,884,885 | -- | agent-system, commit-scoping-concurrency, status-marker-lifecycle |
+| 2 | 881,887 | 873,880 | agent-system, commit-scoping-concurrency |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -33,11 +32,7 @@ next_project_number: 888
 
 ### Status Marker Lifecycle
 
-876 [NOT STARTED] — HIGHEST-VALUE FIX for the reported symptom 'tasks say PLANNED whe
-  └─ 879 [NOT STARTED] — A purpose-built self-healing script for EXACTLY the reported fail
-877 [NOT STARTED] — The status-writing script and the plan format spec disagree on MO
-  └─ 878 [NOT STARTED] — Addresses the 'plan says NOT STARTED while it is being worked on 
-    └─ 879 [NOT STARTED] — A purpose-built self-healing script for EXACTLY the reported fail (see above)
+879 [NOT STARTED] — A purpose-built self-healing script for EXACTLY the reported fail
 
 ## Tasks
 
@@ -315,10 +310,13 @@ DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside s
 ---
 
 ### 878. Harden the status scripts and give phase markers a real owner
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: status-marker-lifecycle
 - **Dependencies**: Task 877
+- **Research**: [878_harden_status_scripts_and_own_phase_markers/reports/01_harden-status-scripts-phase-markers.md]
+- **Plan**: [878_harden_status_scripts_and_own_phase_markers/plans/01_harden-status-scripts-phase-markers.md]
+- **Summary**: [878_harden_status_scripts_and_own_phase_markers/summaries/01_harden-status-scripts-phase-markers-summary.md]
 
 **Description**: Addresses the 'plan says NOT STARTED while it is being worked on or even after it is completed' half of the report. Four defects in three existing scripts, plus one never-wired script. NO NEW SCRIPTS.
 
@@ -347,13 +345,18 @@ CONSTRAINT: no new scripts; fix and wire the three that exist.
 
 DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside specs/**.
 
+DEFECT E - NO TASK-LEVEL PARTIAL/BLOCKED TERMINUS (added after an orchestrate run hit this live): update-task-status.sh map_status (lines ~89-102) has exactly ONE implement-phase outcome, postflight:implement -> STATE_STATUS=completed, and the target_status validation (line ~69) admits only research|plan|implement|pr_ready. So there is NO sanctioned path to set a task to partial or blocked -- a genuinely partial or blocked task must either be silently left at 'planned'/'implementing' (hiding real work) or falsely stamped 'completed'. generate-todo.sh ALREADY renders partial->PARTIAL and blocked->BLOCKED, so the renderer is not the blocker; only the writer is. Fix: admit 'partial' and 'blocked' as target_status values (line 69) and add map_status cases postflight:partial -> partial/PARTIAL and postflight:blocked -> blocked/BLOCKED. This MUST sit OUTSIDE the DEFECT D idempotency early-exit, or a partial/blocked write becomes a silent no-op. Observed: two tasks in a single orchestrate batch could only be recorded honestly by hand-editing state.json because this path did not exist.
+
 ---
 
 ### 877. Settle the plan-level status marker vocabulary (script vs spec)
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: status-marker-lifecycle
 - **Dependencies**: None
+- **Research**: [877_settle_plan_status_marker_vocabulary/reports/01_settle-plan-status-vocabulary.md]
+- **Plan**: [877_settle_plan_status_marker_vocabulary/plans/01_settle-plan-status-vocabulary.md]
+- **Summary**: [877_settle_plan_status_marker_vocabulary/summaries/01_settle-plan-status-vocabulary-summary.md]
 
 **Description**: The status-writing script and the plan format spec disagree on MOST of the vocabulary. This must be settled before any writer is wired to it, otherwise a correctly-wired writer emits spec-violating markers.
 
@@ -381,10 +384,13 @@ DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside s
 ---
 
 ### 876. Wire status preflight into both /orchestrate paths
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: status-marker-lifecycle
 - **Dependencies**: None
+- **Research**: [876_wire_preflight_into_orchestrate_paths/reports/01_wire-preflight-orchestrate.md]
+- **Plan**: [876_wire_preflight_into_orchestrate_paths/plans/01_wire-preflight-orchestrate.md]
+- **Summary**: [876_wire_preflight_into_orchestrate_paths/summaries/01_wire-preflight-orchestrate-summary.md]
 
 **Description**: HIGHEST-VALUE FIX for the reported symptom 'tasks say PLANNED when they are being worked on'. The capability already exists and is correct; nothing calls it on the /orchestrate path.
 
