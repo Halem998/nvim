@@ -1,4 +1,10 @@
 **/.return-meta.json
+# The .claude/ deploy tree is a disposable build artifact regenerated from the
+# source store in agent-system/extensions/ (selection pinned by the project-root
+# .claude-extensions.json). Nothing under it is hand-authored — every deployed
+# file has a source, enforced by the check-extension-docs.sh hard gate — so it is
+# not tracked. Wipe and regenerate from the <leader>al picker at any time.
+/.claude/
 # Runtime logs relocated out of .claude/.opencode so they survive a wipe (see
 # agent-system/extensions/core/docs/architecture/extension-system.md)
 /.agent-logs/
@@ -7,7 +13,7 @@
 /.claude-settings-backup/
 /.opencode-settings-backup/
 /specs/tmp
-/.claude/tmp/
+# /.claude/tmp/ is covered by the blanket /.claude/ rule above
 /.opencode/tmp/
 **/.postflight-pending
 **/.git-snapshot-marker
@@ -19,8 +25,6 @@ specs/literature/**/*.djvu
 .literature.db.tmp
 specs/literature/.literature.db
 specs/literature/.literature.db.tmp
-# literature-convert.sh pymupdf4llm engine venv (auto-provisioned by
-# literature-pyenv-provision.sh; never commit — see task 831)
-.claude/scripts/literature-pyenv/
+# (.claude/scripts/literature-pyenv/ is covered by the blanket /.claude/ rule above)
 __pycache__/
 *.pyc

@@ -1,1 +1,0 @@
-../../agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md

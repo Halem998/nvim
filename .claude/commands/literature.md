@@ -1,1 +1,0 @@
-../../agent-system/extensions/literature/commands/literature.md
