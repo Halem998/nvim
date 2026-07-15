@@ -52,7 +52,20 @@ Validate and classify mode from arguments:
 # Parse arguments
 args="$ARGUMENTS"
 
-# Determine mode
+# Target resolution: global-by-default, --local is the only opt-out, no interactive prompt.
+# Note: parse-command-args.sh is NOT sourced here — its Step 6 task-number validation gate
+# hard-fails on /meta's free-form argument grammar (/meta takes a prompt, never N[,N-N]).
+# This standalone check is a deliberate, same-shaped parallel to that script's --local handling
+# (LOCAL_FLAG regex-match + sed-strip convention), not a redundant reimplementation of it.
+GLOBAL_ROOT="${CLAUDE_AGENT_GLOBAL_ROOT:-$HOME/.config/nvim}"
+local_mode="false"
+if [[ "$args" =~ --local ]]; then
+  local_mode="true"
+fi
+args=$(echo "$args" | sed 's/--local//g' | xargs)
+
+# Determine mode (classified AFTER --local is stripped, so `/meta --local` does not
+# mis-classify as mode=prompt with prompt="--local")
 if [ -z "$args" ]; then
   mode="interactive"
 elif [ "$args" = "--analyze" ]; then
@@ -60,6 +73,17 @@ elif [ "$args" = "--analyze" ]; then
 else
   mode="prompt"
   prompt="$args"
+fi
+
+# Resolve target_root from local_mode. This is a genuine no-op when invoked from within
+# $GLOBAL_ROOT — the same code path runs and resolves to the same repo; there is no
+# special-casing branch for "already at the global root".
+if [ "$local_mode" = "true" ]; then
+  target_root="$(git rev-parse --show-toplevel)"
+  mode_target="local"
+else
+  target_root="$GLOBAL_ROOT"
+  mode_target="global"
 fi
 ```
 
@@ -76,7 +100,9 @@ Prepare delegation context:
   "delegation_path": ["orchestrator", "meta", "skill-meta"],
   "timeout": 7200,
   "mode": "interactive|prompt|analyze",
-  "prompt": "{user prompt if mode=prompt, null otherwise}"
+  "prompt": "{user prompt if mode=prompt, null otherwise}",
+  "mode_target": "global|local",
+  "target_root": "{resolved absolute path — $GLOBAL_ROOT in global mode, current repo root in local mode}"
 }
 ```
 
@@ -91,13 +117,23 @@ The `agent` field in this skill's frontmatter specifies the target: `meta-builde
 Tool: Agent (NOT Skill, NOT Plan)
 Parameters:
   - subagent_type: "meta-builder-agent"
-  - prompt: [Include mode, prompt if provided, delegation_context]
+  - prompt: [Include mode, prompt if provided, delegation_context (with mode_target/target_root),
+             AND the path-qualification imperative below]
   - description: "Execute meta building in {mode} mode"
 ```
 
 **DO NOT** use `Skill(meta-builder-agent)` - this will FAIL.
 Agents live in `.claude/agents/`, not `.claude/skills/`.
 The Skill tool can only invoke skills from `.claude/skills/`.
+
+**REQUIRED path-qualification imperative in the Agent-tool prompt**: because Write/Edit tool path
+resolution is completely independent of shell cwd (no `cd` in any Bash call affects it), the prompt
+sent to `meta-builder-agent` MUST include an explicit, unambiguous instruction that every
+task-directory Write/Edit path be qualified by `target_root` (or be an absolute path) — NEVER a
+bare `specs/...` relative path. For example: "All task-directory paths (TODO.md, state.json, task
+dirs) MUST be written as `{target_root}/specs/...`, never as a bare `specs/...` relative path."
+This instruction is carried by the prompt today; a dependent follow-up task makes it durable in the
+agent definition itself (`meta-builder-agent.md`) rather than relying on prompt text alone.
 
 The subagent will:
 - Load component guides on-demand based on mode
@@ -233,5 +269,24 @@ After the agent returns, this skill MUST NOT:
 The postflight phase is LIMITED TO:
 - Reading agent return
 - Git commit (if tasks were created)
+
+### Postflight Git Commit
+
+If the agent return indicates tasks were created, commit at `target_root` (resolved in Section 1).
+This MUST be issued as a **single Bash tool call** — shell cwd from a `cd` in one Bash invocation
+does not persist into a later, separate Bash invocation, so `GLOBAL_ROOT`/`target_root` must be
+re-derived and chained inline at the point of use, every time:
+
+```bash
+GLOBAL_ROOT="${CLAUDE_AGENT_GLOBAL_ROOT:-$HOME/.config/nvim}"
+cd "$GLOBAL_ROOT" && git add specs/ && git commit -m "task {N}: create {title}
+
+Session: {session_id}
+"
+```
+
+In local mode, the identical block runs with `target_root` (the current repo root) substituted
+for `$GLOBAL_ROOT` — this is the same code path, not a separate branch; when the current repo
+already IS `$GLOBAL_ROOT`, both modes resolve to an identical commit target (the no-op case).
 
 Reference: @.claude/context/standards/postflight-tool-restrictions.md

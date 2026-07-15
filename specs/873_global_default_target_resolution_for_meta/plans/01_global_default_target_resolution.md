@@ -149,14 +149,14 @@ convention verbatim.
 
 ---
 
-### Phase 2: GLOBAL_ROOT resolution, threading, and chained postflight in skill-meta [NOT STARTED]
+### Phase 2: GLOBAL_ROOT resolution, threading, and chained postflight in skill-meta [COMPLETED]
 
 **Goal**: Make `skill-meta` resolve the root, detect `--local` inline, thread the resolved mode/root to
 the agent with an imperative path-qualification instruction, and perform the postflight commit as a
 single chained Bash invocation.
 
 **Tasks**:
-- [ ] In Section 1 "Input Validation" (lines 46-64), extend the existing bash-fenced mode-detection block to:
+- [x] In Section 1 "Input Validation" (lines 46-64), extend the existing bash-fenced mode-detection block to:
       - Resolve `GLOBAL_ROOT="${CLAUDE_AGENT_GLOBAL_ROOT:-$HOME/.config/nvim}"` (mirrors the established
         `LIT_DIR="${LITERATURE_DIR:-$HOME/Projects/Literature}"` pattern).
       - Detect `--local` with a standalone regex check shaped like `parse-command-args.sh`'s
@@ -165,26 +165,26 @@ single chained Bash invocation.
         validation gate hard-fails on `/meta`'s free-form argument grammar.
       - Set `target_root` = `$GLOBAL_ROOT` (global mode) or the current repo root (local mode).
       - Ensure `--local` is stripped before `mode` is classified, so `/meta --local` does not
-        mis-classify as `mode=prompt` with `prompt="--local"`.
-- [ ] Add a note that global mode is a genuine no-op when invoked from within `$GLOBAL_ROOT` — the same
-      code path runs and resolves to the same repo. No special-casing branch.
-- [ ] In Section 2 "Context Preparation" (lines 68-81), add `"mode_target": "global|local"` and
-      `"target_root": "{resolved absolute path}"` to the delegation-context JSON.
-- [ ] In Section 3 "Invoke Subagent" (lines 83-100), require the Agent-tool prompt to carry an explicit
+        mis-classify as `mode=prompt` with `prompt="--local"`. *(completed)*
+- [x] Add a note that global mode is a genuine no-op when invoked from within `$GLOBAL_ROOT` — the same
+      code path runs and resolves to the same repo. No special-casing branch. *(completed)*
+- [x] In Section 2 "Context Preparation" (lines 68-81), add `"mode_target": "global|local"` and
+      `"target_root": "{resolved absolute path}"` to the delegation-context JSON. *(completed)*
+- [x] In Section 3 "Invoke Subagent" (lines 83-100), require the Agent-tool prompt to carry an explicit
       imperative: **all task-directory Write/Edit paths MUST be qualified by `target_root` (or absolute) —
       never bare `specs/...`** — because Write/Edit path resolution is independent of any Bash-side `cd`.
       Note that this instruction is carried by the prompt today and is made durable in the agent
-      definition by the dependent follow-up work.
-- [ ] Replace the prose-only postflight (lines 233-236) with a concrete chained bash block, and state
+      definition by the dependent follow-up work. *(completed)*
+- [x] Replace the prose-only postflight (lines 233-236) with a concrete chained bash block, and state
       that it MUST be issued as a single Bash tool call because cwd does not persist across invocations:
       ```bash
       GLOBAL_ROOT="${CLAUDE_AGENT_GLOBAL_ROOT:-$HOME/.config/nvim}"
       cd "$GLOBAL_ROOT" && git add specs/ && git commit -m "..."
       ```
-      In local mode the same block runs with `target_root` = current repo (no-op-equivalent).
-- [ ] Keep the "MUST NOT (Postflight Boundary)" list intact; the postflight remains limited to reading
-      the agent return and the git commit.
-- [ ] Do not add task-number references anywhere in this file.
+      In local mode the same block runs with `target_root` = current repo (no-op-equivalent). *(completed)*
+- [x] Keep the "MUST NOT (Postflight Boundary)" list intact; the postflight remains limited to reading
+      the agent return and the git commit. *(completed)*
+- [x] Do not add task-number references anywhere in this file. *(completed: grep confirmed clean)*
 
 **Timing**: 1.5 hours
 
