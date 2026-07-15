@@ -1,0 +1,21 @@
+name: Extension Docs Gate
+
+# Runs the deployed-vs-source drift/orphan gate (agent-system/extensions/core/scripts/
+# check-extension-docs.sh, dual-write deployed at .claude/scripts/check-extension-docs.sh).
+# Fails the build on any manifest drift, undeclared source, deployed-only orphan (no
+# provides.<category> declaration in any extension manifest), or broken deployed symlink.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  check-extension-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run check-extension-docs.sh
+        run: bash .claude/scripts/check-extension-docs.sh

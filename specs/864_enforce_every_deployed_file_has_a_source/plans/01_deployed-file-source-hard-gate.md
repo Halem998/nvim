@@ -357,7 +357,7 @@ distinct broken-deployed-symlink check, landing byte-identical in both copies, i
 
 ---
 
-### Phase 6: Promote checks to hard gate and verify green [NOT STARTED]
+### Phase 6: Promote checks to hard gate and verify green [COMPLETED]
 
 **Goal**: Flip the new orphan and broken-symlink checks from advisory to blocking so any unsourced
 deployed file or broken deployed symlink contributes to `FAILURES` and forces non-zero exit; then
@@ -365,19 +365,24 @@ confirm a clean (exit 0) run on the remediated tree and wire the gate into CI/pr
 already present.
 
 **Tasks**:
-- [ ] Promote the five new checks so their findings increment `FAILURES` (the existing non-zero
+- [x] Promote the five new checks so their findings increment `FAILURES` (the existing non-zero
       exit at `FAILURES>0` then makes them blocking). Land byte-identical in both copies; confirm
-      with `diff`.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and confirm it exits 0 (all orphans
-      backfilled, all symlinks repaired, both dual-write pairs in sync).
-- [ ] Confirm the gate is wired to run automatically (CI workflow and/or precommit hook). If a
+      with `diff`. *(completed: `ORPHAN_GATE_MODE` default flipped from "advisory" to "hard")*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and confirm it exits 0 (all orphans
+      backfilled, all symlinks repaired, both dual-write pairs in sync). *(completed: exit 0)*
+- [x] Confirm the gate is wired to run automatically (CI workflow and/or precommit hook). If a
       wiring point already invokes `check-extension-docs.sh`, no change is needed; otherwise add the
-      minimal wiring. Do not create PRs or push.
-- [ ] Optionally add a short rule-letter index comment block to the script header mapping the now
+      minimal wiring. Do not create PRs or push. *(completed: no existing CI/precommit wiring
+      found anywhere in the repo (no `.github/workflows/`, no tracked pre-commit hook, no
+      `core.hooksPath`); added minimal `.github/workflows/check-extension-docs.yml` running the
+      gate on push to master and on pull_request — a plain tracked-file addition, no git config
+      changed, no push performed)*
+- [x] Optionally add a short rule-letter index comment block to the script header mapping the now
       10+ rules (including the new ones) to one-line descriptions (research recommendation).
-- [ ] Write the implementation summary recording: orphans backfilled per extension, symlink repair
+      *(completed: added a Rule A-N index block to the header comment in both copies)*
+- [x] Write the implementation summary recording: orphans backfilled per extension, symlink repair
       outcome, the `fork-patterns.md` decision, and the `literature-organization.md` ownership
-      decision.
+      decision. *(completed: see summaries/01_deployed-file-source-hard-gate-summary.md)*
 
 **Timing**: 1 hour
 
@@ -398,13 +403,13 @@ already present.
 
 ## Testing & Validation
 
-- [ ] `find .claude/agents .claude/commands .claude/skills -type l ! -exec test -e {} \; -print` returns no broken symlinks
-- [ ] `.claude/agents/literature-agent.md` and `.claude/commands/literature.md` resolve
-- [ ] Every deployed file under `.claude/{agents,commands,context,scripts,rules}` (excluding `merge_targets` output and intentional symlinks) traces to a manifest-declared source
-- [ ] `bash .claude/scripts/check-extension-docs.sh` exits 0 on the remediated tree
-- [ ] A simulated unsourced orphan or broken symlink causes non-zero exit (hard gate confirmed)
-- [ ] Both `install-extension.sh` copies are byte-identical; both `check-extension-docs.sh` copies are byte-identical
-- [ ] No task-number references introduced in any file outside `specs/**`
+- [x] `find .claude/agents .claude/commands .claude/skills -type l ! -exec test -e {} \; -print` returns no broken symlinks
+- [x] `.claude/agents/literature-agent.md` and `.claude/commands/literature.md` resolve
+- [x] Every deployed file under `.claude/{agents,commands,context,scripts,rules}` (excluding `merge_targets` output and intentional symlinks) traces to a manifest-declared source
+- [x] `bash .claude/scripts/check-extension-docs.sh` exits 0 on the remediated tree
+- [x] A simulated unsourced orphan or broken symlink causes non-zero exit (hard gate confirmed) *(verified on the real tree with a git-tracked-then-reverted throwaway orphan file, and in scratchpad fixtures for the broken-symlink case)*
+- [x] Both `install-extension.sh` copies are byte-identical; both `check-extension-docs.sh` copies are byte-identical
+- [x] No task-number references introduced in any file outside `specs/**`
 
 ## Artifacts & Outputs
 

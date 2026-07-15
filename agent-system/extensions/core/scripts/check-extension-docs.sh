@@ -26,6 +26,23 @@
 #     parallel symlink-deploy mechanism; distinct from the orphan checks above -- a dangling
 #     symlink DOES have a declared source, its target path is simply wrong)
 #
+# Rule letter index (checks named "Rule X" in function comments below, in first-introduced
+# order; unlettered checks are unnamed/structural and are not part of this index):
+#   A - check_undeclared_skills            : skill dir on disk not in provides.skills
+#   B - check_routing_consistency          : routing/routing_hard target not resolvable anywhere
+#   C - check_routing_consistency          : routing/routing_hard target resolvable but not deployed
+#   D - check_deployed_skill_agents        : deployed skill's subagent_type not in .claude/agents/
+#   E - check_referenced_scripts_declared  : script referenced in docs but not in provides.scripts
+#   F - check_deployed_script_drift        : deployed script content drift from extension source
+#   G - check_dangling_contract_references : dangling .claude/context/contracts/*.md reference
+#   H - check_undeclared_rules             : rule file on disk not in provides.rules
+#   I - check_deployed_rule_drift          : deployed rule content drift from extension source
+#   J - check_flat_category_orphans(agents)   : deployed agent with no provides.agents source
+#   K - check_flat_category_orphans(commands) : deployed command with no provides.commands source
+#   L - check_context_orphans              : deployed context file with no provides.context source
+#   M - check_flat_category_orphans(scripts)  : deployed script with no provides.scripts source
+#   N - check_broken_deployed_symlinks     : dangling install-extension.sh-created symlink
+#
 # Exit codes:
 #   0 - all extensions pass
 #   1 - one or more extensions have failures
@@ -585,8 +602,10 @@ check_dangling_contract_references() {
 # ORPHAN_GATE_MODE controls severity for this whole block (orphan checks J/K/L/M AND the broken-
 # symlink check N): "advisory" (info-only, does not increment FAILURES) during the remediation-
 # verification window (this task's Phase 5), "hard" (fail, increments FAILURES) once promoted
-# (this task's Phase 6). Flipping this one default is the entire Phase 6 promotion edit.
-ORPHAN_GATE_MODE="${ORPHAN_GATE_MODE:-advisory}"
+# (this task's Phase 6). Promoted to "hard" by default now that Phases 1-4 remediation has landed
+# and Phase 5 confirmed a clean (0 orphans, 0 broken symlinks) advisory run -- override to
+# "advisory" only for temporary local debugging, never in committed config.
+ORPHAN_GATE_MODE="${ORPHAN_GATE_MODE:-hard}"
 
 orphan_report() {
   local msg="$1"
