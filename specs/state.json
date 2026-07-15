@@ -71,6 +71,11 @@
           "path": "specs/864_enforce_every_deployed_file_has_a_source/plans/01_deployed-file-source-hard-gate.md",
           "type": "plan",
           "summary": "Created a 6-phase implementation plan for enforcing 'every deployed file has a source' as a hard gate. The plan sequences remediation before enforcement: Wave 1 runs four independent, disjoint-territory phases in parallel -- (1) repair the 19 broken install-extension.sh symlinks (fix the hardcoded '../extensions/$EXT_NAME/' relative target to '../../agent-system/extensions/$EXT_NAME/' byte-identically in BOTH copies of install-extension.sh, then delete-and-recreate the broken cslib/literature/pr-review symlinks since the script cannot self-repair them, and delete the dead zotero symlinks); (2) backfill the 4 genuinely core-owned orphans (no-task-references-in-deliverables.md, commands/README.md with a content rewrite, lint-contract-compliance.sh, validate-handoff.sh); (3) backfill the 8 literature-owned orphans and resolve literature-organization.md ownership to literature; (4) backfill the nvim orphan (extension-deploy-modes.md) plus the remaining core context/patterns orphans and resolve the fork-patterns.md duplicate via content diff. Wave 2 (Phase 5) extends check-extension-docs.sh with per-category orphan checks (agents/commands/context/scripts, honoring agents_subdir, recursive context comparison, scripts subdir entries, and merge_targets/index.json exclusion) plus a distinct broken-deployed-symlink check, at advisory level, and confirms 0 orphans / 0 broken symlinks on the remediated tree. Wave 3 (Phase 6) promotes those checks to blocking (FAILURES-contributing, non-zero exit) and verifies a clean exit-0 run. All check-extension-docs.sh and install-extension.sh edits are byte-identical dual-writes; all destructive check-logic testing happens in scratchpad against fake dirs."
+        },
+        {
+          "path": "specs/864_enforce_every_deployed_file_has_a_source/summaries/01_deployed-file-source-hard-gate-summary.md",
+          "type": "summary",
+          "summary": "Executed all 6 phases of the plan across 3 waves. Wave 1 (phases 1-4, parallel territory): repaired the install-extension.sh symlink-deploy regression (fixed the hardcoded rel_path at all 5 sites in both byte-identical copies, deleted and recreated the 19 broken cslib/literature/pr-review symlinks, deleted 2 dead zotero symlinks); backfilled the 4 core-owned orphans (no-task-references-in-deliverables.md, commands/README.md with rewritten content, lint-contract-compliance.sh, validate-handoff.sh); backfilled the 8 literature-owned orphans (6 scripts + 2 context patterns) and resolved literature-organization.md ownership to literature's own context/guides/ tree; backfilled the nvim orphan (extension-deploy-modes.md, content extended) plus 4 more core context/patterns+guides orphans, and resolved the fork-patterns.md duplicate (byte-identical to existing core docs/fork-patterns.md -- deleted the deployed copy and its stale index.json entry). Wave 2 (phase 5): added 5 new project-wide checks to check-extension-docs.sh (Rules J/K/L/M for per-category orphans, Rule N for broken deployed symlinks), landed byte-identical in both copies, gated by a single ORPHAN_GATE_MODE toggle defaulting to advisory; verified 0 orphans and 0 broken symlinks on the remediated tree via scratchpad-only destructive testing. Wave 3 (phase 6): flipped ORPHAN_GATE_MODE's default to hard, added a Rule A-N header index, confirmed exit 0 on the real tree and non-zero exit with a git-tracked-then-reverted throwaway orphan, added minimal CI wiring (.github/workflows/check-extension-docs.yml, none existed before), and wrote the implementation summary. Task status transitioned planned -> implementing -> completed."
         }
       ],
       "completion_summary": "Repaired the 19+2 broken/dead install-extension.sh symlinks (relative-path fix in both dual-write copies), backfilled all 23 deployed-only orphans into their correct owning extensions (4 core, 8 literature, 1 nvim, plus 4 additional core context/patterns backfills and the fork-patterns.md/literature-organization.md ambiguous-case resolutions), and extended check-extension-docs.sh with 5 new per-category orphan + broken-symlink checks (Rules J-N), landed advisory-first then promoted to a hard, blocking gate that exits 0 on the remediated tree. Added minimal CI wiring (.github/workflows/check-extension-docs.yml) since none existed."
@@ -78,7 +83,7 @@
     {
       "project_number": 865,
       "project_name": "make_claude_wipe_lossless_and_regenerable",
-      "status": "planned",
+      "status": "completed",
       "task_type": "neovim",
       "topic": "extensions",
       "title": "Make .claude/ wipe lossless and one-keystroke regenerable",
@@ -91,7 +96,7 @@
         "lua/neotex/plugins/ai/shared/extensions/init.lua"
       ],
       "created": "2026-07-14T22:58:04Z",
-      "last_updated": "2026-07-14T23:51:19Z",
+      "last_updated": "2026-07-15T00:44:18Z",
       "session_id": "sess_1784070109_39d07a_865",
       "artifacts": [
         {
@@ -103,6 +108,11 @@
           "path": "specs/865_make_claude_wipe_lossless_and_regenerable/plans/01_wipe-lossless-regenerable.md",
           "type": "plan",
           "summary": "7-phase implementation plan created. Extensions.json relocates to preset-scoped project-root dotfiles (.claude-extensions.json / .opencode-extensions.json) via a new config.lua root_state_file field at the single state.lua get_state_path choke point, with all shell readers (skill-base.sh, validate-wiring.sh) and deployed copies tracked. New manager.regenerate logic reads the surviving manifest's active extensions and iterates manager.load to rebuild without re-picking. Settings.json/settings.local.json keep their hardcoded .claude/ path (host-app constraint) but gain install-once semantics in loader.lua copy_root_files (mirroring sync.lua's OpenCode pattern) plus a wipe-time backup/restore wrapper. logs/ relocates to a project-root directory via path-constant changes across 5 source scripts and deployed copies. Full wipe-and-regenerate cycle plus settings-reload regression verified headlessly in a scratchpad fake project dir, never against the real tree."
+        },
+        {
+          "path": "specs/865_make_claude_wipe_lossless_and_regenerable/summaries/01_wipe-lossless-regenerable-summary.md",
+          "type": "summary",
+          "summary": "All 7 phases across 4 waves complete. Extensions.json relocated to preset-scoped project-root dotfiles (.claude-extensions.json / .opencode-extensions.json) via config.lua's new root_state_file field at the single state.lua get_state_path choke point; all shell readers (skill-base.sh, validate-wiring.sh) and their .claude/.opencode deployed copies updated in lockstep. manager.regenerate (init.lua) reads the surviving manifest's active extensions, resets state, and reloads each via manager.load, whose existing recursive dependency resolution handles ordering. settings.json/settings.local.json keep their hardcoded .claude/ path (host-app constraint): loader.lua's copy_root_files gained an install-once guard, and a post-hoc gap was found and closed where manager.unload was deleting these files before install-once could ever apply on the next load, defeating it for the unload-then-load reload cycle. A new settings_backup.lua module provides true zero-loss across a full wipe (backup -> rm -rf base_dir -> regenerate -> restore), wired into manager.regenerate. logs/ relocated to project-root .agent-logs/ across 5 source scripts and all deployed copies. Documentation swept in EXTENSION.md, README.md, extension-system.md, permission-configuration.md, and the literature extension's README.md. Phase 7 proved the full cycle headlessly in scratchpad fake project dirs: 20/20 assertions passed, all 292 pre-wipe files reproduced byte-identically post-regenerate (modulo a discovered pre-existing, out-of-scope index.json key-order non-determinism), and the real ~/.config/nvim/.claude tree was never touched destructively. check-extension-docs.sh (the hard orphan/broken-symlink gate) passes after every phase."
         }
       ]
     },

@@ -4,30 +4,17 @@ next_project_number: 866
 
 # TODO
 
-## Task Order
-
-*Updated 2026-07-15. Generated from state.json dependency graph.*
-
-**Dependency Waves**:
-| Wave | Tasks | Blocked by | Topics |
-|------|-------|------------|--------|
-| 1 | 865 | -- | extensions |
-
-**Grouped by Topic** (indented = depends on parent):
-
-### Extensions
-
-865 [PLANNED] — Make a .claude/ wipe lossless and one-keystroke regenerable by li
 
 ## Tasks
 
 ### 865. Make .claude/ wipe lossless and one-keystroke regenerable
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: neovim
 - **Topic**: extensions
 - **Dependencies**: Task 863
 - **Research**: [865_make_claude_wipe_lossless_and_regenerable/reports/01_wipe-lossless-regenerable-research.md]
 - **Plan**: [865_make_claude_wipe_lossless_and_regenerable/plans/01_wipe-lossless-regenerable.md]
+- **Summary**: [865_make_claude_wipe_lossless_and_regenerable/summaries/01_wipe-lossless-regenerable-summary.md]
 
 **Description**: Make a .claude/ wipe lossless and one-keystroke regenerable by lifting all wipe-surviving state OUT of .claude/. Depends on the store-relocation task (the deploy/target model); can land in parallel with or after the drift-check-hardening task.
 
@@ -48,6 +35,7 @@ CROSS-CUTTING CONSTRAINTS: Copy-deploy only, no symlink farm. Honor the no-task-
 - **Dependencies**: Task 863
 - **Research**: [864_enforce_every_deployed_file_has_a_source/reports/01_enforce-every-deployed-file-source.md]
 - **Plan**: [864_enforce_every_deployed_file_has_a_source/plans/01_deployed-file-source-hard-gate.md]
+- **Summary**: [864_enforce_every_deployed_file_has_a_source/summaries/01_deployed-file-source-hard-gate-summary.md]
 
 **Description**: Enforce the invariant "every deployed file has a source" by extending the deployed-vs-source drift check into a hard gate, and by giving every deployed-only orphan a real source home in the core extension. Order this AFTER the store-relocation task (the check compares deployed output against the relocated store).
 
