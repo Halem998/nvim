@@ -215,25 +215,25 @@ path; always echoes `{}`.
 
 ---
 
-### Phase 4: Create the Stop/SubagentStop events-logger hook [NOT STARTED]
+### Phase 4: Create the Stop/SubagentStop events-logger hook [COMPLETED]
 
 **Goal**: A new hook script that, on `Stop`/`SubagentStop`, correlates the active task via marker
 files (and message pattern-matching as fallback) and emits a lifecycle event; always echoes `{}`.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/hooks/events-log-lifecycle.sh` (single script handling
-      both hook types; branch on the stdin payload / `agent_id` presence as existing hooks do).
-- [ ] `SubagentStop` path: reuse `find specs -maxdepth 3 -name ".postflight-pending"` to locate the
+- [x] Create `agent-system/extensions/core/hooks/events-log-lifecycle.sh` (single script handling
+      both hook types; branch on the stdin payload / `agent_id` presence as existing hooks do). *(completed)*
+- [x] `SubagentStop` path: reuse `find specs -maxdepth 3 -name ".postflight-pending"` to locate the
       marker; read `session_id`/`skill`/`operation` from it. Emit `--event-type subagent_stop
-      --category milestone --checkpoint postflight`.
-- [ ] `Stop` path: read `.claude/tmp/workflow-active` for an active task number; if absent, regex the
+      --category milestone --checkpoint postflight`. *(completed)*
+- [x] `Stop` path: read `.claude/tmp/workflow-active` for an active task number; if absent, regex the
       `last_assistant_message` stdin field for `task [0-9]+`/`Task #[0-9]+` (mirror `memory-nudge.sh`)
       to recover a task number. Emit `--event-type session_stop --category milestone`. If no task can
-      be recovered, still emit a session-scoped event (task omitted) or exit `{}` cleanly.
-- [ ] Do NOT re-read `.return-meta.json` (may be cleaned up already). Correlation is marker/message
-      only.
-- [ ] Document the accepted `SubagentStop` duplicate-event trade-off in a header comment; optionally
-      gate emission on the same "final stop" condition `subagent-postflight.sh` uses.
+      be recovered, still emit a session-scoped event (task omitted) or exit `{}` cleanly. *(deviation: altered — session_id for the Stop path resolved via state.json lookup keyed on the recovered task number, since neither correlation source carries session_id directly)*
+- [x] Do NOT re-read `.return-meta.json` (may be cleaned up already). Correlation is marker/message
+      only. *(completed)*
+- [x] Document the accepted `SubagentStop` duplicate-event trade-off in a header comment; optionally
+      gate emission on the same "final stop" condition `subagent-postflight.sh` uses. *(completed)*
 - [x] Wrap the append `>/dev/null 2>&1 || true`; end with `echo '{}'`. Never emit `"decision"`. *(completed)*
 
 **Timing**: 1 hour

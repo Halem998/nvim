@@ -1,0 +1,23 @@
+{
+  "phase": 4,
+  "phase_name": "Create the Stop/SubagentStop events-logger hook",
+  "started_at": "2026-07-15T09:15:00Z",
+  "last_updated": "2026-07-15T09:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create events-log-lifecycle.sh branching on agent_id presence (SubagentStop vs Stop)", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/events-log-lifecycle.sh"]},
+    {"id": 2, "description": "SubagentStop path: .postflight-pending marker correlation; Stop path: workflow-active marker + message-pattern fallback, session_id resolved via state.json", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/events-log-lifecycle.sh"]},
+    {"id": 3, "description": "bash -n verify; test marker-present SubagentStop, workflow-active Stop, message-pattern fallback, and no-correlation cases", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "Stop path: emit --event-type session_stop with task omitted when no session_id can be resolved",
+      "type": "altered",
+      "reason": "events-append.sh requires --session as mandatory; neither workflow-active nor the last_assistant_message fallback carries a session_id directly. Added a session_id lookup via the recovered task number against state.json's active_projects[].session_id (populated by update-task-status.sh on every preflight). When no task is recovered, or the task's session_id cannot be resolved, the hook exits {} cleanly instead of emitting a sessionless event (which events-append.sh would reject anyway).",
+      "annotation": "*(deviation: altered — session_id for the Stop path resolved via state.json lookup keyed on the recovered task number)*"
+    }
+  ]
+}
