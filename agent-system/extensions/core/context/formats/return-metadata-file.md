@@ -191,6 +191,40 @@ Each candidate object:
 - `/todo` consumes candidates during archival (task 447 scope)
 - The field uses `// []` fallback in all jq reads for backward compatibility
 
+### reflection (optional)
+
+**Type**: object
+**Include if**: status is `implemented` and the agent captured a completion-time reflection
+(optional even then)
+
+A structured completion-time reflection, produced alongside `completion_data` and
+`memory_candidates` by implementation agents. Unlike `memory_candidates` (which accumulates
+across a task's history with append semantics), `reflection` is a single top-level object that
+skill postflight propagates to the `state.json` task entry with **overwrite** (not append)
+semantics — the latest implementation's reflection replaces any prior one.
+
+Each `reflection` object has four string sub-fields:
+
+| Field | Type | Required | Description |
+|-------|------|----------|--------------|
+| `what_worked` | string | No | ~1-3 sentences on what approach or technique worked well |
+| `what_was_hard` | string | No | ~1-3 sentences on what was difficult or friction-prone |
+| `what_was_missed` | string | No | ~1-3 sentences on what was overlooked, deferred, or missed initially |
+| `successes` | string | No | ~1-3 sentences summarizing concrete successes |
+
+All four fields are free text (all-or-nothing per agent judgment — an agent may populate all
+four, a subset, or omit the object entirely if there is nothing worth capturing).
+
+**Notes**:
+- `reflection` is a top-level sibling of `memory_candidates`, not nested under `completion_data`.
+- Skill postflight (the `orchestrator-postflight.sh` completion seam) reads this field, logs it
+  once as a `reflection` event to the unified event store, and writes it to the matching
+  `active_projects[]` entry in `state.json`, gated on `operation_type == "implement" && status ==
+  "implemented"`.
+- The write uses overwrite semantics: `state.json`'s `reflection` field always reflects the most
+  recent implementation's reflection, not a history.
+- Absence of `reflection` is valid behavior — it is optional even on a successful implementation.
+
 ### errors (optional)
 
 **Type**: array of objects
@@ -312,6 +346,12 @@ rm -f "specs/${padded_num}_${task_slug}/.return-meta.json"
       "suggested_keywords": ["lsp", "server-config", "vim.tbl_deep_extend", "merge"]
     }
   ],
+  "reflection": {
+    "what_worked": "Reading the existing server-config module before editing revealed a shared base table pattern that made the merge approach obvious.",
+    "what_was_hard": "Determining which server-specific overrides were safe to merge versus which needed to remain isolated took a few iterations.",
+    "what_was_missed": "The initial pass missed one server's custom on_attach hook, caught only during final verification.",
+    "successes": "All 4 integrations configured and verified working with a single shared base config, avoiding the duplication the prior setup had."
+  },
   "next_steps": "Review implementation and verify with /test",
   "metadata": {
     "session_id": "sess_1736700000_def456",

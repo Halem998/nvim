@@ -1,0 +1,13 @@
+{
+  "status": "planned",
+  "summary": "6-phase plan (~4.5h) to add completion-time reflection: contract in return-metadata-file.md, persist at orchestrator-postflight.sh Stage 7d, one reflection event to events.jsonl, read-only surfacing in skill-todo Stage 9 harvest, /learn --task extension via skill-memory/SKILL.md, plus extension consistency and E2E verification.",
+  "artifacts": [
+    {
+      "path": "specs/871_completion_time_reflective_harvest/plans/01_reflective-harvest.md",
+      "type": "plan",
+      "summary": "Reflective harvest implementation plan: 6 phases, waves [[1],[2,3,4],[5],[6]]. Scope decisions resolved: skill-memory/SKILL.md and state-management-schema.md included as natural-consequence edits; dormant memory-harvest.sh and commands/todo.md kept doc-only."
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "Run /implement 871 to execute the 6-phase plan."
+}

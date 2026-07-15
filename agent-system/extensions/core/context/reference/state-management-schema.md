@@ -164,6 +164,7 @@ artifact_number=$((count + 1))
 | `completion_summary` | string | Yes (when completed) | 1-3 sentence summary of accomplishment |
 | `roadmap_items` | array | No | Explicit ROADMAP.md item texts (non-meta only) |
 | `memory_candidates` | array | No | Structured memory candidates emitted by agents (see below) |
+| `reflection` | object | No | Structured completion-time reflection emitted by agents (see below) |
 
 ### Memory Candidates Field
 
@@ -185,6 +186,28 @@ The `memory_candidates` array on task entries accumulates structured memory cand
 **Responsibility Split**:
 - **`/implement` (Producer)**: Reports what was changed factually
 - **`/todo` (Consumer)**: Evaluates content and decides what warrants CLAUDE.md updates
+
+### Reflection Field
+
+The `reflection` object on task entries holds a single completion-time reflection emitted by an
+implementation agent. Unlike `memory_candidates`, it is written with **overwrite** (not append)
+semantics — the latest implementation's reflection replaces any prior one on the same task entry.
+
+| Field | Type | Required | Description |
+|-------|------|----------|--------------|
+| `what_worked` | string | No | ~1-3 sentences on what approach or technique worked well |
+| `what_was_hard` | string | No | ~1-3 sentences on what was difficult or friction-prone |
+| `what_was_missed` | string | No | ~1-3 sentences on what was overlooked, deferred, or missed initially |
+| `successes` | string | No | ~1-3 sentences summarizing concrete successes |
+
+**Lifecycle**:
+- **Producer**: Skill postflight reads `reflection` from `.return-meta.json` and writes it to the
+  task entry, gated on `operation_type == "implement" && status == "implemented"`
+- **Consumer**: `/todo` surfaces reflections read-only during its harvest stage (alongside
+  `memory_candidates`); `/learn --task N` can pull a present reflection in as an additional
+  reviewable segment
+- **Semantics**: Overwrite, not append; absence is valid (optional even on a successful
+  implementation)
 
 ### Dependencies Field
 
