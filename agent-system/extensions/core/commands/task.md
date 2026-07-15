@@ -438,6 +438,53 @@ state.json is the authoritative source of truth. Sync validates integrity and re
    bash .claude/scripts/reconcile-artifacts.sh
    ```
 
+2.6. **Status reconciliation** — repair tasks stuck in an in-flight status whose artifact for
+   that phase already exists on disk (a crashed or killed session that wrote an artifact but
+   never reached postflight). This is the primary, user-invoked trigger for
+   `reconcile-task-status.sh`; it runs only on explicit `/task --sync` invocation, never on a
+   hot path. Runs after step 2.5 so artifact registration is backfilled before status is
+   reconciled against it.
+
+   Sync Mode does not source `command-gate-in.sh`, so it has no `session_id` of its own —
+   generate one inline using the standard portable pattern:
+   ```bash
+   sync_session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+   ```
+
+   Sweep every task whose status is one of the four statuses `reconcile-task-status.sh` knows
+   how to reconcile (all other statuses are already a no-op inside the script itself, so no
+   `!=`/negation selector is needed here):
+   ```bash
+   reconcile_targets=$(jq -r '
+     .active_projects[] |
+     select(.status == "researching" or .status == "planning" or .status == "implementing" or .status == "partial") |
+     .project_number
+   ' specs/state.json)
+
+   promoted_count=0
+   for task_num in $reconcile_targets; do
+     recon_out=$(bash .claude/scripts/reconcile-task-status.sh "$task_num" "$sync_session_id" 2>&1) || {
+       echo "Warning: reconcile-task-status.sh failed for task $task_num (non-fatal)" >&2
+       continue
+     }
+     if [[ -n "$recon_out" ]]; then
+       echo "$recon_out"
+       if echo "$recon_out" | grep -q "promoted"; then
+         promoted_count=$((promoted_count + 1))
+       fi
+     fi
+   done
+
+   if [[ "$promoted_count" -gt 0 ]]; then
+     echo "Status reconciliation: $promoted_count task(s) promoted"
+   else
+     echo "Status reconciliation: no tasks required status repair"
+   fi
+   ```
+   This call is live (not `--dry-run`): the user explicitly invoked a repair command. The
+   summary line always prints, including the zero-candidate case — a silent sweep is the
+   failure mode this step exists to eliminate.
+
 3. **Regenerate TODO.md from state.json** (single authoritative operation):
    ```bash
    bash .claude/scripts/generate-todo.sh \

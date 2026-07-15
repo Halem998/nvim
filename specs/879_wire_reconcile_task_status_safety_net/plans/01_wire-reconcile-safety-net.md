@@ -186,7 +186,7 @@ every automatic caller.
 
 ---
 
-### Phase 2: Wire /task --sync as the primary live trigger [NOT STARTED]
+### Phase 2: Wire /task --sync as the primary live trigger [COMPLETED]
 
 **Goal**: Add a status-reconciliation step to Sync Mode alongside the existing artifact-
 reconciliation step, so the command the system already tells users to run for "state looks wrong"
@@ -194,25 +194,30 @@ actually repairs status. This is the primary trigger: user-invoked, never on a h
 
 **Tasks**:
 
-- [ ] Read the Sync Mode section of `agent-system/extensions/core/commands/task.md`, in particular
+- [x] Read the Sync Mode section of `agent-system/extensions/core/commands/task.md`, in particular
       step 2.5 (`reconcile-artifacts.sh`) — the new step goes immediately after it as step 2.6, so
-      artifact registration is backfilled before status is reconciled against it.
-- [ ] Generate a session ID inline (Sync Mode deliberately does not source the gate-in script, so
+      artifact registration is backfilled before status is reconciled against it. *(completed)*
+- [x] Generate a session ID inline (Sync Mode deliberately does not source the gate-in script, so
       it has none): use the standard portable pattern
-      `sync_session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"`.
-- [ ] Add the sweep loop over non-terminal active tasks. Select `researching`/`planning`/
+      `sync_session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"`. *(completed)*
+- [x] Add the sweep loop over non-terminal active tasks. Select `researching`/`planning`/
       `implementing`/`partial` from `state.json` using the `| not` inequality pattern required by
-      this codebase's jq escaping workaround — never the `!=` operator.
-- [ ] Call `bash .claude/scripts/reconcile-task-status.sh "$task_num" "$sync_session_id"` per task,
-      live (not dry-run): the user explicitly invoked a repair command.
-- [ ] **Visibility**: capture each call's combined output. Print it verbatim when non-empty. After
+      this codebase's jq escaping workaround — never the `!=` operator. *(deviation: altered — used
+      a direct `select(.status == "researching" or ... or .status == "partial")` positive-match
+      selector instead of a negation-of-terminal-statuses `| not` selector. Both avoid `!=`
+      entirely; positive-match against the four reconcilable statuses is simpler and was verified
+      to return the identical result set against real `specs/state.json` as a `| not`-based
+      cross-check)*
+- [x] Call `bash .claude/scripts/reconcile-task-status.sh "$task_num" "$sync_session_id"` per task,
+      live (not dry-run): the user explicitly invoked a repair command. *(completed)*
+- [x] **Visibility**: capture each call's combined output. Print it verbatim when non-empty. After
       the loop, always print a summary line — `Status reconciliation: N task(s) promoted` — and,
       when N is zero, `Status reconciliation: no tasks required status repair`. The zero case must
-      print; a silent sweep is the failure mode this task exists to eliminate.
-- [ ] Keep the step non-fatal: a per-task failure warns and continues to the next task, matching
-      how step 3's `generate-todo.sh` call already degrades.
-- [ ] Do not renumber the existing steps; insert as 2.6.
-- [ ] Mirror to `.claude/commands/task.md`.
+      print; a silent sweep is the failure mode this task exists to eliminate. *(completed)*
+- [x] Keep the step non-fatal: a per-task failure warns and continues to the next task, matching
+      how step 3's `generate-todo.sh` call already degrades. *(completed)*
+- [x] Do not renumber the existing steps; insert as 2.6. *(completed)*
+- [x] Mirror to `.claude/commands/task.md`. *(completed)*
 
 **Timing**: 1 hour
 

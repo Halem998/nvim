@@ -1,0 +1,22 @@
+{
+  "phase": 2,
+  "phase_name": "Wire /task --sync as the primary live trigger",
+  "started_at": "2026-07-15T00:00:00Z",
+  "last_updated": "2026-07-15T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Sync Mode step 2.6 with inline session id, sweep loop, live reconcile call, visibility summary", "status": "done", "files_touched": ["agent-system/extensions/core/commands/task.md", ".claude/commands/task.md"]},
+    {"id": 2, "description": "Fixture-verify selector against real state.json, stranded-task promotion, zero-candidate summary line", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.3",
+      "description": "Select researching/planning/implementing/partial from state.json using the | not inequality pattern",
+      "type": "altered",
+      "reason": "Used a positive-match select(.status == X or .status == Y ...) selector instead of a negation-of-terminal-statuses selector. Both avoid != entirely; positive-match against the four reconcilable statuses is simpler and was verified to return the identical result set against real specs/state.json.",
+      "annotation": "*(deviation: altered — used a direct select(.status == \"researching\" or ... or .status == \"partial\") positive-match selector instead of a negation-of-terminal-statuses | not selector. Both avoid != entirely; positive-match against the four reconcilable statuses is simpler and was verified to return the identical result set against real specs/state.json as a | not-based cross-check)*"
+    }
+  ]
+}
