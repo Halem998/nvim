@@ -1,7 +1,7 @@
 # Implementation Plan: Sparse-Literature Detection and Stage 4a Reconciliation
 
 - **Task**: 867 - Add sparse-literature detection to --lit and reconcile the drifted Stage 4a flow
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 9 hours
 - **Dependencies**: 866 (complete -- `literature-ingest-online.sh` bridge with STABLE CONTRACT header exists)
 - **Research Inputs**: specs/867_sparse_lit_detection_stage4a/reports/01_sparse-lit-detection-design.md
@@ -342,23 +342,23 @@ remove every raw briefing call site.
 
 ---
 
-### Phase 7: End-to-end verification [NOT STARTED]
+### Phase 7: End-to-end verification [COMPLETED]
 
 **Goal**: Confirm the scripts, skills, and docs are internally consistent and the boundary behavior
 is correct.
 
 **Tasks**:
-- [ ] `bash -n` (and `shellcheck` if available) on both modified scripts.
-- [ ] Drive `literature-lit-flag-resolve.sh` against fixtures at counts 2/3/4 and confirm the exact
+- [x] `bash -n` (and `shellcheck` if available) on both modified scripts.
+- [x] Drive `literature-lit-flag-resolve.sh` against fixtures at counts 2/3/4 and confirm the exact
   `SPARSE_PROMPT_NEEDED` <-> `SUBINDEX_PRESENT` boundary (`< threshold`); repeat with an overridden
   `LITERATURE_SPARSE_THRESHOLD` to confirm the env var is honored.
-- [ ] Drive `literature-briefing.sh` in both modes and confirm the machine-readable marker line and
+- [x] Drive `literature-briefing.sh` in both modes and confirm the machine-readable marker line and
   `[SPARSE COVERAGE ...]` banner appear under threshold and are absent at/above threshold.
-- [ ] Confirm all six skills reference the shared block and no raw `literature-briefing.sh
+- [x] Confirm all six skills reference the shared block and no raw `literature-briefing.sh
   2>/dev/null` remains (`grep`).
-- [ ] Confirm the autonomous path emits `[lit:auto]` and never `AskUserQuestion` (static read of the
+- [x] Confirm the autonomous path emits `[lit:auto]` and never `AskUserQuestion` (static read of the
   shared block + the two orchestrate dispatch contexts).
-- [ ] Run the extension doc-lint if present
+- [x] Run the extension doc-lint if present
   (`.claude/scripts/check-extension-docs.sh` / `check-extension-docs.sh`) and resolve any failures.
 
 **Timing**: 1 hour
@@ -373,18 +373,18 @@ is correct.
 
 ## Testing & Validation
 
-- [ ] `bash -n` clean on `literature-briefing.sh` and `literature-lit-flag-resolve.sh`.
-- [ ] Resolver emits `SPARSE_PROMPT_NEEDED` for resolved counts `< LITERATURE_SPARSE_THRESHOLD` and
+- [x] `bash -n` clean on `literature-briefing.sh` and `literature-lit-flag-resolve.sh`.
+- [x] Resolver emits `SPARSE_PROMPT_NEEDED` for resolved counts `< LITERATURE_SPARSE_THRESHOLD` and
   `SUBINDEX_PRESENT` at/above it; env-var override honored.
-- [ ] Briefing emits a greppable machine-readable coverage marker in both modes and a loud
+- [x] Briefing emits a greppable machine-readable coverage marker in both modes and a loud
   `[SPARSE COVERAGE ...]` banner under threshold.
-- [ ] `grep -rl 'literature-briefing.sh 2>/dev/null' agent-system/extensions/core/skills/` returns
+- [x] `grep -rl 'literature-briefing.sh 2>/dev/null' agent-system/extensions/core/skills/` returns
   nothing.
-- [ ] All six skills reference the single shared `lit-stage4a-flow.md`; none retains commented-out
+- [x] All six skills reference the single shared `lit-stage4a-flow.md`; none retains commented-out
   `AskUserQuestion` pseudocode.
-- [ ] `/orchestrate --lit` dispatch contexts pass `orchestrator_mode: true` for research, plan, and
+- [x] `/orchestrate --lit` dispatch contexts pass `orchestrator_mode: true` for research, plan, and
   implement; autonomous Stage 4a emits `[lit:auto]` and never prompts.
-- [ ] EXTENSION.md, `claudemd.md`, and `adhoc-navigation-directive.md` document the new directive,
+- [x] EXTENSION.md, `claudemd.md`, and `adhoc-navigation-directive.md` document the new directive,
   threshold, and online-ingest option consistently; `.claude/CLAUDE.md` untouched.
 
 ## Artifacts & Outputs
