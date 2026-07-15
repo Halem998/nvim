@@ -225,7 +225,7 @@ Verify git commit succeeded (non-critical):
 # Parse return as JSON
 if ! echo "$git_return" | jq empty 2>/dev/null; then
   echo "WARNING: Git commit failed - invalid JSON from git-workflow-manager"
-  echo "Manual fix: git add . && git commit -m 'task $task_number: ${command} completed'"
+  echo "Manual fix: stage the task-scoped files per git-staging-scope.md and commit manually (avoid whole-tree staging: -A/--all, bare dot pathspec, or commit -a/-am)"
   # Continue (git failure is non-critical)
 fi
 
@@ -244,7 +244,7 @@ elif [ "$git_status" == "failed" ]; then
   error_msg=$(echo "$git_return" | jq -r '.errors[0].message // "Unknown error"')
   
   echo "Git error: $error_msg"
-  echo "Manual fix: git add . && git commit -m 'task $task_number: ${command} completed'"
+  echo "Manual fix: stage the task-scoped files per git-staging-scope.md and commit manually (avoid whole-tree staging: -A/--all, bare dot pathspec, or commit -a/-am)"
   # Continue (git failure doesn't fail the command)
 fi
 ```

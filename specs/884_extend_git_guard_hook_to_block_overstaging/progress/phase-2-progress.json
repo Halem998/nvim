@@ -1,0 +1,23 @@
+{
+  "phase": 2,
+  "phase_name": "Reconcile Contradicting Prose",
+  "started_at": "2026-07-15T23:40:00Z",
+  "last_updated": "2026-07-15T23:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Fix postflight-pattern.md lines 228 and 247 (Manual fix guidance)", "status": "done", "files_touched": ["agent-system/extensions/core/context/orchestration/postflight-pattern.md"]},
+    {"id": 2, "description": "Fix skill-project-overview/SKILL.md line 435 (git add specs/ .claude/)", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-project-overview/SKILL.md"]},
+    {"id": 3, "description": "Confirm surrounding variable names match", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.1",
+      "description": "Replace 'Manual fix: git add . && ...' with scoped-staging guidance",
+      "type": "altered",
+      "reason": "The plan's own suggested 'e.g.' wording contains the literal substring 'git add .' inside the do-not-use parenthetical, which would fail the plan's own Phase 2 verification grep for that substring. Reworded to describe forbidden flags (-A/--all, bare dot pathspec, -a/-am) without the literal three-token command string, preserving the same guidance intent.",
+      "annotation": "*(deviation: altered — reworded to avoid literal 'git add .' substring so Phase 2's own grep verification passes)*"
+    }
+  ]
+}

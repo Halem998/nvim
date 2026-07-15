@@ -217,25 +217,26 @@ file's existing `([[:space:]]|$)` idiom and avoids `\b`'s edge behavior on a tra
 
 ---
 
-### Phase 2: Reconcile Contradicting Prose [NOT STARTED]
+### Phase 2: Reconcile Contradicting Prose [COMPLETED]
 
 **Goal**: Remove the two documented instructions that teach commands the extended hook blocks, and
 fix one over-broad (and now actively broken) staging prescription.
 
 **Tasks**:
-- [ ] **`context/orchestration/postflight-pattern.md:228` and `:247`** — both currently read
+- [x] **`context/orchestration/postflight-pattern.md:228` and `:247`** — both currently read
       `echo "Manual fix: git add . && git commit -m 'task $task_number: ${command} completed'"`.
       Both are inside `skill-git-workflow`'s validate-return fallback (the `jq`-parse-failure
       branch and the `status == "failed"` branch). Replace both with guidance pointing at scoped
-      staging, e.g. `Manual fix: stage the task-scoped files per git-staging-scope.md and commit
-      manually (do not use git add -A / git add . / git commit -am)`. These are the only two
+      staging. These are the only two
       literal blocked-command instructions in the file; fix both identically.
-- [ ] **`skills/skill-project-overview/SKILL.md:435`** — currently `git add specs/ .claude/`.
-      Narrow to the canonical template from `git-staging-scope.md`, matching the surrounding step's
-      existing variables:
+      *(completed: deviation — reworded to avoid the literal substring "git add ." per the
+      Phase 2 grep verification, since the plan's own "e.g." wording would itself fail that
+      check; intent — no instruction to run a blocked form — preserved)*
+- [x] **`skills/skill-project-overview/SKILL.md:435`** — currently `git add specs/ .claude/`.
+      Narrowed to the canonical scoped-staging template using the surrounding step's existing
+      `task_dir` variable (already `specs/${padded_num}_${task_slug}` at line 290):
       ```
-      padded_num=$(printf "%03d" "$next_num")
-      git add "specs/${padded_num}_${slug}/" specs/TODO.md specs/state.json
+      git add "$task_dir" specs/TODO.md specs/state.json
       ```
       **Scope honesty (do not overclaim)**: this line is **not** one of the three forms the hook
       blocks — it has no `-A`, no bare `.`, and no `-a`. The hook will not reject it. Justify the
@@ -245,8 +246,9 @@ fix one over-broad (and now actively broken) staging prescription.
       2. **It is now actively broken**: `/.claude/` is gitignored, so `git add .claude/` stages
          nothing and emits `The following paths are ignored by one of your .gitignore files`.
          The `.claude/` argument is dead weight and must be dropped regardless.
-- [ ] Confirm the surrounding variable names (`next_num`, slug variable) match what that SKILL.md
-      step already defines before substituting; adjust to fit rather than introducing new names.
+- [x] Confirmed the surrounding variable names (`next_num`, `padded_num`, `task_slug`, `task_dir`)
+      match what that SKILL.md step already defines; used the existing `task_dir` composite
+      variable rather than introducing new names.
 
 **Timing**: 30 minutes
 

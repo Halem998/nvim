@@ -432,7 +432,7 @@ bash .claude/scripts/generate-todo.sh || echo "WARNING: generate-todo.sh failed 
 #### 5.6: Git Commit
 
 ```bash
-git add specs/ .claude/
+git add "$task_dir" specs/TODO.md specs/state.json
 git commit -m "task ${next_num}: create and complete research
 
 Session: ${session_id}"
