@@ -1,13 +1,26 @@
 {
-  "status": "planned",
-  "summary": "Six-phase plan (5.5h) adding --dream as an 8th /distill sub-mode, scoped entirely to agent-system/extensions/memory/. Phase 1 wires command-layer dispatch in distill.md. Phases 2-4 author the SKILL.md `### Sub-Mode: dream` section: event ingestion via events-query.sh only (with the no-events degraded path), two-tier event-to-memory correlation and corroborated/contradicted/gap classification, revision through the existing UPDATE/tombstone/CREATE primitives behind a mandatory AskUserQuestion stop, then the separate improvement-proposal deliverable, dream-log.json schema, state integration, and --auto exclusion. Phase 5 syncs distill-usage.md/EXTENSION.md/index-entries.json and verifies manifest.json needs no change. Phase 6 verifies cross-table consistency, doc-lint, no new task-number citations, and that agent-system/extensions/core/ is untouched. All research design decisions carried verbatim; the three decisions research left open are ratified in the plan. Verified live during planning rather than assumed: specs/events.jsonl is absent and events-query.sh returns total_events:0 / [] at exit 0, so the no-events path is the DEFAULT day-one experience and is planned as first-class, not an edge case; and the deployed .claude/commands/distill.md is byte-identical to source (diff -q clean), confirming deployed copies are pure sync targets and correctly out of scope.",
+  "status": "implemented",
+  "summary": "Implemented all 6 phases adding --dream as an 8th /distill sub-mode, entirely within agent-system/extensions/memory/. Phase 1 wired command-layer dispatch in distill.md (if/elif branch, prose list, availability table row, Present Results block, error-message flag lists, state_management reads/writes). Phases 2-4 authored the SKILL.md `### Sub-Mode: dream` section end to end: event ingestion exclusively via events-query.sh (including the verified 'no events yet' degraded path as a first-class, non-error outcome), two-tier event-to-memory correlation (task-number substring match, then keyword/topic overlap fallback reusing the existing Overlap Scoring formula), corroborated/contradicted/gap classification with a three-strikes recurrence threshold anchored to the Convergence Policing Contract's Divergence Audit precedent by name, revision through the existing UPDATE/EXTEND/CREATE/tombstone primitives behind a mandatory AskUserQuestion stop with proposed-body review, the separate improvement-proposal deliverable (AskUserQuestion Create-as-task/Note-in-report-only/Skip with an explicit confirmation gate before task creation), the new dream-log.json schema, distill-log.json/state.json integration (last_dream/dream_count), and --auto exclusion in both the exclusion table and execution-flow skip list. Phase 5 synced distill-usage.md (quick reference, full workflow section, cadence row, dream-log entry shape, dry-run/auto-exclusion updates), EXTENSION.md (commands table row), and index-entries.json (keywords/summary/line_count); manifest.json was verified to need no change, recorded as the correct outcome rather than a manufactured edit. Phase 6 verified all four parallel sub-mode tables agree, the auto-exclusion appears in all three required places, check-extension-docs.sh's memory-extension result is OK/PASS (the overall FAIL is pre-existing core deploy-drift from already-committed prior tasks, confirmed via git log/git status), zero new task-number citations were introduced (pre-existing violating cells were left untouched per the plan's explicit hazard warning), agent-system/extensions/core/ is untouched, and the documented no-events behavior was re-confirmed live.",
   "artifacts": [
     {
-      "path": "specs/872_distill_review_revise_dream_mode/plans/01_distill-dream-mode.md",
-      "type": "plan",
-      "summary": "Six-phase implementation plan, 5.5 hours, 5 dependency waves. Phases 1 and 2 run parallel (distinct files); 2->3->4 are strictly sequential on the shared SKILL.md dream section; 5 depends on 1+4; 6 is verification-only."
+      "path": "specs/872_distill_review_revise_dream_mode/summaries/01_distill-dream-mode-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary for /distill --dream mode: what changed across the six in-scope files, key decisions (dispatch ordering, three-strikes anchor by document name, dual distill-log/dream-log logging), verification results, and the documented multi-task-creation-standard.md follow-up left out of scope."
     }
   ],
   "blockers": [],
-  "next_action_hint": "Run /implement 872 to execute the plan. Three things the implementer must get right: (1) do NOT copy the adjacent `Available (task 450)` cells when adding new sub-mode table rows -- those are pre-existing no-task-references-in-deliverables violations and must not be extended, though fixing the existing ones is out of scope; (2) manifest.json is expected to need NO change -- 'verified, no change required' is the correct and complete outcome, not a reason to manufacture an edit; (3) the no-events path is a normal documented outcome with a visible notice, never an error branch. Research's three open decisions are now ratified in the plan: state field is last_dream/dream_count; the narrative dream report is terminal-only with no persisted dream-report-{date}.md (dream-log.json is the machine record); and the multi-task-creation-standard.md compliance-table row is a deliberate documented follow-up since that file lies outside the declared memory-extension scope."
+  "phases_completed": 6,
+  "phases_total": 6,
+  "modified_files": [
+    "agent-system/extensions/memory/commands/distill.md",
+    "agent-system/extensions/memory/skills/skill-memory/SKILL.md",
+    "agent-system/extensions/memory/context/project/memory/distill-usage.md",
+    "agent-system/extensions/memory/EXTENSION.md",
+    "agent-system/extensions/memory/index-entries.json",
+    "specs/872_distill_review_revise_dream_mode/plans/01_distill-dream-mode.md",
+    "specs/872_distill_review_revise_dream_mode/summaries/01_distill-dream-mode-summary.md",
+    "specs/state.json",
+    "specs/TODO.md"
+  ],
+  "next_action_hint": "Task 872 is complete (status: completed in specs/state.json). No further /implement dispatch is needed. If desired as a future task, the documented follow-up (out of scope here) is adding a /distill --dream row to multi-task-creation-standard.md's Current Compliance Status table at Required-components-only level, matching /errors' 'Partial' framing."
 }
