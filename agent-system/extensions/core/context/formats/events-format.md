@@ -1,0 +1,140 @@
+# Events Store Format
+
+## Overview
+
+`specs/events.jsonl` is the unified, append-only event/reflection log for the agent system. It
+captures lifecycle timings, deviations, blockers, milestones, successes, and completion-time
+reflections as a single stream of compact JSON lines, so downstream consumers (dashboards,
+distillation passes, ad hoc `jq` queries) share one schema and one pair of helper scripts instead
+of each hand-rolling their own log format.
+
+This document specifies the per-line schema. The formal machine-checkable contract lives in
+`context/schemas/events-schema.json` (draft-07 JSON Schema); the two must stay in sync.
+
+## File Location
+
+```
+specs/events.jsonl
+```
+
+Repo-root-relative, sibling to `specs/errors.json`, `specs/state.json`, and `specs/TODO.md`.
+
+## Lazy Creation and Never-Gitignored
+
+- The file is **not** pre-created. It comes into existence the first time
+  `scripts/events-append.sh` is invoked -- mirroring the existing `specs/errors.json` convention
+  (which also does not exist until the first error is logged).
+- Once created, it is a normal tracked file and is **never gitignored**. It accumulates for the
+  lifetime of the repository.
+- Both helper scripts (`events-append.sh`, `events-query.sh`) must tolerate the file's absence:
+  the append helper creates it lazily; the query helper returns an empty result set and exits 0
+  (never an error) when the file does not exist yet.
+- No rotation or archival strategy is defined for this file. Unbounded growth over a long-lived
+  repository is a known, explicitly out-of-scope gap -- flagged for a future task, not solved
+  here.
+
+## One-Compact-JSON-Object-Per-Line
+
+Each line is exactly one JSON object, produced with `jq -c` (compact, single-line, no embedded
+newlines), terminated by `\n`. This makes the file:
+
+- Trivially `jq`-streamable: `jq` parses a stream of concatenated JSON values natively, so no
+  `--slurp`/`-s` flag is needed for line-by-line filtering.
+- Trivially `wc -l`-countable for a cheap total-event count.
+- Append-only: lines are never rewritten or reordered in place; corrections are expressed as new
+  lines (e.g. a later `success` event), never mutation of an earlier line.
+
+Lines are built via `jq -c -n --arg`/`--argjson ...` into a shell variable and appended with a
+single `printf '%s\n' "$line" >> "$EVENTS_FILE"` write -- never via string concatenation, which
+risks JSON-escaping bugs. See `scripts/events-append.sh` for the reference implementation.
+
+## Field Table
+
+| Field | Required | Type | Notes |
+|-------|----------|------|-------|
+| `event_id` | yes | string | Unique, creation-order-sortable ID: `evt_{timestamp_ms}_{random6}`. Mirrors the existing `err_{timestamp}` / `sess_{timestamp}_{random}` ID conventions rather than inventing a new scheme (e.g. UUID). |
+| `event_type` | yes | string (open) | The specific kind of event -- finer-grained than `category`. Free-form but documented (see below); new values may be added by future consumers without a schema revision. |
+| `category` | yes | string (closed enum) | Exactly one of `deviation`, `blocker`, `milestone`, `success`. The primary filterable/groupable taxonomy for aggregate queries. |
+| `timestamp` | yes | string | ISO 8601, matching every other timestamp convention in this codebase (`errors.json`, return-metadata files, `state.json`). |
+| `duration_seconds` | no (nullable) | number \| null | Nullable -- point events (e.g. hitting a blocker) have no duration; a completed lifecycle stage does. Named `duration_seconds`, not `duration_ms`, to match the existing `metadata.duration_seconds` convention in `return-metadata-file.md`. |
+| `session_id` | yes | string | The exact `sess_{timestamp}_{random}` value already generated at command gate-in -- the shared cross-link key joining events to a run. |
+| `task` | no (nullable) | integer \| null | Bare (unpadded) task/project number, matching `errors.json`'s `context.task` and `state.json`'s `project_number` -- **not** the zero-padded directory string. Nullable because some events (e.g. a `/refresh` sweep) are not task-scoped. |
+| `checkpoint` | no (nullable) | string \| null (open) | The lifecycle point the event occurred at. Open string with documented common values (see below); nullable for events with no single associated checkpoint. |
+| `message` | yes | string | Short, human-readable one-line summary, mirroring `errors.json`'s `message` field. |
+| `detail` | no | object (open) | Open, `event_type`-specific structured payload -- e.g. a completion-time reflection's `what_worked`/`what_was_hard`/`what_was_missed`/`successes` fields nest here without requiring a schema revision. Defaults to `{}` when absent. |
+| `error_ref` | no (nullable) | string \| null | Optional cross-link to an `errors.json` entry's `id` (e.g. `"err_1736700000"`). **Always optional, never a hard foreign key** -- consumers must work correctly whether or not `specs/errors.json` exists or contains the referenced ID. |
+
+## `category` Closed Enum
+
+`category` is intentionally a closed, 4-value enum -- the stable taxonomy that aggregate/summary
+consumers group and filter by:
+
+| Value | Meaning |
+|-------|---------|
+| `deviation` | Execution diverged from the plan (skipped, altered, or deferred a step). |
+| `blocker` | Work could not proceed without external resolution. |
+| `milestone` | A meaningful checkpoint or phase boundary was reached. |
+| `success` | A goal, phase, or task completed successfully. |
+
+## `event_type` Open String -- Common Values
+
+`event_type` is an open, extensible string. The starter/common values below are seeded by this
+contract; consumers may add new values without a schema-breaking revision:
+
+| Value | Typical `category` | Description |
+|-------|--------------------|--------------|
+| `lifecycle_stage` | `milestone` | A named lifecycle stage (see `checkpoint`) completed. |
+| `deviation` | `deviation` | A plan step was skipped, altered, or deferred. |
+| `blocker` | `blocker` | Execution stalled on an external dependency or missing input. |
+| `milestone` | `milestone` | A phase or objective boundary was reached. |
+| `success` | `success` | A goal, phase, or task completed. |
+| `reflection` | `success` (typically) | A completion-time structured reflection payload, nested in `detail`. |
+
+## `checkpoint` Open String -- Common Values
+
+`checkpoint` is an open, extensible string naming the lifecycle point an event is associated
+with. Documented common values:
+
+| Value | Source |
+|-------|--------|
+| `preflight` | `skill-base.sh` lifecycle stage |
+| `context_injection` | `skill-base.sh` lifecycle stage |
+| `verification` | `skill-base.sh` lifecycle stage |
+| `postflight` | `skill-base.sh` lifecycle stage |
+| `GATE_IN` | Command-level checkpoint (`command-gate-in.sh`) |
+| `GATE_OUT` | Command-level checkpoint (`command-gate-out.sh`) |
+| `phase_{N}` | Implementation phase marker, e.g. `phase_2` |
+
+New checkpoint names may be added by future instrumentation without a schema revision --
+`checkpoint` is never validated against a closed list.
+
+## `detail` Open-Object Contract
+
+`detail` carries `event_type`-specific structured data and is validated only as `"type": "object"`
+with `additionalProperties: true` -- it imposes no fixed shape. This is deliberate: a completion-
+time reflection's nested fields (e.g. `what_worked`, `what_was_hard`, `what_was_missed`,
+`successes`) and any future payload shape can be added without revising `events-schema.json`.
+When absent, treat `detail` as `{}`.
+
+## `error_ref` Cross-Link Contract
+
+`error_ref`, when present, holds the `id` of an entry in `specs/errors.json` (e.g.
+`"err_1736700000"`). It is:
+
+- **Always optional** -- most events have no associated error.
+- **Never a hard foreign key** -- readers and writers must not assume `specs/errors.json` exists,
+  and must not fail if the referenced ID cannot be resolved. The cross-link is informational only.
+
+## Example Lines
+
+```json
+{"event_id":"evt_1736700000123_a1b2c3","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-07-15T10:22:31.123Z","duration_seconds":4.2,"session_id":"sess_1736700000_abc123","task":259,"checkpoint":"preflight","message":"Preflight completed","detail":{},"error_ref":null}
+{"event_id":"evt_1736700005456_d4e5f6","event_type":"deviation","category":"deviation","timestamp":"2026-07-15T10:22:36.456Z","duration_seconds":null,"session_id":"sess_1736700000_abc123","task":259,"checkpoint":"phase_2","message":"Skipped optional retry step","detail":{"reason":"Not needed for this input size"},"error_ref":null}
+{"event_id":"evt_1736700010789_g7h8i9","event_type":"blocker","category":"blocker","timestamp":"2026-07-15T10:22:41.789Z","duration_seconds":null,"session_id":"sess_1736700000_abc123","task":259,"checkpoint":null,"message":"Missing external credential","detail":{},"error_ref":"err_1736700000"}
+```
+
+## Related Documentation
+
+- [Events Schema](../schemas/events-schema.json) -- formal draft-07 JSON Schema for a single line
+- [Return Metadata Format](return-metadata-file.md) -- `session_id`/`duration_seconds` convention
+- [Error Handling Rule](../../rules/error-handling.md) -- `errors.json` schema and `error_ref` target

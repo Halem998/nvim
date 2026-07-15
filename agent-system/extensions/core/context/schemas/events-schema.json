@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.org/schemas/events-line.json",
+  "title": "Unified Events Store Line Schema",
+  "description": "JSON Schema for a single line of the append-only specs/events.jsonl event/reflection store. Each line is one compact JSON object produced via jq -c.",
+  "type": "object",
+  "required": [
+    "event_id",
+    "event_type",
+    "category",
+    "timestamp",
+    "session_id",
+    "message"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "pattern": "^evt_[0-9]+_[a-zA-Z0-9]{6}$",
+      "description": "Unique, creation-order-sortable ID: evt_{timestamp_ms}_{random6}"
+    },
+    "event_type": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Open, extensible string naming the specific kind of event (e.g. lifecycle_stage, deviation, blocker, milestone, success, reflection). Not a closed enum -- new values may be added by future consumers."
+    },
+    "category": {
+      "type": "string",
+      "enum": ["deviation", "blocker", "milestone", "success"],
+      "description": "Closed 4-value taxonomy used for aggregate filtering/grouping."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of the event."
+    },
+    "duration_seconds": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "description": "Nullable duration in seconds. Null for point events with no duration."
+    },
+    "session_id": {
+      "type": "string",
+      "pattern": "^sess_[0-9]+_[a-zA-Z0-9]+$",
+      "description": "The sess_{timestamp}_{random} value generated at command gate-in; shared cross-link key."
+    },
+    "task": {
+      "type": ["integer", "null"],
+      "description": "Bare (unpadded) task/project number, or null for non-task-scoped events."
+    },
+    "checkpoint": {
+      "type": ["string", "null"],
+      "description": "Open, extensible string naming the lifecycle point (e.g. preflight, context_injection, verification, postflight, GATE_IN, GATE_OUT, phase_{N}), or null."
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Short, human-readable one-line summary."
+    },
+    "detail": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Open, event_type-specific structured payload. Defaults to {} when absent."
+    },
+    "error_ref": {
+      "type": ["string", "null"],
+      "description": "Optional cross-link to an errors.json entry's id. Never a hard foreign key -- always optional."
+    }
+  },
+  "additionalProperties": false
+}

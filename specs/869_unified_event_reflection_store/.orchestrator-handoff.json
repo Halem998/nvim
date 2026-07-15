@@ -1,0 +1,13 @@
+{
+  "status": "planned",
+  "summary": "Created a 5-phase implementation plan for the append-only specs/events.jsonl event store under agent-system/extensions/core/. Phase 1 authors the contract (context/formats/events-format.md documented schema + context/schemas/events-schema.json draft-07 JSON Schema). Phases 2 and 3 (parallelizable) implement the two shared helpers: events-append.sh (jq-built, flock-guarded, lazy-creating single-event append with closed category-enum validation) and events-query.sh (jq-native filter/aggregate reader that tolerates an absent store and supports jsonl|json-array|summary-counts formats). Phase 4 syncs manifest.json (add 2 scripts), index-entries.json (2 new format/schema entries), and EXTENSION.md (correct the stale scripts count from manifest, add a capability bullet). Phase 5 is end-to-end append/query round-trip verification. All edits are scoped to agent-system/extensions/core/ only; .claude/ and .opencode/ propagate via the separate pre-existing sync mechanism and are out of scope, as is CLAUDE.md (auto-generated). Dependency waves: [[1],[2,3],[4],[5]], ~4.5h total.",
+  "artifacts": [
+    {
+      "path": "specs/869_unified_event_reflection_store/plans/01_event-store-plumbing.md",
+      "type": "plan",
+      "summary": "5-phase plan: schema doc + JSON Schema (Phase 1), events-append.sh (Phase 2), events-query.sh (Phase 3), manifest/index-entries/EXTENSION.md sync (Phase 4), end-to-end verification (Phase 5)."
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "Run /implement 869 to execute the plan. Waves: Phase 1 first (contract), then Phases 2 and 3 in parallel (both depend only on Phase 1), then Phase 4 (sync, depends on 2+3), then Phase 5 (verification). Edit only under agent-system/extensions/core/; never hand-edit CLAUDE.md or the deployed .claude/.opencode copies."
+}
