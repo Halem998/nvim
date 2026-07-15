@@ -88,8 +88,12 @@ Runs a three-tier discovery pipeline via `literature-discover.sh`:
 2. **Tier 2 (local)**: Search Zotero library (`zotero-library.json`) for available PDFs
 3. **Tier 3 (online)**: Semantic Scholar API, Unpaywall DOI lookup, arXiv direct PDF
 
-Results are presented interactively. Selected items are added to `specs/literature-index.json`.
-Unresolved items are appended to `specs/literature/SOURCES.md` for later acquisition.
+Results are presented interactively. For each selected `open_access`/`paywall`/`in_zotero_no_pdf`
+entry, the user is offered a choice: ingest it into the Literature corpus now (via
+`literature-ingest-online.sh` — downloads and magic-byte-verifies the PDF, creates or attaches the
+Zotero item, then delegates to the unmodified `literature-ingest.sh` pipeline and registers it in
+`specs/literature-index.json`), or just record it in `specs/literature/SOURCES.md` for later
+acquisition (the default/fallback, and the only outcome for records with no discoverable PDF).
 
 ### Mode B: Integration
 
@@ -140,11 +144,12 @@ Scripts are in `.claude/extensions/literature/scripts/zotero-*.sh`.
 |--------|---------|----------|
 | `zotero-search.sh` | Search CSL-JSON export by keyword (used by Mode A) | Yes |
 | `zotero-read.sh` | Read item metadata and PDFs via `zot` CLI | No — inactive, see below |
-| `zotero-write.sh` | Write/attach files to Zotero items | No — inactive, see below |
+| `zotero-write.sh` | Write/attach files to Zotero items; create new items with PDF attachment (`item-add`) | No — inactive, see below |
 | `zotero-setup.sh` | Setup wizard: detect data dir, validate, configure | No — inactive, see below |
 | `zotero-chunk.sh` | Extract PDF text and chunk into sections | No — inactive, see below |
 | `zotero-attach-chunks.sh` | Upload chunks as Zotero child attachments | No — inactive, see below |
 | `cite-extract.sh` | Extract citation patterns from markdown artifacts | Yes |
+| `literature-ingest-online.sh` | Online-discovery -> Zotero+PDF -> ingest bridge (classify/download-verify/create-or-attach/delegate/patch) | Declared in `manifest.json`; its classification/download/delegate/patch logic works standalone, but its create-item and attach-to-existing paths call `zotero-write.sh`, which is itself still blocked on the external `zot` CLI (see below) |
 
 ### Deployment Status (task 844)
 
@@ -164,7 +169,7 @@ directory)**:
 | Artifact | Reason |
 |----------|--------|
 | `zotero-read.sh` | Blocked on external `zot` CLI (`zotero-cli-cc`), which is not installed in this environment. No live caller. |
-| `zotero-write.sh` | Blocked on external `zot` CLI, not installed. No live caller. |
+| `zotero-write.sh` | Blocked on external `zot` CLI, not installed. Now has a live SOURCE-tree caller (`literature-ingest-online.sh`'s `item-add`/`attach-file` calls, added by the online-ingest-bridge work — see `context/project/literature/patterns/zotero-item-creation.md`), but the runtime blocker is unchanged: no `zot` binary or configured Zotero API key is available in this environment to exercise it live. |
 | `zotero-setup.sh` | Blocked on external `zot` CLI, not installed. No live caller. |
 | `zotero-chunk.sh` | Superseded by the read-only briefing+tools design adopted in task 758; write-back-to-Zotero chunking is orthogonal to the current pipeline. No live caller. |
 | `zotero-attach-chunks.sh` | Superseded by the same task-758 read-only design. No live caller. |
@@ -263,3 +268,4 @@ Install via Nix: `nix-env -iA nixpkgs.poppler_utils nixpkgs.djvulibre`
 | Command | /cite | Citation verification command |
 | Script | scripts/literature-briefing.sh | Generates `<literature-briefing>` blocks for agents |
 | Script | scripts/literature-discover.sh | Three-tier source discovery pipeline |
+| Script | scripts/literature-ingest-online.sh | Online-discovery -> Zotero+PDF -> ingest bridge (classify/download-verify/create-or-attach/delegate/patch) |

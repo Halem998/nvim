@@ -361,14 +361,83 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--rebuild [--dry-run]|--validate|--i
          }
          ```
 
+      3.5. **Offer online ingestion for eligible entries** (new branch; runs BEFORE step 4, for
+          each SELECTED entry whose status is `open_access`, `paywall`, or `in_zotero_no_pdf` —
+          `available`/`in_zotero` entries already have a local file or Zotero PDF and skip this
+          branch entirely, unaffected). Numbered "3.5" (not "3b") to avoid any confusion with the
+          unrelated top-level `<step_3b>` XML tag (rebuild mode) elsewhere in this command file:
+
+          If one or more eligible entries were selected, issue `AskUserQuestion`:
+          ```json
+          {
+            "question": "N of your selected sources can be ingested into the Literature corpus now (Zotero item + PDF + corpus chunks). Which should be ingested?",
+            "header": "Online Ingest into Literature",
+            "multiSelect": true,
+            "options": [
+              {
+                "label": "Title of OA/arXiv Paper",
+                "description": "Status: open_access | PDF: https://arxiv.org/pdf/... — ingest now, or skip to record in SOURCES.md only"
+              },
+              {
+                "label": "Title of In-Zotero-No-PDF Paper",
+                "description": "Status: in_zotero_no_pdf | Zotero item exists but has no PDF attached yet — attach + ingest now, or skip"
+              },
+              {
+                "label": "Title of Paywalled Paper",
+                "description": "Status: paywall — no PDF is known; ingesting will likely just confirm this honestly and fall back to SOURCES.md"
+              },
+              {
+                "label": "None — just record in SOURCES.md (default)",
+                "description": "Skip online ingestion for all of the above; today's SOURCES.md-only behavior"
+              }
+            ]
+          }
+          ```
+
+          For each entry the user opts into (NOT "None"): invoke `literature-ingest-online.sh`
+          with that entry's full discovery-record JSON:
+          ```bash
+          directive=$(echo "$entry_json" | .claude/scripts/literature-ingest-online.sh 2>/tmp/online-ingest-rationale.txt)
+          ingest_exit=$?
+          rationale=$(cat /tmp/online-ingest-rationale.txt)
+          ```
+
+          Branch on `directive` (both stdout token AND stderr rationale are captured, never
+          discarded — mirrors the `zotero-export-status.sh`/`zotero_directive` pattern above):
+          - **`ONLINE_INGEST_INGESTED`** or **`ONLINE_INGEST_ATTACHED`** (exit 0): full success.
+            Mark this entry as "already ingested" for steps 4/5 below — it gets a `[RESOLVED]`
+            SOURCES.md row (not the status-based row) and is NOT separately added to the
+            sub-index in step 5 (the script itself already registered it in
+            `specs/literature-index.json`).
+          - **`ONLINE_INGEST_NO_PDF`** (exit 1): honest, no-side-effect stop (paywall, or no
+            discoverable PDF for an in_zotero_no_pdf item). Surface `rationale` visibly, then
+            fall through to steps 4/5 exactly as if the user had chosen "None" for this entry —
+            never a silent failure, never a fabricated success.
+          - **`ONLINE_INGEST_DOWNLOAD_FAILED`** (exit 2): the PDF failed the magic-byte gate or
+            could not be downloaded. Surface `rationale` visibly (this is the "cookie-wall/
+            landing-page" case), then fall through to steps 4/5 as today (no fabricated
+            download; no Zotero write was attempted).
+          - **`ONLINE_INGEST_ZOTERO_CREATE_FAILED`** / **`ONLINE_INGEST_ZOTERO_RESOLVE_FAILED`**
+            / **`ONLINE_INGEST_ZOTERO_ATTACH_FAILED`** / **`ONLINE_INGEST_PIPELINE_FAILED`**
+            (exit 3/4/5/6): surface `rationale` visibly as an error (not a silent fallback —
+            these indicate the ingest was attempted but failed partway), then fall through to
+            steps 4/5 as today so the entry is at least recorded in SOURCES.md.
+
+          If the user selects "None" (or no eligible entries were selected at all): skip this
+          branch entirely, proceed to steps 4/5 unchanged (today's SOURCES.md-only behavior for
+          every eligible entry — the honest, always-available fallback).
+
       4. **Update `specs/literature/SOURCES.md`** for selected entries:
 
          For each selected result:
          - If status = "available": skip SOURCES.md entry (already imported), show path
+         - If marked "already ingested" by step 3.5: add row with status `[RESOLVED]`, note the
+           doc_id (this document is now fully in the corpus — Zotero item + PDF + corpus chunks
+           + sub-index entry — not merely tracked)
          - If status = "in_zotero": add row with status `[IN_ZOTERO]`
-         - If status = "in_zotero_no_pdf": add row with status `[PENDING]`
-         - If status = "open_access": add row with status `[FOUND]`, include PDF URL in Notes
-         - If status = "paywall": add row with status `[PAYWALL]`, include DOI in Notes
+         - If status = "in_zotero_no_pdf" (not ingested this run): add row with status `[PENDING]`
+         - If status = "open_access" (not ingested this run): add row with status `[FOUND]`, include PDF URL in Notes
+         - If status = "paywall" (not ingested this run): add row with status `[PAYWALL]`, include DOI in Notes
 
          SOURCES.md format:
          ```markdown
@@ -379,14 +448,20 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--rebuild [--dry-run]|--validate|--i
          | Paper Title | Author Name | 2023 | 10.1234/x | [IN_ZOTERO] | zotero: citation_key |
          | OA Paper | Author2 | 2022 | 10.5678/y | [FOUND] | pdf: https://arxiv.org/pdf/2201.1234 |
          | Paywalled | Author3 | 2021 | 10.9012/z | [PAYWALL] | |
+         | Ingested Paper | Author4 | 2021 | 10.3456/w | [RESOLVED] | doc_id: author4_2021_paper (ingested via online-ingest bridge) |
          ```
 
          If `specs/literature/SOURCES.md` does not exist, create it with the header row.
          If it already exists, append new rows (check for duplicate titles before appending).
 
-      5. **Update `specs/literature-index.json`** sub-index (only for "available" and "in_zotero" entries):
+      5. **Update `specs/literature-index.json`** sub-index (only for "available", "in_zotero",
+         and entries marked "already ingested" by step 3.5):
          - For "available" entries that resolve to a path in LITERATURE_DIR: add entry to local sub-index
-         - Skip sub-index update for online/paywall sources (not yet local)
+         - For entries marked "already ingested" by step 3.5: SKIP — `literature-ingest-online.sh`
+           already registered the sub-index entry itself (source: "discover"); adding it again
+           here would be redundant, not idempotent-safe duplication
+         - Skip sub-index update for any remaining online/paywall sources not ingested this run
+           (not yet local)
 
          ```bash
          LOCAL_INDEX="specs/literature-index.json"
@@ -394,6 +469,7 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--rebuild [--dry-run]|--validate|--i
            echo '{"entries": []}' > "$LOCAL_INDEX"
          fi
          # Add entries for local sources with doc_id, title, authors, year, path, status
+         # (entries already registered by literature-ingest-online.sh in step 3.5 are skipped)
          ```
     </process>
   </step_2>

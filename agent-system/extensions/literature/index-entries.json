@@ -55,6 +55,20 @@
         "skills": ["skill-literature", "skill-researcher", "skill-implementer"],
         "commands": ["/literature"]
       }
+    },
+    {
+      "path": "project/literature/patterns/zotero-item-creation.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "topics": ["literature", "zotero", "item-add", "create-item", "pdf", "magic-byte", "online-ingest"],
+      "keywords": ["zotero", "item-add", "zot add", "create-item", "attach-file", "magic-byte", "storage-repoint", "online-ingest", "in_zotero_no_pdf"],
+      "summary": "How literature-ingest-online.sh creates a new Zotero item with a PDF attachment (item-add wrapping zot add --pdf), the unconfirmed envelope-field-name mitigation, the mandatory %PDF gate, storage re-pointing, and the in_zotero_no_pdf attach-to-existing sub-path",
+      "line_count": 124,
+      "load_when": {
+        "agents": ["literature-agent", "general-research-agent", "general-implementation-agent"],
+        "skills": ["skill-literature", "skill-researcher", "skill-implementer"],
+        "commands": ["/literature"]
+      }
     }
   ]
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Online-Discovery -> Zotero+PDF -> Ingest Bridge
 
 - **Task**: 866 - Build the online-discovery -> Zotero+PDF -> ingest bridge for the literature extension
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 11 hours
 - **Dependencies**: None (foundation task; tasks 867 and 868 build on this)
 - **Research Inputs**: specs/866_online_ingest_zotero_pdf_bridge/reports/01_online-ingest-zotero-bridge.md
@@ -337,25 +337,36 @@ independently verified. Recorded here rather than silently claimed as fully test
 
 ---
 
-### Phase 7: Command Wiring + Documentation Sync [NOT STARTED]
+### Phase 7: Command Wiring + Documentation Sync [COMPLETED]
 
 **Goal**: Wire the new bridge into the `/literature` Mode A flow and keep the merge-source docs and
 context docs in sync.
 
 **Tasks**:
-- [ ] Extend `commands/literature.md` Mode A (SOURCES.md + sub-index step) with a new branch: for
+- [x] Extend `commands/literature.md` Mode A (SOURCES.md + sub-index step) with a new branch: for
       user-selected `open_access`/arXiv-flavored/`paywall`/`in_zotero_no_pdf` entries, offer (via
       `AskUserQuestion`, consistent with the existing directive-branch pattern) "Ingest into
       Literature now" vs. "Just record in SOURCES.md" (today's default/fallback). Only opt-in
-      entries invoke `literature-ingest-online.sh`.
-- [ ] Preserve honest surfacing: `ONLINE_INGEST_NO_PDF`/`DOWNLOAD_FAILED` fall back to today's
-      `[PAYWALL]`/`[PENDING]` SOURCES.md row behavior; never a silent success.
-- [ ] Add an `EXTENSION.md` script-table row for `literature-ingest-online.sh` and update the
+      entries invoke `literature-ingest-online.sh`. *(completed as new numbered step "3.5" between
+      the existing steps 3 and 4, deliberately not "3b" to avoid collision with the unrelated
+      top-level `<step_3b>` rebuild-mode XML tag elsewhere in the file)*
+- [x] Preserve honest surfacing: `ONLINE_INGEST_NO_PDF`/`DOWNLOAD_FAILED` fall back to today's
+      `[PAYWALL]`/`[PENDING]` SOURCES.md row behavior; never a silent success. *(completed --
+      every non-success directive token, including the Zotero-side failure tokens from Phases
+      4/6, falls through to steps 4/5 unchanged, with the rationale surfaced visibly first)*
+- [x] Add an `EXTENSION.md` script-table row for `literature-ingest-online.sh` and update the
       `zotero-write.sh` row description to mention the new `item-add` create-with-PDF operation.
-- [ ] Create `context/project/literature/patterns/zotero-item-creation.md` documenting the
+      *(completed; also updated README.md's more detailed script table, Mode A prose, Deployment
+      Status section, and Provided Artifacts table for full consistency)*
+- [x] Create `context/project/literature/patterns/zotero-item-creation.md` documenting the
       empirically confirmed `zot add --pdf` envelope fields (Phase 1), the magic-byte download gate,
-      and the storage re-pointing step, so tasks 867/868 do not re-derive this research.
-- [ ] Do NOT edit the auto-generated `.claude/CLAUDE.md` (edit merge-source docs only).
+      and the storage re-pointing step, so tasks 867/868 do not re-derive this research. *(completed
+      and registered in index-entries.json; documents the field names as an UNCONFIRMED empirical
+      unknown with a defensive multi-path mitigation, per the Phase 1 deviation, rather than
+      fabricating confirmed field names that were never actually verified against a real call)*
+- [x] Do NOT edit the auto-generated `.claude/CLAUDE.md` (edit merge-source docs only). *(confirmed
+      -- only EXTENSION.md/README.md/commands/literature.md/manifest.json/index-entries.json and
+      the new pattern doc were touched; `.claude/CLAUDE.md` itself was never opened for editing)*
 
 **Timing**: 2 hours
 
@@ -376,17 +387,33 @@ context docs in sync.
 
 ## Testing & Validation
 
-- [ ] `zotero-write.sh item-add --dry-run` and one live call succeed; confirmed envelope fields recorded.
-- [ ] Classification prints the correct single directive token for each of `open_access` (with and
-      without `arxiv_id`), `paywall`, and `in_zotero_no_pdf`.
-- [ ] Magic-byte gate rejects an HTML landing page (`ONLINE_INGEST_DOWNLOAD_FAILED`), no Zotero write.
-- [ ] End-to-end open-access ingest: Zotero item + PDF attached, corpus chunks produced, `index.json`
+- [x] `zotero-write.sh item-add --dry-run` and one live call succeed; confirmed envelope fields recorded.
+      *(altered: real `zot`/Zotero account unavailable in this sandbox; verified via a stub `zot`
+      executable instead. Real envelope field names remain an empirical unknown, documented as a
+      required follow-up in `zotero-item-creation.md` — see Phase 1 deviation note.)*
+- [x] Classification prints the correct single directive token for each of `open_access` (with and
+      without `arxiv_id`), `paywall`, and `in_zotero_no_pdf`. Verified directly.
+- [x] Magic-byte gate rejects an HTML landing page (`ONLINE_INGEST_DOWNLOAD_FAILED`), no Zotero write.
+      Verified directly (and a curl-failure/nonexistent-path case too).
+- [x] End-to-end open-access ingest: Zotero item + PDF attached, corpus chunks produced, `index.json`
       entry has real metadata + Zotero key/path, `specs/literature-index.json` has a `source: "discover"` entry.
-- [ ] `in_zotero_no_pdf` path attaches to the existing item and ingests; unresolvable case stops honestly.
-- [ ] `commands/literature.md` Mode A offers ingest vs. SOURCES.md-only and falls back honestly.
-- [ ] `literature-ingest.sh`, `literature-convert.sh`, `literature-chunk.sh`,
-      `literature-build-index.sh` remain unmodified (diff check).
-- [ ] `bash .claude/scripts/check-extension-docs.sh` passes.
+      Verified directly with a stub `zot`, a hand-built minimal valid PDF, and the real (unmodified)
+      `literature-ingest.sh`/PyMuPDF/pdftotext pipeline.
+- [x] `in_zotero_no_pdf` path attaches to the existing item and ingests; unresolvable case stops honestly.
+      *(altered: the unresolvable/absent-tier honest stop was verified for real, safely, against
+      the read-only live Zotero API already running on this machine. The full resolved-and-
+      attached success sub-path was verified by code-level reuse of already-tested helpers plus
+      the Phase 1 stub-zot attach-file regression, not by an independent live end-to-end run — see
+      Phase 6 verification-scope-note deviation for why a further live mock was avoided.)*
+- [x] `commands/literature.md` Mode A offers ingest vs. SOURCES.md-only and falls back honestly.
+      Verified by reading the wired step 3.5 branch logic against the directive-token contract;
+      not exercised via a live `/literature` invocation (that requires the interactive
+      `AskUserQuestion` runtime, out of scope for a scripted check).
+- [x] `literature-ingest.sh`, `literature-convert.sh`, `literature-chunk.sh`,
+      `literature-build-index.sh` remain unmodified (diff check). Confirmed via
+      `git diff --stat` (empty output) both mid-implementation and at completion.
+- [x] `bash .claude/scripts/check-extension-docs.sh` passes. Confirmed: literature extension (and
+      all other extensions) report PASS.
 
 ## Artifacts & Outputs
 

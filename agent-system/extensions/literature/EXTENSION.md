@@ -39,8 +39,11 @@ discovery pipeline via `literature-discover.sh`:
 2. Tier 2 (local): Search Zotero library (`zotero-library.json`)
 3. Tier 3 (online): Semantic Scholar API, Unpaywall DOI lookup, arXiv
 
-Results are shown interactively. Selected items are added to `specs/literature-index.json`.
-Unresolved items are appended to `specs/literature/SOURCES.md`.
+Results are shown interactively. For each selected `open_access`/`paywall`/`in_zotero_no_pdf`
+entry, the user is offered "Ingest into Literature now" (via `literature-ingest-online.sh`) or
+"Just record in SOURCES.md" (the default/fallback, and the only outcome when no PDF is
+discoverable). Ingested items are registered in `specs/literature-index.json`; unresolved items
+are appended to `specs/literature/SOURCES.md`.
 
 **Mode B (Integrate)**: When called with a file path or bare (no args), runs the ingestion
 pipeline via `literature-ingest.sh`. Converts PDFs/DJVUs, indexes in FTS5, and updates
@@ -74,11 +77,12 @@ save to `~/Projects/Literature/zotero-library.json`.
 |--------|---------|
 | `zotero-search.sh` | Search CSL-JSON export by keyword (used by Mode A) |
 | `zotero-read.sh` | Read item metadata and PDFs via `zot` CLI |
-| `zotero-write.sh` | Write/attach files to Zotero items |
+| `zotero-write.sh` | Write/attach files to Zotero items; create new items with PDF attachment (`item-add`, wrapping `zot add --pdf`) |
 | `zotero-setup.sh` | Setup wizard: detect data dir, validate, configure |
 | `zotero-chunk.sh` | Extract PDF text and chunk into sections |
 | `zotero-attach-chunks.sh` | Upload chunks as Zotero child attachments |
 | `cite-extract.sh` | Extract citation patterns from markdown artifacts |
+| `literature-ingest-online.sh` | Online-discovery -> Zotero+PDF -> ingest bridge: classifies a discovery record, downloads and magic-byte-verifies the PDF, creates/attaches the Zotero item, delegates to `literature-ingest.sh`, and patches index/sub-index metadata |
 
 ### Skill-Agent Mapping
 

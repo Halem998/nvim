@@ -1,0 +1,54 @@
+{
+  "phase": 7,
+  "phase_name": "Command Wiring + Documentation Sync",
+  "started_at": "2026-07-15T07:26:00Z",
+  "last_updated": "2026-07-15T07:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Extend commands/literature.md Mode A with an ingest-now vs SOURCES.md-only offer",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/literature/commands/literature.md"]
+    },
+    {
+      "id": 2,
+      "description": "Preserve honest surfacing for NO_PDF/DOWNLOAD_FAILED/Zotero-failure directives",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/literature/commands/literature.md"]
+    },
+    {
+      "id": 3,
+      "description": "Update EXTENSION.md script table (new row + zotero-write.sh description)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/literature/EXTENSION.md", "agent-system/extensions/literature/README.md", "agent-system/extensions/literature/manifest.json"]
+    },
+    {
+      "id": 4,
+      "description": "Create context/project/literature/patterns/zotero-item-creation.md and register in index-entries.json",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/context/project/literature/patterns/zotero-item-creation.md",
+        "agent-system/extensions/literature/index-entries.json"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Do not edit auto-generated .claude/CLAUDE.md",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.1",
+      "description": "Numbering of the new Mode A ingest-offer branch",
+      "type": "altered",
+      "reason": "Used '3.5' instead of '3b' to avoid collision with the unrelated top-level <step_3b> XML tag (rebuild mode) already present in commands/literature.md's workflow_execution block.",
+      "annotation": "*(deviation: altered — numbered as step 3.5, not 3b)*"
+    }
+  ],
+  "verification_notes": "bash .claude/scripts/check-extension-docs.sh reports PASS for the literature extension (and all other extensions); literature-ingest-online.sh and zotero-write.sh both pass bash -n; manifest.json and index-entries.json both validate as JSON."
+}

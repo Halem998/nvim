@@ -39,6 +39,7 @@
       "test-lit-pipeline.sh",
       "literature-discover.sh",
       "literature-ingest.sh",
+      "literature-ingest-online.sh",
       "literature-search.sh",
       "literature-fidelity-audit.sh",
       "literature-build-index.sh",
