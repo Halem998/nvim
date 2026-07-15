@@ -291,7 +291,7 @@ the deployed path, per the Verification block below.
 
 ---
 
-### Phase 4: Mirror source to deploy and verify the whole change [NOT STARTED]
+### Phase 4: Mirror source to deploy and verify the whole change [COMPLETED]
 
 **Goal**: Restore the source/deploy byte-identity invariant so the live session sees the new
 schema text, then verify the complete change set.
@@ -303,17 +303,28 @@ preserves the byte-identity that held before this task. This mirror is a **conve
 it is never committed and carries no risk, because the source is the sole authority.
 
 **Tasks**:
-- [ ] Copy each edited source file over its deploy counterpart (three `cp` operations following
-      the mapping table in the Overview).
-- [ ] Confirm `diff -q` is clean for all three source/deploy pairs.
-- [ ] Confirm `git status --short` lists the **three source files under `agent-system/`** as
+- [x] Copy each edited source file over its deploy counterpart (three `cp` operations following
+      the mapping table in the Overview). *(completed)*
+- [x] Confirm `diff -q` is clean for all three source/deploy pairs. *(completed)*
+- [x] Confirm `git status --short` lists the **three source files under `agent-system/`** as
       modified, and lists **nothing under `.claude/`** (it is gitignored — its appearance would
-      mean the wrong tree was edited).
-- [ ] Run the deliverable-rule sweep: confirm no `task {N}` / `tasks {N}-{M}` citation was
-      introduced into any of the three edited files (all live outside `specs/**`).
-- [ ] Confirm the no-new-scripts constraint held: `git status --short` shows no added `.sh` file
-      and no modification to `orchestrator-postflight.sh`.
-- [ ] Confirm every fenced ```json block in both edited schema files parses under `jq empty`.
+      mean the wrong tree was edited). *(deviation: altered — the three files were already
+      committed individually at the end of Phases 1-3 per the mandatory per-phase-green commit
+      workflow, so `git status --short` no longer shows them as pending "M"; verified instead via
+      `git log --oneline -- <path>` for each of the three files, confirming each carries a `task
+      880 phase N: ...` commit, and confirmed `.claude/` shows no tracked entries at all —
+      stronger than the original ask, since the work is already durably committed, not merely
+      staged)*
+- [x] Run the deliverable-rule sweep: confirm no `task {N}` / `tasks {N}-{M}` citation was
+      introduced into any of the three edited files (all live outside `specs/**`). *(completed:
+      swept via `git diff <pre-880-commit>..HEAD` restricted to added lines — zero added lines
+      contain a task-number citation; two pre-existing citations in return-metadata-file.md,
+      predating this task, were left untouched per Non-Goals)*
+- [x] Confirm the no-new-scripts constraint held: `git status --short` shows no added `.sh` file
+      and no modification to `orchestrator-postflight.sh`. *(completed)*
+- [x] Confirm every fenced ```json block in both edited schema files parses under `jq empty`.
+      *(completed: all newly-authored blocks parse; one pre-existing non-JSON comment-prefixed
+      block in return-metadata-file.md, predating this task, was left as-is per Non-Goals)*
 
 **Timing**: 0.5 hours
 
