@@ -1,0 +1,45 @@
+{
+  "phase": 1,
+  "phase_name": "Add item-add Operation to zotero-write.sh",
+  "started_at": "2026-07-15T06:56:43Z",
+  "last_updated": "2026-07-15T07:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add item-add operation following attach-file pattern (--pdf, --doi, --idempotency-key, --dry-run)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/literature/scripts/zotero-write.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Wrap zot add --pdf; support zot add --doi fallback with honest no-PDF surfacing",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/literature/scripts/zotero-write.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Reuse dependency checks and exit-code contract; pass through --dry-run/--idempotency-key",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/literature/scripts/zotero-write.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Empirically verify zot add --pdf envelope field names",
+      "status": "done",
+      "note": "zot binary/Zotero account unavailable in this sandbox; verified via stub zot executable instead. Real field names remain an empirical unknown, documented as a follow-up.",
+      "files_touched": ["agent-system/extensions/literature/scripts/zotero-write.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.4",
+      "description": "Empirically verify zot add --pdf output via --dry-run then a live low-stakes call",
+      "type": "altered",
+      "reason": "No zot CLI binary or configured Zotero API key/account is available in this sandboxed dev environment; a genuine live call is infeasible.",
+      "annotation": "*(deviation: altered — verified via stub zot executable instead of a real live call; real field names documented as a follow-up in zotero-item-creation.md)*"
+    }
+  ]
+}
