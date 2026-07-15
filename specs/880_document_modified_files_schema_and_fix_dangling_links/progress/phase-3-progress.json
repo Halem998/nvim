@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "Fix the two dangling links in neovim-integration.md",
+  "started_at": "2026-07-15T23:25:00Z",
+  "last_updated": "2026-07-15T23:27:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Repoint the two See Also links to 4-levels-up (deploy-correct depth)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/nvim/context/project/neovim/guides/neovim-integration.md"]
+    },
+    {
+      "id": 2,
+      "description": "Leave the TTS/STT sibling link and other See Also bullets untouched",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

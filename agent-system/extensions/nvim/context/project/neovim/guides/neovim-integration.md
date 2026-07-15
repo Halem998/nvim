@@ -330,6 +330,6 @@ Notification hook fires (permission_prompt, elicitation_dialog)
 ## See Also
 
 - [TTS/STT Integration Guide](tts-stt-integration.md) - Complete TTS/STT documentation with software dependencies
-- [Permission Configuration](../../../../../../.claude/docs/guides/permission-configuration.md) - Hook permissions
-- [User Guide](../../../../../../.claude/docs/guides/user-guide.md) - General Claude Code usage
+- [Permission Configuration](../../../../docs/guides/permission-configuration.md) - Hook permissions
+- [User Guide](../../../../docs/guides/user-guide.md) - General Claude Code usage
 - Neovim STT README: `~/.config/nvim/lua/neotex/plugins/tools/README.md`

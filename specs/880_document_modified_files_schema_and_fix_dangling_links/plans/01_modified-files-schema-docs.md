@@ -234,7 +234,7 @@ array that the implementation agent accumulates and later sums.
 
 ---
 
-### Phase 3: Fix the two dangling links in neovim-integration.md [NOT STARTED]
+### Phase 3: Fix the two dangling links in neovim-integration.md [COMPLETED]
 
 **Goal**: Repoint two `See Also` links that currently resolve outside the repository.
 
@@ -267,10 +267,11 @@ make it resolve from `agent-system/`.** Any verification of these links must be 
 the deployed path, per the Verification block below.
 
 **Tasks**:
-- [ ] Apply the two link replacements exactly as tabulated above. Change only the link targets;
+- [x] Apply the two link replacements exactly as tabulated above. Change only the link targets;
       leave link text and the trailing descriptions (`- Hook permissions`,
-      `- General Claude Code usage`) unchanged.
-- [ ] Leave the sibling `[TTS/STT Integration Guide](tts-stt-integration.md)` link untouched.
+      `- General Claude Code usage`) unchanged. *(completed)*
+- [x] Leave the sibling `[TTS/STT Integration Guide](tts-stt-integration.md)` link untouched.
+      *(completed)*
 
 **Timing**: 0.25 hours
 
