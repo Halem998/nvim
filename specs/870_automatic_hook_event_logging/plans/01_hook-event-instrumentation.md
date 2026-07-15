@@ -145,24 +145,24 @@ Phases within the same wave can execute in parallel (they touch disjoint files).
 
 ---
 
-### Phase 2: Emit success/blocker event from orchestrator-postflight.sh [NOT STARTED]
+### Phase 2: Emit success/blocker event from orchestrator-postflight.sh [COMPLETED]
 
 **Goal**: At the stage where `orchestrator-postflight.sh` has resolved the run `status`, emit exactly
 one event: `success` when status matches a success value, else `blocker`/`deviation`; populate
 `--error-ref` from the most recent matching `errors.json` entry when the file exists.
 
 **Tasks**:
-- [ ] Locate the stage that reads `.return-meta.json`'s `status` into the `status` variable
-      (research: "Stage 6", lines ~133-166).
-- [ ] After `status` is known, compute `--duration` covering the full operation if a start timestamp
-      is available (else omit `--duration`).
-- [ ] Map status → category: success value → `success`; `failed`/`blocked` → `blocker`;
-      `partial` → `deviation`.
-- [ ] Cross-link `errors.json`: `[ -f specs/errors.json ]` guard, then `jq` the most recent entry
+- [x] Locate the stage that reads `.return-meta.json`'s `status` into the `status` variable
+      (research: "Stage 6", lines ~133-166). *(completed)*
+- [x] After `status` is known, compute `--duration` covering the full operation if a start timestamp
+      is available (else omit `--duration`). *(completed)*
+- [x] Map status → category: success value → `success`; `failed`/`blocked` → `blocker`;
+      `partial` → `deviation`. *(completed)*
+- [x] Cross-link `errors.json`: `[ -f specs/errors.json ]` guard, then `jq` the most recent entry
       whose `context.session_id` matches `$session_id`; pass its `id` as `--error-ref`. Empty on no
-      match or absent file — never fatal.
-- [ ] Emit `--event-type orchestrator_status --checkpoint postflight` (or the stage's own checkpoint
-      name), wrapped `|| echo "WARNING ..." >&2` in the script's existing non-blocking idiom.
+      match or absent file — never fatal. *(completed)*
+- [x] Emit `--event-type orchestrator_status --checkpoint postflight` (or the stage's own checkpoint
+      name), wrapped `|| echo "WARNING ..." >&2` in the script's existing non-blocking idiom. *(completed)*
 
 **Timing**: 45 minutes
 

@@ -84,6 +84,10 @@ session_id="$4"
 operation_type="$5"
 task_type="${6:-general}"
 
+# Start timer for the unified event store's Stage 6b duration (covers this postflight pipeline,
+# from argument parsing through status resolution below).
+_postflight_t0=$(date +%s.%N)
+
 task_dir="specs/${padded_num}_${project_name}"
 metadata_file="${task_dir}/.return-meta.json"
 
@@ -164,6 +168,38 @@ echo "[postflight] Subagent status: ${status}"
 if [ -z "$artifact_type_from_meta" ]; then
   artifact_type_from_meta="$artifact_type"
 fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 6b: Emit exactly one success/blocker/deviation event to the unified event store,
+# cross-linked to specs/errors.json when present. Never fatal: absence/malformedness of
+# errors.json degrades to an empty error_ref, and events-append.sh failure is swallowed.
+# ─────────────────────────────────────────────────────────────────────────────
+case "$status" in
+  "$success_status") event_category="success" ;;
+  failed|blocked) event_category="blocker" ;;
+  partial) event_category="deviation" ;;
+  *) event_category="deviation" ;;
+esac
+
+event_duration=$(awk -v a="$_postflight_t0" -v b="$(date +%s.%N)" 'BEGIN{printf "%.3f", b-a}')
+
+error_ref=""
+if [ -f specs/errors.json ] && jq empty specs/errors.json 2>/dev/null; then
+  error_ref=$(jq -r --arg sid "$session_id" \
+    '[.errors[]? | select(.context.session_id == $sid)] | sort_by(.timestamp) | last | .id // empty' \
+    specs/errors.json 2>/dev/null || true)
+fi
+
+event_args=(--event-type orchestrator_status --category "$event_category" \
+  --checkpoint postflight --task "$task_number" --session "$session_id" \
+  --duration "$event_duration" \
+  --message "Orchestrator postflight resolved status '${status}' for ${operation_type}")
+if [ -n "$error_ref" ] && [ "$error_ref" != "null" ]; then
+  event_args+=(--error-ref "$error_ref")
+fi
+
+bash .claude/scripts/events-append.sh "${event_args[@]}" \
+  >/dev/null 2>&1 || echo "[postflight] WARNING: events-append.sh failed (non-blocking)" >&2
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 6a: Validate artifact (non-blocking)
