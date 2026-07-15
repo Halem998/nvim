@@ -1,7 +1,7 @@
 # Implementation Plan: Enforce Every Deployed File Has a Source (Hard Drift Gate)
 
 - **Task**: 864 - Enforce the invariant "every deployed file has a source" by extending the deployed-vs-source drift check into a hard gate, backfilling every deployed-only orphan into its correct owning extension, and repairing the broken symlink-deploy regression.
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: 863 (extension store relocation — landed)
 - **Research Inputs**: specs/864_enforce_every_deployed_file_has_a_source/reports/01_enforce-every-deployed-file-source.md
