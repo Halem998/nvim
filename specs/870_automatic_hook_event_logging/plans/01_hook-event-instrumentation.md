@@ -1,7 +1,7 @@
 # Implementation Plan: Automatic Event-Store Instrumentation and Hook Logging
 
 - **Task**: 870 - Emit structured events into the unified event store (specs/events.jsonl) automatically
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: Task 869 (event store plumbing — COMPLETE; `events-append.sh` is the append target)
 - **Research Inputs**: specs/870_automatic_hook_event_logging/reports/01_automatic-hook-event-logging.md
@@ -319,23 +319,23 @@ index entries.
 
 ---
 
-### Phase 7: End-to-end verification [NOT STARTED]
+### Phase 7: End-to-end verification [COMPLETED]
 
 **Goal**: Confirm the whole path works: a simulated lifecycle produces well-formed, cross-linkable
 event lines, and graceful degradation holds when `errors.json` is absent.
 
 **Tasks**:
-- [ ] `bash -n` all modified/new shell files.
-- [ ] Run each new/changed emission path against a scratch `specs/events.jsonl` in a temp working
+- [x] `bash -n` all modified/new shell files. *(completed)*
+- [x] Run each new/changed emission path against a scratch `specs/events.jsonl` in a temp working
       dir; validate every produced line against `context/schemas/events-schema.json` (e.g. with the
-      existing validation used by `events-append.sh`, or `jq` field checks).
-- [ ] Verify absent-`errors.json` case: remove/omit the file and confirm no path errors and events
-      still append with empty `error_ref`.
-- [ ] Verify non-blocking guarantee: force `events-append.sh` to fail and confirm callers/hooks still
-      exit 0 and echo `{}` where applicable.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` (doc-lint) if available; confirm it passes
-      for the core extension.
-- [ ] Confirm all edits are confined to `agent-system/extensions/core/` (git status scope check).
+      existing validation used by `events-append.sh`, or `jq` field checks). *(completed)*
+- [x] Verify absent-`errors.json` case: remove/omit the file and confirm no path errors and events
+      still append with empty `error_ref`. *(completed)*
+- [x] Verify non-blocking guarantee: force `events-append.sh` to fail and confirm callers/hooks still
+      exit 0 and echo `{}` where applicable. *(completed)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` (doc-lint) if available; confirm it passes
+      for the core extension. *(deviation: altered — doc-lint reports script-drift FAIL for skill-base.sh/orchestrator-postflight.sh, an accepted consequence of the no-deploy-to-.claude/ Non-Goal; all other doc-lint checks and all other Phase 7 verifications pass)*
+- [x] Confirm all edits are confined to `agent-system/extensions/core/` (git status scope check). *(completed)*
 
 **Timing**: 45 minutes
 
@@ -353,21 +353,21 @@ event lines, and graceful degradation holds when `errors.json` is absent.
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on `skill-base.sh`, `orchestrator-postflight.sh`, `events-log-artifact.sh`,
+- [x] `bash -n` passes on `skill-base.sh`, `orchestrator-postflight.sh`, `events-log-artifact.sh`,
       `events-log-lifecycle.sh`.
-- [ ] `jq empty` passes on `manifest.json`, `root-files/settings.json`, `index-entries.json`.
-- [ ] A simulated preflight→context_injection→verification→postflight sequence appends four
+- [x] `jq empty` passes on `manifest.json`, `root-files/settings.json`, `index-entries.json`.
+- [x] A simulated preflight→context_injection→verification→postflight sequence appends four
       `milestone` lifecycle events with correct `checkpoint` values and numeric `duration`.
-- [ ] `orchestrator-postflight.sh` emits exactly one status event; `success` with no `errors.json`,
+- [x] `orchestrator-postflight.sh` emits exactly one status event; `success` with no `errors.json`,
       `blocker` with a matching `error_ref` when `errors.json` is present.
-- [ ] `PostToolUse` hook early-exits on non-matching paths and emits on `.return-meta.json`/
+- [x] `PostToolUse` hook early-exits on non-matching paths and emits on `.return-meta.json`/
       `errors.json` writes; malformed files do not crash it.
-- [ ] `Stop`/`SubagentStop` hook correlates via markers/messages and emits; missing correlation
+- [x] `Stop`/`SubagentStop` hook correlates via markers/messages and emits; missing correlation
       degrades to `{}` cleanly.
-- [ ] `EXTENSION.md` hook/script counts equal the `manifest.json` array lengths.
-- [ ] Every produced line validates against `events-schema.json`.
-- [ ] No task-number citations in any file under `agent-system/`.
-- [ ] All changes confined to `agent-system/extensions/core/`.
+- [x] `EXTENSION.md` hook/script counts equal the `manifest.json` array lengths.
+- [x] Every produced line validates against `events-schema.json`.
+- [x] No task-number citations in any file under `agent-system/`.
+- [x] All changes confined to `agent-system/extensions/core/`.
 
 ## Artifacts & Outputs
 
