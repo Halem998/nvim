@@ -142,25 +142,25 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Add SPARSE_PROMPT_NEEDED directive + count to literature-lit-flag-resolve.sh [NOT STARTED]
+### Phase 2: Add SPARSE_PROMPT_NEEDED directive + count to literature-lit-flag-resolve.sh [COMPLETED]
 
 **Goal**: Teach the single classification authority to compute an up-front coverage count and emit
 the new `SPARSE_PROMPT_NEEDED` directive for the sub-index-sparse case.
 
 **Tasks**:
-- [ ] Add `LITERATURE_SPARSE_THRESHOLD="${LITERATURE_SPARSE_THRESHOLD:-3}"` with the same default as
+- [x] Add `LITERATURE_SPARSE_THRESHOLD="${LITERATURE_SPARSE_THRESHOLD:-3}"` with the same default as
   Phase 1; document it in the script header.
-- [ ] In the `SUBINDEX_PRESENT` branch, compute the resolved chunk/doc count with the lightweight
+- [x] In the `SUBINDEX_PRESENT` branch, compute the resolved chunk/doc count with the lightweight
   `jq '.entries | length'` / resolution the resolver already has paths for (reuse, do not duplicate,
   `literature-briefing.sh`'s resolution loop -- Risk 4). If count `>= threshold`, keep emitting
   `SUBINDEX_PRESENT` unchanged; if `< threshold` (including 0 entries that resolve to nothing),
   emit `SPARSE_PROMPT_NEEDED` instead.
-- [ ] Document (in a header comment / directive list) that `SPARSE_PROMPT_NEEDED` is also reachable
+- [x] Document (in a header comment / directive list) that `SPARSE_PROMPT_NEEDED` is also reachable
   from a *second* call site -- after a global search already ran and returned `< threshold`
   segments -- which is detected by the caller via Phase 1's marker line, NOT by re-invoking the
   resolver (the resolver stays single-shot; the two-checkpoint shape lives in the skill/shared
   block, per Decision 3).
-- [ ] Keep the other four directives (`LIT_DISABLED`, `GLOBAL_MISSING`, `PROMPT_NEEDED`,
+- [x] Keep the other four directives (`LIT_DISABLED`, `GLOBAL_MISSING`, `PROMPT_NEEDED`,
   `AUTONOMOUS_GLOBAL`) unchanged; `SPARSE_PROMPT_NEEDED` is a refinement, not a replacement.
 
 **Timing**: 1.5 hours

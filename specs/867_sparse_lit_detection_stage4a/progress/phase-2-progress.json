@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "Add SPARSE_PROMPT_NEEDED directive + count to literature-lit-flag-resolve.sh",
+  "started_at": "2026-07-15T01:00:00Z",
+  "last_updated": "2026-07-15T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add LITERATURE_SPARSE_THRESHOLD env var + header doc", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-lit-flag-resolve.sh"]},
+    {"id": 2, "description": "SUBINDEX_PRESENT branch computes entry count, emits SPARSE_PROMPT_NEEDED below threshold", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-lit-flag-resolve.sh"]},
+    {"id": 3, "description": "Document second call site (post-global-search) reachability without re-invoking resolver", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-lit-flag-resolve.sh"]},
+    {"id": 4, "description": "Verify other four directives unchanged", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
