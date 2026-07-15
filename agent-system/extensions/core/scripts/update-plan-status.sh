@@ -2,7 +2,7 @@
 # update-plan-status.sh - Centralized plan-level status update
 # Usage: .claude/scripts/update-plan-status.sh TASK_NUMBER PROJECT_NAME STATUS
 #
-# STATUS values: IMPLEMENTING, COMPLETED, PARTIAL, NOT_STARTED
+# STATUS values: IMPLEMENTING, COMPLETED, PARTIAL, NOT_STARTED, BLOCKED, ABANDONED
 # Outputs: Updated plan file path on success, empty on failure/no-op
 
 set -euo pipefail
@@ -18,11 +18,15 @@ if [[ -z "$task_number" || -z "$project_name" || -z "$new_status" ]]; then
 fi
 
 # Normalize status
+# BLOCKED and ABANDONED complete the documented plan-level vocabulary (see
+# .claude/context/formats/plan-format.md) ahead of later hardening work that wires call sites.
 case "$new_status" in
     IMPLEMENTING|implementing) new_status="IMPLEMENTING" ;;
     COMPLETED|completed) new_status="COMPLETED" ;;
     PARTIAL|partial) new_status="PARTIAL" ;;
     NOT_STARTED|not_started) new_status="NOT STARTED" ;;
+    BLOCKED|blocked) new_status="BLOCKED" ;;
+    ABANDONED|abandoned) new_status="ABANDONED" ;;
     *) echo "Unknown status: $new_status" >&2; exit 1 ;;
 esac
 

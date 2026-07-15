@@ -3,7 +3,7 @@
 **Scope:** All plan artifacts produced by /plan, /revise, /implement (phase planning), /review (when drafting follow-on work), and related agents.
 
 ## Metadata (Markdown block, required)
-- Use a single **Status** field with status markers (`[NOT STARTED]`, `[IN PROGRESS]`, `[BLOCKED]`, `[ABANDONED]`, `[COMPLETED]`) per status-markers.md.
+- Use a single **Status** field with status markers (`[NOT STARTED]`, `[IMPLEMENTING]`, `[PARTIAL]`, `[BLOCKED]`, `[ABANDONED]`, `[COMPLETED]`) per status-markers.md.
 - Do **not** use YAML front matter. Use a Markdown metadata block at the top of the plan.
 - Required fields: Task, Status, Effort, Dependencies, Research Inputs, Artifacts, Standards, Type.
 - Status timestamps belong where transitions happen (e.g., in phases or a short Started/Completed line under the status). Avoid null placeholder fields.
@@ -131,6 +131,27 @@ flagged in the implementation summary, not silently accepted as equivalent to a 
 - Every phase starts as `[NOT STARTED]` and progresses through valid transitions.
 - Include timestamps when transitions occur; avoid null/empty metadata fields.
 - Do not use emojis in headings or markers.
+
+### Plan-level vs. phase-level markers
+
+The plan-level **Status** field (Metadata block, above) and the per-phase heading marker
+(`### Phase N: {name} [STATUS]`, Implementation Phases format, above) are two distinct
+vocabularies at two distinct grains, and their divergence is intentional, not an oversight:
+
+- Plan-level Status uses the six markers `{NOT STARTED, IMPLEMENTING, PARTIAL, BLOCKED,
+  ABANDONED, COMPLETED}` — a subset of the fuller task-level vocabulary defined in
+  status-markers.md.
+- `ABANDONED` is deliberately plan/task-level only. No code path abandons a single phase while
+  leaving sibling phases active — abandonment is a whole-document decision, so phase headings
+  have no `[ABANDONED]` marker.
+- Plan-level `[PARTIAL]` is an aggregate "this document is stalled/resumable" signal covering the
+  whole plan. It is distinct from, and fully compatible with, any individual phase heading
+  simultaneously carrying its own `[PARTIAL]` marker (e.g. a phase interrupted by context
+  exhaustion) — the two `PARTIAL`s describe different grains of the same document and do not need
+  to move together.
+
+See status-markers.md for the full task-level vocabulary and the cross-reference to this
+subsection.
 
 ## Writing Guidance
 - Keep phases small (1-2 hours each) per task-breakdown guidelines.
