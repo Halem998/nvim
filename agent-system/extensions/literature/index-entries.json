@@ -57,6 +57,20 @@
       }
     },
     {
+      "path": "project/literature/domain/format-decision.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "topics": ["literature", "format", "typst", "markdown", "decision", "format-agnostic"],
+      "keywords": ["typst", "format", "markdown", "decision", "format-agnostic", "segmentation", "source_format"],
+      "summary": "Durable NO-GO decision record: markdown retained as the sole convert/chunk/index format; no PDF-to-Typst converter comparable to pymupdf4llm exists and the FTS5 index is format-agnostic",
+      "line_count": 95,
+      "load_when": {
+        "agents": ["literature-agent", "general-research-agent", "general-implementation-agent", "planner-agent"],
+        "skills": ["skill-literature", "skill-researcher", "skill-implementer", "skill-planner"],
+        "commands": ["/literature", "/research", "/plan", "/implement"]
+      }
+    },
+    {
       "path": "project/literature/patterns/zotero-item-creation.md",
       "domain": "project",
       "subdomain": "literature",

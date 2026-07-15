@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Author and register the durable decision record",
+  "started_at": "2026-07-15T07:59:09Z",
+  "last_updated": "2026-07-15T08:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create format-decision.md with decision statement, rationale, evidence anchors, format-layer note, source_format clarification, re-evaluation trigger", "status": "done", "files_touched": ["agent-system/extensions/literature/context/project/literature/domain/format-decision.md"]},
+    {"id": 2, "description": "Register new file in index-entries.json with load_when block", "status": "done", "files_touched": ["agent-system/extensions/literature/index-entries.json"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
