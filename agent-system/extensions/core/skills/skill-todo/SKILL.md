@@ -28,6 +28,53 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
     </process>
   </stage>
   
+  <stage id="1.5" name="ReconcileScan">
+    <action>Dry-run scan for status-stranded tasks whose artifact for the in-flight phase already
+    exists on disk -- these are invisible to Stage 2's literal completed/abandoned match today and
+    can never be archived until something promotes them</action>
+    <process>
+      This stage never auto-repairs status: `/todo` performs the system's most irreversible
+      operations (moving directories, rewriting CHANGE_LOG.md), and a silent status promotion
+      immediately before a silent archive move would compound two mutations with no visibility.
+      Every call this stage makes is `--dry-run`; only a user-approved selection in Stage 9 ever
+      calls the script live.
+
+      1. Generate a session ID inline (skill-todo does not source `command-gate-in.sh` and has
+         none of its own):
+         ```bash
+         todo_session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+         ```
+      2. Select the same four reconcilable statuses used by the `/task --sync` and `/orchestrate`
+         triggers (positive-match against the four statuses `reconcile-task-status.sh` knows how
+         to reconcile -- no `!=`/negation selector needed):
+         ```bash
+         reconcile_scan_targets=$(jq -r '
+           .active_projects[] |
+           select(.status == "researching" or .status == "planning" or .status == "implementing" or .status == "partial") |
+           .project_number
+         ' specs/state.json)
+         ```
+      3. For each candidate, dry-run the script and collect any task whose output reports a
+         would-promote line into `reconcile_candidates`, keeping each candidate's task number,
+         current status, the artifact basename found, and the full dry-run output for display in
+         Stage 8/9:
+         ```bash
+         reconcile_candidates=()
+         for task_num in $reconcile_scan_targets; do
+           recon_out=$(bash .claude/scripts/reconcile-task-status.sh "$task_num" "$todo_session_id" --dry-run 2>&1)
+           if echo "$recon_out" | grep -q "Would promote"; then
+             reconcile_candidates+=("$task_num")
+             # associate $recon_out with $task_num (e.g. via an associative array) for Stage 9's
+             # AskUserQuestion description text
+           fi
+         done
+         ```
+      4. If `reconcile_scan_targets` is empty, `reconcile_candidates` is `()` -- proceed straight
+         to Stage 2. This stage is genuinely side-effect-free: `--dry-run` never writes
+         `state.json` or any other file.
+    </process>
+  </stage>
+
   <stage id="2" name="ScanTasks">
     <action>Scan for archivable tasks</action>
     <process>
@@ -233,6 +280,9 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          - Reflections: one summary line from `harvest_reflections`, shown only when non-empty
            - Format: `Reflections: {N} task(s) reported a completion-time reflection`
            - If empty, omit the line entirely (mirrors the memory-candidate dry-run line)
+         - Status reconciliation: one summary line from `reconcile_candidates` (Stage 1.5)
+           - Format: `Status reconciliation: {N} task(s) stranded with artifacts on disk`
+           - If `reconcile_candidates` is empty: `Status reconciliation: none`
       2. Exit after display
     </process>
   </stage>
@@ -276,6 +326,21 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
            (repeat per entry in `harvest_reflections`; omit any sub-field that is absent). Omit
            the entire "Completion-time reflections" section when `harvest_reflections` is empty.
            The multiSelect mechanics (tiers, dedup, NOOP) are unchanged by this augmentation.
+      5. **Status reconciliation candidates** (from `reconcile_candidates`, Stage 1.5):
+         - If `reconcile_candidates` is empty, skip this sub-step entirely (mirrors how the memory
+           harvest sub-step above handles its empty case)
+         - Build a multiSelect option list, one option per candidate, showing the task number, its
+           current status, the artifact found, and the promotion that would result:
+           `Task {N}: status={current_status}, artifact={artifact_basename} -- would promote to
+           {target_status}`
+         - Present AskUserQuestion with multiSelect (nothing pre-selected -- this stage never
+           auto-repairs; every promotion here is an explicit opt-in)
+         - Store user-approved candidates as `approved_reconciliations`
+         - Only for `approved_reconciliations`: re-run `bash .claude/scripts/reconcile-task-status.sh
+           "$task_num" "$todo_session_id"` **without** `--dry-run` to apply the promotion, echoing
+           its `[reconcile]` output verbatim. Unselected candidates are left stranded and simply are
+           not archived this run -- the correct conservative outcome, since a status promotion
+           immediately before a directory move must never be inferred rather than chosen.
     </process>
   </stage>
   

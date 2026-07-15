@@ -311,7 +311,7 @@ cycle loop.
 
 ---
 
-### Phase 4: Wire skill-todo as a dry-run-then-confirm reporter [NOT STARTED]
+### Phase 4: Wire skill-todo as a dry-run-then-confirm reporter [COMPLETED]
 
 **Goal**: Make status-stranded tasks visible to `/todo` — they are currently invisible to its scan
 and therefore unarchivable forever — without ever silently promoting status immediately before
@@ -319,31 +319,35 @@ silently moving a directory.
 
 **Tasks**:
 
-- [ ] Read `agent-system/extensions/core/skills/skill-todo/SKILL.md` stages 1, 2 (`ScanTasks`), 8
+- [x] Read `agent-system/extensions/core/skills/skill-todo/SKILL.md` stages 1, 2 (`ScanTasks`), 8
       (`DryRunOutput`), and 9 (`InteractivePrompts`) to match the file's XML-ish stage structure and
-      its established conventions.
-- [ ] Add a new `<stage id="1.5" name="ReconcileScan">` between `ParseArguments` and `ScanTasks`, so
-      any promotion the user approves is reflected before Stage 2's scan reads status.
-- [ ] In that stage: select non-terminal active tasks from `state.json` (same `| not` selector as
+      its established conventions. *(completed)*
+- [x] Add a new `<stage id="1.5" name="ReconcileScan">` between `ParseArguments` and `ScanTasks`, so
+      any promotion the user approves is reflected before Stage 2's scan reads status. *(completed)*
+- [x] In that stage: select non-terminal active tasks from `state.json` (same `| not` selector as
       Phase 2), call `bash .claude/scripts/reconcile-task-status.sh "$n" "$session_id" --dry-run`
       per task, and collect any task whose dry-run output reports a would-promote into
-      `reconcile_candidates`. Dry-run mode is what makes this stage side-effect-free.
-- [ ] **Visibility (dry-run output)**: extend Stage 8's preview with a line mirroring the existing
+      `reconcile_candidates`. Dry-run mode is what makes this stage side-effect-free. *(deviation:
+      altered — used the same positive-match selector as Phase 2's step 2.6 rather than a `| not`
+      negation selector, for the same reason recorded there: both avoid `!=` entirely, and
+      positive-match is simpler. Fixture-verified byte-identical state.json before/after)*
+- [x] **Visibility (dry-run output)**: extend Stage 8's preview with a line mirroring the existing
       memory-candidate line's style — `Status reconciliation: {N} task(s) stranded with artifacts
       on disk`, or `Status reconciliation: none`. Stage 8 exits after display, so this is the whole
-      visibility contract for `/todo --dry-run`.
-- [ ] **Visibility (interactive)**: add a sub-step to Stage 9 presenting `reconcile_candidates`
+      visibility contract for `/todo --dry-run`. *(completed)*
+- [x] **Visibility (interactive)**: add a sub-step to Stage 9 presenting `reconcile_candidates`
       through the skill's existing `AskUserQuestion` multiSelect pattern, showing each candidate's
       task number, current status, the artifact found, and the promotion that would result. Skip
       the sub-step entirely when `reconcile_candidates` is empty, matching how the memory-harvest
-      sub-step already handles its empty case.
-- [ ] Only for user-selected candidates, re-run the script **without** `--dry-run` to apply the
+      sub-step already handles its empty case. *(completed)*
+- [x] Only for user-selected candidates, re-run the script **without** `--dry-run` to apply the
       promotion, echoing its `[reconcile]` output. Unselected candidates are left stranded and
-      simply are not archived this run — that is the correct conservative outcome.
-- [ ] State explicitly in the stage description that this stage never auto-repairs: `/todo` performs
+      simply are not archived this run — that is the correct conservative outcome. *(completed:
+      verified by grep — the only non-dry-run invocation in the file sits in this Stage 9 branch)*
+- [x] State explicitly in the stage description that this stage never auto-repairs: `/todo` performs
       the system's most irreversible operations, and a silent promotion followed by a silent archive
-      compounds two mutations with no visibility.
-- [ ] Mirror to `.claude/skills/skill-todo/SKILL.md`.
+      compounds two mutations with no visibility. *(completed)*
+- [x] Mirror to `.claude/skills/skill-todo/SKILL.md`. *(completed)*
 
 **Timing**: 1.5 hours
 

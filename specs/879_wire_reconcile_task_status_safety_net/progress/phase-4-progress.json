@@ -1,0 +1,24 @@
+{
+  "phase": 4,
+  "phase_name": "Wire skill-todo as a dry-run-then-confirm reporter",
+  "started_at": "2026-07-15T00:00:00Z",
+  "last_updated": "2026-07-15T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add stage 1.5 ReconcileScan (dry-run only, side-effect-free)", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md", ".claude/skills/skill-todo/SKILL.md"]},
+    {"id": 2, "description": "Extend Stage 8 preview with Status reconciliation summary line", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md", ".claude/skills/skill-todo/SKILL.md"]},
+    {"id": 3, "description": "Add Stage 9 sub-step 5 for user-confirmed live reconciliation", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md", ".claude/skills/skill-todo/SKILL.md"]},
+    {"id": 4, "description": "Fixture-verify stage 1.5 byte-identical state.json, confirm single live-invocation site", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "Select non-terminal active tasks from state.json using the | not selector",
+      "type": "altered",
+      "reason": "Used the same positive-match selector as Phase 2's step 2.6 rather than a | not negation selector, for consistency and simplicity. Both avoid != entirely.",
+      "annotation": "*(deviation: altered — used the same positive-match selector as Phase 2's step 2.6 rather than a | not negation selector, for the same reason recorded there: both avoid != entirely, and positive-match is simpler. Fixture-verified byte-identical state.json before/after)*"
+    }
+  ]
+}
