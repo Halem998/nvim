@@ -1,0 +1,20 @@
+{
+  "phase": 4,
+  "phase_name": "Zotero Create-Item + Storage Re-Point + Delegate to literature-ingest.sh",
+  "started_at": "2026-07-15T07:06:00Z",
+  "last_updated": "2026-07-15T07:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Call zotero-write.sh item-add with --pdf/--doi/--idempotency-key/--dry-run", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 2, "description": "Resolve storage/<attachmentKey>/<filename> defensively across plausible field paths", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 3, "description": "Fallback to staging path with flagged warning if storage path unreadable", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 4, "description": "Delegate to unmodified literature-ingest.sh --no-local", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 5, "description": "Capture ingested doc_id from literature-ingest.sh output", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "grep '^Ingested: ' to extract doc_id", "result": "failed", "reason": "literature-ingest.sh's log_out() prefixes stdout with '[ingest] ', so the bare-anchor regex never matched; silently fell back to the wrong doc_id and made the Phase 5 metadata patch a no-op. Fixed to match '^\\[ingest\\] Ingested: ' with a '^Documents ingested: ' fallback."}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "Full end-to-end test with a stub zot (real zot unavailable) and a hand-built valid minimal PDF: item-add creates a synthetic envelope, storage re-point resolves to the stub's simulated storage/ATTKEY01/source.pdf, literature-ingest.sh (real, unmodified) converts/chunks/indexes it successfully via PyMuPDF+pdftotext, and reports doc_id=source. git diff --stat confirms literature-ingest.sh/convert.sh/chunk.sh/build-index.sh remain byte-for-byte unmodified."
+}

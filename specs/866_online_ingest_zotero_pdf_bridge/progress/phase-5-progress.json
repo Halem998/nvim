@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Post-Ingest Metadata Patch + Sub-Index Registration",
+  "started_at": "2026-07-15T07:06:00Z",
+  "last_updated": "2026-07-15T07:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "jq-patch global index.json entry with real title/authors/year/doi/arxiv_id/zotero_key/zotero_path", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 2, "description": "Scope patch as new logic in literature-ingest-online.sh only", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 3, "description": "Upsert specs/literature-index.json sub-index entry (doc_id, relevance, added, source: discover)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 4, "description": "Idempotency: re-run updates in place, no duplicates", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "End-to-end test confirmed the patched index.json entry carries real title/authors/year/doi/arxiv_id/zotero_key/zotero_path (no DOC_ID placeholder), the sub-index gains a source:discover entry, and re-running the identical record leaves both files at exactly one entry each (verified via jq '.entries | length')."
+}

@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Scaffold literature-ingest-online.sh + Directive-Token Classification",
+  "started_at": "2026-07-15T07:06:00Z",
+  "last_updated": "2026-07-15T07:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create literature-ingest-online.sh with --record/stdin/--dry-run/--idempotency-key parsing", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 2, "description": "Classification keyed off (status, arxiv_id, pdf_url)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 3, "description": "arxiv as derived condition, never a literal status", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 4, "description": "Directive token + rationale + exit-code contract", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 5, "description": "STABLE CONTRACT header documenting schema/tokens/exit codes", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

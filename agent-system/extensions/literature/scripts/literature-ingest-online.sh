@@ -1,0 +1,657 @@
+#!/usr/bin/env bash
+# literature-ingest-online.sh - Online-discovery -> Zotero+PDF -> ingest bridge.
+#
+# Wires a single literature-discover.sh Tier-2/Tier-3 discovery record into: Zotero
+# item-creation-or-attach (via zotero-write.sh's item-add/attach-file operations), the
+# UNMODIFIED literature-ingest.sh pipeline (convert/chunk/index), a post-ingest index.json
+# metadata patch, and specs/literature-index.json sub-index registration.
+#
+# ============================================================================================
+# STABLE CONTRACT -- this header documents the input schema, directive tokens, and exit codes.
+# This interface is depended on by other tooling built on top of the online-ingest bridge; do
+# not change field names, token spellings, or exit-code numbers here without updating every
+# downstream consumer (including commands/literature.md's Mode A wiring).
+# ============================================================================================
+#
+# USAGE:
+#   literature-ingest-online.sh --record '<json>' [--dry-run] [--idempotency-key KEY]
+#   echo '<json>' | literature-ingest-online.sh [--dry-run] [--idempotency-key KEY]
+#
+# INPUT SCHEMA (one element of literature-discover.sh's JSON output array):
+#   {
+#     "title":     string,           # required
+#     "authors":   string[],         # required (may be empty array)
+#     "year":      integer|null,     # required key, nullable
+#     "doc_id":    string,           # required. Tier 1: global index doc_id (not applicable to
+#                                     # this bridge). Tier 2: Zotero citation_key. Tier 3:
+#                                     # derived (doi-slug | arxiv_<id> | ss_<paperId> |
+#                                     # unknown_<slug>).
+#     "status":    "in_zotero_no_pdf" | "open_access" | "paywall",
+#                                     # ("available"/"in_zotero" records do not need this bridge
+#                                     # -- they already have a local file or attached PDF -- and
+#                                     # are rejected as a usage error, exit 64.)
+#     "tier":      2 | 3,
+#     "doi":       string|null,      # tier 3 only; absent/null on tier 2
+#     "arxiv_id":  string|null,      # tier 3 only; absent/null on tier 2. NOTE: there is no
+#                                     # literal "arxiv" status -- arXiv hits are
+#                                     # status=="open_access" with arxiv_id set. This script
+#                                     # treats "arxiv" as that derived condition, never as a
+#                                     # fourth status string.
+#     "pdf_url":   string|null       # tier 3 only; absent/null on tier 2
+#   }
+#
+# DIRECTIVE TOKENS (stdout, exactly ONE line, nothing else on stdout; rationale to stderr):
+#   ONLINE_INGEST_NO_PDF                 No PDF is available or discoverable for this record
+#                                         (status=="paywall"; status=="open_access" with no
+#                                         usable pdf_url; or an in_zotero_no_pdf record whose
+#                                         resolved Zotero item has no DOI / no Unpaywall OA
+#                                         location). Honest, non-actionable stop. NO Zotero
+#                                         write, NO download attempted. Never fabricated.
+#   ONLINE_INGEST_DOWNLOAD_FAILED        curl failure (non-2xx / network) OR the downloaded
+#                                         bytes failed the mandatory `%PDF` magic-byte gate.
+#                                         NO Zotero write is ever attempted after this token.
+#   ONLINE_INGEST_ZOTERO_CREATE_FAILED   `zotero-write.sh item-add` (create-item path) failed.
+#   ONLINE_INGEST_ZOTERO_RESOLVE_FAILED  in_zotero_no_pdf path: could not resolve the discovery
+#                                         record's citation_key to a real Zotero item key (tier
+#                                         "absent" from zotero-resolve-pdf.sh, or a hard
+#                                         resolver failure). Never invents a key.
+#   ONLINE_INGEST_ZOTERO_ATTACH_FAILED   `zotero-write.sh attach-file` (existing-item path)
+#                                         failed.
+#   ONLINE_INGEST_PIPELINE_FAILED        The delegated, UNMODIFIED literature-ingest.sh call
+#                                         (convert/chunk/index) exited non-zero for this file.
+#   ONLINE_INGEST_INGESTED               Full success via the create-item (open_access/arXiv)
+#                                         path: Zotero item + PDF created and attached, corpus
+#                                         chunks produced, index.json patched, sub-index
+#                                         registered.
+#   ONLINE_INGEST_ATTACHED               Full success via the attach-to-existing
+#                                         (in_zotero_no_pdf) path: PDF attached to the existing
+#                                         Zotero item (or found already attached, in the
+#                                         corrective edge case documented in Phase 6 below),
+#                                         then ingested/patched/registered same as above.
+#
+# EXIT CODES:
+#   0   ONLINE_INGEST_INGESTED or ONLINE_INGEST_ATTACHED printed (full success)
+#   1   ONLINE_INGEST_NO_PDF printed (honest stop, no side effects)
+#   2   ONLINE_INGEST_DOWNLOAD_FAILED printed
+#   3   ONLINE_INGEST_ZOTERO_CREATE_FAILED printed
+#   4   ONLINE_INGEST_ZOTERO_RESOLVE_FAILED printed
+#   5   ONLINE_INGEST_ZOTERO_ATTACH_FAILED printed
+#   6   ONLINE_INGEST_PIPELINE_FAILED printed
+#   64  Argument/usage error or malformed/unsupported input record. NO directive token is
+#       printed to stdout for this case (usage text goes to stderr only) -- callers can
+#       distinguish "never classified" from every classified terminal state above by checking
+#       whether stdout produced a token at all.
+#
+# --dry-run: stops immediately after classification succeeds (i.e. for a resolvable record --
+#   ONLINE_INGEST_RESOLVABLE-equivalent internal state, or the in_zotero_no_pdf path). It prints
+#   the classification's directive token PLUS a human-readable preview of the planned
+#   `zotero-write.sh item-add`/`attach-file` and `literature-ingest.sh` invocations to stderr,
+#   with NO network download, NO Zotero write, and NO delegated ingest call. This mirrors "would
+#   run" previews used by zotero-write.sh's own `--dry-run` operations. Exit code follows the
+#   same table above (0 for a resolvable classification, 1 for ONLINE_INGEST_NO_PDF, etc).
+#
+# ENVIRONMENT:
+#   LITERATURE_DIR    Global library root (default: ~/Projects/Literature), same convention as
+#                      literature-ingest.sh/literature-discover.sh.
+#   USER_EMAIL         Contact email for Unpaywall lookups (default: benbrastmckie@gmail.com),
+#                      same convention as literature-discover.sh's tier3_search().
+#
+# NON-GOALS (do not modify): literature-ingest.sh, literature-convert.sh, literature-chunk.sh,
+# literature-build-index.sh are all invoked unmodified. This script owns ONLY: classification,
+# download+verification, the new zotero-write.sh item-add/attach-file calls, storage
+# re-pointing, the post-ingest index.json metadata patch, and sub-index registration.
+#
+# See also: context/project/literature/patterns/zotero-item-creation.md (empirically confirmed
+# -- and NOT confirmed -- `zot add --pdf` envelope fields, the magic-byte gate, and the storage
+# re-pointing step).
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LITERATURE_DIR="${LITERATURE_DIR:-$HOME/Projects/Literature}"
+USER_EMAIL="${USER_EMAIL:-benbrastmckie@gmail.com}"
+GIT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+
+log() { echo "[ingest-online] $*" >&2; }
+
+# ---------------------------------------------------------------------------
+# Usage
+# ---------------------------------------------------------------------------
+
+show_usage() {
+  cat >&2 << 'USAGE'
+Usage:
+  literature-ingest-online.sh --record '<json>' [--dry-run] [--idempotency-key KEY]
+  echo '<json>' | literature-ingest-online.sh [--dry-run] [--idempotency-key KEY]
+
+<json> is a single literature-discover.sh discovery record (one array element) with status
+in_zotero_no_pdf, open_access, or paywall. See the header comment block in this script for the
+full input schema, directive-token list, and exit-code table (STABLE CONTRACT).
+USAGE
+}
+
+# ---------------------------------------------------------------------------
+# Argument parsing
+# ---------------------------------------------------------------------------
+
+RECORD_ARG=""
+DRY_RUN=false
+IDEM_KEY=""
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --record)
+      RECORD_ARG="${2:-}"
+      shift 2
+      ;;
+    --record=*)
+      RECORD_ARG="${1#--record=}"
+      shift
+      ;;
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    --idempotency-key)
+      IDEM_KEY="${2:-}"
+      shift 2
+      ;;
+    --idempotency-key=*)
+      IDEM_KEY="${1#--idempotency-key=}"
+      shift
+      ;;
+    -h|--help)
+      show_usage
+      exit 0
+      ;;
+    *)
+      echo "literature-ingest-online.sh: unknown argument: $1" >&2
+      show_usage
+      exit 64
+      ;;
+  esac
+done
+
+if [ -n "$RECORD_ARG" ]; then
+  RECORD="$RECORD_ARG"
+else
+  if [ -t 0 ]; then
+    echo "literature-ingest-online.sh: no --record given and stdin is a terminal" >&2
+    show_usage
+    exit 64
+  fi
+  RECORD="$(cat)"
+fi
+
+if ! echo "$RECORD" | jq -e . >/dev/null 2>&1; then
+  echo "literature-ingest-online.sh: --record is not valid JSON" >&2
+  exit 64
+fi
+
+TITLE="$(jq -r '.title // empty' <<<"$RECORD")"
+DOC_ID="$(jq -r '.doc_id // empty' <<<"$RECORD")"
+STATUS="$(jq -r '.status // empty' <<<"$RECORD")"
+YEAR_RAW="$(jq -r '.year // empty' <<<"$RECORD")"
+DOI_RAW="$(jq -r '.doi // empty' <<<"$RECORD")"
+ARXIV_ID_RAW="$(jq -r '.arxiv_id // empty' <<<"$RECORD")"
+PDF_URL_RAW="$(jq -r '.pdf_url // empty' <<<"$RECORD")"
+AUTHORS_JSON="$(jq -c '.authors // []' <<<"$RECORD")"
+
+if [ -z "$TITLE" ] || [ -z "$DOC_ID" ] || [ -z "$STATUS" ]; then
+  echo "literature-ingest-online.sh: record missing required field(s) (title/doc_id/status)" >&2
+  exit 64
+fi
+
+case "$STATUS" in
+  in_zotero_no_pdf|open_access|paywall) : ;;
+  *)
+    echo "literature-ingest-online.sh: status \"$STATUS\" does not need this bridge (only in_zotero_no_pdf/open_access/paywall are handled -- available/in_zotero records already have a local file or PDF)" >&2
+    exit 64
+    ;;
+esac
+
+# ---------------------------------------------------------------------------
+# Sanitize a stable doc_id-derived staging filename, matching literature-ingest.sh's own
+# BASE_DOC_ID derivation so the eventual real doc_id lines up with $DOC_ID for the metadata
+# patch below.
+# ---------------------------------------------------------------------------
+sanitize_doc_id() {
+  echo "$1" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr -cs '[:alnum:]_.-' '_' | sed -E 's/_+$//'
+}
+
+SANITIZED_DOC_ID="$(sanitize_doc_id "$DOC_ID")"
+STAGING_DIR="$LITERATURE_DIR/.online-ingest-staging"
+STAGING_PATH="$STAGING_DIR/${SANITIZED_DOC_ID}.pdf"
+
+# ---------------------------------------------------------------------------
+# Helper: emit exactly one directive token to stdout, rationale to stderr, then exit.
+# ---------------------------------------------------------------------------
+directive_stop() {
+  local token="$1" code="$2" rationale="$3"
+  log "$rationale"
+  echo "$token"
+  exit "$code"
+}
+
+# ---------------------------------------------------------------------------
+# Helper: download + mandatory %PDF magic-byte verification. Never falls through to a Zotero
+# write on failure of either curl or the magic-byte check.
+# ---------------------------------------------------------------------------
+download_and_verify() {
+  local url="$1" dest="$2"
+  mkdir -p "$(dirname "$dest")"
+  if ! curl -sL --fail --max-time 30 -o "$dest" "$url" 2>/tmp/ingest-online-curl-stderr.$$; then
+    log "download failed for $url: $(cat /tmp/ingest-online-curl-stderr.$$ 2>/dev/null)"
+    rm -f /tmp/ingest-online-curl-stderr.$$ "$dest"
+    return 1
+  fi
+  rm -f /tmp/ingest-online-curl-stderr.$$
+  local magic
+  magic="$(head -c4 "$dest" 2>/dev/null || true)"
+  if [ "$magic" != "%PDF" ]; then
+    log "magic-byte check failed for $url: expected %PDF, got \"$magic\" (likely an HTML landing/cookie-wall page, not a real PDF)"
+    rm -f "$dest"
+    return 1
+  fi
+  return 0
+}
+
+# ---------------------------------------------------------------------------
+# Helper: optional, non-blocking pre-create duplicate-title check against the global
+# index.json, using the existing .zotero-title-sim.py helper (zotero-resolve-pdf.sh pattern).
+# Recommendation-only per the plan -- logs a warning, never blocks.
+# ---------------------------------------------------------------------------
+check_duplicate_title() {
+  local title="$1"
+  local idx="$LITERATURE_DIR/index.json"
+  [ -f "$idx" ] || return 0
+  local best_sim="0.0" best_title=""
+  while IFS= read -r existing_title; do
+    [ -z "$existing_title" ] && continue
+    local sim
+    sim="$(python3 "$SCRIPT_DIR/.zotero-title-sim.py" "$title" "$existing_title" 2>/dev/null || echo "0.0")"
+    if awk -v s="$sim" -v b="$best_sim" 'BEGIN{exit !(s>b)}'; then
+      best_sim="$sim"
+      best_title="$existing_title"
+    fi
+  done < <(jq -r '.entries[]?.title // empty' "$idx" 2>/dev/null)
+  if [ -n "$best_title" ] && awk -v s="$best_sim" 'BEGIN{exit !(s>=0.85)}'; then
+    log "WARNING: possible duplicate -- existing index.json entry \"$best_title\" has title similarity $best_sim to \"$title\" (non-blocking recommendation-only check; proceeding)"
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Helper: extract the first non-empty/non-null value across several plausible jq field paths
+# on a JSON envelope. `zot add --pdf`'s exact data.* field names are NOT independently
+# confirmed in this environment (no zot/Zotero account available) -- see
+# zotero-item-creation.md. This defensive multi-path lookup is the mitigation.
+# ---------------------------------------------------------------------------
+extract_envelope_field() {
+  local envelope="$1"
+  shift
+  local path val
+  for path in "$@"; do
+    val="$(jq -r "$path // empty" <<<"$envelope" 2>/dev/null || true)"
+    if [ -n "$val" ] && [ "$val" != "null" ]; then
+      echo "$val"
+      return 0
+    fi
+  done
+  return 1
+}
+
+# ---------------------------------------------------------------------------
+# Helper: resolve the durable Zotero-managed storage/<attachmentKey>/<filename> path from a
+# zotero-write.sh item-add/attach-file JSON envelope. Falls back to a directory glob if the
+# filename field is not found. Returns non-zero (caller falls back to the staging path) if
+# nothing resolves.
+# ---------------------------------------------------------------------------
+resolve_storage_path_from_envelope() {
+  local envelope="$1"
+
+  local att_key=""
+  att_key="$(extract_envelope_field "$envelope" \
+    '.data.attachment.key' '.data.attachmentKey' '.data.attachment_key' \
+    '.data.attachments[0].key' '.data.attachments[0].itemKey')" || return 1
+
+  local att_filename=""
+  att_filename="$(extract_envelope_field "$envelope" \
+    '.data.attachment.filename' '.data.filename' \
+    '.data.attachments[0].filename')" || true
+
+  local zotero_sqlite zotero_data_dir storage_root
+  zotero_sqlite="$("$SCRIPT_DIR/zotero-resolve-sqlite-path.sh")"
+  zotero_data_dir="$(dirname "$zotero_sqlite")"
+  storage_root="$zotero_data_dir/storage"
+
+  if [ -n "$att_filename" ]; then
+    local candidate="$storage_root/$att_key/$att_filename"
+    if [ -f "$candidate" ]; then
+      echo "$candidate"
+      return 0
+    fi
+  fi
+
+  local att_dir="$storage_root/$att_key"
+  if [ -d "$att_dir" ]; then
+    local found
+    found="$(find "$att_dir" -maxdepth 1 -name '*.pdf' 2>/dev/null | head -1)"
+    if [ -n "$found" ]; then
+      echo "$found"
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+# ---------------------------------------------------------------------------
+# Helper: post-ingest global index.json metadata patch. Scoped as new logic in THIS script
+# only (literature-ingest.sh's core loop is never modified). Idempotent: re-running for the
+# same doc_id updates the entry in place, never duplicates.
+# ---------------------------------------------------------------------------
+patch_global_index() {
+  local doc_id="$1" title="$2" authors_json="$3" year_json="$4" doi_json="$5" \
+        arxiv_json="$6" zkey_json="$7" zpath_json="$8"
+  local idx="$LITERATURE_DIR/index.json"
+  if [ ! -f "$idx" ]; then
+    log "WARNING: global index.json not found at $idx; cannot patch metadata for $doc_id"
+    return 1
+  fi
+  local tmp
+  tmp="$(mktemp)"
+  jq --arg doc_id "$doc_id" --arg title "$title" \
+     --argjson authors "$authors_json" --argjson year "$year_json" \
+     --argjson doi "$doi_json" --argjson arxiv_id "$arxiv_json" \
+     --argjson zotero_key "$zkey_json" --argjson zotero_path "$zpath_json" \
+     '.entries |= map(if .doc_id == $doc_id then
+        . + {title: $title, authors: $authors, year: $year, doi: $doi,
+             arxiv_id: $arxiv_id, zotero_key: $zotero_key, zotero_path: $zotero_path}
+      else . end)' "$idx" > "$tmp" && mv "$tmp" "$idx"
+  log "Patched global index.json entry for doc_id=$doc_id with real metadata"
+}
+
+# ---------------------------------------------------------------------------
+# Helper: upsert an entry into the per-repo sub-index (specs/literature-index.json), mirroring
+# the jq-upsert sketch already in commands/literature.md step_2.5. Idempotent (remove-then-
+# append), so a repeat run updates in place rather than duplicating rows.
+# ---------------------------------------------------------------------------
+upsert_subindex() {
+  local doc_id="$1"
+  local sub_idx="$GIT_ROOT/specs/literature-index.json"
+  if [ ! -f "$sub_idx" ]; then
+    echo '{"entries": []}' > "$sub_idx"
+  fi
+  local added
+  added="$(date -u +%Y-%m-%d)"
+  local tmp
+  tmp="$(mktemp)"
+  jq --arg doc_id "$doc_id" --arg added "$added" \
+     '.entries |= ([.[]? | select(.doc_id != $doc_id)] +
+        [{doc_id: $doc_id, relevance: "discovered via online-ingest bridge", added: $added, source: "discover"}])' \
+     "$sub_idx" > "$tmp" && mv "$tmp" "$sub_idx"
+  log "Registered doc_id=$doc_id in $sub_idx (source: discover)"
+}
+
+# ---------------------------------------------------------------------------
+# Helper: delegate to the UNMODIFIED literature-ingest.sh, capture its stdout to recover the
+# real ingested doc_id (which may legitimately differ from $SANITIZED_DOC_ID -- see
+# literature-ingest.sh's own belt-and-suspenders comment). Returns 1 on any non-zero exit.
+# ---------------------------------------------------------------------------
+run_ingest_pipeline() {
+  local pdf_path="$1"
+  local ingest_script="$SCRIPT_DIR/literature-ingest.sh"
+  if [ ! -x "$ingest_script" ]; then
+    log "ERROR: literature-ingest.sh not found or not executable at $ingest_script"
+    return 1
+  fi
+
+  local stdout_capture exit_code
+  if stdout_capture=$("$ingest_script" "$pdf_path" --no-local 2>&1); then
+    exit_code=0
+  else
+    exit_code=$?
+  fi
+
+  echo "$stdout_capture" | sed 's/^/[ingest-online]   /' >&2
+
+  if [ "$exit_code" -ne 0 ]; then
+    return 1
+  fi
+
+  # literature-ingest.sh's log_out() prefixes stdout lines with "[ingest] ", so the per-file
+  # success line actually reads "[ingest] Ingested: <doc_id> (N chunks)", not a bare "Ingested:
+  # " line -- match that first; fall back to the un-prefixed final-summary line ("Documents
+  # ingested: <doc_id>", printed via plain `echo`) if the per-file line is ever not found.
+  INGESTED_REAL_DOC_ID="$(echo "$stdout_capture" | grep -m1 '^\[ingest\] Ingested: ' | sed -E 's/^\[ingest\] Ingested: ([^ ]+).*/\1/')"
+  if [ -z "$INGESTED_REAL_DOC_ID" ]; then
+    INGESTED_REAL_DOC_ID="$(echo "$stdout_capture" | grep -m1 '^Documents ingested: ' | sed -E 's/^Documents ingested: ([^ ]+).*/\1/')"
+  fi
+  if [ -z "$INGESTED_REAL_DOC_ID" ]; then
+    log "WARNING: literature-ingest.sh exited 0 but no ingested-doc_id line was found; falling back to sanitized doc_id"
+    INGESTED_REAL_DOC_ID="$SANITIZED_DOC_ID"
+  fi
+  return 0
+}
+
+# ---------------------------------------------------------------------------
+# Helper: year -> jq-safe JSON (null if empty/non-numeric)
+# ---------------------------------------------------------------------------
+year_to_json() {
+  local y="$1"
+  if [ -z "$y" ] || [ "$y" = "null" ] || ! [[ "$y" =~ ^[0-9]+$ ]]; then
+    echo "null"
+  else
+    echo "$y"
+  fi
+}
+
+str_or_null_json() {
+  local s="$1"
+  if [ -z "$s" ] || [ "$s" = "null" ]; then
+    echo "null"
+  else
+    jq -n --arg s "$s" '$s'
+  fi
+}
+
+YEAR_JSON="$(year_to_json "$YEAR_RAW")"
+DOI_JSON="$(str_or_null_json "$DOI_RAW")"
+ARXIV_JSON="$(str_or_null_json "$ARXIV_ID_RAW")"
+
+# ===========================================================================
+# Classification (mirrors zotero-export-status.sh's honest directive-token pattern)
+# ===========================================================================
+
+if [ "$STATUS" = "in_zotero_no_pdf" ]; then
+  CLASSIFICATION="existing_no_pdf"
+  log "Classified doc_id=$DOC_ID as existing_no_pdf (status=in_zotero_no_pdf): attach-to-existing-item path."
+elif [ "$STATUS" = "open_access" ] && [ -n "$PDF_URL_RAW" ]; then
+  CLASSIFICATION="resolvable"
+  if [ -n "$ARXIV_ID_RAW" ]; then
+    log "Classified doc_id=$DOC_ID as resolvable (status=open_access, arxiv_id=$ARXIV_ID_RAW present): create-item path."
+  else
+    log "Classified doc_id=$DOC_ID as resolvable (status=open_access, pdf_url present): create-item path."
+  fi
+else
+  # status == "paywall", or open_access with no usable pdf_url.
+  directive_stop "ONLINE_INGEST_NO_PDF" 1 \
+    "doc_id=$DOC_ID status=$STATUS has no usable PDF (paywall, or open_access with no pdf_url); no download attempted, no fabricated source. Falls back to today's SOURCES.md-only behavior."
+fi
+
+# ===========================================================================
+# --dry-run: stop here with a preview of planned invocations, no side effects.
+# ===========================================================================
+if [ "$DRY_RUN" = "true" ]; then
+  if [ "$CLASSIFICATION" = "resolvable" ]; then
+    log "[dry-run] Would download: $PDF_URL_RAW -> $STAGING_PATH"
+    log "[dry-run] Would run: $SCRIPT_DIR/zotero-write.sh item-add --pdf $STAGING_PATH ${DOI_RAW:+--doi $DOI_RAW} --idempotency-key ${IDEM_KEY:-online-ingest-$SANITIZED_DOC_ID}"
+    log "[dry-run] Would run: $SCRIPT_DIR/literature-ingest.sh <resolved_storage_or_staging_path> --no-local"
+    log "[dry-run] Would patch $LITERATURE_DIR/index.json and register $GIT_ROOT/specs/literature-index.json for doc_id=$DOC_ID"
+    echo "ONLINE_INGEST_INGESTED"
+    exit 0
+  else
+    log "[dry-run] Would resolve doc_id=$DOC_ID's citation_key to a real Zotero item key via zotero-resolve-pdf.sh"
+    log "[dry-run] Would (if a PDF URL is discoverable) download + verify, then run: $SCRIPT_DIR/zotero-write.sh attach-file <resolved_key> $STAGING_PATH --idempotency-key ${IDEM_KEY:-online-ingest-attach-$SANITIZED_DOC_ID}"
+    log "[dry-run] Would run: $SCRIPT_DIR/literature-ingest.sh <resolved_storage_or_staging_path> --no-local"
+    log "[dry-run] Would patch $LITERATURE_DIR/index.json and register $GIT_ROOT/specs/literature-index.json for doc_id=$DOC_ID"
+    echo "ONLINE_INGEST_ATTACHED"
+    exit 0
+  fi
+fi
+
+# ===========================================================================
+# Resolvable (open_access / arXiv) path: download + verify + create-item + delegate + patch
+# ===========================================================================
+if [ "$CLASSIFICATION" = "resolvable" ]; then
+  check_duplicate_title "$TITLE"
+
+  if ! download_and_verify "$PDF_URL_RAW" "$STAGING_PATH"; then
+    directive_stop "ONLINE_INGEST_DOWNLOAD_FAILED" 2 \
+      "download or %PDF magic-byte verification failed for doc_id=$DOC_ID, pdf_url=$PDF_URL_RAW; no Zotero write attempted."
+  fi
+  log "Downloaded and verified PDF for doc_id=$DOC_ID at $STAGING_PATH"
+
+  ZW_CMD=("$SCRIPT_DIR/zotero-write.sh" item-add --pdf "$STAGING_PATH")
+  if [ -n "$DOI_RAW" ]; then
+    ZW_CMD+=(--doi "$DOI_RAW")
+  fi
+  ZW_CMD+=(--idempotency-key "${IDEM_KEY:-online-ingest-$SANITIZED_DOC_ID}")
+
+  ITEM_ADD_EXIT=0
+  ITEM_ADD_STDOUT="$("${ZW_CMD[@]}" 2>/tmp/ingest-online-item-add-stderr.$$)" || ITEM_ADD_EXIT=$?
+  ITEM_ADD_STDERR="$(cat /tmp/ingest-online-item-add-stderr.$$ 2>/dev/null || true)"
+  rm -f /tmp/ingest-online-item-add-stderr.$$
+
+  if [ "$ITEM_ADD_EXIT" -ne 0 ]; then
+    directive_stop "ONLINE_INGEST_ZOTERO_CREATE_FAILED" 3 \
+      "zotero-write.sh item-add failed for doc_id=$DOC_ID (exit $ITEM_ADD_EXIT): $ITEM_ADD_STDERR"
+  fi
+  log "Created Zotero item for doc_id=$DOC_ID via item-add"
+
+  ZOTERO_ITEM_KEY="$(extract_envelope_field "$ITEM_ADD_STDOUT" '.data.key' '.data.item.key' '.data.itemKey')" || ZOTERO_ITEM_KEY=""
+  RESOLVED_PDF_PATH="$(resolve_storage_path_from_envelope "$ITEM_ADD_STDOUT")" || {
+    log "WARNING: could not resolve Zotero-managed storage path from the item-add envelope; falling back to the staging download path ($STAGING_PATH) -- source_path/zotero_path will point at a less durable location. Flagged as a follow-up, not a silent success."
+    RESOLVED_PDF_PATH="$STAGING_PATH"
+  }
+  log "Using PDF path for ingest delegation: $RESOLVED_PDF_PATH"
+
+  if ! run_ingest_pipeline "$RESOLVED_PDF_PATH"; then
+    directive_stop "ONLINE_INGEST_PIPELINE_FAILED" 6 \
+      "literature-ingest.sh delegate failed for doc_id=$DOC_ID (source: $RESOLVED_PDF_PATH)"
+  fi
+  log "literature-ingest.sh reported ingested doc_id=$INGESTED_REAL_DOC_ID"
+
+  ZKEY_JSON="$(str_or_null_json "$ZOTERO_ITEM_KEY")"
+  ZPATH_JSON="$(str_or_null_json "$RESOLVED_PDF_PATH")"
+  patch_global_index "$INGESTED_REAL_DOC_ID" "$TITLE" "$AUTHORS_JSON" "$YEAR_JSON" \
+    "$DOI_JSON" "$ARXIV_JSON" "$ZKEY_JSON" "$ZPATH_JSON" || true
+  upsert_subindex "$INGESTED_REAL_DOC_ID"
+
+  echo "ONLINE_INGEST_INGESTED"
+  exit 0
+fi
+
+# ===========================================================================
+# Existing-no-pdf (in_zotero_no_pdf) path: resolve real key -> attach -> delegate -> patch
+# ===========================================================================
+if [ "$CLASSIFICATION" = "existing_no_pdf" ]; then
+  RESOLVER_RECORD="$(jq -n --arg title "$TITLE" --argjson authors "$AUTHORS_JSON" --argjson year "$YEAR_JSON" \
+    '{title: $title, authors: $authors, year: $year, zotero_key: null}')"
+
+  RESOLVE_EXIT=0
+  RESOLVE_OUT="$(jq -n --arg doc_id "$DOC_ID" --argjson record "$RESOLVER_RECORD" '{doc_id: $doc_id, record: $record}' \
+    | "$SCRIPT_DIR/zotero-resolve-pdf.sh" 2>/tmp/ingest-online-resolve-stderr.$$)" || RESOLVE_EXIT=$?
+  RESOLVE_STDERR="$(cat /tmp/ingest-online-resolve-stderr.$$ 2>/dev/null || true)"
+  rm -f /tmp/ingest-online-resolve-stderr.$$
+
+  if [ "$RESOLVE_EXIT" -ne 0 ]; then
+    directive_stop "ONLINE_INGEST_ZOTERO_RESOLVE_FAILED" 4 \
+      "zotero-resolve-pdf.sh hard-failed for doc_id=$DOC_ID: $RESOLVE_STDERR"
+  fi
+
+  RESOLVE_TIER="$(jq -r '.tier // "absent"' <<<"$RESOLVE_OUT")"
+  if [ "$RESOLVE_TIER" = "absent" ]; then
+    directive_stop "ONLINE_INGEST_ZOTERO_RESOLVE_FAILED" 4 \
+      "could not resolve doc_id=$DOC_ID's citation_key to a real Zotero item key (tier=absent); refusing to invent one."
+  fi
+
+  ZOTERO_ITEM_KEY="$(jq -r '.zotero_key // empty' <<<"$RESOLVE_OUT")"
+  EXISTING_RESOLVED_PATH="$(jq -r '.resolved_path // empty' <<<"$RESOLVE_OUT")"
+  ZOTERO_DOI="$(jq -r '.zotero_doi // empty' <<<"$RESOLVE_OUT")"
+
+  if [ -z "$ZOTERO_ITEM_KEY" ]; then
+    directive_stop "ONLINE_INGEST_ZOTERO_RESOLVE_FAILED" 4 \
+      "zotero-resolve-pdf.sh returned tier=$RESOLVE_TIER but no zotero_key for doc_id=$DOC_ID"
+  fi
+  log "Resolved doc_id=$DOC_ID to Zotero item key $ZOTERO_ITEM_KEY (tier=$RESOLVE_TIER)"
+
+  if [ -n "$EXISTING_RESOLVED_PATH" ]; then
+    # Corrective edge case: the Tier-2 in_zotero_no_pdf classification came from a stale
+    # zotero-library.json snapshot, but the resolver's live/sqlite check found the item
+    # already HAS a PDF attached. Skip download+attach entirely; use it directly.
+    log "Zotero item $ZOTERO_ITEM_KEY already has a PDF attached at $EXISTING_RESOLVED_PATH (stale in_zotero_no_pdf snapshot) -- skipping attach-file, using it directly."
+    RESOLVED_PDF_PATH="$EXISTING_RESOLVED_PATH"
+  else
+    check_duplicate_title "$TITLE"
+
+    PDF_URL_FOR_ATTACH=""
+    if [ -n "$ZOTERO_DOI" ] && [ "$ZOTERO_DOI" != "null" ]; then
+      UW_RESULT="$(curl -s --max-time 10 "https://api.unpaywall.org/v2/${ZOTERO_DOI}?email=${USER_EMAIL}" 2>/dev/null || true)"
+      if [ -n "$UW_RESULT" ]; then
+        OA_URL="$(jq -r '.best_oa_location.url // empty' <<<"$UW_RESULT" 2>/dev/null || true)"
+        [ -n "$OA_URL" ] && [ "$OA_URL" != "null" ] && PDF_URL_FOR_ATTACH="$OA_URL"
+      fi
+    fi
+
+    if [ -z "$PDF_URL_FOR_ATTACH" ]; then
+      directive_stop "ONLINE_INGEST_NO_PDF" 1 \
+        "resolved existing Zotero item $ZOTERO_ITEM_KEY for doc_id=$DOC_ID but no PDF URL is discoverable (no DOI on the resolved item, or Unpaywall found no OA location); honest stop, no fabricated download."
+    fi
+
+    if ! download_and_verify "$PDF_URL_FOR_ATTACH" "$STAGING_PATH"; then
+      directive_stop "ONLINE_INGEST_DOWNLOAD_FAILED" 2 \
+        "download or %PDF magic-byte verification failed for doc_id=$DOC_ID, pdf_url=$PDF_URL_FOR_ATTACH; no Zotero write attempted."
+    fi
+    log "Downloaded and verified PDF for doc_id=$DOC_ID at $STAGING_PATH (via Unpaywall DOI lookup)"
+
+    ATTACH_EXIT=0
+    ATTACH_STDOUT="$("$SCRIPT_DIR/zotero-write.sh" attach-file "$ZOTERO_ITEM_KEY" "$STAGING_PATH" \
+      --idempotency-key "${IDEM_KEY:-online-ingest-attach-$SANITIZED_DOC_ID}" 2>/tmp/ingest-online-attach-stderr.$$)" || ATTACH_EXIT=$?
+    ATTACH_STDERR="$(cat /tmp/ingest-online-attach-stderr.$$ 2>/dev/null || true)"
+    rm -f /tmp/ingest-online-attach-stderr.$$
+
+    if [ "$ATTACH_EXIT" -ne 0 ]; then
+      directive_stop "ONLINE_INGEST_ZOTERO_ATTACH_FAILED" 5 \
+        "zotero-write.sh attach-file failed for doc_id=$DOC_ID, key=$ZOTERO_ITEM_KEY (exit $ATTACH_EXIT): $ATTACH_STDERR"
+    fi
+    log "Attached PDF to existing Zotero item $ZOTERO_ITEM_KEY for doc_id=$DOC_ID"
+
+    RESOLVED_PDF_PATH="$(resolve_storage_path_from_envelope "$ATTACH_STDOUT")" || {
+      log "WARNING: could not resolve Zotero-managed storage path from the attach-file envelope; falling back to the staging download path ($STAGING_PATH). Flagged as a follow-up, not a silent success."
+      RESOLVED_PDF_PATH="$STAGING_PATH"
+    }
+  fi
+
+  log "Using PDF path for ingest delegation: $RESOLVED_PDF_PATH"
+
+  if ! run_ingest_pipeline "$RESOLVED_PDF_PATH"; then
+    directive_stop "ONLINE_INGEST_PIPELINE_FAILED" 6 \
+      "literature-ingest.sh delegate failed for doc_id=$DOC_ID (source: $RESOLVED_PDF_PATH)"
+  fi
+  log "literature-ingest.sh reported ingested doc_id=$INGESTED_REAL_DOC_ID"
+
+  ZKEY_JSON="$(str_or_null_json "$ZOTERO_ITEM_KEY")"
+  ZPATH_JSON="$(str_or_null_json "$RESOLVED_PDF_PATH")"
+  patch_global_index "$INGESTED_REAL_DOC_ID" "$TITLE" "$AUTHORS_JSON" "$YEAR_JSON" \
+    "$DOI_JSON" "$ARXIV_JSON" "$ZKEY_JSON" "$ZPATH_JSON" || true
+  upsert_subindex "$INGESTED_REAL_DOC_ID"
+
+  echo "ONLINE_INGEST_ATTACHED"
+  exit 0
+fi
+
+# Unreachable: CLASSIFICATION is always set to "resolvable" or "existing_no_pdf" above, or the
+# script has already exited via directive_stop for ONLINE_INGEST_NO_PDF.
+echo "literature-ingest-online.sh: internal error -- unclassified state" >&2
+exit 64

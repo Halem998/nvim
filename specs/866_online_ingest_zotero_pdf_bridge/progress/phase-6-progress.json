@@ -1,0 +1,26 @@
+{
+  "phase": 6,
+  "phase_name": "in_zotero_no_pdf Attach-to-Existing Sub-Path",
+  "started_at": "2026-07-15T07:06:00Z",
+  "last_updated": "2026-07-15T07:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Resolve citation_key to real Zotero item key via zotero-resolve-pdf.sh (unmodified, stdin JSON)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 2, "description": "Discover PDF URL via Unpaywall DOI lookup on the resolved item's zotero_doi; honest stop if none", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 3, "description": "Call zotero-write.sh attach-file on the resolved key", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 4, "description": "Reuse Phase 4/5 machinery (ingest delegate, metadata patch, sub-index) for the attached document", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Mock a local HTTP server on 127.0.0.1:23119 to simulate the Zotero live API for a full attach-path end-to-end test", "result": "failed", "reason": "A real Zotero instance is already running and bound to 127.0.0.1:23119 on this machine (discovered via a failed bind attempt, which returned real library data from the user's actual Zotero library). Abandoned to avoid any risk of touching real Zotero state; pivoted to a read-only real-API test of the honest tier=absent stop path only, plus code-level reuse verification for the rest (see plan Phase 6 verification-scope-note deviation)."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.verification",
+      "description": "Full live-API attach-path end-to-end test (resolve -> found existing item -> Unpaywall -> download -> attach -> ingest)",
+      "type": "altered",
+      "reason": "A real Zotero instance already owns 127.0.0.1:23119 on this development machine; mocking or exercising the live API further risked touching the user's real Zotero library. Verified the honest tier=absent stop safely (read-only) against the real API with a fabricated non-matching title, and verified every downstream helper this path shares with the already-fully-tested create-item path (Phase 4/5) plus the attach-file command construction (Phase 1 stub-zot regression).",
+      "annotation": "*(deviation: altered — verification scope narrowed to avoid touching the real, already-running Zotero instance on this machine; see plan Phase 6 verification-scope note)*"
+    }
+  ]
+}

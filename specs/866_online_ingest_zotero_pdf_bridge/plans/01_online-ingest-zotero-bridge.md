@@ -142,25 +142,29 @@ field names.
 
 ---
 
-### Phase 2: Scaffold literature-ingest-online.sh + Directive-Token Classification [NOT STARTED]
+### Phase 2: Scaffold literature-ingest-online.sh + Directive-Token Classification [COMPLETED]
 
 **Goal**: Create the new entry point with input parsing and the honest directive-token classifier,
 mirroring `zotero-export-status.sh` (exactly one token to stdout, rationale to stderr, no silent
 no-op). No downloads or writes yet.
 
 **Tasks**:
-- [ ] Create `literature-ingest-online.sh` accepting a single discovery-record JSON via stdin or
-      `--record '<json>'`, plus `--dry-run` and `--idempotency-key` flags mirroring `zotero-write.sh`.
-- [ ] Implement classification keying off `(status, arxiv_id present, pdf_url present)`:
+- [x] Create `literature-ingest-online.sh` accepting a single discovery-record JSON via stdin or
+      `--record '<json>'`, plus `--dry-run` and `--idempotency-key` flags mirroring `zotero-write.sh`. *(completed)*
+- [x] Implement classification keying off `(status, arxiv_id present, pdf_url present)`:
       - `status == "in_zotero_no_pdf"` -> `ONLINE_INGEST_EXISTING_NO_PDF`
       - `status == "open_access"` with non-empty `pdf_url` (arXiv or not) -> `ONLINE_INGEST_RESOLVABLE`
       - `status == "paywall"`, or `open_access` with no usable `pdf_url` -> `ONLINE_INGEST_NO_PDF`
-- [ ] Treat "arxiv" strictly as a derived condition (`status=="open_access" && arxiv_id != null`),
-      never a literal `"arxiv"` status.
-- [ ] Print exactly one directive token to stdout; write the rationale to stderr; define exit
+      *(completed)*
+- [x] Treat "arxiv" strictly as a derived condition (`status=="open_access" && arxiv_id != null`),
+      never a literal `"arxiv"` status. *(completed)*
+- [x] Print exactly one directive token to stdout; write the rationale to stderr; define exit
       codes (resolvable=0 proceed, no-pdf non-zero honest-stop) consistent with the export-status precedent.
-- [ ] Document the entry-point interface (input schema, directive tokens, exit codes) in a header
-      comment block, since tasks 867/868 depend on it as a stable contract.
+      *(completed: full exit-code table also covers the later-phase terminal tokens --
+      0/1/2/3/4/5/6/64 -- documented together in the Phase 2 header block since all directives
+      were designed as one coherent contract up front)*
+- [x] Document the entry-point interface (input schema, directive tokens, exit codes) in a header
+      comment block, since tasks 867/868 depend on it as a stable contract. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -176,19 +180,23 @@ no-op). No downloads or writes yet.
 
 ---
 
-### Phase 3: PDF Download + Magic-Byte Verification + Duplicate Check [NOT STARTED]
+### Phase 3: PDF Download + Magic-Byte Verification + Duplicate Check [COMPLETED]
 
 **Goal**: For `ONLINE_INGEST_RESOLVABLE`, download the PDF to a stable staging path and verify it
 is genuinely a PDF before any Zotero write; optionally guard against duplicate ingestion.
 
 **Tasks**:
-- [ ] Download via `curl -sL --fail --max-time 30 -o <staging_path> "$pdf_url"`.
-- [ ] Verify the first bytes are `%PDF` (`head -c4`); on non-2xx/curl failure or magic-byte
+- [x] Download via `curl -sL --fail --max-time 30 -o <staging_path> "$pdf_url"`. *(completed)*
+- [x] Verify the first bytes are `%PDF` (`head -c4`); on non-2xx/curl failure or magic-byte
       mismatch, emit `ONLINE_INGEST_DOWNLOAD_FAILED` and stop (never fall through to item creation).
-- [ ] Choose a stable staging path (not an ephemeral temp that is cleaned before ingest) and
+      *(completed; verified with a real HTML landing-page file and a nonexistent-file 404 case,
+      both correctly produce ONLINE_INGEST_DOWNLOAD_FAILED with no Zotero write attempted)*
+- [x] Choose a stable staging path (not an ephemeral temp that is cleaned before ingest) and
       derive `doc_id` consistently with `literature-ingest.sh` (from the resolved filename).
-- [ ] Add an optional pre-create title-similarity check against the global `index.json` using the
+      *(completed: `$LITERATURE_DIR/.online-ingest-staging/<sanitized_doc_id>.pdf`)*
+- [x] Add an optional pre-create title-similarity check against the global `index.json` using the
       existing `.zotero-title-sim.py` helper (`zotero-resolve-pdf.sh` pattern) to avoid double-ingest.
+      *(completed; verified a near-duplicate title logs a non-blocking WARNING and still proceeds)*
 
 **Timing**: 1.5 hours
 
@@ -204,20 +212,29 @@ is genuinely a PDF before any Zotero write; optionally guard against duplicate i
 
 ---
 
-### Phase 4: Zotero Create-Item + Storage Re-Point + Delegate to literature-ingest.sh [NOT STARTED]
+### Phase 4: Zotero Create-Item + Storage Re-Point + Delegate to literature-ingest.sh [COMPLETED]
 
 **Goal**: For the create-item path (open-access/arXiv), create the Zotero item + attachment, resolve
 the durable Zotero storage copy, and run the unmodified ingest pipeline against that copy.
 
 **Tasks**:
-- [ ] Call `zotero-write.sh item-add --pdf <staging_path> [--doi <doi>] [--idempotency-key online-ingest-<doc_id>] [--dry-run]`.
-- [ ] Resolve the Zotero-managed `storage/<attachmentKey>/<filename>` path from the confirmed
+- [x] Call `zotero-write.sh item-add --pdf <staging_path> [--doi <doi>] [--idempotency-key online-ingest-<doc_id>] [--dry-run]`. *(completed)*
+- [x] Resolve the Zotero-managed `storage/<attachmentKey>/<filename>` path from the confirmed
       envelope field (Phase 1) and/or `zotero-resolve-sqlite-path.sh`; never hardcode the storage root.
-- [ ] Verify the storage path is readable; if not, fall back to the staging download path and flag
-      as a follow-up (honest, never a silent success claim).
-- [ ] Invoke `literature-ingest.sh "$zotero_storage_pdf_path" --no-local` (let the caller decide
+      *(completed via `resolve_storage_path_from_envelope()`, a defensive multi-jq-path lookup
+      across several plausible field names since the real `zot add --pdf` shape is unconfirmed --
+      see Phase 1 deviation note)*
+- [x] Verify the storage path is readable; if not, fall back to the staging download path and flag
+      as a follow-up (honest, never a silent success claim). *(completed)*
+- [x] Invoke `literature-ingest.sh "$zotero_storage_pdf_path" --no-local` (let the caller decide
       `--local`/interactive), reusing 100% of convert/chunk/quality-gate/index-rebuild logic.
-- [ ] Capture the ingested `doc_id` reported by `literature-ingest.sh` for the Phase 5 patch.
+      *(completed; confirmed via `git diff --stat` that literature-ingest.sh/convert.sh/chunk.sh/
+      build-index.sh are byte-for-byte unmodified)*
+- [x] Capture the ingested `doc_id` reported by `literature-ingest.sh` for the Phase 5 patch.
+      *(completed: fixed a real bug found during end-to-end testing -- literature-ingest.sh's
+      `log_out()` prefixes stdout lines with "[ingest] ", so the original `^Ingested: ` grep
+      never matched and silently fell back to the wrong doc_id, leaving the metadata patch a
+      no-op. Fixed to match `^\[ingest\] Ingested: ` with a `^Documents ingested: ` fallback.)*
 
 **Timing**: 2 hours
 
@@ -233,20 +250,25 @@ the durable Zotero storage copy, and run the unmodified ingest pipeline against 
 
 ---
 
-### Phase 5: Post-Ingest Metadata Patch + Sub-Index Registration [NOT STARTED]
+### Phase 5: Post-Ingest Metadata Patch + Sub-Index Registration [COMPLETED]
 
 **Goal**: Close the placeholder-metadata gap for online-ingested docs and register them in the
 per-repo sub-index.
 
 **Tasks**:
-- [ ] After `literature-ingest.sh` exits 0, `jq`-patch the global `index.json` entry for the
+- [x] After `literature-ingest.sh` exits 0, `jq`-patch the global `index.json` entry for the
       ingested `doc_id`, merging real `title`, `authors`, `year`, `doi`, `arxiv_id`, `zotero_key`,
       `zotero_path` from the discovery record + Zotero envelope (not the `DOC_ID` placeholder).
-- [ ] Scope the patch as new logic in `literature-ingest-online.sh` only (do NOT modify
-      `literature-ingest.sh`'s core loop).
-- [ ] Upsert an entry into `specs/literature-index.json` (`doc_id`, `relevance`, `added`,
+      *(completed; verified end-to-end -- real title/authors/year/doi/arxiv_id/zotero_key/
+      zotero_path all present in the patched entry, no placeholder left)*
+- [x] Scope the patch as new logic in `literature-ingest-online.sh` only (do NOT modify
+      `literature-ingest.sh`'s core loop). *(completed)*
+- [x] Upsert an entry into `specs/literature-index.json` (`doc_id`, `relevance`, `added`,
       `source: "discover"`) using the same jq-upsert sketch already in `commands/literature.md` step_2.
-- [ ] Ensure idempotency: re-running for the same `doc_id` updates rather than duplicates entries.
+      *(completed)*
+- [x] Ensure idempotency: re-running for the same `doc_id` updates rather than duplicates entries.
+      *(completed; verified re-running the same record leaves both index.json and the sub-index
+      at a single entry each)*
 
 **Timing**: 1.5 hours
 
@@ -262,19 +284,44 @@ per-repo sub-index.
 
 ---
 
-### Phase 6: in_zotero_no_pdf Attach-to-Existing Sub-Path [NOT STARTED]
+### Phase 6: in_zotero_no_pdf Attach-to-Existing Sub-Path [COMPLETED]
 
 **Goal**: Handle `ONLINE_INGEST_EXISTING_NO_PDF` as an attach-to-existing-item operation using the
 existing `attach-file` capability, then ingest and register like the create path.
 
 **Tasks**:
-- [ ] Resolve the Tier-2 citation_key to the real Zotero item key via `zotero-resolve-pdf.sh`-style
+- [x] Resolve the Tier-2 citation_key to the real Zotero item key via `zotero-resolve-pdf.sh`-style
       title/author search (do not assume the citation_key is the literal 8-char API key).
-- [ ] If a PDF URL is discoverable, reuse the Phase 3 download + `%PDF` verification; if none is
-      discoverable, surface honestly and stop (never invent one).
-- [ ] Call `zotero-write.sh attach-file <key> <verified_pdf>` (existing operation; no create-item).
-- [ ] Reuse the Phase 4/5 machinery to run `literature-ingest.sh`, patch `index.json`, and register
-      in the sub-index for the now-attached document.
+      *(completed by piping a synthesized `{doc_id, record}` object directly into the existing,
+      unmodified `zotero-resolve-pdf.sh` over stdin -- reuses its live-api/sqlite-readonly tiering,
+      title-truncation search, and MIN_SIMILARITY floor rather than re-implementing any of it)*
+- [x] If a PDF URL is discoverable, reuse the Phase 3 download + `%PDF` verification; if none is
+      discoverable, surface honestly and stop (never invent one). *(completed: an Unpaywall
+      DOI lookup against the resolved item's `zotero_doi` supplies the candidate PDF URL, since
+      Tier-2 in_zotero_no_pdf records carry no `pdf_url`/`doi` of their own; no OA location found
+      -> `ONLINE_INGEST_NO_PDF`, honest stop, no download attempted)*
+- [x] Call `zotero-write.sh attach-file <key> <verified_pdf>` (existing operation; no create-item).
+      *(completed)*
+- [x] Reuse the Phase 4/5 machinery to run `literature-ingest.sh`, patch `index.json`, and register
+      in the sub-index for the now-attached document. *(completed -- shares `download_and_verify`,
+      `resolve_storage_path_from_envelope`, `run_ingest_pipeline`, `patch_global_index`, and
+      `upsert_subindex` verbatim with the create-item path)*
+
+**Verification scope note** *(deviation: altered)*: a real Zotero instance was found already
+running and owning `127.0.0.1:23119` on this machine (the live-api port `zotero-resolve-pdf.sh`
+probes) -- confirmed by a failed bind attempt while building a mock server for this phase. To
+avoid touching the user's real Zotero library, live-API mocking for this phase was abandoned.
+What WAS verified safely: (1) the honest `tier=absent` -> `ONLINE_INGEST_ZOTERO_RESOLVE_FAILED`
+stop, exercised for real against the live (read-only, GET-only) API with a fabricated title/author
+guaranteed not to match anything real; (2) every downstream helper this path calls
+(`download_and_verify`, `resolve_storage_path_from_envelope`, `run_ingest_pipeline`,
+`patch_global_index`, `upsert_subindex`) already fully verified end-to-end by the Phase 4/5
+create-item test; (3) the `attach-file` command construction itself, via Phase 1's stub-`zot`
+regression test. The one sub-path NOT independently exercised end-to-end is a full
+"matched-no-pdf tier resolves a real key -> Unpaywall finds a PDF -> attach succeeds" run, since
+that would require either fabricating entries in the user's real Zotero library or building a
+full Zotero sqlite-schema mock -- judged disproportionate given every component it composes was
+independently verified. Recorded here rather than silently claimed as fully tested.
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "PDF Download + Magic-Byte Verification + Duplicate Check",
+  "started_at": "2026-07-15T07:06:00Z",
+  "last_updated": "2026-07-15T07:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "curl download to staging path", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 2, "description": "%PDF magic-byte verification gate -> ONLINE_INGEST_DOWNLOAD_FAILED on mismatch", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 3, "description": "Stable staging path with doc_id-consistent naming", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 4, "description": "Optional duplicate-title check via .zotero-title-sim.py", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "Verified with real curl against file:// URLs: a valid minimal hand-built PDF passes; an HTML landing page and a nonexistent path both correctly yield ONLINE_INGEST_DOWNLOAD_FAILED (exit 2) with no Zotero write attempted. Duplicate-title check verified to log a non-blocking WARNING for a near-identical title (similarity 0.9091) and still proceed."
+}
