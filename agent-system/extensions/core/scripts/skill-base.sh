@@ -101,6 +101,50 @@ skill_run_extension_hook() {
     echo "[skill-base] WARNING: Extension hook '${hook_name}' exited non-zero (non-blocking)"
 }
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Observable-but-non-fatal wrapper around events-append.sh.
+#
+# Replaces the bare `bash .claude/scripts/events-append.sh ... || true` idiom, which failed
+# SILENTLY when the helper was missing -- the defect that hid the events store's non-deployment
+# for a full day. This wrapper ALWAYS returns 0 to its caller (a missing/failing events helper
+# must never become fatal to the enclosing skill lifecycle stage), but distinguishes "helper
+# missing/not executable" from "helper present but exited non-zero" in both a one-time-per-process
+# stderr WARNING and a durable sentinel marker under .claude/tmp/, so the failure is surfaceable
+# instead of silently swallowed.
+#
+# Usage: _events_append_observable ".claude/scripts/events-append.sh" --event-type ... [args...]
+_EVENTS_APPEND_OBSERVABLE_WARNED=""
+_events_append_observable() {
+  local helper_path="$1"
+  shift
+  local kind="" exit_code=""
+  if [ ! -x "$helper_path" ]; then
+    kind="missing"
+  else
+    if "$helper_path" "$@" >/dev/null 2>&1; then
+      exit_code=0
+    else
+      exit_code=$?
+      kind="failed"
+    fi
+  fi
+  if [ -n "$kind" ]; then
+    if [ -z "$_EVENTS_APPEND_OBSERVABLE_WARNED" ]; then
+      if [ "$kind" = "missing" ]; then
+        echo "[skill-base] WARNING: events-append.sh helper missing or not executable at ${helper_path} (non-blocking)" >&2
+      else
+        echo "[skill-base] WARNING: events-append.sh helper present but failed (exit ${exit_code}) at ${helper_path} (non-blocking)" >&2
+      fi
+      _EVENTS_APPEND_OBSERVABLE_WARNED=1
+    fi
+    mkdir -p ".claude/tmp" 2>/dev/null
+    printf '{"kind":"%s","helper_path":"%s","exit_code":"%s","ts":"%s"}\n' \
+      "$kind" "$helper_path" "$exit_code" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+      >> ".claude/tmp/events-append-observable.log" 2>/dev/null
+  fi
+  return 0
+}
+
 # ORCHESTRATOR MODE: Support for skill-orchestrate dispatch (task 596).
 # When orchestrator_mode=true in delegation context, skills call skill_write_orchestrator_handoff()
 # in their postflight to produce .orchestrator-handoff.json for the state machine loop.
@@ -151,10 +195,10 @@ skill_preflight_update() {
   # Unified event store: one non-blocking milestone event per lifecycle stage
   local _dur
   _dur=$(awk -v a="$_t0" -v b="$(date +%s.%N)" 'BEGIN{printf "%.3f", b-a}')
-  bash .claude/scripts/events-append.sh --event-type lifecycle_stage --category milestone \
+  _events_append_observable ".claude/scripts/events-append.sh" \
+    --event-type lifecycle_stage --category milestone \
     --checkpoint preflight --duration "$_dur" --task "$task_number" --session "$session_id" \
-    --message "Preflight stage completed for ${operation}" \
-    >/dev/null 2>&1 || true
+    --message "Preflight stage completed for ${operation}"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -196,10 +240,10 @@ skill_context_injection() {
   # Unified event store: one non-blocking milestone event per lifecycle stage
   local _dur
   _dur=$(awk -v a="$_t0" -v b="$(date +%s.%N)" 'BEGIN{printf "%.3f", b-a}')
-  bash .claude/scripts/events-append.sh --event-type lifecycle_stage --category milestone \
+  _events_append_observable ".claude/scripts/events-append.sh" \
+    --event-type lifecycle_stage --category milestone \
     --checkpoint context_injection --duration "$_dur" --task "$task_number" --session "$session_id" \
-    --message "Context injection stage completed for ${operation}" \
-    >/dev/null 2>&1 || true
+    --message "Context injection stage completed for ${operation}"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -297,10 +341,10 @@ skill_validate_artifact() {
       failed|blocked|partial) _category="deviation" ;;
       *) _category="milestone" ;;
     esac
-    bash .claude/scripts/events-append.sh --event-type lifecycle_stage --category "$_category" \
+    _events_append_observable ".claude/scripts/events-append.sh" \
+      --event-type lifecycle_stage --category "$_category" \
       --checkpoint verification --duration "$_dur" --task "$task_number" --session "$session_id" \
-      --message "Verification stage completed for ${artifact_kind} (status: ${status})" \
-      >/dev/null 2>&1 || true
+      --message "Verification stage completed for ${artifact_kind} (status: ${status})"
   fi
 }
 
@@ -329,10 +373,10 @@ skill_postflight_update() {
   # Unified event store: one non-blocking milestone event per lifecycle stage
   local _dur
   _dur=$(awk -v a="$_t0" -v b="$(date +%s.%N)" 'BEGIN{printf "%.3f", b-a}')
-  bash .claude/scripts/events-append.sh --event-type lifecycle_stage --category milestone \
+  _events_append_observable ".claude/scripts/events-append.sh" \
+    --event-type lifecycle_stage --category milestone \
     --checkpoint postflight --duration "$_dur" --task "$task_number" --session "$session_id" \
-    --message "Postflight stage completed for ${operation} (status: ${status})" \
-    >/dev/null 2>&1 || true
+    --message "Postflight stage completed for ${operation} (status: ${status})"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────

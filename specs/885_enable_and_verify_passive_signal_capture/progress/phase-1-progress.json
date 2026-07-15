@@ -1,0 +1,67 @@
+{
+  "phase": 1,
+  "phase_name": "Observable-but-non-fatal failure signal (scope 2)",
+  "started_at": "2026-07-15T19:40:00Z",
+  "last_updated": "2026-07-15T19:47:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add shared observable wrapper (duplicated inline in each of 4 files)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/skill-base.sh",
+        "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+        "agent-system/extensions/core/hooks/events-log-lifecycle.sh",
+        "agent-system/extensions/core/hooks/events-log-artifact.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "skill-base.sh: replace 4 || true sites",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]
+    },
+    {
+      "id": 3,
+      "description": "orchestrator-postflight.sh: generalize 2 sites",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrator-postflight.sh"]
+    },
+    {
+      "id": 4,
+      "description": "events-log-lifecycle.sh: replace 2 sites + remove early bypass guard",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/hooks/events-log-lifecycle.sh"]
+    },
+    {
+      "id": 5,
+      "description": "events-log-artifact.sh: replace 2 sites + remove early bypass guard",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/hooks/events-log-artifact.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Verify with present/absent/failing helper harness across all 4 files",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Bare helper invocation without an if-guard around the call inside _events_append_observable",
+      "result": "failed",
+      "reason": "Under set -e / set -euo pipefail (orchestrator-postflight.sh declares the latter), a present-but-failing helper's non-zero exit terminated the enclosing script before the wrapper could capture $? and return 0, defeating the never-fatal contract. Fixed by wrapping the call in an if/else."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.1",
+      "description": "Add the shared observable wrapper in a location sourced by both skill-base.sh and the hooks",
+      "type": "altered",
+      "reason": "The plan offered a fallback (\"duplicate a tiny inline guard if sourcing is not clean\") which was taken: the 4 call-site files span sourced (skill-base.sh) and standalone (orchestrator-postflight.sh + 2 hooks) execution contexts with no existing shared-sourcing convention among them, and a new shared script file would require a manifest.json registration outside this task's edit-target file list. The identical function body is duplicated in each of the 4 files instead.",
+      "annotation": "*(deviation: altered — duplicated inline per-file instead of a single sourced shared script)*"
+    }
+  ]
+}

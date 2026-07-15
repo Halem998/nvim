@@ -67,6 +67,49 @@
 set -euo pipefail
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Observable-but-non-fatal wrapper around events-append.sh.
+#
+# Replaces the bare `bash .claude/scripts/events-append.sh ... || echo "WARNING..." >&2` idiom
+# at Stage 6b's two call sites below. ALWAYS returns 0 (this script runs under `set -e`, so a
+# non-zero return here would abort the rest of postflight -- unacceptable for a non-blocking
+# event append). Distinguishes "helper missing/not executable" from "helper present but exited
+# non-zero" in both a one-time-per-process stderr WARNING and a durable sentinel marker under
+# .claude/tmp/, generalizing the pattern already used by skill-base.sh's identical helper.
+#
+# Usage: _events_append_observable ".claude/scripts/events-append.sh" --event-type ... [args...]
+_EVENTS_APPEND_OBSERVABLE_WARNED=""
+_events_append_observable() {
+  local helper_path="$1"
+  shift
+  local kind="" exit_code=""
+  if [ ! -x "$helper_path" ]; then
+    kind="missing"
+  else
+    if "$helper_path" "$@" >/dev/null 2>&1; then
+      exit_code=0
+    else
+      exit_code=$?
+      kind="failed"
+    fi
+  fi
+  if [ -n "$kind" ]; then
+    if [ -z "$_EVENTS_APPEND_OBSERVABLE_WARNED" ]; then
+      if [ "$kind" = "missing" ]; then
+        echo "[postflight] WARNING: events-append.sh helper missing or not executable at ${helper_path} (non-blocking)" >&2
+      else
+        echo "[postflight] WARNING: events-append.sh helper present but failed (exit ${exit_code}) at ${helper_path} (non-blocking)" >&2
+      fi
+      _EVENTS_APPEND_OBSERVABLE_WARNED=1
+    fi
+    mkdir -p ".claude/tmp" 2>/dev/null
+    printf '{"kind":"%s","helper_path":"%s","exit_code":"%s","ts":"%s"}\n' \
+      "$kind" "$helper_path" "$exit_code" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+      >> ".claude/tmp/events-append-observable.log" 2>/dev/null
+  fi
+  return 0
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Argument parsing
 # ─────────────────────────────────────────────────────────────────────────────
 if [ $# -lt 5 ]; then
@@ -205,18 +248,17 @@ if [ -n "$error_ref" ] && [ "$error_ref" != "null" ]; then
   event_args+=(--error-ref "$error_ref")
 fi
 
-bash .claude/scripts/events-append.sh "${event_args[@]}" \
-  >/dev/null 2>&1 || echo "[postflight] WARNING: events-append.sh failed (non-blocking)" >&2
+_events_append_observable ".claude/scripts/events-append.sh" "${event_args[@]}"
 
 # Second, independent event: log a completion-time reflection when present. Never reuses the
 # orchestrator_status event line above; guarded and non-blocking so a reflection-event failure
 # cannot affect the rest of postflight.
 if [ "$reflection" != "null" ] && [ -n "$reflection" ]; then
-  bash .claude/scripts/events-append.sh --event-type reflection --category success \
+  _events_append_observable ".claude/scripts/events-append.sh" \
+    --event-type reflection --category success \
     --checkpoint postflight --task "$task_number" --session "$session_id" \
     --detail-json "$reflection" \
-    --message "Completion-time reflection captured for task ${task_number}" \
-    >/dev/null 2>&1 || echo "[postflight] WARNING: reflection event append failed (non-blocking)" >&2
+    --message "Completion-time reflection captured for task ${task_number}"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────

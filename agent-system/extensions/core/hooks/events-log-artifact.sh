@@ -10,12 +10,49 @@
 # Write/Edit calls it fires for (mirrors validate-plan-write.sh / validate-meta-write.sh).
 #
 # Never blocks: always echoes {} (never emits a "decision" key). Every events-append.sh
-# call is wrapped in `|| true` so a failure here can never surface to the caller or stall
-# the session.
+# call goes through the observable-but-non-fatal helper below so a failure here can never
+# surface to the caller or stall the session, while still producing a distinguishable,
+# durable signal instead of the prior bare `|| true` silent failure.
 #
 # See context/formats/events-format.md for the event field contract.
 
 set -uo pipefail
+
+# Observable-but-non-fatal wrapper around events-append.sh -- see the identical helper in
+# scripts/skill-base.sh and scripts/orchestrator-postflight.sh for the full contract comment.
+# ALWAYS returns 0; distinguishes "missing" vs "failed (exit N)" in a stderr WARNING plus a
+# durable sentinel marker under .claude/tmp/.
+_EVENTS_APPEND_OBSERVABLE_WARNED=""
+_events_append_observable() {
+  local helper_path="$1"
+  shift
+  local kind="" exit_code=""
+  if [ ! -x "$helper_path" ]; then
+    kind="missing"
+  else
+    if "$helper_path" "$@" >/dev/null 2>&1; then
+      exit_code=0
+    else
+      exit_code=$?
+      kind="failed"
+    fi
+  fi
+  if [ -n "$kind" ]; then
+    if [ -z "$_EVENTS_APPEND_OBSERVABLE_WARNED" ]; then
+      if [ "$kind" = "missing" ]; then
+        echo "[events-log-artifact] WARNING: events-append.sh helper missing or not executable at ${helper_path} (non-blocking)" >&2
+      else
+        echo "[events-log-artifact] WARNING: events-append.sh helper present but failed (exit ${exit_code}) at ${helper_path} (non-blocking)" >&2
+      fi
+      _EVENTS_APPEND_OBSERVABLE_WARNED=1
+    fi
+    mkdir -p ".claude/tmp" 2>/dev/null
+    printf '{"kind":"%s","helper_path":"%s","exit_code":"%s","ts":"%s"}\n' \
+      "$kind" "$helper_path" "$exit_code" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+      >> ".claude/tmp/events-append-observable.log" 2>/dev/null
+  fi
+  return 0
+}
 
 # --- Parse file_path from stdin (PostToolUse hook input), mirroring the stdin-then-env
 #     fallback pattern used by validate-plan-write.sh / validate-meta-write.sh ---
@@ -62,10 +99,10 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 EVENTS_APPEND="${SCRIPT_DIR}/scripts/events-append.sh"
 
-if [ ! -x "$EVENTS_APPEND" ]; then
-  echo '{}'
-  exit 0
-fi
+# NOTE: deliberately no early `[ ! -x "$EVENTS_APPEND" ] && exit` bypass here -- that used to
+# short-circuit BEFORE the call site could ever signal a missing helper, which is exactly the
+# silent-failure defect this wrapper replaces. Missing/failing helper detection now happens
+# inside _events_append_observable at each call site below.
 
 if [ "$match_type" = "return_meta" ]; then
   session_id=$(jq -r '.metadata.session_id // empty' "$FILE" 2>/dev/null)
@@ -91,7 +128,7 @@ if [ "$match_type" = "return_meta" ]; then
       --message "Artifact metadata written with status '${status:-unknown}'")
     [ -n "$task" ] && event_args+=(--task "$task")
 
-    "$EVENTS_APPEND" "${event_args[@]}" >/dev/null 2>&1 || true
+    _events_append_observable "$EVENTS_APPEND" "${event_args[@]}"
   fi
 
 elif [ "$match_type" = "errors_json" ]; then
@@ -112,7 +149,7 @@ elif [ "$match_type" = "errors_json" ]; then
     [ -n "$task" ] && [ "$task" != "null" ] && event_args+=(--task "$task")
     [ -n "$error_id" ] && event_args+=(--error-ref "$error_id")
 
-    "$EVENTS_APPEND" "${event_args[@]}" >/dev/null 2>&1 || true
+    _events_append_observable "$EVENTS_APPEND" "${event_args[@]}"
   fi
 fi
 

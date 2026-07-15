@@ -33,7 +33,9 @@
 # PostToolUse hook's job (events-log-artifact.sh), which fires at Write time.
 #
 # Never blocks: always echoes {} (never emits a "decision" key). The events-append.sh call
-# is wrapped so a failure here can never surface to the caller or stall the session.
+# is wrapped in the observable-but-non-fatal helper below so a failure here can never surface
+# to the caller or stall the session, while still producing a distinguishable, durable signal
+# instead of the prior bare `|| true` silent failure.
 
 set -uo pipefail
 
@@ -45,8 +47,47 @@ exit_success() {
   exit 0
 }
 
+# Observable-but-non-fatal wrapper around events-append.sh -- see the identical helper in
+# scripts/skill-base.sh and scripts/orchestrator-postflight.sh for the full contract comment.
+# ALWAYS returns 0; distinguishes "missing" vs "failed (exit N)" in a stderr WARNING plus a
+# durable sentinel marker under .claude/tmp/.
+_EVENTS_APPEND_OBSERVABLE_WARNED=""
+_events_append_observable() {
+  local helper_path="$1"
+  shift
+  local kind="" exit_code=""
+  if [ ! -x "$helper_path" ]; then
+    kind="missing"
+  else
+    if "$helper_path" "$@" >/dev/null 2>&1; then
+      exit_code=0
+    else
+      exit_code=$?
+      kind="failed"
+    fi
+  fi
+  if [ -n "$kind" ]; then
+    if [ -z "$_EVENTS_APPEND_OBSERVABLE_WARNED" ]; then
+      if [ "$kind" = "missing" ]; then
+        echo "[events-log-lifecycle] WARNING: events-append.sh helper missing or not executable at ${helper_path} (non-blocking)" >&2
+      else
+        echo "[events-log-lifecycle] WARNING: events-append.sh helper present but failed (exit ${exit_code}) at ${helper_path} (non-blocking)" >&2
+      fi
+      _EVENTS_APPEND_OBSERVABLE_WARNED=1
+    fi
+    mkdir -p "$SCRIPT_DIR/../tmp" 2>/dev/null
+    printf '{"kind":"%s","helper_path":"%s","exit_code":"%s","ts":"%s"}\n' \
+      "$kind" "$helper_path" "$exit_code" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+      >> "$SCRIPT_DIR/../tmp/events-append-observable.log" 2>/dev/null
+  fi
+  return 0
+}
+
 command -v jq &>/dev/null || exit_success
-[ -x "$EVENTS_APPEND" ] || exit_success
+# NOTE: deliberately no early `[ -x "$EVENTS_APPEND" ] || exit_success` bypass here -- that
+# used to short-circuit BEFORE the call site could ever signal a missing helper, which is
+# exactly the silent-failure defect this wrapper replaces. Missing/failing helper detection now
+# happens inside _events_append_observable at each call site below.
 
 # --- Read stdin JSON (hook context) ---
 STDIN_JSON=""
@@ -85,7 +126,7 @@ if [ -n "$AGENT_ID" ]; then
     --message "Subagent stop for ${skill:-unknown} (${operation:-unknown})")
   [ -n "$task" ] && event_args+=(--task "$task")
 
-  "$EVENTS_APPEND" "${event_args[@]}" >/dev/null 2>&1 || true
+  _events_append_observable "$EVENTS_APPEND" "${event_args[@]}"
   exit_success
 fi
 
@@ -124,5 +165,5 @@ session_id=$(jq -r --argjson num "$task" \
 event_args=(--event-type session_stop --category milestone --session "$session_id" \
   --task "$task" --message "Session stop observed for task ${task}")
 
-"$EVENTS_APPEND" "${event_args[@]}" >/dev/null 2>&1 || true
+_events_append_observable "$EVENTS_APPEND" "${event_args[@]}"
 exit_success
