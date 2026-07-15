@@ -312,7 +312,7 @@ CWD happens to be.
 
 ---
 
-### Phase 5: Qualify Write and Mutate Operations (Category D) [NOT STARTED]
+### Phase 5: Qualify Write and Mutate Operations (Category D) [COMPLETED]
 
 **Goal**: Close the actual silent-wrong-repo-write paths. This is where unmitigated cross-repo `/meta`
 corrupts a foreign repo.

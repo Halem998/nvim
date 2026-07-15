@@ -763,9 +763,18 @@ for position, task_idx in enumerate(sorted_indices):
   # 1. Create slug from title
   slug=$(echo "{title}" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr -cd 'a-z0-9_' | cut -c1-50)
 
-  # 2. Update state.json (include dependencies array)
-  # 3. Update TODO.md
+  # 2. Update state.json (include dependencies array) — Edit tool target:
+  #    "${TARGET_ROOT}/specs/state.json"
+  # 3. Update TODO.md — handled by generate-todo.sh in Stage 6 step 4a, not a direct Edit here
 ```
+
+**Task-directory creation (explicit, `${TARGET_ROOT}`-qualified)**: for each task, Write the task
+directory using the fully-qualified path — never a bare `specs/...` relative path, since Write tool
+resolution ignores shell `cd` entirely:
+```
+Write("${TARGET_ROOT}/specs/${padded_num}_${slug}/", ...)   # e.g. "${TARGET_ROOT}/specs/037_add_topological_sorting/"
+```
+where `padded_num` is `task_num` zero-padded to 3 digits (`printf '%03d' "$task_num"`).
 
 **Topic Assignment**: Write `batch_topic` (from Stage 4.5) to the `"topic"` field in each
 state.json entry. `batch_topic` is non-empty by construction (task 796: Mode A has no Skip
@@ -791,7 +800,7 @@ Note: Pass `--arg title "$task_title"` and `--arg desc "$task_description"` to t
 Note: The `"topic"` field is always populated (task 796: topic assignment is mandatory, no
 Skip option exists in Stage 4.5's Mode A picker).
 
-After all tasks are written to state.json, call `bash .claude/scripts/generate-todo.sh` to regenerate TODO.md. This handles frontmatter, task entries (in descending project_number order), and Task Order — all in one step.
+After all tasks are written to state.json, call `bash "${TARGET_ROOT}/.claude/scripts/generate-todo.sh"` to regenerate TODO.md. This handles frontmatter, task entries (in descending project_number order), and Task Order — all in one step. (`generate-todo.sh` self-resolves its project root from `BASH_SOURCE[0]`, not CWD — the absolute qualification is what makes this correct at a non-CWD target root; see Stage 1's Path Qualification Convention.)
 
 **Complexity Detection** (for DeliverSummary visualization):
 
@@ -871,7 +880,7 @@ def generate_execution_summary(task_list, sorted_indices, task_number_map, depen
 
         padded = f"{task_num:03d}"
         title = task['title'][:40]  # Truncate for table
-        table_lines.append(f"| {task_num} | {title} | {dep_str} | specs/{padded}_{task['slug']}/ |")
+        table_lines.append(f"| {task_num} | {title} | {dep_str} | {target_root}/specs/{padded}_{task['slug']}/ |")
 
     table_str = "\n".join(table_lines)
 
@@ -1039,6 +1048,8 @@ first_task_num = task_number_map[sorted_indices[0]]
 ```
 ## Tasks Created
 
+**Created in**: {target_root} ({mode_target} mode)
+
 Created {N} task(s) for {domain}:
 
 {task_table}
@@ -1068,6 +1079,14 @@ Parallel execution is possible for tasks marked [parallel with above].
 - `{dependency_graph}` = ASCII visualization from graph generation
 - `{execution_order}` = Numbered list from `generate_execution_order()`
 - `{first_task_num}` = Lowest assigned task number (first foundational task)
+- `{target_root}` = Resolved `$TARGET_ROOT` from Stage 1 — gives the reader one unambiguous anchor
+  for where the created tasks actually landed
+- `{mode_target}` = `global` or `local`, from the Stage 1 delegation context
+
+**Why the header line matters**: a user reading a bare `specs/037_.../` path while their CWD is a
+foreign repo will reasonably read it as relative to *their* repo, then run `/research 37` there and
+get a mismatch. The `**Created in**` header and the fully-qualified table paths remove that
+ambiguity.
 
 ### DeliverSummary Examples
 
@@ -1078,13 +1097,15 @@ Input: 3 tasks with simple A -> B -> C dependencies
 ```
 ## Tasks Created
 
+**Created in**: /home/user/.config/nvim (global mode)
+
 Created 3 task(s) for dependency visualization:
 
 | # | Task | Depends On | Path |
 |---|------|------------|------|
-| 37 | Add topological sorting | None | specs/037_add_topological_sorting/ |
-| 38 | Update TODO insertion | #37 | specs/038_update_todo_insertion/ |
-| 39 | Enhance visualization | #38 | specs/039_enhance_visualization/ |
+| 37 | Add topological sorting | None | /home/user/.config/nvim/specs/037_add_topological_sorting/ |
+| 38 | Update TODO insertion | #37 | /home/user/.config/nvim/specs/038_update_todo_insertion/ |
+| 39 | Enhance visualization | #38 | /home/user/.config/nvim/specs/039_enhance_visualization/ |
 
 **Dependency Graph**:
 ```
@@ -1117,14 +1138,16 @@ Input: 4 tasks where 2 parallel tasks converge to 1 final task
 ```
 ## Tasks Created
 
+**Created in**: /home/user/.config/nvim (local mode)
+
 Created 4 task(s) for feature implementation:
 
 | # | Task | Depends On | Path |
 |---|------|------------|------|
-| 37 | Core API | None | specs/037_core_api/ |
-| 38 | Parser module | #37 | specs/038_parser_module/ |
-| 39 | Validator module | #37 | specs/039_validator_module/ |
-| 40 | Integration layer | #38, #39 | specs/040_integration_layer/ |
+| 37 | Core API | None | /home/user/.config/nvim/specs/037_core_api/ |
+| 38 | Parser module | #37 | /home/user/.config/nvim/specs/038_parser_module/ |
+| 39 | Validator module | #37 | /home/user/.config/nvim/specs/039_validator_module/ |
+| 40 | Integration layer | #38, #39 | /home/user/.config/nvim/specs/040_integration_layer/ |
 
 **Dependency Graph**:
 ```
@@ -1164,12 +1187,14 @@ Input: 2 tasks where the first depends on existing task #35
 ```
 ## Tasks Created
 
+**Created in**: /home/user/.config/nvim (global mode)
+
 Created 2 task(s) for build system:
 
 | # | Task | Depends On | Path |
 |---|------|------------|------|
-| 37 | Add build scripts | #35 | specs/037_add_build_scripts/ |
-| 38 | Configure CI | #37 | specs/038_configure_ci/ |
+| 37 | Add build scripts | #35 | /home/user/.config/nvim/specs/037_add_build_scripts/ |
+| 38 | Configure CI | #37 | /home/user/.config/nvim/specs/038_configure_ci/ |
 
 **Dependency Graph**:
 ```
@@ -1321,7 +1346,7 @@ Return ONLY valid JSON matching this schema:
   "artifacts": [
     {
       "type": "task_entry",
-      "path": "specs/TODO.md",
+      "path": "{target_root}/specs/TODO.md",
       "summary": "Task #430 added to TODO.md"
     }
   ],
@@ -1332,11 +1357,19 @@ Return ONLY valid JSON matching this schema:
     "delegation_depth": 1,
     "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
     "mode": "interactive",
+    "mode_target": "{from delegation context}",
+    "target_root": "{resolved $TARGET_ROOT from Stage 1}",
     "tasks_created": 3
   },
   "next_steps": "Run /research 430 to begin research on first task"
 }
 ```
+
+**Path rendering rule**: every `artifacts[].path` and sibling artifact path in this and the
+following JSON schemas MUST render the resolved `{target_root}`-qualified form (e.g.
+`{target_root}/specs/TODO.md`, `{target_root}/specs/430_.../`), never a bare `specs/...` relative
+path — this lets a *caller* parsing the return JSON, not just a human reading the summary text,
+determine unambiguously where artifacts landed.
 
 ### Analyze Mode
 
@@ -1405,32 +1438,45 @@ Return ONLY valid JSON matching this schema:
    Ensure each new topic is registered in active_topics, then assign to each task.
    `batch_topic` is non-empty by construction (task 796: Mode A has no Skip option); the
    empty-string guard below is defensive only:
+   `manage-topics.sh` self-resolves its project root from `BASH_SOURCE[0]`, not CWD, and has **no**
+   `--state`/`--todo` override flag at all — an unqualified relative invocation silently corrupts
+   the wrong repo's `active_topics` with no error. Absolute, `${TARGET_ROOT}`-qualified invocation is
+   the only correctness mechanism available (Path Qualification Convention, Stage 1):
    ```bash
    for topic in "${new_topics[@]}"; do
      [[ -z "$topic" ]] && continue
-     bash .claude/scripts/manage-topics.sh add "$topic"
+     bash "${TARGET_ROOT}/.claude/scripts/manage-topics.sh" add "$topic"
    done
    ```
 
    Then for each created task:
    ```bash
-   bash .claude/scripts/manage-topics.sh set "$task_num" "$batch_topic"
+   bash "${TARGET_ROOT}/.claude/scripts/manage-topics.sh" set "$task_num" "$batch_topic"
    ```
 
    Topics already in `active_topics` are skipped by `manage-topics.sh add` (idempotent). Empty/null topics are skipped via the `[[ -z "$topic" ]]` guard.
 
 4a. **Regenerate TODO.md** (non-blocking):
-   After all tasks have been written to state.json and active_topics updated, regenerate TODO.md:
+   After all tasks have been written to state.json and active_topics updated, regenerate TODO.md.
+   `generate-todo.sh` also self-resolves its project root from `BASH_SOURCE[0]`, not CWD; use the
+   same absolute, `${TARGET_ROOT}`-qualified form (do not add `--state`/`--todo` flags — they do not
+   fix `PROJECT_ROOT`, which also feeds the log path and the `generate-task-order.sh` delegate call):
    ```bash
-   bash .claude/scripts/generate-todo.sh \
+   bash "${TARGET_ROOT}/.claude/scripts/generate-todo.sh" \
      2>/dev/null || echo "Note: Failed to regenerate TODO.md (non-fatal)" >&2
    ```
 
-5. **Git Commit**:
+5. **Git Commit**: the single documented exception to the absolute-path default (Stage 1 Path
+   Qualification Convention) — issued as **one chained Bash call**, because shell cwd from a `cd` in
+   one Bash tool invocation does not persist into a later, separate invocation:
 ```bash
-git add specs/
-git commit -m "meta: create {N} tasks for {domain}"
+cd "$TARGET_ROOT" && git add specs/ && git commit -m "meta: create {N} tasks for {domain}"
 ```
+
+Note: skill-meta's postflight also issues a commit at `target_root` after this agent returns; if
+this Stage 6 commit already landed, that later call harmlessly finds nothing staged. This Stage 6
+commit is kept in place deliberately — removing it in favor of relying solely on skill-meta's
+postflight would be a mechanism redesign, out of scope here.
 
 Note: {N} in commit message is COUNT of tasks created.
 
