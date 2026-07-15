@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Expose scope-acquire / scope-release on task-lock.sh",
+  "started_at": "2026-07-15T23:50:00Z",
+  "last_updated": "2026-07-16T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend acquire_scope_mutex to accept optional stale-window argument, write stale_sec file", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 2, "description": "Waiter branch reads holder-declared stale_sec with fallback", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 3, "description": "Add cmd_scope_acquire with owner token", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 4, "description": "Add cmd_scope_release with owner-token verification", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 5, "description": "Register scope-acquire/scope-release in dispatch + usage string", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 6, "description": "No task-number citations in new comments", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Verified via .claude/scripts/task-lock.sh copy: scope-acquire prints token + creates specs/.scope-lock/{claimed_at,stale_sec,owner}; contended second acquire fails closed exit 2 within ~6.5s (5s wait loop + jq overhead); scope-release with correct token removes the mutex; scope-release with wrong token warns loudly and leaves mutex intact. Pre-existing acquire/heartbeat/release/check path regression-tested against a disposable scratch task dir (specs/999_scratch_lock_regression_test, removed after test) rather than task 882's own live lock, after an initial mistake where an early regression test's release call against task 882 (cmd_release is unconditional, no session-ownership check) deleted the live task-882 lock held by the orchestrating session; immediately restored via a fresh acquire with the correct session_id/operation/command before re-running the regression safely on the scratch dir."
+}

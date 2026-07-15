@@ -18,6 +18,21 @@
 #   task-lock.sh release <task_number> <session_id>
 #   task-lock.sh check <task_number>
 #   task-lock.sh init-marker <file_path>    (stdin = JSON content; task 808)
+#   task-lock.sh scope-acquire <session_id> [stale_sec]
+#   task-lock.sh scope-release <token>
+#
+# scope-acquire/scope-release expose the specs/.scope-lock/ global mutex (defined below as
+# acquire_scope_mutex/release_scope_mutex, originally introduced for cmd_acquire's cross-task
+# overlap scan) as a standalone CLI primitive for callers that need to bracket a critical section
+# spanning MULTIPLE process invocations (e.g. a shell script wrapping several other scripts' state
+# writes) rather than a single function's lifetime. See
+# .claude/context/patterns/task-lock.md for the full contract: the mutex is NOT reentrant
+# (SCOPE_MUTEX_HELD is the sanctioned way for a callee to detect an outer holder and skip nested
+# acquire/release), staleness is holder-declared (the acquiring process's chosen stale_sec is
+# written into the mutex directory so every waiter honors the SAME window, not its own default),
+# and release is owner-token-verified (an unconditional rm -rf on release would be unsafe once
+# acquire and release are separate processes -- a stale-reclaimed holder's release must never
+# delete a successor's mutex).
 #
 # Lockfile layout (per task):
 #   specs/{NNN}_{SLUG}/.lock/            <- directory, created via `mkdir` (POSIX-atomic
@@ -54,6 +69,13 @@
 #     0 - created (fresh; caller treats this as a fresh start)
 #     1 - already exists (valid JSON found); caller resumes from the existing file
 #     2 - usage/write-error, or an orphaned claim persisted after one self-heal retry
+#   scope-acquire (specs/.scope-lock/ global mutex, exposed as a standalone CLI subcommand —
+#   see the top-of-file usage comment):
+#     0 - acquired; owner token printed on stdout
+#     2 - timed out waiting for the mutex (fail closed; current holder named on stderr)
+#   scope-release:
+#     0 - always (best-effort; a token mismatch or absent mutex is a loud WARNING on stderr,
+#         never a failure — release must never fail a caller's cleanup path)
 #
 # Same-session re-entry (CRITICAL): a session re-acquiring its own lock (e.g.
 # `/research 42` then `/plan 42` in one conversation) MUST NOT self-block. `acquire`
@@ -212,21 +234,43 @@ find_held_locks() {
 # CLOSED (non-zero) on timeout rather than ever failing open.
 SCOPE_MUTEX_STALE_SEC=10
 
+# acquire_scope_mutex [stale_sec]
+#
+# Staleness is holder-declared, not waiter-declared: the successful acquirer writes its own
+# tolerated window into $mutex_dir/stale_sec alongside claimed_at, and every waiter (including
+# waiters with a different default) reads THAT file when deciding whether to reclaim. This lets a
+# long-running critical section (e.g. scope-acquire called with a generous stale_sec) declare a
+# window all concurrent waiters honor, instead of a short-window waiter reclaiming the mutex out
+# from under a still-live, longer-running holder. When called with no argument (the pre-existing
+# cmd_acquire call site), stale_sec defaults to SCOPE_MUTEX_STALE_SEC (10) -- behavior identical
+# to before this file's stale_sec file existed.
 acquire_scope_mutex() {
+  local requested_stale="${1:-}" stale_sec
+  if [[ "$requested_stale" =~ ^[0-9]+$ ]]; then
+    stale_sec="$requested_stale"
+  else
+    stale_sec="$SCOPE_MUTEX_STALE_SEC"
+  fi
+
   local mutex_dir="$PROJECT_ROOT/specs/.scope-lock"
-  local waited_ms=0 claimed_at now age
+  local waited_ms=0 claimed_at now age holder_stale_sec
   while true; do
     if mkdir "$mutex_dir" 2>/dev/null; then
       now_epoch > "$mutex_dir/claimed_at" 2>/dev/null || true
+      echo "$stale_sec" > "$mutex_dir/stale_sec" 2>/dev/null || true
       return 0
     fi
 
     claimed_at=$(cat "$mutex_dir/claimed_at" 2>/dev/null)
     now=$(now_epoch)
+    holder_stale_sec=$(cat "$mutex_dir/stale_sec" 2>/dev/null)
+    if ! [[ "$holder_stale_sec" =~ ^[0-9]+$ ]]; then
+      holder_stale_sec="$SCOPE_MUTEX_STALE_SEC"
+    fi
     if [ -n "$claimed_at" ]; then
       age=$(( now - claimed_at ))
-      if [ "$age" -gt "$SCOPE_MUTEX_STALE_SEC" ]; then
-        echo "WARN: reclaiming stale specs/.scope-lock mutex (age ${age}s > ${SCOPE_MUTEX_STALE_SEC}s)." >&2
+      if [ "$age" -gt "$holder_stale_sec" ]; then
+        echo "WARN: reclaiming stale specs/.scope-lock mutex (age ${age}s > holder-declared ${holder_stale_sec}s)." >&2
         rm -rf "$mutex_dir" 2>/dev/null || true
         continue
       fi
@@ -428,6 +472,75 @@ cmd_check() {
 }
 
 # =====================================================================
+# scope-acquire <session_id> [stale_sec]
+# =====================================================================
+# Standalone CLI exposure of acquire_scope_mutex for cross-process critical sections (see the
+# top-of-file usage comment and .claude/context/patterns/task-lock.md for the full contract).
+# Deliberately does NOT install a `trap ... RETURN` -- unlike cmd_acquire's task-scoped lock
+# (which lives and dies within one function call), this mutex is meant to outlive this process:
+# the caller holds the printed token across other commands and releases it explicitly (or via its
+# own EXIT trap) with a separate `scope-release` invocation.
+cmd_scope_acquire() {
+  local session_id="$1" stale_sec="${2:-}"
+  local mutex_dir="$PROJECT_ROOT/specs/.scope-lock"
+
+  if ! acquire_scope_mutex "$stale_sec"; then
+    local holder_session holder_pid
+    holder_session=$(jq -r '.session_id // empty' "$mutex_dir/owner" 2>/dev/null)
+    holder_pid=$(jq -r '.pid // empty' "$mutex_dir/owner" 2>/dev/null)
+    echo "ERROR: timed out waiting for specs/.scope-lock mutex (session=$session_id); current holder: session=${holder_session:-unknown} pid=${holder_pid:-unknown}." >&2
+    return 2
+  fi
+
+  local pid claimed_epoch token
+  pid=$$
+  claimed_epoch=$(now_epoch)
+  token="${session_id}:${pid}:${claimed_epoch}"
+
+  jq -n \
+    --arg session_id "$session_id" \
+    --argjson pid "$pid" \
+    --argjson claimed_epoch "$claimed_epoch" \
+    --arg token "$token" \
+    '{session_id: $session_id, pid: $pid, claimed_epoch: $claimed_epoch, token: $token}' \
+    > "$mutex_dir/owner" 2>/dev/null
+
+  echo "$token"
+  return 0
+}
+
+# =====================================================================
+# scope-release <token>
+# =====================================================================
+# Owner-token-verified release: because acquire and release are separate processes here (unlike
+# acquire_scope_mutex's task 809 in-function usage), an unconditional rm -rf would be unsafe if
+# this holder was stale-reclaimed and a successor already re-acquired -- this release would then
+# delete the SUCCESSOR's mutex. A token mismatch is therefore a loud, non-silent WARNING (it means
+# the critical section overran its declared stale_sec and a concurrent writer may have
+# interleaved), never a forced removal. Release is best-effort and always exits 0 -- it must never
+# fail a caller's cleanup path.
+cmd_scope_release() {
+  local token="$1"
+  local mutex_dir="$PROJECT_ROOT/specs/.scope-lock"
+
+  if [ ! -d "$mutex_dir" ]; then
+    echo "WARN: scope-release (token=$token) found no specs/.scope-lock mutex -- already released or never held." >&2
+    return 0
+  fi
+
+  local owner_token
+  owner_token=$(jq -r '.token // empty' "$mutex_dir/owner" 2>/dev/null)
+
+  if [ "$owner_token" != "$token" ]; then
+    echo "WARN: scope-release token mismatch (given=$token current-holder=${owner_token:-unknown}); NOT releasing. This means the critical section overran its declared staleness window and a concurrent writer may have reclaimed the mutex -- investigate rather than ignore." >&2
+    return 0
+  fi
+
+  release_scope_mutex
+  return 0
+}
+
+# =====================================================================
 # init-marker <file_path>   (task 808)
 # =====================================================================
 # Generic atomic-on-creation primitive for marker/state files that were using a
@@ -539,8 +652,24 @@ case "$SUBCMD" in
     cmd_init_marker "$@"
     exit $?
     ;;
+  scope-acquire)
+    if [ "$#" -lt 1 ]; then
+      echo "Usage: $0 scope-acquire <session_id> [stale_sec]" >&2
+      exit 2
+    fi
+    cmd_scope_acquire "$@"
+    exit $?
+    ;;
+  scope-release)
+    if [ "$#" -lt 1 ]; then
+      echo "Usage: $0 scope-release <token>" >&2
+      exit 2
+    fi
+    cmd_scope_release "$@"
+    exit $?
+    ;;
   *)
-    echo "Usage: $0 {acquire|heartbeat|release|check|init-marker} ..." >&2
+    echo "Usage: $0 {acquire|heartbeat|release|check|init-marker|scope-acquire|scope-release} ..." >&2
     exit 2
     ;;
 esac

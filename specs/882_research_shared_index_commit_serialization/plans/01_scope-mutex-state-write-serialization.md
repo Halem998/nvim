@@ -202,29 +202,33 @@ what staleness window Stages 7-8a actually require — with measurement rather t
 
 ---
 
-### Phase 2: Expose scope-acquire / scope-release on task-lock.sh [NOT STARTED]
+### Phase 2: Expose scope-acquire / scope-release on task-lock.sh [COMPLETED]
 
 **Goal**: Add a CLI surface to the existing scope mutex — reuse only, no new script — with
 holder-declared staleness and ownership-verified release.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/task-lock.sh`, extend `acquire_scope_mutex` to accept
-      an optional stale-window argument (default: existing `SCOPE_MUTEX_STALE_SEC`) and write it to
-      `$mutex_dir/stale_sec` immediately after the successful `mkdir`, alongside `claimed_at`.
-- [ ] Change the waiter branch to read `$mutex_dir/stale_sec` and compare the mutex's age against
-      *that* value, falling back to `SCOPE_MUTEX_STALE_SEC` when the file is absent or unparseable.
-      Verify `cmd_acquire`'s behavior is unchanged (it passes no argument -> writes 10 -> waiters
-      read 10).
-- [ ] Add `cmd_scope_acquire <session_id> [stale_sec]`: calls `acquire_scope_mutex "$stale_sec"`,
-      writes an owner token (`session_id`, pid, epoch) to `$mutex_dir/owner`, echoes the token to
-      stdout, exits 0. On timeout, exit 2 with a diagnostic naming the current holder from
-      `$mutex_dir/owner`. **Must not** install a `RETURN` trap — the mutex outlives this process.
-- [ ] Add `cmd_scope_release <token>`: compares against `$mutex_dir/owner`; on match, releases and
-      exits 0; on mismatch or missing mutex, emits a loud WARNING naming both tokens and exits 0
-      (release is best-effort and must never fail a caller).
-- [ ] Register `scope-acquire` and `scope-release` in the dispatch `case` block and add them to the
-      usage string.
-- [ ] Keep every comment free of task-number citations (this file lives outside `specs/**`).
+- [x] **Task 2.1**: In `agent-system/extensions/core/scripts/task-lock.sh`, extend
+      `acquire_scope_mutex` to accept an optional stale-window argument (default: existing
+      `SCOPE_MUTEX_STALE_SEC`) and write it to `$mutex_dir/stale_sec` immediately after the
+      successful `mkdir`, alongside `claimed_at`. *(completed)*
+- [x] **Task 2.2**: Change the waiter branch to read `$mutex_dir/stale_sec` and compare the mutex's
+      age against *that* value, falling back to `SCOPE_MUTEX_STALE_SEC` when the file is absent or
+      unparseable. Verify `cmd_acquire`'s behavior is unchanged (it passes no argument -> writes 10
+      -> waiters read 10). *(completed: verified via the acquire/heartbeat/release/check regression
+      test against a disposable scratch task dir — behavior byte-identical to pre-change.)*
+- [x] **Task 2.3**: Add `cmd_scope_acquire <session_id> [stale_sec]`: calls
+      `acquire_scope_mutex "$stale_sec"`, writes an owner token (`session_id`, pid, epoch) to
+      `$mutex_dir/owner`, echoes the token to stdout, exits 0. On timeout, exit 2 with a diagnostic
+      naming the current holder from `$mutex_dir/owner`. No `RETURN` trap installed. *(completed)*
+- [x] **Task 2.4**: Add `cmd_scope_release <token>`: compares against `$mutex_dir/owner`; on match,
+      releases and exits 0; on mismatch or missing mutex, emits a loud WARNING naming both tokens
+      and exits 0. *(completed)*
+- [x] **Task 2.5**: Register `scope-acquire` and `scope-release` in the dispatch `case` block and add
+      them to the usage string. *(completed: also extended the header doc's usage block and exit-code
+      table.)*
+- [x] **Task 2.6**: Keep every comment free of task-number citations (this file lives outside
+      `specs/**`). *(completed: verified via `grep -nE '\btasks? [0-9]+'` — see Testing & Validation.)*
 
 **Timing**: 1.25 hours
 
