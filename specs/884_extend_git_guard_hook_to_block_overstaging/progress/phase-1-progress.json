@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Extend the Hook with Over-Staging Detectors",
+  "started_at": "2026-07-15T23:20:00Z",
+  "last_updated": "2026-07-15T23:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Header comment documenting over-staging detectors and no-exemption rationale", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 2, "description": "Placement: independent block before MATCHED chain, own exit 2", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 3, "description": "Quote-stripping helper before flag-scanning", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 4, "description": "git add detector (-A/--all, bare dot pathspec)", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 5, "description": "git commit detector (-a/-am/--all)", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 6, "description": "Remediation messages pointing at scoped staging, never git-snapshot.sh", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

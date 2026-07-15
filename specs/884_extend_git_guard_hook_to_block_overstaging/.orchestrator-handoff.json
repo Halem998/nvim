@@ -1,0 +1,27 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Created 4-phase plan (2.5h) extending guard-destructive-git.sh with three over-staging detectors plus two prose fixes. Confirmed research's core verdicts empirically: no git-snapshot.sh exemption needed, no settings.json change (hook already registered). Found two issues research's manual regex trace missed: a real quoted-commit-message false positive, and an implicit design fork on snapshot-marker interaction.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/884_extend_git_guard_hook_to_block_overstaging/plans/01_extend-git-guard-overstaging.md"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "implement",
+  "files_modified": [],
+  "decisions_made": [
+    "No settings.json change: hook already registered as PreToolUse/Bash in agent-system/extensions/core/root-files/settings.json:52 (not templates/ as the delegation context suggested); extending it needs no re-registration.",
+    "New detectors must block INDEPENDENTLY (own exit 2, own remediation) placed after the clean-tree gate but before the MATCHED chain, so a fresh snapshot marker never exempts over-staging. Naive append to the MATCHED chain would wrongly exempt it and emit wrong remediation text.",
+    "Quote-stripping required before flag-scanning: 'git commit -m \"fix -a regression\"' false-positives without it (empirically confirmed, 13/13 pass with it).",
+    "Use --all([[:space:]]|$) over research's --all\\b to match the file's existing boundary idiom.",
+    "skill-project-overview SKILL.md:435 justified as broken-on-its-own-terms (/.claude/ is gitignored, so 'git add .claude/' stages nothing and warns), NOT as hook-blocked - it is not one of the three blocked forms.",
+    "Durable test harness kept out of scope per research; Phase 3 verifies against the real hook without adding a permanent file."
+  ],
+  "dead_ends": [
+    "Do not build a marker/allowlist/caller-identification exemption for git-snapshot.sh: verified both segment-extraction patterns return no match against the literal 'bash .claude/scripts/git-snapshot.sh --branch 884', so the hook structurally cannot observe the internal git add -A."
+  ],
+  "plan_markers_verified": true
+}

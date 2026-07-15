@@ -25,6 +25,26 @@
 #     .claude/scripts/git-snapshot.sh); the marker is consumed (deleted) on use so it
 #     only authorizes the ONE destructive command it was taken for.
 #   - non-Bash tool calls / empty command (parse failure) -- never block.
+#
+# Over-staging patterns (blocked independently of the snapshot-marker exemption):
+#   - git add -A / git add --all         (stages the entire working tree)
+#   - git add .                          (bare dot pathspec; stages the entire cwd tree)
+#   - git commit -a / -am / --all        (implicitly stages all tracked-file modifications)
+#
+# This guard has NO exemption mechanism for over-staging -- unlike the destructive-command
+# chain above, a fresh snapshot marker does NOT and must NEVER exempt these three forms.
+# A snapshot makes a *destructive* command recoverable (data-loss problem); over-staging is
+# a scope-pollution problem that a snapshot does not make acceptable. See
+# .claude/context/standards/git-staging-scope.md for the scoped-staging contract these
+# patterns enforce.
+#
+# git-snapshot.sh's own sanctioned `git add -A` (scripts/git-snapshot.sh, --branch mode
+# only, against a throwaway wip-snapshot branch) needs no exemption here: this hook only
+# ever observes the literal top-level tool_input.command string of the Bash call actually
+# invoked, e.g. `bash .claude/scripts/git-snapshot.sh --branch 884`. The `git add -A` that
+# runs as a subprocess *inside* that script is structurally invisible at this observation
+# boundary -- it never appears in tool_input.command. Any future legitimate need to bypass
+# these detectors must be wrapped in a script the same way, never special-cased in this file.
 
 set -uo pipefail
 
@@ -42,6 +62,55 @@ fi
 # and git clean -fd (git-safety.md), since the safety commit makes the tree clean first.
 if [ -z "$(git status --porcelain 2>/dev/null)" ]; then
   exit 0
+fi
+
+# --- Over-staging detectors ---
+# Independent of the destructive-command MATCHED chain below: these block directly via their
+# own exit 2 and never set MATCHED/REASON, so a fresh snapshot marker can NEVER exempt
+# over-staging (see header comment for the data-loss vs. scope-pollution rationale). Quoted
+# spans are stripped before flag-scanning so free-text commit messages (e.g. -m "fix -a bug")
+# never false-positive.
+OVERSTAGE_REASON=""
+
+# git add -A / --all / bare "." pathspec
+ADD_SEGMENTS=$(echo "$COMMAND" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+add[^;&|]*')
+if [ -n "$ADD_SEGMENTS" ]; then
+  while IFS= read -r seg; do
+    [ -z "$seg" ] && continue
+    seg_scan=$(echo "$seg" | sed -e 's/"[^"]*"/""/g' -e "s/'[^']*'/''/g")
+    if echo "$seg_scan" | grep -qE -- '(^|[^-])-[a-zA-Z]*A[a-zA-Z]*([[:space:]]|$)|--all([[:space:]]|$)'; then
+      OVERSTAGE_REASON="git add -A (or --all) stages the entire working tree; stage explicit task-scoped paths instead"
+      break
+    fi
+    if echo "$seg_scan" | grep -qE -- '(^|[[:space:]])\.([[:space:]]|$)'; then
+      OVERSTAGE_REASON="git add . stages the entire current directory tree; stage explicit task-scoped paths instead"
+      break
+    fi
+  done <<< "$ADD_SEGMENTS"
+fi
+
+# git commit -a / -am / --all (bare -a is as hazardous as -am: both implicitly stage all
+# tracked modifications, per git-staging-scope.md)
+if [ -z "$OVERSTAGE_REASON" ]; then
+  COMMIT_SEGMENTS=$(echo "$COMMAND" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+commit[^;&|]*')
+  if [ -n "$COMMIT_SEGMENTS" ]; then
+    while IFS= read -r seg; do
+      [ -z "$seg" ] && continue
+      seg_scan=$(echo "$seg" | sed -e 's/"[^"]*"/""/g' -e "s/'[^']*'/''/g")
+      if echo "$seg_scan" | grep -qE -- '(^|[^-])-[a-zA-Z]*a[a-zA-Z]*([[:space:]]|$)|--all([[:space:]]|$)'; then
+        OVERSTAGE_REASON="git commit -a/-am (or --all) implicitly stages all tracked-file modifications; stage explicit paths and commit without -a"
+        break
+      fi
+    done <<< "$COMMIT_SEGMENTS"
+  fi
+fi
+
+if [ -n "$OVERSTAGE_REASON" ]; then
+  echo "BLOCKED: $OVERSTAGE_REASON" >&2
+  echo "Stage explicit, task-scoped paths per .claude/context/standards/git-staging-scope.md" >&2
+  echo "(this guard has no snapshot-marker exemption for over-staging -- a snapshot does not" >&2
+  echo "make scope pollution acceptable)." >&2
+  exit 2
 fi
 
 MATCHED=0
