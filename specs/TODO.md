@@ -11,7 +11,7 @@ next_project_number: 888
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,879,880,882,883,884,885 | -- | agent-system, commit-scoping-concurrency, status-marker-lifecycle |
+| 1 | 873,880,882,883,884,885 | -- | agent-system, commit-scoping-concurrency |
 | 2 | 881,887 | 873,880 | agent-system, commit-scoping-concurrency |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -29,10 +29,6 @@ next_project_number: 888
 882 [NOT STARTED] — RESEARCH-FIRST BY EXPLICIT USER DECISION. This task must NOT lock
 883 [NOT STARTED] — The staging contract written to avoid committing unrelated state 
 884 [NOT STARTED] — The staging prohibition is prose-only. Three documents forbid `gi
-
-### Status Marker Lifecycle
-
-879 [NOT STARTED] — A purpose-built self-healing script for EXACTLY the reported fail
 
 ## Tasks
 
@@ -286,10 +282,13 @@ DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside s
 ---
 
 ### 879. Wire reconcile-task-status.sh, which was built for this failure and never called
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: status-marker-lifecycle
 - **Dependencies**: Task 876, Task 878
+- **Research**: [879_wire_reconcile_task_status_safety_net/reports/01_wire-reconcile-safety-net.md]
+- **Plan**: [879_wire_reconcile_task_status_safety_net/plans/01_wire-reconcile-safety-net.md]
+- **Summary**: [879_wire_reconcile_task_status_safety_net/summaries/01_wire-reconcile-safety-net-summary.md]
 
 **Description**: A purpose-built self-healing script for EXACTLY the reported failure mode already exists and has zero callers. Wiring it is the durable safety net for when the preflight/phase-marker fixes are bypassed by some future path.
 

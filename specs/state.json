@@ -806,7 +806,7 @@
     {
       "project_number": 879,
       "project_name": "wire_reconcile_task_status_safety_net",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "status-marker-lifecycle",
       "title": "Wire reconcile-task-status.sh, which was built for this failure and never called",
@@ -820,7 +820,26 @@
         ".claude/skills/skill-orchestrate/SKILL.md",
         ".claude/skills/skill-todo/SKILL.md"
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/879_wire_reconcile_task_status_safety_net/reports/01_wire-reconcile-safety-net.md",
+          "type": "report",
+          "summary": "Trigger-point evaluation; canonical path corrections; lock-leak and divergence-detector findings"
+        },
+        {
+          "path": "specs/879_wire_reconcile_task_status_safety_net/plans/01_wire-reconcile-safety-net.md",
+          "type": "plan",
+          "summary": "Five-phase plan: three callers with per-trigger visibility contracts"
+        },
+        {
+          "path": "specs/879_wire_reconcile_task_status_safety_net/summaries/01_wire-reconcile-safety-net-summary.md",
+          "type": "summary",
+          "summary": "Five phases: reconcile-task-status.sh wired to three callers with visibility contracts"
+        }
+      ],
+      "last_updated": "2026-07-15T22:38:37Z",
+      "session_id": "sess_1784151328_c3716f_879",
+      "completion_summary": "Gave reconcile-task-status.sh its first callers (it was deployed with zero). Three triggers with per-trigger visibility contracts: /task --sync (live sweep, primary), /orchestrate entry (live, once per invocation, both single- and multi-task, never per-cycle), and skill-todo (dry-run-then-confirm, never silent auto-repair at archive time). Added a handoff-aware promotion guard so automatic reconciliation cannot mask a blocked outcome, plus an optional report-only plan-vs-state.json divergence check (previously absent system-wide). Also fixed a pre-existing find_latest_artifact() empty-directory crash. Canonical agent-system/ tree and .claude/ mirror verified identical."
     },
     {
       "project_number": 880,
