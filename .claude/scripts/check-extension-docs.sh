@@ -19,6 +19,12 @@
 #     rules are skipped, not failed)
 #   - README.md older than manifest.json (potential drift)
 #   - commands listed in manifest but not mentioned in README.md
+#   - deployed files under .claude/{agents,commands,context,scripts}/ that trace to ZERO
+#     manifest.provides.<category> declaration in any extension ("every deployed file has a
+#     source" gate; project-wide, not per-extension; severity controlled by ORPHAN_GATE_MODE)
+#   - broken deployed symlinks under .claude/{agents,commands,skills}/ (install-extension.sh's
+#     parallel symlink-deploy mechanism; distinct from the orphan checks above -- a dangling
+#     symlink DOES have a declared source, its target path is simply wrong)
 #
 # Exit codes:
 #   0 - all extensions pass
@@ -564,6 +570,166 @@ check_dangling_contract_references() {
   # extension is loaded.
 }
 
+# ---------------------------------------------------------------------------
+# Rules J/K/L/M/N: "Every deployed file has a source" gate.
+#
+# Distinct direction from check_manifest_entries (declared-but-missing-on-source, per-extension)
+# and check_undeclared_skills/check_undeclared_rules (Rules A/H, present-on-source-but-undeclared,
+# per-extension). This block is project-wide: for each provides category not already covered
+# end-to-end by a content-drift check (rules is already fully covered by
+# check_deployed_rule_drift + check_undeclared_rules), find every deployed file under
+# .claude/<category>/ that traces to ZERO manifest.provides.<category> declaration in ANY
+# extension. A deployed-only orphan like this vanishes on a clean rebuild from source, since
+# nothing in any extension's source tree would ever recreate it.
+#
+# ORPHAN_GATE_MODE controls severity for this whole block (orphan checks J/K/L/M AND the broken-
+# symlink check N): "advisory" (info-only, does not increment FAILURES) during the remediation-
+# verification window (this task's Phase 5), "hard" (fail, increments FAILURES) once promoted
+# (this task's Phase 6). Flipping this one default is the entire Phase 6 promotion edit.
+ORPHAN_GATE_MODE="${ORPHAN_GATE_MODE:-advisory}"
+
+orphan_report() {
+  local msg="$1"
+  if [[ "$ORPHAN_GATE_MODE" == "hard" ]]; then
+    fail "$msg"
+  else
+    info "ADVISORY (not yet blocking): $msg"
+  fi
+}
+
+# Enumeration method: git ls-files (not find), matching the research audit method -- naturally
+# excludes gitignored runtime artifacts (literature-pyenv/venv/, __pycache__/) without extra
+# path filtering, since they were never tracked.
+_git_deployed_files() {
+  local category="$1"
+  git -C "$REPO_ROOT" ls-files ".claude/$category" 2>/dev/null
+}
+
+# Rules J/K/M: flat-category orphan check (agents, commands, scripts).
+#
+# "Flat" here means one directory level of copy_simple_files()/copy_scripts() semantics -- but
+# for scripts, an individual provides.scripts entry may itself contain a "/" (e.g.
+# "lint/lint-postflight-boundary.sh", "tests/generate-test-fixtures.py"), so entries are matched
+# by their full relative path under the category root, not by basename alone.
+check_flat_category_orphans() {
+  local category="$1"
+  local rule_label="$2"
+
+  # Build the declared set: union of every extension's provides.<category> entries (regardless
+  # of whether that extension's own source file exists -- a missing source is already reported
+  # by check_manifest_entries; this check only asks "does ANY manifest acknowledge this deployed
+  # name").
+  local declared=""
+  local m
+  for m in "$EXT_DIR"/*/manifest.json; do
+    [[ -f "$m" ]] || continue
+    declared+=$'\n'"$(jq -r --arg c "$category" '.provides[$c][]? // empty' "$m" 2>/dev/null)"
+  done
+
+  local rel f full
+  while IFS= read -r rel; do
+    [[ -z "$rel" ]] && continue
+    full="$REPO_ROOT/$rel"
+    # Symlinks are governed by check_broken_deployed_symlinks (Rule N), not this content-source
+    # check -- explicit [[ -L ]] skip so a dangling symlink never reaches cmp/orphan logic here
+    # and is never silently mistaken for an ordinary unsourced regular file either.
+    [[ -L "$full" ]] && continue
+    [[ -f "$full" ]] || continue
+    f="${rel#.claude/$category/}"
+    if ! grep -qxF "$f" <<< "$declared"; then
+      orphan_report "$rule_label: deployed $category/$f traces to no provides.$category entry in any extension manifest"
+    fi
+  done < <(_git_deployed_files "$category")
+}
+
+# Rule L: context orphan check (recursive).
+#
+# provides.context entries are either a bare filename at context root (matches itself) or a
+# directory name (deployed recursively, preserving substructure, via copy_context_dirs()). The
+# declared set must therefore be expanded to individual FILES, not just top-level entry names,
+# to correctly diff against a flat git-ls-files enumeration of .claude/context/. Multiple
+# extensions may legitimately declare the same directory-name entry (e.g. both core and
+# literature declare "guides") -- each extension's own files are unioned in, not overwritten.
+#
+# Excludes any file produced by a merge_targets entry whose target lives under .claude/context/
+# (e.g. context/index.json, built from index-entries.json fragments across extensions) -- these
+# are not produced by provides.context copy-deploy at all and must never be flagged.
+check_context_orphans() {
+  local declared_files=""
+  local m ext_path entries e src rel_prefix
+
+  # Build merge_targets exclusion set (paths relative to .claude/context/).
+  local excludes=""
+  for m in "$EXT_DIR"/*/manifest.json; do
+    [[ -f "$m" ]] || continue
+    while IFS= read -r tgt; do
+      [[ -z "$tgt" ]] && continue
+      case "$tgt" in
+        .claude/context/*)
+          excludes+=$'\n'"${tgt#.claude/context/}"
+          ;;
+      esac
+    done < <(jq -r '.merge_targets // {} | to_entries[]? | .value.target // empty' "$m" 2>/dev/null)
+  done
+
+  # Build the declared file-set across every extension's own context/ source tree.
+  for m in "$EXT_DIR"/*/manifest.json; do
+    [[ -f "$m" ]] || continue
+    ext_path="$(dirname "$m")"
+    entries=$(jq -r '.provides.context[]? // empty' "$m" 2>/dev/null)
+    for e in $entries; do
+      src="$ext_path/context/$e"
+      if [[ -d "$src" ]]; then
+        while IFS= read -r f; do
+          rel_prefix="${f#"$ext_path"/context/}"
+          declared_files+=$'\n'"$rel_prefix"
+        done < <(find "$src" -type f 2>/dev/null)
+      elif [[ -f "$src" ]]; then
+        declared_files+=$'\n'"$e"
+      fi
+      # If neither exists on disk, check_manifest_entries already reports it; nothing to add here.
+    done
+  done
+
+  local rel full f
+  while IFS= read -r rel; do
+    [[ -z "$rel" ]] && continue
+    full="$REPO_ROOT/$rel"
+    [[ -L "$full" ]] && continue
+    [[ -f "$full" ]] || continue
+    f="${rel#.claude/context/}"
+    if grep -qxF "$f" <<< "$excludes"; then
+      continue
+    fi
+    if ! grep -qxF "$f" <<< "$declared_files"; then
+      orphan_report "Rule L: deployed context/$f traces to no provides.context entry in any extension manifest"
+    fi
+  done < <(_git_deployed_files "context")
+}
+
+# Rule N: broken deployed symlink health check (distinct from the has-a-source orphan checks
+# above). install-extension.sh is a separate, parallel deploy mechanism from provides.*
+# copy-deploy: it creates real symlinks under .claude/{agents,commands,skills}/ pointing back
+# into an extension's source tree. A dangling one of these technically DOES have a
+# manifest-declared source (the extension does declare the agent/command/skill) -- the symlink's
+# *target path* is simply wrong, most often because install-extension.sh's hardcoded relative
+# path math no longer matches the current depth of the source-store root relative to
+# .claude/{agents,commands,skills}/ (the exact regression repaired in this task's Phase 1).
+# Surfaced as its own check with its own message so a future reader is pointed at
+# install-extension.sh's relative-path math, not a missing extension source.
+check_broken_deployed_symlinks() {
+  local dir f
+  for dir in "$REPO_ROOT/.claude/agents" "$REPO_ROOT/.claude/commands" "$REPO_ROOT/.claude/skills"; do
+    [[ -d "$dir" ]] || continue
+    for f in "$dir"/*; do
+      [[ -L "$f" ]] || continue
+      if [[ ! -e "$f" ]]; then
+        orphan_report "Rule N: broken deployed symlink ${f#"$REPO_ROOT"/} -- target does not resolve; likely install-extension.sh relative-path drift (see its rel_path construction), not a missing extension source"
+      fi
+    done
+  done
+}
+
 echo "Checking .claude/extensions/ documentation..."
 echo
 
@@ -608,6 +774,11 @@ CURRENT_EXT="project-wide"
 EXTENSION_STATUS["project-wide"]="PASS"
 echo "[project-wide]"
 check_dangling_contract_references
+check_flat_category_orphans "agents" "Rule J"
+check_flat_category_orphans "commands" "Rule K"
+check_context_orphans
+check_flat_category_orphans "scripts" "Rule M"
+check_broken_deployed_symlinks
 if [[ "${EXTENSION_STATUS[project-wide]}" == "PASS" ]]; then
   info "OK"
 fi

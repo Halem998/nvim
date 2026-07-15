@@ -1,0 +1,19 @@
+{
+  "phase": 5,
+  "phase_name": "Extend check-extension-docs.sh with orphan + symlink checks (advisory)",
+  "started_at": "2026-07-15T01:00:00Z",
+  "last_updated": "2026-07-15T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Implement per-category orphan checks (Rules J/K/L/M)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 2, "description": "Exclude merge_targets-produced context files", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 3, "description": "Implement check_broken_deployed_symlinks (Rule N)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 4, "description": "Advisory-level severity via ORPHAN_GATE_MODE toggle", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 5, "description": "Dual-write byte-identical to deployed copy", "status": "done", "files_touched": [".claude/scripts/check-extension-docs.sh"]},
+    {"id": 6, "description": "Run on remediated tree, confirm 0 orphans / 0 broken symlinks / exit unchanged", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Scratchpad destructive testing of comparison logic", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

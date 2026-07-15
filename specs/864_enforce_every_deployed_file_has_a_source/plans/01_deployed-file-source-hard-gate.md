@@ -294,38 +294,53 @@ question with a content diff.
 
 ---
 
-### Phase 5: Extend check-extension-docs.sh with orphan + symlink checks (advisory) [IN PROGRESS]
+### Phase 5: Extend check-extension-docs.sh with orphan + symlink checks (advisory) [COMPLETED]
 
 **Goal**: Add one deployed-orphan check per category (agents, commands, context, scripts) plus a
 distinct broken-deployed-symlink check, landing byte-identical in both copies, initially at
 **info/advisory** level, and confirm the checks report zero issues on the now-remediated tree.
 
 **Tasks**:
-- [ ] Add per-category orphan checks that, for each category, build the set of
+- [x] Add per-category orphan checks that, for each category, build the set of
       `git ls-files .claude/<category>` (regular files only) and diff against the union of every
       extension's `provides.<category>` entries resolved against every extension's own source tree.
       Honor the per-category divergences from research: `agents` uses the `agents_subdir` override
       (Claude Code `"agents"`); `context` compares recursively (directory entries expand to their
       file trees; bare-filename entries match themselves); `scripts` entries may contain `/`
-      (source_dir/scripts/<entry> → target_dir/scripts/<entry>).
-- [ ] Exclude from the context check any `merge_targets`-produced file: `context/index.json` and
+      (source_dir/scripts/<entry> → target_dir/scripts/<entry>). *(completed: implemented as
+      `check_flat_category_orphans` (Rules J/K/M, shared for agents/commands/scripts) and
+      `check_context_orphans` (Rule L, recursive); this repo only deploys the Claude Code
+      `agents_subdir` value so no override parameter was needed)*
+- [x] Exclude from the context check any `merge_targets`-produced file: `context/index.json` and
       any other merge-target output — do not flag them (they are not produced by `provides.context`).
-- [ ] Add a distinct `check_broken_deployed_symlinks` function: for every symlink under
+      *(completed: `check_context_orphans` builds a merge_targets exclusion set from every
+      manifest's `merge_targets.*.target` entries under `.claude/context/`)*
+- [x] Add a distinct `check_broken_deployed_symlinks` function: for every symlink under
       `.claude/{agents,commands,skills}/`, test `[[ -e "$f" ]]`; report each broken one with a
       message that names `install-extension.sh`'s relative-path math as the likely cause (so a
       future reader does not mistake it for a missing manifest source). Route symlinks to this check
       via an explicit `[[ -L ]]` branch so the orphan checks never `cmp` a dangling symlink.
-- [ ] Keep the new checks at info/advisory level for this phase (they must not yet contribute to
-      the blocking `FAILURES` count).
-- [ ] Land the edits byte-identical in both `agent-system/extensions/core/scripts/check-extension-docs.sh`
+      *(completed as Rule N; verified in a scratchpad fixture that a broken commands/ symlink is
+      routed only to Rule N, never double-reported by the Rule K orphan check)*
+- [x] Keep the new checks at info/advisory level for this phase (they must not yet contribute to
+      the blocking `FAILURES` count). *(completed: single `ORPHAN_GATE_MODE` variable, default
+      "advisory", routes all 5 new checks through a shared `orphan_report()` helper that calls
+      `info` instead of `fail` unless the mode is "hard")*
+- [x] Land the edits byte-identical in both `agent-system/extensions/core/scripts/check-extension-docs.sh`
       (source, edit first) and `.claude/scripts/check-extension-docs.sh` (deployed). Confirm with
       `diff` (empty output). The script lints itself, so the new source files and manifest entries
-      added in Phases 2-4 must already satisfy `check_manifest_entries`.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and confirm the new checks report **zero**
+      added in Phases 2-4 must already satisfy `check_manifest_entries`. *(completed: diff empty)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and confirm the new checks report **zero**
       orphans and **zero** broken symlinks (proving Phases 1-4 are complete), and that the script's
-      overall exit code is unchanged (still exits per pre-existing FAILURES only).
-- [ ] Do any destructive testing of the comparison logic (e.g. simulating orphans/broken symlinks)
+      overall exit code is unchanged (still exits per pre-existing FAILURES only). *(completed:
+      exit 0, project-wide OK, no ADVISORY lines emitted)*
+- [x] Do any destructive testing of the comparison logic (e.g. simulating orphans/broken symlinks)
       in the scratchpad against fake project directories, never against the real `.claude/` tree.
+      *(completed: two scratchpad fixtures under /tmp/claude-*/scratchpad/, using
+      `REPO_ROOT`/`EXT_DIR` env overrides — confirmed orphan detection for commands/context,
+      correct non-flagging of sourced files and nested scripts/ paths, broken-symlink routing
+      exclusivity, and the `ORPHAN_GATE_MODE=hard` promotion toggle; both fixtures deleted after
+      verification)*
 
 **Timing**: 2 hours
 
