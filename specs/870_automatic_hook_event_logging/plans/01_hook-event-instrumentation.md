@@ -181,23 +181,23 @@ one event: `success` when status matches a success value, else `blocker`/`deviat
 
 ---
 
-### Phase 3: Create the PostToolUse events-logger hook [NOT STARTED]
+### Phase 3: Create the PostToolUse events-logger hook [COMPLETED]
 
 **Goal**: A new hook script that, on `Write` to `specs/*/.return-meta.json` or `specs/errors.json`,
 reads the just-written file and emits a corresponding event; cheap early-exit on any non-matching
 path; always echoes `{}`.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/hooks/events-log-artifact.sh`.
-- [ ] Parse `CLAUDE_TOOL_INPUT` for `.file_path`; early-exit `echo '{}'` immediately if it is neither
-      a `*/.return-meta.json` nor `specs/errors.json` path (no `jq`/lock work on the hot path).
-- [ ] On match: `jq empty "$file" 2>/dev/null || { echo '{}'; exit 0; }` guard, then extract
+- [x] Create `agent-system/extensions/core/hooks/events-log-artifact.sh`. *(completed)*
+- [x] Parse `CLAUDE_TOOL_INPUT` for `.file_path`; early-exit `echo '{}'` immediately if it is neither
+      a `*/.return-meta.json` nor `specs/errors.json` path (no `jq`/lock work on the hot path). *(completed)*
+- [x] On match: `jq empty "$file" 2>/dev/null || { echo '{}'; exit 0; }` guard, then extract
       `session_id`/`task`/`status` (return-meta) or `context.{session_id,task}`/`id`/`severity`
-      (errors.json).
-- [ ] Call `events-append.sh` with the appropriate `--event-type` (`artifact_write` vs
+      (errors.json). *(completed)*
+- [x] Call `events-append.sh` with the appropriate `--event-type` (`artifact_write` vs
       `error_logged`), `--category` (`milestone`/`success` for meta status; `blocker`/`deviation`
-      for an error entry), and `--error-ref` (the errors.json `id` when the write is to errors.json).
-- [ ] Wrap the append `>/dev/null 2>&1 || true`; end with `echo '{}'`. Never emit `"decision"`.
+      for an error entry), and `--error-ref` (the errors.json `id` when the write is to errors.json). *(completed)*
+- [x] Wrap the append `>/dev/null 2>&1 || true`; end with `echo '{}'`. Never emit `"decision"`. *(completed)*
 
 **Timing**: 1 hour
 
@@ -234,7 +234,7 @@ files (and message pattern-matching as fallback) and emits a lifecycle event; al
       only.
 - [ ] Document the accepted `SubagentStop` duplicate-event trade-off in a header comment; optionally
       gate emission on the same "final stop" condition `subagent-postflight.sh` uses.
-- [ ] Wrap the append `>/dev/null 2>&1 || true`; end with `echo '{}'`. Never emit `"decision"`.
+- [x] Wrap the append `>/dev/null 2>&1 || true`; end with `echo '{}'`. Never emit `"decision"`. *(completed)*
 
 **Timing**: 1 hour
 

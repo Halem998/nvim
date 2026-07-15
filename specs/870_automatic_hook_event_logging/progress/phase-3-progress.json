@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Create the PostToolUse events-logger hook",
+  "started_at": "2026-07-15T09:00:00Z",
+  "last_updated": "2026-07-15T09:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create events-log-artifact.sh with cheap path early-exit before any jq/lock work", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/events-log-artifact.sh"]},
+    {"id": 2, "description": "jq empty guard, extract fields for return-meta vs errors.json, call events-append.sh with correct event-type/category/error-ref", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/events-log-artifact.sh"]},
+    {"id": 3, "description": "bash -n verify; test matching return-meta write, non-matching path, and malformed/missing file", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
