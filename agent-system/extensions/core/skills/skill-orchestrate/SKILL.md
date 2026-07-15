@@ -200,7 +200,7 @@ Invoke the Agent tool:
 |-------|-------|
 | `subagent_type` | `$RESEARCH_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Research task $task_number: $DESCRIPTION" (append ". User focus: $focus_prompt" if non-empty) |
-| `context` | `{ task_number, task_type, session_id, orchestrator_mode: false, lit_flag }` |
+| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, lit_flag }` |
 
 After Agent tool returns: read handoff (Stage 5). Increment cycle_count.
 
@@ -229,7 +229,7 @@ Invoke the Agent tool:
 |-------|-------|
 | `subagent_type` | `"planner-agent"` |
 | `prompt` | "Create implementation plan for task $task_number" (append ". User focus: $focus_prompt" if non-empty) |
-| `context` | `{ task_number, task_type, session_id, research_artifacts: [research_artifact], orchestrator_mode: false, lit_flag }` |
+| `context` | `{ task_number, task_type, session_id, research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag }` |
 
 After Agent tool returns: read handoff. Increment cycle_count.
 
@@ -693,11 +693,11 @@ the wave-split check's defer-not-fail behavior in Stage MT-3 step 4.5) and log:
 **Dispatch all groups in ONE message**:
 
 For each task in `research_tasks`:
-- Invoke Agent tool: `subagent_type = research_agents[task_num]`, prompt = "Research task $task_num: $description", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: false, lit_flag }`
+- Invoke Agent tool: `subagent_type = research_agents[task_num]`, prompt = "Research task $task_num: $description", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, lit_flag }`
 
 For each task in `plan_tasks`:
 - Read `research_artifact` path from `state.json` artifacts (type=report)
-- Invoke Agent tool: `subagent_type = "planner-agent"`, prompt = "Create implementation plan for task $task_num", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", research_artifacts: [research_artifact], orchestrator_mode: false, lit_flag }`
+- Invoke Agent tool: `subagent_type = "planner-agent"`, prompt = "Create implementation plan for task $task_num", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag }`
 
 For each task in `implement_tasks`:
 - Read `plan_path` from `task_dir/plans/` (latest .md)
@@ -769,8 +769,8 @@ This ensures context grows by only ~450 tokens per cycle regardless of artifact 
 
 | Operation | `subagent_type` | Notes |
 |-----------|----------------|-------|
-| Research dispatch | `$RESEARCH_AGENT` (resolved by task type in Stage 1b) | Fresh context; `orchestrator_mode: false` |
-| Plan dispatch | `"planner-agent"` | Fresh context; `orchestrator_mode: false` |
+| Research dispatch | `$RESEARCH_AGENT` (resolved by task type in Stage 1b) | Fresh context; `orchestrator_mode: true` |
+| Plan dispatch | `"planner-agent"` | Fresh context; `orchestrator_mode: true` |
 | Implement dispatch | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) | Fresh context; `orchestrator_mode: true` |
 | Blocker research | `"fork"` | Inherits parent cache; fast blocker research |
 | Plan revision (blocker) | `"reviser-agent"` | Fresh context; `orchestrator_mode: false` |

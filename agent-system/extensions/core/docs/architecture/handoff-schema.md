@@ -8,6 +8,16 @@
 
 **See Also**: `architecture-spec.md` (Component 5), `orchestrate-state-machine.md`
 
+**Dual-Consumer Note**: `orchestrator_mode` has TWO independent consumers as of the
+sparse-literature-detection reconciliation (see `EXTENSION.md`'s "Sparse-Coverage Detection"
+section in the literature extension): (1) the handoff-write gate documented on this page
+("Skills MUST write `.orchestrator-handoff.json` when and ONLY when `orchestrator_mode: true`"),
+and (2) the literature Stage 4a autonomy gate in
+`context/patterns/lit-stage4a-flow.md` (`orchestrator_mode: true` suppresses `AskUserQuestion`
+and takes the deterministic `[lit:auto]` global-corpus fallback instead). A future edit to
+either consumer's semantics MUST re-check the other before landing -- fixing the autonomy gate
+must never silently regress the handoff-write gate, or vice versa.
+
 ---
 
 ## Two Distinct Handoff Types

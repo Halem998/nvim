@@ -36,7 +36,22 @@
 # See .claude/skills/skill-researcher/SKILL.md Stage 4a for the detection block.
 #
 # Environment:
-#   LITERATURE_DIR  Path to global Literature/ repo (default: ~/Projects/Literature)
+#   LITERATURE_DIR              Path to global Literature/ repo (default: ~/Projects/Literature)
+#   LITERATURE_SPARSE_THRESHOLD Minimum resolved segment/document count before coverage is
+#                                considered sparse (default: 3). Below this count (< threshold,
+#                                never <=), both modes emit a machine-readable
+#                                `<!-- lit-coverage ... sparse=true ... -->` marker line and a
+#                                loud `[SPARSE COVERAGE ...]` banner, in the same family as the
+#                                existing `[UNVERIFIED ...]` / `[DEGRADED RETRIEVAL ...]`
+#                                banners below -- never silent. See
+#                                literature-lit-flag-resolve.sh for the companion
+#                                SPARSE_PROMPT_NEEDED directive (sub-index-sparse checkpoint);
+#                                this script's marker/banner is the post-global-search checkpoint.
+#
+# Machine-readable coverage marker (both modes, emitted right after the header line):
+#   <!-- lit-coverage mode=repo|global seg_count=N sparse=true|false threshold=T -->
+# A caller (e.g. the shared Stage 4a block) can `grep` this line without scraping the
+# human-readable header to decide whether to offer a second, sparse-coverage prompt.
 
 set -euo pipefail
 
@@ -50,6 +65,7 @@ SUB_INDEX="$PROJECT_ROOT/specs/literature-index.json"
 GLOBAL_INDEX="$LIT_DIR/index.json"
 SEARCH_SCRIPT="$SCRIPT_DIR/literature-search.sh"
 GLOBAL_TOP_N_DEFAULT=8
+LITERATURE_SPARSE_THRESHOLD="${LITERATURE_SPARSE_THRESHOLD:-3}"
 
 # --- Argument parsing ---
 mode="repo"
@@ -272,6 +288,8 @@ ${entry}"
   fi
 
   header="## Available Literature (${#briefing_lines[@]} document(s))"
+  coverage_mode="repo"
+  coverage_count="${#briefing_lines[@]}"
 
 else
   # ============================================================
@@ -349,6 +367,8 @@ ${entry}"
   fi
 
   header="## Available Literature — Global Corpus Search Results for: \"${query}\" (${#briefing_lines[@]} segment(s))"
+  coverage_mode="global"
+  coverage_count="$seg_count"
 
   # --- Degraded-tier banner (task #833) ---
   # When results exist but the primary bm25 tier did not answer, prefix the segment list
@@ -383,6 +403,22 @@ HEADER
 
 echo "$header"
 echo ""
+
+# --- Machine-readable coverage marker + loud sparse banner (never silent) ---
+# coverage_mode/coverage_count are set in each mode's branch above (repo: resolved document
+# count; global: seg_count, the pre-top_n-slice total match count). sparse = count < threshold
+# (never <=; the boundary is exercised by the Testing & Validation fixtures).
+sparse="false"
+if [ "$coverage_count" -lt "$LITERATURE_SPARSE_THRESHOLD" ]; then
+  sparse="true"
+fi
+echo "<!-- lit-coverage mode=${coverage_mode} seg_count=${coverage_count} sparse=${sparse} threshold=${LITERATURE_SPARSE_THRESHOLD} -->"
+echo ""
+
+if [ "$sparse" = "true" ]; then
+  echo "[SPARSE COVERAGE - ${coverage_count} segment(s), threshold ${LITERATURE_SPARSE_THRESHOLD}] This briefing resolved fewer relevant segments than the configured sparsity threshold; consider searching online for additional sources (see the Stage 4a \"Search online to ingest\" option) or broadening the query."
+  echo ""
+fi
 
 if [ "${#briefing_lines[@]}" -eq 0 ]; then
   # Honest zero-result messaging (task #833): a genuine zero-result (query_error null,

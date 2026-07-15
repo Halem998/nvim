@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Surface count + sparse signal + threshold in literature-briefing.sh",
+  "started_at": "2026-07-15T00:00:00Z",
+  "last_updated": "2026-07-15T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add LITERATURE_SPARSE_THRESHOLD env var + header doc", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-briefing.sh"]},
+    {"id": 2, "description": "Global mode machine-readable coverage marker", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-briefing.sh"]},
+    {"id": 3, "description": "Repo mode machine-readable coverage marker", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-briefing.sh"]},
+    {"id": 4, "description": "Loud [SPARSE COVERAGE ...] banner below threshold", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-briefing.sh"]},
+    {"id": 5, "description": "Keep existing header lines byte-stable (additive only)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

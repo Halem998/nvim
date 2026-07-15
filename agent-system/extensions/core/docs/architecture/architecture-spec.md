@@ -466,6 +466,19 @@ The `orchestrator_mode` flag MUST be preserved across continuation chains:
 }
 ```
 
+### Dual-Consumer Note (sparse-literature-detection reconciliation)
+
+`orchestrator_mode` now has a SECOND, independent consumer beyond the nested-loop-resolution /
+handoff-write gate documented above: the literature Stage 4a autonomy gate in
+`context/patterns/lit-stage4a-flow.md`. When `orchestrator_mode: true`, Stage 4a MUST NOT call
+`AskUserQuestion` for any `--lit` directive (including `SPARSE_PROMPT_NEEDED`); it takes the
+deterministic global-corpus fallback and emits a visible `[lit:auto]` notice instead. Both
+`skill-orchestrate` and `skill-orchestrate-hard` now pass `orchestrator_mode: true` uniformly for
+research, plan, AND implement dispatches (previously `false` for research/plan) specifically to
+satisfy this second consumer -- see `handoff-schema.md`'s Dual-Consumer Note for the full
+cross-reference. A change to the nested-loop-resolution semantics above MUST NOT be made without
+re-checking the literature autonomy gate, and vice versa.
+
 ---
 
 ## Cross-Cutting Concern: Context Budget Architecture

@@ -329,7 +329,7 @@ Dispatch research via hard-mode research agent.
 Agent tool:
   subagent_type: $RESEARCH_AGENT
   prompt: "Research task $task_number: $DESCRIPTION${focus_prompt:+. Focus: $focus_prompt}"
-  delegation_context: {task_number, session_id, effort_flag: "hard", orchestrator_mode: false}
+  delegation_context: {task_number, session_id, effort_flag: "hard", orchestrator_mode: true}
 ```
 
 After Agent tool returns: read handoff (Stage 5). Set `adversarial_verified=false`.
@@ -377,7 +377,7 @@ if [ "$adversarial_verified" = "true" ]; then
   Agent tool:
     subagent_type: $PLANNER_AGENT
     prompt: "Create hard-mode implementation plan for task $task_number${focus_prompt:+. Focus: $focus_prompt}"
-    delegation_context: {task_number, session_id, effort_flag: "hard", orchestrator_mode: false, ...}
+    delegation_context: {task_number, session_id, effort_flag: "hard", orchestrator_mode: true, ...}
 fi
 ```
 
