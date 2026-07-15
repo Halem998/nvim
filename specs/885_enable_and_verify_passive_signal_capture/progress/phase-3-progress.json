@@ -1,0 +1,50 @@
+{
+  "phase": 3,
+  "phase_name": "Deploy-drift / completeness gate for core (scope 6)",
+  "started_at": "2026-07-15T20:10:00Z",
+  "last_updated": "2026-07-15T20:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add ADVISORY (not FAIL) lane for core never-deployed scripts",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Add provides.hooks drift/completeness check for core",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Add root-files/settings.json hook-registration completeness check",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Verify additivity (memory extension unaffected) and unchanged ordinary-invocation verdict",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Note-only REPO_ROOT auto-detect latent-bug flag",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.1",
+      "description": "check-extension-docs.sh: treat 'not deployed' as FAIL for the core extension",
+      "type": "altered",
+      "reason": "The orchestrator's delegation instructions imposed a binding guardrail after the plan was written: the pre-existing core deploy drift is REAL right now and can only be resolved by a user-driven manual regeneration; a hard FAIL would brick this doc-lint gate for every caller until then, including a concurrently-running sibling session validating an unrelated memory-extension manifest change via this same script. Implemented as a new ADVISORY lane (advisory() function, DEPLOY_DRIFT_ADVISORIES counter, dedicated always-visible summary section) that is always printed (ignoring --quiet) but never affects FAILURES or the exit code by default. An opt-in STRICT_CORE_DEPLOY=1 env var promotes the same advisories to real fail()-driven failures for a future post-regeneration verification run.",
+      "annotation": "*(deviation: altered — ADVISORY lane instead of a hard FAIL, per binding orchestrator guardrail; see check_core_deploy_advisory's in-file rationale comment)*"
+    }
+  ]
+}

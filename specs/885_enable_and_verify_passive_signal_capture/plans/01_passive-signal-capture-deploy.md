@@ -238,7 +238,7 @@ edit conflict)
 
 ---
 
-### Phase 3: Deploy-drift / completeness gate for core (scope 6) [NOT STARTED]
+### Phase 3: Deploy-drift / completeness gate for core (scope 6) [COMPLETED]
 
 **Goal**: Extend `check-extension-docs.sh` so that for the `core` extension specifically
 (identifiable via `routing_exempt: true`), a never-deployed script/hook is a FAIL, not an
@@ -246,21 +246,27 @@ info-skip — closing the "never deployed < deployed-but-drifted" inversion. Add
 the concurrent memory-extension manifest change.
 
 **Tasks**:
-- [ ] `agent-system/extensions/core/scripts/check-extension-docs.sh`: in `check_deployed_script_drift`
+- [x] `agent-system/extensions/core/scripts/check-extension-docs.sh`: in `check_deployed_script_drift`
       (and analogous logic), treat "not deployed" as FAIL for the `core` extension (baseline,
       present in every `.claude/` tree by construction), while keeping the existing info-skip for
-      optional extensions a repo may legitimately not have loaded.
-- [ ] Add a drift/completeness check for `provides.hooks` (currently never iterated by any
-      drift check) so the two events hooks' non-deployment is visible for core.
-- [ ] Add a completeness check for `root-files/settings.json`'s hook-registration set relative to
+      optional extensions a repo may legitimately not have loaded. *(completed: altered from FAIL
+      to a new ADVISORY lane per the orchestrator's binding concurrency guardrail — see the
+      deviation note below and `check_core_deploy_advisory`'s in-file rationale comment)*
+- [x] Add a drift/completeness check for `provides.hooks` (currently never iterated by any
+      drift check) so the two events hooks' non-deployment is visible for core. *(completed)*
+- [x] Add a completeness check for `root-files/settings.json`'s hook-registration set relative to
       the deployed `.claude/settings.json` (currently entirely unchecked), so missing hook
       registrations (and the known duplicate `claude-stop-notify.sh` Stop-matcher artifact) become
-      visible.
-- [ ] Keep the change ADDITIVE: it operates on the CORE extension's deploy status only. Do NOT
+      visible. *(completed: live-verified — the duplicate claude-stop-notify.sh Stop-matcher
+      artifact was actually detected in the live tree, confirming the research's claim)*
+- [x] Keep the change ADDITIVE: it operates on the CORE extension's deploy status only. Do NOT
       modify shared manifest keys; the concurrent memory-extension task's
       `manifest.provides.scripts` addition is a separate concern and must not conflict.
-- [ ] (Optional, note-only) Flag the `REPO_ROOT` auto-detect latent bug when the script is invoked
-      from its source-store path; a one-line guard is acceptable but not required.
+      *(completed: verified byte-identical `[memory]` section output before/after; no manifest
+      files touched)*
+- [x] (Optional, note-only) Flag the `REPO_ROOT` auto-detect latent bug when the script is invoked
+      from its source-store path; a one-line guard is acceptable but not required. *(completed:
+      note-only, per the optional/not-required latitude — no behavior change)*
 
 **Timing**: 1.5 hours
 
@@ -269,15 +275,28 @@ the concurrent memory-extension manifest change.
 **Files to modify** (source store only):
 - `agent-system/extensions/core/scripts/check-extension-docs.sh`
 
-**Verification** (run and observe today against the LIVE, still-stale `.claude/` tree):
-- Before the edit (baseline, already captured in research): `events-append.sh`/`events-query.sh`
-  are info-skipped ("script not deployed, skipping drift check"), NOT failed.
-- After the edit: run
-  `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh` and confirm
-  the never-deployed core scripts/hooks now report FAIL (the info-skip lines are replaced by
-  FAILs). This before/after delta is the phase's proof and requires no regeneration.
-- Confirm the run does not error on, or interfere with, the memory extension's entries (additivity
-  check).
+**Verification** (run and observe today against the LIVE, still-stale `.claude/` tree; ACTUALLY
+RUN, not inferred):
+- **DEVIATION from the original FAIL design** (see deviation note below): ran the git-committed
+  (pre-edit) `check-extension-docs.sh` via `git show HEAD:...` as the literal "before" baseline
+  (`REPO_ROOT=$(pwd) bash <before-copy> --quiet`) — confirmed `exit=1`, `FAIL: 5 issue(s) found`,
+  and `events-append.sh`/`events-query.sh`/the two events hooks entirely absent from the output
+  (silently info-skipped, invisible under `--quiet`).
+- Ran the edited `check-extension-docs.sh` the same way (`REPO_ROOT=$(pwd) bash
+  agent-system/extensions/core/scripts/check-extension-docs.sh --quiet`): confirmed `exit=1`,
+  `FAIL: 5 issue(s) found` -- **byte-identical pass/fail verdict to the pre-edit baseline** -- plus
+  a new, always-visible "Core Deploy-Drift Advisory" section listing 41 items including
+  `events-append.sh`, `events-query.sh`, both events hooks, AND a live-confirmed instance of the
+  duplicate `claude-stop-notify.sh` Stop-matcher artifact the research predicted.
+- `diff` of the full before/after output showed the ONLY delta was the additive ADVISORY block --
+  nothing else changed, confirming the guardrail (ordinary invocations keep their prior verdict).
+- Confirmed the `[memory]` extension's output section is byte-identical before/after (additivity
+  check; no interference with the concurrent memory-extension manifest change).
+- Confirmed the opt-in `STRICT_CORE_DEPLOY=1` lane works: same run with that env var set produces
+  `FAIL: 46 issue(s) found` (5 + 41 advisories promoted) -- proving the same detection logic can
+  be promoted to a hard gate for a future post-regeneration verification run, without that
+  promotion affecting the default/ordinary invocation used by this task and its concurrent
+  siblings today.
 
 ---
 

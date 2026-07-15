@@ -25,6 +25,12 @@
 #   - broken deployed symlinks under .claude/{agents,commands,skills}/ (install-extension.sh's
 #     parallel symlink-deploy mechanism; distinct from the orphan checks above -- a dangling
 #     symlink DOES have a declared source, its target path is simply wrong)
+#   - CORE-extension (routing_exempt: true) deploy-drift/completeness ADVISORY lane: never-
+#     deployed provides.scripts/provides.hooks entries, and root-files/settings.json hook
+#     registrations missing from (or duplicated in) the deployed .claude/settings.json. This is
+#     an ADVISORY lane, not a FAIL lane, by design -- see check_core_deploy_advisory's comment
+#     for the rationale (a hard FAIL here would brick this gate for every caller until a user
+#     performs the manual <leader>al regeneration this check exists to make visible).
 #
 # Rule letter index (checks named "Rule X" in function comments below, in first-introduced
 # order; unlettered checks are unnamed/structural and are not part of this index):
@@ -42,14 +48,22 @@
 #   L - check_context_orphans              : deployed context file with no provides.context source
 #   M - check_flat_category_orphans(scripts)  : deployed script with no provides.scripts source
 #   N - check_broken_deployed_symlinks     : dangling install-extension.sh-created symlink
+#   O - check_core_deploy_advisory         : core script/hook never deployed (ADVISORY, not FAIL)
+#   P - check_settings_hook_registration_completeness : settings.json hook registration gap/dup
+#       (ADVISORY, not FAIL; sub-check of O, core extension only)
 #
 # Exit codes:
-#   0 - all extensions pass
-#   1 - one or more extensions have failures
+#   0 - all extensions pass (Core Deploy-Drift Advisories, if any, do NOT affect this)
+#   1 - one or more extensions have failures (or STRICT_CORE_DEPLOY=1 promoted an advisory)
 #
 # Usage:
 #   bash .claude/scripts/check-extension-docs.sh
-#   bash .claude/scripts/check-extension-docs.sh --quiet   (suppress info output)
+#   bash .claude/scripts/check-extension-docs.sh --quiet   (suppress info output; Core
+#                                                            Deploy-Drift Advisories still print --
+#                                                            see check_core_deploy_advisory)
+#   STRICT_CORE_DEPLOY=1 bash .claude/scripts/check-extension-docs.sh
+#       (promotes Core Deploy-Drift Advisories to real fail()-driven non-zero exits; intended for
+#       a post-regeneration verification run, NOT the default/ordinary invocation)
 
 set -uo pipefail
 
@@ -58,6 +72,12 @@ if [[ "${1:-}" == "--quiet" ]]; then
   QUIET=1
 fi
 
+# NOTE (known latent bug, flagged not fixed -- see the plan this check-extension-docs.sh change
+# shipped with): this auto-detect assumes BASH_SOURCE is deployed at .claude/scripts/<name>
+# (two directories under REPO_ROOT). When this script is instead invoked directly from its
+# extension SOURCE-STORE path (agent-system/extensions/core/scripts/check-extension-docs.sh),
+# the auto-detect miscomputes REPO_ROOT. Verification and any source-store invocation MUST pass
+# an explicit REPO_ROOT=$(pwd) override; the auto-detect is correct only for the deployed copy.
 REPO_ROOT="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 EXT_DIR="${EXT_DIR:-$REPO_ROOT/agent-system/extensions}"
 
@@ -69,11 +89,32 @@ fi
 FAILURES=0
 declare -A EXTENSION_STATUS
 
+# Core Deploy-Drift Advisory lane (Rules O/P) -- see check_core_deploy_advisory for the
+# FAIL-vs-ADVISORY rationale. Counted and reported SEPARATELY from FAILURES so ordinary
+# invocations (including a concurrent sibling session's doc-lint gate run) keep their prior
+# pass/fail verdict unchanged while the drift becomes impossible to miss.
+DEPLOY_DRIFT_ADVISORIES=0
+DEPLOY_DRIFT_ADVISORY_LINES=()
+STRICT_CORE_DEPLOY="${STRICT_CORE_DEPLOY:-0}"
+
 info() { [[ $QUIET -eq 0 ]] && echo "  $*"; }
 fail() {
   echo "  FAIL: $*"
   FAILURES=$((FAILURES + 1))
   EXTENSION_STATUS["$CURRENT_EXT"]="FAIL"
+}
+# advisory(): the ADVISORY counterpart to fail(). Always printed (deliberately ignores --quiet --
+# the whole point of this lane is that this class of issue must never again be silent), counted
+# in DEPLOY_DRIFT_ADVISORIES (not FAILURES), and collected for the dedicated summary section.
+# Never affects EXTENSION_STATUS or the exit code unless STRICT_CORE_DEPLOY=1.
+advisory() {
+  local msg="$*"
+  echo "  ADVISORY: $msg"
+  DEPLOY_DRIFT_ADVISORIES=$((DEPLOY_DRIFT_ADVISORIES + 1))
+  DEPLOY_DRIFT_ADVISORY_LINES+=("$msg")
+  if [[ "$STRICT_CORE_DEPLOY" == "1" ]]; then
+    fail "$msg"
+  fi
 }
 
 check_file() {
@@ -229,6 +270,95 @@ check_deployed_rule_drift() {
       fail "deployed rule content drift (deployed != extension source): rules/$r"
     fi
   done
+}
+
+# Rule P: root-files/settings.json hook-registration completeness (core extension only).
+#
+# Sub-check of Rule O (check_core_deploy_advisory), factored out for readability. Compares the
+# hook-script basenames registered under each event in the extension SOURCE's
+# root-files/settings.json against the same event in the DEPLOYED .claude/settings.json, and
+# separately flags any duplicate registration within a single deployed event's hook-script
+# basenames (e.g. the known duplicate claude-stop-notify.sh Stop-matcher artifact). Both classes
+# are ADVISORY (see check_core_deploy_advisory) -- never a fail() unless STRICT_CORE_DEPLOY=1.
+check_settings_hook_registration_completeness() {
+  local ext_path="$1"
+  local source_settings="$ext_path/root-files/settings.json"
+  local deployed_settings="$REPO_ROOT/.claude/settings.json"
+
+  [[ -f "$source_settings" ]] || return 0
+  jq empty "$source_settings" 2>/dev/null || return 0
+
+  if [[ ! -f "$deployed_settings" ]]; then
+    advisory "deployed .claude/settings.json is missing entirely -- no hook registrations are live (regenerate via <leader>al 'Sync all')"
+    return 0
+  fi
+  jq empty "$deployed_settings" 2>/dev/null || return 0
+
+  local events ev src_scripts dep_scripts s dup
+  events=$(jq -r '.hooks // {} | keys[]' "$source_settings" 2>/dev/null)
+  for ev in $events; do
+    src_scripts=$(jq -r --arg e "$ev" '.hooks[$e][]?.hooks[]?.command // empty' "$source_settings" 2>/dev/null \
+      | grep -oE '[A-Za-z0-9_.-]+\.sh' | sort -u)
+    dep_scripts=$(jq -r --arg e "$ev" '.hooks[$e][]?.hooks[]?.command // empty' "$deployed_settings" 2>/dev/null \
+      | grep -oE '[A-Za-z0-9_.-]+\.sh' | sort -u)
+
+    for s in $src_scripts; do
+      if ! grep -qxF "$s" <<< "$dep_scripts"; then
+        advisory "settings.json hook registration missing for event '$ev': $s (source declares it, deployed .claude/settings.json does not -- regenerate via <leader>al 'Sync all')"
+      fi
+    done
+
+    dup=$(jq -r --arg e "$ev" '.hooks[$e][]?.hooks[]?.command // empty' "$deployed_settings" 2>/dev/null \
+      | grep -oE '[A-Za-z0-9_.-]+\.sh' | sort | uniq -d)
+    for s in $dup; do
+      advisory "settings.json duplicate hook registration for event '$ev': $s appears more than once in the deployed .claude/settings.json Stop-matcher (or equivalent) array"
+    done
+  done
+}
+
+# Rule O: core-extension (routing_exempt: true) deploy-drift/completeness ADVISORY lane (scope 6
+# of the passive-signal-capture work). Extends the existing "not deployed -> info-skip" behavior
+# of check_deployed_script_drift/check_deployed_rule_drift for the core extension specifically:
+# a never-deployed provides.scripts or provides.hooks entry is baseline infrastructure present in
+# every .claude/ tree by construction, so its absence is a meaningfully different (and worse)
+# condition than "deployed but drifted" -- yet the prior info-skip line was easy to lose (and
+# fully suppressed under --quiet), silently inverting that severity ordering.
+#
+# GUARDRAIL (binding, do not remove without re-reading the originating plan): the pre-existing
+# core deploy drift this check surfaces (skill-base.sh/orchestrator-postflight.sh stale-deployed;
+# events-append.sh/events-query.sh/the two events hooks never deployed) is REAL RIGHT NOW and can
+# ONLY be resolved by a user-driven <leader>al "Sync all (replace existing)" regeneration -- there
+# is no headless/CI path. This check therefore NEVER calls fail() by default for a core
+# "not deployed" condition: doing so would hard-fail this doc-lint gate for EVERY caller until
+# the user regenerates, including concurrent sibling sessions validating unrelated manifest
+# changes via this same script, and every commit thereafter. It reports via advisory() instead --
+# always printed (ignoring --quiet), counted separately from FAILURES, and summarized in its own
+# section -- so the divergence is impossible to miss without ever blocking ordinary invocations.
+# Set STRICT_CORE_DEPLOY=1 to promote these same advisories to real fail()-driven non-zero exits
+# (e.g. a post-regeneration verification run asserting zero remaining core drift).
+check_core_deploy_advisory() {
+  local ext_path="$1"
+  local manifest="$ext_path/manifest.json"
+
+  local routing_exempt
+  routing_exempt=$(jq -r '.routing_exempt // false' "$manifest" 2>/dev/null)
+  [[ "$routing_exempt" == "true" ]] || return 0
+
+  local scripts s deployed
+  scripts=$(jq -r '.provides.scripts[]? // empty' "$manifest" 2>/dev/null)
+  for s in $scripts; do
+    deployed="$REPO_ROOT/.claude/scripts/$s"
+    [[ -f "$deployed" ]] || advisory "core script never deployed: scripts/$s (regenerate via <leader>al 'Sync all (replace existing)')"
+  done
+
+  local hooks h
+  hooks=$(jq -r '.provides.hooks[]? // empty' "$manifest" 2>/dev/null)
+  for h in $hooks; do
+    deployed="$REPO_ROOT/.claude/hooks/$h"
+    [[ -f "$deployed" ]] || advisory "core hook never deployed: hooks/$h (regenerate via <leader>al 'Sync all (replace existing)')"
+  done
+
+  check_settings_hook_registration_completeness "$ext_path"
 }
 
 check_routing_block() {
@@ -777,6 +907,7 @@ for ext_path in "$EXT_DIR"/*/; do
       check_deployed_skill_agents "$ext_path"
       check_readme_vs_manifest "$ext_path"
       check_referenced_scripts_declared "$ext_path"
+      check_core_deploy_advisory "$ext_path"
     else
       fail "manifest.json is not valid JSON"
     fi
@@ -802,6 +933,25 @@ if [[ "${EXTENSION_STATUS[project-wide]}" == "PASS" ]]; then
   info "OK"
 fi
 echo
+
+# Core Deploy-Drift Advisory summary (Rules O/P) -- ALWAYS printed when non-empty, regardless of
+# --quiet, and deliberately placed BEFORE the pass/fail Summary table so it reads as its own
+# section, not a footnote. This block is purely informational and does NOT affect FAILURES or
+# the exit code unless STRICT_CORE_DEPLOY=1 (in which case the underlying advisory() calls above
+# already routed into fail()/FAILURES themselves).
+if [[ "$DEPLOY_DRIFT_ADVISORIES" -gt 0 ]]; then
+  echo "====================================="
+  echo "Core Deploy-Drift Advisory (informational -- does NOT affect the PASS/FAIL verdict below)"
+  echo "====================================="
+  for line in "${DEPLOY_DRIFT_ADVISORY_LINES[@]}"; do
+    echo "  - $line"
+  done
+  echo
+  echo "$DEPLOY_DRIFT_ADVISORIES advisory item(s) found. Resolve via a user-run <leader>al"
+  echo "'Sync all (replace existing)' regeneration -- there is no headless/CI path."
+  echo "Set STRICT_CORE_DEPLOY=1 to treat these as hard failures (e.g. post-regeneration verification)."
+  echo
+fi
 
 # Summary table
 echo "====================================="
