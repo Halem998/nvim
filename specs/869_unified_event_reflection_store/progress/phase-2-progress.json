@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Implement events-append.sh (write helper)",
+  "started_at": "2026-07-15T08:20:00Z",
+  "last_updated": "2026-07-15T08:23:30Z",
+  "objectives": [
+    {"id": 1, "description": "Create events-append.sh with full CLI, event_id/timestamp generation, jq -c -n line construction, category validation, detail-json validation, flock-guarded lazy-creating append, chmod +x", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/events-append.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {"approach": "tr | head -c 6 for random6 without SIGPIPE guard", "result": "failed", "reason": "set -o pipefail causes tr's SIGPIPE (from head closing the pipe early) to abort the script; fixed by appending `|| true` to the pipeline"},
+    {"approach": "--argjson detail \"${detail_json:-{}}\"", "result": "failed", "reason": "bash parameter-expansion default value containing a literal '{}' appends a stray trailing '}' when detail_json is non-empty, corrupting the JSON; fixed by resolving the default in a separate variable assignment before passing to --argjson"}
+  ],
+  "handoff_count": 0
+}

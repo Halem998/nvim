@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+# events-append.sh - Append one validated event line to the unified specs/events.jsonl store
+#
+# Usage:
+#   events-append.sh --event-type TYPE --category CAT --session SESSION_ID \
+#     [--task N] [--checkpoint NAME] [--duration SECONDS] --message "..." \
+#     [--detail-json '{"...":"..."}'] [--error-ref ERR_ID]
+#
+# Single responsibility: build one validated JSON line via `jq -c -n` (never string
+# concatenation) and append it to specs/events.jsonl, creating the file lazily on first
+# use. The append is guarded by `flock` on specs/.events.lock as defense-in-depth beyond
+# POSIX small-write (O_APPEND) atomicity.
+#
+# See context/formats/events-format.md for the full field contract and
+# context/schemas/events-schema.json for the formal JSON Schema.
+#
+# Exit codes:
+#   0 - Success (line appended)
+#   1 - Error (missing/invalid arguments, invalid --category, malformed --detail-json)
+#
+# Outputs:
+#   stdout: the event_id of the appended line
+#   stderr: diagnostic/error messages
+
+set -euo pipefail
+
+usage() {
+  cat >&2 <<'USAGE'
+Usage: events-append.sh --event-type TYPE --category CAT --session SESSION_ID \
+  [--task N] [--checkpoint NAME] [--duration SECONDS] --message "..." \
+  [--detail-json '{"...":"..."}'] [--error-ref ERR_ID]
+
+Required:
+  --event-type TYPE     Open string naming the specific kind of event
+  --category CAT        One of: deviation|blocker|milestone|success
+  --session SESSION_ID  sess_{timestamp}_{random} value
+  --message "..."       Short human-readable one-line summary
+
+Optional:
+  --task N              Bare (unpadded) task/project number
+  --checkpoint NAME      Lifecycle checkpoint name (e.g. preflight, GATE_IN, phase_2)
+  --duration SECONDS    Duration in seconds (number)
+  --detail-json '{...}' Open JSON object payload (must be valid JSON)
+  --error-ref ERR_ID     Optional cross-link to an errors.json entry id
+USAGE
+  exit 1
+}
+
+# --- Argument parsing ---
+event_type=""
+category=""
+session_id=""
+task=""
+checkpoint=""
+duration=""
+message=""
+detail_json=""
+error_ref=""
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --event-type) event_type="${2:-}"; shift 2 ;;
+    --category) category="${2:-}"; shift 2 ;;
+    --session) session_id="${2:-}"; shift 2 ;;
+    --task) task="${2:-}"; shift 2 ;;
+    --checkpoint) checkpoint="${2:-}"; shift 2 ;;
+    --duration) duration="${2:-}"; shift 2 ;;
+    --message) message="${2:-}"; shift 2 ;;
+    --detail-json) detail_json="${2:-}"; shift 2 ;;
+    --error-ref) error_ref="${2:-}"; shift 2 ;;
+    -h|--help) usage ;;
+    *) echo "error: unknown argument: $1" >&2; usage ;;
+  esac
+done
+
+# --- Validate required arguments ---
+if [ -z "$event_type" ] || [ -z "$category" ] || [ -z "$session_id" ] || [ -z "$message" ]; then
+  echo "error: --event-type, --category, --session, and --message are all required" >&2
+  usage
+fi
+
+# --- Validate --category against the closed enum (fail loudly, write nothing) ---
+case "$category" in
+  deviation|blocker|milestone|success) ;;
+  *)
+    echo "error: invalid --category '$category' (must be one of: deviation|blocker|milestone|success)" >&2
+    exit 1
+    ;;
+esac
+
+# --- Validate --detail-json parses before any write ---
+if [ -n "$detail_json" ]; then
+  if ! echo "$detail_json" | jq -e 'type == "object"' > /dev/null 2>&1; then
+    echo "error: --detail-json is not valid JSON (or not a JSON object): $detail_json" >&2
+    exit 1
+  fi
+fi
+
+# --- Validate --duration is numeric if given ---
+if [ -n "$duration" ]; then
+  if ! [[ "$duration" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+    echo "error: --duration must be a non-negative number, got: $duration" >&2
+    exit 1
+  fi
+fi
+
+# --- Validate --task is an integer if given ---
+if [ -n "$task" ]; then
+  if ! [[ "$task" =~ ^[0-9]+$ ]]; then
+    echo "error: --task must be a bare integer, got: $task" >&2
+    exit 1
+  fi
+fi
+
+# --- Paths ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+EVENTS_FILE="$PROJECT_ROOT/specs/events.jsonl"
+LOCK_FILE="$PROJECT_ROOT/specs/.events.lock"
+
+# --- Generate event_id and timestamp ---
+timestamp_ms=$(date -u +%s%3N)
+random6=$(tr -dc 'a-zA-Z0-9' < /dev/urandom 2>/dev/null | head -c 6 || true)
+if [ -z "$random6" ] || [ "${#random6}" -lt 6 ]; then
+  # Fallback if /dev/urandom is unavailable or too slow to yield 6 chars
+  random6=$(printf '%06x' "$RANDOM$RANDOM" | tail -c 6)
+fi
+event_id="evt_${timestamp_ms}_${random6}"
+timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
+
+# --- Build the line via jq -c -n (never string concatenation) ---
+detail_arg="$detail_json"
+if [ -z "$detail_arg" ]; then
+  detail_arg='{}'
+fi
+
+line=$(jq -c -n \
+  --arg event_id "$event_id" \
+  --arg event_type "$event_type" \
+  --arg category "$category" \
+  --arg timestamp "$timestamp" \
+  --arg session_id "$session_id" \
+  --arg task "$task" \
+  --arg checkpoint "$checkpoint" \
+  --arg duration "$duration" \
+  --arg message "$message" \
+  --argjson detail "$detail_arg" \
+  --arg error_ref "$error_ref" \
+  '{
+    event_id: $event_id,
+    event_type: $event_type,
+    category: $category,
+    timestamp: $timestamp,
+    duration_seconds: (if $duration == "" then null else ($duration | tonumber) end),
+    session_id: $session_id,
+    task: (if $task == "" then null else ($task | tonumber) end),
+    checkpoint: (if $checkpoint == "" then null else $checkpoint end),
+    message: $message,
+    detail: $detail,
+    error_ref: (if $error_ref == "" then null else $error_ref end)
+  }')
+
+# --- Append with a single write, guarded by flock (defense-in-depth) ---
+(
+  flock -x 200
+  printf '%s\n' "$line" >> "$EVENTS_FILE"
+) 200> "$LOCK_FILE"
+
+echo "$event_id"
+exit 0

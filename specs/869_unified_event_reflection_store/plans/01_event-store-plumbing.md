@@ -129,24 +129,27 @@ JSON Schema -- that both helper scripts and all downstream consumers build on.
 
 ---
 
-### Phase 2: Implement events-append.sh (write helper) [NOT STARTED]
+### Phase 2: Implement events-append.sh (write helper) [COMPLETED]
 
 **Goal**: Ship the single-responsibility append helper that validates and atomically appends one
 event line, creating the store lazily on first use.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/events-append.sh` with the CLI:
+- [x] Create `agent-system/extensions/core/scripts/events-append.sh` with the CLI:
       `--event-type TYPE --category CAT --session SESSION_ID [--task N] [--checkpoint NAME]
       [--duration SECONDS] --message "..." [--detail-json '{...}'] [--error-ref ERR_ID]`.
-- [ ] Generate `event_id` as `evt_{timestamp_ms}_{random6}` and `timestamp` as ISO 8601.
-- [ ] Build the line via `jq -c -n --arg/--argjson ...` into a variable (never string
+      *(completed)*
+- [x] Generate `event_id` as `evt_{timestamp_ms}_{random6}` and `timestamp` as ISO 8601.
+      *(completed)*
+- [x] Build the line via `jq -c -n --arg/--argjson ...` into a variable (never string
       concatenation); validate `--category` against the closed enum and fail loudly on an invalid
       value; parse `--detail-json` via `--argjson` so malformed JSON fails before any write.
-- [ ] Resolve the store path (`specs/events.jsonl`) relative to repo root; create it lazily if
+      *(completed: also fixed a bash parameter-expansion default-value bug and a SIGPIPE-under-pipefail bug found during verification)*
+- [x] Resolve the store path (`specs/events.jsonl`) relative to repo root; create it lazily if
       absent; append with a single `printf '%s\n' "$line" >> "$EVENTS_FILE"` wrapped in `flock` on
-      `specs/.events.lock`.
-- [ ] `chmod +x` the script; follow existing script conventions (`set -euo pipefail`, header
-      comment, usage function) modeled on `memory-harvest.sh`.
+      `specs/.events.lock`. *(completed)*
+- [x] `chmod +x` the script; follow existing script conventions (`set -euo pipefail`, header
+      comment, usage function) modeled on `memory-harvest.sh`. *(completed)*
 
 **Timing**: 1 hour
 
