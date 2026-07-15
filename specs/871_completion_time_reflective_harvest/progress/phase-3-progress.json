@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Surface reflections in skill-todo harvest",
+  "started_at": "2026-07-15T00:20:00Z",
+  "last_updated": "2026-07-15T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Stage 7 HarvestMemories: collect harvest_reflections list", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]},
+    {"id": 2, "description": "Stage 8 DryRunOutput: add Reflections summary line", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]},
+    {"id": 3, "description": "Stage 9 InteractivePrompts: augment prompt description with read-only reflection block", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]},
+    {"id": 4, "description": "Stage 14 CreateMemories: extend cleanup note for reflection", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

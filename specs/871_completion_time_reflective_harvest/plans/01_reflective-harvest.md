@@ -206,26 +206,26 @@ fixed contract.
 
 ---
 
-### Phase 3: Surface reflections in skill-todo harvest [NOT STARTED]
+### Phase 3: Surface reflections in skill-todo harvest [COMPLETED]
 
 **Goal**: Collect per-task reflections during archival and present them read-only through the
 existing AskUserQuestion prompt.
 
 **Tasks**:
-- [ ] Stage 7 (`HarvestMemories`): add a parallel collection sub-step reading `reflection //
+- [x] Stage 7 (`HarvestMemories`): add a parallel collection sub-step reading `reflection //
   null` per archived task in the same loop as `memory_candidates`, storing a `harvest_reflections`
   list of `{task_number, what_worked, what_was_hard, what_was_missed, successes}`; skip tasks with
-  no reflection. No dedup/tiering (reflections are one-per-task, not vault-deduped).
-- [ ] Stage 8 (`DryRunOutput`): add one summary line `Reflections: {N} task(s) reported a
+  no reflection. No dedup/tiering (reflections are one-per-task, not vault-deduped). *(completed)*
+- [x] Stage 8 (`DryRunOutput`): add one summary line `Reflections: {N} task(s) reported a
   completion-time reflection`, shown only when `harvest_reflections` is non-empty (mirrors the
-  existing memory-candidate dry-run line).
-- [ ] Stage 9 (`InteractivePrompts`): augment the existing memory-harvest AskUserQuestion's
+  existing memory-candidate dry-run line). *(completed)*
+- [x] Stage 9 (`InteractivePrompts`): augment the existing memory-harvest AskUserQuestion's
   `description`/header text with a per-task read-only reflection block when `harvest_reflections`
   is non-empty. Do NOT add new selectable options or a second prompt; the multiSelect mechanics
-  (tiers, dedup, NOOP) are unchanged. Omit the section entirely when empty.
-- [ ] Stage 14 (`CreateMemories`): extend the existing cleanup note to state that `reflection` is
+  (tiers, dedup, NOOP) are unchanged. Omit the section entirely when empty. *(completed)*
+- [x] Stage 14 (`CreateMemories`): extend the existing cleanup note to state that `reflection` is
   cleaned identically to `memory_candidates` when the task entry is moved to archive (no separate
-  cleanup logic — it rides the archive-move).
+  cleanup logic — it rides the archive-move). *(completed)*
 
 **Timing**: 1 hour
 
