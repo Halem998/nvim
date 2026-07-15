@@ -1,7 +1,7 @@
 ---
 description: Interactive system builder that creates TASKS for agent architecture changes (never implements directly)
 allowed-tools: Skill
-argument-hint: "[PROMPT] | --analyze"
+argument-hint: "[PROMPT] | --analyze | --local"
 model: opus
 ---
 
@@ -16,6 +16,8 @@ Interactive system builder that delegates to `skill-meta` for creating TASKS for
 - No args: Start interactive interview (7 stages)
 - `PROMPT` - Direct analysis of change request (abbreviated flow)
 - `--analyze` - Analyze existing .claude/ structure (read-only)
+- `--local` - Create tasks in the current repo's `specs/` instead of the global default target
+  (see "Target Resolution" below). Composable with `PROMPT` or with no other args.
 
 ## Constraints
 
@@ -67,6 +69,53 @@ else:
     mode = "prompt"
     prompt = $ARGUMENTS
 ```
+
+### Target Resolution
+
+`/meta` is **global-by-default**: task directories, `TODO.md`, and `state.json` are created in the
+global agent-system root, not necessarily the repo the session is currently in. `--local` is the
+only opt-out. There is no interactive prompt asking which target to use.
+
+- `GLOBAL_ROOT="${CLAUDE_AGENT_GLOBAL_ROOT:-$HOME/.config/nvim}"` — mirrors the established
+  `LIT_DIR="${LITERATURE_DIR:-$HOME/Projects/Literature}"` pattern used elsewhere in this agent
+  system.
+- Running `/meta` from a session whose cwd is already inside `$GLOBAL_ROOT` is a **genuine no-op**,
+  not a special case: the same resolution code path runs and resolves to the same repo either way.
+- The resolved root is threaded through as `target_root` end-to-end, and the postflight git commit
+  operates on `target_root`. Because shell cwd from a `cd` in one Bash tool invocation does **not**
+  persist into a separate, later Bash tool invocation, `cd "$GLOBAL_ROOT"` must be **chained at each
+  point of use** — re-derived and issued as part of a single Bash call
+  (e.g. `cd "$GLOBAL_ROOT" && git add specs/ && git commit ...`), never assumed to carry over from
+  an earlier call.
+- `Write`/`Edit` tool calls take a literal path string and are **not** affected by shell cwd at all
+  — task-directory paths must be `$GLOBAL_ROOT`-qualified (or absolute), never bare `specs/...`
+  relative paths, regardless of any `cd`.
+
+### Canonical Source vs Deploy Tree
+
+The source of truth for the agent system is the source store at `agent-system/extensions/core/`
+(and any loaded extensions under `agent-system/extensions/`). Each repo's `.claude/` tree is a
+**gitignored, disposable deploy artifact** regenerated from that source store, with the specific
+extension selection pinned by the project-root `.claude-extensions.json`. A change hand-authored
+directly under `.claude/` is silently wiped by the next regeneration. Tasks created by `/meta` that
+target agent-system changes must edit files in the source store — never `.claude/` directly — and
+each repo regenerates its own `.claude/` independently via the `<leader>al` loader.
+
+### Parallel Defaults: Shell vs Lua
+
+`CLAUDE_AGENT_GLOBAL_ROOT` (the shell-side env var this command resolves, consumed by `/meta`) and
+`global_source_dir` (the Lua-side option consumed by the `<leader>al` picker/loader) are
+**independently-resolved values that share the `~/.config/nvim` default only by convention, not by
+any coupling mechanism**. They live in different runtimes (shell process vs. Neovim Lua) with no
+shared IPC, and are deliberately not coupled in code. If either is customized away from the shared
+default, the other must be updated to match by hand — there is no propagation between them.
+
+### Settings Dependency
+
+Global-mode writes rely on `Write`/`Edit` being unscoped (not restricted to project-relative globs)
+in the effective `settings.json` for the invoking session. A project whose settings scope `Write`
+more tightly would need to explicitly add the global root to its allowed paths, or fall back to
+`--local` for that session.
 
 ### 2. Delegate to Skill
 

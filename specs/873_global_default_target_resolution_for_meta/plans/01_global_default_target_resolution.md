@@ -204,39 +204,39 @@ single chained Bash invocation.
 
 ---
 
-### Phase 3: Document global-default semantics in commands/meta.md [NOT STARTED]
+### Phase 3: Document global-default semantics in commands/meta.md [COMPLETED]
 
 **Goal**: Document the flag, the semantics, the source-store-vs-deploy-tree distinction, the
 parallel-defaults note, and the settings dependency.
 
 **Tasks**:
-- [ ] Update the `argument-hint` frontmatter (line 4) from `"[PROMPT] | --analyze"` to include `--local`.
-- [ ] Add `--local` to the Arguments section (lines 14-18) with a one-line description.
-- [ ] Add a "Target Resolution" subsection to Mode Detection (Execution step 1, lines 57-69) documenting:
+- [x] Update the `argument-hint` frontmatter (line 4) from `"[PROMPT] | --analyze"` to include `--local`. *(completed)*
+- [x] Add `--local` to the Arguments section (lines 14-18) with a one-line description. *(completed)*
+- [x] Add a "Target Resolution" subsection to Mode Detection (Execution step 1, lines 57-69) documenting:
       - Global-by-default; `--local` is the only opt-out; there is no interactive prompt.
       - `GLOBAL_ROOT="${CLAUDE_AGENT_GLOBAL_ROOT:-$HOME/.config/nvim}"`.
       - Running from within the global root is a no-op, not a special case.
       - `cd "$GLOBAL_ROOT"` must be **chained at each point of use** in a single Bash invocation; a `cd`
         issued in an earlier, separate Bash call does not persist. Write/Edit take literal paths and are
-        unaffected by shell cwd entirely — they must be `$GLOBAL_ROOT`-qualified or absolute.
-- [ ] Add a "Canonical Source vs Deploy Tree" note: the source of truth is `agent-system/extensions/core/`;
+        unaffected by shell cwd entirely — they must be `$GLOBAL_ROOT`-qualified or absolute. *(completed)*
+- [x] Add a "Canonical Source vs Deploy Tree" note: the source of truth is `agent-system/extensions/core/`;
       each repo's `.claude/` is a gitignored, disposable deploy artifact regenerated from the source store
       (selection pinned by the project-root `.claude-extensions.json`). A change written to `.claude/` is
       silently wiped by the next regeneration. Tasks created by `/meta` targeting the agent system must
-      edit the source store; each repo regenerates its own `.claude/` via the `<leader>al` loader.
-- [ ] Add the parallel-defaults note (research finding (b)): `CLAUDE_AGENT_GLOBAL_ROOT` (shell, consumed
+      edit the source store; each repo regenerates its own `.claude/` via the `<leader>al` loader. *(completed)*
+- [x] Add the parallel-defaults note (research finding (b)): `CLAUDE_AGENT_GLOBAL_ROOT` (shell, consumed
       by `/meta`) and `global_source_dir` (Lua, `lua/neotex/plugins/ai/claude/config.lua`, consumed by the
       `<leader>al` picker/loader) are **independently-resolved values that share the `~/.config/nvim`
       default by convention, not by mechanism**, and must be updated together if either is customized.
       State plainly that they are deliberately not coupled: they live in different runtimes with no
-      shared IPC.
-- [ ] Add the settings-dependency note (research finding (a)): global-mode writes rely on `Write`/`Edit`
+      shared IPC. *(completed)*
+- [x] Add the settings-dependency note (research finding (a)): global-mode writes rely on `Write`/`Edit`
       being unscoped in the effective `settings.json`; a project that scopes `Write` more tightly would
-      need to add the global root to its own allowed paths, or use `--local`.
-- [ ] Confirm the Anti-Bypass Constraint section still reads correctly — global mode changes *which*
+      need to add the global root to its own allowed paths, or use `--local`. *(completed)*
+- [x] Confirm the Anti-Bypass Constraint section still reads correctly — global mode changes *which*
       repo's `specs/` is the legitimate target, not the `specs/`-allowed / `.claude/`-forbidden boundary.
-      Amend only if the wording implies a single repo.
-- [ ] Do not add task-number references anywhere in this file (no "task 875", no "task 873").
+      Amend only if the wording implies a single repo. *(completed: reviewed, wording is repo-agnostic already, no amendment needed)*
+- [x] Do not add task-number references anywhere in this file (no "task 875", no "task 873"). *(completed: grep confirmed clean)*
 
 **Timing**: 1 hour
 

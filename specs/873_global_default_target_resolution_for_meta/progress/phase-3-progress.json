@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Document global-default semantics in commands/meta.md",
+  "started_at": "2026-07-15T18:30:00Z",
+  "last_updated": "2026-07-15T18:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "argument-hint + Arguments section --local documentation", "status": "done", "files_touched": ["agent-system/extensions/core/commands/meta.md"]},
+    {"id": 2, "description": "Target Resolution subsection", "status": "done", "files_touched": ["agent-system/extensions/core/commands/meta.md"]},
+    {"id": 3, "description": "Canonical Source vs Deploy Tree, Parallel Defaults, Settings Dependency notes", "status": "done", "files_touched": ["agent-system/extensions/core/commands/meta.md"]},
+    {"id": 4, "description": "Reviewed Anti-Bypass Constraint wording, no amendment needed", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
