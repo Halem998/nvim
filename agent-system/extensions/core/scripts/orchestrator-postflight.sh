@@ -28,12 +28,17 @@
 #
 # Stages (implemented inside this script):
 #   Stage 6:  Read .return-meta.json (status, artifact_path, artifact_type, artifact_summary,
-#             memory_candidates; implement also reads completion_summary, roadmap_items, handoff_path)
+#             memory_candidates, reflection; implement also reads completion_summary,
+#             roadmap_items, handoff_path)
 #   Stage 6a: Validate artifact via validate-artifact.sh (non-blocking)
+#   Stage 6b: Emit orchestrator_status event, plus a second independent reflection event when a
+#             reflection object is present (non-blocking)
 #   Stage 7:  Call update-task-status.sh postflight (research and plan only; implement does inline)
 #   Stage 7a: Increment next_artifact_number via python3 (research only)
 #   Stage 7b: Write completion_summary + roadmap_items to state.json (implement only)
 #   Stage 7c: Propagate memory_candidates via python3 (all operations)
+#   Stage 7d: Write reflection to state.json via jq --argjson, overwrite semantics (implement-only,
+#             gated on status == implemented; non-blocking)
 #   Stage 8:  Link artifacts in state.json via two-step jq with --arg atype (Issue #1132 safe)
 #   Stage 8a: Regenerate TODO.md via generate-todo.sh (non-blocking)
 #   Stage 8b: Fire TTS lifecycle notification via lifecycle-notify.sh in background (non-blocking)
@@ -144,6 +149,7 @@ memory_candidates="[]"
 completion_summary=""
 roadmap_items="[]"
 handoff_path=""
+reflection="null"
 
 if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
   status=$(jq -r '.status' "$metadata_file")
@@ -151,6 +157,7 @@ if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
   artifact_type_from_meta=$(jq -r '.artifacts[0].type // ""' "$metadata_file")
   artifact_summary=$(jq -r '.artifacts[0].summary // ""' "$metadata_file")
   memory_candidates=$(jq -c '.memory_candidates // []' "$metadata_file")
+  reflection=$(jq -c '.reflection // null' "$metadata_file")
 
   # implement-specific fields (safe to read for all operations — will be empty for non-implement)
   completion_summary=$(jq -r '.completion_data.completion_summary // ""' "$metadata_file")
@@ -200,6 +207,17 @@ fi
 
 bash .claude/scripts/events-append.sh "${event_args[@]}" \
   >/dev/null 2>&1 || echo "[postflight] WARNING: events-append.sh failed (non-blocking)" >&2
+
+# Second, independent event: log a completion-time reflection when present. Never reuses the
+# orchestrator_status event line above; guarded and non-blocking so a reflection-event failure
+# cannot affect the rest of postflight.
+if [ "$reflection" != "null" ] && [ -n "$reflection" ]; then
+  bash .claude/scripts/events-append.sh --event-type reflection --category success \
+    --checkpoint postflight --task "$task_number" --session "$session_id" \
+    --detail-json "$reflection" \
+    --message "Completion-time reflection captured for task ${task_number}" \
+    >/dev/null 2>&1 || echo "[postflight] WARNING: reflection event append failed (non-blocking)" >&2
+fi
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 6a: Validate artifact (non-blocking)
@@ -303,6 +321,22 @@ with open('specs/state.json', 'w') as f:
     json.dump(state, f, indent=2)
     f.write('\n')
 " || echo "[postflight] WARNING: Failed to propagate memory_candidates (non-blocking)" >&2
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 7d: Write reflection (implement only, overwrite semantics)
+# Uses jq --argjson rather than the python3 triple-quote bash-interpolation pattern used above:
+# reflection's four free-text fields may contain embedded quotes/newlines that would break a
+# '''${reflection}''' python string literal. jq --argjson passes the JSON value safely without
+# string interpolation. Guarded and non-blocking: a failure here must not affect the
+# completion_summary/roadmap_items/memory_candidates handling above.
+# ─────────────────────────────────────────────────────────────────────────────
+if [ "$operation_type" = "implement" ] && [ "$status" = "implemented" ] && [ "$reflection" != "null" ] && [ -n "$reflection" ]; then
+  echo "[postflight] Writing reflection to state.json..."
+  jq --argjson num "$task_number" --argjson refl "$reflection" \
+    '(.active_projects[] | select(.project_number == $num)).reflection = $refl' \
+    specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json \
+    || echo "[postflight] WARNING: Failed to write reflection (non-blocking)" >&2
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────

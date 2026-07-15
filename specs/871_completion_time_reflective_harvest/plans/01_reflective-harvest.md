@@ -162,29 +162,32 @@ fixed contract.
 
 ---
 
-### Phase 2: Persist reflection at the postflight completion seam [NOT STARTED]
+### Phase 2: Persist reflection at the postflight completion seam [COMPLETED]
 
 **Goal**: Read, event-log, and persist the `reflection` field in `orchestrator-postflight.sh`.
 
 **Tasks**:
-- [ ] Stage 6 (near line 143-158): initialize `reflection="null"` with the other metadata
+- [x] Stage 6 (near line 143-158): initialize `reflection="null"` with the other metadata
   defaults and add `reflection=$(jq -c '.reflection // null' "$metadata_file")` inside the
-  metadata-read block.
-- [ ] Stage 6b (after the existing `orchestrator_status` event append, ~line 202): add a second,
+  metadata-read block. *(completed)*
+- [x] Stage 6b (after the existing `orchestrator_status` event append, ~line 202): add a second,
   independent `events-append.sh` call guarded on `[ "$reflection" != "null" ] && [ -n
   "$reflection" ]`, with `--event-type reflection --category success --checkpoint postflight
   --task "$task_number" --session "$session_id" --detail-json "$reflection"` and a descriptive
   `--message`. Non-blocking (`|| echo "[postflight] WARNING: reflection event append failed
-  (non-blocking)" >&2`). Do NOT reuse the `orchestrator_status` event line.
-- [ ] Add a new "Stage 7d" block after Stage 7c (~line 306) that writes `reflection` as a
+  (non-blocking)" >&2`). Do NOT reuse the `orchestrator_status` event line. *(completed)*
+- [x] Add a new "Stage 7d" block after Stage 7c (~line 306) that writes `reflection` as a
   top-level object on the matched `active_projects[]` entry. Gate on `operation_type ==
   "implement" && status == "implemented" && reflection != "null"`. Use **overwrite** semantics
-  (`p['reflection'] = new_reflection`), not append.
-- [ ] For this write, read the object safely: prefer `jq --argjson`/temp-file or `json.loads`
+  (`p['reflection'] = new_reflection`), not append. *(completed: used jq
+  `(.active_projects[] | select(.project_number == $num)).reflection = $refl` rather than a
+  python3 dict assignment, matching the Stage 8 jq style already in the file)*
+- [x] For this write, read the object safely: prefer `jq --argjson`/temp-file or `json.loads`
   reading the value out of the metadata file directly, rather than extending the fragile
-  `'''${...}'''` bash-interpolation pattern to four free-text fields (see Risks).
-- [ ] Update the file's header stage-comment block (lines 24-36) to mention the new reflection
-  read/event/write so the documented stage map stays accurate.
+  `'''${...}'''` bash-interpolation pattern to four free-text fields (see Risks). *(completed:
+  jq --argjson)*
+- [x] Update the file's header stage-comment block (lines 24-36) to mention the new reflection
+  read/event/write so the documented stage map stays accurate. *(completed)*
 
 **Timing**: 1 hour
 
