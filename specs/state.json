@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 866,
+  "next_project_number": 873,
   "active_projects": [
     {
       "project_number": 863,
@@ -328,6 +328,192 @@
           "summary": ""
         }
       ]
+    },
+    {
+      "project_number": 866,
+      "project_name": "online_ingest_zotero_pdf_bridge",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "extensions",
+      "description": "Build the online-discovery -> Zotero+PDF -> ingest bridge for the literature extension so a --lit run can ingest a newly found online source end-to-end. Wire literature-discover.sh Tier-3 online results (Semantic Scholar / Unpaywall / arXiv; statuses open_access / paywall / arxiv / in_zotero_no_pdf) into the existing ingest pipeline. For a user-selected discovered source: (1) resolve and download the PDF for open-access/arXiv hits; (2) add the source to Zotero WITH the PDF attached -- this requires a NEW create-item capability (Zotero Web API POST /items via the `zot` CLI, or the local API at 127.0.0.1:23119), since zotero-write.sh today supports ONLY note-add / tag-add / tag-remove / attach-file against an EXISTING item and has no create-item path; (3) run the existing convert -> chunk -> build-index pipeline (literature-ingest.sh, literature-convert.sh, literature-chunk.sh, literature-build-index.sh) and register the new doc in the global index and, when appropriate, the per-repo sub-index (specs/literature-index.json). Paywalled/no-PDF sources MUST be surfaced honestly with no fabricated downloads, mirroring the existing assisted-export UX (zotero-export-status.sh directives) in commands/literature.md. Preferred shape: a new entry point (e.g. literature-ingest-online.sh) or an extension of literature-ingest.sh that accepts a discovery record. This is the foundation task; tasks 867 and 868 build on it. Keep the literature EXTENSION.md / merge-source docs in sync (CLAUDE.md is auto-generated).",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/literature/scripts/",
+        "agent-system/extensions/literature/commands/literature.md",
+        "agent-system/extensions/literature/EXTENSION.md"
+      ],
+      "created": "2026-07-15T06:34:11Z",
+      "last_updated": "2026-07-15T07:17:04Z",
+      "session_id": "sess_1784097580_894630_866",
+      "artifacts": [
+        {
+          "path": "specs/866_online_ingest_zotero_pdf_bridge/reports/01_online-ingest-zotero-bridge.md",
+          "type": "report",
+          "summary": "Online-ingest Zotero+PDF bridge research"
+        },
+        {
+          "path": "specs/866_online_ingest_zotero_pdf_bridge/plans/01_online-ingest-zotero-bridge.md",
+          "type": "plan",
+          "summary": "Online-ingest bridge implementation plan"
+        },
+        {
+          "path": "specs/866_online_ingest_zotero_pdf_bridge/summaries/01_online-ingest-zotero-bridge-summary.md",
+          "type": "summary",
+          "summary": "Online-ingest bridge implementation summary"
+        }
+      ]
+    },
+    {
+      "project_number": 867,
+      "project_name": "sparse_lit_detection_stage4a",
+      "status": "planned",
+      "task_type": "meta",
+      "topic": "extensions",
+      "description": "Add sparse-literature detection to --lit and reconcile the drifted Stage 4a flow so that when a run \"does not find much\" literature it offers to search online and ingest (via the task 866 bridge). Current gaps: literature-lit-flag-resolve.sh classifies purely on file existence (5 directives: LIT_DISABLED / SUBINDEX_PRESENT / GLOBAL_MISSING / PROMPT_NEEDED / AUTONOMOUS_GLOBAL) with NO count or threshold; literature-briefing.sh computes an internal seg_count but never surfaces it to callers; and the deployed skills' Stage 4a is DRIFTED -- skill-researcher and its peers do not actually call literature-lit-flag-resolve.sh and never offer the designed \"Use global corpus now\" option. This task: (1) surface a machine-readable coverage/segment count and a `sparse` signal from literature-briefing.sh, following the established loud-banner precedent (never silent); (2) add a configurable sparsity threshold with a sensible default; (3) introduce a new directive (e.g. SPARSE_PROMPT_NEEDED) that fires on sparse-OR-absent coverage on BOTH the SUBINDEX_PRESENT path (sub-index exists but returns few relevant chunks) AND the global-search path; (4) reconcile and complete the Stage 4a wiring across ALL SIX --lit skills (skill-researcher / skill-planner / skill-implementer and their -hard variants) so they call the resolver and present a new interactive option \"Search online to ingest\" that invokes the task 866 bridge; (5) preserve the autonomous/orchestrator contract with a deterministic, visible [lit:auto] fallback -- never a silent no-op. Keep EXTENSION.md / merge-source docs in sync (CLAUDE.md is auto-generated). Depends on task 866 (the \"search online\" option must invoke the ingest bridge).",
+      "dependencies": [
+        866
+      ],
+      "file_scope": [
+        "agent-system/extensions/literature/scripts/literature-lit-flag-resolve.sh",
+        "agent-system/extensions/literature/scripts/literature-briefing.sh",
+        "agent-system/extensions/core/skills/",
+        "agent-system/extensions/literature/EXTENSION.md"
+      ],
+      "created": "2026-07-15T06:34:11Z",
+      "last_updated": "2026-07-15T07:28:59Z",
+      "session_id": "sess_1784097580_894630_867",
+      "artifacts": [
+        {
+          "path": "specs/867_sparse_lit_detection_stage4a/reports/01_sparse-lit-detection-design.md",
+          "type": "report",
+          "summary": "Sparse-lit detection + Stage 4a reconciliation research"
+        },
+        {
+          "path": "specs/867_sparse_lit_detection_stage4a/plans/01_sparse-lit-stage4a-wiring.md",
+          "type": "plan",
+          "summary": "Sparse-lit + Stage 4a wiring plan"
+        }
+      ]
+    },
+    {
+      "project_number": 868,
+      "project_name": "typst_segmentation_evaluation",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "extensions",
+      "description": "Evaluate whether Typst segmentation is \"superior AND just as convenient\" versus the current markdown chunking, and implement conditionally. Current pipeline is markdown-only: literature-convert.sh emits {doc_id}.md (pdftotext + PyMuPDF; marker/pandoc explicitly evaluated and rejected), literature-chunk.sh does markdown-heading-driven ('# ## ###') two-pass hierarchical chunking into chunk_NNNN.md + chunks.json, indexed via literature-schema.sql / literature-build-index.sh (SQLite FTS5). The typst extension is authoring-only (no scripts, no converter, no chunker). The FTS5 index is largely format-agnostic (a source_format column already exists; .typ chunks are feasible with minor chunk-file glob and --read path changes), but a PDF->typst converter and a typst-aware segmenter (typst '=' / '==' headings and #heading[] / #theorem[] functions) would be NEW greenfield work. Deliverables: (a) a clear decision -- is typst superior and just-as-convenient for segmentation? If NO, record a durable decision (referencing durable anchors, no task-number citations) to keep markdown, with rationale; (b) if YES, implement a typst conversion/segmentation path and make the ingest pipeline (especially the task 866 bridge plus literature-convert.sh / literature-chunk.sh) format-configurable, with minimal index-schema changes. A \"no format change\" outcome is valid and expected if convenience parity is not met. Depends on task 866 (modifies the same convert/chunk stage the bridge uses).",
+      "dependencies": [
+        866
+      ],
+      "file_scope": [
+        "agent-system/extensions/literature/scripts/",
+        "agent-system/extensions/typst/"
+      ],
+      "created": "2026-07-15T06:34:11Z",
+      "last_updated": "2026-07-15T06:34:11Z",
+      "session_id": "sess_1784097251_17781",
+      "artifacts": []
+    },
+    {
+      "project_number": 869,
+      "project_name": "unified_event_reflection_store",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "memory-improvement-loop",
+      "title": "Unified event/reflection JSONL store + schema + reader API",
+      "description": "Define the append-only JSONL store (proposed specs/events.jsonl, created lazily like errors.json) that both capture layers write and the memory distillation reads. Specify the event schema (event_type, timestamp, duration, session_id, task, checkpoint, category for deviation/blocker/milestone/success, and cross-link to errors.json), and ship a shared append helper plus a query/reader helper so no subsystem hand-rolls jq. This is the foundational contract and is sequenced first (build inversion of the runtime data flow) so the producer layers have a validated write target and the distillation consumer has a stable reader; it implements only the store plumbing and its documented format, no agent-behavioral capture itself. Reuse the errors.json entry-schema conventions and the shared session_id/task cross-link keys. Keep the core EXTENSION.md, manifest.json, and index-entries.json in sync (CLAUDE.md is auto-generated, never hand-edited).",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/",
+        "agent-system/extensions/core/context/formats/",
+        "agent-system/extensions/core/context/schemas/",
+        "agent-system/extensions/core/EXTENSION.md",
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/index-entries.json"
+      ],
+      "created": "2026-07-15T07:43:49Z",
+      "last_updated": "2026-07-15T07:43:49Z",
+      "session_id": "sess_1784101429_7c3fb31c",
+      "artifacts": []
+    },
+    {
+      "project_number": 870,
+      "project_name": "automatic_hook_event_logging",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "memory-improvement-loop",
+      "title": "Automatic hook-based lifecycle event logging",
+      "description": "Emit structured events into the unified store automatically: instrument the four skill-base.sh lifecycle stage functions (preflight/context_injection/verification/postflight) for timings and success milestones, and add a PostToolUse plus Stop/SubagentStop logger hook capturing command/agent lifecycle events, deviations, and blockers, cross-linked with errors.json via the shared session_id/task keys. Reuse the existing provides.hooks + settings.json wiring convention; note there is currently no live functioning top-level lifecycle hook, so this also establishes that pattern for real. Handle the lazy absence of errors.json gracefully (do not assume it exists). Depends on the store contract for its append helper. Keep the core EXTENSION.md, manifest.json, and index-entries.json in sync (CLAUDE.md is auto-generated).",
+      "dependencies": [
+        869
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/hooks/",
+        "agent-system/extensions/core/scripts/skill-base.sh",
+        "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+        "agent-system/extensions/core/root-files/",
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/EXTENSION.md",
+        "agent-system/extensions/core/index-entries.json"
+      ],
+      "created": "2026-07-15T07:43:49Z",
+      "last_updated": "2026-07-15T07:43:49Z",
+      "session_id": "sess_1784101429_7c3fb31c",
+      "artifacts": []
+    },
+    {
+      "project_number": 871,
+      "project_name": "completion_time_reflective_harvest",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "memory-improvement-loop",
+      "title": "Completion-time reflective harvest (/todo + /learn)",
+      "description": "Add a structured reflective capture at task completion (what worked / what was hard / what was missed / successes) by extending the existing skill-todo Stage 7/9 harvest and the /learn --task flow rather than replacing them. Persist the reflection as a new field alongside memory_candidates/completion_summary in the task's state.json entry, written at the orchestrator-postflight.sh completion seam, and surface it via the existing AskUserQuestion interactive prompt; the reflection also lands in the unified store for distillation. Depends on the store contract. This task shares orchestrator-postflight.sh and the core EXTENSION.md/manifest.json surfaces with the hook-logging task, so it is intentionally serialized after it (user chose the serialized/safe ordering). Keep the memory and core EXTENSION.md / manifest / index-entries in sync (CLAUDE.md is auto-generated).",
+      "dependencies": [
+        869,
+        870
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/skills/skill-todo/SKILL.md",
+        "agent-system/extensions/core/scripts/memory-harvest.sh",
+        "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+        "agent-system/extensions/core/commands/todo.md",
+        "agent-system/extensions/core/context/formats/return-metadata-file.md",
+        "agent-system/extensions/memory/commands/learn.md",
+        "agent-system/extensions/memory/EXTENSION.md",
+        "agent-system/extensions/core/EXTENSION.md",
+        "agent-system/extensions/core/manifest.json"
+      ],
+      "created": "2026-07-15T07:43:49Z",
+      "last_updated": "2026-07-15T07:43:49Z",
+      "session_id": "sess_1784101429_7c3fb31c",
+      "artifacts": []
+    },
+    {
+      "project_number": 872,
+      "project_name": "distill_review_revise_dream_mode",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "memory-improvement-loop",
+      "title": "/distill review/revise (dream) mode",
+      "description": "Add a new review/revise (dream) mode to the existing /distill command (NOT a separate /dream command) that ingests the unified store, re-reviews and revises ALL memories in light of the captured logs, and synthesizes concrete agent-system improvement proposals (which may become tasks or documentation edits). Reuse /distill's existing score/merge/compress/refine/purge/gc primitives internally and the skill-memory distill sub_mode dispatch; this is the loop-closing consumer. Depends on the store plus both capture layers so it operates over real captured data. Keep the memory EXTENSION.md, manifest.json, index-entries.json, and distill-usage context in sync (CLAUDE.md is auto-generated).",
+      "dependencies": [
+        869,
+        870,
+        871
+      ],
+      "file_scope": [
+        "agent-system/extensions/memory/commands/distill.md",
+        "agent-system/extensions/memory/skills/skill-memory/SKILL.md",
+        "agent-system/extensions/memory/context/project/memory/distill-usage.md",
+        "agent-system/extensions/memory/EXTENSION.md",
+        "agent-system/extensions/memory/manifest.json",
+        "agent-system/extensions/memory/index-entries.json"
+      ],
+      "created": "2026-07-15T07:43:49Z",
+      "last_updated": "2026-07-15T07:43:49Z",
+      "session_id": "sess_1784101429_7c3fb31c",
+      "artifacts": []
     }
   ],
   "completed_projects": [],
@@ -353,6 +539,7 @@
     "literature",
     "cslib",
     "extensions",
-    "neovim"
+    "neovim",
+    "memory-improvement-loop"
   ]
 }

@@ -1,11 +1,111 @@
 ---
-next_project_number: 866
+next_project_number: 873
 ---
 
 # TODO
 
+## Task Order
+
+*Updated 2026-07-15. Generated from state.json dependency graph.*
+
+**Dependency Waves**:
+| Wave | Tasks | Blocked by | Topics |
+|------|-------|------------|--------|
+| 1 | 867,868,869 | -- | extensions, memory-improvement-loop |
+| 2 | 870 | 869 | memory-improvement-loop |
+| 3 | 871 | 870 | memory-improvement-loop |
+| 4 | 872 | 871 | memory-improvement-loop |
+
+**Grouped by Topic** (indented = depends on parent):
+
+### Extensions
+
+867 [PLANNED] — Add sparse-literature detection to --lit and reconcile the drifte
+868 [NOT STARTED] — Evaluate whether Typst segmentation is "superior AND just as conv
+
+### Memory Improvement Loop
+
+869 [NOT STARTED] — Define the append-only JSONL store (proposed specs/events.jsonl, 
+  └─ 870 [NOT STARTED] — Emit structured events into the unified store automatically: inst
+    └─ 871 [NOT STARTED] — Add a structured reflective capture at task completion (what work
+      └─ 872 [NOT STARTED] — Add a new review/revise (dream) mode to the existing /distill com
 
 ## Tasks
+
+### 872. /distill review/revise (dream) mode
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: memory-improvement-loop
+- **Dependencies**: Task 869, Task 870, Task 871
+
+**Description**: Add a new review/revise (dream) mode to the existing /distill command (NOT a separate /dream command) that ingests the unified store, re-reviews and revises ALL memories in light of the captured logs, and synthesizes concrete agent-system improvement proposals (which may become tasks or documentation edits). Reuse /distill's existing score/merge/compress/refine/purge/gc primitives internally and the skill-memory distill sub_mode dispatch; this is the loop-closing consumer. Depends on the store plus both capture layers so it operates over real captured data. Keep the memory EXTENSION.md, manifest.json, index-entries.json, and distill-usage context in sync (CLAUDE.md is auto-generated).
+
+---
+
+### 871. Completion-time reflective harvest (/todo + /learn)
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: memory-improvement-loop
+- **Dependencies**: Task 869, Task 870
+
+**Description**: Add a structured reflective capture at task completion (what worked / what was hard / what was missed / successes) by extending the existing skill-todo Stage 7/9 harvest and the /learn --task flow rather than replacing them. Persist the reflection as a new field alongside memory_candidates/completion_summary in the task's state.json entry, written at the orchestrator-postflight.sh completion seam, and surface it via the existing AskUserQuestion interactive prompt; the reflection also lands in the unified store for distillation. Depends on the store contract. This task shares orchestrator-postflight.sh and the core EXTENSION.md/manifest.json surfaces with the hook-logging task, so it is intentionally serialized after it (user chose the serialized/safe ordering). Keep the memory and core EXTENSION.md / manifest / index-entries in sync (CLAUDE.md is auto-generated).
+
+---
+
+### 870. Automatic hook-based lifecycle event logging
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: memory-improvement-loop
+- **Dependencies**: Task 869
+
+**Description**: Emit structured events into the unified store automatically: instrument the four skill-base.sh lifecycle stage functions (preflight/context_injection/verification/postflight) for timings and success milestones, and add a PostToolUse plus Stop/SubagentStop logger hook capturing command/agent lifecycle events, deviations, and blockers, cross-linked with errors.json via the shared session_id/task keys. Reuse the existing provides.hooks + settings.json wiring convention; note there is currently no live functioning top-level lifecycle hook, so this also establishes that pattern for real. Handle the lazy absence of errors.json gracefully (do not assume it exists). Depends on the store contract for its append helper. Keep the core EXTENSION.md, manifest.json, and index-entries.json in sync (CLAUDE.md is auto-generated).
+
+---
+
+### 869. Unified event/reflection JSONL store + schema + reader API
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: memory-improvement-loop
+- **Dependencies**: None
+
+**Description**: Define the append-only JSONL store (proposed specs/events.jsonl, created lazily like errors.json) that both capture layers write and the memory distillation reads. Specify the event schema (event_type, timestamp, duration, session_id, task, checkpoint, category for deviation/blocker/milestone/success, and cross-link to errors.json), and ship a shared append helper plus a query/reader helper so no subsystem hand-rolls jq. This is the foundational contract and is sequenced first (build inversion of the runtime data flow) so the producer layers have a validated write target and the distillation consumer has a stable reader; it implements only the store plumbing and its documented format, no agent-behavioral capture itself. Reuse the errors.json entry-schema conventions and the shared session_id/task cross-link keys. Keep the core EXTENSION.md, manifest.json, and index-entries.json in sync (CLAUDE.md is auto-generated, never hand-edited).
+
+---
+
+### 868. Typst segmentation evaluation
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 866
+
+**Description**: Evaluate whether Typst segmentation is "superior AND just as convenient" versus the current markdown chunking, and implement conditionally. Current pipeline is markdown-only: literature-convert.sh emits {doc_id}.md (pdftotext + PyMuPDF; marker/pandoc explicitly evaluated and rejected), literature-chunk.sh does markdown-heading-driven ('# ## ###') two-pass hierarchical chunking into chunk_NNNN.md + chunks.json, indexed via literature-schema.sql / literature-build-index.sh (SQLite FTS5). The typst extension is authoring-only (no scripts, no converter, no chunker). The FTS5 index is largely format-agnostic (a source_format column already exists; .typ chunks are feasible with minor chunk-file glob and --read path changes), but a PDF->typst converter and a typst-aware segmenter (typst '=' / '==' headings and #heading[] / #theorem[] functions) would be NEW greenfield work. Deliverables: (a) a clear decision -- is typst superior and just-as-convenient for segmentation? If NO, record a durable decision (referencing durable anchors, no task-number citations) to keep markdown, with rationale; (b) if YES, implement a typst conversion/segmentation path and make the ingest pipeline (especially the task 866 bridge plus literature-convert.sh / literature-chunk.sh) format-configurable, with minimal index-schema changes. A "no format change" outcome is valid and expected if convenience parity is not met. Depends on task 866 (modifies the same convert/chunk stage the bridge uses).
+
+---
+
+### 867. Sparse lit detection stage4a
+- **Status**: [PLANNED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 866
+- **Research**: [867_sparse_lit_detection_stage4a/reports/01_sparse-lit-detection-design.md]
+- **Plan**: [867_sparse_lit_detection_stage4a/plans/01_sparse-lit-stage4a-wiring.md]
+
+**Description**: Add sparse-literature detection to --lit and reconcile the drifted Stage 4a flow so that when a run "does not find much" literature it offers to search online and ingest (via the task 866 bridge). Current gaps: literature-lit-flag-resolve.sh classifies purely on file existence (5 directives: LIT_DISABLED / SUBINDEX_PRESENT / GLOBAL_MISSING / PROMPT_NEEDED / AUTONOMOUS_GLOBAL) with NO count or threshold; literature-briefing.sh computes an internal seg_count but never surfaces it to callers; and the deployed skills' Stage 4a is DRIFTED -- skill-researcher and its peers do not actually call literature-lit-flag-resolve.sh and never offer the designed "Use global corpus now" option. This task: (1) surface a machine-readable coverage/segment count and a `sparse` signal from literature-briefing.sh, following the established loud-banner precedent (never silent); (2) add a configurable sparsity threshold with a sensible default; (3) introduce a new directive (e.g. SPARSE_PROMPT_NEEDED) that fires on sparse-OR-absent coverage on BOTH the SUBINDEX_PRESENT path (sub-index exists but returns few relevant chunks) AND the global-search path; (4) reconcile and complete the Stage 4a wiring across ALL SIX --lit skills (skill-researcher / skill-planner / skill-implementer and their -hard variants) so they call the resolver and present a new interactive option "Search online to ingest" that invokes the task 866 bridge; (5) preserve the autonomous/orchestrator contract with a deterministic, visible [lit:auto] fallback -- never a silent no-op. Keep EXTENSION.md / merge-source docs in sync (CLAUDE.md is auto-generated). Depends on task 866 (the "search online" option must invoke the ingest bridge).
+
+---
+
+### 866. Online ingest zotero pdf bridge
+- **Status**: [COMPLETED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+- **Research**: [866_online_ingest_zotero_pdf_bridge/reports/01_online-ingest-zotero-bridge.md]
+- **Plan**: [866_online_ingest_zotero_pdf_bridge/plans/01_online-ingest-zotero-bridge.md]
+- **Summary**: [866_online_ingest_zotero_pdf_bridge/summaries/01_online-ingest-zotero-bridge-summary.md]
+
+**Description**: Build the online-discovery -> Zotero+PDF -> ingest bridge for the literature extension so a --lit run can ingest a newly found online source end-to-end. Wire literature-discover.sh Tier-3 online results (Semantic Scholar / Unpaywall / arXiv; statuses open_access / paywall / arxiv / in_zotero_no_pdf) into the existing ingest pipeline. For a user-selected discovered source: (1) resolve and download the PDF for open-access/arXiv hits; (2) add the source to Zotero WITH the PDF attached -- this requires a NEW create-item capability (Zotero Web API POST /items via the `zot` CLI, or the local API at 127.0.0.1:23119), since zotero-write.sh today supports ONLY note-add / tag-add / tag-remove / attach-file against an EXISTING item and has no create-item path; (3) run the existing convert -> chunk -> build-index pipeline (literature-ingest.sh, literature-convert.sh, literature-chunk.sh, literature-build-index.sh) and register the new doc in the global index and, when appropriate, the per-repo sub-index (specs/literature-index.json). Paywalled/no-PDF sources MUST be surfaced honestly with no fabricated downloads, mirroring the existing assisted-export UX (zotero-export-status.sh directives) in commands/literature.md. Preferred shape: a new entry point (e.g. literature-ingest-online.sh) or an extension of literature-ingest.sh that accepts a discovery record. This is the foundation task; tasks 867 and 868 build on it. Keep the literature EXTENSION.md / merge-source docs in sync (CLAUDE.md is auto-generated).
+
+---
 
 ### 865. Make .claude/ wipe lossless and one-keystroke regenerable
 - **Status**: [COMPLETED]
