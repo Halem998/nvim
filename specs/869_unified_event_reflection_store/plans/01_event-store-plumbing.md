@@ -240,22 +240,29 @@ sync-surface files, keeping counts and discovery metadata accurate.
 
 ---
 
-### Phase 5: End-to-end verification [NOT STARTED]
+### Phase 5: End-to-end verification [COMPLETED]
 
 **Goal**: Confirm the append/query round-trip works and all sync files remain valid.
 
 **Tasks**:
-- [ ] Run an append -> query round-trip: append 2-3 varied events (different `category`,
+- [x] Run an append -> query round-trip: append 2-3 varied events (different `category`,
       one with `--detail-json`, one with `--error-ref`, one point-event with no `--duration`), then
       query them back by `--session`, by `--category`, and with `--format summary-counts`.
-- [ ] Confirm lazy creation: delete any test `specs/events.jsonl`, run one append, verify the file
-      is created and gitignore status is unchanged (not ignored).
-- [ ] Confirm graceful absence: with no store present, `events-query.sh` exits 0 and emits empty.
-- [ ] Validate every appended line against `events-schema.json` (e.g. via a `jq`-based required-key
-      check, since no JSON Schema validator is assumed installed).
-- [ ] Re-validate `manifest.json`, `index-entries.json` as JSON and confirm EXTENSION.md count.
-- [ ] Remove any throwaway test lines from `specs/events.jsonl` so the store is left clean (or
-      leave it absent if only test events were written).
+      *(completed: tested via a temporary local harness at repo root since the scripts'
+      SCRIPT_DIR/../.. resolution targets their eventual .claude/scripts/ deployment location,
+      not their agent-system/extensions/core/scripts/ source location -- harness removed after
+      verification, no .claude/ files touched)*
+- [x] Confirm lazy creation: delete any test `specs/events.jsonl`, run one append, verify the file
+      is created and gitignore status is unchanged (not ignored). *(completed)*
+- [x] Confirm graceful absence: with no store present, `events-query.sh` exits 0 and emits empty.
+      *(completed)*
+- [x] Validate every appended line against `events-schema.json` (e.g. via a `jq`-based required-key
+      check, since no JSON Schema validator is assumed installed). *(completed)*
+- [x] Re-validate `manifest.json`, `index-entries.json` as JSON and confirm EXTENSION.md count.
+      *(completed: 52 == 52)*
+- [x] Remove any throwaway test lines from `specs/events.jsonl` so the store is left clean (or
+      leave it absent if only test events were written). *(completed: left absent, matching
+      pre-task state)*
 
 **Timing**: 0.5 hours
 
