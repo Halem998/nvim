@@ -152,6 +152,25 @@ DRIFT_REVISION_THRESHOLD=0.30
 
 ### Stage 3: State Machine Loop
 
+**Entry reconcile (once per invocation, never per-cycle)**: before the state machine loop opens,
+run `reconcile-task-status.sh` exactly once against this task. The failure this repairs is a
+*previous, separate* invocation that crashed before postflight — observable only at the start of
+a fresh invocation, not on every cycle iteration (a per-cycle call here would be redundant cost
+against up to `MAX_CYCLES` iterations and would fight the preflight writes `skill_preflight_update`
+already makes between dispatches within this same run). Live (not `--dry-run`): no human is
+reliably present to gate on in `/orchestrate`'s no-confirmation design, and the handoff-aware
+promotion guard now bounds what an automatic promotion can do. Bracketed because a live no-op
+prints nothing — the empty-output branch must still be visible:
+
+```bash
+recon_out=$(bash .claude/scripts/reconcile-task-status.sh "$task_number" "$session_id" 2>&1 || true)
+if [ -n "$recon_out" ]; then
+  echo "$recon_out"
+else
+  echo "[orchestrate] Entry reconcile: no stranded status found for task $task_number"
+fi
+```
+
 The loop runs until a terminal condition is reached or MAX_CYCLES is hit.
 
 ```
@@ -627,6 +646,25 @@ For each task in `task_numbers`, read `state.json` to get `task_type`, `project_
 | *(default)* | `general-research-agent` | `general-implementation-agent` |
 
 Check `.claude/extensions/${task_type}/manifest.json` for override routing. Populate all per-task maps into `mt_state_file`.
+
+**Entry reconcile (once per task, never per-cycle)**: within this same per-task iteration — not
+inside Stage MT-3's cycling loop — run `reconcile-task-status.sh` once for each task. This rides
+the iteration Stage MT-2 already performs to build the routing table, satisfying the once-per-task
+requirement on a path that has no single per-task entry point of its own. Live, bracketed the same
+way as the single-task entry reconcile above (a live no-op prints nothing):
+
+```bash
+for task_number in "${task_numbers[@]}"; do
+  # ... existing routing-table resolution for this task_number (task_type, project_name,
+  # task_dir, research_agent, implement_agent) ...
+  recon_out=$(bash .claude/scripts/reconcile-task-status.sh "$task_number" "$session_id" 2>&1 || true)
+  if [ -n "$recon_out" ]; then
+    echo "$recon_out"
+  else
+    echo "[orchestrate] Entry reconcile: no stranded status found for task $task_number"
+  fi
+done
+```
 
 ### Stage MT-3: Lifecycle-Cycling Loop
 

@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Wire /orchestrate entry as the secondary automatic trigger",
+  "started_at": "2026-07-15T00:00:00Z",
+  "last_updated": "2026-07-15T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add single-task entry reconcile at Stage 2/3 boundary, before the while loop", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md", ".claude/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Add multi-task entry reconcile inside Stage MT-2's per-task iteration, before Stage MT-3", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md", ".claude/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Fixture-verify placement by inspection, bash -n on both snippets, no-op and stranded-task fixture runs", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

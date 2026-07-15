@@ -245,7 +245,7 @@ actually repairs status. This is the primary trigger: user-invoked, never on a h
 
 ---
 
-### Phase 3: Wire /orchestrate entry as the secondary automatic trigger [NOT STARTED]
+### Phase 3: Wire /orchestrate entry as the secondary automatic trigger [COMPLETED]
 
 **Goal**: Reconcile a task stranded by a previous crashed run exactly once per invocation, before
 any lifecycle decision is made — on both the single-task and multi-task paths, and never inside a
@@ -253,31 +253,35 @@ cycle loop.
 
 **Tasks**:
 
-- [ ] Read `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` Stage 2 (loop guard
+- [x] Read `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` Stage 2 (loop guard
       init) and Stage 3 (state machine loop), and Stage MT-2 (routing table build) / MT-3 (cycling
-      loop), to place the calls precisely.
-- [ ] **Single-task**: add the call at the Stage 2 / Stage 3 boundary — after loop-guard
+      loop), to place the calls precisely. *(completed)*
+- [x] **Single-task**: add the call at the Stage 2 / Stage 3 boundary — after loop-guard
       initialization, before the `while` loop opens. It must be outside the loop body. `session_id`
-      and `task_number` are both already in scope there.
-- [ ] **Multi-task**: add the call inside Stage MT-2's existing per-task iteration (the loop that
+      and `task_number` are both already in scope there. *(completed: verified by inspection —
+      lines 155-172 precede `while` at line 177)*
+- [x] **Multi-task**: add the call inside Stage MT-2's existing per-task iteration (the loop that
       already visits every task once to build the routing table), not in Stage MT-3's cycling loop.
       This is what satisfies the once-per-task requirement on a path that has no single per-task
       entry point — the reconcile rides the existing iteration rather than needing new entry
-      detection.
-- [ ] Call live (not dry-run), consistent with the orchestrator's explicit no-confirmation design:
+      detection. *(completed: verified by inspection — lines 650-667 sit inside Stage MT-2, before
+      Stage MT-3 begins at line 669)*
+- [x] Call live (not dry-run), consistent with the orchestrator's explicit no-confirmation design:
       no human is reliably present to gate on, and Phase 1's guard now bounds what promotion can do.
-- [ ] **Visibility**: because a live no-op prints nothing, bracket each call —
+      *(completed)*
+- [x] **Visibility**: because a live no-op prints nothing, bracket each call —
       `recon_out=$(bash .claude/scripts/reconcile-task-status.sh "$task_number" "$session_id" 2>&1 || true)`.
       If `recon_out` is non-empty, echo it. If empty, echo
       `[orchestrate] Entry reconcile: no stranded status found for task $task_number`. Both paths
       print; neither is silent. Use the same `[orchestrate]` prefix the surrounding stages use.
-- [ ] Keep it non-fatal (`|| true`): a reconcile failure must never prevent the orchestrator from
-      starting.
-- [ ] Add a brief comment at each call site stating the once-per-invocation constraint and why
+      *(completed)*
+- [x] Keep it non-fatal (`|| true`): a reconcile failure must never prevent the orchestrator from
+      starting. *(completed)*
+- [x] Add a brief comment at each call site stating the once-per-invocation constraint and why
       (the failure mode is a *previous* run's crash, observable only at entry; per-cycle calls
       would be redundant and would fight the orchestrator's own preflight writes). **MUST NOT**
-      cite a task number in that comment.
-- [ ] Mirror to `.claude/skills/skill-orchestrate/SKILL.md`.
+      cite a task number in that comment. *(completed)*
+- [x] Mirror to `.claude/skills/skill-orchestrate/SKILL.md`. *(completed)*
 
 **Timing**: 1 hour
 
