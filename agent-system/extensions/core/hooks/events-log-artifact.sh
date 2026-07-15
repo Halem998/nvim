@@ -56,6 +56,10 @@ _events_append_observable() {
 
 # --- Parse file_path from stdin (PostToolUse hook input), mirroring the stdin-then-env
 #     fallback pattern used by validate-plan-write.sh / validate-meta-write.sh ---
+# Also capture the top-level .cwd field from the same parsed stdin JSON when available (scope 5:
+# nullable cwd) -- the CLAUDE_TOOL_INPUT env fallback carries no .cwd, so CWD stays empty
+# (written as null by events-append.sh) in that edge case.
+CWD=""
 if [ -t 0 ]; then
   FILE=$(echo "${CLAUDE_TOOL_INPUT:-}" | jq -r '.file_path // empty' 2>/dev/null)
 else
@@ -64,6 +68,7 @@ else
   if [ -z "$FILE" ]; then
     FILE=$(echo "${CLAUDE_TOOL_INPUT:-}" | jq -r '.file_path // empty' 2>/dev/null)
   fi
+  CWD=$(echo "$INPUT" | jq -r '.cwd // empty' 2>/dev/null)
 fi
 
 # Early exit for empty path (~1ms) -- no jq/lock work paid for below this point unless matched
@@ -127,6 +132,7 @@ if [ "$match_type" = "return_meta" ]; then
     event_args=(--event-type artifact_write --category "$category" --session "$session_id" \
       --message "Artifact metadata written with status '${status:-unknown}'")
     [ -n "$task" ] && event_args+=(--task "$task")
+    [ -n "$CWD" ] && event_args+=(--cwd "$CWD")
 
     _events_append_observable "$EVENTS_APPEND" "${event_args[@]}"
   fi
@@ -148,6 +154,7 @@ elif [ "$match_type" = "errors_json" ]; then
       --message "Error entry logged to specs/errors.json")
     [ -n "$task" ] && [ "$task" != "null" ] && event_args+=(--task "$task")
     [ -n "$error_id" ] && event_args+=(--error-ref "$error_id")
+    [ -n "$CWD" ] && event_args+=(--cwd "$CWD")
 
     _events_append_observable "$EVENTS_APPEND" "${event_args[@]}"
   fi

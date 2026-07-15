@@ -4,7 +4,7 @@
 # Usage:
 #   events-append.sh --event-type TYPE --category CAT --session SESSION_ID \
 #     [--task N] [--checkpoint NAME] [--duration SECONDS] --message "..." \
-#     [--detail-json '{"...":"..."}'] [--error-ref ERR_ID]
+#     [--detail-json '{"...":"..."}'] [--error-ref ERR_ID] [--cwd PATH]
 #
 # Single responsibility: build one validated JSON line via `jq -c -n` (never string
 # concatenation) and append it to specs/events.jsonl, creating the file lazily on first
@@ -28,7 +28,7 @@ usage() {
   cat >&2 <<'USAGE'
 Usage: events-append.sh --event-type TYPE --category CAT --session SESSION_ID \
   [--task N] [--checkpoint NAME] [--duration SECONDS] --message "..." \
-  [--detail-json '{"...":"..."}'] [--error-ref ERR_ID]
+  [--detail-json '{"...":"..."}'] [--error-ref ERR_ID] [--cwd PATH]
 
 Required:
   --event-type TYPE     Open string naming the specific kind of event
@@ -42,6 +42,9 @@ Optional:
   --duration SECONDS    Duration in seconds (number)
   --detail-json '{...}' Open JSON object payload (must be valid JSON)
   --error-ref ERR_ID     Optional cross-link to an errors.json entry id
+  --cwd PATH             Invoking working directory (absolute path); written as null when
+                         absent (backward compatible). Never auto-detected -- the caller
+                         supplies it explicitly (e.g. from hook stdin's .cwd field).
 USAGE
   exit 1
 }
@@ -56,6 +59,7 @@ duration=""
 message=""
 detail_json=""
 error_ref=""
+cwd=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -68,6 +72,7 @@ while [ $# -gt 0 ]; do
     --message) message="${2:-}"; shift 2 ;;
     --detail-json) detail_json="${2:-}"; shift 2 ;;
     --error-ref) error_ref="${2:-}"; shift 2 ;;
+    --cwd) cwd="${2:-}"; shift 2 ;;
     -h|--help) usage ;;
     *) echo "error: unknown argument: $1" >&2; usage ;;
   esac
@@ -146,6 +151,7 @@ line=$(jq -c -n \
   --arg message "$message" \
   --argjson detail "$detail_arg" \
   --arg error_ref "$error_ref" \
+  --arg cwd "$cwd" \
   '{
     event_id: $event_id,
     event_type: $event_type,
@@ -157,7 +163,8 @@ line=$(jq -c -n \
     checkpoint: (if $checkpoint == "" then null else $checkpoint end),
     message: $message,
     detail: $detail,
-    error_ref: (if $error_ref == "" then null else $error_ref end)
+    error_ref: (if $error_ref == "" then null else $error_ref end),
+    cwd: (if $cwd == "" then null else $cwd end)
   }')
 
 # --- Append with a single write, guarded by flock (defense-in-depth) ---

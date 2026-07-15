@@ -64,6 +64,10 @@
     "error_ref": {
       "type": ["string", "null"],
       "description": "Optional cross-link to an errors.json entry's id. Never a hard foreign key -- always optional."
+    },
+    "cwd": {
+      "type": ["string", "null"],
+      "description": "Nullable invoking working directory (absolute path), as captured from the originating hook/lifecycle-stage context. Null when the caller did not supply --cwd (e.g. older rows written before this field existed, or a call site with no reliable cwd source). Used by events-query.sh to derive a 'repo' value at query time for cross-repo federation -- 'repo' itself is never stored, only cwd."
     }
   },
   "additionalProperties": false

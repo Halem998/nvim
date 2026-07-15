@@ -100,6 +100,9 @@ fi
 [ -z "$STDIN_JSON" ] && STDIN_JSON='{}'
 
 AGENT_ID=$(echo "$STDIN_JSON" | jq -r '.agent_id // empty' 2>/dev/null || echo "")
+# Claude Code hook stdin carries a top-level .cwd field alongside .agent_id -- capture it once
+# here and thread it to both the SubagentStop and Stop --cwd args below (scope 5: nullable cwd).
+CWD=$(echo "$STDIN_JSON" | jq -r '.cwd // empty' 2>/dev/null || echo "")
 
 if [ -n "$AGENT_ID" ]; then
   # ─────────────────────────────────────────────────────────────────────────
@@ -125,6 +128,7 @@ if [ -n "$AGENT_ID" ]; then
     --session "$session_id" \
     --message "Subagent stop for ${skill:-unknown} (${operation:-unknown})")
   [ -n "$task" ] && event_args+=(--task "$task")
+  [ -n "$CWD" ] && event_args+=(--cwd "$CWD")
 
   _events_append_observable "$EVENTS_APPEND" "${event_args[@]}"
   exit_success
@@ -164,6 +168,7 @@ session_id=$(jq -r --argjson num "$task" \
 
 event_args=(--event-type session_stop --category milestone --session "$session_id" \
   --task "$task" --message "Session stop observed for task ${task}")
+[ -n "$CWD" ] && event_args+=(--cwd "$CWD")
 
 _events_append_observable "$EVENTS_APPEND" "${event_args[@]}"
 exit_success

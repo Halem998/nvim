@@ -1,0 +1,56 @@
+{
+  "phase": 2,
+  "phase_name": "Nullable cwd schema field and threading (scope 5)",
+  "started_at": "2026-07-15T19:50:00Z",
+  "last_updated": "2026-07-15T20:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add nullable cwd field to events-schema.json",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/schemas/events-schema.json"]
+    },
+    {
+      "id": 2,
+      "description": "Add --cwd flag to events-append.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/events-append.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Thread --cwd through events-log-lifecycle.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/hooks/events-log-lifecycle.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Thread --cwd through events-log-artifact.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/hooks/events-log-artifact.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Derive repo from cwd in events-query.sh, tolerant of null",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/events-query.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Document cwd field and derived-repo behavior in events-format.md",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/formats/events-format.md"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.5",
+      "description": "Derive repo as basename of the git toplevel for that cwd",
+      "type": "altered",
+      "reason": "Implemented as basename(cwd) via pure jq instead of a per-row `git rev-parse --show-toplevel` shell-out. The plan text itself flagged this as an example (\"e.g.\"), and a per-row git invocation would be inconsistent with events-query.sh's existing native-jq streaming-filter design (no --slurp, no external process per line). In practice the cwd captured by the events hooks is already the invoking repo root, so basename(cwd) yields the same result with no added process-spawn cost per query.",
+      "annotation": "*(deviation: altered — repo derived as basename(cwd) via jq, not a per-row git-toplevel shell-out; documented in events-format.md)*"
+    }
+  ]
+}

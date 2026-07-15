@@ -63,6 +63,26 @@ risks JSON-escaping bugs. See `scripts/events-append.sh` for the reference imple
 | `message` | yes | string | Short, human-readable one-line summary, mirroring `errors.json`'s `message` field. |
 | `detail` | no | object (open) | Open, `event_type`-specific structured payload -- e.g. a completion-time reflection's `what_worked`/`what_was_hard`/`what_was_missed`/`successes` fields nest here without requiring a schema revision. Defaults to `{}` when absent. |
 | `error_ref` | no (nullable) | string \| null | Optional cross-link to an `errors.json` entry's `id` (e.g. `"err_1736700000"`). **Always optional, never a hard foreign key** -- consumers must work correctly whether or not `specs/errors.json` exists or contains the referenced ID. |
+| `cwd` | no (nullable) | string \| null | The invoking working directory (absolute path), when the caller supplied `--cwd`. Null for older rows written before this field existed, or for call sites with no reliable `cwd` source. **`cwd` is the only field stored for cross-repo federation** -- `repo` is deliberately NOT a stored field (see below). |
+
+## Cross-Repo Federation: `cwd` Stored, `repo` Derived (never stored)
+
+Cross-repo federation is built on `cwd` alone. `events-append.sh` accepts an optional `--cwd PATH`
+flag (never auto-detected -- the caller must supply it explicitly, typically from a hook's stdin
+`.cwd` field) and writes it verbatim, or `null` when absent. No `repo` field is ever written to
+`specs/events.jsonl`.
+
+`events-query.sh` derives `repo` at query time as `basename(cwd)` (e.g. `cwd`
+`"/home/user/.config/nvim"` -> `repo` `"nvim"`), added to every row in `jsonl`/`json-array` output
+and aggregated as `by_repo` in `summary-counts` output. Rows with `cwd: null` derive `repo: null`
+and are tolerated everywhere -- never an error, and never matched by a non-empty `--repo` filter.
+This basename derivation is a deliberate simplification of "git toplevel of that cwd": a per-row
+`git` invocation would be inconsistent with `events-query.sh`'s native-`jq` streaming-filter
+design, and in practice the `cwd` captured by the events hooks is already the invoking repo root.
+
+Storing only `cwd` (not a redundant `repo` field) keeps the schema minimal and avoids committing
+to a stored-vs-derived inconsistency if the repo-naming convention ever changes -- only the query
+layer would need updating, not every historical row.
 
 ## `category` Closed Enum
 
@@ -128,9 +148,9 @@ When absent, treat `detail` as `{}`.
 ## Example Lines
 
 ```json
-{"event_id":"evt_1736700000123_a1b2c3","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-07-15T10:22:31.123Z","duration_seconds":4.2,"session_id":"sess_1736700000_abc123","task":259,"checkpoint":"preflight","message":"Preflight completed","detail":{},"error_ref":null}
-{"event_id":"evt_1736700005456_d4e5f6","event_type":"deviation","category":"deviation","timestamp":"2026-07-15T10:22:36.456Z","duration_seconds":null,"session_id":"sess_1736700000_abc123","task":259,"checkpoint":"phase_2","message":"Skipped optional retry step","detail":{"reason":"Not needed for this input size"},"error_ref":null}
-{"event_id":"evt_1736700010789_g7h8i9","event_type":"blocker","category":"blocker","timestamp":"2026-07-15T10:22:41.789Z","duration_seconds":null,"session_id":"sess_1736700000_abc123","task":259,"checkpoint":null,"message":"Missing external credential","detail":{},"error_ref":"err_1736700000"}
+{"event_id":"evt_1736700000123_a1b2c3","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-07-15T10:22:31.123Z","duration_seconds":4.2,"session_id":"sess_1736700000_abc123","task":259,"checkpoint":"preflight","message":"Preflight completed","detail":{},"error_ref":null,"cwd":"/home/user/.config/nvim"}
+{"event_id":"evt_1736700005456_d4e5f6","event_type":"deviation","category":"deviation","timestamp":"2026-07-15T10:22:36.456Z","duration_seconds":null,"session_id":"sess_1736700000_abc123","task":259,"checkpoint":"phase_2","message":"Skipped optional retry step","detail":{"reason":"Not needed for this input size"},"error_ref":null,"cwd":"/home/user/.config/nvim"}
+{"event_id":"evt_1736700010789_g7h8i9","event_type":"blocker","category":"blocker","timestamp":"2026-07-15T10:22:41.789Z","duration_seconds":null,"session_id":"sess_1736700000_abc123","task":259,"checkpoint":null,"message":"Missing external credential","detail":{},"error_ref":"err_1736700000","cwd":null}
 ```
 
 ## Related Documentation

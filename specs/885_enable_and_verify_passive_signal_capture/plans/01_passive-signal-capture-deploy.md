@@ -186,26 +186,34 @@ distinguish missing-vs-failed and must be non-fatal. Do not make any call site f
 
 ---
 
-### Phase 2: Nullable `cwd` schema field and threading (scope 5) [NOT STARTED]
+### Phase 2: Nullable `cwd` schema field and threading (scope 5) [COMPLETED]
 
 **Goal**: Add a single nullable `cwd` field to the event schema and thread it end-to-end, so
 cross-repo federation can derive "repo" from `cwd` at query time — without storing a redundant
 `repo` field and without adopting the unfrozen `cc_session_id`.
 
 **Tasks**:
-- [ ] `agent-system/extensions/core/context/schemas/events-schema.json`: add a nullable `cwd`
+- [x] `agent-system/extensions/core/context/schemas/events-schema.json`: add a nullable `cwd`
       field (string, nullable; document it as the invoking working directory). Add `cwd` ONLY.
-- [ ] `agent-system/extensions/core/scripts/events-append.sh`: add a `--cwd` flag; when supplied,
+      *(completed)*
+- [x] `agent-system/extensions/core/scripts/events-append.sh`: add a `--cwd` flag; when supplied,
       write it into the event object; when absent, write `null` (backward compatible).
-- [ ] `agent-system/extensions/core/hooks/events-log-lifecycle.sh`: capture `cwd` from the
-      already-parsed hook stdin and pass `--cwd` to `events-append.sh`.
-- [ ] `agent-system/extensions/core/hooks/events-log-artifact.sh`: same — thread `--cwd` from stdin.
-- [ ] `agent-system/extensions/core/scripts/events-query.sh`: derive "repo" as a computed value
+      *(completed)*
+- [x] `agent-system/extensions/core/hooks/events-log-lifecycle.sh`: capture `cwd` from the
+      already-parsed hook stdin and pass `--cwd` to `events-append.sh`. *(completed: both
+      SubagentStop and Stop paths)*
+- [x] `agent-system/extensions/core/hooks/events-log-artifact.sh`: same — thread `--cwd` from stdin.
+      *(completed: both return_meta and errors_json branches)*
+- [x] `agent-system/extensions/core/scripts/events-query.sh`: derive "repo" as a computed value
       from `cwd` (e.g. basename of the git toplevel for that `cwd`) rather than reading a stored
-      `repo` field. Keep it tolerant of `cwd: null` (older rows).
-- [ ] Update `agent-system/extensions/core/context/formats/events-format.md` if it enumerates
+      `repo` field. Keep it tolerant of `cwd: null` (older rows). *(completed: derived as
+      basename(cwd) via pure jq rather than a per-row git-toplevel shell-out, to stay consistent
+      with events-query.sh's native-jq streaming-filter design — documented as a deliberate
+      simplification in events-format.md; added `--repo` filter and `by_repo` summary-counts
+      aggregate)*
+- [x] Update `agent-system/extensions/core/context/formats/events-format.md` if it enumerates
       fields, to document `cwd` (nullable) and the derived-repo query behavior. Do NOT document
-      `cc_session_id`.
+      `cc_session_id`. *(completed)*
 
 **Timing**: 1 hour
 

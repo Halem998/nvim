@@ -3,8 +3,16 @@
 #
 # Usage:
 #   events-query.sh [--session ID] [--task N] [--category CAT] [--event-type TYPE] \
-#     [--checkpoint NAME] [--since ISO8601] [--until ISO8601] \
+#     [--checkpoint NAME] [--since ISO8601] [--until ISO8601] [--repo NAME] \
 #     [--format jsonl|json-array|summary-counts]
+#
+# "repo" (scope 5) is NEVER a stored field -- it is derived at query time from the nullable
+# `cwd` field as basename(cwd) (e.g. cwd "/home/user/.config/nvim" -> repo "nvim"). This is a
+# deliberate simplification of "basename of the git toplevel for that cwd": a per-row git
+# invocation would be inconsistent with this script's native-jq streaming-filter design, and in
+# practice the cwd captured by the events hooks is already the invoking repo root. Rows with
+# cwd: null (pre-scope-5 rows, or call sites with no reliable cwd source) derive repo: null and
+# are tolerated everywhere, never erroring.
 #
 # Filters the specs/events.jsonl stream using native jq (jq parses a stream of concatenated
 # JSON documents directly -- no --slurp is used for the line-filtering step itself; --slurp is
@@ -28,7 +36,7 @@ set -euo pipefail
 usage() {
   cat >&2 <<'USAGE'
 Usage: events-query.sh [--session ID] [--task N] [--category CAT] [--event-type TYPE] \
-  [--checkpoint NAME] [--since ISO8601] [--until ISO8601] \
+  [--checkpoint NAME] [--since ISO8601] [--until ISO8601] [--repo NAME] \
   [--format jsonl|json-array|summary-counts]
 
 Filters:
@@ -39,11 +47,14 @@ Filters:
   --checkpoint NAME   Match checkpoint exactly
   --since ISO8601     Only events with timestamp >= this value (lexicographic ISO 8601 compare)
   --until ISO8601     Only events with timestamp <= this value (lexicographic ISO 8601 compare)
+  --repo NAME         Match the DERIVED repo (basename of cwd) exactly; rows with cwd: null
+                       never match a non-empty --repo filter
 
 Output:
-  --format jsonl          One compact JSON object per line (default)
-  --format json-array     A single JSON array of matching events
-  --format summary-counts Aggregate counts grouped by category and event_type
+  --format jsonl          One compact JSON object per line (default), each augmented with a
+                           derived "repo" field (see above; never stored, always computed)
+  --format json-array     A single JSON array of matching events, same "repo" augmentation
+  --format summary-counts Aggregate counts grouped by category, event_type, and repo
 USAGE
   exit 1
 }
@@ -56,6 +67,7 @@ f_event_type=""
 f_checkpoint=""
 f_since=""
 f_until=""
+f_repo=""
 format="jsonl"
 
 while [ $# -gt 0 ]; do
@@ -67,6 +79,7 @@ while [ $# -gt 0 ]; do
     --checkpoint) f_checkpoint="${2:-}"; shift 2 ;;
     --since) f_since="${2:-}"; shift 2 ;;
     --until) f_until="${2:-}"; shift 2 ;;
+    --repo) f_repo="${2:-}"; shift 2 ;;
     --format) format="${2:-}"; shift 2 ;;
     -h|--help) usage ;;
     *) echo "error: unknown argument: $1" >&2; usage ;;
@@ -97,6 +110,8 @@ if [ ! -f "$EVENTS_FILE" ]; then
 fi
 
 # --- Filter the JSONL stream natively (no --slurp for this step) ---
+# "repo" is derived here (basename of cwd; null when cwd is null) BEFORE filtering, so --repo
+# can select on it and every downstream output format carries the same computed field.
 filtered=$(jq -c \
   --arg session "$f_session" \
   --arg task "$f_task" \
@@ -105,14 +120,17 @@ filtered=$(jq -c \
   --arg checkpoint "$f_checkpoint" \
   --arg since "$f_since" \
   --arg until_ "$f_until" \
-  'select(
+  --arg repo "$f_repo" \
+  '. + {repo: (if (.cwd // null) == null then null else (.cwd | rtrimstr("/") | split("/") | last) end)}
+  | select(
     ($session == "" or .session_id == $session) and
     ($task == "" or ((.task // "" ) | tostring) == $task) and
     ($category == "" or .category == $category) and
     ($event_type == "" or .event_type == $event_type) and
     ($checkpoint == "" or .checkpoint == $checkpoint) and
     ($since == "" or ((.timestamp // "") >= $since)) and
-    ($until_ == "" or ((.timestamp // "") <= $until_))
+    ($until_ == "" or ((.timestamp // "") <= $until_)) and
+    ($repo == "" or .repo == $repo)
   )' "$EVENTS_FILE")
 
 # --- Emit in the requested format ---
@@ -135,11 +153,12 @@ case "$format" in
         {
           total_events: length,
           by_category: ((group_by(.category) | map({(.[0].category): length}) | add) // {}),
-          by_event_type: ((group_by(.event_type) | map({(.[0].event_type): length}) | add) // {})
+          by_event_type: ((group_by(.event_type) | map({(.[0].event_type): length}) | add) // {}),
+          by_repo: ((group_by(.repo // "null") | map({(.[0].repo // "null"): length}) | add) // {})
         }
       '
     else
-      jq -c -n '{total_events: 0, by_category: {}, by_event_type: {}}'
+      jq -c -n '{total_events: 0, by_category: {}, by_event_type: {}, by_repo: {}}'
     fi
     ;;
 esac
