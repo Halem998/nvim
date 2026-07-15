@@ -17,6 +17,24 @@
 /.opencode/tmp/
 **/.postflight-pending
 **/.git-snapshot-marker
+# Ephemeral orchestration session state: per-dispatch scratch, mutex directories,
+# and loop guards. All are runtime-only — each is overwritten or removed within a
+# single orchestrate run (see .claude/docs/architecture/handoff-schema.md, which
+# specifies .orchestrator-handoff.json as "runtime; not checked in" and overwritten
+# every dispatch cycle). They are ignored here because the postflight commit stage
+# runs before its own marker-cleanup stage, so anything left unignored is swept into
+# a commit mid-lifecycle.
+**/.lock/
+**/.orchestrator-handoff.json
+**/.orchestrator-loop-guard
+**/.continuation-loop-guard
+**/.orchestrator-churn-state.json
+**/.postflight-loop-guard
+**/.orchestrator-multi-state.json
+**/.return-meta-*.json
+**/.events.lock
+# Note: specs/events.jsonl is deliberately NOT ignored — it is an append-only durable
+# store (see .claude/context/formats/events-format.md). Do not add it here.
 .syncprotect
 specs/literature/**/*.pdf
 specs/literature/**/*.djvu
