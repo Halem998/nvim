@@ -305,43 +305,87 @@ parallel-defaults note, and the settings dependency.
 
 ---
 
-### Phase 5: Live cross-repo `/meta` verification [NOT STARTED]
+### Phase 5: Live cross-repo `/meta` verification [BLOCKED]
 
 **Goal**: Empirically confirm, via an actual cross-repo `/meta` invocation, that the commit lands in the
 global repo. The research explicitly did NOT verify this live and flagged it as required. **This phase may
 not be marked complete on reasoning alone.**
 
+**Deviation from plan (orchestrator instruction)**: two sibling tasks were executing concurrently in this
+same real nvim repo during this implementation, with postflight writes touching the real
+`specs/state.json`. Running the live test against the real `~/.config/nvim` and `~/Projects/cslib` repos
+(as originally planned) risked a lost update to the real system's machine truth. Per explicit orchestrator
+instruction, this phase was redirected to run against a **temporary scratch global root and a temporary
+scratch foreign repo** instead — testing the identical mechanism with zero blast radius on real state.
+
 **Tasks**:
-- [ ] **Deploy for test**: copy the three changed source files into the deploy trees under test
-      (`~/.config/nvim/.claude/` and `~/Projects/cslib/.claude/`). This is a *deploy* operation, mechanically
-      identical to what the `<leader>al` loader does for these files (confirmed: `sync.lua` uses a plain
-      `copy` action + `copy_file_permissions`), and is explicitly NOT authoring in `.claude/`. Record the
-      exact `cp` commands. Snapshot the foreign repo's original `.claude/` copies first for restoration.
-- [ ] **Run the live test**: launch `/meta "<small throwaway request>"` from a session whose cwd is
-      `~/Projects/cslib`. Attempt a headless `claude -p` invocation first.
-      **Decision point**: `/meta` has a mandatory user-confirmation gate (prompt mode step 4), which a
-      headless run may be unable to satisfy. If headless cannot drive the confirmation, do NOT simulate,
-      stub, or infer the result — mark this phase [BLOCKED], hand the user an exact copy-pasteable manual
-      verification procedure, and mark the task [PARTIAL]. An unobserved pass is a failure, not a pass.
-- [ ] **Observe and record** (verbatim, whatever actually happens):
-      - Did the task directory get created under `~/.config/nvim/specs/` or under `~/Projects/cslib/specs/`?
-      - Did `git -C ~/.config/nvim log -1` show the new task-creation commit?
-      - Did `git -C ~/Projects/cslib log -1` show it (it must NOT)?
-      - Did `git -C ~/Projects/cslib status --porcelain` stay clean of `specs/` churn?
-- [ ] **Interpret honestly**: if the task dir landed in the foreign repo, the Agent-prompt imperative from
-      Phase 2 was not honored — record it as a real finding for the dependent agent-definition follow-up.
-      Do not retro-edit the plan to call that a success.
-- [ ] **Verify `--local`**: run `/meta --local "<throwaway>"` from the same foreign repo and confirm the
-      task lands in `~/Projects/cslib/specs/` and NOT in the global root.
-- [ ] **Cleanup (mandatory)**:
-      - Remove the throwaway task(s) from the global repo: task dir, `state.json` entry, then
-        `bash .claude/scripts/generate-todo.sh` to regenerate TODO.md from state.
-      - Revert the throwaway commit(s) (`git reset --soft HEAD~1` is permitted — `--hard` is forbidden on a
-        dirty tree per git-workflow.md).
-      - Restore `~/Projects/cslib/.claude/` from the snapshot taken above.
-      - Confirm both repos are clean of test residue with `git status --short`.
-- [ ] Write the observed results into the task summary. State plainly which claims are observed and which
-      remain unverified.
+- [x] **Deploy for test**: built `$SCRATCH/fake-global-root/` (throwaway global root: `specs/state.json`
+      skeleton with `next_project_number: 1` and empty `active_projects`, `specs/TODO.md`, git-initialized)
+      and `$SCRATCH/fake-foreign-repo/` (throwaway foreign repo). Copied the real repo's full `.claude/`
+      deploy tree into both, then overlaid the three Wave-1-edited source-store files
+      (`parse-command-args.sh`, `skill-meta/SKILL.md`, `commands/meta.md`) on top — simulating exactly what
+      the `<leader>al` loader's `copy` action does, scoped to scratch dirs instead of real repos.
+      *(altered from plan: scratch dirs substituted for the real `~/.config/nvim`/`~/Projects/cslib` deploy
+      trees, per orchestrator redirect above.)*
+- [x] **Run the live test**: attempted a headless `claude -p '/meta "throwaway verification task: add a
+      trivial no-op debug print statement"'` invocation from `$SCRATCH/fake-foreign-repo` (cwd), with
+      `CLAUDE_AGENT_GLOBAL_ROOT=$SCRATCH/fake-global-root` exported, bounded by a 90s `timeout`.
+      **OBSERVED result**: the process printed exactly one line and exited on its own (no timeout kill
+      needed, confirmed via `pgrep` — no orphaned process):
+      ```
+      Ignoring 24 permissions.allow entries from .claude/settings.json: this workspace has not been
+      trusted. Run Claude Code interactively here once and accept the trust dialog, or set
+      projects["<path>"].hasTrustDialogAccepted: true in ~/.claude.json.
+      ```
+      **Decision point resolved as BLOCKED**: this is a *more fundamental* headless blocker than the plan's
+      anticipated AskUserQuestion confirmation gate — it fires before permissions or any confirmation step
+      are even reached. A freshly-created scratch directory has no accepted Claude Code trust dialog, and
+      that dialog cannot be satisfied non-interactively. The only way to clear it (editing
+      `~/.claude.json`'s per-project `hasTrustDialogAccepted` flag) mutates a real, global, user-wide config
+      file outside both the sanctioned edit targets and the scratch test harness — out of scope for this
+      task's blast radius, so it was deliberately NOT attempted. Per the orchestrator's explicit
+      instruction, the result is reported honestly as BLOCKED rather than worked around or inferred.
+- [x] **Observe and record**: no task directory was created anywhere (`$SCRATCH/fake-global-root/specs/`
+      remains the untouched skeleton — `next_project_number` still `1`, `active_projects` still `[]`;
+      `$SCRATCH/fake-foreign-repo` git log shows only the harness-setup commit). No `/meta` execution ever
+      began — the run was blocked at the workspace-trust gate before mode detection or any skill/agent
+      dispatch occurred.
+- [x] **Interpret honestly**: the Agent-prompt path-qualification imperative added in Phase 2 was **never
+      exercised** — the run never reached `skill-meta`, let alone `meta-builder-agent`. Phase 5 therefore
+      provides **no evidence either way** about whether `meta-builder-agent` honors the threaded
+      `target_root`. This is recorded as a genuine gap, not papered over: Phase 5's verification of the
+      cross-task coupling with `meta-builder-agent` (out of this task's scope) remains **fully unverified**,
+      to be exercised once that dependent work lands and once a properly-trusted headless or interactive
+      test environment is available.
+- [ ] **Verify `--local`**: not reached — blocked at the same workspace-trust gate before mode detection.
+- [x] **Cleanup**: no cleanup was required — the workspace-trust block occurred before any write, so
+      `$SCRATCH/fake-global-root/specs/state.json` was never mutated, no commit was made in either scratch
+      repo beyond the harness-setup commit, and the real `~/.config/nvim` and `~/Projects/cslib` repos were
+      never touched by this phase at all (confirmed: `git log --oneline -5` in the real repo shows no test
+      commits; `diff .claude/commands/meta.md agent-system/extensions/core/commands/meta.md` still differs,
+      confirming the real `.claude/` deploy tree was untouched by this test).
+- [x] Write the observed results into the task summary. State plainly which claims are observed and which
+      remain unverified. *(completed — see summary.)*
+
+**Manual verification procedure** (for the user to run interactively, since headless cannot clear the
+workspace-trust gate):
+1. In a terminal, `cd ~/Projects/cslib` (or any other repo with `.claude/` deployed).
+2. Run `<leader>al` in Neovim (or manually `cp` the three files) to deploy this task's changes:
+   `agent-system/extensions/core/scripts/parse-command-args.sh` -> `.claude/scripts/parse-command-args.sh`,
+   `agent-system/extensions/core/skills/skill-meta/SKILL.md` -> `.claude/skills/skill-meta/SKILL.md`,
+   `agent-system/extensions/core/commands/meta.md` -> `.claude/commands/meta.md`.
+3. Launch `claude` interactively in that repo (accepting the trust dialog if prompted).
+4. Run `/meta "throwaway verification task"`.
+5. At the confirmation prompt, answer to create the task(s).
+6. Check: did the task directory land under `~/.config/nvim/specs/` (expected) or under
+   `~/Projects/cslib/specs/` (would indicate the Agent-prompt imperative from Phase 2 was not honored)?
+7. Check `git -C ~/.config/nvim log -1` for the new commit; check `git -C ~/Projects/cslib status
+   --porcelain` stays clean.
+8. Repeat with `/meta --local "throwaway verification task"` and confirm it now lands in
+   `~/Projects/cslib/specs/` instead.
+9. Clean up: remove the throwaway task dir + `state.json` entry, regenerate `TODO.md` via
+   `bash .claude/scripts/generate-todo.sh`, and `git reset --soft HEAD~1` (never `--hard` on a dirty tree)
+   to revert the throwaway commit(s).
 
 **Timing**: 1.5 hours
 
@@ -362,17 +406,22 @@ not be marked complete on reasoning alone.**
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on `parse-command-args.sh` and on every bash block added to `skill-meta/SKILL.md`.
-- [ ] `LOCAL_FLAG` round-trips correctly (`true` with `--local`, `false` without, stripped from `FOCUS_PROMPT`).
-- [ ] Pre-existing flags (`--clean`, `--force`, `--lit`, `--team`, model/effort flags) are unchanged.
-- [ ] All three edits are confirmed present in `agent-system/extensions/core/` and absent from any
+- [x] `bash -n` passes on `parse-command-args.sh` and on every bash block added to `skill-meta/SKILL.md`.
+- [x] `LOCAL_FLAG` round-trips correctly (`true` with `--local`, `false` without, stripped from `FOCUS_PROMPT`).
+- [x] Pre-existing flags (`--clean`, `--force`, `--lit`, `--team`, model/effort flags) are unchanged
+      (observed: `CLEAN=true FORCE=true LIT=true TEAM=true EFFORT=fast MODEL=opus` with all flags combined).
+- [x] All three edits are confirmed present in `agent-system/extensions/core/` and absent from any
       hand-authored `.claude/` change.
-- [ ] `grep -rinE '\btasks? [0-9]{2,4}\b'` over the three changed files introduces no new task-number
-      references (the pre-existing `parse-command-args.sh` header comment is a known, flagged exception).
-- [ ] Chained-`cd` resolution observed correct from a foreign cwd (Phase 4).
-- [ ] Cross-repo `/meta` commit placement observed correct (Phase 5) — or honestly reported as unverified.
-- [ ] `--local` observed to place tasks in the local repo (Phase 5).
-- [ ] Global mode observed to be a no-op from within `~/.config/nvim`.
+- [x] `grep -rinE '\btasks? [0-9]{2,4}\b'` over the three changed files introduces no new task-number
+      references (the pre-existing `parse-command-args.sh` header comment is a known, flagged exception —
+      confirmed the only two matches are the pre-existing "Task 594"/"Task 595" lines).
+- [x] Chained-`cd` resolution observed correct from a foreign cwd (Phase 4).
+- [ ] Cross-repo `/meta` commit placement observed correct (Phase 5) — **honestly reported as unverified**:
+      headless invocation blocked at the workspace-trust-dialog gate before `/meta` execution began. See
+      Phase 5 and the manual verification procedure recorded there.
+- [ ] `--local` observed to place tasks in the local repo (Phase 5) — **not reached**, blocked at the same
+      gate before mode detection.
+- [x] Global mode observed to be a no-op from within `~/.config/nvim` (Phase 4, shell-level).
 
 ## Artifacts & Outputs
 
