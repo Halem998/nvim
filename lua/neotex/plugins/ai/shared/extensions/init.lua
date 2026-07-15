@@ -926,6 +926,83 @@ function M.create(config)
     return results
   end
 
+  --- Regenerate `base_dir` (`.claude/`/`.opencode/`) from the surviving project-root
+  --- extension manifest, without re-picking any extensions.
+  ---
+  --- This is the crux of "one-keystroke regenerable": the manifest written by
+  --- `state_mod.write` lives at the project root (`config.root_state_file`), outside
+  --- `base_dir`, so it survives a `rm -rf base_dir` wipe. Calling this after such a
+  --- wipe re-reads that surviving manifest's `status == "active"` extensions and
+  --- reloads each one via `manager.load`, reconstructing an identical `base_dir`.
+  ---
+  --- Implementation note: the surviving manifest's per-extension tracking data
+  --- (`installed_files`/`installed_dirs`/`merged_sections`) all point into `base_dir`,
+  --- which is gone after a wipe, so it is stale -- and `manager.load` itself refuses
+  --- to act on an extension its state already marks `status == "active"` (see
+  --- `manager.load`'s "Check if already loaded" guard). To make regeneration work
+  --- despite that guard, the in-memory/on-disk state is first reset to empty, then
+  --- each formerly-active extension is (re)loaded via `manager.load`, whose own
+  --- recursive dependency resolution (see `manager.load`'s "Resolve dependencies"
+  --- section) transparently handles any ordering requirements -- a dependency pulled
+  --- in by an earlier iteration is detected via a fresh state read and counted as
+  --- loaded rather than re-invoked (which would otherwise surface a harmless
+  --- "already loaded" as a spurious failure).
+  ---
+  --- No-op-safe: a missing or empty manifest yields `{ loaded = {}, failed = {} }`
+  --- with no error and no state reset. Each individual extension load is guarded by
+  --- `manager.load`'s own error return, so one failure does not abort the rest.
+  --- @param opts table|nil Options: { project_dir = string|nil }
+  --- @return table result { loaded = {name, ...}, failed = {{name=, error=}, ...} }
+  function manager.regenerate(opts)
+    opts = opts or {}
+    local project_dir = opts.project_dir or vim.fn.getcwd()
+
+    local result = { loaded = {}, failed = {} }
+
+    local ok, surviving_state = pcall(state_mod.read, project_dir, config)
+    if not ok then
+      table.insert(result.failed, { name = "<manifest>", error = tostring(surviving_state) })
+      return result
+    end
+
+    local active_names = state_mod.list_loaded(surviving_state)
+    if #active_names == 0 then
+      return result
+    end
+
+    local reset_ok = state_mod.write(project_dir, { version = "1.0.0", extensions = {} }, config)
+    if not reset_ok then
+      table.insert(result.failed, {
+        name = "<manifest>",
+        error = "Failed to reset extension state before regenerate",
+      })
+      return result
+    end
+
+    for _, extension_name in ipairs(active_names) do
+      -- A prior iteration may already have (re)loaded this extension as a
+      -- dependency; re-check current state instead of calling manager.load
+      -- again, which would otherwise report a harmless "already loaded" as a
+      -- failure.
+      local current_state = state_mod.read(project_dir, config)
+      if state_mod.is_loaded(current_state, extension_name) then
+        table.insert(result.loaded, extension_name)
+      else
+        local load_ok, load_err = manager.load(extension_name, {
+          confirm = false,
+          project_dir = project_dir,
+        })
+        if load_ok then
+          table.insert(result.loaded, extension_name)
+        else
+          table.insert(result.failed, { name = extension_name, error = load_err })
+        end
+      end
+    end
+
+    return result
+  end
+
   return manager
 end
 
