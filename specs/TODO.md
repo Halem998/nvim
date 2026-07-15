@@ -1,11 +1,116 @@
 ---
-next_project_number: 873
+next_project_number: 876
 ---
 
 # TODO
 
+## Task Order
+
+*Updated 2026-07-15. Generated from state.json dependency graph.*
+
+**Dependency Waves**:
+| Wave | Tasks | Blocked by | Topics |
+|------|-------|------------|--------|
+| 1 | 873,874 | -- | agent-system, extensions |
+| 2 | 875 | 873 | agent-system |
+
+**Grouped by Topic** (indented = depends on parent):
+
+### Agent System
+
+873 [NOT STARTED] — Make /meta create tasks in the GLOBAL agent-system root by defaul
+  └─ 875 [NOT STARTED] — Update meta-builder-agent so it operates correctly at a resolved 
+
+### Extensions
+
+874 [NOT STARTED] — Remove or rework the stale self-sync guard that prevents the nvim
 
 ## Tasks
+
+### 875. Teach meta-builder-agent global-mode semantics
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 873
+
+**Description**: Update meta-builder-agent so it operates correctly at a resolved global root and so the tasks it CREATES name source-store paths rather than deploy-tree paths.
+
+DEPENDS ON the global-default target resolution and --local flag work, which establishes GLOBAL_ROOT="${CLAUDE_AGENT_GLOBAL_ROOT:-$HOME/.config/nvim}", the `cd "$GLOBAL_ROOT"` mechanism, and the resolved mode/root threaded through to the agent invocation. This task consumes that resolved root; it does not define it.
+
+EDIT TARGET: agent-system/extensions/core/agents/meta-builder-agent.md ONLY.
+
+CANONICAL SOURCE vs DEPLOY TREE (critical): the agent-system SOURCE of truth is agent-system/extensions/core/. The nvim repo's .claude/ tree is a GITIGNORED, UNTRACKED deploy artifact regenerated from the source store in agent-system/extensions/ (selection pinned by the project-root .claude-extensions.json); nothing under it is hand-authored, every deployed file has a source, enforced by the check-extension-docs.sh hard gate. The edit MUST target agent-system/extensions/core/agents/meta-builder-agent.md, NEVER the deployed .claude/ copy. Verified: the two are currently byte-identical.
+
+REQUIRED CHANGES:
+  - Stage 0 inventory at :158-162 currently uses bare CWD-relative paths (`ls .claude/commands/*.md`, `find .claude/skills -name SKILL.md`, `ls .claude/agents/*.md`, `ls .claude/rules/*.md`, `jq '.active_projects | length' specs/state.json`) and must operate at the resolved root.
+  - Tasks this agent CREATES must name agent-system/extensions/core/** paths as edit targets rather than .claude/** paths, because .claude/ is a disposable deploy tree -- a task that edits .claude/ directly would have its work silently wiped by the next <leader>al regeneration.
+  - The SCOPE BOUNDARY at :26 ("This agent MUST NOT write to .claude/ paths...") and the surrounding anti-bypass language need reframing in terms of the source store vs deploy tree distinction. The current wording predates the relocation and conflates "don't implement changes here" with "don't touch the deploy tree" -- two different rules that now have different correct answers.
+  - The return-schema examples at :138-143 and the task-dir renderings at :821, :1032-1034, :1071-1074 and :1118-1119 use bare relative specs/ paths; confirm they remain correct under the cd mechanism (they likely are, since the cd makes CWD-relative paths resolve at the global root, but this must be checked rather than assumed).
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 874. Fix stale self-sync guard blocking nvim deploy-tree regeneration
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: Remove or rework the stale self-sync guard that prevents the nvim repo from regenerating its OWN .claude/ deploy tree via the <leader>al picker.
+
+CURRENT BEHAVIOR: load_all_globally() early-returns with helpers.notify("Already in the global directory", "INFO") when project_dir == global_dir. The guard lives at lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua:1141-1148.
+
+WHY IT IS STALE: that guard predates the source-store relocation (commit 7e79b2695 "task 863 phase 1: relocate store and repoint canonical default"). It made sense when .claude/ WAS the source store and self-loading was a degenerate copy-onto-itself. Now that the source is agent-system/extensions/core/ and .claude/ is a gitignored, disposable deploy tree, the guard blocks exactly what .gitignore promises: "Wipe and regenerate from the <leader>al picker at any time."
+
+USER-VISIBLE CONSEQUENCE: a global /meta change reaches other repos via <leader>al, but the nvim repo cannot regenerate its own .claude/ deploy tree, so nvim's own /meta stays stale. This directly undercuts the global-default /meta work once that lands.
+
+RESEARCH NOTES:
+  - sync.lua:1065-1066 sets use_core_source=false for the lib/ and tests/ categories, which still read from {global_dir}/.claude/ rather than the core store. Verify a self-load does not become a degenerate copy-onto-itself for those two categories specifically, and handle or exclude them if so. This is the main correctness risk in removing the guard.
+  - Verify against the read/write split at sync.lua:913-923 (core_source_base derivation).
+  - Verify against the root_file_names={} / CLAUDE.md exclusions at :1084 and :1126-1128.
+
+TESTING CONSTRAINT: all destructive loader testing happens in the scratchpad against fake project dirs, NEVER against the real ~/.config/nvim/.claude tree (this loader had a live data-loss bug recently).
+
+This task is independent of the global-default /meta target-resolution work and can proceed in parallel, but it must land for that work to be observable from within nvim itself.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 873. Add global-default target resolution and --local flag to /meta
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Make /meta create tasks in the GLOBAL agent-system root by default, with `--local` as the only opt-out. There is NO interactive prompt.
+
+DESIRED BEHAVIOR: /meta run from any repo other than ~/.config/nvim defaults to GLOBAL mode, creating tasks in ~/.config/nvim/specs/. `--local` creates tasks in the current repo's specs/ instead. /meta run from within ~/.config/nvim is already global, so the resolution must be a NO-OP there rather than a special-cased branch. The user regenerates each repo's local .claude/ agent system via the <leader>al loader as needed.
+
+CANONICAL SOURCE vs DEPLOY TREE (critical): the agent-system SOURCE of truth is agent-system/extensions/core/. The nvim repo's .claude/ tree is a GITIGNORED, UNTRACKED deploy artifact (see the /.claude/ entry in .gitignore: the deploy tree is a disposable build artifact regenerated from the source store in agent-system/extensions/, selection pinned by the project-root .claude-extensions.json; nothing under it is hand-authored, every deployed file has a source, enforced by the check-extension-docs.sh hard gate). ALL file edits in this task MUST target agent-system/extensions/core/**, NEVER .claude/**. A change written to .claude/ would be silently wiped by the next <leader>al regeneration. Verified: core/commands/meta.md, core/skills/skill-meta/SKILL.md and core/agents/meta-builder-agent.md are currently byte-identical to their deployed .claude/ copies.
+
+PATH-RESOLUTION MECHANISM (chosen; do NOT redesign): two strategies coexist in the script layer. Strategy A (script-location-relative): generate-todo.sh:28 and update-task-status.sh:27 use PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)", resolving from the SCRIPT's own location. Strategy B (bare relative, CWD-following): skill-base.sh (specs/state.json at :119, :302, :358), command-gate-in.sh:47, command-gate-out.sh:34, and all hooks in settings.json (invoked as `bash .claude/hooks/<name>.sh`). A `cd "$GLOBAL_ROOT"` at the start of the global-mode /meta flow makes BOTH strategies resolve to nvim consistently: Strategy B follows the new CWD, and Strategy A is reached via the CWD-relative `bash .claude/scripts/generate-todo.sh` invocation so it picks up nvim's own script. This cd is the chosen mechanism.
+
+CONSTRAINTS: Do NOT refactor the ~49 scripts. Do NOT introduce CLAUDE_PROJECT_DIR -- it was proposed once in an archived hook research report and deliberately never adopted; it appears nowhere in live code.
+
+GLOBAL ROOT RESOLUTION (user-confirmed): GLOBAL_ROOT="${CLAUDE_AGENT_GLOBAL_ROOT:-$HOME/.config/nvim}". This mirrors the established LITERATURE_DIR pattern LIT_DIR="${LITERATURE_DIR:-$HOME/Projects/Literature}" found at skill-researcher/SKILL.md:171, skill-planner/SKILL.md:182, skill-implementer/SKILL.md:164 and the three -hard variants. The env block in ~/.claude/settings.json is Home-Manager-managed from ~/.dotfiles/config/claude/settings.json.
+
+FLAG PATTERN: parse-command-args.sh already has an established convention -- regex match (`[[ "$remaining" =~ --clean ]]` at :103, `--force` at :106) plus sed-strip (:129-130). Follow it verbatim for --local.
+
+EDIT TARGETS (all under agent-system/extensions/core/):
+  - commands/meta.md -- document --local in Arguments, update the argument-hint frontmatter, document the global-default semantics and the source-store-vs-deploy-tree distinction.
+  - skills/skill-meta/SKILL.md -- resolve GLOBAL_ROOT, cd into it for global mode, thread the resolved mode/root through to the agent invocation.
+  - scripts/parse-command-args.sh -- add --local following the --clean pattern (regex match + sed strip).
+
+RESEARCH MUST SETTLE:
+  (a) Whether Claude Code's permission/sandbox model lets a session launched in another repo (e.g. ~/Projects/cslib) write to ~/.config/nvim/specs/ without prohibitive permission friction. This is the single biggest feasibility risk for the whole approach.
+  (b) How shell-side CLAUDE_AGENT_GLOBAL_ROOT should relate to the Lua-side global_source_dir option (lua/neotex/plugins/ai/claude/config.lua:40-41, with a hardcoded ~/.config/nvim fallback at picker/utils/scan.lua:8-17) without creating two silently drifting sources of truth.
+  (c) Whether the git postflight commit in skill-meta lands in the correct repo after the cd.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
 
 ### 872. /distill review/revise (dream) mode
 - **Status**: [COMPLETED]
