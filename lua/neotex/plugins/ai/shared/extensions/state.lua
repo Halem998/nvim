@@ -63,12 +63,15 @@ local function write_json(filepath, data)
   return true
 end
 
---- Get path to extensions.json in a project
+--- Get path to the extension selection manifest in a project.
+--- Lives at the PROJECT ROOT (not inside base_dir) so it survives a
+--- `.claude`/`.opencode` wipe -- this is the single Lua choke point for the
+--- manifest's location; all shell readers and deployed copies mirror it.
 --- @param project_dir string Project directory path
 --- @param config table Extension system configuration
---- @return string path Path to extensions.json
+--- @return string path Path to the root-level extension state manifest
 local function get_state_path(project_dir, config)
-  return project_dir .. "/" .. config.base_dir .. "/" .. config.state_file
+  return project_dir .. "/" .. config.root_state_file
 end
 
 --- Read extensions.json from target project
@@ -101,12 +104,8 @@ function M.write(project_dir, state, config)
   project_dir = project_dir or vim.fn.getcwd()
   local state_path = get_state_path(project_dir, config)
 
-  -- Ensure base directory exists
-  local base_dir = project_dir .. "/" .. config.base_dir
-  if vim.fn.isdirectory(base_dir) ~= 1 then
-    vim.fn.mkdir(base_dir, "p")
-  end
-
+  -- The manifest now lives at project_dir root, which always exists by the
+  -- time this is called; no base_dir mkdir is needed here.
   return write_json(state_path, state)
 end
 

@@ -12,7 +12,7 @@ function M.create(opts)
     base_dir = { opts.base_dir, "string" },
     config_file = { opts.config_file, "string" },
     section_prefix = { opts.section_prefix, "string" },
-    state_file = { opts.state_file, "string" },
+    root_state_file = { opts.root_state_file, "string" },
     global_extensions_dir = { opts.global_extensions_dir, "string" },
     merge_target_key = { opts.merge_target_key, "string", true },
     agents_subdir = { opts.agents_subdir, "string", true },
@@ -28,8 +28,11 @@ function M.create(opts)
     -- Section prefix for merge markers (extension_claude_ or extension_oc_)
     section_prefix = opts.section_prefix,
 
-    -- State file name (extensions.json)
-    state_file = opts.state_file,
+    -- Extension selection manifest file name, deployed at the PROJECT ROOT
+    -- (not inside base_dir) so it survives a `.claude`/`.opencode` wipe.
+    -- Preset-scoped (`.claude-extensions.json` / `.opencode-extensions.json`)
+    -- so both presets can coexist in one project root without collision.
+    root_state_file = opts.root_state_file,
 
     -- Global extensions directory (absolute path)
     global_extensions_dir = opts.global_extensions_dir,
@@ -51,7 +54,7 @@ function M.claude(global_dir)
     base_dir = ".claude",
     config_file = "CLAUDE.md",
     section_prefix = "extension_",
-    state_file = "extensions.json",
+    root_state_file = ".claude-extensions.json",
     global_extensions_dir = global_dir .. "/agent-system/extensions",
     merge_target_key = "claudemd",
     agents_subdir = "agents",
@@ -67,7 +70,7 @@ function M.opencode(global_dir)
     base_dir = ".opencode",
     config_file = "OPENCODE.md",
     section_prefix = "extension_oc_",
-    state_file = "extensions.json",
+    root_state_file = ".opencode-extensions.json",
     global_extensions_dir = global_dir .. "/.opencode/extensions",
     merge_target_key = "opencode_md",
     agents_subdir = "agent/subagents",
