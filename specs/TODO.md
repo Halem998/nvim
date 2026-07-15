@@ -1,5 +1,5 @@
 ---
-next_project_number: 876
+next_project_number: 885
 ---
 
 # TODO
@@ -11,8 +11,9 @@ next_project_number: 876
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,874 | -- | agent-system, extensions |
-| 2 | 875 | 873 | agent-system |
+| 1 | 873,874,876,877,880,882,883,884 | -- | agent-system, commit-scoping-concurrency, extensions, ... |
+| 2 | 875,878,881 | 873,877,880 | agent-system, commit-scoping-concurrency, status-marker-lifecycle |
+| 3 | 879 | 876,878 | status-marker-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -21,11 +22,277 @@ next_project_number: 876
 873 [NOT STARTED] — Make /meta create tasks in the GLOBAL agent-system root by defaul
   └─ 875 [NOT STARTED] — Update meta-builder-agent so it operates correctly at a resolved 
 
+### Commit Scoping Concurrency
+
+880 [NOT STARTED] — The whole targeted-staging contract - the mechanism that makes th
+  └─ 881 [NOT STARTED] — Four of five implementation agents never report what they touched
+882 [NOT STARTED] — RESEARCH-FIRST BY EXPLICIT USER DECISION. This task must NOT lock
+883 [NOT STARTED] — The staging contract written to avoid committing unrelated state 
+884 [NOT STARTED] — The staging prohibition is prose-only. Three documents forbid `gi
+
 ### Extensions
 
 874 [NOT STARTED] — Remove or rework the stale self-sync guard that prevents the nvim
 
+### Status Marker Lifecycle
+
+876 [NOT STARTED] — HIGHEST-VALUE FIX for the reported symptom 'tasks say PLANNED whe
+  └─ 879 [NOT STARTED] — A purpose-built self-healing script for EXACTLY the reported fail
+877 [NOT STARTED] — The status-writing script and the plan format spec disagree on MO
+  └─ 878 [NOT STARTED] — Addresses the 'plan says NOT STARTED while it is being worked on 
+    └─ 879 [NOT STARTED] — A purpose-built self-healing script for EXACTLY the reported fail (see above)
+
 ## Tasks
+
+### 884. Extend the existing git guard hook to block over-staging
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: commit-scoping-concurrency
+- **Dependencies**: None
+
+**Description**: The staging prohibition is prose-only. Three documents forbid `git add -A` but nothing enforces it, so the rule holds only as long as every agent chooses to read and obey it.
+
+VERIFIED EVIDENCE:
+- The POLICY is already good and needs no rewrite: context/standards/git-staging-scope.md is canonical, mandates per-operation scope, states the fail-safe direction 'Under-stage, never over-stage' (:50), and forbids `git add -A` / `git add .` / `git commit -am` (:110-112). Echoed at rules/git-workflow.md:117-121 and skill-git-workflow/SKILL.md:140-142.
+- The two-layer enforcement pattern ALREADY EXISTS AND IS PROVEN IN THIS REPO: guard-destructive-git.sh is registered as a PreToolUse hook in settings.json and successfully blocks destructive git (reset --hard etc.). This is the same shape as the email extension's mail-guard.sh.
+- THE GAP: nothing blocks over-staging. The one enforcement mechanism that exists guards destruction but not scope.
+
+REQUIRED: extend the EXISTING guard-destructive-git.sh rather than adding a new hook (the user explicitly asked for 'not too many' scripts, and a second git-guarding PreToolUse hook would be the third place git policy lives). Block `git add -A`, `git add .`, and `git commit -am` at the tool boundary.
+
+MANDATORY EXEMPTION - do not break this: git-snapshot.sh:150 contains the ONLY `git add -A` in executable code and it is DEFENSIBLE. It runs only in --branch mode against a throwaway `wip-snapshot-${TS}` scratch branch, never the working branch. Verified. Do NOT remove it; the guard MUST exempt this sanctioned path. Research must determine how the hook can distinguish it (the hook sees the tool call, not the caller, so this is the genuinely hard part of the task and may constrain the design).
+
+ALSO IN SCOPE - two prose contradictions to reconcile so the docs stop teaching the thing the hook will now block:
+- skills/skill-project-overview/SKILL.md:435 prescribes `git add specs/ .claude/`, the widest non-`-A` prescription in the system.
+- context/orchestration/postflight-pattern.md:228 and :247 advise 'Manual fix: git add . && git commit', directly contradicting git-staging-scope.md:110-112.
+
+CONSTRAINT: extend the existing hook; do not create a new one.
+
+DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside specs/**.
+
+---
+
+### 883. Stop committing ephemeral lock and session state
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: commit-scoping-concurrency
+- **Dependencies**: None
+
+**Description**: The staging contract written to avoid committing unrelated state is itself committing session-scoped mutex state. Small, self-contained, no dependencies.
+
+VERIFIED EVIDENCE:
+- .gitignore covers `**/.return-meta.json` (:1) and `**/.git-snapshot-marker` (:19), but NOT `.lock/` and NOT `.orchestrator-multi-state.json`.
+- Because orchestrator-postflight.sh:335 stages the task directory WHOLESALE (`"${task_dir}/"`), it necessarily sweeps in ${task_dir}/.lock/holder.json. The wholesale directory stage is the reason ephemeral state gets committed; note this when deciding the fix.
+- Already tracked in git RIGHT NOW (verified `git ls-files`): specs/860_enforce_plan_compliance_rule/.lock/holder.json and specs/archive/856_scrub_task_number_leaks_from_wrapper_contracts/.lock/holder.json - the latter was ARCHIVED WHILE STILL HELD, which is a lock that can never be released.
+- The .gitignore pattern `**/.return-meta.json` does NOT match `.return-meta-multi.json`. Verified: specs/.return-meta-multi.json IS tracked today. Also in scope.
+
+LIVE EMPIRICAL PROOF - commit b42aa5aec ('orchestrate tasks 869-872: complete orchestration'): a single commit spanning FOUR distinct tasks that committed the DELETION of three ephemeral lock files (specs/869_unified_event_reflection_store/.lock/holder.json, specs/871_completion_time_reflective_harvest/.lock/holder.json, specs/872_distill_review_revise_dream_mode/.lock/holder.json) plus specs/.return-meta-multi.json and specs/state.json. Verified via `git show --stat b42aa5aec`. This is no longer hypothetical.
+
+REQUIRED: add .gitignore entries covering .lock/ directories, .orchestrator-multi-state.json, and the .return-meta-multi.json / .return-meta-*.json family; then `git rm --cached` the already-tracked instances. Research should enumerate the full set of ephemeral session artifacts under specs/ rather than fixing only the four named here - .orchestrator-handoff.json is a candidate to evaluate (it may be a deliberate durable handoff rather than ephemeral, so do not blanket-ignore it without deciding).
+
+CONSTRAINT: no new scripts.
+
+DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside specs/**.
+
+---
+
+### 882. Decide whether shared-index commits need serialization (research-first)
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: commit-scoping-concurrency
+- **Dependencies**: None
+
+**Description**: RESEARCH-FIRST BY EXPLICIT USER DECISION. This task must NOT lock in an approach before research settles the open question below. Do not treat serialization as the foregone conclusion.
+
+THE MECHANISM (verified) - this is precisely how a concurrent session's work 'rides along' in another session's push:
+- Task-scoped staging structurally CANNOT isolate the two SHARED GLOBAL files that every task's postflight stages: specs/TODO.md and specs/state.json (orchestrator-postflight.sh:335 sets stage_paths=(task_dir/ specs/TODO.md specs/state.json)).
+- generate-todo.sh regenerates TODO.md WHOLESALE from all active_projects (atomic mktemp+mv, :421-423) and reads ONLY state.json.
+- Therefore if session A updates state.json for its task and session B then runs generate-todo.sh + `git add specs/TODO.md specs/state.json`, session B's commit NECESSARILY contains session A's rows. That is the reported 'rode along' exactly.
+- task-lock.sh CANNOT prevent this: it is PER-TASK (specs/{NNN}_{SLUG}/.lock/), so two sessions on DIFFERENT tasks never exclude each other; and task-lock.md:262 explicitly states a lock holder 'still checkpoints/commits exactly as before - the lock only adds' mutual exclusion. It does not gate commits.
+
+OPEN QUESTION - RESEARCH MUST SETTLE, DO NOT PRE-RESOLVE:
+Is cross-session mixing of TODO.md/state.json actually a defect worth serializing, or is it benign? The case that it is BENIGN: both are DERIVED INDEX files. TODO.md is regenerated wholesale from state.json every time, so a 'mixed' TODO.md is not corrupt - it is simply current. state.json rows for other tasks are also current, not wrong. On this reading only SOURCE and ARTIFACT isolation matter, the observed commits are cosmetically noisy but semantically correct, and adding a mutex to the commit path is unnecessary complexity on a hot path. The case that it is a DEFECT: it makes commits non-atomic w.r.t. review, makes `git log -- <task dir>` misleading about who did what, and means a revert of one task's commit silently reverts another task's index rows.
+Research must decide, and must weigh a THIRD option: leave commits mixed but make them HONEST (e.g. accurate commit messages naming all tasks whose rows are included), rather than serializing.
+
+IF AND ONLY IF research concludes serialization is warranted: a reusable primitive ALREADY EXISTS and must be reused rather than reinvented - task-lock.sh:215-245 acquire_scope_mutex/release_scope_mutex, a POSIX-atomic mkdir-based global mutex at specs/.scope-lock, SCOPE_MUTEX_STALE_SEC=10, 5s timeout, fails closed. Note it is currently an INTERNAL function with no CLI surface (task-lock.sh dispatches only acquire/heartbeat/release/check/init-marker), so exposing it is part of the work. The window to serialize is read-state -> regenerate-TODO -> stage -> commit.
+
+LIVE EVIDENCE THAT THE COLLISION IS REAL AND ONGOING: while these very tasks were being created, a concurrent /meta session claimed task numbers 873-875 (commit aeef5a4a7) from specs/state.json, forcing this batch to renumber to 876-884. The shared-index race is not hypothetical; it fired during the creation of its own fix.
+
+CONSTRAINT: strongly prefer reusing acquire_scope_mutex over any new script.
+
+DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside specs/**.
+
+---
+
+### 881. Make the four silent implementation agents emit modified_files
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: commit-scoping-concurrency
+- **Dependencies**: Task 880
+
+**Description**: Four of five implementation agents never report what they touched, so targeted staging has nothing to stage and their source changes are silently never committed. This is a direct cause of 'the system did not commit the work it actually did'.
+
+VERIFIED EVIDENCE:
+- EMITS (the only one): general-implementation-agent.md. It has a complete working chain worth copying: objectives[].files_touched (:141, :156) -> Stage 6 dedup (:390-399) -> .return-meta.json.
+- MISSING (all four): email-implementation-agent.md, general-implementation-hard-agent.md, neovim-implementation-agent.md, nix-implementation-agent.md. Verified: `grep -rl modified_files .claude/agents/` returns general-implementation-agent.md and nothing else.
+- CONSEQUENCE: for those four, modified_files is always empty -> orchestrator-postflight.sh:354 warns 'staged 0 files' -> the fallback path fires -> real source edits are never committed. Note general-implementation-hard-agent is among the silent four, so HARD MODE - the mode reached for on the most complex, highest-stakes work - is currently the least likely to commit its own output.
+
+REQUIRED: replicate the working emit chain into all four agents, conforming to the schema defined by the schema-documentation task (this task's dependency). Prefer factoring the shared contract into context rather than copy-pasting the same prose into five agent files - the copy-paste is what let four of five drift in the first place; research should evaluate whether a shared @-referenced context fragment is the better carrier.
+
+VERIFICATION: the acceptance test is behavioral, not textual - a run of each agent must produce a non-empty modified_files that orchestrator-postflight.sh actually stages. Do not accept 'the prose was added' as done.
+
+DEPENDS ON the schema-documentation task: conform to a written schema, do not invent a second one.
+
+CONSTRAINT: no new scripts.
+
+DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside specs/**.
+
+---
+
+### 880. Document the modified_files/files_touched schema that targeted staging depends on
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: commit-scoping-concurrency
+- **Dependencies**: None
+
+**Description**: The whole targeted-staging contract - the mechanism that makes the system 'commit the work it has actually done, instead of committing all' - rests on a field that is documented NOWHERE. This is a dangling reference and it must be closed before any agent is asked to emit the field.
+
+VERIFIED EVIDENCE:
+- `grep -c modified_files .claude/context/formats/return-metadata-file.md` -> 0
+- `grep -c files_touched .claude/context/formats/progress-file.md` -> 0
+- Yet FOUR documents cite exactly those two files as the schema authority: git-staging-scope.md:133-134, skill-git-workflow/SKILL.md:106 and :115, general-implementation-agent.md:394.
+- CONSEQUENCE: an agent that dutifully reads the cited schema doc to learn the format will never learn to emit modified_files, and will silently trigger the under-stage warning path (orchestrator-postflight.sh:354) on every single run. Its source changes are then never committed.
+
+REQUIRED: document `modified_files` in return-metadata-file.md and `files_touched` in progress-file.md - type, semantics, path form (absolute vs repo-relative - orchestrator-postflight.sh:348 consumes them via `jq -r '.modified_files[]? // empty'` and passes them to `git add`, so the path convention is load-bearing and must be stated, not implied), whether directories are permitted, and behavior on empty.
+
+CRITICAL DISTINCTION TO DOCUMENT: these fields are RETROSPECTIVE (what an agent actually touched) and must not be confused with `file_scope` in state.json, which is PROSPECTIVE (what a task is declared to touch, used for lock overlap detection). The two are already contrasted at context/reference/state-management-schema.md:220-223; make that contrast explicit in the schema docs so future agents do not conflate them.
+
+ALSO IN SCOPE - unrelated dangling-doc-link fix, folded in here because it is the same class of defect (a doc citing a path that does not exist): .claude/context/project/neovim/guides/neovim-integration.md lines 333-334 link to `../../../../../../.claude/docs/guides/permission-configuration.md` and `../../../../../../.claude/docs/guides/user-guide.md`. That six-level-up path no longer resolves. This repo has its OWN copies of both targets at .claude/docs/guides/ (both verified present). Repoint the two links inward.
+
+BLOCKS the agent-emitter task: the schema must exist before four agents are told to conform to it.
+
+CONSTRAINT: no new scripts; documentation only.
+
+DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside specs/**.
+
+---
+
+### 879. Wire reconcile-task-status.sh, which was built for this failure and never called
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: status-marker-lifecycle
+- **Dependencies**: Task 876, Task 878
+
+**Description**: A purpose-built self-healing script for EXACTLY the reported failure mode already exists and has zero callers. Wiring it is the durable safety net for when the preflight/phase-marker fixes are bypassed by some future path.
+
+VERIFIED EVIDENCE:
+- reconcile-task-status.sh's own header states it is 'Self-healing reconciliation for stuck tasks... detects tasks stuck in in-flight states when artifacts already exist, then replays the missed postflight.' That is a precise description of the user's complaint.
+- It has ZERO callers. Verified: the only non-self reference anywhere under .claude/ is extensions/core/manifest.json:122, which is a DEPLOY MANIFEST LISTING (it copies the file into place), not an invocation. The script is deployed and dead.
+
+REQUIRED: give it a caller. Research must choose the trigger point and justify it. Candidates: /orchestrate entry (self-heal a task stranded by a previous crashed run before deciding the next state), skill-todo preflight (reconcile before archiving, so desynced tasks are not archived stale - note an archived-while-still-held lock has already been observed), and/or an explicit /task --sync path. Evaluate whether reconciliation should be automatic or report-only-then-confirm; silent auto-repair of state is itself a visibility risk and the user is explicitly asking for MORE visibility, not more silent mutation.
+
+ALSO EVALUATE: whether the reconcile pass should compare plan-file markers against state.json. generate-todo.sh reads ONLY state.json and never plan files, so plan-vs-state divergence currently has no detector anywhere in the system. This script is the natural home for that check.
+
+DEPENDS ON the preflight-wiring and status-hardening tasks: this is the net that catches what they miss, so it should be specified against their post-fix behavior rather than today's. Shares skill-orchestrate/SKILL.md with the preflight-wiring task (file overlap -> serialized).
+
+CONSTRAINT: no new scripts; wire the one that exists.
+
+DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside specs/**.
+
+---
+
+### 878. Harden the status scripts and give phase markers a real owner
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: status-marker-lifecycle
+- **Dependencies**: Task 877
+
+**Description**: Addresses the 'plan says NOT STARTED while it is being worked on or even after it is completed' half of the report. Four defects in three existing scripts, plus one never-wired script. NO NEW SCRIPTS.
+
+DEFECT A - PHASE MARKERS HAVE NO OWNING MECHANISM:
+- Every plan is BORN with all phases [NOT STARTED] (plan-format.md:173,180), so markers are only ever correct if something actively advances them.
+- update-task-status.sh:260-287 advances ONLY THE FIRST [NOT STARTED] phase (`grep -m1` at :277). Phases 2..N are never touched by any script. This is the exact signature of the observed 'first phase COMPLETED, rest NOT STARTED' desync class.
+- The base agent (general-implementation-agent.md:123-126, 228-231) instructs the LLM to HAND-EDIT the heading via the Edit tool. That is a prompt instruction, not code: it fails silently when the model skips it or the string does not match.
+- Only general-implementation-hard-agent.md (:155,171,233) calls update-phase-status.sh. The base agent has ZERO references to it.
+- HARD PROOF IT HAS NEVER RUN: update-phase-status.sh:116 logs every transition to .agent-logs/phase-transitions.log. That directory is live and actively written (generate-todo.log, sessions.log, subagent-postflight.log all written today) but phase-transitions.log DOES NOT EXIST. The script has never completed a single transition in this working tree.
+=> Wire update-phase-status.sh into the base implementation agent so phase advancement is mechanical, and make the advance cover all phases rather than only the first.
+
+DEFECT B - EVERY FAILURE IS SILENT:
+- update-task-status.sh:256-258,280-283 swallow plan/phase errors as warnings; :209-211 treats TODO.md regeneration failure as a warning.
+- update-plan-status.sh:58 uses sed against a `^- \*\*Status\*\*:` anchor and silently no-ops when the anchor is missing.
+- Net effect: state.json marches to completed while the plan records nothing. generate-todo.sh reads ONLY state.json, never plan files, so NO user-visible surface ever reveals the divergence. Decide (research) which failures should be fatal vs. loudly warned; a plan-write failure during implement is a strong fatal candidate.
+
+DEFECT C - PLAN SELECTION IS MTIME-ORDERED, NOT VERSION-ORDERED:
+- update-plan-status.sh:44 and update-phase-status.sh:63 both select the plan via `ls -t "$plan_dir"/*.md | head -1`. Merely EDITING an older plan re-targets both scripts at the wrong file. Select by version/sequence instead.
+
+DEFECT D - IDEMPOTENCY SHORT-CIRCUIT SKIPS THE PLAN UPDATE:
+- update-task-status.sh:133-144 exits 0 early when state.json already equals the target status, which ALSO skips the plan-file update. If state.json reached `implementing` by any other path, a later correct preflight becomes a silent no-op and the plan never updates. Make the early-exit cover state.json only, not the plan/phase side effects.
+
+DEPENDS ON the vocabulary task: the marker set must be settled before wiring a writer to it, or this task hardcodes a contested vocabulary. Shares update-plan-status.sh with that task (file overlap -> serialized).
+
+CONSTRAINT: no new scripts; fix and wire the three that exist.
+
+DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside specs/**.
+
+---
+
+### 877. Settle the plan-level status marker vocabulary (script vs spec)
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: status-marker-lifecycle
+- **Dependencies**: None
+
+**Description**: The status-writing script and the plan format spec disagree on MOST of the vocabulary. This must be settled before any writer is wired to it, otherwise a correctly-wired writer emits spec-violating markers.
+
+VERIFIED EVIDENCE: update-plan-status.sh:21-27 accepts exactly {IMPLEMENTING, COMPLETED, PARTIAL, NOT STARTED}. plan-format.md:6 documents exactly {NOT STARTED, IN PROGRESS, BLOCKED, ABANDONED, COMPLETED}. They agree on only 2 of 5:
+  - NOT STARTED  -> accepted + documented (agree)
+  - COMPLETED    -> accepted + documented (agree)
+  - IMPLEMENTING -> script WRITES it; absent from plan-level spec
+  - PARTIAL      -> script WRITES it; absent from plan-level spec (it is a PHASE-level marker)
+  - IN PROGRESS  -> documented; script REJECTS it (unreachable)
+  - BLOCKED      -> documented; script REJECTS it (unreachable)
+  - ABANDONED    -> documented; script REJECTS it (unreachable)
+So three documented markers are unwritable and two written markers are undocumented.
+
+OPEN QUESTION FOR RESEARCH - DO NOT PRE-RESOLVE. Two candidate resolutions, both defensible:
+  (a) Conform the script to the spec: make update-plan-status.sh write the already-documented [IN PROGRESS] instead of [IMPLEMENTING]. Smaller spec surface; but [IN PROGRESS] then means something different at plan level than the task-level [IMPLEMENTING] that TODO.md shows, which may itself confuse the visibility the user wants.
+  (b) Extend the spec to admit [IMPLEMENTING] (and possibly [PARTIAL]) at plan level. Keeps plan-level and task-level markers lexically aligned; but widens the vocabulary and must not collide with phase-level semantics.
+Research must also settle the BROADER DIVERGENCE now in scope: plan-level admits [ABANDONED] but not [PARTIAL], while phase-level is the reverse (per artifact-formats.md:83-90 / plan-format-enforcement.md). Determine whether that asymmetry is intentional and document the rationale, or unify.
+
+OUT OF SCOPE: do not fix the fail-silent / plan-selection / phase-advance defects here; those follow in the status-script hardening task that depends on this one.
+
+CONSTRAINT: no new scripts.
+
+DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside specs/**.
+
+---
+
+### 876. Wire status preflight into both /orchestrate paths
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: status-marker-lifecycle
+- **Dependencies**: None
+
+**Description**: HIGHEST-VALUE FIX for the reported symptom 'tasks say PLANNED when they are being worked on'. The capability already exists and is correct; nothing calls it on the /orchestrate path.
+
+VERIFIED EVIDENCE:
+- update-task-status.sh:92 already implements `preflight:implement` -> state=implementing + TODO=IMPLEMENTING. This IS the missing PLANNED->IMPLEMENTING transition. No new script is needed.
+- skill-orchestrate/SKILL.md contains ZERO occurrences of `preflight` or `update-task-status` (verified grep count = 0).
+- skill-orchestrate-hard/SKILL.md has only 2 occurrences, both POSTflight (:448, :451). No preflight on either path.
+- ROOT CAUSE: skill-orchestrate/SKILL.md Stage 4 State Handlers (:193-330, e.g. :246-251) dispatch the Agent tool DIRECTLY by subagent_type ($IMPLEMENT_AGENT), bypassing skill-implementer. The preflight call lives INSIDE skill-implementer (:76) and skill-implementer-hard (:80), so direct Agent dispatch never reaches it.
+- CONFIRMS the defect is confined to the orchestrate path: /implement is correct today; /orchestrate is not. The user's own report was about `/orchestrate on task 373`.
+- Zero agents in .claude/agents/ reference update-task-status.sh, so nothing compensates downstream.
+
+CONSEQUENCE: under /orchestrate a task goes planned -> (work happens) -> completed, never passing through implementing. Status markers give no visibility during the entire work window.
+
+REQUIRED: Ensure both skill-orchestrate and skill-orchestrate-hard invoke the implement preflight before dispatching implementation work. Research should decide between (a) routing Stage 4 handlers through skill-implementer/skill-implementer-hard so the existing preflight is inherited, versus (b) calling update-task-status.sh preflight directly from the orchestrate state handlers. Option (a) removes the duplication that caused this bug class; option (b) is a smaller diff. Evaluate whether research/plan phases have the same gap, not just implement.
+
+ALSO IN SCOPE: skill-orchestrate/SKILL.md:100 heading 'Stage 2: Preflight - Loop Guard' is misleadingly named. It is a loop guard, NOT a status update; the name plausibly masked this defect. Rename it.
+
+CONSTRAINT: no new scripts. Wire the existing update-task-status.sh.
+
+DELIVERABLE RULE: honor no-task-references-in-deliverables; cite durable anchors (file/section), never task numbers, in any file outside specs/**.
+
+---
 
 ### 875. Teach meta-builder-agent global-mode semantics
 - **Status**: [NOT STARTED]
