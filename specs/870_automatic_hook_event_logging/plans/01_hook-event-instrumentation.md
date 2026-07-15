@@ -287,22 +287,22 @@ events.
 
 ---
 
-### Phase 6: Sync EXTENSION.md and index-entries.json [NOT STARTED]
+### Phase 6: Sync EXTENSION.md and index-entries.json [COMPLETED]
 
 **Goal**: Documentation counts and capability descriptions agree with `manifest.json`; no dangling
 index entries.
 
 **Tasks**:
-- [ ] Update `EXTENSION.md` summary table: `hooks | 11` → `hooks | 18` (corrects the pre-existing
+- [x] Update `EXTENSION.md` summary table: `hooks | 11` → `hooks | 18` (corrects the pre-existing
       drift AND reflects the two new hooks in one edit). Confirm the `scripts | 52` row still matches
-      `manifest.provides.scripts` length (no new scripts added — the new files are hooks).
-- [ ] Add a short "Hook-Based Event Logging" bullet to the Key Capabilities section describing
+      `manifest.provides.scripts` length (no new scripts added — the new files are hooks). *(completed)*
+- [x] Add a short "Hook-Based Event Logging" bullet to the Key Capabilities section describing
       automatic emission into the unified event store, using durable anchors (reference
-      `events-format.md` / the hook filenames), never a task number.
-- [ ] Confirm `index-entries.json` needs no new entries: `events-format.md`/`events-schema.json`
+      `events-format.md` / the hook filenames), never a task number. *(completed)*
+- [x] Confirm `index-entries.json` needs no new entries: `events-format.md`/`events-schema.json`
       entries already exist from the store work; no new context docs are created by this task. Add an
-      entry only if a doc file is created (it is not).
-- [ ] Grep the touched files for accidental `task N` citations; ensure durable anchors only.
+      entry only if a doc file is created (it is not). *(completed)*
+- [x] Grep the touched files for accidental `task N` citations; ensure durable anchors only. *(completed)*
 
 **Timing**: 30 minutes
 

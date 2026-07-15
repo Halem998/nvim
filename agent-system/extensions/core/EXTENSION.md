@@ -21,7 +21,7 @@ via the extension loader while maintaining full backward compatibility.
 | rules | 6 | Auto-applied rules for state, git, artifacts, workflows, and error handling |
 | skills | 19 | Skill definitions including team mode, orchestration, and utility skills |
 | scripts | 52 | Utility scripts for validation, hooks, memory, events, and extension management |
-| hooks | 11 | Session logging, memory nudging, WezTerm notifications, validation hooks |
+| hooks | 18 | Session logging, memory nudging, WezTerm notifications, validation hooks, unified event-store logging |
 | context | 15 dirs | Architecture, patterns, guides, schemas, workflows, and reference material |
 | docs | 23 files | Standards documentation, architecture guides, and references |
 | templates | 2 | Extension README template and settings.json template |
@@ -36,6 +36,11 @@ via the extension loader while maintaining full backward compatibility.
 - **Unified Event Store**: Append-only `specs/events.jsonl` log (`events-append.sh`/
   `events-query.sh`) capturing lifecycle timings, deviations, blockers, milestones, successes,
   and reflections behind a shared schema and query interface
+- **Hook-Based Event Logging**: Automatic, non-blocking emission into the unified event store --
+  `skill-base.sh`'s four lifecycle functions and `orchestrator-postflight.sh`'s status
+  resolution each append one event per stage, and the `events-log-artifact.sh` (`PostToolUse`)
+  / `events-log-lifecycle.sh` (`Stop`/`SubagentStop`) hooks capture artifact writes and session
+  lifecycle boundaries; see `context/formats/events-format.md` for the field contract
 - **Extension Infrastructure**: Scripts to install, validate, and manage other extensions
 
 ## Usage Notes
