@@ -1,0 +1,29 @@
+{
+  "phase": 1,
+  "phase_name": "Document files_touched in progress-file.md",
+  "started_at": "2026-07-15T23:09:17Z",
+  "last_updated": "2026-07-15T23:09:17Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add files_touched row to objectives field table + immutability note",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/formats/progress-file.md"]
+    },
+    {
+      "id": 2,
+      "description": "Add path-form/additivity prose and cross-references",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/formats/progress-file.md"]
+    },
+    {
+      "id": 3,
+      "description": "Add files_touched to Schema skeleton and worked example",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/formats/progress-file.md"]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

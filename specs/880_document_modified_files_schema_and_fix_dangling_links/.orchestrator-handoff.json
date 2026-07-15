@@ -1,0 +1,30 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "4-phase documentation-only plan. Phases 1-3 (independent, wave 1): document files_touched in progress-file.md, document modified_files in return-metadata-file.md, repoint two dangling links in neovim-integration.md. Phase 4 (wave 2): mirror source to the disposable deploy tree and verify. CRITICAL: all edits target the TRACKED agent-system/extensions/ source tree, never the gitignored .claude/ deploy tree named in the task's file_scope.",
+  "artifacts": [
+    {"type": "plan", "path": "specs/880_document_modified_files_schema_and_fix_dangling_links/plans/01_modified-files-schema-docs.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "implement",
+  "files_modified": [
+    "specs/880_document_modified_files_schema_and_fix_dangling_links/plans/01_modified-files-schema-docs.md"
+  ],
+  "decisions_made": [
+    "OVERRIDES the research handoff's 'agent-system/ out of scope' decision: the three file_scope paths under .claude/ are WRONG as edit targets. .gitignore:7 ignores /.claude/ entirely and the tree is a disposable build artifact regenerated from agent-system/extensions/; edits there would never commit and would be wiped. Deploy and source verified byte-identical at planning time, so nothing is at risk.",
+    "Edit-target mapping: .claude/context/formats/{return-metadata-file,progress-file}.md -> agent-system/extensions/core/context/formats/; .claude/context/project/neovim/guides/neovim-integration.md -> agent-system/extensions/nvim/context/project/neovim/guides/ (nvim extension, NOT core).",
+    "Neovim link depth stays 4-levels-up, computed against the DEPLOYED location. Planning proved ../../../../docs/guides/permission-configuration.md resolves and exists from .claude/context/project/neovim/guides/, but does NOT exist from the source dir. That source-tree miss is expected (nvim context deploys to .claude/context/ while core docs deploy to .claude/docs/) and the plan forbids recomputing depth against the source location.",
+    "Contract documented as: modified_files = optional top-level string[], repo-relative, individual files only (directories not permitted), empty => write [] never omit; files_touched = per-objective additive array summed (flattened + deduplicated) into modified_files.",
+    "Retrospective (modified_files/files_touched) vs prospective (state.json file_scope) contrast added to both schema docs, pointing at state-management-schema.md's 'File Scope Field' section by name.",
+    "All authored cross-references cite section/field names, never line numbers, since the description's general-implementation-agent.md:394 citation is already stale (real citations: 151-155, 166-168, 212-215, 425-435, 494).",
+    "Phase 4 mirrors source over deploy to restore byte-identity; the mirror is gitignored, never committed, and reproduces what regeneration would emit. Phase 4 asserts git status shows the three agent-system/ files modified and nothing under .claude/.",
+    "no-task-references-in-deliverables enforced: all three edited files live outside specs/**, and Phase 4 sweeps for task-number citations."
+  ],
+  "dead_ends": [
+    "Editing .claude/context/formats/*.md or .claude/context/project/neovim/guides/neovim-integration.md directly: gitignored, never committed, wiped on the next deploy-tree regeneration.",
+    "Recomputing the neovim link depth so it resolves from the source tree: would produce a link that breaks at the deployed location, which is the only place it must work.",
+    "Anchoring any edit at general-implementation-agent.md:394: the file has drifted and that line is now mid-way through an unrelated Implementation Summary template."
+  ],
+  "plan_markers_verified": true
+}

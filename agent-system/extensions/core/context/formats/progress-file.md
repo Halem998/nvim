@@ -47,13 +47,15 @@ specs/{N}_{SLUG}/
     {
       "id": 1,
       "description": "Define ValidationResult type",
-      "status": "done"
+      "status": "done",
+      "files_touched": ["lua/neotex/core/validation/types.lua"]
     },
     {
       "id": 2,
       "description": "Implement field validators",
       "status": "in_progress",
-      "note": "3 of 5 validators completed (string, number, boolean)"
+      "note": "3 of 5 validators completed (string, number, boolean)",
+      "files_touched": ["lua/neotex/core/validation/validators.lua"]
     },
     {
       "id": 3,
@@ -113,8 +115,19 @@ Each objective:
 | `description` | string | Yes | Brief description of the objective |
 | `status` | string | Yes | `not_started`, `in_progress`, `done`, `blocked` |
 | `note` | string | No | Additional context (partial completion, blockers) |
+| `files_touched` | array of strings | No | Repo-relative paths of files written or edited while working this objective |
 
-**Immutability**: Objective `id` and `description` are immutable once created. Only `status` and `note` change during execution.
+**Immutability**: Objective `id` and `description` are immutable once created. `status`, `note`,
+and `files_touched` change during execution. `files_touched` is **additive** — entries are
+appended to across updates to the same objective, never overwritten or truncated.
+
+**`files_touched` path form**: entries are **individual repo-relative file paths** — not
+directory prefixes and not absolute paths. This per-objective array is the accumulation
+mechanism: the implementation agent sums it (flattened and deduplicated across every phase and
+every objective in the task) into the top-level `modified_files` field of `.return-meta.json`.
+See [Return Metadata Format](return-metadata-file.md) for the `modified_files` field
+specification and [Git Staging Scope Contract](../standards/git-staging-scope.md) for how that
+field drives targeted `git add` staging.
 
 ### current_objective (required)
 
@@ -207,23 +220,30 @@ The successor reads the progress file to understand exactly what was completed.
     {
       "id": 1,
       "description": "Define ValidationResult type and error codes",
-      "status": "done"
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/core/validation/types.lua",
+        "lua/neotex/core/validation/errors.lua"
+      ]
     },
     {
       "id": 2,
       "description": "Implement field validators for primitive types",
-      "status": "done"
+      "status": "done",
+      "files_touched": ["lua/neotex/core/validation/primitives.lua"]
     },
     {
       "id": 3,
       "description": "Implement field validators for domain types",
       "status": "in_progress",
-      "note": "Date and URL validators done, custom type validators remaining"
+      "note": "Date and URL validators done, custom type validators remaining",
+      "files_touched": ["lua/neotex/core/validation/domain.lua"]
     },
     {
       "id": 4,
       "description": "Integrate validators with main handler",
-      "status": "not_started"
+      "status": "not_started",
+      "files_touched": []
     }
   ],
   "current_objective": 3,
