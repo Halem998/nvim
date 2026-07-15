@@ -166,7 +166,7 @@ of it.
 
 ---
 
-### Phase 2: Transcript pass script [NOT STARTED]
+### Phase 2: Transcript pass script [COMPLETED]
 
 **Goal**: Author `bootstrap-harvest-transcripts.sh` — the perishable-data pass. Emits one row per
 top-level session with `is_error` statistics, resolved repo path, and self-exclusion applied.
@@ -174,23 +174,24 @@ top-level session with `is_error` statistics, resolved repo path, and self-exclu
 **READ-ONLY**: the script must only read under `~/.claude/`.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/memory/scripts/bootstrap-harvest-transcripts.sh`.
-- [ ] Implement self-exclusion: read `$CLAUDE_CODE_SESSION_ID` once at start; exclude that
+- [x] Create `agent-system/extensions/memory/scripts/bootstrap-harvest-transcripts.sh`.
+- [x] Implement self-exclusion: read `$CLAUDE_CODE_SESSION_ID` once at start; exclude that
       sessionId and any transcripts under `<that-sessionId>/subagents/` from every count. If the
       variable is unset, fail loudly rather than silently harvesting the miner's own output.
-- [ ] Implement repo resolution in fixed order: `sessions-index.json.entries[].projectPath` →
-      first record's `cwd` → fail loudly. Never the encoded dirname.
-- [ ] Implement the `is_error` count via jq streaming over raw `.jsonl`. Count own-session and
+      *(completed: verified 108/109 rows emitted on nvim slice, self session absent)*
+- [x] Implement repo resolution in fixed order: `sessions-index.json.entries[].projectPath` →
+      first record's `cwd` → fail loudly. Never the encoded dirname. *(completed: 0 repo_unresolved on nvim slice)*
+- [x] Implement the `is_error` count via jq streaming over raw `.jsonl`. Count own-session and
       subagent errors **separately**, and emit both plus a rolled-up total. Also emit the
-      tool-result denominator so the rate is reconstructible.
-- [ ] Emit per row: `session_id`, `repo`, `first_timestamp`, `last_timestamp`, `message_count`,
+      tool-result denominator so the rate is reconstructible. *(completed: is_error_count, subagent_is_error_count, tool_result_count all emitted separately; rolled-up total computed in Phase 5's inferred_outcome)*
+- [x] Emit per row: `session_id`, `repo`, `first_timestamp`, `last_timestamp`, `message_count`,
       `is_error_count`, `subagent_is_error_count`, `tool_result_count`, `transcript_path`.
-      Attribution fields are added by Phase 4; `inferred_outcome` by Phase 5.
-- [ ] Header comment: state the read-only contract and that `FAILED` is deliberately NOT used as a
+      Attribution fields are added by Phase 4; `inferred_outcome` by Phase 5. *(completed)*
+- [x] Header comment: state the read-only contract and that `FAILED` is deliberately NOT used as a
       failure signal (it is content inside exit-0 calls), citing the `is_error` field as the only
-      outcome signal. Use durable anchors — no task-number citations.
-- [ ] Emit a per-file skip/decode-failure count to stderr for the manifest to collect. Never drop a
-      file silently.
+      outcome signal. Use durable anchors — no task-number citations. *(completed)*
+- [x] Emit a per-file skip/decode-failure count to stderr for the manifest to collect. Never drop a
+      file silently. *(completed: files_scanned/files_skipped_self/files_decode_failed/rows_emitted/repo_unresolved all printed to stderr)*
 
 **Timing**: 1.5 hours
 

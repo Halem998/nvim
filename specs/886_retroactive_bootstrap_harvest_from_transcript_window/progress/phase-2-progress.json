@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Transcript pass script",
+  "started_at": "2026-07-15T18:25:00Z",
+  "last_updated": "2026-07-15T18:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create bootstrap-harvest-transcripts.sh with self-exclusion, repo resolution, is_error counting, per-row emission, header comment, decode-failure counting", "status": "done", "files_touched": ["agent-system/extensions/memory/scripts/bootstrap-harvest-transcripts.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "test isolation via a symlinked single-project root", "result": "failed", "reason": "bash for-glob with trailing / follows symlinks fine, but bare `find <symlinked-dir> -maxdepth 1 -type f` does not descend into a symlink passed as the start path without -L; fixed by adding -L to both find invocations in the script (harmless/more robust against the real, non-symlinked corpus too)"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
