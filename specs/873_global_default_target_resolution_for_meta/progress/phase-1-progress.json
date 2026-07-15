@@ -1,0 +1,13 @@
+{
+  "phase": 1,
+  "phase_name": "Add --local to parse-command-args.sh",
+  "started_at": "2026-07-15T18:00:00Z",
+  "last_updated": "2026-07-15T18:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add LOCAL_FLAG to header comment, initializer, regex check, sed strip, export", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/parse-command-args.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
