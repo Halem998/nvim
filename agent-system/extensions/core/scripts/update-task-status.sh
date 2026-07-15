@@ -12,8 +12,10 @@
 # Arguments:
 #   operation     - "preflight" or "postflight"
 #   task_number   - Task number (integer)
-#   target_status - "research", "plan", "implement", or "pr_ready" (pr_ready is reserved for
-#                    task_type == "pr" unless --allow-pr-ready is passed)
+#   target_status - "research", "plan", "implement", "pr_ready", "partial", or "blocked"
+#                    (pr_ready is reserved for task_type == "pr" unless --allow-pr-ready is
+#                    passed; partial/blocked are postflight-only task-level termini -- see
+#                    map_status() below for the preflight rejection)
 #   session_id    - Session identifier string
 #
 # Exit codes:
@@ -57,7 +59,7 @@ session_id="${POSITIONAL_ARGS[3]:-}"
 if [[ -z "$operation" || -z "$task_number" || -z "$target_status" || -z "$session_id" ]]; then
   echo "Usage: $0 <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready]" >&2
   echo "  operation:     preflight | postflight" >&2
-  echo "  target_status: research | plan | implement | pr_ready (pr_ready requires task_type==pr unless --allow-pr-ready)" >&2
+  echo "  target_status: research | plan | implement | pr_ready | partial | blocked (pr_ready requires task_type==pr unless --allow-pr-ready; partial/blocked are postflight-only)" >&2
   exit 1
 fi
 
@@ -66,8 +68,8 @@ if [[ "$operation" != "preflight" && "$operation" != "postflight" ]]; then
   exit 1
 fi
 
-if [[ "$target_status" != "research" && "$target_status" != "plan" && "$target_status" != "implement" && "$target_status" != "pr_ready" ]]; then
-  echo "Error: target_status must be 'research', 'plan', 'implement', or 'pr_ready', got '$target_status'" >&2
+if [[ "$target_status" != "research" && "$target_status" != "plan" && "$target_status" != "implement" && "$target_status" != "pr_ready" && "$target_status" != "partial" && "$target_status" != "blocked" ]]; then
+  echo "Error: target_status must be 'research', 'plan', 'implement', 'pr_ready', 'partial', or 'blocked', got '$target_status'" >&2
   exit 1
 fi
 
@@ -95,6 +97,12 @@ map_status() {
     postflight:implement) STATE_STATUS="completed";     TODO_STATUS="COMPLETED" ;;
     preflight:pr_ready)  STATE_STATUS="pr_ready";      TODO_STATUS="PR READY" ;;
     postflight:pr_ready) STATE_STATUS="completed";     TODO_STATUS="COMPLETED" ;;
+    # partial/blocked are postflight-only task-level termini (state-management.md's permissive
+    # transition model admits them from [IMPLEMENTING] on timeout/error). There is deliberately
+    # no preflight:partial or preflight:blocked case here -- the catch-all below rejects that
+    # nonsensical combination with exit 1, which is the desired fail-loud behavior.
+    postflight:partial)  STATE_STATUS="partial";       TODO_STATUS="PARTIAL" ;;
+    postflight:blocked)  STATE_STATUS="blocked";       TODO_STATUS="BLOCKED" ;;
     *)
       echo "Error: unknown operation:target_status combination '${op}:${target}'" >&2
       exit 1

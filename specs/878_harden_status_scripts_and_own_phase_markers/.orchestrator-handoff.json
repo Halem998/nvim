@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Six-phase plan fixing all five verified defects (A-E) in the three task-status scripts and the base implementation agent, ordered E -> C -> D -> B -> A -> integration so each fix lands on a foundation the prior one made safe. Every edit targets the canonical git-tracked agent-system/ tree with a mirrored copy to the gitignored .claude/ deploy tree, and every phase verifies by direct script invocation against an isolated mktemp fixture rather than the status machinery under repair.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/878_harden_status_scripts_and_own_phase_markers/plans/01_harden-status-scripts-phase-markers.md",
+      "summary": "6 phases, 4 hours: DEFECT E (partial/blocked termini), DEFECT C (version-ordered plan selection, 3 sites), DEFECT D (scope idempotency early-exit to state.json), DEFECT B (fatal-vs-warn decision table encoded), DEFECT A (wire base agent to update-phase-status.sh), integration verification."
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "implement",
+  "phases_total": 6
+}
