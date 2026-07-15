@@ -143,9 +143,18 @@ skill_preflight_update() {
   local task_number="$1"
   local operation="$2"
   local session_id="$3"
+  local _t0
+  _t0=$(date +%s.%N)
   bash .claude/scripts/update-task-status.sh preflight "$task_number" "$operation" "$session_id"
   # Extension hook: preflight (runs after status update)
   skill_run_extension_hook "preflight" "$task_number" "${TASK_TYPE:-}" "${TASK_DIR:-}" "$session_id" "$operation"
+  # Unified event store: one non-blocking milestone event per lifecycle stage
+  local _dur
+  _dur=$(awk -v a="$_t0" -v b="$(date +%s.%N)" 'BEGIN{printf "%.3f", b-a}')
+  bash .claude/scripts/events-append.sh --event-type lifecycle_stage --category milestone \
+    --checkpoint preflight --duration "$_dur" --task "$task_number" --session "$session_id" \
+    --message "Preflight stage completed for ${operation}" \
+    >/dev/null 2>&1 || true
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -181,7 +190,16 @@ skill_context_injection() {
   local task_number="$1"
   local session_id="$2"
   local operation="${3:-research}"
+  local _t0
+  _t0=$(date +%s.%N)
   skill_run_extension_hook "context_injection" "$task_number" "${TASK_TYPE:-}" "${TASK_DIR:-}" "$session_id" "$operation"
+  # Unified event store: one non-blocking milestone event per lifecycle stage
+  local _dur
+  _dur=$(awk -v a="$_t0" -v b="$(date +%s.%N)" 'BEGIN{printf "%.3f", b-a}')
+  bash .claude/scripts/events-append.sh --event-type lifecycle_stage --category milestone \
+    --checkpoint context_injection --duration "$_dur" --task "$task_number" --session "$session_id" \
+    --message "Context injection stage completed for ${operation}" \
+    >/dev/null 2>&1 || true
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -257,6 +275,8 @@ skill_validate_artifact() {
   local task_number="${4:-}"
   local session_id="${5:-}"
   local operation="${6:-}"
+  local _t0
+  _t0=$(date +%s.%N)
   if [ "$status" != "failed" ] && [ -n "$artifact_path" ] && [ -f "$artifact_path" ]; then
     echo "Validating ${artifact_kind} artifact..."
     if ! bash .claude/scripts/validate-artifact.sh "$artifact_path" "$artifact_kind" --fix 2>/dev/null; then
@@ -266,6 +286,21 @@ skill_validate_artifact() {
   # Extension hook: verification (runs after artifact validation, non-blocking)
   if [ -n "$task_number" ]; then
     skill_run_extension_hook "verification" "$task_number" "${TASK_TYPE:-}" "${TASK_DIR:-}" "$session_id" "$operation"
+  fi
+  # Unified event store: one non-blocking event per lifecycle stage.
+  # category is discriminated by status: a failed/blocked/partial verification is a
+  # deviation from the plan, not a clean milestone.
+  if [ -n "$task_number" ]; then
+    local _dur _category
+    _dur=$(awk -v a="$_t0" -v b="$(date +%s.%N)" 'BEGIN{printf "%.3f", b-a}')
+    case "$status" in
+      failed|blocked|partial) _category="deviation" ;;
+      *) _category="milestone" ;;
+    esac
+    bash .claude/scripts/events-append.sh --event-type lifecycle_stage --category "$_category" \
+      --checkpoint verification --duration "$_dur" --task "$task_number" --session "$session_id" \
+      --message "Verification stage completed for ${artifact_kind} (status: ${status})" \
+      >/dev/null 2>&1 || true
   fi
 }
 
@@ -279,6 +314,8 @@ skill_postflight_update() {
   local operation="$2"
   local session_id="$3"
   local status="$4"
+  local _t0
+  _t0=$(date +%s.%N)
   case "$status" in
     researched|planned|implemented)
       bash .claude/scripts/update-task-status.sh postflight "$task_number" "$operation" "$session_id"
@@ -289,6 +326,13 @@ skill_postflight_update() {
   esac
   # Extension hook: postflight (runs after status update, non-blocking)
   skill_run_extension_hook "postflight" "$task_number" "${TASK_TYPE:-}" "${TASK_DIR:-}" "$session_id" "$operation"
+  # Unified event store: one non-blocking milestone event per lifecycle stage
+  local _dur
+  _dur=$(awk -v a="$_t0" -v b="$(date +%s.%N)" 'BEGIN{printf "%.3f", b-a}')
+  bash .claude/scripts/events-append.sh --event-type lifecycle_stage --category milestone \
+    --checkpoint postflight --duration "$_dur" --task "$task_number" --session "$session_id" \
+    --message "Postflight stage completed for ${operation} (status: ${status})" \
+    >/dev/null 2>&1 || true
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
