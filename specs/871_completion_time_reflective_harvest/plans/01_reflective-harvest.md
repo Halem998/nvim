@@ -277,28 +277,31 @@ additional reviewable segment, and document it.
 
 ---
 
-### Phase 5: Minimal legacy touches and extension consistency [NOT STARTED]
+### Phase 5: Minimal legacy touches and extension consistency [COMPLETED]
 
 **Goal**: Apply the bounded doc-only touches to dormant/legacy files and keep the extension
 manifest/EXTENSION docs consistent — after the functional phases have settled so cross-references
 are accurate.
 
 **Tasks**:
-- [ ] `agent-system/extensions/core/scripts/memory-harvest.sh`: add a one-line header comment
+- [x] `agent-system/extensions/core/scripts/memory-harvest.sh`: add a one-line header comment
   noting the script is presently uncalled and that `reflection` lives on the same task entries but
   is consumed via `skill-todo`'s inline harvest logic, not this script. No functional change.
-- [ ] `agent-system/extensions/core/commands/todo.md`: add a single small Notes pointer that
+  *(completed)*
+- [x] `agent-system/extensions/core/commands/todo.md`: add a single small Notes pointer that
   completion-time reflections (when present) are surfaced during archival per
   `skill-todo/SKILL.md`'s harvest stage. Do not re-sync the broader memory-harvest workflow.
-- [ ] `agent-system/extensions/memory/EXTENSION.md`: add a short note (under Memory Lifecycle or a
+  *(completed)*
+- [x] `agent-system/extensions/memory/EXTENSION.md`: add a short note (under Memory Lifecycle or a
   small subsection) that `/todo`'s harvest also surfaces completion-time reflections (state.json
   `reflection` field) alongside `memory_candidates`, and `/learn --task N` can pull them in as an
-  additional segment.
-- [ ] `agent-system/extensions/core/EXTENSION.md`: verify the existing "Unified Event Store"
+  additional segment. *(completed)*
+- [x] `agent-system/extensions/core/EXTENSION.md`: verify the existing "Unified Event Store"
   bullet (which already references reflections) still reads correctly; adjust wording only if
-  needed for consistency.
-- [ ] `agent-system/extensions/core/manifest.json`: verify no new script/skill file was
+  needed for consistency. *(completed: verified, already reads correctly, no edit made)*
+- [x] `agent-system/extensions/core/manifest.json`: verify no new script/skill file was
   introduced (none is) and therefore no `provides` entry is required. Verify-only, expected no-op.
+  *(completed: `jq empty` passes, no edit made)*
 
 **Timing**: 45 min
 

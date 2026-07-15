@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # memory-harvest.sh - Harvest memory candidates from state.json into the memory vault
 #
+# NOTE: this script is presently uncalled (no caller in the skill/command pipeline). A task
+# entry's `reflection` field lives on the same state.json entries as `memory_candidates`, but it
+# is consumed via skill-todo's inline harvest logic (HarvestMemories stage), not via this script.
+#
 # Usage: memory-harvest.sh <task_number>
 #
 # Reads memory_candidates from state.json for the given task number,

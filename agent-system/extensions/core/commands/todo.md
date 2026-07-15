@@ -871,6 +871,8 @@ If no roadmap items were updated (no matches found in Step 3.5):
 - Tasks can be recovered with `/task --recover N`
 - Archive is append-only (for audit trail)
 - Run periodically to keep TODO.md and specs/ manageable
+- Completion-time reflections (when present on a task's `reflection` field) are surfaced
+  read-only during archival per `skill-todo/SKILL.md`'s memory-harvest stage.
 
 ### Orphan Tracking
 

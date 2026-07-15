@@ -1,0 +1,16 @@
+{
+  "phase": 5,
+  "phase_name": "Minimal legacy touches and extension consistency",
+  "started_at": "2026-07-15T00:40:00Z",
+  "last_updated": "2026-07-15T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "memory-harvest.sh header comment (doc-only)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/memory-harvest.sh"]},
+    {"id": 2, "description": "commands/todo.md Notes pointer", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 3, "description": "memory/EXTENSION.md lifecycle note", "status": "done", "files_touched": ["agent-system/extensions/memory/EXTENSION.md"]},
+    {"id": 4, "description": "core/EXTENSION.md Unified Event Store bullet verify-only (no edit needed, already reads correctly)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "core/manifest.json verify-only (jq empty passes, no edit needed)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
