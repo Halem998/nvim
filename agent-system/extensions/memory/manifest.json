@@ -20,6 +20,12 @@
     "data": [
       ".memory"
     ],
+    "scripts": [
+      "bootstrap-harvest.sh",
+      "bootstrap-harvest-transcripts.sh",
+      "bootstrap-harvest-history.sh",
+      "bootstrap-harvest-attribution.sh"
+    ],
     "hooks": []
   },
   "routing": {

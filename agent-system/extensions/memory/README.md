@@ -324,11 +324,52 @@ The extension is optimized for under 1000 memories. Periodically:
 
 ---
 
+## Bootstrap Harvest Scripts (one-shot, historical)
+
+`scripts/` contains a one-shot, read-only mining pipeline that distills the Claude Code
+transcript corpus (`~/.claude/projects/`) and the durable prompt spine (`~/.claude/history.jsonl`)
+into a pointer-based dataset. This is **not** a scheduled or repeatedly-run pipeline — the
+transcript format is undocumented and unversioned, and the transcript window itself is a rolling
+~30-day cliff. The scripts exist as a deployable, reusable substrate for a future dataset
+refresh, not as ongoing automation.
+
+| Script | Role |
+|--------|------|
+| `bootstrap-harvest.sh` | Orchestrator: runs the three passes below, joins their output on `session_id`, computes the `inferred_outcome` label, and writes the manifest |
+| `bootstrap-harvest-transcripts.sh` | Perishable pass: one row per top-level transcript session with `is_error` statistics and resolved repo path |
+| `bootstrap-harvest-history.sh` | Durable pass: one row per `sessionId` from `history.jsonl`, using a skip-and-continue decode so an embedded raw-newline record cannot abort the whole read |
+| `bootstrap-harvest-attribution.sh` | Join pass: maps `.meta.json` subagent sidecars to a parent session and a best-effort task number extracted from the sidecar description |
+
+**Read-only contract (binding)**: every pass reads under `~/.claude/` using only `jq`/`find`/
+`cat`/`python3` raw-decode — never `rm`/`mv`/`>`/`>>`/truncate against that tree. All output is
+written to caller-supplied paths outside `~/.claude/` (JSONL to stdout, redirected by the
+orchestrator).
+
+**Self-exclusion**: each pass reads `$CLAUDE_CODE_SESSION_ID` once at start and excludes that
+session (and its subagent sidecars) from every count, so the harvest never counts its own
+execution as corpus data.
+
+**Usage**:
+```bash
+CLAUDE_CODE_SESSION_ID="$CLAUDE_CODE_SESSION_ID" bash scripts/bootstrap-harvest.sh \
+  sessions.jsonl history-spine.jsonl harvest-manifest.json \
+  [projects_root] [history_jsonl_path]
+```
+
+The `inferred_outcome` label (`trivial`/`clean`/`mixed`/`high_error`) is an explicit modeling
+decision documented in the orchestrator's header comment, not an extraction — there is no
+session-level success/failure field in the source data. Every output row retains its raw
+`is_error`/`tool_result_count` numerator and denominator so the label can be recomputed later
+without re-mining the corpus.
+
+---
+
 ## Subdirectories
 
 - `commands/` - `/learn` command implementation
 - `skills/` - `skill-memory` skill definition
 - `context/` - Extended usage guides
+- `scripts/` - One-shot bootstrap harvest pipeline (see "Bootstrap Harvest Scripts" above)
 
 ### Context Documentation
 
