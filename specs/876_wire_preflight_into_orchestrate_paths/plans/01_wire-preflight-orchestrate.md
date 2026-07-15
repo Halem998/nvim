@@ -1,7 +1,7 @@
 # Implementation Plan: Wire status preflight into both /orchestrate paths
 
 - **Task**: 876 - Wire status preflight into both /orchestrate paths
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/876_wire_preflight_into_orchestrate_paths/reports/01_wire-preflight-orchestrate.md
@@ -251,26 +251,39 @@ ordering constraint, and rename its Stage 2 heading.
 
 ---
 
-### Phase 5: Manual verification [NOT STARTED]
+### Phase 5: Manual verification [COMPLETED]
 
 **Goal**: Confirm the wiring works and the H4 constraint holds, since no orchestrate test harness
 exists.
 
 **Tasks**:
-- [ ] Static checks: `grep -n "skill_preflight_update" .claude/skills/skill-orchestrate/SKILL.md`
+- [x] Static checks: `grep -n "skill_preflight_update" .claude/skills/skill-orchestrate/SKILL.md`
       and `.../skill-orchestrate-hard/SKILL.md` show the expected counts and positions from
-      Phases 1-3.
-- [ ] Confirm no `### Stage 2: Preflight` heading remains in either skill file
+      Phases 1-3. *(completed: base skill = 7 (4 single-task + 3 MT-4), hard skill = 4; verified
+      on both the canonical source under agent-system/extensions/core/skills/ and the deployed
+      .claude/ copy, which are otherwise byte-identical modulo one pre-existing, unrelated
+      orchestrator_mode true/false drift between the two trees that predates this task)*
+- [x] Confirm no `### Stage 2: Preflight` heading remains in either skill file
       (`grep -rn "Stage 2: Preflight" .claude/skills/skill-orchestrate*/SKILL.md` returns nothing).
-- [ ] Trace-read (or dry-run against a throwaway/scratch task) each single-task handler to confirm
+      *(completed: confirmed empty on both trees)*
+- [x] Trace-read (or dry-run against a throwaway/scratch task) each single-task handler to confirm
       the preflight call precedes the Agent dispatch and uses the correct operation
-      (`research`/`plan`/`implement`).
-- [ ] H4 ordering assertion: in `skill-orchestrate-hard`, confirm by reading that the `plan`
+      (`research`/`plan`/`implement`). *(completed: traced by reading; each of the 4 base-skill
+      single-task handlers and the 3 MT-4 per-task-group loops has its preflight call
+      immediately before the corresponding Agent dispatch, with the matching operation string)*
+- [x] H4 ordering assertion: in `skill-orchestrate-hard`, confirm by reading that the `plan`
       preflight is only reachable when `adversarial_verified=true`, and the verification
       re-dispatch of `$RESEARCH_AGENT` has no preflight — status stays `researched` across a
-      verification pass.
-- [ ] Idempotency spot-check: confirm `update-task-status.sh` no-ops when already at target status
+      verification pass. *(completed: confirmed by reading — the `plan` preflight sits on the
+      line immediately after `if [ "$adversarial_verified" = "true" ]` and immediately before
+      `subagent_type: $PLANNER_AGENT`; the earlier `else` verification re-dispatch branch that
+      calls `subagent_type: $RESEARCH_AGENT` while status is still `researched` has no preflight
+      call of any kind)*
+- [x] Idempotency spot-check: confirm `update-task-status.sh` no-ops when already at target status
       (so repeated per-phase implement dispatches and continuation resumes do not thrash status).
+      *(completed: confirmed by reading `.claude/scripts/update-task-status.sh` lines 133-144 —
+      an idempotency check compares `current_state_status` to the target `STATE_STATUS` and
+      exits 0 as a no-op when they already match, before any state.json write)*
 
 **Timing**: 20 minutes
 
