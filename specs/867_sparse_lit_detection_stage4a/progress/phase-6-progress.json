@@ -1,0 +1,16 @@
+{
+  "phase": 6,
+  "phase_name": "Sync EXTENSION.md, CLAUDE.md merge source, and adhoc directive",
+  "started_at": "2026-07-15T03:00:00Z",
+  "last_updated": "2026-07-15T03:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Sparse-Coverage Detection subsection to EXTENSION.md", "status": "done", "files_touched": ["agent-system/extensions/literature/EXTENSION.md"]},
+    {"id": 2, "description": "Update claudemd.md: six directives, LITERATURE_SPARSE_THRESHOLD, Search online to ingest option, orchestrator_mode dual-consumer note", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 3, "description": "Update adhoc-navigation-directive.md Sources of Truth / option list to match reconciled Stage 4a", "status": "done", "files_touched": ["agent-system/extensions/literature/context/project/literature/patterns/adhoc-navigation-directive.md"]},
+    {"id": 4, "description": "Do NOT edit .claude/CLAUDE.md (verified untouched)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

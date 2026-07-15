@@ -21,29 +21,40 @@ A live user is always present in a conversational request, so the autonomous bra
      --orchestrator-mode false --query "<user request text>"
    ```
 
-2. Branch on the directive token printed to stdout. Only four directives are reachable from the
-   primary session (`AUTONOMOUS_GLOBAL` cannot occur since `--orchestrator-mode` is always
-   `false`; `LIT_DISABLED` cannot occur since `--lit-flag` is always `true` here):
+2. Branch on the directive token printed to stdout. Only five of the six directives are
+   reachable from the primary session (`AUTONOMOUS_GLOBAL` cannot occur since
+   `--orchestrator-mode` is always `false`; `LIT_DISABLED` cannot occur since `--lit-flag` is
+   always `true` here):
 
    - **`SUBINDEX_PRESENT`** → run the per-repo briefing with no arguments:
 
      ```bash
-     bash .claude/scripts/literature-briefing.sh
+     bash .claude/scripts/literature-briefing-invoke.sh
      ```
 
    - **`GLOBAL_MISSING`** → emit a visible chat notice that no literature is available (no
      per-repo sub-index and no global Literature index found). Do not proceed silently — say so
      in the response, then continue without a briefing.
 
-   - **`PROMPT_NEEDED`** → issue `AskUserQuestion` with the **identical** three options and
-     wording used by Stage 4a (see `.claude/skills/skill-researcher/SKILL.md` lines 195-238):
+   - **`PROMPT_NEEDED`** (sub-index absent, global index present) and **`SPARSE_PROMPT_NEEDED`**
+     (sub-index present but resolves to fewer than `LITERATURE_SPARSE_THRESHOLD` entries) → issue
+     `AskUserQuestion` with the **identical** four options and wording used by the shared Stage
+     4a block (see `.claude/context/patterns/lit-stage4a-flow.md`):
      - **"Use global corpus now"** (recommended default, listed first): run
-       `literature-briefing.sh --global "<query>"` and inject the result for this response only.
-       No setup, no file writes.
+       `literature-briefing-invoke.sh --global "<query>"` and inject the result for this response
+       only. No setup, no file writes. If the result's `<!-- lit-coverage ... -->` marker reports
+       `sparse=true`, re-prompt with the same four options (two-checkpoint shape) — only when
+       this was the option chosen, never after "Skip this run" or "Create curation task".
      - **"Create curation task"**: run `literature-create-setup-task.sh` to create the
        `populate_literature_sub_index` task, then attempt the same Stage 4a-fork inline
-       population Stage 4a uses (see SKILL.md lines 254-275) so this conversation also benefits;
-       once `specs/literature-index.json` exists, run the no-arg `literature-briefing.sh`.
+       population Stage 4a uses so this conversation also benefits; once
+       `specs/literature-index.json` exists (or has more entries), run the no-arg
+       `literature-briefing-invoke.sh`.
+     - **"Search online to ingest"**: run `literature-discover.sh "<query>"`, filter candidate
+       records to `open_access`/`paywall`/`in_zotero_no_pdf`, ingest each via the STABLE-CONTRACT
+       `literature-ingest-online.sh --record` bridge, then re-run the per-repo briefing to pick up
+       whatever was ingested. Live network calls — this option is always an explicit user choice,
+       never automatic.
      - **"Skip this run"**: an explicit, user-chosen decision. Log `[lit] Skipped by user choice`
        and continue without a briefing — non-silent because it is an explicit, logged choice.
 
@@ -82,11 +93,15 @@ This file documents primary-session-specific *routing* (self-execution vs. subag
 around the existing directive machinery — it does not re-derive the classification rules. For
 the canonical classification logic and exact `AskUserQuestion` wording, see:
 
-- Stage 4a in `.claude/skills/skill-researcher/SKILL.md` (lines 146-278) — the directive
-  `case`/`esac`, the `PROMPT_NEEDED` three-option `AskUserQuestion` block, the Stage 4a-fork
-  inline population procedure, and the Stage 5 injection-placement rule.
+- `.claude/context/patterns/lit-stage4a-flow.md` — the single shared Stage 4a block all six
+  `--lit` skills import: the directive branching, the four-option `AskUserQuestion` (shared by
+  `PROMPT_NEEDED` and `SPARSE_PROMPT_NEEDED`, including "Search online to ingest"), the
+  two-checkpoint sparse re-prompt, the Stage 4a-fork inline population procedure, the autonomous
+  `[lit:auto]` fallback, and the injection-placement rule.
 - `.claude/scripts/literature-lit-flag-resolve.sh` — the single source of truth for directive
-  classification.
+  classification (six directives, including `SPARSE_PROMPT_NEEDED`).
+- `.claude/scripts/literature-briefing.sh` — the source of the `<!-- lit-coverage ... -->`
+  machine-readable marker and `[SPARSE COVERAGE ...]` banner used by the two-checkpoint re-prompt.
 
 If Stage 4a's wording or branching changes, update this file to match rather than letting the
 two drift apart.

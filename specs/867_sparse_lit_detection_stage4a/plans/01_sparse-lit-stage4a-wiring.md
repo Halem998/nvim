@@ -267,23 +267,23 @@ will import -- eliminating the six-way drift class.
 
 ---
 
-### Phase 5: Wire all six --lit skills to the shared block [NOT STARTED]
+### Phase 5: Wire all six --lit skills to the shared block [COMPLETED]
 
 **Goal**: Replace each skill's drifted inline Stage 4a with an `@`-import of the shared block, and
 remove every raw briefing call site.
 
 **Tasks**:
-- [ ] In each of the six `SKILL.md` files (`skill-researcher`, `skill-planner`, `skill-implementer`,
+- [x] In each of the six `SKILL.md` files (`skill-researcher`, `skill-planner`, `skill-implementer`,
   `skill-researcher-hard`, `skill-planner-hard`, `skill-implementer-hard`), replace the ~70-110-line
   drifted Stage 4a block with a reference/`@`-import to
   `context/patterns/lit-stage4a-flow.md` (deployed path), preserving each skill's surrounding stage
   numbering and injection point (after `<memory-context>`, before task instructions).
-- [ ] Remove the four remaining raw `literature-briefing.sh 2>/dev/null` call sites
+- [x] Remove the four remaining raw `literature-briefing.sh 2>/dev/null` call sites
   (`skill-researcher`, `skill-researcher-hard`, `skill-planner-hard`, `skill-implementer-hard`);
   the shared block is now the single caller and it uses `literature-briefing-invoke.sh`.
-- [ ] Confirm `skill-planner` and `skill-implementer` (already on the wrapper) converge to the same
+- [x] Confirm `skill-planner` and `skill-implementer` (already on the wrapper) converge to the same
   shared block with no divergence.
-- [ ] Ensure the `--orchestrator-mode` argument passed by the shared block is sourced from each
+- [x] Ensure the `--orchestrator-mode` argument passed by the shared block is sourced from each
   skill's delegation context (now `true` for all `/orchestrate --lit` phases after Phase 3).
 
 **Timing**: 1.5 hours
@@ -306,25 +306,25 @@ remove every raw briefing call site.
 
 ---
 
-### Phase 6: Sync EXTENSION.md, CLAUDE.md merge source, and adhoc directive [NOT STARTED]
+### Phase 6: Sync EXTENSION.md, CLAUDE.md merge source, and adhoc directive [COMPLETED]
 
 **Goal**: Bring the documentation in line with the new behavior; never hand-edit the generated
 `.claude/CLAUDE.md`.
 
 **Tasks**:
-- [ ] Add a "Sparse-Coverage Detection" subsection to
+- [x] Add a "Sparse-Coverage Detection" subsection to
   `agent-system/extensions/literature/EXTENSION.md` summarizing the `SPARSE_PROMPT_NEEDED`
   directive, the `LITERATURE_SPARSE_THRESHOLD` env var (default 3), the "Search online to ingest"
   option, and a cross-reference to the fuller spec in `claudemd.md`.
-- [ ] Update the CLAUDE.md merge source `agent-system/extensions/core/merge-sources/claudemd.md`:
+- [x] Update the CLAUDE.md merge source `agent-system/extensions/core/merge-sources/claudemd.md`:
   extend the `--lit` "Interactive Sub-Index Setup Detection" section to list six directives
   (add `SPARSE_PROMPT_NEEDED`), document the `LITERATURE_SPARSE_THRESHOLD` env var, add the
   "Search online to ingest" option to the prompt option list, and note the `orchestrator_mode`
   dual-consumer/autonomy contract for all `/orchestrate --lit` phases.
-- [ ] Update `agent-system/extensions/literature/context/project/literature/patterns/adhoc-navigation-directive.md`
+- [x] Update `agent-system/extensions/literature/context/project/literature/patterns/adhoc-navigation-directive.md`
   so its "Sources of Truth" / option list matches the reconciled Stage 4a (six directives, new
   online-ingest option) -- it is cited by CLAUDE.md as the ad-hoc counterpart of Stage 4a.
-- [ ] Do NOT edit `.claude/CLAUDE.md` (auto-generated from merge sources).
+- [x] Do NOT edit `.claude/CLAUDE.md` (auto-generated from merge sources).
 
 **Timing**: 1 hour
 

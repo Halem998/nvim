@@ -340,6 +340,12 @@ When `--lit` is passed to `/research`, `/plan`, `/implement`, or `/orchestrate`:
   "Interactive Sub-Index Setup Detection" for the full missing-sub-index decision flow).
 - The only numeric limiter on any live path is `--top-n` (default 8 chunks), which applies to
   global-corpus mode only.
+- **Sparse-coverage detection**: `literature-briefing.sh` also emits a machine-readable
+  `<!-- lit-coverage mode=repo|global seg_count=N sparse=true|false threshold=T -->` marker and,
+  when `sparse=true`, a loud `[SPARSE COVERAGE - N segment(s), threshold T]` banner (same family
+  as `[UNVERIFIED ...]` / `[DEGRADED RETRIEVAL ...]`). Sparse is `seg_count < threshold` (never
+  `<=`). `LITERATURE_SPARSE_THRESHOLD` (env var, default `3`) controls the threshold for both
+  this marker and the resolver's `SPARSE_PROMPT_NEEDED` directive below.
 
 ### Ad-Hoc / Conversational Literature Requests
 
@@ -356,10 +362,12 @@ run") — never silently injecting nothing and never silently auto-searching.
 When `--lit` is used, each skill (skill-researcher, skill-planner, skill-implementer, and their
 `--hard` variants) resolves the situation via the shared helper
 `.claude/scripts/literature-lit-flag-resolve.sh`, which classifies the case and prints exactly
-one of five directives (`LIT_DISABLED`, `SUBINDEX_PRESENT`, `GLOBAL_MISSING`, `PROMPT_NEEDED`,
-`AUTONOMOUS_GLOBAL`) — this eliminates the prior per-skill duplication and, critically, ensures
-no directive branch defaults to an empty briefing without either a visible logged notice or an
-explicit user choice. There is no silent fallback.
+one of SIX directives (`LIT_DISABLED`, `SUBINDEX_PRESENT`, `GLOBAL_MISSING`, `PROMPT_NEEDED`,
+`AUTONOMOUS_GLOBAL`, `SPARSE_PROMPT_NEEDED`) — this eliminates the prior per-skill duplication
+and, critically, ensures no directive branch defaults to an empty briefing without either a
+visible logged notice or an explicit user choice. There is no silent fallback. All six skills
+implement the branching via ONE shared, directly-executable block imported from
+`.claude/context/patterns/lit-stage4a-flow.md` rather than six independently-maintained copies.
 
 1. **No global index** (`GLOBAL_MISSING`): If the per-repo sub-index at
    `specs/literature-index.json` is absent AND `~/Projects/Literature/index.json` (or
@@ -368,17 +376,26 @@ explicit user choice. There is no silent fallback.
    empty branch, and it is explicitly announced, never silent.
 
 2. **Global index exists, sub-index missing, interactive context** (`PROMPT_NEEDED`): An
-   `AskUserQuestion` prompt appears with three choices — two live outcomes plus one explicit,
+   `AskUserQuestion` prompt appears with FOUR choices — three live outcomes plus one explicit,
    non-silent skip:
    - **Use global corpus now** (recommended default, listed first): Runs a live relevance
      search against the global Literature corpus via
-     `literature-briefing.sh --global "<task description>"` and injects the result for this run
-     only. No setup, no file writes.
+     `literature-briefing-invoke.sh --global "<task description>"` and injects the result for
+     this run only. No setup, no file writes. If the result's `<!-- lit-coverage ... -->` marker
+     reports `sparse=true`, the skill re-prompts with the same four-option list (the
+     two-checkpoint shape) rather than silently accepting thin coverage — but only when this was
+     the option chosen, never after "Skip this run" or "Create curation task".
    - **Create curation task**: Creates a task (`populate_literature_sub_index`) in TODO.md via
      `.claude/scripts/literature-create-setup-task.sh`, then attempts to fork-populate
      `specs/literature-index.json` inline so the current run also benefits; injects via the
-     no-arg `literature-briefing.sh` once the sub-index exists (or emits a visible notice if the
-     inline population did not complete this run).
+     no-arg `literature-briefing-invoke.sh` once the sub-index exists (or emits a visible notice
+     if the inline population did not complete this run).
+   - **Search online to ingest** (new): Runs `literature-discover.sh "<task description>"`,
+     filters candidate records to `open_access`/`paywall`/`in_zotero_no_pdf`, ingests each via the
+     `literature-ingest-online.sh --record` bridge (STABLE CONTRACT: input schema, directive
+     tokens, and exit codes are documented in that script's own header and are never changed by
+     this flow), then re-runs the per-repo briefing to pick up whatever was ingested. Live
+     network calls; interactive-choice-only, never triggered autonomously.
    - **Skip this run**: An explicit, user-chosen decision to continue without literature context.
      The skill logs a visible `[lit] Skipped by user choice` notice — non-silent because it is an
      explicit choice, not a default.
@@ -386,18 +403,37 @@ explicit user choice. There is no silent fallback.
 3. **Global index exists, sub-index missing, autonomous context** (`AUTONOMOUS_GLOBAL`): When
    `orchestrator_mode == true` (e.g. `/orchestrate`), `AskUserQuestion` cannot prompt a human, so
    the skill MUST NOT call it. It takes the deterministic default **"Use global corpus now"**:
-   it runs `literature-briefing.sh --global "<task description>"` and emits a visible
+   it runs `literature-briefing-invoke.sh --global "<task description>"` and emits a visible
    `[lit:auto]` notice to the transcript stating that the global-corpus briefing was
    auto-selected because no per-repo sub-index exists and no human is available to prompt. This
-   is never a silent no-op.
+   is never a silent no-op. Online ingest is never triggered autonomously even if the resulting
+   briefing reports `sparse=true`.
+
+4. **Per-repo sub-index exists but is sparse** (`SPARSE_PROMPT_NEEDED`): The sub-index at
+   `specs/literature-index.json` exists but resolves to fewer than `LITERATURE_SPARSE_THRESHOLD`
+   entries (default `3`; includes zero). Interactive contexts get the SAME four-option
+   `AskUserQuestion` as `PROMPT_NEEDED` above (prompt wording names the sparse sub-index rather
+   than a missing one). Autonomous contexts (`orchestrator_mode == true`) reuse the existing
+   sub-index via the plain per-repo briefing and emit `[lit:auto]` — never `AskUserQuestion`,
+   never online ingest.
 
 The sub-index creation helper is `.claude/scripts/literature-create-setup-task.sh`. The
-global-corpus search mode is `.claude/scripts/literature-briefing.sh --global "<query>"
+global-corpus search mode is `.claude/scripts/literature-briefing-invoke.sh --global "<query>"
 [--top-n N]`; both the per-repo and global-corpus briefing modes share a single output section
 that always appends the "How to Use" footer. The interactive detection block lives in Stage 4a
 of each skill that supports `--lit` (skill-researcher, skill-planner, skill-implementer, and
-their `--hard` variants), each delegating classification to
-`literature-lit-flag-resolve.sh`.
+their `--hard` variants), each delegating classification to `literature-lit-flag-resolve.sh` and
+importing the single shared flow at `.claude/context/patterns/lit-stage4a-flow.md`.
+
+### orchestrator_mode Dual-Consumer / Autonomy Contract
+
+`orchestrator_mode` has TWO independent consumers: (1) the `.orchestrator-handoff.json`
+write-gate (see `docs/architecture/handoff-schema.md`), and (2) the literature Stage 4a autonomy
+gate above (`AUTONOMOUS_GLOBAL` / the autonomous branch of `SPARSE_PROMPT_NEEDED`). Both
+`skill-orchestrate` and `skill-orchestrate-hard` pass `orchestrator_mode: true` uniformly for
+research, plan, AND implement dispatches so the literature autonomy contract holds across all
+three `/orchestrate --lit` phases — never just the implement phase. A future change to either
+consumer's meaning MUST re-check the other before landing.
 
 ### specs/literature/ Directory Convention
 

@@ -1,0 +1,30 @@
+{
+  "phase": 5,
+  "phase_name": "Wire all six --lit skills to the shared block",
+  "started_at": "2026-07-15T02:30:00Z",
+  "last_updated": "2026-07-15T03:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace drifted Stage 4a in all six SKILL.md with @-import reference", "status": "done", "files_touched": [
+      "agent-system/extensions/core/skills/skill-researcher/SKILL.md",
+      "agent-system/extensions/core/skills/skill-planner/SKILL.md",
+      "agent-system/extensions/core/skills/skill-implementer/SKILL.md",
+      "agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md",
+      "agent-system/extensions/core/skills/skill-planner-hard/SKILL.md",
+      "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md"
+    ]},
+    {"id": 2, "description": "Remove remaining raw literature-briefing.sh 2>/dev/null call sites (4 skills)", "status": "done", "files_touched": [
+      "agent-system/extensions/core/skills/skill-researcher/SKILL.md",
+      "agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md",
+      "agent-system/extensions/core/skills/skill-planner-hard/SKILL.md",
+      "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md"
+    ]},
+    {"id": 3, "description": "Confirm skill-planner/skill-implementer converge with no divergence", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm --orchestrator-mode threaded from each skill's delegation context (orchestrator_mode already in scope before Stage 4a in all six)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "Initial replacement text cited 'the task-866 literature-ingest-online.sh bridge'", "result": "failed", "reason": "Violates no-task-references-in-deliverables.md; fixed to durable anchor 'STABLE-CONTRACT literature-ingest-online.sh bridge'"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
