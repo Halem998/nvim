@@ -100,6 +100,8 @@
       "command-gate-in.sh",
       "command-gate-out.sh",
       "command-route-skill.sh",
+      "events-append.sh",
+      "events-query.sh",
       "export-to-markdown.sh",
       "generate-task-order.sh",
       "generate-todo.sh",

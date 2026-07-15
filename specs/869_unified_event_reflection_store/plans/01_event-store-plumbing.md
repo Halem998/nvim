@@ -200,23 +200,28 @@ instead of ad hoc one-liners.
 
 ---
 
-### Phase 4: Sync manifest.json, index-entries.json, and EXTENSION.md [NOT STARTED]
+### Phase 4: Sync manifest.json, index-entries.json, and EXTENSION.md [COMPLETED]
 
 **Goal**: Register the two new scripts and two new context files across the extension's
 sync-surface files, keeping counts and discovery metadata accurate.
 
 **Tasks**:
-- [ ] `agent-system/extensions/core/manifest.json`: add `"events-append.sh"` and
+- [x] `agent-system/extensions/core/manifest.json`: add `"events-append.sh"` and
       `"events-query.sh"` to `provides.scripts`. No change to `provides.context` (the `"formats"`
-      and `"schemas"` whole-directory entries already cover the two new files).
-- [ ] `agent-system/extensions/core/index-entries.json`: add two per-file entries -- one for
+      and `"schemas"` whole-directory entries already cover the two new files). *(completed:
+      inserted alphabetically between "command-route-skill.sh" and "export-to-markdown.sh";
+      true count is 52, not the 50 the research report observed -- two more scripts landed
+      between the research pass and this implementation pass)*
+- [x] `agent-system/extensions/core/index-entries.json`: add two per-file entries -- one for
       `formats/events-format.md`, one for `schemas/events-schema.json` -- matching the shape of
       existing entries (`domain: "core"`, `subdomain: "formats"`/`"schemas"`, `line_count`,
       `keywords`, `topics`, and a `load_when` block). Set a real `line_count` from the authored
-      files.
-- [ ] `agent-system/extensions/core/EXTENSION.md`: update the `scripts` count row to the true
+      files. *(completed: positioned alphabetically within the formats/schemas blocks;
+      line_count 140/70 respectively)*
+- [x] `agent-system/extensions/core/EXTENSION.md`: update the `scripts` count row to the true
       post-edit `provides.scripts` count (compute from `manifest.json`; the current "27" is
       pre-existing drift), and add one "Key Capabilities" bullet describing the unified event store.
+      *(completed: count corrected to 52)*
 
 **Timing**: 0.5 hours
 

@@ -20,7 +20,7 @@ via the extension loader while maintaining full backward compatibility.
 | commands | 17 | `/task`, `/research`, `/plan`, `/implement`, `/todo`, `/meta`, and more |
 | rules | 6 | Auto-applied rules for state, git, artifacts, workflows, and error handling |
 | skills | 19 | Skill definitions including team mode, orchestration, and utility skills |
-| scripts | 27 | Utility scripts for validation, hooks, memory, and extension management |
+| scripts | 52 | Utility scripts for validation, hooks, memory, events, and extension management |
 | hooks | 11 | Session logging, memory nudging, WezTerm notifications, validation hooks |
 | context | 15 dirs | Architecture, patterns, guides, schemas, workflows, and reference material |
 | docs | 23 files | Standards documentation, architecture guides, and references |
@@ -33,6 +33,9 @@ via the extension loader while maintaining full backward compatibility.
 - **Agent Orchestration**: Routing, delegation, and team mode for parallel execution
 - **State Management**: Atomic synchronization of TODO.md and state.json
 - **Memory System**: Auto-retrieval hooks and distillation support
+- **Unified Event Store**: Append-only `specs/events.jsonl` log (`events-append.sh`/
+  `events-query.sh`) capturing lifecycle timings, deviations, blockers, milestones, successes,
+  and reflections behind a shared schema and query interface
 - **Extension Infrastructure**: Scripts to install, validate, and manage other extensions
 
 ## Usage Notes

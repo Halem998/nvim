@@ -239,6 +239,30 @@
       }
     },
     {
+      "path": "formats/events-format.md",
+      "domain": "core",
+      "subdomain": "formats",
+      "summary": "Unified events/reflection JSONL store schema: specs/events.jsonl field contract, lazy creation, category enum, and cross-link conventions",
+      "line_count": 140,
+      "keywords": [
+        "events",
+        "jsonl",
+        "schema",
+        "reflection",
+        "logging"
+      ],
+      "topics": [
+        "observability"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [
+          "meta"
+        ],
+        "commands": []
+      }
+    },
+    {
       "path": "formats/frontmatter.md",
       "domain": "core",
       "subdomain": "formats",
@@ -1595,6 +1619,30 @@
       ],
       "topics": [
         "orchestration"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [
+          "meta"
+        ],
+        "commands": []
+      }
+    },
+    {
+      "path": "schemas/events-schema.json",
+      "domain": "core",
+      "subdomain": "schemas",
+      "summary": "Draft-07 JSON Schema for a single specs/events.jsonl line",
+      "line_count": 70,
+      "keywords": [
+        "events",
+        "schema",
+        "json-schema",
+        "validation"
+      ],
+      "topics": [
+        "observability",
+        "standards"
       ],
       "load_when": {
         "agents": [],
