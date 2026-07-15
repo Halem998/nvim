@@ -1,0 +1,23 @@
+{
+  "status": "planned",
+  "task_number": 875,
+  "summary": "6-phase plan to teach agent-system/extensions/core/agents/meta-builder-agent.md global-mode semantics. Phase 1 establishes the $TARGET_ROOT contract in Stage 1 (parse mode_target/target_root, hold as $TARGET_ROOT, add a Path Qualification Convention block; CWD must never be the fallback). Phase 2 splits the conflated SCOPE BOUNDARY into an actor/workflow rule (never implement directly) and a location-correctness rule (.claude/ is a disposable deploy tree; created tasks name agent-system/extensions/core/** targets). Phase 3 qualifies read-only inventory ops (Stage 0, Stage 3B, Stage 3C, analyze-mode matrix) against $TARGET_ROOT. Phase 4 retargets task-creation file_scope/affected_area heuristics from .claude/** to source-store paths. Phase 5 qualifies write/mutate ops: scripts via absolute path (generate-todo.sh/manage-topics.sh self-resolve PROJECT_ROOT from BASH_SOURCE[0], and manage-topics.sh has NO override flag), git via single chained cd, DeliverSummary renderings, and Stage 5 return JSON. Phase 6 statically verifies (source/deploy divergence, no bare script calls, contract consistency, bash -n, scope discipline, no new task-number refs) and documents the manual live procedure honestly -- live cross-repo /meta verification is NOT a success criterion (blocked by the workspace-trust dialog, reported NOT OBSERVED). Chosen strategy: fully-qualified absolute paths as the default; chained cd reserved for git only. Independently re-verified all load-bearing factual anchors against the target file before finalizing.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/875_teach_meta_builder_agent_global_mode_semantics/plans/01_global-mode-semantics-meta-builder.md",
+      "summary": "6-phase implementation plan (est. 4h) with dependency waves [[1],[2,3,4,5],[6]]. Wave 2 phases are logically independent but MUST run sequentially in one agent (all edit the same single file). Adopts the research report's 5-category classification as-is; path-qualification strategy is absolute paths by default with chained cd for git only; verification is static-only with a documented manual user procedure."
+    }
+  ],
+  "next_steps": "Run /implement 875 to execute the plan. Note: all six phases edit the same single file (agent-system/extensions/core/agents/meta-builder-agent.md), so Wave 2 (phases 2-5) must execute sequentially in one agent despite being logically parallelizable. Live cross-repo /meta verification is a manual user step, not an implementation success gate.",
+  "metadata": {
+    "session_id": "sess_1784135810_7e6755_875",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 4,
+    "dependency_waves": [[1], [2, 3, 4, 5], [6]]
+  },
+  "memory_candidates": []
+}

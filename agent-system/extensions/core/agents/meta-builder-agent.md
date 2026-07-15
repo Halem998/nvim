@@ -120,11 +120,36 @@ Extract from input:
     "delegation_path": ["orchestrator", "meta", "meta-builder-agent"]
   },
   "mode": "interactive|prompt|analyze",
-  "prompt": "{user prompt if mode=prompt, null otherwise}"
+  "prompt": "{user prompt if mode=prompt, null otherwise}",
+  "mode_target": "global|local",
+  "target_root": "{resolved absolute path — $GLOBAL_ROOT in global mode, current repo root in local mode}"
 }
 ```
 
 Validate mode is one of: interactive, prompt, analyze.
+
+Extract `target_root` from the delegation context and hold it as `$TARGET_ROOT` for the entire
+remainder of this run — every subsequent stage that reads or writes a path qualifies against it.
+Field names (`mode_target`, `target_root`) match what `skill-meta` emits exactly; do not rename or
+alias them.
+
+**Defensive fallback**: if `target_root` is absent from the delegation context (an older caller or
+malformed input), resolve `TARGET_ROOT="${CLAUDE_AGENT_GLOBAL_ROOT:-$HOME/.config/nvim}"` and note
+the fallback was used in the run log. **CWD must never be the fallback** — CWD-as-default is the
+exact defect this contract exists to eliminate.
+
+**Path Qualification Convention (binding for the rest of this file)**:
+- **Default: absolute, `${TARGET_ROOT}`-qualified paths** for every Write/Edit tool call and every
+  script invocation (`bash "${TARGET_ROOT}/.claude/scripts/..."`). Write/Edit tool path resolution
+  is completely independent of shell `cd` — no `cd` in any Bash call ever affects it — so qualified
+  absolute paths are the only mechanism that works for those tools.
+- **Exception: `git`, via a single chained Bash call** — `cd "$TARGET_ROOT" && git add specs/ && git
+  commit -m "..."`. This is the one place a `cd`-based convention is used, because it must be issued
+  as one chained call anyway (see next point) and it mirrors `skill-meta`'s postflight commit form.
+- **Why not `cd` everywhere**: Bash tool cwd does not persist across separate Bash tool invocations —
+  a `cd` in one call has no effect on the next. A convention that relies on re-deriving `cd` in every
+  single Bash call is one missed re-derivation away from silently reintroducing the bug this contract
+  exists to close; absolute paths carry no such dependency.
 
 ### Stage 2: Load Context Based on Mode
 
