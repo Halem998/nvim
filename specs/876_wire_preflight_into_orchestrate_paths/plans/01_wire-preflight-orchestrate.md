@@ -218,19 +218,23 @@ ordering constraint, and rename its Stage 2 heading.
 
 ---
 
-### Phase 4: Architecture doc note [NOT STARTED]
+### Phase 4: Architecture doc note [COMPLETED]
 
 **Goal**: Keep the state-machine spec in sync with the implementation.
 
 **Tasks**:
-- [ ] In `.claude/docs/architecture/orchestrate-state-machine.md`, at the Complete State Table
+- [x] In `.claude/docs/architecture/orchestrate-state-machine.md`, at the Complete State Table
       (currently `## Complete State Table`, line 17) which already lists `researching`/`planning`
       as reachable states, add a short note (a sentence directly under the table, or a new
       one-line row footnote) stating that `dispatch()` now performs the preflight status
       transition (to `researching`/`planning`/`implementing`) immediately before invoking the
-      Agent tool, so these in-flight states are entered during the work window.
-- [ ] Cite durable anchors only (the skill file names and the "Complete State Table" section) —
-      no task-number references (per no-task-references-in-deliverables).
+      Agent tool, so these in-flight states are entered during the work window. *(completed:
+      applied to both the canonical source at
+      agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md and the
+      deployed .claude/ copy)*
+- [x] Cite durable anchors only (the skill file names and the "Complete State Table" section) —
+      no task-number references (per no-task-references-in-deliverables). *(completed; verified
+      by grep)*
 
 **Timing**: 15 minutes
 

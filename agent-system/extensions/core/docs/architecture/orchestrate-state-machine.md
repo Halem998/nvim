@@ -32,6 +32,16 @@ The state machine is implemented inside `skill-orchestrate` (Pattern C: Orchestr
 | `abandoned` | `status = "abandoned"` | Report abandoned status, exit | — | — |
 | `expanded` | `status = "expanded"` | Report expanded status, exit | — | — |
 
+Each `dispatch(...)` call in the table above now performs the preflight status transition (to
+`researching`/`planning`/`implementing`) immediately before invoking the Agent tool, so these
+in-flight states are entered during the work window rather than only after the dispatch returns.
+This is implemented via `skill_preflight_update()` (see `.claude/scripts/skill-base.sh`), called
+from each single-task and multi-task state handler in `skill-orchestrate/SKILL.md`'s "Stage 4:
+State Handlers" and "Stage MT-4: Phase-Aware Dispatch and Per-Task Postflight" sections, and the
+equivalent handlers in `skill-orchestrate-hard/SKILL.md` — immediately before each handler's
+corresponding Agent dispatch, mirroring the `skill_postflight_update()` call these same handlers
+already make after the dispatch returns.
+
 ---
 
 ## State Transition Diagram (ASCII)
