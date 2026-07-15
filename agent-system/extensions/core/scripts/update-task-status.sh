@@ -22,6 +22,9 @@
 #   0 - Success or no-op (already at target status)
 #   1 - Validation error (bad arguments)
 #   2 - state.json update failed
+#   3 - plan file update failed after state.json was written, on implement postflight only
+#       (retry after fixing the plan file; the state.json write is idempotent and will no-op
+#       on retry, so the plan/phase updates re-fire and the retry is genuinely effective)
 
 set -euo pipefail
 
@@ -266,11 +269,25 @@ update_plan_file() {
     return 0
   fi
 
-  # Call existing script; non-fatal if it fails
+  # Call existing script. It is already fail-loud on its own diagnostic ("Failed to update
+  # status in $plan_file"); do not discard its stderr here. Branch fatal-vs-warn on operation:
+  # a failed [COMPLETED] write on implement postflight leaves state.json and the plan file in
+  # permanent, externally-invisible disagreement -- generate-todo.sh reads only state.json,
+  # never plan files, so no other surface reveals the divergence -- making that path fatal. A
+  # failed [IMPLEMENTING] write on preflight is advisory (work is starting either way), so it
+  # stays a non-fatal warning.
   cd "$PROJECT_ROOT"
-  "$plan_script" "$task_number" "$project_name" "$plan_status" 2>/dev/null || {
-    echo "Warning: plan file update failed (non-fatal)" >&2
-  }
+  if ! "$plan_script" "$task_number" "$project_name" "$plan_status"; then
+    if [[ "$operation" == "postflight" ]]; then
+      echo "Error: failed to update plan file status to [$plan_status] for task $task_number." >&2
+      echo "       state.json was already written to '$STATE_STATUS'; this is retryable -- the" >&2
+      echo "       state.json write is idempotent and will no-op on retry, while the plan/phase" >&2
+      echo "       updates below re-fire until they converge." >&2
+      exit 3
+    else
+      echo "Warning: plan file update failed (non-fatal)" >&2
+    fi
+  fi
 
   # Auto-advance the first NOT STARTED phase to IN PROGRESS on implement preflight
   if [[ "$operation" == "preflight" ]]; then
@@ -301,7 +318,10 @@ update_plan_file() {
           first_phase=$(grep -m1 "^### Phase [0-9]*:.*\[NOT STARTED\]" "$plan_file" \
             | sed 's/^### Phase \([0-9]*\):.*/\1/' || echo "")
           if [[ -n "$first_phase" ]]; then
-            "$phase_script" "$task_number" "$project_name" "$first_phase" "IN_PROGRESS" 2>/dev/null || {
+            # Superseded by the base agent owning every per-phase transition directly; this
+            # call is a redundant convenience, recoverable via the agent's own explicit calls.
+            # Non-fatal, and its stderr is no longer discarded.
+            "$phase_script" "$task_number" "$project_name" "$first_phase" "IN_PROGRESS" || {
               echo "Warning: phase status update failed (non-fatal)" >&2
             }
           fi

@@ -1,0 +1,25 @@
+{
+  "phase": 4,
+  "phase_name": "DEFECT B — encode the fatal-vs-warn decision, stop discarding stderr",
+  "started_at": "2026-07-15T22:10:00Z",
+  "last_updated": "2026-07-15T22:18:00Z",
+  "objectives": [
+    {"id": 1, "description": "Branch plan-status call site on operation: postflight fatal exit 3, preflight non-fatal warning; stop discarding stderr", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 2, "description": "Add exit code 3 to header comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 3, "description": "Stop discarding stderr at phase-status call site, keep non-fatal", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 4, "description": "Verify fatal postflight fires exit 3 with visible stderr; retry after repair succeeds; preflight/phase/TODO sites stay non-fatal and loud; happy path unaffected", "status": "done", "files_touched": [], "note": "Phase-site verification deviated from the literal scenario (see plan checklist note) — used a read-only plan_dir to force a genuine failure instead of a headings-absent no-op."},
+    {"id": 5, "description": "Mirror to .claude/scripts/update-task-status.sh", "status": "done", "files_touched": [".claude/scripts/update-task-status.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.verification",
+      "description": "Phase site stays non-fatal: fixture plan with a valid Status anchor but no ### Phase headings; expect a visible phase warning.",
+      "type": "altered",
+      "reason": "With no [NOT STARTED] phase heading, first_phase is empty and the update-phase-status.sh call is skipped entirely (a legitimate no-op, not a failure) both before and after this phase's fix, so the literal scenario cannot exercise the target call site. Substituted a read-only plan directory to force a genuine sed -i failure and confirm the call site's stderr visibility and non-fatal behavior directly.",
+      "annotation": "See Phase 4 verification note in the plan file."
+    }
+  ]
+}

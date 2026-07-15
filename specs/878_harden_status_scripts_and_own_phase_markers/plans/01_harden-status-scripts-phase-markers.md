@@ -344,7 +344,7 @@ no-op contract that the orchestrate preflight wiring depends on.
 
 ---
 
-### Phase 4: DEFECT B — encode the fatal-vs-warn decision, stop discarding stderr [NOT STARTED]
+### Phase 4: DEFECT B — encode the fatal-vs-warn decision, stop discarding stderr [COMPLETED]
 
 **Goal**: Replace blanket silence with a deliberate per-site policy. No site may discard the
 underlying script's stderr; the one site whose failure can leave state.json and the plan file in
@@ -361,15 +361,17 @@ permanent, externally-invisible disagreement becomes fatal.
 
 **Tasks**:
 
-- [ ] Remove `2>/dev/null` from the `update-plan-status.sh` call site (line 256) so its already-fail-loud diagnostic (`"Failed to update status in $plan_file"`) reaches the user. Do NOT modify `update-plan-status.sh` itself — it is fail-loud by design; the caller was the defect.
-- [ ] Branch the plan-status call site on `operation`: on `postflight`, a non-zero exit is fatal — print a diagnostic naming the plan file and the divergence, then `exit 3`. On `preflight`, keep the non-fatal warning.
-- [ ] Add exit code 3 to the header comment block (lines 19-22), documented as "plan file update failed after state.json was written (retry after fixing the plan file; the state.json write is idempotent and will no-op)".
-- [ ] Remove `2>/dev/null` from the `update-phase-status.sh` call site (line 280); keep the warning non-fatal.
-- [ ] Confirm the `generate-todo.sh` site (line 209) has no stderr redirect today and leave it non-fatal and unchanged apart from any message clarity.
-- [ ] Confirm `update_plan_file()`'s two existing early-return warnings (missing `project_name`, non-executable plan script) remain non-fatal `return 0` — they are pre-condition misses, not update failures.
-- [ ] Note in a comment at the fatal site that the retry path is only safe because the state.json write is idempotent (the Phase 3 change) — cite the behavior, not the task number.
-- [ ] Verify no task-number citations were introduced in any comment or message.
-- [ ] Mirror to `.claude/scripts/update-task-status.sh`; confirm `diff -q` is silent.
+- [x] Remove `2>/dev/null` from the `update-plan-status.sh` call site (line 256) so its already-fail-loud diagnostic (`"Failed to update status in $plan_file"`) reaches the user. Do NOT modify `update-plan-status.sh` itself — it is fail-loud by design; the caller was the defect. *(completed)*
+- [x] Branch the plan-status call site on `operation`: on `postflight`, a non-zero exit is fatal — print a diagnostic naming the plan file and the divergence, then `exit 3`. On `preflight`, keep the non-fatal warning. *(completed)*
+- [x] Add exit code 3 to the header comment block (lines 19-22), documented as "plan file update failed after state.json was written (retry after fixing the plan file; the state.json write is idempotent and will no-op)". *(completed)*
+- [x] Remove `2>/dev/null` from the `update-phase-status.sh` call site (line 280); keep the warning non-fatal. *(completed)*
+- [x] Confirm the `generate-todo.sh` site (line 209) has no stderr redirect today and leave it non-fatal and unchanged apart from any message clarity. *(completed: confirmed via grep, no redirect present, left unchanged)*
+- [x] Confirm `update_plan_file()`'s two existing early-return warnings (missing `project_name`, non-executable plan script) remain non-fatal `return 0` — they are pre-condition misses, not update failures. *(completed: unchanged in the diff)*
+- [x] Note in a comment at the fatal site that the retry path is only safe because the state.json write is idempotent (the Phase 3 change) — cite the behavior, not the task number. *(completed)*
+- [x] Verify no task-number citations were introduced in any comment or message. *(completed: grep returned zero hits)*
+- [x] Mirror to `.claude/scripts/update-task-status.sh`; confirm `diff -q` is silent. *(completed)*
+
+**Verification note (deviation, honestly recorded)**: the "Phase site stays non-fatal" scenario as literally described (a plan with a valid `- **Status**:` anchor but no `### Phase` headings) does not exercise the target call site at all — with no `[NOT STARTED]` phase heading, `first_phase` is empty and the `update-phase-status.sh` call is skipped entirely (a legitimate no-remaining-work no-op, not a failure), both before and after this phase's change. To genuinely exercise the phase-status call site's stderr-visibility and non-fatal behavior, the fixture instead made the plan directory read-only (`chmod 555`) so `update-phase-status.sh`'s internal `sed -i` fails for real; this confirmed both the plan-status and phase-status warnings are visible on stderr and the overall command still exits 0 under preflight.
 
 **Timing**: 0.75 hours
 
