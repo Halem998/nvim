@@ -229,7 +229,7 @@ addition — without it, no Category B/C/D fix is expressible.
 
 ---
 
-### Phase 3: Qualify Read-Only Inventory Operations (Category B) [NOT STARTED]
+### Phase 3: Qualify Read-Only Inventory Operations (Category B) [COMPLETED]
 
 **Goal**: Make every inventory read report on the **target's** system, not whatever repo the agent's
 CWD happens to be.

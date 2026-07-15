@@ -89,7 +89,7 @@ Load these on-demand using @-references:
 |------|---------------|
 | interactive | `@.claude/docs/guides/component-selection.md` (after Stage 0 inventory) |
 | prompt | `@.claude/docs/guides/component-selection.md` |
-| analyze | `@.claude/CLAUDE.md`, `@.claude/context/index.json` |
+| analyze | Read `{target_root}/.claude/CLAUDE.md`, Read `{target_root}/.claude/context/index.json` (runtime instruction — analyze mode inventories the **target** system, so static `@`-syntax cannot be used here; it would load the agent's own deployed copy instead) |
 
 **Stages 3-5 (Interview/Analysis - On-Demand)**:
 - When user selects commands: `@.claude/docs/guides/creating-commands.md`
@@ -196,12 +196,12 @@ Execute the 7-stage interview workflow using AskUserQuestion for user interactio
 **Action**: Analyze existing .claude/ structure
 
 ```bash
-# Count existing components
-cmd_count=$(ls .claude/commands/*.md 2>/dev/null | wc -l)
-skill_count=$(find .claude/skills -name "SKILL.md" 2>/dev/null | wc -l)
-agent_count=$(ls .claude/agents/*.md 2>/dev/null | wc -l)
-rule_count=$(ls .claude/rules/*.md 2>/dev/null | wc -l)
-active_tasks=$(jq '.active_projects | length' specs/state.json)
+# Count existing components at the resolved target root
+cmd_count=$(ls "${TARGET_ROOT}/.claude/commands"/*.md 2>/dev/null | wc -l)
+skill_count=$(find "${TARGET_ROOT}/.claude/skills" -name "SKILL.md" 2>/dev/null | wc -l)
+agent_count=$(ls "${TARGET_ROOT}/.claude/agents"/*.md 2>/dev/null | wc -l)
+rule_count=$(ls "${TARGET_ROOT}/.claude/rules"/*.md 2>/dev/null | wc -l)
+active_tasks=$(jq '.active_projects | length' "${TARGET_ROOT}/specs/state.json")
 ```
 
 **Output**:
@@ -1200,7 +1200,7 @@ Identify:
 
 Search state.json for related active tasks:
 ```bash
-jq '.active_projects[] | select(.project_name | contains("{keyword}"))' specs/state.json
+jq '.active_projects[] | select(.project_name | contains("{keyword}"))' "${TARGET_ROOT}/specs/state.json"
 ```
 
 ### Step 3: Propose Task Breakdown
@@ -1244,28 +1244,28 @@ When mode is "analyze", examine existing structure (read-only):
 ### Step 1: Inventory Components
 
 ```bash
-# Commands
-ls .claude/commands/*.md 2>/dev/null | while read f; do
+# Commands — inventory the resolved target's system, not this session's own deploy tree
+ls "${TARGET_ROOT}/.claude/commands"/*.md 2>/dev/null | while read f; do
   name=$(basename "$f" .md)
   desc=$(grep -m1 "^description:" "$f" | sed 's/description: //')
   echo "- /$name - $desc"
 done
 
 # Skills
-find .claude/skills -name "SKILL.md" | while read f; do
+find "${TARGET_ROOT}/.claude/skills" -name "SKILL.md" | while read f; do
   name=$(grep -m1 "^name:" "$f" | sed 's/name: //')
   desc=$(grep -m1 "^description:" "$f" | sed 's/description: //')
   echo "- $name - $desc"
 done
 
 # Agents
-ls .claude/agents/*.md 2>/dev/null | while read f; do
+ls "${TARGET_ROOT}/.claude/agents"/*.md 2>/dev/null | while read f; do
   name=$(basename "$f" .md)
   echo "- $name"
 done
 
 # Active tasks
-jq -r '.active_projects[] | "- #\(.project_number): \(.project_name) [\(.status)]"' specs/state.json
+jq -r '.active_projects[] | "- #\(.project_number): \(.project_name) [\(.status)]"' "${TARGET_ROOT}/specs/state.json"
 ```
 
 ### Step 2: Generate Recommendations
