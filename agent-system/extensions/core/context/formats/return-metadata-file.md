@@ -45,6 +45,9 @@ Example: `specs/1_setup_lsp_config/.return-meta.json`
       "suggested_keywords": ["keyword1", "keyword2"]
     }
   ],
+  "modified_files": [
+    "specs/001_setup_lsp_config/reports/01_lsp-config-research.md"
+  ],
   "errors": [
     {
       "type": "validation|execution|timeout",
@@ -225,6 +228,41 @@ four, a subset, or omit the object entirely if there is nothing worth capturing)
   recent implementation's reflection, not a history.
 - Absence of `reflection` is valid behavior — it is optional even on a successful implementation.
 
+### modified_files (optional)
+
+**Type**: optional `string[]` at the **top level** of `.return-meta.json` — a sibling of
+`memory_candidates` and `reflection`, not nested under `completion_data`.
+
+**Include if**: the operation is `implement` (populated by implementation agents). Unused and
+absent for `research` and `plan` operations.
+
+**Path form**: entries are **repo-relative** paths, relative to the repository root. This is
+load-bearing and must not be left implied: the skill postflight commit pipeline
+(`orchestrator-postflight.sh`) passes these entries straight to `git add`, invoked from the repo
+root, alongside other repo-relative literals in the same invocation. Absolute paths are not
+permitted.
+
+**Granularity**: entries are **individual file paths**. Directory prefixes are **not**
+permitted.
+
+**Empty behavior**: if no files were touched, write `"modified_files": []` — **never omit the
+field**. An empty or absent array is non-fatal: the consumer falls back to staging the fixed
+task-directory scope and emits a loud stderr warning. It never escalates to `git add -A`.
+
+**Provenance**: the flattened, deduplicated union of every phase's every objective's
+`files_touched` array from that task's progress files. See
+[Progress File Schema](progress-file.md) for the `files_touched` field this is summed from, and
+[Git Staging Scope Contract](../standards/git-staging-scope.md) for the fullest narrative
+description of the staging contract this field drives.
+
+**Retrospective vs. prospective**: `modified_files` (and the `files_touched` it is summed from)
+is **retrospective** — what an agent actually touched, self-reported at implementation time, for
+git staging. This is a distinct concept from `state.json`'s `file_scope`, which is
+**prospective** — what a task is declared to touch, set at creation time, for lock-overlap
+detection. The two are complementary and are never merged or reconciled against each other. See
+[State Management Schema](../reference/state-management-schema.md), section "File Scope Field",
+for the `file_scope` side of this contrast.
+
 ### errors (optional)
 
 **Type**: array of objects
@@ -352,6 +390,10 @@ rm -f "specs/${padded_num}_${task_slug}/.return-meta.json"
     "what_was_missed": "The initial pass missed one server's custom on_attach hook, caught only during final verification.",
     "successes": "All 4 integrations configured and verified working with a single shared base config, avoiding the duplication the prior setup had."
   },
+  "modified_files": [
+    "src/config/server-setup.ext",
+    "src/config/keybindings.ext"
+  ],
   "next_steps": "Review implementation and verify with /test",
   "metadata": {
     "session_id": "sess_1736700000_def456",

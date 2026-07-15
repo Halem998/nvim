@@ -161,7 +161,7 @@ array that the implementation agent accumulates and later sums.
 
 ---
 
-### Phase 2: Document `modified_files` in return-metadata-file.md [NOT STARTED]
+### Phase 2: Document `modified_files` in return-metadata-file.md [COMPLETED]
 
 **Goal**: Make `return-metadata-file.md` the authoritative schema for the top-level
 `modified_files` array that `orchestrator-postflight.sh` feeds directly to `git add`.
@@ -170,10 +170,10 @@ array that the implementation agent accumulates and later sums.
 `agent-system/extensions/core/context/formats/return-metadata-file.md`
 
 **Tasks**:
-- [ ] Add a new `### modified_files (optional)` field-specification section positioned **after
+- [x] Add a new `### modified_files (optional)` field-specification section positioned **after
       `### reflection (optional)` and before `### errors (optional)`**, matching the field's
-      position in the worked Implementation Success example.
-- [ ] Content of the new section must state all of:
+      position in the worked Implementation Success example. *(completed)*
+- [x] Content of the new section must state all of:
       - **Type**: optional `string[]` at the **top level** of `.return-meta.json` (a sibling of
         `memory_candidates` and `reflection`, not nested under `completion_data`).
       - **Include if**: the operation is `implement` (populated by implementation agents);
@@ -190,21 +190,22 @@ array that the implementation agent accumulates and later sums.
         `git add -A`.
       - **Provenance**: the flattened, deduplicated union of every phase's every objective's
         `files_touched` array from that task's progress files (cross-reference
-        `progress-file.md`).
-- [ ] Add the retrospective/prospective contrast: `modified_files` and `files_touched` are
+        `progress-file.md`). *(completed)*
+- [x] Add the retrospective/prospective contrast: `modified_files` and `files_touched` are
       **retrospective** (what an agent actually touched, self-reported at implementation time, for
       git staging); `state.json`'s `file_scope` is **prospective** (what a task is declared to
       touch, set at creation time, for lock-overlap detection). The two are complementary and are
       never merged or reconciled against each other. Point to
       `../reference/state-management-schema.md` and its `File Scope Field` section by **name, not
       line number** (path verified to resolve from both source and deploy `context/formats/`).
-- [ ] Cross-reference `../standards/git-staging-scope.md` as the fullest narrative description of
-      the staging contract.
-- [ ] Add `"modified_files": [...]` to the top-level `## Schema` skeleton JSON block, placed
-      consistently with the field-spec ordering.
-- [ ] Add a realistic `"modified_files"` array to the `### Implementation Success (Non-Meta)`
+      *(completed)*
+- [x] Cross-reference `../standards/git-staging-scope.md` as the fullest narrative description of
+      the staging contract. *(completed)*
+- [x] Add `"modified_files": [...]` to the top-level `## Schema` skeleton JSON block, placed
+      consistently with the field-spec ordering. *(completed)*
+- [x] Add a realistic `"modified_files"` array to the `### Implementation Success (Non-Meta)`
       example, which currently omits the key entirely. Use repo-relative paths consistent with
-      that example's existing `artifacts` entries.
+      that example's existing `artifacts` entries. *(completed)*
 
 **Constraints**:
 - Do **not** anchor any edit at `general-implementation-agent.md:394` — that citation is stale.
