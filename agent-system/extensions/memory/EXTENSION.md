@@ -23,6 +23,7 @@ Knowledge capture and retrieval via the memory vault. Supports text, file, direc
 | `/distill` | `/distill --refine` | Improve memory metadata quality (keywords, tags, topics) |
 | `/distill` | `/distill --gc` | Hard-delete tombstoned memories past 7-day grace period |
 | `/distill` | `/distill --auto` | Automated Tier 1 maintenance (non-interactive) |
+| `/distill` | `/distill --dream` | Ingest the event store, review/revise memories, and surface agent-system improvement proposals (interactive; excluded from `--auto`) |
 
 ### Memory-Augmented Research
 

@@ -322,29 +322,34 @@ wiring.
 
 ---
 
-### Phase 5: Context and extension metadata sync [NOT STARTED]
+### Phase 5: Context and extension metadata sync [COMPLETED]
 
 **Goal**: The user-facing usage guide and extension metadata reflect dream mode.
 
 **Tasks**:
-- [ ] `distill-usage.md`: add `/distill --dream` to the Quick Reference block; add a
+- [x] `distill-usage.md`: add `/distill --dream` to the Quick Reference block; add a
       `### Dream (/distill --dream)` sub-mode workflow section (numbered workflow matching the
       other sub-modes' style, including the no-events degraded note); add a dream row to the
       Recommended Maintenance Cadence table; add the `dream-log.json` entry shape (the research
       flagged this as an undocumented schema gap and `distill-usage.md` is in scope); update the
-      `--dry-run` line to include dream.
-- [ ] `distill-usage.md`: update the Auto section's "Explicitly excludes:" sentence to include
-      dream.
-- [ ] `EXTENSION.md`: add a `/distill --dream` row to the Commands table. Note that CLAUDE.md is
+      `--dry-run` line to include dream. *(completed)*
+- [x] `distill-usage.md`: update the Auto section's "Explicitly excludes:" sentence to include
+      dream. *(completed)*
+- [x] `EXTENSION.md`: add a `/distill --dream` row to the Commands table. Note that CLAUDE.md is
       auto-generated from this file via the `claudemd` merge target -- do not hand-edit
-      `.claude/CLAUDE.md`.
-- [ ] `index-entries.json`: add `dream`/`events` to the `distill-usage.md` entry's `keywords`,
+      `.claude/CLAUDE.md`. *(completed; .claude/CLAUDE.md untouched)*
+- [x] `index-entries.json`: add `dream`/`events` to the `distill-usage.md` entry's `keywords`,
       extend its `summary` to mention event-store review, and refresh its `line_count` to the
-      post-edit value.
-- [ ] `manifest.json`: **verify** whether any change is needed. Expected outcome: **none** --
+      post-edit value. *(completed: line_count updated to 211, verified against `wc -l`)*
+- [x] `manifest.json`: **verify** whether any change is needed. Expected outcome: **none** --
       `provides.commands` already lists `distill.md`, no new command/skill/context file is added,
       and `routing` is unchanged. Recording "verified, no change required" is the correct and
       complete result here; do not manufacture an edit to make the file appear touched.
+      *(completed: verified -- no change required; `provides.commands` already lists
+      `distill.md`, `provides.context` already lists the `project/memory` directory generically
+      (covers `distill-usage.md` without a per-file entry), and `routing` is unaffected since
+      dream is a sub-mode dispatch inside the existing `skill-memory`/`distill.md`, not a new
+      command or skill)*
 
 **Timing**: 1 hour
 

@@ -70,9 +70,9 @@
       "domain": "project",
       "subdomain": "memory",
       "topics": ["memory", "distill", "maintenance", "scoring"],
-      "keywords": ["distill", "purge", "merge", "compress", "refine", "scoring", "health"],
-      "summary": "Usage guide for /distill command: sub-mode workflows, scoring formula, maintenance cadence",
-      "line_count": 180,
+      "keywords": ["distill", "purge", "merge", "compress", "refine", "scoring", "health", "dream", "events"],
+      "summary": "Usage guide for /distill command: sub-mode workflows, scoring formula, maintenance cadence, and event-store-informed dream review",
+      "line_count": 211,
       "load_when": {
         "skills": ["skill-memory"],
         "commands": ["/distill"],

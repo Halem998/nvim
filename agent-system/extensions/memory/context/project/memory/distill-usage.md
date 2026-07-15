@@ -12,6 +12,7 @@ Usage guide for the `/distill` command and memory vault maintenance.
 /distill --refine         # Improve metadata quality
 /distill --gc             # Hard-delete tombstoned memories
 /distill --auto           # Automated Tier 1 maintenance
+/distill --dream          # Event-store review, revision, and improvement proposals
 
 # Modifier flags (combinable with any sub-mode):
 /distill --purge --dry-run    # Preview without changes
@@ -104,7 +105,39 @@ Non-interactive automated maintenance. Runs only Tier 1 refine fixes:
 - Summary generation
 - Topic normalization
 
-Explicitly excludes: compress (needs AI review), purge, merge, Tier 2 refine. Suitable for routine maintenance without human oversight.
+Explicitly excludes: compress (needs AI review), purge, merge, dream, Tier 2 refine. Suitable for routine maintenance without human oversight.
+
+### Dream (`/distill --dream`)
+
+Ingests the unified event store (`specs/events.jsonl`, read exclusively via `events-query.sh`),
+re-reviews the memory vault against captured event evidence, and surfaces a separate
+agent-system improvement-proposal deliverable. Interactive by default (never runs under
+`--auto`). Workflow:
+
+1. Validate-on-read, then gate on vault emptiness (mirrors refine's early return)
+2. Cheap event-count gate: `events-query.sh --format summary-counts [--since {last_dream}]`
+   -- if `specs/events.jsonl` does not exist yet (`total_events: 0`), this is a normal,
+   first-class outcome, not an error: dream review continues using vault scoring alone
+   (staleness/duplicate/size) and reports zero correlations
+3. Pull deviation/blocker events and reflection events via `events-query.sh
+   --category deviation|blocker` / `--event-type reflection --format json-array`
+4. Correlate events to memories: task-number substring match first, keyword/topic overlap
+   fallback (same formula `/distill --merge` uses)
+5. Classify each correlated memory as corroborated / contradicted / gap; a pattern needs
+   3+ occurrences at the same checkpoint/event_type to count as contradicted or a gap
+6. Interactive selection via AskUserQuestion -- corroborated memories are noted only;
+   contradicted memories offer UPDATE (with the proposed new body shown for review) /
+   TOMBSTONE (`tombstone_reason: "dream_superseded"`) / SKIP; gaps offer CREATE (if durable
+   knowledge) or escalate to an improvement proposal (if a system change)
+7. Memory revisions and improvement proposals are two distinct sections in the output --
+   never merged. Improvement proposals go through their own AskUserQuestion (Create as task /
+   Note in dream report only / Skip) with an explicit "Yes, create tasks" confirmation gate
+   before any task is created
+8. Index regenerated as a batch; operation logged to `.memory/dream-log.json`; state.json
+   updated (`last_dream`, `dream_count`)
+
+The narrative dream synthesis is terminal-only output, like the bare `/distill` health report --
+no dated report file is written to disk.
 
 ## Scoring Formula
 
@@ -141,6 +174,7 @@ Health score formula: `100 - (purge_count * 3) - (merge_count * 5) - (compress_c
 | Merge check | When duplicate score >0.6 appears | `/distill --merge` |
 | Compress check | When size penalty >0.5 appears | `/distill --compress` |
 | GC cleanup | After purge, when 7+ days elapsed | `/distill --gc` |
+| Dream review | Periodically, or after a burst of deviations/blockers/reflections | `/distill --dream` |
 
 ## Memory Lifecycle
 
@@ -153,7 +187,25 @@ Create          Use               Capture           Maintain
                                         candidates         and maintains
 ```
 
+## Dream Log Entry Shape
+
+Dream runs log to `.memory/dream-log.json` (separate from `.memory/distill-log.json`), mirroring
+its `version`/`operations[]`/`summary` shape with dream-specific fields:
+
+```json
+{
+  "id": "dream_{timestamp}",
+  "timestamp": "ISO8601",
+  "type": "dream",
+  "since": "ISO8601 or null (first run)",
+  "events_ingested": {"total_events": 0, "deviation": 0, "blocker": 0, "reflection": 0},
+  "classification": {"corroborated": 0, "contradicted": 0, "gap": 0},
+  "affected_memories": [{"id": "MEM-...", "classification": "contradicted", "action": "updated"}],
+  "proposals": {"surfaced": 0, "created_as_task": 0, "noted_only": 0, "skipped": 0}
+}
+```
+
 ## --dry-run and --verbose
 
-- `--dry-run`: Available on all maintenance sub-modes (purge, merge, compress, refine, gc). Shows what would happen without writing any files. Useful for previewing before committing to changes.
+- `--dry-run`: Available on all maintenance sub-modes (purge, merge, compress, refine, gc, dream). Shows what would happen without writing any files. Useful for previewing before committing to changes.
 - `--verbose`: Shows detailed per-memory scoring breakdown including individual component values (staleness, zero_retrieval, size_penalty, duplicate) alongside the composite score.
