@@ -596,7 +596,7 @@
         {
           "path": "specs/872_distill_review_revise_dream_mode/summaries/01_distill-dream-mode-summary.md",
           "type": "summary",
-          "summary": "Implementation summary for /distill --dream mode"
+          "summary": "Distill dream mode implementation"
         }
       ],
       "completion_summary": "Added /distill --dream as an 8th sub-mode: ingests the unified event store via events-query.sh, correlates events to memories (task-number match then keyword overlap), classifies corroborated/contradicted/gap, revises the vault through existing UPDATE/EXTEND/CREATE/tombstone primitives behind a mandatory AskUserQuestion stop, and surfaces a separate improvement-proposal deliverable. Documentation-only change across six memory-extension files; agent-system/extensions/core/ untouched."

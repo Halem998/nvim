@@ -1,7 +1,7 @@
 # Implementation Plan: Unified event/reflection JSONL store + schema + reader API
 
 - **Task**: 869 - Unified event/reflection JSONL store + schema + reader API
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None (foundational contract for downstream tasks 870, 871, 872)
 - **Research Inputs**: reports/01_event-store-schema-design.md

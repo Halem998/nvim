@@ -1,0 +1,24 @@
+{
+  "status": "implemented",
+  "summary": "Wired events-append.sh up as the unified event store's first real caller: instrumented all four skill-base.sh lifecycle functions and orchestrator-postflight.sh's status resolution with non-blocking timed event emissions, added PostToolUse (events-log-artifact.sh) and Stop/SubagentStop (events-log-lifecycle.sh) logger hooks, registered both in manifest.json/root-files/settings.json, and synced EXTENSION.md's hook count and capability list. All 7 plan phases completed and committed; e2e verification confirmed schema-valid events, graceful errors.json-absent handling, and the non-blocking guarantee under forced failure.",
+  "artifacts": [
+    {
+      "path": "specs/870_automatic_hook_event_logging/summaries/01_hook-event-instrumentation-summary.md",
+      "type": "summary",
+      "summary": "Full implementation summary covering all 7 phases: lifecycle instrumentation, orchestrator status event, two new hooks, manifest/settings registration, EXTENSION.md sync, and end-to-end verification results."
+    }
+  ],
+  "blockers": [],
+  "phases_completed": 7,
+  "phases_total": 7,
+  "modified_files": [
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+    "agent-system/extensions/core/hooks/events-log-artifact.sh",
+    "agent-system/extensions/core/hooks/events-log-lifecycle.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/root-files/settings.json",
+    "agent-system/extensions/core/EXTENSION.md"
+  ],
+  "next_action_hint": "Task complete; ready for standard postflight status sync to [COMPLETED]. Note (non-blocking, out of this task's scope per its Non-Goals): check-extension-docs.sh doc-lint reports deployed-vs-source drift for skill-base.sh/orchestrator-postflight.sh because agent-system/extensions/core/ was intentionally not synced to the live .claude/ tree; a future separate sync task can deploy these changes and resolve that drift."
+}
