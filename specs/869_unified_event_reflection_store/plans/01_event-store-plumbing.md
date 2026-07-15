@@ -167,21 +167,23 @@ event line, creating the store lazily on first use.
 
 ---
 
-### Phase 3: Implement events-query.sh (read helper) [NOT STARTED]
+### Phase 3: Implement events-query.sh (read helper) [COMPLETED]
 
 **Goal**: Ship the shared reader so every consumer uses identical, tested `jq` filter syntax
 instead of ad hoc one-liners.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/events-query.sh` with the CLI:
+- [x] Create `agent-system/extensions/core/scripts/events-query.sh` with the CLI:
       `[--session ID] [--task N] [--category CAT] [--event-type TYPE] [--checkpoint NAME]
       [--since ISO8601] [--until ISO8601] [--format jsonl|json-array|summary-counts]`.
-- [ ] Implement filtering over the JSONL stream using native `jq` (no `--slurp` for line
+      *(completed)*
+- [x] Implement filtering over the JSONL stream using native `jq` (no `--slurp` for line
       filtering); `--format json-array` collects into an array; `--format summary-counts` emits
       counts grouped by `category` and `event_type` (modeled on the `distill-log.json` summary
-      rollup shape).
-- [ ] Tolerate an absent `specs/events.jsonl`: return an empty result set and exit 0 (never error).
-- [ ] `chmod +x`; follow existing script conventions modeled on `memory-retrieve.sh`.
+      rollup shape). *(completed)*
+- [x] Tolerate an absent `specs/events.jsonl`: return an empty result set and exit 0 (never error).
+      *(completed)*
+- [x] `chmod +x`; follow existing script conventions modeled on `memory-retrieve.sh`. *(completed)*
 
 **Timing**: 1 hour
 

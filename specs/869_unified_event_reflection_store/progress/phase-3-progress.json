@@ -1,0 +1,12 @@
+{
+  "phase": 3,
+  "phase_name": "Implement events-query.sh (read helper)",
+  "started_at": "2026-07-15T08:24:00Z",
+  "last_updated": "2026-07-15T08:26:30Z",
+  "objectives": [
+    {"id": 1, "description": "Create events-query.sh with full CLI (session/task/category/event-type/checkpoint/since/until filters, jsonl|json-array|summary-counts formats), tolerate absent store, chmod +x", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/events-query.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
