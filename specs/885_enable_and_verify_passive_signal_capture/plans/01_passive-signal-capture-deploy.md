@@ -300,26 +300,31 @@ RUN, not inferred):
 
 ---
 
-### Phase 4: Document the no-headless constraint and produce the user handoff [NOT STARTED]
+### Phase 4: Document the no-headless constraint and produce the user handoff [COMPLETED]
 
 **Goal**: Prevent future retreading of the settled feasibility question, and produce a precise,
 copy-pasteable handoff for the two genuinely gated items (manual regeneration; dotfiles telemetry/
 retention). Landable today; no regeneration dependency.
 
 **Tasks**:
-- [ ] Add a short note to the source store (e.g.
+- [x] Add a short note to the source store (e.g.
       `agent-system/extensions/core/docs/guides/creating-extensions.md`, or a new
       `agent-system/extensions/core/context/patterns/` file) stating plainly that `<leader>al`'s
       "Load Core"/"Load All" sync has NO headless/CI equivalent and always requires a human
       `confirm()` selection — so future automation/CI-deploy-verification attempts don't retread
-      this. Honor no-task-references-in-deliverables (no task numbers in this file).
-- [ ] Write a durable handoff document under this task's directory (specs/ — task-number
+      this. Honor no-task-references-in-deliverables (no task numbers in this file). *(completed:
+      new file `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md`,
+      chosen over creating-extensions.md since it's a deployment/loader concept, not an
+      extension-authoring one; registered in `index-entries.json` for lazy-load discoverability)*
+- [x] Write a durable handoff document under this task's directory (specs/ — task-number
       references allowed here):
       `specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md`, containing:
       - The exact regeneration keystrokes and success criteria (Phase 5 content below).
-      - The exact dotfiles snippet (Phase 5 content below).
-- [ ] Verify the source-store note contains no task-number references and the handoff doc reproduces
-      the exact snippet and keystrokes.
+      - The exact dotfiles snippet (Phase 5 content below). *(completed)*
+- [x] Verify the source-store note contains no task-number references and the handoff doc reproduces
+      the exact snippet and keystrokes. *(completed: grep -nE 'task [0-9]|tasks [0-9]' returns no
+      matches on the source-store note; HANDOFF.md verified to contain the keystroke sequence and
+      the dotfiles snippet verbatim)*
 
 **Timing**: 0.5 hour
 

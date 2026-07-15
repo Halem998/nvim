@@ -2589,6 +2589,35 @@
         "commands": [],
         "task_types": []
       }
+    },
+    {
+      "path": "patterns/regeneration-is-manual-only.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "States that <leader>al deployment/regeneration has no headless/CI equivalent -- vim.fn.confirm() is unconditional and execute_sync is unexported",
+      "line_count": 47,
+      "keywords": [
+        "regeneration",
+        "deploy",
+        "headless",
+        "confirm",
+        "leader-al"
+      ],
+      "topics": [
+        "deployment",
+        "extension-loader"
+      ],
+      "load_when": {
+        "agents": [
+          "meta-builder-agent"
+        ],
+        "task_types": [
+          "meta"
+        ],
+        "commands": [
+          "/meta"
+        ]
+      }
     }
   ]
 }

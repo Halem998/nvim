@@ -1,0 +1,41 @@
+{
+  "phase": 4,
+  "phase_name": "Document the no-headless constraint and produce the user handoff",
+  "started_at": "2026-07-15T20:32:00Z",
+  "last_updated": "2026-07-15T20:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add source-store note on no-headless-regeneration constraint",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Write durable HANDOFF.md with regeneration procedure and dotfiles snippet",
+      "status": "done",
+      "files_touched": ["specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md"]
+    },
+    {
+      "id": 3,
+      "description": "Verify no task-number references in source-store note; HANDOFF.md reproduces snippet/keystrokes verbatim",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.1",
+      "description": "Register the new pattern file in index-entries.json",
+      "type": "altered",
+      "reason": "Not explicitly listed in the plan's file list, but added as a minimal, low-risk companion edit so the new context/patterns/ file is discoverable via lazy-loading rather than an orphaned, unindexed file -- consistent with this repo's existing convention of registering every context/patterns/ file in index-entries.json.",
+      "annotation": "*(deviation: altered — also registered the new file in index-entries.json, not explicitly in the plan's file list)*"
+    }
+  ]
+}
