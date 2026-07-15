@@ -92,6 +92,18 @@ When `LITERATURE_DIR` is set, content directories use a `sources/` subdirectory 
 falls back to per-project `specs/literature/`. If `LITERATURE_DIR` is unset, per-project
 directories are used directly.
 
+### Format Decision: Markdown Retained
+
+Markdown is retained as the sole convert/chunk/index format for this extension's pipeline
+(`literature-convert.sh` -> `literature-chunk.sh` -> `literature-build-index.sh` /
+`literature-schema.sql`). A typst-based alternative was evaluated and rejected: no PDF-to-Typst
+converter comparable in maturity to the production pymupdf4llm/PyMuPDF path exists, typst's
+structural affordances offer no segmentation advantage for PDF-sourced (not natively-authored)
+content, and the chunk-level FTS5 index only ever sees extracted plain text, so markup syntax is
+irrelevant to retrieval. See `context/project/literature/domain/format-decision.md` for the full
+rationale, the format-agnostic-index-layer notes, the `source_format` field clarification, and
+the re-evaluation trigger.
+
 ### Zotero Integration (Unified)
 
 Full Zotero library management is part of this extension (absorbed from former zotero extension).

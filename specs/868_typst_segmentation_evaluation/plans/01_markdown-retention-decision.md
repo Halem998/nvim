@@ -158,21 +158,24 @@ context index so future readers discover it.
 
 ---
 
-### Phase 2: Sync EXTENSION.md and verify no generated-file edits [NOT STARTED]
+### Phase 2: Sync EXTENSION.md and verify no generated-file edits [COMPLETED]
 
 **Goal**: Reference the decision from the extension's merge-source doc using a durable anchor, and
 confirm no auto-generated CLAUDE.md was hand-edited and no code changed.
 
 **Tasks**:
-- [ ] Add a short subsection to
+- [x] Add a short subsection to
       `agent-system/extensions/literature/EXTENSION.md` (e.g. "### Format Decision: Markdown
       Retained") stating markdown is the retained convert/chunk/index format and pointing to
       `context/project/literature/domain/format-decision.md` for the full rationale and
       re-evaluation trigger. Use the filename as the durable anchor; no task-number citation.
-- [ ] Confirm no generated CLAUDE.md file was edited (the literature section of any CLAUDE.md is
+      *(completed)*
+- [x] Confirm no generated CLAUDE.md file was edited (the literature section of any CLAUDE.md is
       produced by the extension loader from EXTENSION.md / merge sources; leave it untouched).
-- [ ] Confirm no script under `agent-system/extensions/literature/scripts/` was modified (the
-      `*.md` glob correction remains a documented note only).
+      *(completed: verified via `git status --short`, no CLAUDE.md changes)*
+- [x] Confirm no script under `agent-system/extensions/literature/scripts/` was modified (the
+      `*.md` glob correction remains a documented note only). *(completed: verified via
+      `git status --short agent-system/extensions/literature/scripts/`, no output)*
 
 **Timing**: 30 minutes
 
@@ -196,12 +199,16 @@ confirm no auto-generated CLAUDE.md was hand-edited and no code changed.
 
 ## Testing & Validation
 
-- [ ] `format-decision.md` reads as a self-contained decision record: a future reader with no task
-      tracker can understand what was decided, why, and when to reopen it.
-- [ ] `index-entries.json` is valid JSON and the new entry mirrors sibling entries' shape.
-- [ ] No task-number citations in either deliverable file (grep clean).
-- [ ] `git status --short` shows exactly the intended file set; no CLAUDE.md, no `scripts/` edits.
-- [ ] `check-extension-docs.sh` (if available) reports no new failures.
+- [x] `format-decision.md` reads as a self-contained decision record: a future reader with no task
+      tracker can understand what was decided, why, and when to reopen it. *(verified)*
+- [x] `index-entries.json` is valid JSON and the new entry mirrors sibling entries' shape.
+      *(verified via `python3 -m json.tool`)*
+- [x] No task-number citations in either deliverable file (grep clean). *(verified, both grep
+      commands exit 1 with no matches)*
+- [x] `git status --short` shows exactly the intended file set; no CLAUDE.md, no `scripts/` edits.
+      *(verified)*
+- [x] `check-extension-docs.sh` (if available) reports no new failures. *(verified: `literature
+      PASS`)*
 
 ## Artifacts & Outputs
 
