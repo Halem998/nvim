@@ -1,7 +1,7 @@
 # Implementation Plan: Task #875
 
 - **Task**: 875 - Teach meta-builder-agent global-mode semantics
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED] (all 6 phases; static verification only per Phase 6 — live cross-repo test NOT OBSERVED, see summary)
 - **Effort**: 4 hours
 - **Dependencies**: 873 (committed, [PARTIAL] — its Phase 5 live verification is blocked; see Overview)
 - **Research Inputs**: specs/875_teach_meta_builder_agent_global_mode_semantics/reports/01_global-mode-semantics-for-meta-builder.md
@@ -365,7 +365,7 @@ corrupts a foreign repo.
 
 ---
 
-### Phase 6: Static Verification and Manual Procedure Documentation [NOT STARTED]
+### Phase 6: Static Verification and Manual Procedure Documentation [COMPLETED]
 
 **Goal**: Verify what can actually be observed. Report honestly what cannot.
 
