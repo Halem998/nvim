@@ -166,26 +166,27 @@ phase-level marker asymmetry.
 
 ---
 
-### Phase 3: Propagate rationale to restating docs [NOT STARTED]
+### Phase 3: Propagate rationale to restating docs [COMPLETED]
 
 **Goal**: Keep the three restating docs consistent with the settled vocabulary: add the asymmetry
 cross-reference to `status-markers.md`, and clarify in the two phase-level docs that their marker
 list is phase-heading-scoped (functionally unchanged).
 
 **Tasks**:
-- [ ] `status-markers.md`: add a brief note (natural home: near the `[PARTIAL]`/`[ABANDONED]`
+- [x] `status-markers.md`: add a brief note (natural home: near the `[PARTIAL]`/`[ABANDONED]`
       definitions or in a short "Plan-level vs. phase-level" subsection) stating that the plan-level
       Status field uses the subset `{NOT STARTED, IMPLEMENTING, PARTIAL, BLOCKED, ABANDONED,
       COMPLETED}` and cross-referencing the fuller rationale callout in `plan-format.md`. Use the
-      verified path `.claude/context/standards/status-markers.md`.
-- [ ] `plan-format-enforcement.md` (line 13): clarify that the listed markers
+      verified path `.claude/context/standards/status-markers.md`. *(completed)*
+- [x] `plan-format-enforcement.md` (line 13): clarify that the listed markers
       (`[NOT STARTED]`, `[IN PROGRESS]`, `[COMPLETED]`, `[PARTIAL]`, `[BLOCKED]`) are the
       **phase-heading** vocabulary, distinct from the plan-level Status field vocabulary documented
-      in `plan-format.md`. Do NOT change the phase marker set itself.
-- [ ] `artifact-formats.md` (Phase Status Markers, lines 83-90): retitle/annotate the section so it
+      in `plan-format.md`. Do NOT change the phase marker set itself. *(completed)*
+- [x] `artifact-formats.md` (Phase Status Markers, lines 83-90): retitle/annotate the section so it
       is explicit these are phase-heading markers used inside plan files, distinct from the
-      plan-level Status field. Do NOT change the phase marker set itself.
-- [ ] All cross-references use durable anchors (filenames, section names); no task numbers.
+      plan-level Status field. Do NOT change the phase marker set itself. *(completed)*
+- [x] All cross-references use durable anchors (filenames, section names); no task numbers.
+      *(completed: verified via grep)*
 
 **Timing**: 40 minutes
 

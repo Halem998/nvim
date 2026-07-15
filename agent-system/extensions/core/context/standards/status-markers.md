@@ -132,6 +132,27 @@ This document defines the complete set of status markers used throughout this ag
 - `- **Abandoned**: YYYY-MM-DD` timestamp
 - `- **Abandonment Reason**: {reason}`
 
+---
+
+### Plan-level vs. phase-level markers
+
+The full marker set above is the **task-level** vocabulary (TODO.md / state.json). Plan artifacts
+use a related but narrower vocabulary at two further grains, and the differences between all
+three are intentional:
+
+- **Plan-level Status field** (the single `- **Status**:` line in a plan artifact's metadata
+  block) uses the subset `{NOT STARTED, IMPLEMENTING, PARTIAL, BLOCKED, ABANDONED, COMPLETED}`.
+- **Phase-heading markers** (`### Phase N: {name} [STATUS]`) are scoped to a single phase within
+  a plan and never include `ABANDONED` — see plan-format.md's Implementation Phases format.
+
+See plan-format.md's "Plan-level vs. phase-level markers" subsection (under Status Marker
+Requirements) for the full rationale: `ABANDONED` is deliberately plan/task-level only (no code
+path abandons a single phase while leaving siblings active), and plan-level `PARTIAL` is an
+aggregate whole-document signal distinct from, and compatible with, an individual phase heading
+carrying its own `[PARTIAL]`.
+
+---
+
 #### `[EXPANDED]`
 **TODO.md Format**: `- **Status**: [EXPANDED]`
 **state.json Value**: `"status": "expanded"`

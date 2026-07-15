@@ -80,14 +80,19 @@ Round 2 (after blocker/revision):
   -> 01_implementation-plan.md (uses round 1)
 ```
 
-## Phase Status Markers
+## Phase Status Markers (phase-heading scope)
 
-Use in plan files:
+Use in plan files, on the `### Phase N: {name} [STATUS]` heading only:
 - `[NOT STARTED]` - Phase not begun
 - `[IN PROGRESS]` - Currently executing
 - `[COMPLETED]` - Phase finished
 - `[PARTIAL]` - Partially complete (interrupted)
 - `[BLOCKED]` - Cannot proceed
+
+These are phase-heading markers, distinct from the plan-level `- **Status**:` field vocabulary
+(`{NOT STARTED, IMPLEMENTING, PARTIAL, BLOCKED, ABANDONED, COMPLETED}`, no `[IN PROGRESS]`)
+documented in plan-format.md. See that file's "Plan-level vs. phase-level markers" subsection for
+the rationale behind the asymmetry.
 
 ## Versioning
 
