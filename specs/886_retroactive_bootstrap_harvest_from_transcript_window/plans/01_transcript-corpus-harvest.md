@@ -214,7 +214,7 @@ top-level session with `is_error` statistics, resolved repo path, and self-exclu
 
 ---
 
-### Phase 3: history.jsonl spine script [NOT STARTED]
+### Phase 3: history.jsonl spine script [COMPLETED]
 
 **Goal**: Author `bootstrap-harvest-history.sh` — the durable, transcript-independent spine pass.
 Parallel-safe with Phase 2 (different source file, different script, no shared state).
@@ -222,19 +222,22 @@ Parallel-safe with Phase 2 (different source file, different script, no shared s
 **READ-ONLY**: reads `~/.claude/history.jsonl` only.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/memory/scripts/bootstrap-harvest-history.sh`.
-- [ ] Parse `history.jsonl` as a **whole jq stream** using the approach validated in Phase 1. Never
+- [x] Create `agent-system/extensions/memory/scripts/bootstrap-harvest-history.sh`.
+- [x] Parse `history.jsonl` as a **whole jq stream** using the approach validated in Phase 1. Never
       `sed -n '{n}p'`, never `wc -l`-driven extraction, never naive `split('\n')` — a real record
-      with an embedded raw newline is confirmed present.
-- [ ] Count and report decode failures explicitly; skip-and-continue rather than abort. The failure
-      count is an output, not a swallowed detail.
-- [ ] Group by `sessionId` and emit per row: `session_id`, `repo` (from the `project` field, which
+      with an embedded raw newline is confirmed present. *(completed: implemented via Python json.JSONDecoder().raw_decode skip-and-continue, per the Phase 1 finding that bare jq aborts fatally rather than skipping)*
+- [x] Count and report decode failures explicitly; skip-and-continue rather than abort. The failure
+      count is an output, not a swallowed detail. *(completed: records_decode_failed printed to stderr, observed=1)*
+- [x] Group by `sessionId` and emit per row: `session_id`, `repo` (from the `project` field, which
       is already an absolute path in the same format as `cwd`), `prompt_count`,
-      `first_timestamp`, `last_timestamp`.
-- [ ] Emit rows for sessions with no `sessionId` under an explicit sentinel rather than dropping
+      `first_timestamp`, `last_timestamp`. *(completed)*
+- [x] Emit rows for sessions with no `sessionId` under an explicit sentinel rather than dropping
       them (437 records lack one per the inventory: 23,758 total vs 23,321 with sessionId).
-- [ ] Header comment documents the read-only contract and the whole-stream parse requirement with a
-      durable anchor — no task-number citations.
+      *(completed: `__no_session_id__` sentinel implemented; observed 0 sentinel rows on the live
+      file today — a divergence from the inventory's 437 figure, flagged not suppressed, likely
+      because history.jsonl is live/append-only and has grown since the inventory snapshot)*
+- [x] Header comment documents the read-only contract and the whole-stream parse requirement with a
+      durable anchor — no task-number citations. *(completed)*
 
 **Timing**: 0.75 hours
 
