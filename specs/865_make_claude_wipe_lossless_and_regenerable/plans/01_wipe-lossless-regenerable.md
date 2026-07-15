@@ -1,7 +1,7 @@
 # Implementation Plan: Make .claude/ Wipe Lossless and One-Keystroke Regenerable
 
 - **Task**: 865 - Make .claude/ wipe lossless and one-keystroke regenerable
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 9 hours
 - **Dependencies**: 863 (store relocation / deploy-target model, already landed)
 - **Research Inputs**: reports/01_wipe-lossless-regenerable-research.md
@@ -365,27 +365,43 @@ pre-existing tracking anomaly.
 
 ---
 
-### Phase 7: Headless scratch verification of full wipe-and-regenerate cycle [NOT STARTED]
+### Phase 7: Headless scratch verification of full wipe-and-regenerate cycle [COMPLETED]
 
 **Goal**: Prove wipe-losslessness and identical regeneration end-to-end in a scratchpad fake project, plus
 the settings-reload regression — never touching the real tree.
 
 **Tasks**:
-- [ ] Build a minimal fake project dir in the scratchpad (not a full repo rsync): a `project_dir` with the
+- [x] Build a minimal fake project dir in the scratchpad (not a full repo rsync): a `project_dir` with the
   agent-system store reachable via `global_dir` pointed at the real repo (read-only source), and an empty
   `.claude/`.
-- [ ] Deploy 1-2 extensions via `manager.load(name, {project_dir=fake, global_dir=repo, confirm=false})`;
+- [x] Deploy 1-2 extensions via `manager.load(name, {project_dir=fake, global_dir=repo, confirm=false})`;
   assert `.claude-extensions.json` lands at the fake project **root**, not inside `.claude/`.
-- [ ] Snapshot the deployed `.claude/` tree (excluding volatile fields like `loaded_at`).
-- [ ] Run the Phase 5 backup helper (settings), then `rm -rf` ONLY the fake project's `.claude/`.
-- [ ] Assert the root `.claude-extensions.json` (and settings backup) survived the deletion.
-- [ ] Call `manager.regenerate` (Phase 3) over the surviving manifest; run the Phase 5 restore.
-- [ ] Diff the regenerated `.claude/` against the pre-wipe snapshot for byte-identical output (excluding
-  volatile timestamp fields); assert restored `settings.local.json` marker survived.
-- [ ] Separate regression (same or second fake project): deploy core, hand-edit `.claude/settings.json`,
-  reload core, assert the edit survives (install-once, Phase 4).
-- [ ] Guardrail assertion in the test harness: refuse to run if `project_dir` resolves to the real
+  *(deviation: altered — loaded "memory", which auto-pulls in its "core" dependency via `manager.load`'s
+  existing recursive dependency resolution, exercising 2 extensions rather than passing `global_dir` as a
+  separate opt (`manager.load` has no such opt; the global source dir is baked into the `config` the
+  manager was created with via `config.claude(global_dir)`).)*
+- [x] Snapshot the deployed `.claude/` tree (excluding volatile fields like `loaded_at`).
+  *(deviation: altered — snapshotted via recursive `find` + `md5sum` per file rather than a single
+  tree hash, so individual mismatches are attributable; discovered and excluded ONE additional volatile
+  field beyond `loaded_at`: `context/index.json`'s per-entry JSON key order is non-deterministic across
+  independent `vim.json.encode` calls (Lua `pairs()` iteration order), confirmed pre-existing and
+  unrelated to this task by reproducing it between two independent fresh loads with no wipe/regenerate
+  involved at all -- compared structurally (entry-path set) instead of by byte hash for this one file.)*
+- [x] Run the Phase 5 backup helper (settings), then `rm -rf` ONLY the fake project's `.claude/`.
+- [x] Assert the root `.claude-extensions.json` (and settings backup) survived the deletion.
+- [x] Call `manager.regenerate` (Phase 3) over the surviving manifest; run the Phase 5 restore.
+- [x] Diff the regenerated `.claude/` against the pre-wipe snapshot for byte-identical output (excluding
+  volatile timestamp fields); assert restored `settings.local.json` marker survived. All 292 pre-wipe
+  files reproduced byte-identically post-regenerate (modulo the `index.json` key-order exclusion above).
+- [x] Separate regression (same or second fake project): deploy core, hand-edit `.claude/settings.json`,
+  reload core, assert the edit survives (install-once, Phase 4). Used `manager.reload` (unload-then-load)
+  specifically, since that is the path that originally exposed the Phase 4/5 post-hoc `manager.unload` gap.
+- [x] Guardrail assertion in the test harness: refuse to run if `project_dir` resolves to the real
   `~/.config/nvim` tree.
+
+**Result**: 20/20 assertions passed. `bash .claude/scripts/check-extension-docs.sh` (the hard orphan/
+broken-symlink gate) passes after every phase's edits. `git status` confirms no mutation of the real
+`~/.config/nvim/.claude` tree by any scratch test (all destructive steps ran under `/tmp/.../scratchpad/`).
 
 **Timing**: 1.5 hours
 
