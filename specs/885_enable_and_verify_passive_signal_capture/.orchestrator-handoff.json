@@ -1,0 +1,50 @@
+{
+  "status": "partial",
+  "task_number": 885,
+  "session_id": "sess_1784135810_7e6755_885",
+  "summary": "Implementation landed Phases 1-4 of the plan (all regeneration-independent source-store edits under agent-system/extensions/core/**, each verified by actually running the modified script and observing the result). Phase 1 replaced the `|| true` silent-fail idiom at all 10 events-append.sh call sites with a duplicated observable-but-non-fatal wrapper, catching and fixing a real set -e correctness bug along the way (a present-but-failing helper previously aborted the enclosing script before the wrapper could return 0). Phase 2 added a nullable `cwd` field ONLY to events-schema.json (not cc_session_id) and threaded --cwd through events-append.sh and both hooks; events-query.sh derives `repo` at query time as basename(cwd), never stored. Phase 3 extended check-extension-docs.sh with a new ADVISORY (not hard-FAIL) lane for core-extension never-deployed scripts/hooks and settings.json registration gaps -- deliberately ADVISORY rather than the plan's original FAIL design, per a binding orchestrator concurrency guardrail: a hard FAIL would have bricked the doc-lint gate for every caller (including a concurrently running sibling session validating an unrelated memory-extension manifest change) until the user's manual regeneration happens. An opt-in STRICT_CORE_DEPLOY=1 env var preserves the original hard-FAIL option. Phase 4 documented the no-headless-regeneration constraint in a new source-store pattern file and wrote a durable, user-executable HANDOFF.md. Phases 5-6 (manual <leader>al regeneration; doubly-gated event-flow verification) remain [BLOCKED] -- genuinely gated on human action and accumulated real usage, not fakeable. Task terminus is [PARTIAL] as designed; no phase claims event flow is verified today.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/885_enable_and_verify_passive_signal_capture/summaries/01_passive-signal-capture-deploy-summary.md",
+      "summary": "Implementation summary for Phases 1-4 (landed, verified) and the handoff for Phases 5-6 ([BLOCKED])."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md",
+      "summary": "Durable, user-executable handoff: exact <leader>al regeneration procedure with independently verifiable success criteria, and the dotfiles telemetry/retention snippet (not applied to this repo)."
+    },
+    {
+      "type": "plan",
+      "path": "specs/885_enable_and_verify_passive_signal_capture/plans/01_passive-signal-capture-deploy.md",
+      "summary": "6-phase plan, updated in place: Phases 1-4 marked [COMPLETED] with per-task completion/deviation annotations; Phases 5-6 remain [BLOCKED]."
+    },
+    {
+      "type": "report",
+      "path": "specs/885_enable_and_verify_passive_signal_capture/reports/01_enable-verify-passive-signal-capture.md",
+      "summary": "Research report the plan integrated: settled no-headless-regeneration feasibility, exact manual keystroke procedure with success criteria, live check-extension-docs.sh drift evidence, dotfiles-vs-repo settlement for scope 3/4, verified cleanupPeriodDays:0 claim, and cwd-only schema recommendation."
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+    "agent-system/extensions/core/hooks/events-log-lifecycle.sh",
+    "agent-system/extensions/core/hooks/events-log-artifact.sh",
+    "agent-system/extensions/core/context/schemas/events-schema.json",
+    "agent-system/extensions/core/scripts/events-append.sh",
+    "agent-system/extensions/core/scripts/events-query.sh",
+    "agent-system/extensions/core/context/formats/events-format.md",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md",
+    "specs/885_enable_and_verify_passive_signal_capture/plans/01_passive-signal-capture-deploy.md"
+  ],
+  "next_steps": "Task is [PARTIAL] by design; do not re-run /implement 885 expecting Phases 5-6 to complete automatically -- they are user-owned. Follow specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md: run <leader>al in nvim and at least one other repo (e.g. ~/.dotfiles), choosing 'Sync all (replace existing)' at the confirm dialog, then verify via the independently-checkable criteria in HANDOFF.md Part A. After regeneration, event-flow verification (Phase 6) still requires accumulated real command usage before it can be confirmed -- do not claim it verified from code inspection alone.",
+  "blocking_manual_steps": [
+    "User must run <leader>al in nvim and choose 'Sync all (replace existing)' (NOT the default Cancel, NOT 'Add new only') at the vim.fn.confirm() dialog to deploy the finished source-store edits -- no headless/CI path exists.",
+    "User must repeat the same <leader>al 'Sync all' step in at least one other repo (e.g. ~/.dotfiles, confirmed to have the identical undeployed gap) for cross-repo verification.",
+    "User (or a separate ~/.dotfiles-repo task) must add cleanupPeriodDays: 365 (never 0) and CLAUDE_CODE_ENABLE_TELEMETRY=1 + OTEL_METRICS_EXPORTER=console + OTEL_LOGS_EXPORTER=console to ~/.dotfiles/config/claude/settings.json, then run home-manager switch. This task does not edit that file.",
+    "End-to-end event-flow verification (specs/events.jsonl growing, check-extension-docs.sh green, a real lifecycle event fired) is doubly gated: first on the manual regeneration, then on accumulated real command usage over time. It cannot be observed today."
+  ]
+}
