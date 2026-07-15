@@ -32,7 +32,9 @@ Extension Source                           Target Project
 1. **File-Copy Based**: Extensions are loaded by copying files into the core structure
 2. **Editor Managed**: Load/unload triggered via the extension picker
 3. **Claude Code Agnostic**: Claude Code sees only standard `.claude/` structure
-4. **State Tracked**: `extensions.json` tracks what is installed and where
+4. **State Tracked**: a project-root manifest (`.claude-extensions.json` /
+   `.opencode-extensions.json`) tracks what is installed and where -- deliberately outside
+   `.claude/`/`.opencode/` so it survives a wipe of either directory
 
 ---
 
@@ -48,7 +50,7 @@ The extension system operates at two distinct layers that serve different audien
 │  init.lua          manager.load() / manager.unload()           │
 │  loader.lua        12 copy functions, conflict detection        │
 │  merge.lua         generate_claudemd(), merge_settings(), ...   │
-│  state.lua         extensions.json read/write                   │
+│  state.lua         root-level extension manifest read/write     │
 │  config.lua        target paths, section prefixes              │
 │                                                                 │
 │  Trigger: Extension picker UI (editor-specific)                │
@@ -120,7 +122,10 @@ agent-system/extensions/{name}/
 
 ### State File
 
-When extensions are loaded, state is tracked in `.claude/extensions.json`:
+When extensions are loaded, state is tracked in a project-root manifest --
+`.claude-extensions.json` for the Claude preset, `.opencode-extensions.json` for the OpenCode
+preset (`config.lua`'s `root_state_file` field). The manifest lives at the project root, not
+inside `.claude/`/`.opencode/`, so it survives a wipe of either directory:
 
 ```json
 {
@@ -301,7 +306,8 @@ This means `inject_section()` and `remove_section()` still exist in merge.lua bu
 
 ### 4. State (state.lua)
 
-State tracking via `extensions.json`:
+State tracking via the project-root extension manifest (`.claude-extensions.json` /
+`.opencode-extensions.json`, `config.root_state_file`):
 
 **Functions**:
 - `read()` - Read current state
@@ -322,7 +328,7 @@ Configuration presets for different agent systems:
   base_dir = ".claude",
   config_file = "CLAUDE.md",
   section_prefix = "extension_",
-  state_file = "extensions.json",
+  root_state_file = ".claude-extensions.json",
   global_extensions_dir = "$PROJECT_ROOT/agent-system/extensions",
   merge_target_key = "claudemd"
 }
@@ -372,7 +378,7 @@ Configuration presets for different agent systems:
       - Extension-specific entries loaded via each extension's merge_targets.index
    c. merge_settings() if merge_targets.settings defined
 7. Update state (mark_loaded)
-8. Write extensions.json
+8. Write the project-root extension manifest (.claude-extensions.json / .opencode-extensions.json)
 9. Post-load verification
 ```
 
@@ -392,7 +398,7 @@ Configuration presets for different agent systems:
    a. remove_index_entries_tracked() from index.json
    b. unmerge_settings() if settings were merged
 5. Update state (mark_unloaded)
-6. Write extensions.json
+6. Write the project-root extension manifest
 7. Regenerate CLAUDE.md:
    a. generate_claudemd() -- recompute from remaining loaded extensions
 ```

@@ -195,12 +195,12 @@ declaration and deployed copy are consistent, not drift.
 
 ### Extension Tracking Gap
 
-The literature extension has no entry in the root `.claude/extensions.json` despite this
-substantial partial deployment (the `/cite` trio and `zotero-search.sh` are now live). Task 844
-intentionally does **not** fabricate an `extensions.json` entry here: that file's
-`merged_sections` metadata is loader-owned state, and hand-authoring it risks introducing the
-exact kind of drift this task is closing. Proper registration of the literature extension via
-the extension-loader flow is a named follow-up, not part of this task's scope.
+The literature extension has no entry in the project-root extension manifest
+(`.claude-extensions.json`) despite this substantial partial deployment (the `/cite` trio and
+`zotero-search.sh` are now live). Task 844 intentionally does **not** fabricate a manifest entry
+here: the `merged_sections` metadata is loader-owned state, and hand-authoring it risks
+introducing the exact kind of drift this task is closing. Proper registration of the literature
+extension via the extension-loader flow is a named follow-up, not part of this task's scope.
 
 ---
 

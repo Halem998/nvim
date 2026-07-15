@@ -131,26 +131,36 @@ project-root dotfile via one new config field and the single Lua path function.
 
 ---
 
-### Phase 2: Update extensions.json non-Lua readers + doc sweep [NOT STARTED]
+### Phase 2: Update extensions.json non-Lua readers + doc sweep [COMPLETED]
 
 **Goal**: Track the relocated, preset-scoped manifest path across every shell reader, their deployed
 copies, and documentation.
 
 **Tasks**:
-- [ ] `agent-system/extensions/core/scripts/skill-base.sh:48` — replace the hardcoded
+- [x] `agent-system/extensions/core/scripts/skill-base.sh:48` — replace the hardcoded
   `.claude/extensions.json` with a preset-aware project-root path derived from the system dir
   (e.g. resolve `.claude` -> `.claude-extensions.json`, `.opencode` -> `.opencode-extensions.json`).
   Do NOT fix the pre-existing `.loaded_extensions[]` schema mismatch (out of scope; note in commit).
-- [ ] `agent-system/extensions/core/scripts/validate-wiring.sh:221` — replace
+- [x] `agent-system/extensions/core/scripts/validate-wiring.sh:221` — replace
   `"$system_dir/extensions.json"` with the project-root preset-scoped filename derived from `$system_dir`.
-- [ ] Update the byte-identical deployed copies in lockstep: `.claude/scripts/skill-base.sh`,
+  *(deviation: altered — implemented as `"${system_dir}-extensions.json"` string concatenation rather
+  than a case/if branch: `$system_dir` is always passed as an absolute path ending in `/.claude` or
+  `/.opencode`, so appending `-extensions.json` yields the correct project-root sibling path for both
+  presets with one line, no branching needed.)*
+- [x] Update the byte-identical deployed copies in lockstep: `.claude/scripts/skill-base.sh`,
   `.opencode/scripts/skill-base.sh`, `.claude/scripts/validate-wiring.sh`,
-  `.opencode/scripts/validate-wiring.sh`.
-- [ ] Documentation sweep (path references only, no logic): `agent-system/extensions/core/EXTENSION.md`,
+  `.opencode/scripts/validate-wiring.sh`. *(deviation: altered — `.opencode/scripts/skill-base.sh` is
+  an independently-maintained variant (no `agent-system/extensions/core` source counterpart; diverges
+  from the Claude version in task-status vocabulary, artifact-linking helpers, etc.), so its own
+  hardcoded `.opencode/extensions.json` -> `.opencode-extensions.json` edit was applied directly rather
+  than by copying the `.claude` source; also updated `.opencode/extensions/core/scripts/validate-wiring.sh`,
+  a 4th deployed copy discovered on disk beyond the plan's named 4, to keep all validate-wiring.sh
+  copies byte-identical.)*
+- [x] Documentation sweep (path references only, no logic): `agent-system/extensions/core/EXTENSION.md`,
   `agent-system/extensions/core/README.md`,
   `agent-system/extensions/core/docs/architecture/extension-system.md`,
   `agent-system/extensions/literature/README.md`.
-- [ ] No task-number citations in any of these files (they are outside `specs/**`).
+- [x] No task-number citations in any of these files (they are outside `specs/**`).
 
 **Timing**: 1 hour
 
@@ -168,19 +178,30 @@ copies, and documentation.
 
 ---
 
-### Phase 3: Add regenerate-from-surviving-selection logic [NOT STARTED]
+### Phase 3: Add regenerate-from-surviving-selection logic [COMPLETED]
 
 **Goal**: Add the new capability that reads the surviving root manifest and rebuilds `.claude/` without
 re-picking — the crux of "one-keystroke regenerable".
 
 **Tasks**:
-- [ ] Add a manager function in `init.lua` (e.g. `manager.regenerate(opts)`), that:
+- [x] Add a manager function in `init.lua` (e.g. `manager.regenerate(opts)`), that:
   reads state via `state_mod.read(project_dir, config)`, gets active extensions via
   `state_mod.list_loaded(state)`, and iterates `manager.load(name, {confirm=false, project_dir=...,
-  global_dir=...})` over that list, accumulating success/error per extension.
-- [ ] Return a structured result (loaded names, failures) so callers and the headless test can assert on it.
-- [ ] Ensure the function is a no-op-safe when the surviving manifest is empty (returns empty result, no error).
-- [ ] Add a LuaDoc header per neovim-lua.md conventions; keep it a local-scoped, `pcall`-guarded load loop.
+  global_dir=...})` over that list, accumulating success/error per extension. *(deviation: altered —
+  discovered during implementation that `manager.load`'s own "already loaded" guard
+  (`state_mod.is_loaded`) would unconditionally reject every formerly-active extension, since the
+  surviving manifest still marks them `status == "active"` even though their files are gone after a
+  wipe; `manager.load` also has no `global_dir` opt (global source dir is baked into the `config`
+  the manager was created with, not passed per-call). Fixed by resetting state to `{extensions={}}`
+  before the loop, then calling `manager.load(name, {confirm=false, project_dir=...})` per formerly-
+  active name -- `manager.load`'s existing recursive dependency resolution transparently handles
+  ordering, and a name already loaded by an earlier iteration's dependency pull-in is detected via a
+  fresh state re-read rather than re-invoked. Verified with a scratch smoke test: loading "memory"
+  (which depends on "core") into a fake project, wiping only the fake project's `.claude/`, and
+  calling `manager.regenerate` successfully reloaded both `core` and `memory` with 0 failures.)*
+- [x] Return a structured result (loaded names, failures) so callers and the headless test can assert on it.
+- [x] Ensure the function is a no-op-safe when the surviving manifest is empty (returns empty result, no error).
+- [x] Add a LuaDoc header per neovim-lua.md conventions; keep it a local-scoped, `pcall`-guarded load loop.
 
 **Timing**: 1.5 hours
 

@@ -51,4 +51,4 @@ None. This is the foundational layer all other extensions build upon.
 
 - `.claude/CLAUDE.md` - Agent system configuration and quick reference
 - `.claude/context/index.json` - Context discovery index
-- `.claude/extensions.json` - Extension registry
+- `.claude-extensions.json` (project root) - Extension registry

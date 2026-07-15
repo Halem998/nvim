@@ -177,4 +177,4 @@ The following sections common to domain extension READMEs are omitted because th
 - `agent-system/extensions/core/EXTENSION.md` - Detailed capability inventory
 - `.claude/docs/README.md` - Standards documentation index
 - `.claude/context/index.json` - Context discovery index
-- `.claude/extensions.json` - Extension registry
+- `.claude-extensions.json` (project root) - Extension registry

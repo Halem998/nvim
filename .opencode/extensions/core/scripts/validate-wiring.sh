@@ -218,7 +218,11 @@ validate_extensions_loaded() {
     log_info "Validating $system_name extension wiring (if loaded)..."
     echo "----------------------------------------"
 
-    local extensions_file="$system_dir/extensions.json"
+    # Extension selection manifest lives at the PROJECT ROOT (sibling of
+    # $system_dir, not inside it) so it survives a .claude/.opencode wipe.
+    # $system_dir is an absolute path ending in "/.claude" or "/.opencode",
+    # so appending "-extensions.json" yields the correct sibling path.
+    local extensions_file="${system_dir}-extensions.json"
     if [[ ! -f "$extensions_file" ]]; then
         log_info "No extensions.json found - extensions not loaded"
         return 0

@@ -45,7 +45,9 @@ SKILL_CONTEXT_BUDGET="${SKILL_CONTEXT_BUDGET:-8000}"
 # Outputs: absolute path to extension directory, or empty string if not found
 skill_get_extension_dir() {
   local task_type="$1"
-  local extensions_json=".claude/extensions.json"
+  # Extension selection manifest lives at the PROJECT ROOT (not inside .claude/)
+  # so it survives a .claude/ wipe -- preset-scoped filename for Claude Code.
+  local extensions_json=".claude-extensions.json"
   if [ ! -f "$extensions_json" ]; then
     return 0
   fi
