@@ -412,7 +412,7 @@ keyword and the produced file_scope are deliberately different strings serving d
 # Validate against state.json
 for task_idx, ext_deps in external_dependencies:
   for task_num in ext_deps:
-    exists = jq --arg num "$task_num" '.active_projects[] | select(.project_number == ($num | tonumber))' specs/state.json
+    exists = jq --arg num "$task_num" '.active_projects[] | select(.project_number == ($num | tonumber))' "${TARGET_ROOT}/specs/state.json"
     if not exists:
       WARNING: "Task #{task_num} not found in active projects (may be archived)"
 ```
