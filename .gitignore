@@ -2,6 +2,10 @@
 # Runtime logs relocated out of .claude/.opencode so they survive a wipe (see
 # agent-system/extensions/core/docs/architecture/extension-system.md)
 /.agent-logs/
+# Staging directory for the settings.json/settings.local.json backup/restore
+# wrapper (settings_backup.lua) used across a full .claude/.opencode wipe.
+/.claude-settings-backup/
+/.opencode-settings-backup/
 /specs/tmp
 /.claude/tmp/
 /.opencode/tmp/

@@ -583,6 +583,13 @@ local INSTALL_ONCE_ROOT_FILES = {
   ["settings.local.json"] = true,
 }
 
+-- Exposed so manager.unload (init.lua) can also exclude these root files from
+-- removal: without this, unload always deletes tracked installed_files first,
+-- so a subsequent load (e.g. via manager.reload's unload-then-load) would find
+-- the target absent and copy fresh regardless of the install-once guard above
+-- -- the "live clobber-on-reload bug" this phase closes requires both halves.
+M.INSTALL_ONCE_ROOT_FILES = INSTALL_ONCE_ROOT_FILES
+
 --- Copy root files (files that go directly into target_dir, not a subdirectory)
 --- These are files like settings.json, .gitignore that live at the .claude/ root.
 --- @param manifest table Extension manifest

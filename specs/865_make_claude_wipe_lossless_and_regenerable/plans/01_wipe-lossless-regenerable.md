@@ -238,6 +238,16 @@ re-picking — the crux of "one-keystroke regenerable".
   `merge_mod.merge_settings` is idempotent (verified in Phase 7).
 - [x] No task-number citations in the loader comment (outside `specs/**`).
 
+**Post-hoc gap found and closed (during Phase 5 smoke testing)**: `copy_root_files`'s install-once
+guard alone does not stop "the live clobber-on-reload bug" for the `manager.reload` (unload-then-load)
+path, because `manager.unload` unconditionally deletes every tracked `installed_files` entry --
+including `settings.json`/`settings.local.json` -- *before* `manager.load` runs, so the install-once
+`filereadable` check always finds the target absent and copies fresh regardless. Closed by exporting
+`loader_mod.INSTALL_ONCE_ROOT_FILES` and excluding those two filenames from removal in
+`manager.unload` (`init.lua`), mirroring the existing `.syncprotect` skip pattern. Verified with a
+scratch smoke test: hand-edited `settings.local.json` now survives a full `manager.reload("core", ...)`
+cycle (previously did not, confirming this was a live bug, not a hypothetical one).
+
 **Timing**: 1 hour
 
 **Depends on**: none
@@ -252,29 +262,42 @@ re-picking — the crux of "one-keystroke regenerable".
 
 ---
 
-### Phase 5: Settings backup/restore wrapper + regenerate entrypoint + architecture docs [NOT STARTED]
+### Phase 5: Settings backup/restore wrapper + regenerate entrypoint + architecture docs [COMPLETED]
 
 **Goal**: Provide true zero-loss for the two un-relocatable settings files across a full wipe, and wire
 the restore into the actual regenerate path; document the host-app constraint and the install-once pattern.
 
 **Tasks**:
-- [ ] Add a small backup/restore helper (Lua) that snapshots `.claude/settings.json` and
+- [x] Add a small backup/restore helper (Lua) that snapshots `.claude/settings.json` and
   `.claude/settings.local.json` to a project-root staging location (e.g. `.claude-settings-backup/` or a
   single dotfile pair) immediately before a wipe, and restores them immediately after regenerate. Use the
-  loader's symlink-safe file handling conventions; no destructive git.
-- [ ] Locate the actual regenerate keystroke / entrypoint (the picker "Load Core" path in
+  loader's symlink-safe file handling conventions; no destructive git. *(deviation: altered — new file
+  `lua/neotex/plugins/ai/shared/extensions/settings_backup.lua`; preset-scoped staging directory name
+  via a new `config.settings_backup_dir` field (`.claude-settings-backup` / `.opencode-settings-backup`),
+  mirroring `root_state_file`'s collision-avoidance rationale, rather than a single shared dotfile pair.)*
+- [x] Locate the actual regenerate keystroke / entrypoint (the picker "Load Core" path in
   `lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua`, or the `manager.regenerate` added in
   Phase 3) and wire the restore step so a regenerate after a wipe re-applies the backed-up settings if the
   staging snapshot exists. If no single "wipe" keystroke exists, expose backup + restore as callable
   helpers and document the intended `backup -> rm -rf .claude/ -> regenerate -> restore` sequence.
-- [ ] Add the staging location to the project-root `.gitignore`.
-- [ ] Documentation (per research Context Extension Recommendations): add a short subsection to
+  *(deviation: altered — wired restore into `manager.regenerate` itself (confirmed during Phase 2 research
+  that the picker's "Load Core" path, `sync.load_all_globally`, does not touch `root_files` for `.claude`
+  at all — settings are loader-owned, not sync-owned, for that base_dir), per the plan's own documented
+  fallback; `manager.regenerate` calls `settings_backup.restore` unconditionally at the end, no-op-safe
+  when no backup was staged.)*
+- [x] Add the staging location to the project-root `.gitignore`.
+- [x] Documentation (per research Context Extension Recommendations): add a short subsection to
   `agent-system/extensions/core/docs/guides/permission-configuration.md` (or a cross-referenced
   architecture note) explaining that `.claude/settings.json` / `.claude/settings.local.json` file
   *locations* are a Claude Code harness constraint, and document the install-once vs always-overwrite
   asymmetry now unified between `loader.lua` and `sync.lua` in
   `agent-system/extensions/core/docs/architecture/extension-system.md`.
-- [ ] No task-number citations in any deliverable file (outside `specs/**`).
+- [x] No task-number citations in any deliverable file (outside `specs/**`).
+
+**Post-hoc gap found and closed (see Phase 4's post-hoc note)**: `manager.unload` was excluding
+`settings.json`/`settings.local.json` from removal added here as part of closing the install-once
+loop, discovered while smoke-testing this phase's backup/restore cycle alongside the Phase 4 reload
+regression.
 
 **Timing**: 1.5 hours
 

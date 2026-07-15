@@ -32,6 +32,32 @@ The OpenCode agent system uses a declarative permission model defined in agent f
 4. **Least Privilege**: Grant only permissions needed for agent function
 5. **Dangerous Operations**: Always deny destructive operations
 
+### Settings File Location: a Host-App Constraint
+
+`.claude/settings.json` and `.claude/settings.local.json` (and their OpenCode equivalents under
+`.opencode/`) hold permission grants/denies plus hooks and MCP server configuration. Unlike the
+extension selection manifest (`.claude-extensions.json` / `.opencode-extensions.json`, now at the
+project root) or the runtime logs directory (`.agent-logs/`, also at the project root), these two
+settings files **cannot** be relocated out of `base_dir`: Claude Code (and OpenCode) hardcode
+`.claude/settings.json` / `.claude/settings.local.json` as the paths they read permissions and
+hooks from -- there is no configuration point to redirect that read.
+
+Because a full `rm -rf .claude/` wipe still destroys these two files, they are protected by a
+different mechanism than a path move:
+
+- **Install-once** (`loader.lua:copy_root_files`): once a project has its own
+  `settings.json`/`settings.local.json`, reloading or re-loading the providing extension never
+  overwrites it. `manager.unload` also excludes these two files from removal
+  (`loader_mod.INSTALL_ONCE_ROOT_FILES`), so an unload-then-load reload cycle does not clobber
+  in-place edits either. See "Install-Once vs Always-Overwrite" in
+  `../architecture/extension-system.md` for the full asymmetry across `loader.lua` and `sync.lua`.
+- **Backup/restore** (`settings_backup.lua`): for a *full* wipe (where the files themselves are
+  deleted, not just reloaded), install-once alone cannot help -- there is nothing left to preserve
+  in place. The wipe sequence is instead `backup -> rm -rf base_dir -> regenerate -> restore`,
+  snapshotting to a project-root staging directory (`.claude-settings-backup/` /
+  `.opencode-settings-backup/`, gitignored) before the wipe and restoring immediately after
+  `manager.regenerate` rebuilds `base_dir`.
+
 ---
 
 ## Permission System Architecture

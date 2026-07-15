@@ -9,6 +9,7 @@ local state_mod = require("neotex.plugins.ai.shared.extensions.state")
 local loader_mod = require("neotex.plugins.ai.shared.extensions.loader")
 local merge_mod = require("neotex.plugins.ai.shared.extensions.merge")
 local verify_mod = require("neotex.plugins.ai.shared.extensions.verify")
+local settings_backup = require("neotex.plugins.ai.shared.extensions.settings_backup")
 local helpers = require("neotex.plugins.ai.claude.commands.picker.utils.helpers")
 
 --- Convert absolute path to relative (from project_dir)
@@ -681,6 +682,7 @@ function M.create(config)
     -- (manager.load does this at load time; unload never did until now).
     local protected_paths = loader_mod.load_syncprotect(project_dir, config.base_dir)
     local protected_skip_count = 0
+    local install_once_skip_count = 0
 
     -- Convert relative paths back to absolute for file removal, filtering
     -- out any path protected by .syncprotect. installed_files/installed_dirs
@@ -692,6 +694,13 @@ function M.create(config)
       local syncprotect_key = rel_path:sub(#config.base_dir + 2)
       if protected_paths[syncprotect_key] then
         protected_skip_count = protected_skip_count + 1
+      elseif loader_mod.INSTALL_ONCE_ROOT_FILES[syncprotect_key] then
+        -- Never remove settings.json/settings.local.json on unload: without
+        -- this, a subsequent load (e.g. manager.reload's unload-then-load)
+        -- would find the target absent and copy fresh regardless of
+        -- copy_root_files' install-once guard, silently clobbering any
+        -- in-place edits on every unload+load cycle.
+        install_once_skip_count = install_once_skip_count + 1
       else
         table.insert(abs_files, project_dir .. "/" .. rel_path)
       end
@@ -749,6 +758,11 @@ function M.create(config)
     local skip_notes = {}
     if protected_skip_count > 0 then
       table.insert(skip_notes, string.format("%d protected (.syncprotect)", protected_skip_count))
+    end
+    if install_once_skip_count > 0 then
+      table.insert(skip_notes, string.format(
+        "%d preserved (settings install-once)", install_once_skip_count
+      ))
     end
     if symlink_skip_count and symlink_skip_count > 0 then
       table.insert(skip_notes, string.format(
@@ -952,7 +966,9 @@ function M.create(config)
   --- with no error and no state reset. Each individual extension load is guarded by
   --- `manager.load`'s own error return, so one failure does not abort the rest.
   --- @param opts table|nil Options: { project_dir = string|nil }
-  --- @return table result { loaded = {name, ...}, failed = {{name=, error=}, ...} }
+  --- @return table result { loaded = {name, ...}, failed = {{name=, error=}, ...},
+  ---   settings_restored = {filename, ...} } -- settings_restored lists which of
+  ---   settings.json/settings.local.json were restored from a staged backup, if any
   function manager.regenerate(opts)
     opts = opts or {}
     local project_dir = opts.project_dir or vim.fn.getcwd()
@@ -998,6 +1014,21 @@ function M.create(config)
           table.insert(result.failed, { name = extension_name, error = load_err })
         end
       end
+    end
+
+    -- Restore settings.json/settings.local.json from a project-root backup
+    -- staged before the wipe, if one exists. This is what makes the wipe
+    -- sequence (backup -> rm -rf base_dir -> regenerate -> restore) truly
+    -- lossless for the two files that install-once semantics (Phase 4) alone
+    -- cannot protect across a full base_dir deletion. No-op-safe when no
+    -- backup was staged (e.g. regenerate called outside a wipe sequence).
+    local restore_ok, restored = settings_backup.restore(project_dir, config)
+    result.settings_restored = restored
+    if not restore_ok then
+      table.insert(result.failed, {
+        name = "<settings-restore>",
+        error = "Failed to restore settings backup after regenerate",
+      })
     end
 
     return result

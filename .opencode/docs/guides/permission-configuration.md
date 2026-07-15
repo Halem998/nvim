@@ -32,6 +32,32 @@ The OpenCode agent system uses a declarative permission model defined in agent f
 4. **Least Privilege**: Grant only permissions needed for agent function
 5. **Dangerous Operations**: Always deny destructive operations
 
+### Settings File Location: a Host-App Constraint
+
+`.claude/settings.json` and `.claude/settings.local.json` (and their OpenCode equivalents under
+`.opencode/`) hold permission grants/denies plus hooks and MCP server configuration. Unlike the
+extension selection manifest (`.claude-extensions.json` / `.opencode-extensions.json`, now at the
+project root) or the runtime logs directory (`.agent-logs/`, also at the project root), these two
+settings files **cannot** be relocated out of `base_dir`: Claude Code (and OpenCode) hardcode
+`.claude/settings.json` / `.claude/settings.local.json` as the paths they read permissions and
+hooks from -- there is no configuration point to redirect that read.
+
+Because a full `rm -rf .claude/` wipe still destroys these two files, they are protected by a
+different mechanism than a path move:
+
+- **Install-once** (`loader.lua:copy_root_files`): once a project has its own
+  `settings.json`/`settings.local.json`, reloading or re-loading the providing extension never
+  overwrites it. `manager.unload` also excludes these two files from removal
+  (`loader_mod.INSTALL_ONCE_ROOT_FILES`), so an unload-then-load reload cycle does not clobber
+  in-place edits either. See "Install-Once vs Always-Overwrite" in
+  `../architecture/extension-system.md` for the full asymmetry across `loader.lua` and `sync.lua`.
+- **Backup/restore** (`settings_backup.lua`): for a *full* wipe (where the files themselves are
+  deleted, not just reloaded), install-once alone cannot help -- there is nothing left to preserve
+  in place. The wipe sequence is instead `backup -> rm -rf base_dir -> regenerate -> restore`,
+  snapshotting to a project-root staging directory (`.claude-settings-backup/` /
+  `.opencode-settings-backup/`, gitignored) before the wipe and restoring immediately after
+  `manager.regenerate` rebuilds `base_dir`.
+
 ---
 
 ## Permission System Architecture
@@ -133,7 +159,7 @@ permissions:
 - read: ["**/*.md"]
 
 # Multiple patterns
-- read: ["**/*.md", "**/*.lua", ".opencode/**/*"]
+- read: ["**/*.md", "**/*.lua", ".claude/**/*"]
 ```
 
 ### Bash Command Patterns
@@ -171,7 +197,7 @@ tools:
 permissions:
   allow:
     # Read access to documentation and code
-    - read: ["**/*.md", ".opencode/**/*", "docs/**/*", "**/*.lua"]
+    - read: ["**/*.md", ".claude/**/*", "docs/**/*", "**/*.lua"]
     
     # Write access to research outputs
     - write: ["specs/**/*", "docs/research/**/*"]
@@ -203,7 +229,7 @@ tools:
 permissions:
   allow:
     # Read access to specs and documentation
-    - read: ["**/*.md", ".opencode/**/*", "docs/**/*"]
+    - read: ["**/*.md", ".claude/**/*", "docs/**/*"]
     
     # Write access to plans
     - write: ["specs/**/*"]
@@ -270,7 +296,7 @@ tools:
 permissions:
   allow:
     # Read access to domain codebase
-    - read: ["**/*.py", "**/*.md", ".opencode/**/*"]
+    - read: ["**/*.py", "**/*.md", ".claude/**/*"]
 
     # Write access to domain files
     - write: ["**/*.py", "specs/**/*"]
@@ -478,7 +504,7 @@ permissions:
 ```yaml
 permissions:
   allow:
-    - read: ["**/*.md", ".opencode/**/*"]
+    - read: ["**/*.md", ".claude/**/*"]
     - write: ["specs/**/*"]
     - bash: ["git", "date"]
   deny:
@@ -597,13 +623,13 @@ permissions:
 **Solution**:
 1. Review recent permission changes in git history:
    ```bash
-   git log -p -- .opencode/agents/{agent}.md
+   git log -p -- .claude/agents/{agent}.md
    ```
 2. Identify removed permission
 3. Assess if removal was intentional
 4. If unintentional, restore permission:
    ```bash
-   git checkout HEAD~1 -- .opencode/agents/{agent}.md
+   git checkout HEAD~1 -- .claude/agents/{agent}.md
    ```
 5. Test agent operation
 6. Document decision
@@ -662,7 +688,7 @@ permissions:
 # Expand as needed
 permissions:
   allow:
-    - read: ["**/*.md", ".opencode/**/*"]
+    - read: ["**/*.md", ".claude/**/*"]
     - write: ["specs/**/*"]
     - bash: ["git", "grep", "find"]
 ```
@@ -750,9 +776,9 @@ git status
 
 ## Related Documentation
 
-- [Frontmatter Standard](.opencode/context/formats/frontmatter.md) - Agent frontmatter format
-- [Delegation](.opencode/context/orchestration/delegation.md) - Agent delegation patterns
-- [State Management](.opencode/context/orchestration/state-management.md) - State file management
+- [Frontmatter Standard](.claude/context/formats/frontmatter.md) - Agent frontmatter format
+- [Delegation](.claude/context/orchestration/delegation.md) - Agent delegation patterns
+- [State Management](.claude/context/orchestration/state-management.md) - State file management
 
 ---
 

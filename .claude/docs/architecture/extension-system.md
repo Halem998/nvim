@@ -10,7 +10,7 @@ The extension system enables modular domain support that can be loaded and unloa
 
 ```
 Extension Source                           Target Project
-(.claude/extensions/)                      (.claude/)
+(agent-system/extensions/)                      (.claude/)
 
 ┌────────────────────┐                    ┌──────────────────┐
 │ latex/             │                    │ agents/          │
@@ -32,7 +32,9 @@ Extension Source                           Target Project
 1. **File-Copy Based**: Extensions are loaded by copying files into the core structure
 2. **Editor Managed**: Load/unload triggered via the extension picker
 3. **Claude Code Agnostic**: Claude Code sees only standard `.claude/` structure
-4. **State Tracked**: `extensions.json` tracks what is installed and where
+4. **State Tracked**: a project-root manifest (`.claude-extensions.json` /
+   `.opencode-extensions.json`) tracks what is installed and where -- deliberately outside
+   `.claude/`/`.opencode/` so it survives a wipe of either directory
 
 ---
 
@@ -48,7 +50,7 @@ The extension system operates at two distinct layers that serve different audien
 │  init.lua          manager.load() / manager.unload()           │
 │  loader.lua        12 copy functions, conflict detection        │
 │  merge.lua         generate_claudemd(), merge_settings(), ...   │
-│  state.lua         extensions.json read/write                   │
+│  state.lua         root-level extension manifest read/write     │
 │  config.lua        target paths, section prefixes              │
 │                                                                 │
 │  Trigger: Extension picker UI (editor-specific)                │
@@ -68,7 +70,7 @@ The extension system operates at two distinct layers that serve different audien
 ```
 
 **Vocabulary**:
-- **Source**: Files living in `.claude/extensions/{name}/` -- the authoritative extension definition
+- **Source**: Files living in `agent-system/extensions/{name}/` -- the authoritative extension definition
 - **Loaded**: Files copied into `.claude/` -- the runtime-active state visible to Claude Code
 
 Claude Code has no knowledge of Layer 1. It only sees the standard `.claude/` directory structure populated by the loader.
@@ -79,10 +81,10 @@ Claude Code has no knowledge of Layer 1. It only sees the standard `.claude/` di
 
 ### Extension Layout
 
-Each extension lives in `.claude/extensions/{name}/`:
+Each extension lives in `agent-system/extensions/{name}/`:
 
 ```
-.claude/extensions/{name}/
+agent-system/extensions/{name}/
 ├── manifest.json              # Extension metadata (REQUIRED)
 ├── EXTENSION.md               # Content included via generate_claudemd() (REQUIRED)
 ├── index-entries.json         # Context index entries (optional)
@@ -120,7 +122,10 @@ Each extension lives in `.claude/extensions/{name}/`:
 
 ### State File
 
-When extensions are loaded, state is tracked in `.claude/extensions.json`:
+When extensions are loaded, state is tracked in a project-root manifest --
+`.claude-extensions.json` for the Claude preset, `.opencode-extensions.json` for the OpenCode
+preset (`config.lua`'s `root_state_file` field). The manifest lives at the project root, not
+inside `.claude/`/`.opencode/`, so it survives a wipe of either directory:
 
 ```json
 {
@@ -128,7 +133,7 @@ When extensions are loaded, state is tracked in `.claude/extensions.json`:
     "latex": {
       "version": "1.0.0",
       "loaded_at": "2026-01-15T10:30:00Z",
-      "source_dir": "$PROJECT_ROOT/.claude/extensions/latex",
+      "source_dir": "$PROJECT_ROOT/agent-system/extensions/latex",
       "installed_files": [
         ".claude/agents/latex-implementation-agent.md",
         ".claude/agents/latex-research-agent.md"
@@ -301,7 +306,8 @@ This means `inject_section()` and `remove_section()` still exist in merge.lua bu
 
 ### 4. State (state.lua)
 
-State tracking via `extensions.json`:
+State tracking via the project-root extension manifest (`.claude-extensions.json` /
+`.opencode-extensions.json`, `config.root_state_file`):
 
 **Functions**:
 - `read()` - Read current state
@@ -322,8 +328,8 @@ Configuration presets for different agent systems:
   base_dir = ".claude",
   config_file = "CLAUDE.md",
   section_prefix = "extension_",
-  state_file = "extensions.json",
-  global_extensions_dir = "$PROJECT_ROOT/.claude/extensions",
+  root_state_file = ".claude-extensions.json",
+  global_extensions_dir = "$PROJECT_ROOT/agent-system/extensions",
   merge_target_key = "claudemd"
 }
 ```
@@ -372,7 +378,7 @@ Configuration presets for different agent systems:
       - Extension-specific entries loaded via each extension's merge_targets.index
    c. merge_settings() if merge_targets.settings defined
 7. Update state (mark_loaded)
-8. Write extensions.json
+8. Write the project-root extension manifest (.claude-extensions.json / .opencode-extensions.json)
 9. Post-load verification
 ```
 
@@ -392,7 +398,7 @@ Configuration presets for different agent systems:
    a. remove_index_entries_tracked() from index.json
    b. unmerge_settings() if settings were merged
 5. Update state (mark_unloaded)
-6. Write extensions.json
+6. Write the project-root extension manifest
 7. Regenerate CLAUDE.md:
    a. generate_claudemd() -- recompute from remaining loaded extensions
 ```
@@ -534,12 +540,41 @@ If unloading an extension that is required by another loaded extension:
 
 ### Recovery
 
-Extension files are tracked by git. Use `git checkout HEAD -- .claude/extensions/{ext}/` to recover any extension file, or `git log --oneline -- .claude/extensions/` to find when changes occurred.
+Extension files are tracked by git. Use `git checkout HEAD -- agent-system/extensions/{ext}/` to recover any extension file, or `git log --oneline -- agent-system/extensions/` to find when changes occurred.
 
 ### State Consistency
 - State is only updated after successful operations
 - Installed file/directory lists enable clean unload
 - `data_skeleton_files` tracks files created by `copy_data_dirs()` (merge-copy, non-overwriting)
+
+---
+
+## Install-Once vs Always-Overwrite (root_files / settings)
+
+`copy_root_files()` (`loader.lua`) and the OpenCode root-file sync loop (`sync.lua`,
+`scan_all_artifacts()`'s `root_file_names` handling) both distinguish two categories of root-level
+file:
+
+- **Always-overwrite**: files like `.gitignore` are byte-for-byte replaced from the extension
+  source on every load/reload/sync -- there is nothing project-specific in them worth preserving.
+- **Install-once**: `settings.json` and `settings.local.json` are copied from source only when no
+  project copy exists yet (`vim.fn.filereadable(target_path) == 1` skips the copy in `loader.lua`;
+  the `action = "copy"/"skip"/"replace"` classification does the same in `sync.lua`, gated further
+  there by a `.managed` marker file for `opencode.json`/`settings.json`/`package.json`). Once a
+  project has its own copy, no future load, reload, or sync ever overwrites it.
+
+This asymmetry exists because `settings.json`/`settings.local.json` hold project-specific
+permission grants, hooks, and MCP server configuration that must survive every extension
+operation -- unlike `.gitignore`, which is safe to keep in lockstep with the extension source.
+`manager.unload` (`init.lua`) mirrors the same install-once set (`loader_mod.
+INSTALL_ONCE_ROOT_FILES`) by excluding these two filenames from the files it deletes, so an
+unload-then-load reload cycle (`manager.reload`) cannot clobber them either -- install-once at load
+time is not sufficient on its own if unload deletes the file first.
+
+Install-once is necessarily silent about a wipe that deletes the file itself (there is no
+"existing project copy" left to protect at that point). For that case, see `settings_backup.lua`
+and the "Settings File Location" subsection of `../guides/permission-configuration.md`, which
+cover the true zero-loss `backup -> wipe -> regenerate -> restore` sequence.
 
 ---
 

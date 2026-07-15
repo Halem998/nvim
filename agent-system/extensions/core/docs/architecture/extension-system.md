@@ -549,6 +549,35 @@ Extension files are tracked by git. Use `git checkout HEAD -- agent-system/exten
 
 ---
 
+## Install-Once vs Always-Overwrite (root_files / settings)
+
+`copy_root_files()` (`loader.lua`) and the OpenCode root-file sync loop (`sync.lua`,
+`scan_all_artifacts()`'s `root_file_names` handling) both distinguish two categories of root-level
+file:
+
+- **Always-overwrite**: files like `.gitignore` are byte-for-byte replaced from the extension
+  source on every load/reload/sync -- there is nothing project-specific in them worth preserving.
+- **Install-once**: `settings.json` and `settings.local.json` are copied from source only when no
+  project copy exists yet (`vim.fn.filereadable(target_path) == 1` skips the copy in `loader.lua`;
+  the `action = "copy"/"skip"/"replace"` classification does the same in `sync.lua`, gated further
+  there by a `.managed` marker file for `opencode.json`/`settings.json`/`package.json`). Once a
+  project has its own copy, no future load, reload, or sync ever overwrites it.
+
+This asymmetry exists because `settings.json`/`settings.local.json` hold project-specific
+permission grants, hooks, and MCP server configuration that must survive every extension
+operation -- unlike `.gitignore`, which is safe to keep in lockstep with the extension source.
+`manager.unload` (`init.lua`) mirrors the same install-once set (`loader_mod.
+INSTALL_ONCE_ROOT_FILES`) by excluding these two filenames from the files it deletes, so an
+unload-then-load reload cycle (`manager.reload`) cannot clobber them either -- install-once at load
+time is not sufficient on its own if unload deletes the file first.
+
+Install-once is necessarily silent about a wipe that deletes the file itself (there is no
+"existing project copy" left to protect at that point). For that case, see `settings_backup.lua`
+and the "Settings File Location" subsection of `../guides/permission-configuration.md`, which
+cover the true zero-loss `backup -> wipe -> regenerate -> restore` sequence.
+
+---
+
 ## Related Documentation
 
 - [Adding Domains](../guides/adding-domains.md) - When to use extensions vs core
