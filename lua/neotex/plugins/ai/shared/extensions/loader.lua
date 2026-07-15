@@ -570,6 +570,19 @@ function M.copy_templates(manifest, source_dir, target_dir, protected_paths)
   return copied_files, created_dirs, skipped_count
 end
 
+--- Root files that are install-once: copied only when no project copy exists yet, never
+--- overwritten on subsequent loads/reloads. Mirrors the OpenCode install-only pattern in
+--- picker/operations/sync.lua's root_file_names handling (settings.json/opencode.json/
+--- package.json there use the same "copy" vs "skip" distinction). Claude Code hardcodes the
+--- `.claude/settings.json` / `.claude/settings.local.json` read paths, so these two files
+--- cannot relocate out of `.claude/` -- install-once semantics (rather than a path move) is
+--- the fix for the live clobber-on-reload bug: a hand-edited project settings file must
+--- survive every future "Load Core" / extension reload.
+local INSTALL_ONCE_ROOT_FILES = {
+  ["settings.json"] = true,
+  ["settings.local.json"] = true,
+}
+
 --- Copy root files (files that go directly into target_dir, not a subdirectory)
 --- These are files like settings.json, .gitignore that live at the .claude/ root.
 --- @param manifest table Extension manifest
@@ -578,7 +591,7 @@ end
 --- @param protected_paths table|nil Set of protected relative paths {[path] = true}
 --- @return table copied_files Array of copied file paths
 --- @return table created_dirs Array of created directory paths
---- @return number skipped_count Number of files skipped due to .syncprotect
+--- @return number skipped_count Number of files skipped due to .syncprotect (or install-once)
 function M.copy_root_files(manifest, source_dir, target_dir, protected_paths)
   local copied_files = {}
   local created_dirs = {}
@@ -596,6 +609,15 @@ function M.copy_root_files(manifest, source_dir, target_dir, protected_paths)
     -- Root files are at the base_dir level; rel_path is just the filename
     local rel_path = filename
 
+    -- Install-once guard: skip the copy entirely when a project copy already exists,
+    -- preserving any in-place edits (e.g. project-specific permissions/hooks in
+    -- settings.local.json). All other root files (e.g. .gitignore) keep the existing
+    -- always-copy (overwrite) behavior.
+    if INSTALL_ONCE_ROOT_FILES[filename] and vim.fn.filereadable(target_path) == 1 then
+      skipped_count = skipped_count + 1
+      goto continue
+    end
+
     if vim.fn.filereadable(source_path) == 1 then
       local ok, skipped = copy_file(source_path, target_path, false, protected_paths, rel_path)
       if skipped then
@@ -604,6 +626,8 @@ function M.copy_root_files(manifest, source_dir, target_dir, protected_paths)
         table.insert(copied_files, target_path)
       end
     end
+
+    ::continue::
   end
 
   return copied_files, created_dirs, skipped_count
