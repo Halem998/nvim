@@ -1,0 +1,35 @@
+{
+  "phase": 4,
+  "phase_name": "Backfill nvim orphan and resolve ambiguous cases",
+  "started_at": "2026-07-15T00:40:00Z",
+  "last_updated": "2026-07-15T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Backfill extension-deploy-modes.md and extend content", "status": "done", "files_touched": [
+      "agent-system/extensions/nvim/context/project/neovim/domain/extension-deploy-modes.md",
+      ".claude/context/project/neovim/domain/extension-deploy-modes.md"
+    ]},
+    {"id": 2, "description": "Resolve fork-patterns.md diff decision", "status": "done", "files_touched": [
+      ".claude/context/patterns/fork-patterns.md",
+      ".claude/context/index.json"
+    ]},
+    {"id": 3, "description": "Backfill 4 remaining core context/patterns and guides orphans", "status": "done", "files_touched": [
+      "agent-system/extensions/core/context/patterns/batch-drain-loop.md",
+      "agent-system/extensions/core/context/patterns/context-protective-lead.md",
+      "agent-system/extensions/core/context/patterns/topic-assignment-pattern.md",
+      "agent-system/extensions/core/context/guides/hard-mode-routing.md"
+    ]},
+    {"id": 4, "description": "Confirm byte-identical", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.2",
+      "description": "fork-patterns.md diff decision",
+      "type": "altered",
+      "reason": "Deleting .claude/context/patterns/fork-patterns.md (dead-duplicate decision per plan) left a dangling context/index.json metadata entry (path patterns/fork-patterns.md, domain core) that did not trace to any current index-entries.json source fragment. Removed the stale index entry directly from the deployed .claude/context/index.json so no agent context-discovery query resolves to a deleted file. Not explicitly listed as a plan task but necessary to avoid introducing a new drift/dangling-reference regression as a side effect of the deletion this task explicitly calls for.",
+      "annotation": "*(deviation: altered — also removed the now-dangling context/index.json metadata entry for the deleted file)*"
+    }
+  ]
+}

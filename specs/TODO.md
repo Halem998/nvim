@@ -6,7 +6,7 @@ next_project_number: 866
 
 ## Task Order
 
-*Updated 2026-07-14. Generated from state.json dependency graph.*
+*Updated 2026-07-15. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -17,16 +17,18 @@ next_project_number: 866
 
 ### Extensions
 
-864 [NOT STARTED] — Enforce the invariant "every deployed file has a source" by exten
-865 [NOT STARTED] — Make a .claude/ wipe lossless and one-keystroke regenerable by li
+864 [IMPLEMENTING] — Enforce the invariant "every deployed file has a source" by exten
+865 [PLANNED] — Make a .claude/ wipe lossless and one-keystroke regenerable by li
 
 ## Tasks
 
 ### 865. Make .claude/ wipe lossless and one-keystroke regenerable
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: neovim
 - **Topic**: extensions
 - **Dependencies**: Task 863
+- **Research**: [865_make_claude_wipe_lossless_and_regenerable/reports/01_wipe-lossless-regenerable-research.md]
+- **Plan**: [865_make_claude_wipe_lossless_and_regenerable/plans/01_wipe-lossless-regenerable.md]
 
 **Description**: Make a .claude/ wipe lossless and one-keystroke regenerable by lifting all wipe-surviving state OUT of .claude/. Depends on the store-relocation task (the deploy/target model); can land in parallel with or after the drift-check-hardening task.
 
@@ -41,10 +43,12 @@ CROSS-CUTTING CONSTRAINTS: Copy-deploy only, no symlink farm. Honor the no-task-
 ---
 
 ### 864. Enforce every deployed file has a source (hard drift gate)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 863
+- **Research**: [864_enforce_every_deployed_file_has_a_source/reports/01_enforce-every-deployed-file-source.md]
+- **Plan**: [864_enforce_every_deployed_file_has_a_source/plans/01_deployed-file-source-hard-gate.md]
 
 **Description**: Enforce the invariant "every deployed file has a source" by extending the deployed-vs-source drift check into a hard gate, and by giving every deployed-only orphan a real source home in the core extension. Order this AFTER the store-relocation task (the check compares deployed output against the relocated store).
 

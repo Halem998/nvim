@@ -33,7 +33,7 @@
         {
           "path": "specs/863_relocate_extension_source_store_out_of_claude/summaries/01_relocate-extension-store-summary.md",
           "type": "summary",
-          "summary": "Documented the relocation, config/sync.lua repointing, shell-script sync, fixture update, documentation sweep scope decisions, and full verification record for the three acceptance properties."
+          "summary": "Relocated the global extension source store from ~/.config/nvim/.claude/extensions/ to ~/.config/nvim/agent-system/extensions/ via history-preserving git mv (981 renamed files), repointed the single canonical config default (config.lua:55, M.claude preset), derived sync.lua's core_source_base from that canonical value to permanently close the drift class, repointed both shell scripts' defaults in source and deployed copies while keeping the pairs byte-identical, updated the manifest_spec.lua test fixture, swept documentation prose naming the source location (narrowing an initial 1506-hit grep to ~15 genuine source-store descriptions after classifying the remainder as out-of-scope: specs/** historical artifacts, .claude/** disposable deploy-tree copies, do-not-touch manifest.json runtime stubs, and a pre-existing unrelated @-reference citation pattern), and verified all three acceptance properties (picker listing, arbitrary-CWD deploy, full self-rebuild) strictly against scratchpad fake project dirs and a full rsync scratch copy of the repo. The real ~/.config/nvim/.claude tree was never destructively touched."
         }
       ],
       "completion_summary": "Relocated the global extension source store from ~/.config/nvim/.claude/extensions/ to ~/.config/nvim/agent-system/extensions/ via history-preserving git mv, repointed the canonical config default and the sync.lua drift-prone literal, kept both shell scripts byte-identical across source and deployed copies, updated the manifest_spec.lua fixture, swept documentation prose naming the source location, and verified all three acceptance properties (picker listing, arbitrary-CWD deploy, and full self-rebuild) strictly against scratchpad fake project dirs.",
@@ -44,7 +44,7 @@
     {
       "project_number": 864,
       "project_name": "enforce_every_deployed_file_has_a_source",
-      "status": "not_started",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Enforce every deployed file has a source (hard drift gate)",
@@ -59,14 +59,25 @@
         ".claude/extensions/core/commands/README.md"
       ],
       "created": "2026-07-14T22:58:04Z",
-      "last_updated": "2026-07-14T22:58:04Z",
-      "session_id": "sess_1784069750_5427d7",
-      "artifacts": []
+      "last_updated": "2026-07-15T00:04:31Z",
+      "session_id": "sess_1784073170_af81356c",
+      "artifacts": [
+        {
+          "path": "specs/864_enforce_every_deployed_file_has_a_source/reports/01_enforce-every-deployed-file-source.md",
+          "type": "report",
+          "summary": "Verified current on-disk layout post-863 (core extension source now at agent-system/extensions/core/; check-extension-docs.sh's two .claude-scoped copies (.claude/scripts/ and agent-system/extensions/core/scripts/) are confirmed byte-identical; a third same-named .opencode script is a materially different, out-of-scope tool for a parallel deploy tree). Fully audited every provides category (agents, commands, context, scripts; rules already covered by the landed check_deployed_rule_drift) for deployed files with zero manifest source anywhere, using git ls-files diffed against the union of every extension's provides.<category> entries (recursive expansion for context, since copy_context_dirs deploys directory entries recursively). Found 0 agent orphans, 2 command orphans, 10 context orphans, and 8 script orphans (23 total) spanning three extensions (core, literature, nvim) -- not just core as the stale task description assumed. Also discovered and evidenced a critical, separate regression: 19 of ~21 symlinks under .claude/{agents,commands,skills}/ (the intentional 'symlink deploy mode' for cslib/literature/pr-review, created by install-extension.sh) are broken because that script hardcodes a relative target path '../extensions/$EXT_NAME/...' that resolved against the old .claude/extensions/ location and no longer resolves against agent-system/extensions/. Cross-referenced task 862's handoff, which explicitly restored and verified literature-agent.md and literature.md as working symlinks -- both are broken again now by 863's relocation, meaning the /literature command and its research agent may not currently resolve. Full findings, proposed source homes per orphan, and per-category comparison-logic design are in the research report."
+        },
+        {
+          "path": "specs/864_enforce_every_deployed_file_has_a_source/plans/01_deployed-file-source-hard-gate.md",
+          "type": "plan",
+          "summary": "Created a 6-phase implementation plan for enforcing 'every deployed file has a source' as a hard gate. The plan sequences remediation before enforcement: Wave 1 runs four independent, disjoint-territory phases in parallel -- (1) repair the 19 broken install-extension.sh symlinks (fix the hardcoded '../extensions/$EXT_NAME/' relative target to '../../agent-system/extensions/$EXT_NAME/' byte-identically in BOTH copies of install-extension.sh, then delete-and-recreate the broken cslib/literature/pr-review symlinks since the script cannot self-repair them, and delete the dead zotero symlinks); (2) backfill the 4 genuinely core-owned orphans (no-task-references-in-deliverables.md, commands/README.md with a content rewrite, lint-contract-compliance.sh, validate-handoff.sh); (3) backfill the 8 literature-owned orphans and resolve literature-organization.md ownership to literature; (4) backfill the nvim orphan (extension-deploy-modes.md) plus the remaining core context/patterns orphans and resolve the fork-patterns.md duplicate via content diff. Wave 2 (Phase 5) extends check-extension-docs.sh with per-category orphan checks (agents/commands/context/scripts, honoring agents_subdir, recursive context comparison, scripts subdir entries, and merge_targets/index.json exclusion) plus a distinct broken-deployed-symlink check, at advisory level, and confirms 0 orphans / 0 broken symlinks on the remediated tree. Wave 3 (Phase 6) promotes those checks to blocking (FAILURES-contributing, non-zero exit) and verifies a clean exit-0 run. All check-extension-docs.sh and install-extension.sh edits are byte-identical dual-writes; all destructive check-logic testing happens in scratchpad against fake dirs."
+        }
+      ]
     },
     {
       "project_number": 865,
       "project_name": "make_claude_wipe_lossless_and_regenerable",
-      "status": "not_started",
+      "status": "planned",
       "task_type": "neovim",
       "topic": "extensions",
       "title": "Make .claude/ wipe lossless and one-keystroke regenerable",
@@ -79,9 +90,20 @@
         "lua/neotex/plugins/ai/shared/extensions/init.lua"
       ],
       "created": "2026-07-14T22:58:04Z",
-      "last_updated": "2026-07-14T22:58:04Z",
-      "session_id": "sess_1784069750_5427d7",
-      "artifacts": []
+      "last_updated": "2026-07-14T23:51:19Z",
+      "session_id": "sess_1784070109_39d07a_865",
+      "artifacts": [
+        {
+          "path": "specs/865_make_claude_wipe_lossless_and_regenerable/reports/01_wipe-lossless-regenerable-research.md",
+          "type": "report",
+          "summary": "extensions.json can move cleanly to a system-scoped project-root dotfile (.claude-extensions.json / .opencode-extensions.json via a new config.lua field) with all Lua and shell readers/writers enumerated. settings.json/settings.local.json CANNOT literally relocate -- Claude Code hardcodes the .claude/ path for project settings; the real fix is install-once semantics in loader.lua (matching sync.lua's existing OpenCode pattern) plus an explicit backup/restore step around the wipe operation. logs/ has no deploy skeleton at all and is a simple path-constant change across 5 source scripts plus deployed copies."
+        },
+        {
+          "path": "specs/865_make_claude_wipe_lossless_and_regenerable/plans/01_wipe-lossless-regenerable.md",
+          "type": "plan",
+          "summary": "7-phase implementation plan created. Extensions.json relocates to preset-scoped project-root dotfiles (.claude-extensions.json / .opencode-extensions.json) via a new config.lua root_state_file field at the single state.lua get_state_path choke point, with all shell readers (skill-base.sh, validate-wiring.sh) and deployed copies tracked. New manager.regenerate logic reads the surviving manifest's active extensions and iterates manager.load to rebuild without re-picking. Settings.json/settings.local.json keep their hardcoded .claude/ path (host-app constraint) but gain install-once semantics in loader.lua copy_root_files (mirroring sync.lua's OpenCode pattern) plus a wipe-time backup/restore wrapper. logs/ relocates to a project-root directory via path-constant changes across 5 source scripts and deployed copies. Full wipe-and-regenerate cycle plus settings-reload regression verified headlessly in a scratchpad fake project dir, never against the real tree."
+        }
+      ]
     },
     {
       "project_number": 862,

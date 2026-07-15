@@ -5,37 +5,6 @@
     {
       "load_when": {
         "commands": [],
-        "agents": [
-          "meta-builder-agent",
-          "planner-agent"
-        ],
-        "task_types": [
-          "meta"
-        ]
-      },
-      "path": "patterns/fork-patterns.md",
-      "keywords": [
-        "fork",
-        "cache",
-        "delegation",
-        "FORK_SUBAGENT",
-        "context",
-        "prompt"
-      ],
-      "summary": "Fork patterns reference: context: fork vs FORK_SUBAGENT, delegation decision matrix, cache sharing",
-      "domain": "core",
-      "line_count": 120,
-      "tier": 3,
-      "topics": [
-        "orchestration",
-        "performance"
-      ],
-      "subdomain": "patterns",
-      "token_cost_estimate": 960
-    },
-    {
-      "load_when": {
-        "commands": [],
         "agents": [],
         "task_types": []
       },

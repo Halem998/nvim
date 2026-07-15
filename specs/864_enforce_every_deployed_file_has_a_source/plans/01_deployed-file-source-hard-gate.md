@@ -1,7 +1,7 @@
 # Implementation Plan: Enforce Every Deployed File Has a Source (Hard Drift Gate)
 
 - **Task**: 864 - Enforce the invariant "every deployed file has a source" by extending the deployed-vs-source drift check into a hard gate, backfilling every deployed-only orphan into its correct owning extension, and repairing the broken symlink-deploy regression.
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: 863 (extension store relocation — landed)
 - **Research Inputs**: specs/864_enforce_every_deployed_file_has_a_source/reports/01_enforce-every-deployed-file-source.md
@@ -243,30 +243,39 @@ guides ownership decision.
 
 ---
 
-### Phase 4: Backfill nvim orphan and resolve ambiguous cases [NOT STARTED]
+### Phase 4: Backfill nvim orphan and resolve ambiguous cases [COMPLETED]
 
 **Goal**: Backfill the nvim-owned context orphan and resolve the `fork-patterns.md` duplicate
 question with a content diff.
 
 **Tasks**:
-- [ ] `context/project/neovim/domain/extension-deploy-modes.md`: copy the deployed file to
+- [x] `context/project/neovim/domain/extension-deploy-modes.md`: copy the deployed file to
       `agent-system/extensions/nvim/context/project/neovim/domain/extension-deploy-modes.md`
       (already covered by nvim's `"project/neovim"` recursive context entry — no manifest change
       needed). Optionally extend its content to document the `install-extension.sh` relative-path
-      fragility repaired in Phase 1 (research Context Extension recommendation).
-- [ ] `context/patterns/fork-patterns.md`: diff the deployed
+      fragility repaired in Phase 1 (research Context Extension recommendation). *(completed:
+      extended with a new "Relative-path fragility (regression precedent)" section documenting
+      the Phase 1 repair; also corrected the two stale `../extensions/...` example symlink
+      targets in the existing table to the corrected `../../agent-system/extensions/...` form)*
+- [x] `context/patterns/fork-patterns.md`: diff the deployed
       `.claude/context/patterns/fork-patterns.md` against the existing
       `agent-system/extensions/core/docs/fork-patterns.md`. If identical, treat `docs/fork-patterns.md`
       as canonical and `git rm .claude/context/patterns/fork-patterns.md` (no new source). If
       diverged, add `context/patterns/fork-patterns.md` as a core source under
       `agent-system/extensions/core/context/patterns/` (covered by core's `"patterns"` entry).
-      Record the decision in the implementation summary.
-- [ ] Backfill the four remaining core `context/patterns` orphans to
+      Record the decision in the implementation summary. *(completed: byte-identical (confirmed
+      via diff, empty output) — `git rm .claude/context/patterns/fork-patterns.md`; also removed
+      its now-dangling `context/index.json` metadata entry (path `patterns/fork-patterns.md`,
+      domain `core`) since it did not trace to any current index-entries.json fragment and would
+      otherwise point agents at a deleted file — see progress file deviation)*
+- [x] Backfill the four remaining core `context/patterns` orphans to
       `agent-system/extensions/core/context/patterns/` (covered by core's `"patterns"` entry, no
       manifest change): `batch-drain-loop.md`, `context-protective-lead.md`,
       `topic-assignment-pattern.md`, and `hard-mode-routing.md` (the last under
       `agent-system/extensions/core/context/guides/`, covered by core's existing `"guides"` entry).
-- [ ] Confirm each new source file is byte-identical to its deployed counterpart.
+      *(completed)*
+- [x] Confirm each new source file is byte-identical to its deployed counterpart. *(completed:
+      diff empty for all 5 new/backfilled source files)*
 
 **Timing**: 1 hour
 
@@ -285,7 +294,7 @@ question with a content diff.
 
 ---
 
-### Phase 5: Extend check-extension-docs.sh with orphan + symlink checks (advisory) [NOT STARTED]
+### Phase 5: Extend check-extension-docs.sh with orphan + symlink checks (advisory) [IN PROGRESS]
 
 **Goal**: Add one deployed-orphan check per category (agents, commands, context, scripts) plus a
 distinct broken-deployed-symlink check, landing byte-identical in both copies, initially at
