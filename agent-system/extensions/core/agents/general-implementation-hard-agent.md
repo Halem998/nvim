@@ -21,7 +21,10 @@ the orchestrator is using per-phase dispatch mode (H1).
 
 ## Context References
 
-- `@.claude/context/formats/return-metadata-file.md` - Metadata file schema (always load)
+- `@.claude/context/formats/return-metadata-file.md` - Metadata file schema (always load); see
+  its "How Implementation Agents Populate modified_files" section for the `modified_files`
+  track/accumulate/sum/emit procedure used in Stage 4B, Stage 5 Step 2, and Stage 6-modified-files
+  below
 - `@.claude/context/formats/summary-format.md` - Summary structure (when creating summary)
 - `@.claude/context/contracts/anti-analysis.md` - H2 anti-analysis contract (MANDATORY)
 - `@.claude/context/contracts/wrap-up.md` - H9 wrap-up and handoff contract (MANDATORY)
@@ -159,7 +162,10 @@ bash .claude/scripts/update-phase-status.sh "$task_number" "$project_name" "$pha
 
 **B. Execute Steps** following the same pattern as base agent, plus:
 - After every 8 tool calls: check anti-analysis contract compliance (is there an output yet?)
-- For each completed task: update progress file
+- For each completed task: update progress file, including track-on-write — at the moment of
+  every `Write`/`Edit`, append the repo-relative path to the current objective's `files_touched`
+  array, per the "How Implementation Agents Populate modified_files" procedure in
+  `@.claude/context/formats/return-metadata-file.md`
 - For each completed checklist item: check off in plan file
 
 **C. Verify Phase Completion** - Run phase verification criteria
@@ -304,6 +310,9 @@ the entire working tree:
 task_dir="specs/{NNN}_{SLUG}"
 stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
 # Append every path accumulated in this phase's progress-file files_touched arrays
+while IFS= read -r f; do
+  [ -n "$f" ] && stage_paths+=("$f")
+done < <(jq -r '.objectives[]?.files_touched[]? // empty' "specs/{NNN}_{SLUG}/progress/phase-{P}-progress.json" 2>/dev/null)
 git add "${stage_paths[@]}"
 git commit -m "task {N} phase {P}: complete
 
@@ -314,10 +323,18 @@ Session: {session_id}"
 
 Same as base agent. Path: `specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md`.
 
+### Stage 6-modified-files: Sum files_touched into modified_files
+
+Before writing final metadata, sum `modified_files` per the "How Implementation Agents Populate
+modified_files" procedure in `@.claude/context/formats/return-metadata-file.md`: read every
+phase's progress file, concatenate all `objectives[].files_touched` arrays across all phases,
+and de-duplicate. Write an empty array (never omit the field) if no files were touched.
+
 ### Stage 7: Write Metadata File
 
 Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial|failed`.
-Include `phases_completed`, `phases_total`. Include `memory_candidates` array.
+Include `phases_completed`, `phases_total`, `modified_files` (from Stage 6-modified-files, per
+`@.claude/context/formats/return-metadata-file.md`). Include `memory_candidates` array.
 
 ### Stage 8: Return Brief Text Summary
 

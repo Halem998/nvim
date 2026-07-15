@@ -52,7 +52,11 @@ This agent has access to:
 Load these on-demand using @-references:
 
 **Always Load**:
-- `@.claude/context/formats/return-metadata-file.md` - Metadata file schema
+- `@.claude/context/formats/return-metadata-file.md` - Metadata file schema; see its "How
+  Implementation Agents Populate modified_files" section for the track/accumulate/sum/emit
+  procedure used in Stage 3.5, Stage 4C, the pre-Stage-7 sum step, and Stage 7 below
+- `@.claude/context/formats/progress-file.md` - Progress tracking schema (minimal, one
+  objective per phase; used to carry `files_touched` for `modified_files`)
 
 **Load When Creating Summary**:
 - `@.claude/context/formats/summary-format.md` - Summary structure
@@ -139,6 +143,31 @@ Scan phases for first incomplete:
 - `[PARTIAL]` - Resume here
 - `[NOT STARTED]` - Start here
 
+### Stage 3.5: Initialize Progress Tracking
+
+Create a minimal progress file at `specs/{NNN}_{SLUG}/progress/phase-{P}-progress.json` for the
+resume phase, carrying `files_touched` only — do not import the base agent's full
+deviations/handoff apparatus. One flat objective per phase is sufficient for this agent's
+single-pass loop:
+
+```bash
+mkdir -p "specs/{NNN}_{SLUG}/progress"
+```
+
+```json
+{
+  "phase": {P},
+  "phase_name": "{Phase Name from plan}",
+  "started_at": "{ISO8601 timestamp}",
+  "last_updated": "{ISO8601 timestamp}",
+  "objectives": [
+    {"id": 1, "description": "{Phase Name} — file changes", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 1,
+  "handoff_count": 0
+}
+```
+
 ### Stage 4: Execute Implementation Loop
 
 For each phase starting from resume point:
@@ -170,6 +199,11 @@ For each step in the phase:
    - Use `Write` for new Nix files
    - Use `Edit` for modifications
    - Follow nix-style-guide.md conventions
+   - **Track on write**: immediately append the repo-relative path of every file `Write`/`Edit`-ed
+     to the current objective's `files_touched` array in the Stage 3.5 progress file (additive —
+     do not overwrite paths from earlier writes to the same objective), per the "How
+     Implementation Agents Populate modified_files" procedure in
+     `@.claude/context/formats/return-metadata-file.md`
 
 4. **Verify changes**
    - Run `nix flake check` after each file change
@@ -320,6 +354,14 @@ Populate `## Plan Deviations` from any deviation annotations made in plan checkl
 2. Optionally generate `roadmap_items`: Array of explicit ROADMAP.md item texts this task addresses
    - Only include if the task clearly maps to specific roadmap items
 
+### Stage 6b: Sum files_touched into modified_files
+
+Before writing final metadata, sum `modified_files` per the "How Implementation Agents Populate
+modified_files" procedure in `@.claude/context/formats/return-metadata-file.md`: read every
+phase's progress file created in Stage 3.5, concatenate all `objectives[].files_touched` arrays
+across all phases, and de-duplicate. Write an empty array (never omit the field) if no files were
+touched.
+
 ### Stage 7: Write Metadata File
 
 Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
@@ -343,6 +385,9 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
   "completion_data": {
     "completion_summary": "Created NixOS module for myservice with enable option and port configuration."
   },
+  "modified_files": [
+    "modules/myservice.nix"
+  ],
   "metadata": {
     "session_id": "{from delegation context}",
     "duration_seconds": 123,
@@ -385,6 +430,10 @@ For each phase in the implementation plan:
    ```bash
    task_dir="specs/{NNN}_{SLUG}"
    stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
+   # Append this phase's accumulated files_touched (Stage 3.5 progress file) — never git add -A
+   while IFS= read -r f; do
+     [ -n "$f" ] && stage_paths+=("$f")
+   done < <(jq -r '.objectives[]?.files_touched[]? // empty' "specs/{NNN}_{SLUG}/progress/phase-{P}-progress.json" 2>/dev/null)
    git add "${stage_paths[@]}"
    git commit -m "task {N} phase {P}: {phase_name}
 

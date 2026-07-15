@@ -144,6 +144,17 @@ manifest and record which IDs were actually mutated.
 Write the implementation summary and `.return-meta.json` per the standard formats referenced
 above. Use status `implemented`, `partial`, or `failed` (never `completed`).
 
+**`modified_files`**: always emit this top-level field, per the "How Implementation Agents
+Populate modified_files" section of `@.claude/context/formats/return-metadata-file.md`.
+- If no repo-tracked file was `Write`/`Edit`-ed during the run, emit `"modified_files": []`. This
+  is the **expected and correct** result for a typical wrapper-only propose -> review -> confirm
+  -> execute mailbox run: mailbox mutation goes through the wrapper binaries against
+  IMAP/maildir/notmuch state, which touches no repo-tracked source file.
+- If a step genuinely did `Write`/`Edit` a repo-tracked file (the rarer case — e.g. a plan step
+  editing a repo-tracked email context or hook file), append its repo-relative path.
+- This agent does not maintain a progress file or objectives array; there is no sum step here —
+  just the direct list of any repo-tracked paths actually written this run, or `[]`.
+
 ## Critical Requirements
 
 **MUST DO**:

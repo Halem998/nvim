@@ -255,6 +255,43 @@ task-directory scope and emits a loud stderr warning. It never escalates to `git
 [Git Staging Scope Contract](../standards/git-staging-scope.md) for the fullest narrative
 description of the staging contract this field drives.
 
+#### How Implementation Agents Populate modified_files
+
+This is the single producer-side procedure every implementation agent follows to arrive at the
+`modified_files` value above. It serves both agents that maintain a progress file
+(`progress-file.md`) and agents that do not — the four-step shape is the same either way; only
+step 2's accumulation site differs.
+
+1. **Track on write** — at the moment of every `Write`/`Edit`, append that file's repo-relative
+   path to the current accumulation site immediately. Do not attempt to reconstruct the list from
+   memory at the end of a run; by then earlier edits are easy to forget.
+2. **Accumulate** — agents with a progress file append the path to the current objective's
+   `files_touched` array, additively (never overwriting paths recorded earlier for the same
+   objective), per `progress-file.md`. Agents without a progress file keep a single flat list of
+   touched paths for the run instead.
+3. **Sum** — before writing final metadata, flatten every phase's every `objectives[].files_touched`
+   array (or the flat run-list, for agents without a progress file) into one list and de-duplicate
+   it.
+4. **Emit** — write the deduped list as the top-level `modified_files` field in
+   `.return-meta.json`, as a sibling of `memory_candidates` and `reflection`.
+
+**Field constraints** (restated here so an agent following this section alone cannot get them
+wrong — see the field specification above for the authoritative statement):
+- **Repo-relative**, never absolute.
+- **Individual file paths**, never directory prefixes.
+- **`[]` when nothing was touched — never omit the field.**
+
+**Paths under the task directory are harmless if listed** — the fixed task-directory scope
+already stages `specs/{NNN}_{SLUG}/` regardless. The load-bearing case this procedure exists for
+is every repo-tracked file touched **outside** the task directory: those are staged only if this
+procedure reports them here.
+
+**Wrapper-only or non-file-editing agents**: emitting `modified_files: []` is correct schema
+behavior for an agent whose work does not touch repo-tracked files (for example, a mailbox
+triage run that only mutates IMAP/maildir state) — not a defect to be engineered around. Such an
+agent has no use for the progress-file/objectives machinery in step 2 and should not adopt it
+solely to populate this field.
+
 **Retrospective vs. prospective**: `modified_files` (and the `files_touched` it is summed from)
 is **retrospective** — what an agent actually touched, self-reported at implementation time, for
 git staging. This is a distinct concept from `state.json`'s `file_scope`, which is
