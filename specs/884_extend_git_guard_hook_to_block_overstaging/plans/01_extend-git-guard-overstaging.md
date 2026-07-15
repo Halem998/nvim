@@ -121,9 +121,9 @@ Phases within the same wave can execute in parallel. Phases 1 and 2 touch disjoi
 **Goal**: Gate the work on the two facts that make it correct, so no edit lands in the wrong tree.
 
 **Tasks**:
-- [ ] Confirm `.claude/` is gitignored: `git check-ignore -v .claude/hooks/guard-destructive-git.sh`
-- [ ] Confirm the tracked source and deploy copies are currently identical for all three target files
-- [ ] Confirm no `settings.json` change is needed: `guard-destructive-git.sh` is **already**
+- [x] Confirm `.claude/` is gitignored: `git check-ignore -v .claude/hooks/guard-destructive-git.sh`
+- [x] Confirm the tracked source and deploy copies are currently identical for all three target files
+- [x] Confirm no `settings.json` change is needed: `guard-destructive-git.sh` is **already**
       registered as a PreToolUse/Bash hook in the assembled `.claude/settings.json` AND in the
       tracked source `agent-system/extensions/core/root-files/settings.json:52`. Since this task
       *extends* an already-registered hook, registration already covers it. **Conclusion: no
@@ -267,7 +267,7 @@ fix one over-broad (and now actively broken) staging prescription.
 
 ---
 
-### Phase 3: Verify Against the Real Hook [NOT STARTED]
+### Phase 3: Verify Against the Real Hook [COMPLETED]
 
 **Goal**: Prove the three prohibited forms block and the full false-positive set passes, by piping
 real payloads through the actual hook.
@@ -277,10 +277,11 @@ must-block case will silently pass if the tree is clean.** Confirm `git status -
 non-empty before trusting any BLOCK result, or the entire verification is vacuous.
 
 **Tasks**:
-- [ ] Drive cases through the hook as it will really be called:
+- [x] Drive cases through the hook as it will really be called:
       `echo '{"tool_input":{"command":"git add -A"}}' | bash agent-system/extensions/core/hooks/guard-destructive-git.sh; echo $?`
-      Exit 2 = blocked, exit 0 = allowed.
-- [ ] **MUST BLOCK (expect exit 2)** — the three prohibited forms and their variants:
+      Exit 2 = blocked, exit 0 = allowed. *(completed: driven via jq-built JSON payloads against
+      the tracked source hook, never the live `.claude/hooks/` copy)*
+- [x] **MUST BLOCK (expect exit 2)** — the three prohibited forms and their variants: 9/9 PASS.
 
       | Command | Why |
       |---|---|
@@ -294,7 +295,7 @@ non-empty before trusting any BLOCK result, or the entire verification is vacuou
       | `git commit --all -m "x"` | long flag |
       | `git commit -m "x" -a` | flag after message |
 
-- [ ] **MUST NOT BLOCK (expect exit 0)** — the required false-negative set:
+- [x] **MUST NOT BLOCK (expect exit 0)** — the required false-negative set: 14/14 PASS.
 
       | Command | Why it must pass |
       |---|---|
@@ -313,15 +314,26 @@ non-empty before trusting any BLOCK result, or the entire verification is vacuou
       | `git commit -m 'fix -a in single quotes'` | single-quote variant |
       | `git commit -m "add all the things"` | `all` as prose, not a flag |
 
-- [ ] Confirm the existing destructive detectors still behave: `git reset --hard` still blocks;
+- [x] Confirm the existing destructive detectors still behave: `git reset --hard` still blocks;
       `git stash pop` and `git restore --staged x` still pass. The new block must not disturb them.
-- [ ] Confirm marker independence: take a fresh snapshot marker, then verify `git add -A` **still
+      PASS (3/3).
+- [x] Confirm marker independence: take a fresh snapshot marker, then verify `git add -A` **still
       blocks** (the marker must not exempt over-staging) while `git reset --hard` is exempted as
-      before. This is the check that catches the Phase 1 Task 2 placement error.
-- [ ] Confirm the edits are tracked: `git status --short` shows the three
-      `agent-system/extensions/core/...` files as modified, and **no** `.claude/...` path appears.
-- [ ] Deliverable rule sweep: `grep -rniE "task [0-9]+" ` over the three touched files returns
-      nothing.
+      before. This is the check that catches the Phase 1 Task 2 placement error. PASS.
+      *(completed: deviation — the marker was constructed directly (`TIMESTAMP=$(date +%s)` under
+      the task's `.git-snapshot-marker`) rather than by invoking the real
+      `scripts/git-snapshot.sh`, to avoid a real `git stash`/branch operation touching the shared
+      working tree's concurrent-session uncommitted changes (task 882 running in parallel per the
+      Territory note). The marker file format/contract consumed by the hook is identical either
+      way, so this exercises the same code path.)*
+- [x] Confirm the edits are tracked: verified via `git show --stat` on the two phase commits
+      (0121024f0, a24762aaa) rather than `git status --short`, since the edits were already
+      committed per the mandatory green-substep commit cadence by the time this check ran. No
+      `.claude/...` path appears in either commit.
+- [x] Deliverable rule sweep: `grep -rniE "task [0-9]+"` over the three touched files returns only
+      pre-existing "task 796" / "Task 326" references that predate and are untouched by this
+      task's diffs (confirmed via `git diff <parent> <commit>` showing no such text was added by
+      our changes); no new task-number citation was introduced.
 
 **Timing**: 1 hour
 

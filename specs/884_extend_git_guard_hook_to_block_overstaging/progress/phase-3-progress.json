@@ -1,0 +1,33 @@
+{
+  "phase": 3,
+  "phase_name": "Verify Against the Real Hook",
+  "started_at": "2026-07-15T23:55:00Z",
+  "last_updated": "2026-07-16T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Drive JSON payloads through the tracked source hook (never the live .claude/hooks/ copy)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "9/9 MUST BLOCK cases exit 2", "status": "done", "files_touched": []},
+    {"id": 3, "description": "14/14 MUST NOT BLOCK cases exit 0", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Existing destructive detectors still behave (reset --hard, stash pop, restore --staged)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Marker independence: fresh marker does not exempt git add -A, still exempts git reset --hard", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm edits tracked (no .claude/ path) and deliverable-rule sweep over touched files", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.marker-independence",
+      "description": "Take a fresh snapshot marker before the marker-independence check",
+      "type": "altered",
+      "reason": "Invoking the real scripts/git-snapshot.sh would perform a real git stash or scratch-branch WIP commit against the shared working tree, which currently has concurrent-session uncommitted changes (task 882 running in parallel, per this plan's own Territory note). Constructed the marker file directly instead (same TIMESTAMP=<epoch> contract the hook consumes), exercising the identical code path without touching the shared tree.",
+      "annotation": "*(deviation: altered — marker constructed directly instead of via git-snapshot.sh, to avoid disturbing the concurrent task's uncommitted changes)*"
+    },
+    {
+      "task_id": "3.tracked-edits-check",
+      "description": "Confirm edits are tracked via git status --short",
+      "type": "altered",
+      "reason": "Per the mandatory commit-per-green-substep rule, Phase 1 and Phase 2 edits were already committed by the time Phase 3 ran, so git status --short no longer shows them as modified. Verified via git show --stat on the two phase commits instead, confirming no .claude/ path in either.",
+      "annotation": "*(deviation: altered — verified via git show --stat on phase commits instead of git status --short)*"
+    }
+  ]
+}
