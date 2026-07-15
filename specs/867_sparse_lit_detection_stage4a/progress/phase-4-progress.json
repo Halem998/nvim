@@ -1,0 +1,18 @@
+{
+  "phase": 4,
+  "phase_name": "Author the shared reconciled Stage 4a block (core context)",
+  "started_at": "2026-07-15T01:30:00Z",
+  "last_updated": "2026-07-15T02:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create shared file in core context (lit-stage4a-flow.md)", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/lit-stage4a-flow.md"]},
+    {"id": 2, "description": "Direct executable instructions, resolver call, branch on all six directives", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/lit-stage4a-flow.md"]},
+    {"id": 3, "description": "Real AskUserQuestion with four options including Search online to ingest, wired to discover.sh -> ingest-online.sh -> re-briefing", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/lit-stage4a-flow.md"]},
+    {"id": 4, "description": "Two-checkpoint sparse detection encoded (re-prompt only after Use global corpus now, interactive only)", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/lit-stage4a-flow.md"]},
+    {"id": 5, "description": "Autonomous path never calls AskUserQuestion, emits [lit:auto], never triggers online ingest", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/lit-stage4a-flow.md"]},
+    {"id": 6, "description": "Standardize on literature-briefing-invoke.sh throughout", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/lit-stage4a-flow.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -217,37 +217,37 @@ implement), so Stage 4a never attempts `AskUserQuestion` with no human present.
 
 ---
 
-### Phase 4: Author the shared reconciled Stage 4a block (core context) [NOT STARTED]
+### Phase 4: Author the shared reconciled Stage 4a block (core context) [COMPLETED]
 
 **Goal**: Produce ONE canonical Stage 4a "Literature" block, in core context, that all six skills
 will import -- eliminating the six-way drift class.
 
 **Tasks**:
-- [ ] Create a new shared file in **core** context (e.g.
+- [x] Create a new shared file in **core** context (e.g.
   `agent-system/extensions/core/context/patterns/lit-stage4a-flow.md`) -- placed in core, not the
   literature extension, so the six core skills' `@`-import resolves even when literature is not in
   the selected extension set (Risk: broken `@`-reference).
-- [ ] Write the reconciled Stage 4a logic as **direct, executable instructions** (never
+- [x] Write the reconciled Stage 4a logic as **direct, executable instructions** (never
   commented-out pseudocode inside a bash fence -- the root cause of the current drift): (a) call
   `literature-lit-flag-resolve.sh` with the correct `--orchestrator-mode` argument threaded from the
   delegation context; (b) branch on all six directives (`LIT_DISABLED`, `SUBINDEX_PRESENT`,
   `GLOBAL_MISSING`, `PROMPT_NEEDED`, `AUTONOMOUS_GLOBAL`, `SPARSE_PROMPT_NEEDED`).
-- [ ] For `PROMPT_NEEDED` and `SPARSE_PROMPT_NEEDED` (interactive), issue a real `AskUserQuestion`
+- [x] For `PROMPT_NEEDED` and `SPARSE_PROMPT_NEEDED` (interactive), issue a real `AskUserQuestion`
   with the options: "Use global corpus now", "Create curation task", "Search online to ingest"
   (new), and "Skip this run". Encode the "Search online to ingest" chain: `literature-discover.sh
   "<query>"` -> filter records with `status` in {open_access, paywall, in_zotero_no_pdf} ->
   per-record `literature-ingest-online.sh --record '<json>'` -> re-run
   `literature-briefing-invoke.sh` (per-repo mode, since the bridge self-registers into the
   sub-index).
-- [ ] Encode the two-checkpoint shape: after "Use global corpus now" runs a global search, inspect
+- [x] Encode the two-checkpoint shape: after "Use global corpus now" runs a global search, inspect
   Phase 1's `<!-- lit-coverage ... sparse=true -->` marker; if sparse, re-prompt with the
   `SPARSE_PROMPT_NEEDED` option set (adding "Search online to ingest"). Only re-prompt if the first
   choice was "Use global corpus now" -- never after "Skip this run"/"Create curation task" (Risk 1).
-- [ ] Encode the autonomous path: when the resolved directive is `AUTONOMOUS_GLOBAL` (or any
+- [x] Encode the autonomous path: when the resolved directive is `AUTONOMOUS_GLOBAL` (or any
   prompt-needing directive is reached while unattended), MUST NOT call `AskUserQuestion`; take the
   deterministic read-only global-corpus default and emit a visible `[lit:auto]` notice. Autonomous
   runs never trigger online ingest (Risk 3).
-- [ ] Standardize the briefing call on `literature-briefing-invoke.sh` (never raw
+- [x] Standardize the briefing call on `literature-briefing-invoke.sh` (never raw
   `literature-briefing.sh 2>/dev/null`) throughout the block (Finding 4).
 
 **Timing**: 2 hours
