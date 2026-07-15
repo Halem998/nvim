@@ -1,7 +1,7 @@
 # Implementation Plan: Task #878
 
 - **Task**: 878 - harden_status_scripts_and_own_phase_markers
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: None (877 and 876 both COMPLETED; this plan consumes their settled outcomes)
 - **Research Inputs**: reports/01_harden-status-scripts-phase-markers.md
@@ -437,23 +437,23 @@ wires (not a proof of the LLM's compliance, which only a subsequent dispatch can
 
 ---
 
-### Phase 6: Integration verification and mirror consistency [NOT STARTED]
+### Phase 6: Integration verification and mirror consistency [COMPLETED]
 
 **Goal**: Prove the five fixes compose correctly, and that both trees are consistent. This phase
 writes no new logic; it is the gate that the whole task is genuinely green.
 
 **Tasks**:
 
-- [ ] Rebuild a clean fixture from the current (fully patched) `.claude/scripts/`.
-- [ ] Run the full lifecycle against the fixture: `preflight implement` -> per-phase `update-phase-status.sh` calls for phases 1, 2 and 3 -> `postflight implement`. Confirm the plan file ends with `- **Status**: [COMPLETED]` and all three phase headings at `[COMPLETED]`.
-- [ ] Confirm DEFECT E composes: `postflight 878 partial` on the fixture writes `status: partial`, and is unaffected by the Phase 3 early-exit restructure (it is a genuine status change, never a no-op).
-- [ ] Confirm DEFECT D + DEFECT B compose: the broken-anchor postflight exits 3, and the post-repair retry succeeds despite state.json being a no-op.
-- [ ] Run `diff -q` across all four canonical/mirror pairs; all silent.
-- [ ] Run `bash -n` on all three canonical scripts (syntax check) and confirm each remains executable (`-x`).
-- [ ] Grep all four canonical files for task-number citation patterns (`task [0-9]`, `tasks [0-9]`); confirm zero hits, per `no-task-references-in-deliverables.md`.
-- [ ] Confirm `reconcile-task-status.sh` was not modified in either tree (`git status` clean for it) — it remains out of scope.
-- [ ] Confirm the real `specs/state.json` was never mutated by any verification step: it should carry only this task's own legitimate lifecycle transitions, with no fixture task 878 artifacts leaked in.
-- [ ] Remove the fixture (`rm -rf "$FIXTURE"`).
+- [x] Rebuild a clean fixture from the current (fully patched) `.claude/scripts/`. *(completed)*
+- [x] Run the full lifecycle against the fixture: `preflight implement` -> per-phase `update-phase-status.sh` calls for phases 1, 2 and 3 -> `postflight implement`. Confirm the plan file ends with `- **Status**: [COMPLETED]` and all three phase headings at `[COMPLETED]`. *(completed: verified)*
+- [x] Confirm DEFECT E composes: `postflight 878 partial` on the fixture writes `status: partial`, and is unaffected by the Phase 3 early-exit restructure (it is a genuine status change, never a no-op). *(completed: verified)*
+- [x] Confirm DEFECT D + DEFECT B compose: the broken-anchor postflight exits 3, and the post-repair retry succeeds despite state.json being a no-op. *(completed: verified — exit 3 then exit 0 with byte-identical state.json on retry)*
+- [x] Run `diff -q` across all four canonical/mirror pairs; all silent. *(completed)*
+- [x] Run `bash -n` on all three canonical scripts (syntax check) and confirm each remains executable (`-x`). *(completed)*
+- [x] Grep all four canonical files for task-number citation patterns (`task [0-9]`, `tasks [0-9]`); confirm zero hits, per `no-task-references-in-deliverables.md`. *(completed: found and fixed one pre-existing citation in general-implementation-agent.md — "see task 788 Phase 3 deviation note" — predating this plan, in the same file this phase was already editing; rephrased to stand on its own without a task-number citation. Grep now returns zero hits across all four files.)*
+- [x] Confirm `reconcile-task-status.sh` was not modified in either tree (`git status` clean for it) — it remains out of scope. *(completed: confirmed clean)*
+- [x] Confirm the real `specs/state.json` was never mutated by any verification step: it should carry only this task's own legitimate lifecycle transitions, with no fixture task 878 artifacts leaked in. *(completed: `git diff specs/state.json` shows only tasks 876/877 completions and this task's own real preflight not_started -> implementing transition; no fixture data present)*
+- [x] Remove the fixture (`rm -rf "$FIXTURE"`). *(completed)*
 
 **Timing**: 0.5 hours
 

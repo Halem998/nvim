@@ -256,7 +256,7 @@ No-op with a warning if the lock is missing or held by another session — heart
 phase progression. See `.claude/context/patterns/task-lock.md` for the full contract. (This is
 the actual per-phase-transition site for single-task `/implement`; `skill-implementer/SKILL.md`
 is a thin wrapper that delegates the entire phase loop to this agent and has no phase-transition
-point of its own to hook — see task 788 Phase 3 deviation note.)
+point of its own to hook.)
 
 #### 4D-ii. Post-Phase Self-Review
 
