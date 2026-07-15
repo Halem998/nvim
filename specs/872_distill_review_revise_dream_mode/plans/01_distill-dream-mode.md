@@ -159,40 +159,43 @@ with Phase 2.
 
 ---
 
-### Phase 2: SKILL.md dispatch row, event ingestion, and correlation [NOT STARTED]
+### Phase 2: SKILL.md dispatch row, event ingestion, and correlation [COMPLETED]
 
 **Goal**: skill-memory knows dream mode exists, how to read the event store (including when it is
 empty), and how to correlate events to memories.
 
 **Tasks**:
-- [ ] Add a `dream` row to the `### Sub-Mode Dispatch` table (SKILL.md ~line 1073). Same
+- [x] Add a `dream` row to the `### Sub-Mode Dispatch` table (SKILL.md ~line 1073). Same
       no-task-number constraint as Phase 1 -- the adjacent `Available (task 449)` cells are
-      pre-existing violations, not a template to copy.
-- [ ] Open a new `### Sub-Mode: dream` section. Placement: after `### Sub-Mode: auto` and before
-      `### Distill Log Schema`, so the mode sections stay contiguous.
-- [ ] Write `#### Edge Case Checks`: run validate-on-read; count non-tombstoned memories; return
-      early if the vault is empty (mirroring refine's early-return wording).
-- [ ] Write `#### Event Ingestion` specifying, in order: (1) the cheap gate
+      pre-existing violations, not a template to copy. *(completed)*
+- [x] Open a new `### Sub-Mode: dream` section. Placement: after `### Sub-Mode: auto` and before
+      `### Distill Log Schema`, so the mode sections stay contiguous. *(completed)*
+- [x] Write `#### Edge Case Checks`: run validate-on-read; count non-tombstoned memories; return
+      early if the vault is empty (mirroring refine's early-return wording). *(completed)*
+- [x] Write `#### Event Ingestion` specifying, in order: (1) the cheap gate
       `events-query.sh --format summary-counts [--since {last_dream}]`; (2) the deviation/blocker
       pull `events-query.sh --category deviation|blocker --format json-array [--since ...]`;
       (3) the reflection pull `events-query.sh --event-type reflection --format json-array
       [--since ...]`. State explicitly that hand-rolled `jq` against `specs/events.jsonl` is
-      prohibited (the script's own header rule).
-- [ ] Document why the event-store copy of reflections is used rather than `state.json`'s
+      prohibited (the script's own header rule). *(completed)*
+- [x] Document why the event-store copy of reflections is used rather than `state.json`'s
       `reflection` field: the store is append-only across a task's whole history, while
-      `state.json`'s field is overwrite-only/most-recent-only.
-- [ ] Write `#### No Events Yet (Degraded Path)` as a **first-class, non-error** outcome, citing
+      `state.json`'s field is overwrite-only/most-recent-only. *(completed)*
+- [x] Write `#### No Events Yet (Degraded Path)` as a **first-class, non-error** outcome, citing
       the verified behavior (`total_events: 0` / `[]`, exit 0, absent store). Spec the user-facing
       notice and the continuation rule: dream review proceeds using the existing scoring engine
       alone (staleness/duplicate/size) and reports zero correlations. This is the default
       experience until the store accumulates and MUST NOT be written as an error branch.
-- [ ] Write `#### Event-to-Memory Correlation`: tier (a) task-number substring match of an event's
+      *(completed)*
+- [x] Write `#### Event-to-Memory Correlation`: tier (a) task-number substring match of an event's
       non-null `task` field against a memory's free-text `source` frontmatter; tier (b) fallback
       keyword/topic overlap reusing the existing overlap formula from `### Overlap Scoring` --
-      reference it by section name, do not restate or fork it.
-- [ ] Write `#### Classification` defining corroborated / contradicted / gap, and state the
+      reference it by section name, do not restate or fork it. *(completed)*
+- [x] Write `#### Classification` defining corroborated / contradicted / gap, and state the
       three-strikes (>=3 occurrences at the same checkpoint/event_type) recurrence threshold,
       anchoring it to the hard-mode divergence-audit precedent by name rather than by task number.
+      *(completed: anchored to "Convergence Policing Contract's Divergence Audit precedent
+      (context/contracts/convergence.md)" by document name)*
 
 **Timing**: 1.5 hours
 
@@ -210,34 +213,36 @@ empty), and how to correlate events to memories.
 
 ---
 
-### Phase 3: SKILL.md dream section -- memory revision execution [NOT STARTED]
+### Phase 3: SKILL.md dream section -- memory revision execution [COMPLETED]
 
 **Goal**: Specify how classified memories are revised, entirely through existing primitives and
 behind a mandatory human gate.
 
 **Tasks**:
-- [ ] Write `#### Dry-Run Behavior`: `--dry-run` prints the full three-bucket classification with
+- [x] Write `#### Dry-Run Behavior`: `--dry-run` prints the full three-bucket classification with
       counts and evidence citations and performs zero writes, matching the contract every other
-      sub-mode honors.
-- [ ] Write `#### Interactive Selection -- MANDATORY STOP`, reusing the existing mandatory-stop
-      banner style. Specify `AskUserQuestion` with `multiSelect`.
-- [ ] Spec the **corroborated** handling: no write; noted in the dream summary/log only.
-- [ ] Spec the **contradicted/stale** handling with three options: (i) UPDATE via the existing
+      sub-mode honors. *(completed)*
+- [x] Write `#### Interactive Selection -- MANDATORY STOP`, reusing the existing mandatory-stop
+      banner style. Specify `AskUserQuestion` with `multiSelect`. *(completed)*
+- [x] Spec the **corroborated** handling: no write; noted in the dream summary/log only.
+      *(completed)*
+- [x] Spec the **contradicted/stale** handling with three options: (i) UPDATE via the existing
       `### UPDATE Operation` template (old guidance to `## History`, corrected guidance as new
       main content, sourced from event evidence); (ii) tombstone via the existing frontmatter
       pattern with a new `tombstone_reason: "dream_superseded"` value (new *value*, same field
-      shape as merge/purge -- not a new schema); (iii) skip.
-- [ ] Spec the **gap** handling: CREATE candidate via the existing `### CREATE Operation`
+      shape as merge/purge -- not a new schema); (iii) skip. *(completed)*
+- [x] Spec the **gap** handling: CREATE candidate via the existing `### CREATE Operation`
       template, sourced from event detail/message. State the escalation discriminator explicitly:
       durable domain/technique knowledge (fits the existing
       TECHNIQUE/PATTERN/CONFIG/WORKFLOW/INSIGHT taxonomy) stays a memory; a *system change*
       (skill/hook/rule/doc should differ) escalates to a Phase 4 improvement proposal instead.
-- [ ] Require that each option's `description` cites the specific correlated event IDs/messages as
+      *(completed)*
+- [x] Require that each option's `description` cites the specific correlated event IDs/messages as
       evidence, and that a proposed UPDATE shows the **proposed new memory body** for review --
-      not a bare yes/no confirmation.
-- [ ] Write `#### Batch Index Regeneration`: after all writes, regenerate memory-index.json,
+      not a bare yes/no confirmation. *(completed)*
+- [x] Write `#### Batch Index Regeneration`: after all writes, regenerate memory-index.json,
       index.md, and 10-Memories/README.md as one batch via the existing
-      `### Index Regeneration Pattern` / `### JSON Index Maintenance` procedures.
+      `### Index Regeneration Pattern` / `### JSON Index Maintenance` procedures. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -254,48 +259,52 @@ behind a mandatory human gate.
 
 ---
 
-### Phase 4: SKILL.md dream section -- proposals, logging, and auto exclusion [NOT STARTED]
+### Phase 4: SKILL.md dream section -- proposals, logging, and auto exclusion [COMPLETED]
 
 **Goal**: Specify the separate improvement-proposal deliverable and all persistence/exclusion
 wiring.
 
 **Tasks**:
-- [ ] Write `#### Improvement Proposals`, stated up front as a **separate deliverable** from memory
+- [x] Write `#### Improvement Proposals`, stated up front as a **separate deliverable** from memory
       revision, never merged into one list (different destinations, different write permissions).
-- [ ] Spec proposal discovery: recurring (three-strikes) deviation/blocker events pointing at a
+      *(completed)*
+- [x] Spec proposal discovery: recurring (three-strikes) deviation/blocker events pointing at a
       named skill/hook/rule/lifecycle stage, plus recurring `what_was_hard`/`what_was_missed`
-      phrases across reflection events for the same or related task types.
-- [ ] Spec presentation: `AskUserQuestion` `multiSelect`, one row per candidate, three options --
-      "Create as task" / "Note in dream report only" / "Skip".
-- [ ] Spec the explicit "Yes, create tasks" confirmation gate before any task is created
-      (Multi-Task Creation Standard Component 7).
-- [ ] Spec task creation at **Required-components-only** compliance: each confirmed proposal
+      phrases across reflection events for the same or related task types. *(completed)*
+- [x] Spec presentation: `AskUserQuestion` `multiSelect`, one row per candidate, three options --
+      "Create as task" / "Note in dream report only" / "Skip". *(completed)*
+- [x] Spec the explicit "Yes, create tasks" confirmation gate before any task is created
+      (Multi-Task Creation Standard Component 7). *(completed)*
+- [x] Spec task creation at **Required-components-only** compliance: each confirmed proposal
       becomes one independent `task_type: "meta"` entry via the same primitive `/task`'s Create
       Task Mode uses (`next_project_number`, append to `active_projects`, `generate-todo.sh`, git
       commit), `file_scope` seeded from the paths the triggering events implicate. Explicitly note
       the intentional v1 gap (no grouping/dependencies/ordering/visualization), matching `/errors`.
-- [ ] Spec the doc-edit-proposal rule: proposals whose remedy is "edit file X's prose" are
+      *(completed)*
+- [x] Spec the doc-edit-proposal rule: proposals whose remedy is "edit file X's prose" are
       report-only findings. Dream mode MUST NOT edit files outside `.memory/`, `state.json`'s
-      `memory_health`, and the dream/distill logs.
-- [ ] Write `#### Dream Log Schema` for the new `.memory/dream-log.json`, mirroring the
+      `memory_health`, and the dream/distill logs. *(completed)*
+- [x] Write `#### Dream Log Schema` for the new `.memory/dream-log.json`, mirroring the
       `distill-log.json` shape (`version`, `operations[]`, `summary`) with dream-specific fields
-      (correlation counts, classification buckets, proposals surfaced/created).
-- [ ] Spec the narrative dream report as **terminal-only output, not a persisted file**
+      (correlation counts, classification buckets, proposals surfaced/created). *(completed)*
+- [x] Spec the narrative dream report as **terminal-only output, not a persisted file**
       (ratifying research open decision (b)): `.memory/dream-log.json` is the machine-queryable
       record, and the human-readable synthesis is displayed in-terminal exactly as the bare
       `/distill` health report already is -- which is likewise never written to disk. Do **not**
       create `.memory/20-Indices/dream-report-{date}.md`; `20-Indices/` holds regenerated vault
       indexes, not dated run reports, and adding one would invent a new artifact type for no
-      gain. A user who wants the narrative persisted can redirect it.
-- [ ] Add a `dream` row to `### Distill Log Schema`'s Operation Types table and to the `type`
+      gain. A user who wants the narrative persisted can redirect it. *(completed)*
+- [x] Add a `dream` row to `### Distill Log Schema`'s Operation Types table and to the `type`
       enum string; add `total_dreamed` (or equivalent) to the `summary` block. The Task column of
       that table is another pre-existing no-task-reference violation -- do not extend the pattern.
-- [ ] Update `### State Integration`: add `last_dream` and `dream_count` to the `memory_health`
+      *(completed: used an em-dash in the Task column)*
+- [x] Update `### State Integration`: add `last_dream` and `dream_count` to the `memory_health`
       example, mirroring `last_distilled`/`distill_count`, and add a `dream` column (or fold into
-      the existing mutating-sub-mode column) in the field-update-rules table.
-- [ ] Add a `Dream` row to `### Sub-Mode: auto`'s **Explicitly Excluded Operations** table with the
+      the existing mutating-sub-mode column) in the field-update-rules table. *(completed: added
+      a third `dream` column)*
+- [x] Add a `Dream` row to `### Sub-Mode: auto`'s **Explicitly Excluded Operations** table with the
       reason (event-evidence-driven revision is a judgment call requiring human review), and add
-      dream to the "Skip ALL interactive operations" list in the auto execution flow.
+      dream to the "Skip ALL interactive operations" list in the auto execution flow. *(completed)*
 
 **Timing**: 1.5 hours
 

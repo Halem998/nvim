@@ -1079,6 +1079,7 @@ Memory vault distillation: scoring, health reporting, and maintenance operations
 | `refine` | Improve memory quality (keywords, tags) | Available (task 452) |
 | `gc` | Hard-delete tombstoned memories past grace period | Available (task 450) |
 | `auto` | Automated distillation (Tier 1 refine only) | Available (task 452) |
+| `dream` | Event-store-informed memory review/revision plus improvement proposals | Available |
 
 All sub-modes are now available. No placeholder responses needed.
 
@@ -2018,6 +2019,7 @@ Automated non-interactive maintenance that runs only safe Tier 1 refine fixes. T
    - No compress operations
    - No purge operations
    - No merge operations
+   - No dream operations
 ```
 
 #### Explicitly Excluded Operations
@@ -2028,6 +2030,7 @@ Automated non-interactive maintenance that runs only safe Tier 1 refine fixes. T
 | Purge | Tombstoning decisions need user judgment |
 | Merge | Content combination needs user oversight |
 | Tier 2 Refine | Interactive fixes require user selection |
+| Dream | Event-evidence-driven revision is a judgment call requiring human review |
 
 #### Change Summary Display
 
@@ -2079,6 +2082,312 @@ Log the auto operation to `.memory/distill-log.json`:
 
 Note: Auto mode uses `type: "refine"` (not a separate type) with `"notes"` containing `"auto mode"` to distinguish from interactive refine operations.
 
+### Sub-Mode: dream
+
+Event-store-informed review and revision of the memory vault, plus a separate improvement-proposal
+deliverable for the agent system itself. Dream mode reuses every existing distill primitive
+(Scoring Engine, UPDATE/EXTEND/CREATE/tombstone operations, batch index regeneration, distill-log
+conventions) -- it adds event evidence as a new correlation input, not a new mutation mechanism.
+
+#### Edge Case Checks
+
+```
+1. Run validate-on-read to ensure memory-index.json is consistent with the filesystem
+2. Count non-tombstoned memories (status != "tombstoned" or status absent)
+3. If no non-tombstoned memories:
+   Display: "No memories in vault to dream over. Use /learn to add memories first."
+   Return early.
+```
+
+#### Event Ingestion
+
+Dream mode reads the unified event store exclusively through `events-query.sh` -- **hand-rolled
+`jq` against `specs/events.jsonl` is prohibited**, per the script's own header contract. Every call
+below additionally takes `--since {last_dream}` once `memory_health.last_dream` is set (see State
+Integration below), so every run after the first is bounded to events captured since the previous
+dream.
+
+In order:
+
+1. **Cheap gate** -- an aggregate count before pulling full event bodies:
+   ```bash
+   events-query.sh --format summary-counts [--since {last_dream}]
+   ```
+2. **Deviation/blocker pull** -- the primary signal for memory contradiction/gap detection:
+   ```bash
+   events-query.sh --category deviation --format json-array [--since {last_dream}]
+   events-query.sh --category blocker --format json-array [--since {last_dream}]
+   ```
+3. **Reflection pull** -- completion-time structured reflections:
+   ```bash
+   events-query.sh --event-type reflection --format json-array [--since {last_dream}]
+   ```
+
+#### Why the Event Store, Not `state.json`'s `reflection` Field
+
+`state.json`'s per-task `reflection` field is overwrite-only / most-recent-only -- it holds at most
+the latest reflection captured for a task. The event store's `reflection`-typed events are
+append-only across a task's entire history, so dream mode reads from the store to see every
+reflection ever captured for a task, not just whichever one happens to currently sit in
+`state.json`.
+
+#### No Events Yet (Degraded Path)
+
+**This is a normal, first-class outcome -- not an error.** Verified live: when
+`specs/events.jsonl` does not exist yet, `events-query.sh --format summary-counts` returns
+`{"total_events":0,"by_category":{},"by_event_type":{}}` and `--format json-array` returns `[]`,
+both exiting 0. This is the expected day-one experience, and remains the expected experience for
+any repository until the event store accumulates history.
+
+When the summary-counts gate reports `total_events: 0`, display:
+
+```
+No events captured yet in specs/events.jsonl -- dream review proceeds using vault scoring alone
+(staleness/duplicate/size), with zero event correlations this run.
+```
+
+Continuation rule: dream mode does NOT stop or treat this as an error. It proceeds exactly as
+`/distill --refine` would, using only the existing Scoring Engine, and reports zero
+corroborated/contradicted/gap correlations. The Improvement Proposals section (below) likewise
+reports zero candidates in this case.
+
+#### Event-to-Memory Correlation
+
+Two-tier correlation, reusing existing formulas rather than inventing a new one:
+
+- **Tier (a) -- task-number substring match**: for each pulled event with a non-null `task` field,
+  substring-match the task number against each memory's free-text `source` frontmatter field
+  (e.g. an event with `"task": 259` matches a memory whose `source` contains `"259"` in a
+  task-directory-shaped context). This is the high-confidence tier.
+- **Tier (b) -- keyword/topic overlap fallback**: for events with no task-number match (or no
+  `task` field), fall back to the existing overlap formula from `### Overlap Scoring` above,
+  scoring the event's `message`/`detail` text against each memory's `keywords`. Reference that
+  section by name -- do not restate or fork the formula here.
+
+#### Classification
+
+Each memory with at least one correlated event is classified into exactly one bucket:
+
+| Classification | Meaning |
+|-----------------|---------|
+| Corroborated | Correlated events are consistent with the memory's existing guidance -- no contradiction found. |
+| Contradicted | Correlated events (deviation/blocker) show the memory's guidance no longer holds, or is stale relative to captured evidence. |
+| Gap | Correlated events point at a recurring pattern with no existing memory covering it. |
+
+**Recurrence threshold**: a pattern must occur **three or more times** at the same
+checkpoint/event_type combination to be treated as `contradicted` (rather than a one-off) or
+surfaced as a `gap` candidate. This three-strikes threshold is the same one the Convergence
+Policing Contract's Divergence Audit precedent (`context/contracts/convergence.md`) uses for churn
+detection -- reused here by name, not reinvented.
+
+Memories with zero correlated events are left out of the dream classification entirely; they are
+still covered by the ordinary Scoring Engine as usual.
+
+#### Dry-Run Behavior
+
+When `--dry-run` is active, print the full three-bucket classification (corroborated /
+contradicted / gap) with per-memory counts and the specific correlated event IDs/messages cited as
+evidence, and perform **zero writes** -- matching the contract every other distill sub-mode
+honors:
+
+```
+[DRY RUN] Dream classification:
+  Corroborated: {count} memories (no action)
+  Contradicted: {count} memories -- would prompt UPDATE/tombstone/skip
+  Gap: {count} candidate memories -- would prompt CREATE
+
+No changes made.
+```
+
+Exit after displaying the dry-run summary.
+
+#### Interactive Selection -- MANDATORY STOP
+
+**YOU MUST call AskUserQuestion for the contradicted and gap buckets before writing anything. Do
+NOT infer what the user wants. Do NOT apply any UPDATE/CREATE/tombstone without explicit user
+selection.**
+
+##### Corroborated Handling
+
+No write. The memory and its corroborating event IDs are recorded in the dream summary/log only
+(see Dream Log Schema below) -- corroboration is informational, not actionable.
+
+##### Contradicted / Stale Handling
+
+Present each contradicted memory via `AskUserQuestion`, with three options. Each option's
+`description` MUST cite the specific correlated event IDs/messages as evidence, and the UPDATE
+option MUST show the **proposed new memory body** for review -- never a bare yes/no confirmation:
+
+```json
+{
+  "question": "Memory '{memory.id}' appears contradicted by {N} captured events. How should it be handled?",
+  "header": "Contradicted: {memory.id}",
+  "multiSelect": false,
+  "options": [
+    {
+      "label": "UPDATE",
+      "description": "Evidence: {event_id_1} ({message_1}), {event_id_2} ({message_2}). Proposed new body:\n\n{proposed_new_memory_body}"
+    },
+    {
+      "label": "TOMBSTONE",
+      "description": "Mark superseded by dream evidence: {event_id_1} ({message_1})"
+    },
+    {
+      "label": "SKIP",
+      "description": "Take no action this run"
+    }
+  ]
+}
+```
+
+- **UPDATE**: apply via the existing `### UPDATE Operation` template -- old guidance moves to
+  `## History`, the corrected guidance (sourced from event evidence) becomes the new main content.
+- **TOMBSTONE**: apply via the existing tombstone frontmatter pattern (see `#### Tombstone
+  Application` above) with `tombstone_reason: "dream_superseded"` -- a new *value* for the existing
+  field, not a new schema.
+- **SKIP**: no write.
+
+##### Gap Handling
+
+Present each gap candidate via `AskUserQuestion`, evidence-cited the same way. Before offering
+CREATE, apply the escalation discriminator:
+
+- If the gap represents durable domain/technique knowledge that fits the existing
+  TECHNIQUE/PATTERN/CONFIG/WORKFLOW/INSIGHT taxonomy, offer **CREATE** via the existing
+  `### CREATE Operation` template, sourced from the event's `detail`/`message` content.
+- If the gap instead represents a *system change* (a skill, hook, rule, or doc that should differ),
+  it escalates to an **Improvement Proposal** (below) instead of a memory CREATE -- dream mode
+  never creates a memory to paper over a system defect.
+
+#### Batch Index Regeneration
+
+After all UPDATE/TOMBSTONE/CREATE writes for this dream run are complete (and only after -- never
+per-memory):
+
+```
+1. Regenerate memory-index.json using "JSON Index Maintenance" procedure
+2. Regenerate index.md using "Index Regeneration Pattern"
+3. Regenerate .memory/10-Memories/README.md
+```
+
+#### Improvement Proposals
+
+**A separate deliverable from memory revision** -- never merged into the same list. Memory
+revisions mutate `.memory/10-Memories/*.md` under the primitives above; improvement proposals
+optionally create new `task_type: "meta"` task directories under `specs/`. The two have different
+destinations and different write permissions, and are presented as two distinct sections in every
+dream run's output.
+
+**Discovery**: a proposal candidate is surfaced when either:
+- A recurring (three-strikes, per Classification above) deviation/blocker event points at a named
+  skill, hook, rule, or lifecycle stage/checkpoint, or
+- A recurring `what_was_hard` / `what_was_missed` phrase appears across reflection events for the
+  same or related task types.
+
+**Presentation**: `AskUserQuestion` `multiSelect`, one row per candidate:
+
+```json
+{
+  "question": "Dream mode surfaced {N} recurring agent-system improvement candidates. What should happen with each?",
+  "header": "Improvement Proposals",
+  "multiSelect": true,
+  "options": [
+    {
+      "label": "{candidate.summary}",
+      "description": "Evidence: {event_id_1} ({message_1}), {event_id_2} ({message_2}), {event_id_3} ({message_3}) -- recurring at checkpoint '{checkpoint}'"
+    }
+  ]
+}
+```
+
+For each selected candidate, a second `AskUserQuestion` (or a combined per-row selector) offers:
+- **Create as task** -- becomes a new task (see Task Creation below)
+- **Note in dream report only** -- recorded in the dream-log/report but no task created
+- **Skip** -- discarded entirely
+
+**Confirmation gate**: before any task is actually created, show the full list of confirmed
+"Create as task" candidates and require an explicit "Yes, create tasks" confirmation (Multi-Task
+Creation Standard Component 7) -- mirroring every other multi-task creator in this codebase.
+
+**Task creation** (Required-components-only compliance, matching `/errors`' "Partial" framing):
+each confirmed proposal becomes one independent `task_type: "meta"` entry, created via the same
+primitive `/task`'s Create Task Mode uses: read and increment `next_project_number`, append to
+`active_projects` in `specs/state.json`, call `generate-todo.sh`, and git commit. `file_scope` is
+seeded from the paths the triggering events implicate (e.g. the named skill/hook/rule file).
+Deliberately out of scope for v1: topic grouping, dependency interview, Kahn's-algorithm ordering,
+and DAG visualization -- exactly the same intentional gap `/errors` documents for its own automatic
+mode.
+
+**Doc-edit-proposal rule**: a proposal whose remedy is "edit file X's prose" (rather than create a
+new task) is a **report-only finding**. Dream mode MUST NOT edit any file outside `.memory/`,
+`state.json`'s `memory_health` field, and the dream/distill logs. Recommending a doc edit is always
+surfaced as a finding for the user to act on, never applied automatically.
+
+#### Dream Log Schema
+
+Operations are logged to `.memory/dream-log.json`, mirroring the shape of
+`.memory/distill-log.json`:
+
+```json
+{
+  "version": "1.0.0",
+  "operations": [
+    {
+      "id": "dream_{timestamp}",
+      "timestamp": "ISO8601",
+      "type": "dream",
+      "session_id": "sess_...",
+      "since": "ISO8601 or null (first run)",
+      "events_ingested": {
+        "total_events": 0,
+        "deviation": 0,
+        "blocker": 0,
+        "reflection": 0
+      },
+      "classification": {
+        "corroborated": 0,
+        "contradicted": 0,
+        "gap": 0
+      },
+      "affected_memories": [
+        {
+          "id": "{memory.id}",
+          "classification": "contradicted",
+          "action": "updated|tombstoned|skipped",
+          "evidence_event_ids": ["evt_..."]
+        }
+      ],
+      "proposals": {
+        "surfaced": 0,
+        "created_as_task": 0,
+        "noted_only": 0,
+        "skipped": 0,
+        "task_numbers_created": []
+      },
+      "notes": ""
+    }
+  ],
+  "summary": {
+    "total_dreamed": 0,
+    "total_corroborated": 0,
+    "total_contradicted": 0,
+    "total_gaps_created": 0,
+    "total_proposals_created": 0,
+    "last_operation": null
+  }
+}
+```
+
+#### Narrative Dream Report (Terminal-Only)
+
+The human-readable synthesis of a dream run -- vault classification summary plus improvement
+proposal candidates -- is displayed **in-terminal only**, exactly as the bare `/distill` health
+report already is (which is likewise never written to disk). `.memory/dream-log.json` is the
+machine-queryable persisted record. Dream mode does **not** create a
+`.memory/20-Indices/dream-report-{date}.md` file: `20-Indices/` holds regenerated vault indexes,
+not dated run reports, and adding one would invent a new artifact type for no gain. A user who
+wants the narrative persisted can redirect the command's output themselves.
+
 ### Distill Log Schema
 
 Operations are logged to `.memory/distill-log.json` for tracking maintenance history.
@@ -2092,7 +2401,7 @@ Operations are logged to `.memory/distill-log.json` for tracking maintenance his
     {
       "id": "distill_{timestamp}",
       "timestamp": "ISO8601",
-      "type": "report|purge|merge|compress|refine|gc",
+      "type": "report|purge|merge|compress|refine|gc|dream",
       "session_id": "sess_...",
       "pre_metrics": {
         "total_memories": 0,
@@ -2121,6 +2430,7 @@ Operations are logged to `.memory/distill-log.json` for tracking maintenance his
     "total_compressed": 0,
     "total_refined": 0,
     "total_gc_deleted": 0,
+    "total_dreamed": 0,
     "last_operation": null
   }
 }
@@ -2136,6 +2446,7 @@ Operations are logged to `.memory/distill-log.json` for tracking maintenance his
 | `compress` | Oversized memories summarized | 452 |
 | `refine` | Memory quality improved | 452 |
 | `gc` | Hard-delete tombstoned memories past grace period | 450 |
+| `dream` | Event-store-informed memory review plus improvement proposals | -- |
 
 For `report` operations, `pre_metrics` and `post_metrics` are identical (no changes made).
 
@@ -2151,7 +2462,9 @@ After each distill operation, update `memory_health` in `specs/state.json`:
     "total_memories": 5,
     "never_retrieved": 2,
     "health_score": 85,
-    "status": "healthy"
+    "status": "healthy",
+    "last_dream": "ISO8601 timestamp or null (never dreamed)",
+    "dream_count": 0
   }
 }
 ```
@@ -2160,16 +2473,18 @@ The `memory_health` field is a top-level sibling of `repository_health` in state
 
 **Field update rules by sub-mode**:
 
-| Field | report | purge/merge/compress/refine/gc/auto |
-|-------|--------|-------------------------------------|
-| `last_distilled` | Updated | Updated |
-| `distill_count` | NOT incremented | Incremented |
-| `total_memories` | Updated | Updated |
-| `never_retrieved` | Updated | Updated |
-| `health_score` | Updated | Updated |
-| `status` | Updated | Updated |
+| Field | report | purge/merge/compress/refine/gc/auto | dream |
+|-------|--------|-------------------------------------|-------|
+| `last_distilled` | Updated | Updated | Updated |
+| `distill_count` | NOT incremented | Incremented | Incremented |
+| `total_memories` | Updated | Updated | Updated |
+| `never_retrieved` | Updated | Updated | Updated |
+| `health_score` | Updated | Updated | Updated |
+| `status` | Updated | Updated | Updated |
+| `last_dream` | NOT updated | NOT updated | Updated |
+| `dream_count` | NOT updated | NOT updated | Incremented |
 
-**Rationale**: The `report` sub-mode is read-only -- it generates a health report without modifying any memory files. Since `distill_count` tracks the number of maintenance operations that actually changed the vault, report-only invocations should not increment it. The `last_distilled` timestamp is still updated for all sub-modes because it tracks when the vault was last assessed, not when it was last modified.
+**Rationale**: The `report` sub-mode is read-only -- it generates a health report without modifying any memory files. Since `distill_count` tracks the number of maintenance operations that actually changed the vault, report-only invocations should not increment it. The `last_distilled` timestamp is still updated for all sub-modes because it tracks when the vault was last assessed, not when it was last modified. `last_dream`/`dream_count` mirror `last_distilled`/`distill_count` but scoped to dream runs only -- they are untouched by every other sub-mode, including report, since those never ingest the event store.
 
 ### Purge Sub-Mode
 
