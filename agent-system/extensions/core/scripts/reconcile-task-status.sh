@@ -87,7 +87,11 @@ find_latest_artifact() {
   local subdir="$1"
   local artifact_dir="${TASK_DIR}/${subdir}"
   if [[ -d "$artifact_dir" ]]; then
-    ls -1 "${artifact_dir}/"*.md 2>/dev/null | sort -V | tail -1
+    # `|| true`: under `set -e -o pipefail`, an existing-but-empty directory makes the
+    # unexpanded `*.md` glob a literal nonexistent filename, so `ls` exits non-zero and
+    # pipefail would abort the whole script even though `sort`/`tail` succeed on empty input.
+    # An empty artifact directory is a legitimate no-artifact-yet state, not an error.
+    ls -1 "${artifact_dir}/"*.md 2>/dev/null | sort -V | tail -1 || true
   fi
 }
 
@@ -194,10 +198,58 @@ record_refused_promotion() {
   esac
 }
 
+# --- Helper: map a state.json task-level status to its plan-level marker equivalent. ---
+# Plan-level Status uses a narrower 6-marker vocabulary than the full task-level vocabulary (see
+# status-markers.md's "Plan-level vs. phase-level markers" section): a plan document is
+# not_started, implementing, partial, blocked, abandoned, or completed -- it does not track
+# research/planning sub-phases of its own, so statuses like "researching" or "planning" have no
+# plan-level equivalent. Echoes the equivalent marker and returns 0 when one exists; returns 1
+# (nothing echoed) otherwise.
+plan_level_equivalent() {
+  local state_status="$1"
+  case "$state_status" in
+    not_started) echo "NOT STARTED" ;;
+    implementing) echo "IMPLEMENTING" ;;
+    partial) echo "PARTIAL" ;;
+    blocked) echo "BLOCKED" ;;
+    abandoned) echo "ABANDONED" ;;
+    completed) echo "COMPLETED" ;;
+    *) return 1 ;;
+  esac
+}
+
+# --- Report-only plan-vs-state.json divergence check (optional/stretch scope). Never repairs
+# either direction -- unlike "artifact exists, therefore promote", a plan-vs-state mismatch has
+# no unambiguous correct side. Compares only the plan-level `- **Status**:` field, never
+# phase-heading markers, which are a distinct, narrower grain. No-ops silently (exit status
+# unaffected) when the current status has no plan-level equivalent or no plan file exists yet.
+check_plan_state_divergence() {
+  local expected_plan_status
+  expected_plan_status=$(plan_level_equivalent "$current_status") || return 0
+
+  local plan_file
+  plan_file=$(find_latest_artifact "plans")
+  if [[ -z "$plan_file" ]]; then
+    return 0
+  fi
+
+  local plan_status
+  plan_status=$(grep -m1 '^- \*\*Status\*\*:' "$plan_file" 2>/dev/null | \
+    sed -E 's/^- \*\*Status\*\*:\s*\[?([A-Z ]+)\]?.*/\1/')
+  if [[ -z "$plan_status" ]]; then
+    return 0
+  fi
+
+  if [[ "$plan_status" != "$expected_plan_status" ]]; then
+    echo "[reconcile] WARNING: task $task_number plan status=$plan_status, state.json status=$current_status"
+  fi
+}
+
 # --- Main reconciliation dispatch ---
 case "$current_status" in
 
   researching)
+    check_plan_state_divergence
     # Check for completed research artifact
     report_file=$(find_latest_artifact "reports")
     if [[ -z "$report_file" ]]; then
@@ -230,6 +282,7 @@ case "$current_status" in
     ;;
 
   planning)
+    check_plan_state_divergence
     # Check for completed plan artifact
     plan_file=$(find_latest_artifact "plans")
     if [[ -z "$plan_file" ]]; then
@@ -261,6 +314,7 @@ case "$current_status" in
     ;;
 
   implementing)
+    check_plan_state_divergence
     # Check for completed summary artifact
     summary_file=$(find_latest_artifact "summaries")
     if [[ -z "$summary_file" ]]; then
@@ -292,6 +346,7 @@ case "$current_status" in
     ;;
 
   partial)
+    check_plan_state_divergence
     # For partial state, check if there's a summary (stuck after final phase)
     summary_file=$(find_latest_artifact "summaries")
     if [[ -z "$summary_file" ]]; then

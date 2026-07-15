@@ -374,7 +374,7 @@ silently moving a directory.
 
 ---
 
-### Phase 5: Report-only plan-vs-state divergence check (optional/stretch) [NOT STARTED]
+### Phase 5: Report-only plan-vs-state divergence check (optional/stretch) [COMPLETED]
 
 **Goal**: Surface plan-file-vs-state.json status divergence, which currently has no detector
 anywhere in the system. **This phase is optional.** It is new comparison logic rather than pure
@@ -383,20 +383,35 @@ completely. Drop this phase if effort runs long; the tree stays green without it
 
 **Tasks**:
 
-- [ ] Confirm the gap still holds before building anything: the TODO renderer reads only
+- [x] Confirm the gap still holds before building anything: the TODO renderer reads only
       `state.json` and never opens a plan file, so nothing compares the two today. If a detector has
-      appeared since research, stop and report rather than duplicating it.
-- [ ] Add a report-only check to `reconcile-task-status.sh`: read the version-ordered latest plan
+      appeared since research, stop and report rather than duplicating it. *(completed: re-grepped
+      generate-todo.sh and all scripts for a plan-vs-state comparator; confirmed still absent)*
+- [x] Add a report-only check to `reconcile-task-status.sh`: read the version-ordered latest plan
       file's `- **Status**:` field and compare it against `state.json`'s status for the same task.
-- [ ] Use the settled plan-level marker vocabulary — `{NOT STARTED, IMPLEMENTING, PARTIAL, BLOCKED,
+      *(completed: reuses the existing version-ordered `find_latest_artifact "plans"` helper)*
+- [x] Use the settled plan-level marker vocabulary — `{NOT STARTED, IMPLEMENTING, PARTIAL, BLOCKED,
       ABANDONED, COMPLETED}` — and note that this is a deliberately narrower set than the phase-
       heading vocabulary. Do not compare against phase-heading markers; they are a different grain.
-- [ ] On mismatch, print `[reconcile] WARNING: task N plan status=X, state.json status=Y` and
+      *(completed: `plan_level_equivalent()` maps only these six state.json values; statuses with
+      no plan-level equivalent, e.g. researching/planning, are silently skipped)*
+- [x] On mismatch, print `[reconcile] WARNING: task N plan status=X, state.json status=Y` and
       **nothing else**. **MUST NOT** repair either direction: unlike "artifact exists, therefore
       promote," a plan-vs-state mismatch has no unambiguous correct side. Exit code is unaffected.
-- [ ] Run the check for every reconcilable status, including the branches that no-op, so divergence
-      is reported even when there is nothing to promote.
-- [ ] Mirror to `.claude/scripts/reconcile-task-status.sh`.
+      *(completed; fixture-verified both files byte-identical before/after a mismatch)*
+- [x] Run the check for every reconcilable status, including the branches that no-op, so divergence
+      is reported even when there is nothing to promote. *(completed: `check_plan_state_divergence`
+      is called as the first statement in all four branches, before their own no-artifact early
+      exits)*
+- [x] Mirror to `.claude/scripts/reconcile-task-status.sh`. *(completed)*
+- [x] *(unplanned, discovered during fixture testing)* Hardened `find_latest_artifact()` against a
+      pre-existing latent bug: under `set -euo pipefail`, an artifact subdirectory that exists but
+      is empty made the unexpanded `*.md` glob fail `ls`, and pipefail aborted the entire script
+      with exit 2 instead of a normal no-artifact no-op. This directly undermines the
+      non-fatal/visible guarantees Phases 2-4 build on top of this function, so it was fixed in the
+      same file already being edited (`|| true` on the pipeline) rather than deferred. Fixture
+      re-verified: an existing-but-empty artifact directory now no-ops cleanly (exit 0) instead of
+      crashing.
 
 **Timing**: 1 hour
 
