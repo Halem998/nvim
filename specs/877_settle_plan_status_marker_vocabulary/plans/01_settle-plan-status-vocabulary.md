@@ -1,7 +1,7 @@
 # Implementation Plan: Settle the plan-level status marker vocabulary
 
 - **Task**: 877 - Settle the plan-level status marker vocabulary (script vs spec)
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/877_settle_plan_status_marker_vocabulary/reports/01_settle-plan-status-vocabulary.md
@@ -205,23 +205,32 @@ list is phase-heading-scoped (functionally unchanged).
 
 ---
 
-### Phase 4: Cross-file consistency verification [NOT STARTED]
+### Phase 4: Cross-file consistency verification [COMPLETED]
 
 **Goal**: Confirm the settled vocabulary is internally consistent across script and docs and that
 deliverable rules are honored.
 
 **Tasks**:
-- [ ] Confirm the script accept-set is a superset of the documented plan-level set: extract the
+- [x] Confirm the script accept-set is a superset of the documented plan-level set: extract the
       case-statement canonical values from `update-plan-status.sh` and the six markers from
       `plan-format.md:6`; every documented marker must be accepted by the script.
-- [ ] Confirm no doc lists `[IN PROGRESS]` as a plan-level Status value
+      *(completed: script accepts IMPLEMENTING, COMPLETED, PARTIAL, NOT_STARTED->"NOT STARTED",
+      BLOCKED, ABANDONED — a superset of all six documented markers)*
+- [x] Confirm no doc lists `[IN PROGRESS]` as a plan-level Status value
       (`grep -rn 'IN PROGRESS' .claude/context/formats/plan-format.md
       .claude/context/standards/status-markers.md` — remaining hits, if any, must be phase-level).
-- [ ] Confirm the phase-level vocabulary is unchanged in `update-phase-status.sh`,
+      *(completed: zero hits in either file)*
+- [x] Confirm the phase-level vocabulary is unchanged in `update-phase-status.sh`,
       `plan-format-enforcement.md`, and `artifact-formats.md` (no marker added/removed).
-- [ ] Run the no-task-references check over all five changed files:
+      *(completed: `update-phase-status.sh` has no diff; the other two files' marker sets are
+      byte-identical, only clarifying prose was added — verified via diff)*
+- [x] Run the no-task-references check over all five changed files:
       `grep -rniE 'task[ -][0-9]+' <changed files>` returns nothing (durable anchors only).
-- [ ] `bash -n .claude/scripts/update-plan-status.sh` still parses.
+      *(completed: only pre-existing hit is the unmodified placeholder-convention example row
+      `` `389`, `task 389:` `` in artifact-formats.md, confirmed via git diff to predate this
+      task's edits)*
+- [x] `bash -n .claude/scripts/update-plan-status.sh` still parses. *(completed: both source and
+      deployed copies parse cleanly)*
 
 **Timing**: 25 minutes
 
@@ -238,15 +247,15 @@ deliverable rules are honored.
 
 ## Testing & Validation
 
-- [ ] `bash -n .claude/scripts/update-plan-status.sh` parses cleanly after the case-statement edit.
-- [ ] Script accepts `BLOCKED`, `blocked`, `ABANDONED`, `abandoned` (normalize to uppercase) and
+- [x] `bash -n .claude/scripts/update-plan-status.sh` parses cleanly after the case-statement edit.
+- [x] Script accepts `BLOCKED`, `blocked`, `ABANDONED`, `abandoned` (normalize to uppercase) and
       still rejects an unknown value via the `*)` branch (exit 1).
-- [ ] `plan-format.md:6` lists exactly the six resolution-(b) markers; `[IN PROGRESS]` removed.
-- [ ] Script accept-set is a superset of the documented plan-level set.
-- [ ] Phase-level marker sets unchanged across `update-phase-status.sh`,
+- [x] `plan-format.md:6` lists exactly the six resolution-(b) markers; `[IN PROGRESS]` removed.
+- [x] Script accept-set is a superset of the documented plan-level set.
+- [x] Phase-level marker sets unchanged across `update-phase-status.sh`,
       `plan-format-enforcement.md`, `artifact-formats.md`.
-- [ ] Asymmetry rationale present in `plan-format.md` and cross-referenced from `status-markers.md`.
-- [ ] No task-number references in any of the five changed files (all under `.claude/`).
+- [x] Asymmetry rationale present in `plan-format.md` and cross-referenced from `status-markers.md`.
+- [x] No task-number references in any of the five changed files (all under `.claude/`).
 
 ## Artifacts & Outputs
 
