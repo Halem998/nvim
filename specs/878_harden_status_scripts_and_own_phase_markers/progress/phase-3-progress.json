@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "DEFECT D — scope the idempotency early-exit to state.json only",
+  "started_at": "2026-07-15T22:00:00Z",
+  "last_updated": "2026-07-15T22:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace early exit 0 with state_is_noop flag", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 2, "description": "Guard update_state_json invocation by state_is_noop", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 3, "description": "Make final success line accurate on no-op path", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 4, "description": "Verify state.json no-op contract, dry-run behavior, and non-no-op path via fixture", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Mirror to .claude/scripts/update-task-status.sh", "status": "done", "files_touched": [".claude/scripts/update-task-status.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

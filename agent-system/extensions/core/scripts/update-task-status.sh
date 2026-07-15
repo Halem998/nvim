@@ -138,24 +138,29 @@ elif [[ "$target_status" == "pr_ready" ]]; then
   exit 1
 fi
 
-# --- Idempotency check ---
+# --- Idempotency check (scoped to state.json only) ---
+# When state.json is already at the target status, the state.json write itself is skipped
+# (state_is_noop=true) but PHASE 2 (TODO.md regen) and PHASE 3 (plan/phase file updates) below
+# still run unconditionally -- both downstream scripts have their own idempotency checks, so a
+# redundant call is a safe no-op. This makes plan/phase updates self-healing on retry instead of
+# being silently suppressed by an unrelated state.json no-op.
 current_state_status=$(jq -r --arg num "$task_number" \
   '.active_projects[] | select(.project_number == ($num | tonumber)) | .status' \
   "$STATE_FILE")
 
+state_is_noop=false
 if [[ "$current_state_status" == "$STATE_STATUS" ]]; then
-  # Already at target status, no-op
+  state_is_noop=true
   if [[ "$DRY_RUN" == "true" ]]; then
-    echo "[dry-run] Task $task_number already at status '$STATE_STATUS' -- no-op"
+    echo "[dry-run] Task $task_number already at status '$STATE_STATUS' -- state.json no-op"
   fi
-  exit 0
 fi
 
 # --- Ensure tmp directory exists ---
 mkdir -p "$TMP_DIR"
 
 # ============================================================
-# PHASE 1: Update state.json (machine state first)
+# PHASE 1: Update state.json (machine state first) -- skipped when state_is_noop
 # ============================================================
 update_state_json() {
   local ts
@@ -200,9 +205,11 @@ update_state_json() {
   mv "$TMP_DIR/state.json.tmp" "$STATE_FILE"
 }
 
-if ! update_state_json; then
-  echo "Error: failed to update state.json for task $task_number" >&2
-  exit 2
+if [[ "$state_is_noop" != "true" ]]; then
+  if ! update_state_json; then
+    echo "Error: failed to update state.json for task $task_number" >&2
+    exit 2
+  fi
 fi
 
 # ============================================================
@@ -311,7 +318,11 @@ regenerate_todo
 update_plan_file
 
 if [[ "$DRY_RUN" != "true" ]]; then
-  echo "OK: task $task_number status -> $STATE_STATUS"
+  if [[ "$state_is_noop" == "true" ]]; then
+    echo "OK: task $task_number state.json already at '$STATE_STATUS' (no-op); plan/phase updates re-applied"
+  else
+    echo "OK: task $task_number status -> $STATE_STATUS"
+  fi
 fi
 
 exit 0

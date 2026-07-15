@@ -308,7 +308,7 @@ Verify against all three directory shapes, using fixture plan dirs (never the re
 
 ---
 
-### Phase 3: DEFECT D — scope the idempotency early-exit to state.json only [NOT STARTED]
+### Phase 3: DEFECT D — scope the idempotency early-exit to state.json only [COMPLETED]
 
 **Goal**: Stop a same-status state.json write from suppressing the plan and phase updates, making
 those updates self-healing on every invocation, while preserving byte-for-byte the state.json
@@ -316,15 +316,15 @@ no-op contract that the orchestrate preflight wiring depends on.
 
 **Tasks**:
 
-- [ ] Replace the early `exit 0` at `update-task-status.sh:138-144` with a flag: set `state_is_noop=true` when `current_state_status == STATE_STATUS`, and do not exit.
-- [ ] Guard the `update_state_json` invocation (lines 195-198) so it runs only when `state_is_noop == false`. Preserve its exit-2-on-failure behavior unchanged for the non-no-op path.
-- [ ] Leave `regenerate_todo` (line 291) and `update_plan_file` (line 294) unconditional, so they now fire on the no-op path too. Both downstream scripts have their own idempotency checks (`update-plan-status.sh:56-59`, `update-phase-status.sh:90-94`), so redundant calls are safe no-ops.
-- [ ] Preserve the `workflow-active` marker semantics exactly: it is written inside `update_state_json()` (lines 162-166), which the current early-exit also skips on a no-op. Keeping it inside the guarded call means no behavior change. Confirm and record this rather than moving the marker write.
-- [ ] Preserve the `--dry-run` no-op message (line 141) — it must still print `[dry-run] Task N already at status 'X' -- no-op` when the state write is a no-op, now alongside the dry-run plan/phase lines.
-- [ ] Make the final success line (line 297) accurate on the no-op path: report that state.json was already at the target and the plan/phase updates were still applied, rather than falsely claiming a status change.
-- [ ] Confirm the state.json no-op contract is intact: a second identical invocation must not rewrite `last_updated` or `session_id`. This is what the orchestrate preflight wiring depends on.
-- [ ] Verify no task-number citations were introduced.
-- [ ] Mirror to `.claude/scripts/update-task-status.sh`; confirm `diff -q` is silent.
+- [x] Replace the early `exit 0` at `update-task-status.sh:138-144` with a flag: set `state_is_noop=true` when `current_state_status == STATE_STATUS`, and do not exit. *(completed)*
+- [x] Guard the `update_state_json` invocation (lines 195-198) so it runs only when `state_is_noop == false`. Preserve its exit-2-on-failure behavior unchanged for the non-no-op path. *(completed)*
+- [x] Leave `regenerate_todo` (line 291) and `update_plan_file` (line 294) unconditional, so they now fire on the no-op path too. Both downstream scripts have their own idempotency checks (`update-plan-status.sh:56-59`, `update-phase-status.sh:90-94`), so redundant calls are safe no-ops. *(completed: no change needed, already unconditional at the bottom of the script)*
+- [x] Preserve the `workflow-active` marker semantics exactly: it is written inside `update_state_json()` (lines 162-166), which the current early-exit also skips on a no-op. Keeping it inside the guarded call means no behavior change. Confirm and record this rather than moving the marker write. *(completed: verified — the marker write stayed inside update_state_json(), now guarded by state_is_noop instead of the removed exit 0, same skip-on-no-op behavior)*
+- [x] Preserve the `--dry-run` no-op message (line 141) — it must still print `[dry-run] Task N already at status 'X' -- no-op` when the state write is a no-op, now alongside the dry-run plan/phase lines. *(completed: verified via fixture — dry-run no-op prints the state.json no-op line plus the TODO.md/plan/phase dry-run lines)*
+- [x] Make the final success line (line 297) accurate on the no-op path: report that state.json was already at the target and the plan/phase updates were still applied, rather than falsely claiming a status change. *(completed)*
+- [x] Confirm the state.json no-op contract is intact: a second identical invocation must not rewrite `last_updated` or `session_id`. This is what the orchestrate preflight wiring depends on. *(completed: verified via fixture — sha256 of state.json byte-identical across 3 repeated invocations)*
+- [x] Verify no task-number citations were introduced. *(completed: grep returned zero hits)*
+- [x] Mirror to `.claude/scripts/update-task-status.sh`; confirm `diff -q` is silent. *(completed)*
 
 **Timing**: 0.75 hours
 
