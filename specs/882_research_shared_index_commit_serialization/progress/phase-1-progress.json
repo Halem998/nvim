@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Audit Call Sites and Measure the Critical Section",
+  "started_at": "2026-07-15T16:10:00Z",
+  "last_updated": "2026-07-15T16:12:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run nested-call audit for task-lock.sh/acquire_scope_mutex/scope-lock/flock across the Stages 7-8a call graph", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm lifecycle-notify.sh and validate-artifact.sh fall outside the 7-8a bracket", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Check orchestrator-postflight.sh for pre-existing EXIT traps", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Time the Stage 7-8a span (component measurements)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Choose POSTFLIGHT_SCOPE_STALE_SEC=30 (floor governs; 6x worst case ~2.4s < 30s floor)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
