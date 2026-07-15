@@ -165,35 +165,38 @@ in `skill-orchestrate/SKILL.md` and rename the Stage 2 heading.
 
 ---
 
-### Phase 3: Hard skill preflights + heading rename [NOT STARTED]
+### Phase 3: Hard skill preflights + heading rename [COMPLETED]
 
 **Goal**: Add the four preflight calls to `skill-orchestrate-hard/SKILL.md` with the exact H4
 ordering constraint, and rename its Stage 2 heading.
 
 **Tasks**:
-- [ ] Re-verify line numbers before editing.
-- [ ] Rename `### Stage 2: Preflight — Loop Guard and Churn State` (currently line 187) to drop
-      "Preflight" — e.g. `### Stage 2: Loop Guard and Churn State Initialization`.
-- [ ] `not_started` handler (currently `#### State: \`not_started\``, line 324): before the
-      `Agent tool:` block (currently 329), add `skill_preflight_update "$task_number" "research" "$session_id"`.
-- [ ] `researched` H4 handler (currently line 342): add
+- [x] Re-verify line numbers before editing. *(completed: anchors matched plan within a few lines; applied to both the canonical source at agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md and the deployed .claude/ copy)*
+- [x] Rename `### Stage 2: Preflight — Loop Guard and Churn State` (currently line 187) to drop
+      "Preflight" — e.g. `### Stage 2: Loop Guard and Churn State Initialization`. *(completed)*
+- [x] `not_started` handler (currently `#### State: \`not_started\``, line 324): before the
+      `Agent tool:` block (currently 329), add `skill_preflight_update "$task_number" "research" "$session_id"`. *(completed)*
+- [x] `researched` H4 handler (currently line 342): add
       `skill_preflight_update "$task_number" "plan" "$session_id"` **inside** the
       `if [ "$adversarial_verified" = "true" ]` block (currently 376-381), immediately before the
       `subagent_type: $PLANNER_AGENT` Agent call (currently 377). **MUST NOT** place it in the
       verification re-dispatch branch (currently 364-368) — that branch re-dispatches
       `$RESEARCH_AGENT` while status is `researched` and must not receive a research preflight
       (would regress status to `researching`). Add an inline comment stating this constraint.
-- [ ] `planned` or `implementing` H1 per-phase handler (currently line 388): add
+      *(completed: preflight call and 4-line constraint comment inserted immediately inside the
+      `if [ "$adversarial_verified" = "true" ]` block, before the `subagent_type: $PLANNER_AGENT`
+      call; the verification re-dispatch branch above it received no preflight call)*
+- [x] `planned` or `implementing` H1 per-phase handler (currently line 388): add
       `skill_preflight_update "$task_number" "implement" "$session_id"` **inside** the
       `if [ -n "$next_phase" ]` branch (currently opens at 418), immediately before the
       `Agent tool: subagent_type: $IMPLEMENT_AGENT` call (currently 433). MUST NOT add it in the
       `elif` skeleton-exhaustion branch (447-453) or the final `else` all-complete branch
       (455-461) — neither dispatches an implement agent. Add a brief note that this preflight's
       one-time side effects (workflow-active marker, first-phase auto-advance) do not collide with
-      the heading scan, which already matches `IN PROGRESS`.
-- [ ] `partial` continuation sub-state (currently `**Sub-state: continuation available**`,
+      the heading scan, which already matches `IN PROGRESS`. *(completed)*
+- [x] `partial` continuation sub-state (currently `**Sub-state: continuation available**`,
       line 506): add `skill_preflight_update "$task_number" "implement" "$session_id"` before the
-      per-phase implement dispatch described there (defense-in-depth, idempotent).
+      per-phase implement dispatch described there (defense-in-depth, idempotent). *(completed)*
 
 **Timing**: 40 minutes
 

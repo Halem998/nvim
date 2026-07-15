@@ -97,7 +97,7 @@ if [ -f "$manifest" ]; then
 fi
 ```
 
-### Stage 2: Preflight — Loop Guard
+### Stage 2: Loop Guard Initialization
 
 Create or read the loop guard file. This tracks cycle count across conversational turns.
 
@@ -194,6 +194,10 @@ bash .claude/scripts/task-lock.sh heartbeat "$task_number" "$session_id" 2>/dev/
 
 #### State: `not_started` or `not started`
 
+```bash
+skill_preflight_update "$task_number" "research" "$session_id"
+```
+
 Invoke the Agent tool:
 
 | Field | Value |
@@ -223,6 +227,10 @@ research_artifact=$(jq -r --argjson num "$task_number" \
   specs/state.json)
 ```
 
+```bash
+skill_preflight_update "$task_number" "plan" "$session_id"
+```
+
 Invoke the Agent tool:
 
 | Field | Value |
@@ -242,6 +250,10 @@ In-flight state. Exit with warning (same pattern as `researching`).
 Read plan path:
 ```bash
 plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+```
+
+```bash
+skill_preflight_update "$task_number" "implement" "$session_id"
 ```
 
 Invoke the Agent tool:
@@ -270,6 +282,12 @@ blocker_count=$(echo "$blockers" | jq 'length')
 Read plan path:
 ```bash
 plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+```
+
+```bash
+# Defense-in-depth: status is typically already "implementing" here, so this is
+# usually a no-op (update-task-status.sh preflight is idempotent).
+skill_preflight_update "$task_number" "implement" "$session_id"
 ```
 
 Invoke the Agent tool:

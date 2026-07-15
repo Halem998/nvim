@@ -184,7 +184,7 @@ iteration in Stage 3c below.
 
 ---
 
-### Stage 2: Preflight — Loop Guard and Churn State
+### Stage 2: Loop Guard and Churn State Initialization
 
 Create or read the loop guard file with hard-mode churn counters.
 
@@ -325,6 +325,10 @@ echo "[hard-orchestrate] H-orch: burnout signal detected (session total: $burnou
 
 Dispatch research via hard-mode research agent.
 
+```bash
+skill_preflight_update "$task_number" "research" "$session_id"
+```
+
 ```
 Agent tool:
   subagent_type: $RESEARCH_AGENT
@@ -374,6 +378,11 @@ fi
 
 # After verification: dispatch planning
 if [ "$adversarial_verified" = "true" ]; then
+  # Preflight fires ONLY here, strictly inside the adversarial_verified=true branch — never in
+  # the H4 verification re-dispatch branch above (which re-dispatches $RESEARCH_AGENT while
+  # status is still "researched"; a preflight there would incorrectly regress status to
+  # "researching"). This is the single plan-preflight call for the researched handler.
+  skill_preflight_update "$task_number" "plan" "$session_id"
   Agent tool:
     subagent_type: $PLANNER_AGENT
     prompt: "Create hard-mode implementation plan for task $task_number${focus_prompt:+. Focus: $focus_prompt}"
@@ -429,6 +438,14 @@ if [ -n "$next_phase" ]; then
     "plan_path": "'$plan_path'",
     "phase_number": '$next_phase'
   }'
+
+  # This preflight sits inside the `if [ -n "$next_phase" ]` branch ONLY — never in the
+  # elif skeleton-exhaustion branch or the trailing else (all-complete) branch below, neither
+  # of which dispatches an implement agent. Its one-time side effects (workflow-active marker
+  # write, first-phase [NOT STARTED]->[IN PROGRESS] auto-advance) do not collide with the
+  # heading scan above, which already matches "IN PROGRESS" — so phase-1 auto-advance still
+  # resolves next_phase=1, and the call is an idempotent no-op on every later phase.
+  skill_preflight_update "$task_number" "implement" "$session_id"
 
   Agent tool:
     subagent_type: $IMPLEMENT_AGENT
@@ -504,6 +521,12 @@ phases_total=$(echo "$handoff" | jq -r '.phases_total // 0')
 ```
 
 **Sub-state: continuation available** (continuation != null):
+
+```bash
+# Defense-in-depth: status is typically already "implementing" here, so this is
+# usually a no-op (update-task-status.sh preflight is idempotent).
+skill_preflight_update "$task_number" "implement" "$session_id"
+```
 
 Dispatch implement with continuation context (per-phase, H1).
 
