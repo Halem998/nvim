@@ -11,13 +11,12 @@ next_project_number: 866
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 864,865 | -- | extensions |
+| 1 | 865 | -- | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Extensions
 
-864 [IMPLEMENTING] — Enforce the invariant "every deployed file has a source" by exten
 865 [PLANNED] — Make a .claude/ wipe lossless and one-keystroke regenerable by li
 
 ## Tasks
@@ -43,7 +42,7 @@ CROSS-CUTTING CONSTRAINTS: Copy-deploy only, no symlink farm. Honor the no-task-
 ---
 
 ### 864. Enforce every deployed file has a source (hard drift gate)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 863

@@ -44,7 +44,7 @@
     {
       "project_number": 864,
       "project_name": "enforce_every_deployed_file_has_a_source",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Enforce every deployed file has a source (hard drift gate)",
@@ -59,7 +59,7 @@
         ".claude/extensions/core/commands/README.md"
       ],
       "created": "2026-07-14T22:58:04Z",
-      "last_updated": "2026-07-15T00:04:31Z",
+      "last_updated": "2026-07-15T00:14:03Z",
       "session_id": "sess_1784073170_af81356c",
       "artifacts": [
         {
@@ -72,7 +72,8 @@
           "type": "plan",
           "summary": "Created a 6-phase implementation plan for enforcing 'every deployed file has a source' as a hard gate. The plan sequences remediation before enforcement: Wave 1 runs four independent, disjoint-territory phases in parallel -- (1) repair the 19 broken install-extension.sh symlinks (fix the hardcoded '../extensions/$EXT_NAME/' relative target to '../../agent-system/extensions/$EXT_NAME/' byte-identically in BOTH copies of install-extension.sh, then delete-and-recreate the broken cslib/literature/pr-review symlinks since the script cannot self-repair them, and delete the dead zotero symlinks); (2) backfill the 4 genuinely core-owned orphans (no-task-references-in-deliverables.md, commands/README.md with a content rewrite, lint-contract-compliance.sh, validate-handoff.sh); (3) backfill the 8 literature-owned orphans and resolve literature-organization.md ownership to literature; (4) backfill the nvim orphan (extension-deploy-modes.md) plus the remaining core context/patterns orphans and resolve the fork-patterns.md duplicate via content diff. Wave 2 (Phase 5) extends check-extension-docs.sh with per-category orphan checks (agents/commands/context/scripts, honoring agents_subdir, recursive context comparison, scripts subdir entries, and merge_targets/index.json exclusion) plus a distinct broken-deployed-symlink check, at advisory level, and confirms 0 orphans / 0 broken symlinks on the remediated tree. Wave 3 (Phase 6) promotes those checks to blocking (FAILURES-contributing, non-zero exit) and verifies a clean exit-0 run. All check-extension-docs.sh and install-extension.sh edits are byte-identical dual-writes; all destructive check-logic testing happens in scratchpad against fake dirs."
         }
-      ]
+      ],
+      "completion_summary": "Repaired the 19+2 broken/dead install-extension.sh symlinks (relative-path fix in both dual-write copies), backfilled all 23 deployed-only orphans into their correct owning extensions (4 core, 8 literature, 1 nvim, plus 4 additional core context/patterns backfills and the fork-patterns.md/literature-organization.md ambiguous-case resolutions), and extended check-extension-docs.sh with 5 new per-category orphan + broken-symlink checks (Rules J-N), landed advisory-first then promoted to a hard, blocking gate that exits 0 on the remediated tree. Added minimal CI wiring (.github/workflows/check-extension-docs.yml) since none existed."
     },
     {
       "project_number": 865,
