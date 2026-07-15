@@ -45,6 +45,7 @@ unresolved_task_number=0
 toolUseId_confirmed=0
 toolUseId_unconfirmed=0
 rows_emitted=0
+sidecars_decode_failed=0
 
 # Task-number regex: case-insensitive "task(s) <number>", optionally prefixed with #.
 # Deliberately narrow -- do not widen to chase the ~63% ceiling (see header).
@@ -68,6 +69,7 @@ for project_dir in "$PROJECTS_ROOT"/*/; do
       subagent_count=$((subagent_count + 1))
 
       if ! jq -e . "$meta_file" >/dev/null 2>&1; then
+        sidecars_decode_failed=$((sidecars_decode_failed + 1))
         echo "WARN: decode failure, skipping (not silently dropped): $meta_file" >&2
         continue
       fi
@@ -130,5 +132,5 @@ for project_dir in "$PROJECTS_ROOT"/*/; do
 done
 
 {
-  echo "bootstrap-harvest-attribution.sh: sidecars_scanned=$sidecars_scanned rows_emitted=$rows_emitted resolved_task_number=$resolved_task_number unresolved_task_number=$unresolved_task_number toolUseId_confirmed=$toolUseId_confirmed toolUseId_unconfirmed=$toolUseId_unconfirmed"
+  echo "bootstrap-harvest-attribution.sh: sidecars_scanned=$sidecars_scanned rows_emitted=$rows_emitted resolved_task_number=$resolved_task_number unresolved_task_number=$unresolved_task_number toolUseId_confirmed=$toolUseId_confirmed toolUseId_unconfirmed=$toolUseId_unconfirmed sidecars_decode_failed=$sidecars_decode_failed"
 } >&2

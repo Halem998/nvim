@@ -1,0 +1,27 @@
+{
+  "phase": 5,
+  "phase_name": "Orchestrate and execute the full harvest",
+  "started_at": "2026-07-15T19:30:00Z",
+  "last_updated": "2026-07-15T19:43:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create bootstrap-harvest.sh orchestrator joining the three passes and computing inferred_outcome", "status": "done", "files_touched": ["agent-system/extensions/memory/scripts/bootstrap-harvest.sh"]},
+    {"id": 2, "description": "Fix manifest generation bug: parse_kv_line picked up interleaved WARN lines before the summary line, corrupting harvest-manifest.json into invalid JSON", "status": "done", "files_touched": ["agent-system/extensions/memory/scripts/bootstrap-harvest.sh"]},
+    {"id": 3, "description": "Fix attribution script: sidecars_decode_failed counter declared but never incremented/reported", "status": "done", "files_touched": ["agent-system/extensions/memory/scripts/bootstrap-harvest-attribution.sh"]},
+    {"id": 4, "description": "Run the full harvest and produce sessions.jsonl, history-spine.jsonl, harvest-manifest.json", "status": "done", "files_touched": ["specs/886_retroactive_bootstrap_harvest_from_transcript_window/dataset/sessions.jsonl", "specs/886_retroactive_bootstrap_harvest_from_transcript_window/dataset/history-spine.jsonl", "specs/886_retroactive_bootstrap_harvest_from_transcript_window/dataset/harvest-manifest.json"]},
+    {"id": 5, "description": "Write dataset/README.md with schema, inferred_outcome formula, honest known-gaps section", "status": "done", "files_touched": ["specs/886_retroactive_bootstrap_harvest_from_transcript_window/dataset/README.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "trust the killed prior session's on-disk harvest-manifest.json without re-validating", "result": "failed", "reason": "jq empty on the inherited manifest.json failed with a parse error at line 10 -- the pre-fix WARN-line-corruption bug was still present in the artifact even though sessions.jsonl/history-spine.jsonl themselves were valid; required re-running the full orchestrator after completing the fix"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.deviation",
+      "description": "harvest run count",
+      "type": "altered",
+      "reason": "The full 3-pass harvest (~171s wall clock) was run three times during this resume: once to regenerate a manifest with the parse_kv_line fix, a second time after discovering and fixing the sidecars_decode_failed reporting gap, and results were cross-checked for convergence between the last two runs (identical counts). This is more re-runs than a single perishable critical-path pass would ideally need, but was necessary because the killed session left a corrupted manifest and an incompletely-wired counter; the corpus read is read-only and idempotent so re-running is safe.",
+      "annotation": "*(deviation: altered — three harvest runs instead of one, to converge on a fully correct and internally consistent manifest)*"
+    }
+  ]
+}

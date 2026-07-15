@@ -1,0 +1,37 @@
+{
+  "harvest_timestamp_start": "2026-07-15T19:40:08Z",
+  "harvest_timestamp_end": "2026-07-15T19:42:59Z",
+  "wall_clock_seconds": 171,
+  "excluded_self_session_id": "c4adc98e-f94b-4ffe-bbf8-b105c7845204",
+  "projects_root": "/home/benjamin/.claude/projects",
+  "history_jsonl_path": "/home/benjamin/.claude/history.jsonl",
+  "sessions_jsonl_row_count": 829,
+  "history_spine_jsonl_row_count": 4930,
+  "transcripts_pass": {"files_scanned":838,"files_skipped_self":1,"files_decode_failed":8,"rows_emitted":829,"repo_unresolved":0},
+  "history_pass": {"records_ok":23792,"records_decode_failed":1,"self_excluded_records":2,"sessions_emitted":4930,"distinct_repos":33,"total_prompt_count":23790},
+  "attribution_pass": {"sidecars_scanned":4545,"rows_emitted":651,"resolved_task_number":2897,"unresolved_task_number":1647,"toolUseId_confirmed":3666,"toolUseId_unconfirmed":878,"sidecars_decode_failed":1},
+  "inferred_outcome_distribution": {
+  "clean": 133,
+  "high_error": 472,
+  "mixed": 190,
+  "trivial": 34
+},
+  "inferred_outcome_formula": {
+    "total_is_error": "is_error_count + subagent_is_error_count",
+    "is_error_rate": "total_is_error / tool_result_count (0 when denominator is 0)",
+    "trivial": "message_count < 3",
+    "clean": "total_is_error == 0 and message_count >= 3",
+    "mixed": "0 < is_error_rate <= 0.10",
+    "high_error": "is_error_rate > 0.10",
+    "threshold_note": "0.10 is a provisional judgement call against the corpus-wide 2.9% is_error density established in the source inventory; raw numerator/denominator retained on every row so this can be recomputed without re-mining"
+  },
+  "phase1_strategy_decision": {
+    "bulk_transcript_strategy": "jq-only per-file -s slurp pass",
+    "oracle_role": "claude-code-log used as pilot-only correctness oracle on the nvim slice (109 files, 42.073s), not invoked at bulk/full-corpus scale",
+    "history_jsonl_decode_strategy": "Python json.JSONDecoder().raw_decode skip-and-continue (bare jq whole-stream parsing aborts fatally at the first embedded-newline record rather than skipping it)"
+  },
+  "tool_versions": {
+    "jq": "jq-1.8.1",
+    "python3": "Python 3.13.13"
+  }
+}
