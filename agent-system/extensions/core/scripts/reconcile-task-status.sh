@@ -150,6 +150,50 @@ link_artifact() {
   fi
 }
 
+# --- Helper: does a handoff permit promotion to this phase's success status? ---
+# Generalizes the contract the `partial` branch below already implements: if the handoff file is
+# absent, permit promotion (preserves pre-existing behavior for tasks with no handoff); if
+# present and its `.status` matches the expected success value for this phase, permit; otherwise
+# refuse. Returns 0 (permit) or 1 (refuse) via exit status.
+handoff_permits_promotion() {
+  local expected_status="$1"
+  local handoff_file="${TASK_DIR}/.orchestrator-handoff.json"
+  if [[ ! -f "$handoff_file" ]]; then
+    return 0
+  fi
+  local handoff_status
+  handoff_status=$(jq -r '.status // ""' "$handoff_file" 2>/dev/null)
+  [[ "$handoff_status" == "$expected_status" ]]
+}
+
+# --- Helper: read the handoff's status field (empty string if no handoff file) ---
+handoff_status_value() {
+  local handoff_file="${TASK_DIR}/.orchestrator-handoff.json"
+  if [[ -f "$handoff_file" ]]; then
+    jq -r '.status // ""' "$handoff_file" 2>/dev/null
+  fi
+}
+
+# --- Helper: record a refused promotion using the sanctioned partial/blocked postflight
+# termini — but only when the handoff status maps unambiguously onto one of them. Any other
+# handoff status (e.g. "failed", or an empty/missing status field) is already surfaced by the
+# caller's refusal line; this is a plain no-op for those cases — never invent a status.
+record_refused_promotion() {
+  local handoff_status="$1"
+  case "$handoff_status" in
+    blocked|partial)
+      local dry_run_flag=()
+      if [[ "$DRY_RUN" == "true" ]]; then
+        dry_run_flag=(--dry-run)
+      fi
+      "$SCRIPT_DIR/update-task-status.sh" postflight "$task_number" "$handoff_status" "$session_id" "${dry_run_flag[@]}"
+      ;;
+    *)
+      : # ambiguous mapping — no recording, the refusal line above is the whole report
+      ;;
+  esac
+}
+
 # --- Main reconciliation dispatch ---
 case "$current_status" in
 
@@ -161,6 +205,14 @@ case "$current_status" in
       if [[ "$DRY_RUN" == "true" ]]; then
         echo "[reconcile] Task $task_number: status=researching, no report artifact found — no-op"
       fi
+      exit 0
+    fi
+
+    # Handoff-aware promotion guard (see handoff_permits_promotion above).
+    if ! handoff_permits_promotion "researched"; then
+      handoff_status=$(handoff_status_value)
+      echo "[reconcile] Task $task_number: status=researching, artifact exists but handoff status=$handoff_status — refusing promotion"
+      record_refused_promotion "$handoff_status"
       exit 0
     fi
 
@@ -187,6 +239,14 @@ case "$current_status" in
       exit 0
     fi
 
+    # Handoff-aware promotion guard (see handoff_permits_promotion above).
+    if ! handoff_permits_promotion "planned"; then
+      handoff_status=$(handoff_status_value)
+      echo "[reconcile] Task $task_number: status=planning, artifact exists but handoff status=$handoff_status — refusing promotion"
+      record_refused_promotion "$handoff_status"
+      exit 0
+    fi
+
     plan_basename=$(basename "$plan_file")
     if [[ "$DRY_RUN" == "true" ]]; then
       echo "[reconcile] Task $task_number: status=planning, found plan $plan_basename"
@@ -207,6 +267,14 @@ case "$current_status" in
       if [[ "$DRY_RUN" == "true" ]]; then
         echo "[reconcile] Task $task_number: status=implementing, no summary artifact found — no-op"
       fi
+      exit 0
+    fi
+
+    # Handoff-aware promotion guard (see handoff_permits_promotion above).
+    if ! handoff_permits_promotion "implemented"; then
+      handoff_status=$(handoff_status_value)
+      echo "[reconcile] Task $task_number: status=implementing, artifact exists but handoff status=$handoff_status — refusing promotion"
+      record_refused_promotion "$handoff_status"
       exit 0
     fi
 

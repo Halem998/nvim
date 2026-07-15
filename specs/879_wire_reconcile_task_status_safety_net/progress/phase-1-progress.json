@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Handoff-aware promotion guard in reconcile-task-status.sh",
+  "started_at": "2026-07-15T00:00:00Z",
+  "last_updated": "2026-07-15T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add handoff_permits_promotion helper and record_refused_promotion helper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/reconcile-task-status.sh", ".claude/scripts/reconcile-task-status.sh"]},
+    {"id": 2, "description": "Wire guard into researching/planning/implementing branches", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/reconcile-task-status.sh", ".claude/scripts/reconcile-task-status.sh"]},
+    {"id": 3, "description": "Fixture-verify no-handoff/blocked/matching-handoff cases", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
