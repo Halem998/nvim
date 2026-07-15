@@ -186,7 +186,7 @@ addition — without it, no Category B/C/D fix is expressible.
 
 ---
 
-### Phase 2: Reframe the SCOPE BOUNDARY (Category E) [NOT STARTED]
+### Phase 2: Reframe the SCOPE BOUNDARY (Category E) [COMPLETED]
 
 **Goal**: Split one conflated rule into two distinct rules that now have different correct answers.
 

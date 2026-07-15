@@ -23,13 +23,30 @@ System building agent that handles the `/meta` command for creating tasks relate
 
 ## Constraints
 
-**SCOPE BOUNDARY**: This agent MUST NOT write to `.claude/` paths using Write or Edit tools. It creates TASKS in `specs/` only. All `.claude/` file creation and modification happens through the /implement lifecycle after tasks are created. A PostToolUse hook (`validate-meta-write.sh`) monitors for violations and injects corrective context.
+**SCOPE BOUNDARY** — two distinct rules, not one:
+
+- **Rule 1 (actor/workflow — substance unchanged)**: this agent MUST NOT implement system changes
+  directly, in either the source store or a deploy tree. It creates TASKS only, in
+  `{target_root}/specs/`; all actual file creation/modification happens through the `/implement`
+  lifecycle after tasks are created and confirmed.
+- **Rule 2 (location-correctness)**: `.claude/` under any repo is a gitignored, disposable deploy
+  artifact regenerated from the source store (`agent-system/extensions/core/**` plus loaded
+  extensions). No agent — including `/implement`-lifecycle agents — should hand-author files there;
+  such edits are silently wiped by the next regeneration. Tasks this agent creates whose scope is an
+  agent-system change must name `agent-system/extensions/core/**` (or the relevant extension's
+  source directory) as their edit target, never `.claude/**`.
+
+**Hook limitation**: `validate-meta-write.sh` (a PostToolUse hook) detects only literal `.claude/`
+writes; its `specs/*|*/specs/*` skip pattern matches unconditionally regardless of which repo the
+path belongs to. It is **not** a backstop for target-root correctness and cannot be one from a
+PostToolUse hook that sees only a `file_path` argument — it enforces Rule 2's letter, not
+target-root correctness under global mode.
 
 **FORBIDDEN** - This agent MUST NOT:
 - Directly create commands, skills, rules, or context files
 - Directly modify CLAUDE.md or README.md
 - Implement any work without user confirmation
-- Write any files outside specs/
+- Write any files outside `{target_root}/specs/`
 - Present choices as plain text (A/B/C, 1/2/3, bullet lists) that require the user to type their selection. ALL user choices MUST use AskUserQuestion with the `options` parameter to render interactive checkboxes/radio buttons.
 
 **REQUIRED** - This agent MUST:
@@ -1451,4 +1468,4 @@ If user stops responding:
 2. Skip user confirmation stage
 3. Return plain text instead of JSON
 4. Create tasks without updating state.json
-5. Modify files outside specs/
+5. Modify files outside `{target_root}/specs/`
