@@ -1,0 +1,30 @@
+{
+  "phase": 3,
+  "phase_name": "Backfill literature-owned orphans",
+  "started_at": "2026-07-15T00:25:00Z",
+  "last_updated": "2026-07-15T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Backfill 6 script orphans", "status": "done", "files_touched": [
+      "agent-system/extensions/literature/scripts/literature-audit.sh",
+      "agent-system/extensions/literature/scripts/literature-pyenv-provision.sh",
+      "agent-system/extensions/literature/scripts/zotero-resolve-pdf.sh",
+      "agent-system/extensions/literature/scripts/.zotero-title-sim.py",
+      "agent-system/extensions/literature/scripts/tests/generate-test-fixtures.py",
+      "agent-system/extensions/literature/scripts/tests/test-literature-convert.sh",
+      "agent-system/extensions/literature/manifest.json"
+    ]},
+    {"id": 2, "description": "Backfill 2 context patterns", "status": "done", "files_touched": [
+      "agent-system/extensions/literature/context/project/literature/patterns/chunk-file-conventions.md",
+      "agent-system/extensions/literature/context/project/literature/patterns/zotero-pdf-resolution.md"
+    ]},
+    {"id": 3, "description": "Resolve literature-organization.md ownership (move to literature guides)", "status": "done", "files_touched": [
+      "agent-system/extensions/literature/context/guides/literature-organization.md",
+      "agent-system/extensions/literature/manifest.json"
+    ]},
+    {"id": 4, "description": "Confirm byte-identical", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

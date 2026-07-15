@@ -20,7 +20,8 @@
       "skill-cite"
     ],
     "context": [
-      "project/literature"
+      "project/literature",
+      "guides"
     ],
     "scripts": [
       "zotero-search.sh",
@@ -47,7 +48,13 @@
       "literature-decode-font-offset.py",
       "literature-schema.sql",
       "literature-briefing-invoke.sh",
-      "literature-lit-flag-resolve.sh"
+      "literature-lit-flag-resolve.sh",
+      "literature-audit.sh",
+      "literature-pyenv-provision.sh",
+      "zotero-resolve-pdf.sh",
+      ".zotero-title-sim.py",
+      "tests/generate-test-fixtures.py",
+      "tests/test-literature-convert.sh"
     ]
   },
   "merge_targets": {

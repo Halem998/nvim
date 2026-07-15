@@ -200,29 +200,32 @@ and declare them in core's manifest.
 
 ---
 
-### Phase 3: Backfill literature-owned orphans [NOT STARTED]
+### Phase 3: Backfill literature-owned orphans [COMPLETED]
 
 **Goal**: Give the eight literature-owned orphans (6 scripts + 2 context patterns) a source under
 `agent-system/extensions/literature/`, declare them, and resolve the `literature-organization.md`
 guides ownership decision.
 
 **Tasks**:
-- [ ] Backfill the 6 script orphans to `agent-system/extensions/literature/scripts/` and add each
+- [x] Backfill the 6 script orphans to `agent-system/extensions/literature/scripts/` and add each
       to literature's `provides.scripts`: `literature-audit.sh`, `literature-pyenv-provision.sh`,
       `zotero-resolve-pdf.sh`, `.zotero-title-sim.py`, `tests/generate-test-fixtures.py`,
       `tests/test-literature-convert.sh` (ship the `.zotero-title-sim.py` helper alongside its
-      caller `zotero-resolve-pdf.sh`).
-- [ ] Backfill the 2 context patterns to
+      caller `zotero-resolve-pdf.sh`). *(completed)*
+- [x] Backfill the 2 context patterns to
       `agent-system/extensions/literature/context/project/literature/patterns/` (already covered by
       literature's `"project/literature"` context entry — recursive, no manifest change needed):
-      `chunk-file-conventions.md`, `zotero-pdf-resolution.md`.
-- [ ] Resolve `context/guides/literature-organization.md`: move it under literature's context tree
+      `chunk-file-conventions.md`, `zotero-pdf-resolution.md`. *(completed)*
+- [x] Resolve `context/guides/literature-organization.md`: move it under literature's context tree
       at `agent-system/extensions/literature/context/guides/literature-organization.md` and add
       `"guides"` to literature's `provides.context` (research recommendation (a)). Confirm the
       deployed file at `.claude/context/guides/literature-organization.md` still traces to a source
       after the move (it is deployed under `.claude/context/guides/` by whichever extension declares
-      the `guides` entry — verify the new literature `guides` entry produces it).
-- [ ] Confirm each new source file is byte-identical to its deployed counterpart.
+      the `guides` entry — verify the new literature `guides` entry produces it). *(completed:
+      literature now declares "guides" alongside core's pre-existing "guides" entry; no filename
+      collision between the two extensions' guides/ trees)*
+- [x] Confirm each new source file is byte-identical to its deployed counterpart. *(completed:
+      diff empty for all 9 new source files)*
 
 **Timing**: 1.5 hours
 
