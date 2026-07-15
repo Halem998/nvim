@@ -1,7 +1,7 @@
 # Implementation Plan: Task #872
 
 - **Task**: 872 - Add a review/revise "dream" mode to the existing /distill command
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: 869, 870, 871 (all complete -- event store, capture layers 1 and 2)
 - **Research Inputs**: specs/872_distill_review_revise_dream_mode/reports/01_dream_mode_research.md
@@ -369,27 +369,40 @@ wiring.
 
 ---
 
-### Phase 6: Cross-file consistency verification [NOT STARTED]
+### Phase 6: Cross-file consistency verification [COMPLETED]
 
 **Goal**: All parallel tables agree and no rule is violated.
 
 **Tasks**:
-- [ ] Verify dream mode appears consistently in all four parallel sub-mode listings:
+- [x] Verify dream mode appears consistently in all four parallel sub-mode listings:
       `distill.md` availability table, SKILL.md Sub-Mode Dispatch table, `EXTENSION.md` Commands
-      table, `distill-usage.md` Quick Reference. Descriptions must not contradict.
-- [ ] Verify the auto-exclusion is stated in all three places it belongs: SKILL.md exclusion
-      table, SKILL.md auto execution flow skip list, `distill-usage.md` auto section.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and confirm it exits 0 (or that any
+      table, `distill-usage.md` Quick Reference. Descriptions must not contradict. *(verified:
+      all four grep-confirmed present, no contradictions)*
+- [x] Verify the auto-exclusion is stated in all three places it belongs: SKILL.md exclusion
+      table, SKILL.md auto execution flow skip list, `distill-usage.md` auto section. *(verified:
+      all three grep-confirmed present)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and confirm it exits 0 (or that any
       failure is pre-existing and unrelated -- capture the before/after comparison rather than
-      assuming).
-- [ ] Run a no-task-references check over the diff: `git diff` filtered for `task [0-9]` /
+      assuming). *(ran: the `memory` extension (the one this task touches) reports OK/PASS. The
+      overall script exits 1 due to a pre-existing, unrelated `core` FAIL: deployed-vs-source
+      drift on `memory-harvest.sh`/`skill-base.sh`/`orchestrator-postflight.sh`. Confirmed via
+      `git log` that this drift stems from prior, already-committed tasks 869-871 modifying
+      `agent-system/extensions/core/scripts/*` source without redeploying to the gitignored
+      `.claude/` tree -- `git status --porcelain agent-system/extensions/core/` is empty, proving
+      this task made zero core changes. Pre-existing and unrelated, not manufactured.)*
+- [x] Run a no-task-references check over the diff: `git diff` filtered for `task [0-9]` /
       `tasks [0-9]` across all files outside `specs/**`. Must return zero **new** hits.
-      Pre-existing violations in the untouched surrounding rows stay untouched.
-- [ ] Confirm no file under `agent-system/extensions/core/scripts/` was modified:
-      `git status --porcelain agent-system/extensions/core/` must be empty.
-- [ ] Confirm no `.claude/` or `.opencode/` deployed copy was hand-edited.
-- [ ] Re-confirm the documented no-events behavior still matches live output by re-running
-      `events-query.sh --format summary-counts` and `--format json-array`.
+      Pre-existing violations in the untouched surrounding rows stay untouched. *(verified: zero
+      new hits across all five touched files, scoped to this task's own commits)*
+- [x] Confirm no file under `agent-system/extensions/core/scripts/` was modified:
+      `git status --porcelain agent-system/extensions/core/` must be empty. *(confirmed empty)*
+- [x] Confirm no `.claude/` or `.opencode/` deployed copy was hand-edited. *(confirmed: both
+      gitignored, zero porcelain status)*
+- [x] Re-confirm the documented no-events behavior still matches live output by re-running
+      `events-query.sh --format summary-counts` and `--format json-array`. *(re-ran live:
+      `specs/events.jsonl` still absent; summary-counts returns
+      `{"total_events":0,"by_category":{},"by_event_type":{}}`, json-array returns `[]`, both
+      exit 0 -- matches the documented degraded path exactly)*
 
 **Timing**: 0.5 hours
 
@@ -404,20 +417,22 @@ wiring.
 
 ## Testing & Validation
 
-- [ ] All four parallel sub-mode listings include dream with non-contradicting descriptions.
-- [ ] `--dream` is in both `distill.md` error-message flag lists.
-- [ ] Dream mode is excluded from `--auto` in all three documented locations.
-- [ ] The no-events degraded path is documented as a normal, non-error outcome and matches live
+- [x] All four parallel sub-mode listings include dream with non-contradicting descriptions.
+- [x] `--dream` is in both `distill.md` error-message flag lists.
+- [x] Dream mode is excluded from `--auto` in all three documented locations.
+- [x] The no-events degraded path is documented as a normal, non-error outcome and matches live
       `events-query.sh` behavior.
-- [ ] Every event read is an `events-query.sh` call using flags that exist in its usage block; no
+- [x] Every event read is an `events-query.sh` call using flags that exist in its usage block; no
       hand-rolled `jq` against `specs/events.jsonl` is specified anywhere.
-- [ ] Every memory write path routes through an existing named primitive
+- [x] Every memory write path routes through an existing named primitive
       (UPDATE/EXTEND/CREATE/tombstone) behind a mandatory AskUserQuestion stop.
-- [ ] `--dry-run` performs zero writes on every dream path.
-- [ ] `index-entries.json` and `manifest.json` parse under `jq`; `line_count` is accurate.
-- [ ] `check-extension-docs.sh` exits 0 (or fails identically to its pre-change baseline).
-- [ ] Zero new task-number citations outside `specs/**`.
-- [ ] `agent-system/extensions/core/` is untouched.
+- [x] `--dry-run` performs zero writes on every dream path.
+- [x] `index-entries.json` and `manifest.json` parse under `jq`; `line_count` is accurate.
+- [x] `check-extension-docs.sh` exits 0 (or fails identically to its pre-change baseline) --
+      `memory` extension itself is OK/PASS; the overall FAIL is a pre-existing, unrelated `core`
+      deploy-drift issue from prior tasks 869-871, confirmed via `git log`/`git status`.
+- [x] Zero new task-number citations outside `specs/**`.
+- [x] `agent-system/extensions/core/` is untouched.
 
 ## Artifacts & Outputs
 
