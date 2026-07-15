@@ -257,7 +257,7 @@ Parallel-safe with Phase 2 (different source file, different script, no shared s
 
 ---
 
-### Phase 4: Attribution join script [NOT STARTED]
+### Phase 4: Attribution join script [COMPLETED]
 
 **Goal**: Author `bootstrap-harvest-attribution.sh` — the `.meta.json` sidecar join that maps
 subagent work to task numbers and agent types, with zero content parsing.
@@ -265,20 +265,21 @@ subagent work to task numbers and agent types, with zero content parsing.
 **READ-ONLY**: reads `.meta.json` sidecars and transcripts only.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/memory/scripts/bootstrap-harvest-attribution.sh`.
-- [ ] Walk the `.meta.json` sidecars (4,613 known) reading `agentType`, `description`,
-      `toolUseId`, `spawnDepth`. No transcript content parsing.
-- [ ] Extract a task number from `description` by regex. Sidecars with no match get
+- [x] Create `agent-system/extensions/memory/scripts/bootstrap-harvest-attribution.sh`.
+- [x] Walk the `.meta.json` sidecars (4,613 known) reading `agentType`, `description`,
+      `toolUseId`, `spawnDepth`. No transcript content parsing. *(completed)*
+- [x] Extract a task number from `description` by regex. Sidecars with no match get
       `task_number: null` — **never** a guess. Do not widen the regex to chase the established 63%
-      ceiling; a wrong attribution is worse than an honest null.
-- [ ] Resolve the parent session: the sidecar's own directory gives the child sessionId; the
+      ceiling; a wrong attribution is worse than an honest null. *(completed: 420/573=73.3% resolved on nvim slice, ~10pts above the 63% ceiling — flagged as a finding, regex not widened/narrowed to chase either number)*
+- [x] Resolve the parent session: the sidecar's own directory gives the child sessionId; the
       transcript one level up is the parent, and its filename is the parent sessionId. Match
       `toolUseId` against a `Task`-type `tool_use` block in that parent to confirm the link. This
       join stays entirely inside Claude Code's UUID space — it must never touch `sess_*` IDs.
-- [ ] Emit per parent session: `session_id`, `task_numbers` (array, nulls excluded),
-      `agent_types` (array from `agentType`), `subagent_count`.
-- [ ] Report the resolved/unresolved split as counts on stderr for the manifest.
-- [ ] Header comment uses durable anchors — no task-number citations.
+      *(completed: 478/573=83.4% toolUseId-confirmed; grep for the orchestrator session-id token returns nothing)*
+- [x] Emit per parent session: `session_id`, `task_numbers` (array, nulls excluded),
+      `agent_types` (array from `agentType`), `subagent_count`. *(completed)*
+- [x] Report the resolved/unresolved split as counts on stderr for the manifest. *(completed)*
+- [x] Header comment uses durable anchors — no task-number citations. *(completed)*
 
 **Timing**: 1.25 hours
 

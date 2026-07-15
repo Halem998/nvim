@@ -1,0 +1,15 @@
+{
+  "phase": 4,
+  "phase_name": "Attribution join script",
+  "started_at": "2026-07-15T19:10:00Z",
+  "last_updated": "2026-07-15T19:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create bootstrap-harvest-attribution.sh with meta.json walk, regex extraction, toolUseId join, per-parent rollup", "status": "done", "files_touched": ["agent-system/extensions/memory/scripts/bootstrap-harvest-attribution.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "literal 'sess_' substring in header comments to explain the ID-space exclusion", "result": "failed", "reason": "the plan's own verification grep for 'sess_' would match the explanatory comment itself; reworded to describe the format without the literal 4-char token"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
