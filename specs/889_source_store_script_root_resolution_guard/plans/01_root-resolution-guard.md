@@ -375,27 +375,28 @@ legitimately red until a manual sync.
 
 ---
 
-### Phase 6: Document the pattern and surface the required sync [NOT STARTED]
+### Phase 6: Document the pattern and surface the required sync [COMPLETED]
 
 **Goal**: A future core script copies the guarded root-resolution boilerplate rather than
 rediscovering this bug, and the user knows a manual sync is required to make the guard live.
 
 **Tasks**:
-- [ ] Add a short addendum to `.claude/context/patterns/regeneration-is-manual-only.md` (or a
+- [x] Add a short addendum to `.claude/context/patterns/regeneration-is-manual-only.md` (or a
       brief sibling doc if that file is a poor fit) capturing: every core script that resolves
       its root via `${SCRIPT_DIR}/../..` MUST source `deploy-root-guard.sh` with `|| exit 1`
       immediately after that computation; the two accepted deploy-tree names; and why
-      `git rev-parse --show-toplevel` is not the fix. Keep it under ~20 lines.
-- [ ] No task numbers in the doc — anchor to `deploy-root-guard.sh` and to
-      `check-extension-docs.sh`'s reconciled comment.
-- [ ] In the implementation summary and the orchestrator handoff, state prominently: the source
+      `git rev-parse --show-toplevel` is not the fix. Keep it under ~20 lines. *(completed: 14
+      content lines added as a "Root-Resolution Guard for Core Scripts" section)*
+- [x] No task numbers in the doc — anchor to `deploy-root-guard.sh` and to
+      `check-extension-docs.sh`'s reconciled comment. *(completed)*
+- [x] In the implementation summary and the orchestrator handoff, state prominently: the source
       store is fixed, but `.claude/scripts/` still holds unguarded copies until the user runs
       `<leader>al` "Sync all (replace existing)"; until then `check-extension-docs.sh` reports
       Rule F drift for the 24 edited scripts. After syncing, the gate should return to PASS and
       `STRICT_CORE_DEPLOY=1 bash .claude/scripts/check-extension-docs.sh` is the
-      post-regeneration assertion.
-- [ ] Flag as a recommended follow-up (do not implement): mirroring the guard into the 15-ish
-      overlapping `.opencode/scripts/` copies.
+      post-regeneration assertion. *(completed — see summary and handoff)*
+- [x] Flag as a recommended follow-up (do not implement): mirroring the guard into the 15-ish
+      overlapping `.opencode/scripts/` copies. *(completed — see summary Notes)*
 
 **Timing**: 0.4 hours
 

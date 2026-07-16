@@ -39,6 +39,21 @@ explicitly out of scope for any task relying on this document.
   regeneration, then (for anything involving hook-driven event flow) accumulated real usage over
   time. Neither gate can be satisfied by inspecting source-store code alone.
 
+## Root-Resolution Guard for Core Scripts
+
+Any core script under `agent-system/extensions/core/scripts/` that resolves its repo root as
+`"$(cd "${SCRIPT_DIR}/../.." && pwd)"` is correct ONLY once deployed (`.claude/scripts/` or
+`.opencode/scripts/`, two levels under the repo root). Run from the source store, the same
+expression silently resolves to `agent-system/extensions/` and proceeds against a bogus root.
+Every such script MUST source the shared guard immediately after that root computation:
+`. "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1` -- the trailing `|| exit 1` is required
+because several core scripts do not use `set -e`, so a bare `source` of a missing/failing
+helper would otherwise print an error and continue unguarded. `deploy-root-guard.sh` validates
+its own `BASH_SOURCE[0]` location structurally (no filesystem I/O) against exactly two accepted
+deploy-tree grandparents, `.claude` and `.opencode` -- never hardcode just one. Do NOT use
+`git rev-parse --show-toplevel` as a substitute: it would silently succeed by finding the true
+repo root, masking the invocation-context error this guard exists to surface.
+
 ## Related Documentation
 
 - `docs/guides/creating-extensions.md` -- extension authoring guide (manifest schema, file
