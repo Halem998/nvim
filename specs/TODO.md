@@ -11,7 +11,7 @@ next_project_number: 890
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,888,889 | -- | agent-system |
+| 1 | 873,885,889 | -- | agent-system |
 | 2 | 887 | 873 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -24,24 +24,28 @@ next_project_number: 890
 
 ### Uncategorized
 
-888 [NOT STARTED] — Extension discovery in lua/neotex/plugins/ai/shared/extensions/ma
-889 [NOT STARTED] — Scripts in the agent-system source store resolve PROJECT_ROOT as 
+889 [IMPLEMENTING] — Scripts in the agent-system source store resolve PROJECT_ROOT as 
 
 ## Tasks
 
 ### 889. Source store script root resolution guard
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Dependencies**: None
+- **Research**: [889_source_store_script_root_resolution_guard/reports/01_root_resolution_guard.md]
+- **Plan**: [889_source_store_script_root_resolution_guard/plans/01_root-resolution-guard.md]
 
 **Description**: Scripts in the agent-system source store resolve PROJECT_ROOT as "$(cd "${SCRIPT_DIR}/../.." && pwd)". That depth is only correct in the deploy tree, where the script sits at .claude/scripts/ and ../.. is the repo root. In the source store the same file sits at agent-system/extensions/core/scripts/, so ../.. silently resolves to agent-system/extensions/ instead of failing. generate-todo.sh run this way created a stray agent-system/extensions/.agent-logs/ directory and logged: state.json not found at agent-system/extensions/specs/state.json. 24 scripts under agent-system/extensions/core/scripts/ share this pattern. Add a root validation guard so a script run outside a valid deploy tree fails loudly with an actionable message rather than computing a bogus root and writing stray artifacts. Also de-anchor the .gitignore entry (currently /.agent-logs/ at line 10, root-anchored) so nested log dirs are ignored wherever they appear.
 
 ---
 
 ### 888. Harden extension discovery against stray dirs
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: neovim
 - **Dependencies**: None
+- **Research**: [888_harden_extension_discovery_against_stray_dirs/reports/01_harden-extension-discovery.md]
+- **Plan**: [888_harden_extension_discovery_against_stray_dirs/plans/01_harden-extension-discovery.md]
+- **Summary**: [888_harden_extension_discovery_against_stray_dirs/summaries/01_harden-extension-discovery-summary.md]
 
 **Description**: Extension discovery in lua/neotex/plugins/ai/shared/extensions/manifest.lua treats every subdirectory of the global extensions dir as an extension candidate, including dot-directories. A stray .agent-logs/ log dir written into agent-system/extensions/ was therefore reported as an extension with an invalid manifest. Two defects: (1) M.list_extensions (manifest.lua:182) iterates readdir entries with no dot-prefix filter; (2) it re-warns on every invocation and is called from at least three sites per reload (manifest.lua:219, manifest.lua:245, init.lua:842), so one bad directory produced ~120 identical vim.notify warnings. Skip dot-prefixed entries during the scan, and deduplicate/warn-once so a single malformed extension yields a single notification. Preserve the existing warn-and-continue behavior for genuinely malformed non-dot extensions.
 

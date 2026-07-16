@@ -100,6 +100,7 @@
       "command-gate-in.sh",
       "command-gate-out.sh",
       "command-route-skill.sh",
+      "deploy-root-guard.sh",
       "events-append.sh",
       "events-query.sh",
       "export-to-markdown.sh",
