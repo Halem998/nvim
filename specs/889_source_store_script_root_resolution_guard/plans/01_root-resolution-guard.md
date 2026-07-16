@@ -308,18 +308,20 @@ and its "flagged not fixed" comment stops describing a bug that no longer exists
 
 ---
 
-### Phase 5: Verify both guard branches and the no-stray-artifact claim [NOT STARTED]
+### Phase 5: Verify both guard branches and the no-stray-artifact claim [COMPLETED]
 
 **Goal**: Prove the guard fires in the source store, stays silent in a deploy tree, and that the
 reported symptom is actually gone — without depending on the doc-lint gate, which is
 legitimately red until a manual sync.
 
 **Tasks**:
-- [ ] **Negative branch (the reported symptom)**: from a clean tree, run
+- [x] **Negative branch (the reported symptom)**: from a clean tree, run
       `bash agent-system/extensions/core/scripts/generate-todo.sh`. Assert: exit 1, stderr names
       the deploy-tree requirement, and **`agent-system/extensions/.agent-logs/` is NOT created**.
-      Repeat for `update-phase-status.sh` (the other `.agent-logs` writer).
-- [ ] **Positive branch**: build a throwaway deploy tree and prove the guard passes there:
+      Repeat for `update-phase-status.sh` (the other `.agent-logs` writer). *(completed: both
+      exit 1 with the actionable message; no stray `.agent-logs/` anywhere under
+      `agent-system/extensions/`)*
+- [x] **Positive branch**: build a throwaway deploy tree and prove the guard passes there:
       ```bash
       tmp=$(mktemp -d); mkdir -p "$tmp/.claude/scripts" "$tmp/specs"
       cp agent-system/extensions/core/scripts/{deploy-root-guard.sh,generate-todo.sh} \
@@ -328,19 +330,35 @@ legitimately red until a manual sync.
       bash "$tmp/.claude/scripts/generate-todo.sh"   # must NOT trip the guard
       ```
       Assert it proceeds past the guard (a later failure for an unrelated reason is acceptable
-      and informative; a guard-message failure is not). Clean up `$tmp`.
-- [ ] **Uniformity**: assert all 24 carry exactly one guard line —
+      and informative; a guard-message failure is not). Clean up `$tmp`. *(completed: guard not
+      tripped; run failed later with exit 127 on a missing sibling script it wasn't given —
+      an unrelated, informative failure, not a guard failure. Also verified `.opencode/scripts/`
+      is accepted by sourcing the guard directly from a throwaway `.opencode` tree, exit 0.)*
+- [x] **Uniformity**: assert all 24 carry exactly one guard line —
       `grep -l 'deploy-root-guard.sh' agent-system/extensions/core/scripts/*.sh | wc -l` == 25
-      (24 callers + the helper's own header reference), and no caller has two.
-- [ ] **Syntax**: `bash -n` across all 24 + the helper.
-- [ ] **Override**: confirm `REPO_ROOT=$(pwd) bash .../check-extension-docs.sh --quiet` still
-      exits 0 for reasons unrelated to drift (see next task).
-- [ ] **Record, do not chase, the expected drift**: run
+      (24 callers + the helper's own header reference), and no caller has two. *(completed: 25
+      files match. 23 callers show exactly one grep -c hit; `check-extension-docs.sh` shows two
+      textual hits — one is the single actual guard-invocation line, the other is the reconciled
+      comment's filename mention that Phase 4 explicitly required ("anchor to
+      `deploy-root-guard.sh` by filename"). Exactly one guard *invocation* line, confirmed by
+      inspection — the plan's "no caller has two" intent (two invocations) holds; the literal
+      grep -c count for this one file is a harmless side effect of the mandated comment text.)*
+- [x] **Syntax**: `bash -n` across all 24 + the helper. *(completed: clean, plus all other
+      scripts in the directory for good measure)*
+- [x] **Override**: confirm `REPO_ROOT=$(pwd) bash .../check-extension-docs.sh --quiet` bypasses
+      the guard itself (no guard-message failure). *(completed: verified — the override run
+      produces no guard error and proceeds through the full doc-lint suite. Note: the plan text
+      here says "still exits 0"; that is superseded by the very next task, which correctly
+      expects Rule F drift and a non-zero exit once Phases 3-4 land. The override's job — bypass
+      the guard, not the doc-lint content itself — is confirmed.)*
+- [x] **Record, do not chase, the expected drift**: run
       `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh` and
       expect Rule F to now report drift for the 24 edited scripts (baseline before this task was
       a clean PASS). This is the correct, expected consequence of a source-store edit and is
       resolved only by the user's `<leader>al` sync. Do **not** hand-edit `.claude/scripts/` to
-      silence it. Record the failing count in the summary.
+      silence it. Record the failing count in the summary. *(completed: exactly 24 Rule F drift
+      FAILs recorded, matching the 24 edited scripts; overall verdict FAIL with "24 issue(s)
+      found". `.claude/scripts/` was NOT hand-edited.)*
 
 **Timing**: 0.75 hours
 
