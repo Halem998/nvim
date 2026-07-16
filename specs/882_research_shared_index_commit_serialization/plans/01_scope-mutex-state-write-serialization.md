@@ -252,24 +252,37 @@ holder-declared staleness and ownership-verified release.
 
 ---
 
-### Phase 3: Re-entrancy Guard and Standalone Mutex in update-task-status.sh [NOT STARTED]
+### Phase 3: Re-entrancy Guard and Standalone Mutex in update-task-status.sh [COMPLETED]
 
 **Goal**: Protect `update-task-status.sh`'s own read-modify-write when invoked standalone, while
 making it a no-op guest when it runs inside an outer critical section. This must land before
 Phase 4 or postflight self-deadlocks on every run.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/update-task-status.sh`, wrap the state.json
-      read-modify-write (the `jq` -> tmp -> `mv` span, ~lines 184-208) *and* the `generate-todo.sh`
-      call (~line 227) in a single critical section — one acquire covering both, not two.
-- [ ] Guard it: when `SCOPE_MUTEX_HELD` is already set in the environment, skip acquire and release
-      entirely and log a brief note that an outer holder owns the section.
-- [ ] When not set: call `task-lock.sh scope-acquire`, export `SCOPE_MUTEX_HELD=1` for the duration,
-      install `trap` on EXIT to release, release explicitly at the end and clear the trap.
-- [ ] On mutex-acquire timeout, log a loud WARNING and proceed unserialized — preserving today's
-      non-blocking behavior. Do not abort the status update.
-- [ ] Respect the existing `--dry-run` path: no mutex acquisition when nothing is written.
-- [ ] No task-number citations in comments.
+- [x] **Task 3.1**: In `agent-system/extensions/core/scripts/update-task-status.sh`, wrap the
+      state.json read-modify-write (the `jq` -> tmp -> `mv` span) *and* the `generate-todo.sh` call
+      in a single critical section — one acquire covering both, not two. *(completed: acquired
+      immediately before `update_state_json`'s execution site, released immediately after
+      `regenerate_todo`'s execution call, before `update_plan_file` runs.)*
+- [x] **Task 3.2**: Guard it: when `SCOPE_MUTEX_HELD` is already set in the environment, skip
+      acquire and release entirely and log a brief note that an outer holder owns the section.
+      *(completed: verified — Test B, guest mode never created `specs/.scope-lock`.)*
+- [x] **Task 3.3**: When not set: call `task-lock.sh scope-acquire`, export `SCOPE_MUTEX_HELD=1` for
+      the duration, install `trap` on EXIT to release, release explicitly at the end and clear the
+      trap. *(completed with one deliberate deviation — see Deviations below: rather than
+      installing a second, dedicated EXIT trap and clearing it after the explicit release, the
+      pre-existing `cleanup` EXIT trap (already installed for tmp-file removal) was extended to
+      also call `release_state_mutex`, which is itself idempotent via the `STATE_MUTEX_OWNED_HERE`
+      flag — so no "clear the trap" step is needed; a second post-explicit-release firing is a
+      guaranteed no-op. Functionally equivalent and verified by Test E's forced-failure check.)*
+- [x] **Task 3.4**: On mutex-acquire timeout, log a loud WARNING and proceed unserialized —
+      preserving today's non-blocking behavior. Do not abort the status update. *(completed:
+      verified — Test C, external hold caused the WARNING and the state.json write still
+      completed.)*
+- [x] **Task 3.5**: Respect the existing `--dry-run` path: no mutex acquisition when nothing is
+      written. *(completed: verified — Test D.)*
+- [x] **Task 3.6**: No task-number citations in comments. *(completed: verified via grep — see
+      Testing & Validation.)*
 
 **Timing**: 1 hour
 

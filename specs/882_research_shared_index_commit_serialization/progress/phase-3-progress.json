@@ -1,0 +1,27 @@
+{
+  "phase": 3,
+  "phase_name": "Re-entrancy Guard and Standalone Mutex in update-task-status.sh",
+  "started_at": "2026-07-16T00:00:00Z",
+  "last_updated": "2026-07-16T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Bracket state.json RMW + generate-todo.sh call in one critical section", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 2, "description": "SCOPE_MUTEX_HELD guard skips acquire/release when an outer holder owns the section", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 3, "description": "acquire via task-lock.sh scope-acquire, export SCOPE_MUTEX_HELD=1, release on trap/explicit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 4, "description": "Timeout logs loud WARNING, proceeds unserialized (non-blocking preserved)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 5, "description": "--dry-run acquires no mutex", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 6, "description": "No task-number citations in new comments", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.3",
+      "description": "install trap on EXIT to release, release explicitly at the end and clear the trap",
+      "type": "altered",
+      "reason": "Reused the script's pre-existing `trap cleanup EXIT` (already installed for tmp-file removal) by extending `cleanup()` to also call the idempotent `release_state_mutex` (guarded by STATE_MUTEX_OWNED_HERE), rather than installing a second dedicated trap and explicitly clearing it after the mid-script release. Functionally equivalent -- verified by the forced-failure EXIT-trap test -- and avoids a second trap-stacking mechanism in a script that already has one.",
+      "annotation": "*(deviation: altered — reused the existing cleanup EXIT trap instead of installing/clearing a second one; release_state_mutex is idempotent so a post-explicit-release trap firing is a no-op)*"
+    }
+  ],
+  "notes": "Verified via .claude/scripts/update-task-status.sh (deployed copy) against a disposable scratch task row (project_number 99999, added then removed from the live specs/state.json via targeted jq del(), never a wholesale file overwrite, to avoid clobbering any concurrent sibling-session writes): Test A (standalone run, mutex observed present mid-run via background poll, absent after, state written correctly); Test B (SCOPE_MUTEX_HELD=1 guest mode never creates the mutex); Test C (mutex externally held by a scope-acquire -> WARNING logged, state.json write still completed non-blocking; the run's own exit 3 was update-task-status.sh's PRE-EXISTING unrelated plan-file-update failure for a scratch task with no plans/ dir, outside this mutex's bracket by design, not a regression); Test D (--dry-run creates no mutex); Test E (EXIT-trap release under forced early failure) run two ways: E1 a proxy using the same deployed scope-acquire/scope-release CLI directly under a bash EXIT trap with a forced exit 1 (mutex released), and E2 the real script with specs/tmp/ made briefly unwritable (chmod 000, restored to 755 immediately after) so update_state_json's jq write genuinely failed mid-section -- mutex was released by the cleanup trap in both cases. Task 882's own state.json row and .lock/ were verified untouched throughout (an earlier Phase 2 regression-test mistake had briefly deleted task 882's real task-lock via an unconditional `release` call against the wrong scratch target; restored immediately and this phase's tests used only the disposable scratch row 99999 and .claude/scripts/task-lock.sh's specs/.scope-lock global mutex, never task 882's per-task .lock/ again)."
+}

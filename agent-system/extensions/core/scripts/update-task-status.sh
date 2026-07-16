@@ -34,9 +34,62 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
 TMP_DIR="$PROJECT_ROOT/specs/tmp"
 
+# --- specs/.scope-lock mutex around the state.json read-modify-write + TODO.md regen below ---
+# Brackets the same critical section orchestrator-postflight.sh's Stages 7-8a bracket protects
+# (see .claude/context/patterns/task-lock.md's scope-acquire/scope-release section and
+# .claude/context/standards/git-staging-scope.md's state-write hazard note) so this script's
+# standalone callers (reconcile-task-status.sh, manage-topics.sh, command-gate-out.sh,
+# skill-base.sh, and SKILL.md call sites) get the same serialization against concurrent
+# state.json writers that postflight's own inline path gets.
+#
+# The specs/.scope-lock mutex is NOT reentrant. When SCOPE_MUTEX_HELD=1 is already exported by an
+# outer holder (e.g. this script invoked as a Stage 7 child of orchestrator-postflight.sh, which
+# acquires the same mutex before calling this script), acquire/release below are skipped
+# entirely and this script runs as a guest inside the outer holder's critical section — a nested
+# acquire here would otherwise self-deadlock the outer holder for 5s and then fail closed on
+# every single postflight run.
+STATE_MUTEX_TOKEN=""
+STATE_MUTEX_OWNED_HERE=false
+
+acquire_state_mutex() {
+  # Respect the existing --dry-run path: nothing is written, so nothing needs serializing.
+  if [[ "$DRY_RUN" == "true" ]]; then
+    return 0
+  fi
+  if [[ -n "${SCOPE_MUTEX_HELD:-}" ]]; then
+    echo "Note: an outer holder already owns the specs/.scope-lock mutex (SCOPE_MUTEX_HELD=1 inherited); running as guest, no nested acquire." >&2
+    return 0
+  fi
+  local token
+  if ! token=$("$SCRIPT_DIR/task-lock.sh" scope-acquire "$session_id"); then
+    # Mutex is fail-closed as a lock (never silently double-held), but this script's own
+    # non-blocking character is preserved: a timeout logs loudly and proceeds unserialized
+    # rather than aborting the status update.
+    echo "WARNING: failed to acquire specs/.scope-lock mutex for task ${task_number}'s status update; proceeding unserialized (non-blocking)." >&2
+    return 0
+  fi
+  STATE_MUTEX_TOKEN="$token"
+  STATE_MUTEX_OWNED_HERE=true
+  export SCOPE_MUTEX_HELD=1
+  return 0
+}
+
+release_state_mutex() {
+  if [[ "$STATE_MUTEX_OWNED_HERE" == "true" ]]; then
+    "$SCRIPT_DIR/task-lock.sh" scope-release "$STATE_MUTEX_TOKEN" >&2 || true
+    STATE_MUTEX_OWNED_HERE=false
+    unset SCOPE_MUTEX_HELD
+  fi
+}
+
 # --- Cleanup trap ---
+# Extended (not duplicated) to also release the state mutex on any exit path — including an
+# early `set -e` abort mid-critical-section — so a forced early failure never leaves the mutex
+# held. release_state_mutex is idempotent (guarded by STATE_MUTEX_OWNED_HERE), so it is safe to
+# call again after the explicit release below has already fired.
 cleanup() {
   rm -f "$TMP_DIR/state.json.tmp" 2>/dev/null || true
+  release_state_mutex
 }
 trap cleanup EXIT
 
@@ -208,6 +261,12 @@ update_state_json() {
   mv "$TMP_DIR/state.json.tmp" "$STATE_FILE"
 }
 
+# Acquire the specs/.scope-lock mutex before the state.json write below. The critical section
+# this brackets is: this write PLUS the TODO.md regen at "Execute TODO.md regeneration" further
+# down -- released explicitly right after that call, before PHASE 3's plan-file update (which is
+# not part of the state.json/TODO.md hazard this mutex protects).
+acquire_state_mutex
+
 if [[ "$state_is_noop" != "true" ]]; then
   if ! update_state_json; then
     echo "Error: failed to update state.json for task $task_number" >&2
@@ -333,6 +392,11 @@ update_plan_file() {
 
 # Execute TODO.md regeneration
 regenerate_todo
+
+# Release the specs/.scope-lock mutex here: the state.json write + TODO.md regen critical
+# section (acquired above, before PHASE 1) ends here. PHASE 3's plan-file update below is
+# explicitly outside the bracket -- it does not touch state.json or TODO.md.
+release_state_mutex
 
 # Execute plan file update
 update_plan_file
