@@ -1,7 +1,7 @@
 # Implementation Plan: Task #889
 
 - **Task**: 889 - Source store script root resolution guard
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/889_source_store_script_root_resolution_guard/reports/01_root_resolution_guard.md

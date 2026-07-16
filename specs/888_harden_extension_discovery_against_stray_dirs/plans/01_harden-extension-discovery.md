@@ -1,7 +1,7 @@
 # Implementation Plan: Task #888
 
 - **Task**: 888 - Harden extension discovery against stray directories
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1 hour
 - **Dependencies**: None
 - **Research Inputs**: specs/888_harden_extension_discovery_against_stray_dirs/reports/01_harden-extension-discovery.md

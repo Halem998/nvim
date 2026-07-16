@@ -11,7 +11,7 @@ next_project_number: 890
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,889 | -- | agent-system |
+| 1 | 873,885 | -- | agent-system |
 | 2 | 887 | 873 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -22,18 +22,15 @@ next_project_number: 890
   └─ 887 [RESEARCHED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
 
-### Uncategorized
-
-889 [IMPLEMENTING] — Scripts in the agent-system source store resolve PROJECT_ROOT as 
-
 ## Tasks
 
 ### 889. Source store script root resolution guard
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [889_source_store_script_root_resolution_guard/reports/01_root_resolution_guard.md]
 - **Plan**: [889_source_store_script_root_resolution_guard/plans/01_root-resolution-guard.md]
+- **Summary**: [889_source_store_script_root_resolution_guard/summaries/01_root-resolution-guard-summary.md]
 
 **Description**: Scripts in the agent-system source store resolve PROJECT_ROOT as "$(cd "${SCRIPT_DIR}/../.." && pwd)". That depth is only correct in the deploy tree, where the script sits at .claude/scripts/ and ../.. is the repo root. In the source store the same file sits at agent-system/extensions/core/scripts/, so ../.. silently resolves to agent-system/extensions/ instead of failing. generate-todo.sh run this way created a stray agent-system/extensions/.agent-logs/ directory and logged: state.json not found at agent-system/extensions/specs/state.json. 24 scripts under agent-system/extensions/core/scripts/ share this pattern. Add a root validation guard so a script run outside a valid deploy tree fails loudly with an actionable message rather than computing a bogus root and writing stray artifacts. Also de-anchor the .gitignore entry (currently /.agent-logs/ at line 10, root-anchored) so nested log dirs are ignored wherever they appear.
 

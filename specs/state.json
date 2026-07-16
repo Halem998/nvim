@@ -1131,10 +1131,10 @@
     {
       "project_number": 889,
       "project_name": "source_store_script_root_resolution_guard",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "description": "Scripts in the agent-system source store resolve PROJECT_ROOT as \"$(cd \"${SCRIPT_DIR}/../..\" && pwd)\". That depth is only correct in the deploy tree, where the script sits at .claude/scripts/ and ../.. is the repo root. In the source store the same file sits at agent-system/extensions/core/scripts/, so ../.. silently resolves to agent-system/extensions/ instead of failing. generate-todo.sh run this way created a stray agent-system/extensions/.agent-logs/ directory and logged: state.json not found at agent-system/extensions/specs/state.json. 24 scripts under agent-system/extensions/core/scripts/ share this pattern. Add a root validation guard so a script run outside a valid deploy tree fails loudly with an actionable message rather than computing a bogus root and writing stray artifacts. Also de-anchor the .gitignore entry (currently /.agent-logs/ at line 10, root-anchored) so nested log dirs are ignored wherever they appear.",
-      "last_updated": "2026-07-16T07:13:11Z",
+      "last_updated": "2026-07-16T07:24:00Z",
       "session_id": "sess_1784185160_df2d91_889",
       "artifacts": [
         {
@@ -1146,8 +1146,14 @@
           "path": "specs/889_source_store_script_root_resolution_guard/plans/01_root-resolution-guard.md",
           "type": "plan",
           "summary": ""
+        },
+        {
+          "path": "specs/889_source_store_script_root_resolution_guard/summaries/01_root-resolution-guard-summary.md",
+          "type": "summary",
+          "summary": ""
         }
-      ]
+      ],
+      "completion_summary": "Added deploy-root-guard.sh (~25 lines): a structural, no-I/O guard validating its own BASH_SOURCE location, accepting .claude or .opencode deploy parents. Sourced by 24 core scripts via '. \"${SCRIPT_DIR}/deploy-root-guard.sh\" || exit 1' (the explicit || exit 1 is load-bearing: 4 callers lack set -e). Inserted before any mkdir/state-read so the stray-artifact symptom is actually prevented. De-anchored .gitignore to **/.agent-logs/. Chose a shared helper over 24 inline blocks (~37 vs ~120 lines); skill-base.sh precedent meant the sourced-library convention was not new. Requires a manual <leader>al sync to go live."
     }
   ],
   "completed_projects": [],
