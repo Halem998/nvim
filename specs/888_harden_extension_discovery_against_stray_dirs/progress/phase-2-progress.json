@@ -1,0 +1,11 @@
+{
+  "phase": 2,
+  "phase_name": "Add regression test coverage",
+  "started_at": "2026-07-16T07:16:00Z",
+  "last_updated": "2026-07-16T07:16:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add regression test coverage — file changes", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/manifest_spec.lua"]}
+  ],
+  "current_objective": 1,
+  "handoff_count": 0
+}

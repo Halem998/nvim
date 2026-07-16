@@ -117,33 +117,40 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Add regression test coverage [NOT STARTED]
+### Phase 2: Add regression test coverage [COMPLETED]
 
 **Goal**: Both fixed behaviors are locked in by an isolated, repeatable test.
 
 **Tasks**:
-- [ ] Add a `describe("list_extensions")` block covering the shared module, using the
+- [x] Add a `describe("list_extensions")` block covering the shared module, using the
       `vim.fn.tempname()` + `vim.fn.mkdir(dir, "p")` + `after_each(vim.fn.delete(dir, "rf"))`
       pattern from `lua/neotex/plugins/ai/claude/commands/picker/utils/scan_spec.lua` — never
-      the live `agent-system/extensions/` directory
-- [ ] Case (a): a dot-prefixed subdirectory with no `manifest.json` is absent from the result and
+      the live `agent-system/extensions/` directory *(deviation: altered — placed in a new
+      `lua/neotex/plugins/ai/shared/extensions/manifest_spec.lua` rather than the existing
+      `claude/extensions/manifest_spec.lua`; see Files to modify note below for rationale)*
+- [x] Case (a): a dot-prefixed subdirectory with no `manifest.json` is absent from the result and
       triggers no notification
-- [ ] Case (b): a malformed non-dot subdirectory is excluded from the result and produces exactly
+- [x] Case (b): a malformed non-dot subdirectory is excluded from the result and produces exactly
       one notification across two successive `list_extensions()` calls (stub `vim.notify` and
       count invocations)
-- [ ] Confirm a valid extension in the same temp dir is still returned (guards against the filter
+- [x] Confirm a valid extension in the same temp dir is still returned (guards against the filter
       over-matching)
-- [ ] Run the spec and confirm it passes
+- [x] Run the spec and confirm it passes
 
 **Timing**: 30 minutes
 
 **Depends on**: 1
 
 **Files to modify**:
-- `lua/neotex/plugins/ai/claude/extensions/manifest_spec.lua` (new `describe` block) — or a new
-  `lua/neotex/plugins/ai/shared/extensions/manifest_spec.lua` if testing the shared module
-  directly proves cleaner. Implementer picks whichever keeps the test isolated from live on-disk
-  extension state.
+- `lua/neotex/plugins/ai/shared/extensions/manifest_spec.lua` (new file, new `describe` block).
+  Judgment call resolved: the shared module's `M.list_extensions(config)` takes a config table,
+  while the existing `claude/extensions/manifest_spec.lua` exercises the delegating wrapper's
+  `list_extensions(global_dir_string)` against the real `agent-system/extensions/` directory
+  (including a live `lean` extension fixture). Placing the new isolated, temp-dir-only tests in
+  a new spec file colocated with the actually-fixed module avoids mixing the wrapper's
+  string-argument/live-fixture style with the shared module's config-table/temp-dir style in one
+  file, and keeps the new tests fully isolated from live on-disk extension state per the plan's
+  deciding factor.
 
 **Verification**:
 - New test cases pass
