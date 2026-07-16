@@ -181,6 +181,116 @@ directory documented above** — it is not a second locking mechanism, does not 
 Exit codes: `0` = created (fresh), `1` = already exists (resume from it), `2` = usage/write-error
 or unresolved orphaned claim after one retry.
 
+## Scope-Mutex CLI: `scope-acquire` / `scope-release`
+
+This is a DISTINCT, orthogonal primitive from the task-number `.lock/` mechanism documented
+above — it does not lock a task, it locks a critical section of `specs/state.json` writes that
+may span MULTIPLE process invocations (e.g. an outer script bracketing several inner scripts'
+state.json read-modify-write calls). It reuses `specs/.scope-lock/`, the same global mutex
+`acquire`'s cross-task `file_scope` overlap scan already uses internally (see "Cross-Task
+`file_scope` Overlap Check" above) — `scope-acquire`/`scope-release` simply expose that existing
+internal primitive (`acquire_scope_mutex`/`release_scope_mutex`) as a standalone CLI surface,
+rather than introducing a new script or a new lock directory.
+
+### `scope-acquire <session_id> [stale_sec]`
+
+Acquires `specs/.scope-lock/`, writes an owner token (`session_id:pid:epoch`) to
+`specs/.scope-lock/owner`, and prints that token on stdout. Exit `0` on success. On contention,
+waits out the same bounded retry window `acquire`'s internal mutex use already relies on; on
+timeout, exits `2` with a diagnostic naming the current holder (read from `owner`) — fail closed,
+never fail open.
+
+### `scope-release <token>`
+
+Releases `specs/.scope-lock/` if, and only if, `<token>` matches the current
+`specs/.scope-lock/owner` token. Always exits `0` — release is best-effort and must never fail a
+caller's cleanup path. A mismatch (or a release against an already-absent mutex) is a loud,
+non-fatal `WARN:` on stderr, never a silent no-op and never a forced removal.
+
+**Caller requirement — install an EXIT trap immediately after a successful `scope-acquire`.**
+Unlike `acquire`'s task-number lock (whose exclusivity lives and dies within a single function
+call), `scope-acquire`'s mutex is meant to outlive the acquiring call and be released by a later,
+separate `scope-release` invocation — so `scope-acquire` deliberately does not install any trap
+of its own. This means the CALLER is responsible for guaranteeing release on every exit path
+(normal completion, an early `return`/`exit`, or a `set -e` abort partway through the critical
+section): install `trap 'bash .claude/scripts/task-lock.sh scope-release "$token"' EXIT`
+immediately after a successful acquire, and explicitly release-and-clear-the-trap at the natural
+end of the critical section so the mutex is not held for the remainder of the script's
+unserialized tail. A script that already has its own EXIT trap for other cleanup (e.g.
+`update-task-status.sh`'s pre-existing tmp-file removal) may instead extend that trap to also
+call release, provided the release call itself is idempotent against being invoked twice (guard
+it behind an "did I acquire and not yet release" flag) — both approaches are used by this
+primitive's reference consumers below.
+
+### Reentrancy: `SCOPE_MUTEX_HELD` Is the Sanctioned Way to Nest
+
+The `specs/.scope-lock/` mutex is **NOT reentrant**. A process that already holds it — or is
+running as a guest inside an outer holder's critical section — MUST NOT attempt a second
+`scope-acquire`: the `mkdir` underneath would simply fail, and the process would wait out the
+full contention window before warning and proceeding unserialized (best case), or deadlock if the
+inner acquire happens inside the SAME process/call chain that already holds the mutex (worst
+case, and the reason this guard exists at all). The sanctioned pattern for a script that may run
+either standalone or nested inside an outer holder's critical section: the outer holder exports
+`SCOPE_MUTEX_HELD=1` before invoking the inner script (environment variables propagate to child
+processes, so this requires no separate lock-accounting mechanism); the inner script checks for
+that variable and skips BOTH `scope-acquire` and `scope-release` entirely when it is already set,
+logging a brief note that an outer holder owns the section. `.claude/scripts/update-task-status.sh`
+and `.claude/scripts/orchestrator-postflight.sh` are the reference implementation of this pattern
+(see "Consumers" below): postflight's Stage 7 shells out to `update-task-status.sh`, which would
+otherwise attempt its own nested acquire on every single postflight run.
+
+### Holder-Declared Staleness
+
+Unlike `acquire`'s internal use of `acquire_scope_mutex` (which always relies on the default
+`SCOPE_MUTEX_STALE_SEC` of 10 seconds, appropriate for a fast scan-then-mkdir sequence),
+`scope-acquire` accepts an optional `stale_sec` argument for callers whose critical section is
+knowingly longer-running. Staleness is **holder-declared, not waiter-declared**: the successful
+acquirer writes its own chosen `stale_sec` into `specs/.scope-lock/stale_sec` alongside
+`claimed_at`, and EVERY waiter — including a waiter carrying a different or default `stale_sec`
+of its own — reads that file when deciding whether to reclaim the mutex as stale. This is
+deliberate: if staleness were evaluated by the waiter against its own constant instead, a
+short-window waiter could reclaim a still-live, longer-running holder's mutex out from under it,
+producing two simultaneous live holders — the exact lost-update this primitive exists to prevent,
+now harder to diagnose because it would appear as a `mkdir` succeeding cleanly rather than as a
+refusal. When no `stale_sec` is passed (or an unparseable one is), the default
+`SCOPE_MUTEX_STALE_SEC` (10) governs, which is why `acquire`'s pre-existing internal call site
+(which passes no argument) is unaffected by this change.
+
+### Owner-Token-Verified Release
+
+Because `scope-acquire` and `scope-release` are separate process invocations (unlike
+`acquire_scope_mutex`'s task-number-lock use, which acquires and releases within a single
+function's lifetime), an unconditional `rm -rf` on release would be unsafe: if the holder was
+stale-reclaimed by a waiter and a NEW holder acquired in the interim, the original holder's
+release would delete the new holder's mutex out from under it. `scope-acquire` writes the owner
+token described above; `scope-release <token>` compares its argument against that file and only
+removes the mutex on an exact match, as described above.
+
+### Consumers
+
+- `.claude/scripts/update-task-status.sh` brackets its own state.json read-modify-write plus its
+  `generate-todo.sh` call in the mutex when invoked standalone, and skips acquire/release entirely
+  (guest mode) when `SCOPE_MUTEX_HELD` is already set by an outer holder.
+- `.claude/scripts/orchestrator-postflight.sh` acquires the mutex immediately before its Stage 7
+  (update task status), with a generous, holder-declared `stale_sec` sized to the measured
+  worst-case wall-clock time of Stages 7 through 8a; exports `SCOPE_MUTEX_HELD=1` so Stage 7's
+  `update-task-status.sh` child inherits the guard above instead of self-deadlocking; and releases
+  explicitly at the close of Stage 8a (TODO.md regeneration). The TTS notification, git commit,
+  and cleanup stages that follow run OUTSIDE the mutex — see
+  `.claude/context/standards/git-staging-scope.md`'s state-write hazard note for why the boundary
+  stops there.
+
+### Relationship to the Task-Number Lock
+
+As the "Related Documentation" cross-reference below already notes, the task-number `.lock/`
+mechanism "does not change checkpoint behavior" — it only adds cross-session exclusivity around a
+single task's working tree. The scope mutex documented in this section is a genuinely distinct,
+orthogonal primitive: it protects the SHARED `specs/state.json` (and, transitively,
+`specs/TODO.md`) write path that every task's postflight touches, regardless of which
+task-number lock — if any — is held at the time. A session can hold its own task-number lock
+while contending with another session for the scope mutex, and vice versa: the two mechanisms
+compose independently, and neither substitutes for the other.
+
 ## The ABORT Refusal Message
 
 Modeled on the established two-line `ABORT:` + remedy shape already used by

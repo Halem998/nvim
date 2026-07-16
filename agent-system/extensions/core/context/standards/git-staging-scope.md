@@ -128,6 +128,37 @@ After a targeted commit, the postflight pipeline runs `git status --porcelain` a
 warning if the working tree is still non-empty — this surfaces (rather than hides) any gap
 between what was staged and what actually changed.
 
+## State-Write Serialization and Honest Commit Messages
+
+This scoped-staging rule governs WHAT gets staged for a commit; it does not, by itself, say
+anything about ordering the underlying writes to the shared files it stages. `specs/state.json`
+in particular is mutated by several independent read-modify-write round trips per postflight run
+(status update, artifact-number increment, completion-data writes, memory-candidate propagation,
+artifact linking), each of which reads the file, transforms it, and writes it back —  a shape
+that is only ever safe against a SINGLE writer at a time. `orchestrator-postflight.sh` now
+brackets that entire read-modify-write-plus-`TODO.md`-regen window (its Stages 7 through 8a) in
+the `specs/.scope-lock/` mutex documented in `task-lock.md`'s "Scope-Mutex CLI" section, so two
+concurrent postflight runs on DIFFERENT tasks can no longer interleave their state.json writes
+and silently lose one session's update. This serialization is deliberately narrow: it protects
+only the write window above, never `git add`/`git commit` themselves (Stage 9 and later remain
+explicitly outside the mutex, matching the "targeted, work-scoped staging" contract this document
+already describes — a slower git/TTS/cleanup tail carries no data-integrity risk worth
+serializing).
+
+Because the staging rule above still allows `specs/state.json` and `specs/TODO.md` to legitimately
+carry OTHER tasks' current rows in a given commit (they are shared, wholesale-regenerated index
+files — see Per-Operation Scope above), `orchestrator-postflight.sh`'s Stage 9 now also runs a
+staged-diff scan immediately after `git add` and before `git commit`: it compares the just-staged
+`specs/state.json` against `HEAD`'s, entry-by-entry on parsed `active_projects` records (never a
+raw `+`/`-` line diff, which would miss a changed field sitting inside an unchanged
+`project_number` context line), and appends a body line naming every OTHER task whose index rows
+the commit carries — e.g. `Also carries current index rows for tasks: 42, 57`. This does not
+change staging scope or serialization; it makes an already-legitimate outcome (a commit
+mentioning one task while its diff includes other tasks' current index rows) honestly labeled
+rather than silently attributed to the named task alone. The scan is entirely failure-tolerant:
+any error (missing `HEAD` file on a first commit, unparseable JSON, no staged `state.json`) omits
+the addendum and falls through to the plain commit message — it must never break a commit.
+
 ## Related Documentation
 
 - `.claude/context/formats/return-metadata-file.md` — `modified_files` field schema
@@ -135,3 +166,6 @@ between what was staged and what actually changed.
 - `.claude/scripts/orchestrator-postflight.sh` — Stage 9 execution site
 - `.claude/rules/git-workflow.md` — Never Run list and Commit Scope section
 - `.claude/skills/skill-git-workflow/SKILL.md` — canonical documentation front
+- `.claude/context/patterns/task-lock.md` — the `specs/.scope-lock/` scope-mutex CLI
+  (`scope-acquire`/`scope-release`) that now brackets the state.json read-modify-write window
+  referenced above

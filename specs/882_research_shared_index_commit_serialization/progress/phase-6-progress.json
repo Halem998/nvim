@@ -1,0 +1,19 @@
+{
+  "phase": 6,
+  "phase_name": "Document the Scope-Mutex CLI and the State-Write Hazard",
+  "started_at": "2026-07-16T01:30:00Z",
+  "last_updated": "2026-07-16T01:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "New scope-mutex CLI section in task-lock.md: scope-acquire/scope-release, exit codes, owner-token, holder-declared stale_sec, SCOPE_MUTEX_HELD guard, EXIT trap requirement", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 2, "description": "Explicit not-reentrant / SCOPE_MUTEX_HELD-is-sanctioned statement", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 3, "description": "Reconcile 'does not change checkpoint behavior' note with the new distinct orthogonal scope-mutex primitive", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 4, "description": "New state-write hazard subsection in git-staging-scope.md, cross-referencing task-lock.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 5, "description": "Do not touch postflight-pattern.md or the git guard hook", "status": "done", "files_touched": []},
+    {"id": 6, "description": "No task-number citations in either file's new content", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Verified via grep that neither new section introduces a task-number citation (task-lock.md's pre-existing task 788/808/809 citations elsewhere in the file predate this task's work and are out of scope, unmodified). Ran bash .claude/scripts/check-extension-docs.sh after deploying both updated docs to .claude/context/ for consistency -- PASS: all extensions OK (the 37 advisory items reported are pre-existing, unrelated literature-script deploy-sync notices, not failures)."
+}

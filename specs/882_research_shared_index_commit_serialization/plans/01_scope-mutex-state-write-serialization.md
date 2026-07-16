@@ -408,28 +408,39 @@ its diff carries other tasks' index rows — with an accurate message rather tha
 
 ---
 
-### Phase 6: Document the Scope-Mutex CLI and the State-Write Hazard [NOT STARTED]
+### Phase 6: Document the Scope-Mutex CLI and the State-Write Hazard [COMPLETED]
 
 **Goal**: Record the newly exposed CLI surface and the read-modify-write hazard, so a future author
 adding another `state.json` mutation point knows to bracket it.
 
 **Tasks**:
-- [ ] Extend `agent-system/extensions/core/context/patterns/task-lock.md` with a new section
-      documenting the scope-mutex CLI: `scope-acquire <session_id> [stale_sec]` /
+- [x] **Task 6.1**: Extend `agent-system/extensions/core/context/patterns/task-lock.md` with a new
+      section documenting the scope-mutex CLI: `scope-acquire <session_id> [stale_sec]` /
       `scope-release <token>`, exit codes, the owner-token contract, the holder-declared
       `stale_sec` semantics, the `SCOPE_MUTEX_HELD` re-entrancy guard, and the requirement to
-      install an EXIT trap after acquiring.
-- [ ] State explicitly that the mutex is **not** reentrant and that `SCOPE_MUTEX_HELD` is the
-      sanctioned way to nest.
-- [ ] Reconcile the doc's existing note that the per-task lock "does not change checkpoint
-      behavior" — still true; the scope mutex is a distinct, orthogonal primitive and the doc
-      should say so rather than leave a reader to infer it.
-- [ ] Extend `agent-system/extensions/core/context/standards/git-staging-scope.md` with a short
-      subsection: the shared-index staging rule is unchanged, but `state.json`'s write path is now
-      mutex-bracketed, and commit messages now name every task whose rows the diff carries.
-      Cross-reference `task-lock.md`.
-- [ ] Do **not** touch `postflight-pattern.md` or the git guard hook (owned by task 884).
-- [ ] No task-number citations in either file — cite document names and section headings instead.
+      install an EXIT trap after acquiring. *(completed: new "Scope-Mutex CLI" section with
+      `scope-acquire`/`scope-release` subsections, a "Caller requirement" callout on the EXIT
+      trap, a "Reentrancy" subsection, a "Holder-Declared Staleness" subsection, an
+      "Owner-Token-Verified Release" subsection, and a "Consumers" subsection.)*
+- [x] **Task 6.2**: State explicitly that the mutex is **not** reentrant and that
+      `SCOPE_MUTEX_HELD` is the sanctioned way to nest. *(completed — see the "Reentrancy:
+      `SCOPE_MUTEX_HELD` Is the Sanctioned Way to Nest" subsection heading itself.)*
+- [x] **Task 6.3**: Reconcile the doc's existing note that the per-task lock "does not change
+      checkpoint behavior" — still true; the scope mutex is a distinct, orthogonal primitive and
+      the doc should say so rather than leave a reader to infer it. *(completed: new "Relationship
+      to the Task-Number Lock" subsection makes this explicit.)*
+- [x] **Task 6.4**: Extend `agent-system/extensions/core/context/standards/git-staging-scope.md`
+      with a short subsection: the shared-index staging rule is unchanged, but `state.json`'s write
+      path is now mutex-bracketed, and commit messages now name every task whose rows the diff
+      carries. Cross-reference `task-lock.md`. *(completed: new "State-Write Serialization and
+      Honest Commit Messages" section, plus a cross-reference entry added to "Related
+      Documentation".)*
+- [x] **Task 6.5**: Do **not** touch `postflight-pattern.md` or the git guard hook. *(completed:
+      neither file was read or edited during this implementation.)*
+- [x] **Task 6.6**: No task-number citations in either file — cite document names and section
+      headings instead. *(completed: verified via grep that neither of my new sections introduced
+      any new task-number citation; `task-lock.md`'s PRE-EXISTING citations elsewhere in the file
+      — task 788/808/809, present before this task's work began — are out of scope and untouched.)*
 
 **Timing**: 0.5 hours
 
