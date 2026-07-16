@@ -1,0 +1,19 @@
+{
+  "phase": 5,
+  "phase_name": "Honest Commit Messages at Stage 9",
+  "started_at": "2026-07-16T01:10:00Z",
+  "last_updated": "2026-07-16T01:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Compare git show HEAD:specs/state.json against staged git show :specs/state.json after git add", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrator-postflight.sh"]},
+    {"id": 2, "description": "Parsed active_projects entry comparison (python3), not raw diff lines", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrator-postflight.sh"]},
+    {"id": 3, "description": "Exclude committed task, append 'Also carries current index rows for tasks: N, M'", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrator-postflight.sh"]},
+    {"id": 4, "description": "Failure-tolerant guard: any scan error omits addendum, never breaks commit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrator-postflight.sh"]},
+    {"id": 5, "description": "Preserve Session trailer and message structure", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrator-postflight.sh"]},
+    {"id": 6, "description": "Scan stays outside the mutex (after Phase 4's release point)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrator-postflight.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Tested the scan logic in a fully isolated scratch git repo under the session scratchpad (never touching the live repo's index or specs/state.json, and never running orchestrator-postflight.sh itself, per the explicit instruction not to run it live since it creates real commits). Four scenarios verified against the exact python3 snippet used in the deployed script: (1) only the committed task changed -> also_carries='' (no addendum); (2) another task's status field changed while its project_number context line is otherwise unchanged -> also_carries='101' (proves the parsed-entry comparison catches what a raw +/- grep would miss); (3) a brand-new task row added -> also_carries='103'; (4) staged state.json corrupted to invalid JSON -> also_carries='' with exit 0 and no traceback (failure-tolerant guard confirmed). Scratch repo removed after testing. Deployed the updated orchestrator-postflight.sh to .claude/scripts/ (bash -n clean) but did not exercise Stage 9 end-to-end live, consistent with the orchestrator's explicit instruction to avoid real commits during testing."
+}

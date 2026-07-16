@@ -362,25 +362,30 @@ TODO.md-regen window — and nothing beyond it.
 
 ---
 
-### Phase 5: Honest Commit Messages at Stage 9 [NOT STARTED]
+### Phase 5: Honest Commit Messages at Stage 9 [COMPLETED]
 
 **Goal**: Fix the benign-but-real attribution problem — a commit whose message names one task while
 its diff carries other tasks' index rows — with an accurate message rather than a lock.
 
 **Tasks**:
-- [ ] In `orchestrator-postflight.sh` Stage 9, after `git add` succeeds and before `git commit`,
-      compare `git show HEAD:specs/state.json` against the staged `git show :specs/state.json`.
-- [ ] Compare **parsed** `active_projects` entries block-by-block (python3/jq), collecting every
-      `project_number` whose JSON differs from HEAD's. Do not grep raw `+`/`-` lines — that misses a
-      changed status inside an unchanged `project_number` context line and is the obvious wrong
-      implementation here.
-- [ ] Exclude the task being committed; if any others remain, append a body line to the existing
-      commit message, e.g. `Also carries current index rows for tasks: N, M`.
-- [ ] Wrap the whole scan in a failure-tolerant guard (missing HEAD file, unparseable JSON, no
-      staged state.json): on any failure, omit the addendum and commit exactly as today. This must
-      never break a commit.
-- [ ] Preserve the existing `Session: ${session_id}` trailer and the message's current structure.
-- [ ] Keep the scan outside the mutex — Stage 9 is explicitly not serialized.
+- [x] **Task 5.1**: In `orchestrator-postflight.sh` Stage 9, after `git add` succeeds and before
+      `git commit`, compare `git show HEAD:specs/state.json` against the staged
+      `git show :specs/state.json`. *(completed)*
+- [x] **Task 5.2**: Compare **parsed** `active_projects` entries block-by-block (python3/jq),
+      collecting every `project_number` whose JSON differs from HEAD's. Do not grep raw `+`/`-`
+      lines. *(completed: used python3's `json.load` + a dict keyed by `project_number`, comparing
+      whole-entry equality — verified this catches a status change inside an unchanged
+      `project_number` context, which a raw diff would miss.)*
+- [x] **Task 5.3**: Exclude the task being committed; if any others remain, append a body line to
+      the existing commit message. *(completed: `Also carries current index rows for tasks: N, M`.)*
+- [x] **Task 5.4**: Wrap the whole scan in a failure-tolerant guard; on any failure, omit the
+      addendum and commit exactly as today. *(completed and verified: corrupted staged
+      `state.json` test produced an empty result with no traceback, exit 0.)*
+- [x] **Task 5.5**: Preserve the existing `Session: ${session_id}` trailer and the message's current
+      structure. *(completed.)*
+- [x] **Task 5.6**: Keep the scan outside the mutex — Stage 9 is explicitly not serialized.
+      *(completed: the scan lives entirely inside the Stage 9 block, which Phase 4's mutex release
+      already precedes.)*
 
 **Timing**: 1 hour
 

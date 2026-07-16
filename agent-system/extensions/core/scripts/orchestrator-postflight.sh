@@ -503,7 +503,48 @@ if [ "$do_git_commit" = "true" ]; then
   fi
 
   if git add "${stage_paths[@]}"; then
-    git commit -m "${commit_message}
+    # Stage 9b: honest-commit-message scan. Compares the just-staged specs/state.json against
+    # HEAD's, block-by-block on PARSED active_projects entries (never raw +/- line grep, which
+    # would miss a changed field sitting inside an unchanged project_number context line), and
+    # names every OTHER task whose index rows this commit also carries. Runs OUTSIDE the
+    # specs/.scope-lock mutex — Stage 9 is explicitly unserialized (see
+    # .claude/context/standards/git-staging-scope.md's state-write hazard note) — and is entirely
+    # failure-tolerant: any error here (missing HEAD file on a first commit, unparseable JSON, no
+    # staged state.json) falls through to the plain commit message below. This scan must never
+    # break a commit.
+    also_carries=$(python3 -c "
+import json, subprocess, sys
+
+def load_ref(ref):
+    try:
+        out = subprocess.run(['git', 'show', ref], capture_output=True, text=True, check=True).stdout
+        return json.loads(out)
+    except Exception:
+        return None
+
+head = load_ref('HEAD:specs/state.json')
+staged = load_ref(':specs/state.json')
+if head is None or staged is None:
+    sys.exit(0)
+
+head_map = {p.get('project_number'): p for p in head.get('active_projects', []) if 'project_number' in p}
+staged_map = {p.get('project_number'): p for p in staged.get('active_projects', []) if 'project_number' in p}
+
+changed = sorted(
+    num for num, entry in staged_map.items()
+    if num != ${task_number} and head_map.get(num) != entry
+)
+print(', '.join(str(n) for n in changed))
+" 2>/dev/null) || also_carries=""
+
+    commit_msg="${commit_message}"
+    if [ -n "$also_carries" ]; then
+      commit_msg="${commit_message}
+
+Also carries current index rows for tasks: ${also_carries}"
+    fi
+
+    git commit -m "${commit_msg}
 
 Session: ${session_id}
 " || echo "[postflight] NOTE: Nothing to commit or git commit failed (non-blocking)" >&2
