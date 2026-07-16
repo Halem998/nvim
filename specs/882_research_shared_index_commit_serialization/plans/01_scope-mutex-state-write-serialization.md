@@ -461,22 +461,43 @@ adding another `state.json` mutation point knows to bracket it.
 
 ## Testing & Validation
 
-- [ ] `bash -n` clean on all three modified scripts.
-- [ ] Pre-existing `task-lock.sh acquire`/`release`/`check`/`heartbeat`/`init-marker` paths behave
-      unchanged (regression).
-- [ ] `scope-acquire` fails closed (exit 2) on contention within ~5s; never fails open.
-- [ ] `scope-release` with a wrong token never deletes another holder's mutex.
-- [ ] No postflight wall-clock regression from a nested-acquire block at Stage 7 (the deadlock
-      canary).
-- [ ] Mutex released on early exit / kill via the EXIT trap.
-- [ ] Two concurrent postflight runs on different tasks preserve both tasks' `state.json` writes.
-- [ ] Stage 9 remains outside the mutex.
-- [ ] Commit message addendum: correct on the multi-task case, absent on the single-task case, and
-      omitted-not-fatal on the corrupt case.
-- [ ] `check-extension-docs.sh` passes.
-- [ ] No new task-number citations outside `specs/**`.
-- [ ] `git status` shows no staged changes under `.claude/` (test copies are gitignored; only
-      `agent-system/extensions/core/` edits are committed).
+- [x] `bash -n` clean on all three modified scripts.
+- [x] Pre-existing `task-lock.sh acquire`/`release`/`check`/`heartbeat`/`init-marker` paths behave
+      unchanged (regression). *(verified against a disposable scratch task dir, Phase 2.)*
+- [x] `scope-acquire` fails closed (exit 2) on contention within ~5s; never fails open. *(Phase 2.)*
+- [x] `scope-release` with a wrong token never deletes another holder's mutex. *(Phase 2.)*
+- [x] No postflight wall-clock regression from a nested-acquire block at Stage 7 (the deadlock
+      canary). *(Verified via a load-independent A/B comparison in Phase 4, since ambient system
+      load from concurrent sibling sessions made raw wall-clock deltas unreliable during testing —
+      see the Phase 4 progress notes: with `SCOPE_MUTEX_HELD` unset, contention costs the full ~5s
+      timeout; with it set exactly as Stage 7 sets it, the same contention costs zero mutex-related
+      wait. Also directly observed live: the integrated postflight run printed the guest-mode note
+      during Stage 7 itself.)*
+- [x] Mutex released on early exit / kill via the EXIT trap. *(Verified three ways: a proxy test on
+      the bare CLI primitives (Phase 3), a real forced-failure test with `specs/tmp/` made briefly
+      unwritable (Phase 3), and a literal `kill -TERM` against a running
+      `orchestrator-postflight.sh` mid-Stage-7, confirmed released after SIGTERM.)*
+- [x] Two concurrent postflight runs on different tasks preserve both tasks' `state.json` writes.
+      *(Verified twice: at the `update-task-status.sh` level in Phase 4, and as two full concurrent
+      `orchestrator-postflight.sh` invocations in final wrap-up testing — both completed, neither
+      lost the other's write, no accidental commit.)*
+- [x] Stage 9 remains outside the mutex. *(Verified structurally via grep — the release block
+      precedes both Stage 8b and Stage 9 in file order — and empirically, since the mutex was
+      observed absent throughout every test run's completion, which necessarily includes whatever
+      of Stage 9 executed.)*
+- [x] Commit message addendum: correct on the multi-task case, absent on the single-task case, and
+      omitted-not-fatal on the corrupt case. *(Verified in an isolated scratch git repo in Phase 5,
+      never touching the live repo's index — all four scenarios from the plan's Phase 5
+      verification passed exactly as specified.)*
+- [x] `check-extension-docs.sh` passes. *(Phase 6: PASS: all extensions OK.)*
+- [x] No new task-number citations outside `specs/**`. *(Verified via targeted grep after every
+      phase touching a non-`specs/**` file; pre-existing citations in `task-lock.md` predate this
+      task's work and are out of scope.)*
+- [x] `git status` shows no staged changes under `.claude/` (test copies are gitignored; only
+      `agent-system/extensions/core/` edits are committed). *(Confirmed at final wrap-up: `git
+      status --porcelain` shows only pre-existing unrelated edits and sibling-task changes; nothing
+      under `.claude/` appears since it is gitignored, and `.claude/scripts/`/`.claude/context/`
+      were left fully deployed and matching source, `bash -n` clean.)*
 
 ## Artifacts & Outputs
 
