@@ -20,6 +20,7 @@ set -euo pipefail
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+. "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 CLAUDE_DIR="$PROJECT_ROOT/.claude"
 DEFAULT_OUTPUT="$PROJECT_ROOT/docs/claude-directory-export.md"
 

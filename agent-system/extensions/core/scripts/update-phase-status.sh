@@ -44,6 +44,7 @@ esac
 # Script may be called from any working directory, so resolve relative to this script's location
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${script_dir}/../.." && pwd)"
+. "${script_dir}/deploy-root-guard.sh" || exit 1
 
 # Find plan directory (padded task number with fallback to unpadded)
 padded_num=$(printf "%03d" "$task_number")

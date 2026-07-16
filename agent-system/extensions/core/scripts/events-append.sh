@@ -120,6 +120,7 @@ fi
 # --- Paths ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+. "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 EVENTS_FILE="$PROJECT_ROOT/specs/events.jsonl"
 LOCK_FILE="$PROJECT_ROOT/specs/.events.lock"
 

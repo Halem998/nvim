@@ -208,19 +208,19 @@ Notes for the implementer:
 
 ---
 
-### Phase 3: Wire the guard into the 23 uniform scripts [NOT STARTED]
+### Phase 3: Wire the guard into the 23 uniform scripts [COMPLETED]
 
 **Goal**: Every uniform script validates its tree before consuming its computed root.
 
 **Tasks**:
-- [ ] For each of the 23 scripts below, insert **one line** immediately after the root
+- [x] For each of the 23 scripts below, insert **one line** immediately after the root
       computation (`PROJECT_ROOT=` / `REPO_ROOT=` / `PROJECT_DIR=` / `repo_root=`) and before
       any other statement that consumes the root:
-      `. "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1`
-- [ ] Use the root-var name already present in each file; only `update-phase-status.sh` differs
-      (lowercase `script_dir`) -> `. "${script_dir}/deploy-root-guard.sh" || exit 1`.
-- [ ] Do not otherwise reformat, renumber, or "tidy" these files — the diff must be one line per
-      file so the Phase 5 drift review stays reviewable.
+      `. "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1` *(completed)*
+- [x] Use the root-var name already present in each file; only `update-phase-status.sh` differs
+      (lowercase `script_dir`) -> `. "${script_dir}/deploy-root-guard.sh" || exit 1`. *(completed)*
+- [x] Do not otherwise reformat, renumber, or "tidy" these files — the diff must be one line per
+      file so the Phase 5 drift review stays reviewable. *(completed)*
 
 The 23 (line numbers are the existing root-computation line; insert after it):
 
@@ -268,13 +268,13 @@ Notes for the implementer:
 
 ---
 
-### Phase 4: Wire check-extension-docs.sh and reconcile its stale comment [NOT STARTED]
+### Phase 4: Wire check-extension-docs.sh and reconcile its stale comment [COMPLETED]
 
 **Goal**: The doc-lint script is guarded without breaking its deliberate `REPO_ROOT` override,
 and its "flagged not fixed" comment stops describing a bug that no longer exists.
 
 **Tasks**:
-- [ ] This file is the one outlier: it computes no `SCRIPT_DIR` and uses a single-line
+- [x] This file is the one outlier: it computes no `SCRIPT_DIR` and uses a single-line
       `REPO_ROOT="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"` (line 81)
       that callers deliberately override to run it from the source store. Gate the guard on the
       override being **absent**, so it fires only on the computed default:
@@ -284,11 +284,13 @@ and its "flagged not fixed" comment stops describing a bug that no longer exists
       ```
       Place the gated source line immediately **before** the existing `REPO_ROOT=` line. Note
       this file uses `set -uo pipefail` (no `-e`), so the trailing `|| exit 1` is load-bearing.
-- [ ] Replace the stale NOTE block (lines 76-80, "known latent bug, flagged not fixed") with a
+      *(completed)*
+- [x] Replace the stale NOTE block (lines 76-80, "known latent bug, flagged not fixed") with a
       comment that states current reality: the auto-detect is valid only in a deploy tree, a
       sourced guard now enforces that, and an explicit `REPO_ROOT` override intentionally
-      bypasses the guard for source-store verification callers.
-- [ ] Keep the comment free of task numbers; anchor to `deploy-root-guard.sh` by filename.
+      bypasses the guard for source-store verification callers. *(completed)*
+- [x] Keep the comment free of task numbers; anchor to `deploy-root-guard.sh` by filename.
+      *(completed)*
 
 **Timing**: 0.4 hours
 

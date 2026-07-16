@@ -72,12 +72,12 @@ if [[ "${1:-}" == "--quiet" ]]; then
   QUIET=1
 fi
 
-# NOTE (known latent bug, flagged not fixed -- see the plan this check-extension-docs.sh change
-# shipped with): this auto-detect assumes BASH_SOURCE is deployed at .claude/scripts/<name>
-# (two directories under REPO_ROOT). When this script is instead invoked directly from its
-# extension SOURCE-STORE path (agent-system/extensions/core/scripts/check-extension-docs.sh),
-# the auto-detect miscomputes REPO_ROOT. Verification and any source-store invocation MUST pass
-# an explicit REPO_ROOT=$(pwd) override; the auto-detect is correct only for the deployed copy.
+# NOTE: the auto-detect below assumes BASH_SOURCE is deployed at .claude/scripts/<name> or
+# .opencode/scripts/<name> (two directories under REPO_ROOT); it is valid only in a deploy tree.
+# deploy-root-guard.sh now enforces this structurally on the computed-default path. Verification
+# and any deliberate source-store invocation MUST pass an explicit REPO_ROOT=$(pwd) override,
+# which intentionally bypasses the guard below -- the guard fires only when REPO_ROOT is unset.
+[[ -n "${REPO_ROOT:-}" ]] || . "$(dirname "${BASH_SOURCE[0]}")/deploy-root-guard.sh" || exit 1
 REPO_ROOT="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 EXT_DIR="${EXT_DIR:-$REPO_ROOT/agent-system/extensions}"
 
