@@ -274,6 +274,34 @@ if [ "$status" = "$success_status" ] || [ "$status" = "partial" ]; then
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
+# specs/.scope-lock mutex: brackets Stages 7 through 8a (the state.json read-modify-write +
+# TODO.md-regen window) — see .claude/context/patterns/task-lock.md's scope-acquire/scope-release
+# section and .claude/context/standards/git-staging-scope.md's state-write hazard note. Stage 8b
+# (TTS) and Stage 9 (git commit) stay explicitly OUTSIDE the mutex — serializing them was
+# rejected: they are comparatively slow and carry no data-integrity risk. `POSTFLIGHT_SCOPE_STALE_SEC`
+# is holder-declared (see task-lock.sh's acquire_scope_mutex), well above the measured worst-case
+# wall-clock time for this span. Fail-closed as a *lock* (never silently double-held), but
+# non-blocking as a *stage*: an acquire timeout logs a loud WARNING and Stages 7-8a proceed
+# unserialized, matching this script's pre-existing non-blocking-on-failure character elsewhere.
+# ─────────────────────────────────────────────────────────────────────────────
+POSTFLIGHT_SCOPE_STALE_SEC=30
+_scope_mutex_held_here="false"
+scope_token=""
+if scope_token=$(bash .claude/scripts/task-lock.sh scope-acquire "$session_id" "$POSTFLIGHT_SCOPE_STALE_SEC"); then
+  _scope_mutex_held_here="true"
+  # Exported so Stage 7's update-task-status.sh child (and anything it shells out to) inherits
+  # the guard and skips its own nested acquire/release rather than self-deadlocking.
+  export SCOPE_MUTEX_HELD=1
+  # Installed immediately after a successful acquire: this script runs under `set -e` and can
+  # exit early at several stages between here and the explicit release below. No pre-existing
+  # EXIT trap exists in this script (confirmed during planning), so this is the first and only
+  # trap installed.
+  trap 'bash .claude/scripts/task-lock.sh scope-release "$scope_token" >&2 || true' EXIT
+else
+  echo "[postflight] WARNING: failed to acquire specs/.scope-lock mutex for task ${task_number}'s Stage 7-8a state-write window; proceeding unserialized (non-blocking)." >&2
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Stage 7: Update task status (postflight) — research and plan only
 # implement does this inline in skill-implementer before calling this script
 # ─────────────────────────────────────────────────────────────────────────────
@@ -411,6 +439,20 @@ fi
 # ─────────────────────────────────────────────────────────────────────────────
 echo "[postflight] Regenerating TODO.md..."
 bash .claude/scripts/generate-todo.sh || echo "[postflight] WARNING: generate-todo.sh failed (non-fatal)" >&2
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Release the specs/.scope-lock mutex: the Stages 7-8a critical section (state.json
+# read-modify-write + TODO.md regen) ends here. Stage 8b (TTS), Stage 9 (git commit), and
+# Stage 10 (cleanup) run OUTSIDE the mutex — this boundary is the research verdict and must not
+# drift. Explicit release + trap clear (rather than leaving the EXIT trap to fire at script end)
+# so the mutex is not held for the remainder of postflight's non-serialized tail.
+# ─────────────────────────────────────────────────────────────────────────────
+if [ "$_scope_mutex_held_here" = "true" ]; then
+  bash .claude/scripts/task-lock.sh scope-release "$scope_token" >&2 || true
+  trap - EXIT
+  unset SCOPE_MUTEX_HELD
+  _scope_mutex_held_here="false"
+fi
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 8b: Lifecycle TTS notification (non-blocking, background)

@@ -306,28 +306,36 @@ Phase 4 or postflight self-deadlocks on every run.
 
 ---
 
-### Phase 4: Bracket Postflight Stages 7-8a in the Scope Mutex [NOT STARTED]
+### Phase 4: Bracket Postflight Stages 7-8a in the Scope Mutex [COMPLETED]
 
 **Goal**: Close the evidenced lost-update race by serializing the state.json read-modify-write +
 TODO.md-regen window — and nothing beyond it.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/orchestrator-postflight.sh`, acquire the mutex
-      immediately before Stage 7 with the `POSTFLIGHT_SCOPE_STALE_SEC` value chosen in Phase 1:
-      `scope_token=$(bash .claude/scripts/task-lock.sh scope-acquire "$session_id" "$stale_sec")`.
-- [ ] Export `SCOPE_MUTEX_HELD=1` so Stage 7's `update-task-status.sh` child inherits the guard from
-      Phase 3 and does not self-deadlock.
-- [ ] Install `trap 'bash .claude/scripts/task-lock.sh scope-release "$scope_token"' EXIT`
-      immediately after a successful acquire — postflight runs under `set -e` and can exit early at
-      several stages. Reconcile with any pre-existing EXIT trap found in Phase 1.
-- [ ] Release explicitly at the close of Stage 8a, clear the trap, and unset `SCOPE_MUTEX_HELD`.
-      Stage 8b (TTS), Stage 9 (git), and Stage 10 (cleanup) run **outside** the mutex — this
-      boundary is the research verdict and must not drift.
-- [ ] On acquire timeout: log a loud WARNING and continue unserialized. The mutex is fail-closed as
-      a *lock* (never silently double-held), but postflight's own stages remain non-blocking, as
-      they are today.
-- [ ] Add a comment at the bracket explaining what the critical section protects, citing the
-      staged-index write hazard and the pattern doc by name — never a task number.
+- [x] **Task 4.1**: In `agent-system/extensions/core/scripts/orchestrator-postflight.sh`, acquire
+      the mutex immediately before Stage 7 with the `POSTFLIGHT_SCOPE_STALE_SEC=30` value chosen in
+      Phase 1: `scope_token=$(bash .claude/scripts/task-lock.sh scope-acquire "$session_id" "$POSTFLIGHT_SCOPE_STALE_SEC")`.
+      *(completed)*
+- [x] **Task 4.2**: Export `SCOPE_MUTEX_HELD=1` so Stage 7's `update-task-status.sh` child inherits
+      the guard from Phase 3 and does not self-deadlock. *(completed and verified live: the
+      integrated run printed "Note: an outer holder already owns the specs/.scope-lock mutex
+      (SCOPE_MUTEX_HELD=1 inherited); running as guest, no nested acquire." during Stage 7 —
+      confirming the inherited guard fired inside the real postflight path, not just in isolation.)*
+- [x] **Task 4.3**: Install `trap 'bash .claude/scripts/task-lock.sh scope-release "$scope_token"' EXIT`
+      immediately after a successful acquire. No pre-existing EXIT trap was found in Phase 1's
+      audit, so this is the first and only trap in the script — no reconciliation needed.
+      *(completed)*
+- [x] **Task 4.4**: Release explicitly at the close of Stage 8a, clear the trap, and unset
+      `SCOPE_MUTEX_HELD`. Stage 8b/9/10 run outside the mutex. *(completed; verified structurally
+      via grep — the release block at the mutex-release comment precedes both the Stage 8b and
+      Stage 9 blocks in file order, and neither references `scope_token` or `SCOPE_MUTEX_HELD`.)*
+- [x] **Task 4.5**: On acquire timeout: log a loud WARNING and continue unserialized. *(completed:
+      matches the existing WARNING pattern used throughout this script and Phase 3's
+      `update-task-status.sh` guard.)*
+- [x] **Task 4.6**: Add a comment at the bracket explaining what the critical section protects,
+      citing the staged-index write hazard and the pattern doc by name — never a task number.
+      *(completed: cites `.claude/context/patterns/task-lock.md`'s scope-acquire/scope-release
+      section and `.claude/context/standards/git-staging-scope.md`'s state-write hazard note.)*
 
 **Timing**: 1.25 hours
 
