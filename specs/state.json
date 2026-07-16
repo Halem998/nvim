@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 888,
+  "next_project_number": 890,
   "active_projects": [
     {
       "project_number": 863,
@@ -1100,6 +1100,20 @@
           "summary": "Research report: telemetry source architecture and /distill redesign"
         }
       ]
+    },
+    {
+      "project_number": 888,
+      "project_name": "harden_extension_discovery_against_stray_dirs",
+      "status": "not_started",
+      "task_type": "neovim",
+      "description": "Extension discovery in lua/neotex/plugins/ai/shared/extensions/manifest.lua treats every subdirectory of the global extensions dir as an extension candidate, including dot-directories. A stray .agent-logs/ log dir written into agent-system/extensions/ was therefore reported as an extension with an invalid manifest. Two defects: (1) M.list_extensions (manifest.lua:182) iterates readdir entries with no dot-prefix filter; (2) it re-warns on every invocation and is called from at least three sites per reload (manifest.lua:219, manifest.lua:245, init.lua:842), so one bad directory produced ~120 identical vim.notify warnings. Skip dot-prefixed entries during the scan, and deduplicate/warn-once so a single malformed extension yields a single notification. Preserve the existing warn-and-continue behavior for genuinely malformed non-dot extensions."
+    },
+    {
+      "project_number": 889,
+      "project_name": "source_store_script_root_resolution_guard",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Scripts in the agent-system source store resolve PROJECT_ROOT as \"$(cd \"${SCRIPT_DIR}/../..\" && pwd)\". That depth is only correct in the deploy tree, where the script sits at .claude/scripts/ and ../.. is the repo root. In the source store the same file sits at agent-system/extensions/core/scripts/, so ../.. silently resolves to agent-system/extensions/ instead of failing. generate-todo.sh run this way created a stray agent-system/extensions/.agent-logs/ directory and logged: state.json not found at agent-system/extensions/specs/state.json. 24 scripts under agent-system/extensions/core/scripts/ share this pattern. Add a root validation guard so a script run outside a valid deploy tree fails loudly with an actionable message rather than computing a bogus root and writing stray artifacts. Also de-anchor the .gitignore entry (currently /.agent-logs/ at line 10, root-anchored) so nested log dirs are ignored wherever they appear."
     }
   ],
   "completed_projects": [],
