@@ -177,8 +177,10 @@ function M.list_extensions(config)
     return extensions
   end
 
-  -- Scan for subdirectories
-  local entries = vim.fn.readdir(extensions_dir)
+  -- Scan for subdirectories, skipping dot-prefixed entries (e.g. stray .agent-logs/)
+  local entries = vim.fn.readdir(extensions_dir, function(name)
+    return name:sub(1, 1) ~= "."
+  end)
   for _, entry in ipairs(entries) do
     local extension_path = extensions_dir .. "/" .. entry
 
@@ -192,9 +194,9 @@ function M.list_extensions(config)
           manifest = manifest,
         })
       else
-        -- Log warning for invalid extensions but continue
+        -- Log warning for invalid extensions but continue (dedup by message across re-scans)
         vim.schedule(function()
-          vim.notify(
+          vim.notify_once(
             string.format("Extension '%s' has invalid manifest: %s", entry, err),
             vim.log.levels.WARN
           )

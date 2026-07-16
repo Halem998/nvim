@@ -1,0 +1,11 @@
+{
+  "phase": 1,
+  "phase_name": "Apply the two-line fix to M.list_extensions",
+  "started_at": "2026-07-16T07:10:22Z",
+  "last_updated": "2026-07-16T07:10:22Z",
+  "objectives": [
+    {"id": 1, "description": "Apply the two-line fix to M.list_extensions — file changes", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/manifest.lua"]}
+  ],
+  "current_objective": 1,
+  "handoff_count": 0
+}
