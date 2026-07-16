@@ -844,7 +844,7 @@
     {
       "project_number": 880,
       "project_name": "document_modified_files_schema_and_fix_dangling_links",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "commit-scoping-concurrency",
       "title": "Document the modified_files/files_touched schema that targeted staging depends on",
@@ -855,12 +855,30 @@
         ".claude/context/formats/progress-file.md",
         ".claude/context/project/neovim/guides/neovim-integration.md"
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/880_document_modified_files_schema_and_fix_dangling_links/reports/01_modified-files-schema-dangling-links.md",
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/880_document_modified_files_schema_and_fix_dangling_links/plans/01_modified-files-schema-docs.md",
+          "type": "plan",
+          "summary": ""
+        },
+        {
+          "path": "specs/880_document_modified_files_schema_and_fix_dangling_links/summaries/01_modified-files-schema-docs-summary.md",
+          "type": "summary",
+          "summary": ""
+        }
+      ],
+      "last_updated": "2026-07-15T23:18:19Z",
+      "session_id": "sess_1784155855_f90cfe_880"
     },
     {
       "project_number": 881,
       "project_name": "make_four_agents_emit_modified_files",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "commit-scoping-concurrency",
       "title": "Make the four silent implementation agents emit modified_files",
@@ -874,12 +892,25 @@
         ".claude/agents/neovim-implementation-agent.md",
         ".claude/agents/nix-implementation-agent.md"
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/881_make_four_agents_emit_modified_files/reports/01_shared-fragment-and-agent-gaps.md",
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/881_make_four_agents_emit_modified_files/plans/01_three-class-modified-files-emission.md",
+          "type": "plan",
+          "summary": ""
+        }
+      ],
+      "last_updated": "2026-07-15T23:52:26Z",
+      "session_id": "sess_1784155855_f90cfe_881"
     },
     {
       "project_number": 882,
       "project_name": "research_shared_index_commit_serialization",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "commit-scoping-concurrency",
       "title": "Decide whether shared-index commits need serialization (research-first)",
@@ -891,12 +922,25 @@
         ".claude/scripts/generate-todo.sh",
         ".claude/context/standards/git-staging-scope.md"
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/882_research_shared_index_commit_serialization/reports/01_shared-index-commit-serialization.md",
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/882_research_shared_index_commit_serialization/plans/01_scope-mutex-state-write-serialization.md",
+          "type": "plan",
+          "summary": ""
+        }
+      ],
+      "last_updated": "2026-07-16T00:18:58Z",
+      "session_id": "sess_1784155855_f90cfe_882"
     },
     {
       "project_number": 883,
       "project_name": "gitignore_and_untrack_ephemeral_session_state",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "commit-scoping-concurrency",
       "title": "Stop committing ephemeral lock and session state",
@@ -905,12 +949,30 @@
       "file_scope": [
         ".gitignore"
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/883_gitignore_and_untrack_ephemeral_session_state/reports/01_gitignore-ephemeral-session-state.md",
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/883_gitignore_and_untrack_ephemeral_session_state/plans/01_gitignore-untrack-ephemeral-state.md",
+          "type": "plan",
+          "summary": ""
+        },
+        {
+          "path": "specs/883_gitignore_and_untrack_ephemeral_session_state/summaries/01_gitignore-untrack-ephemeral-state-summary.md",
+          "type": "summary",
+          "summary": ""
+        }
+      ],
+      "last_updated": "2026-07-15T23:25:33Z",
+      "session_id": "sess_1784155855_f90cfe_883"
     },
     {
       "project_number": 884,
       "project_name": "extend_git_guard_hook_to_block_overstaging",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "commit-scoping-concurrency",
       "title": "Extend the existing git guard hook to block over-staging",
@@ -922,7 +984,25 @@
         ".claude/skills/skill-project-overview/SKILL.md",
         ".claude/context/orchestration/postflight-pattern.md"
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/884_extend_git_guard_hook_to_block_overstaging/reports/01_extend-git-guard-overstaging.md",
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/884_extend_git_guard_hook_to_block_overstaging/plans/01_extend-git-guard-overstaging.md",
+          "type": "plan",
+          "summary": ""
+        },
+        {
+          "path": "specs/884_extend_git_guard_hook_to_block_overstaging/summaries/01_extend-git-guard-overstaging-summary.md",
+          "type": "summary",
+          "summary": ""
+        }
+      ],
+      "last_updated": "2026-07-15T23:18:23Z",
+      "session_id": "sess_1784155855_f90cfe_884"
     },
     {
       "project_number": 885,

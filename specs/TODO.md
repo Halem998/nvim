@@ -6,13 +6,13 @@ next_project_number: 888
 
 ## Task Order
 
-*Updated 2026-07-15. Generated from state.json dependency graph.*
+*Updated 2026-07-16. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,880,882,883,884,885 | -- | agent-system, commit-scoping-concurrency |
-| 2 | 881,887 | 873,880 | agent-system, commit-scoping-concurrency |
+| 1 | 873,885 | -- | agent-system |
+| 2 | 887 | 873 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -21,14 +21,6 @@ next_project_number: 888
 873 [PARTIAL] — Make /meta create tasks in the GLOBAL agent-system root by defaul
   └─ 887 [RESEARCHED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
-
-### Commit Scoping Concurrency
-
-880 [NOT STARTED] — The whole targeted-staging contract - the mechanism that makes th
-  └─ 881 [NOT STARTED] — Four of five implementation agents never report what they touched
-882 [NOT STARTED] — RESEARCH-FIRST BY EXPLICIT USER DECISION. This task must NOT lock
-883 [NOT STARTED] — The staging contract written to avoid committing unrelated state 
-884 [NOT STARTED] — The staging prohibition is prose-only. Three documents forbid `gi
 
 ## Tasks
 
@@ -150,10 +142,13 @@ DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside s
 ---
 
 ### 884. Extend the existing git guard hook to block over-staging
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: commit-scoping-concurrency
 - **Dependencies**: None
+- **Research**: [884_extend_git_guard_hook_to_block_overstaging/reports/01_extend-git-guard-overstaging.md]
+- **Plan**: [884_extend_git_guard_hook_to_block_overstaging/plans/01_extend-git-guard-overstaging.md]
+- **Summary**: [884_extend_git_guard_hook_to_block_overstaging/summaries/01_extend-git-guard-overstaging-summary.md]
 
 **Description**: The staging prohibition is prose-only. Three documents forbid `git add -A` but nothing enforces it, so the rule holds only as long as every agent chooses to read and obey it.
 
@@ -177,10 +172,13 @@ DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside s
 ---
 
 ### 883. Stop committing ephemeral lock and session state
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: commit-scoping-concurrency
 - **Dependencies**: None
+- **Research**: [883_gitignore_and_untrack_ephemeral_session_state/reports/01_gitignore-ephemeral-session-state.md]
+- **Plan**: [883_gitignore_and_untrack_ephemeral_session_state/plans/01_gitignore-untrack-ephemeral-state.md]
+- **Summary**: [883_gitignore_and_untrack_ephemeral_session_state/summaries/01_gitignore-untrack-ephemeral-state-summary.md]
 
 **Description**: The staging contract written to avoid committing unrelated state is itself committing session-scoped mutex state. Small, self-contained, no dependencies.
 
@@ -201,10 +199,12 @@ DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside s
 ---
 
 ### 882. Decide whether shared-index commits need serialization (research-first)
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: commit-scoping-concurrency
 - **Dependencies**: None
+- **Research**: [882_research_shared_index_commit_serialization/reports/01_shared-index-commit-serialization.md]
+- **Plan**: [882_research_shared_index_commit_serialization/plans/01_scope-mutex-state-write-serialization.md]
 
 **Description**: RESEARCH-FIRST BY EXPLICIT USER DECISION. This task must NOT lock in an approach before research settles the open question below. Do not treat serialization as the foregone conclusion.
 
@@ -229,10 +229,12 @@ DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside s
 ---
 
 ### 881. Make the four silent implementation agents emit modified_files
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: commit-scoping-concurrency
 - **Dependencies**: Task 880
+- **Research**: [881_make_four_agents_emit_modified_files/reports/01_shared-fragment-and-agent-gaps.md]
+- **Plan**: [881_make_four_agents_emit_modified_files/plans/01_three-class-modified-files-emission.md]
 
 **Description**: Four of five implementation agents never report what they touched, so targeted staging has nothing to stage and their source changes are silently never committed. This is a direct cause of 'the system did not commit the work it actually did'.
 
@@ -254,10 +256,13 @@ DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside s
 ---
 
 ### 880. Document the modified_files/files_touched schema that targeted staging depends on
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: commit-scoping-concurrency
 - **Dependencies**: None
+- **Research**: [880_document_modified_files_schema_and_fix_dangling_links/reports/01_modified-files-schema-dangling-links.md]
+- **Plan**: [880_document_modified_files_schema_and_fix_dangling_links/plans/01_modified-files-schema-docs.md]
+- **Summary**: [880_document_modified_files_schema_and_fix_dangling_links/summaries/01_modified-files-schema-docs-summary.md]
 
 **Description**: The whole targeted-staging contract - the mechanism that makes the system 'commit the work it has actually done, instead of committing all' - rests on a field that is documented NOWHERE. This is a dangling reference and it must be closed before any agent is asked to emit the field.
 

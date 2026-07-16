@@ -1,7 +1,7 @@
 # Implementation Plan: Task #882
 
 - **Task**: 882 - Decide whether shared-index commits need serialization (research-first)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None (tasks 883 and 884 run in parallel on disjoint file scopes)
 - **Research Inputs**: specs/882_research_shared_index_commit_serialization/reports/01_shared-index-commit-serialization.md

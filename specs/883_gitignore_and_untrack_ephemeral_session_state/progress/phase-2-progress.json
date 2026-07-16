@@ -1,0 +1,27 @@
+{
+  "phase": 2,
+  "phase_name": "Untrack the 198 Tracked Instances",
+  "started_at": "2026-07-15T00:00:00Z",
+  "last_updated": "2026-07-15T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Enumerate targets into a reviewable manifest in the session scratchpad", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Assert manifest count is exactly 198", "status": "done", "files_touched": [], "note": "Actual count 202 (+4 from live sibling task 880/884 activity: +2 .orchestrator-handoff.json, +2 .lock/holder.json). Confirmed plausible per plan's explicit growth-allowance clause; all added paths match intended pattern categories, no unexpected pattern types."},
+    {"id": 3, "description": "Assert manifest contains no durable artifact", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Assert no path contains whitespace", "status": "done", "files_touched": []},
+    {"id": 5, "description": "git rm --cached --pathspec-from-file the manifest", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Verify staged set matches manifest exactly before committing", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Commit the untracking immediately", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "2.2",
+      "description": "Assert the manifest count is exactly 198",
+      "type": "altered",
+      "reason": "Live index grew by 4 tracked ephemeral files between plan time and Phase 2 execution due to concurrent sibling orchestrate dispatches (880/884) creating new .orchestrator-handoff.json and .lock/holder.json entries. Verified every added path matches an intended pattern category (no unexpected pattern types), so proceeded with actual count 202 per the plan's explicit growth-allowance instruction.",
+      "annotation": "*(deviation: altered — count 202, not 198; +4 from live sibling task 880/884 activity, all within intended pattern categories, confirmed not assumed)*"
+    }
+  ],
+  "handoff_count": 0
+}

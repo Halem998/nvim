@@ -1,7 +1,7 @@
 # Implementation Plan: Task #884
 
 - **Task**: 884 - extend_git_guard_hook_to_block_overstaging
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: None (see Territory note re: task 882 running in parallel)
 - **Research Inputs**: `specs/884_extend_git_guard_hook_to_block_overstaging/reports/01_extend-git-guard-overstaging.md`
