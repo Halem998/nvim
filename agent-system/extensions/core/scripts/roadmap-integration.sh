@@ -110,14 +110,16 @@ fi
 #   Status tables: pipe-delimited rows with Component/Status/Location
 #   Priority markers: (High Priority), (Medium Priority), (Low Priority)
 
-ROADMAP_CONTENT=$(cat "$ROADMAP_PATH")
-
-ROADMAP_STATE=$(python3 - "$ROADMAP_CONTENT" << 'PYEOF'
+ROADMAP_STATE=$(python3 - "$ROADMAP_PATH" << 'PYEOF'
 import sys
 import re
 import json
 
-content = sys.argv[1]
+# Read the file directly from disk (path is a short argv string; the file itself may be
+# large, so we never pass its content through argv -- see defect 1, line ~238 for the
+# analogous fix on the ALL_COMPLETED/ROADMAP_STATE payloads).
+with open(sys.argv[1], "r") as f:
+    content = f.read()
 lines = content.split("\n")
 
 phases = []
@@ -162,25 +164,59 @@ for i, line in enumerate(lines):
             })
             continue
 
-    # Match status table rows: | **Component** | Status | Location |
-    table_row_match = re.match(r'^\|(.+)\|(.+)\|(.+)\|$', line)
+    # Match status table rows of ANY column count: | col | col | col | ... |
+    # (previously a fixed-arity `^\|(.+)\|(.+)\|(.+)\|$` regex, which only matched exactly
+    # 3-column rows and mis-split 4- and 5-column rows -- see defect 3, separator-regex fix.)
+    table_row_match = re.match(r'^\|(.*)\|\s*$', line)
     if table_row_match:
-        cols = [c.strip() for c in [table_row_match.group(1), table_row_match.group(2), table_row_match.group(3)]]
-        # Skip separator rows (--- cells)
-        if all(re.match(r'^-+$', c.strip('-')) or c.strip('-') == '' for c in cols):
+        # Generic split on '|' works for any column count.
+        cols = [c.strip() for c in table_row_match.group(1).split('|')]
+        # A bare "|...|" line with no internal '|' (1 column) is not a real table row --
+        # e.g. ASCII-art box-drawing lines using '|' as a vertical bar. Require >=2 columns.
+        if len(cols) < 2:
+            in_table = False
             continue
-        # Skip header rows
-        if 'component' in cols[0].lower() or 'status' in cols[1].lower():
+        # Skip separator rows (---, :---, ---:, :---: cells) for any column count.
+        if all(re.match(r'^:?-+:?$', c) or c == '' for c in cols):
+            continue
+        # Detect header rows via lookahead: a row is a header iff the NEXT line is a
+        # same-width separator row. This is robust regardless of cell content -- an earlier
+        # keyword-based heuristic ("status" appears in some column) produced false positives
+        # when a DATA cell happened to contain the substring "status" (e.g. a
+        # "[...STATUS.md](...)" markdown link), silently swallowing that data row as a second
+        # header.
+        next_line = lines[i + 1] if i + 1 < len(lines) else ""
+        next_row_match = re.match(r'^\|(.*)\|\s*$', next_line)
+        next_cols = [c.strip() for c in next_row_match.group(1).split('|')] if next_row_match else None
+        is_header = (
+            next_cols is not None
+            and len(next_cols) == len(cols)
+            and all(re.match(r'^:?-+:?$', c) or c == '' for c in next_cols)
+        )
+        if is_header:
             table_headers = cols
             in_table = True
             continue
         if in_table:
-            # Strip markdown bold from component name
-            component = re.sub(r'\*\*(.+)\*\*', r'\1', cols[0])
+            # Strip markdown bold from component name (first column).
+            component = re.sub(r'\*\*(.+?)\*\*', r'\1', cols[0])
+            # Status is not reliably at a fixed column index across tables of different
+            # widths/headers (e.g. "Hardware Port" is the actual completion-status column in
+            # several 4-/5-column ROADMAP tables, not column index 1). Scan all non-component
+            # columns for a value that whole-word-matches the completion allowlist and use
+            # that as the status; fall back to column index 1 for backward compatibility when
+            # no column matches (informational only -- the matcher only treats an allowlist
+            # match as a candidate).
+            status_value = ""
+            for c in cols[1:]:
+                if re.search(r'\b(complete|resolved|done)\b', c, re.IGNORECASE):
+                    status_value = c
+                    break
             status_tables.append({
                 "component": component,
-                "status": cols[1],
-                "location": cols[2] if len(cols) > 2 else ""
+                "status": status_value if status_value else (cols[1] if len(cols) > 1 else ""),
+                "location": cols[-1] if len(cols) > 1 else "",
+                "columns": cols
             })
     else:
         in_table = False
@@ -235,13 +271,25 @@ fi
 
 ALL_COMPLETED=$(echo "$COMPLETED_TASKS $ARCHIVED_TASKS" | jq -s 'add // []')
 
-ROADMAP_MATCHES=$(python3 - "$ROADMAP_STATE" "$ALL_COMPLETED" << 'PYEOF'
+# ROADMAP_STATE and ALL_COMPLETED can each exceed Linux's MAX_ARG_STRLEN (131,072 bytes) once
+# the task history grows (observed ~252KB), which would make argv-passing exit 126 ("Argument
+# list too long"). Pass both via temp files instead and json.load() them in python -- stdin is
+# reserved for the heredoc program source and env vars hit the identical argv-size limit.
+TMP_ROADMAP_STATE=$(mktemp)
+TMP_ALL_COMPLETED=$(mktemp)
+trap 'rm -f "$TMP_ROADMAP_STATE" "$TMP_ALL_COMPLETED"' EXIT
+printf '%s' "$ROADMAP_STATE" > "$TMP_ROADMAP_STATE"
+printf '%s' "$ALL_COMPLETED" > "$TMP_ALL_COMPLETED"
+
+ROADMAP_MATCHES=$(python3 - "$TMP_ROADMAP_STATE" "$TMP_ALL_COMPLETED" << 'PYEOF'
 import sys
 import re
 import json
 
-roadmap_state = json.loads(sys.argv[1])
-all_completed = json.loads(sys.argv[2])
+with open(sys.argv[1], "r") as f:
+    roadmap_state = json.load(f)
+with open(sys.argv[2], "r") as f:
+    all_completed = json.load(f)
 
 matches = []
 
@@ -260,6 +308,59 @@ def keywords(text):
     stopwords = {'with', 'from', 'that', 'this', 'have', 'been', 'will', 'also', 'into', 'than'}
     return set(w for w in words if len(w) > 3 and w not in stopwords)
 
+# Strict, whole-word, case-insensitive allowlist of completion-status values that a table row's
+# status column must match before it is even considered as a candidate for matching (defect 3,
+# Option A). This mirrors the checkbox path's "completed": true gate -- only rows that are
+# themselves marked complete become candidates, so an over-broad matcher can't annotate rows
+# that are still in progress.
+STATUS_ALLOWLIST_RE = re.compile(r'\b(complete|resolved|done)\b', re.IGNORECASE)
+
+def find_match(item_text, item_norm, item_kw):
+    """Shared (Task N) / explicit-roadmap-item / title-match / keyword-match heuristic, used by
+    both the checkbox-item path and the table-row path (defect 3, Option A) so a single matcher
+    implementation backs both roadmap formats."""
+    # Check 1: Does item contain an explicit (Task N) / (task N) reference? Case-insensitive
+    # since the ROADMAP.md table format spells this in lowercase (e.g. "Complete (task <N>)"),
+    # unlike the checkbox format's title-case convention.
+    task_ref = re.search(r'\(task (\d+)', item_text, re.IGNORECASE)
+    if task_ref:
+        task_num = int(task_ref.group(1))
+        if task_num in task_by_number:
+            return task_by_number[task_num], "high", "explicit_task_ref"
+
+    # Check 2: Does a completed task have explicit roadmap_items matching this text?
+    for task in all_completed:
+        for ri in task.get("roadmap_items", []):
+            ri_norm = normalize(ri)
+            if ri_norm == item_norm or (len(ri_norm) > 10 and ri_norm in item_norm):
+                return task, "high", "explicit_roadmap_item"
+
+    # Check 3: Title match (exact or near-exact)
+    for task in all_completed:
+        task_title_norm = normalize(task["title"])
+        if task_title_norm == item_norm:
+            return task, "high", "exact_title_match"
+        # Near-exact: one is a substring of the other
+        if len(task_title_norm) > 10:
+            if task_title_norm in item_norm or item_norm in task_title_norm:
+                return task, "medium", "title_match"
+
+    # Check 4: Keyword match (60%+ overlap)
+    if len(item_kw) >= 3:
+        best_overlap = 0
+        best_match = None
+        for task in all_completed:
+            task_kw = keywords(task["title"] + " " + task.get("completion_summary", ""))
+            overlap = len(item_kw & task_kw)
+            overlap_ratio = overlap / len(item_kw)
+            if overlap_ratio >= 0.6 and overlap > best_overlap:
+                best_overlap = overlap
+                best_match = task
+        if best_match is not None:
+            return best_match, "low", "keyword_match"
+
+    return None, None, None
+
 for phase in roadmap_state.get("phases", []):
     for item in phase.get("checkboxes", {}).get("items", []):
         item_text = item["text"]
@@ -274,68 +375,10 @@ for phase in roadmap_state.get("phases", []):
         if item.get("completed", False):
             continue
 
-        best_match = None
-        best_confidence = None
-        best_match_type = None
-
-        # Check 1: Does item contain explicit (Task N) reference?
-        task_ref = re.search(r'\(Task (\d+)\)', item_text)
-        if task_ref:
-            task_num = int(task_ref.group(1))
-            if task_num in task_by_number:
-                best_match = task_by_number[task_num]
-                best_confidence = "high"
-                best_match_type = "explicit_task_ref"
-
-        # Check 2: Does completed task have explicit roadmap_items?
-        if best_match is None:
-            for task in all_completed:
-                for ri in task.get("roadmap_items", []):
-                    ri_norm = normalize(ri)
-                    if ri_norm == item_norm or (len(ri_norm) > 10 and ri_norm in item_norm):
-                        best_match = task
-                        best_confidence = "high"
-                        best_match_type = "explicit_roadmap_item"
-                        break
-                if best_match:
-                    break
-
-        # Check 3: Title match (exact or near-exact)
-        if best_match is None:
-            for task in all_completed:
-                task_title_norm = normalize(task["title"])
-                if task_title_norm == item_norm:
-                    best_match = task
-                    best_confidence = "high"
-                    best_match_type = "exact_title_match"
-                    break
-                # Near-exact: one is a substring of the other
-                if len(task_title_norm) > 10:
-                    if task_title_norm in item_norm or item_norm in task_title_norm:
-                        best_match = task
-                        best_confidence = "medium"
-                        best_match_type = "title_match"
-                        break
-
-        # Check 4: Keyword match (60%+ overlap)
-        if best_match is None and len(item_kw) >= 3:
-            best_overlap = 0
-            for task in all_completed:
-                task_kw = keywords(task["title"] + " " + task.get("completion_summary", ""))
-                overlap = len(item_kw & task_kw)
-                overlap_ratio = overlap / len(item_kw)
-                if overlap_ratio >= 0.6 and overlap > best_overlap:
-                    best_overlap = overlap
-                    best_match = task
-                    best_confidence = "low"
-                    best_match_type = "keyword_match"
+        best_match, best_confidence, best_match_type = find_match(item_text, item_norm, item_kw)
 
         if best_match is not None:
-            # Find completion date (use a placeholder since state.json may not track dates)
             completion_date = best_match.get("completion_date", "")
-            if not completion_date:
-                # Try to infer from task creation date or use empty
-                completion_date = ""
 
             matches.append({
                 "roadmap_item": item_text,
@@ -346,6 +389,45 @@ for phase in roadmap_state.get("phases", []):
                 "task_title": best_match["title"],
                 "completion_date": completion_date
             })
+
+# Table-row-based completion matcher (defect 3, Option A): iterate status_tables entries (any
+# column width, per the generic parser fix above) and treat rows whose status column matches the
+# strict completion allowlist as candidates, reusing the same (Task N)/title/keyword heuristics
+# against the row's component + status + location text. This is additive to the checkbox matcher
+# above -- ROADMAP.md's current table format has zero checkboxes, so without this loop
+# annotations_made is always 0 regardless of how many completed items the table actually lists.
+for row in roadmap_state.get("status_tables", []):
+    status_text = row.get("status", "")
+    if not STATUS_ALLOWLIST_RE.search(status_text):
+        continue
+
+    # Skip rows already annotated with a completion marker.
+    if "*(Completed:" in status_text or "(Completed:" in status_text:
+        continue
+
+    # Build combined text for matching: component name + status text (which often carries the
+    # explicit "(task N)" reference) + location.
+    row_text = " ".join(
+        filter(None, [row.get("component", ""), status_text, row.get("location", "")])
+    )
+    row_norm = normalize(row_text)
+    row_kw = keywords(row_text)
+
+    best_match, best_confidence, best_match_type = find_match(row_text, row_norm, row_kw)
+
+    if best_match is not None:
+        completion_date = best_match.get("completion_date", "")
+
+        matches.append({
+            "roadmap_item": row.get("component", ""),
+            "phase": None,
+            "match_type": best_match_type,
+            "confidence": best_confidence,
+            "matched_task": best_match["number"],
+            "task_title": best_match["title"],
+            "completion_date": completion_date,
+            "source": "status_table"
+        })
 
 print(json.dumps(matches))
 PYEOF

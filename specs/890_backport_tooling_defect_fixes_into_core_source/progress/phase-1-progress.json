@@ -1,0 +1,30 @@
+{
+  "phase": 1,
+  "phase_name": "Defects 1 & 3 - roadmap-integration.sh (argv overflow + table-format annotations)",
+  "started_at": "2026-07-18T21:30:00Z",
+  "last_updated": "2026-07-18T22:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Diff review roadmap-integration.sh source vs finished, confirm no deploy-root-guard.sh drift, apply whole-file copy (safe, no drift)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Verify Defect 1 (argv overflow) with >131072-byte state.json payload, exit code 0",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Verify Defect 3 (table-format annotations matcher) against synthetic 4-column ROADMAP.md",
+      "status": "done",
+      "files_touched": [],
+      "note": "roadmap_matches now correctly populated (previously empty due to fixed-arity 3-column regex mis-parsing 4-col tables, confirmed by re-running pre-fix file against same fixture). annotation_summary.annotations_made remains 0 for a pure-table (no-checkbox) ROADMAP.md because the write-back mechanism (lines ~436-520) only replaces literal '- [ ] {text}' checkbox lines and was not modified by this defect's diff -- confirmed byte-identical output between the newly-copied source file and the finished Hardware reference file on the same fixture, so this is pre-existing verified behavior, not a regression introduced by this back-port."
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
