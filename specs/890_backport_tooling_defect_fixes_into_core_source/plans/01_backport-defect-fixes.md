@@ -175,7 +175,7 @@ edit — never `cp` this file.
 
 ---
 
-### Phase 4: Defect 5 — new advisory hook + settings-hooks.json wiring [NOT STARTED]
+### Phase 4: Defect 5 — new advisory hook + settings-hooks.json wiring [COMPLETED]
 
 **Goal**: Create the new non-blocking advisory hook
 `agent-system/extensions/core/hooks/validate-no-task-references.sh` (executable), and register it
@@ -183,11 +183,11 @@ via a NEW standalone `PostToolUse` `Write|Edit` block in
 `agent-system/extensions/core/merge-sources/settings-hooks.json`.
 
 **Tasks**:
-- [ ] Copy `/home/benjamin/Projects/Logos/Hardware/.claude/hooks/validate-no-task-references.sh` (61 lines) into `agent-system/extensions/core/hooks/validate-no-task-references.sh`.
-- [ ] `chmod +x agent-system/extensions/core/hooks/validate-no-task-references.sh`.
-- [ ] Confirm the hook contains no task-number citations of its own and uses durable anchors (it enforces `rules/no-task-references-in-deliverables.md`).
-- [ ] Edit `agent-system/extensions/core/merge-sources/settings-hooks.json`: add a NEW top-level `"PostToolUse"` key (the file currently has only `SessionStart`/`Stop`/`UserPromptSubmit`) containing ONE `Write|Edit` matcher block with a single hook command `bash .claude/hooks/validate-no-task-references.sh 2>/dev/null || echo '{}'` (exact shape in research report Finding 4). Do NOT fold into or copy the deploy tree's full array.
-- [ ] Confirm `manifest.json`'s `provides.hooks` already lists `validate-no-task-references.sh` (no manifest edit) and validate the JSON parses (`jq . merge-sources/settings-hooks.json`).
+- [x] Copy `/home/benjamin/Projects/Logos/Hardware/.claude/hooks/validate-no-task-references.sh` (61 lines) into `agent-system/extensions/core/hooks/validate-no-task-references.sh`. *(completed: byte-identical)*
+- [x] `chmod +x agent-system/extensions/core/hooks/validate-no-task-references.sh`. *(completed)*
+- [x] Confirm the hook contains no task-number citations of its own and uses durable anchors (it enforces `rules/no-task-references-in-deliverables.md`). *(completed: only generic "task N"/"tasks N-M" pattern examples, not literal citations)*
+- [x] Edit `agent-system/extensions/core/merge-sources/settings-hooks.json`: add a NEW top-level `"PostToolUse"` key (the file currently has only `SessionStart`/`Stop`/`UserPromptSubmit`) containing ONE `Write|Edit` matcher block with a single hook command `bash .claude/hooks/validate-no-task-references.sh 2>/dev/null || echo '{}'` (exact shape in research report Finding 4). Do NOT fold into or copy the deploy tree's full array. *(completed)*
+- [x] Confirm `manifest.json`'s `provides.hooks` already lists `validate-no-task-references.sh` (no manifest edit) and validate the JSON parses (`jq . merge-sources/settings-hooks.json`). *(completed: grep confirmed at manifest.json line 159, jq parse OK)*
 
 **Timing**: 0.75 hours
 

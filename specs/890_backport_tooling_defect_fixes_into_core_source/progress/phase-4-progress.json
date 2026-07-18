@@ -1,0 +1,30 @@
+{
+  "phase": 4,
+  "phase_name": "Defect 5 - new advisory hook + settings-hooks.json wiring",
+  "started_at": "2026-07-18T22:30:00Z",
+  "last_updated": "2026-07-18T22:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Copy validate-no-task-references.sh into hooks/, chmod +x",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/hooks/validate-no-task-references.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Add new standalone PostToolUse Write|Edit block to settings-hooks.json",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/merge-sources/settings-hooks.json"]
+    },
+    {
+      "id": 3,
+      "description": "Verify -x bit, live invocation for both inside/outside specs/** cases, jq parse, manifest.json provides.hooks already lists the hook",
+      "status": "done",
+      "files_touched": [],
+      "note": "both stdin-invocation cases confirmed exit 0; case (a) additionalContext reminder, case (b) bare {} silent"
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

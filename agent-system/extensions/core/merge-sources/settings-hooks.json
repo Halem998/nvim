@@ -24,6 +24,14 @@
           { "type": "command", "command": "bash .claude/hooks/wezterm-preflight-status.sh 2>/dev/null || echo '{}'" }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/validate-no-task-references.sh 2>/dev/null || echo '{}'" }
+        ]
+      }
     ]
   }
 }
