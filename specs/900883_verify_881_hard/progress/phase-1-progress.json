@@ -1,0 +1,11 @@
+{
+  "phase": 1,
+  "objectives": [
+    {
+      "id": "1.1",
+      "description": "Append a line to verify-scratch/probe.md",
+      "status": "done",
+      "files_touched": ["verify-scratch/probe.md"]
+    }
+  ]
+}

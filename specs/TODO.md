@@ -1,17 +1,17 @@
 ---
-next_project_number: 890
+next_project_number: 891
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-07-16. Generated from state.json dependency graph.*
+*Updated 2026-07-18. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885 | -- | agent-system |
+| 1 | 873,885,890 | -- | agent-system, extensions |
 | 2 | 887 | 873 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -22,7 +22,43 @@ next_project_number: 890
   └─ 887 [RESEARCHED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
 
+### Extensions
+
+890 [NOT STARTED] — TIMING RISK (READ FIRST): The finished source-of-truth files for 
+
 ## Tasks
+
+### 890. Back-port review-2026-07-16 tooling-defect fixes into core extension source
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: TIMING RISK (READ FIRST): The finished source-of-truth files for this back-port currently exist ONLY in a downstream project's deployed, git-ignored deploy tree at /home/benjamin/Projects/Logos/Hardware/.claude/... . That .claude/ is a disposable copy-deploy artifact generated from ~/.config/nvim/agent-system/extensions/ by the Neovim loader (<leader>al). No committed copy of these fixed files exists anywhere else. They MUST be copied into the agent-system SOURCE store BEFORE the Hardware project (or any project sharing the core extension) is redeployed via <leader>al, or the work is LOST with no recovery.
+
+PURPOSE: Back-port a set of already-completed, already-verified tooling-defect fixes (from the review review-2026-07-16) into the agent-system SOURCE store so they survive .claude/ regeneration. Provenance: the fixes were implemented and verified in the downstream Hardware project's deployed .claude/ tree; because .claude/ is regenerated from source, they are not yet in source. This task ports them into agent-system/extensions/core/ (the always-active core extension). Cite durable anchors (the review review-2026-07-16, the core extension, and the defect descriptions below) for provenance -- never ephemeral task numbers.
+
+SCOPE (single cohesive back-port -- one review, one core extension). All destination paths are relative to ~/.config/nvim/agent-system/extensions/core/ ; each finished source-of-truth file is under /home/benjamin/Projects/Logos/Hardware/.claude/ :
+
+1. scripts/roadmap-integration.sh (~236 changed lines). Defect 1 (argv-length overflow): a ~252KB+ completed-task JSON passed as a single argv string exceeds Linux MAX_ARG_STRLEN=131072 and exits 126; fix = pass the ROADMAP_STATE / ALL_COMPLETED payloads via temp files + python json.load with a trap cleanup, applied at BOTH call sites (the completed-task pass near line 238 AND the latent identical ROADMAP_CONTENT pass near line 111/113). Defect 3 (annotations matcher): it only iterated markdown checkboxes, but specs/ROADMAP.md is table-format (0 checkboxes) so annotations_made was always 0 -- rewrite it to parse the table format with a strict status allowlist AND fix the generic column split (the old separator-skip regex only handled 3-column tables; 4-5 column tables were mis-split and ingested separator rows as data). Finished file: /home/benjamin/Projects/Logos/Hardware/.claude/scripts/roadmap-integration.sh (548 lines vs 466 in source).
+
+2. commands/review.md (~18 changed lines). Defect 2 (silent guard): the roadmap-integration guard checked only file existence, not exit code, so a 126 failure was SILENT (jq on empty input returns exit 0). Fix = capture and check $? of the actual invocation. Finished file: /home/benjamin/Projects/Logos/Hardware/.claude/commands/review.md .
+
+3. scripts/generate-task-order.sh (~16 changed lines). Defect 4 (warning symmetry): add a symmetric stderr warning near line 466 for undeclared topics. Finished file: /home/benjamin/Projects/Logos/Hardware/.claude/scripts/generate-task-order.sh .
+
+4. context/formats/task-order-format.md (~10 changed lines). Defect 4 (documentation): document the previously-undocumented append-extras behavior near line 320. Finished file: /home/benjamin/Projects/Logos/Hardware/.claude/context/formats/task-order-format.md .
+
+5. hooks/validate-no-task-references.sh (NEW, 61 lines). Defect 5: create this file in agent-system/extensions/core/hooks/ alongside the other validate-*.sh hooks. It is a PostToolUse, NON-BLOCKING advisory hook that scans new/edited content outside specs/** for task-number citation patterns and surfaces a reminder (never blocks); it enforces the existing core rule rules/no-task-references-in-deliverables.md. Must be chmod +x. Finished file: /home/benjamin/Projects/Logos/Hardware/.claude/hooks/validate-no-task-references.sh .
+
+6. merge-sources/settings-hooks.json (Defect 5 wiring): register the new hook HERE, NOT in root-files/settings.json -- the deployed settings.json is assembled by merging fragments. Mirror the exact PostToolUse registration shape visible in the deployed /home/benjamin/Projects/Logos/Hardware/.claude/settings.json .
+
+EXPLICIT NON-GOALS (out of scope): (a) rules/no-task-references-in-deliverables.md is ALREADY byte-identical in source (back-ported previously) -- do NOT touch it. (b) The Defect-4 per-repo topic list (active_topics in a project's state.json) is per-repo data, NOT an agent-system source concern -- only the generate-task-order.sh warning and the task-order-format.md doc are source-relevant here.
+
+IMPLEMENTER'S JOB (essentially mechanical copy-then-verify): copy the 5 finished files into their agent-system/extensions/core/... source paths, add the settings-hooks.json registration entry, chmod +x the new hook, then VERIFY each fix IN THE SOURCE CONTEXT: (1) re-run roadmap-integration.sh with a >131KB payload and confirm exit 0; (2) confirm the review.md guard propagates a non-zero exit on failure; (3) confirm the hook fires non-blockingly outside specs/** and is silent inside; (4) confirm annotations_made can be non-zero against the table-format ROADMAP.md. After source is updated, the user redeploys affected projects via <leader>al.
+
+LOCATION-CORRECTNESS: every edit target is agent-system/extensions/core/** (source store), never .claude/** (disposable deploy tree). Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
 
 ### 889. Source store script root resolution guard
 - **Status**: [COMPLETED]
