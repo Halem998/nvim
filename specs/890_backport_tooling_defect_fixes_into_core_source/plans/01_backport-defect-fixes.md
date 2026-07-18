@@ -1,7 +1,7 @@
 # Implementation Plan: Back-port review-2026-07-16 tooling-defect fixes into core extension source
 
 - **Task**: 890 - Back-port review-2026-07-16 tooling-defect fixes into core extension source
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: reports/01_backport-verification.md

@@ -1158,7 +1158,7 @@
     {
       "project_number": 890,
       "project_name": "backport_tooling_defect_fixes_into_core_source",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Back-port review-2026-07-16 tooling-defect fixes into core extension source",
@@ -1173,9 +1173,25 @@
         "agent-system/extensions/core/merge-sources/settings-hooks.json"
       ],
       "created": "2026-07-18T00:00:00Z",
-      "last_updated": "2026-07-18T00:00:00Z",
-      "session_id": "sess_1784399951_088cf4",
-      "artifacts": []
+      "last_updated": "2026-07-18T20:57:24Z",
+      "session_id": "sess_1784406955_478c24",
+      "artifacts": [
+        {
+          "path": "specs/890_backport_tooling_defect_fixes_into_core_source/reports/01_backport-verification.md",
+          "type": "report",
+          "summary": "Backport verification research"
+        },
+        {
+          "path": "specs/890_backport_tooling_defect_fixes_into_core_source/plans/01_backport-defect-fixes.md",
+          "type": "plan",
+          "summary": "Backport defect fixes plan"
+        },
+        {
+          "path": "specs/890_backport_tooling_defect_fixes_into_core_source/summaries/01_backport-defect-fixes-summary.md",
+          "type": "summary",
+          "summary": "Backport defect fixes summary"
+        }
+      ]
     }
   ],
   "completed_projects": [],

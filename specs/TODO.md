@@ -11,7 +11,7 @@ next_project_number: 891
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,890 | -- | agent-system, extensions |
+| 1 | 873,885 | -- | agent-system |
 | 2 | 887 | 873 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -22,17 +22,16 @@ next_project_number: 891
   └─ 887 [RESEARCHED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
 
-### Extensions
-
-890 [NOT STARTED] — TIMING RISK (READ FIRST): The finished source-of-truth files for 
-
 ## Tasks
 
 ### 890. Back-port review-2026-07-16 tooling-defect fixes into core extension source
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
+- **Research**: [890_backport_tooling_defect_fixes_into_core_source/reports/01_backport-verification.md]
+- **Plan**: [890_backport_tooling_defect_fixes_into_core_source/plans/01_backport-defect-fixes.md]
+- **Summary**: [890_backport_tooling_defect_fixes_into_core_source/summaries/01_backport-defect-fixes-summary.md]
 
 **Description**: TIMING RISK (READ FIRST): The finished source-of-truth files for this back-port currently exist ONLY in a downstream project's deployed, git-ignored deploy tree at /home/benjamin/Projects/Logos/Hardware/.claude/... . That .claude/ is a disposable copy-deploy artifact generated from ~/.config/nvim/agent-system/extensions/ by the Neovim loader (<leader>al). No committed copy of these fixed files exists anywhere else. They MUST be copied into the agent-system SOURCE store BEFORE the Hardware project (or any project sharing the core extension) is redeployed via <leader>al, or the work is LOST with no recovery.
 
