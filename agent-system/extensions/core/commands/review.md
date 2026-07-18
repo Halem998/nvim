@@ -67,11 +67,15 @@ fi
 Run `roadmap-integration.sh` to parse ROADMAP.md, cross-reference with project state, and annotate completed items:
 
 ```bash
-# Run roadmap integration: parse, cross-reference, and annotate
+# Run roadmap integration: parse, cross-reference, and annotate.
+# Capture the invocation's own exit status immediately -- do not rely solely on the
+# file-existence guard below, or a script that is present but fails silently propagates
+# nothing (jq on empty input still exits 0, masking the failure).
+roadmap_exit=0
 roadmap_output=$(bash .claude/scripts/roadmap-integration.sh \
   --roadmap specs/ROADMAP.md \
   --state specs/state.json \
-  --annotate)
+  --annotate) || roadmap_exit=$?
 
 # Extract structured data for downstream use
 roadmap_state=$(echo "$roadmap_output" | jq '.roadmap_state')
@@ -80,11 +84,19 @@ annotation_summary=$(echo "$roadmap_output" | jq '.annotation_summary')
 annotations_made=$(echo "$annotation_summary" | jq '.annotations_made')
 ```
 
-**Error handling**: If `roadmap-integration.sh` fails or is not found, log warning and continue review without roadmap integration:
+**Error handling**: If `roadmap-integration.sh` is missing, exits non-zero, or produces empty
+output, log a visible warning and fall back to the empty-state default. Both "script missing"
+and "script present but failed" must surface the same warning and fallback -- neither is
+allowed to fail silently:
 
 ```bash
 if [ ! -f .claude/scripts/roadmap-integration.sh ]; then
   echo "Warning: roadmap-integration.sh not found -- skipping roadmap integration" >&2
+  roadmap_state='{"phases":[],"status_tables":[]}'
+  roadmap_matches='[]'
+  annotations_made=0
+elif [[ "$roadmap_exit" -ne 0 ]] || [[ -z "$roadmap_output" ]]; then
+  echo "Warning: roadmap-integration.sh exited $roadmap_exit or produced empty output -- skipping roadmap integration" >&2
   roadmap_state='{"phases":[],"status_tables":[]}'
   roadmap_matches='[]'
   annotations_made=0

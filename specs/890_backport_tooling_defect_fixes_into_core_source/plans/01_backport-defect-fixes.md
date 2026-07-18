@@ -117,16 +117,16 @@ context.
 
 ---
 
-### Phase 2: Defect 2 — review.md (silent roadmap-integration guard) [NOT STARTED]
+### Phase 2: Defect 2 — review.md (silent roadmap-integration guard) [COMPLETED]
 
 **Goal**: Apply the exit-code-capture fix to
 `agent-system/extensions/core/commands/review.md` so a non-zero exit from
 `roadmap-integration.sh` is no longer swallowed, and verify.
 
 **Tasks**:
-- [ ] `diff -u agent-system/extensions/core/commands/review.md /home/benjamin/Projects/Logos/Hardware/.claude/commands/review.md` and review (research: clean ~29-line additive diff, no drift).
-- [ ] Apply Defect 2: initialize `roadmap_exit=0` before the invocation, append `|| roadmap_exit=$?` to the `roadmap_output=$(bash .claude/scripts/roadmap-integration.sh ...)` line, and add the new `elif [[ "$roadmap_exit" -ne 0 ]] || [[ -z "$roadmap_output" ]]` branch that emits a warning and falls back to the same empty-state defaults as the file-missing branch.
-- [ ] Confirm no task-number citations are introduced (durable anchors only).
+- [x] `diff -u agent-system/extensions/core/commands/review.md /home/benjamin/Projects/Logos/Hardware/.claude/commands/review.md` and review (research: clean ~29-line additive diff, no drift). *(completed)*
+- [x] Apply Defect 2: initialize `roadmap_exit=0` before the invocation, append `|| roadmap_exit=$?` to the `roadmap_output=$(bash .claude/scripts/roadmap-integration.sh ...)` line, and add the new `elif [[ "$roadmap_exit" -ne 0 ]] || [[ -z "$roadmap_output" ]]` branch that emits a warning and falls back to the same empty-state defaults as the file-missing branch. *(completed: applied via whole-file copy, no drift)*
+- [x] Confirm no task-number citations are introduced (durable anchors only). *(completed: the sole "task 796" reference in the file is pre-existing content unrelated to this diff, confirmed via git show HEAD)*
 
 **Timing**: 0.5 hours
 
