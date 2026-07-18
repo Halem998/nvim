@@ -140,7 +140,7 @@ context.
 
 ---
 
-### Phase 3: Defect 4 — generate-task-order.sh (targeted edit) + task-order-format.md doc [NOT STARTED]
+### Phase 3: Defect 4 — generate-task-order.sh (targeted edit) + task-order-format.md doc [COMPLETED]
 
 **Goal**: Apply the undeclared-topic warning-symmetry fix to
 `agent-system/extensions/core/scripts/generate-task-order.sh` via a TARGETED EDIT that preserves
@@ -154,11 +154,11 @@ A whole-file copy would silently REGRESS that guard. Apply ONLY the Defect-4 hun
 edit — never `cp` this file.
 
 **Tasks**:
-- [ ] `diff -u agent-system/extensions/core/scripts/generate-task-order.sh /home/benjamin/Projects/Logos/Hardware/.claude/scripts/generate-task-order.sh` and identify the two changes: the intended Defect-4 `undeclared_topics` block (~line 455-475) AND the spurious removal of the `deploy-root-guard.sh` sourcing line (must NOT be ported).
-- [ ] Confirm `grep -n "deploy-root-guard" agent-system/extensions/core/scripts/generate-task-order.sh` matches BEFORE editing (baseline).
-- [ ] Apply ONLY the Defect-4 hunk via targeted edit: add `local -a undeclared_topics=()` / `declare -A undeclared_topic_task=()`, populate them in the existing loop that appends unseen topics to `topics_to_render`, and add the block that emits `echo "Warning: topic '$tp' on task ${undeclared_topic_task[$tp]} is not declared in active_topics and will render after curated topics" >&2` for each distinct undeclared topic (symmetric to the existing `Uncategorized` warning).
-- [ ] Do NOT remove or alter the `deploy-root-guard.sh` sourcing line.
-- [ ] `diff -u` the doc file and apply Defect 4 documentation to `task-order-format.md`: add the "Append-extras behavior" paragraph to step 7 of the algorithm description (undeclared topic rendered as its own appended section in first-encountered-task order, each triggering a one-time stderr warning). Leave the pre-existing unrelated `*Updated 2026-05-15 ...*` line untouched.
+- [x] `diff -u agent-system/extensions/core/scripts/generate-task-order.sh /home/benjamin/Projects/Logos/Hardware/.claude/scripts/generate-task-order.sh` and identify the two changes: the intended Defect-4 `undeclared_topics` block (~line 455-475) AND the spurious removal of the `deploy-root-guard.sh` sourcing line (must NOT be ported). *(completed)*
+- [x] Confirm `grep -n "deploy-root-guard" agent-system/extensions/core/scripts/generate-task-order.sh` matches BEFORE editing (baseline). *(completed: line 31 matched)*
+- [x] Apply ONLY the Defect-4 hunk via targeted edit: add `local -a undeclared_topics=()` / `declare -A undeclared_topic_task=()`, populate them in the existing loop that appends unseen topics to `topics_to_render`, and add the block that emits `echo "Warning: topic '$tp' on task ${undeclared_topic_task[$tp]} is not declared in active_topics and will render after curated topics" >&2` for each distinct undeclared topic (symmetric to the existing `Uncategorized` warning). *(completed: via targeted Edit, never cp)*
+- [x] Do NOT remove or alter the `deploy-root-guard.sh` sourcing line. *(completed: regression assertion confirmed line 31 still present after edit; post-edit diff against the reference file shows only the guard line as the remaining difference)*
+- [x] `diff -u` the doc file and apply Defect 4 documentation to `task-order-format.md`: add the "Append-extras behavior" paragraph to step 7 of the algorithm description (undeclared topic rendered as its own appended section in first-encountered-task order, each triggering a one-time stderr warning). Leave the pre-existing unrelated `*Updated 2026-05-15 ...*` line untouched. *(completed: doc file now byte-identical to reference; both "Updated 2026-05-15" lines untouched)*
 
 **Timing**: 0.75 hours
 

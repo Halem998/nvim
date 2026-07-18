@@ -456,6 +456,8 @@ generate_grouped_section() {
   fi
 
   # Collect any topics in tasks that aren't in active_topics_order
+  local -a undeclared_topics=()
+  declare -A undeclared_topic_task=()
   for tn in "${all_task_nums[@]}"; do
     local tp="${task_topic[$tn]:-}"
     local tp_key
@@ -463,8 +465,21 @@ generate_grouped_section() {
     if [[ -n "$tp" && -z "${seen_topics[$tp_key]+x}" ]]; then
       topics_to_render+=("$tp_key")
       seen_topics["$tp_key"]=1
+      undeclared_topics+=("$tp_key")
+      undeclared_topic_task["$tp_key"]="$tn"
     fi
   done
+
+  # Symmetric to the Uncategorized warning below: a topic present on a task but absent from
+  # active_topics_order still renders (appended after all curated topics, per the
+  # append-extras behavior documented in task-order-format.md), but the desync itself
+  # indicates active_topics in state.json has drifted from the topics tasks actually use.
+  # Surface it loudly but non-fatally, once per distinct undeclared topic.
+  if [[ ${#undeclared_topics[@]} -gt 0 ]]; then
+    for tp in "${undeclared_topics[@]}"; do
+      echo "Warning: topic '$tp' on task ${undeclared_topic_task[$tp]} is not declared in active_topics and will render after curated topics" >&2
+    done
+  fi
 
   # Reset global tracking
   _globally_visited=()

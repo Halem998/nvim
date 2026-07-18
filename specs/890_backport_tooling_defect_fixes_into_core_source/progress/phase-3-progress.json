@@ -1,0 +1,37 @@
+{
+  "phase": 3,
+  "phase_name": "Defect 4 - generate-task-order.sh (targeted edit) + task-order-format.md doc",
+  "started_at": "2026-07-18T22:15:00Z",
+  "last_updated": "2026-07-18T22:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Baseline assertion: grep deploy-root-guard matches before editing",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Apply ONLY the Defect-4 undeclared_topics hunk via targeted Edit (never cp), preserving deploy-root-guard.sh sourcing",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/generate-task-order.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Regression assertion: grep deploy-root-guard still matches after edit; bash -n syntax check clean",
+      "status": "done",
+      "files_touched": [],
+      "note": "post-edit diff against the Hardware reference file shows the guard-sourcing line as the ONLY remaining difference, confirming the targeted hunk was applied exactly"
+    },
+    {
+      "id": 4,
+      "description": "Apply Defect 4 append-extras documentation paragraph to task-order-format.md, step 7",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/formats/task-order-format.md"],
+      "note": "file now byte-identical to reference; pre-existing Updated 2026-05-15 lines untouched"
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
