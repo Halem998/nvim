@@ -398,7 +398,18 @@ case "$current_status" in
     else
       echo "[reconcile] Task $task_number: status=implementing but summary exists ($summary_basename) — replaying postflight"
       link_artifact "$summary_file" "summary" "Implementation summary: $summary_basename"
-      "$SCRIPT_DIR/update-task-status.sh" postflight "$task_number" "implement" "$session_id"
+      reconcile_rc=0
+      "$SCRIPT_DIR/update-task-status.sh" postflight "$task_number" "implement" "$session_id" --phase-check=refuse || reconcile_rc=$?
+      if [[ "$reconcile_rc" -eq 4 ]]; then
+        # A repair attempt can itself be refused. That is the intended, accepted failure mode: a
+        # stuck-but-honestly-labeled task is strictly safer than a silently-wrong [COMPLETED]
+        # one, and this branch already logs loudly on every path so the refusal is never silent.
+        echo "[reconcile] Task $task_number: phase-accounting backstop refused the implementing -> completed promotion (plan file shows incomplete phases) — leaving status=implementing"
+        exit 0
+      elif [[ "$reconcile_rc" -ne 0 ]]; then
+        echo "[reconcile] Task $task_number: update-task-status.sh failed (exit $reconcile_rc)" >&2
+        exit "$reconcile_rc"
+      fi
       echo "[reconcile] Task $task_number: promoted implementing -> completed"
     fi
     ;;
@@ -434,7 +445,15 @@ case "$current_status" in
     else
       echo "[reconcile] Task $task_number: status=partial but summary exists ($summary_basename) with implemented handoff — replaying postflight"
       link_artifact "$summary_file" "summary" "Implementation summary: $summary_basename"
-      "$SCRIPT_DIR/update-task-status.sh" postflight "$task_number" "implement" "$session_id"
+      reconcile_rc=0
+      "$SCRIPT_DIR/update-task-status.sh" postflight "$task_number" "implement" "$session_id" --phase-check=refuse || reconcile_rc=$?
+      if [[ "$reconcile_rc" -eq 4 ]]; then
+        echo "[reconcile] Task $task_number: phase-accounting backstop refused the partial -> completed promotion (plan file shows incomplete phases) — leaving status=partial"
+        exit 0
+      elif [[ "$reconcile_rc" -ne 0 ]]; then
+        echo "[reconcile] Task $task_number: update-task-status.sh failed (exit $reconcile_rc)" >&2
+        exit "$reconcile_rc"
+      fi
       echo "[reconcile] Task $task_number: promoted partial -> completed"
     fi
     ;;

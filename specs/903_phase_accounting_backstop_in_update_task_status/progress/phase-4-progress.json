@@ -1,0 +1,16 @@
+{
+  "phase": 4,
+  "phase_name": "refuse opt-in at the zero-gate scripts",
+  "started_at": "2026-07-25T16:40:00Z",
+  "last_updated": "2026-07-25T17:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Edit reconcile-task-status.sh implementing branch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/reconcile-task-status.sh"]},
+    {"id": 2, "description": "Edit reconcile-task-status.sh partial branch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/reconcile-task-status.sh"]},
+    {"id": 3, "description": "Edit command-gate-out.sh defensive correction", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/command-gate-out.sh"]},
+    {"id": 4, "description": "bash -n all three and live wiring verification", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Live-verified with a scratch task 999999 (created, exercised, fully deleted; state.json/TODO.md restored from backup and diff-confirmed identical): reconcile-task-status.sh implementing-branch refusal (status stays implementing) and success (promotes to completed), partial-branch refusal (status stays partial), command-gate-out.sh refusal (status stays implementing) and success (promotes to completed), and confirmed the flag is silently absent for a non-implement status_token (operation=plan). record_refused_promotion is not called from either new refusal branch (grep-confirmed)."
+}

@@ -492,17 +492,17 @@ criterion (they are the inconclusive pass-through case by design).
 
 ---
 
-### Phase 4: `refuse` opt-in at the zero-gate scripts [NOT STARTED]
+### Phase 4: `refuse` opt-in at the zero-gate scripts [COMPLETED]
 
 **Goal**: Thread `--phase-check=refuse` into the three zero-gate script call sites — both
 `reconcile-task-status.sh` repair branches and `command-gate-out.sh`'s defensive correction —
 each distinguishing exit 4 (refusal) from a genuine failure.
 
 **Tasks**:
-- [ ] Edit `reconcile-task-status.sh` `implementing` branch (line 344)
-- [ ] Edit `reconcile-task-status.sh` `partial` branch (line 380)
-- [ ] Edit `command-gate-out.sh` defensive correction (line 94)
-- [ ] `bash -n` all three
+- [x] Edit `reconcile-task-status.sh` `implementing` branch *(completed)*
+- [x] Edit `reconcile-task-status.sh` `partial` branch *(completed)*
+- [x] Edit `command-gate-out.sh` defensive correction *(completed)*
+- [x] `bash -n` all three *(completed)*
 
 **Exact replacement text** (all in `agent-system/extensions/core/scripts/`):
 

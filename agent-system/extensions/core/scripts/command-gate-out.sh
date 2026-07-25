@@ -91,8 +91,22 @@ if [ -n "$expected_status" ] && { [ "$skill_status" = "implemented" ] || \
 
   if [ "$current_status" != "$expected_status" ] && [ "$skill_status" != "partial" ] && [ "$skill_status" != "failed" ]; then
     echo "[gate-out] Defensive correction: status is '$current_status', skill reports '$skill_status'. Applying correction to '$expected_status'."
-    bash .claude/scripts/update-task-status.sh postflight "$task_number" "$status_token" "$session_id" 2>/dev/null || \
+    # A defensive corrector has no fresh handoff to trust, so it is exactly the case the
+    # script-side backstop is built for: only the implement token gets --phase-check=refuse (the
+    # flag is silently ignored elsewhere, but passing it only where it applies keeps intent
+    # legible). stderr is deliberately no longer discarded for this call -- swallowing it would
+    # hide the refusal's reason, which is the only actionable part of the message.
+    gate_out_phase_check=""
+    if [ "$status_token" = "implement" ]; then
+      gate_out_phase_check="--phase-check=refuse"
+    fi
+    gate_out_rc=0
+    bash .claude/scripts/update-task-status.sh postflight "$task_number" "$status_token" "$session_id" ${gate_out_phase_check} || gate_out_rc=$?
+    if [ "$gate_out_rc" -eq 4 ]; then
+      echo "[gate-out] Phase-accounting backstop refused the defensive correction for task $task_number (plan file shows incomplete phases). Leaving status as '$current_status'." >&2
+    elif [ "$gate_out_rc" -ne 0 ]; then
       echo "WARNING: update-task-status.sh failed — manual correction may be needed" >&2
+    fi
   fi
 fi
 
