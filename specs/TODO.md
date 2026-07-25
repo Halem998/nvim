@@ -1,5 +1,5 @@
 ---
-next_project_number: 904
+next_project_number: 906
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 904
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,892,893,894,897,903 | -- | agent-system |
+| 1 | 873,885,892,893,894,897,903,904,905 | -- | agent-system, literature |
 | 2 | 887,896,898 | 873,892,897 | agent-system |
 | 3 | 900 | 898 | agent-system |
 | 4 | 901 | 900 | agent-system |
@@ -24,21 +24,89 @@ next_project_number: 904
 873 [PARTIAL] — Make /meta create tasks in the GLOBAL agent-system root by defaul
   └─ 887 [RESEARCHED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
-892 [NOT STARTED] — SEVERITY: second-highest of a six-defect batch observed in a sing
+892 [RESEARCHING] — SEVERITY: second-highest of a six-defect batch observed in a sing
   └─ 896 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
-893 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
-894 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
+893 [RESEARCHING] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
+894 [RESEARCHING] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
 897 [NOT STARTED] — LOWER PRIORITY. Observed in the same full /orchestrate run (lean4
   └─ 898 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 900 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
       └─ 901 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
         └─ 902 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-903 [NOT STARTED] — Defense-in-depth backstop recommended by the research for the com
+903 [RESEARCHING] — Defense-in-depth backstop recommended by the research for the com
+
+### Literature
+
+904 [NOT STARTED] — Eliminate the two remaining bypasses of the shared Zotero sqlite-
+905 [NOT STARTED] — Make Zotero export staleness a detected, propagated, and loudly-s
 
 ## Tasks
 
-### 903. Add an optional phase-accounting backstop to update-task-status.sh implement postflight
+### 905. Detect stale Zotero exports and fail loudly instead of returning clean zero results
 - **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: Make Zotero export staleness a detected, propagated, and loudly-surfaced condition end-to-end. Two defects share one root cause -- freshness is never checked -- and are deliberately kept in ONE task so the user-visible symptom is not half-fixed at any commit boundary.
+
+SOURCE-STORE RULE (binding): the agent-system SOURCE of truth for this extension is agent-system/extensions/literature/. The .claude/ tree is a GITIGNORED, UNTRACKED, DISPOSABLE deploy artifact regenerated from the source store by the loader. ALL edits MUST target agent-system/extensions/literature/** and NEVER .claude/** -- a change written to .claude/ is silently wiped by the next regeneration.
+
+PRIMARY ACCEPTANCE CRITERION: a zero-result Zotero answer must never be silently indistinguishable from "the library was never consulted" or "the export predates the items." Every failure mode below produced a confident, clean, WRONG negative -- specifically the conclusion "these papers are not in your library" about papers that are in fact present. That is the thing being fixed; treat any implementation that still permits a silent clean zero-result as incomplete.
+
+REPRODUCED SYMPTOM: $LITERATURE_DIR/zotero-library.json is a stale, incomplete export -- 400 records dated 2026-07-01, correct domain (Carnap, Kripke, Holliday, Kurucz) but containing NONE of 18 documents known to be in the corpus. The live sqlite is dated 2026-07-15 and DOES contain matching items, so regenerating the export would capture them.
+
+DEFECT 3 -- scripts/zotero-export-status.sh treats file EXISTENCE as freshness. It emits ZOTERO_EXPORT_PRESENT at :143 on existence alone; verbatim output today reads "zotero-library.json already present ... no assisted-generation offer needed" for an export provably two weeks stale. The staleness machinery already exists and is simply unused for this decision: .zotero-library.meta.json (written by zotero-generate-export.sh) is present at $LITERATURE_DIR/.
+
+DEFECT 4 -- scripts/zotero-search.sh, the primary consumer of zotero-library.json (drives /literature Mode A discovery and /cite), neither calls the resolver nor performs any staleness check. Grepping it for meta.json, stale, export-status, resolve-sqlite, or mtime returns nothing. Its documented exit code 2 ("No results matched the query") is therefore emitted identically for a fresh library that genuinely lacks the item and for an export that predates the item -- the caller cannot tell these apart.
+
+SUGGESTED SEQUENCING (internal phases, not separate tasks -- the helper must land before its consumers, but the task is not complete until the search-side banner ships):
+1. Add a shared freshness helper (e.g. scripts/zotero-export-freshness.sh) that compares the zotero-library.json mtime against the resolved zotero.sqlite mtime (via zotero-resolve-sqlite-path.sh) and against the .zotero-library.meta.json stamp. Design its output as a directive token in the same honest-token style already used by zotero-export-status.sh and literature-ingest-online.sh.
+2. Add a fifth directive ZOTERO_EXPORT_STALE to zotero-export-status.sh, which currently emits exactly four (PRESENT / MISSING_RUNNING / MISSING_NOT_RUNNING / UNAVAILABLE). Keep PRESENT meaning "present AND fresh".
+3. Update the /literature directive table in commands/literature.md. The PRESENT branch at :149 currently says "No offer. Proceed directly to step 1", so a stale export is today a dead end for the user as well as the script -- STALE must instead offer assisted regeneration, reusing the existing MISSING_RUNNING / MISSING_NOT_RUNNING offer machinery. Handle the orchestrator / non-interactive path too: it cannot prompt, so it must take a deterministic default and emit a visible notice, matching how the rest of this extension handles autonomous contexts.
+4. Add the staleness guard to zotero-search.sh: consult the helper before searching and, on stale or absent input, emit a visible banner in the established family ([SPARSE COVERAGE ...] / [UNVERIFIED ...] / [DEGRADED RETRIEVAL ...]) -- suggested [STALE EXPORT ...]. Consider whether the exit-code contract needs a distinct code for "searched a degraded library and found nothing" versus the existing 2; if exit codes stay as documented, the banner must carry the distinction unambiguously.
+
+NON-GOALS (verified; do not drift into these):
+- Do NOT auto-regenerate the export without user consent. zotero-generate-export.sh is deliberately an ASSISTED generator; --force stays opt-in. Detecting staleness must not become silently repairing it.
+- Do NOT rewrite scripts/zotero-resolve-sqlite-path.sh. It is correct -- it returns /home/benjamin/Documents/Zotero/zotero.sqlite and correctly ignores the stale ~/Zotero. Consume it, do not modify it.
+- Do NOT delete or migrate ~/Zotero. User data, out of scope.
+
+RELATIONSHIP TO THE SIBLING TASK: the resolver-bypass task (literature-audit.sh and zotero-setup.sh delegation) fixes the other root cause behind the same user-facing incident. The two file_scopes are disjoint and no dependency edge is declared; they can proceed in parallel.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 904. Delegate Zotero data-directory resolution to the shared resolver
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: Eliminate the two remaining bypasses of the shared Zotero sqlite-path resolver. Both defects share one root cause: a second, independently-maintained data-directory resolution ladder that disagrees with the canonical one.
+
+SOURCE-STORE RULE (binding): the agent-system SOURCE of truth for this extension is agent-system/extensions/literature/. The .claude/ tree is a GITIGNORED, UNTRACKED, DISPOSABLE deploy artifact regenerated from the source store by the loader. ALL edits MUST target agent-system/extensions/literature/** and NEVER .claude/** -- a change written to .claude/ is silently wiped by the next regeneration.
+
+REPRODUCED SYMPTOM: a discovery pass concluded "no Zotero storage" and returned 0 hits for titles that ARE present in the library. The stale profile ~/Zotero (zotero.sqlite dated 2026-04-17) was read instead of the live one ~/Documents/Zotero (dated 2026-07-15).
+
+DEFECT 1 -- scripts/literature-audit.sh:47. DEFAULT_SEARCH_PATHS hardcodes "$HOME/Zotero/storage", which on this machine is the stale April profile's storage directory. Fix: resolve the data directory from the canonical resolver -- dirname "$(zotero-resolve-sqlite-path.sh)" -- and append /storage, rather than assuming a location.
+
+DEFECT 2 -- scripts/zotero-setup.sh:79 (and its diagnostic at :103). _detect_data_dir() step 3 walks its own candidate list in the order "$HOME/Zotero", "$HOME/Documents/Zotero", "${XDG_DATA_HOME:-$HOME/.local/share}/Zotero". Because ~/Zotero is probed FIRST and does contain a zotero.sqlite, the setup wizard selects the stale profile and then reports it as successfully configured. The stderr message at :103 confirms this ordering to the user. Fix: replace step 3 with delegation to the resolver. Keep steps 1 and 2 ($ZOT_DATA_DIR, then zotero-index.json's .zot_data_dir) ahead of the resolver as explicit user overrides -- they are intentional escape hatches, not duplicate detection. Update the :103 "Checked:" diagnostic to describe the delegated ladder truthfully rather than the now-removed hardcoded list.
+
+WHY DELEGATION, NOT REORDERING: reordering zotero-setup.sh's candidate list would fix this machine and leave the design fault intact -- two ladders that can drift apart again on the next edit. The resolver already has four correct consumers (zotero-export-status.sh, zotero-generate-export.sh, zotero-resolve-pdf.sh, literature-ingest-online.sh); literature-audit.sh and zotero-setup.sh are the only two bypassing it, so this is a closed set and the fix makes the resolver the single ladder.
+
+NON-GOALS (verified; do not drift into these):
+- Do NOT rewrite or "fix" scripts/zotero-resolve-sqlite-path.sh. It is correct. Invoked directly it returns /home/benjamin/Documents/Zotero/zotero.sqlite; it parses ~/.zotero/zotero/pmqmra0p.default/prefs.js, honours extensions.zotero.useDataDir / dataDir, and correctly does NOT fall through to the historical ${HOME}/Zotero default. Its 3-tier ladder is sound.
+- Do NOT delete, migrate, or otherwise touch ~/Zotero. It is the user's data and out of scope.
+
+VERIFICATION: on a machine with both ~/Zotero and a custom dataDir configured, `zotero-setup.sh --detect` must print the resolved custom data directory, and literature-audit.sh must probe the resolved storage directory. Both must agree with `zotero-resolve-sqlite-path.sh` output. Note that the resolver performs no existence check on its result, so both callers keep their own file/directory probes on the resolved path.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 903. Add an optional phase-accounting backstop to update-task-status.sh implement postflight
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -313,7 +381,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 894. Fix git-snapshot.sh silent-revert footgun and unhelpful missing-argument failure
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -341,7 +409,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 893. Close stranded-status detection gap for not_started tasks with existing artifacts
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -368,7 +436,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 892. Prevent stale/misplaced .orchestrator-handoff.json reads
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
