@@ -250,7 +250,7 @@ absolute path.
 
 ---
 
-### Phase 2: `validate-handoff-location.sh` PostToolUse hook + registration [NOT STARTED]
+### Phase 2: `validate-handoff-location.sh` PostToolUse hook + registration [COMPLETED]
 
 **Goal**: Catch — at write time — any Write/Edit-tool write of `.orchestrator-handoff.json` that
 lands outside a task directory, and record in the hook itself exactly what it cannot catch.
@@ -273,7 +273,7 @@ therefore must tell the agent to **delete the stray and rewrite at the correct a
 
 **Tasks**:
 
-- [ ] **Create the hook** at `agent-system/extensions/core/hooks/validate-handoff-location.sh`
+- [x] **Create the hook** at `agent-system/extensions/core/hooks/validate-handoff-location.sh`
   with exactly this content:
   ```bash
   #!/bin/bash
@@ -365,7 +365,7 @@ therefore must tell the agent to **delete the stray and rewrite at the correct a
   inside this plan. In the actual file, the heredoc body and its terminating `EOF` must start at
   column 0 (unquoted `EOF`, so `$FILE` interpolates). Verify with `bash -n`.
 
-- [ ] **Register in `merge-sources/settings-hooks.json`.** Locate the existing `PostToolUse` block:
+- [x] **Register in `merge-sources/settings-hooks.json`.** Locate the existing `PostToolUse` block:
   ```json
       "PostToolUse": [
         {
@@ -387,7 +387,7 @@ therefore must tell the agent to **delete the stray and rewrite at the correct a
   suffix is what makes the sibling hooks advisory — it swallows stderr and forces exit 0. This
   hook's entire purpose is to surface stderr and exit 2, so the suffix must be omitted.
 
-- [ ] **Register in `manifest.json`.** In `provides.hooks`, insert `"validate-handoff-location.sh"`
+- [x] **Register in `manifest.json`.** In `provides.hooks`, insert `"validate-handoff-location.sh"`
   in alphabetical position — immediately BEFORE `"validate-meta-write.sh"`.
 
 **Timing**: 40 minutes

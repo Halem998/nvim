@@ -155,6 +155,7 @@
       "post-command.sh",
       "subagent-postflight.sh",
       "tts-notify.sh",
+      "validate-handoff-location.sh",
       "validate-meta-write.sh",
       "validate-no-task-references.sh",
       "validate-plan-write.sh",

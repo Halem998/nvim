@@ -29,7 +29,8 @@
       {
         "matcher": "Write|Edit",
         "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/validate-no-task-references.sh 2>/dev/null || echo '{}'" }
+          { "type": "command", "command": "bash .claude/hooks/validate-no-task-references.sh 2>/dev/null || echo '{}'" },
+          { "type": "command", "command": "bash .claude/hooks/validate-handoff-location.sh" }
         ]
       }
     ]
