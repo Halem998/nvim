@@ -54,6 +54,18 @@ If `TASK_DATA` is empty: exit with error "Task $task_number not found in state.j
 
 Extract: `PROJECT_NAME`, `TASK_TYPE` (default: "general"), `DESCRIPTION`, `TASK_DIR="specs/${PADDED_NUM}_${PROJECT_NAME}"`.
 
+Then resolve the absolute anchor that every dispatched agent will be handed. `TASK_DIR` stays
+relative (many consumers below depend on that); `TASK_DIR_ABS` is the anchor that goes into
+delegation contexts, because a dispatched agent has no reliable way to know what the ambient
+working directory will be when its Write tool runs.
+
+```bash
+# SKILL_REPO_ROOT is exported by skill-base.sh, which resolves it from BASH_SOURCE rather than
+# from the ambient cwd. $(pwd) is a last-resort fallback for direct invocation.
+TASK_DIR_ABS="${TASK_DIR_ABS:-${SKILL_REPO_ROOT:-$(pwd)}/${TASK_DIR}}"
+HANDOFF_PATH_ABS="${TASK_DIR_ABS}/.orchestrator-handoff.json"
+```
+
 ### Stage 1b: Resolve Task-Type Routing
 
 Map task_type to the correct research and implementation agents using extension manifests.
@@ -108,7 +120,10 @@ MAX_CYCLES=5
 # transport flakiness is unrelated to plan size.
 MAX_INFRA_FAILURES=3
 loop_guard_file="${TASK_DIR}/.orchestrator-loop-guard"
-handoff_file="${TASK_DIR}/.orchestrator-handoff.json"
+# Absolute: this must name the same file the dispatched agent was told to write, and that
+# instruction is absolute. Comparing a relative read path against an absolute write path is how
+# a misplaced handoff goes unnoticed.
+handoff_file="${HANDOFF_PATH_ABS}"
 
 mkdir -p "$TASK_DIR"
 
@@ -242,7 +257,7 @@ Invoke the Agent tool:
 |-------|-------|
 | `subagent_type` | `$RESEARCH_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Research task $task_number: $DESCRIPTION" (append ". User focus: $focus_prompt" if non-empty) |
-| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, lit_flag }` |
+| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
 `context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
@@ -290,7 +305,7 @@ Invoke the Agent tool:
 |-------|-------|
 | `subagent_type` | `"planner-agent"` |
 | `prompt` | "Create implementation plan for task $task_number" (append ". User focus: $focus_prompt" if non-empty) |
-| `context` | `{ task_number, task_type, session_id, research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag }` |
+| `context` | `{ task_number, task_type, session_id, research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
 `context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
@@ -330,7 +345,7 @@ Invoke the Agent tool:
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Implement task $task_number following the plan" (append ". User focus: $focus_prompt" if non-empty) |
-| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, lit_flag }` |
+| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
 `context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
@@ -379,7 +394,7 @@ Invoke the Agent tool:
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Resume implementation for task $task_number from continuation handoff" (append ". User focus: $focus_prompt" if non-empty) |
-| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, continuation_context, lit_flag }` |
+| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, continuation_context, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
 `context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
@@ -656,7 +671,7 @@ After Agent tool returns: read handoff to confirm revision.
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Implement task $task_number following the revised plan" (append ". User focus: $focus_prompt" if non-empty) |
-| `context` | `{ task_number, session_id, orchestrator_mode: true, plan_path: revised_plan_path }` |
+| `context` | `{ task_number, session_id, orchestrator_mode: true, plan_path: revised_plan_path, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` |
 
 After Agent tool returns: read handoff.
 
@@ -902,22 +917,25 @@ idempotent, so calling it once per task per cycle is always safe, including repe
 continuation-resume cycles.
 
 For each task in `research_tasks`:
+- Resolve this task's absolute anchor: `task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/specs/$(printf '%03d' "$task_num")_${project_name}"` and `handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"`
 - Record the dispatch window: `jq --arg t "$task_num" --argjson ts "$(date -u +%s)" '.dispatch_start_ts[$t] = $ts' "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"`, and reset this task's `task_transport_error` to `false`
 - `skill_preflight_update "$task_num" "research" "${session_id}_${task_num}"`
-- Invoke Agent tool: `subagent_type = research_agents[task_num]`, prompt = "Research task $task_num: $description", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, lit_flag }`
+- Invoke Agent tool: `subagent_type = research_agents[task_num]`, prompt = "Research task $task_num: $description", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs }`
 
 For each task in `plan_tasks`:
+- Resolve this task's absolute anchor: `task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/specs/$(printf '%03d' "$task_num")_${project_name}"` and `handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"`
 - Record the dispatch window: `jq --arg t "$task_num" --argjson ts "$(date -u +%s)" '.dispatch_start_ts[$t] = $ts' "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"`, and reset this task's `task_transport_error` to `false`
 - Read `research_artifact` path from `state.json` artifacts (type=report)
 - `skill_preflight_update "$task_num" "plan" "${session_id}_${task_num}"`
-- Invoke Agent tool: `subagent_type = "planner-agent"`, prompt = "Create implementation plan for task $task_num", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag }`
+- Invoke Agent tool: `subagent_type = "planner-agent"`, prompt = "Create implementation plan for task $task_num", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs }`
 
 For each task in `implement_tasks`:
+- Resolve this task's absolute anchor: `task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/specs/$(printf '%03d' "$task_num")_${project_name}"` and `handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"`
 - Record the dispatch window: `jq --arg t "$task_num" --argjson ts "$(date -u +%s)" '.dispatch_start_ts[$t] = $ts' "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"`, and reset this task's `task_transport_error` to `false`
 - Read `plan_path` from `task_dir/plans/` (latest .md)
 - Read `continuation` from `task_dir/.orchestrator-handoff.json` (or null)
 - `skill_preflight_update "$task_num" "implement" "${session_id}_${task_num}"`
-- Invoke Agent tool: `subagent_type = implement_agents[task_num]`, prompt = "Implement task $task_num following the plan", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, plan_path, continuation_context: continuation, lit_flag }`
+- Invoke Agent tool: `subagent_type = implement_agents[task_num]`, prompt = "Implement task $task_num following the plan", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, plan_path, continuation_context: continuation, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs }`
 
 **After all Agent tool calls complete**, read handoffs and run per-task postflight for each dispatched task:
 

@@ -663,7 +663,7 @@ bullet that is the literal text the lean phase agent receives.
 
 ---
 
-### Phase 5: Thread the absolute anchor through `skill-orchestrate/SKILL.md` [NOT STARTED]
+### Phase 5: Thread the absolute anchor through `skill-orchestrate/SKILL.md` [COMPLETED]
 
 **Goal**: The base orchestrator resolves an absolute task dir and hands `task_dir` +
 `handoff_path` to every dispatched agent.
@@ -675,7 +675,7 @@ bullet that is the literal text the lean phase agent receives.
 
 **Tasks**:
 
-- [ ] **Edit 5a — Stage 1a, resolve the absolute anchor.** Locate (advisory ~line 55):
+- [x] **Edit 5a — Stage 1a, resolve the absolute anchor.** Locate (advisory ~line 55):
   ```
   Extract: `PROJECT_NAME`, `TASK_TYPE` (default: "general"), `DESCRIPTION`, `TASK_DIR="specs/${PADDED_NUM}_${PROJECT_NAME}"`.
   ```
@@ -696,7 +696,7 @@ bullet that is the literal text the lean phase agent receives.
   ```
   ```
 
-- [ ] **Edit 5b — absolute handoff read path.** Locate (advisory ~line 111):
+- [x] **Edit 5b — absolute handoff read path.** Locate (advisory ~line 111):
   ```
   handoff_file="${TASK_DIR}/.orchestrator-handoff.json"
   ```
@@ -709,7 +709,7 @@ bullet that is the literal text the lean phase agent receives.
   ```
   Leave `loop_guard_file` relative — out of scope.
 
-- [ ] **Edit 5c — the four single-task dispatch contexts.** Each is a table row of the form
+- [x] **Edit 5c — the four single-task dispatch contexts.** Each is a table row of the form
   `| `context` | `{ ... }` |`. Add `task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS` to
   each. The four exact current values (advisory lines 245, 293, 333, 382):
 
@@ -722,7 +722,7 @@ bullet that is the literal text the lean phase agent receives.
   4. `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, continuation_context, lit_flag }`
      -> `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, continuation_context, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }`
 
-- [ ] **Edit 5d — the revise re-dispatch context.** Locate (advisory ~line 659):
+- [x] **Edit 5d — the revise re-dispatch context.** Locate (advisory ~line 659):
   ```
   | `context` | `{ task_number, session_id, orchestrator_mode: true, plan_path: revised_plan_path }` |
   ```
@@ -731,7 +731,7 @@ bullet that is the literal text the lean phase agent receives.
   | `context` | `{ task_number, session_id, orchestrator_mode: true, plan_path: revised_plan_path, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` |
   ```
 
-- [ ] **Edit 5e — the three multi-task dispatch contexts.** In the multi-task section (advisory
+- [x] **Edit 5e — the three multi-task dispatch contexts.** In the multi-task section (advisory
   ~lines 900-925), add a per-task absolute anchor and thread it. First, in the `For each task in
   research_tasks:` list, insert a new first bullet before the existing `- Record the dispatch
   window:` bullet — and do the same for `plan_tasks` and `implement_tasks`:
