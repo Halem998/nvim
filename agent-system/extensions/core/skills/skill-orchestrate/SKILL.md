@@ -596,6 +596,7 @@ else
   next_hint=$(echo "$handoff" | jq -r '.next_action_hint // "none"')
   phases_completed=$(echo "$handoff" | jq -r '.phases_completed // 0')
   phases_total=$(echo "$handoff" | jq -r '.phases_total // 0')
+  plan_markers_verified=$(echo "$handoff" | jq -r '.plan_markers_verified // "absent"')
   echo "[orchestrate] Dispatch result: $dispatch_status — $dispatch_summary"
   [ "$phases_total" -gt 0 ] && echo "[orchestrate] Phase progress: $phases_completed/$phases_total"
 
@@ -619,30 +620,23 @@ else
       skill_postflight_update "$task_number" "plan" "$session_id" "$dispatch_status"
       ;;
     implemented)
-      # Phase-completion gate: a dispatch reporting "implemented" must not flip the whole task
-      # to `completed` while the plan still has phases left. When the handoff carries no phase
-      # accounting (`phases_total` 0 or absent) the historical unconditional behavior is
-      # preserved — such handoffs must never regress into never completing. Note this differs
-      # deliberately from the hard-mode expression, which requires `phases_total > 0`: hard
-      # mode's per-phase dispatch always populates phase accounting, base mode's does not.
-      if [ "$phases_total" -eq 0 ] || [ "$phases_completed" -ge "$phases_total" ]; then
-        # `warn`, deliberately NOT `refuse`. This gate already decided to proceed using richer
-        # context than the script has (the full handoff, drift inspection). The script-side
-        # backstop reads a structurally different evidence source -- the plan file's own phase
-        # headings, unaffected by what the handoff chose to report -- so it is a valuable SECOND
-        # OPINION here, not a veto: a `refuse` at this site would silently override a decision
-        # this state machine made deliberately and loggedly. The loud warning is exactly what
-        # catches the "handoff omitted its phase fields but the task was actually incomplete"
-        # case, which the handoff-based gate above structurally cannot see.
+      # Completion-claim verification gate: a dispatch reporting "implemented" must not flip the
+      # whole task to `completed` without corroborating evidence in the handoff. The three-case
+      # fail-closed logic lives in ONE place — skill_gate_completion_claim in skill-base.sh — so
+      # base mode, hard mode, and multi-task mode cannot drift apart again. See that function's
+      # header for the full case table (phase accounting present-and-complete always allows,
+      # present-and-incomplete always refuses, absent falls back to plan_markers_verified).
+      if skill_gate_completion_claim "$task_number" "$phases_completed" "$phases_total" \
+           "$plan_markers_verified" "[orchestrate]"; then
+        # `warn`, deliberately NOT `refuse`: the script-side backstop reads the plan file's own
+        # phase headings — structurally different evidence — so it is a valuable SECOND OPINION
+        # here, not a veto over a decision this state machine made deliberately and loggedly.
         skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn"
-      else
-        echo "[orchestrate] Phase ${phases_completed}/${phases_total} complete — task not done. Continuing." >&2
-        # No status transition: state stays `implementing`. `cycle_count` still increments at the
-        # end of this stage, Stage 3a re-reads `implementing` next cycle, and Stage 4's
-        # `planned`/`implementing` handler re-dispatches the implement agent against the same
-        # plan (which resumes at the first non-completed phase). MAX_CYCLES bounds this, so a
-        # misreporting agent exits `partial` rather than looping forever.
       fi
+      # On refuse: no status transition. State stays `implementing`, the gate already logged which
+      # case fired, `cycle_count` still increments at the end of this stage, and Stage 4
+      # re-dispatches implement next cycle against the same plan. MAX_CYCLES bounds this, so a
+      # misreporting agent exits `partial` rather than looping forever.
       ;;
     *)
       echo "[orchestrate] Dispatch status '$dispatch_status' — no postflight update needed"
@@ -1084,24 +1078,25 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
    task can be infra-deferred at most `MAX_INFRA_FAILURES` times before it lands in
    `failed_tasks` anyway — so no task can keep the wave alive indefinitely.
 2. Extract `dispatch_status`, `dispatch_summary`, artifact path/type/summary, and — from *this*
-   task's own handoff, freshly per task — `phases_completed` (`jq -r '.phases_completed // 0'`)
-   and `phases_total` (`jq -r '.phases_total // 0'`), mirroring the Stage 5 reads. Never carry
-   these values over from a previous task in the same wave; re-read them for every task in the
-   loop.
+   task's own handoff, freshly per task — `phases_completed` (`jq -r '.phases_completed // 0'`),
+   `phases_total` (`jq -r '.phases_total // 0'`), and `plan_markers_verified`
+   (`jq -r '.plan_markers_verified // "absent"'`), mirroring the Stage 5 reads. Never carry these
+   values over from a previous task in the same wave; re-read them for every task in the loop.
 3. Call `skill_postflight_update`:
    - `dispatch_status = "researched"` → `skill_postflight_update task_num "research" "${session_id}_${task_num}" researched`
    - `dispatch_status = "planned"` → `skill_postflight_update task_num "plan" "${session_id}_${task_num}" planned`
-   - `dispatch_status = "implemented"` → apply the same phase-completion gate as Stage 5. Call
+   - `dispatch_status = "implemented"` → apply the same completion-claim verification gate as
+     Stage 5: call
+     `skill_gate_completion_claim "$task_num" "$phases_completed" "$phases_total" "$plan_markers_verified" "[orchestrate]"`
+     and, only if it returns 0 (allow), call
      `skill_postflight_update task_num "implement" "${session_id}_${task_num}" implemented "warn"`
      (the trailing `"warn"` mirrors Stage 5's script-side second-opinion backstop; never `refuse`
-     here, for the same reason)
-     **only if** `phases_total` is 0 (no phase accounting — preserve the historical behavior) **or**
-     `phases_completed >= phases_total`. Otherwise **skip the postflight call**, log
-     `[orchestrate] Task {task_num}: phase {phases_completed}/{phases_total} complete — task not done. Continuing.`,
-     and leave the task at `implementing`. Steps 4-6 below still run unchanged: the artifact is
-     still linked, step 5 reads `fresh_status = "implementing"` and takes its `Otherwise` branch
-     (not `completed_tasks`), and the per-task lock is still released. The task stays eligible in
-     Stage MT-3's next cycle and is re-dispatched, bounded by `MAX_CYCLES_MT`.
+     here, for the same reason). On a refuse, **skip the postflight call** — the gate has already
+     logged which of the three cases fired — and leave the task at `implementing`. Steps 4-6
+     below still run unchanged: the artifact is still linked, step 5 reads
+     `fresh_status = "implementing"` and takes its `Otherwise` branch (not `completed_tasks`), and
+     the per-task lock is still released. The task stays eligible in Stage MT-3's next cycle and
+     is re-dispatched, bounded by `MAX_CYCLES_MT`.
    - Other → no postflight update
 4. Call `skill_link_artifacts` if artifact path is present (same field mapping as Stage 5).
 5. Re-read fresh status from `state.json` (postflight may have updated it). Update `mt_state_file.current_statuses[task_num]`:

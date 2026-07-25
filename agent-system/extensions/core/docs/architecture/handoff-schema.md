@@ -105,15 +105,21 @@ the successor agent reads markdown prose.
     "Approach tried but failed — so the orchestrator does not retry it"
   ],
 
+  "phases_completed": 2,
+  "phases_total": 4,
+
   "continuation_context": {
     "handoff_path": "specs/NNN_slug/handoffs/phase-N-handoff-TIMESTAMP.md",
-    "phases_completed": 2,
-    "phases_total": 4
+    "orchestrator_mode": true
   },
 
   "plan_markers_verified": true
 }
 ```
+
+`phases_completed` and `phases_total` are TOP-LEVEL fields, always — never members of
+`continuation_context`. See the `continuation_context` field definition below and the
+Completion-Claim Verification Gate section for why this matters.
 
 ---
 
@@ -166,9 +172,18 @@ re-investigating already-settled questions.
 Approaches tried but failed. The orchestrator passes these to downstream delegation context
 to prevent repetition.
 
+### `phases_completed` / `phases_total` (optional, integers, TOP LEVEL)
+Phase-accounting fields read by the completion-claim verification gate (see below). These are
+ALWAYS top-level fields on the handoff object — never members of `continuation_context`.
+`continuation_context` carries only `handoff_path` and `orchestrator_mode`. The single active
+handoff writer (the hard-mode implementation agents' H9 wrap-up) and the orchestrator's readers
+at all three call sites (base Stage 5, base Stage MT-4, hard Stage 5) agree on top level; do not
+move these fields into `continuation_context` in either a writer or a reader.
+
 ### `continuation_context` (optional, present when `status = "partial"`)
 Points to the continuation handoff file written by the agent. The orchestrator reads
-`handoff_path` and passes it in the next implement dispatch as `continuation_context`.
+`handoff_path` and passes it in the next implement dispatch as `continuation_context`. It also
+carries `orchestrator_mode` (see below). It does NOT carry `phases_completed` or `phases_total`.
 
 **Note**: `continuation_context` and `blockers` can both be present (partial completion with
 identified blockers). The orchestrator handles blockers first via escalation.
@@ -182,12 +197,48 @@ phase headings in the plan file carry `[COMPLETED]` after the final verification
 - `false` or absent: Stage 5a was skipped, ran but found unresolvable stale markers, or the
   agent did not implement Stage 5a (pre-task-764 behavior)
 
-**Orchestrator behavior**: When `status = "implemented"` and `plan_markers_verified` is absent
-or `false`, the orchestrator logs a warning:
+**Orchestrator behavior — the completion-claim verification gate**: `plan_markers_verified` is
+the Case 3 corroborating signal consumed by `skill_gate_completion_claim` (defined once, in
+`skill-base.sh`, and called identically from all three sites: base Stage 5, base Stage MT-4, and
+hard Stage 5). The gate has three fail-closed cases, evaluated in this order:
+
+1. **Case 1 — phase accounting present, incomplete** (`phases_total > 0` and
+   `phases_completed < phases_total`): always REFUSES. `plan_markers_verified` is not consulted.
+2. **Case 2 — phase accounting present and complete** (`phases_total > 0` and
+   `phases_completed >= phases_total`): always ALLOWS. `plan_markers_verified` is not consulted.
+3. **Case 3 — phase accounting absent or malformed** (`phases_total == 0`): falls back to
+   `plan_markers_verified`. `true` ALLOWS; `false`, absent, `null`, or any other value REFUSES.
+
+A refusal means the `completed` transition does NOT happen this cycle: the task stays
+`implementing`, `cycle_count` still increments, and the existing MAX_CYCLES / MAX_CYCLES_MT caps
+bound the retry — the next cycle re-dispatches implement against the same plan. This supersedes
+the previous "non-blocking warning only" behavior for the phase-accounting-absent case.
+
+Every gate decision logs one of four greppable shapes (all carry the literal token
+`COMPLETION-CLAIM GATE case N/3` plus the task number):
 ```
-[orchestrate] WARNING: plan_markers_verified absent or false — stale markers may remain in plan file
+${log_prefix} COMPLETION-CLAIM GATE case 2/3 (phase accounting present and complete) task ${task_number}: ${phases_completed}/${phases_total} — allowing completion.
+${log_prefix} COMPLETION-CLAIM GATE case 1/3 (phase accounting present, incomplete) task ${task_number}: ${phases_completed}/${phases_total} — refusing completion; task stays implementing.
+${log_prefix} COMPLETION-CLAIM GATE case 3/3 (phase accounting absent, plan_markers_verified=true) task ${task_number}: allowing completion on the corroborating marker signal.
+${log_prefix} COMPLETION-CLAIM GATE case 3/3 (phase accounting absent, plan_markers_verified=${plan_markers_verified}) task ${task_number}: refusing completion — handoff-writer defect suspected; task stays implementing.
 ```
-This warning does not block the next lifecycle phase but is recorded for audit purposes.
+`${log_prefix}` is `[orchestrate]` (base and multi-task) or `[hard-orchestrate]` (hard mode).
+
+### Handoff Writers
+
+| Writer | Status | Notes |
+|--------|--------|-------|
+| `agent-system/extensions/core/agents/general-implementation-hard-agent.md` (H9 Stage 5) | Active | The only active writer of `.orchestrator-handoff.json` today |
+| cslib and lean hard-mode implementation agent counterparts | Active | Mirror the core H9 wrap-up |
+| `skill_write_orchestrator_handoff` in `agent-system/extensions/core/scripts/skill-base.sh` | Defined, unreferenced | No caller currently invokes it |
+| Base-mode `skill-researcher`, `skill-planner`, `skill-implementer` | Not implemented | These dispatches do not write `.orchestrator-handoff.json` at all — a pre-existing gap, out of scope here |
+
+`agent-system/extensions/core/scripts/validate-handoff.sh` independently requires
+`phases_completed` and `phases_total` as top-level fields (its `required_fields` array reads them
+via `jq ".phases_completed"` / `jq ".phases_total"`, not `.continuation_context.phases_completed`
+/ `.continuation_context.phases_total`) — corroborating that top level, not nested under
+`continuation_context`, is the canonical schema documented above. No change to that script was
+needed or made.
 
 ---
 
@@ -262,10 +313,10 @@ When skill-implementer runs in orchestrator_mode and returns partial, it MUST pr
 ```json
 {
   "status": "partial",
+  "phases_completed": 2,
+  "phases_total": 4,
   "continuation_context": {
     "handoff_path": "specs/.../handoffs/phase-2-handoff-T.md",
-    "phases_completed": 2,
-    "phases_total": 4,
     "orchestrator_mode": true
   }
 }
@@ -296,7 +347,17 @@ blockers=$(echo "$handoff" | jq -c '.blockers // []')
 next_hint=$(echo "$handoff" | jq -r '.next_action_hint // "none"')
 continuation=$(echo "$handoff" | jq -c '.continuation_context // null')
 artifacts=$(echo "$handoff" | jq -c '.artifacts // []')
+phases_completed=$(echo "$handoff" | jq -r '.phases_completed // 0')
+phases_total=$(echo "$handoff" | jq -r '.phases_total // 0')
+plan_markers_verified=$(echo "$handoff" | jq -r '.plan_markers_verified // "absent"')
 ```
+
+When `status = "implemented"`, the orchestrator additionally calls
+`skill_gate_completion_claim` (see the `plan_markers_verified` field definition above) to decide
+whether the `completed` transition is corroborated. This introduces NO new file read — it
+consumes only fields already parsed out of the handoff object above, so the ~450-tokens-per-cycle
+context-flatness invariant is unchanged and the three sanctioned grep exceptions table below is
+unaffected.
 
 On the normal path the orchestrator reads the ~400-token handoff object and nothing else — it
 never opens research reports, plan files, or implementation summaries for comprehension. Three
@@ -390,10 +451,10 @@ grep)" contract in `skill-orchestrate/SKILL.md` and the Read allowlist in
     "parse-command-args.sh exports FOCUS_PROMPT as remaining text after all flags stripped"
   ],
   "dead_ends": [],
+  "phases_completed": 2,
+  "phases_total": 4,
   "continuation_context": {
     "handoff_path": "specs/593_extract_shared_workflow_utilities/handoffs/phase-3-handoff-20260522T120000Z.md",
-    "phases_completed": 2,
-    "phases_total": 4,
     "orchestrator_mode": true
   }
 }

@@ -832,6 +832,7 @@ else
   phases_completed=$(echo "$handoff" | jq -r '.phases_completed // 0')
   phases_total=$(echo "$handoff" | jq -r '.phases_total // 0')
   skeleton=$(echo "$handoff" | jq -r '.skeleton // false')
+  plan_markers_verified=$(echo "$handoff" | jq -r '.plan_markers_verified // "absent"')
 
   # Additional hard-mode handoff fields: sorry inventory, extended with skeleton + follow_up_task
   sorry_inventory=$(echo "$handoff" | jq -c '.sorry_inventory // []')
@@ -862,18 +863,20 @@ else
       skill_postflight_update "$task_number" "plan" "$session_id" "$dispatch_status"
       ;;
     implemented)
-      # A single per-phase "implemented" handoff (skeleton or not) must NOT flip the whole task
-      # to completed. Only transition when every phase is actually done.
-      if [ "$phases_total" -gt 0 ] && [ "$phases_completed" -ge "$phases_total" ]; then
-        # `warn`, not `refuse` -- same rationale as the base-mode gate: hard mode's per-phase
-        # dispatch discipline already populates phase accounting and this gate is strictly
-        # stricter (it requires phases_total > 0, never a 0-pass-through), so the script-side
-        # check is a second opinion on independent evidence rather than a veto.
+      # A single per-phase "implemented" handoff (skeleton or not) must NOT flip the whole task to
+      # completed. Identical call to the base-mode and multi-task sites — the three-case logic
+      # lives only in skill_gate_completion_claim. This is a deliberate change from hard mode's
+      # former `phases_total > 0` requirement (a blind refuse when accounting is absent): that is
+      # now the corroborated Case 3 fallback, which allows only on `plan_markers_verified == true`.
+      # Hard mode's per-phase dispatch always populates accounting, so Case 3 should be
+      # near-unreachable here; when it does fire it means the handoff writer is defective.
+      if skill_gate_completion_claim "$task_number" "$phases_completed" "$phases_total" \
+           "$plan_markers_verified" "[hard-orchestrate]"; then
         skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn"
       else
-        echo "[hard-orchestrate] Phase ${phases_completed}/${phases_total} complete (skeleton=${skeleton}). Continuing." >&2
+        echo "[hard-orchestrate] skeleton=${skeleton} at refusal." >&2
         # Leave state as `implementing` — Stage 3a re-enters the Per-Phase Dispatch handler
-        # (Stage 4, H1) on the next cycle. No postflight status transition happens here.
+        # (Stage 4, H1) next cycle. No postflight status transition happens here.
       fi
       ;;
     *)

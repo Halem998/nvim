@@ -361,7 +361,7 @@
     {
       "project_number": 898,
       "project_name": "completion_claim_verification_gate",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Gate the implemented completion claim on phase evidence before postflight",
@@ -376,9 +376,26 @@
         "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"
       ],
       "created": "2026-07-24T00:00:00Z",
-      "last_updated": "2026-07-25T06:40:37Z",
-      "session_id": "sess_1784959496_6c4f8e_898",
-      "artifacts": []
+      "last_updated": "2026-07-25T17:43:55Z",
+      "session_id": "sess_1784998517_0638c7_898",
+      "artifacts": [
+        {
+          "path": "specs/898_completion_claim_verification_gate/reports/01_completion_claim_verification_gate.md",
+          "type": "report",
+          "summary": "Full findings: existing gate coverage, handoff-writer inventory (1 active + 1 dead), on-disk field-placement audit (177/203 top-level), plan_markers_verified population audit (28/203), decision-point recommendation, and three-case shared-gate design."
+        },
+        {
+          "path": "specs/898_completion_claim_verification_gate/plans/01_completion-claim-verification-gate.md",
+          "type": "plan",
+          "summary": "Implementation plan, 5 phases, 3 dependency waves"
+        },
+        {
+          "path": "specs/898_completion_claim_verification_gate/summaries/01_completion-claim-verification-gate-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary recording the DECISION POINT resolution, the two deliberate behavior changes, and the Load Core deploy requirement."
+        }
+      ],
+      "completion_summary": "Extracted a shared three-case fail-closed skill_gate_completion_claim into skill-base.sh and wired it into all three completion paths (base Stage 5, base Stage MT-4, hard Stage 5), replacing drifted inline gates; added plan_markers_verified handling that previously existed nowhere, and reconciled the architecture docs to document top-level phase accounting as canonical."
     },
     {
       "project_number": 899,

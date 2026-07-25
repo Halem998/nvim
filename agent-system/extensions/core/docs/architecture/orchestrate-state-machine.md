@@ -230,20 +230,38 @@ Cycle 1: status=planned → dispatch implement (orchestrator_mode=true)
          Agent writes continuation handoff to handoffs/phase-2-handoff-T.md
          handoff: {
            status: "partial",
+           phases_completed: 2,
+           phases_total: 4,
            continuation_context: {
-             handoff_path: "specs/593_.../handoffs/phase-2-handoff-T.md",
-             phases_completed: 2,
-             phases_total: 4
+             handoff_path: "specs/593_.../handoffs/phase-2-handoff-T.md"
            }
          }
 
 Cycle 2: read continuation_context from handoff
          dispatch implement with continuation_context embedded
          (orchestrator_mode=true preserved in continuation_context)
-         handoff: {status: "implemented", ...}
+         handoff: {status: "implemented", phases_completed: 4, phases_total: 4, ...}
+         skill_gate_completion_claim(593, 4, 4, ..., "[orchestrate]") → Case 2/3, ALLOW
 
 EXIT: Task 593 completed successfully.
 ```
+
+### Completion-Claim Refusal Flow
+
+A `status: "implemented"` handoff does not unconditionally flip the task to `completed`. Stage 5
+(and Stage MT-4, and hard-mode Stage 5) call `skill_gate_completion_claim` before the postflight
+transition. On a Case 1 (phase accounting present but incomplete) or Case 3 (phase accounting
+absent and `plan_markers_verified` not `true`) refusal:
+
+- No status transition happens this cycle — the task stays `implementing`.
+- `cycle_count` still increments (the only exemption is a corroborated infra failure).
+- The gate has already logged which case fired to stderr.
+- The next cycle re-enters Stage 3a with `implementing` and re-dispatches implement against the
+  same plan, which resumes at the first non-completed phase.
+- The existing `MAX_CYCLES` (base) / `MAX_CYCLES_MT` (multi-task) caps bound the retry — a
+  persistently misreporting agent exits via the cap, not an infinite loop. See
+  `handoff-schema.md`'s `plan_markers_verified` section for the full three-case gate contract and
+  the four greppable log-line shapes.
 
 ### Blocker Escalation Flow
 

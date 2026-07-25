@@ -602,3 +602,68 @@ skill_write_orchestrator_handoff() {
     echo "[skill-base] Orchestrator handoff written: $handoff_path" || \
     echo "[skill-base] WARNING: Failed to write orchestrator handoff to $handoff_path" >&2
 }
+
+# ───────────────────────────────────────────────────────────────────────────
+# Completion-claim verification gate
+# Usage: skill_gate_completion_claim "$task_number" "$phases_completed" \
+#          "$phases_total" "$plan_markers_verified" "$log_prefix"
+#
+#   $1 = task_number            : task number, named in every log line
+#   $2 = phases_completed       : integer from the handoff's TOP-LEVEL field (jq '// 0')
+#   $3 = phases_total           : integer from the handoff's TOP-LEVEL field (jq '// 0')
+#   $4 = plan_markers_verified  : "true" | "false" | "absent" (jq '// "absent"')
+#   $5 = log_prefix             : "[orchestrate]" or "[hard-orchestrate]"
+#
+# Returns 0 = ALLOW the completed transition; 1 = REFUSE it. On a refuse the caller MUST skip
+# skill_postflight_update entirely, leave the task at `implementing`, and let the surrounding
+# cycle counter increment as usual, so the next cycle re-dispatches implement and the existing
+# MAX_CYCLES / MAX_CYCLES_MT caps bound the retry.
+#
+# All evidence is read from fields the caller already parsed out of
+# .orchestrator-handoff.json. This function never reads a plan file, report, or summary, and
+# never invokes the Stage 5 phase-marker recovery grep — that exception is scoped to the
+# missing/stale-handoff branch and this gate fires only when a handoff IS present and fresh.
+#
+# This unification is a deliberate behavior change from the two inline gates it replaces:
+#   - base mode LOSES its `phases_total == 0` blind allow (it used to unconditionally allow
+#     completion when phase accounting was absent; it now requires plan_markers_verified=true).
+#   - hard mode LOSES its `phases_total == 0` blind refuse (it used to unconditionally refuse
+#     when phase accounting was absent; it now allows on plan_markers_verified=true).
+#   Both are replaced by the single corroborated Case 3 fallback below.
+#
+# This function is the ONLY place the three-case logic may live. Inlining a copy at a call site
+# is the drift this refactor exists to prevent — call this function from every site instead.
+skill_gate_completion_claim() {
+  local task_number="$1"
+  local phases_completed="$2"
+  local phases_total="$3"
+  local plan_markers_verified="$4"
+  local log_prefix="$5"
+
+  # Sanitize: a non-integer is missing evidence, not an arithmetic error. Coerce to 0 so it
+  # always falls through to Case 3 (fail closed) rather than crashing `-ge`/`-gt` under `set -e`.
+  [[ "$phases_completed" =~ ^[0-9]+$ ]] || phases_completed=0
+  [[ "$phases_total" =~ ^[0-9]+$ ]] || phases_total=0
+
+  if [ "$phases_total" -gt 0 ] && [ "$phases_completed" -ge "$phases_total" ]; then
+    # Case 2: phase accounting present and complete — the only unconditional allow.
+    echo "${log_prefix} COMPLETION-CLAIM GATE case 2/3 (phase accounting present and complete) task ${task_number}: ${phases_completed}/${phases_total} — allowing completion." >&2
+    return 0
+  fi
+
+  if [ "$phases_total" -gt 0 ]; then
+    # Case 1: phase accounting present but incomplete — always refuse.
+    echo "${log_prefix} COMPLETION-CLAIM GATE case 1/3 (phase accounting present, incomplete) task ${task_number}: ${phases_completed}/${phases_total} — refusing completion; task stays implementing." >&2
+    return 1
+  fi
+
+  # Case 3: phases_total == 0, i.e. accounting absent or malformed. Fall back to the
+  # corroborating plan_markers_verified signal.
+  if [ "$plan_markers_verified" = "true" ]; then
+    echo "${log_prefix} COMPLETION-CLAIM GATE case 3/3 (phase accounting absent, plan_markers_verified=true) task ${task_number}: allowing completion on the corroborating marker signal." >&2
+    return 0
+  fi
+
+  echo "${log_prefix} COMPLETION-CLAIM GATE case 3/3 (phase accounting absent, plan_markers_verified=${plan_markers_verified}) task ${task_number}: refusing completion — handoff-writer defect suspected; task stays implementing." >&2
+  return 1
+}

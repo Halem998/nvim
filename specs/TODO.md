@@ -11,12 +11,11 @@ next_project_number: 910
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,898,904,905 | -- | agent-system, literature |
-| 2 | 887,900,909 | 873,898 | agent-system |
-| 3 | 901 | 900 | agent-system |
-| 4 | 902,906 | 885,901 | agent-system |
-| 5 | 907 | 902,906 | agent-system |
-| 6 | 908 | 907 | agent-system |
+| 1 | 873,885,900,904,905,909 | -- | agent-system, literature |
+| 2 | 887,901 | 873,900 | agent-system |
+| 3 | 902,906 | 885,901 | agent-system |
+| 4 | 907 | 902,906 | agent-system |
+| 5 | 908 | 907 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -28,13 +27,12 @@ next_project_number: 910
   └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
       └─ 908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
-898 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-  └─ 900 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-    └─ 901 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-      └─ 902 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-        └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
-      └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
-  └─ 909 [NOT STARTED] — Residual gap surfaced by the implementation agent for the complet
+900 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+  └─ 901 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+    └─ 902 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+      └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
+    └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
+909 [NOT STARTED] — Residual gap surfaced by the implementation agent for the complet
 
 ### Literature
 
@@ -458,10 +456,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 898. Gate the implemented completion claim on phase evidence before postflight
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 897
+- **Research**: [898_completion_claim_verification_gate/reports/01_completion_claim_verification_gate.md]
+- **Plan**: [898_completion_claim_verification_gate/plans/01_completion-claim-verification-gate.md]
+- **Summary**: [898_completion_claim_verification_gate/summaries/01_completion-claim-verification-gate-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/core/** and NEVER .claude/**.
 
