@@ -161,8 +161,9 @@ When Stage 3.5 detects context pressure, STOP starting new searches and execute,
    `git status --porcelain`. Research rarely dirties the tree, but the branch is included for
    completeness. If clean, no git action is needed. If dirty and confirmably green, `git commit`
    a checkpoint commit. If dirty and RED (or green cannot be confirmed), run
-   `bash .claude/scripts/git-snapshot.sh {task_number}` instead. Record the resulting reference
-   for the handoff's Current State below.
+   `bash .claude/scripts/git-snapshot.sh --no-revert {task_number}` instead (`--no-revert`
+   keeps the tree intact for the successor; the default and `--branch` modes both revert it).
+   Record the resulting reference for the handoff's Current State below.
 2. **Write partial findings** to the report path (Stage 6 path construction) as a "partial
    report-in-progress": include everything gathered so far under the normal report-format.md
    sections, with a header note `**Status**: partial — see handoff for next action`.

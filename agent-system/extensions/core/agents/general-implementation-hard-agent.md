@@ -217,9 +217,9 @@ handoff), plus: ensure `.orchestrator-handoff.json` is written with `status: "pa
 reference and does not touch any other part of Stage 4C or `.orchestrator-handoff.json`.)*
 
 After the base Stage 4C git-checkpoint step (commit if green,
-`bash .claude/scripts/git-snapshot.sh {task_number}` if RED — see
+`bash .claude/scripts/git-snapshot.sh --no-revert {task_number}` if RED — see
 `@.claude/context/patterns/checkpoint-before-overflow.md`) produces a reference (a commit SHA, a
-`working-progress-*.patch` path, a `stash@{N}` ref, or a `wip-snapshot-{ts}` branch name),
+`working-progress-*.patch` path, a `stash@{N}` ref, or an `untracked-backup-{ts}` path),
 surface that same reference in `.orchestrator-handoff.json`: add a `git_checkpoint` string field
 to the relevant `blockers` entry for the interrupted phase (or at the top level of the JSON if no
 per-phase blocker entry applies) so a fresh dispatch can locate the checkpointed state without

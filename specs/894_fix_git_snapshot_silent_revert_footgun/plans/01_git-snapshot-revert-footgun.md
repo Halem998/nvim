@@ -766,7 +766,7 @@ reverts — while keeping the default mode, which is correct for this family.
 
 ---
 
-### Phase 5: Route defensive-checkpoint (family 2) call sites to `--no-revert` [NOT STARTED]
+### Phase 5: Route defensive-checkpoint (family 2) call sites to `--no-revert` [COMPLETED]
 
 **Goal**: The CHECKPOINT-BEFORE-OVERFLOW family — where the agent snapshots, writes a handoff,
 and stops, and where a successor needs the work still present — stops reverting the tree.
@@ -784,13 +784,13 @@ research-agent sites are the *same* CHECKPOINT-BEFORE-OVERFLOW git-checkpoint st
 as well and are included here.
 
 **Tasks**:
-- [ ] Edit 5.1 — `context/patterns/checkpoint-before-overflow.md`, the code block. Replace the
+- [x] Edit 5.1 — `context/patterns/checkpoint-before-overflow.md`, the code block. Replace the
       quoted line ```  bash .claude/scripts/git-snapshot.sh {task_number}``` (inside the fenced
-      bash block) with:
+      bash block) with: *(completed)*
       ```
         bash .claude/scripts/git-snapshot.sh --no-revert {task_number}
       ```
-- [ ] Edit 5.2 — same file, the prose immediately after that block. Replace the quoted lines:
+- [x] Edit 5.2 — same file, the prose immediately after that block. Replace the quoted lines: *(completed)*
       ```
       This writes a durable `working-progress-{ts}.patch` under the task directory and (belt-and-
       suspenders) an in-repo `git stash push -u`, without dropping either. Capture whichever
@@ -815,7 +815,7 @@ as well and are included here.
       dirty tree to a scratch branch and then checks the original branch back out, which reverts
       the tree exactly as much as the stash path does. Only `--no-revert` leaves the tree intact.
       ```
-- [ ] Edit 5.3 — same file, the decision table. Replace the quoted row:
+- [x] Edit 5.3 — same file, the decision table. Replace the quoted row: *(completed)*
       ```
       | Dirty | No / RED | `bash .claude/scripts/git-snapshot.sh {task_number}` |
       ```
@@ -823,7 +823,7 @@ as well and are included here.
       ```
       | Dirty | No / RED | `bash .claude/scripts/git-snapshot.sh --no-revert {task_number}` |
       ```
-- [ ] Edit 5.4 — same file, the handoff reference string. Replace the quoted lines:
+- [x] Edit 5.4 — same file, the handoff reference string. Replace the quoted lines: *(completed)*
       ```
       - Snapshot path: `**Git checkpoint**: RED tree snapshotted via git-snapshot.sh — patch:
         {working-progress-{ts}.patch path}, stash: {stash@{N} or NONE}, branch: {wip-snapshot-{ts} or
@@ -835,7 +835,7 @@ as well and are included here.
         — patch: {working-progress-{ts}.patch path}, stash: {stash@{N} or NONE},
         untracked-backup: {untracked-backup-{ts} path or NONE}; working tree left intact`
       ```
-- [ ] Edit 5.5 — `agents/general-research-agent.md`. Replace the quoted fragment
+- [x] Edit 5.5 — `agents/general-research-agent.md`. Replace the quoted fragment *(completed)*
       ```
       `bash .claude/scripts/git-snapshot.sh {task_number}` instead. Record the resulting reference
       ```
@@ -845,9 +845,9 @@ as well and are included here.
       keeps the tree intact for the successor; the default and `--branch` modes both revert it).
       Record the resulting reference
       ```
-- [ ] Edit 5.6 — `agents/general-research-hard-agent.md`. Apply the identical replacement as
-      Edit 5.5 (the surrounding sentence is verbatim the same).
-- [ ] Edit 5.7 — `agents/general-implementation-agent.md`, Stage 4C. Within the quoted
+- [x] Edit 5.6 — `agents/general-research-hard-agent.md`. Apply the identical replacement as
+      Edit 5.5 (the surrounding sentence is verbatim the same). *(completed)*
+- [x] Edit 5.7 — `agents/general-implementation-agent.md`, Stage 4C. Within the quoted
       single-line step beginning `1. **Git checkpoint** (CHECKPOINT-BEFORE-OVERFLOW`, replace
       the substring:
       ```
@@ -857,7 +857,7 @@ as well and are included here.
       ```
       run `bash .claude/scripts/git-snapshot.sh --no-revert {task_number}` instead of committing broken state (`--no-revert` is required here: the default and `--branch` modes both leave the tree clean at HEAD, erasing the very RED work this step protects).
       ```
-- [ ] Edit 5.8 — `agents/general-implementation-hard-agent.md`, Stage 4C sub-section. Replace
+- [x] Edit 5.8 — `agents/general-implementation-hard-agent.md`, Stage 4C sub-section. Replace *(completed)*
       the quoted lines:
       ```
       After the base Stage 4C git-checkpoint step (commit if green,
@@ -876,8 +876,9 @@ as well and are included here.
       ```
       `working-progress-*.patch` path, a `stash@{N}` ref, or an `untracked-backup-{ts}` path)
       ```
-- [ ] Confirm the Phase 4 edit to `general-implementation-hard-agent.md` (rung (c), near the
-      top of the file) is still intact and untouched by this phase's edits.
+- [x] Confirm the Phase 4 edit to `general-implementation-hard-agent.md` (rung (c), near the
+      top of the file) is still intact and untouched by this phase's edits. *(completed:
+      verified — line 71 still reads the default-mode rung (c) text unchanged)*
 
 **Timing**: 1 hour
 

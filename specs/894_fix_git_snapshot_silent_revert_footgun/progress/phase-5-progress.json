@@ -1,0 +1,21 @@
+{
+  "phase": 5,
+  "phase_name": "Route defensive-checkpoint (family 2) call sites to --no-revert",
+  "started_at": "2026-07-25T09:45:00Z",
+  "last_updated": "2026-07-25T10:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Edit 5.1 checkpoint-before-overflow.md code block", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/checkpoint-before-overflow.md"]},
+    {"id": 2, "description": "Edit 5.2 checkpoint-before-overflow.md prose", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/checkpoint-before-overflow.md"]},
+    {"id": 3, "description": "Edit 5.3 checkpoint-before-overflow.md decision table", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/checkpoint-before-overflow.md"]},
+    {"id": 4, "description": "Edit 5.4 checkpoint-before-overflow.md handoff reference string", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/checkpoint-before-overflow.md"]},
+    {"id": 5, "description": "Edit 5.5 general-research-agent.md", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-research-agent.md"]},
+    {"id": 6, "description": "Edit 5.6 general-research-hard-agent.md", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-research-hard-agent.md"]},
+    {"id": 7, "description": "Edit 5.7 general-implementation-agent.md Stage 4C", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 8, "description": "Edit 5.8 general-implementation-hard-agent.md Stage 4C sub-section", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-hard-agent.md"]},
+    {"id": 9, "description": "Confirm Phase 4 rung (c) edit still intact; verify family split via grep", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

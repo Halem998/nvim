@@ -82,14 +82,21 @@ git status --porcelain
   pressure signal fired), do **not** commit broken state to the branch. Instead, run the
   sanctioned snapshot helper from task 780:
   ```bash
-  bash .claude/scripts/git-snapshot.sh {task_number}
+  bash .claude/scripts/git-snapshot.sh --no-revert {task_number}
   ```
-  This writes a durable `working-progress-{ts}.patch` under the task directory and (belt-and-
-  suspenders) an in-repo `git stash push -u`, without dropping either. Capture whichever
-  reference(s) the script reports — the patch path, the `stash@{N}` ref, and/or (with
-  `--branch`) the `wip-snapshot-{ts}` branch name — for the handoff's Current State. On a clean
-  tree the script itself is a no-op; this branch only runs it when the tree is dirty and RED, so
-  that no-op case does not apply here.
+  This writes a durable `working-progress-{ts}.patch` under the task directory, records a
+  belt-and-suspenders stash entry, and copies untracked files to
+  `untracked-backup-{ts}/`. Capture whichever reference(s) the script reports — the patch
+  path, the `stash@{N}` ref, and the untracked-backup directory — for the handoff's Current
+  State. On a clean tree the script itself is a no-op; this branch only runs it when the tree
+  is dirty and RED, so that no-op case does not apply here.
+
+  **`--no-revert` is required at this call site.** The script's default mode runs
+  `git stash push -u`, which leaves the working tree clean at HEAD — the RED work this step
+  exists to protect would disappear from the working directory, and the successor picking up
+  the handoff would find nothing to resume from. `--branch` does not help: it commits the
+  dirty tree to a scratch branch and then checks the original branch back out, which reverts
+  the tree exactly as much as the stash path does. Only `--no-revert` leaves the tree intact.
 
 **Decision table**:
 
@@ -97,7 +104,7 @@ git status --porcelain
 |---|---|---|
 | Clean | n/a | No git action |
 | Dirty | Yes | `git commit` (checkpoint commit) |
-| Dirty | No / RED | `bash .claude/scripts/git-snapshot.sh {task_number}` |
+| Dirty | No / RED | `bash .claude/scripts/git-snapshot.sh --no-revert {task_number}` |
 
 ---
 
@@ -109,9 +116,9 @@ re-derive it:
 
 - Commit path: `**Git checkpoint**: commit {sha} ("task {N}: checkpoint before context-pressure
   handoff")`
-- Snapshot path: `**Git checkpoint**: RED tree snapshotted via git-snapshot.sh — patch:
-  {working-progress-{ts}.patch path}, stash: {stash@{N} or NONE}, branch: {wip-snapshot-{ts} or
-  NONE}`
+- Snapshot path: `**Git checkpoint**: RED tree snapshotted via git-snapshot.sh --no-revert
+  — patch: {working-progress-{ts}.patch path}, stash: {stash@{N} or NONE},
+  untracked-backup: {untracked-backup-{ts} path or NONE}; working tree left intact`
 - Clean-tree path: `**Git checkpoint**: tree was clean, no git action needed`
 
 For agents that also write `.orchestrator-handoff.json` (hard-mode implementation), additionally
