@@ -60,7 +60,12 @@ leaving the tree RED. This rung reaches green by shrinking scope, not by reverti
 **Only if truly required, and only after rungs (a) and (b) have been exhausted or ruled out.**
 If a genuine rollback is unavoidable:
 
-1. **Snapshot first.** Run `bash .claude/scripts/git-snapshot.sh [--branch] [TASK]`
+1. **Snapshot first.** Run `bash .claude/scripts/git-snapshot.sh <TASK>` — pass TASK
+   explicitly rather than relying on inference, which only resolves when exactly one task
+   is `implementing`. The default mode reverts the working tree, which is the intended
+   handoff here; `--branch` does NOT avoid that revert (it only changes the recovery
+   handle from a stash entry to a branch), and `--no-revert` is for defensive checkpoints
+   where work continues, not for this rung.
    (`.claude/scripts/git-snapshot.sh`) before any destructive git operation. This is not
    optional guidance — `.claude/hooks/guard-destructive-git.sh` is a PreToolUse Bash hook that
    blocks `git reset --hard`, `git checkout -- <path>`, `git restore` (non-`--staged`),

@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "Update rollback-ladder (family 1) call sites",
+  "started_at": "2026-07-25T09:25:00Z",
+  "last_updated": "2026-07-25T09:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Edit 4.1 guard-destructive-git.sh blocked-command advice", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 2, "description": "Edit 4.2 git-workflow.md exemption item 2", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]},
+    {"id": 3, "description": "Edit 4.3 git-workflow.md bare-invocation instruction", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]},
+    {"id": 4, "description": "Edit 4.4 general-implementation-hard-agent.md rung (c)", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-hard-agent.md"]},
+    {"id": 5, "description": "Edit 4.5 skill-orchestrate-hard/SKILL.md Recovery Discipline slot", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]},
+    {"id": 6, "description": "Edit 4.6 context/contracts/recovery.md rung (c) step 1", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/recovery.md"]},
+    {"id": 7, "description": "Verify no bare invocation remains, no new task-number citations, bash -n on hook", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

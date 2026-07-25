@@ -551,7 +551,7 @@ HARD MODE DISPATCH — CONTRACT SLOTS:
 2. Anti-Analysis Rules: Read .claude/context/contracts/anti-analysis.md. First file edit within 20% of tool calls.
 3. Wrap-up Contract: Write .orchestrator-handoff.json before terminating. Incremental commits.
 4. Settled Design Preamble: State the decided design before first tool call.
-5. Recovery Discipline: If RED, FIX FORWARD to reach green — never revert/reset/checkout to a prior commit. If a sub-goal is genuinely blocked, land a documented strategic-sorry skeleton (anti-analysis.md) instead of discarding structure. Only if rollback is truly required: snapshot first via 'bash .claude/scripts/git-snapshot.sh', then use the smallest revert scope. Full ladder: .claude/context/contracts/recovery.md.
+5. Recovery Discipline: If RED, FIX FORWARD to reach green — never revert/reset/checkout to a prior commit. If a sub-goal is genuinely blocked, land a documented strategic-sorry skeleton (anti-analysis.md) instead of discarding structure. Only if rollback is truly required: snapshot first via 'bash .claude/scripts/git-snapshot.sh $task_number' (pass the task number explicitly; the default mode REVERTS the working tree, which is correct immediately before a rollback -- use --no-revert only when you intend to keep working), then use the smallest revert scope. Full ladder: .claude/context/contracts/recovery.md.
 
 PHASES COMPLETED: $phases_completed of $phases_total
 "
@@ -688,9 +688,60 @@ per-phase handoff (skeleton or not) never flips the whole task to `completed` ea
 # Reset the per-cycle exemption flag before any branch can set it.
 infra_exempt_cycle=false
 
-if [ ! -f "$handoff_file" ]; then
-  echo "[hard-orchestrate] ERROR: Skill did not write orchestrator handoff."
-  echo "This may mean orchestrator_mode was not propagated correctly."
+# ── Staleness gate ────────────────────────────────────────────────────────────
+# A handoff sitting at the correct path does NOT prove this dispatch wrote it. If the current
+# dispatch wrote nothing (or wrote somewhere else), the PREVIOUS cycle's file is still there,
+# and reading it reports the previous cycle's status and phases_completed as if they were this
+# one's — a silent wrong answer, worse than a detected absence.
+#
+# Reuse the dispatch window already captured for infra-failure discrimination: dispatch_start_ts
+# is set via `date -u +%s` immediately before every Agent tool call above. This is the same
+# stat/compare technique the missing-handoff branch below already applies to .return-meta.json,
+# pointed at a second file. No new timestamp mechanism.
+#
+# Fail-closed: an unset dispatch_start_ts yields 9999999999, so a dispatch site that forgot to
+# set its window marks the handoff stale rather than trusting it — matching the missing-handoff
+# branch's defaults-to-charging posture below.
+handoff_stale=false
+if [ -f "$handoff_file" ]; then
+  stale_window_start="${dispatch_start_ts:-9999999999}"
+  handoff_mtime=$(stat -c %Y "$handoff_file" 2>/dev/null || stat -f %m "$handoff_file" 2>/dev/null || echo 0)
+  if [ "$handoff_mtime" -lt "$stale_window_start" ]; then
+    handoff_stale=true
+    echo "[hard-orchestrate] ERROR: STALE HANDOFF — $handoff_file has mtime $handoff_mtime, older than this dispatch window ($stale_window_start)." >&2
+    echo "[hard-orchestrate] This dispatch did not write it. Treating as a missing handoff, not a successful read." >&2
+  fi
+fi
+
+# ── Stray-handoff sweep ───────────────────────────────────────────────────────
+# Mechanism-agnostic backstop. The validate-handoff-location.sh PostToolUse hook catches
+# Write/Edit-tool misplacements, but it is structurally unable to see a Bash-redirect write
+# (skill_write_orchestrator_handoff writes via `jq -n ... > "$handoff_path"`; a Bash tool_input
+# carries unexpanded command text, so the resolved destination is never visible to a hook).
+# This sweep catches a misplaced handoff no matter how it was written.
+#
+# Deliberately bounded to two exact paths — the repo root and specs/ — not a recursive find.
+# Those are the two places an unanchored write actually lands.
+sweep_root="${SKILL_REPO_ROOT:-$(pwd)}"
+for stray in "${sweep_root}/.orchestrator-handoff.json" "${sweep_root}/specs/.orchestrator-handoff.json"; do
+  if [ -e "$stray" ]; then
+    echo "[hard-orchestrate] ERROR: STRAY HANDOFF at $stray — a writer produced the handoff outside its task directory." >&2
+    echo "[hard-orchestrate] The correct destination is $handoff_file." >&2
+    # Move aside rather than delete: preserves the evidence while ensuring no later
+    # cwd-relative read can pick it up.
+    mv "$stray" "${TASK_DIR}/.stray-handoff-$(date -u +%s).json" 2>/dev/null \
+      && echo "[hard-orchestrate] Stray moved into ${TASK_DIR}/ for inspection." >&2 \
+      || echo "[hard-orchestrate] WARNING: could not move stray aside; remove it manually before the next cycle." >&2
+  fi
+done
+
+if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
+  if [ "$handoff_stale" = "true" ]; then
+    echo "[hard-orchestrate] ERROR: Skill did not write a handoff for THIS dispatch (a stale one from an earlier cycle is present)."
+  else
+    echo "[hard-orchestrate] ERROR: Skill did not write orchestrator handoff."
+  fi
+  echo "This may mean orchestrator_mode was not propagated correctly, or the handoff was written outside the task directory."
 
   # Infra-failure discrimination — see context/patterns/infra-failure-discrimination.md.
   # TWO corroborating signals are required to exempt this cycle from the work-cycle budget:

@@ -145,13 +145,24 @@ dirty and no fresh snapshot exists.
    `git reset --hard {sha}` / `git clean -fd` rollback runs, so it is never blocked.
 2. A snapshot was just taken via `bash .claude/scripts/git-snapshot.sh` (the
    sanctioned way to snapshot). The helper writes a durable `.patch` under
-   `specs/{NNN}_{SLUG}/` plus a belt-and-suspenders `git stash` (default mode) or a
-   WIP commit on a scratch branch (`--branch` mode), then refreshes a short-lived,
+   `specs/{NNN}_{SLUG}/` plus a belt-and-suspenders `git stash` (default mode), a
+   WIP commit on a scratch branch (`--branch` mode), or a non-mutating stored stash plus
+   an `untracked-backup-{ts}/` copy (`--no-revert` mode), then refreshes a short-lived,
    single-use freshness marker that the hook consumes on the next matching
    destructive command.
 
 Before any intentional rollback that would otherwise be blocked, run
-`bash .claude/scripts/git-snapshot.sh` first, then retry the destructive command.
+`bash .claude/scripts/git-snapshot.sh <task-number>` first, then retry the destructive
+command. Pass the task number explicitly — the no-argument form only resolves when
+exactly one task in `specs/state.json` has status `implementing`, which does not hold
+when several tasks are in flight at once.
+
+**The default and `--branch` modes both REVERT the working tree.** Both leave it clean
+at HEAD, with the uncommitted edits recoverable only from the reported patch, stash, or
+branch; `--branch` changes the recovery handle, not whether the revert happens. That is
+the intended behavior at this call site, because the snapshot sits immediately before an
+already-decided destructive command. For a purely defensive checkpoint where work
+continues afterwards, use `--no-revert`, which leaves the tree untouched.
 
 **Not blocked** (do not discard uncommitted changes): `git stash` (push),
 `git stash pop` / `git stash apply`, `git restore --staged <path>`, and non-forced

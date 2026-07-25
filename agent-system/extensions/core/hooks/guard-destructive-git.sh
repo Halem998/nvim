@@ -213,6 +213,10 @@ fi
 
 echo "BLOCKED: $REASON" >&2
 echo "The working tree has uncommitted changes and this command would discard them." >&2
-echo "Run 'bash .claude/scripts/git-snapshot.sh' first to take a recoverable snapshot" >&2
-echo "(writes a .patch under the task directory + a stash backup), then retry the command." >&2
+echo "Run 'bash .claude/scripts/git-snapshot.sh <task-number>' first to take a recoverable" >&2
+echo "snapshot (writes a .patch under the task directory + a stash backup), then retry." >&2
+echo "Pass the task number explicitly: the no-argument form only resolves when exactly one" >&2
+echo "task in specs/state.json is 'implementing', which does not hold with several in flight." >&2
+echo "The default mode REVERTS the working tree -- intended here, immediately before a" >&2
+echo "destructive command. Use --no-revert only if you intend to keep working afterwards." >&2
 exit 2

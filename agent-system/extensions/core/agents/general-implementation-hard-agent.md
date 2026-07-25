@@ -68,7 +68,10 @@ reach green. Full disambiguation and the 3-rung ladder live in
 - **Rung (b) documented strategic-sorry skeleton** — when a sub-goal is genuinely blocked; see
   the "Strategic-Sorry Skeleton (Hard Mode)" section above for this agent's mechanics.
 - **Rung (c) snapshot-then-smallest-scope-rollback** — only if rollback is truly required;
-  snapshot first via `bash .claude/scripts/git-snapshot.sh` before any destructive git command.
+  snapshot first via `bash .claude/scripts/git-snapshot.sh {task_number}` before any
+  destructive git command. Pass `{task_number}` explicitly — the no-argument form only
+  resolves when exactly one task is `implementing`. The default mode REVERTS the working
+  tree, which is correct here because a destructive command follows immediately.
 
 This is `--hard`-only for rungs (b)/(c); the fix-forward default (rung a) applies to any RED
 state regardless of mode.

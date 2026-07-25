@@ -641,7 +641,7 @@ fi
 
 ---
 
-### Phase 4: Update rollback-ladder (family 1) call sites [NOT STARTED]
+### Phase 4: Update rollback-ladder (family 1) call sites [COMPLETED]
 
 **Goal**: The four bare-invocation sites pass a task number and state that the default mode
 reverts — while keeping the default mode, which is correct for this family.
@@ -652,7 +652,7 @@ reverts — while keeping the default mode, which is correct for this family.
 `agent-system/extensions/core/`.
 
 **Tasks**:
-- [ ] Edit 4.1 — `hooks/guard-destructive-git.sh`. Replace the two quoted lines:
+- [x] Edit 4.1 — `hooks/guard-destructive-git.sh`. Replace the two quoted lines: *(completed)*
       ```
       echo "Run 'bash .claude/scripts/git-snapshot.sh' first to take a recoverable snapshot" >&2
       echo "(writes a .patch under the task directory + a stash backup), then retry the command." >&2
@@ -666,7 +666,7 @@ reverts — while keeping the default mode, which is correct for this family.
       echo "The default mode REVERTS the working tree -- intended here, immediately before a" >&2
       echo "destructive command. Use --no-revert only if you intend to keep working afterwards." >&2
       ```
-- [ ] Edit 4.2 — `rules/git-workflow.md`, exemption item 2. Replace the quoted lines:
+- [x] Edit 4.2 — `rules/git-workflow.md`, exemption item 2. Replace the quoted lines: *(completed)*
       ```
       `specs/{NNN}_{SLUG}/` plus a belt-and-suspenders `git stash` (default mode) or a
       WIP commit on a scratch branch (`--branch` mode), then refreshes a short-lived,
@@ -677,8 +677,8 @@ reverts — while keeping the default mode, which is correct for this family.
       WIP commit on a scratch branch (`--branch` mode), or a non-mutating stored stash plus
       an `untracked-backup-{ts}/` copy (`--no-revert` mode), then refreshes a short-lived,
       ```
-- [ ] Edit 4.3 — `rules/git-workflow.md`, the bare-invocation instruction. Replace the quoted
-      lines:
+- [x] Edit 4.3 — `rules/git-workflow.md`, the bare-invocation instruction. Replace the quoted
+      lines: *(completed)*
       ```
       Before any intentional rollback that would otherwise be blocked, run
       `bash .claude/scripts/git-snapshot.sh` first, then retry the destructive command.
@@ -698,8 +698,8 @@ reverts — while keeping the default mode, which is correct for this family.
       already-decided destructive command. For a purely defensive checkpoint where work
       continues afterwards, use `--no-revert`, which leaves the tree untouched.
       ```
-- [ ] Edit 4.4 — `agents/general-implementation-hard-agent.md`, rung (c). Replace the quoted
-      lines:
+- [x] Edit 4.4 — `agents/general-implementation-hard-agent.md`, rung (c). Replace the quoted
+      lines: *(completed)*
       ```
       - **Rung (c) snapshot-then-smallest-scope-rollback** — only if rollback is truly required;
         snapshot first via `bash .claude/scripts/git-snapshot.sh` before any destructive git command.
@@ -712,7 +712,7 @@ reverts — while keeping the default mode, which is correct for this family.
         resolves when exactly one task is `implementing`. The default mode REVERTS the working
         tree, which is correct here because a destructive command follows immediately.
       ```
-- [ ] Edit 4.5 — `skills/skill-orchestrate-hard/SKILL.md`, Recovery Discipline slot. Within
+- [x] Edit 4.5 — `skills/skill-orchestrate-hard/SKILL.md`, Recovery Discipline slot. Within *(completed)*
       the quoted contract-slot line beginning `5. Recovery Discipline:`, replace the substring:
       ```
       snapshot first via 'bash .claude/scripts/git-snapshot.sh', then use the smallest revert scope.
@@ -725,7 +725,7 @@ reverts — while keeping the default mode, which is correct for this family.
       `echo "..."` double-quoted string that already interpolates `$next_phase` and
       `$phases_completed`, and `task_number` is assigned earlier in the same skill from
       `.task_context.task_number`. Verify this by quoted text before editing.
-- [ ] Edit 4.6 — `context/contracts/recovery.md`, rung (c) step 1. Replace the quoted line:
+- [x] Edit 4.6 — `context/contracts/recovery.md`, rung (c) step 1. Replace the quoted line: *(completed)*
       ```
       1. **Snapshot first.** Run `bash .claude/scripts/git-snapshot.sh [--branch] [TASK]`
       ```
@@ -740,7 +740,8 @@ reverts — while keeping the default mode, which is correct for this family.
       ```
       Keep the following numbered-list lines (`(`.claude/scripts/git-snapshot.sh`) before any
       destructive git operation. ...`) intact, re-indenting only as needed so the list renders.
-- [ ] Confirm no new task-number citation was introduced in any edited file.
+- [x] Confirm no new task-number citation was introduced in any edited file. *(completed:
+      verified via `git diff | grep '^+' | grep -i "task [0-9]"` returning empty)*
 
 **Timing**: 1 hour
 
