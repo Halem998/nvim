@@ -1,6 +1,6 @@
 #!/bin/bash
 # git-snapshot.sh
-# Sanctioned snapshot helper for task 780 (agent git-safety: preserve uncommitted work).
+# Sanctioned snapshot helper for agent git-safety: preserve uncommitted work.
 #
 # Purpose: write a recoverable, durable snapshot of uncommitted working-tree changes
 # BEFORE any destructive git operation (git reset --hard, git checkout -- <path>,
@@ -19,6 +19,7 @@
 #             plus (best-effort, mode-dependent):
 #               STASH_REF=<stash@{N} ref, or NONE>
 #               BRANCH_NAME=<wip-snapshot-{ts} branch name, or NONE>
+#               UNTRACKED_BACKUP=<untracked-backup-{ts} dir, or NONE>
 #   Freshness window: 120 seconds. The hook treats a marker older than this window
 #             as stale and will NOT honor it (a stale marker does not authorize a
 #             later, unrelated destructive command).
@@ -31,18 +32,49 @@
 #             tracked under the task directory for manual recovery if needed.
 #
 # --- Usage ---
-#   git-snapshot.sh [--branch] [TASK]
-#     TASK        Task number (e.g. 780), a specs/{NNN}_{SLUG} directory path, or
-#                 omitted to infer the single task currently in status "implementing"
-#                 from specs/state.json.
-#     --branch    Instead of the default stash-based snapshot, create a WIP commit
-#                 on a scratch branch (wip-snapshot-{ts}) capturing the dirty tree,
-#                 then return to the original branch.
+#   git-snapshot.sh [--branch | --no-revert] [TASK]
+#     TASK          Task number (an integer), a specs/{NNN}_{SLUG} directory path, or
+#                   omitted to infer the task from specs/state.json (see TASK inference).
+#     --branch      Instead of the default stash-based snapshot, create a WIP commit
+#                   on a scratch branch (wip-snapshot-{ts}) capturing the dirty tree,
+#                   then return to the original branch.
+#     --no-revert   Take the snapshot WITHOUT mutating the working tree (see modes).
+#     --help, -h    Print the usage summary and exit 0.
+#   The three modes are mutually exclusive; passing more than one is an error.
 #
-#   Default mode: writes specs/{NNN}_{SLUG}/working-progress-{ts}.patch (git diff
-#   HEAD) AND runs `git stash push -u` (untracked-inclusive, without drop) as a
-#   belt-and-suspenders in-repo copy. Both the patch and the marker are written
-#   before the function returns success.
+# --- WARNING: default and --branch modes REVERT the working tree ---
+#   Despite the name, this script is NOT read-only in its default or --branch modes.
+#   Both leave the working tree CLEAN at HEAD: uncommitted edits are removed from the
+#   working directory (still recoverable, but no longer present).
+#     default mode  runs `git stash push -u`, which reverts modified tracked files and
+#                   removes untracked ones.
+#     --branch mode commits the dirty tree onto a scratch branch and then checks out the
+#                   original branch, which reverts the tree exactly as much as the stash
+#                   path does. --branch changes only the RECOVERY HANDLE (a branch instead
+#                   of a stash entry) -- it does NOT avoid the revert.
+#   Use --no-revert when you want a durable backup and intend to KEEP WORKING. Use the
+#   default (or --branch) when the snapshot is a precursor to an already-decided
+#   destructive git command, where a clean tree is the intended handoff.
+#
+#   Default mode: writes specs/{NNN}_{SLUG}/working-progress-{ts}.patch (git diff HEAD)
+#   AND runs `git stash push -u` (untracked-inclusive, without drop) as a
+#   belt-and-suspenders in-repo copy. Both the patch and the marker are written before
+#   the script exits successfully. THE WORKING TREE IS REVERTED.
+#
+#   --no-revert mode: writes the same working-progress-{ts}.patch, records a real stash
+#   entry via `git stash create` + `git stash store` (which build and store a stash commit
+#   object without ever touching the working tree), and copies untracked files to
+#   specs/{NNN}_{SLUG}/untracked-backup-{ts}/ because a diff cannot represent them. The
+#   working tree is left exactly as it was found. The freshness marker is still written:
+#   the resulting snapshot is genuinely recoverable, but note that because the tree stays
+#   dirty, a destructive command run afterwards discards the LIVE edits and recovery must
+#   come from the patch / stash / untracked backup.
+#
+#   TASK inference: with no TASK argument, the script reads specs/state.json and uses the
+#   single task whose status is "implementing". Inference FAILS whenever that is not
+#   exactly one task -- zero matches, two or more concurrent "implementing" tasks, no jq,
+#   or no specs/state.json. Several tasks being in flight at once is normal here, so
+#   passing TASK explicitly is the reliable form.
 #
 #   On a clean working tree, this script is a no-op: it prints a message and exits 0
 #   without writing a marker (there is nothing to protect).
@@ -55,11 +87,49 @@ set -uo pipefail
 
 MODE="default"
 TASK_ARG=""
+MODE_FLAG_COUNT=0
+
+print_usage() {
+  cat << 'USAGE'
+Usage: git-snapshot.sh [--branch | --no-revert] [TASK]
+
+  TASK          Task number (an integer), a specs/{NNN}_{SLUG} directory path, or
+                omitted to infer the single "implementing" task from specs/state.json.
+  --branch      Snapshot by committing the dirty tree to a scratch branch
+                (wip-snapshot-{ts}), then returning to the original branch.
+  --no-revert   Snapshot WITHOUT mutating the working tree.
+  --help, -h    Print this usage and exit 0.
+
+WARNING: the default and --branch modes BOTH revert the working tree.
+  Default mode runs `git stash push -u`; --branch mode commits to a scratch branch and
+  then checks out the original branch. Either way the tree ends up clean at HEAD and the
+  uncommitted edits are no longer present in the working directory (they remain
+  recoverable via the reported patch / stash / branch). --branch changes only the
+  recovery handle -- it does NOT avoid the revert.
+  Use --no-revert to take a durable backup and keep working.
+
+The three modes are mutually exclusive.
+USAGE
+}
 
 for arg in "$@"; do
   case "$arg" in
     --branch)
       MODE="branch"
+      MODE_FLAG_COUNT=$((MODE_FLAG_COUNT + 1))
+      ;;
+    --no-revert)
+      MODE="no-revert"
+      MODE_FLAG_COUNT=$((MODE_FLAG_COUNT + 1))
+      ;;
+    --help|-h)
+      print_usage
+      exit 0
+      ;;
+    -*)
+      echo "git-snapshot.sh: unrecognized option '$arg'" >&2
+      print_usage >&2
+      exit 1
       ;;
     *)
       TASK_ARG="$arg"
@@ -67,7 +137,17 @@ for arg in "$@"; do
   esac
 done
 
+if [ "$MODE_FLAG_COUNT" -gt 1 ]; then
+  echo "git-snapshot.sh: --branch and --no-revert are mutually exclusive" >&2
+  print_usage >&2
+  exit 1
+fi
+
 # resolve_task_dir: turn a task number / path / empty arg into a specs/{NNN}_{SLUG} dir.
+# On failure it echoes a specific reason to stderr and returns 1. The reason is written to
+# stderr rather than assigned to a variable on purpose: this function is invoked as
+# TASK_DIR=$(resolve_task_dir ...), i.e. in a subshell, so any variable it set would be
+# discarded -- stderr passes through the command substitution unchanged.
 resolve_task_dir() {
   local arg="$1"
 
@@ -84,33 +164,68 @@ resolve_task_dir() {
         echo "$dir"
         return 0
       fi
+      echo "git-snapshot.sh: could not resolve a task directory." >&2
+      echo "  reason: '$arg' looks like a task number, but no specs/${padded}_* directory exists (cwd: $(pwd))" >&2
+      return 1
     fi
+    echo "git-snapshot.sh: could not resolve a task directory." >&2
+    echo "  reason: '$arg' is neither an existing directory nor an integer task number (cwd: $(pwd))" >&2
     return 1
   fi
 
-  # No arg given: infer the single task currently in status "implementing".
-  if command -v jq >/dev/null 2>&1 && [ -f specs/state.json ]; then
-    local nums count
-    nums=$(jq -r '.active_projects[] | select(.status=="implementing") | .project_number' specs/state.json 2>/dev/null)
-    count=$(printf '%s\n' "$nums" | grep -c '^[0-9]\+$' || true)
-    if [ "$count" = "1" ]; then
-      local padded dir
-      padded=$(printf "%03d" "$nums")
-      dir=$(find specs -maxdepth 1 -type d -name "${padded}_*" 2>/dev/null | head -1)
-      if [ -n "$dir" ]; then
-        echo "$dir"
-        return 0
-      fi
-    fi
+  # No TASK argument: infer the single task currently in status "implementing".
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "git-snapshot.sh: could not resolve a task directory." >&2
+    echo "  reason: no TASK argument was given and 'jq' is not installed, so specs/state.json could not be read" >&2
+    return 1
+  fi
+  if [ ! -f specs/state.json ]; then
+    echo "git-snapshot.sh: could not resolve a task directory." >&2
+    echo "  reason: no TASK argument was given and specs/state.json does not exist (cwd: $(pwd)); inference requires it" >&2
+    return 1
   fi
 
+  local nums count
+  nums=$(jq -r '.active_projects[] | select(.status=="implementing") | .project_number' specs/state.json 2>/dev/null)
+  count=$(printf '%s\n' "$nums" | grep -c '^[0-9]\+$' || true)
+
+  if [ "$count" = "0" ]; then
+    echo "git-snapshot.sh: could not resolve a task directory." >&2
+    echo "  reason: no TASK argument was given and no task in specs/state.json has status \"implementing\", so there is nothing to infer" >&2
+    return 1
+  fi
+  if [ "$count" = "1" ]; then
+    local padded dir
+    padded=$(printf "%03d" "$nums")
+    dir=$(find specs -maxdepth 1 -type d -name "${padded}_*" 2>/dev/null | head -1)
+    if [ -n "$dir" ]; then
+      echo "$dir"
+      return 0
+    fi
+    echo "git-snapshot.sh: could not resolve a task directory." >&2
+    echo "  reason: inferred task $nums from specs/state.json, but no specs/${padded}_* directory exists" >&2
+    return 1
+  fi
+
+  echo "git-snapshot.sh: could not resolve a task directory." >&2
+  echo "  reason: no TASK argument was given and $count tasks are concurrently \"implementing\" ($(printf '%s' "$nums" | tr '\n' ' ' | sed 's/ *$//')), so inference is ambiguous" >&2
   return 1
 }
 
 TASK_DIR=$(resolve_task_dir "$TASK_ARG")
 if [ -z "$TASK_DIR" ] || [ ! -d "$TASK_DIR" ]; then
-  echo "git-snapshot.sh: could not resolve a task directory." >&2
-  echo "  Pass it explicitly: git-snapshot.sh [--branch] <task-number-or-specs-dir>" >&2
+  if [ -n "$TASK_DIR" ]; then
+    echo "git-snapshot.sh: could not resolve a task directory." >&2
+    echo "  reason: resolved to '$TASK_DIR', which is not a directory" >&2
+  fi
+  echo "  fix:    pass the task explicitly, in either form:" >&2
+  echo "            bash .claude/scripts/git-snapshot.sh <task-number>" >&2
+  echo "            bash .claude/scripts/git-snapshot.sh specs/<NNN>_<slug>" >&2
+  echo "  note:   the no-argument form only resolves when EXACTLY ONE task in" >&2
+  echo "          specs/state.json has status \"implementing\". Several tasks being in" >&2
+  echo "          flight at once is normal here, so the explicit form is the reliable one." >&2
+  echo "  modes:  the default and --branch modes REVERT the working tree; --no-revert does" >&2
+  echo "          not. Run 'bash .claude/scripts/git-snapshot.sh --help' for details." >&2
   exit 1
 fi
 

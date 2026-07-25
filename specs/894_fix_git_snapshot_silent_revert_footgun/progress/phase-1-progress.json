@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Usage block, --help, option rejection, and richer resolution diagnostics",
+  "started_at": "2026-07-25T08:30:00Z",
+  "last_updated": "2026-07-25T08:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-grep source store for --help/unrecognized flags", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Edit 1.1 marker contract UNTRACKED_BACKUP key", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 3, "description": "Edit 1.2 remove task-number citation on header line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 4, "description": "Edit 1.3 replace Usage block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 5, "description": "Edit 1.4 replace arg-parsing block with print_usage and mutual-exclusion check", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 6, "description": "Edit 1.5 replace resolve_task_dir() with stderr diagnostics", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 7, "description": "Edit 1.6 replace failure block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 8, "description": "bash -n passes", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
