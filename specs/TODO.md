@@ -11,13 +11,12 @@ next_project_number: 903
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,891,892,893,894 | -- | agent-system |
-| 2 | 887,895,896 | 873,891,892 | agent-system |
-| 3 | 897 | 895 | agent-system |
-| 4 | 898 | 897 | agent-system |
-| 5 | 900 | 898 | agent-system |
-| 6 | 901 | 900 | agent-system |
-| 7 | 902 | 901 | agent-system |
+| 1 | 873,885,892,893,894,895 | -- | agent-system |
+| 2 | 887,896,897 | 873,892,895 | agent-system |
+| 3 | 898 | 897 | agent-system |
+| 4 | 900 | 898 | agent-system |
+| 5 | 901 | 900 | agent-system |
+| 6 | 902 | 901 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -26,17 +25,16 @@ next_project_number: 903
 873 [PARTIAL] — Make /meta create tasks in the GLOBAL agent-system root by defaul
   └─ 887 [RESEARCHED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
-891 [IMPLEMENTING] — SEVERITY: HIGHEST of a six-defect batch observed in a single full
-  └─ 895 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
-    └─ 897 [NOT STARTED] — LOWER PRIORITY. Observed in the same full /orchestrate run (lean4
-      └─ 898 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-        └─ 900 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-          └─ 901 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-            └─ 902 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 892 [NOT STARTED] — SEVERITY: second-highest of a six-defect batch observed in a sing
   └─ 896 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
 893 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
 894 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
+895 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
+  └─ 897 [NOT STARTED] — LOWER PRIORITY. Observed in the same full /orchestrate run (lean4
+    └─ 898 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+      └─ 900 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+        └─ 901 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+          └─ 902 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ## Tasks
 
@@ -368,12 +366,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 891. Gate /orchestrate completed transition on phases_completed >= phases_total
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [891_gate_orchestrate_completion_on_phase_progress/reports/01_gate-completion-on-phase-progress.md]
 - **Plan**: [891_gate_orchestrate_completion_on_phase_progress/plans/01_gate-completion-on-phase-progress.md]
+- **Summary**: [891_gate_orchestrate_completion_on_phase_progress/summaries/01_gate-completion-on-phase-progress-summary.md]
 
 **Description**: SEVERITY: HIGHEST of a six-defect batch observed in a single full /orchestrate run (lean4 task, 8 implementation phases, 5 cycles, ~1.6M subagent tokens). Silent premature completion: an 8-phase task would have been marked COMPLETED at phase 4, silently abandoning half the work.
 
