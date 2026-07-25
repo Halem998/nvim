@@ -1,5 +1,5 @@
 ---
-next_project_number: 903
+next_project_number: 904
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 903
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,892,893,894,897 | -- | agent-system |
+| 1 | 873,885,892,893,894,897,903 | -- | agent-system |
 | 2 | 887,896,898 | 873,892,897 | agent-system |
 | 3 | 900 | 898 | agent-system |
 | 4 | 901 | 900 | agent-system |
@@ -33,8 +33,33 @@ next_project_number: 903
     └─ 900 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
       └─ 901 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
         └─ 902 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+903 [NOT STARTED] — Defense-in-depth backstop recommended by the research for the com
 
 ## Tasks
+
+### 903. Add an optional phase-accounting backstop to update-task-status.sh implement postflight
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Defense-in-depth backstop recommended by the research for the completed task that gated the /orchestrate implemented->completed transition on phase progress (task 891). That task deliberately scoped its fix to the SKILL layer only; this task is the script-layer follow-up it named.
+
+SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, UNTRACKED, DISPOSABLE deploy artifact regenerated from the source store by the <leader>al picker/loader. ALL edits MUST target agent-system/extensions/** and NEVER .claude/** -- a change written to .claude/ is silently wiped by the next regeneration.
+
+DEFECT: scripts/update-task-status.sh maps `postflight <N> implement` straight to STATE_STATUS="completed" (around line 154) with no phase awareness whatsoever, and additionally stamps the plan file's own Status field to [COMPLETED] via update_plan_file(). The phase gate added by task 891 lives ONLY in the two orchestrate SKILL.md files. Any other caller -- a different skill, a hand-run command, a future code path -- that invokes `update-task-status.sh postflight N implement` still flips a half-finished multi-phase task to completed unconditionally. The guard is currently one layer deep.
+
+MOTIVATING OBSERVATION (from the orchestrate run of task 895, worth reading before designing): the implementation agent wrote `phases_completed: null` and `phases_total: null` into .orchestrator-handoff.json even though its own .return-meta.json correctly recorded 6/6. Under the task-891 gate, null reads as 0, which takes the deliberate pass-through branch and completes the task. In that instance the work genuinely WAS complete so the outcome was correct, but it demonstrates that the skill-layer gate cannot protect against a handoff that simply omits the fields. A script-layer backstop that can consult evidence the handoff did not supply (e.g. the plan file's own checklist state) closes a gap the skill layer structurally cannot.
+
+DESIGN CONSTRAINT (the hard part): update-task-status.sh has NO phase-accounting parameters today and is called from many places. Any change MUST be backward compatible -- the recommendation from the task-891 research was OPTIONAL ADDITIVE FLAGS that default to a NO-OP, so every existing call site keeps its current behavior byte-for-byte. Do not make phase accounting a required argument. Research should determine what evidence the script can consult on its own (the plan file at specs/{NNN}_{SLUG}/plans/ is readable from the script and carries per-phase checkboxes and Status markers) versus what must be passed in by the caller, and recommend which.
+
+Decide explicitly whether the backstop REFUSES the transition (exit non-zero) or WARNS and proceeds. Refusing is stronger but risks breaking legitimate callers that have no phase accounting; warning is safe but may be ignored. Justify the choice rather than defaulting.
+
+RELATIONSHIP TO OTHER TASKS: task 898 (gate the implemented completion claim on phase evidence before postflight) addresses the same failure from the SKILL side -- verifying the agent's claim before calling postflight. This task is the independent script-side layer beneath it. They touch different files and are not sequenced; if both land, the guard is three layers deep (agent claim -> skill gate -> script backstop). No dependencies[] edge is declared because no open task shares this task's file_scope.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
 
 ### 902. Flag tasks that modify orchestrator machinery and force them to run alone
 - **Status**: [NOT STARTED]

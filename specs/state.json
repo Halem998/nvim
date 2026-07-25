@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 903,
+  "next_project_number": 904,
   "active_projects": [
     {
       "project_number": 891,
@@ -242,7 +242,7 @@
         }
       ],
       "updated": "2026-07-15T20:16:11Z",
-      "completion_summary": "Phases 1-4 complete and committed: replaced the || true silent-fail idiom at all 10 events-append.sh call sites with an observable non-fatal wrapper (fixed a real set -e abort bug in the process); added nullable cwd field to events-schema.json + threading, with repo derived at query time in events-query.sh; extended check-extension-docs.sh with an ADVISORY (non-blocking) core deploy-drift lane; added a source-store no-headless-regeneration note and a HANDOFF.md. Phases 5-6 BLOCKED: end-to-end verification needs a manual <leader>al Sync-all regeneration (no headless path exists — load_all_globally calls vim.fn.confirm, execute_sync is a module-local closure) in nvim plus one other repo, THEN accumulated real usage before event flow can be observed. OTel/cleanupPeriodDays (scope 3/4) handed off to ~/.dotfiles as a copy-pasteable snippet (cleanupPeriodDays: 365, never 0). See specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md."
+      "completion_summary": "Phases 1-4 complete and committed: replaced the || true silent-fail idiom at all 10 events-append.sh call sites with an observable non-fatal wrapper (fixed a real set -e abort bug in the process); added nullable cwd field to events-schema.json + threading, with repo derived at query time in events-query.sh; extended check-extension-docs.sh with an ADVISORY (non-blocking) core deploy-drift lane; added a source-store no-headless-regeneration note and a HANDOFF.md. Phases 5-6 BLOCKED: end-to-end verification needs a manual <leader>al Sync-all regeneration (no headless path exists \u2014 load_all_globally calls vim.fn.confirm, execute_sync is a module-local closure) in nvim plus one other repo, THEN accumulated real usage before event flow can be observed. OTel/cleanupPeriodDays (scope 3/4) handed off to ~/.dotfiles as a copy-pasteable snippet (cleanupPeriodDays: 365, never 0). See specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md."
     },
     {
       "project_number": 887,
@@ -393,6 +393,22 @@
       "created": "2026-07-24T00:00:00Z",
       "last_updated": "2026-07-24T00:00:00Z",
       "session_id": "sess_1784959496_6c4f8e_902",
+      "artifacts": []
+    },
+    {
+      "project_number": 903,
+      "project_name": "phase_accounting_backstop_in_update_task_status",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Add an optional phase-accounting backstop to update-task-status.sh implement postflight",
+      "description": "Defense-in-depth backstop recommended by the research for the completed task that gated the /orchestrate implemented->completed transition on phase progress (task 891). That task deliberately scoped its fix to the SKILL layer only; this task is the script-layer follow-up it named.\n\nSOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, UNTRACKED, DISPOSABLE deploy artifact regenerated from the source store by the <leader>al picker/loader. ALL edits MUST target agent-system/extensions/** and NEVER .claude/** -- a change written to .claude/ is silently wiped by the next regeneration.\n\nDEFECT: scripts/update-task-status.sh maps `postflight <N> implement` straight to STATE_STATUS=\"completed\" (around line 154) with no phase awareness whatsoever, and additionally stamps the plan file's own Status field to [COMPLETED] via update_plan_file(). The phase gate added by task 891 lives ONLY in the two orchestrate SKILL.md files. Any other caller -- a different skill, a hand-run command, a future code path -- that invokes `update-task-status.sh postflight N implement` still flips a half-finished multi-phase task to completed unconditionally. The guard is currently one layer deep.\n\nMOTIVATING OBSERVATION (from the orchestrate run of task 895, worth reading before designing): the implementation agent wrote `phases_completed: null` and `phases_total: null` into .orchestrator-handoff.json even though its own .return-meta.json correctly recorded 6/6. Under the task-891 gate, null reads as 0, which takes the deliberate pass-through branch and completes the task. In that instance the work genuinely WAS complete so the outcome was correct, but it demonstrates that the skill-layer gate cannot protect against a handoff that simply omits the fields. A script-layer backstop that can consult evidence the handoff did not supply (e.g. the plan file's own checklist state) closes a gap the skill layer structurally cannot.\n\nDESIGN CONSTRAINT (the hard part): update-task-status.sh has NO phase-accounting parameters today and is called from many places. Any change MUST be backward compatible -- the recommendation from the task-891 research was OPTIONAL ADDITIVE FLAGS that default to a NO-OP, so every existing call site keeps its current behavior byte-for-byte. Do not make phase accounting a required argument. Research should determine what evidence the script can consult on its own (the plan file at specs/{NNN}_{SLUG}/plans/ is readable from the script and carries per-phase checkboxes and Status markers) versus what must be passed in by the caller, and recommend which.\n\nDecide explicitly whether the backstop REFUSES the transition (exit non-zero) or WARNS and proceeds. Refusing is stronger but risks breaking legitimate callers that have no phase accounting; warning is safe but may be ignored. Justify the choice rather than defaulting.\n\nRELATIONSHIP TO OTHER TASKS: task 898 (gate the implemented completion claim on phase evidence before postflight) addresses the same failure from the SKILL side -- verifying the agent's claim before calling postflight. This task is the independent script-side layer beneath it. They touch different files and are not sequenced; if both land, the guard is three layers deep (agent claim -> skill gate -> script backstop). No dependencies[] edge is declared because no open task shares this task's file_scope.\n\nHonor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/update-task-status.sh"
+      ],
+      "created": "2026-07-25T14:56:12Z",
+      "last_updated": "2026-07-25T14:56:12Z",
       "artifacts": []
     }
   ],
