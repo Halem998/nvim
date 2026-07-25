@@ -288,26 +288,40 @@ manual run before Phase 2 was marked complete.
 
 ---
 
-### Phase 3: Surface the Flag in the Dry-Run Report [NOT STARTED]
+### Phase 3: Surface the Flag in the Dry-Run Report [COMPLETED]
 
 **Goal**: `/orchestrate --dry-run` shows the self-modifying flag with a plain-language reason, and
 the report cannot drift from the live decision because it composes the same predicate.
 
 **Tasks**:
-- [ ] Pass `--invocation-count "${#validated_tasks[@]}"` on the existing single
-      `orchestrate-batch-admit.sh` call in Step 4 of the report composer.
-- [ ] Branch on `defer_reason`: `self_modifying` becomes an **exclusion** with a plain-language
+- [x] Pass `--invocation-count "${#validated_tasks[@]}"` on the existing single
+      `orchestrate-batch-admit.sh` call in Step 4 of the report composer. *(completed)*
+- [x] Branch on `defer_reason`: `self_modifying` becomes an **exclusion** with a plain-language
       reason naming the matched critical path, its label, and the solo-only rule (explicitly
       "deferred out of this invocation — re-run it alone", so a reader does not mistake it for a
       wave deferral); `file_scope_collision` retains today's exact in_batch/cross_batch behavior.
-- [ ] When a candidate is admitted with `self_modifying: true` (solo invocation), add a Note line
+      *(completed)*
+- [x] When a candidate is admitted with `self_modifying: true` (solo invocation), add a Note line
       stating it is orchestrator-critical and admitted only because this invocation carries one
-      candidate.
-- [ ] Add a `self-modification: ran | SKIPPED (degraded: ...)` line to the "Checks run" section,
+      candidate. *(completed)*
+- [x] Add a `self-modification: ran | SKIPPED (degraded: ...)` line to the "Checks run" section,
       driven by `self_modifying == null` on any verdict (D5), keeping the section's existing
-      one-line-per-check shape.
-- [ ] Update the script header's Composition list (step 4) to name the new dimension and the
+      one-line-per-check shape. *(completed: fixed a `// "null"` jq pitfall found during manual
+      verification — see deviation note below)*
+- [x] Update the script header's Composition list (step 4) to name the new dimension and the
       exclusion semantics; do not restate the schema (reference the schema doc by path).
+      *(completed)*
+
+**Deviation (bug found and fixed during manual verification, not in the original task list)**:
+the first implementation read `self_mod=$(echo "$verdict" | jq -r '.self_modifying // "null"')`.
+jq's `//` operator treats a literal `false` as falsy, so a valid, non-degraded
+`self_modifying: false` verdict was misread as the degraded "null" case, making the
+"self-modification" Checks-run line print `SKIPPED (degraded: ...)` on every ordinary
+(non-self-modifying) run even though the check had actually run correctly. Fixed by switching to
+`jq -c '.self_modifying'` (compact, no `//` fallback), which passes through the literal
+`true`/`false`/`null` token unchanged. Verified via a scratch-deploy-tree manual run confirming
+`self-modification: ran` for an ordinary candidate and `SKIPPED (degraded: ...)` only when the
+critical-paths data file is actually absent.
 
 **Timing**: 1 hour
 

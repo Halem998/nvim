@@ -1,0 +1,56 @@
+{
+  "phase": 3,
+  "phase_name": "Surface the Flag in the Dry-Run Report",
+  "started_at": "2026-07-25T00:50:00Z",
+  "last_updated": "2026-07-25T01:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Pass --invocation-count on the admit call",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Branch on defer_reason for self_modifying vs file_scope_collision exclusions",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Add solo-admit Note line",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Add self-modification Checks-run line",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Update header Composition list",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh"]
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {
+      "approach": "self_mod=$(jq -r '.self_modifying // \"null\"')",
+      "result": "failed",
+      "reason": "jq's // treats literal false as falsy, misreading a valid self_modifying:false verdict as degraded null. Fixed with jq -c '.self_modifying' (no // fallback)."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.4",
+      "description": "self_mod degraded-detection implementation detail",
+      "type": "altered",
+      "reason": "Bug found during manual scratch-tree verification; fixed before marking phase complete.",
+      "annotation": "*(deviation: altered — fixed jq // false-is-falsy bug, see plan note)*"
+    }
+  ]
+}
