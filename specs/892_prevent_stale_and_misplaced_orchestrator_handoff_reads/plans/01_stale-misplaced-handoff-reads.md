@@ -846,7 +846,7 @@ bullet that is the literal text the lean phase agent receives.
 
 ---
 
-### Phase 7: Staleness gate and stray-handoff sweep in both orchestrators [NOT STARTED]
+### Phase 7: Staleness gate and stray-handoff sweep in both orchestrators [COMPLETED]
 
 **Goal**: At read time, refuse to trust a handoff that predates the current dispatch window, and
 detect a misplaced handoff regardless of which mechanism wrote it.
@@ -862,7 +862,7 @@ skill, `[hard-orchestrate]` in the hard skill).
 
 **Tasks**:
 
-- [ ] **Edit 7a — base skill, insert the gate before the existing branch.** In Stage 5, locate
+- [x] **Edit 7a — base skill, insert the gate before the existing branch.** In Stage 5, locate
   (advisory ~line 445):
   ```bash
   # Reset the per-cycle exemption flag before any branch can set it.
@@ -925,7 +925,7 @@ skill, `[hard-orchestrate]` in the hard skill).
   if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
   ```
 
-- [ ] **Edit 7b — base skill, make the branch message accurate for both cases.** Immediately
+- [x] **Edit 7b — base skill, make the branch message accurate for both cases.** Immediately
   inside that branch, locate:
   ```bash
     echo "[orchestrate] ERROR: Skill did not write orchestrator handoff."
@@ -944,7 +944,7 @@ skill, `[hard-orchestrate]` in the hard skill).
   branch exactly as it is — it is a harmless idempotent re-assignment and rewriting it risks
   disturbing the infra-failure logic, which is not in scope.
 
-- [ ] **Edit 7c — hard skill, same two blocks.** Apply Edits 7a and 7b to
+- [x] **Edit 7c — hard skill, same two blocks.** Apply Edits 7a and 7b to
   `skill-orchestrate-hard/SKILL.md` at its analogous Stage 5 block (advisory ~line 680), anchored
   on the identical quoted text:
   ```bash
