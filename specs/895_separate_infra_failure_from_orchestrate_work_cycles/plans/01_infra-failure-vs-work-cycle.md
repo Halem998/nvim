@@ -385,14 +385,14 @@ installed before the thing it bounds.
 
 ---
 
-### Phase 3: Base Stage 5 discrimination branch [NOT STARTED]
+### Phase 3: Base Stage 5 discrimination branch [COMPLETED]
 
 **Goal**: Replace `skill-orchestrate/SKILL.md`'s unconditional missing-handoff cycle charge with the
 two-signal branch, and make the `cycle_count` increment conditional.
 
 **Tasks**:
-- [ ] Re-verify the anchor: `grep -n 'Skill did not write orchestrator handoff' agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`
-- [ ] Replace this exact block (currently ~lines 374-379):
+- [x] Re-verify the anchor: `grep -n 'Skill did not write orchestrator handoff' agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`
+- [x] Replace this exact block (currently ~lines 374-379):
       ```bash
       if [ ! -f "$handoff_file" ]; then
         echo "[orchestrate] ERROR: Skill did not write orchestrator handoff."
@@ -442,7 +442,7 @@ two-signal branch, and make the `cycle_count` increment conditional.
         fi
       else
       ```
-- [ ] Replace the unconditional increment at the end of Stage 5 (currently ~lines 461-462):
+- [x] Replace the unconditional increment at the end of Stage 5 (currently ~lines 461-462):
       ```bash
       # Increment cycle_count
       cycle_count=$((cycle_count + 1))
@@ -459,7 +459,7 @@ two-signal branch, and make the `cycle_count` increment conditional.
         cycle_count=$((cycle_count + 1))
       fi
       ```
-- [ ] Confirm the `implemented)` phase-completion gate block and its comment are untouched by these
+- [x] Confirm the `implemented)` phase-completion gate block and its comment are untouched by these
       edits (they sit between the two replacement sites).
 
 **Timing**: 1 hour

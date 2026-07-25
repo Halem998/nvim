@@ -443,10 +443,44 @@ After every Agent tool invocation, read the orchestrator handoff to learn the ou
 Never read the full research report, plan, or implementation summary — only the handoff.
 
 ```bash
+# Reset the per-cycle exemption flag before any branch can set it.
+infra_exempt_cycle=false
+
 if [ ! -f "$handoff_file" ]; then
   echo "[orchestrate] ERROR: Skill did not write orchestrator handoff."
   echo "This may mean orchestrator_mode was not propagated correctly."
-  # Increment cycle and continue — state.json may still have been updated
+
+  # Infra-failure discrimination — see context/patterns/infra-failure-discrimination.md.
+  # TWO corroborating signals are required to exempt this cycle from the work-cycle budget:
+  #   (a) dispatch_was_transport_error — narrated judgment about the Agent tool call itself,
+  #       set at the dispatch site in Stage 4;
+  #   (b) meta_touched — mechanical check of whether the subagent's own Stage 0
+  #       early-metadata write landed inside this dispatch window.
+  # Either signal alone DEFAULTS TO CHARGING a genuine cycle. The defaults below are chosen
+  # so a dispatch site that forgot to set its variables also falls back to charging.
+  # Do not weaken the AND below into an OR or a fallthrough.
+  meta_file="${TASK_DIR}/.return-meta.json"
+  window_start="${dispatch_start_ts:-9999999999}"
+  meta_mtime=$(stat -c %Y "$meta_file" 2>/dev/null || stat -f %m "$meta_file" 2>/dev/null || echo 0)
+  if [ "$meta_mtime" -ge "$window_start" ]; then
+    meta_touched=true
+  else
+    meta_touched=false
+  fi
+
+  if [ "${dispatch_was_transport_error:-false}" = "true" ] && [ "$meta_touched" = "false" ]; then
+    # Corroborated infra failure: the Agent tool call failed at the transport/API layer AND
+    # the subagent left no footprint at all. Charge infra_failures, never cycle_count.
+    infra_failures=$((infra_failures + 1))
+    jq --argjson infra "$infra_failures" \
+       --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+      '.infra_failures = $infra | .last_updated = $updated' \
+      "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+    echo "[orchestrate] INFRA FAILURE $infra_failures/$MAX_INFRA_FAILURES — Agent tool transport/API failure with no subagent footprint. Not charged against MAX_CYCLES." >&2
+    infra_exempt_cycle=true
+  else
+    echo "[orchestrate] Missing handoff charged as a genuine work cycle (transport_error=${dispatch_was_transport_error:-false}, meta_touched=$meta_touched)." >&2
+  fi
 else
   handoff=$(cat "$handoff_file")
   dispatch_status=$(echo "$handoff" | jq -r '.status')
@@ -529,8 +563,15 @@ else
   fi
 fi
 
-# Increment cycle_count
-cycle_count=$((cycle_count + 1))
+# Increment cycle_count — skipped ONLY for a corroborated infra failure, which is separately
+# bounded by MAX_INFRA_FAILURES (Stage 7). Every iteration charges exactly one of the two
+# counters; both are capped, so worst-case iterations per invocation are
+# MAX_CYCLES + MAX_INFRA_FAILURES.
+if [ "$infra_exempt_cycle" = "true" ]; then
+  echo "[orchestrate] Cycle not charged (infra failure). cycle_count remains $cycle_count/$MAX_CYCLES." >&2
+else
+  cycle_count=$((cycle_count + 1))
+fi
 ```
 
 ---
