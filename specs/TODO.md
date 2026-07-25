@@ -97,6 +97,7 @@ WHY DELEGATION, NOT REORDERING: reordering zotero-setup.sh's candidate list woul
 
 NON-GOALS (verified; do not drift into these):
 - Do NOT rewrite or "fix" scripts/zotero-resolve-sqlite-path.sh. It is correct. Invoked directly it returns /home/benjamin/Documents/Zotero/zotero.sqlite; it parses ~/.zotero/zotero/pmqmra0p.default/prefs.js, honours extensions.zotero.useDataDir / dataDir, and correctly does NOT fall through to the historical ${HOME}/Zotero default. Its 3-tier ladder is sound.
+- Do NOT auto-regenerate the zotero-library.json export without user consent. zotero-generate-export.sh is deliberately an ASSISTED generator; --force stays opt-in. This task should not touch the export at all, but the guard is recorded here so a resolver fix does not grow into one.
 - Do NOT delete, migrate, or otherwise touch ~/Zotero. It is the user's data and out of scope.
 
 VERIFICATION: on a machine with both ~/Zotero and a custom dataDir configured, `zotero-setup.sh --detect` must print the resolved custom data directory, and literature-audit.sh must probe the resolved storage directory. Both must agree with `zotero-resolve-sqlite-path.sh` output. Note that the resolver performs no existence check on its result, so both callers keep their own file/directory probes on the resolved path.
