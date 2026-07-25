@@ -425,7 +425,7 @@ therefore must tell the agent to **delete the stray and rewrite at the correct a
 
 ---
 
-### Phase 3: Core hard-mode write instructions state the absolute path [NOT STARTED]
+### Phase 3: Core hard-mode write instructions state the absolute path [COMPLETED]
 
 **Goal**: Every core-extension instruction that tells an agent to write the handoff names an
 absolute anchor, and `skill-implementer-hard` supplies that anchor in its delegation context.
@@ -439,7 +439,7 @@ absolute anchor, and `skill-implementer-hard` supplies that anchor in its delega
 
 **Tasks**:
 
-- [ ] **Edit 3a — `wrap-up.md`.** Locate (advisory ~line 14, under `## Orchestrator Handoff JSON
+- [x] **Edit 3a — `wrap-up.md`.** Locate (advisory ~line 14, under `## Orchestrator Handoff JSON
   Schema`):
   ```
   Every hard-mode implementation dispatch MUST write `.orchestrator-handoff.json` before
@@ -470,7 +470,7 @@ absolute anchor, and `skill-implementer-hard` supplies that anchor in its delega
   Required fields:
   ```
 
-- [ ] **Edit 3b — `general-implementation-hard-agent.md`.** Locate (advisory ~line 253):
+- [x] **Edit 3b — `general-implementation-hard-agent.md`.** Locate (advisory ~line 253):
   ```
   **Step 1: Write `.orchestrator-handoff.json`**
 
@@ -493,7 +493,7 @@ absolute anchor, and `skill-implementer-hard` supplies that anchor in its delega
   Always write this file, even on successful completion:
   ```
 
-- [ ] **Edit 3c — `skill-implementer-hard/SKILL.md`, absolute task dir.** Locate (advisory
+- [x] **Edit 3c — `skill-implementer-hard/SKILL.md`, absolute task dir.** Locate (advisory
   ~line 129):
   ```
     task_dir="specs/${padded_num}_${project_name}"
@@ -509,7 +509,7 @@ absolute anchor, and `skill-implementer-hard` supplies that anchor in its delega
     handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"
   ```
 
-- [ ] **Edit 3d — `skill-implementer-hard/SKILL.md`, delegation context.** Locate (advisory
+- [x] **Edit 3d — `skill-implementer-hard/SKILL.md`, delegation context.** Locate (advisory
   ~line 221) in the delegation-context JSON block:
   ```
     "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"
@@ -521,7 +521,7 @@ absolute anchor, and `skill-implementer-hard` supplies that anchor in its delega
     "handoff_path": "{handoff_path_abs — ABSOLUTE path the agent MUST write its handoff to}"
   ```
 
-- [ ] **Edit 3e — `skill-implementer-hard/SKILL.md`, dispatch prompt.** Locate (advisory ~line 243)
+- [x] **Edit 3e — `skill-implementer-hard/SKILL.md`, dispatch prompt.** Locate (advisory ~line 243)
   in Stage 5:
   ```
     - prompt: [task_context, delegation_context, format specification, memory_context, lit_context]

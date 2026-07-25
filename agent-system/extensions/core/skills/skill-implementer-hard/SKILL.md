@@ -127,6 +127,11 @@ dispatching the whole plan:
 ```bash
 if [ "$orchestrator_mode" = "true" ]; then
   task_dir="specs/${padded_num}_${project_name}"
+  # Absolute anchor handed to the dispatched agent so it never has to resolve a bare filename
+  # against the ambient working directory. SKILL_REPO_ROOT is exported by skill-base.sh when
+  # sourced; $(pwd) is a last-resort fallback for direct invocation.
+  task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/specs/${padded_num}_${project_name}"
+  handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"
   # Fixed: was the un-scoped "specs/.orchestrator-handoff.json" (collided across tasks and
   # didn't match skill-orchestrate-hard's own TASK_DIR-scoped path). Now scoped per task,
   # matching skill-orchestrate-hard/SKILL.md:131 (`${TASK_DIR}/.orchestrator-handoff.json`).
@@ -218,7 +223,9 @@ Ladder), and territory params (when applicable):
   "phase_number": "{next_phase when orchestrator_mode=true, null otherwise}",
   "territory": "{territory params from orchestrate-hard dispatch, null if not provided}",
   "orchestrator_mode": "{orchestrator_mode}",
-  "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"
+  "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json",
+  "task_dir": "{task_dir_abs — ABSOLUTE path to the task directory}",
+  "handoff_path": "{handoff_path_abs — ABSOLUTE path the agent MUST write its handoff to}"
 }
 ```
 
@@ -243,6 +250,10 @@ Parameters:
   - prompt: [task_context, delegation_context, format specification, memory_context, lit_context]
   - description: "Execute hard-mode implementation for task {N} phase {next_phase}"
 ```
+
+The prompt MUST state the handoff destination explicitly, not leave it to the agent to infer:
+"Write your orchestrator handoff to the ABSOLUTE path `{handoff_path_abs}`. Never write a bare
+`.orchestrator-handoff.json` filename."
 
 If `lit_context` is non-empty, inject it as a `<literature-briefing>` block after the memory context and before the task-specific instructions.
 

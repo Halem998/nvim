@@ -250,7 +250,17 @@ Set `plan_markers_verified: true` in `.orchestrator-handoff.json` when Stage 5a 
 
 After all assigned phases complete (or on context pressure), execute H9 wrap-up:
 
-**Step 1: Write `.orchestrator-handoff.json`**
+**Step 1: Write the orchestrator handoff**
+
+Write to the ABSOLUTE path given in your delegation context as `handoff_path`. If that field is
+absent, use `{task_dir}/.orchestrator-handoff.json` with the absolute `task_dir` from your
+delegation context. If neither field is present, STOP and say so in your final message rather
+than guessing.
+
+NEVER write a bare `.orchestrator-handoff.json` filename. It resolves against the ambient
+working directory at Write-tool-call time and strands the handoff outside the task directory,
+where the orchestrator will instead read the previous cycle's leftover file. See
+`context/contracts/wrap-up.md`, "Write location", for the full rule.
 
 Always write this file, even on successful completion:
 ```json

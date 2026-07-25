@@ -439,9 +439,83 @@ case "$current_status" in
     fi
     ;;
 
+  not_started)
+    check_plan_state_divergence
+    # Case (a): a plan exists and postdates the last recorded status write. The planning
+    # postflight was lost mid-run -- replay it and promote not_started -> planned.
+    plan_file=$(find_latest_artifact "plans")
+    if [[ -n "$plan_file" ]] && artifact_newer_than_last_update "$plan_file"; then
+      # Handoff-aware promotion guard (see handoff_permits_promotion above). Note this guard is
+      # near-pass-through in standard mode -- .orchestrator-handoff.json is written only by
+      # hard-mode dispatch paths -- so it is NOT what disambiguates a recovered task from a
+      # stranded one. That is artifact_newer_than_last_update's job, above.
+      if ! handoff_permits_promotion "planned"; then
+        handoff_status=$(handoff_status_value)
+        echo "[reconcile] Task $task_number: status=not_started, plan exists but handoff status=$handoff_status — refusing promotion"
+        record_refused_promotion "$handoff_status"
+        exit 0
+      fi
+
+      plan_basename=$(basename "$plan_file")
+      if [[ "$DRY_RUN" == "true" ]]; then
+        echo "[reconcile] Task $task_number: status=not_started, found plan $plan_basename"
+        echo "[reconcile] Would promote: not_started -> planned via postflight plan"
+        link_artifact "$plan_file" "plan" "Implementation plan: $plan_basename"
+      else
+        echo "[reconcile] Task $task_number: status=not_started but plan exists ($plan_basename) — replaying postflight"
+        link_artifact "$plan_file" "plan" "Implementation plan: $plan_basename"
+        "$SCRIPT_DIR/update-task-status.sh" postflight "$task_number" "plan" "$session_id"
+        echo "[reconcile] Task $task_number: promoted not_started -> planned"
+      fi
+      exit 0
+    fi
+
+    # Case (b), defense in depth: no fresh plan, but handoffs/ holds a phase handoff that
+    # postdates the last status write, so an implementation run started and died. Promote to
+    # `partial`, never `implementing`: `implementing` asserts work is underway right now, while a
+    # cold reconcile pass finding a stalled run is exactly status-markers.md's "implementation
+    # partially completed (can resume)". `partial` is also what record_refused_promotion and the
+    # `partial` branch above already treat as the resting state for this situation, and the
+    # permissive-transition rule lets /implement pick it up unchanged on the next dispatch.
+    handoff_dir="${TASK_DIR}/handoffs"
+    if [[ -d "$handoff_dir" ]]; then
+      # `|| true` for the same pipefail reason documented on find_latest_artifact above: an
+      # existing-but-empty directory leaves the glob unexpanded and makes `ls` exit non-zero.
+      # `ls -1t` rather than the `sort -V` used there, because the question here is strictly
+      # "is any handoff newer than last_updated" -- an mtime question, not a filename-order one.
+      latest_handoff=$(ls -1t "${handoff_dir}/"*.md 2>/dev/null | head -1 || true)
+      if [[ -n "$latest_handoff" ]] && artifact_newer_than_last_update "$latest_handoff"; then
+        if ! handoff_permits_promotion "partial"; then
+          handoff_status=$(handoff_status_value)
+          echo "[reconcile] Task $task_number: status=not_started, handoffs/ non-empty but handoff status=$handoff_status — refusing promotion"
+          record_refused_promotion "$handoff_status"
+          exit 0
+        fi
+
+        handoff_basename=$(basename "$latest_handoff")
+        if [[ "$DRY_RUN" == "true" ]]; then
+          echo "[reconcile] Task $task_number: status=not_started, found phase handoff $handoff_basename"
+          echo "[reconcile] Would promote: not_started -> partial via postflight partial"
+        else
+          echo "[reconcile] Task $task_number: status=not_started but phase handoff exists ($handoff_basename) — replaying postflight"
+          "$SCRIPT_DIR/update-task-status.sh" postflight "$task_number" "partial" "$session_id"
+          echo "[reconcile] Task $task_number: promoted not_started -> partial"
+        fi
+        exit 0
+      fi
+    fi
+
+    # Nothing newer than last_updated: either a genuinely new task, or one deliberately reset
+    # (Recover Mode in commands/task.md) with its old artifacts intact. not_started is the
+    # correct resting state in both cases -- no-op.
+    if [[ "$DRY_RUN" == "true" ]]; then
+      echo "[reconcile] Task $task_number: status=not_started, no artifact newer than last_updated — no-op"
+    fi
+    ;;
+
   *)
-    # All other statuses (not_started, researched, planned, completed, blocked, abandoned, expanded)
-    # are either terminal or already at a stable state — no-op
+    # All other statuses (researched, planned, completed, blocked, abandoned, expanded) are
+    # either terminal or already at a stable state — no-op
     exit 0
     ;;
 esac

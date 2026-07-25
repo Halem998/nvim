@@ -11,8 +11,27 @@ STANDARD mode never loads this file.
 
 ## Orchestrator Handoff JSON Schema
 
-Every hard-mode implementation dispatch MUST write `.orchestrator-handoff.json` before
-terminating. Maximum 400 tokens. Required fields:
+Every hard-mode implementation dispatch MUST write the orchestrator handoff before
+terminating. Maximum 400 tokens.
+
+### Write location — absolute path, never a bare filename
+
+Write to the ABSOLUTE path supplied in your delegation context as `handoff_path`. If
+`handoff_path` is absent, use `{task_dir}/.orchestrator-handoff.json` with the absolute
+`task_dir` from your delegation context. If BOTH are absent, STOP and report the missing
+anchor in your final message — do not guess.
+
+A bare `.orchestrator-handoff.json` filename resolves against whatever the ambient working
+directory happens to be when the Write tool runs. The file then lands outside the task
+directory, and the orchestrator either sees no handoff or reads the PREVIOUS cycle's leftover
+and reports its status as this dispatch's result. That silent wrong-answer failure is worse
+than a missing handoff.
+
+A `PostToolUse` hook (`hooks/validate-handoff-location.sh`) rejects Write/Edit calls whose
+destination is not `specs/{NNN}_{SLUG}/.orchestrator-handoff.json`. Treat that rejection as a
+hard error: delete the stray file, then rewrite at the correct absolute path.
+
+Required fields:
 
 ```json
 {

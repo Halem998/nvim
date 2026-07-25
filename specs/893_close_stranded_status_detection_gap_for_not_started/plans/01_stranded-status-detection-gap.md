@@ -264,15 +264,15 @@ artifact_newer_than_last_update() {
 
 ---
 
-### Phase 2: Add the `not_started)` dispatch branch [NOT STARTED]
+### Phase 2: Add the `not_started)` dispatch branch [COMPLETED]
 
 **Goal**: Wire the two promotion cases into the dispatch and stop claiming `not_started` is
 unconditionally a no-op.
 
 **Tasks**:
 
-- [ ] Apply Edit 2 below to the same source-store file.
-- [ ] Run `bash -n` on the file.
+- [x] Apply Edit 2 below to the same source-store file. *(completed)*
+- [x] Run `bash -n` on the file. *(completed: exits 0)*
 
 **Edit 2 — new case plus catch-all comment.** Locate this exact block at the end of the `case`
 statement:
