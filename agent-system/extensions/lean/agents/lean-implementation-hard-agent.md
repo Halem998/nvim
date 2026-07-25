@@ -256,7 +256,17 @@ Monitor for context pressure:
 
 After all assigned phases complete (or on context pressure), execute H9 wrap-up:
 
-**Step 1: Write `.orchestrator-handoff.json`** (always, even on success):
+**Step 1: Write the orchestrator handoff** (always, even on success):
+
+Write to the ABSOLUTE path given in your delegation context as `handoff_path`. If that field is
+absent, use `{task_dir}/.orchestrator-handoff.json` with the absolute `task_dir` from your
+delegation context. If neither is present, STOP and say so in your final message rather than
+guessing.
+
+NEVER write a bare `.orchestrator-handoff.json` filename. It resolves against the ambient
+working directory at Write-tool-call time and strands the handoff outside the task directory,
+where the orchestrator will read the previous cycle's leftover file instead. See
+`context/contracts/wrap-up.md`, "Write location", for the full rule.
 
 ```json
 {

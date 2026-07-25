@@ -95,6 +95,10 @@ Find the latest plan file and identify the next incomplete phase for per-phase d
 ```bash
 # Find latest plan
 padded_num=$(printf "%03d" "$task_number")
+# Absolute anchor handed to the dispatched agent. SKILL_REPO_ROOT is exported by skill-base.sh
+# when sourced; $(pwd) is a last-resort fallback for direct invocation.
+task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/specs/${padded_num}_${project_name}"
+handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"
 plan_file=$(ls "specs/${padded_num}_${project_name}/plans/"*.md 2>/dev/null | sort -V | tail -1)
 
 if [ -z "$plan_file" ]; then
@@ -110,7 +114,7 @@ next_phase=$(grep -n "### Phase [0-9]*:.*\[NOT STARTED\]\|### Phase [0-9]*:.*\[I
 phase_number=$(echo "$next_phase" | grep -oP "Phase \K[0-9]+")
 
 # Read handoff for per-phase dispatch context (territory, continuation_context)
-handoff_file=$(ls "specs/${padded_num}_${project_name}/.orchestrator-handoff.json" 2>/dev/null | head -1)
+handoff_file=$(ls "${handoff_path_abs}" 2>/dev/null | head -1)
 territory=null
 continuation_context=null
 
@@ -145,7 +149,9 @@ Prepare delegation context for the subagent with per-phase dispatch parameters:
   "phase_number": {N_or_null},
   "territory": {territory_or_null},
   "continuation_context": {continuation_context_or_null},
-  "metadata_file_path": "specs/{N}_{SLUG}/.return-meta.json"
+  "metadata_file_path": "specs/{N}_{SLUG}/.return-meta.json",
+  "task_dir": "{ABSOLUTE path to the task directory}",
+  "handoff_path": "{ABSOLUTE path the agent MUST write its handoff to}"
 }
 ```
 
@@ -162,7 +168,7 @@ Parameters:
   - subagent_type: "lean-implementation-hard-agent"
   - model: "opus"
   - prompt: [Include task_context, delegation_context, plan_path, phase_number,
-             territory, continuation_context, metadata_file_path]
+             territory, continuation_context, metadata_file_path, handoff_path]
   - description: "Execute hard-mode Lean implementation for task {N} phase {P}"
 ```
 
@@ -175,7 +181,8 @@ The subagent will:
 - Use lean_goal before and after each tactic application
 - Use lean_multi_attempt before applying edits
 - Run final verification (sorry check, axiom check, lake build)
-- Write `.orchestrator-handoff.json` with sorry_inventory
+- Write the orchestrator handoff (with sorry_inventory) to the ABSOLUTE path given as
+  `handoff_path` in the delegation context — never a bare `.orchestrator-handoff.json` filename
 - Create implementation summary
 - Write metadata to `specs/{N}_{SLUG}/.return-meta.json`
 - Return a brief text summary (NOT JSON)
@@ -254,7 +261,7 @@ fi
 After agent returns, propagate sorry_inventory to `.orchestrator-handoff.json`:
 
 ```bash
-handoff_file="specs/${padded_num}_${project_name}/.orchestrator-handoff.json"
+handoff_file="${handoff_path_abs}"
 
 if [ -f "$handoff_file" ] && jq empty "$handoff_file" 2>/dev/null; then
     # Merge with previous sorry_inventory (prev + new — resolved)

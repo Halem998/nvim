@@ -551,7 +551,7 @@ absolute anchor, and `skill-implementer-hard` supplies that anchor in its delega
 
 ---
 
-### Phase 4: Lean hard-mode write instructions state the absolute path [NOT STARTED]
+### Phase 4: Lean hard-mode write instructions state the absolute path [COMPLETED]
 
 **Goal**: Same fix as Phase 3, applied to the lean extension — including the dispatch-prompt
 bullet that is the literal text the lean phase agent receives.
@@ -564,7 +564,7 @@ bullet that is the literal text the lean phase agent receives.
 
 **Tasks**:
 
-- [ ] **Edit 4a — `lean-implementation-hard-agent.md`.** Locate (advisory ~line 259):
+- [x] **Edit 4a — `lean-implementation-hard-agent.md`.** Locate (advisory ~line 259):
   ```
   **Step 1: Write `.orchestrator-handoff.json`** (always, even on success):
   ```
@@ -583,7 +583,7 @@ bullet that is the literal text the lean phase agent receives.
   `context/contracts/wrap-up.md`, "Write location", for the full rule.
   ```
 
-- [ ] **Edit 4b — `skill-lean-implementation-hard/SKILL.md`, dispatch bullet.** This is the
+- [x] **Edit 4b — `skill-lean-implementation-hard/SKILL.md`, dispatch bullet.** This is the
   load-bearing one: it is the literal text injected into the Agent-tool `prompt`. Locate
   (advisory ~line 178):
   ```
@@ -595,7 +595,7 @@ bullet that is the literal text the lean phase agent receives.
     `handoff_path` in the delegation context — never a bare `.orchestrator-handoff.json` filename
   ```
 
-- [ ] **Edit 4c — `skill-lean-implementation-hard/SKILL.md`, delegation context.** Locate
+- [x] **Edit 4c — `skill-lean-implementation-hard/SKILL.md`, delegation context.** Locate
   (advisory ~line 148):
   ```
     "metadata_file_path": "specs/{N}_{SLUG}/.return-meta.json"
@@ -607,7 +607,7 @@ bullet that is the literal text the lean phase agent receives.
     "handoff_path": "{ABSOLUTE path the agent MUST write its handoff to}"
   ```
 
-- [ ] **Edit 4d — `skill-lean-implementation-hard/SKILL.md`, resolve the absolute anchor.** Locate
+- [x] **Edit 4d — `skill-lean-implementation-hard/SKILL.md`, resolve the absolute anchor.** Locate
   (advisory ~line 97):
   ```
   padded_num=$(printf "%03d" "$task_number")
@@ -620,7 +620,7 @@ bullet that is the literal text the lean phase agent receives.
   handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"
   ```
 
-- [ ] **Edit 4e — `skill-lean-implementation-hard/SKILL.md`, read sites.** Locate (advisory
+- [x] **Edit 4e — `skill-lean-implementation-hard/SKILL.md`, read sites.** Locate (advisory
   ~line 113):
   ```
   handoff_file=$(ls "specs/${padded_num}_${project_name}/.orchestrator-handoff.json" 2>/dev/null | head -1)
@@ -640,7 +640,7 @@ bullet that is the literal text the lean phase agent receives.
   Leave the occurrence in the artifact/staging path list (advisory ~line 328) as a relative path —
   those entries are repo-relative by design.
 
-- [ ] **Edit 4f — dispatch prompt.** Locate (advisory ~line 164):
+- [x] **Edit 4f — dispatch prompt.** Locate (advisory ~line 164):
   ```
     - prompt: [Include task_context, delegation_context, plan_path, phase_number,
                territory, continuation_context, metadata_file_path]
