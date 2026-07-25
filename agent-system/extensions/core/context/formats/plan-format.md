@@ -77,6 +77,14 @@ follow-up tasks created to discharge those division points. Both fields are popu
   - **Owner:** (optional)
   - **Started/Completed/Blocked/Abandoned:** timestamp lines when status changes (ISO8601). Do not leave null placeholders.
 
+**Consumers of this heading contract**: the exact `### Phase N: {name} [STATUS]` shape above is
+parsed by three independent mechanisms, so a future change to the format must account for all
+three: `update-phase-status.sh` (mutates a single phase's status in place), `update-plan-status.sh`
+(the plan-level status-field equivalent), and `update-task-status.sh`'s opt-in `--phase-check`
+backstop (counts conforming headings across the whole plan to decide whether an implement
+postflight transition may proceed). All three treat this heading — never the `- [ ]`/`- [x]`
+task checklist — as the authoritative phase-completion signal.
+
 ## Dependency Analysis (format)
 
 Place a **Dependency Analysis** wave table immediately after `## Implementation Phases` and before the first `### Phase`. Columns: **Wave** (execution order), **Phases** (can run in parallel within wave), **Blocked by** (prerequisite phases, `--` for none). Generate from per-phase `Depends on` fields. For fully sequential plans, each wave contains one phase.
