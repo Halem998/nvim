@@ -588,7 +588,7 @@ forever.
 
 ---
 
-### Phase 5: Hard-mode variant — Stage 2, Stage 4, Stage 5, Stage 7 [NOT STARTED]
+### Phase 5: Hard-mode variant — Stage 2, Stage 4, Stage 5, Stage 7 [COMPLETED]
 
 **Goal**: Apply the same changes to `skill-orchestrate-hard/SKILL.md`, matching
 `burnout_signals_this_session`'s declaration/persistence shape exactly. Multi-task mode needs no
@@ -596,22 +596,22 @@ hard-mode edit — the hard variant's "Multi-Task Mode" section delegates to bas
 unmodified, so Phase 4 already covers `/orchestrate --hard` multi-task runs.
 
 **Tasks**:
-- [ ] Re-verify anchors: `grep -n 'MAX_CYCLES=13\|burnout_signals_this_session\|Agent tool:\|Skill did not write orchestrator handoff\|MAX_CYCLES reached' agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`
-- [ ] **Stage 2 (~line 192)**: add `MAX_INFRA_FAILURES=3` directly after `MAX_CYCLES=13`, with the
+- [x] Re-verify anchors: `grep -n 'MAX_CYCLES=13\|burnout_signals_this_session\|Agent tool:\|Skill did not write orchestrator handoff\|MAX_CYCLES reached' agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`
+- [x] **Stage 2 (~line 192)**: add `MAX_INFRA_FAILURES=3` directly after `MAX_CYCLES=13`, with the
       same explanatory comment used in the base variant. Value is identical to base — flat, not
       scaled with hard mode's larger `MAX_CYCLES`.
-- [ ] **Stage 2 resume branch (~line 200-202)**: add
+- [x] **Stage 2 resume branch (~line 200-202)**: add
       `infra_failures=$(jq -r '.infra_failures // 0' "$loop_guard_file")` alongside the
       `burnout_signals_this_session` read, and extend the echo to report
       `(burnout signals so far: $burnout_signals_this_session, infra failures: $infra_failures of $MAX_INFRA_FAILURES)`.
-- [ ] **Stage 2 fresh-start `jq -n` blob (~line 210-225)**: add
+- [x] **Stage 2 fresh-start `jq -n` blob (~line 210-225)**: add
       `--argjson max_infra_failures "$MAX_INFRA_FAILURES"`, the fields `"infra_failures": 0` and
       `"max_infra_failures": $max_infra_failures` alongside `"burnout_signals_this_session": 0`, and
       `infra_failures=0` alongside `burnout_signals_this_session=0` on the success path.
-- [ ] **Stage 2 lost-race branch (~line 226-229)**: read `infra_failures` too. Update the existing
+- [x] **Stage 2 lost-race branch (~line 226-229)**: read `infra_failures` too. Update the existing
       comment at ~line 208-209 (which currently says the lost-race branch must read BOTH counters)
       to say it must read **all** persisted counters, naming them.
-- [ ] **Stage 4 — all four dispatch sites**: `not_started` (~333), the H4 verification re-dispatch
+- [x] **Stage 4 — all four dispatch sites**: `not_started` (~333), the H4 verification re-dispatch
       (~368-373), the planner dispatch inside the `adversarial_verified=true` branch (~386-390), and
       the H1 per-phase dispatch (~450-453). Immediately before each `Agent tool:` block insert:
       ```bash
@@ -625,13 +625,13 @@ unmodified, so Phase 4 already covers `/orchestrate --hard` multi-task runs.
       narrated transport-judgment instruction used in Phase 2, adapted to hard mode's existing
       trailing sentences (e.g. `not_started`'s "Set `adversarial_verified=false`. Increment
       cycle_count.").
-- [ ] **Stage 5 (~line 626-630)**: apply the Phase 3 replacement verbatim, substituting the
+- [x] **Stage 5 (~line 626-630)**: apply the Phase 3 replacement verbatim, substituting the
       `[hard-orchestrate]` log prefix for `[orchestrate]` in every echo. Preserve the surrounding
       `<!-- BEGIN/END 772 Item 5B -->` markers and the hard-mode-specific `sorry_inventory` /
       `skeleton` reads untouched.
-- [ ] **Stage 5 increment (~line 714-715)**: apply the Phase 3 conditional-increment replacement,
+- [x] **Stage 5 increment (~line 714-715)**: apply the Phase 3 conditional-increment replacement,
       again with the `[hard-orchestrate]` prefix.
-- [ ] **Stage 7 (~line 757-767)**: insert the MAX_INFRA_FAILURES terminal block **before** the
+- [x] **Stage 7 (~line 757-767)**: insert the MAX_INFRA_FAILURES terminal block **before** the
       existing MAX_CYCLES check, in hard mode's bash-block idiom:
       ```bash
       # MAX_INFRA_FAILURES reached — repeated transport/API failures, distinct from work-budget
@@ -646,11 +646,11 @@ unmodified, so Phase 4 already covers `/orchestrate --hard` multi-task runs.
       fi
       ```
       Do NOT also increment `cycle_count` here.
-- [ ] **Verify (do not edit)** that hard mode's "Multi-Task Mode" section still reads "Same as base
+- [x] **Verify (do not edit)** that hard mode's "Multi-Task Mode" section still reads "Same as base
       `skill-orchestrate` multi-task stages (MT-1 through MT-5)". If it does, Phase 4's fix covers
       hard-mode multi-task runs and no hard-mode MT edit is needed. If that delegation has changed,
       STOP and report — do not silently duplicate the MT logic here.
-- [ ] Confirm Stage 3b's loop-guard `jq` write uses field assignment (`.field = value`) and therefore
+- [x] Confirm Stage 3b's loop-guard `jq` write uses field assignment (`.field = value`) and therefore
       preserves `infra_failures`. If so, no Stage 3b change is required; record the confirmation.
 
 **Timing**: 1.25 hours

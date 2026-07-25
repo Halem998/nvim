@@ -1,0 +1,58 @@
+{
+  "phase": 5,
+  "phase_name": "Hard-mode variant — Stage 2, Stage 4, Stage 5, Stage 7",
+  "started_at": "2026-07-25T15:31:00Z",
+  "last_updated": "2026-07-25T15:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Stage 2: MAX_INFRA_FAILURES declaration + resume/fresh/lost-race init paths (mirroring burnout_signals_this_session shape)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Stage 4: dispatch windows at all four sites (not_started, H4 re-dispatch, planner dispatch, H1 per-phase dispatch)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Stage 5: two-signal discrimination branch + conditional cycle_count increment, [hard-orchestrate] prefix",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Stage 7: MAX_INFRA_FAILURES terminal block before MAX_CYCLES check",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Verify Multi-Task Mode still delegates to base MT-1..MT-5 unmodified (stop condition check)",
+      "status": "done",
+      "note": "Confirmed unchanged: 'Same as base skill-orchestrate multi-task stages (MT-1 through MT-5)' still present verbatim at line 890. No hard-mode MT edit needed; Phase 4's base fix covers hard-mode multi-task runs.",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Confirm Stage 3b loop-guard jq write uses field assignment and preserves infra_failures",
+      "status": "done",
+      "note": "Confirmed: Stage 3b's write is '.current_state = $state | .last_updated = $updated | .cycle_count = $count', field-assignment merge -- preserves infra_failures and burnout_signals_this_session. No Stage 3b change required.",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
