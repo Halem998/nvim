@@ -103,6 +103,10 @@ Create or read the loop guard file. This tracks cycle count across conversationa
 
 ```bash
 MAX_CYCLES=5
+# Infrastructure-failure counter, separate from the work-cycle budget. See
+# context/patterns/infra-failure-discrimination.md. Flat (not scaled with MAX_CYCLES):
+# transport flakiness is unrelated to plan size.
+MAX_INFRA_FAILURES=3
 loop_guard_file="${TASK_DIR}/.orchestrator-loop-guard"
 handoff_file="${TASK_DIR}/.orchestrator-handoff.json"
 
@@ -111,7 +115,8 @@ mkdir -p "$TASK_DIR"
 if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
   # Resume: read existing guard
   cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
-  echo "[orchestrate] Resuming — cycle $cycle_count of $MAX_CYCLES"
+  infra_failures=$(jq -r '.infra_failures // 0' "$loop_guard_file")
+  echo "[orchestrate] Resuming — cycle $cycle_count of $MAX_CYCLES (infra failures: $infra_failures of $MAX_INFRA_FAILURES)"
 else
   # Fresh start: create guard atomically via init-marker (task 808). A plain
   # `>` redirect has no O_EXCL semantics, so two racing writers could both take
@@ -121,21 +126,27 @@ else
   if jq -n \
     --arg session_id "$session_id" \
     --argjson max_cycles "$MAX_CYCLES" \
+    --argjson max_infra_failures "$MAX_INFRA_FAILURES" \
     --arg started "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     '{
       "session_id": $session_id,
       "cycle_count": 0,
       "max_cycles": $max_cycles,
+      "infra_failures": 0,
+      "max_infra_failures": $max_infra_failures,
       "current_state": "reading",
       "started": $started,
       "last_updated": $started
     }' | bash .claude/scripts/task-lock.sh init-marker "$loop_guard_file"; then
     cycle_count=0
-    echo "[orchestrate] Starting fresh — MAX_CYCLES=$MAX_CYCLES"
+    infra_failures=0
+    echo "[orchestrate] Starting fresh — MAX_CYCLES=$MAX_CYCLES, MAX_INFRA_FAILURES=$MAX_INFRA_FAILURES"
   else
-    # Lost the creation race: another writer won. Resume from their guard.
+    # Lost the creation race: another writer won. Resume from their guard, reading BOTH
+    # counters — not just cycle_count.
     cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
-    echo "[orchestrate] Resuming (lost init race) — cycle $cycle_count of $MAX_CYCLES"
+    infra_failures=$(jq -r '.infra_failures // 0' "$loop_guard_file")
+    echo "[orchestrate] Resuming (lost init race) — cycle $cycle_count of $MAX_CYCLES (infra failures: $infra_failures of $MAX_INFRA_FAILURES)"
   fi
 fi
 
@@ -217,6 +228,14 @@ bash .claude/scripts/task-lock.sh heartbeat "$task_number" "$session_id" 2>/dev/
 skill_preflight_update "$task_number" "research" "$session_id"
 ```
 
+```bash
+# Dispatch window for infra-failure discrimination — see
+# context/patterns/infra-failure-discrimination.md. Reset both signals every dispatch so a
+# stale `true` can never carry over from a previous cycle.
+dispatch_start_ts=$(date -u +%s)
+dispatch_was_transport_error=false
+```
+
 Invoke the Agent tool:
 
 | Field | Value |
@@ -224,6 +243,13 @@ Invoke the Agent tool:
 | `subagent_type` | `$RESEARCH_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Research task $task_number: $DESCRIPTION" (append ". User focus: $focus_prompt" if non-empty) |
 | `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, lit_flag }` |
+
+**After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
+`context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
+ONLY if the call itself returned a transport/API-layer error with no subagent-authored text of
+any kind. Any subagent-authored output — including text in which the subagent describes an
+error it hit — means `false`. Then read handoff (Stage 5), which decides whether this cycle is
+charged.
 
 After Agent tool returns: read handoff (Stage 5). Increment cycle_count.
 
@@ -250,6 +276,14 @@ research_artifact=$(jq -r --argjson num "$task_number" \
 skill_preflight_update "$task_number" "plan" "$session_id"
 ```
 
+```bash
+# Dispatch window for infra-failure discrimination — see
+# context/patterns/infra-failure-discrimination.md. Reset both signals every dispatch so a
+# stale `true` can never carry over from a previous cycle.
+dispatch_start_ts=$(date -u +%s)
+dispatch_was_transport_error=false
+```
+
 Invoke the Agent tool:
 
 | Field | Value |
@@ -257,6 +291,13 @@ Invoke the Agent tool:
 | `subagent_type` | `"planner-agent"` |
 | `prompt` | "Create implementation plan for task $task_number" (append ". User focus: $focus_prompt" if non-empty) |
 | `context` | `{ task_number, task_type, session_id, research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag }` |
+
+**After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
+`context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
+ONLY if the call itself returned a transport/API-layer error with no subagent-authored text of
+any kind. Any subagent-authored output — including text in which the subagent describes an
+error it hit — means `false`. Then read handoff (Stage 5), which decides whether this cycle is
+charged.
 
 After Agent tool returns: read handoff. Increment cycle_count.
 
@@ -275,6 +316,14 @@ plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
 skill_preflight_update "$task_number" "implement" "$session_id"
 ```
 
+```bash
+# Dispatch window for infra-failure discrimination — see
+# context/patterns/infra-failure-discrimination.md. Reset both signals every dispatch so a
+# stale `true` can never carry over from a previous cycle.
+dispatch_start_ts=$(date -u +%s)
+dispatch_was_transport_error=false
+```
+
 Invoke the Agent tool:
 
 | Field | Value |
@@ -282,6 +331,13 @@ Invoke the Agent tool:
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Implement task $task_number following the plan" (append ". User focus: $focus_prompt" if non-empty) |
 | `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, lit_flag }` |
+
+**After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
+`context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
+ONLY if the call itself returned a transport/API-layer error with no subagent-authored text of
+any kind. Any subagent-authored output — including text in which the subagent describes an
+error it hit — means `false`. Then read handoff (Stage 5), which decides whether this cycle is
+charged.
 
 After Agent tool returns: read handoff. Increment cycle_count.
 
@@ -309,6 +365,14 @@ plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
 skill_preflight_update "$task_number" "implement" "$session_id"
 ```
 
+```bash
+# Dispatch window for infra-failure discrimination — see
+# context/patterns/infra-failure-discrimination.md. Reset both signals every dispatch so a
+# stale `true` can never carry over from a previous cycle.
+dispatch_start_ts=$(date -u +%s)
+dispatch_was_transport_error=false
+```
+
 Invoke the Agent tool:
 
 | Field | Value |
@@ -316,6 +380,13 @@ Invoke the Agent tool:
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Resume implementation for task $task_number from continuation handoff" (append ". User focus: $focus_prompt" if non-empty) |
 | `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, continuation_context, lit_flag }` |
+
+**After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
+`context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
+ONLY if the call itself returned a transport/API-layer error with no subagent-authored text of
+any kind. Any subagent-authored output — including text in which the subagent describes an
+error it hit — means `false`. Then read handoff (Stage 5), which decides whether this cycle is
+charged.
 
 **Sub-state: blockers present** (blocker_count > 0):
 
@@ -558,9 +629,25 @@ After each cycle (whether dispatch succeeded or failed):
 jq --arg state "$current_status" \
    --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
    --argjson count "$cycle_count" \
-  '.current_state = $state | .last_updated = $updated | .cycle_count = $count' \
+   --argjson infra "${infra_failures:-0}" \
+  '.current_state = $state | .last_updated = $updated | .cycle_count = $count | .infra_failures = $infra' \
   "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
 ```
+
+If MAX_INFRA_FAILURES reached (infra_failures >= MAX_INFRA_FAILURES):
+
+```
+echo "[orchestrate] MAX_INFRA_FAILURES ($MAX_INFRA_FAILURES) reached for task $task_number — repeated Agent tool transport/API failures with no subagent execution."
+echo "This is a connectivity problem, not a work-budget problem: cycle_count is still $cycle_count/$MAX_CYCLES."
+echo "Run /orchestrate $task_number again once connectivity is confirmed."
+EXIT (partial)
+```
+
+This is the explicit bound on the exemption path. Because an infra-exempt cycle does not
+increment `cycle_count`, the `while` condition alone would not advance; this check — which runs
+at the end of every cycle — is what terminates the run. Worst-case iterations per invocation
+are therefore `MAX_CYCLES + MAX_INFRA_FAILURES` = 8. Do NOT also increment `cycle_count` here:
+the cap's purpose is to stay outside the work-cycle budget.
 
 If MAX_CYCLES reached (cycle_count >= MAX_CYCLES):
 

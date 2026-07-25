@@ -257,15 +257,15 @@ context index and cross-linked, so both SKILL.md files can reference rather than
 
 ---
 
-### Phase 2: Base counter plumbing — Stage 2 init, Stage 4 dispatch windows, Stage 7 terminal [NOT STARTED]
+### Phase 2: Base counter plumbing — Stage 2 init, Stage 4 dispatch windows, Stage 7 terminal [COMPLETED]
 
 **Goal**: Add the counter, the per-dispatch window capture, and the terminal bound to
 `skill-orchestrate/SKILL.md` — everything *except* the Stage 5 exemption branch. The bound is
 installed before the thing it bounds.
 
 **Tasks**:
-- [ ] Re-verify anchors: `grep -n 'MAX_CYCLES=5\|Invoke the Agent tool\|MAX_CYCLES reached' agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`
-- [ ] **Stage 2 (~line 105)**: replace `MAX_CYCLES=5` with:
+- [x] Re-verify anchors: `grep -n 'MAX_CYCLES=5\|Invoke the Agent tool\|MAX_CYCLES reached' agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`
+- [x] **Stage 2 (~line 105)**: replace `MAX_CYCLES=5` with:
       ```bash
       MAX_CYCLES=5
       # Infrastructure-failure counter, separate from the work-cycle budget. See
@@ -273,13 +273,13 @@ installed before the thing it bounds.
       # transport flakiness is unrelated to plan size.
       MAX_INFRA_FAILURES=3
       ```
-- [ ] **Stage 2 resume branch (~line 113-114)**: replace with:
+- [x] **Stage 2 resume branch (~line 113-114)**: replace with:
       ```bash
       cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
       infra_failures=$(jq -r '.infra_failures // 0' "$loop_guard_file")
       echo "[orchestrate] Resuming — cycle $cycle_count of $MAX_CYCLES (infra failures: $infra_failures of $MAX_INFRA_FAILURES)"
       ```
-- [ ] **Stage 2 fresh-start `jq -n` blob (~line 121-134)**: add the `--argjson` and the two fields,
+- [x] **Stage 2 fresh-start `jq -n` blob (~line 121-134)**: add the `--argjson` and the two fields,
       and set the shell variable on success:
       ```bash
         if jq -n \
@@ -301,7 +301,7 @@ installed before the thing it bounds.
           infra_failures=0
           echo "[orchestrate] Starting fresh — MAX_CYCLES=$MAX_CYCLES, MAX_INFRA_FAILURES=$MAX_INFRA_FAILURES"
       ```
-- [ ] **Stage 2 lost-race branch (~line 136-138)**: read **both** counters (this branch was itself a
+- [x] **Stage 2 lost-race branch (~line 136-138)**: read **both** counters (this branch was itself a
       past bug fix for reading only one counter — do not repeat it):
       ```bash
           # Lost the creation race: another writer won. Resume from their guard, reading BOTH
@@ -310,7 +310,7 @@ installed before the thing it bounds.
           infra_failures=$(jq -r '.infra_failures // 0' "$loop_guard_file")
           echo "[orchestrate] Resuming (lost init race) — cycle $cycle_count of $MAX_CYCLES (infra failures: $infra_failures of $MAX_INFRA_FAILURES)"
       ```
-- [ ] **Stage 4 — all four dispatch sites**: `not_started` (~220), `researched` (~253),
+- [x] **Stage 4 — all four dispatch sites**: `not_started` (~220), `researched` (~253),
       `planned`/`implementing` (~278), `partial` continuation (~312). Immediately **before** each
       `Invoke the Agent tool:` line insert:
       ````
@@ -333,7 +333,7 @@ installed before the thing it bounds.
       charged.
       ```
       Keep each site's existing trailing sentence otherwise intact.
-- [ ] **Stage 7 loop-guard persist (~line 558-562)**: add `infra_failures` to the write
+- [x] **Stage 7 loop-guard persist (~line 558-562)**: add `infra_failures` to the write
       (belt-and-suspenders — the Stage 5 increment in Phase 3 persists it too; `jq` field assignment
       preserves other fields either way):
       ```bash
@@ -344,7 +344,7 @@ installed before the thing it bounds.
         '.current_state = $state | .last_updated = $updated | .cycle_count = $count | .infra_failures = $infra' \
         "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
       ```
-- [ ] **Stage 7 terminal condition**: insert the following block **immediately before** the existing
+- [x] **Stage 7 terminal condition**: insert the following block **immediately before** the existing
       `If MAX_CYCLES reached` block (~line 565), so the more specific diagnosis wins:
       ```
       If MAX_INFRA_FAILURES reached (infra_failures >= MAX_INFRA_FAILURES):
