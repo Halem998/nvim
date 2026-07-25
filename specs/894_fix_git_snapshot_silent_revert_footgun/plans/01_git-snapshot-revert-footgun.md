@@ -508,7 +508,7 @@ command strings.
 
 ---
 
-### Phase 3: Implement `--no-revert` mode [NOT STARTED]
+### Phase 3: Implement `--no-revert` mode [COMPLETED]
 
 **Goal**: `--no-revert` produces a snapshot with coverage at parity with default mode
 (patch + real stash entry + untracked files) while leaving the working tree byte-identical.
@@ -517,23 +517,29 @@ command strings.
 `.gitignore`.
 
 **Tasks**:
-- [ ] Edit 3.1 — replace the mode dispatch. Anchor on the quoted line `STASH_REF="NONE"` and
+- [x] Edit 3.1 — replace the mode dispatch. Anchor on the quoted line `STASH_REF="NONE"` and
       replace from there through the closing `fi` of the `else` (default) branch with
       "Replacement text 3.1" below. The `--branch` and default branches are reproduced
       unchanged; only the new `elif` and the `UNTRACKED_BACKUP` initializer are added.
-- [ ] Edit 3.2 — add the marker key. Anchor on the quoted line
+      *(completed: applied as two Edits — `UNTRACKED_BACKUP="NONE"` initializer plus the
+      `elif`/no-revert branch — to preserve the Phase 2 pre-op warning block that now sits
+      between the initializers and the dispatch `if`; net result is textually equivalent to
+      Replacement text 3.1 with the Phase 2 warning retained in place)*
+- [x] Edit 3.2 — add the marker key. Anchor on the quoted line
       `BRANCH_NAME=${BRANCH_NAME}` inside the `cat > "$MARKER_PATH"` heredoc and insert
       immediately after it:
       ```
       UNTRACKED_BACKUP=${UNTRACKED_BACKUP}
       ```
       (The guard hook reads only `^TIMESTAMP=`, so extra `KEY=VALUE` lines are contract-safe.)
-- [ ] Edit 3.3 — report the backup path on stdout only when it exists. Anchor on the quoted
+      *(completed)*
+- [x] Edit 3.3 — report the backup path on stdout only when it exists. Anchor on the quoted
       line `echo "  marker: ${MARKER_PATH}"` and insert **before** it:
       ```bash
       [ "$UNTRACKED_BACKUP" = "NONE" ] || echo "  untracked-backup: ${UNTRACKED_BACKUP}"
       ```
-- [ ] Edit 3.4 — repo-root `.gitignore`: anchor on the quoted line
+      *(completed)*
+- [x] Edit 3.4 — repo-root `.gitignore`: anchor on the quoted line
       `**/.git-snapshot-marker` and insert immediately after it:
       ```
       **/untracked-backup-*/
@@ -541,8 +547,8 @@ command strings.
       Rationale (worth a one-line comment above it in the file): ignoring the backup keeps a
       later `git stash -u` and a `git clean -fd` from removing it, keeps task-scoped staging
       from committing it, and keeps `git ls-files --others --exclude-standard` from nesting
-      backups of backups on repeat runs.
-- [ ] `bash -n` must pass.
+      backups of backups on repeat runs. *(completed: comment added)*
+- [x] `bash -n` must pass. *(completed: verified)*
 
 **Replacement text 3.1** (replaces the whole mode dispatch):
 ```bash

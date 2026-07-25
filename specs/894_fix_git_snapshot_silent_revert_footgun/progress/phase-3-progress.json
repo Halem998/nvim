@@ -1,0 +1,25 @@
+{
+  "phase": 3,
+  "phase_name": "Implement --no-revert mode",
+  "started_at": "2026-07-25T09:00:00Z",
+  "last_updated": "2026-07-25T09:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Edit 3.1 mode dispatch elif no-revert branch + UNTRACKED_BACKUP initializer", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 2, "description": "Edit 3.2 marker heredoc UNTRACKED_BACKUP key", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 3, "description": "Edit 3.3 stdout untracked-backup report line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 4, "description": "Edit 3.4 .gitignore untracked-backup-*/ pattern", "status": "done", "files_touched": [".gitignore"]},
+    {"id": 5, "description": "bash -n passes; scratch-repo functional smoke test for --no-revert with tracked+untracked dirt and untracked-only dirt", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.1",
+      "description": "Replacement text 3.1 anchored on STASH_REF=\"NONE\" through the closing fi",
+      "type": "altered",
+      "reason": "Phase 2 inserted the pre-op warning block between the STASH_REF/BRANCH_NAME initializers and the mode-dispatch if, so a literal contiguous replacement matching Replacement text 3.1 verbatim would have deleted that warning block. Applied as two separate Edits (initializer line insertion + dispatch if/elif/else replacement) that preserve the Phase 2 warning block in place; the resulting script is textually equivalent to the plan's intent.",
+      "annotation": "*(deviation: altered — split into two Edits to preserve Phase 2 warning block; see note)*"
+    }
+  ]
+}

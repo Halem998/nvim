@@ -17,6 +17,11 @@
 /.opencode/tmp/
 **/.postflight-pending
 **/.git-snapshot-marker
+# git-snapshot.sh --no-revert mode's untracked-file backup: ignoring it keeps a later
+# `git stash -u` and `git clean -fd` from removing it, keeps task-scoped staging from
+# committing it, and keeps `git ls-files --others --exclude-standard` from nesting
+# backups of backups on repeat runs.
+**/untracked-backup-*/
 # Ephemeral orchestration session state: per-dispatch scratch, mutex directories,
 # and loop guards. All are runtime-only — each is overwritten or removed within a
 # single orchestrate run (see .claude/docs/architecture/handoff-schema.md, which

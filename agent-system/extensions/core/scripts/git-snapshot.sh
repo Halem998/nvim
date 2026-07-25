@@ -253,6 +253,7 @@ fi
 
 STASH_REF="NONE"
 BRANCH_NAME="NONE"
+UNTRACKED_BACKUP="NONE"
 
 # Pre-op warning. On stderr so the existing stdout report stays byte-compatible for the
 # docs that describe it (checkpoint-before-overflow.md and the agent handoff steps).
@@ -284,9 +285,44 @@ if [ "$MODE" = "branch" ]; then
     echo "git-snapshot.sh: failed to return to original branch $ORIGINAL_BRANCH after WIP commit on $BRANCH_NAME" >&2
     exit 1
   fi
+elif [ "$MODE" = "no-revert" ]; then
+  # Non-destructive mode. `git stash create` builds a stash COMMIT OBJECT and prints its
+  # sha without touching the working tree or refs/stash; `git stash store` then records
+  # that object so it appears in `git stash list` like any other entry. Neither step
+  # reverts anything. `git stash create` prints nothing when there are no tracked-file
+  # changes (e.g. an untracked-only dirty tree), which is handled below.
+  STASH_SHA=$(git stash create "git-snapshot-${TS}" 2>/dev/null)
+  if [ -n "$STASH_SHA" ]; then
+    if ! git stash store -m "git-snapshot-${TS}" "$STASH_SHA" >/dev/null 2>&1; then
+      echo "git-snapshot.sh: failed to store stash object $STASH_SHA (no-revert mode)" >&2
+      rm -f "$PATCH_TMP"
+      exit 1
+    fi
+    STASH_REF=$(git stash list | head -1 | cut -d: -f1)
+  fi
+
+  # `git stash create` cannot capture untracked files and the patch cannot represent them,
+  # so copy them instead. --exclude-standard matches `git stash -u`'s own ignored-file
+  # semantics, so coverage is at parity with default mode. Enumeration happens BEFORE the
+  # backup directory is created, so a backup never contains itself. Untracked filenames
+  # containing a newline are not supported (none exist in practice).
+  UNTRACKED_LIST=$(git ls-files --others --exclude-standard 2>/dev/null)
+  if [ -n "$UNTRACKED_LIST" ]; then
+    UNTRACKED_BACKUP="${TASK_DIR}/untracked-backup-${TS}"
+    while IFS= read -r f; do
+      [ -z "$f" ] && continue
+      dest="${UNTRACKED_BACKUP}/${f}"
+      if ! mkdir -p "$(dirname "$dest")" >/dev/null 2>&1 || ! cp -p "$f" "$dest" >/dev/null 2>&1; then
+        echo "git-snapshot.sh: failed to back up untracked file '$f' to $dest (no-revert mode)" >&2
+        rm -f "$PATCH_TMP"
+        exit 1
+      fi
+    done <<< "$UNTRACKED_LIST"
+  fi
 else
   # Default mode: belt-and-suspenders in-repo stash copy (patch above is the primary
   # durable record; -u also captures untracked files the patch cannot represent).
+  # NOTE: this REVERTS the working tree -- see the warning block above.
   if ! git stash push -u -m "git-snapshot-${TS}" >/dev/null 2>&1; then
     echo "git-snapshot.sh: failed to stash changes (diff was computed but not yet written to $PATCH_PATH)" >&2
     rm -f "$PATCH_TMP"
@@ -310,12 +346,14 @@ HEAD_SHA=${HEAD_SHA}
 PATCH_PATH=${PATCH_PATH}
 STASH_REF=${STASH_REF}
 BRANCH_NAME=${BRANCH_NAME}
+UNTRACKED_BACKUP=${UNTRACKED_BACKUP}
 EOF
 
 echo "git-snapshot.sh: snapshot complete"
 echo "  patch:  ${PATCH_PATH}"
 echo "  stash:  ${STASH_REF}"
 echo "  branch: ${BRANCH_NAME}"
+[ "$UNTRACKED_BACKUP" = "NONE" ] || echo "  untracked-backup: ${UNTRACKED_BACKUP}"
 echo "  marker: ${MARKER_PATH}"
 
 # Post-op notice, on stderr for the same stdout-compatibility reason as the pre-op warning.
