@@ -59,7 +59,7 @@ never reordered per verdict. `self_modifying` is present on **every** verdict, i
 **Self-modifying defer** (self-modification hazard, invocation carries more than one candidate):
 
 ```json
-{"$schema":"orchestrate-batch-admit-v2","task_number":902,"decision":"defer","self_modifying":true,"defer_reason":"self_modifying","critical_path":"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh","critical_label":"admission predicate","reason":"candidate #902 file_scope names orchestrator-critical path \"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh\" (admission predicate); deferred out of this invocation because orchestrator-critical work runs solo only — re-run task #902 alone"}
+{"$schema":"orchestrate-batch-admit-v2","task_number":460,"decision":"defer","self_modifying":true,"defer_reason":"self_modifying","critical_path":"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh","critical_label":"admission predicate","reason":"candidate #460 file_scope names orchestrator-critical path \"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh\" (admission predicate); deferred out of this invocation because orchestrator-critical work runs solo only — re-run task #460 alone"}
 ```
 
 **File-scope collision defer** (unchanged algorithm from v1, plus the two additive fields):
