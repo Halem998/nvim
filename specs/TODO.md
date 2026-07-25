@@ -1,5 +1,5 @@
 ---
-next_project_number: 908
+next_project_number: 910
 ---
 
 # TODO
@@ -13,10 +13,11 @@ next_project_number: 908
 |------|-------|------------|--------|
 | 1 | 873,885,896,897,904,905 | -- | agent-system, literature |
 | 2 | 887,898 | 873,897 | agent-system |
-| 3 | 900 | 898 | agent-system |
+| 3 | 900,909 | 898 | agent-system |
 | 4 | 901 | 900 | agent-system |
 | 5 | 902,906 | 885,896,901 | agent-system |
 | 6 | 907 | 902,906 | agent-system |
+| 7 | 908 | 907 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -27,6 +28,7 @@ next_project_number: 908
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
   └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+      └─ 908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
 896 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
   └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
 897 [NOT STARTED] — LOWER PRIORITY. Observed in the same full /orchestrate run (lean4
@@ -36,6 +38,7 @@ next_project_number: 908
         └─ 902 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
           └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
         └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
+    └─ 909 [NOT STARTED] — Residual gap surfaced by the implementation agent for the complet
 
 ### Literature
 
@@ -43,6 +46,62 @@ next_project_number: 908
 905 [NOT STARTED] — Make Zotero export staleness a detected, propagated, and loudly-s
 
 ## Tasks
+
+### 909. Resolve the two hard-mode dispatch contexts that carry neither an absolute handoff anchor nor orchestrator_mode
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 898
+
+**Description**: Residual gap surfaced by the implementation agent for the completed handoff-location task (891-series work on .orchestrator-handoff.json placement), which correctly flagged it rather than silently editing outside its plan's scope.
+
+SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+VERIFIED STATE OF THE INVARIANT. In skills/skill-orchestrate/SKILL.md (base mode) the pattern is clean and evidently deliberate: every dispatch context carrying `orchestrator_mode: true` also carries `task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS`, and every dispatch that omits the anchor explicitly sets `orchestrator_mode: false` (the drift-inspection, drift-revision, blocker-research, and blocker-revision dispatches). The invariant "absolute anchor present if and only if orchestrator_mode is true" holds and is locally checkable.
+
+THE GAP. In skills/skill-orchestrate-hard/SKILL.md three dispatch contexts carry both `orchestrator_mode: true` and the absolute anchor, but TWO carry neither the anchor NOR any orchestrator_mode key at all: the divergence-audit dispatch and the blocker-research dispatch, both of which dispatch $RESEARCH_AGENT. Because these two omit orchestrator_mode entirely rather than setting it to false, the invariant is not merely violated -- it is unverifiable at those sites. A reader cannot tell whether the missing anchor is correct-by-design or an oversight.
+
+WHY THIS MATTERS: $RESEARCH_AGENT is on the verified list of handoff-writing components. If handoff writing is genuinely gated on orchestrator_mode being true, these two dispatches never write a handoff and the missing anchor is harmless -- but that should be made explicit rather than left implicit. If the gating is weaker than assumed, these are live instances of the exact defect the handoff-location work exists to prevent: a path-less write instruction that can land a handoff at the repo root.
+
+REQUIRED FIRST STEP -- DO NOT PRESUME THE ANSWER: determine authoritatively whether an agent dispatched WITHOUT orchestrator_mode: true actually writes .orchestrator-handoff.json. Read the write instructions in context/contracts/wrap-up.md, agents/general-research-agent.md, agents/general-research-hard-agent.md, and scripts/skill-base.sh's skill_write_orchestrator_handoff to establish the real gating condition. Only then choose between the two fixes:
+  (a) If these dispatches never write a handoff: add an explicit `orchestrator_mode: false` to both sites, matching base mode's convention, so the invariant becomes checkable rather than ambiguous.
+  (b) If they can write a handoff: add `task_dir` and `handoff_path` to both sites, matching the three already-anchored hard-mode sites.
+
+Whichever branch is taken, consider adding a short verification note near the dispatch sites (or a grep-based check) recording the invariant, so a future reader or reviewer can confirm it mechanically instead of re-deriving this analysis.
+
+SCOPE: hard mode only. Base mode was verified consistent and needs no edit.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 908. Prevent git index contention between concurrently dispatched orchestrate agents
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 907
+
+**Description**: Observed directly during a 4-task concurrent /orchestrate batch (tasks 892, 893, 894, 903 dispatched in one wave). Two separate implementation agents independently reported that their commits were swept into other agents' commits: one reported two of its own phase commits bundled under other agents' commit messages, another reported its phase-7 commit swept into a concurrent session's commit. Content survived intact in every observed case (independently re-verified), but commit attribution is now wrong in the history.
+
+SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store by the <leader>al picker/loader. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+ROOT CAUSE (mechanism, stated precisely): the git index is a single shared resource per working tree. `git add <paths>` followed by `git commit` is not atomic with respect to other processes in the same tree. When agent A stages its files and agent B then runs `git add` + `git commit`, B's commit captures A's staged-but-uncommitted paths too, because a bare `git commit` commits the whole index rather than only the paths the caller named.
+
+WHY THE EXISTING GUARD CANNOT CATCH THIS -- this is the key point: the runtime wave-split check in commands/orchestrate.md and skills/skill-orchestrate/SKILL.md (Stage MT-3 step 4.5) compares tasks' file_scope using the directory-prefix overlap algorithm in context/patterns/file-footprint-overlap.md. In the observed batch that check passed correctly -- the four tasks' file_scope sets were genuinely disjoint and no agent edited another's files. The collision was not in the FILES, it was in the shared INDEX. A file-path-based overlap check is structurally incapable of detecting index contention, so this gap cannot be closed by tightening the existing check; it needs a different mechanism.
+
+CANDIDATE MECHANISMS TO EVALUATE (research should compare, not assume):
+  (a) Path-scoped commits: `git commit -- <paths>` / `git commit -o <paths>`, which commit only the named paths and ignore the rest of the index. Cheapest change; verify it composes with the targeted-staging convention already documented in context/standards/git-staging-scope.md.
+  (b) A commit mutex. There is existing precedent in this codebase for exactly this shape -- acquire_state_mutex in scripts/update-task-status.sh, and scripts/task-lock.sh -- so a commit lock should follow one of those established patterns rather than inventing a new one.
+  (c) Per-agent git worktrees, giving each concurrent agent its own index. Strongest isolation, highest cost; assess whether the agent-dispatch layer can support it.
+  (d) Serializing commits through the orchestrator: agents write files and report modified paths, the orchestrator commits. Removes concurrency at the commit step entirely.
+
+Evaluate whether the fix belongs in the git-staging-scope standard, in the orchestrate skill's multi-task dispatch stage, in a shared script, or some combination. Note that agents currently commit their own work per phase, so any fix must either keep that property or deliberately change it with justification.
+
+SCOPE NOTE: single-task /orchestrate is unaffected (one agent at a time). This is specific to multi-task/parallel dispatch. Determine whether team-mode skills (skill-team-implement) share the same exposure.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
 
 ### 907. Establish an orchestrator runtime-file tracking policy so ephemeral loop guards are never committed
 - **Status**: [NOT STARTED]
