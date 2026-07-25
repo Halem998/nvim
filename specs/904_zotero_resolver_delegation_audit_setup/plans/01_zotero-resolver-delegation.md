@@ -186,31 +186,34 @@ resolver-derived path, matching the `zotero-resolve-pdf.sh:75-76` idiom.
 
 ---
 
-### Phase 3: Delegate `zotero-setup.sh` Step 3 and correct its diagnostic [NOT STARTED]
+### Phase 3: Delegate `zotero-setup.sh` Step 3 and correct its diagnostic [COMPLETED]
 
 **Goal**: Replace `_detect_data_dir()` Step 3's private candidate ladder with resolver
 delegation, keeping Steps 1 and 2 and the function's existence probe, and reword the
 `cmd_detect` "Checked:" stderr line to describe the delegated ladder truthfully.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/literature/scripts/zotero-setup.sh`, replace the Step 3 block
+- [x] In `agent-system/extensions/literature/scripts/zotero-setup.sh`, replace the Step 3 block
       (currently lines 76-89: the `for _candidate in "$HOME/Zotero" "$HOME/Documents/Zotero"
       "${XDG_DATA_HOME:-$HOME/.local/share}/Zotero"` loop) with a call to
       `"$SCRIPT_DIR/zotero-resolve-sqlite-path.sh"` plus `dirname`, retaining a
       `[[ -d "$_resolved_dir" && -f "$_resolved_sqlite" ]]` guard before `echo`/`return 0`, and
-      preserving the trailing `return 1`.
-- [ ] Leave Step 1 (`$ZOT_DATA_DIR`, lines 58-64) and Step 2 (`zotero-index.json`, lines 66-74)
-      byte-for-byte unchanged.
-- [ ] Update the comment above Step 3 to name the resolver and its 3-tier order.
-- [ ] Reword the `cmd_detect` stderr line (currently line 103) so it no longer lists `~/Zotero`,
+      preserving the trailing `return 1`. *(completed)*
+- [x] Leave Step 1 (`$ZOT_DATA_DIR`, lines 58-64) and Step 2 (`zotero-index.json`, lines 66-74)
+      byte-for-byte unchanged. *(completed: confirmed via `git diff`)*
+- [x] Update the comment above Step 3 to name the resolver and its 3-tier order. *(completed)*
+- [x] Reword the `cmd_detect` stderr line (currently line 103) so it no longer lists `~/Zotero`,
       `~/Documents/Zotero`, and `$XDG_DATA_HOME/Zotero` as independently probed paths; name
       `$ZOT_DATA_DIR`, the index file, then the resolver and its actual ladder
       (`$ZOTERO_SQLITE_PATH` override, auto-detected custom dataDir from Zotero's `prefs.js`, or
       the historical `~/Zotero` default). Do not claim the resolver checks existence.
-- [ ] Confirm no other `$HOME/Zotero` / `XDG_DATA_HOME` candidate-ladder remnant remains
-      (`grep -n 'HOME/Zotero\|XDG_DATA_HOME' zotero-setup.sh`).
-- [ ] Leave the pre-existing task-number citation in the file header (line 4) unchanged; report
+      *(completed)*
+- [x] Confirm no other `$HOME/Zotero` / `XDG_DATA_HOME` candidate-ladder remnant remains
+      (`grep -n 'HOME/Zotero\|XDG_DATA_HOME' zotero-setup.sh`). *(completed: no matches)*
+- [x] Leave the pre-existing task-number citation in the file header (line 4) unchanged; report
       it as a noted out-of-scope observation if the advisory hook flags the edit.
+      *(completed: line 4 unchanged, confirmed via `git diff` — advisory hook did not flag it
+      since the edit did not touch that line)*
 
 **Timing**: 0.5 hours
 

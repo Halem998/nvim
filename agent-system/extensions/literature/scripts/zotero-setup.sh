@@ -73,18 +73,17 @@ _detect_data_dir() {
     fi
   fi
 
-  # Step 3: common locations
-  local _candidate
-  for _candidate in \
-    "$HOME/Zotero" \
-    "$HOME/Documents/Zotero" \
-    "${XDG_DATA_HOME:-$HOME/.local/share}/Zotero"
-  do
-    if [[ -d "$_candidate" && -f "$_candidate/zotero.sqlite" ]]; then
-      echo "$_candidate"
-      return 0
-    fi
-  done
+  # Step 3: delegate to the canonical resolver (zotero-resolve-sqlite-path.sh), which tries, in
+  # order: $ZOTERO_SQLITE_PATH override, an auto-detected custom dataDir read from Zotero's
+  # prefs.js, then the historical ~/Zotero default. This keeps this script's ladder identical to
+  # the resolver's other callers instead of maintaining a private, divergent candidate list.
+  local _resolved_sqlite _resolved_dir
+  _resolved_sqlite="$("$SCRIPT_DIR/zotero-resolve-sqlite-path.sh")"
+  _resolved_dir="$(dirname "$_resolved_sqlite")"
+  if [[ -d "$_resolved_dir" && -f "$_resolved_sqlite" ]]; then
+    echo "$_resolved_dir"
+    return 0
+  fi
 
   return 1
 }
@@ -100,7 +99,7 @@ cmd_detect() {
     exit 0
   else
     echo "zotero-setup.sh: Zotero data directory not found" >&2
-    echo "Checked: \$ZOT_DATA_DIR, $ZOTERO_INDEX, ~/Zotero, ~/Documents/Zotero, \$XDG_DATA_HOME/Zotero" >&2
+    echo "Checked: \$ZOT_DATA_DIR, $ZOTERO_INDEX, then the resolver's ladder (\$ZOTERO_SQLITE_PATH override, an auto-detected custom dataDir from Zotero's prefs.js, or the historical ~/Zotero default)" >&2
     exit 1
   fi
 }
