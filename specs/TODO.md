@@ -26,7 +26,7 @@ next_project_number: 903
 873 [PARTIAL] — Make /meta create tasks in the GLOBAL agent-system root by defaul
   └─ 887 [RESEARCHED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
-891 [NOT STARTED] — SEVERITY: HIGHEST of a six-defect batch observed in a single full
+891 [IMPLEMENTING] — SEVERITY: HIGHEST of a six-defect batch observed in a single full
   └─ 895 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
     └─ 897 [NOT STARTED] — LOWER PRIORITY. Observed in the same full /orchestrate run (lean4
       └─ 898 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
@@ -368,10 +368,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 891. Gate /orchestrate completed transition on phases_completed >= phases_total
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [891_gate_orchestrate_completion_on_phase_progress/reports/01_gate-completion-on-phase-progress.md]
+- **Plan**: [891_gate_orchestrate_completion_on_phase_progress/plans/01_gate-completion-on-phase-progress.md]
 
 **Description**: SEVERITY: HIGHEST of a six-defect batch observed in a single full /orchestrate run (lean4 task, 8 implementation phases, 5 cycles, ~1.6M subagent tokens). Silent premature completion: an 8-phase task would have been marked COMPLETED at phase 4, silently abandoning half the work.
 

@@ -408,7 +408,22 @@ else
       skill_postflight_update "$task_number" "plan" "$session_id" "$dispatch_status"
       ;;
     implemented)
-      skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status"
+      # Phase-completion gate: a dispatch reporting "implemented" must not flip the whole task
+      # to `completed` while the plan still has phases left. When the handoff carries no phase
+      # accounting (`phases_total` 0 or absent) the historical unconditional behavior is
+      # preserved — such handoffs must never regress into never completing. Note this differs
+      # deliberately from the hard-mode expression, which requires `phases_total > 0`: hard
+      # mode's per-phase dispatch always populates phase accounting, base mode's does not.
+      if [ "$phases_total" -eq 0 ] || [ "$phases_completed" -ge "$phases_total" ]; then
+        skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status"
+      else
+        echo "[orchestrate] Phase ${phases_completed}/${phases_total} complete — task not done. Continuing." >&2
+        # No status transition: state stays `implementing`. `cycle_count` still increments at the
+        # end of this stage, Stage 3a re-reads `implementing` next cycle, and Stage 4's
+        # `planned`/`implementing` handler re-dispatches the implement agent against the same
+        # plan (which resumes at the first non-completed phase). MAX_CYCLES bounds this, so a
+        # misreporting agent exits `partial` rather than looping forever.
+      fi
       ;;
     *)
       echo "[orchestrate] Dispatch status '$dispatch_status' — no postflight update needed"
@@ -771,11 +786,23 @@ For each task in `implement_tasks`:
 
 For each task in `research_tasks + plan_tasks + implement_tasks`:
 1. Read `task_dir/.orchestrator-handoff.json`. If missing: mark task in `failed_tasks`, skip.
-2. Extract `dispatch_status`, `dispatch_summary`, artifact path/type/summary.
+2. Extract `dispatch_status`, `dispatch_summary`, artifact path/type/summary, and — from *this*
+   task's own handoff, freshly per task — `phases_completed` (`jq -r '.phases_completed // 0'`)
+   and `phases_total` (`jq -r '.phases_total // 0'`), mirroring the Stage 5 reads. Never carry
+   these values over from a previous task in the same wave; re-read them for every task in the
+   loop.
 3. Call `skill_postflight_update`:
    - `dispatch_status = "researched"` → `skill_postflight_update task_num "research" "${session_id}_${task_num}" researched`
    - `dispatch_status = "planned"` → `skill_postflight_update task_num "plan" "${session_id}_${task_num}" planned`
-   - `dispatch_status = "implemented"` → `skill_postflight_update task_num "implement" "${session_id}_${task_num}" implemented`
+   - `dispatch_status = "implemented"` → apply the same phase-completion gate as Stage 5. Call
+     `skill_postflight_update task_num "implement" "${session_id}_${task_num}" implemented`
+     **only if** `phases_total` is 0 (no phase accounting — preserve the historical behavior) **or**
+     `phases_completed >= phases_total`. Otherwise **skip the postflight call**, log
+     `[orchestrate] Task {task_num}: phase {phases_completed}/{phases_total} complete — task not done. Continuing.`,
+     and leave the task at `implementing`. Steps 4-6 below still run unchanged: the artifact is
+     still linked, step 5 reads `fresh_status = "implementing"` and takes its `Otherwise` branch
+     (not `completed_tasks`), and the per-task lock is still released. The task stays eligible in
+     Stage MT-3's next cycle and is re-dispatched, bounded by `MAX_CYCLES_MT`.
    - Other → no postflight update
 4. Call `skill_link_artifacts` if artifact path is present (same field mapping as Stage 5).
 5. Re-read fresh status from `state.json` (postflight may have updated it). Update `mt_state_file.current_statuses[task_num]`:

@@ -5,7 +5,7 @@
     {
       "project_number": 891,
       "project_name": "gate_orchestrate_completion_on_phase_progress",
-      "status": "not_started",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Gate /orchestrate completed transition on phases_completed >= phases_total",
@@ -17,9 +17,20 @@
         "agent-system/extensions/core/scripts/update-task-status.sh"
       ],
       "created": "2026-07-24T00:00:00Z",
-      "last_updated": "2026-07-24T00:00:00Z",
-      "session_id": "sess_1784932361_05a63f_891",
-      "artifacts": []
+      "last_updated": "2026-07-25T07:21:07Z",
+      "session_id": "sess_1784963374_f37edd",
+      "artifacts": [
+        {
+          "path": "specs/891_gate_orchestrate_completion_on_phase_progress/reports/01_gate-completion-on-phase-progress.md",
+          "type": "report",
+          "summary": "Verified defect sites and recommended skill-layer gate"
+        },
+        {
+          "path": "specs/891_gate_orchestrate_completion_on_phase_progress/plans/01_gate-completion-on-phase-progress.md",
+          "type": "plan",
+          "summary": "3-phase plan gating implemented->completed on phase accounting"
+        }
+      ]
     },
     {
       "project_number": 892,
