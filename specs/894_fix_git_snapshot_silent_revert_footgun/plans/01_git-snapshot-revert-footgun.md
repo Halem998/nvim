@@ -434,7 +434,7 @@ fi
 
 ---
 
-### Phase 2: Pre-op and post-op tree-reset warnings [NOT STARTED]
+### Phase 2: Pre-op and post-op tree-reset warnings [COMPLETED]
 
 **Goal**: Every tree-reverting invocation announces the revert before it happens and confirms
 it afterwards with concrete recovery commands — all on stderr, leaving stdout byte-compatible.
@@ -442,17 +442,18 @@ it afterwards with concrete recovery commands — all on stderr, leaving stdout 
 **Territory**: `agent-system/extensions/core/scripts/git-snapshot.sh` only.
 
 **Tasks**:
-- [ ] Edit 2.1 — insert the pre-op warning immediately **before** the mode dispatch. Anchor on
+- [x] Edit 2.1 — insert the pre-op warning immediately **before** the mode dispatch. Anchor on
       the quoted line `if [ "$MODE" = "branch" ]; then` (the first occurrence, which follows
       `BRANCH_NAME="NONE"`) and insert "Replacement text 2.1" above it, separated by a blank
-      line.
-- [ ] Edit 2.2 — append the post-op notice **after** the existing four `echo` output lines and
+      line. *(completed)*
+- [x] Edit 2.2 — append the post-op notice **after** the existing four `echo` output lines and
       **before** `exit 0`. Anchor on the quoted line
-      `echo "  marker: ${MARKER_PATH}"` and insert "Replacement text 2.2" after it.
-- [ ] Do **not** modify, reorder, or reformat the four existing stdout lines
+      `echo "  marker: ${MARKER_PATH}"` and insert "Replacement text 2.2" after it. *(completed)*
+- [x] Do **not** modify, reorder, or reformat the four existing stdout lines
       (`snapshot complete`, `  patch:`, `  stash:`, `  branch:`, `  marker:`). Three doc files
-      describe those references; they must stay byte-identical.
-- [ ] `bash -n` must pass.
+      describe those references; they must stay byte-identical. *(completed: verified via
+      1>/dev/null and 2>/dev/null split test)*
+- [x] `bash -n` must pass. *(completed: verified)*
 
 **Replacement text 2.1** (inserted before the mode dispatch):
 ```bash

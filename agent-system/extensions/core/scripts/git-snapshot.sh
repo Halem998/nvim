@@ -254,6 +254,19 @@ fi
 STASH_REF="NONE"
 BRANCH_NAME="NONE"
 
+# Pre-op warning. On stderr so the existing stdout report stays byte-compatible for the
+# docs that describe it (checkpoint-before-overflow.md and the agent handoff steps).
+if [ "$MODE" = "no-revert" ]; then
+  echo "git-snapshot.sh: --no-revert mode -- the working tree will NOT be modified." >&2
+else
+  echo "git-snapshot.sh: WARNING -- ${MODE} mode REVERTS the working tree." >&2
+  echo "  Your uncommitted changes are about to be removed from the working directory." >&2
+  echo "  They stay recoverable via the patch / stash / branch reported on completion, but" >&2
+  echo "  they will no longer be present as live edits. --branch does NOT avoid this; it" >&2
+  echo "  only changes the recovery handle. If you intend to keep working, abort and re-run" >&2
+  echo "  with --no-revert." >&2
+fi
+
 if [ "$MODE" = "branch" ]; then
   ORIGINAL_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
   BRANCH_NAME="wip-snapshot-${TS}"
@@ -304,4 +317,17 @@ echo "  patch:  ${PATCH_PATH}"
 echo "  stash:  ${STASH_REF}"
 echo "  branch: ${BRANCH_NAME}"
 echo "  marker: ${MARKER_PATH}"
+
+# Post-op notice, on stderr for the same stdout-compatibility reason as the pre-op warning.
+if [ "$MODE" = "no-revert" ]; then
+  echo "git-snapshot.sh: the working tree was left UNCHANGED -- your edits are still present." >&2
+  echo "  Because the tree is still dirty, a destructive git command run after this will" >&2
+  echo "  discard those live edits; recover them from the patch / stash / untracked backup." >&2
+else
+  echo "git-snapshot.sh: THE WORKING TREE WAS JUST RESET TO HEAD." >&2
+  echo "  Your uncommitted changes are no longer in the working directory. Recover with:" >&2
+  echo "    patch  -> git apply ${PATCH_PATH}" >&2
+  [ "$STASH_REF" = "NONE" ] || echo "    stash  -> git stash pop ${STASH_REF}" >&2
+  [ "$BRANCH_NAME" = "NONE" ] || echo "    branch -> git checkout ${BRANCH_NAME}" >&2
+fi
 exit 0
