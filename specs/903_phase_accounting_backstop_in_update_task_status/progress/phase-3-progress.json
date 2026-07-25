@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Empirical validation gate for the refuse rollout",
+  "started_at": "2026-07-25T16:25:00Z",
+  "last_updated": "2026-07-25T16:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Select sample of at least 8 recent completed tasks with plan files", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run/count phase headings per sampled task", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Count with identical regexes and record done/total per task", "status": "done", "files_touched": ["specs/903_phase_accounting_backstop_in_update_task_status/plans/01_phase-accounting-backstop.md"]},
+    {"id": 4, "description": "Classify each sampled task", "status": "done", "files_touched": ["specs/903_phase_accounting_backstop_in_update_task_status/plans/01_phase-accounting-backstop.md"]},
+    {"id": 5, "description": "Record tally and verdict", "status": "done", "files_touched": ["specs/903_phase_accounting_backstop_in_update_task_status/plans/01_phase-accounting-backstop.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "PASS: 10/10 sampled completed tasks (899,895,891,890,889,888,886,884,883,882) show done==total, 0 stuck-at-NOT-STARTED. 100% >= 80% pass criterion. Phases 4-5 proceed with refuse as planned. Read-only phase; git status --porcelain confirms no unintended modifications (only the plan file's own checklist/verdict update)."
+}

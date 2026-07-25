@@ -428,7 +428,7 @@ this point. No cleanup change is needed.
 
 ---
 
-### Phase 3: Empirical validation gate for the `refuse` rollout [NOT STARTED]
+### Phase 3: Empirical validation gate for the `refuse` rollout [COMPLETED]
 
 **Goal**: Prove, before any `refuse` opt-in ships, that genuinely-complete implementations do
 leave their plan files' phase headings at `[COMPLETED]`. This is the research report's explicit
@@ -437,23 +437,40 @@ fails, Phases 4 and 5 must be re-scoped to `warn` and the failure recorded, rath
 proceeding.**
 
 **Tasks**:
-- [ ] Select a sample of at least 8 recent tasks whose `state.json` status is `completed` and
-      which have a plan file under `specs/{NNN}_{SLUG}/plans/`
-- [ ] For each, run the new machinery in preview mode:
-      `bash agent-system/extensions/core/scripts/update-task-status.sh postflight <N> implement validation-probe --dry-run --phase-check=refuse`
-      (`--dry-run` guarantees zero writes; for an already-`completed` task the `state_is_noop`
-      exclusion additionally means the gate does not even evaluate — so for the probe, note that
-      the gate is skipped and instead directly count headings on the same resolved plan file)
-- [ ] Because `state_is_noop` short-circuits the gate for already-`completed` tasks, perform the
-      substantive count directly with the identical regexes:
-      ```bash
-      total=$(grep -c '^### Phase [0-9][0-9]*:.*\[[A-Z][A-Z ]*\][[:space:]]*$' "$plan" 2>/dev/null) || total=0
-      done=$(grep -c '^### Phase [0-9][0-9]*:.*\[COMPLETED\][[:space:]]*$' "$plan" 2>/dev/null) || done=0
-      ```
-      and record `done/total` per sampled task
-- [ ] Classify each sampled task: all-complete (supports `refuse`), partially-marked (false-refusal
-      risk), or zero conforming headings (inconclusive pass-through, harmless)
-- [ ] Record the tally and the verdict in the phase's verification notes
+- [x] Select a sample of at least 8 recent tasks whose `state.json` status is `completed` and
+      which have a plan file under `specs/{NNN}_{SLUG}/plans/` *(completed: 10 sampled, spanning
+      active `state.json` completed tasks and `specs/archive/`)*
+- [x] For each, run the new machinery in preview mode / count headings directly *(completed:
+      `state_is_noop` correctly short-circuited the gate on the 3 active-completed samples per
+      Phase 2's live verification, so the substantive count was taken directly per the next
+      task)*
+- [x] Count directly with the identical regexes and record `done/total` per sampled task
+      *(completed — table below)*
+- [x] Classify each sampled task *(completed: all 10 are all-complete)*
+- [x] Record the tally and the verdict *(completed — below)*
+
+**Empirical results** (10 samples, `grep -c` regex identical to the script's
+`count_plan_phases()`):
+
+| Task | done/total | Plan file | Stuck-at-`[NOT STARTED]` headings |
+|------|-----------|-----------|------------------------------------|
+| 899 | 3/3 | `01_batch-orchestration-guardrails.md` | 0 |
+| 895 | 6/6 | `01_infra-failure-vs-work-cycle.md` | 0 |
+| 891 | 3/3 | `01_gate-completion-on-phase-progress.md` | 0 |
+| 890 | 5/5 | `01_backport-defect-fixes.md` | 0 |
+| 889 | 6/6 | `01_root-resolution-guard.md` | 0 |
+| 888 | 2/2 | `01_harden-extension-discovery.md` | 0 |
+| 886 | 6/6 | `01_transcript-corpus-harvest.md` | 0 |
+| 884 | 4/4 | `01_extend-git-guard-overstaging.md` | 0 |
+| 883 | 3/3 | `01_gitignore-untrack-ephemeral-state.md` | 0 |
+| 882 | 6/6 | `01_scope-mutex-state-write-serialization.md` | 0 |
+
+**Verdict**: 10/10 sampled tasks (100%) show `done == total`, well above the 80% pass
+criterion, and zero sampled tasks show any phase heading stuck at `[NOT STARTED]` despite a
+`completed` state.json status. No sampled task had zero conforming headings, so the
+inconclusive-pass-through case was not exercised by this sample (already covered separately by
+Phase 2's live verification against task 887, whose empty `plans/` directory produced the
+`-- inconclusive` line). **PASS — Phases 4 and 5 proceed with `refuse` as planned.**
 
 **Pass criterion**: at least 80% of sampled tasks that have conforming phase headings show
 `done == total`, AND no sampled task shows a plan file with headings stuck at `[NOT STARTED]`
