@@ -11,12 +11,11 @@ next_project_number: 903
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,892,893,894,895 | -- | agent-system |
-| 2 | 887,896,897 | 873,892,895 | agent-system |
-| 3 | 898 | 897 | agent-system |
-| 4 | 900 | 898 | agent-system |
-| 5 | 901 | 900 | agent-system |
-| 6 | 902 | 901 | agent-system |
+| 1 | 873,885,892,893,894,897 | -- | agent-system |
+| 2 | 887,896,898 | 873,892,897 | agent-system |
+| 3 | 900 | 898 | agent-system |
+| 4 | 901 | 900 | agent-system |
+| 5 | 902 | 901 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -29,12 +28,11 @@ next_project_number: 903
   └─ 896 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
 893 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
 894 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
-895 [IMPLEMENTING] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
-  └─ 897 [NOT STARTED] — LOWER PRIORITY. Observed in the same full /orchestrate run (lean4
-    └─ 898 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-      └─ 900 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-        └─ 901 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-          └─ 902 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+897 [NOT STARTED] — LOWER PRIORITY. Observed in the same full /orchestrate run (lean4
+  └─ 898 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+    └─ 900 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+      └─ 901 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+        └─ 902 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ## Tasks
 
@@ -261,12 +259,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 895. Distinguish infrastructure failure from a genuine /orchestrate work cycle
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 891
 - **Research**: [895_separate_infra_failure_from_orchestrate_work_cycles/reports/01_infra-failure-vs-work-cycle.md]
 - **Plan**: [895_separate_infra_failure_from_orchestrate_work_cycles/plans/01_infra-failure-vs-work-cycle.md]
+- **Summary**: [895_separate_infra_failure_from_orchestrate_work_cycles/summaries/01_infra-failure-vs-work-cycle-summary.md]
 
 **Description**: Observed in a single full /orchestrate run (lean4 task, 8 implementation phases, 5 cycles) as one of six agent-system defects.
 

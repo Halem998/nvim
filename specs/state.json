@@ -99,7 +99,7 @@
     {
       "project_number": 895,
       "project_name": "separate_infra_failure_from_orchestrate_work_cycles",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Distinguish infrastructure failure from a genuine /orchestrate work cycle",
@@ -112,7 +112,7 @@
         "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
       ],
       "created": "2026-07-24T00:00:00Z",
-      "last_updated": "2026-07-25T14:35:44Z",
+      "last_updated": "2026-07-25T14:51:20Z",
       "session_id": "sess_1784989231_f82b61",
       "artifacts": [
         {
@@ -124,8 +124,14 @@
           "path": "specs/895_separate_infra_failure_from_orchestrate_work_cycles/plans/01_infra-failure-vs-work-cycle.md",
           "type": "plan",
           "summary": "6-phase plan: capped infra-failure counter with two-signal discrimination"
+        },
+        {
+          "path": "specs/895_separate_infra_failure_from_orchestrate_work_cycles/summaries/01_infra-failure-vs-work-cycle-summary.md",
+          "type": "summary",
+          "summary": "Capped infra-failure counter with two-signal AND discrimination"
         }
-      ]
+      ],
+      "completion_summary": "Added a capped infra-failure counter (MAX_INFRA_FAILURES=3) to both /orchestrate variants so transport/API failures that ran no subagent are not charged against MAX_CYCLES. Exemption requires two corroborating signals joined by AND (narrated transport-error judgment plus a .return-meta.json mtime check against the dispatch window); either alone defaults to charging. Also fixed the worse multi-task Stage MT-4 manifestation, which previously marked such tasks failed with no retry. Worst-case bound is MAX_CYCLES + MAX_INFRA_FAILURES (8 base, 16 hard)."
     },
     {
       "project_number": 896,
