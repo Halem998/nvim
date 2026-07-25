@@ -7,7 +7,7 @@
 #   3. Plan file (optional, via update-plan-status.sh)
 #
 # Usage:
-#   .claude/scripts/update-task-status.sh <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready]
+#   .claude/scripts/update-task-status.sh <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready] [--phase-check=warn|refuse]
 #
 # Arguments:
 #   operation     - "preflight" or "postflight"
@@ -25,6 +25,17 @@
 #   3 - plan file update failed after state.json was written, on implement postflight only
 #       (retry after fixing the plan file; the state.json write is idempotent and will no-op
 #       on retry, so the plan/phase updates re-fire and the retry is genuinely effective)
+#   4 - Phase-accounting backstop refused the transition (the task's plan file shows incomplete
+#       phases); no state.json write and no plan-file status stamp occurred. Only reachable when
+#       --phase-check=refuse is explicitly passed on a postflight implement call.
+#
+# Optional flag: --phase-check=warn|refuse
+#   Absent by default. When absent, this script behaves exactly as it did before the flag
+#   existed. When present, and only when operation==postflight and target_status==implement,
+#   the script independently counts the task plan file's own `### Phase N: ... [STATUS]`
+#   headings (never a caller-supplied count) and acts on conclusive on-disk evidence of
+#   incompleteness: `warn` logs loudly and proceeds, `refuse` exits 4 without writing anything.
+#   Passing the flag with any other operation/target_status pair is silently ignored.
 
 set -euo pipefail
 
@@ -97,12 +108,14 @@ trap cleanup EXIT
 # --- Parse arguments ---
 DRY_RUN=false
 ALLOW_PR_READY=false
+PHASE_CHECK=""
 POSITIONAL_ARGS=()
 
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
     --allow-pr-ready) ALLOW_PR_READY=true ;;
+    --phase-check=*) PHASE_CHECK="${arg#--phase-check=}" ;;
     *) POSITIONAL_ARGS+=("$arg") ;;
   esac
 done
@@ -114,7 +127,7 @@ session_id="${POSITIONAL_ARGS[3]:-}"
 
 # --- Validation ---
 if [[ -z "$operation" || -z "$task_number" || -z "$target_status" || -z "$session_id" ]]; then
-  echo "Usage: $0 <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready]" >&2
+  echo "Usage: $0 <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready] [--phase-check=warn|refuse]" >&2
   echo "  operation:     preflight | postflight" >&2
   echo "  target_status: research | plan | implement | pr_ready | partial | blocked (pr_ready requires task_type==pr unless --allow-pr-ready; partial/blocked are postflight-only)" >&2
   exit 1
@@ -132,6 +145,13 @@ fi
 
 if ! [[ "$task_number" =~ ^[0-9]+$ ]]; then
   echo "Error: task_number must be a positive integer, got '$task_number'" >&2
+  exit 1
+fi
+
+# A typo'd --phase-check value must never SILENTLY disable the very protection the caller
+# intended to enable, so a bad value is a hard validation error rather than a fallback to no-op.
+if [[ -n "$PHASE_CHECK" && "$PHASE_CHECK" != "warn" && "$PHASE_CHECK" != "refuse" ]]; then
+  echo "Error: --phase-check must be 'warn' or 'refuse', got '$PHASE_CHECK'" >&2
   exit 1
 fi
 
