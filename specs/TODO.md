@@ -29,7 +29,7 @@ next_project_number: 903
   └─ 896 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
 893 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
 894 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
-895 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
+895 [IMPLEMENTING] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
   └─ 897 [NOT STARTED] — LOWER PRIORITY. Observed in the same full /orchestrate run (lean4
     └─ 898 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
       └─ 900 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
@@ -261,10 +261,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 895. Distinguish infrastructure failure from a genuine /orchestrate work cycle
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 891
+- **Research**: [895_separate_infra_failure_from_orchestrate_work_cycles/reports/01_infra-failure-vs-work-cycle.md]
+- **Plan**: [895_separate_infra_failure_from_orchestrate_work_cycles/plans/01_infra-failure-vs-work-cycle.md]
 
 **Description**: Observed in a single full /orchestrate run (lean4 task, 8 implementation phases, 5 cycles) as one of six agent-system defects.
 

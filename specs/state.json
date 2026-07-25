@@ -99,7 +99,7 @@
     {
       "project_number": 895,
       "project_name": "separate_infra_failure_from_orchestrate_work_cycles",
-      "status": "not_started",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Distinguish infrastructure failure from a genuine /orchestrate work cycle",
@@ -112,9 +112,20 @@
         "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
       ],
       "created": "2026-07-24T00:00:00Z",
-      "last_updated": "2026-07-24T00:00:00Z",
-      "session_id": "sess_1784932361_05a63f_895",
-      "artifacts": []
+      "last_updated": "2026-07-25T14:35:44Z",
+      "session_id": "sess_1784989231_f82b61",
+      "artifacts": [
+        {
+          "path": "specs/895_separate_infra_failure_from_orchestrate_work_cycles/reports/01_infra-failure-vs-work-cycle.md",
+          "type": "report",
+          "summary": "Two-signal infra-failure discrimination; MAX_INFRA_FAILURES=3"
+        },
+        {
+          "path": "specs/895_separate_infra_failure_from_orchestrate_work_cycles/plans/01_infra-failure-vs-work-cycle.md",
+          "type": "plan",
+          "summary": "6-phase plan: capped infra-failure counter with two-signal discrimination"
+        }
+      ]
     },
     {
       "project_number": 896,
