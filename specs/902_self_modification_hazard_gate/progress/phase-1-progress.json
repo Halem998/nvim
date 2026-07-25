@@ -1,0 +1,58 @@
+{
+  "phase": 1,
+  "phase_name": "Declare the Critical Set as Data and Record Its Rationale",
+  "started_at": "2026-07-25T00:00:00Z",
+  "last_updated": "2026-07-25T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create orchestrator-critical-paths.json data file",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/reference/orchestrator-critical-paths.json"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add Self-Modification Hazard section to batch-orchestration-guardrails.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Add classification row and extend Three Existing Admission Layers framing",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Add consumers entry to file-footprint-overlap.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/file-footprint-overlap.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Add row to context/reference/README.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/reference/README.md"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Verify no task-number citations introduced; verify check-extension-docs.sh no new failures",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

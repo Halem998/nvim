@@ -10,6 +10,7 @@ This directory contains schema definitions and reference documentation for the a
 | skill-agent-mapping.md | Skill-to-agent routing and delegation reference |
 | artifact-templates.md | Error report template (other artifact types use format files in `../formats/`) |
 | workflow-diagrams.md | Visual diagrams for research, planning, implementation, and error recovery workflows |
+| orchestrator-critical-paths.json | Declared list of orchestrator-critical paths and scope roots consumed by `orchestrate-batch-admit.sh`'s self-modification hazard check |
 
 ## Purpose
 

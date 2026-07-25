@@ -27,6 +27,13 @@ concurrency strategy:
    overlapping foreign lock causes refusal; a stale one warns and proceeds. Scan scope: every
    currently-held lock, repo-wide.
 
+A fourth, orthogonal dimension is layered on top of the batch-admission layer (layer 2's
+cross-batch extension, `orchestrate-batch-admit.sh`): the **self-modification hazard** check. It
+is not a new scan scope — it reuses layer 2's existing single-`specs/state.json`-read admission
+call — but a different *predicate* evaluated on the same candidate before the pairwise overlap
+scan runs at all: does the candidate's own `file_scope` name an orchestrator-critical file? See
+"Self-Modification Hazard: The Fourth Admission Dimension" below for the full rationale.
+
 Layers 1-2 are a cheap, no-agent-invoked, optimistic pre-check: they decide whether to even
 attempt concurrent dispatch. Layer 3 is a pessimistic enforcement lock: it is the mutex that
 actually prevents two concurrent writers. The layers are independently sound, but their scan
@@ -61,8 +68,114 @@ never demotes a check to advisory.
 | File-scope overlap (creation-time and runtime wave/cycle-split) | BLOCKING | On-disk `file_scope` comparison, no agent invoked; an unserialized overlap risks silent concurrent-write corruption discovered only later |
 | Held lock (lock-acquisition-time) | BLOCKING | On-disk lock state, no agent invoked; proceeding past a live lock risks the same silent corruption |
 | Unmet predecessor (dependency-graph eligibility) | BLOCKING | On-disk dependency edge and terminal-status check, no agent invoked; treating an unmet dependency as satisfied is silent and hard to detect after the fact |
+| Self-modification hazard (candidate `file_scope` names an orchestrator-critical path) | BLOCKING | Computable from the candidate's own on-disk `file_scope` against a fixed, declared critical-path list — no agent invoked; the harm (an unverifiable orchestrator-machinery fix bundled into a multi-task batch commit) is silent and hard to attribute later, satisfying both halves of the criterion |
 | Heuristic drift-percentage signal | ADVISORY | The signal is an estimate from a fork's plan inspection, not a hard fact — fails condition 1's structural-fact requirement in spirit even though it reads on-disk state, because the *derived* percentage is inherently approximate |
 | Absent completion-marker verification signal (`plan_markers_verified` missing or false) | ADVISORY | Per the handoff schema's own documented behavior, this warns but does not block the next lifecycle phase — the condition is logged, not gated, because it is deliberately designed as a non-blocking signal |
+
+## Self-Modification Hazard: The Fourth Admission Dimension
+
+A candidate task whose declared `file_scope` names a file that is itself part of the orchestrator
+machinery — the dispatch loop, the admission predicate, the lock, the status gatekeeper — poses a
+qualitatively different hazard than an ordinary file-scope collision: the running session that
+would admit, batch-commit, and grade that fix is the very machinery the fix changes. This section
+records the two tests used to decide which files belong on that list, not merely today's answer,
+so a future reader can judge a *newly proposed* file rather than pattern-match on the names below.
+
+### The Two Conjunctive Tests
+
+A file belongs on the critical-path list if and only if **both** hold:
+
+1. **Reachability** — the file is actually read or executed on the MULTI-TASK batch-dispatch
+   path. Single-task `/orchestrate` never has siblings to worry about, so a file that is only
+   reachable there is out of scope for this specific gate (it may still be sensitive for other
+   reasons, but this gate exists to protect *concurrent, batched* dispatch).
+2. **Decision-relevance** — a defect in the file yields a silent WRONG admission, wave, lock, or
+   completion decision, not a loud failure and not a merely cosmetic one. A file that would fail
+   loudly (aborting the run) or that only affects reporting/formatting fails this test even if it
+   is reachable.
+
+Both tests must hold. A file that is reachable but not decision-relevant, or decision-relevant
+but not reachable from MT dispatch, is excluded.
+
+### Inclusion Table (the nine files, with per-file evidence)
+
+| # | Path (relative to the core extension root) | Reachability evidence | Decision-relevance evidence |
+|---|---|---|---|
+| 1 | `skills/skill-orchestrate/SKILL.md` | The multi-task dispatch state machine itself — Stages MT-1 through MT-5 ARE the MT batch-dispatch path | A defect here silently mis-routes eligibility, wave/cycle admission, or postflight status — the core decision surface |
+| 2 | `skills/skill-orchestrate-hard/SKILL.md` | Hard-mode inherits and extends MT-1..MT-5 for `/orchestrate --hard` batch runs | Same class of silent mis-routing risk as #1, scoped to the hard-mode contract layer |
+| 3 | `commands/orchestrate.md` | The command entry point that builds the wave schedule and invokes the admission predicate for MT dispatch (Step 3) | A defect silently changes which wave a task lands in, or skips the admission call entirely |
+| 4 | `scripts/skill-base.sh` | Sourced by preflight/postflight for every dispatched task in a batch | A defect silently corrupts the preflight/postflight/completion-claim gate for every task in the batch, not just one |
+| 5 | `scripts/task-lock.sh` | Acquired/released per task inside MT dispatch (Stage MT-4) | A defect silently breaks the concurrency mutex itself — the last line of defense against two tasks writing the same files |
+| 6 | `scripts/update-task-status.sh` | Invoked by postflight for every task a batch dispatches | A defect silently writes a wrong status transition, corrupting `state.json` for the whole batch |
+| 7 | `scripts/orchestrate-batch-admit.sh` | THE admission predicate this gate itself extends; called once per wave/cycle | A defect here is maximally silent: it IS the mechanism deciding admission, so a bug in it defeats the very check meant to catch bugs like it |
+| 8 | `scripts/orchestrate-triage-classify.sh` | Called once per MT cycle (Stage MT-4) to route tasks to research/plan/implement | A defect silently misroutes a task to the wrong lifecycle phase |
+| 9 | `scripts/orchestrate-dry-run-report.sh` | Composes the `--dry-run` report human operators trust to preview a live run | A defect silently misrepresents what a live run would actually do, undermining the one human-facing verification surface for batch composition |
+
+### Exclusion Table (explicitly excluded, with evidence)
+
+**Excluded on the skill's own explicit statement / zero-reference grep** (fails reachability):
+
+| Path | Evidence |
+|---|---|
+| `scripts/command-gate-in.sh` | `skills/skill-orchestrate/SKILL.md` states explicitly that MT dispatch never sources the single-task gate-in/gate-out scripts — the MT path has its own Stage MT-1/MT-2 initialization instead |
+| `scripts/command-gate-out.sh` | Same explicit statement as above — MT dispatch never sources it |
+| `scripts/orchestrator-postflight.sh` | Zero references anywhere in `skills/skill-orchestrate/SKILL.md` (confirmed by grep at authoring time) — this script belongs to a different command's postflight, not MT dispatch |
+
+**Reachable but not decision-relevant** (fails decision-relevance — these files are read on the
+MT path but a defect in them fails loudly or is merely cosmetic, not a silent wrong decision):
+
+| Path | Evidence |
+|---|---|
+| `scripts/generate-todo.sh` | Regenerates the human-facing `TODO.md` view from `state.json` — a defect produces a visibly wrong rendered file, not a silent wrong admission/wave/lock/completion decision |
+| `scripts/validate-artifact.sh` | Validates artifact format/presence — a defect fails loudly (a validation error) rather than silently corrupting a scheduling decision |
+| `scripts/lifecycle-notify.sh` | A notification/logging hook — a defect at worst drops or garbles a notification; it does not feed back into any admission, wave, lock, or completion decision |
+
+### The Deploy-Manual Analysis and the Three Surviving Hazards
+
+The research behind this gate initially hypothesized that a source-store edit to orchestrator
+machinery could corrupt the *currently running* session. That hypothesis does not hold: this
+repository's core extension deploys manually (a human runs `<leader>al` / "Load Core" to
+regenerate `.claude/` from `agent-system/extensions/core/`), so a source-store edit cannot alter
+a session already in flight. That reversal does not cancel the gate — it redefines what the gate
+actually protects, to three hazards that survive the corrected model:
+
+1. **Verification-gap risk** — a fix to orchestrator machinery is necessarily verified only
+   against a scratch deploy-tree copy (per this plan's own SOURCE-STORE RULE), never against the
+   live, running system it will eventually become. That gap is real regardless of whether
+   redeploy is immediate or manual.
+2. **Rollback/commit-granularity risk** — a multi-task batch commit mixes N tasks' index rows and
+   diffs into one commit. If the self-modifying task's change needs to be reverted, isolating it
+   from sibling tasks' unrelated changes in the same commit is harder than it would be for a
+   solo, single-task commit.
+3. **Bootstrapping risk** — admission for the task rewriting the admission predicate (or any of
+   the other eight files) is decided by the OLD, currently-deployed copy of that same machinery.
+   A defect the new candidate is trying to fix cannot fix its own admission decision; only a solo
+   run followed by a manual redeploy breaks that circularity.
+
+A later maintainer must not read the disproven live-corruption hypothesis as license to relax or
+remove this gate — the three hazards above are the actual, surviving rationale.
+
+### Scope Limitation and Residual Risk
+
+This gate is `/orchestrate`-only. Plain multi-task `/implement N,M`, `/research N,M`, and `/plan
+N,M` never call `orchestrate-batch-admit.sh` at all, so a self-modifying task run through one of
+those commands is invisible to this gate. This is a known, accepted scope limitation, not a
+silently-absorbed gap — a follow-up task would be required to extend equivalent protection to
+those commands, should that ever be judged necessary.
+
+Separately, and out of scope for this gate: a multi-task `/orchestrate` batch commit does not
+currently stage an implementation agent's self-reported `modified_files` per task (the batch
+commit staging gap). This is a distinct defect flagged by the originating research for a future
+task; this gate does not fix it.
+
+### Note on Reachability Durability
+
+The reachability conclusion for the three explicitly-excluded files (`command-gate-in.sh`,
+`command-gate-out.sh`, `orchestrator-postflight.sh`) is a fact about the CURRENT MT dispatch
+implementation, not a permanent property of those files. If MT dispatch is ever rerouted through
+the Skill tool in a way that sources any of them, the reachability test flips for that file and
+it should be re-evaluated for inclusion using the same two tests above — not grandfathered out
+because it was excluded once.
 
 ## Admission-Time vs. Mid-Flight: A Knowability Test
 
@@ -191,3 +304,8 @@ This document states principles only. The mechanisms are defined, exactly once e
   MUST NOT section).
 - **Creation-time overlap component**: `docs/reference/standards/multi-task-creation-standard.md`
   — the file-scope capture and overlap-detection component invoked at task-creation time.
+- **Self-modification hazard data and schema**: `context/reference/orchestrator-critical-paths.json`
+  — the single declaration of the nine-file critical-path list and its `scope_roots` expansion
+  rule, consumed by `scripts/orchestrate-batch-admit.sh`; and
+  `docs/architecture/batch-admit-schema.md` — the `self_modifying` / `defer_reason` verdict fields
+  this fourth dimension adds to the admission predicate's output.

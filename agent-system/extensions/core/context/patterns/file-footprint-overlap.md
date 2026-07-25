@@ -99,6 +99,17 @@ levels:
   only sees currently-held locks). Consumers: `commands/orchestrate.md` Step 3 (pre-computed wave
   schedule) and `skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 (per-cycle eligibility
   gate). See `docs/architecture/batch-admit-schema.md` for the verdict schema this caller emits.
+- **Self-modification-hazard application** (same caller as above, a further application of this
+  same predicate rather than a new matching rule): before the cross-batch comparison above runs,
+  `orchestrate-batch-admit.sh` also tests a candidate's own `file_scope` against a fixed, declared
+  list of orchestrator-critical paths (`context/reference/orchestrator-critical-paths.json`),
+  using this document's identical `overlaps(pathA, pathB)` predicate — exact match or either-side
+  directory-prefix containment. The only difference from the callers above is what the candidate
+  is compared AGAINST (a static declared list rather than other tasks' `file_scope`); the
+  matching rule itself is unchanged. See
+  `context/patterns/batch-orchestration-guardrails.md`'s "Self-Modification Hazard" section for
+  the rationale behind the declared list, and `docs/architecture/batch-admit-schema.md` for the
+  `self_modifying` verdict field this application produces.
 
 All four callers reference this document by path; none restates the normalization or overlap
 rule inline.

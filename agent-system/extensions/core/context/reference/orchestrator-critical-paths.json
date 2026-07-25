@@ -1,0 +1,46 @@
+{
+  "$schema": "orchestrator-critical-paths-v1",
+  "scope_roots": [
+    "agent-system/extensions/core",
+    ".claude",
+    ".opencode"
+  ],
+  "critical_paths": [
+    {
+      "path": "skills/skill-orchestrate/SKILL.md",
+      "label": "multi-task dispatch state machine"
+    },
+    {
+      "path": "skills/skill-orchestrate-hard/SKILL.md",
+      "label": "hard-mode dispatch contracts"
+    },
+    {
+      "path": "commands/orchestrate.md",
+      "label": "wave/admission/commit logic"
+    },
+    {
+      "path": "scripts/skill-base.sh",
+      "label": "preflight/postflight/completion-claim gate"
+    },
+    {
+      "path": "scripts/task-lock.sh",
+      "label": "concurrency lock"
+    },
+    {
+      "path": "scripts/update-task-status.sh",
+      "label": "status-transition gatekeeper"
+    },
+    {
+      "path": "scripts/orchestrate-batch-admit.sh",
+      "label": "admission predicate"
+    },
+    {
+      "path": "scripts/orchestrate-triage-classify.sh",
+      "label": "phase-routing classifier"
+    },
+    {
+      "path": "scripts/orchestrate-dry-run-report.sh",
+      "label": "admission report surface"
+    }
+  ]
+}
