@@ -22,6 +22,17 @@
 SKILL_CONTEXT_BUDGET="${SKILL_CONTEXT_BUDGET:-8000}"
 
 # ─────────────────────────────────────────────────────────────────────────────
+# REPO ROOT ANCHOR
+# This file is deployed at <repo-root>/.claude/scripts/skill-base.sh, so the repo root is two
+# directories up from this file's own location. Resolving from BASH_SOURCE — rather than from
+# the ambient working directory or `git rev-parse --show-toplevel` — keeps paths built below
+# correct no matter where the caller's shell happens to be, and stays correct inside git
+# worktrees and nested repos where `git rev-parse` answers a different question.
+# Override only in tests.
+SKILL_REPO_ROOT="${SKILL_REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
+export SKILL_REPO_ROOT
+
+# ─────────────────────────────────────────────────────────────────────────────
 # EXTENSION HOOKS: Lifecycle hook invocation for loaded extensions.
 #
 # Extensions may declare hook scripts in manifest.json under a top-level
@@ -170,12 +181,16 @@ skill_validate_input() {
   PROJECT_NAME=$(echo "$TASK_DATA" | jq -r '.project_name')
   DESCRIPTION=$(echo "$TASK_DATA" | jq -r '.description // ""')
   TASK_DIR="specs/${PADDED_NUM}_${PROJECT_NAME}"
+  # Absolute companion to TASK_DIR. TASK_DIR stays relative because many existing consumers
+  # depend on its relative form; TASK_DIR_ABS is the anchor to hand to dispatched agents and
+  # to build write destinations from.
+  TASK_DIR_ABS="${SKILL_REPO_ROOT}/${TASK_DIR}"
   # Block terminal states
   if [ "$TASK_STATUS" = "completed" ] || [ "$TASK_STATUS" = "abandoned" ] || [ "$TASK_STATUS" = "expanded" ]; then
     echo "ERROR: Task $task_number is in terminal state [$TASK_STATUS]" >&2
     exit 1
   fi
-  export TASK_DATA TASK_TYPE TASK_STATUS PROJECT_NAME DESCRIPTION PADDED_NUM TASK_DIR
+  export TASK_DATA TASK_TYPE TASK_STATUS PROJECT_NAME DESCRIPTION PADDED_NUM TASK_DIR TASK_DIR_ABS
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -510,7 +525,12 @@ skill_write_orchestrator_handoff() {
     return 0
   fi
 
-  local handoff_path="specs/${padded_num}_${project_name}/.orchestrator-handoff.json"
+  # ABSOLUTE, not cwd-relative. A bare `specs/...` string written via the Bash redirect below
+  # lands wherever the shell's working directory happens to be at call time, which silently
+  # strands the handoff outside the task directory and leaves the orchestrator reading the
+  # previous cycle's file. SKILL_REPO_ROOT is resolved from BASH_SOURCE at source time.
+  local handoff_path="${SKILL_REPO_ROOT}/specs/${padded_num}_${project_name}/.orchestrator-handoff.json"
+  mkdir -p "$(dirname "$handoff_path")"
 
   # Truncate summary at ~100 tokens (~400 chars) to respect token budget
   local truncated_summary
@@ -535,7 +555,14 @@ skill_write_orchestrator_handoff() {
   local phases_completed="${ORCHESTRATOR_HANDOFF_PHASES_COMPLETED:-0}"
   local phases_total="${ORCHESTRATOR_HANDOFF_PHASES_TOTAL:-0}"
 
-  # Write handoff JSON
+  # Write handoff JSON.
+  # NOTE: this is a Bash redirect, not a Write-tool call. The PostToolUse location hook
+  # (hooks/validate-handoff-location.sh) reads tool_input.file_path and therefore CANNOT see
+  # this write at all — a Bash tool_input carries the unexpanded command text, in which
+  # "$handoff_path" appears verbatim and its resolved value is unrecoverable. The absolute
+  # path constructed above, plus the orchestrator-side stray sweep in skill-orchestrate
+  # Stage 5, are what protect this code path. Do not weaken the absolute anchor on the
+  # assumption that the hook is a backstop here; it is not.
   jq -n \
     --arg schema "orchestrator-handoff-v1" \
     --arg phase "$phase" \
