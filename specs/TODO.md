@@ -11,7 +11,7 @@ next_project_number: 910
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,904,905,909 | -- | agent-system, literature |
+| 1 | 873,885,905,909 | -- | agent-system, literature |
 | 2 | 887,906 | 873,885 | agent-system |
 | 3 | 907 | 906 | agent-system |
 | 4 | 908 | 907 | agent-system |
@@ -20,8 +20,8 @@ next_project_number: 910
 
 ### Agent System
 
-873 [PARTIAL] — Make /meta create tasks in the GLOBAL agent-system root by defaul
-  └─ 887 [RESEARCHED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
+873 [BLOCKED] — Make /meta create tasks in the GLOBAL agent-system root by defaul
+  └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
   └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
@@ -30,7 +30,6 @@ next_project_number: 910
 
 ### Literature
 
-904 [NOT STARTED] — Eliminate the two remaining bypasses of the shared Zotero sqlite-
 905 [NOT STARTED] — Make Zotero export staleness a detected, propagated, and loudly-s
 
 ## Tasks
@@ -266,10 +265,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 904. Delegate Zotero data-directory resolution to the shared resolver
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [904_zotero_resolver_delegation_audit_setup/reports/01_zotero-resolver-delegation.md]
+- **Plan**: [904_zotero_resolver_delegation_audit_setup/plans/01_zotero-resolver-delegation.md]
+- **Summary**: [904_zotero_resolver_delegation_audit_setup/summaries/01_zotero-resolver-delegation-summary.md]
 
 **Description**: Eliminate the two remaining bypasses of the shared Zotero sqlite-path resolver. Both defects share one root cause: a second, independently-maintained data-directory resolution ladder that disagrees with the canonical one.
 
@@ -706,7 +708,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 887. Research: telemetry source architecture and /distill redesign
-- **Status**: [RESEARCHED]
+- **Status**: [BLOCKED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 873
@@ -786,7 +788,7 @@ DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside s
 ---
 
 ### 873. Add global-default target resolution and --local flag to /meta
-- **Status**: [PARTIAL]
+- **Status**: [BLOCKED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None

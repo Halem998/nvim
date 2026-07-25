@@ -261,7 +261,7 @@
     {
       "project_number": 873,
       "project_name": "global_default_target_resolution_for_meta",
-      "status": "partial",
+      "status": "blocked",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Add global-default target resolution and --local flag to /meta",
@@ -273,8 +273,8 @@
         "agent-system/extensions/core/scripts/parse-command-args.sh"
       ],
       "created": "2026-07-15T00:00:00Z",
-      "last_updated": "2026-07-15T17:42:56Z",
-      "session_id": "sess_1784135810_7e6755_873",
+      "last_updated": "2026-07-25T21:14:38Z",
+      "session_id": "sess_1785013977_5ccd7f_873",
       "artifacts": [
         {
           "path": "specs/873_global_default_target_resolution_for_meta/reports/01_global_default_target_resolution.md",
@@ -342,7 +342,7 @@
     {
       "project_number": 887,
       "project_name": "research_telemetry_source_architecture_and_distill_redesign",
-      "status": "researched",
+      "status": "blocked",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Research: telemetry source architecture and /distill redesign",
@@ -358,8 +358,8 @@
         "agent-system/extensions/memory/index-entries.json"
       ],
       "created": "2026-07-15",
-      "last_updated": "2026-07-15T17:49:47Z",
-      "session_id": "sess_1784135810_7e6755_887",
+      "last_updated": "2026-07-25T21:24:08Z",
+      "session_id": "sess_1785013977_5ccd7f_887",
       "artifacts": [
         {
           "path": "specs/887_research_telemetry_source_architecture_and_distill_redesign/reports/01_telemetry-source-architecture.md",
@@ -595,7 +595,7 @@
     {
       "project_number": 904,
       "project_name": "zotero_resolver_delegation_audit_setup",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "literature",
       "title": "Delegate Zotero data-directory resolution to the shared resolver",
@@ -606,9 +606,26 @@
         "agent-system/extensions/literature/scripts/zotero-setup.sh"
       ],
       "created": "2026-07-25T15:05:37Z",
-      "last_updated": "2026-07-25T15:06:50Z",
-      "artifacts": [],
-      "session_id": "sess_1784991080_dc27be_904"
+      "last_updated": "2026-07-25T21:33:08Z",
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/904_zotero_resolver_delegation_audit_setup/reports/01_zotero-resolver-delegation.md",
+          "summary": "Resolver delegation research: exact patches for literature-audit.sh DEFAULT_SEARCH_PATHS and zotero-setup.sh _detect_data_dir Step 3"
+        },
+        {
+          "type": "plan",
+          "path": "specs/904_zotero_resolver_delegation_audit_setup/plans/01_zotero-resolver-delegation.md",
+          "summary": "4-phase implementation plan with per-file edit targets and run-the-scripts verification"
+        },
+        {
+          "type": "summary",
+          "path": "specs/904_zotero_resolver_delegation_audit_setup/summaries/01_zotero-resolver-delegation-summary.md",
+          "summary": "Implementation summary with pre/post-patch baseline and three-way agreement verification"
+        }
+      ],
+      "session_id": "sess_1785013977_5ccd7f_904",
+      "completion_summary": "Delegated the two remaining Zotero sqlite-path resolver bypasses (literature-audit.sh DEFAULT_SEARCH_PATHS, zotero-setup.sh _detect_data_dir Step 3) to the canonical resolver; verified live three-way agreement on the resolved data directory."
     },
     {
       "project_number": 905,
@@ -626,9 +643,9 @@
         "agent-system/extensions/literature/commands/literature.md"
       ],
       "created": "2026-07-25T15:05:37Z",
-      "last_updated": "2026-07-25T15:05:37Z",
+      "last_updated": "2026-07-25T21:14:00Z",
       "artifacts": [],
-      "session_id": "sess_1784991080_dc27be_905"
+      "session_id": "sess_1785013977_5ccd7f_905"
     },
     {
       "project_number": 906,
