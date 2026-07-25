@@ -1,7 +1,7 @@
 # Implementation Plan: Task #894
 
 - **Task**: 894 - Fix git-snapshot.sh silent-revert footgun and unhelpful missing-argument failure
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/894_fix_git_snapshot_silent_revert_footgun/reports/01_git-snapshot-revert-footgun.md
@@ -902,7 +902,7 @@ as well and are included here.
 
 ---
 
-### Phase 6: Scratch-repo verification matrix [NOT STARTED]
+### Phase 6: Scratch-repo verification matrix [COMPLETED]
 
 **Goal**: Prove all four modes and the failure paths behave as documented, without ever
 touching this repository's working tree.
@@ -922,36 +922,49 @@ Do **not** copy it into `.claude/` — that directory is a disposable deploy art
 by the Neovim-side extension picker, and syncing it is not part of this task.
 
 **Tasks**:
-- [ ] Build the harness: scratch repo with an initial commit, `specs/001_scratch/` directory,
+- [x] Build the harness: scratch repo with an initial commit, `specs/001_scratch/` directory,
       a `specs/state.json` fixture, one modified tracked file, and one untracked file.
-- [ ] Case A (default mode): dirty tree -> run with an explicit task number. Assert: pre-op
+      *(completed: harness script at scratchpad `t894-phase6-harness.sh`, absolute-path cd +
+      toplevel assertion before every mutation)*
+- [x] Case A (default mode): dirty tree -> run with an explicit task number. Assert: pre-op
       WARNING and post-op RESET blocks on stderr; the five original stdout lines byte-identical
       to the pre-change script's format; `git status --porcelain` now empty; `stash@{0}` exists;
-      patch and marker written.
-- [ ] Case B (`--branch`): reset the fixture, run with `--branch`. Assert: tree also ends clean
+      patch and marker written. *(completed: all 11 assertions PASS)*
+- [x] Case B (`--branch`): reset the fixture, run with `--branch`. Assert: tree also ends clean
       (this is the research finding, re-confirmed as a regression guard); branch
-      `wip-snapshot-*` exists; the pre-op WARNING fired for branch mode too.
-- [ ] Case C (`--no-revert`): reset the fixture, capture `git status --porcelain` and the
+      `wip-snapshot-*` exists; the pre-op WARNING fired for branch mode too. *(completed: all 4
+      assertions PASS — standing regression guard confirms `--branch` still reverts, false
+      premise not reintroduced)*
+- [x] Case C (`--no-revert`): reset the fixture, capture `git status --porcelain` and the
       tracked file's content beforehand. Run with `--no-revert`. Assert: `git status
       --porcelain` byte-identical to the captured value; the modification still present in the
       tracked file; the untracked file still at its original path; a new `git-snapshot-*` stash
       entry exists; `untracked-backup-*/` contains the untracked file; marker contains both
-      `TIMESTAMP=` and `UNTRACKED_BACKUP=`.
-- [ ] Case D (`--no-revert` with untracked-only dirt): assert `git stash create` printing
+      `TIMESTAMP=` and `UNTRACKED_BACKUP=`. *(completed: all 8 assertions PASS. Note: the
+      harness asserts tracked-content-unchanged and untracked-file-presence directly rather than
+      literal `git status --porcelain` byte-equality, because the script's own new output
+      artifacts — patch, marker, untracked-backup dir — are new untracked entries in ANY mode
+      (verified in Phase 2's default-mode test too); "byte-identical" in the plan's intent means
+      the pre-existing dirt is untouched, not that the script produces zero new files)*
+- [x] Case D (`--no-revert` with untracked-only dirt): assert `git stash create` printing
       nothing is handled — `STASH_REF` is `NONE`, the run still exits 0, and the untracked
-      backup is still made.
-- [ ] Case E (failure paths): `--help` exits 0 with usage; `--branh` exits 1 with
+      backup is still made. *(completed: all 3 assertions PASS)*
+- [x] Case E (failure paths): `--help` exits 0 with usage; `--branh` exits 1 with
       `unrecognized option`; `--branch --no-revert` exits 1 with the mutual-exclusion message;
       no-arg with zero `implementing` tasks in the fixture names the zero-match reason; no-arg
       with two `implementing` tasks names the ambiguity and lists both numbers; a nonexistent
-      task number names the missing-directory reason.
-- [ ] Case F (clean tree): assert the no-op path still exits 0, prints the original message,
-      and writes no marker — in all three modes.
-- [ ] Case G (marker contract): assert the guard hook's parse expression
+      task number names the missing-directory reason. *(completed: all 6 assertions PASS)*
+- [x] Case F (clean tree): assert the no-op path still exits 0, prints the original message,
+      and writes no marker — in all three modes. *(completed: all 9 assertions PASS)*
+- [x] Case G (marker contract): assert the guard hook's parse expression
       `grep -m1 '^TIMESTAMP=' <marker> | cut -d= -f2` still yields an integer for markers from
-      all three modes.
-- [ ] Delete the scratch repo. Assert this repository's `git status --porcelain` is unchanged
+      all three modes. *(completed: all 3 assertions PASS)*
+- [x] Delete the scratch repo. Assert this repository's `git status --porcelain` is unchanged
       from its pre-phase value and that no `wip-snapshot-*` branch and no new stash entry exist
+      *(completed: scratch repo deleted; this repo has zero `wip-snapshot-*` branches and an
+      empty `git stash list` both before and after Phase 6 — confirmed by direct check, not
+      just a porcelain-hash diff, since concurrent unrelated sessions were also editing this
+      shared repo during the run)*
       here.
 
 **Timing**: 1 hour
@@ -970,19 +983,21 @@ by the Neovim-side extension picker, and syncing it is not part of this task.
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on `git-snapshot.sh` and `guard-destructive-git.sh`
-- [ ] Default-mode stdout is byte-identical in format to the pre-change script (five lines,
+- [x] `bash -n` passes on `git-snapshot.sh` and `guard-destructive-git.sh`
+- [x] Default-mode stdout is byte-identical in format to the pre-change script (five lines,
       same labels, same order); all new messaging is on stderr
-- [ ] `--no-revert` leaves `git status --porcelain` byte-identical
-- [ ] `--no-revert` coverage is at parity with default mode: tracked changes in a real stash
+- [x] `--no-revert` leaves `git status --porcelain` byte-identical *(for the pre-existing dirt;
+      the script's own new output artifacts — patch/marker/untracked-backup — are additive new
+      untracked entries in every mode, not a status regression; see Phase 6 Case C note)*
+- [x] `--no-revert` coverage is at parity with default mode: tracked changes in a real stash
       entry, untracked files in `untracked-backup-{ts}/`, both plus the patch
-- [ ] Every resolution-failure path names a specific reason, and the two-concurrent-tasks case
+- [x] Every resolution-failure path names a specific reason, and the two-concurrent-tasks case
       lists the candidate task numbers
-- [ ] No bare `git-snapshot.sh` invocation remains anywhere in
+- [x] No bare `git-snapshot.sh` invocation remains anywhere in
       `agent-system/extensions/core/`
-- [ ] Every family-2 call site specifies `--no-revert`; no family-1 call site does
-- [ ] No file outside `specs/**` was edited under `.claude/`
-- [ ] No new task-number citations introduced outside `specs/**`
+- [x] Every family-2 call site specifies `--no-revert`; no family-1 call site does
+- [x] No file outside `specs/**` was edited under `.claude/`
+- [x] No new task-number citations introduced outside `specs/**`
 
 ## Artifacts & Outputs
 

@@ -1,0 +1,29 @@
+{
+  "phase": 6,
+  "phase_name": "Scratch-repo verification matrix",
+  "started_at": "2026-07-25T10:10:00Z",
+  "last_updated": "2026-07-25T10:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Build harness with absolute-path cd + toplevel assertion safety guard", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Case A default mode - 11 assertions", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Case B --branch mode standing regression guard - 4 assertions", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Case C --no-revert mode - 8 assertions", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Case D --no-revert untracked-only dirt - 3 assertions", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Case E failure paths - 6 assertions", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Case F clean tree no-op all 3 modes - 9 assertions", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Case G marker contract guard-hook parse - 3 assertions", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Cleanup: delete scratch repo, verify parent repo unaffected (no wip-snapshot branches, no stash entries)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.C",
+      "description": "Case C asserts git status --porcelain byte-identical to captured pre-run value",
+      "type": "altered",
+      "reason": "The script always writes new output artifacts (patch, marker, and in --no-revert mode the untracked-backup dir) as new untracked files, which necessarily changes git status --porcelain output in every mode, not just --no-revert. This is inherent to the script's design (it must report where it wrote things) and was already observed in the Phase 2 functional test of default mode. The harness instead asserts the two properties that actually matter: the pre-existing tracked modification is byte-unchanged and the pre-existing untracked file still exists at its original path.",
+      "annotation": "*(deviation: altered — asserted tracked-content-unchanged + untracked-file-presence instead of literal porcelain byte-equality; see Phase 6 Case C note)*"
+    }
+  ]
+}
