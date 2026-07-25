@@ -1119,6 +1119,30 @@
       }
     },
     {
+      "path": "patterns/infra-failure-discrimination.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Distinguishing Agent-tool transport failures from genuine orchestrate work cycles",
+      "line_count": 121,
+      "keywords": [
+        "patterns",
+        "orchestrate",
+        "infra",
+        "failure",
+        "cycles"
+      ],
+      "topics": [
+        "recovery"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [
+          "meta"
+        ],
+        "commands": []
+      }
+    },
+    {
       "path": "patterns/mcp-tool-recovery.md",
       "domain": "core",
       "subdomain": "patterns",

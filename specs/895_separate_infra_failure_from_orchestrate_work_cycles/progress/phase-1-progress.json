@@ -1,0 +1,42 @@
+{
+  "phase": 1,
+  "phase_name": "Shared discrimination pattern doc",
+  "started_at": "2026-07-25T14:36:32Z",
+  "last_updated": "2026-07-25T14:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create infra-failure-discrimination.md with all required sections",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/infra-failure-discrimination.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Register the new file in index-entries.json",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Cross-link from mcp-tool-recovery.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/mcp-tool-recovery.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Confirm no task-number citations in new file",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -252,3 +252,6 @@ success  error
 - [Early Metadata Pattern](early-metadata-pattern.md) - Early metadata file creation for interruption recovery
 - [Error Handling Rule](../../rules/error-handling.md) - Error handling rules and mcp_abort_error type
 - [Return Metadata Format](../formats/return-metadata-file.md) - Metadata file schema with partial_progress
+- [Infra-Failure Discrimination](infra-failure-discrimination.md) - Recognizing Agent/Task-tool
+  transport-layer failures and distinguishing them from genuine orchestrate work cycles (a
+  different failure surface than MCP tool calls covered above)
