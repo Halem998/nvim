@@ -150,22 +150,23 @@ observed behavior change rather than asserted from the diff.
 
 ---
 
-### Phase 2: Delegate `literature-audit.sh` storage path to the resolver [NOT STARTED]
+### Phase 2: Delegate `literature-audit.sh` storage path to the resolver [COMPLETED]
 
 **Goal**: Replace the hardcoded `"$HOME/Zotero/storage"` element of `DEFAULT_SEARCH_PATHS` with a
 resolver-derived path, matching the `zotero-resolve-pdf.sh:75-76` idiom.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/literature/scripts/literature-audit.sh`, immediately above the
+- [x] In `agent-system/extensions/literature/scripts/literature-audit.sh`, immediately above the
       `DEFAULT_SEARCH_PATHS` array (currently lines 43-48), compute
       `ZOTERO_DATA_DIR="$(dirname "$("$SCRIPT_DIR/zotero-resolve-sqlite-path.sh")")"`.
-- [ ] Replace the array's third element `"$HOME/Zotero/storage"` with `"$ZOTERO_DATA_DIR/storage"`.
-      Leave the first two elements unchanged.
-- [ ] Add a one-line comment stating the storage root is derived from the canonical resolver,
+      *(completed)*
+- [x] Replace the array's third element `"$HOME/Zotero/storage"` with `"$ZOTERO_DATA_DIR/storage"`.
+      Leave the first two elements unchanged. *(completed)*
+- [x] Add a one-line comment stating the storage root is derived from the canonical resolver,
       never hardcoded (mirroring `zotero-resolve-pdf.sh`'s header wording). No task-number
-      citation.
-- [ ] Confirm no other occurrence of `$HOME/Zotero` remains in the file
-      (`grep -n 'HOME/Zotero' literature-audit.sh`).
+      citation. *(completed)*
+- [x] Confirm no other occurrence of `$HOME/Zotero` remains in the file
+      (`grep -n 'HOME/Zotero' literature-audit.sh`). *(completed: no matches)*
 
 **Timing**: 0.25 hours
 

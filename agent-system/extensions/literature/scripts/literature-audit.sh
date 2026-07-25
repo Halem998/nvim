@@ -41,10 +41,13 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Default search paths for test PDFs
+# The Zotero storage root is ALWAYS derived from the canonical resolver's dataDir, never
+# hardcoded to the historical default profile's storage dir.
+ZOTERO_DATA_DIR="$(dirname "$("$SCRIPT_DIR/zotero-resolve-sqlite-path.sh")")"
 DEFAULT_SEARCH_PATHS=(
   "$HOME/Projects/BimodalLogic/specs/literature"
   "$HOME/Projects/Literature/pdfs"
-  "$HOME/Zotero/storage"
+  "$ZOTERO_DATA_DIR/storage"
 )
 
 # --- Functions ---
