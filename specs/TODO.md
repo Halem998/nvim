@@ -11,11 +11,11 @@ next_project_number: 903
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,891,892,893,894,899 | -- | agent-system |
+| 1 | 873,885,891,892,893,894 | -- | agent-system |
 | 2 | 887,895,896 | 873,891,892 | agent-system |
 | 3 | 897 | 895 | agent-system |
 | 4 | 898 | 897 | agent-system |
-| 5 | 900 | 898,899 | agent-system |
+| 5 | 900 | 898 | agent-system |
 | 6 | 901 | 900 | agent-system |
 | 7 | 902 | 901 | agent-system |
 
@@ -37,8 +37,6 @@ next_project_number: 903
   └─ 896 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
 893 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
 894 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
-899 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-  └─ 900 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
 
 ## Tasks
 
@@ -143,10 +141,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 899. Author a batch-orchestration guardrails context pattern from current practice
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [899_batch_orchestration_guardrails_context/reports/01_batch-orchestration-guardrails.md]
+- **Plan**: [899_batch_orchestration_guardrails_context/plans/01_batch-orchestration-guardrails.md]
+- **Summary**: [899_batch_orchestration_guardrails_context/summaries/01_batch-orchestration-guardrails-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/core/** and NEVER .claude/**.
 
