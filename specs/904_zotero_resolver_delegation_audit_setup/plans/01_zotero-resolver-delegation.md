@@ -1,7 +1,7 @@
 # Implementation Plan: Delegate Zotero data-directory resolution to the shared resolver
 
 - **Task**: 904 - Delegate Zotero data-directory resolution to the shared resolver
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/904_zotero_resolver_delegation_audit_setup/reports/01_zotero-resolver-delegation.md
@@ -235,33 +235,38 @@ delegation, keeping Steps 1 and 2 and the function's existence probe, and reword
 
 ---
 
-### Phase 4: Three-way agreement verification and summary [NOT STARTED]
+### Phase 4: Three-way agreement verification and summary [COMPLETED]
 
 **Goal**: Demonstrate, by running the scripts rather than reading the diff, that both callers now
 agree with the canonical resolver, and record the before/after contrast.
 
 **Tasks**:
-- [ ] Re-run `zotero-resolve-sqlite-path.sh` and record its output (control — must be unchanged
-      from Phase 1).
-- [ ] Re-run `zotero-setup.sh --detect` and confirm it now prints `dirname` of the resolver's
-      output rather than the Phase 1 baseline value.
-- [ ] Re-derive `literature-audit.sh`'s third search path and confirm it equals
-      `<resolver-dir>/storage`.
-- [ ] Assert three-way agreement explicitly: `--detect` output == `dirname "$(resolver)"` ==
-      the audit search path with `/storage` stripped.
-- [ ] Optionally run `literature-audit.sh` (or its `find_test_pdfs` path) far enough to confirm
+- [x] Re-run `zotero-resolve-sqlite-path.sh` and record its output (control — must be unchanged
+      from Phase 1). *(completed: `/home/benjamin/Documents/Zotero/zotero.sqlite`, unchanged)*
+- [x] Re-run `zotero-setup.sh --detect` and confirm it now prints `dirname` of the resolver's
+      output rather than the Phase 1 baseline value. *(completed: now prints
+      `/home/benjamin/Documents/Zotero`, was `/home/benjamin/Zotero`)*
+- [x] Re-derive `literature-audit.sh`'s third search path and confirm it equals
+      `<resolver-dir>/storage`. *(completed: `/home/benjamin/Documents/Zotero/storage`)*
+- [x] Assert three-way agreement explicitly: `--detect` output == `dirname "$(resolver)"` ==
+      the audit search path with `/storage` stripped. *(completed: all three equal
+      `/home/benjamin/Documents/Zotero`)*
+- [x] Optionally run `literature-audit.sh` (or its `find_test_pdfs` path) far enough to confirm
       it now probes the live storage directory; if the run is not practical, say so rather than
-      inferring the outcome.
-- [ ] Confirm `git status --porcelain` shows changes ONLY under
+      inferring the outcome. *(completed: ran `literature-audit.sh --xref` live; all 5 test PDFs
+      confirmed to live under the resolver-derived storage dir since the first two search paths
+      contributed 0)*
+- [x] Confirm `git status --porcelain` shows changes ONLY under
       `agent-system/extensions/literature/scripts/` and `specs/904_*/` — no `.claude/` paths.
-- [ ] Confirm `~/Zotero` is untouched (still present, unmodified) and `zotero-library.json` was
-      not regenerated.
-- [ ] Confirm `git diff` touches exactly two script files and does not include
-      `zotero-resolve-sqlite-path.sh`.
-- [ ] Write the implementation summary to
+      *(completed: confirmed, only pre-existing unrelated changes remain outside this scope)*
+- [x] Confirm `~/Zotero` is untouched (still present, unmodified) and `zotero-library.json` was
+      not regenerated. *(completed: confirmed)*
+- [x] Confirm `git diff` touches exactly two script files and does not include
+      `zotero-resolve-sqlite-path.sh`. *(completed: confirmed)*
+- [x] Write the implementation summary to
       `specs/904_zotero_resolver_delegation_audit_setup/summaries/01_zotero-resolver-delegation-summary.md`,
       recording the Phase 1 baseline values, the post-patch values, and the three-way agreement
-      result verbatim.
+      result verbatim. *(completed)*
 
 **Timing**: 0.5 hours
 
