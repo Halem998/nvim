@@ -1,5 +1,5 @@
 ---
-next_project_number: 906
+next_project_number: 908
 ---
 
 # TODO
@@ -15,7 +15,8 @@ next_project_number: 906
 | 2 | 887,896,898 | 873,892,897 | agent-system |
 | 3 | 900 | 898 | agent-system |
 | 4 | 901 | 900 | agent-system |
-| 5 | 902 | 901 | agent-system |
+| 5 | 902,906 | 885,896,901 | agent-system |
+| 6 | 907 | 902,906 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -24,16 +25,21 @@ next_project_number: 906
 873 [PARTIAL] — Make /meta create tasks in the GLOBAL agent-system root by defaul
   └─ 887 [RESEARCHED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
-892 [RESEARCHING] — SEVERITY: second-highest of a six-defect batch observed in a sing
+  └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+    └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+892 [PLANNING] — SEVERITY: second-highest of a six-defect batch observed in a sing
   └─ 896 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
-893 [RESEARCHING] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
-894 [RESEARCHING] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
+    └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
+893 [PLANNING] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
+894 [PLANNING] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
 897 [NOT STARTED] — LOWER PRIORITY. Observed in the same full /orchestrate run (lean4
   └─ 898 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 900 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
       └─ 901 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
         └─ 902 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-903 [RESEARCHING] — Defense-in-depth backstop recommended by the research for the com
+          └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
+        └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
+903 [PLANNING] — Defense-in-depth backstop recommended by the research for the com
 
 ### Literature
 
@@ -41,6 +47,145 @@ next_project_number: 906
 905 [NOT STARTED] — Make Zotero export staleness a detected, propagated, and loudly-s
 
 ## Tasks
+
+### 907. Establish an orchestrator runtime-file tracking policy so ephemeral loop guards are never committed
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 885, Task 902, Task 906
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/core/** and NEVER .claude/**.
+
+== DEFECT: orchestrator runtime scratch files have no tracking policy and are inconsistently committed ==
+
+EVIDENCE (gathered in the DEPLOYED consumer repo /home/benjamin/.dotfiles, where .claude/ and specs/ ARE tracked -- unlike this repo, where .claude/ is gitignored): committed counts across specs/ were 45 `.return-meta.json`, 27 `.orchestrator-handoff.json`, 3 `.orchestrator-loop-guard`, plus 2 committed `.lock` entries, with ZERO .gitignore coverage for any of them.
+
+PRIORITY WITHIN THIS TASK -- the committed `.orchestrator-loop-guard` files are an ACTIVE CORRECTNESS HAZARD, not mere repo noise:
+- The guard carries cycle_count / max_cycles / current_state (see docs/architecture/orchestrate-state-machine.md line 102 and docs/architecture/architecture-spec.md line 268).
+- skills/skill-orchestrate/SKILL.md Stage 2 (loop_guard_file defined at line 110) RESUMES from an existing guard rather than starting fresh; skills/skill-orchestrate-hard/SKILL.md does the same (line 198).
+- Therefore a guard committed to git -- or restored by a checkout, clone, or branch switch -- makes a fresh /orchestrate believe it is already mid-run at a stale cycle count, silently consuming its cycle budget before doing any work.
+
+ROOT CONTRADICTION (verified): commands/orchestrate.md stages the WHOLE task directory in both of its commit paths, sweeping runtime files in, while implementation agents treat those same files as uncommitted runtime state. The command and the agents actively contradict each other, which is precisely why tracking is inconsistent.
+- commands/orchestrate.md CHECKPOINT 3 (section header line 417): `stage_paths=("specs/${PADDED_NUM}_${PROJECT_NAME}/" "specs/TODO.md" "specs/state.json")` then `git add "${stage_paths[@]}"` at line 428.
+- commands/orchestrate.md Step 5 multi-task batch commit (section header line 253): appends `specs/${tpadded}_${tname}/` per task in the loop, then `git add "${stage_paths[@]}"` at line 291.
+- context/standards/git-staging-scope.md endorses the whole-task-dir form at lines 25-27 and again at lines 88-90.
+
+USEFUL PRECEDENT: context/standards/git-staging-scope.md lines 72-76 already shows a NARROWER research-variant staging form that lists `specs/{padded}_{slug}/reports/` and `specs/{padded}_{slug}/.return-meta.json` explicitly instead of the whole directory. That form is the model for the fix -- the narrow pattern already exists in the standard and simply is not applied to the orchestrate paths.
+
+FOURTH RUNTIME FILE FOUND DURING VERIFICATION (not in the original evidence set): `.orchestrator-churn-state.json`, the hard-mode churn-detection state written by skills/skill-orchestrate-hard/SKILL.md Stage 2 (see context/patterns/task-lock.md lines 341 and 359, and scripts/task-lock.sh line 549, which groups it with .orchestrator-loop-guard under the same atomic-creation pattern). It is ephemeral runtime state of exactly the same character as the loop guard and MUST be covered by whatever policy this task establishes. Audit for any further runtime scratch files under specs/*/ before finalizing, rather than assuming this list is complete.
+
+== SCOPE NOTE ==
+
+This policy governs `specs/*/` runtime artifacts in ANY repo that consumes the agent system. It is NOT about the .claude/ deploy tree, which is already gitignored in this repo. The fix must be authored in the source store so every consumer repo inherits it -- that is the entire reason this task is routed here rather than patched in one consumer.
+
+== USER-CHOSEN POLICY (already decided -- implement it, do not re-litigate) ==
+
+GITIGNORE and UNTRACK (pure ephemeral runtime state; committed loop-guards are the actual hazard):
+- specs/*/.orchestrator-loop-guard
+- specs/*/.lock/
+- specs/*/.orchestrator-churn-state.json (added per the verification finding above; same character, same hazard class)
+
+KEEP TRACKED as durable provenance (the per-dispatch audit trail):
+- specs/*/.orchestrator-handoff.json
+- specs/*/.return-meta.json
+
+Include guidance for consumer repos on untracking already-committed loop-guards via `git rm --cached` (which preserves them on disk so an in-flight orchestration is not disrupted), and state explicitly that handoff and return-meta files must NOT be untracked.
+
+== MATERIAL CONSTRAINT DISCOVERED DURING VERIFICATION ==
+
+root-files/.gitignore is NOT the right vehicle for these patterns as it currently stands. Its existing contents are `hooks/*.log`, `logs/`, `output/`, `*.tmp` -- all relative to the .claude/ directory it deploys INTO. A `specs/*/...` pattern placed there would be interpreted relative to .claude/ and would silently match nothing. Determine the correct mechanism before writing patterns: either the consumer repo's ROOT .gitignore (which requires a deploy/merge path that may not exist yet), or a `.claude/../.gitignore` contribution, or documented setup guidance that the consumer applies once. Investigate root-files/ and templates/ to establish which of these the source store can actually deliver, and if none can, say so and deliver documented guidance plus a check rather than a pattern file that does nothing. Do NOT ship a gitignore entry without demonstrating it actually matches the intended paths in a consumer repo.
+
+== REQUIRED RECONCILIATION ==
+
+All of the following must agree with each other and with the shipped gitignore guidance:
+- the gitignore template / root-files the source store deploys (root-files/, templates/ -- subject to the constraint above)
+- context/standards/git-staging-scope.md: must stop implying whole-task-dir adds are safe (lines 25-27 and 88-90), and should generalize the narrow form already present at lines 72-76
+- commands/orchestrate.md CHECKPOINT 3 staging (line 428) AND the multi-task Step 5 batch-commit staging (line 291)
+- skills/skill-orchestrate/SKILL.md: document the loop guard as ephemeral and never-committed, reinforcing the Stage 2 resume semantics (line 110) and Stage 8 cleanup. Mirror the same statement for .orchestrator-churn-state.json in the hard variant if that file's policy lands here.
+
+== DEPENDENCY NOTE ==
+
+The declared dependencies (885, 902, 906) are SERIALIZATION-FOR-FILE-OVERLAP edges, not logical prerequisites:
+- 885 edits root-files/settings.json, inside this task's root-files/ scope.
+- 902 sits at the tail of the 891 -> 895 -> 897 -> 898 -> 900 -> 901 -> 902 chain covering commands/orchestrate.md and skills/skill-orchestrate/SKILL.md.
+- 906 edits skills/skill-orchestrate/SKILL.md (Stage 8 return-meta status vocabulary), overlapping this task's edits to the same file.
+These edges exist solely to keep this task out of a shared dispatch wave with tasks editing the same files. Nothing here waits on those tasks' conclusions.
+
+== VERIFICATION REQUIRED ==
+
+Demonstrate, in a scratch consumer-repo checkout, that (a) the shipped ignore mechanism actually causes `git status` to ignore a newly created specs/NNN_slug/.orchestrator-loop-guard, (b) `git rm --cached` on an already-committed guard leaves the file on disk, and (c) an orchestrate commit after the staging fix does not stage any of the three ephemeral file classes while still staging the handoff and return-meta provenance files.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 906. Fix gate-out artifact-validation call arity and unify the .return-meta.json status vocabulary
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 885, Task 896, Task 901
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/core/** and NEVER .claude/**.
+
+All line numbers below were live-verified against the CANONICAL source at agent-system/extensions/core/, not the deployed copy.
+
+== DEFECT 1: validate-artifact.sh call-arity bug in command-gate-out.sh (silent dead code) ==
+
+VERIFIED:
+- scripts/command-gate-out.sh line 101 calls: bash .claude/scripts/validate-artifact.sh "$task_dir" --fix 2>/dev/null || true
+- scripts/validate-artifact.sh line 4 declares: Usage: validate-artifact.sh <artifact_path> <type> [--fix] [--strict], with type in {report, plan, summary}.
+- Therefore "--fix" is consumed as the TYPE positional and a DIRECTORY is passed as artifact_path. Control reaches the `if [ ! -f "$artifact_path" ]` guard at scripts/validate-artifact.sh line 55, which prints `[FAIL] File not found: specs/NNN_slug` and exits 3.
+- The `[FAIL]` line is written to STDOUT, so the caller's `2>/dev/null` does NOT suppress it. Users see a spurious FAIL on EVERY gate-out run of EVERY command, while `|| true` swallows the nonzero exit so nothing ever surfaces as an error.
+
+CONSEQUENCE: the non-blocking artifact link-repair that gate-out claims to perform has NEVER run, for any command, for any task. Live-observed during an /orchestrate run.
+
+UNIFORMITY EVIDENCE (command-gate-out.sh is the LONE deviant; every other caller uses the correct 3-token form `validate-artifact.sh "$artifact_path" "$artifact_kind" --fix`):
+- scripts/skill-base.sh line 326
+- scripts/orchestrator-postflight.sh line 270
+- skills/skill-researcher/SKILL.md line 328 (report)
+- skills/skill-planner/SKILL.md line 350 (plan)
+- skills/skill-implementer/SKILL.md line 380 (summary)
+- skills/skill-reviser/SKILL.md line 314 (plan)
+- skills/skill-planner-hard/SKILL.md line 244 (plan)
+- skills/skill-researcher-hard/SKILL.md line 233 (report)
+
+REQUIRED APPROACH: do NOT simply inline a per-type loop at the call site. Extract ONE shared helper -- a "validate every artifact in a task directory with its correct per-file type" function -- and place it in scripts/skill-base.sh adjacent to the existing correct caller at line 326, so command-gate-out.sh and any future caller consume the same abstraction. The goal is that this convention cannot drift again. Verify the helper is reachable from command-gate-out.sh's execution context before committing to that location; if skill-base.sh is not sourceable there, choose a location that is and record why.
+
+ALSO INVESTIGATE: commands/research.md line 424 already documents in prose that "the validate-artifact.sh --fix leg is dead code and cannot substitute for this check". Determine whether that observation has this same root cause. If so, fix uniformly and update the prose at that line, rather than leaving a doc that describes a bug this task has removed.
+
+== DEFECT 2: .return-meta.json emits a FORBIDDEN status value, making gate-out's defensive correction unreachable ==
+
+VERIFIED:
+- skills/skill-orchestrate/SKILL.md Stage 8 writes .return-meta.json with `--arg status "completed"` at line 731 (clean exit) and `--arg status "partial"` at line 748 (partial exit).
+- scripts/command-gate-out.sh lines 84-85 gate the defensive status-correction branch on skill_status being one of {implemented, researched, planned}. The `case "$operation"` block begins at line 75, and its `orchestrate)` arm at line 79 sets expected_status="completed" (a state.json status, a different vocabulary from the return-meta status).
+- context/formats/return-metadata-file.md line 79 states VERBATIM: **Note**: Never use `"completed"` - it triggers Claude stop behavior. The documented vocabulary is enumerated at lines 72-75: researched | planned | implemented | partial | failed | blocked.
+
+FIX DIRECTION (settled, do not invert): skill-orchestrate is the OFFENDER -- it emits a value the format spec explicitly forbids. command-gate-out.sh's accept-list at lines 84-85 is CORRECT. Do NOT "fix" gate-out by adding "completed" to its accept-list; that would enshrine a value the spec bans and risks the stop behavior the spec warns about. skill-orchestrate Stage 8 must emit `implemented` on clean exit instead. Before finalizing, verify the stop-behavior rationale behind the line-79 prohibition still holds; if it no longer does, say so explicitly in the summary and escalate rather than silently proceeding on a stale premise.
+
+CONSEQUENCE TODAY: for /orchestrate the correction branch can never fire, so a desynced state.json is silently never repaired -- which is the entire stated purpose of that checkpoint. The inline comment block at scripts/command-gate-out.sh lines 65-74 reasons at length about this unreachable branch (it even says the orchestrate arm "would have failed update-task-status.sh's validation had this branch ever been exercised"); once the branch becomes live, that comment is misleading and must be corrected.
+
+THIRD WRITER FOUND DURING VERIFICATION (not previously catalogued): skills/skill-orchestrate/SKILL.md Stage MT-5 writes specs/.return-meta-multi.json at line 1009 with `--arg status "$exit_status"`, where exit_status is set to the same forbidden "completed" (or "partial") at lines 1004-1006. This is a different file from .return-meta.json but the same vocabulary violation, and it must be brought under the unified vocabulary too.
+
+AUDIT RESULTS ALREADY ESTABLISHED (narrow the search accordingly, but re-verify):
+- skills/skill-orchestrate-hard/SKILL.md does NOT emit a status value -- it only READS .return-meta.json (line 696). It is not an offender for this defect, though it must be re-checked once the vocabulary is centralized.
+- skill-researcher (line 289, "researched"), skill-planner (line 312, "planned"), skill-implementer (line 297, "implemented"), skill-implementer-hard (line 263, "implemented"), skill-planner-hard (line 214, "planned"), skill-researcher-hard (line 196), skill-spawn (line 223), and skill-reviser (line 275) all reference the correct vocabulary or defer to the format doc. No divergence found in these.
+- CORRECTION TO A PRIOR ASSUMPTION: docs/architecture/handoff-schema.md is NOT a divergent third source. Its line 45 already declares `"status": "researched | planned | implemented | partial | failed | blocked"`, which AGREES with context/formats/return-metadata-file.md. Note that handoff-schema.md governs .orchestrator-handoff.json, a DIFFERENT file from .return-meta.json; part of this task is to make that separation-of-concerns explicit rather than to "reconcile a disagreement" that does not exist. Confirm the two vocabularies are intended to be identical, and if so state where that identity is enforced.
+
+REQUIRED APPROACH: ONE documented status vocabulary shared by every writer and reader of .return-meta.json (and .return-meta-multi.json), enforced in ONE place rather than restated per skill. Make context/formats/return-metadata-file.md the single normative source, have docs/architecture/handoff-schema.md reference it rather than restate it, and ensure the accept-list in scripts/command-gate-out.sh is derived from or explicitly cross-referenced to that source so the two cannot drift.
+
+== SCOPE AND COORDINATION ==
+
+COORDINATE WITH TASK 896: 896 edits skill_link_artifacts in scripts/skill-base.sh (cwd-relative path resolution). This task adds a shared validation helper to the SAME file. The two are DIFFERENT defects -- 896 is about path resolution, this is about call arity -- but whichever lands second must not clobber the other's edits. Re-read the file before editing.
+
+CROSS-REFERENCE TASK 898: 898 gates WHETHER an `implemented` completion claim is honest (phase evidence before postflight). This task governs WHICH STRING is emitted to signal that claim. Adjacent and complementary, not duplicate. Because 898 will make the orchestrator's implemented-branch behavior conditional, and this task changes what value reaches that branch, the two must agree on the final spelling. Whichever lands second must verify the other's gate still fires.
+
+DEPENDENCY NOTE: the declared dependencies (885, 896, 901) are SERIALIZATION-FOR-FILE-OVERLAP edges, not logical prerequisites. 885 and 896 both edit scripts/skill-base.sh; 901 sits at the tail of the 891 -> 895 -> 897 -> 898 -> 900 -> 901 chain on skills/skill-orchestrate/SKILL.md (and 898 additionally on docs/architecture/handoff-schema.md). These edges exist solely to keep this task out of a shared dispatch wave with tasks editing the same files. Nothing here waits on those tasks' conclusions.
+
+VERIFICATION REQUIRED: after the fix, demonstrate that (a) a gate-out run on a real task directory validates each artifact with its correct type and emits no spurious [FAIL], and (b) the defensive status-correction branch in command-gate-out.sh is actually reachable for operation=orchestrate by exercising it against a deliberately desynced state.json.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
 
 ### 905. Detect stale Zotero exports and fail loudly instead of returning clean zero results
 - **Status**: [NOT STARTED]
@@ -107,10 +252,11 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 903. Add an optional phase-accounting backstop to update-task-status.sh implement postflight
-- **Status**: [RESEARCHING]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [903_phase_accounting_backstop_in_update_task_status/reports/01_phase-accounting-backstop.md]
 
 **Description**: Defense-in-depth backstop recommended by the research for the completed task that gated the /orchestrate implemented->completed transition on phase progress (task 891). That task deliberately scoped its fix to the SKILL layer only; this task is the script-layer follow-up it named.
 
@@ -382,10 +528,11 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 894. Fix git-snapshot.sh silent-revert footgun and unhelpful missing-argument failure
-- **Status**: [RESEARCHING]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [894_fix_git_snapshot_silent_revert_footgun/reports/01_git-snapshot-revert-footgun.md]
 
 **Description**: Observed in a single full /orchestrate run (lean4 task, 8 implementation phases, 5 cycles) as one of six agent-system defects. This one BIT THREE SEPARATE AGENTS in that one session and caused REAL DATA LOSS TWICE.
 
@@ -410,10 +557,11 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 893. Close stranded-status detection gap for not_started tasks with existing artifacts
-- **Status**: [RESEARCHING]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [893_close_stranded_status_detection_gap_for_not_started/reports/01_stranded-status-detection-gap.md]
 
 **Description**: Observed in a single full /orchestrate run (lean4 task, 8 implementation phases, 5 cycles) as one of six agent-system defects.
 
@@ -437,10 +585,11 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 892. Prevent stale/misplaced .orchestrator-handoff.json reads
-- **Status**: [RESEARCHING]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [892_prevent_stale_and_misplaced_orchestrator_handoff_reads/reports/01_stale-misplaced-handoff-reads.md]
 
 **Description**: SEVERITY: second-highest of a six-defect batch observed in a single full /orchestrate run (lean4 task, 8 implementation phases, 5 cycles). Silent stale-handoff read: the orchestrator advanced its state machine on phase-6 facts after phase 7 had already finished.
 
