@@ -11,8 +11,8 @@ next_project_number: 908
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,892,893,894,897,903,904,905 | -- | agent-system, literature |
-| 2 | 887,896,898 | 873,892,897 | agent-system |
+| 1 | 873,885,896,897,904,905 | -- | agent-system, literature |
+| 2 | 887,898 | 873,897 | agent-system |
 | 3 | 900 | 898 | agent-system |
 | 4 | 901 | 900 | agent-system |
 | 5 | 902,906 | 885,896,901 | agent-system |
@@ -27,11 +27,8 @@ next_project_number: 908
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
   └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-892 [PLANNING] — SEVERITY: second-highest of a six-defect batch observed in a sing
-  └─ 896 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
-    └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
-893 [PLANNING] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
-894 [PLANNING] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
+896 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
+  └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
 897 [NOT STARTED] — LOWER PRIORITY. Observed in the same full /orchestrate run (lean4
   └─ 898 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 900 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
@@ -39,7 +36,6 @@ next_project_number: 908
         └─ 902 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
           └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
         └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
-903 [PLANNING] — Defense-in-depth backstop recommended by the research for the com
 
 ### Literature
 
@@ -252,11 +248,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 903. Add an optional phase-accounting backstop to update-task-status.sh implement postflight
-- **Status**: [PLANNING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [903_phase_accounting_backstop_in_update_task_status/reports/01_phase-accounting-backstop.md]
+- **Plan**: [903_phase_accounting_backstop_in_update_task_status/plans/01_phase-accounting-backstop.md]
+- **Summary**: [903_phase_accounting_backstop_in_update_task_status/summaries/01_phase-accounting-backstop-summary.md]
 
 **Description**: Defense-in-depth backstop recommended by the research for the completed task that gated the /orchestrate implemented->completed transition on phase progress (task 891). That task deliberately scoped its fix to the SKILL layer only; this task is the script-layer follow-up it named.
 
@@ -528,11 +526,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 894. Fix git-snapshot.sh silent-revert footgun and unhelpful missing-argument failure
-- **Status**: [PLANNING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [894_fix_git_snapshot_silent_revert_footgun/reports/01_git-snapshot-revert-footgun.md]
+- **Plan**: [894_fix_git_snapshot_silent_revert_footgun/plans/01_git-snapshot-revert-footgun.md]
+- **Summary**: [894_fix_git_snapshot_silent_revert_footgun/summaries/01_git-snapshot-revert-footgun-summary.md]
 
 **Description**: Observed in a single full /orchestrate run (lean4 task, 8 implementation phases, 5 cycles) as one of six agent-system defects. This one BIT THREE SEPARATE AGENTS in that one session and caused REAL DATA LOSS TWICE.
 
@@ -557,11 +557,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 893. Close stranded-status detection gap for not_started tasks with existing artifacts
-- **Status**: [PLANNING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [893_close_stranded_status_detection_gap_for_not_started/reports/01_stranded-status-detection-gap.md]
+- **Plan**: [893_close_stranded_status_detection_gap_for_not_started/plans/01_stranded-status-detection-gap.md]
+- **Summary**: [893_close_stranded_status_detection_gap_for_not_started/summaries/01_stranded-status-detection-gap-summary.md]
 
 **Description**: Observed in a single full /orchestrate run (lean4 task, 8 implementation phases, 5 cycles) as one of six agent-system defects.
 
@@ -585,11 +587,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 892. Prevent stale/misplaced .orchestrator-handoff.json reads
-- **Status**: [PLANNING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [892_prevent_stale_and_misplaced_orchestrator_handoff_reads/reports/01_stale-misplaced-handoff-reads.md]
+- **Plan**: [892_prevent_stale_and_misplaced_orchestrator_handoff_reads/plans/01_stale-misplaced-handoff-reads.md]
+- **Summary**: [892_prevent_stale_and_misplaced_orchestrator_handoff_reads/summaries/01_stale-misplaced-handoff-reads-summary.md]
 
 **Description**: SEVERITY: second-highest of a six-defect batch observed in a single full /orchestrate run (lean4 task, 8 implementation phases, 5 cycles). Silent stale-handoff read: the orchestrator advanced its state machine on phase-6 facts after phase 7 had already finished.
 

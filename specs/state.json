@@ -41,7 +41,7 @@
     {
       "project_number": 892,
       "project_name": "prevent_stale_and_misplaced_orchestrator_handoff_reads",
-      "status": "planning",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Prevent stale/misplaced .orchestrator-handoff.json reads",
@@ -58,20 +58,31 @@
         "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md"
       ],
       "created": "2026-07-24T00:00:00Z",
-      "last_updated": "2026-07-25T15:13:40Z",
+      "last_updated": "2026-07-25T16:35:04Z",
       "session_id": "sess_1784991755_1b4381_892",
       "artifacts": [
         {
           "path": "specs/892_prevent_stale_and_misplaced_orchestrator_handoff_reads/reports/01_stale-misplaced-handoff-reads.md",
           "type": "report",
           "summary": "Research findings"
+        },
+        {
+          "path": "specs/892_prevent_stale_and_misplaced_orchestrator_handoff_reads/plans/01_stale-misplaced-handoff-reads.md",
+          "type": "plan",
+          "summary": "Implementation plan"
+        },
+        {
+          "path": "specs/892_prevent_stale_and_misplaced_orchestrator_handoff_reads/summaries/01_stale-misplaced-handoff-reads-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary"
         }
-      ]
+      ],
+      "completion_summary": "Fixed misplaced/stale .orchestrator-handoff.json reads: absolute repo-root anchor in skill-base.sh, absolute write instructions across core and lean hard-mode components, task_dir/handoff_path threaded through all orchestrate dispatch sites, a validate-handoff-location.sh PostToolUse hook, a staleness gate reusing dispatch_start_ts, and a bounded stray sweep. The hook's structural blindness to Bash-redirect writes is documented in three places rather than glossed over."
     },
     {
       "project_number": 893,
       "project_name": "close_stranded_status_detection_gap_for_not_started",
-      "status": "planning",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Close stranded-status detection gap for not_started tasks with existing artifacts",
@@ -81,20 +92,31 @@
         "agent-system/extensions/core/scripts/reconcile-task-status.sh"
       ],
       "created": "2026-07-24T00:00:00Z",
-      "last_updated": "2026-07-25T15:13:42Z",
+      "last_updated": "2026-07-25T16:35:04Z",
       "session_id": "sess_1784991755_1b4381_893",
       "artifacts": [
         {
           "path": "specs/893_close_stranded_status_detection_gap_for_not_started/reports/01_stranded-status-detection-gap.md",
           "type": "report",
           "summary": "Research findings"
+        },
+        {
+          "path": "specs/893_close_stranded_status_detection_gap_for_not_started/plans/01_stranded-status-detection-gap.md",
+          "type": "plan",
+          "summary": "Implementation plan"
+        },
+        {
+          "path": "specs/893_close_stranded_status_detection_gap_for_not_started/summaries/01_stranded-status-detection-gap-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary"
         }
-      ]
+      ],
+      "completion_summary": "Closed the stranded-status detection gap: reconcile-task-status.sh now has a not_started dispatch arm promoting to planned (plan present) or partial (handoffs present), guarded by a new artifact_newer_than_last_update() helper so /task --recover restorations are not falsely promoted. Verified against a 10-case matrix in a sandbox deploy tree."
     },
     {
       "project_number": 894,
       "project_name": "fix_git_snapshot_silent_revert_footgun",
-      "status": "planning",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Fix git-snapshot.sh silent-revert footgun and unhelpful missing-argument failure",
@@ -104,15 +126,26 @@
         "agent-system/extensions/core/scripts/git-snapshot.sh"
       ],
       "created": "2026-07-24T00:00:00Z",
-      "last_updated": "2026-07-25T15:13:44Z",
+      "last_updated": "2026-07-25T16:35:04Z",
       "session_id": "sess_1784991755_1b4381_894",
       "artifacts": [
         {
           "path": "specs/894_fix_git_snapshot_silent_revert_footgun/reports/01_git-snapshot-revert-footgun.md",
           "type": "report",
           "summary": "Research findings"
+        },
+        {
+          "path": "specs/894_fix_git_snapshot_silent_revert_footgun/plans/01_git-snapshot-revert-footgun.md",
+          "type": "plan",
+          "summary": "Implementation plan"
+        },
+        {
+          "path": "specs/894_fix_git_snapshot_silent_revert_footgun/summaries/01_git-snapshot-revert-footgun-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary"
         }
-      ]
+      ],
+      "completion_summary": "Fixed the git-snapshot.sh footgun: per-cause missing-argument diagnostics on stderr, pre/post-op revert warnings, and a new opt-in --no-revert mode using git stash create + git stash store (no working-tree touch) with untracked-file backup. Call sites split by family: rollback-ladder sites keep the reverting default, defensive-checkpoint sites use --no-revert. The original premise that --branch avoids the revert was disproven and a regression guard now prevents its reintroduction."
     },
     {
       "project_number": 895,
@@ -260,7 +293,7 @@
         }
       ],
       "updated": "2026-07-15T20:16:11Z",
-      "completion_summary": "Phases 1-4 complete and committed: replaced the || true silent-fail idiom at all 10 events-append.sh call sites with an observable non-fatal wrapper (fixed a real set -e abort bug in the process); added nullable cwd field to events-schema.json + threading, with repo derived at query time in events-query.sh; extended check-extension-docs.sh with an ADVISORY (non-blocking) core deploy-drift lane; added a source-store no-headless-regeneration note and a HANDOFF.md. Phases 5-6 BLOCKED: end-to-end verification needs a manual <leader>al Sync-all regeneration (no headless path exists — load_all_globally calls vim.fn.confirm, execute_sync is a module-local closure) in nvim plus one other repo, THEN accumulated real usage before event flow can be observed. OTel/cleanupPeriodDays (scope 3/4) handed off to ~/.dotfiles as a copy-pasteable snippet (cleanupPeriodDays: 365, never 0). See specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md."
+      "completion_summary": "Phases 1-4 complete and committed: replaced the || true silent-fail idiom at all 10 events-append.sh call sites with an observable non-fatal wrapper (fixed a real set -e abort bug in the process); added nullable cwd field to events-schema.json + threading, with repo derived at query time in events-query.sh; extended check-extension-docs.sh with an ADVISORY (non-blocking) core deploy-drift lane; added a source-store no-headless-regeneration note and a HANDOFF.md. Phases 5-6 BLOCKED: end-to-end verification needs a manual <leader>al Sync-all regeneration (no headless path exists \u2014 load_all_globally calls vim.fn.confirm, execute_sync is a module-local closure) in nvim plus one other repo, THEN accumulated real usage before event flow can be observed. OTel/cleanupPeriodDays (scope 3/4) handed off to ~/.dotfiles as a copy-pasteable snippet (cleanupPeriodDays: 365, never 0). See specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md."
     },
     {
       "project_number": 887,
@@ -416,7 +449,7 @@
     {
       "project_number": 903,
       "project_name": "phase_accounting_backstop_in_update_task_status",
-      "status": "planning",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Add an optional phase-accounting backstop to update-task-status.sh implement postflight",
@@ -426,15 +459,26 @@
         "agent-system/extensions/core/scripts/update-task-status.sh"
       ],
       "created": "2026-07-25T14:56:12Z",
-      "last_updated": "2026-07-25T15:13:45Z",
+      "last_updated": "2026-07-25T16:35:04Z",
       "artifacts": [
         {
           "path": "specs/903_phase_accounting_backstop_in_update_task_status/reports/01_phase-accounting-backstop.md",
           "type": "report",
           "summary": "Research findings"
+        },
+        {
+          "path": "specs/903_phase_accounting_backstop_in_update_task_status/plans/01_phase-accounting-backstop.md",
+          "type": "plan",
+          "summary": "Implementation plan"
+        },
+        {
+          "path": "specs/903_phase_accounting_backstop_in_update_task_status/summaries/01_phase-accounting-backstop-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary"
         }
       ],
-      "session_id": "sess_1784991755_1b4381_903"
+      "session_id": "sess_1784991755_1b4381_903",
+      "completion_summary": "Added an opt-in --phase-check=warn|refuse backstop to update-task-status.sh, gating the implement->completed postflight on plan-file phase headings. Single gate before acquire_state_mutex blocks both the state.json flip and the plan [COMPLETED] stamp. Absent by default, proven byte-for-byte backward compatible across a 24-cell matrix; refuse wired to zero-gate call sites, warn where a skill-layer gate already decided."
     },
     {
       "project_number": 904,
