@@ -222,37 +222,52 @@ determine whether a newly added file belongs in it by re-deriving the tests rath
 
 ---
 
-### Phase 2: Implement the Gate in orchestrate-batch-admit.sh [NOT STARTED]
+### Phase 2: Implement the Gate in orchestrate-batch-admit.sh [COMPLETED]
 
 **Goal**: The admission predicate emits a `self_modifying` dimension on every verdict and defers
 the self-modifying candidate — and only it — when the invocation carries more than one candidate.
 
 **Tasks**:
-- [ ] Add `--invocation-count <N>` argument parsing ahead of the existing positional integer
+- [x] Add `--invocation-count <N>` argument parsing ahead of the existing positional integer
       validation (preserve the existing usage-error behavior for zero args and non-integer task
       numbers; reject a non-integer `--invocation-count` the same way). Default to the positional
-      argument count when absent.
-- [ ] Load `$SCRIPT_DIR/../context/reference/orchestrator-critical-paths.json` (this relative path
+      argument count when absent. *(completed)*
+- [x] Load `$SCRIPT_DIR/../context/reference/orchestrator-critical-paths.json` (this relative path
       resolves identically in the source store and in a deploy tree). On missing/unparseable file:
-      set a degraded flag, print one loud stderr line, and continue.
-- [ ] Expand each `critical_paths[].path` against each `scope_roots[]` entry into a flat list of
+      set a degraded flag, print one loud stderr line, and continue. *(completed)*
+- [x] Expand each `critical_paths[].path` against each `scope_roots[]` entry into a flat list of
       full repo-relative prefixes, carrying the entry's `label` alongside each expansion.
-- [ ] Inside the existing jq program, reuse `scopes_overlap_first` (unchanged) to test the
+      *(completed)*
+- [x] Inside the existing jq program, reuse `scopes_overlap_first` (unchanged) to test the
       candidate's own `file_scope` against the expanded critical list; capture the first matching
-      path and its label.
-- [ ] Emit `self_modifying` on EVERY verdict — `true`, `false`, or `null` when degraded — including
-      `admit` verdicts, so a solo self-modifying run is still visible.
-- [ ] When `self_modifying` is true AND the invocation count is > 1: emit
+      path and its label. *(completed: implemented as a sibling def `self_mod_match`, same
+      predicate rules, deliberately using `first` not `first // empty` — see the fix note below)*
+- [x] Emit `self_modifying` on EVERY verdict — `true`, `false`, or `null` when degraded — including
+      `admit` verdicts, so a solo self-modifying run is still visible. *(completed)*
+- [x] When `self_modifying` is true AND the invocation count is > 1: emit
       `decision: "defer"`, `defer_reason: "self_modifying"`, `critical_path` (the matched
       declared path), `critical_label`, and a plain-language `reason` naming the file, the label,
-      and the solo-only rule. Skip the collision scan entirely (D4).
-- [ ] When `self_modifying` is true and the invocation count is 1: `admit` (solo is the desired
-      outcome), with `self_modifying: true` still present.
-- [ ] Add `defer_reason: "file_scope_collision"` to the existing collision defer verdict and bump
-      the `$schema` literal to `orchestrate-batch-admit-v2` on all verdicts.
-- [ ] Update the script's header comment block: new flag, new fields, the two `defer_reason`
+      and the solo-only rule. Skip the collision scan entirely (D4). *(completed)*
+- [x] When `self_modifying` is true and the invocation count is 1: `admit` (solo is the desired
+      outcome), with `self_modifying: true` still present. *(completed)*
+- [x] Add `defer_reason: "file_scope_collision"` to the existing collision defer verdict and bump
+      the `$schema` literal to `orchestrate-batch-admit-v2` on all verdicts. *(completed)*
+- [x] Update the script's header comment block: new flag, new fields, the two `defer_reason`
       values, the precedence rule (D4), the degradation rule (D5), and a by-path reference to
-      the data file and to guardrails.md for the rationale (never restating either).
+      the data file and to guardrails.md for the rationale (never restating either). *(completed)*
+
+**Deviation (bug found and fixed during manual verification, not in the original task list)**:
+the first implementation of `self_mod_match` copied `scopes_overlap_first`'s `first // empty`
+tail verbatim. That is correct for `scopes_overlap_first` (used inside an array comprehension,
+where `empty` means "this iteration contributes nothing to the array"), but `self_mod_match`'s
+result is bound via `as $sm_hit |` OUTSIDE any array comprehension — an `empty` result there
+made jq's `as` binding iterate zero times, silently dropping the ENTIRE verdict for any
+non-self-modifying candidate from stdout (verified: a plain ordinary candidate produced no
+output at all, exit 0). Fixed by changing the tail to plain `first` (which returns `null`, not
+`empty`, for an empty match array), restoring one verdict line per candidate. Also fixed two
+apostrophes accidentally introduced into comments/strings inside the single-quoted bash-to-jq
+program (`bash -n` caught both as syntax errors). All fixes verified via a scratch-deploy-tree
+manual run before Phase 2 was marked complete.
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,62 @@
+{
+  "phase": 2,
+  "phase_name": "Implement the Gate in orchestrate-batch-admit.sh",
+  "started_at": "2026-07-25T00:15:00Z",
+  "last_updated": "2026-07-25T00:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add --invocation-count argument parsing",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Load and expand orchestrator-critical-paths.json with degradation handling",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Implement self_mod_match predicate reusing overlap rule",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Emit self_modifying on every verdict; defer/admit branching per D4",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Bump schema to v2, add defer_reason to collision defer",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Update header comment block",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {
+      "approach": "self_mod_match using `first // empty` tail (copied from scopes_overlap_first)",
+      "result": "failed",
+      "reason": "bound via `as $sm_hit |` outside an array comprehension; empty result caused zero iterations, silently dropping the whole verdict for non-self-modifying candidates. Fixed by using plain `first` (returns null on no-match)."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.3",
+      "description": "self_mod_match implementation detail (first vs first // empty)",
+      "type": "altered",
+      "reason": "Bug found during manual scratch-tree verification; fixed before marking phase complete. Not a scope change, an implementation correction.",
+      "annotation": "*(deviation: altered — fixed first // empty bug, see plan note)*"
+    }
+  ]
+}
