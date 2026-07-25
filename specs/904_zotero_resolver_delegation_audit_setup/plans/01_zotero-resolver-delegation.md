@@ -1,0 +1,312 @@
+# Implementation Plan: Delegate Zotero data-directory resolution to the shared resolver
+
+- **Task**: 904 - Delegate Zotero data-directory resolution to the shared resolver
+- **Status**: [IMPLEMENTING]
+- **Effort**: 1.5 hours
+- **Dependencies**: None
+- **Research Inputs**: specs/904_zotero_resolver_delegation_audit_setup/reports/01_zotero-resolver-delegation.md
+- **Artifacts**: plans/01_zotero-resolver-delegation.md (this file)
+- **Standards**: plan-format.md; status-markers.md; artifact-management.md; tasks.md; no-task-references-in-deliverables.md
+- **Type**: meta
+- **Lean Intent**: false
+
+## Overview
+
+Two scripts in the literature extension resolve the Zotero data directory with their own
+hardcoded candidate ladders instead of delegating to the canonical resolver
+(`zotero-resolve-sqlite-path.sh`). On this machine both ladders pick the stale `~/Zotero` profile
+over the live custom `dataDir`, so an audit probes an empty storage tree and the setup wizard
+reports a stale profile as successfully configured. The fix replaces both private ladders with
+the same two-line delegation idiom already used by the resolver's four correct consumers, leaving
+the resolver itself untouched. Definition of done: `zotero-setup.sh --detect`, the storage path
+`literature-audit.sh` probes, and direct invocation of `zotero-resolve-sqlite-path.sh` all agree
+on the live data directory, with both callers retaining their own existence probes.
+
+### Research Integration
+
+The research report verified every claim in the task description against current file contents
+and supplies exact patches for both sites. Key findings carried into this plan:
+
+- `SCRIPT_DIR` is already defined in both target files (`literature-audit.sh:41`,
+  `zotero-setup.sh:28`), so no new path plumbing is needed.
+- The delegation idiom to copy verbatim is `zotero-resolve-pdf.sh:75-76`:
+  `ZOTERO_SQLITE="$("$SCRIPT_DIR/zotero-resolve-sqlite-path.sh")"` then
+  `dirname "$ZOTERO_SQLITE"`. That file's header already states the storage root is ALWAYS
+  derived from the resolver's dataDir, never hardcoded — the textual precedent for Defect 1.
+- `DEFAULT_SEARCH_PATHS` is consumed read-only by `find_test_pdfs()` (line 96) and
+  `audit_crossrefs()` (line 303); neither requires a compile-time literal, so computing the third
+  element at script start is a drop-in change.
+- `_detect_data_dir()` has four callers (`cmd_detect:98`, `cmd_configure:114`, `cmd_validate:179`,
+  `cmd_status:231`), all treating it as an opaque "resolve or fail" call, so replacing Step 3's
+  body is transparent to all four.
+- The resolver always exits 0 on every code path, so nested command substitution under
+  `set -euo pipefail` is safe. No defensive `|| true` is warranted — a silent fallback would
+  reintroduce the bug being fixed.
+- No test file and no documentation file references either defect site. `tests/` and
+  `test-lit-pipeline.sh` do not touch `literature-audit.sh`; `EXTENSION.md`, `README.md`, and
+  `agents/literature-agent.md` carry only a one-line tool-table summary. The only string that
+  must change outside the two code sites is the `zotero-setup.sh:103` stderr diagnostic.
+
+### Prior Plan Reference
+
+No prior plan.
+
+### Roadmap Alignment
+
+No `roadmap_path` was supplied in the delegation context. `specs/ROADMAP.md` exists but contains
+no item this work advances (its literature entry covers the completed centralization effort). No
+roadmap phases are included and ROADMAP.md is not modified.
+
+## Goals & Non-Goals
+
+**Goals**:
+- `literature-audit.sh` derives its Zotero storage search path from the canonical resolver rather
+  than a hardcoded `$HOME/Zotero/storage`.
+- `zotero-setup.sh`'s `_detect_data_dir()` Step 3 delegates to the canonical resolver, removing
+  its private candidate ladder entirely.
+- The `zotero-setup.sh` "Checked:" stderr diagnostic truthfully describes the delegated ladder.
+- Both callers retain their own file/directory existence probes on the resolved path.
+- The resolver becomes the single data-directory ladder for all six consumers.
+
+**Non-Goals**:
+- Do NOT modify `zotero-resolve-sqlite-path.sh`. It is verified correct and out of scope.
+- Do NOT regenerate `zotero-library.json`; `zotero-generate-export.sh --force` stays opt-in and
+  this task does not touch the export at all.
+- Do NOT delete, migrate, or otherwise touch `~/Zotero` — user data, out of scope.
+- Do NOT reorder the existing candidate list as a shortcut; delegation is the point.
+- Do NOT change `_detect_data_dir()` Steps 1 and 2 (`$ZOT_DATA_DIR`, `zotero-index.json`'s
+  `.zot_data_dir`). They are intentional user-override escape hatches.
+- Do NOT edit anything under `.claude/**` — see the source-store rule below.
+- Do NOT add test files or documentation updates beyond the in-script diagnostic string.
+
+### Binding Constraints
+
+- **SOURCE-STORE RULE**: every edit targets `agent-system/extensions/literature/**`. The
+  `.claude/` tree is a gitignored, untracked, disposable deploy artifact regenerated by the
+  loader; a change written there is silently wiped. Before finishing, confirm
+  `git status --porcelain` shows no `.claude/` paths from this work.
+- **No task-number citations** in any file outside `specs/**`. The plan and summary may cite the
+  task number; the two shell scripts must not gain any new task reference.
+- **Known pre-existing exception**: `zotero-setup.sh:4` already carries a task-number citation in
+  its header comment. It predates this work and is out of scope — leave it unchanged, do not
+  expand scope to clean it up, and note it if the advisory
+  `validate-no-task-references.sh` hook surfaces it during the edit.
+
+## Risks & Mitigations
+
+| Risk | Impact | Likelihood | Mitigation |
+|------|--------|------------|------------|
+| Nested command substitution aborts a script under `set -euo pipefail` if the resolver ever fails | H | L | Resolver verified to exit 0 on every path; keep the callers' own `-d`/`-f` probes so a nonexistent resolved path degrades to the existing "not found" behavior rather than a crash. Do not add `\|\| true`. |
+| Reworded `:103` diagnostic implies an existence check the resolver does not perform | L | M | Word it to name the resolver's actual 3-tier order (override / auto-detected dataDir / historical default), not to assert specific paths were probed for existence by `zotero-setup.sh`. |
+| Edit lands in `.claude/` deploy tree and is silently wiped | H | L | Phase 4 explicitly greps `git status --porcelain` for `.claude/` paths; all edits use absolute `agent-system/...` paths. |
+| Verification is done by reading the diff rather than running the scripts | M | M | Phase 1 captures a pre-patch baseline so Phase 4's post-patch run has something to diff against; the observed before/after strings must be recorded in the summary. |
+| Scope creep into the resolver, the export, or `~/Zotero` | M | L | Non-Goals above are restated in every phase's verification step; any temptation to touch them is reported, not acted on. |
+
+## Implementation Phases
+
+**Dependency Analysis**:
+| Wave | Phases | Blocked by |
+|------|--------|------------|
+| 1 | 1 | -- |
+| 2 | 2, 3 | 1 |
+| 3 | 4 | 2, 3 |
+
+Phases within the same wave can execute in parallel. Phases 2 and 3 touch disjoint files
+(`literature-audit.sh` and `zotero-setup.sh` respectively) and share no state, so they are
+territory-clean for parallel execution; running them sequentially is equally acceptable.
+
+### Phase 1: Capture pre-patch baseline [COMPLETED]
+
+**Goal**: Record the current (buggy) resolution outputs so the fix can be demonstrated as an
+observed behavior change rather than asserted from the diff.
+
+**Tasks**:
+- [x] Run `agent-system/extensions/literature/scripts/zotero-resolve-sqlite-path.sh` and record
+      its stdout (expected: the live `~/Documents/Zotero/zotero.sqlite`) and exit code.
+      *(completed: `/home/benjamin/Documents/Zotero/zotero.sqlite`, exit 0)*
+- [x] Run `agent-system/extensions/literature/scripts/zotero-setup.sh --detect` and record its
+      stdout/stderr and exit code (expected: the stale `~/Zotero`, or a not-found message).
+      *(completed: printed `/home/benjamin/Zotero`, exit 0 — confirms the divergence)*
+- [x] Record the current third element of `DEFAULT_SEARCH_PATHS` in `literature-audit.sh` and
+      note whether `$HOME/Zotero/storage` and the resolver-derived `<dir>/storage` exist and how
+      many entries each contains (e.g. `ls -1 <dir> | wc -l`) — enough to show the divergence.
+      *(completed: third element `"$HOME/Zotero/storage"`; that dir does not exist; the
+      resolver-derived `~/Documents/Zotero/storage` exists with 939 entries)*
+- [x] Confirm `git status --porcelain agent-system/extensions/literature` is clean before editing.
+      *(completed: empty output, confirmed clean)*
+
+**Timing**: 0.25 hours
+
+**Depends on**: none
+
+**Files to modify**: none (read-only baseline capture)
+
+**Verification**:
+- Three baseline values are written down (resolver output, `--detect` output, audit storage path
+  plus existence/contents of both candidate storage dirs) and carried into Phase 4.
+- If `zotero-setup.sh --detect` already prints the resolver's directory (i.e. the machine no
+  longer diverges), say so explicitly and note that the before/after contrast will be weaker;
+  proceed with the patches regardless, since the design fault is the target, not this machine.
+
+---
+
+### Phase 2: Delegate `literature-audit.sh` storage path to the resolver [NOT STARTED]
+
+**Goal**: Replace the hardcoded `"$HOME/Zotero/storage"` element of `DEFAULT_SEARCH_PATHS` with a
+resolver-derived path, matching the `zotero-resolve-pdf.sh:75-76` idiom.
+
+**Tasks**:
+- [ ] In `agent-system/extensions/literature/scripts/literature-audit.sh`, immediately above the
+      `DEFAULT_SEARCH_PATHS` array (currently lines 43-48), compute
+      `ZOTERO_DATA_DIR="$(dirname "$("$SCRIPT_DIR/zotero-resolve-sqlite-path.sh")")"`.
+- [ ] Replace the array's third element `"$HOME/Zotero/storage"` with `"$ZOTERO_DATA_DIR/storage"`.
+      Leave the first two elements unchanged.
+- [ ] Add a one-line comment stating the storage root is derived from the canonical resolver,
+      never hardcoded (mirroring `zotero-resolve-pdf.sh`'s header wording). No task-number
+      citation.
+- [ ] Confirm no other occurrence of `$HOME/Zotero` remains in the file
+      (`grep -n 'HOME/Zotero' literature-audit.sh`).
+
+**Timing**: 0.25 hours
+
+**Depends on**: 1
+
+**Files to modify**:
+- `agent-system/extensions/literature/scripts/literature-audit.sh` — resolver-derived
+  `ZOTERO_DATA_DIR` added near `SCRIPT_DIR`; third `DEFAULT_SEARCH_PATHS` element changed.
+
+**Verification**:
+- `bash -n agent-system/extensions/literature/scripts/literature-audit.sh` exits 0.
+- A probe of the resolved array value (e.g. sourcing the config prologue in a subshell, or
+  `bash -c` echoing the array after the edit) prints `<resolver-dir>/storage` and matches
+  `dirname "$(zotero-resolve-sqlite-path.sh)"` + `/storage`.
+- `grep -n 'HOME/Zotero' agent-system/extensions/literature/scripts/literature-audit.sh` returns
+  no matches.
+
+---
+
+### Phase 3: Delegate `zotero-setup.sh` Step 3 and correct its diagnostic [NOT STARTED]
+
+**Goal**: Replace `_detect_data_dir()` Step 3's private candidate ladder with resolver
+delegation, keeping Steps 1 and 2 and the function's existence probe, and reword the
+`cmd_detect` "Checked:" stderr line to describe the delegated ladder truthfully.
+
+**Tasks**:
+- [ ] In `agent-system/extensions/literature/scripts/zotero-setup.sh`, replace the Step 3 block
+      (currently lines 76-89: the `for _candidate in "$HOME/Zotero" "$HOME/Documents/Zotero"
+      "${XDG_DATA_HOME:-$HOME/.local/share}/Zotero"` loop) with a call to
+      `"$SCRIPT_DIR/zotero-resolve-sqlite-path.sh"` plus `dirname`, retaining a
+      `[[ -d "$_resolved_dir" && -f "$_resolved_sqlite" ]]` guard before `echo`/`return 0`, and
+      preserving the trailing `return 1`.
+- [ ] Leave Step 1 (`$ZOT_DATA_DIR`, lines 58-64) and Step 2 (`zotero-index.json`, lines 66-74)
+      byte-for-byte unchanged.
+- [ ] Update the comment above Step 3 to name the resolver and its 3-tier order.
+- [ ] Reword the `cmd_detect` stderr line (currently line 103) so it no longer lists `~/Zotero`,
+      `~/Documents/Zotero`, and `$XDG_DATA_HOME/Zotero` as independently probed paths; name
+      `$ZOT_DATA_DIR`, the index file, then the resolver and its actual ladder
+      (`$ZOTERO_SQLITE_PATH` override, auto-detected custom dataDir from Zotero's `prefs.js`, or
+      the historical `~/Zotero` default). Do not claim the resolver checks existence.
+- [ ] Confirm no other `$HOME/Zotero` / `XDG_DATA_HOME` candidate-ladder remnant remains
+      (`grep -n 'HOME/Zotero\|XDG_DATA_HOME' zotero-setup.sh`).
+- [ ] Leave the pre-existing task-number citation in the file header (line 4) unchanged; report
+      it as a noted out-of-scope observation if the advisory hook flags the edit.
+
+**Timing**: 0.5 hours
+
+**Depends on**: 1
+
+**Files to modify**:
+- `agent-system/extensions/literature/scripts/zotero-setup.sh` — `_detect_data_dir()` Step 3 body
+  replaced; `cmd_detect` "Checked:" diagnostic reworded.
+
+**Verification**:
+- `bash -n agent-system/extensions/literature/scripts/zotero-setup.sh` exits 0.
+- `zotero-setup.sh --detect` prints the resolver-derived directory and exits 0 (or, if the
+  resolved path genuinely does not exist, exits 1 with the reworded diagnostic — the probe is
+  retained deliberately).
+- The four `_detect_data_dir()` call sites (`cmd_detect`, `cmd_configure`, `cmd_validate`,
+  `cmd_status`) are unchanged; `grep -n '_detect_data_dir' zotero-setup.sh` still shows the same
+  five occurrences (definition plus four callers).
+- Steps 1 and 2 are untouched in `git diff`.
+
+---
+
+### Phase 4: Three-way agreement verification and summary [NOT STARTED]
+
+**Goal**: Demonstrate, by running the scripts rather than reading the diff, that both callers now
+agree with the canonical resolver, and record the before/after contrast.
+
+**Tasks**:
+- [ ] Re-run `zotero-resolve-sqlite-path.sh` and record its output (control — must be unchanged
+      from Phase 1).
+- [ ] Re-run `zotero-setup.sh --detect` and confirm it now prints `dirname` of the resolver's
+      output rather than the Phase 1 baseline value.
+- [ ] Re-derive `literature-audit.sh`'s third search path and confirm it equals
+      `<resolver-dir>/storage`.
+- [ ] Assert three-way agreement explicitly: `--detect` output == `dirname "$(resolver)"` ==
+      the audit search path with `/storage` stripped.
+- [ ] Optionally run `literature-audit.sh` (or its `find_test_pdfs` path) far enough to confirm
+      it now probes the live storage directory; if the run is not practical, say so rather than
+      inferring the outcome.
+- [ ] Confirm `git status --porcelain` shows changes ONLY under
+      `agent-system/extensions/literature/scripts/` and `specs/904_*/` — no `.claude/` paths.
+- [ ] Confirm `~/Zotero` is untouched (still present, unmodified) and `zotero-library.json` was
+      not regenerated.
+- [ ] Confirm `git diff` touches exactly two script files and does not include
+      `zotero-resolve-sqlite-path.sh`.
+- [ ] Write the implementation summary to
+      `specs/904_zotero_resolver_delegation_audit_setup/summaries/01_zotero-resolver-delegation-summary.md`,
+      recording the Phase 1 baseline values, the post-patch values, and the three-way agreement
+      result verbatim.
+
+**Timing**: 0.5 hours
+
+**Depends on**: 2, 3
+
+**Files to modify**:
+- `specs/904_zotero_resolver_delegation_audit_setup/summaries/01_zotero-resolver-delegation-summary.md`
+  — new implementation summary.
+- `specs/904_zotero_resolver_delegation_audit_setup/plans/01_zotero-resolver-delegation.md` —
+  phase status markers updated in place.
+
+**Verification**:
+- All three resolution paths print the same data directory, with the observed strings pasted into
+  the summary (not paraphrased).
+- `git status --porcelain | grep '^.. \.claude/'` returns no matches.
+- Both scripts pass `bash -n`.
+
+## Testing & Validation
+
+- [ ] `bash -n` passes on `literature-audit.sh` and `zotero-setup.sh`.
+- [ ] `zotero-setup.sh --detect` output == `dirname "$(zotero-resolve-sqlite-path.sh)"`.
+- [ ] `literature-audit.sh`'s third `DEFAULT_SEARCH_PATHS` element ==
+      `dirname "$(zotero-resolve-sqlite-path.sh)"` + `/storage`.
+- [ ] Before/after contrast recorded: `--detect` changed from the Phase 1 baseline to the
+      resolver's directory (or explicitly noted if this machine did not diverge at run time).
+- [ ] `grep -rn 'HOME/Zotero' agent-system/extensions/literature/scripts/literature-audit.sh
+      agent-system/extensions/literature/scripts/zotero-setup.sh` returns no candidate-ladder
+      matches (a reference inside the reworded diagnostic describing the resolver's historical
+      default is acceptable and should be justified in the summary if present).
+- [ ] `zotero-resolve-sqlite-path.sh` is unmodified (`git diff --stat` shows two files only).
+- [ ] No new task-number citation appears in either script.
+- [ ] No file under `.claude/` was written.
+
+## Artifacts & Outputs
+
+- `agent-system/extensions/literature/scripts/literature-audit.sh` (modified)
+- `agent-system/extensions/literature/scripts/zotero-setup.sh` (modified)
+- `specs/904_zotero_resolver_delegation_audit_setup/plans/01_zotero-resolver-delegation.md`
+  (this file, updated with phase status markers)
+- `specs/904_zotero_resolver_delegation_audit_setup/summaries/01_zotero-resolver-delegation-summary.md`
+
+## Rollback/Contingency
+
+Both patches are confined to two files with no shared state and no schema, data, or state.json
+changes. To revert: `git checkout -- agent-system/extensions/literature/scripts/literature-audit.sh
+agent-system/extensions/literature/scripts/zotero-setup.sh` (safe only on a tree with no other
+uncommitted work in those files; snapshot first per the destructive-git rule if the tree is
+dirty). Because the phases are independent, either can be reverted alone without affecting the
+other. No deploy-tree regeneration is required to roll back, since no `.claude/` file is written.
+
+If the resolver's output turns out to be wrong on some machine, the correct response is to fix
+the resolver in a follow-up task — not to reintroduce a second ladder in either caller.
