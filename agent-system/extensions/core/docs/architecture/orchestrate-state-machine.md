@@ -27,6 +27,7 @@ The state machine is implemented inside `skill-orchestrate` (Pattern C: Orchestr
 | `partial` (with handoff) | `.orchestrator-handoff.json` has `continuation_context.handoff_path` | `dispatch(implement, task_n, continuation_context, orchestrator_mode=true)` | `implemented` | check blockers |
 | `partial` (with blockers) | `.orchestrator-handoff.json` has non-empty `blockers` array | `dispatch_blocker_escalation()` → revise → implement | `implemented` | increment cycle |
 | `partial` (no handoff, cycle limit) | `cycle_count >= MAX_CYCLES` | Report state, exit | — | — |
+| `partial` (infra cap) | `infra_failures >= MAX_INFRA_FAILURES` | Report connectivity issue, exit | — | — |
 | `blocked` | `status = "blocked"` | Read blockers from `state.json`, `dispatch_blocker_escalation()` | `planned` | increment cycle |
 | `completed` | `status = "completed"` | Report success, exit | — | — |
 | `abandoned` | `status = "abandoned"` | Report abandoned status, exit | — | — |
@@ -95,7 +96,8 @@ already make after the dispatch returns.
 ## MAX_CYCLES Enforcement
 
 ```bash
-MAX_CYCLES=5    # Maximum dispatch cycles per /orchestrate invocation
+MAX_CYCLES=5            # Maximum dispatch cycles per /orchestrate invocation
+MAX_INFRA_FAILURES=3    # Maximum corroborated Agent-tool transport/API failures per invocation
 
 # Loop guard file: specs/{NNN}_{SLUG}/.orchestrator-loop-guard
 # Schema:
@@ -103,6 +105,8 @@ MAX_CYCLES=5    # Maximum dispatch cycles per /orchestrate invocation
   "session_id": "sess_...",
   "cycle_count": 2,
   "max_cycles": 5,
+  "infra_failures": 0,
+  "max_infra_failures": 3,
   "current_state": "planned",
   "started": "2026-05-22T00:00:00Z",
   "last_updated": "2026-05-22T00:30:00Z"
@@ -115,6 +119,19 @@ sees the accumulated cycle count.
 
 **On cycle limit**: The task is left in `partial` state. The orchestrator reports: "Task {N} reached
 MAX_CYCLES limit. Run `/orchestrate {N}` again to continue, or `/implement {N}` to resume manually."
+
+### Infra-Failure vs. Work-Cycle Discrimination
+
+`cycle_count` and `infra_failures` are two separate, independently capped counters. A missing
+`.orchestrator-handoff.json` is charged against `cycle_count` (a genuine work cycle) unless BOTH
+of two corroborating signals agree the Agent tool call itself failed at the transport/API layer
+with no subagent execution at all — in which case it is charged against `infra_failures`
+instead, up to `MAX_INFRA_FAILURES`. See
+`context/patterns/infra-failure-discrimination.md` for the full two-signal rule, the conservative
+"either signal alone charges" default, and the `MAX_CYCLES + MAX_INFRA_FAILURES` worst-case
+iteration bound. On reaching `MAX_INFRA_FAILURES`, the orchestrator exits `partial` with a
+message distinct from the `MAX_CYCLES` message, so a log reader can tell "connectivity problem"
+apart from "ran out of work budget."
 
 ---
 
@@ -335,6 +352,15 @@ If a predecessor is still in-progress (e.g., `researched`, `planned`), the depen
 | MAX_CYCLES_MT hit | `partial` | Cycle budget exhausted |
 
 `MAX_CYCLES_MT = min(task_count * 5, 25)`
+
+**Per-task infra-failure cap**: a missing handoff for an individual task in Stage MT-4 is deferred
+(not marked `failed_tasks`) when it corroborates as an infra failure — see
+`context/patterns/infra-failure-discrimination.md` — up to `MAX_INFRA_FAILURES = 3` (flat per
+task, not scaled by `task_count`). The shared `MAX_CYCLES_MT` counter still increments once per
+wave cycle regardless of any individual task's infra verdict, so the outer loop remains bounded
+independent of this per-task cap; a task that keeps corroborating as an infra failure past
+`MAX_INFRA_FAILURES` falls back to the historical `failed_tasks` behavior rather than being
+deferred forever.
 
 ### MT Example Flow: 2 Independent Tasks
 

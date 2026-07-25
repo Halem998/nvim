@@ -1,7 +1,7 @@
 # Implementation Plan: Task #895
 
 - **Task**: 895 - separate_infra_failure_from_orchestrate_work_cycles
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None (file-overlap serialization only against any concurrent edit of the two SKILL.md files)
 - **Research Inputs**: `specs/895_separate_infra_failure_from_orchestrate_work_cycles/reports/01_infra-failure-vs-work-cycle.md`
@@ -674,22 +674,22 @@ unmodified, so Phase 4 already covers `/orchestrate --hard` multi-task runs.
 
 ---
 
-### Phase 6: Cross-file consistency sweep and architecture doc update [NOT STARTED]
+### Phase 6: Cross-file consistency sweep and architecture doc update [COMPLETED]
 
 **Goal**: Catch omissions the per-phase verifications cannot see, and update the architecture doc
 that documents the loop-guard schema.
 
 **Tasks**:
-- [ ] **Dispatch-site parity audit**: for each SKILL.md, list every dispatch site and confirm the
+- [x] **Dispatch-site parity audit**: for each SKILL.md, list every dispatch site and confirm the
       four in-scope Stage 4 sites each have a preceding `dispatch_start_ts=`. Confirm the
       intentionally-excluded sites are exactly: base Stage 5a drift-inspection fork, base Stage 6
       steps 2/4/5, hard Stage 4b churn-audit dispatch, hard Stage 6. Record the excluded list
       explicitly in the summary — an unrecorded exclusion is indistinguishable from an omission.
-- [ ] **`.claude/` leak check**: `git status --short` and `git diff --name-only` must show no
+- [x] **`.claude/` leak check**: `git status --short` and `git diff --name-only` must show no
       modified path under `.claude/`. All edits must be under `agent-system/extensions/core/`.
-- [ ] **Task-number citation check**: `git diff -- agent-system/ | grep -nE '^\+.*\btasks? [0-9]{2,4}\b'`
+- [x] **Task-number citation check**: `git diff -- agent-system/ | grep -nE '^\+.*\btasks? [0-9]{2,4}\b'`
       must return nothing.
-- [ ] **Update `agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md`**:
+- [x] **Update `agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md`**:
   - Section `## MAX_CYCLES Enforcement` (~line 95): add `MAX_INFRA_FAILURES=3` next to
     `MAX_CYCLES=5`, and add `"infra_failures": 0` / `"max_infra_failures": 3` to the example
     loop-guard JSON (~line 100-104).
@@ -699,12 +699,12 @@ that documents the loop-guard schema.
   - Terminal-conditions table (~line 29): add a row for `partial` (infra cap) with condition
     `infra_failures >= MAX_INFRA_FAILURES`.
   - Multi-task terminal table (~line 335): add a per-task infra-cap note.
-- [ ] **Check `agent-system/extensions/core/commands/orchestrate.md`** (~lines 26, 460): if it
+- [x] **Check `agent-system/extensions/core/commands/orchestrate.md`** (~lines 26, 460): if it
       enumerates termination reasons, add the infra-cap reason. Keep it to one line; the command doc
       is user-facing.
-- [ ] **Check `agent-system/extensions/core/docs/architecture/architecture-spec.md`** for a
+- [x] **Check `agent-system/extensions/core/docs/architecture/architecture-spec.md`** for a
       loop-guard schema mention; update only if it enumerates the guard's fields.
-- [ ] Run `bash agent-system/extensions/core/scripts/validate-context-index.sh` (or the repo's
+- [x] Run `bash agent-system/extensions/core/scripts/validate-context-index.sh` (or the repo's
       nearest equivalent) to confirm the new `index-entries.json` entry validates. If the script
       expects the deployed `.claude/context/index.json` and that tree is stale, note the result
       rather than deploying — deployment is user-driven and out of scope.
@@ -730,20 +730,20 @@ that documents the loop-guard schema.
 
 There is no executable test harness for SKILL.md prose-plus-bash. Validation is structural:
 
-- [ ] Every fenced bash block edited in Phases 2, 3, 5 extracted and passed to `bash -n` without
+- [x] Every fenced bash block edited in Phases 2, 3, 5 extracted and passed to `bash -n` without
       syntax errors (balanced `if`/`else`/`fi`, correct quoting).
-- [ ] `jq empty` passes on `agent-system/extensions/core/index-entries.json`.
-- [ ] Dispatch-site parity: `dispatch_start_ts=` count equals 4 in each SKILL.md, plus 3 MT-4
+- [x] `jq empty` passes on `agent-system/extensions/core/index-entries.json`.
+- [x] Dispatch-site parity: `dispatch_start_ts=` count equals 4 in each SKILL.md, plus 3 MT-4
       occurrences in the base file's multi-task section.
-- [ ] The literal string `# Increment cycle and continue` appears in neither SKILL.md.
-- [ ] Trace the bound by hand on paper for both variants: an invocation in which every dispatch is a
+- [x] The literal string `# Increment cycle and continue` appears in neither SKILL.md.
+- [x] Trace the bound by hand on paper for both variants: an invocation in which every dispatch is a
       corroborated infra failure terminates after exactly `MAX_INFRA_FAILURES` iterations; an
       invocation with no infra failures terminates after exactly `MAX_CYCLES`; a mixed invocation
       terminates after at most `MAX_CYCLES + MAX_INFRA_FAILURES`. Record this trace in the summary.
-- [ ] Trace the conservative default by hand: a missing handoff with `dispatch_was_transport_error`
+- [x] Trace the conservative default by hand: a missing handoff with `dispatch_was_transport_error`
       unset charges a cycle; with it `true` but `.return-meta.json` freshly written, charges a cycle.
-- [ ] No path under `.claude/` modified.
-- [ ] No new task-number citations outside `specs/**`.
+- [x] No path under `.claude/` modified.
+- [x] No new task-number citations outside `specs/**`.
 
 ## Artifacts & Outputs
 

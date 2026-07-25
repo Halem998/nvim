@@ -23,7 +23,7 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 
 - Multi-task mode uses dependency-aware wave dispatch. `--team` flag not supported.
 - No confirmation gates between lifecycle phases
-- Terminates automatically on success, MAX_CYCLES exceeded, or unrecoverable blocker
+- Terminates automatically on success, MAX_CYCLES exceeded, MAX_INFRA_FAILURES exceeded (repeated Agent-tool transport/API failures — a distinct connectivity-vs-work-budget diagnosis), or unrecoverable blocker
 - In multi-task mode, failure in one task does not block other tasks in the same wave, but DOES block dependent tasks in later waves
 
 ## Options
@@ -458,3 +458,4 @@ Commit failure is non-blocking (log and continue).
 - **DELEGATE Failure**: Keep current status, log error; loop guard preserved for resume
 - **GATE OUT Failure**: Missing artifacts — log warning, continue with available
 - **MAX_CYCLES Reached**: Report status, provide `/orchestrate {N}` resume instruction
+- **MAX_INFRA_FAILURES Reached**: Report a connectivity problem distinct from work-budget exhaustion (`cycle_count` unaffected), provide `/orchestrate {N}` resume instruction once connectivity is confirmed
