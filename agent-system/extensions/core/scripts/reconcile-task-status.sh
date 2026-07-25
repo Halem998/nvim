@@ -19,6 +19,25 @@
 #   plans/*.md      -> planning phase   (planning -> planned)
 #   summaries/*.md  -> implement phase  (implementing -> completed)
 #   partial state   -> check handoff for continuation_context
+#   plans/*.md      -> planning phase   (not_started -> planned)   [mtime-gated, see below]
+#   handoffs/*.md   -> partial state    (not_started -> partial)   [mtime-gated, see below]
+#
+# Why the not_started mappings are mtime-gated:
+#   A not_started task with artifacts on disk is ambiguous. It is either a crashed run whose
+#   postflight was lost (promote it) or a task deliberately reset with its old artifacts left in
+#   place (leave it alone). The Recover Mode in commands/task.md produces the second shape on
+#   purpose: it moves an archived task's entire directory -- plans/, reports/, summaries/,
+#   handoffs/ -- back into specs/, forces status="not_started", and stamps last_updated to the
+#   recovery time in the same jq call. Artifact PRESENCE cannot tell the two apart; artifact
+#   RECENCY can. A crashed run necessarily wrote its artifact after the last successful status
+#   write, so artifact_mtime > last_updated. A recovered task's artifacts all predate the
+#   recovery stamp, so last_updated > artifact_mtime. Promotion therefore requires a strictly
+#   newer artifact (see artifact_newer_than_last_update below).
+#
+#   Do NOT "simplify" this into a bare artifact-presence check. This reconcile runs live and
+#   unattended from the orchestrate entry path (no --dry-run, no human), so dropping the guard
+#   would silently fast-forward every recovered task past the research or planning it was
+#   recovered to redo.
 #
 # Exit codes:
 #   0 - Success or no-op (nothing to reconcile, or reconciliation applied)
@@ -177,6 +196,44 @@ handoff_status_value() {
   if [[ -f "$handoff_file" ]]; then
     jq -r '.status // ""' "$handoff_file" 2>/dev/null
   fi
+}
+
+# --- Helper: is this artifact newer than the task's last recorded status write? ---
+# The false-positive guard for the not_started branches (see the header's "Why the not_started
+# mappings are mtime-gated" note). Returns 0 (permit) when the artifact's mtime is strictly
+# greater than state.json's last_updated for this task, 1 (refuse) otherwise.
+#
+# Ties refuse, deliberately: a directory move can land an artifact's mtime on the same whole
+# second as the recovery stamp, and the two outcomes are not symmetric. Refusing a tie costs one
+# re-run of /plan; permitting one silently skips planning on a task that was reopened to redo it.
+#
+# Fails OPEN (0) when last_updated is missing or unparseable -- the same "signal absent ->
+# permit" philosophy handoff_permits_promotion above already uses, so a task predating the
+# last_updated field behaves as it did before. Fails CLOSED (1) when the artifact cannot be
+# stat'd, which should not happen: callers only reach here after find_latest_artifact (or an
+# equivalent listing) already located the file, so an unreadable path means something is wrong
+# and refusing is correct.
+#
+# stat and date both use the GNU-then-BSD fallback idiom already established elsewhere in this
+# codebase (scripts/claude-cleanup.sh for stat, scripts/task-lock.sh for date) rather than
+# assuming GNU. A guard that silently degrades to a no-op on a non-Linux host would be worse
+# than no guard, because it would look present in review while permitting every promotion.
+artifact_newer_than_last_update() {
+  local artifact_path="$1"
+  local artifact_mtime last_updated_raw last_updated_epoch
+
+  artifact_mtime=$(stat -c %Y "$artifact_path" 2>/dev/null \
+    || stat -f %m "$artifact_path" 2>/dev/null) || return 1
+  [[ -n "$artifact_mtime" ]] || return 1
+
+  last_updated_raw=$(echo "$task_data" | jq -r '.last_updated // empty' 2>/dev/null)
+  [[ -n "$last_updated_raw" ]] || return 0
+
+  last_updated_epoch=$(date -u -d "$last_updated_raw" +%s 2>/dev/null \
+    || date -u -j -f "%Y-%m-%dT%H:%M:%SZ" "$last_updated_raw" +%s 2>/dev/null) || return 0
+  [[ -n "$last_updated_epoch" ]] || return 0
+
+  [[ "$artifact_mtime" -gt "$last_updated_epoch" ]]
 }
 
 # --- Helper: record a refused promotion using the sanctioned partial/blocked postflight
