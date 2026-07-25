@@ -233,6 +233,111 @@ if [[ "$current_state_status" == "$STATE_STATUS" ]]; then
   fi
 fi
 
+# ============================================================
+# PHASE 0: Phase-accounting backstop (opt-in via --phase-check)
+# ============================================================
+# Independent, script-side evidence gathering: this NEVER trusts a caller-supplied phase count.
+# Accepting one would reproduce the exact fragility being fixed (a caller can pass wrong numbers
+# just as easily as a handoff can omit them), so the only caller-supplied decision is the MODE.
+#
+# Evidence source is the plan file's own `### Phase N: {name} [STATUS]` headings -- the same
+# single-line-per-phase contract plan-format.md fixes and update-phase-status.sh already treats
+# as authoritative. Deliberately NOT `- [ ]`/`- [x]` checkbox counting: checkboxes are sub-phase
+# task items whose granularity is unrelated to phase count, and they also appear in non-phase
+# sections (e.g. "Testing & Validation"), so a whole-file checkbox ratio is not a phase signal.
+#
+# Plan-file resolution reuses update_plan_file()'s existing project_name -> plan_dir ->
+# version-ordered-ls chain, so NO new argument is required: task_number (already a required
+# positional) is sufficient.
+#
+# Conclusiveness convention: only "conforming phase headings exist AND at least one is not
+# [COMPLETED]" is conclusive evidence of incompleteness. No plan file, no plan dir, or zero
+# conforming phase headings is INCONCLUSIVE and always passes through -- deliberately mirroring
+# the SKILL-layer gate's own `phases_total == 0` pass-through so the two layers never disagree
+# on the meaning of "no data".
+PHASE_CHECK_PLAN_FILE=""
+PHASE_CHECK_TOTAL=0
+PHASE_CHECK_DONE=0
+
+resolve_plan_file_for_phase_check() {
+  local project_name padded_num plan_dir plan_file
+  project_name=$(jq -r --arg num "$task_number" \
+    '.active_projects[] | select(.project_number == ($num | tonumber)) | .project_name' \
+    "$STATE_FILE")
+  if [[ -z "$project_name" || "$project_name" == "null" ]]; then
+    return 0
+  fi
+  padded_num=$(printf "%03d" "$task_number")
+  plan_dir="$PROJECT_ROOT/specs/${padded_num}_${project_name}/plans"
+  if [[ ! -d "$plan_dir" ]]; then
+    plan_dir="$PROJECT_ROOT/specs/${task_number}_${project_name}/plans"
+  fi
+  [[ -d "$plan_dir" ]] || return 0
+  # Version-ordered selection (not mtime-ordered), the same two-tier rule used by
+  # update_plan_file()'s preflight branch, update-plan-status.sh, and update-phase-status.sh.
+  plan_file=$(ls "$plan_dir"/[0-9][0-9]_*.md 2>/dev/null | sort | tail -1 || echo "")
+  if [[ -z "$plan_file" ]]; then
+    plan_file=$(ls "$plan_dir"/*.md 2>/dev/null | sort | tail -1 || echo "")
+  fi
+  [[ -n "$plan_file" && -f "$plan_file" ]] || return 0
+  PHASE_CHECK_PLAN_FILE="$plan_file"
+  return 0
+}
+
+count_plan_phases() {
+  # A heading is counted only when it matches the exact conforming shape
+  # `### Phase <N>: ... [<UPPERCASE STATUS>]` (trailing whitespace tolerated). Malformed headings
+  # -- missing brackets, lowercase status, non-numeric N -- are excluded from BOTH totals rather
+  # than raising an error, matching the graceful-degradation style used throughout these scripts.
+  #
+  # The `VAR=$(grep -c ...) || VAR=0` form is required, not cosmetic: `grep -c` exits 1 when it
+  # matches nothing (which `set -e` would otherwise treat as fatal), and the tempting
+  # `$(grep -c ... || echo 0)` form emits TWO lines ("0" from grep plus "0" from echo).
+  PHASE_CHECK_TOTAL=$(grep -c '^### Phase [0-9][0-9]*:.*\[[A-Z][A-Z ]*\][[:space:]]*$' \
+    "$PHASE_CHECK_PLAN_FILE" 2>/dev/null) || PHASE_CHECK_TOTAL=0
+  PHASE_CHECK_DONE=$(grep -c '^### Phase [0-9][0-9]*:.*\[COMPLETED\][[:space:]]*$' \
+    "$PHASE_CHECK_PLAN_FILE" 2>/dev/null) || PHASE_CHECK_DONE=0
+}
+
+# The gate runs BEFORE acquire_state_mutex below, so a refusal costs no mutex acquisition and no
+# jq write. Because PHASE 1 (state.json flip) and PHASE 3 (update_plan_file's [COMPLETED] stamp)
+# are both downstream of this point and both reachable only via this one
+# operation=postflight/target_status=implement code path, this single gate blocks both of the
+# defect's two effects at once.
+#
+# `state_is_noop == true` is excluded: a task already at 'completed' replaying postflight has
+# nothing left to refuse.
+if [[ -n "$PHASE_CHECK" && "$operation" == "postflight" && "$target_status" == "implement" \
+      && "$state_is_noop" != "true" ]]; then
+  resolve_plan_file_for_phase_check
+  if [[ -n "$PHASE_CHECK_PLAN_FILE" ]]; then
+    count_plan_phases
+  fi
+
+  if [[ -z "$PHASE_CHECK_PLAN_FILE" ]]; then
+    echo "[phase-check] Task $task_number: no plan file resolved -- inconclusive, passing through." >&2
+  elif [[ "$PHASE_CHECK_TOTAL" -eq 0 ]]; then
+    echo "[phase-check] Task $task_number: no conforming '### Phase N: ... [STATUS]' headings in $(basename "$PHASE_CHECK_PLAN_FILE") -- inconclusive, passing through." >&2
+  elif [[ "$PHASE_CHECK_DONE" -ge "$PHASE_CHECK_TOTAL" ]]; then
+    echo "[phase-check] Task $task_number: ${PHASE_CHECK_DONE}/${PHASE_CHECK_TOTAL} phases [COMPLETED] in $(basename "$PHASE_CHECK_PLAN_FILE") -- proceeding." >&2
+  else
+    # Conclusive on-disk evidence of incompleteness.
+    if [[ "$DRY_RUN" == "true" ]]; then
+      # --dry-run is preview-only and never itself a failure signal, so it always exits 0 and
+      # continues previewing the rest of the pipeline even under --phase-check=refuse. This lets
+      # a caller preview a refusal without it looking like a script bug in a dry-run harness.
+      echo "[dry-run] Phase-check (mode=${PHASE_CHECK}) would block this transition: ${PHASE_CHECK_DONE}/${PHASE_CHECK_TOTAL} phases complete in ${PHASE_CHECK_PLAN_FILE}"
+    elif [[ "$PHASE_CHECK" == "refuse" ]]; then
+      echo "Error: [phase-check] refusing postflight implement for task $task_number: only ${PHASE_CHECK_DONE}/${PHASE_CHECK_TOTAL} phases are [COMPLETED] in ${PHASE_CHECK_PLAN_FILE}." >&2
+      echo "       No state.json write and no plan-file status stamp occurred." >&2
+      echo "       Finish the remaining phases, or correct the plan file's phase headings, and re-run." >&2
+      exit 4
+    else
+      echo "WARNING: [phase-check] task $task_number is being marked completed with only ${PHASE_CHECK_DONE}/${PHASE_CHECK_TOTAL} phases [COMPLETED] in ${PHASE_CHECK_PLAN_FILE}." >&2
+    fi
+  fi
+fi
+
 # --- Ensure tmp directory exists ---
 mkdir -p "$TMP_DIR"
 

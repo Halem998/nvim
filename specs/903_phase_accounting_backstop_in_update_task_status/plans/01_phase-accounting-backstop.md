@@ -261,16 +261,16 @@ fi
 
 ---
 
-### Phase 2: Evidence gathering and the single early gate [NOT STARTED]
+### Phase 2: Evidence gathering and the single early gate [COMPLETED]
 
 **Goal**: Add independent plan-file phase counting and the single early gate that blocks both the
 state.json flip and the plan-file `[COMPLETED]` stamp, placed before `acquire_state_mutex`.
 
 **Tasks**:
-- [ ] Add `resolve_plan_file_for_phase_check()` and `count_plan_phases()`
-- [ ] Add the gate block with its four verdict branches
-- [ ] Confirm placement is before `mkdir -p "$TMP_DIR"` and therefore before `acquire_state_mutex`
-- [ ] `bash -n` syntax check
+- [x] Add `resolve_plan_file_for_phase_check()` and `count_plan_phases()` *(completed)*
+- [x] Add the gate block with its four verdict branches *(completed)*
+- [x] Confirm placement is before `mkdir -p "$TMP_DIR"` and therefore before `acquire_state_mutex` *(completed)*
+- [x] `bash -n` syntax check *(completed)*
 
 **Exact insertion text**. Insert the entire block below into
 `agent-system/extensions/core/scripts/update-task-status.sh` immediately AFTER the
