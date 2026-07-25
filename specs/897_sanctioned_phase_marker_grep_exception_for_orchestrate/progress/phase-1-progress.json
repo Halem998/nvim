@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Base skill — recovery carve-out and Stage 5 recovery grep",
+  "started_at": "2026-07-25T17:09:31Z",
+  "last_updated": "2026-07-25T17:09:31Z",
+  "objectives": [
+    {"id": 1, "description": "Locate MUST NOT heading, leave items 1-4 unchanged", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Insert canonical carve-out after ONLY-file-read paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Append recovery grep block to Stage 5 missing/stale-handoff branch", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 4, "description": "Confirm no task-number citation introduced", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

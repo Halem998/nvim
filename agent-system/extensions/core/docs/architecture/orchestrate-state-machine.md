@@ -107,11 +107,17 @@ MAX_INFRA_FAILURES=3    # Maximum corroborated Agent-tool transport/API failures
   "max_cycles": 5,
   "infra_failures": 0,
   "max_infra_failures": 3,
+  "last_recovered_phases_completed": 2,   # optional; written only by the Stage 5 recovery grep
+  "last_recovered_phases_total": 6,       # optional; written only by the Stage 5 recovery grep
   "current_state": "planned",
   "started": "2026-05-22T00:00:00Z",
   "last_updated": "2026-05-22T00:30:00Z"
 }
 ```
+
+The two last_recovered_* fields are optional and diagnostic: they appear only after a
+missing/stale-handoff recovery event, are read back with a jq default, and never participate in
+any cap or status transition.
 
 The loop guard file is created at the start of an `/orchestrate` invocation and updated after each
 dispatch cycle. It persists between conversational turns so a resumed `/orchestrate` invocation
@@ -176,8 +182,12 @@ Step 5: RE-DISPATCH IMPLEMENT
 
 ## Context Flatness Guarantee
 
-The orchestrator NEVER reads research reports, plan files, or implementation summaries during its
-state machine loop. After each dispatch it reads only:
+On the normal path the orchestrator reads only the handoff object after each dispatch — it never
+opens research reports, plan files, or implementation summaries for comprehension during its
+state machine loop. Three narrow, grep-only exceptions are sanctioned (adversarial-verification
+grep, next-phase selection grep, and the Stage 5 phase-marker recovery grep); see the exception
+table in `docs/architecture/handoff-schema.md` for the full accounting. After each dispatch on
+the normal path it reads only:
 
 ```bash
 handoff=$(cat "specs/${padded_num}_${project_name}/.orchestrator-handoff.json")

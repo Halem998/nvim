@@ -11,13 +11,12 @@ next_project_number: 910
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,896,897,904,905 | -- | agent-system, literature |
-| 2 | 887,898 | 873,897 | agent-system |
-| 3 | 900,909 | 898 | agent-system |
-| 4 | 901 | 900 | agent-system |
-| 5 | 902,906 | 885,896,901 | agent-system |
-| 6 | 907 | 902,906 | agent-system |
-| 7 | 908 | 907 | agent-system |
+| 1 | 873,885,898,904,905 | -- | agent-system, literature |
+| 2 | 887,900,909 | 873,898 | agent-system |
+| 3 | 901 | 900 | agent-system |
+| 4 | 902,906 | 885,901 | agent-system |
+| 5 | 907 | 902,906 | agent-system |
+| 6 | 908 | 907 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -29,16 +28,13 @@ next_project_number: 910
   └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
       └─ 908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
-896 [NOT STARTED] — Observed in a single full /orchestrate run (lean4 task, 8 impleme
-  └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
-897 [NOT STARTED] — LOWER PRIORITY. Observed in the same full /orchestrate run (lean4
-  └─ 898 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-    └─ 900 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-      └─ 901 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-        └─ 902 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-          └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
-        └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
-    └─ 909 [NOT STARTED] — Residual gap surfaced by the implementation agent for the complet
+898 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+  └─ 900 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+    └─ 901 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+      └─ 902 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+        └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
+      └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
+  └─ 909 [NOT STARTED] — Residual gap surfaced by the implementation agent for the complet
 
 ### Literature
 
@@ -504,10 +500,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 897. Add narrow sanctioned phase-marker grep exception to orchestrate MUST NOT list
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 895
+- **Research**: [897_sanctioned_phase_marker_grep_exception_for_orchestrate/reports/01_phase-marker-grep-exception.md]
+- **Plan**: [897_sanctioned_phase_marker_grep_exception_for_orchestrate/plans/01_phase-marker-grep-recovery.md]
+- **Summary**: [897_sanctioned_phase_marker_grep_exception_for_orchestrate/summaries/01_phase-marker-grep-recovery-summary.md]
 
 **Description**: LOWER PRIORITY. Observed in the same full /orchestrate run (lean4 task, 8 implementation phases, 5 cycles) as the other five defects in this batch.
 
@@ -530,10 +529,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 896. Fix cwd-relative paths in skill_link_artifacts and add task filter to reconcile-artifacts.sh
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 892
+- **Research**: [896_fix_cwd_relative_artifact_linking_in_skill_base/reports/01_cwd_relative_artifact_linking_fix.md]
+- **Plan**: [896_fix_cwd_relative_artifact_linking_in_skill_base/plans/01_cwd-relative-artifact-linking-fix.md]
+- **Summary**: [896_fix_cwd_relative_artifact_linking_in_skill_base/summaries/01_cwd-relative-artifact-linking-fix-summary.md]
 
 **Description**: Observed in a single full /orchestrate run (lean4 task, 8 implementation phases, 5 cycles) as one of six agent-system defects.
 

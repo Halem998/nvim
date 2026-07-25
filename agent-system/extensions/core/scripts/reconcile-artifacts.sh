@@ -7,10 +7,11 @@
 # (preserves team research with multiple report files).
 #
 # Usage:
-#   .claude/scripts/reconcile-artifacts.sh [--dry-run]
+#   .claude/scripts/reconcile-artifacts.sh [--dry-run] [--task N]
 #
 # Options:
-#   --dry-run  Print what would be backfilled without modifying state.json
+#   --dry-run     Print what would be backfilled without modifying state.json
+#   --task N      Scope the backfill to a single task number (default: all active tasks)
 #
 # Exit codes:
 #   0 - Success (no-op or backfill applied)
@@ -26,11 +27,35 @@ STATE_FILE="$PROJECT_ROOT/specs/state.json"
 
 # --- Argument parsing ---
 DRY_RUN=false
-for arg in "$@"; do
-  case "$arg" in
-    --dry-run) DRY_RUN=true ;;
+TASK_FILTER=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    --task)
+      if [[ $# -lt 2 || -z "$2" ]]; then
+        echo "Error: --task requires a value" >&2
+        exit 1
+      fi
+      if [[ ! "$2" =~ ^[0-9]+$ ]]; then
+        echo "Error: --task value must be numeric, got: $2" >&2
+        exit 1
+      fi
+      TASK_FILTER="$2"
+      shift 2
+      ;;
+    --task=*)
+      TASK_FILTER="${1#--task=}"
+      if [[ -z "$TASK_FILTER" || ! "$TASK_FILTER" =~ ^[0-9]+$ ]]; then
+        echo "Error: --task value must be numeric, got: $TASK_FILTER" >&2
+        exit 1
+      fi
+      shift
+      ;;
     *)
-      echo "Usage: $0 [--dry-run]" >&2
+      echo "Usage: $0 [--dry-run] [--task N]" >&2
       exit 1
       ;;
   esac
@@ -78,6 +103,10 @@ tasks_with_backfill=0
 # --- Main loop: iterate over all active tasks ---
 while IFS='|' read -r task_num task_slug; do
   [[ -z "$task_num" ]] && continue
+
+  if [[ -n "$TASK_FILTER" ]] && [[ "$task_num" -ne "$TASK_FILTER" ]]; then
+    continue
+  fi
 
   # Resolve task directory (try padded form first, then unpadded)
   PADDED_NUM=$(printf "%03d" "$task_num")
@@ -150,12 +179,16 @@ while IFS='|' read -r task_num task_slug; do
 done < <(jq -r '.active_projects[] | "\(.project_number)|\(.project_name)"' "$STATE_FILE")
 
 # --- Report summary ---
+scope_suffix=""
+if [[ -n "$TASK_FILTER" ]]; then
+  scope_suffix=" (task $TASK_FILTER)"
+fi
 if [[ "$total_backfilled" -eq 0 ]]; then
-  echo "[reconcile] No artifact gaps found"
+  echo "[reconcile] No artifact gaps found${scope_suffix}"
 elif [[ "$DRY_RUN" == "true" ]]; then
-  echo "[reconcile] Dry run: would backfill $total_backfilled artifact(s) for $tasks_with_backfill task(s)"
+  echo "[reconcile] Dry run: would backfill $total_backfilled artifact(s) for $tasks_with_backfill task(s)${scope_suffix}"
 else
-  echo "[reconcile] Backfilled $total_backfilled artifact(s) for $tasks_with_backfill task(s)"
+  echo "[reconcile] Backfilled $total_backfilled artifact(s) for $tasks_with_backfill task(s)${scope_suffix}"
 fi
 
 exit 0

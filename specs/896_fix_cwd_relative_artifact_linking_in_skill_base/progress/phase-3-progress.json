@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Add opt-in --task N filter to reconcile-artifacts.sh",
+  "started_at": "2026-07-25T00:16:00Z",
+  "last_updated": "2026-07-25T00:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Update header usage docstring for --task N option", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/reconcile-artifacts.sh"]},
+    {"id": 2, "description": "Introduce TASK_FILTER variable and convert for-loop to while/shift arg parser accepting --task N and --task=N with numeric validation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/reconcile-artifacts.sh"]},
+    {"id": 3, "description": "Update catch-all usage error string", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/reconcile-artifacts.sh"]},
+    {"id": 4, "description": "Add if/then filter guard in main loop after existing skip guard", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/reconcile-artifacts.sh"]},
+    {"id": 5, "description": "Extend final summary echoes with scope suffix when TASK_FILTER set", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/reconcile-artifacts.sh"]},
+    {"id": 6, "description": "Confirm task.md invocation unchanged", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -48,8 +48,13 @@ even to "verify" a phase before or after dispatch.
 1. `specs/state.json` — task status and metadata.
 2. `specs/{NNN}_{SLUG}/.orchestrator-handoff.json` and its siblings
    `.orchestrator-loop-guard` / `.orchestrator-churn-state.json`.
-3. `specs/{NNN}_{SLUG}/plans/*.md` and `specs/{NNN}_{SLUG}/reports/*.md` (reports are needed
-   for the H4 adversarial-verification grep in Stage 4).
+3. `specs/{NNN}_{SLUG}/plans/*.md` and `specs/{NNN}_{SLUG}/reports/*.md`. Plan- and
+   report-file access covers exactly three bounded, grep-only uses, none of which is a
+   full-file comprehension read: (a) the H4 adversarial-verification grep over reports in
+   Stage 4; (b) Stage 4's `### Phase N: ... [STATUS]` next-phase selection grep over the plan;
+   and (c) Stage 5's count-only phase-marker recovery grep over the plan, which fires only
+   inside the missing/stale-handoff branch and is bounded to ≤10 tokens per recovery event
+   (two `grep -c` integers). Any other use of these files is outside the allowlist.
 4. `.claude/context/contracts/*.md` and `.claude/docs/architecture/*.md` (this skill's own
    contracts and architecture docs, per Context References above).
 
@@ -773,6 +778,49 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
     infra_exempt_cycle=true
   else
     echo "[hard-orchestrate] Missing handoff charged as a genuine work cycle (transport_error=${dispatch_was_transport_error:-false}, meta_touched=$meta_touched)." >&2
+  fi
+
+  # ── phase-marker recovery grep (sanctioned narrow exception) ─────────────────
+  # PRECONDITION: reachable ONLY inside this missing/stale-handoff branch. Never runs on the
+  # normal path where a fresh handoff was read — the context-flatness invariant is untouched
+  # there. See "MUST NOT (Context Flatness Constraint) — Recovery exception" for the contract.
+  # Same access class as the next-phase selection grep in the planned/implementing handler above
+  # — heading lines only, over the same $plan_path — but conditioned on a bad handoff rather
+  # than run every cycle.
+  # TOKEN BOUND: two `grep -c` calls returning one integer each — ≤10 tokens per recovery event,
+  # no matched line content.
+  # These counts are DIAGNOSTIC ONLY: with no usable handoff there is no dispatch_status to
+  # trust, so they never drive a status transition. They exist to give the operator and the
+  # next cycle visibility into real phase progress that a missing handoff structurally cannot
+  # report.
+  recovery_plan_path="${plan_path:-}"
+  if [ -z "$recovery_plan_path" ]; then
+    # $plan_path is set by the planned/implementing dispatch handler; a missing handoff after a
+    # research or plan dispatch leaves it unset. Re-derive with the same idiom that handler uses.
+    recovery_plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+  fi
+  if [ -n "$recovery_plan_path" ] && [ -f "$recovery_plan_path" ]; then
+    # `x=$(grep -c ...) || x=0` — grep exits 1 on zero matches. Never `$(grep -c ... || echo 0)`,
+    # which emits two lines in that case.
+    recovered_total=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: ' "$recovery_plan_path" 2>/dev/null) || recovered_total=0
+    recovered_completed=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: .*\[COMPLETED\]' "$recovery_plan_path" 2>/dev/null) || recovered_completed=0
+    echo "[hard-orchestrate] RECOVERY: handoff unusable — plan headings show ${recovered_completed}/${recovered_total} phases [COMPLETED] in ${recovery_plan_path}." >&2
+
+    # Stagnation signal: an identical recovered_completed across consecutive recovery events
+    # means dispatches are burning cycles without advancing the plan. Logged, never enforced —
+    # MAX_CYCLES remains the only bound on this branch.
+    prev_recovered=$(jq -r '.last_recovered_phases_completed // -1' "$loop_guard_file" 2>/dev/null) || prev_recovered=-1
+    if [ "$prev_recovered" = "$recovered_completed" ]; then
+      echo "[hard-orchestrate] RECOVERY: no phase progress since the previous recovery event (still ${recovered_completed}/${recovered_total}). Dispatches are not advancing the plan." >&2
+    fi
+    jq --argjson rc "$recovered_completed" --argjson rt "$recovered_total" \
+       --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+      '.last_recovered_phases_completed = $rc
+       | .last_recovered_phases_total = $rt
+       | .last_updated = $updated' \
+      "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+  else
+    echo "[hard-orchestrate] RECOVERY: no plan file available — phase progress cannot be recovered this cycle." >&2
   fi
 else
   handoff=$(cat "$handoff_file")

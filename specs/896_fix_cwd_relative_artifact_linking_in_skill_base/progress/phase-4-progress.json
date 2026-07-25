@@ -1,0 +1,20 @@
+{
+  "phase": 4,
+  "phase_name": "Integrated non-root-cwd regression verification",
+  "started_at": "2026-07-25T00:26:00Z",
+  "last_updated": "2026-07-25T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Refresh harness with Phase 2/3 scripts and pristine fixture", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Call skill_link_artifacts for research/plan/summary from non-root cwd", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm state.json entries and TODO.md regeneration", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Delete specs/tmp and confirm mkdir -p handles it", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm duplicate-type remove-then-add semantics leave exactly one entry", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Real (non-dry-run) reconcile-artifacts.sh --task N scoping proof", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Real no-argument reconcile-artifacts.sh backfill matches Phase 1 baseline", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Confirm no stray specs/ tree under elsewhere", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

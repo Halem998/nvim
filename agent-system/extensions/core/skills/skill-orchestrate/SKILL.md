@@ -547,6 +547,46 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
   else
     echo "[orchestrate] Missing handoff charged as a genuine work cycle (transport_error=${dispatch_was_transport_error:-false}, meta_touched=$meta_touched)." >&2
   fi
+
+  # ── Phase-marker recovery grep (sanctioned narrow exception) ─────────────────
+  # PRECONDITION: reachable ONLY inside this missing/stale-handoff branch. Never runs on the
+  # normal path where a fresh handoff was read — the context-flatness invariant is untouched
+  # there. See "MUST NOT (Context Flatness Constraint) — Recovery exception" for the contract.
+  # TOKEN BOUND: two `grep -c` calls returning one integer each — ≤10 tokens per recovery event,
+  # no matched line content.
+  # These counts are DIAGNOSTIC ONLY: with no usable handoff there is no dispatch_status to
+  # trust, so they never drive a status transition. They exist to give the operator and the
+  # next cycle visibility into real phase progress that a missing handoff structurally cannot
+  # report.
+  recovery_plan_path="${plan_path:-}"
+  if [ -z "$recovery_plan_path" ]; then
+    # $plan_path is set by the planned/implementing dispatch handler; a missing handoff after a
+    # research or plan dispatch leaves it unset. Re-derive with the same idiom that handler uses.
+    recovery_plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+  fi
+  if [ -n "$recovery_plan_path" ] && [ -f "$recovery_plan_path" ]; then
+    # `x=$(grep -c ...) || x=0` — grep exits 1 on zero matches. Never `$(grep -c ... || echo 0)`,
+    # which emits two lines in that case.
+    recovered_total=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: ' "$recovery_plan_path" 2>/dev/null) || recovered_total=0
+    recovered_completed=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: .*\[COMPLETED\]' "$recovery_plan_path" 2>/dev/null) || recovered_completed=0
+    echo "[orchestrate] RECOVERY: handoff unusable — plan headings show ${recovered_completed}/${recovered_total} phases [COMPLETED] in ${recovery_plan_path}." >&2
+
+    # Stagnation signal: an identical recovered_completed across consecutive recovery events
+    # means dispatches are burning cycles without advancing the plan. Logged, never enforced —
+    # MAX_CYCLES remains the only bound on this branch.
+    prev_recovered=$(jq -r '.last_recovered_phases_completed // -1' "$loop_guard_file" 2>/dev/null) || prev_recovered=-1
+    if [ "$prev_recovered" = "$recovered_completed" ]; then
+      echo "[orchestrate] RECOVERY: no phase progress since the previous recovery event (still ${recovered_completed}/${recovered_total}). Dispatches are not advancing the plan." >&2
+    fi
+    jq --argjson rc "$recovered_completed" --argjson rt "$recovered_total" \
+       --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+      '.last_recovered_phases_completed = $rc
+       | .last_recovered_phases_total = $rt
+       | .last_updated = $updated' \
+      "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+  else
+    echo "[orchestrate] RECOVERY: no plan file available — phase progress cannot be recovered this cycle." >&2
+  fi
 else
   handoff=$(cat "$handoff_file")
   dispatch_status=$(echo "$handoff" | jq -r '.status')
@@ -1113,6 +1153,27 @@ This skill MUST NOT:
 
 The ONLY file read after each dispatch is `.orchestrator-handoff.json` (≤400 tokens).
 This ensures context grows by only ~450 tokens per cycle regardless of artifact complexity.
+
+**Recovery exception (phase-marker grep)**: When — and only when — Stage 5 has already
+determined that this dispatch's `.orchestrator-handoff.json` is missing or stale, the
+orchestrator MAY run at most two count-only `grep -c` calls against the plan file's
+`### Phase N: {name} [STATUS]` heading lines to recover `phases_completed` / `phases_total`.
+All four bounds below are binding:
+
+- **Count-only**: `grep -c`, never `grep`. No matched line content ever enters context — the
+  two calls return one integer each, a hard ceiling of **≤10 tokens per recovery event**.
+- **Heading lines only**: the patterns anchor on `^### Phase N: `. Checklist items, prose,
+  deviation annotations, and every other part of the plan file remain out of scope.
+- **Recovery-only precondition**: it fires inside the missing/stale-handoff branch of Stage 5
+  and nowhere else. It is never a routine per-cycle read, and never a substitute for reading a
+  handoff that is present and fresh.
+- **Diagnostic, not authoritative**: the recovered counts are logged and recorded in the loop
+  guard. They never synthesize a `dispatch_status` and never drive a status transition — with
+  no handoff there is no dispatch outcome to trust.
+
+This exception narrows item 2 inside one branch; it does not relax items 1, 3, or 4, and it
+does not relax item 2 anywhere else. The ~450-tokens-per-cycle flatness invariant is unaffected
+on the normal path, where no recovery grep runs at all.
 
 ## Skill-to-Agent Mapping
 

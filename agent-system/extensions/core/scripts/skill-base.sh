@@ -464,19 +464,20 @@ skill_link_artifacts() {
   local field_name="${5:-'**Summary**'}"
   local next_field="${6:-'**Description**'}"
   if [ -n "$artifact_path" ]; then
+    mkdir -p "${SKILL_REPO_ROOT}/specs/tmp"
     # Step 1: Remove existing artifacts of same type (use "| not" pattern — Issue #1132 safe)
     jq --arg atype "$artifact_type" \
       '(.active_projects[] | select(.project_number == '"$task_number"')).artifacts =
         [(.active_projects[] | select(.project_number == '"$task_number"')).artifacts // [] | .[] | select(.type == $atype | not)]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+      "${SKILL_REPO_ROOT}/specs/state.json" > "${SKILL_REPO_ROOT}/specs/tmp/state.json" && mv "${SKILL_REPO_ROOT}/specs/tmp/state.json" "${SKILL_REPO_ROOT}/specs/state.json"
     # Step 2: Add new artifact entry
     jq --arg path "$artifact_path" \
        --arg type "$artifact_type" \
        --arg summary "$artifact_summary" \
       '(.active_projects[] | select(.project_number == '"$task_number"')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+      "${SKILL_REPO_ROOT}/specs/state.json" > "${SKILL_REPO_ROOT}/specs/tmp/state.json" && mv "${SKILL_REPO_ROOT}/specs/tmp/state.json" "${SKILL_REPO_ROOT}/specs/state.json"
     # Regenerate TODO.md from state.json (replaces link-artifact-todo.sh call)
-    bash .claude/scripts/generate-todo.sh || echo "WARNING: generate-todo.sh failed (non-fatal)"
+    bash "${SKILL_REPO_ROOT}/.claude/scripts/generate-todo.sh" || echo "WARNING: generate-todo.sh failed (non-fatal)"
   fi
 }
 

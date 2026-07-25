@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "Architecture doc reconciliation",
+  "started_at": "2026-07-25T17:25:00Z",
+  "last_updated": "2026-07-25T17:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace unqualified NEVER-reads paragraph in handoff-schema.md with three-exception table", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]},
+    {"id": 2, "description": "Add two additive loop-guard fields to orchestrate-state-machine.md schema block", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 3, "description": "Add one-sentence note after schema block closing fence", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 4, "description": "Confirm no task-number citation introduced", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "3-extra",
+      "description": "Update Context Flatness Guarantee section in orchestrate-state-machine.md",
+      "type": "altered",
+      "reason": "This section carried the same unqualified \"orchestrator NEVER reads research reports, plan files, or implementation summaries\" claim as the one explicitly targeted in handoff-schema.md, but was not named by either of this phase's two file-scoped tasks. Left unfixed it would have failed this phase's own verification (grep -rn \"NEVER reads\" over docs/ and context/ returning nothing that contradicts the new table), since that check scans the whole tree, not just the two named files.",
+      "annotation": "*(deviation: altered — also updated Context Flatness Guarantee section)*"
+    }
+  ],
+  "handoff_count": 0
+}

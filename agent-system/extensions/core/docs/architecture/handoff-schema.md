@@ -298,8 +298,21 @@ continuation=$(echo "$handoff" | jq -c '.continuation_context // null')
 artifacts=$(echo "$handoff" | jq -c '.artifacts // []')
 ```
 
-The orchestrator NEVER reads the actual research reports, plan files, or implementation summaries
-during its state machine loop. It reads ONLY the 400-token handoff object.
+On the normal path the orchestrator reads the ~400-token handoff object and nothing else — it
+never opens research reports, plan files, or implementation summaries for comprehension. Three
+narrow, grep-only exceptions are sanctioned, and all three are bounded to `### Phase N: ...
+[STATUS]` heading lines or equivalent pattern matches, never full-file reads:
+
+| Exception | Variant | When it fires | Bound |
+|-----------|---------|---------------|-------|
+| Adversarial-verification grep over reports | hard mode | Stage 4, before the plan dispatch | Pattern match; no full-file read |
+| Next-phase selection grep over the plan | hard mode | Stage 4 `planned`/`implementing` handler, every cycle | One matched heading, reduced to a phase number |
+| Phase-marker recovery grep over the plan | base + hard | Stage 5, missing/stale-handoff branch only | Two `grep -c` integers, ≤10 tokens per recovery event |
+
+Outside these three, the reading contract is unchanged: the handoff object is the sole channel
+by which artifact content reaches the orchestrator. See the "Recovery exception (phase-marker
+grep)" contract in `skill-orchestrate/SKILL.md` and the Read allowlist in
+`skill-orchestrate-hard/SKILL.md` for the binding wording.
 
 ---
 

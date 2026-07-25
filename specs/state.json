@@ -187,7 +187,7 @@
     {
       "project_number": 896,
       "project_name": "fix_cwd_relative_artifact_linking_in_skill_base",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Fix cwd-relative paths in skill_link_artifacts and add task filter to reconcile-artifacts.sh",
@@ -200,14 +200,31 @@
         "agent-system/extensions/core/scripts/reconcile-artifacts.sh"
       ],
       "created": "2026-07-24T00:00:00Z",
-      "last_updated": "2026-07-24T00:00:00Z",
-      "session_id": "sess_1784932361_05a63f_896",
-      "artifacts": []
+      "last_updated": "2026-07-25T17:17:29Z",
+      "session_id": "sess_1784998517_0638c7_896",
+      "artifacts": [
+        {
+          "path": "specs/896_fix_cwd_relative_artifact_linking_in_skill_base/reports/01_cwd_relative_artifact_linking_fix.md",
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/896_fix_cwd_relative_artifact_linking_in_skill_base/plans/01_cwd-relative-artifact-linking-fix.md",
+          "type": "plan",
+          "summary": ""
+        },
+        {
+          "path": "specs/896_fix_cwd_relative_artifact_linking_in_skill_base/summaries/01_cwd-relative-artifact-linking-fix-summary.md",
+          "type": "summary",
+          "summary": ""
+        }
+      ],
+      "completion_summary": "Anchored skill_link_artifacts on SKILL_REPO_ROOT instead of ambient cwd (state.json reads/writes, specs/tmp round-trip with mkdir -p, and generate-todo.sh invocation), and added an opt-in --task N/--task=N filter to reconcile-artifacts.sh while preserving the no-argument repo-wide sweep byte-for-byte."
     },
     {
       "project_number": 897,
       "project_name": "sanctioned_phase_marker_grep_exception_for_orchestrate",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Add narrow sanctioned phase-marker grep exception to orchestrate MUST NOT list",
@@ -220,9 +237,26 @@
         "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
       ],
       "created": "2026-07-24T00:00:00Z",
-      "last_updated": "2026-07-24T00:00:00Z",
-      "session_id": "sess_1784932361_05a63f_897",
-      "artifacts": []
+      "last_updated": "2026-07-25T17:17:33Z",
+      "session_id": "sess_1784998517_0638c7_897",
+      "artifacts": [
+        {
+          "path": "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/reports/01_phase-marker-grep-exception.md",
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/plans/01_phase-marker-grep-recovery.md",
+          "type": "plan",
+          "summary": "4-phase plan with canonical carve-out wording, recovery bash block, and per-phase verification"
+        },
+        {
+          "path": "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/summaries/01_phase-marker-grep-recovery-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all 4 phases, decisions, deviations, and verification results"
+        }
+      ],
+      "completion_summary": "Added a narrow, recovery-only phase-marker grep carve-out (bounded at ~10 tokens per event) to both orchestrate skill variants Stage 5 missing/stale-handoff branch, preserving the context-flatness rationale, and reconciled the architecture docs that falsely claimed the orchestrator never reads plan files."
     },
     {
       "project_number": 873,
@@ -293,7 +327,7 @@
         }
       ],
       "updated": "2026-07-15T20:16:11Z",
-      "completion_summary": "Phases 1-4 complete and committed: replaced the || true silent-fail idiom at all 10 events-append.sh call sites with an observable non-fatal wrapper (fixed a real set -e abort bug in the process); added nullable cwd field to events-schema.json + threading, with repo derived at query time in events-query.sh; extended check-extension-docs.sh with an ADVISORY (non-blocking) core deploy-drift lane; added a source-store no-headless-regeneration note and a HANDOFF.md. Phases 5-6 BLOCKED: end-to-end verification needs a manual <leader>al Sync-all regeneration (no headless path exists \u2014 load_all_globally calls vim.fn.confirm, execute_sync is a module-local closure) in nvim plus one other repo, THEN accumulated real usage before event flow can be observed. OTel/cleanupPeriodDays (scope 3/4) handed off to ~/.dotfiles as a copy-pasteable snippet (cleanupPeriodDays: 365, never 0). See specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md."
+      "completion_summary": "Phases 1-4 complete and committed: replaced the || true silent-fail idiom at all 10 events-append.sh call sites with an observable non-fatal wrapper (fixed a real set -e abort bug in the process); added nullable cwd field to events-schema.json + threading, with repo derived at query time in events-query.sh; extended check-extension-docs.sh with an ADVISORY (non-blocking) core deploy-drift lane; added a source-store no-headless-regeneration note and a HANDOFF.md. Phases 5-6 BLOCKED: end-to-end verification needs a manual <leader>al Sync-all regeneration (no headless path exists — load_all_globally calls vim.fn.confirm, execute_sync is a module-local closure) in nvim plus one other repo, THEN accumulated real usage before event flow can be observed. OTel/cleanupPeriodDays (scope 3/4) handed off to ~/.dotfiles as a copy-pasteable snippet (cleanupPeriodDays: 365, never 0). See specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md."
     },
     {
       "project_number": 887,
