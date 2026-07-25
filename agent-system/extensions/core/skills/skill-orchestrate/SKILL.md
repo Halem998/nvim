@@ -773,9 +773,15 @@ Read from delegation context:
 - `waves` — pre-computed topological wave schedule
 - `session_id`, `lit_flag`
 
-Compute: `task_count = length(task_numbers)`, `MAX_CYCLES_MT = min(task_count * 5, 25)`.
+Compute: `task_count = length(task_numbers)`, `MAX_CYCLES_MT = min(task_count * 5, 25)`,
+`MAX_INFRA_FAILURES = 3` (flat **per task**, not scaled by `task_count` — matching single-task
+mode; see `context/patterns/infra-failure-discrimination.md`).
 
-Initialize `mt_state_file = "specs/.orchestrator-multi-state.json"` with fields: `session_id`, `task_numbers`, `waves`, `max_cycles`, `cycle_count: 0`, `failed_tasks: []`, `completed_tasks: []`, `current_statuses: {}`, `task_dirs: {}`, `research_agents: {}`, `implement_agents: {}`.
+Initialize `mt_state_file = "specs/.orchestrator-multi-state.json"` with fields: `session_id`,
+`task_numbers`, `waves`, `max_cycles`, `cycle_count: 0`, `failed_tasks: []`,
+`completed_tasks: []`, `current_statuses: {}`, `task_dirs: {}`, `research_agents: {}`,
+`implement_agents: {}`, `infra_failures: {}` (map task_num -> count, default 0), and
+`dispatch_start_ts: {}` (map task_num -> unix seconds, written at dispatch time).
 
 ### Stage MT-2: Build Per-Task Routing Table
 
@@ -896,15 +902,18 @@ idempotent, so calling it once per task per cycle is always safe, including repe
 continuation-resume cycles.
 
 For each task in `research_tasks`:
+- Record the dispatch window: `jq --arg t "$task_num" --argjson ts "$(date -u +%s)" '.dispatch_start_ts[$t] = $ts' "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"`, and reset this task's `task_transport_error` to `false`
 - `skill_preflight_update "$task_num" "research" "${session_id}_${task_num}"`
 - Invoke Agent tool: `subagent_type = research_agents[task_num]`, prompt = "Research task $task_num: $description", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, lit_flag }`
 
 For each task in `plan_tasks`:
+- Record the dispatch window: `jq --arg t "$task_num" --argjson ts "$(date -u +%s)" '.dispatch_start_ts[$t] = $ts' "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"`, and reset this task's `task_transport_error` to `false`
 - Read `research_artifact` path from `state.json` artifacts (type=report)
 - `skill_preflight_update "$task_num" "plan" "${session_id}_${task_num}"`
 - Invoke Agent tool: `subagent_type = "planner-agent"`, prompt = "Create implementation plan for task $task_num", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", research_artifacts: [research_artifact], orchestrator_mode: true, lit_flag }`
 
 For each task in `implement_tasks`:
+- Record the dispatch window: `jq --arg t "$task_num" --argjson ts "$(date -u +%s)" '.dispatch_start_ts[$t] = $ts' "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"`, and reset this task's `task_transport_error` to `false`
 - Read `plan_path` from `task_dir/plans/` (latest .md)
 - Read `continuation` from `task_dir/.orchestrator-handoff.json` (or null)
 - `skill_preflight_update "$task_num" "implement" "${session_id}_${task_num}"`
@@ -912,8 +921,51 @@ For each task in `implement_tasks`:
 
 **After all Agent tool calls complete**, read handoffs and run per-task postflight for each dispatched task:
 
+**Per-task transport judgment (narrated, before the handoff loop)**: for each dispatched task,
+judge that task's OWN Agent tool call outcome per
+`context/patterns/infra-failure-discrimination.md` and set `task_transport_error` for that task
+to `true` only if the call itself returned a transport/API-layer error with no
+subagent-authored text of any kind. Judge each task independently — never carry one task's
+verdict over to another in the same batch.
+
 For each task in `research_tasks + plan_tasks + implement_tasks`:
-1. Read `task_dir/.orchestrator-handoff.json`. If missing: mark task in `failed_tasks`, skip.
+1. Read `task_dir/.orchestrator-handoff.json`. If present, continue to step 2. **If missing**,
+   apply the infra-failure discrimination rule
+   (`context/patterns/infra-failure-discrimination.md`) scoped to THIS task before deciding.
+   This branch is the worse of the two manifestations of the defect: unlike single-task Stage 5
+   it has historically had no retry at all.
+
+   ```bash
+   meta_file="${task_dir}/.return-meta.json"
+   window_start=$(jq -r --arg t "$task_num" '.dispatch_start_ts[$t] // 9999999999' "$mt_state_file")
+   meta_mtime=$(stat -c %Y "$meta_file" 2>/dev/null || stat -f %m "$meta_file" 2>/dev/null || echo 0)
+   task_infra=$(jq -r --arg t "$task_num" '.infra_failures[$t] // 0' "$mt_state_file")
+
+   if [ "${task_transport_error:-false}" = "true" ] && [ "$meta_mtime" -lt "$window_start" ]; then
+     task_infra=$((task_infra + 1))
+     jq --arg t "$task_num" --argjson n "$task_infra" \
+       '.infra_failures[$t] = $n' "$mt_state_file" > "${mt_state_file}.tmp" \
+       && mv "${mt_state_file}.tmp" "$mt_state_file"
+     if [ "$task_infra" -ge "$MAX_INFRA_FAILURES" ]; then
+       echo "[orchestrate] Task #${task_num}: MAX_INFRA_FAILURES ($MAX_INFRA_FAILURES) reached — repeated transport/API failures. Marking failed_tasks." >&2
+       # Cap reached: fall back to the historical behavior — add to failed_tasks,
+       # release the per-task lock (step 6), skip steps 2-5.
+     else
+       echo "[orchestrate] Task #${task_num}: INFRA FAILURE ${task_infra}/${MAX_INFRA_FAILURES} — NOT marked failed; stays eligible for the next cycle." >&2
+       # Do NOT add to failed_tasks. Release the per-task lock (step 6), skip steps 2-5.
+     fi
+   else
+     # Genuine missing handoff (the subagent ran, or there is no corroborating transport
+     # error): preserve the historical behavior exactly.
+     echo "[orchestrate] Task #${task_num}: missing handoff charged as genuine (transport_error=${task_transport_error:-false}). Marking failed_tasks." >&2
+     # Add to failed_tasks, release the per-task lock (step 6), skip steps 2-5.
+   fi
+   ```
+
+   **Bound**: the shared `MAX_CYCLES_MT` still increments once per wave cycle regardless of any
+   task's infra verdict, so the outer loop is unchanged and already bounded. Independently, a
+   task can be infra-deferred at most `MAX_INFRA_FAILURES` times before it lands in
+   `failed_tasks` anyway — so no task can keep the wave alive indefinitely.
 2. Extract `dispatch_status`, `dispatch_summary`, artifact path/type/summary, and — from *this*
    task's own handoff, freshly per task — `phases_completed` (`jq -r '.phases_completed // 0'`)
    and `phases_total` (`jq -r '.phases_total // 0'`), mirroring the Stage 5 reads. Never carry

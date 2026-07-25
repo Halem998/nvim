@@ -480,7 +480,7 @@ two-signal branch, and make the `cycle_count` increment conditional.
 
 ---
 
-### Phase 4: Base multi-task mode — Stage MT-1 schema and Stage MT-4 step 1 [NOT STARTED]
+### Phase 4: Base multi-task mode — Stage MT-1 schema and Stage MT-4 step 1 [COMPLETED]
 
 **Goal**: Fix the worse manifestation. Today MT-4 marks any missing-handoff task into `failed_tasks`
 with **no retry at all**. After this phase, a corroborated infra failure defers the task instead,
@@ -496,8 +496,8 @@ bound ensuring a persistently failing task still lands in `failed_tasks` rather 
 forever.
 
 **Tasks**:
-- [ ] Re-verify anchors: `grep -n 'MAX_CYCLES_MT = min\|mark task in \`failed_tasks\`, skip' agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`
-- [ ] **Stage MT-1 (~line 648-650)**: replace the Compute + Initialize lines with:
+- [x] Re-verify anchors: `grep -n 'MAX_CYCLES_MT = min\|mark task in \`failed_tasks\`, skip' agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`
+- [x] **Stage MT-1 (~line 648-650)**: replace the Compute + Initialize lines with:
       ```
       Compute: `task_count = length(task_numbers)`, `MAX_CYCLES_MT = min(task_count * 5, 25)`,
       `MAX_INFRA_FAILURES = 3` (flat **per task**, not scaled by `task_count` — matching single-task
@@ -509,13 +509,13 @@ forever.
       `implement_agents: {}`, `infra_failures: {}` (map task_num -> count, default 0), and
       `dispatch_start_ts: {}` (map task_num -> unix seconds, written at dispatch time).
       ```
-- [ ] **Stage MT-4 dispatch bullets (~lines 770-783)**: add one bullet as the **first** bullet of
+- [x] **Stage MT-4 dispatch bullets (~lines 770-783)**: add one bullet as the **first** bullet of
       each of the three `For each task in ...` lists (`research_tasks`, `plan_tasks`,
       `implement_tasks`):
       ```
       - Record the dispatch window: `jq --arg t "$task_num" --argjson ts "$(date -u +%s)" '.dispatch_start_ts[$t] = $ts' "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"`, and reset this task's `task_transport_error` to `false`
       ```
-- [ ] **Stage MT-4, after the "After all Agent tool calls complete" sentence (~line 785)**: insert:
+- [x] **Stage MT-4, after the "After all Agent tool calls complete" sentence (~line 785)**: insert:
       ```
       **Per-task transport judgment (narrated, before the handoff loop)**: for each dispatched task,
       judge that task's OWN Agent tool call outcome per
@@ -524,7 +524,7 @@ forever.
       subagent-authored text of any kind. Judge each task independently — never carry one task's
       verdict over to another in the same batch.
       ```
-- [ ] **Stage MT-4 step 1 (~line 788)**: replace
+- [x] **Stage MT-4 step 1 (~line 788)**: replace
       `1. Read `task_dir/.orchestrator-handoff.json`. If missing: mark task in `failed_tasks`, skip.`
       with:
       ````
@@ -566,7 +566,7 @@ forever.
          task can be infra-deferred at most `MAX_INFRA_FAILURES` times before it lands in
          `failed_tasks` anyway — so no task can keep the wave alive indefinitely.
       ````
-- [ ] Confirm the per-task lock release in step 6 still runs on **all** three outcomes above
+- [x] Confirm the per-task lock release in step 6 still runs on **all** three outcomes above
       (deferred, capped-to-failed, genuine-failed). A deferred task that keeps its lock would
       deadlock its own next cycle — verify against the task-lock same-session re-entry semantics
       documented in the Task-lock acquire block.

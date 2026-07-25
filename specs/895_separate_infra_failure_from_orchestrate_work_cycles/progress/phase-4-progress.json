@@ -1,0 +1,51 @@
+{
+  "phase": 4,
+  "phase_name": "Base multi-task mode — Stage MT-1 schema and Stage MT-4 step 1",
+  "started_at": "2026-07-25T15:16:00Z",
+  "last_updated": "2026-07-25T15:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Stage MT-1: add MAX_INFRA_FAILURES compute and infra_failures/dispatch_start_ts schema fields",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Stage MT-4 dispatch bullets: record dispatch window + reset task_transport_error for all three groups",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Stage MT-4 narrated per-task transport judgment paragraph",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Stage MT-4 step 1: replace unconditional failed_tasks charge with per-task discrimination branch",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Confirm step 6 per-task lock release runs unconditionally on all outcomes including deferred",
+      "status": "done",
+      "note": "Step 6 header already reads 'regardless of the outcome above (success, failed, or blocked)' -- the new deferred outcome is covered by this existing unconditional release; no edit needed.",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
