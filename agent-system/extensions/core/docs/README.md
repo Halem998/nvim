@@ -201,6 +201,7 @@ Context files are discovered via `.claude/context/index.json`:
 - [Extension System](docs/architecture/extension-system.md) - Extension architecture
 - [Architecture Spec](docs/architecture/architecture-spec.md) - Unified workflow architecture spec
 - [Handoff Schema](docs/architecture/handoff-schema.md) - Orchestrator handoff JSON schema
+- [Batch Admit Schema](docs/architecture/batch-admit-schema.md) - Cross-batch admission verdict NDJSON schema
 - [Orchestrate State Machine](docs/architecture/orchestrate-state-machine.md) - /orchestrate state machine spec
 - [docs/README.md](docs/README.md) - Full documentation index
 

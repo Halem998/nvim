@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Publish the canonical verdict schema document",
+  "started_at": "2026-07-25T00:00:00Z",
+  "last_updated": "2026-07-25T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create batch-admit-schema.md", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]},
+    {"id": 2, "description": "Add index entry to docs/README.md", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/README.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -942,23 +942,57 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
 4. **No-eligible circuit breaker**: If `eligible_tasks` is empty, log warning with list of stuck tasks and break loop (exit partial).
 
 4.5. **Runtime wave-split check (cross-batch defense-in-depth)**: Before dispatching
-   `eligible_tasks` when it contains 2+ tasks, compare every pair using the shared
-   directory-prefix overlap algorithm in `.claude/context/patterns/file-footprint-overlap.md`
-   (referenced by path — not restated here), applied to each task's `file_scope` (read only for
-   the tasks already in `task_numbers` for this invocation — no repo-wide scan). If two tasks in
-   `eligible_tasks` have overlapping `file_scope` and no edge between them in
-   `dependency_graph`, remove the lower-priority task (higher `project_number`) from this
-   cycle's dispatch batch (it becomes eligible again next cycle, once the other completes) and
-   log a visible warning:
+   `eligible_tasks` on EVERY cycle — including a cycle where `eligible_tasks` contains only a
+   single task, since a cross-batch collision exists at batch size 1 — call the admission
+   script:
+   ```bash
+   bash .claude/scripts/orchestrate-batch-admit.sh "${eligible_tasks[@]}"
    ```
-   [orchestrate] WARNING: Tasks #{X} and #{Y} have overlapping file_scope with no
-     dependency_graph edge between them. Deferring #{Y} to a later cycle to avoid
-     concurrent edits to the same files.
-   ```
+   This compares each eligible task's `file_scope` against every non-terminal task in a single
+   `specs/state.json` read — the comparison set is every non-terminal task in state, not merely
+   this invocation's own `task_numbers` set. This is still not a repo-wide filesystem scan: no
+   globbing, no second read, just one read of
+   `specs/state.json` per cycle. The predicate itself is the shared directory-prefix overlap
+   algorithm in `.claude/context/patterns/file-footprint-overlap.md` (referenced by path — not
+   restated here); the verdict schema is published in
+   `.claude/docs/architecture/batch-admit-schema.md` (also referenced by path, never restated).
+
+   `jq`-filter stdout for `.decision == "defer"`, then branch on `collision_scope`. Both
+   branches preserve the surrounding cycle semantics verbatim: a deferred task is removed from
+   **this cycle's** dispatch batch, is never added to `failed_tasks`, and becomes eligible again
+   on a later cycle.
+   - **`in_batch`** (the colliding task is itself in `eligible_tasks`): remove the deferred task
+     from this cycle's dispatch batch and log the existing warning:
+     ```
+     [orchestrate] WARNING: Tasks #{X} and #{Y} have overlapping file_scope with no
+       dependency_graph edge between them. Deferring #{Y} to a later cycle to avoid
+       concurrent edits to the same files.
+     ```
+   - **`cross_batch`** (the colliding task is NOT part of `task_numbers` for this invocation):
+     remove the candidate from this cycle's dispatch batch and log a **distinct** warning naming
+     the out-of-batch task and its `colliding_task_status`:
+     ```
+     [orchestrate] WARNING: Task #{task_number} has overlapping file_scope with task
+       #{colliding_task_number} (status: {colliding_task_status}), which is OUTSIDE this
+       invocation's task_numbers. Excluding #{task_number} from this cycle — batch
+       composition needs human review.
+     ```
+
+   **Interaction with the task-lock acquire step (Stage MT-4)**: admission runs **before** lock
+   acquisition and is a distinct gate — admission compares declared scopes of ALL non-terminal
+   tasks in `specs/state.json`, while the lock compares only against currently-held locks.
+   Neither replaces the other; both run.
+
+   **Degradation path**: exit 2 from `orchestrate-batch-admit.sh` means state is unavailable
+   (missing `jq` or an unreadable `specs/state.json`). In that case, log a loud warning and
+   proceed without the check — orchestration cannot function at all under that condition
+   regardless of this check, so proceeding is not a silent weakening of the gate.
+
    This mirrors the same check documented in `orchestrate.md` Step 3 for the pre-computed wave
-   schedule; here it applies per-cycle to `eligible_tasks` since Multi-Task Mode dispatches
-   cycle-by-cycle rather than strictly wave-by-wave. If this proves too aggressive in practice,
-   it can be relaxed to warn-only by editing this step (see Rollback/Contingency in
+   schedule — both now describe a script call, not an inline loop; here it applies per-cycle to
+   `eligible_tasks` since Multi-Task Mode dispatches cycle-by-cycle rather than strictly
+   wave-by-wave. If this proves too aggressive in practice, it can be relaxed to warn-only by
+   editing this step (see Rollback/Contingency in
    `specs/787_file_footprint_aware_dependencies/plans/01_file-footprint-aware-dependencies.md`).
 
 5. **Dispatch** (Stage MT-4) — see below.

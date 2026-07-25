@@ -116,6 +116,7 @@
       "memory-harvest.sh",
       "memory-retrieve.sh",
       "migrate-directory-padding.sh",
+      "orchestrate-batch-admit.sh",
       "orphan-detection.sh",
       "parse-command-args.sh",
       "rename-session.sh",

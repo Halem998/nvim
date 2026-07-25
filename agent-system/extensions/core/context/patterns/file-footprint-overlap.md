@@ -73,7 +73,8 @@ compare across unrelated batches.
 
 ## Consumers
 
-This algorithm has three callers, at the task, phase, and lock-acquisition levels:
+This algorithm has four callers, at the task, phase, lock-acquisition, and batch-admission
+levels:
 
 - **Task-level**: Multi-Task Creation Standard Component **4a** (File Footprint Capture and
   Overlap Detection) — see
@@ -90,8 +91,16 @@ This algorithm has three callers, at the task, phase, and lock-acquisition level
   `task-lock.md`'s "Cross-Task `file_scope` Overlap Check"). Unlike the two callers above, this
   is a live, repo-wide scan at acquire time rather than a one-shot pairwise pass over a fixed
   batch — see the Non-Goals note below on scan scope.
+- **Batch-admission-level**: `.claude/scripts/orchestrate-batch-admit.sh` checks each candidate
+  task's `file_scope` against every non-terminal task in `specs/state.json` — one read, no
+  filesystem scan — closing the gap the task-level and phase-level callers leave open for tasks
+  created in *separate* batches with no `dependencies[]` edge between them, and that the
+  lock-acquisition-level caller leaves open for a non-terminal, unlocked, out-of-batch task (it
+  only sees currently-held locks). Consumers: `commands/orchestrate.md` Step 3 (pre-computed wave
+  schedule) and `skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 (per-cycle eligibility
+  gate). See `docs/architecture/batch-admit-schema.md` for the verdict schema this caller emits.
 
-All three callers reference this document by path; none restates the normalization or overlap
+All four callers reference this document by path; none restates the normalization or overlap
 rule inline.
 
 ## Non-Goals
@@ -103,6 +112,8 @@ rule inline.
   (`overlaps(pathA, pathB)` and its pairwise-set application), not how widely a caller applies
   it. The task-level and phase-level callers apply it within a small, already-collected batch (a
   creation batch, or a task's phase list); the lock-acquisition-level caller (task 809) applies
-  it repo-wide, scanning every currently-held lock in `specs/` at acquire time. Both usages are
-  in scope for this algorithm — each caller chooses its own scan scope, and this document is not
-  extended or forked to accommodate the difference.
+  it repo-wide, scanning every currently-held lock in `specs/` at acquire time; the
+  batch-admission-level caller applies it repo-wide via a single `specs/state.json` read,
+  comparing against every non-terminal task regardless of lock or batch membership. All three
+  scan-scope shapes are in scope for this algorithm — each caller chooses its own scan scope, and
+  this document is not extended or forked to accommodate the difference.

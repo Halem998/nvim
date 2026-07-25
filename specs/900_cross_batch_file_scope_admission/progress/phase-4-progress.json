@@ -1,0 +1,14 @@
+{
+  "phase": 4,
+  "phase_name": "Wire commands/orchestrate.md Step 3",
+  "started_at": "2026-07-25T00:00:00Z",
+  "last_updated": "2026-07-25T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace inline wave-split check with script call; remove 2+ guard; correct scope claim; document branches, invariant, degradation path", "status": "done",
+     "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

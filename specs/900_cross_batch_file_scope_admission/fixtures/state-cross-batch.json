@@ -1,0 +1,117 @@
+{
+  "active_projects": [
+    {
+      "project_number": 900,
+      "project_name": "cross_batch_file_scope_admission",
+      "status": "implementing",
+      "dependencies": [
+        898,
+        899
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+        "agent-system/extensions/core/commands/orchestrate.md",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/context/patterns/file-footprint-overlap.md"
+      ]
+    },
+    {
+      "project_number": 902,
+      "project_name": "self_modification_hazard_gate",
+      "status": "not_started",
+      "dependencies": [
+        901,
+        899
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+        "agent-system/extensions/core/commands/orchestrate.md",
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"
+      ]
+    },
+    {
+      "project_number": 906,
+      "project_name": "fix_gate_out_validation_arity_and_status_vocabulary",
+      "status": "not_started",
+      "dependencies": [
+        885,
+        896,
+        901
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/command-gate-out.sh",
+        "agent-system/extensions/core/scripts/validate-artifact.sh",
+        "agent-system/extensions/core/scripts/skill-base.sh",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+        "agent-system/extensions/core/context/formats/return-metadata-file.md",
+        "agent-system/extensions/core/commands/research.md"
+      ]
+    },
+    {
+      "project_number": 907,
+      "project_name": "orchestrator_runtime_file_tracking_policy",
+      "status": "not_started",
+      "dependencies": [
+        885,
+        902,
+        906
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/context/standards/git-staging-scope.md",
+        "agent-system/extensions/core/commands/orchestrate.md",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/root-files/",
+        "agent-system/extensions/core/templates/"
+      ]
+    },
+    {
+      "project_number": 990,
+      "project_name": "synthetic_terminal_overlap",
+      "status": "completed",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+        "specs/900_cross_batch_file_scope_admission/fixtures/only-terminal-overlap.md"
+      ]
+    },
+    {
+      "project_number": 991,
+      "project_name": "synthetic_directory_scope",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/context/patterns/"
+      ]
+    },
+    {
+      "project_number": 992,
+      "project_name": "synthetic_terminal_exclusion_candidate",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": [
+        "specs/900_cross_batch_file_scope_admission/fixtures/only-terminal-overlap.md"
+      ]
+    },
+    {
+      "project_number": 993,
+      "project_name": "synthetic_edge_linked_candidate",
+      "status": "not_started",
+      "dependencies": [
+        994
+      ],
+      "file_scope": [
+        "specs/900_cross_batch_file_scope_admission/fixtures/edge-linked-only.md"
+      ]
+    },
+    {
+      "project_number": 994,
+      "project_name": "synthetic_edge_linked_partner",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": [
+        "specs/900_cross_batch_file_scope_admission/fixtures/edge-linked-only.md"
+      ]
+    }
+  ]
+}

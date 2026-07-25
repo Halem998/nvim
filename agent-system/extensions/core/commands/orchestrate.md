@@ -162,25 +162,55 @@ residual gap is **cross-batch**: two tasks created in *separate* batches (e.g. `
 overlap comparison between them, so `dependencies[]` may not encode a real file conflict. The
 runtime wave-split check below closes that gap.
 
-**Runtime wave-split check (cross-batch defense-in-depth)**: Before dispatching any wave with 2+
-tasks (Step 4), compare every pair of tasks in that wave using the shared directory-prefix
+**Runtime wave-split check (cross-batch defense-in-depth)**: Before dispatching EVERY wave (Step
+4) — including a wave that contains only a single task, since a cross-batch collision exists at
+batch size 1 — call the admission script:
+
+```bash
+bash .claude/scripts/orchestrate-batch-admit.sh "${wave_tasks[@]}"
+```
+
+This compares each wave task's `file_scope` against every non-terminal task in a single
+`specs/state.json` read — not just the tasks already collected into `validated_tasks` for this
+invocation. This is still not a repo-wide filesystem scan: no globbing, no second read, just one
+read of `specs/state.json` per invocation. The predicate itself is the shared directory-prefix
 overlap algorithm in `.claude/context/patterns/file-footprint-overlap.md` (referenced by path —
-the rule is not restated here), applied to each task's `file_scope` (read only for the tasks
-already collected into `validated_tasks` for this invocation — no repo-wide scan). If two
-in-wave tasks have overlapping `file_scope` and no `dependencies[]` edge between them, defer the
-lower-priority task (the one with the higher `project_number`, unless a wave-internal priority
-signal says otherwise) to the next wave and log a visible warning:
+the rule is not restated here); the verdict schema is published in
+`.claude/docs/architecture/batch-admit-schema.md` (also referenced by path, never restated).
 
-```
-[orchestrate] WARNING: Wave {N} tasks #{X} and #{Y} have overlapping file_scope
-  ({path}) with no dependencies[] edge between them. Deferring #{Y} to wave {N+1}
-  to avoid concurrent edits to the same files.
-```
+`jq`-filter stdout for `.decision == "defer"`, then branch on `collision_scope`:
 
-This check is cheap (bounded by the small `task_numbers` set for this invocation) and never
-silent. If it proves too aggressive in practice (over-splitting waves), it can be relaxed to
-warn-only by editing this section and the mirrored section in
-`.claude/skills/skill-orchestrate/SKILL.md` — see Rollback/Contingency in the originating plan
+- **`in_batch`** (the colliding task is itself in this wave): defer the named task to the next
+  wave — existing behavior, existing warning format preserved:
+  ```
+  [orchestrate] WARNING: Wave {N} tasks #{X} and #{Y} have overlapping file_scope
+    ({path}) with no dependencies[] edge between them. Deferring #{Y} to wave {N+1}
+    to avoid concurrent edits to the same files.
+  ```
+- **`cross_batch`** (the colliding task is NOT part of this invocation): exclude the candidate
+  from this invocation's admitted set and log a **distinct** warning naming the out-of-batch
+  task and its `colliding_task_status`, so the transcript distinguishes "resolves by waiting one
+  wave" from "this batch's composition is contested":
+  ```
+  [orchestrate] WARNING: Task #{task_number} has overlapping file_scope ({path}) with
+    task #{colliding_task_number} (status: {colliding_task_status}), which is OUTSIDE
+    this invocation's batch. Excluding #{task_number} from this run — batch composition
+    needs human review.
+  ```
+
+**Defer-not-fail invariant**: this check never marks a task failed and never mutates
+`specs/state.json` — a `defer` verdict only changes which wave (or whether this invocation at
+all) a task is dispatched in.
+
+**Degradation path**: exit 2 from `orchestrate-batch-admit.sh` means state is unavailable
+(missing `jq` or an unreadable `specs/state.json`). In that case, log a loud warning and proceed
+without the check — orchestration cannot function at all under that condition regardless of this
+check, so proceeding is not a silent weakening of the gate.
+
+This check is cheap (one `specs/state.json` read per invocation) and never silent. If it proves
+too aggressive in practice (over-splitting waves), it can be relaxed to warn-only by editing this
+section and the mirrored section in `.claude/skills/skill-orchestrate/SKILL.md` — see
+Rollback/Contingency in the originating plan
 (`specs/787_file_footprint_aware_dependencies/plans/01_file-footprint-aware-dependencies.md`).
 
 #### Step 4: Wave Execution

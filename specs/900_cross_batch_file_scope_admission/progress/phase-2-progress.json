@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Deterministic fixture and verdict test suite",
+  "started_at": "2026-07-25T00:00:00Z",
+  "last_updated": "2026-07-25T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create fixture state-cross-batch.json", "status": "done",
+     "files_touched": ["specs/900_cross_batch_file_scope_admission/fixtures/state-cross-batch.json"]},
+    {"id": 2, "description": "Create and run test-batch-admit.sh test suite (incl. live smoke check)", "status": "done",
+     "files_touched": ["specs/900_cross_batch_file_scope_admission/tests/test-batch-admit.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.3",
+      "description": "Exact-line assertion for candidates 900 902 (test scenario 2)",
+      "type": "altered",
+      "reason": "The plan predicted candidate 900 would emit admit when batched with 902. Because the fixture must copy tasks 900/902/906/907 verbatim from live state.json, and 900 has a genuine independent cross-batch collision with 906 (shared skill-orchestrate/SKILL.md scope, no dependencies[] edge), a correct implementation defers 900 against 906 rather than admitting it. The test asserts this correct, real behavior instead, while still proving the in-batch direction rule via 902's line (defer against 900, in_batch).",
+      "annotation": "*(deviation: altered — exact-line prediction for candidate 900 in scenario 2 corrected to reflect its genuine cross-batch collision with 906; in-batch direction property still verified via 902's line)*"
+    }
+  ]
+}

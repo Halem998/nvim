@@ -11,11 +11,10 @@ next_project_number: 910
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,900,904,905,909 | -- | agent-system, literature |
-| 2 | 887,901 | 873,900 | agent-system |
-| 3 | 902,906 | 885,901 | agent-system |
-| 4 | 907 | 902,906 | agent-system |
-| 5 | 908 | 907 | agent-system |
+| 1 | 873,885,901,904,905,909 | -- | agent-system, literature |
+| 2 | 887,902,906 | 873,885,901 | agent-system |
+| 3 | 907 | 902,906 | agent-system |
+| 4 | 908 | 907 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -27,11 +26,10 @@ next_project_number: 910
   └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
       └─ 908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
-900 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-  └─ 901 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-    └─ 902 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-      └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
-    └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
+901 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+  └─ 902 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+    └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
+  └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
 909 [NOT STARTED] — Residual gap surfaced by the implementation agent for the complet
 
 ### Literature
@@ -392,10 +390,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 900. Detect file_scope collisions against all active tasks, not just batch members
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 898, Task 899
+- **Research**: [900_cross_batch_file_scope_admission/reports/01_cross-batch-admission-control.md]
+- **Plan**: [900_cross_batch_file_scope_admission/plans/01_cross-batch-admission-control.md]
+- **Summary**: [900_cross_batch_file_scope_admission/summaries/01_cross-batch-admission-control-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/core/** and NEVER .claude/**.
 

@@ -434,7 +434,7 @@
     {
       "project_number": 900,
       "project_name": "cross_batch_file_scope_admission",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Detect file_scope collisions against all active tasks, not just batch members",
@@ -450,9 +450,26 @@
         "agent-system/extensions/core/context/patterns/file-footprint-overlap.md"
       ],
       "created": "2026-07-24T00:00:00Z",
-      "last_updated": "2026-07-24T00:00:00Z",
-      "session_id": "sess_1784959496_6c4f8e_900",
-      "artifacts": []
+      "last_updated": "2026-07-25T18:17:53Z",
+      "session_id": "sess_1784998517_0638c7_900",
+      "artifacts": [
+        {
+          "path": "specs/900_cross_batch_file_scope_admission/reports/01_cross-batch-admission-control.md",
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/900_cross_batch_file_scope_admission/plans/01_cross-batch-admission-control.md",
+          "type": "plan",
+          "summary": "Cross-batch file_scope admission control: 6 phases"
+        },
+        {
+          "path": "specs/900_cross_batch_file_scope_admission/summaries/01_cross-batch-admission-control-summary.md",
+          "type": "summary",
+          "summary": "Cross-batch admission control: new orchestrate-batch-admit.sh, both call sites wired, 8/8 tests pass"
+        }
+      ],
+      "completion_summary": "Added orchestrate-batch-admit.sh, a single-read O(active tasks) admission predicate that compares each candidate task file_scope against every non-terminal task in state.json (in-batch and out-of-batch alike) and emits orchestrate-batch-admit-v1 NDJSON verdicts distinguishing in_batch from cross_batch collisions; wired into both the command and skill call sites, removing the 2+ tasks guard that made single-task batches exempt."
     },
     {
       "project_number": 901,
