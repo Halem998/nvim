@@ -281,7 +281,7 @@ fi
 **If status is "implemented" AND verification_passed is true AND sorry_count is 0**:
 
 ```bash
-bash .claude/scripts/update-task-status.sh postflight "$task_number" implement "$session_id"
+bash .claude/scripts/update-task-status.sh postflight "$task_number" implement "$session_id" --phase-check=warn
 ```
 
 Then add completion_data to state.json:

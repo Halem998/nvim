@@ -586,7 +586,15 @@ else
       # deliberately from the hard-mode expression, which requires `phases_total > 0`: hard
       # mode's per-phase dispatch always populates phase accounting, base mode's does not.
       if [ "$phases_total" -eq 0 ] || [ "$phases_completed" -ge "$phases_total" ]; then
-        skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status"
+        # `warn`, deliberately NOT `refuse`. This gate already decided to proceed using richer
+        # context than the script has (the full handoff, drift inspection). The script-side
+        # backstop reads a structurally different evidence source -- the plan file's own phase
+        # headings, unaffected by what the handoff chose to report -- so it is a valuable SECOND
+        # OPINION here, not a veto: a `refuse` at this site would silently override a decision
+        # this state machine made deliberately and loggedly. The loud warning is exactly what
+        # catches the "handoff omitted its phase fields but the task was actually incomplete"
+        # case, which the handoff-based gate above structurally cannot see.
+        skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn"
       else
         echo "[orchestrate] Phase ${phases_completed}/${phases_total} complete — task not done. Continuing." >&2
         # No status transition: state stays `implementing`. `cycle_count` still increments at the
@@ -1044,7 +1052,9 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
    - `dispatch_status = "researched"` → `skill_postflight_update task_num "research" "${session_id}_${task_num}" researched`
    - `dispatch_status = "planned"` → `skill_postflight_update task_num "plan" "${session_id}_${task_num}" planned`
    - `dispatch_status = "implemented"` → apply the same phase-completion gate as Stage 5. Call
-     `skill_postflight_update task_num "implement" "${session_id}_${task_num}" implemented`
+     `skill_postflight_update task_num "implement" "${session_id}_${task_num}" implemented "warn"`
+     (the trailing `"warn"` mirrors Stage 5's script-side second-opinion backstop; never `refuse`
+     here, for the same reason)
      **only if** `phases_total` is 0 (no phase accounting — preserve the historical behavior) **or**
      `phases_completed >= phases_total`. Otherwise **skip the postflight call**, log
      `[orchestrate] Task {task_num}: phase {phases_completed}/{phases_total} complete — task not done. Continuing.`,

@@ -373,11 +373,21 @@ skill_postflight_update() {
   local operation="$2"
   local session_id="$3"
   local status="$4"
+  # Optional 5th argument: phase-check mode ("warn" or "refuse"), forwarded to
+  # update-task-status.sh's opt-in phase-accounting backstop. ABSENT is the default for every
+  # existing caller and means the flag is not passed at all, preserving today's exact behavior
+  # byte-for-byte. The empty-array expansion pattern below is the same one already used by
+  # reconcile-task-status.sh's dry_run_flag=() handling.
+  local phase_check_mode="${5:-}"
+  local phase_check_args=()
+  if [[ -n "$phase_check_mode" ]]; then
+    phase_check_args=(--phase-check="$phase_check_mode")
+  fi
   local _t0
   _t0=$(date +%s.%N)
   case "$status" in
     researched|planned|implemented)
-      bash .claude/scripts/update-task-status.sh postflight "$task_number" "$operation" "$session_id"
+      bash .claude/scripts/update-task-status.sh postflight "$task_number" "$operation" "$session_id" "${phase_check_args[@]}"
       ;;
     *)
       echo "[skill-base] Non-success status '${status}' — postflight status update skipped"

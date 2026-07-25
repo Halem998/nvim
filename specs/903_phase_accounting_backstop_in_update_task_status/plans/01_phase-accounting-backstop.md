@@ -706,7 +706,7 @@ skeleton-dispatch NOTE) are unchanged and remain immediately below this block.
 
 ---
 
-### Phase 6: `warn` opt-in where a SKILL-layer gate already decided [NOT STARTED]
+### Phase 6: `warn` opt-in where a SKILL-layer gate already decided [COMPLETED]
 
 **Goal**: Add an optional 5th `phase_check_mode` argument to the shared
 `skill_postflight_update` helper (absent by default), pass `warn` from the three orchestrate
@@ -714,12 +714,12 @@ implement arms, and add `warn` at the four lean/cslib extension implementers. `w
 changes an exit code, so no caller needs a new error branch.
 
 **Tasks**:
-- [ ] Add the optional 5th argument to `skill_postflight_update` in `skill-base.sh`
-- [ ] Pass `warn` from `skill-orchestrate` Stage 5's `implemented)` arm
-- [ ] Update `skill-orchestrate` Stage MT-4's prose instruction to pass `warn`
-- [ ] Pass `warn` from `skill-orchestrate-hard`'s `implemented)` arm
-- [ ] Append `--phase-check=warn` at the four extension implementer call sites
-- [ ] `bash -n skill-base.sh`
+- [x] Add the optional 5th argument to `skill_postflight_update` in `skill-base.sh` *(completed)*
+- [x] Pass `warn` from `skill-orchestrate` Stage 5's `implemented)` arm *(completed)*
+- [x] Update `skill-orchestrate` Stage MT-4's prose instruction to pass `warn` *(completed)*
+- [x] Pass `warn` from `skill-orchestrate-hard`'s `implemented)` arm *(completed)*
+- [x] Append `--phase-check=warn` at the four extension implementer call sites *(completed)*
+- [x] `bash -n skill-base.sh` *(completed)*
 
 **Exact replacement text**:
 

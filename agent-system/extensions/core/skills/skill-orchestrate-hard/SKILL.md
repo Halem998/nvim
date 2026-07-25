@@ -817,7 +817,11 @@ else
       # A single per-phase "implemented" handoff (skeleton or not) must NOT flip the whole task
       # to completed. Only transition when every phase is actually done.
       if [ "$phases_total" -gt 0 ] && [ "$phases_completed" -ge "$phases_total" ]; then
-        skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status"
+        # `warn`, not `refuse` -- same rationale as the base-mode gate: hard mode's per-phase
+        # dispatch discipline already populates phase accounting and this gate is strictly
+        # stricter (it requires phases_total > 0, never a 0-pass-through), so the script-side
+        # check is a second opinion on independent evidence rather than a veto.
+        skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn"
       else
         echo "[hard-orchestrate] Phase ${phases_completed}/${phases_total} complete (skeleton=${skeleton}). Continuing." >&2
         # Leave state as `implementing` — Stage 3a re-enters the Per-Phase Dispatch handler

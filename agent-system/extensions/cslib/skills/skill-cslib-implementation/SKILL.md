@@ -121,7 +121,7 @@ Read the metadata file from `specs/{N}_{SLUG}/.return-meta.json`.
 
 ```bash
 if [ "$status" = "implemented" ]; then
-  bash .claude/scripts/update-task-status.sh postflight "$task_number" implement "$session_id"
+  bash .claude/scripts/update-task-status.sh postflight "$task_number" implement "$session_id" --phase-check=warn
 fi
 # On partial: keep status as "implementing" for resume
 ```
