@@ -341,38 +341,61 @@ critical-paths data file is actually absent.
 
 ---
 
-### Phase 4: Wire the Live Dispatch Paths and the Schema Document [NOT STARTED]
+### Phase 4: Wire the Live Dispatch Paths and the Schema Document [COMPLETED]
 
 **Goal**: Both live call sites honor the new defer reason with invocation-scoped (not wave-scoped)
 exclusion, and the published verdict schema matches the implementation.
 
 **Tasks**:
-- [ ] `commands/orchestrate.md` MULTI-TASK DISPATCH Step 3: pass
+- [x] `commands/orchestrate.md` MULTI-TASK DISPATCH Step 3: pass
       `--invocation-count "${#validated_tasks[@]}"` on the `orchestrate-batch-admit.sh` call, and
       add a third branch for `defer_reason == "self_modifying"` that excludes the candidate from
       the invocation (not the wave) with a distinct warning naming the matched critical path and
       instructing a solo re-run. Keep the existing two collision warnings byte-identical.
-- [ ] `commands/orchestrate.md`: state in the same section that the deferral is evaluated against
+      *(completed)*
+- [x] `commands/orchestrate.md`: state in the same section that the deferral is evaluated against
       the invocation's validated-candidate count, never the wave's size, and that the excluded task
-      is neither failed nor marked blocked.
-- [ ] `skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5: same `--invocation-count` argument
+      is neither failed nor marked blocked. *(completed)*
+- [x] `skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5: same `--invocation-count` argument
       (using the invocation's full `task_numbers` count, NOT `eligible_tasks`), same third branch —
       and, critically, record the deferred task in an invocation-scoped
       `deferred_self_modifying` set that Stage MT-3 step 3 excludes from eligibility for the
       REMAINDER of the invocation. Without this the task re-enters every subsequent cycle and the
-      loop never converges.
-- [ ] `skills/skill-orchestrate/SKILL.md` Stage MT-5: report `deferred_self_modifying` tasks in the
+      loop never converges. *(completed: also updated MT-1 to initialize the set and MT-3 step 2
+      All-terminal check plus step 4 circuit-breaker framing to recognize deferred_self_modifying
+      as an intentional exclusion rather than a "stuck" task — see deviation note below)*
+- [x] `skills/skill-orchestrate/SKILL.md` Stage MT-5: report `deferred_self_modifying` tasks in the
       multi-task postflight summary as deferred-for-solo-run — distinct from `failed_tasks`, never
-      added to it, and never status-mutated.
-- [ ] Verify by grep whether `skills/skill-orchestrate-hard/SKILL.md` restates the wave-split
+      added to it, and never status-mutated. *(completed: also adjusted the exit_status
+      determination so a non-empty deferred_self_modifying set with zero failed_tasks yields
+      "partial", never "completed" — see deviation note below)*
+- [x] Verify by grep whether `skills/skill-orchestrate-hard/SKILL.md` restates the wave-split
       branch; it currently inherits MT-1..MT-5 by reference and contains no
       `orchestrate-batch-admit` reference, so the expected outcome is **no edit** — record the
-      grep result rather than editing speculatively.
-- [ ] `docs/architecture/batch-admit-schema.md`: bump to `orchestrate-batch-admit-v2`, document
+      grep result rather than editing speculatively. *(completed: `grep -c "orchestrate-batch-admit"
+      skills/skill-orchestrate-hard/SKILL.md` = 0. No edit made, confirming the predicted outcome.)*
+- [x] `docs/architecture/batch-admit-schema.md`: bump to `orchestrate-batch-admit-v2`, document
       `self_modifying` (with its three-valued semantics), `defer_reason` and its two values,
       `critical_path`, `critical_label`, the `--invocation-count` flag, the precedence rule, and
-      the degradation behavior. Add the data file to See Also by path.
-- [ ] Confirm no task-number citations were added to any of these files.
+      the degradation behavior. Add the data file to See Also by path. *(completed: full rewrite,
+      including a Version History section explaining why v2 was a version bump, not an additive
+      field)*
+- [x] Confirm no task-number citations were added to any of these files. *(completed: grep clean)*
+
+**Deviations (necessary correctness additions beyond the literal task list, both required for
+the convergence property the plan itself demands — not scope creep)**:
+1. **Stage MT-3 step 2 (All-terminal check) and step 4 (no-eligible circuit breaker)**: updated
+   to recognize `deferred_self_modifying` membership as equivalent to terminal/failed for the
+   purpose of deciding whether the cycling loop has anything left to do. Without this, a deferred
+   self-modifying task with no other remaining siblings would fall through to the "stuck tasks"
+   circuit-breaker warning every cycle, misdescribing a deliberate, by-design exclusion as an
+   unexpected stall.
+2. **Stage MT-5 exit_status determination**: changed from `failed_count == 0 -> "completed"` to
+   `failed_count == 0 AND deferred_self_modifying is empty -> "completed"`. Without this, an
+   invocation that successfully excluded a self-modifying task (zero `failed_tasks`) would
+   report `"completed"` even though one task was never actually dispatched — silently
+   misrepresenting an intentionally incomplete invocation as fully finished, which is precisely
+   the class of silent-wrong-decision this whole gate exists to prevent elsewhere.
 
 **Timing**: 1.5 hours
 

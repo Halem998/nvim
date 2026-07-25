@@ -358,6 +358,15 @@ After Agent tool returns: read handoff. Increment cycle_count.
 
 #### State: `partial`
 
+**Cross-reference**: the identical triage rule applied by hand below is also available as an
+executable check, `scripts/orchestrate-triage-classify.sh single`. Its `single`-engine
+`partial`-with-neither outcome (`exit_partial`, matching the "Sub-state: no handoff, no blockers"
+branch below) is **intentionally different** from the `mt`-engine outcome for the identical
+condition (which dispatches to implement) — the two engines diverge by design because
+single-task and multi-task invocations select their dispatch engine differently; see the plan
+decision resolving that divergence (Decision D1 in this task's originating plan) for the full
+justification.
+
 Read `.orchestrator-handoff.json` to determine sub-state:
 
 ```bash
@@ -888,8 +897,16 @@ mode; see `context/patterns/infra-failure-discrimination.md`).
 Initialize `mt_state_file = "specs/.orchestrator-multi-state.json"` with fields: `session_id`,
 `task_numbers`, `waves`, `max_cycles`, `cycle_count: 0`, `failed_tasks: []`,
 `completed_tasks: []`, `current_statuses: {}`, `task_dirs: {}`, `research_agents: {}`,
-`implement_agents: {}`, `infra_failures: {}` (map task_num -> count, default 0), and
-`dispatch_start_ts: {}` (map task_num -> unix seconds, written at dispatch time).
+`implement_agents: {}`, `infra_failures: {}` (map task_num -> count, default 0),
+`dispatch_start_ts: {}` (map task_num -> unix seconds, written at dispatch time), and
+`deferred_self_modifying: []` — an INVOCATION-SCOPED set (persists across every cycle of this
+same `mt_state_file`, never reset mid-invocation) of task numbers the self-modification gate has
+excluded. This is the mechanism that makes the exclusion converge: without it, a self-modifying
+task deferred out of one cycle would simply re-qualify as eligible on the very next cycle (its
+predecessors are still terminal, its status is still non-terminal) and the gate would re-fire
+every cycle forever, never letting the invocation reach an all-terminal state. See Stage MT-3
+step 3 (eligibility exclusion) and step 4.5 (population) below, and Stage MT-5 (postflight
+reporting) for the three places this set is read or written.
 
 ### Stage MT-2: Build Per-Task Routing Table
 
@@ -929,24 +946,40 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
 
 1. **Status refresh**: For each task in `task_numbers`, read current status from `state.json` and update `mt_state_file.current_statuses`.
 
-2. **All-terminal check**: If every task is in `{completed, abandoned, expanded}` or in `failed_tasks` — break loop (exit success or partial).
+2. **All-terminal check**: If every task is in `{completed, abandoned, expanded}`, in
+   `failed_tasks`, OR in `deferred_self_modifying` — break loop (exit success or partial). A task
+   in `deferred_self_modifying` is deliberately excluded, not stuck, so this check treats it the
+   same as a terminal/failed task for the purpose of deciding whether the loop has anything left
+   to do — see step 3's exclusion and step 4.5's population of this set below.
 
 3. **Build eligible_tasks**: For each task, include it if ALL of the following are true:
    - Status is NOT `{completed, abandoned, expanded}` and NOT in `failed_tasks`
+   - Task number is NOT in `deferred_self_modifying` (populated by step 4.5 below; this is the
+     mechanism that makes the exclusion converge — without it, a self-modifying task deferred out
+     of one cycle would simply re-qualify as eligible again on the very next cycle, since its own
+     status and predecessors have not changed, and the gate would re-fire every cycle forever)
    - Status is NOT `{researching, planning}` (in-flight from prior cycle)
    - All predecessors from `dependency_graph[task_num]` are in terminal state or `failed_tasks`
    
    If a predecessor is in `failed_tasks`: mark this task in `failed_tasks` with status `blocked` and skip it.
    If a predecessor is still in-progress: skip this task (wait for next cycle).
 
-4. **No-eligible circuit breaker**: If `eligible_tasks` is empty, log warning with list of stuck tasks and break loop (exit partial).
+4. **No-eligible circuit breaker**: If `eligible_tasks` is empty AND at least one task remains
+   that is NOT terminal, NOT in `failed_tasks`, and NOT in `deferred_self_modifying` — log warning
+   with list of stuck tasks and break loop (exit partial). (If every remaining non-eligible task
+   is accounted for by step 2's All-terminal check instead — i.e. every task is terminal, failed,
+   or deferred-self-modifying — step 2 has already broken the loop before this step runs, so this
+   circuit breaker's "stuck tasks" framing is reserved for genuinely stuck tasks, never for a
+   deliberately deferred self-modifying one.)
 
 4.5. **Runtime wave-split check (cross-batch defense-in-depth)**: Before dispatching
    `eligible_tasks` on EVERY cycle — including a cycle where `eligible_tasks` contains only a
    single task, since a cross-batch collision exists at batch size 1 — call the admission
-   script:
+   script, passing `--invocation-count` set to this invocation's FULL `task_numbers` count (NOT
+   `${#eligible_tasks[@]}`), so the self-modification defer trigger below is evaluated against
+   the whole invocation, never just this cycle's eligible subset:
    ```bash
-   bash .claude/scripts/orchestrate-batch-admit.sh "${eligible_tasks[@]}"
+   bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#task_numbers[@]}" "${eligible_tasks[@]}"
    ```
    This compares each eligible task's `file_scope` against every non-terminal task in a single
    `specs/state.json` read — the comparison set is every non-terminal task in state, not merely
@@ -957,26 +990,47 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
    restated here); the verdict schema is published in
    `.claude/docs/architecture/batch-admit-schema.md` (also referenced by path, never restated).
 
-   `jq`-filter stdout for `.decision == "defer"`, then branch on `collision_scope`. Both
-   branches preserve the surrounding cycle semantics verbatim: a deferred task is removed from
-   **this cycle's** dispatch batch, is never added to `failed_tasks`, and becomes eligible again
-   on a later cycle.
-   - **`in_batch`** (the colliding task is itself in `eligible_tasks`): remove the deferred task
-     from this cycle's dispatch batch and log the existing warning:
+   `jq`-filter stdout for `.decision == "defer"`, then branch on `defer_reason` FIRST (v2 schema
+   — every defer verdict carries this REQUIRED discriminator; checking `collision_scope` without
+   checking `defer_reason` first would misread a self-modifying defer as an ordinary in-batch
+   collision, since both verdicts carry a `reason` string):
+
+   - **`self_modifying`** (the candidate's own `file_scope` names an orchestrator-critical path):
+     remove the candidate from this cycle's dispatch batch AND add it to the INVOCATION-SCOPED
+     `mt_state_file.deferred_self_modifying` set (persists for the remainder of this
+     invocation — this is the critical difference from the two `file_scope_collision` branches
+     below, which only affect the current cycle). **This is the mechanism that makes the
+     exclusion converge**: without recording it in `deferred_self_modifying`, the task would
+     simply re-qualify as eligible again on the very next cycle (see step 3's exclusion above)
+     and this check would re-fire every cycle forever, and the invocation would never reach an
+     all-terminal state. The task is never added to `failed_tasks` and never status-mutated. Log
+     a **distinct** warning naming the matched critical path and label:
      ```
-     [orchestrate] WARNING: Tasks #{X} and #{Y} have overlapping file_scope with no
-       dependency_graph edge between them. Deferring #{Y} to a later cycle to avoid
-       concurrent edits to the same files.
+     [orchestrate] WARNING: Task #{task_number} has file_scope naming orchestrator-critical
+       path {critical_path} ({critical_label}). Orchestrator-critical work runs solo only —
+       excluding #{task_number} from this invocation. Re-run it alone: /orchestrate {task_number}
      ```
-   - **`cross_batch`** (the colliding task is NOT part of `task_numbers` for this invocation):
-     remove the candidate from this cycle's dispatch batch and log a **distinct** warning naming
-     the out-of-batch task and its `colliding_task_status`:
-     ```
-     [orchestrate] WARNING: Task #{task_number} has overlapping file_scope with task
-       #{colliding_task_number} (status: {colliding_task_status}), which is OUTSIDE this
-       invocation's task_numbers. Excluding #{task_number} from this cycle — batch
-       composition needs human review.
-     ```
+   - **`file_scope_collision`** — retains the exact pre-existing `collision_scope` branching
+     below, byte-for-byte. Both branches preserve the surrounding cycle semantics verbatim: a
+     deferred task is removed from **this cycle's** dispatch batch, is never added to
+     `failed_tasks`, and becomes eligible again on a later cycle (never added to
+     `deferred_self_modifying` — that set is exclusively for the `self_modifying` branch above).
+     - **`in_batch`** (the colliding task is itself in `eligible_tasks`): remove the deferred task
+       from this cycle's dispatch batch and log the existing warning:
+       ```
+       [orchestrate] WARNING: Tasks #{X} and #{Y} have overlapping file_scope with no
+         dependency_graph edge between them. Deferring #{Y} to a later cycle to avoid
+         concurrent edits to the same files.
+       ```
+     - **`cross_batch`** (the colliding task is NOT part of `task_numbers` for this invocation):
+       remove the candidate from this cycle's dispatch batch and log a **distinct** warning naming
+       the out-of-batch task and its `colliding_task_status`:
+       ```
+       [orchestrate] WARNING: Task #{task_number} has overlapping file_scope with task
+         #{colliding_task_number} (status: {colliding_task_status}), which is OUTSIDE this
+         invocation's task_numbers. Excluding #{task_number} from this cycle — batch
+         composition needs human review.
+       ```
 
    **Interaction with the task-lock acquire step (Stage MT-4)**: admission runs **before** lock
    acquisition and is a distinct gate — admission compares declared scopes of ALL non-terminal
@@ -1005,7 +1059,34 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
 
 > **COMPLETION SEQUENCING**: After ALL Agent tool calls complete (Claude Code returns control after all calls in the single message finish), read handoffs for every dispatched task. Do NOT read handoffs interleaved with dispatches.
 
-**Phase grouping** — Classify each eligible task by its current status:
+**Classifier call** — before grouping, call the shared handoff-triage classifier so this stage's
+routing reads the SAME rule the read-only dry-run report reads, rather than a second,
+independently-maintained copy of it:
+
+```bash
+bash .claude/scripts/orchestrate-triage-classify.sh mt "${eligible_tasks[@]}"
+```
+
+`jq`-filter the emitted NDJSON by `.group` into this stage's dispatch buckets: `.group ==
+"research"` -> `research_tasks`, `.group == "plan"` -> `plan_tasks`, `.group == "implement"` ->
+`implement_tasks`, `.group == "needs_human"` -> `failed_tasks` (mark blocked), and `.group ==
+"skip"` or `.group == "terminal"` -> skip (no dispatch). This single call supplies the
+pre-dispatch `blockers`/`continuation_context` read for `partial` tasks that the table below
+previously only asserted without a spelled-out mechanism — its precedence is **continuation >
+blockers > neither** (a task with a valid continuation always dispatches to implement even if
+stale blockers are also present; only absence of continuation falls through to the blockers
+check).
+
+**Degradation path**: exit 2 from `orchestrate-triage-classify.sh` means state is unavailable
+(missing `jq`, or an unreadable `specs/state.json`). In that case, log a loud warning and fall
+back to the Phase grouping table below, applied inline per task, rather than silently skipping
+dispatch for the whole cycle — orchestration must still make forward progress when the classifier
+itself cannot run.
+
+**Phase grouping** (documentation of the rule the classifier script transcribes, retained here as
+a byte-identical reference table — `scripts/orchestrate-triage-classify.sh` is the executable
+source of truth, and the table and the script MUST be changed together, never independently) —
+classify each eligible task by its current status:
 
 | Task status | Group | Agent |
 |-------------|-------|-------|
@@ -1147,22 +1228,36 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
 
 After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or MAX_CYCLES_MT reached):
 
-1. Read from `mt_state_file`: `completed_tasks`, `failed_tasks`, `cycles_used`, counts.
+1. Read from `mt_state_file`: `completed_tasks`, `failed_tasks`, `deferred_self_modifying`,
+   `cycles_used`, counts.
 2. Determine `exit_status`:
-   - `failed_count == 0` → `"completed"` (remove `mt_state_file`)
-   - `failed_count > 0` → `"partial"` (preserve `mt_state_file` for diagnostics)
-3. Write `specs/.return-meta-multi.json`:
+   - `failed_count == 0` AND `deferred_self_modifying` is empty → `"completed"` (remove
+     `mt_state_file`)
+   - `failed_count > 0` OR `deferred_self_modifying` is non-empty → `"partial"` (preserve
+     `mt_state_file` for diagnostics). A non-empty `deferred_self_modifying` alone (zero
+     `failed_tasks`) still yields `"partial"`, never `"completed"` — the invocation did not
+     actually finish everything it was asked to; one task remains undispatched pending a solo
+     re-run. This is distinct from a failure: the task is not in `failed_tasks` and was never
+     status-mutated, so `"partial"` here means "incomplete by design", not "broken".
+3. Report `deferred_self_modifying` tasks in the consolidated summary as **deferred-for-solo-run**
+   — a category distinct from both `completed_tasks` and `failed_tasks`. Never add a
+   deferred-self-modifying task to `failed_tasks`, and never mutate its `specs/state.json` status
+   — it simply was not dispatched by this invocation and remains eligible for a future solo
+   `/orchestrate {task_number}` run.
+4. Write `specs/.return-meta-multi.json`:
 ```bash
 jq -n \
   --arg status "$exit_status" \
   --argjson tasks_completed "$completed_tasks" \
   --argjson tasks_failed "$failed_tasks" \
+  --argjson tasks_deferred_self_modifying "$deferred_self_modifying" \
   --argjson cycles_used "$cycles_used" \
   '{
     "status": $status,
     "metadata": {
       "tasks_completed": $tasks_completed,
       "tasks_failed": $tasks_failed,
+      "tasks_deferred_self_modifying": $tasks_deferred_self_modifying,
       "cycles_used": $cycles_used,
       "multi_task_mode": true
     }

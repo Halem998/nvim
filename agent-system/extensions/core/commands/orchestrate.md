@@ -31,6 +31,7 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 | Flag | Description | Default |
 |------|-------------|---------|
 | `--lit` | Literature mode: pass lit_flag=true to skill for paper/spec-based tasks | false |
+| `--dry-run` | Report-only: run the full admission analysis and print the verdict report; dispatch nothing and mutate nothing | false |
 
 ## Anti-Bypass Constraint
 
@@ -44,9 +45,38 @@ command.
 
 ```bash
 source .claude/scripts/parse-command-args.sh "$ARGUMENTS"
-# Exports: TASK_NUMBERS (space-separated), FOCUS_PROMPT, REMAINING_ARGS
+# Exports: TASK_NUMBERS (space-separated), FOCUS_PROMPT, REMAINING_ARGS, DRY_RUN_FLAG
 focus_prompt="${FOCUS_PROMPT:-}"
 ```
+
+**Dry-run short-circuit** (checked immediately after `parse-command-args.sh` is sourced, and
+**before** the `len(TASK_NUMBERS)` branch below): `SESSION_ID` may be unset at this point — the
+flag is parsed before CHECKPOINT 1: GATE IN, which is where a session id is normally minted — so
+`--session` is passed to the report script only when non-empty.
+
+```bash
+if [ "${DRY_RUN_FLAG:-false}" = "true" ]; then
+  if [ -n "${SESSION_ID:-}" ]; then
+    bash .claude/scripts/orchestrate-dry-run-report.sh --session "$SESSION_ID" $TASK_NUMBERS
+  else
+    bash .claude/scripts/orchestrate-dry-run-report.sh $TASK_NUMBERS
+  fi
+  # STOP HERE.
+fi
+```
+
+The report uses the SAME read-only admission analysis the live path uses — naming
+`scripts/orchestrate-batch-admit.sh` (file_scope collisions) and
+`scripts/orchestrate-triage-classify.sh` (handoff-triage routing) by path — so the printed wave
+numbers are the same ones a live run would actually dispatch. Neither schema is restated here;
+see each script's own header comment for its field-by-field contract.
+
+**Dry-run prohibition block**: in dry-run mode, this command MUST NOT continue to MULTI-TASK
+DISPATCH, MUST NOT reach CHECKPOINT 1 (GATE IN), MUST NOT invoke the Skill or Agent tools, MUST
+NOT acquire a task lock, and MUST NOT run CHECKPOINT 3 (COMMIT). This mirrors the Anti-Bypass
+Constraint above: just as that constraint prohibits running lifecycle phases without delegating
+through `skill-orchestrate`, this constraint prohibits a `--dry-run` invocation from reaching ANY
+lifecycle phase at all — the STOP HERE above is absolute, not advisory.
 
 If `len(TASK_NUMBERS) == 1`: extract `task_number=$(echo "$TASK_NUMBERS" | awk '{print $1}')` and fall through to CHECKPOINT 1: GATE IN.
 
@@ -164,10 +194,13 @@ runtime wave-split check below closes that gap.
 
 **Runtime wave-split check (cross-batch defense-in-depth)**: Before dispatching EVERY wave (Step
 4) — including a wave that contains only a single task, since a cross-batch collision exists at
-batch size 1 — call the admission script:
+batch size 1 — call the admission script, passing `--invocation-count` set to the WHOLE
+invocation's validated-candidate count (`${#validated_tasks[@]}`, never `${#wave_tasks[@]}`) so
+the self-modification defer trigger below is evaluated against the invocation as a whole, not
+just this one wave:
 
 ```bash
-bash .claude/scripts/orchestrate-batch-admit.sh "${wave_tasks[@]}"
+bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#validated_tasks[@]}" "${wave_tasks[@]}"
 ```
 
 This compares each wave task's `file_scope` against every non-terminal task in a single
@@ -178,29 +211,48 @@ overlap algorithm in `.claude/context/patterns/file-footprint-overlap.md` (refer
 the rule is not restated here); the verdict schema is published in
 `.claude/docs/architecture/batch-admit-schema.md` (also referenced by path, never restated).
 
-`jq`-filter stdout for `.decision == "defer"`, then branch on `collision_scope`:
+`jq`-filter stdout for `.decision == "defer"`, then branch on `defer_reason` FIRST (v2 schema —
+every defer verdict carries this REQUIRED discriminator; do not fall through to a
+`collision_scope`-only branch without checking it first, or a self-modifying defer is
+misread as an ordinary in-batch collision):
 
-- **`in_batch`** (the colliding task is itself in this wave): defer the named task to the next
-  wave — existing behavior, existing warning format preserved:
+- **`self_modifying`** (the candidate's own `file_scope` names an orchestrator-critical path —
+  see `context/patterns/batch-orchestration-guardrails.md`'s "Self-Modification Hazard" section):
+  exclude the candidate from the WHOLE INVOCATION (not merely this wave — this is evaluated
+  against the invocation's validated-candidate count, never the wave's size) and log a
+  **distinct** warning naming the matched critical path and label, and instructing a solo
+  re-run. The excluded task is neither marked failed nor blocked — it simply is not dispatched
+  by this invocation:
   ```
-  [orchestrate] WARNING: Wave {N} tasks #{X} and #{Y} have overlapping file_scope
-    ({path}) with no dependencies[] edge between them. Deferring #{Y} to wave {N+1}
-    to avoid concurrent edits to the same files.
+  [orchestrate] WARNING: Task #{task_number} has file_scope naming orchestrator-critical
+    path {critical_path} ({critical_label}). Orchestrator-critical work runs solo only —
+    excluding #{task_number} from this invocation. Re-run it alone: /orchestrate {task_number}
   ```
-- **`cross_batch`** (the colliding task is NOT part of this invocation): exclude the candidate
-  from this invocation's admitted set and log a **distinct** warning naming the out-of-batch
-  task and its `colliding_task_status`, so the transcript distinguishes "resolves by waiting one
-  wave" from "this batch's composition is contested":
-  ```
-  [orchestrate] WARNING: Task #{task_number} has overlapping file_scope ({path}) with
-    task #{colliding_task_number} (status: {colliding_task_status}), which is OUTSIDE
-    this invocation's batch. Excluding #{task_number} from this run — batch composition
-    needs human review.
-  ```
+- **`file_scope_collision`** — retains the exact pre-existing `collision_scope` branching below,
+  byte-for-byte:
+  - **`in_batch`** (the colliding task is itself in this wave): defer the named task to the next
+    wave — existing behavior, existing warning format preserved:
+    ```
+    [orchestrate] WARNING: Wave {N} tasks #{X} and #{Y} have overlapping file_scope
+      ({path}) with no dependencies[] edge between them. Deferring #{Y} to wave {N+1}
+      to avoid concurrent edits to the same files.
+    ```
+  - **`cross_batch`** (the colliding task is NOT part of this invocation): exclude the candidate
+    from this invocation's admitted set and log a **distinct** warning naming the out-of-batch
+    task and its `colliding_task_status`, so the transcript distinguishes "resolves by waiting one
+    wave" from "this batch's composition is contested":
+    ```
+    [orchestrate] WARNING: Task #{task_number} has overlapping file_scope ({path}) with
+      task #{colliding_task_number} (status: {colliding_task_status}), which is OUTSIDE
+      this invocation's batch. Excluding #{task_number} from this run — batch composition
+      needs human review.
+    ```
 
 **Defer-not-fail invariant**: this check never marks a task failed and never mutates
 `specs/state.json` — a `defer` verdict only changes which wave (or whether this invocation at
-all) a task is dispatched in.
+all) a task is dispatched in. This applies identically to the `self_modifying` defer_reason: the
+excluded task is neither failed nor marked blocked, and this script never writes to
+`specs/state.json`.
 
 **Degradation path**: exit 2 from `orchestrate-batch-admit.sh` means state is unavailable
 (missing `jq` or an unreadable `specs/state.json`). In that case, log a loud warning and proceed
@@ -481,6 +533,8 @@ Commit failure is non-blocking (log and continue).
 **Partial**: `Orchestration paused for Task #{N}` | Status: `[{STATUS}]` | Cycles: M/5 | `Next: /orchestrate {N}`
 
 **Blocked**: `Task #{N} requires manual intervention` | Blocker description | Suggested actions
+
+**`--dry-run`**: the printed admission report only — no status transition, no cycle consumed, no commit. The invocation ends after the report; nothing else in this Output section applies to a `--dry-run` run.
 
 ## Error Handling
 

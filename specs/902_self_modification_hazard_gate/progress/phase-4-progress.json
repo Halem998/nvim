@@ -1,0 +1,63 @@
+{
+  "phase": 4,
+  "phase_name": "Wire the Live Dispatch Paths and the Schema Document",
+  "started_at": "2026-07-25T01:15:00Z",
+  "last_updated": "2026-07-25T02:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "commands/orchestrate.md Step 3: invocation-count + self_modifying branch",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]
+    },
+    {
+      "id": 2,
+      "description": "skill-orchestrate/SKILL.md Stage MT-3 step 4.5: invocation-count + deferred_self_modifying population",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]
+    },
+    {
+      "id": 3,
+      "description": "skill-orchestrate/SKILL.md Stage MT-1 init, MT-3 step 2/4 convergence handling",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]
+    },
+    {
+      "id": 4,
+      "description": "skill-orchestrate/SKILL.md Stage MT-5 reporting and exit_status fix",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]
+    },
+    {
+      "id": 5,
+      "description": "grep verification of skill-orchestrate-hard/SKILL.md (no edit expected)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "docs/architecture/batch-admit-schema.md v2 rewrite",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "Stage MT-3 step 2 (All-terminal check) and step 4 (circuit breaker) recognition of deferred_self_modifying",
+      "type": "altered",
+      "reason": "Necessary for convergence and accurate stuck-task diagnostics; not explicitly listed in the plan's task checklist but required by the plan's own stated convergence goal.",
+      "annotation": "*(deviation: altered — added deferred_self_modifying recognition to MT-3 steps 2 and 4, see plan note)*"
+    },
+    {
+      "task_id": "4.4",
+      "description": "Stage MT-5 exit_status determination now accounts for non-empty deferred_self_modifying",
+      "type": "altered",
+      "reason": "Without this, an invocation that excluded a self-modifying task would misreport as fully completed. Necessary correctness fix in the same spirit as the gate itself.",
+      "annotation": "*(deviation: altered — exit_status now partial when deferred_self_modifying non-empty, see plan note)*"
+    }
+  ]
+}
