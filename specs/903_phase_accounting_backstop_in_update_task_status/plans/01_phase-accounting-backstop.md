@@ -601,16 +601,18 @@ all; the value is a fixed literal set two lines above, never user input.)
 
 ---
 
-### Phase 5: `refuse` opt-in at the core implementer skills [NOT STARTED]
+### Phase 5: `refuse` opt-in at the core implementer skills [COMPLETED]
 
 **Goal**: Thread `--phase-check=refuse` into `skill-implementer` and `skill-implementer-hard`,
 each of which needs a NEW refusal-handling branch (neither has any error handling on its
 postflight call today).
 
 **Tasks**:
-- [ ] Edit `skill-implementer/SKILL.md` Stage 7 Step 1 and add Step 1a
-- [ ] Edit `skill-implementer-hard/SKILL.md` Stage 7
-- [ ] Confirm no task-number citations were introduced (these files live outside `specs/**`)
+- [x] Edit `skill-implementer/SKILL.md` Stage 7 Step 1 and add Step 1a *(completed)*
+- [x] Edit `skill-implementer-hard/SKILL.md` Stage 7 *(completed)*
+- [x] Confirm no task-number citations were introduced (these files live outside `specs/**`)
+      *(completed: the sole hit found, "task 772" at line 161, pre-dates this change per
+      `git blame` and is outside the diff)*
 
 **Exact replacement text**:
 

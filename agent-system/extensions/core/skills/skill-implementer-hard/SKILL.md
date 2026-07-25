@@ -331,7 +331,17 @@ fi
 
 ```bash
 if [ "$status" = "implemented" ]; then
-  bash .claude/scripts/update-task-status.sh postflight "$task_number" implement "$session_id"
+  postflight_rc=0
+  bash .claude/scripts/update-task-status.sh postflight "$task_number" implement "$session_id" --phase-check=refuse || postflight_rc=$?
+  if [ "$postflight_rc" -eq 4 ]; then
+    # The backstop read the plan file's own `### Phase N: ... [STATUS]` headings and found
+    # incomplete phases. Nothing was written. Degrade to the partial path -- keep status
+    # "implementing" for resume -- rather than retrying without the flag.
+    echo "[hard-mode] Phase-accounting backstop refused completion for task $task_number; keeping status=implementing for resume." >&2
+    status="partial"
+  elif [ "$postflight_rc" -ne 0 ]; then
+    echo "WARNING: update-task-status.sh exited $postflight_rc — manual correction may be needed" >&2
+  fi
 fi
 # On partial: keep status as "implementing" for resume
 # NOTE: A skeleton dispatch (skeleton=true) already reports status="implemented" per the

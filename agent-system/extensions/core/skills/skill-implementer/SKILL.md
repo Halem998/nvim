@@ -439,9 +439,37 @@ unrelated concurrent-session changes.
 
 **If status is "implemented"**:
 
-**Step 1**: Run the centralized status update script to update state.json (status -> "completed", timestamps), TODO.md (`[IMPLEMENTING]` -> `[COMPLETED]` in task entry + Task Order), and plan file (status -> `[COMPLETED]`):
+**Step 1**: Run the centralized status update script to update state.json (status -> "completed", timestamps), TODO.md (`[IMPLEMENTING]` -> `[COMPLETED]` in task entry + Task Order), and plan file (status -> `[COMPLETED]`).
+
+`--phase-check=refuse` engages the script-side phase-accounting backstop. This skill previously
+had no phase gate at all: `phases_completed`/`phases_total` are read from the agent's
+`.return-meta.json` one stage earlier for the commit message, but were never consulted before
+this call. The backstop is deliberately independent of those values — the script resolves the
+task's own plan file and counts its `### Phase N: ... [STATUS]` headings itself, exiting 4
+without writing anything if any phase is not `[COMPLETED]`:
 ```bash
-bash .claude/scripts/update-task-status.sh postflight "$task_number" implement "$session_id"
+postflight_rc=0
+bash .claude/scripts/update-task-status.sh postflight "$task_number" implement "$session_id" --phase-check=refuse || postflight_rc=$?
+```
+
+**Step 1a (refusal branch)**: If `postflight_rc` is 4 the backstop refused — no state.json write
+and no plan-file stamp occurred. Treat this exactly like the `status == "partial"` branch below:
+keep the task at `implementing`, record a resume point, and let the next `/implement` invocation
+resume from the first incomplete phase. Do NOT retry without the flag, and do NOT hand-edit
+state.json to `completed`. Skip Steps 2-3 (completion_summary and roadmap_items are completion
+metadata and the task is not complete); Step 4's memory-candidate propagation may still run.
+```bash
+if [ "$postflight_rc" -eq 4 ]; then
+    echo "[implementer] Phase-accounting backstop refused completion for task $task_number: the plan file shows incomplete phases. Task stays [IMPLEMENTING]; re-run /implement to resume." >&2
+    jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+       --argjson phase "$phases_completed" \
+      '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
+        last_updated: $ts,
+        resume_phase: ($phase + 1)
+      }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+elif [ "$postflight_rc" -ne 0 ]; then
+    echo "WARNING: update-task-status.sh exited $postflight_rc — manual correction may be needed" >&2
+fi
 ```
 
 **Step 2**: Add completion_summary to state.json (implementer-specific, not covered by centralized script):
