@@ -1,0 +1,75 @@
+{
+  "phase": 5,
+  "phase_name": "Tests and Regression",
+  "started_at": "2026-07-25T02:05:00Z",
+  "last_updated": "2026-07-25T03:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create fixture state-self-mod.json",
+      "status": "done",
+      "files_touched": ["specs/902_self_modification_hazard_gate/fixtures/state-self-mod.json"]
+    },
+    {
+      "id": 2,
+      "description": "Create test-self-modifying-gate.sh with all required assertions",
+      "status": "done",
+      "files_touched": ["specs/902_self_modification_hazard_gate/tests/test-self-modifying-gate.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Dry-run report exclusion-line and solo-Note assertions",
+      "status": "done",
+      "files_touched": ["specs/902_self_modification_hazard_gate/tests/test-self-modifying-gate.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Wave-spanning invocation-scoped assertion",
+      "status": "done",
+      "files_touched": ["specs/902_self_modification_hazard_gate/tests/test-self-modifying-gate.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Update test-batch-admit.sh for v2 schema and document behavioral deviation",
+      "status": "done",
+      "files_touched": ["specs/900_cross_batch_file_scope_admission/tests/test-batch-admit.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Run predecessor suites test-triage-classify.sh and test-dry-run-report.sh, confirm unaffected",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Confirm real .claude/ tree and specs/state.json untouched by test runs",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {
+      "approach": "Reuse candidate 954 both as the isolated ordinary-candidate baseline AND as one half of the in-batch-direction pair (954+959, identical file_scope)",
+      "result": "failed",
+      "reason": "orchestrate-batch-admit.sh always compares a candidate against every non-terminal task in the WHOLE state file, not just CLI args, so giving 959 the same file_scope as 954 made 954 incidentally collide with 959 in every other assertion that used 954 alone. Fixed by adding a dedicated, fully-isolated candidate 960 for the ordinary-candidate baseline, keeping 954+959 exclusively for the in-batch-direction pairing test."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.1",
+      "description": "Fixture grew from ~6 implied entries to 11 (950-960)",
+      "type": "altered",
+      "reason": "D4 precedence test (957/958) and the isolation fix (960) both required additional entries beyond the plan's literal minimum list.",
+      "annotation": "*(deviation: altered — fixture expanded to 11 entries, see plan note)*"
+    },
+    {
+      "task_id": "5.5",
+      "description": "test-batch-admit.sh tests 1 and 2 changed in MEANING (not just string literals) because real fixture candidates 900/902/906/907 are genuinely self-modifying",
+      "type": "altered",
+      "reason": "Discovered by running the v2 script against the frozen fixture: D4 precedence makes these tests now demonstrate self-modification admission/defer instead of collision-direction. In-batch-direction coverage restored via a new test (13) in the 902 suite using synthetic non-critical candidates. Live smoke check softened from pinned values to schema-shape-only due to independent staleness (task 900 has since completed).",
+      "annotation": "*(deviation: altered — see substantial deviation note in plan Phase 5 and inline comments in test-batch-admit.sh)*"
+    }
+  ]
+}

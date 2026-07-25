@@ -1,0 +1,106 @@
+{
+  "active_projects": [
+    {
+      "project_number": 950,
+      "project_name": "source_store_critical_candidate",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/task-lock.sh"
+      ]
+    },
+    {
+      "project_number": 951,
+      "project_name": "deploy_tree_critical_candidate",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": [
+        ".claude/scripts/skill-base.sh"
+      ]
+    },
+    {
+      "project_number": 952,
+      "project_name": "directory_ancestor_candidate",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/skills/skill-orchestrate/"
+      ]
+    },
+    {
+      "project_number": 953,
+      "project_name": "excluded_file_candidate",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/command-gate-in.sh"
+      ]
+    },
+    {
+      "project_number": 954,
+      "project_name": "ordinary_candidate",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": [
+        "lua/some/plugin/config.lua"
+      ]
+    },
+    {
+      "project_number": 955,
+      "project_name": "wave_spanning_self_mod_candidate",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/commands/orchestrate.md"
+      ]
+    },
+    {
+      "project_number": 956,
+      "project_name": "wave_spanning_unrelated_sibling",
+      "status": "not_started",
+      "dependencies": [
+        955
+      ],
+      "file_scope": [
+        "lua/some/other/unrelated.lua"
+      ]
+    },
+    {
+      "project_number": 957,
+      "project_name": "self_mod_with_simultaneous_collision",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/update-task-status.sh",
+        "lua/957_only/shared_file.lua"
+      ]
+    },
+    {
+      "project_number": 958,
+      "project_name": "colliding_ordinary_partner",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": [
+        "lua/957_only/shared_file.lua"
+      ]
+    },
+    {
+      "project_number": 959,
+      "project_name": "in_batch_direction_higher_partner",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": [
+        "lua/some/plugin/config.lua"
+      ]
+    },
+    {
+      "project_number": 960,
+      "project_name": "ordinary_isolated_candidate",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": [
+        "lua/isolated/only_960.lua"
+      ]
+    }
+  ]
+}

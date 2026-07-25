@@ -416,20 +416,21 @@ the convergence property the plan itself demands — not scope creep)**:
 
 ---
 
-### Phase 5: Tests and Regression [NOT STARTED]
+### Phase 5: Tests and Regression [COMPLETED]
 
 **Goal**: The gate is exercised by deterministic fixture tests, and the two existing suites stay
 green against the v2 verdict.
 
 **Tasks**:
-- [ ] Create `specs/902_self_modification_hazard_gate/fixtures/state-self-mod.json` covering: a
+- [x] Create `specs/902_self_modification_hazard_gate/fixtures/state-self-mod.json` covering: a
       candidate whose `file_scope` names a source-store critical path; one naming a deploy-tree
       (`.claude/...`) path for the same declared entry; one naming a directory that is a prefix
       ancestor of a critical path; one naming an *excluded* file (`command-gate-in.sh`) that must
       NOT be flagged; an ordinary non-critical candidate; and a self-modifying candidate placed in
       a different wave from an unrelated sibling (via `dependencies[]`) for the wave-spanning
-      assertion.
-- [ ] Create `specs/902_self_modification_hazard_gate/tests/test-self-modifying-gate.sh` using the
+      assertion. *(completed: 950-960, 11 entries — see deviation note below for the 3 additional
+      entries beyond the plan's literal list)*
+- [x] Create `specs/902_self_modification_hazard_gate/tests/test-self-modifying-gate.sh` using the
       scratch-deploy-tree pattern (`mktemp -d`, copy the scripts plus `deploy-root-guard.sh`, copy
       the critical-paths data file into `.claude/context/reference/`, seed `specs/state.json` from
       the fixture, `trap cleanup EXIT`). Assertions: defer with `defer_reason=self_modifying` at
@@ -437,18 +438,65 @@ green against the v2 verdict.
       directory-prefix ancestor matches; excluded file does NOT match; ordinary candidate carries
       `self_modifying=false`; only the self-modifying candidate is deferred (siblings unaffected);
       self-mod precedence over a simultaneous collision (D4); `self_modifying: null` plus exit 0
-      when the data file is absent.
-- [ ] Add a dry-run report assertion (either in the same suite or as a second scratch tree)
-      confirming the plain-language exclusion line and the solo Note.
-- [ ] Add a wave-spanning assertion: a self-modifying task and an unrelated task in different waves
+      when the data file is absent. *(completed: 14 assertions, all passing)*
+- [x] Add a dry-run report assertion (either in the same suite or as a second scratch tree)
+      confirming the plain-language exclusion line and the solo Note. *(completed: assertions
+      12a/12b)*
+- [x] Add a wave-spanning assertion: a self-modifying task and an unrelated task in different waves
       still trigger the gate, proving the trigger is invocation-scoped, not wave-scoped.
-- [ ] Run `specs/900_cross_batch_file_scope_admission/tests/test-batch-admit.sh` and update its
+      *(completed: assertion 10, contrasting `--invocation-count 2` (correctly defers) against
+      the naive omitted-flag call (incorrectly admits) to make the invocation-scoping property
+      observable)*
+- [x] Run `specs/900_cross_batch_file_scope_admission/tests/test-batch-admit.sh` and update its
       exact-string expectations for the v2 `$schema` and the new `self_modifying` /
       `defer_reason` fields (these are pinned whole-object comparisons and will fail otherwise).
-- [ ] Run both predecessor suites (`test-triage-classify.sh`, `test-dry-run-report.sh`) and update
-      any assertions the new report lines disturb.
-- [ ] Confirm the real repository `.claude/` tree and `specs/state.json` are untouched by the test
-      run.
+      *(completed: see the substantial deviation note below — this fixture's real candidates
+      900/902/906/907 are themselves genuinely self-modifying, which changes what tests 1 and 2
+      actually demonstrate, not merely their string literals)*
+- [x] Run both predecessor suites (`test-triage-classify.sh`, `test-dry-run-report.sh`) and update
+      any assertions the new report lines disturb. *(completed: both suites pass unchanged, 6/6
+      and 14/14 — neither suite's assertions pin the new self-modification "Checks run" line or
+      the new verdict fields closely enough to be disturbed)*
+- [x] Confirm the real repository `.claude/` tree and `specs/state.json` are untouched by the test
+      run. *(completed: `git status --short .claude/` empty; the `specs/state.json` diff present
+      in the working tree predates this session entirely — unrelated task-completion backfills,
+      confirmed via `git diff` inspection, not written by any test run here)*
+
+**Deviations (both substantial, both fully documented inline in the affected test files rather
+than silently worked around)**:
+
+1. **Fixture `state-self-mod.json` grew from the plan's ~6 implied entries to 11** (950-960).
+   Three entries beyond the literal list were added, and one existing plan-implied entry
+   (`954`, "ordinary candidate") was split into two (`954`+`959` for in-batch-direction pairing,
+   `960` newly added as the truly isolated ordinary candidate) after discovering that giving 959
+   the SAME `file_scope` as 954 for the in-batch-direction test (item 3 below) made 954
+   incidentally collide with 959 across every OTHER assertion that used 954 in isolation —
+   because `orchestrate-batch-admit.sh` always compares a candidate against every non-terminal
+   task in the WHOLE state file, not just the CLI arguments passed. Splitting the "ordinary,
+   fully isolated" role (960) from the "in-batch-direction pairing" role (954+959) fixed this
+   without weakening either assertion. Entries `957`/`958` were added to test D4 precedence
+   (a candidate that is BOTH self-modifying AND would otherwise collide on a separate,
+   non-critical shared file) — required by the task prompt's explicit hazard flag and not
+   achievable with the other fixture entries without conflating concerns.
+2. **`test-batch-admit.sh` tests 1 and 2 changed IN MEANING, not just in string literals.**
+   Discovered by actually running the v2 script against the frozen fixture (not by predicting):
+   tasks 900, 902, 906, and 907 are real orchestrator-lifecycle tasks whose `file_scope`
+   legitimately names orchestrator-critical files, so they are now genuinely `self_modifying:
+   true`. Per D4 (self-modification precedence, checked first, short-circuiting the collision
+   scan entirely), this means: candidate 900 alone now ADMITS solo (not the previously-asserted
+   cross-batch defer); candidates 900+902 together now BOTH defer via `self_modifying` (not the
+   previously-asserted in-batch-direction collision). This is the new, correct, intended
+   behavior — not a bug — but it retires this suite's incidental coverage of the plain
+   in-batch-direction rule (lower `project_number` wins) for a pair with NO self-modification
+   involved. That coverage is restored via a NEW assertion (test 13) in
+   `specs/902_self_modification_hazard_gate/tests/test-self-modifying-gate.sh`, using two
+   synthetic, deliberately non-critical candidates (954, 959) so the underlying, UNCHANGED
+   direction-rule code stays under test independent of the new gate. The live smoke check at the
+   bottom of `test-batch-admit.sh` was also softened from a pinned decision/`collision_scope`
+   assertion to a schema/shape-only assertion, because the specific real task (900) it pinned
+   has independently reached `completed` status since the suite was first written (unrelated
+   timing drift, not caused by this gate) — re-pinning a new specific value would only defer the
+   same fragility to the next time a referenced live task completes.
 
 **Timing**: 1.5 hours
 
@@ -469,16 +517,29 @@ green against the v2 verdict.
 
 ## Testing & Validation
 
-- [ ] `bash -n` clean on both modified scripts.
-- [ ] The nine declared paths all exist; the data file parses and matches its declared `$schema`.
-- [ ] Self-modifying candidate + sibling: candidate deferred, sibling admitted and dispatched.
-- [ ] Self-modifying candidate alone: admitted, flagged, solo Note present.
-- [ ] Different-wave sibling still triggers the gate (invocation-scoped trigger).
-- [ ] An excluded candidate file (`command-gate-in.sh`) is not flagged.
-- [ ] Absent data file degrades visibly (`self_modifying: null`, stderr line, exit 0, report
-      "SKIPPED (degraded: ...)").
-- [ ] Existing collision behavior unchanged apart from the two additive fields and the `$schema`.
-- [ ] No task-number citations introduced outside `specs/**`; no edits under `.claude/**`.
+- [x] `bash -n` clean on both modified scripts. *(verified: orchestrate-batch-admit.sh,
+      orchestrate-dry-run-report.sh)*
+- [x] The nine declared paths all exist; the data file parses and matches its declared `$schema`.
+      *(verified in Phase 1)*
+- [x] Self-modifying candidate + sibling: candidate deferred, sibling admitted and dispatched.
+      *(verified: test-self-modifying-gate.sh assertion 7, test-dry-run-report assertion 12a)*
+- [x] Self-modifying candidate alone: admitted, flagged, solo Note present. *(verified: assertions
+      2, 12b)*
+- [x] Different-wave sibling still triggers the gate (invocation-scoped trigger). *(verified:
+      assertion 10)*
+- [x] An excluded candidate file (`command-gate-in.sh`) is not flagged. *(verified: assertion 5)*
+- [x] Absent data file degrades visibly (`self_modifying: null`, stderr line, exit 0, report
+      "SKIPPED (degraded: ...)"). *(verified: assertion 9, and a direct dry-run-report degraded
+      run in Phase 3)*
+- [x] Existing collision behavior unchanged apart from the two additive fields and the `$schema`.
+      *(verified TRUE for non-self-modifying candidates — e.g. fixture 991/992/993/991 in
+      test-batch-admit.sh, all fixture 950-960 collision-only paths in the new suite. NOT true,
+      by design, for a candidate that is ALSO self-modifying: D4 precedence means such a
+      candidate's collision fields are never computed at all, which is the new, correct behavior
+      — see the substantial Phase 5 deviation note for why this affected test-batch-admit.sh's
+      real-data tests 1 and 2.)*
+- [x] No task-number citations introduced outside `specs/**`; no edits under `.claude/**`. *(both
+      verified throughout via grep after every phase; confirmed again at the end of Phase 5)*
 
 ## Artifacts & Outputs
 
