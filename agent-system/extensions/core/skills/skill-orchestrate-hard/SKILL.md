@@ -113,6 +113,11 @@ PROJECT_NAME=$(echo "$TASK_DATA" | jq -r '.project_name')
 TASK_TYPE=$(echo "$TASK_DATA" | jq -r '.task_type // "general"')
 DESCRIPTION=$(echo "$TASK_DATA" | jq -r '.description // ""')
 TASK_DIR="specs/${PADDED_NUM}_${PROJECT_NAME}"
+# Absolute companion. TASK_DIR stays relative for existing consumers; TASK_DIR_ABS is the
+# anchor handed to dispatched agents, which cannot know the ambient working directory their
+# Write tool will resolve against. SKILL_REPO_ROOT is exported by skill-base.sh.
+TASK_DIR_ABS="${TASK_DIR_ABS:-${SKILL_REPO_ROOT:-$(pwd)}/${TASK_DIR}}"
+HANDOFF_PATH_ABS="${TASK_DIR_ABS}/.orchestrator-handoff.json"
 ```
 
 ---
@@ -196,7 +201,8 @@ MAX_CYCLES=13
 # larger MAX_CYCLES does not change infra tolerance.
 MAX_INFRA_FAILURES=3
 loop_guard_file="${TASK_DIR}/.orchestrator-loop-guard"
-handoff_file="${TASK_DIR}/.orchestrator-handoff.json"
+# Absolute: must name the same file the dispatched agent was told to write.
+handoff_file="${HANDOFF_PATH_ABS}"
 churn_file="${TASK_DIR}/.orchestrator-churn-state.json"
 
 mkdir -p "$TASK_DIR"
@@ -350,7 +356,7 @@ dispatch_was_transport_error=false
 Agent tool:
   subagent_type: $RESEARCH_AGENT
   prompt: "Research task $task_number: $DESCRIPTION${focus_prompt:+. Focus: $focus_prompt}"
-  delegation_context: {task_number, session_id, effort_flag: "hard", orchestrator_mode: true}
+  delegation_context: {task_number, session_id, effort_flag: "hard", orchestrator_mode: true, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS}
 ```
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
@@ -396,7 +402,7 @@ if [ "$adversarial_verified" = "false" ]; then
       Agent tool:
         subagent_type: $RESEARCH_AGENT
         prompt: "Adversarial verification pass for task $task_number. Read the research report at $research_path and verify all load-bearing claims. Focus: divergence audit — check for analysis-paralysis signatures, verify source citations, flag uncertain claims."
-        delegation_context: {task_number, session_id, effort_flag: "hard", focus_prompt: "divergence audit"}
+        delegation_context: {task_number, session_id, effort_flag: "hard", focus_prompt: "divergence audit", task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS}
 
       # After the Agent tool returns, before Stage 5: judge the tool call's OWN outcome per
       # context/patterns/infra-failure-discrimination.md and set dispatch_was_transport_error=true
@@ -425,7 +431,7 @@ if [ "$adversarial_verified" = "true" ]; then
   Agent tool:
     subagent_type: $PLANNER_AGENT
     prompt: "Create hard-mode implementation plan for task $task_number${focus_prompt:+. Focus: $focus_prompt}"
-    delegation_context: {task_number, session_id, effort_flag: "hard", orchestrator_mode: true, ...}
+    delegation_context: {task_number, session_id, effort_flag: "hard", orchestrator_mode: true, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, ...}
 
   # After the Agent tool returns, before Stage 5: judge the tool call's OWN outcome per
   # context/patterns/infra-failure-discrimination.md and set dispatch_was_transport_error=true
@@ -480,7 +486,9 @@ if [ -n "$next_phase" ]; then
     "orchestrator_mode": true,
     "effort_flag": "hard",
     "plan_path": "'$plan_path'",
-    "phase_number": '$next_phase'
+    "phase_number": '$next_phase',
+    "task_dir": "'$TASK_DIR_ABS'",
+    "handoff_path": "'$HANDOFF_PATH_ABS'"
   }'
 
   # This preflight sits inside the `if [ -n "$next_phase" ]` branch ONLY — never in the

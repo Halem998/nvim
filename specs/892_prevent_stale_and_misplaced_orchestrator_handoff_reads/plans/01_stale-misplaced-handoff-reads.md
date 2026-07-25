@@ -755,7 +755,7 @@ bullet that is the literal text the lean phase agent receives.
 
 ---
 
-### Phase 6: Thread the absolute anchor through `skill-orchestrate-hard/SKILL.md` [NOT STARTED]
+### Phase 6: Thread the absolute anchor through `skill-orchestrate-hard/SKILL.md` [COMPLETED]
 
 **Goal**: Identical treatment for the hard-mode orchestrator, so it cannot regress independently.
 
@@ -766,7 +766,7 @@ bullet that is the literal text the lean phase agent receives.
 
 **Tasks**:
 
-- [ ] **Edit 6a — resolve the absolute anchor.** Locate (advisory ~line 115):
+- [x] **Edit 6a — resolve the absolute anchor.** Locate (advisory ~line 115):
   ```
   TASK_DIR="specs/${PADDED_NUM}_${PROJECT_NAME}"
   ```
@@ -780,7 +780,7 @@ bullet that is the literal text the lean phase agent receives.
   HANDOFF_PATH_ABS="${TASK_DIR_ABS}/.orchestrator-handoff.json"
   ```
 
-- [ ] **Edit 6b — absolute handoff read path.** Locate (advisory ~line 199):
+- [x] **Edit 6b — absolute handoff read path.** Locate (advisory ~line 199):
   ```
   handoff_file="${TASK_DIR}/.orchestrator-handoff.json"
   ```
@@ -791,7 +791,7 @@ bullet that is the literal text the lean phase agent receives.
   ```
   Leave `loop_guard_file` and `churn_file` relative — out of scope.
 
-- [ ] **Edit 6c — research dispatch context.** Locate (advisory ~line 350):
+- [x] **Edit 6c — research dispatch context.** Locate (advisory ~line 350):
   ```
     delegation_context: {task_number, session_id, effort_flag: "hard", orchestrator_mode: true}
   ```
@@ -800,7 +800,7 @@ bullet that is the literal text the lean phase agent receives.
     delegation_context: {task_number, session_id, effort_flag: "hard", orchestrator_mode: true, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS}
   ```
 
-- [ ] **Edit 6d — H4 adversarial-verification re-dispatch context.** Locate (advisory ~line 397):
+- [x] **Edit 6d — H4 adversarial-verification re-dispatch context.** Locate (advisory ~line 397):
   ```
           delegation_context: {task_number, session_id, effort_flag: "hard", focus_prompt: "divergence audit"}
   ```
@@ -809,7 +809,7 @@ bullet that is the literal text the lean phase agent receives.
           delegation_context: {task_number, session_id, effort_flag: "hard", focus_prompt: "divergence audit", task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS}
   ```
 
-- [ ] **Edit 6e — plan dispatch context.** Locate (advisory ~line 428):
+- [x] **Edit 6e — plan dispatch context.** Locate (advisory ~line 428):
   ```
       delegation_context: {task_number, session_id, effort_flag: "hard", orchestrator_mode: true, ...}
   ```
@@ -818,7 +818,7 @@ bullet that is the literal text the lean phase agent receives.
       delegation_context: {task_number, session_id, effort_flag: "hard", orchestrator_mode: true, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, ...}
   ```
 
-- [ ] **Edit 6f — implement dispatch context object.** Locate the `dispatch_context` heredoc
+- [x] **Edit 6f — implement dispatch context object.** Locate the `dispatch_context` heredoc
   (advisory ~line 476):
   ```
       "plan_path": "'$plan_path'",
