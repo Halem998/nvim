@@ -1,7 +1,7 @@
 # Implementation Plan: Task #893
 
 - **Task**: 893 - Close stranded-status detection gap for not_started tasks with existing artifacts
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/893_close_stranded_status_detection_gap_for_not_started/reports/01_stranded-status-detection-gap.md
@@ -397,7 +397,7 @@ uses plain `--` in the same style the existing comments do.
 
 ---
 
-### Phase 3: Sandbox verification matrix [NOT STARTED]
+### Phase 3: Sandbox verification matrix [COMPLETED]
 
 **Goal**: Prove by executed test that stranded tasks are promoted, and that the two must-not-fire
 cases — a `/task --recover`-shaped fixture and an empty task directory — remain `not_started`.
@@ -409,35 +409,28 @@ Build a disposable deploy tree in the scratchpad instead.
 
 **Tasks**:
 
-- [ ] Build the sandbox:
+- [x] Build the sandbox. *(completed: guard passed, script reached argument validation as
+      expected)*
 
-  ```bash
-  SB=/tmp/claude-1000/-home-benjamin--config-nvim/dddad7e6-30ce-4f57-84c3-fb38a6f4e2db/scratchpad/reconcile-sandbox
-  rm -rf "$SB" && mkdir -p "$SB/.claude/scripts" "$SB/specs"
-  cp -a /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/. "$SB/.claude/scripts/"
-  ```
+- [x] Write a synthetic `$SB/specs/state.json` containing one `active_projects` entry per fixture
+      below. *(completed: 14 fixtures — T1-T9 plus 5 T10 regression fixtures — with mtimes set
+      via `touch -d` for exact, reproducible fresh/stale/tie distinctions)*
 
-  Confirm `bash "$SB/.claude/scripts/reconcile-task-status.sh"` no longer trips the deploy-root
-  guard (it should reach argument validation instead).
+- [x] Run each fixture with `--dry-run` and assert the exact expected stdout line. *(completed:
+      all 9 not_started-branch fixtures T1-T9 matched their expected stdout exactly)*
 
-- [ ] Write a synthetic `$SB/specs/state.json` containing one `active_projects` entry per fixture
-      below, each with `project_number`, `project_name`, `status`, `task_type`, and an explicit
-      `last_updated` ISO8601 timestamp. Create the matching `$SB/specs/{NNN}_{project_name}/`
-      directories. Set artifact mtimes with `touch -d '<ISO8601>'` relative to each entry's
-      `last_updated` so the fresh/stale/tie distinction is exact and reproducible, not
-      wall-clock-dependent.
+- [x] Re-run T1, T2, T4, and T6 LIVE (no `--dry-run`) and assert the resulting `.status` in
+      `$SB/specs/state.json` via `jq`. *(completed: deviation — ALL of T1-T9 were re-run LIVE, not
+      only T1/T2/T4/T6, per binding constraint 5's explicit requirement that T3, T5, and T7 also
+      be proven not_started under a LIVE run, not just dry-run. See progress file.)*
 
-- [ ] Run each fixture with `--dry-run` and assert the exact expected stdout line.
+- [x] Run the regression pass (T10) and confirm output is unchanged from the pre-change script.
+      *(completed: baseline obtained from `git show 03e6f5660^:...` — the commit immediately
+      preceding this task's own Phase 1 commit, since `HEAD` at Phase 3 execution time already
+      contained this task's own changes; both dry-run and live output were byte-identical across
+      all 5 T10 fixtures, live `.status` results also identical)*
 
-- [ ] Re-run T1, T2, T4, and T6 LIVE (no `--dry-run`) and assert the resulting `.status` in
-      `$SB/specs/state.json` via `jq`.
-
-- [ ] Run the regression pass (T10) and confirm output is unchanged from the pre-change script.
-      Obtain the baseline by running the same fixtures against a pristine copy: `git show
-      HEAD:agent-system/extensions/core/scripts/reconcile-task-status.sh` written into a second
-      sandbox tree.
-
-- [ ] Tear down: `rm -rf "$SB"`.
+- [x] Tear down: `rm -rf "$SB"`. *(completed: sandbox and baseline trees removed)*
 
 **Test matrix** (T2, T3, T4, T5, T7 are the must-not-fire cases):
 
@@ -480,21 +473,30 @@ Build a disposable deploy tree in the scratchpad instead.
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on the modified script after each of Phases 1 and 2.
-- [ ] T1 (fresh plan) promotes `not_started -> planned`, both dry-run and live.
-- [ ] T2 (`/task --recover` shape: stale plan, recent `last_updated`) does NOT promote, live.
-- [ ] T3 (equal-second tie) does NOT promote — confirms `-gt`, not `-ge`.
-- [ ] T4 (empty task directory) does NOT promote, live.
-- [ ] T5 (empty `plans/` directory) does not abort the script under `set -euo pipefail`.
-- [ ] T6 (fresh phase handoff, no plan) promotes `not_started -> partial`, never `implementing`.
-- [ ] T7 (stale phase handoff) does NOT promote.
-- [ ] T8 (blocked handoff) refuses and records `blocked`; T9 (planned handoff) permits.
-- [ ] T10 regression: `researching`, `planning`, `implementing`, `partial`, `completed` behave
-      byte-identically to the pre-change baseline.
-- [ ] BSD fallbacks present for both `stat` (`stat -f %m`) and `date` (`date -u -j -f`).
-- [ ] No `git log` invocation introduced (the rejected signal).
-- [ ] No file under `.claude/**` modified.
-- [ ] No task-number citations in the modified script.
+- [x] `bash -n` passes on the modified script after each of Phases 1 and 2. *(completed)*
+- [x] T1 (fresh plan) promotes `not_started -> planned`, both dry-run and live. *(completed)*
+- [x] T2 (`/task --recover` shape: stale plan, recent `last_updated`) does NOT promote, live.
+      *(completed: live `.status == "not_started"`)*
+- [x] T3 (equal-second tie) does NOT promote — confirms `-gt`, not `-ge`. *(completed: live
+      `.status == "not_started"`)*
+- [x] T4 (empty task directory) does NOT promote, live. *(completed: live
+      `.status == "not_started"`)*
+- [x] T5 (empty `plans/` directory) does not abort the script under `set -euo pipefail`.
+      *(completed: exit 0, live `.status == "not_started"`)*
+- [x] T6 (fresh phase handoff, no plan) promotes `not_started -> partial`, never `implementing`.
+      *(completed)*
+- [x] T7 (stale phase handoff) does NOT promote. *(completed: live `.status == "not_started"`)*
+- [x] T8 (blocked handoff) refuses and records `blocked`; T9 (planned handoff) permits.
+      *(completed: T8 live `.status == "blocked"`, T9 live `.status == "planned"`)*
+- [x] T10 regression: `researching`, `planning`, `implementing`, `partial`, `completed` behave
+      byte-identically to the pre-change baseline. *(completed: dry-run AND live output identical,
+      live `.status` results identical, against a baseline from the commit preceding this task's
+      own Phase 1 commit)*
+- [x] BSD fallbacks present for both `stat` (`stat -f %m`) and `date` (`date -u -j -f`).
+      *(completed)*
+- [x] No `git log` invocation introduced (the rejected signal). *(completed)*
+- [x] No file under `.claude/**` modified. *(completed)*
+- [x] No task-number citations in the modified script. *(completed)*
 
 ## Artifacts & Outputs
 

@@ -1,12 +1,41 @@
 # Orchestrator Handoff JSON Schema
 
-**Status**: Current architecture — designed by Task 592, implemented by Task 596.
+**Status**: Current architecture.
 
 **File location**: `specs/{NNN}_{SLUG}/.orchestrator-handoff.json` (runtime; not checked in)
 **Written by**: Skills when `orchestrator_mode: true` in delegation context
 **Read by**: `skill-orchestrate` state machine loop
 
 **See Also**: `architecture-spec.md` (Component 5), `orchestrate-state-machine.md`
+
+## Path Resolution Contract
+
+**Writers MUST use an absolute path.** A bare `.orchestrator-handoff.json` filename resolves
+against whatever the ambient working directory happens to be at write time, stranding the file
+outside the task directory. The orchestrator then either reports a missing handoff or — worse —
+reads the previous cycle's leftover file and reports its status as the current dispatch's
+result.
+
+Two independent write mechanisms exist. Both are anchored absolutely, by different means:
+
+| Mechanism | Anchor | Enforcement |
+|-----------|--------|-------------|
+| `skill_write_orchestrator_handoff` (`scripts/skill-base.sh`) — Bash redirect | `${SKILL_REPO_ROOT}/specs/{NNN}_{SLUG}/...`, with `SKILL_REPO_ROOT` resolved from `BASH_SOURCE` | Script-layer construction only. The PostToolUse hook CANNOT see this write. |
+| Hard-mode agent direct write — Write tool | `handoff_path` (absolute) supplied in the delegation context, with absolute `task_dir` as fallback | `hooks/validate-handoff-location.sh` (PostToolUse, matcher `Write\|Edit`) rejects out-of-tree destinations with exit 2 |
+
+**Hook coverage is deliberately partial, and this is not a defect to be fixed by widening the
+matcher.** `validate-handoff-location.sh` reads `tool_input.file_path`, a field only `Write` and
+`Edit` calls carry. A Bash-redirect write exposes only the raw, unexpanded command text — the
+redirect target appears as the literal string `"$handoff_path"`, and its resolved value is not
+present in the hook input at all. No pattern-matching strategy can recover it. The hook is
+therefore complete coverage for agent-direct writes and zero coverage for script writes; the
+orchestrator-side stray-handoff sweep (`skill-orchestrate` and `skill-orchestrate-hard`,
+Stage 5) is the mechanism-agnostic backstop for the latter.
+
+**Readers MUST check freshness.** A handoff at the correct path is not necessarily *this
+dispatch's* handoff. Both orchestrators compare the file's mtime against `dispatch_start_ts` —
+the same dispatch window already captured for infra-failure discrimination — and treat an
+out-of-window handoff exactly as they treat a missing one.
 
 **Dual-Consumer Note**: `orchestrator_mode` has TWO independent consumers as of the
 sparse-literature-detection reconciliation (see `EXTENSION.md`'s "Sparse-Coverage Detection"

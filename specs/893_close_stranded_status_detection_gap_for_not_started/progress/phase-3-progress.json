@@ -1,0 +1,70 @@
+{
+  "phase": 3,
+  "phase_name": "Sandbox verification matrix",
+  "started_at": "2026-07-25T15:45:00Z",
+  "last_updated": "2026-07-25T16:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Build sandbox deploy tree under scratchpad, confirm deploy-root-guard passes",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Write synthetic state.json + 14 fixtures (T1-T9, T10a-T10e) with exact touch -d mtimes",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Run T1-T9 --dry-run, assert exact expected stdout",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Run T1-T9 LIVE, assert resulting .status via jq",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "T10 regression pass (dry-run and live) against pristine pre-task-893 baseline",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Tear down sandbox",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.live-scope",
+      "description": "Plan's Task list says 'Re-run T1, T2, T4, and T6 LIVE'. All of T1-T9 were run LIVE instead.",
+      "type": "altered",
+      "reason": "Binding constraint 5 in the delegation explicitly requires T2, T3, T4, T5, and T7 to EACH be proven not_started after a LIVE run (broader than the plan Task list's T1/T2/T4/T6). Also ran T8/T9 live to confirm the full refuse/permit handoff-aware paths end-to-end. This strictly increases coverage; no fixture behavior changed.",
+      "annotation": "*(deviation: broadened live-run scope from plan's T1/T2/T4/T6 to all of T1-T9 per binding constraint 5)*"
+    },
+    {
+      "task_id": "3.t10-baseline-source",
+      "description": "Plan's Task list says obtain the T10 baseline via `git show HEAD:...`. Used `git show 03e6f5660^:...` instead (the commit immediately preceding this task's own Phase 1 commit).",
+      "type": "altered",
+      "reason": "By the time Phase 3 executed, this task's own Phase 1 and Phase 2 commits (03e6f5660 and the bundled 5eaade0ce) were already on HEAD, so `git show HEAD:...` would have returned the ALREADY-MODIFIED script -- comparing the new script against itself, which would trivially and meaninglessly pass. The plan's own Rollback/Contingency section and Risks table both establish 'pre-change' as the intended comparison baseline; 03e6f5660^ is the correct concrete resolution of that intent.",
+      "annotation": "*(deviation: T10 baseline sourced from the commit preceding this task's own Phase 1 commit, not literal HEAD, because HEAD had already advanced past this task's own changes by Phase 3 execution time)*"
+    },
+    {
+      "task_id": "3.concurrent-file-changes",
+      "description": "During Phase 3 execution, an unrelated concurrent task (a separate agent working on a phase-accounting backstop for update-task-status.sh) made uncommitted edits to the same reconcile-task-status.sh file (adding --phase-check=refuse wiring to the implementing/partial->completed call sites). These edits are NOT part of task 893's diff, were not staged or committed by this agent, and were left untouched.",
+      "type": "altered",
+      "reason": "This repository has multiple concurrent agents editing agent-system/ simultaneously (observed task numbers 892, 893, 894, 903 all active). Task 893's Phase 2 commit was independently verified byte-correct BEFORE this concurrent diff appeared; the sandbox verification in Phase 3 was run against a sandbox copy taken after Phase 2's commit but genuinely reflects only task 893's changes (the concurrent diff is a separate uncommitted edit to the live working tree, not part of the sandboxed script content at the time it was copied).",
+      "annotation": "N/A -- no plan checklist item affected; documented here for provenance only"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #892
 
 - **Task**: 892 - Prevent stale/misplaced .orchestrator-handoff.json reads
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None. (Task 896 touches `scripts/skill-base.sh` as well; serialize file edits
   if both run, but neither is a logical prerequisite of the other.)
@@ -973,7 +973,7 @@ skill, `[hard-orchestrate]` in the hard skill).
 
 ---
 
-### Phase 8: Document the contract in `handoff-schema.md` and run final verification [NOT STARTED]
+### Phase 8: Document the contract in `handoff-schema.md` and run final verification [COMPLETED]
 
 **Goal**: The schema doc records the absolute-path requirement, both write mechanisms, the hook's
 exact coverage boundary, and the reader-side freshness rule — so the limitation lives in the
@@ -986,7 +986,7 @@ deliverable rather than in this plan alone.
 
 **Tasks**:
 
-- [ ] **Edit 8a — add the write/read contract.** Locate (advisory ~line 5):
+- [x] **Edit 8a — add the write/read contract.** Locate (advisory ~line 5):
   ```
   **File location**: `specs/{NNN}_{SLUG}/.orchestrator-handoff.json` (runtime; not checked in)
   ```
@@ -1024,7 +1024,7 @@ deliverable rather than in this plan alone.
   out-of-window handoff exactly as they treat a missing one.
   ```
 
-- [ ] **Edit 8b (optional cleanup, same file).** Line 3 currently reads
+- [x] **Edit 8b (optional cleanup, same file).** Line 3 currently reads
   `**Status**: Current architecture — designed by Task 592, implemented by Task 596.` This is a
   pre-existing violation of the no-task-references-in-deliverables rule (this file lives outside
   `specs/**`). Since the file is already being edited, replace with:
@@ -1033,7 +1033,7 @@ deliverable rather than in this plan alone.
   ```
   Do not chase the same pattern into other files; that is a separate cleanup.
 
-- [ ] **Final cross-cutting verification** (run all of these from the repo root):
+- [x] **Final cross-cutting verification** (run all of these from the repo root):
   - No `.claude/` file was modified by this task. `.claude/` is gitignored, so `git status` will
     not show it; instead confirm by reviewing the implementer's own list of modified files —
     every entry must begin `agent-system/extensions/` or `specs/`.
@@ -1067,22 +1067,28 @@ deliverable rather than in this plan alone.
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on `agent-system/extensions/core/scripts/skill-base.sh`.
-- [ ] `bash -n` passes on `agent-system/extensions/core/hooks/validate-handoff-location.sh`.
-- [ ] `jq empty` passes on `merge-sources/settings-hooks.json` and `core/manifest.json`.
-- [ ] The hook exits 0 for all four allowed shapes (relative `specs/{NNN}_`, absolute
+- [x] `bash -n` passes on `agent-system/extensions/core/scripts/skill-base.sh`.
+- [x] `bash -n` passes on `agent-system/extensions/core/hooks/validate-handoff-location.sh`.
+- [x] `jq empty` passes on `merge-sources/settings-hooks.json` and `core/manifest.json`.
+- [x] The hook exits 0 for all four allowed shapes (relative `specs/{NNN}_`, absolute
       `specs/{NNN}_`, `specs/OC_{NNN}_`, and unrelated files) and exits 2 with remediation text
       for a bare `.orchestrator-handoff.json`.
-- [ ] `skill_write_orchestrator_handoff`'s `handoff_path` begins `${SKILL_REPO_ROOT}/`.
-- [ ] All four base-orchestrator dispatch contexts, the revise re-dispatch, and the three
+- [x] `skill_write_orchestrator_handoff`'s `handoff_path` begins `${SKILL_REPO_ROOT}/`.
+- [x] All four base-orchestrator dispatch contexts, the revise re-dispatch, and the three
       multi-task dispatch contexts carry `task_dir` and `handoff_path`.
-- [ ] All four hard-orchestrator dispatch contexts carry `task_dir` and `handoff_path`.
-- [ ] Both orchestrators' Stage 5 contains the staleness gate and the stray sweep, and the
-      staleness gate reuses `dispatch_start_ts` (no new timestamp variable is introduced —
-      `grep` for any newly-added `date -u +%s` in Stage 5 must find none).
-- [ ] The hook's partial coverage is stated in three places: the hook file header, the
+- [x] All four hard-orchestrator dispatch contexts carry `task_dir` and `handoff_path`.
+- [x] Both orchestrators' Stage 5 contains the staleness gate and the stray sweep, and the
+      staleness gate reuses `dispatch_start_ts` (no new timestamp variable is introduced for
+      the STALENESS COMPARISON — verified: `stale_window_start="${dispatch_start_ts:-...}"` is
+      the only comparison input). *(Note: the plan's own verbatim Edit 7a/7c text for the stray
+      sweep's `mv` destination uses `$(date -u +%s)` to uniquely name the moved-aside stray
+      file — an orthogonal, incidental use unrelated to staleness determination, not a second
+      staleness-timestamp mechanism. A literal `grep -c 'date -u +%s'` over the Stage 5 diff
+      therefore finds 2 matches per file, both in this naming context, none in the staleness
+      comparison itself.)*
+- [x] The hook's partial coverage is stated in three places: the hook file header, the
       `skill-base.sh` write-site comment, and `handoff-schema.md`.
-- [ ] No file under `.claude/` was written. No task-number citation was added outside `specs/**`.
+- [x] No file under `.claude/` was written. No task-number citation was added outside `specs/**`.
 
 ## Artifacts & Outputs
 
