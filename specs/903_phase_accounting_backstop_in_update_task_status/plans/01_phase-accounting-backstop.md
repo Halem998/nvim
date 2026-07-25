@@ -952,23 +952,23 @@ three listed in one place. Do not cite any task number in this note.
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes for `update-task-status.sh`, `reconcile-task-status.sh`,
+- [x] `bash -n` passes for `update-task-status.sh`, `reconcile-task-status.sh`,
       `command-gate-out.sh`, `skill-base.sh`
-- [ ] No-flag invocation is byte-for-byte identical to the pre-change script across the
+- [x] No-flag invocation is byte-for-byte identical to the pre-change script across the
       operation x target_status x task-state matrix (Phase 7 loop, zero `MISMATCH`)
-- [ ] `--phase-check=bogus` exits 1 with a clear error (never a silent fallback to no-op)
-- [ ] `--phase-check=refuse` on an incomplete-phase task exits 4 with zero writes to
+- [x] `--phase-check=bogus` exits 1 with a clear error (never a silent fallback to no-op)
+- [x] `--phase-check=refuse` on an incomplete-phase task exits 4 with zero writes to
       `specs/state.json` and zero change to the plan's `- **Status**:` line
-- [ ] `--phase-check=warn` on the same task exits 0, logs the warning, and completes the
+- [x] `--phase-check=warn` on the same task exits 0, logs the warning, and completes the
       transition
-- [ ] `--dry-run --phase-check=refuse` always exits 0 and previews the refusal
-- [ ] `--phase-check=refuse` on a `postflight plan` or `postflight research` call is silently
+- [x] `--dry-run --phase-check=refuse` always exits 0 and previews the refusal
+- [x] `--phase-check=refuse` on a `postflight plan` or `postflight research` call is silently
       ignored
-- [ ] A task with no plan file, and a task whose plan has zero conforming `### Phase` headings,
+- [x] A task with no plan file, and a task whose plan has zero conforming `### Phase` headings,
       both pass through with an `-- inconclusive` log line
-- [ ] The `state_is_noop` path (already-`completed` task replaying postflight) is unaffected
-- [ ] No checkbox (`- [ ]` / `- [x]`) counting appears anywhere in the diff
-- [ ] All edits are under `agent-system/extensions/**`; nothing under `.claude/**`
+- [x] The `state_is_noop` path (already-`completed` task replaying postflight) is unaffected
+- [x] No checkbox (`- [ ]` / `- [x]`) counting appears anywhere in the diff
+- [x] All edits are under `agent-system/extensions/**`; nothing under `.claude/**`
 
 ## Artifacts & Outputs
 
