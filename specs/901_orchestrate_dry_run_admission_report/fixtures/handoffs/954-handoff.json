@@ -1,0 +1,8 @@
+{
+  "status": "partial",
+  "summary": "Fixture: partial task with unresolved blockers and no continuation.",
+  "blockers": ["waiting on external API credentials"],
+  "continuation_context": null,
+  "phases_completed": 1,
+  "phases_total": 3
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #902
 
 - **Task**: 902 - Flag tasks that modify orchestrator machinery and force them to run alone
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: 901 (dry-run admission report surface — completed), 900 (cross-batch admission predicate — completed)
 - **Research Inputs**: specs/902_self_modification_hazard_gate/reports/01_self-modification-hazard-gate.md

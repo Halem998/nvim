@@ -11,9 +11,9 @@ next_project_number: 910
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,901,904,905,909 | -- | agent-system, literature |
-| 2 | 887,902,906 | 873,885,901 | agent-system |
-| 3 | 907 | 902,906 | agent-system |
+| 1 | 873,885,904,905,909 | -- | agent-system, literature |
+| 2 | 887,906 | 873,885 | agent-system |
+| 3 | 907 | 906 | agent-system |
 | 4 | 908 | 907 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -26,10 +26,6 @@ next_project_number: 910
   └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
       └─ 908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
-901 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-  └─ 902 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-    └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
-  └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
 909 [NOT STARTED] — Residual gap surfaced by the implementation agent for the complet
 
 ### Literature
@@ -326,10 +322,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 902. Flag tasks that modify orchestrator machinery and force them to run alone
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 901, Task 899
+- **Research**: [902_self_modification_hazard_gate/reports/01_self-modification-hazard-gate.md]
+- **Plan**: [902_self_modification_hazard_gate/plans/01_self-modification-hazard-gate.md]
+- **Summary**: [902_self_modification_hazard_gate/summaries/01_self-modification-hazard-gate-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/core/** and NEVER .claude/**.
 
@@ -357,10 +356,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 901. Add an orchestrate dry-run that reports batch admission verdicts before dispatch
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 900
+- **Research**: [901_orchestrate_dry_run_admission_report/reports/01_dry-run-admission-report.md]
+- **Plan**: [901_orchestrate_dry_run_admission_report/plans/01_dry-run-admission-report.md]
+- **Summary**: [901_orchestrate_dry_run_admission_report/summaries/01_dry-run-admission-report-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/core/** and NEVER .claude/**.
 
@@ -757,6 +759,7 @@ DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside s
 - **Dependencies**: Task 874
 - **Research**: [885_enable_and_verify_passive_signal_capture/reports/01_enable-verify-passive-signal-capture.md]
 - **Plan**: [885_enable_and_verify_passive_signal_capture/plans/01_passive-signal-capture-deploy.md]
+- **Summary**: [885_enable_and_verify_passive_signal_capture/summaries/01_passive-signal-capture-deploy-summary.md]
 
 **Description**: URGENT / HIGH PRIORITY. The 30-day transcript window is reaped daily, so every day without capture is permanently lost data.
 
@@ -789,6 +792,7 @@ DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside s
 - **Dependencies**: None
 - **Research**: [873_global_default_target_resolution_for_meta/reports/01_global_default_target_resolution.md]
 - **Plan**: [873_global_default_target_resolution_for_meta/plans/01_global_default_target_resolution.md]
+- **Summary**: [873_global_default_target_resolution_for_meta/summaries/01_global-default-target-resolution-summary.md]
 
 **Description**: Make /meta create tasks in the GLOBAL agent-system root by default, with `--local` as the only opt-out. There is NO interactive prompt.
 

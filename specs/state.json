@@ -285,6 +285,11 @@
           "path": "specs/873_global_default_target_resolution_for_meta/plans/01_global_default_target_resolution.md",
           "type": "plan",
           "summary": "5-phase implementation plan: LOCAL_FLAG in parse-command-args.sh; GLOBAL_ROOT resolution, mode/root threading, and chained postflight commit in skill-meta/SKILL.md; global-default semantics documentation in commands/meta.md; shell-level chained-cd verification; live cross-repo /meta verification with mandatory cleanup."
+        },
+        {
+          "path": "specs/873_global_default_target_resolution_for_meta/summaries/01_global-default-target-resolution-summary.md",
+          "type": "summary",
+          "summary": "global default target resolution summary (backfilled by --sync)"
         }
       ],
       "updated": "2026-07-15T18:43:38Z",
@@ -324,6 +329,11 @@
           "path": "specs/885_enable_and_verify_passive_signal_capture/plans/01_passive-signal-capture-deploy.md",
           "type": "plan",
           "summary": "6-phase plan. Waves: [1,3,4] parallel (landable, disjoint files), [2] after 1 (shares the two hooks), [5] after 1-4 ([BLOCKED] manual regeneration), [6] after 5 ([BLOCKED] event-flow verification). Terminus [PARTIAL]."
+        },
+        {
+          "path": "specs/885_enable_and_verify_passive_signal_capture/summaries/01_passive-signal-capture-deploy-summary.md",
+          "type": "summary",
+          "summary": "passive signal capture deploy summary (backfilled by --sync)"
         }
       ],
       "updated": "2026-07-15T20:16:11Z",
@@ -474,7 +484,7 @@
     {
       "project_number": 901,
       "project_name": "orchestrate_dry_run_admission_report",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Add an orchestrate dry-run that reports batch admission verdicts before dispatch",
@@ -488,14 +498,31 @@
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
       ],
       "created": "2026-07-24T00:00:00Z",
-      "last_updated": "2026-07-25T18:18:07Z",
-      "session_id": "sess_1784998517_0638c7_901",
-      "artifacts": []
+      "last_updated": "2026-07-25T20:01:14Z",
+      "session_id": "sess_1785007876_a13284_901",
+      "artifacts": [
+        {
+          "path": "specs/901_orchestrate_dry_run_admission_report/reports/01_dry-run-admission-report.md",
+          "type": "report",
+          "summary": "dry run admission report (backfilled by --sync)"
+        },
+        {
+          "path": "specs/901_orchestrate_dry_run_admission_report/plans/01_dry-run-admission-report.md",
+          "type": "plan",
+          "summary": "dry run admission report (backfilled by --sync)"
+        },
+        {
+          "path": "specs/901_orchestrate_dry_run_admission_report/summaries/01_dry-run-admission-report-summary.md",
+          "type": "summary",
+          "summary": "dry run admission report summary (backfilled by --sync)"
+        }
+      ],
+      "completion_summary": "Implemented all 6 phases of the /orchestrate --dry-run admission report plan. Added DRY_RUN_FLAG to parse-command-args.sh; created the shared read-only orchestrate-triage-classify.sh classifier (engine=single|mt, both precedence tables transcribed, the Stage 4/Stage MT-4 divergence asserted by test); created orchestrate-dry-run-report.sh composing batch-admit + task-lock check + predecessor scan + triage into a six-section report; wired --dry-run into commands/orchestrate.md STAGE 0 as a short-circuit with an explicit prohibition block; wired Stage MT-4 in skill-orchestrate/SKILL.md to call the shared classifier (with a documented degradation fallback to the retained grouping table) and cross-referenced the single-task partial handler. Both new scripts registered in manifest.json. Two fixture test suites (6 + 14 assertions) pass 100% using the scratch-deploy-tree pattern, asserting read-only behavior, exact table-row reproduction, the engine divergence, lock nuances (self-held vs foreign vs stale), MAX_TASKS trim reporting, and Kahn-ordering wave assignment."
     },
     {
       "project_number": 902,
       "project_name": "self_modification_hazard_gate",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Flag tasks that modify orchestrator machinery and force them to run alone",
@@ -510,9 +537,26 @@
         "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"
       ],
       "created": "2026-07-24T00:00:00Z",
-      "last_updated": "2026-07-24T00:00:00Z",
-      "session_id": "sess_1784959496_6c4f8e_902",
-      "artifacts": []
+      "last_updated": "2026-07-25T20:54:42Z",
+      "session_id": "sess_1785007876_a13284_902",
+      "artifacts": [
+        {
+          "path": "specs/902_self_modification_hazard_gate/reports/01_self-modification-hazard-gate.md",
+          "type": "report",
+          "summary": "self modification hazard gate (backfilled by --sync)"
+        },
+        {
+          "path": "specs/902_self_modification_hazard_gate/plans/01_self-modification-hazard-gate.md",
+          "type": "plan",
+          "summary": "self modification hazard gate (backfilled by --sync)"
+        },
+        {
+          "path": "specs/902_self_modification_hazard_gate/summaries/01_self-modification-hazard-gate-summary.md",
+          "type": "summary",
+          "summary": "self modification hazard gate summary (backfilled by --sync)"
+        }
+      ],
+      "completion_summary": "Added a self-modification hazard gate to /orchestrate admission: a data-declared nine-file critical-path set, a v2 verdict schema (self_modifying + defer_reason discriminator), invocation-scoped solo-only deferral wired into both live dispatch paths with a convergent deferred_self_modifying exclusion set, dry-run report visibility, and a new 14-assertion test suite plus updated v2 regression across all four test suites (14/14, 8/8, 6/6, 14/14 all green)."
     },
     {
       "project_number": 903,

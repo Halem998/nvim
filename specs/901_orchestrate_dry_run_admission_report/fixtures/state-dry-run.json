@@ -1,0 +1,137 @@
+{
+  "active_projects": [
+    {
+      "project_number": 950,
+      "project_name": "clean_admit_a",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": ["specs/901_orchestrate_dry_run_admission_report/fixtures/only-950.md"]
+    },
+    {
+      "project_number": 951,
+      "project_name": "clean_admit_b",
+      "status": "researched",
+      "dependencies": [],
+      "file_scope": ["specs/901_orchestrate_dry_run_admission_report/fixtures/only-951.md"]
+    },
+    {
+      "project_number": 952,
+      "project_name": "cross_batch_collision_candidate",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": ["specs/901_orchestrate_dry_run_admission_report/fixtures/shared-conflict.md"]
+    },
+    {
+      "project_number": 953,
+      "project_name": "out_of_batch_predecessor_candidate",
+      "status": "not_started",
+      "dependencies": [971],
+      "file_scope": ["specs/901_orchestrate_dry_run_admission_report/fixtures/only-953.md"]
+    },
+    {
+      "project_number": 954,
+      "project_name": "partial_blockers_no_continuation",
+      "status": "partial",
+      "dependencies": [],
+      "file_scope": ["specs/901_orchestrate_dry_run_admission_report/fixtures/only-954.md"]
+    },
+    {
+      "project_number": 955,
+      "project_name": "partial_neither",
+      "status": "partial",
+      "dependencies": [],
+      "file_scope": ["specs/901_orchestrate_dry_run_admission_report/fixtures/only-955.md"]
+    },
+    {
+      "project_number": 956,
+      "project_name": "partial_with_continuation",
+      "status": "partial",
+      "dependencies": [],
+      "file_scope": ["specs/901_orchestrate_dry_run_admission_report/fixtures/only-956.md"]
+    },
+    {
+      "project_number": 957,
+      "project_name": "terminal_task",
+      "status": "completed",
+      "dependencies": [],
+      "file_scope": ["specs/901_orchestrate_dry_run_admission_report/fixtures/only-957.md"]
+    },
+    {
+      "project_number": 958,
+      "project_name": "lock_held_by_other_session",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": ["specs/901_orchestrate_dry_run_admission_report/fixtures/only-958.md"]
+    },
+    {
+      "project_number": 959,
+      "project_name": "lock_held_by_self_session",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": ["specs/901_orchestrate_dry_run_admission_report/fixtures/only-959.md"]
+    },
+    {
+      "project_number": 960,
+      "project_name": "lock_held_stale",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": ["specs/901_orchestrate_dry_run_admission_report/fixtures/only-960.md"]
+    },
+    {
+      "project_number": 961,
+      "project_name": "trim_extra_a",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": ["specs/901_orchestrate_dry_run_admission_report/fixtures/only-961.md"]
+    },
+    {
+      "project_number": 962,
+      "project_name": "trim_extra_b",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": ["specs/901_orchestrate_dry_run_admission_report/fixtures/only-962.md"]
+    },
+    {
+      "project_number": 963,
+      "project_name": "in_batch_dependent",
+      "status": "not_started",
+      "dependencies": [950],
+      "file_scope": ["specs/901_orchestrate_dry_run_admission_report/fixtures/only-963.md"]
+    },
+    {
+      "project_number": 970,
+      "project_name": "outside_collision_partner",
+      "status": "implementing",
+      "dependencies": [],
+      "file_scope": ["specs/901_orchestrate_dry_run_admission_report/fixtures/shared-conflict.md"]
+    },
+    {
+      "project_number": 971,
+      "project_name": "outside_predecessor",
+      "status": "not_started",
+      "dependencies": [],
+      "file_scope": ["specs/901_orchestrate_dry_run_admission_report/fixtures/only-971.md"]
+    },
+    {
+      "project_number": 964,
+      "project_name": "blocked_task",
+      "status": "blocked",
+      "dependencies": [],
+      "file_scope": ["specs/901_orchestrate_dry_run_admission_report/fixtures/only-964.md"]
+    },
+    {
+      "project_number": 965,
+      "project_name": "researching_task",
+      "status": "researching",
+      "dependencies": [],
+      "file_scope": ["specs/901_orchestrate_dry_run_admission_report/fixtures/only-965.md"]
+    },
+    {
+      "project_number": 966,
+      "project_name": "unknown_status_task",
+      "status": "some_unrecognized_status",
+      "dependencies": [],
+      "file_scope": ["specs/901_orchestrate_dry_run_admission_report/fixtures/only-966.md"]
+    }
+  ]
+}

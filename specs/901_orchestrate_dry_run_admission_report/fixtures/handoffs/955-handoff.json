@@ -1,0 +1,8 @@
+{
+  "status": "partial",
+  "summary": "Fixture: partial task with neither blockers nor a continuation (cycle-limit/stuck case).",
+  "blockers": [],
+  "continuation_context": null,
+  "phases_completed": 1,
+  "phases_total": 3
+}

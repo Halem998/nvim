@@ -17,6 +17,7 @@
 #   MODEL_FLAG     — "haiku", "sonnet", "opus", "fable", or ""
 #   CLEAN_FLAG     — "true" or "false"
 #   FORCE_FLAG     — "true" or "false"
+#   DRY_RUN_FLAG   — "true" or "false" (--dry-run mode: report-only, no dispatch)
 #   LOCAL_FLAG     — "true" or "false" (--local mode opt-out for /meta global-default targeting)
 #   EXPLOIT_FLAG   — "true" or "false" (--exploit mode hint for team research)
 #   EXPLORE_FLAG   — "true" or "false" (--explore mode hint for team research)
@@ -71,6 +72,7 @@ parse_command_args() {
   MODEL_FLAG=""
   CLEAN_FLAG="false"
   FORCE_FLAG="false"
+  DRY_RUN_FLAG="false"
   LOCAL_FLAG="false"
   EXPLOIT_FLAG="false"
   EXPLORE_FLAG="false"
@@ -108,6 +110,9 @@ parse_command_args() {
   if [[ "$remaining" =~ --force ]]; then
     FORCE_FLAG="true"
   fi
+  if [[ "$remaining" =~ --dry-run ]]; then
+    DRY_RUN_FLAG="true"
+  fi
   if [[ "$remaining" =~ --local ]]; then
     LOCAL_FLAG="true"
   fi
@@ -133,6 +138,7 @@ parse_command_args() {
     | sed 's/--fable//g' \
     | sed 's/--clean//g' \
     | sed 's/--force//g' \
+    | sed 's/--dry-run//g' \
     | sed 's/--local//g' \
     | sed 's/--exploit//g' \
     | sed 's/--explore//g' \
@@ -145,7 +151,7 @@ parse_command_args() {
     return 1
   fi
 
-  export TASK_NUMBERS REMAINING_ARGS TEAM_MODE TEAM_SIZE EFFORT_FLAG MODEL_FLAG CLEAN_FLAG FORCE_FLAG LOCAL_FLAG EXPLOIT_FLAG EXPLORE_FLAG LIT_FLAG FOCUS_PROMPT
+  export TASK_NUMBERS REMAINING_ARGS TEAM_MODE TEAM_SIZE EFFORT_FLAG MODEL_FLAG CLEAN_FLAG FORCE_FLAG DRY_RUN_FLAG LOCAL_FLAG EXPLOIT_FLAG EXPLORE_FLAG LIT_FLAG FOCUS_PROMPT
 }
 
 parse_command_args "$1"

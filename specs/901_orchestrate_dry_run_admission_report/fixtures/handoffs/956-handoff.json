@@ -1,0 +1,11 @@
+{
+  "status": "partial",
+  "summary": "Fixture: partial task with a valid continuation_context.",
+  "blockers": [],
+  "continuation_context": {
+    "handoff_path": "specs/956_partial_with_continuation/handoffs/phase-2-handoff-20260101T000000Z.md",
+    "phase": 2
+  },
+  "phases_completed": 2,
+  "phases_total": 3
+}
