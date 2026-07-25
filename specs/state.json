@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 898,
+  "next_project_number": 903,
   "active_projects": [
     {
       "project_number": 891,
@@ -238,6 +238,111 @@
           "summary": "Research report: telemetry source architecture and /distill redesign"
         }
       ]
+    },
+    {
+      "project_number": 898,
+      "project_name": "completion_claim_verification_gate",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Gate the implemented completion claim on phase evidence before postflight",
+      "description": "SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/core/** and NEVER .claude/**.\n\nDEFECT (observed while batching a multi-task /orchestrate run): Stage MT-4 step 3 in skills/skill-orchestrate/SKILL.md maps dispatch_status=\"implemented\" straight to skill_postflight_update <task> \"implement\" <session> implemented -- which drives the task to completed -- with NO check that the work actually finished. MT-4 never reads phases_completed, phases_total, or plan_markers_verified from the handoff at all.\n\nVERIFIED CURRENT MECHANISM:\n- skills/skill-orchestrate/SKILL.md Stage MT-4 step 3 contains the three-way case on dispatch_status (researched/planned/implemented) with no evidence check on the implemented branch.\n- Single-task Stage 5 DOES read phases_completed and phases_total from the handoff and logs \"Phase progress: N/M\", but the only gate built on those fields is the drift-detection arithmetic gate, and that gate is guarded by [ \"$dispatch_status\" = \"partial\" ]. An \"implemented\" claim therefore bypasses every phase check in BOTH modes.\n- docs/architecture/handoff-schema.md documents plan_markers_verified and states the required orchestrator behavior: when status=\"implemented\" and plan_markers_verified is absent or false, the orchestrator logs a WARNING about possible stale markers. That documented behavior is NOT implemented in skill-orchestrate, skill-orchestrate-hard, or the multi-task path. The doc and the code disagree; reconcile them.\n\nWHY IT MATTERS AT BATCH SCALE: in single-task mode a human watches one handoff and can decline the postflight by hand. In multi-task mode the same unguarded mapping is applied across every task in the dispatch batch in one pass, so a premature completed marking is both more likely and less visible. A multi-phase task with a large file_scope is exactly the shape that produces an early \"implemented\".\n\nDESIRED BEHAVIOR: a single shared completion-claim gate, applied on the implemented branch in ALL THREE paths (single-task Stage 5, multi-task Stage MT-4, and the hard variant). When dispatch_status=\"implemented\" AND either (a) phases_total > 0 and phases_completed < phases_total, or (b) plan_markers_verified is absent or false: do NOT run the postflight-to-completed update. Instead log a loud, greppable warning naming the task and the evidence, and treat the cycle as continuation-eligible so the next cycle re-dispatches implement rather than declaring the task done.\n\nDESIGN CONSTRAINTS:\n- Fail CLOSED on missing evidence, but distinguish the two failure modes. A handoff with phases_total=0 (no phase accounting emitted at all) is NOT the same as phases_completed < phases_total, and the warning text must say which one fired.\n- Do NOT weaken the existing drift-detection gate or the partial/blocker routing; this gate is strictly additional.\n- Do NOT read plan files, reports, or summaries to verify the claim. The MUST NOT (Context Flatness Constraint) section of skill-orchestrate forbids it and the whole point of the handoff is that the orchestrator stays flat. All evidence must come from fields already in .orchestrator-handoff.json.\n- Guard against an infinite re-dispatch loop: a task whose agent repeatedly claims implemented without phase evidence must eventually terminate against the existing cycle cap rather than spin. Verify the interaction with MAX_CYCLES / MAX_CYCLES_MT explicitly.\n\nRESEARCH DIRECTIVE: include web research current as of July 2026 on verification gates for autonomous agent completion claims -- specifically self-reported completion versus independently-checkable evidence, and fail-open versus fail-closed gate design when the verifier cannot afford to re-read the work product.\n\nDEPENDENCY NOTE: depends on task 897 purely to serialize edits to skills/skill-orchestrate/SKILL.md and skills/skill-orchestrate-hard/SKILL.md, which sit at the tail of the existing 891 -> 895 -> 897 chain on those same two files. This is a file-overlap serializer, not a logical prerequisite.\n\nHonor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.",
+      "dependencies": [
+        897
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+        "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+        "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"
+      ],
+      "created": "2026-07-24T00:00:00Z",
+      "last_updated": "2026-07-24T00:00:00Z",
+      "session_id": "sess_1784959496_6c4f8e_898",
+      "artifacts": []
+    },
+    {
+      "project_number": 899,
+      "project_name": "batch_orchestration_guardrails_context",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Author a batch-orchestration guardrails context pattern from current practice",
+      "description": "SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/core/** and NEVER .claude/**.\n\nMOTIVATION: batching several tasks into one /orchestrate invocation currently depends on a human reasoning, by hand and per invocation, about which tasks may safely share a batch -- file-footprint collisions, stale handoffs, tasks that modify the orchestrator itself. That reasoning is correct but unwritten, so it does not scale with batch size and is not reproducible across sessions. Before adding admission machinery, the design principles it should encode need to be written down and grounded.\n\nDELIVERABLE: a new context pattern at agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md that states, for this agent system specifically:\n- Which guardrails must be BLOCKING (refuse to dispatch) versus ADVISORY (warn and continue), and the criterion that decides which category a given guardrail belongs to.\n- How that blocking/advisory split should change as batch size grows -- the central tension being that a guardrail cheap enough to be blocking at batch size 1 may stall an entire batch at size 8, while relaxing it to advisory at scale is precisely how quality regressions enter unnoticed.\n- Admission control versus mid-flight interruption: which classes of problem are detectable BEFORE dispatch (file-footprint collision, stale handoff, held lock, unmet predecessor) and which are only detectable DURING a run (premature completion claim, churn, drift), and why each class belongs where it does.\n- Defer-not-fail as the standing default for admission conflicts, consistent with the existing runtime wave-split check and the task-lock refusal path, both of which already defer a task to a later cycle rather than marking it failed.\n- What must never be relaxed for throughput, stated as explicit non-negotiables.\n\nRESEARCH DIRECTIVE: ground this in web research current as of July 2026 on multi-agent batch orchestration -- admission control and backpressure, concurrency control over shared mutable state, human-in-the-loop review at batch scale (batch approval versus per-item approval and the failure modes of each), and verification-gate design for autonomous agents. Cite durable sources. Distinguish clearly between what the external sources claim and what this repository's own observed behavior shows; where they conflict, say so rather than smoothing it over.\n\nSCOPE DISCIPLINE: this task writes ONE new context file and changes NO existing behavior. It must not edit any skill, command, script, or agent. Its value is that the downstream admission-machinery tasks can consult a written rationale instead of re-deriving it. If research concludes that a proposed downstream guardrail is a bad idea, say that plainly in the deliverable -- a documented argument against a guardrail is a valid outcome.\n\nHonor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"
+      ],
+      "created": "2026-07-24T00:00:00Z",
+      "last_updated": "2026-07-24T00:00:00Z",
+      "session_id": "sess_1784959496_6c4f8e_899",
+      "artifacts": []
+    },
+    {
+      "project_number": 900,
+      "project_name": "cross_batch_file_scope_admission",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Detect file_scope collisions against all active tasks, not just batch members",
+      "description": "SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/core/** and NEVER .claude/**.\n\nDEFECT: a task OUTSIDE the requested batch can share a file with a task INSIDE it, with no dependencies[] edge serializing them, and nothing in the system notices. Observed live: two active tasks share agent-system/extensions/core/scripts/skill-base.sh, only one was in the requested batch, and no edge connects them because they were created in separate /meta batches.\n\nWHY ALL THREE EXISTING CHECKS MISS IT (verify each of these before designing the fix):\n1. commands/orchestrate.md Step 3 runtime wave-split check compares pairs WITHIN a wave. Its own text scopes the read to the tasks in this invocation. Out-of-batch tasks are invisible by construction.\n2. skills/skill-orchestrate/SKILL.md Stage MT-3 step 4.5 compares pairs within eligible_tasks, and states explicitly that file_scope is read only for tasks already in task_numbers for this invocation -- no repo-wide scan.\n3. scripts/task-lock.sh performs a cross-task file_scope overlap check, but only against tasks that currently HOLD A LOCK. A non-terminal, unlocked, out-of-batch task is not examined.\n\nSo the gap is precisely: non-terminal, unlocked, out-of-batch tasks. Each individual check is correct within its own scope; the union of their scopes still has a hole.\n\nDESIRED BEHAVIOR: a new script agent-system/extensions/core/scripts/orchestrate-batch-admit.sh that, given a set of candidate task numbers, reads specs/state.json once and compares each candidate's file_scope against the file_scope of EVERY non-terminal task in state.json -- in-batch and out-of-batch alike -- using the shared directory-prefix overlap algorithm in context/patterns/file-footprint-overlap.md (reference it by path; do NOT restate or fork the algorithm). It emits a machine-readable verdict per candidate: admit, or defer with the colliding task number and the specific overlapping path.\n\nWire the script into both existing call sites so they stop being independently-scoped: commands/orchestrate.md Step 3, and skills/skill-orchestrate/SKILL.md Stage MT-3 step 4.5.\n\nDESIGN CONSTRAINTS:\n- Preserve defer-not-fail. A collision defers the higher project_number to a later cycle; it never marks a task failed. Both existing checks already behave this way and that behavior must survive.\n- Do NOT silently widen the blast radius: reading every non-terminal task's file_scope is a state.json read, not a filesystem scan. Keep it O(active tasks), single read, no globbing of the repo.\n- Terminal statuses (completed, abandoned, expanded) are excluded from the comparison set. Confirm the exact terminal-status list against the state-management rule rather than assuming it.\n- The verdict format must be consumable by a report renderer without reparsing prose, since a downstream task renders these verdicts for human review.\n- An out-of-batch collision is NOT automatically the same severity as an in-batch one. An in-batch pair can be resolved by deferring within the run; an out-of-batch collision may mean the batch should never have included that task. Consider whether the verdict needs to distinguish them.\n\nRESEARCH DIRECTIVE: include web research current as of July 2026 on admission control for concurrent agents over shared mutable files -- in particular conservative footprint-based serialization versus optimistic concurrency with conflict detection after the fact, and the false-positive cost of prefix-based footprint comparison.\n\nDEPENDENCY NOTE: depends on 898 to serialize edits to skills/skill-orchestrate/SKILL.md, and on 899 for the written blocking-versus-advisory criterion this check must conform to.\n\nHonor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.",
+      "dependencies": [
+        898,
+        899
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+        "agent-system/extensions/core/commands/orchestrate.md",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/context/patterns/file-footprint-overlap.md"
+      ],
+      "created": "2026-07-24T00:00:00Z",
+      "last_updated": "2026-07-24T00:00:00Z",
+      "session_id": "sess_1784959496_6c4f8e_900",
+      "artifacts": []
+    },
+    {
+      "project_number": 901,
+      "project_name": "orchestrate_dry_run_admission_report",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Add an orchestrate dry-run that reports batch admission verdicts before dispatch",
+      "description": "SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/core/** and NEVER .claude/**.\n\nMOTIVATION: deciding which tasks belong in a batch currently requires a human to read state.json, cross-check file_scope by eye, open each candidate's .orchestrator-handoff.json to see whether it is resumable, and mentally compute a wave split. That analysis is reproducible in principle but performed ad hoc in practice, and it is the step most likely to be skipped when a batch is large.\n\nDESIRED BEHAVIOR: a --dry-run flag on /orchestrate that performs the full admission analysis and prints a report WITHOUT dispatching any agent or mutating any state. Report contents:\n- The admitted set, with the computed wave assignment.\n- Every excluded candidate with a specific reason: file_scope collision (naming the colliding task and the overlapping path), unmet predecessor, lock held by another session, or stale/unresumable handoff.\n- A recommended split when the admitted set should not run as a single batch.\n\nHANDOFF TRIAGE (the second half of this task): a task in partial status whose .orchestrator-handoff.json carries unresolved blockers and NO continuation_context routes to blocker escalation rather than productive work. Admitting such a task into a batch spends a dispatch cycle discovering something that was readable from the handoff beforehand. The admission analysis must classify this case as needs-human and exclude it, rather than admitting it and escalating mid-run.\n\nVERIFY BEFORE DESIGNING: skills/skill-orchestrate/SKILL.md Stage MT-4 already has a phase-grouping table distinguishing partial-with-continuation (dispatch to implement) from partial-with-blockers (mark blocked) from partial-with-no-handoff (dispatch to implement). The triage classifier must agree with that table exactly. If the dry-run report predicts a different routing than MT-4 would actually take, the report is worse than useless -- it is confidently wrong. Treat exact agreement with the live table as an acceptance criterion, not a nice-to-have.\n\nDESIGN CONSTRAINTS:\n- Reading a handoff for triage is bounded and cheap (the file has a documented ~400 token budget). Reading plans, reports, or summaries is NOT permitted -- that would breach the Context Flatness Constraint the orchestrator depends on.\n- --dry-run must be strictly read-only: no state.json writes, no TODO.md regeneration, no lock acquisition, no agent dispatch. Verify no invoked helper mutates state as a side effect; task-lock.sh in particular must not be called in acquire mode.\n- Parse the flag through the established argument-parsing path rather than ad hoc string matching; check scripts/parse-command-args.sh for the existing convention.\n- The same admission analysis must back both --dry-run and the live path, so the report cannot drift from real behavior. One code path, two consumers.\n\nRESEARCH DIRECTIVE: include web research current as of July 2026 on plan-preview and dry-run affordances for autonomous agent systems -- what makes a preflight report trustworthy rather than a rubber stamp, and the documented failure mode where an approval surface that is always green trains its reviewer to stop reading it.\n\nDEPENDENCY NOTE: depends on 900 for the admission verdict data this renders, and shares scripts/orchestrate-batch-admit.sh, commands/orchestrate.md, and skills/skill-orchestrate/SKILL.md with it.\n\nHonor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.",
+      "dependencies": [
+        900
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/commands/orchestrate.md",
+        "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ],
+      "created": "2026-07-24T00:00:00Z",
+      "last_updated": "2026-07-24T00:00:00Z",
+      "session_id": "sess_1784959496_6c4f8e_901",
+      "artifacts": []
+    },
+    {
+      "project_number": 902,
+      "project_name": "self_modification_hazard_gate",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Flag tasks that modify orchestrator machinery and force them to run alone",
+      "description": "SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/core/** and NEVER .claude/**.\n\nMOTIVATION: batching a task that repairs the orchestrator alongside other tasks means a known-defective orchestrator supervises its own fix, and supervises unrelated work in the same pass. If the defect being fixed is in the dispatch or postflight path, every sibling task in that batch inherits it. This hazard is currently recognized only by human judgment at batch-selection time.\n\nDESIRED BEHAVIOR: extend the admission analysis so that a candidate whose file_scope intersects a defined set of orchestrator-critical paths is flagged self-modifying and admitted ONLY as a solo batch -- never alongside siblings. The flag must be visible in the dry-run report with a plain-language reason.\n\nDEFINING THE CRITICAL SET (the substance of this task -- get this wrong in either direction and the gate is useless):\n- Too narrow and the hazard slips through. Too broad and nearly every meta task becomes solo-only, which destroys batching for exactly the category of work that most needs it, and the gate will be disabled within a week.\n- Candidate members to evaluate on the merits, not adopt wholesale: skills/skill-orchestrate/SKILL.md, skills/skill-orchestrate-hard/SKILL.md, commands/orchestrate.md, scripts/skill-base.sh, the command gate scripts, scripts/task-lock.sh, scripts/update-task-status.sh, scripts/orchestrator-postflight.sh, and the new admission script itself.\n- Argue each inclusion from what actually executes DURING a live orchestration run. A file that only affects future runs is a weaker case than one read or executed mid-dispatch.\n- Determine and state whether the deploy-artifact model changes the analysis: .claude/ is regenerated from the source store and regeneration is manual, so a source-store edit may not affect the RUNNING session at all. See context/patterns/regeneration-is-manual-only.md. If that materially reduces the hazard for some paths, say so and narrow the set accordingly rather than defending a gate that guards nothing.\n\nDESIGN CONSTRAINTS:\n- The critical set must be declared in ONE place, as data rather than as a condition duplicated across call sites.\n- Solo-only must degrade gracefully: a self-modifying task is deferred out of a multi-task batch, not failed, consistent with the defer-not-fail default used by the existing wave-split and lock-refusal paths.\n- Record the rationale for the final set in the guardrails context pattern, so a future reader can tell whether a newly added file belongs in it.\n\nRESEARCH DIRECTIVE: include web research current as of July 2026 on self-modifying and self-hosting automation -- the practice of not letting a system deploy its own repair unsupervised, bootstrap and staging patterns from CI/CD and package-manager self-upgrade, and how those disciplines translate (or fail to translate) to an agent system whose deploy artifact is regenerated manually.\n\nDEPENDENCY NOTE: depends on 901 for the report surface that renders the flag and for the shared admission script and command file, and on 899 for the guardrails pattern where the rationale is recorded.\n\nHonor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.",
+      "dependencies": [
+        901,
+        899
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+        "agent-system/extensions/core/commands/orchestrate.md",
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"
+      ],
+      "created": "2026-07-24T00:00:00Z",
+      "last_updated": "2026-07-24T00:00:00Z",
+      "session_id": "sess_1784959496_6c4f8e_902",
+      "artifacts": []
     }
   ],
   "completed_projects": [],
