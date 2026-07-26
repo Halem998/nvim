@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Fifth ZOTERO_EXPORT_STALE directive in zotero-export-status.sh",
+  "started_at": "2026-07-26T23:25:00Z",
+  "last_updated": "2026-07-26T23:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Replace unconditional existence branch with capture-guarded freshness consultation, three-way branch (FRESH/STALE+UNKNOWN/failure), all folding to STALE except confirmed FRESH",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/literature/scripts/zotero-export-status.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Update header directive documentation and show_usage heredoc for the fifth directive and freshness delegation",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/literature/scripts/zotero-export-status.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

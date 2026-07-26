@@ -14,10 +14,28 @@
 #   `--orchestrator-mode true`. Human-readable rationale is written to stderr on every branch
 #   so the caller can surface a visible notice without polluting the stdout directive.
 #
+#   Freshness of an EXISTING export is delegated entirely to the shared
+#   zotero-export-freshness.sh helper -- this script never re-derives the sqlite-vs-export
+#   timestamp comparison itself. That helper's four-token vocabulary (FRESH / STALE /
+#   FRESHNESS_UNKNOWN / FRESHNESS_ABSENT) folds into just two outcomes here: FRESH becomes
+#   ZOTERO_EXPORT_PRESENT, and everything else about an existing export (STALE,
+#   FRESHNESS_UNKNOWN, or the helper failing/producing nothing recognized) becomes
+#   ZOTERO_EXPORT_STALE. This narrows ZOTERO_EXPORT_PRESENT's meaning to "present AND
+#   confirmed fresh" -- it is never emitted on a helper failure.
+#
 # Directives (stdout, exactly one line, no other output on stdout):
-#   ZOTERO_EXPORT_PRESENT           A zotero-library.json export already exists at the
-#                                   resolved path. No offer needed; proceed to the main
+#   ZOTERO_EXPORT_PRESENT           A zotero-library.json export exists at the resolved path
+#                                   AND is confirmed fresh (see zotero-export-freshness.sh) --
+#                                   freshness is delegated to that shared helper, never
+#                                   re-derived here. No offer needed; proceed to the main
 #                                   discover pass as today.
+#   ZOTERO_EXPORT_STALE             An export exists at the resolved path, but
+#                                   zotero-export-freshness.sh reports it is either STALE or
+#                                   FRESHNESS_UNKNOWN (no sqlite to compare against), or the
+#                                   helper itself failed/produced no recognized token. All
+#                                   three cases fold into this single directive -- covers
+#                                   everything about an EXISTING export other than confirmed
+#                                   freshness. Never silently PRESENT.
 #   ZOTERO_EXPORT_MISSING_RUNNING   Export is missing, but the Zotero local API is reachable
 #                                   (Zotero is running) -- Path 1 (and possibly Path 2, if
 #                                   Better BibTeX is also installed) of
@@ -41,7 +59,7 @@
 #                                        2. $LITERATURE_DIR/zotero-library.json
 #                                        3. ~/Projects/Literature/zotero-library.json
 #   --orchestrator-mode <true|false>  Value of the orchestrator_mode delegation-context field.
-#                                      Does NOT change which of the four directives is
+#                                      Does NOT change which of the five directives is
 #                                      emitted (classification is purely about data-source
 #                                      state) -- it is echoed into the stderr rationale only,
 #                                      so the caller's downstream branch (interactive prompt
@@ -88,7 +106,7 @@ show_usage() {
 USAGE:
   zotero-export-status.sh [--output <path>] [--orchestrator-mode true|false]
 
-Prints exactly one directive token to stdout: ZOTERO_EXPORT_PRESENT,
+Prints exactly one directive token to stdout: ZOTERO_EXPORT_PRESENT, ZOTERO_EXPORT_STALE,
 ZOTERO_EXPORT_MISSING_RUNNING, ZOTERO_EXPORT_MISSING_NOT_RUNNING, or
 ZOTERO_EXPORT_UNAVAILABLE. Rationale is written to stderr. Never calls AskUserQuestion.
 USAGE
@@ -139,9 +157,31 @@ fi
 
 # --- Classification ---
 if [ -f "$output_path" ]; then
-  echo "Rationale: zotero-library.json already present at $output_path (orchestrator-mode=$orchestrator_mode); no assisted-generation offer needed." >&2
-  echo "ZOTERO_EXPORT_PRESENT"
-  exit 0
+  # Freshness is delegated entirely to the shared helper. Capture-guarded against
+  # `set -e`: a non-zero exit or empty/unrecognized output from the helper must never abort
+  # this script, and must never be silently treated as PRESENT/fresh.
+  freshness_stderr="$(mktemp)"
+  freshness_token="$("$SCRIPT_DIR/zotero-export-freshness.sh" --library "$output_path" 2>"$freshness_stderr")" || freshness_token=""
+  freshness_rationale="$(cat "$freshness_stderr")"
+  rm -f "$freshness_stderr"
+
+  case "$freshness_token" in
+    ZOTERO_EXPORT_FRESH)
+      echo "Rationale: zotero-library.json present at $output_path and confirmed fresh by zotero-export-freshness.sh (orchestrator-mode=$orchestrator_mode). ${freshness_rationale}" >&2
+      echo "ZOTERO_EXPORT_PRESENT"
+      exit 0
+      ;;
+    ZOTERO_EXPORT_STALE|ZOTERO_EXPORT_FRESHNESS_UNKNOWN)
+      echo "Rationale: zotero-library.json present at $output_path but NOT confirmed fresh (zotero-export-freshness.sh reported $freshness_token; orchestrator-mode=$orchestrator_mode). ${freshness_rationale}" >&2
+      echo "ZOTERO_EXPORT_STALE"
+      exit 0
+      ;;
+    *)
+      echo "Rationale: zotero-library.json present at $output_path, but zotero-export-freshness.sh failed or returned an unrecognized token ('${freshness_token}'); treating as not-confirmed-fresh rather than silently PRESENT (orchestrator-mode=$orchestrator_mode). Helper stderr: ${freshness_rationale}" >&2
+      echo "ZOTERO_EXPORT_STALE"
+      exit 0
+      ;;
+  esac
 fi
 
 probe_zotero_api() {

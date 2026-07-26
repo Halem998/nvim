@@ -130,34 +130,34 @@ Phases within the same wave can execute in parallel. Phases 2 and 4 touch disjoi
 freshness into four honest directive tokens, declared in the manifest so the loader deploys it.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/literature/scripts/zotero-export-freshness.sh`, `chmod +x`,
+- [x] Create `agent-system/extensions/literature/scripts/zotero-export-freshness.sh`, `chmod +x`,
       modeled structurally on `zotero-export-status.sh` (`set -euo pipefail`, `SCRIPT_DIR` via
       `BASH_SOURCE`, `jq` presence check, `show_usage`, argument loop, one stdout token, all
-      rationale to stderr, `AskUserQuestion` never called).
-- [ ] Implement `USAGE: zotero-export-freshness.sh [--library PATH]` (plus `-h|--help`).
-- [ ] Copy `resolve_library_path()` verbatim from `zotero-search.sh:120-135` (deliberate
-      duplication, consistent with the existing three copies; do not factor it out).
-- [ ] Implement the four directives, exactly one line on stdout, exit 0 for all four:
+      rationale to stderr, `AskUserQuestion` never called). *(completed)*
+- [x] Implement `USAGE: zotero-export-freshness.sh [--library PATH]` (plus `-h|--help`). *(completed)*
+- [x] Copy `resolve_library_path()` verbatim from `zotero-search.sh:120-135` (deliberate
+      duplication, consistent with the existing three copies; do not factor it out). *(completed)*
+- [x] Implement the four directives, exactly one line on stdout, exit 0 for all four:
       - `ZOTERO_EXPORT_FRESH` — reference timestamp >= resolved sqlite mtime
       - `ZOTERO_EXPORT_STALE` — reference timestamp < resolved sqlite mtime
       - `ZOTERO_EXPORT_FRESHNESS_UNKNOWN` — export present, no sqlite on disk to compare against
       - `ZOTERO_EXPORT_FRESHNESS_ABSENT` — no export file at the resolved path
       Reserve non-zero exits for usage/dependency errors only (missing `jq`, bad argument),
-      mirroring `zotero-export-status.sh`'s exit 1/2 convention.
-- [ ] Reference timestamp resolution: if `$(dirname LIBRARY)/.zotero-library.meta.json` exists and
+      mirroring `zotero-export-status.sh`'s exit 1/2 convention. *(completed)*
+- [x] Reference timestamp resolution: if `$(dirname LIBRARY)/.zotero-library.meta.json` exists and
       its `._generated` parses via `date -d`, use that; otherwise fall back to
-      `stat -c %Y "$LIBRARY"`. Name which source was used in the stderr rationale.
-- [ ] Resolve sqlite via `"$SCRIPT_DIR/zotero-resolve-sqlite-path.sh"` (unmodified). Absent file
-      -> `ZOTERO_EXPORT_FRESHNESS_UNKNOWN`, never `FRESH`.
-- [ ] Emit `Rationale:`-prefixed stderr on every branch carrying both epoch values, both
-      human-readable dates, and the reference-timestamp source.
-- [ ] Add `"zotero-export-freshness.sh"` to `provides.scripts` in
+      `stat -c %Y "$LIBRARY"`. Name which source was used in the stderr rationale. *(completed)*
+- [x] Resolve sqlite via `"$SCRIPT_DIR/zotero-resolve-sqlite-path.sh"` (unmodified). Absent file
+      -> `ZOTERO_EXPORT_FRESHNESS_UNKNOWN`, never `FRESH`. *(completed)*
+- [x] Emit `Rationale:`-prefixed stderr on every branch carrying both epoch values, both
+      human-readable dates, and the reference-timestamp source. *(completed)*
+- [x] Add `"zotero-export-freshness.sh"` to `provides.scripts` in
       `agent-system/extensions/literature/manifest.json` (place it adjacent to the other
-      `zotero-*` entries).
-- [ ] Header comment documents the token vocabulary and notes that
+      `zotero-*` entries). *(completed)*
+- [x] Header comment documents the token vocabulary and notes that
       `zotero-export-status.sh` folds `STALE` + `FRESHNESS_UNKNOWN` into its own single
       `ZOTERO_EXPORT_STALE` directive — the identical token spelling across the two vocabularies
-      is intentional, not a collision to be renamed.
+      is intentional, not a collision to be renamed. *(completed)*
 
 **Timing**: 1.25 hours
 
@@ -184,29 +184,29 @@ freshness into four honest directive tokens, declared in the manifest so the loa
 
 ---
 
-### Phase 2: Fifth `ZOTERO_EXPORT_STALE` directive in zotero-export-status.sh [NOT STARTED]
+### Phase 2: Fifth `ZOTERO_EXPORT_STALE` directive in zotero-export-status.sh [COMPLETED]
 
 **Goal**: `ZOTERO_EXPORT_PRESENT` narrows to "present AND confirmed fresh"; everything else about
 an existing export becomes `ZOTERO_EXPORT_STALE`.
 
 **Tasks**:
-- [ ] Replace the unconditional existence branch at `zotero-export-status.sh:141-145` with a
+- [x] Replace the unconditional existence branch at `zotero-export-status.sh:141-145` with a
       freshness consultation: call `"$SCRIPT_DIR/zotero-export-freshness.sh" --library "$output_path"`,
       capture-guarded so a non-zero exit cannot trip `set -e` (capture stdout and stderr
-      separately, `|| true`).
-- [ ] Branch: helper `ZOTERO_EXPORT_FRESH` -> emit `ZOTERO_EXPORT_PRESENT`; helper
+      separately, `|| true`). *(completed)*
+- [x] Branch: helper `ZOTERO_EXPORT_FRESH` -> emit `ZOTERO_EXPORT_PRESENT`; helper
       `ZOTERO_EXPORT_STALE` or `ZOTERO_EXPORT_FRESHNESS_UNKNOWN` -> emit `ZOTERO_EXPORT_STALE`;
       helper failure, empty output, or unrecognized token -> emit `ZOTERO_EXPORT_STALE` with a
-      rationale naming the helper failure explicitly. Never silently PRESENT.
-- [ ] Each branch writes its own `Rationale:` stderr line, forwarding the helper's compared
-      timestamps so the caller can render them in the offer prompt without re-invoking the helper.
-- [ ] Keep the four existing directives' behavior otherwise unchanged; the missing-export branch
+      rationale naming the helper failure explicitly. Never silently PRESENT. *(completed)*
+- [x] Each branch writes its own `Rationale:` stderr line, forwarding the helper's compared
+      timestamps so the caller can render them in the offer prompt without re-invoking the helper. *(completed)*
+- [x] Keep the four existing directives' behavior otherwise unchanged; the missing-export branch
       (`probe_zotero_api()` / sqlite existence, lines 147-173) is untouched and is NOT duplicated
-      for the STALE case.
-- [ ] Update the header directive documentation (lines 17-34): narrow the `ZOTERO_EXPORT_PRESENT`
+      for the STALE case. *(completed)*
+- [x] Update the header directive documentation (lines 17-34): narrow the `ZOTERO_EXPORT_PRESENT`
       wording, add `ZOTERO_EXPORT_STALE`, and note in the Purpose/Inputs prose that freshness is
-      delegated to `zotero-export-freshness.sh`.
-- [ ] Update the `show_usage` heredoc (lines 86-95) to list five directive tokens, not four.
+      delegated to `zotero-export-freshness.sh`. *(completed)*
+- [x] Update the `show_usage` heredoc (lines 86-95) to list five directive tokens, not four. *(completed)*
 
 **Timing**: 0.75 hours
 
