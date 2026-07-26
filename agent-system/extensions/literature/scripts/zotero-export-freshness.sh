@@ -130,16 +130,10 @@ if [ ! -f "$library_path" ]; then
   exit 0
 fi
 
-ZOTERO_SQLITE="$("$SCRIPT_DIR/zotero-resolve-sqlite-path.sh")"
-
-if [ ! -f "$ZOTERO_SQLITE" ]; then
-  echo "Rationale: export present at $library_path, but no Zotero sqlite file was found at the resolved path $ZOTERO_SQLITE to compare against; freshness cannot be determined." >&2
-  echo "ZOTERO_EXPORT_FRESHNESS_UNKNOWN"
-  exit 0
-fi
-
-sqlite_epoch="$(stat -c %Y "$ZOTERO_SQLITE")"
-
+# Reference timestamp resolution is computed unconditionally (it never depends on the sqlite
+# file being present) so that even the FRESHNESS_UNKNOWN branch below can name the export's own
+# date in its rationale -- callers that want to render a "[... - export: DATE, sqlite: ...]"
+# style banner should never have to re-derive this themselves.
 meta_path="$(dirname "$library_path")/.zotero-library.meta.json"
 reference_epoch=""
 reference_source=""
@@ -165,14 +159,26 @@ if [ -z "$reference_epoch" ]; then
 fi
 
 reference_human="$(date -d "@$reference_epoch" '+%Y-%m-%d %H:%M:%S %Z' 2>/dev/null || echo "epoch $reference_epoch")"
+reference_date="$(date -d "@$reference_epoch" '+%Y-%m-%d' 2>/dev/null || echo "unknown")"
+
+ZOTERO_SQLITE="$("$SCRIPT_DIR/zotero-resolve-sqlite-path.sh")"
+
+if [ ! -f "$ZOTERO_SQLITE" ]; then
+  echo "Rationale: export present at $library_path with reference timestamp $reference_human (epoch $reference_epoch, source: $reference_source; export_date=$reference_date), but no Zotero sqlite file was found at the resolved path $ZOTERO_SQLITE to compare against; freshness cannot be determined." >&2
+  echo "ZOTERO_EXPORT_FRESHNESS_UNKNOWN"
+  exit 0
+fi
+
+sqlite_epoch="$(stat -c %Y "$ZOTERO_SQLITE")"
 sqlite_human="$(date -d "@$sqlite_epoch" '+%Y-%m-%d %H:%M:%S %Z' 2>/dev/null || echo "epoch $sqlite_epoch")"
+sqlite_date="$(date -d "@$sqlite_epoch" '+%Y-%m-%d' 2>/dev/null || echo "unknown")"
 
 if [ "$reference_epoch" -ge "$sqlite_epoch" ]; then
-  echo "Rationale: reference timestamp $reference_human (epoch $reference_epoch, source: $reference_source) >= sqlite mtime $sqlite_human (epoch $sqlite_epoch, $ZOTERO_SQLITE); export is fresh." >&2
+  echo "Rationale: reference timestamp $reference_human (epoch $reference_epoch, source: $reference_source; export_date=$reference_date) >= sqlite mtime $sqlite_human (epoch $sqlite_epoch, $ZOTERO_SQLITE; sqlite_date=$sqlite_date); export is fresh." >&2
   echo "ZOTERO_EXPORT_FRESH"
   exit 0
 fi
 
-echo "Rationale: reference timestamp $reference_human (epoch $reference_epoch, source: $reference_source) < sqlite mtime $sqlite_human (epoch $sqlite_epoch, $ZOTERO_SQLITE); the live Zotero database has been written to since the export was generated." >&2
+echo "Rationale: reference timestamp $reference_human (epoch $reference_epoch, source: $reference_source; export_date=$reference_date) < sqlite mtime $sqlite_human (epoch $sqlite_epoch, $ZOTERO_SQLITE; sqlite_date=$sqlite_date); the live Zotero database has been written to since the export was generated." >&2
 echo "ZOTERO_EXPORT_STALE"
 exit 0

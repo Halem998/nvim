@@ -1,0 +1,51 @@
+{
+  "phase": 4,
+  "phase_name": "Staleness guard, banner, and exit code in zotero-search.sh",
+  "started_at": "2026-07-26T23:50:00Z",
+  "last_updated": "2026-07-27T00:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add SCRIPT_DIR, capture-guarded freshness guard call, FRESHNESS_CONFIRMED flag",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/literature/scripts/zotero-search.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Stderr banner always on non-fresh, stdout banner in pretty mode, exit code 3 on unconfirmed zero-result",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/literature/scripts/zotero-search.sh"]
+    },
+    {
+      "id": 3,
+      "description": "STABLE CONTRACT header block + both exit-code listings + scope-honesty note on inert consumers",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/literature/scripts/zotero-search.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Extract export/sqlite dates via grep -oP on the freshness helper's free-text rationale using ad hoc patterns",
+      "result": "superseded",
+      "reason": "Replaced with explicit machine-parseable export_date=/sqlite_date= tokens added to zotero-export-freshness.sh's rationale (see Phase 4 deviation) for robustness"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.1",
+      "description": "Store the resulting token and the compared dates (Phase 4 task list item 2)",
+      "type": "altered",
+      "reason": "Rather than parsing free-form date substrings out of the helper's human-readable rationale text, zotero-export-freshness.sh (Phase 1 file) was extended to also emit explicit export_date=/sqlite_date= tokens in its rationale, computed unconditionally (including in the FRESHNESS_UNKNOWN branch, which previously short-circuited before computing the export's own reference date). This is a small addition to Phase 1's already-committed file, made during Phase 4 verification after discovering the live [STALE EXPORT - export: DATE, sqlite: DATE] acceptance format needed a reliable machine-readable source rather than fragile regex on prose.",
+      "annotation": "*(deviation: altered — see task note)*"
+    },
+    {
+      "task_id": "4.1",
+      "description": "capture-guarded against set -e",
+      "type": "altered",
+      "reason": "The initial capture guard covered only the helper invocation itself; a forced-helper-failure live test revealed a second silent set -e/pipefail trap in the `grep -oP ... | head -1` date-extraction pipeline (grep exits 1 on no match, which pipefail propagates). Both EXPORT_DATE and SQLITE_DATE assignments were given their own `|| VAR=\"\"` guards after this was caught live, not merely reasoned about.",
+      "annotation": "*(deviation: altered — see task note)*"
+    }
+  ]
+}

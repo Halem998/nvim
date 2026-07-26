@@ -284,40 +284,45 @@ autonomously, instead of the current one-line no-op dead end.
 
 ---
 
-### Phase 4: Staleness guard, banner, and exit code in zotero-search.sh [NOT STARTED]
+### Phase 4: Staleness guard, banner, and exit code in zotero-search.sh [COMPLETED]
 
 **Goal**: A search against a stale or unknown-freshness library is never silently
 indistinguishable from a search against a fresh one.
 
 **Tasks**:
-- [ ] Add `SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"` near the top (the script
-      currently has none).
-- [ ] After the existing library-existence check (lines 143-169, unchanged) and before query
+- [x] Add `SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"` near the top (the script
+      currently has none). *(completed)*
+- [x] After the existing library-existence check (lines 143-169, unchanged) and before query
       preprocessing, call `"$SCRIPT_DIR/zotero-export-freshness.sh" --library "$LIBRARY_PATH"`,
       capture-guarded against `set -e`. Store the resulting token and the compared dates.
-- [ ] Set an internal `FRESHNESS_CONFIRMED=true|false`. Anything other than a clean
-      `ZOTERO_EXPORT_FRESH` (including helper failure or absence) sets it false.
-- [ ] When false, always write the banner to **stderr**, matching the
+      *(completed: also fixed a `grep -oP | head -1` pipefail abort on no-match discovered
+      during forced-failure verification — the date-extraction pipeline itself needed
+      `|| VAR=""` guards, not just the helper invocation)*
+- [x] Set an internal `FRESHNESS_CONFIRMED=true|false`. Anything other than a clean
+      `ZOTERO_EXPORT_FRESH` (including helper failure or absence) sets it false. *(completed)*
+- [x] When false, always write the banner to **stderr**, matching the
       `literature-briefing.sh` banner family shape:
       - stale: `[STALE EXPORT - export: {date}, sqlite: {date}] ...` plus one sentence of guidance
         pointing at assisted regeneration.
       - unknown: same label with `sqlite: unresolved` (or an equivalent explicit value) so the
         two conditions are distinguishable, never collapsed.
-- [ ] In `--format=pretty` mode only, additionally print the same banner to **stdout** immediately
+      *(completed: extended zotero-export-freshness.sh's rationale with machine-parseable
+      `export_date=`/`sqlite_date=` tokens so the banner never re-derives freshness itself)*
+- [x] In `--format=pretty` mode only, additionally print the same banner to **stdout** immediately
       before the results table (and before the existing "No results found for:" line in the
-      zero-result path). JSON mode's stdout contract is untouched.
-- [ ] Introduce exit code `3`: zero results returned while freshness is not confirmed. Keep exit
+      zero-result path). JSON mode's stdout contract is untouched. *(completed)*
+- [x] Introduce exit code `3`: zero results returned while freshness is not confirmed. Keep exit
       `2` reserved for a confirmed-fresh zero-result answer. Non-zero-result stale searches keep
       exit `0` but still carry the banner. The change goes in the existing zero-results block
-      (`RESULT_COUNT -eq 0`, around line 348).
-- [ ] Document the above in a `STABLE CONTRACT` header block mirroring
+      (`RESULT_COUNT -eq 0`, around line 348). *(completed)*
+- [x] Document the above in a `STABLE CONTRACT` header block mirroring
       `literature-ingest-online.sh`'s header style, and update **both** exit-code listings: the
-      top-of-file comment block (lines 28-31) and the `show_usage` heredoc (lines 70-73).
-- [ ] In that header, state plainly that exit 3 and the stderr banner are **inert for today's two
+      top-of-file comment block (lines 28-31) and the `show_usage` heredoc (lines 70-73). *(completed)*
+- [x] In that header, state plainly that exit 3 and the stderr banner are **inert for today's two
       callers** — `literature-discover.sh:tier2_search()` and `skills/skill-cite/SKILL.md`, both
       of which discard stderr and treat every non-zero exit identically — and that wiring them is
       a separate follow-up. Do not imply propagation the change does not have. Reference those two
-      call sites by filename only; no task-number citations.
+      call sites by filename only; no task-number citations. *(completed)*
 
 **Timing**: 1.25 hours
 

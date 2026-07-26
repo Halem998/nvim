@@ -1,6 +1,22 @@
 #!/usr/bin/env bash
 # zotero-search.sh — Search a Better BibTeX CSL-JSON export by keyword
 #
+# STABLE CONTRACT -- this header documents the freshness guard, the stderr banner, and the
+# exit-code table below. Do not change token spellings or exit-code numbers here without
+# updating every downstream consumer.
+#
+# SCOPE HONESTY (read before relying on this for end-to-end propagation): the freshness guard,
+# banner, and exit code 3 documented below are INERT for today's two named primary consumers of
+# this script -- literature-discover.sh's tier2_search() and skills/skill-cite/SKILL.md -- both
+# of which invoke this script with `2>/dev/null` (discarding the banner) and both of which treat
+# any non-zero exit code identically as non-fatal (collapsing exit 1/2/3 into the same branch).
+# Wiring those two consumers to distinguish this contract is a documented follow-up, not done
+# here. The substantive close of the "never a silent clean zero-result" acceptance criterion is
+# the pre-search regeneration offer in commands/literature.md's Mode A step 0 (which runs BEFORE
+# literature-discover.sh is ever invoked); this script's guard is defense-in-depth plus a stable
+# forward contract for whichever caller chooses to consume it directly (e.g. this script's own
+# --format=pretty output, used directly by a human or agent, sees the banner immediately).
+#
 # USAGE:
 #   zotero-search.sh [OPTIONS] QUERY [QUERY...]
 #
@@ -15,6 +31,12 @@
 #     abstract +1 per matching term
 #     author   +1 per matching term
 #
+#   Before scoring, the library's freshness is checked via the shared
+#   zotero-export-freshness.sh helper (capture-guarded against this script's own
+#   `set -euo pipefail` -- a helper failure or absence is never silently treated as fresh).
+#   Anything other than a clean ZOTERO_EXPORT_FRESH result sets an internal
+#   FRESHNESS_CONFIRMED=false, which drives the stderr banner and exit-code behavior below.
+#
 # OPTIONS:
 #   --limit=N       Maximum results to return (default: 10)
 #   --format=MODE   Output format: json (default) or pretty
@@ -26,11 +48,17 @@
 #                   then ~/Projects/Literature/zotero-library.json
 #
 # EXIT CODES:
-#   0  Results found and returned
+#   0  Results found and returned (a [STALE EXPORT ...] banner is written to stderr, and in
+#      --format=pretty also to stdout before the table, whenever freshness is not confirmed)
 #   1  Library file not found (setup instructions printed)
-#   2  No results matched the query
+#   2  No results matched the query, AND the export was confirmed fresh
+#   3  No results matched the query, AND freshness was NOT confirmed (stale, unknown, or the
+#      freshness helper failed/was absent) -- distinguishes an honest "nothing in a fresh
+#      library" from "we cannot vouch for this being a complete answer"
 
 set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ---------------------------------------------------------------------------
 # Argument parsing
@@ -68,9 +96,12 @@ ENVIRONMENT:
                   then ~/Projects/Literature/zotero-library.json
 
 EXIT CODES:
-  0  Results found and returned
+  0  Results found and returned (a [STALE EXPORT ...] banner is written to stderr, and in
+     --format=pretty also to stdout before the table, whenever freshness is not confirmed)
   1  Library file not found (setup instructions printed)
-  2  No results matched the query
+  2  No results matched the query, AND the export was confirmed fresh
+  3  No results matched the query, AND freshness was NOT confirmed (stale, unknown, or the
+     freshness helper failed/was absent)
 USAGE
 }
 
@@ -167,6 +198,41 @@ Or set the ZOTERO_LIBRARY environment variable to your export path:
 SETUP_INSTRUCTIONS
   exit 1
 fi
+
+# ---------------------------------------------------------------------------
+# Freshness guard (capture-guarded -- a non-zero exit or missing helper must never abort this
+# script under `set -e`, and must never be silently treated as confirmed-fresh)
+# ---------------------------------------------------------------------------
+
+FRESHNESS_STDERR_FILE="$(mktemp)"
+FRESHNESS_TOKEN="$("$SCRIPT_DIR/zotero-export-freshness.sh" --library "$LIBRARY_PATH" 2>"$FRESHNESS_STDERR_FILE")" || FRESHNESS_TOKEN=""
+FRESHNESS_RATIONALE="$(cat "$FRESHNESS_STDERR_FILE")"
+rm -f "$FRESHNESS_STDERR_FILE"
+
+# The helper's rationale embeds machine-parseable "export_date=" / "sqlite_date=" tokens
+# specifically so callers never have to re-derive freshness timestamps themselves.
+EXPORT_DATE="$(echo "$FRESHNESS_RATIONALE" | grep -oP 'export_date=\K[0-9-]+' | head -1)" || EXPORT_DATE=""
+SQLITE_DATE="$(echo "$FRESHNESS_RATIONALE" | grep -oP 'sqlite_date=\K[0-9-]+' | head -1)" || SQLITE_DATE=""
+[ -n "$EXPORT_DATE" ] || EXPORT_DATE="unresolved"
+[ -n "$SQLITE_DATE" ] || SQLITE_DATE="unresolved"
+
+FRESHNESS_CONFIRMED=false
+STALE_BANNER=""
+
+case "$FRESHNESS_TOKEN" in
+  ZOTERO_EXPORT_FRESH)
+    FRESHNESS_CONFIRMED=true
+    ;;
+  ZOTERO_EXPORT_STALE)
+    STALE_BANNER="[STALE EXPORT - export: ${EXPORT_DATE}, sqlite: ${SQLITE_DATE}] This Zotero export has NOT been confirmed fresh (the live Zotero database has been written to since the export was generated). A zero-result answer below may simply reflect a stale snapshot, not an absent item. Regenerate via zotero-generate-export.sh --force, or use /literature's assisted regeneration offer. Details: ${FRESHNESS_RATIONALE}"
+    ;;
+  ZOTERO_EXPORT_FRESHNESS_UNKNOWN)
+    STALE_BANNER="[STALE EXPORT - export: ${EXPORT_DATE}, sqlite: unresolved] This Zotero export's freshness could NOT be confirmed (no local Zotero sqlite file was found to compare against). A zero-result answer below may simply reflect a stale snapshot, not an absent item. Details: ${FRESHNESS_RATIONALE}"
+    ;;
+  *)
+    STALE_BANNER="[STALE EXPORT - export: ${EXPORT_DATE}, sqlite: ${SQLITE_DATE}] This Zotero export's freshness could NOT be confirmed (the freshness helper failed or returned an unrecognized token: '${FRESHNESS_TOKEN}'). A zero-result answer below may simply reflect a stale snapshot, not an absent item. Helper stderr: ${FRESHNESS_RATIONALE}"
+    ;;
+esac
 
 # ---------------------------------------------------------------------------
 # Query term preprocessing
@@ -348,15 +414,25 @@ verify_pdf_paths() {
 FINAL_RESULTS="$(verify_pdf_paths "$SORTED_RESULTS")"
 
 # ---------------------------------------------------------------------------
-# Check for no results
+# Staleness banner (stderr always, whenever freshness is not confirmed) + check for no results
 # ---------------------------------------------------------------------------
+
+if [[ "$FRESHNESS_CONFIRMED" == "false" ]]; then
+  echo "$STALE_BANNER" >&2
+fi
 
 RESULT_COUNT="$(echo "$FINAL_RESULTS" | jq 'length')"
 if [[ "$RESULT_COUNT" -eq 0 ]]; then
   if [[ "$FORMAT" == "pretty" ]]; then
+    if [[ "$FRESHNESS_CONFIRMED" == "false" ]]; then
+      echo "$STALE_BANNER"
+    fi
     echo "No results found for: ${QUERY_TERMS[*]}"
   else
     echo "[]"
+  fi
+  if [[ "$FRESHNESS_CONFIRMED" == "false" ]]; then
+    exit 3
   fi
   exit 2
 fi
@@ -372,6 +448,9 @@ fi
 
 # Pretty format: human-readable table
 if [[ "$FORMAT" == "pretty" ]]; then
+  if [[ "$FRESHNESS_CONFIRMED" == "false" ]]; then
+    echo "$STALE_BANNER"
+  fi
   echo ""
   printf "%-6s  %-50s  %-30s  %-6s  %-5s\n" "SCORE" "TITLE" "AUTHORS" "YEAR" "PDFS"
   printf "%s\n" "$(printf '%0.s-' {1..110})"
