@@ -1,0 +1,38 @@
+{
+  "phase": 3,
+  "phase_name": "STALE regeneration offer in commands/literature.md",
+  "started_at": "2026-07-27T00:25:00Z",
+  "last_updated": "2026-07-27T00:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Narrow PRESENT bullet wording; add interactive ZOTERO_EXPORT_STALE bullet with two-option AskUserQuestion using --force",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/literature/commands/literature.md"]
+    },
+    {
+      "id": 2,
+      "description": "Add autonomous non-interactive ZOTERO_EXPORT_STALE bullet alongside the two existing autonomous bullets, with [zotero:auto] notice and --force, never AskUserQuestion",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/literature/commands/literature.md"]
+    },
+    {
+      "id": 3,
+      "description": "Verify no task-number citations introduced in edited prose",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.2",
+      "description": "Add a ZOTERO_EXPORT_STALE bullet in the interactive branch group ... specifying a single two-option AskUserQuestion",
+      "type": "altered",
+      "reason": "The interactive and autonomous handling were initially drafted as one combined bullet for editorial convenience; split into two separate bullets (interactive bullet at its documented location after PRESENT/before MISSING_RUNNING, autonomous bullet placed alongside the two existing orchestrator_mode==true bullets) to match the plan's explicit structural placement and the verification's grep-based token accounting.",
+      "annotation": "*(deviation: altered — split into two bullets per plan's explicit placement)*"
+    }
+  ]
+}

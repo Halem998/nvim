@@ -146,8 +146,57 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--rebuild [--dry-run]|--validate|--i
 
          Branch on `zotero_directive`:
 
-         - **`ZOTERO_EXPORT_PRESENT`**: No offer. Proceed directly to step 1 (main discover
-           call) as today.
+         - **`ZOTERO_EXPORT_PRESENT`**: An export exists at the resolved path AND is confirmed
+           fresh (freshness is delegated entirely to `zotero-export-freshness.sh` inside
+           `$STATUS_SCRIPT` -- this command never re-derives it). No offer needed; proceed
+           directly to step 1 (main discover call) as today.
+
+         - **`ZOTERO_EXPORT_STALE`**: An export exists at the resolved path, but is NOT
+           confirmed fresh (the live Zotero database has been written to since the export was
+           generated, its freshness could not be determined, or the freshness helper itself
+           failed -- `$STATUS_SCRIPT` folds all three into this single directive; see that
+           script's own header for the underlying `zotero-export-freshness.sh` vocabulary). A
+           silent zero-result answer from a stale export is exactly the failure mode this whole
+           mechanism exists to prevent, so this branch always surfaces something visible rather
+           than proceeding quietly.
+
+           **Interactive context** (`orchestrator_mode != true`): issue `AskUserQuestion` with a
+           two-option prompt naming the resolved path and both compared dates, drawn directly
+           from `zotero_rationale` (captured above) without re-invoking any classifier:
+
+           ```json
+           {
+             "question": "Your Zotero export at {resolved_path} looks stale (export: {export_date}, Zotero database: {sqlite_date}). Regenerate it now?",
+             "header": "Assisted Zotero Export Regeneration",
+             "multiSelect": false,
+             "options": [
+               {
+                 "label": "Regenerate now (recommended)",
+                 "description": "Runs zotero-generate-export.sh --force, which auto-selects the live-API path (Zotero running) or the offline sqlite-reconstruction path (Zotero closed) on its own -- this offer deliberately does not re-derive that RUNNING/NOT_RUNNING split a second time."
+               },
+               {
+                 "label": "Skip this run",
+                 "description": "Continue with the known-stale export for this discovery pass. You can regenerate it later via zotero-generate-export.sh --force."
+               }
+             ]
+           }
+           ```
+
+           On **"Regenerate now"**: run `"$GENERATE_SCRIPT" --force --orchestrator-mode false`,
+           capturing stdout/stderr the same way the existing "Generate now" handling above does.
+           On success, proceed to step 1 with Tier 2 refreshed. On failure (non-zero exit),
+           surface the generator's stderr and fall back to step 1 non-fatally (Tier 2 stays on
+           the stale snapshot).
+
+           On **"Skip this run"**: log the same explicit "skipped by user choice" notice
+           convention used elsewhere in this step, then proceed to step 1 against the known-stale
+           export.
+
+           This deliberately does not re-derive the `MISSING_RUNNING`/`MISSING_NOT_RUNNING` UI
+           split, because `--force` already auto-selects Path 1 vs Path 3 internally. The
+           `orchestrator_mode == true` autonomous default for this same directive is documented
+           as its own bullet in the autonomous branch group below, alongside the two existing
+           `ZOTERO_EXPORT_MISSING_*` autonomous bullets.
 
          - **`ZOTERO_EXPORT_MISSING_RUNNING`** (interactive context, `orchestrator_mode !=
            true`): Zotero is already running, so its local API is immediately viable (Path 1).
@@ -276,6 +325,17 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--rebuild [--dry-run]|--validate|--i
            ```
 
            Then proceed to step 1 (Tier 2 stays skipped, non-fatal, as today).
+
+         - **Orchestrator / non-interactive default, `ZOTERO_EXPORT_STALE`**
+           (`orchestrator_mode == true`): `AskUserQuestion` cannot prompt a human, so it MUST
+           NOT be called. Take the deterministic default and run `"$GENERATE_SCRIPT" --force
+           --orchestrator-mode true`; emit a visible `[zotero:auto]` notice stating that
+           regeneration was auto-selected because the export is stale and no human is available
+           to prompt -- this is NEVER a silent no-op, and mirrors the same `AUTONOMOUS_GLOBAL`
+           precedent from the `--lit` flow that the two sibling autonomous bullets below already
+           follow (see CLAUDE.md "Literature Mode" section). Then proceed to step 1 regardless of
+           the regeneration outcome (non-fatal): the point of this branch is that staleness was
+           at least visibly acted on, not that regeneration is guaranteed to succeed.
 
          - **Orchestrator / non-interactive default, `ZOTERO_EXPORT_MISSING_RUNNING`**
            (`orchestrator_mode == true`): `AskUserQuestion` cannot prompt a human, so it MUST

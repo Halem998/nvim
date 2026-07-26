@@ -232,16 +232,16 @@ an existing export becomes `ZOTERO_EXPORT_STALE`.
 
 ---
 
-### Phase 3: STALE regeneration offer in commands/literature.md [NOT STARTED]
+### Phase 3: STALE regeneration offer in commands/literature.md [COMPLETED]
 
 **Goal**: `/literature` Mode A step 0 offers assisted regeneration on STALE, interactively and
 autonomously, instead of the current one-line no-op dead end.
 
 **Tasks**:
-- [ ] Narrow the `ZOTERO_EXPORT_PRESENT` bullet (`commands/literature.md:149-151`) to state that
+- [x] Narrow the `ZOTERO_EXPORT_PRESENT` bullet (`commands/literature.md:149-151`) to state that
       PRESENT now means present AND confirmed fresh; behavior unchanged (no offer, proceed to
-      step 1).
-- [ ] Add a `ZOTERO_EXPORT_STALE` bullet in the interactive branch group (after the PRESENT
+      step 1). *(completed)*
+- [x] Add a `ZOTERO_EXPORT_STALE` bullet in the interactive branch group (after the PRESENT
       bullet, before `MISSING_RUNNING`), specifying a single two-option `AskUserQuestion`:
       - question naming the resolved path plus both dates drawn from the captured rationale, e.g.
         "Your Zotero export at {resolved_path} looks stale (export: {export_date}, Zotero
@@ -255,14 +255,16 @@ autonomously, instead of the current one-line no-op dead end.
       - Include a sentence stating that this deliberately does not re-derive the
         RUNNING/NOT_RUNNING split, because `--force` already auto-selects Path 1 vs Path 3
         internally.
-- [ ] Add an **Orchestrator / non-interactive default, `ZOTERO_EXPORT_STALE`** bullet in the
+      *(completed)*
+- [x] Add an **Orchestrator / non-interactive default, `ZOTERO_EXPORT_STALE`** bullet in the
       autonomous branch group (alongside the two existing `orchestrator_mode == true` bullets at
       lines 280-300): `AskUserQuestion` MUST NOT be called; take the deterministic default and run
       `"$GENERATE_SCRIPT" --force --orchestrator-mode true`; emit a visible `[zotero:auto]` notice
       stating that regeneration was auto-selected because the export is stale and no human is
       available to prompt; proceed to step 1 regardless of outcome (non-fatal). Mirror the
-      existing `AUTONOMOUS_GLOBAL` phrasing precedent.
-- [ ] Verify no task-number citations are introduced anywhere in the edited prose.
+      existing `AUTONOMOUS_GLOBAL` phrasing precedent. *(completed)*
+- [x] Verify no task-number citations are introduced anywhere in the edited prose. *(completed:
+      grepped the file for task-number patterns, none found)*
 
 **Timing**: 1 hour
 
