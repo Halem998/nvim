@@ -1,7 +1,7 @@
 # Implementation Plan: Task #905
 
 - **Task**: 905 - Make Zotero export staleness a detected, propagated, and loudly-surfaced condition end-to-end
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: None (disjoint file_scope from the sibling resolver-bypass task)
 - **Research Inputs**: specs/905_zotero_export_freshness_end_to_end/reports/01_zotero-export-freshness-research.md
@@ -352,32 +352,48 @@ indistinguishable from a search against a fresh one.
 
 ---
 
-### Phase 5: End-to-end acceptance verification and boundary documentation [NOT STARTED]
+### Phase 5: End-to-end acceptance verification and boundary documentation [COMPLETED]
 
 **Goal**: Prove the primary acceptance criterion holds for every reachable path, and record the
 propagation boundary honestly.
 
 **Tasks**:
-- [ ] Run the full chain against the real stale environment and capture the outputs:
+- [x] Run the full chain against the real stale environment and capture the outputs:
       helper -> `ZOTERO_EXPORT_STALE`; export-status -> `ZOTERO_EXPORT_STALE`; search -> banner +
-      exit 3 on zero results.
-- [ ] Confirm no reachable path yields a silent clean zero-result: enumerate the four helper
+      exit 3 on zero results. *(completed: all three verified live)*
+- [x] Confirm no reachable path yields a silent clean zero-result: enumerate the four helper
       tokens and, for each, name the visible signal a user or agent receives (offer prompt,
       `[zotero:auto]` notice, banner, or setup instructions). Any token whose path produces no
-      visible signal is a defect to fix before the phase closes.
-- [ ] Confirm the source-store rule held: `git status --short` shows no modifications under
+      visible signal is a defect to fix before the phase closes. *(completed: FRESH intentionally
+      produces no signal — that is the trusted, nothing's-wrong path; STALE and
+      FRESHNESS_UNKNOWN both fold to export-status's STALE and get an AskUserQuestion offer or
+      `[zotero:auto]` notice in commands/literature.md, plus the `[STALE EXPORT ...]` banner +
+      exit 3 in zotero-search.sh as defense-in-depth; FRESHNESS_ABSENT is unreachable from either
+      consumer's call site since both only invoke the helper after confirming the export file
+      exists, and the fallback `*` branch in both consumers already treats any unrecognized
+      token as not-confirmed-fresh with a visible rationale. No defect found.)*
+- [x] Confirm the source-store rule held: `git status --short` shows no modifications under
       `.claude/`, and every changed non-`specs/` path is under
-      `agent-system/extensions/literature/`.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and confirm the literature extension
+      `agent-system/extensions/literature/`. *(completed: zero `.claude/` modifications
+      confirmed. Three unrelated files -- `.claude-extensions.json`,
+      `lua/neotex/plugins/editor/which-key.lua`, `lua/neotex/plugins/tools/himalaya/utils/cli.lua`
+      -- appear modified in `git status` but were already dirty before this implementation began
+      and were never touched by it; this task's own edits are confined entirely to
+      `agent-system/extensions/literature/**` and `specs/**`.)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and confirm the literature extension
       reports no new failures (in particular Rule E, referenced-but-undeclared script). Deployed-
       vs-source drift findings for the newly edited scripts are expected until the user
       regenerates `.claude/` via the loader; note them as expected rather than fixing them by
-      writing to `.claude/`.
-- [ ] Record in the implementation summary: (a) the verified outputs above; (b) the explicit
+      writing to `.claude/`. *(completed: literature extension reports PASS; the 37 advisory
+      "core script never deployed" items cover essentially every zotero-*/literature-* script,
+      not just the newly added one, confirming this is pre-existing whole-extension deploy drift
+      rather than a regression introduced here)*
+- [x] Record in the implementation summary: (a) the verified outputs above; (b) the explicit
       statement that Phase 4's exit 3 and banner are inert for `literature-discover.sh` and
       `skills/skill-cite/SKILL.md` today; (c) the recommended follow-up task scope (wire those two
-      consumers to the new contract).
-- [ ] Confirm no task-number citations were introduced outside `specs/**`.
+      consumers to the new contract). *(completed, see summary artifact)*
+- [x] Confirm no task-number citations were introduced outside `specs/**`. *(completed: grepped
+      every diff hunk across all five edited/created files, none found)*
 
 **Timing**: 0.75 hours
 
@@ -396,24 +412,24 @@ propagation boundary honestly.
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on all three shell scripts (new helper, export-status, search).
-- [ ] Helper classifies all four cases correctly against real and temp-fixture inputs, one stdout
+- [x] `bash -n` passes on all three shell scripts (new helper, export-status, search).
+- [x] Helper classifies all four cases correctly against real and temp-fixture inputs, one stdout
       line each, exit 0 on all four classifications.
-- [ ] `zotero-export-status.sh` emits `ZOTERO_EXPORT_STALE` against the live 2026-07-01 export vs
+- [x] `zotero-export-status.sh` emits `ZOTERO_EXPORT_STALE` against the live 2026-07-01 export vs
       the 2026-07-15 sqlite — the direct refutation of the reproduced symptom.
-- [ ] `zotero-export-status.sh` still emits `ZOTERO_EXPORT_PRESENT` for a confirmed-fresh export,
+- [x] `zotero-export-status.sh` still emits `ZOTERO_EXPORT_PRESENT` for a confirmed-fresh export,
       and its three missing-export directives are unchanged.
-- [ ] Helper failure degrades to STALE / unconfirmed in both consumers without aborting under
+- [x] Helper failure degrades to STALE / unconfirmed in both consumers without aborting under
       `set -euo pipefail`.
-- [ ] `zotero-search.sh --format=json` stdout remains a clean JSON array (or `[]`) in every stale
+- [x] `zotero-search.sh --format=json` stdout remains a clean JSON array (or `[]`) in every stale
       case; the banner never reaches JSON stdout.
-- [ ] Exit codes: 0 (results, banner if stale), 1 (library not found), 2 (confirmed-fresh zero
+- [x] Exit codes: 0 (results, banner if stale), 1 (library not found), 2 (confirmed-fresh zero
       results), 3 (zero results while stale/unknown).
-- [ ] `commands/literature.md` step 0 handles all five directives; the autonomous STALE branch
+- [x] `commands/literature.md` step 0 handles all five directives; the autonomous STALE branch
       never calls `AskUserQuestion` and always emits `[zotero:auto]`.
-- [ ] `manifest.json` declares the new script.
-- [ ] No file under `.claude/` was created or modified.
-- [ ] No task-number citations outside `specs/**`.
+- [x] `manifest.json` declares the new script.
+- [x] No file under `.claude/` was created or modified.
+- [x] No task-number citations outside `specs/**`.
 
 ## Artifacts & Outputs
 
