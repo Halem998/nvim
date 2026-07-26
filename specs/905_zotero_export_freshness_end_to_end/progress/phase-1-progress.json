@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "Shared freshness helper + deployment registration",
+  "started_at": "2026-07-26T23:00:00Z",
+  "last_updated": "2026-07-26T23:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create zotero-export-freshness.sh with four-directive classification, resolve_library_path copy, meta-stamp/mtime reference resolution, stderr rationale",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/literature/scripts/zotero-export-freshness.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Register zotero-export-freshness.sh in manifest.json provides.scripts",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/literature/manifest.json"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
