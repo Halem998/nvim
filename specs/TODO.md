@@ -1,5 +1,5 @@
 ---
-next_project_number: 910
+next_project_number: 913
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 910
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,909 | -- | agent-system |
+| 1 | 873,885,909,910,911,912 | -- | agent-system |
 | 2 | 887,906 | 873,885,909 | agent-system |
 | 3 | 907 | 906 | agent-system |
 | 4 | 908 | 907 | agent-system |
@@ -29,8 +29,96 @@ next_project_number: 910
       └─ 908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
 909 [NOT STARTED] — Residual gap surfaced by the implementation agent for the complet
   └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
+910 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+911 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+912 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ## Tasks
+
+### 912. Establish whether the roadmap_items producer contract actually runs outside the core implementer
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/ and agent-system/extensions/<ext>/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+THIS IS AN INVESTIGATION FIRST AND A FIX SECOND. Closing it with "no upstream defect exists, the downstream repo needs a re-sync" is a VALID and USEFUL outcome. Do not manufacture a fix for a defect that does not exist.
+
+OBSERVED, WITH ITS CONFOUND STATED. Across 21 tasks archived from a downstream repository in a single /todo run, ZERO carried a `roadmap_items` field, and roadmap matching consequently found nothing to annotate. CLAUDE.md documents a producer/consumer contract: /implement is the producer that populates `completion_summary` and optional `roadmap_items`; /todo is the consumer that matches them against ROADMAP.md.
+
+THE CONFOUND IS REAL AND MUST BE RESPECTED. That downstream repo's deployed skill-implementer is 28 lines behind upstream (deployed 726 lines vs upstream 754; upstream additionally carries a newer --phase-check=refuse backstop). The observed absence may therefore be an artifact of the stale deployment rather than an upstream defect. Unlike the roadmap-integration.sh and todo.md findings -- both byte-identical between upstream and deployment, hence genuine -- this one is NOT established as an upstream bug and must not be asserted as one.
+
+ESTABLISH, IN THIS ORDER:
+
+1. Does the upstream core skills/skill-implementer/SKILL.md actually populate `roadmap_items` when it runs? The step exists around line 484. READ THE CODE PATH -- confirm the step is reachable, that it writes the field, and under what conditions it is skipped. Do NOT infer from the mere presence of the string.
+
+2. Do the per-extension implementers populate it, or silently skip it? This is the highest-value question. A preliminary grep across all 20 implementer skills in the source store found the literal `roadmap_items` in only THREE of them -- core/skill-implementer, lean/skill-lean-implementation, and lean/skill-lean-implementation-hard -- plus web/skill-web-implementation, and in core/skill-todo (the consumer side). Notably ABSENT is core/skill-implementer-hard, along with the cslib, email, epidemiology, founder, latex, nix, nvim, python, typst, and z3 implementers. Verify that grep independently; a string count is a starting point, not a finding. The downstream repo is lean4-dominated and routes to skill-lean-implementation rather than the core implementer, so if the lean implementer mentions the field but does not actually populate it on the executed path, that would explain the 0% rate AND would be a genuine upstream gap. Equally, a core-only-in-practice implementation with 16 extension implementers silently omitting the step is a genuine upstream gap regardless of the downstream evidence.
+
+3. ONLY IF a real gap is confirmed by steps 1-2, propose the fix. Consider whether the right shape is duplicating the step into every extension implementer (high duplication, high drift risk) or factoring the producer step into a shared contract/context file that all implementers import -- the latter is more consistent with how this system already handles shared skill behavior.
+
+COORDINATION NOTE: if the resolution turns out to require editing the CLAUDE.md producer/consumer contract text in agent-system/extensions/core/merge-sources/claudemd.md, that file is inside another active task's declared file_scope (the terminal-status-taxonomy work). Sequence behind it or coordinate rather than editing concurrently. As scoped here, this task's edits stay within skill definitions.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 911. Correct the terminal-status taxonomy so /todo can archive expanded tasks
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+DEPLOYMENT-DRIFT CONTROL (already performed -- do not redo): this defect was observed while running the deployed copy in a downstream repository whose .claude/ tree is roughly a week behind upstream. That staleness does NOT confound this finding: commands/todo.md was compared and is BYTE-IDENTICAL between the upstream source store and the stale deployment. This is a genuine upstream bug.
+
+OBSERVED. commands/todo.md line 175 filters `select(.status == "completed")`, and its documented scan (lines 28-29) covers only `completed` and `abandoned`. But the generated CLAUDE.md status table lists `[EXPANDED]` as a TERMINAL state, alongside `[BLOCKED]`, `[ABANDONED]`, and `[PARTIAL]`. Nothing in the archival path ever matches `expanded`.
+
+MEASURED CONSEQUENCE. In the downstream repository, three tasks (161, 175, 321) carry status `expanded` and have never been archivable by any /todo run. A /todo invocation there archived 21 tasks and left all three behind. Their content was genuinely absorbed elsewhere -- 175 folded into 402 Part C, 161 into 402 Part A -- so this is finished work permanently inflating the active task list, and it will keep accumulating in every repo built on this system.
+
+DO NOT BLINDLY ADD `expanded` TO THE FILTER. Two things must be settled first.
+
+1. ARCHIVAL REACHABILITY. An expanded task's directory may hold reports, plans, or summaries that its CHILD tasks still reference. Moving that directory into specs/archive/ could break those references. Establish whether child tasks in practice link back to the parent's artifacts, and if so, whether archival needs to preserve reachability (leave a pointer, defer archival until all children are terminal, or relocate rather than bury).
+
+2. THE TAXONOMY ITSELF MAY BE WRONG. `[PARTIAL]` and `[BLOCKED]` sit in the same terminal-state row of the CLAUDE.md status table but are clearly NOT terminal in practice -- a partial task resumes on the next /implement, and a blocked task unblocks. If the table is mislabeling which states are terminal, the correct fix is to repair the taxonomy (and any code that trusts it) rather than to widen one filter to match a wrong table. Investigate the actual lifecycle of each of the four states before changing anything.
+
+FILES. commands/todo.md is the confirmed site. Check skills/skill-todo/SKILL.md for the same filter and fix both if it carries it. If the status table itself is what needs correcting, the edit target is the CLAUDE.md merge source under agent-system/extensions/core/merge-sources/, never a generated CLAUDE.md.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**. The downstream task numbers above are evidence cited within this specs/ description only.
+
+---
+
+### 910. Fix roadmap-integration.sh reporting success while annotating nothing
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+DEPLOYMENT-DRIFT CONTROL (already performed -- do not redo): this defect was observed while running the deployed copy in a downstream repository whose .claude/ tree is roughly a week behind upstream (28 files differ, 6 absent). That staleness does NOT confound this finding: scripts/roadmap-integration.sh was compared and is BYTE-IDENTICAL between the upstream source store and the stale deployment (548 lines in both). This is therefore a genuine upstream bug, not an artifact of a stale sync.
+
+OBSERVED BEHAVIOR. Run against a downstream 1,617-line specs/ROADMAP.md, the script exited 0 and emitted a success-shaped payload: {"annotations_made": 0, "items_skipped": 1, "skipped_reasons": ["line_not_found_exact"]} with phases: 0 and matches: 1. That ROADMAP.md contains ZERO checkboxes -- both `grep -c '^\s*- \[ \]'` and the `- [x]` equivalent return 0.
+
+ROOT-CAUSE CANDIDATE (verify against the code; do NOT assume): line 133 hard-codes the phase-header regex `^## Phase (\d+): (.+?)(?:\s+\((\w+ Priority)\))?$`. The downstream roadmap uses headings of the form `## Overview`, `## BX Axiom System`, and `### Layer 1: Propositional (4)`. No `## Phase N:` heading exists anywhere in it, so zero phases parse.
+
+CRITICAL NUANCE -- THIS IS NOT A MISSING-FEATURE TASK. The script ALREADY contains a fix attempt aimed at exactly this situation. Around lines 390-398 there is a table-row-based completion matcher whose own inline comment states that the current table format has zero checkboxes and that without the loop, annotations_made is always 0 regardless of how many completed items the table actually lists. That loop EXISTS and still produced 0 annotations, with 1 match recorded and then skipped as `line_not_found_exact`. So the work is NOT "add table support" -- it is "the existing table support finds a match and then fails to locate the line to annotate." Start the investigation from that skipped reason and trace what line lookup the matcher performs after a successful match.
+
+THE DEEPER DEFECT IS BEHAVIORAL, NOT MERELY A PARSING BUG. The script returns exit 0 and a success-shaped JSON payload while doing nothing at all. Both /todo and /review consume that payload and duly report success to the user. A roadmap that parses to 0 phases AND contains 0 checkboxes is a condition the tool can detect cheaply and should surface loudly -- in the same family as the existing [SPARSE COVERAGE ...] and [UNVERIFIED ...] banners this system already uses elsewhere -- rather than passing silently as a no-op success.
+
+DECIDE AND RECOMMEND ONE of the following (the implementation should justify its choice, not implement all three by default):
+  (a) Fix the annotation line-lookup so the existing table matcher can actually annotate.
+  (b) Emit a loud, machine-readable unparseable-roadmap warning when phases == 0 and checkbox count == 0, so downstream consumers cannot report false success.
+  (c) Both.
+
+Also confirm how /todo and /review consume the payload, so that whichever signal is chosen is actually surfaced to the user rather than swallowed by the caller.
+
+SCOPE BOUNDARY: whether any individual downstream project's ROADMAP.md should be reformatted into the phase/checkbox shape is that project's own decision and is explicitly OUT OF SCOPE here. This task fixes the tool and its silence, not any particular roadmap document.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
 
 ### 909. Resolve the two hard-mode dispatch contexts that carry neither an absolute handoff anchor nor orchestrator_mode
 - **Status**: [NOT STARTED]
