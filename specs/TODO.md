@@ -6,13 +6,13 @@ next_project_number: 910
 
 ## Task Order
 
-*Updated 2026-07-25. Generated from state.json dependency graph.*
+*Updated 2026-07-26. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,905,909 | -- | agent-system, literature |
-| 2 | 887,906 | 873,885 | agent-system |
+| 1 | 873,885,909 | -- | agent-system |
+| 2 | 887,906 | 873,885,909 | agent-system |
 | 3 | 907 | 906 | agent-system |
 | 4 | 908 | 907 | agent-system |
 
@@ -23,14 +23,12 @@ next_project_number: 910
 873 [BLOCKED] — Make /meta create tasks in the GLOBAL agent-system root by defaul
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
+  └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use (see above)
   └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
       └─ 908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
 909 [NOT STARTED] — Residual gap surfaced by the implementation agent for the complet
-
-### Literature
-
-905 [NOT STARTED] — Make Zotero export staleness a detected, propagated, and loudly-s
+  └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
 
 ## Tasks
 
@@ -94,7 +92,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 885, Task 902, Task 906
+- **Dependencies**: Task 885, Task 902, Task 906, Task 909
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/core/** and NEVER .claude/**.
 
@@ -165,7 +163,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 885, Task 896, Task 901
+- **Dependencies**: Task 885, Task 896, Task 901, Task 909
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/core/** and NEVER .claude/**.
 
@@ -230,10 +228,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 905. Detect stale Zotero exports and fail loudly instead of returning clean zero results
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Research**: [905_zotero_export_freshness_end_to_end/reports/01_zotero-export-freshness-research.md]
+- **Plan**: [905_zotero_export_freshness_end_to_end/plans/01_zotero-export-freshness-plan.md]
+- **Summary**: [905_zotero_export_freshness_end_to_end/summaries/01_zotero-export-freshness-summary.md]
 
 **Description**: Make Zotero export staleness a detected, propagated, and loudly-surfaced condition end-to-end. Two defects share one root cause -- freshness is never checked -- and are deliberately kept in ONE task so the user-visible symptom is not half-fixed at any commit boundary.
 
@@ -711,7 +712,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 - **Status**: [BLOCKED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 873
+- **Dependencies**: Task 873, Task 885
 - **Research**: [887_research_telemetry_source_architecture_and_distill_redesign/reports/01_telemetry-source-architecture.md]
 
 **Description**: RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The user will /revise this and then /expand it into implementation tasks. Do NOT jump to implementation.
