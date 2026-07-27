@@ -1,0 +1,55 @@
+{
+  "status": "implemented",
+  "task_number": 833,
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1783626090_1b5169_833",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "completion_data": {
+    "completion_summary": "Hardened literature-search.sh's sanitize_query with ligature folding and punctuation normalization, added an additive chunks_trigram FTS5 fallback table with schema drift repair, implemented a bm25/phrase-retry/trigram fallback ladder with an honest degraded/fallback_tier/query_error envelope, and made literature-briefing.sh render honest degraded and syntax-error-with-next-action messaging -- verified end-to-end against the real 3746-chunk corpus, including two real bugs found and fixed (a broken count(*) empty-check and a missing conn.commit() for the lazy trigram rebuild)."
+  },
+  "memory_candidates": [
+    {
+      "content": "SQLite FTS5 external-content tables (content='other_table'): SELECT count(*) FROM fts_table is NOT a reliable 'has the index been populated/rebuilt' check -- it is satisfied directly from the content table's rowid range and returns the full row count immediately after CREATE VIRTUAL TABLE, even before any 'rebuild' special command has run and while an actual MATCH query still returns zero rows. To detect true population state, run a real MATCH probe against a known content sample instead of trusting count(*).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/833_harden_literature_retrieval_tokenization/summaries/01_harden-retrieval-tokenization-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["sqlite", "fts5", "external-content", "count", "rebuild"]
+    },
+    {
+      "content": "Python's sqlite3 module opens connections with an implicit per-connection transaction for write statements (isolation_level='' by default); an INSERT/UPDATE/DELETE executed via conn.execute() is silently rolled back if conn.close() runs without an explicit conn.commit() first. This is easy to miss when adding a first write path to a previously read-only function -- the write appears to work within the same connection (visible to subsequent queries on that connection) but never reaches disk.",
+      "category": "PATTERN",
+      "source_artifact": "specs/833_harden_literature_retrieval_tokenization/summaries/01_harden-retrieval-tokenization-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["python", "sqlite3", "transaction", "commit", "rollback"]
+    },
+    {
+      "content": "When a task's own triggering example strings are the very thing an earlier phase of the same plan fixes, later phases' verification steps that reuse those literal example strings can silently pass for the wrong reason (or fail to exercise the intended code path at all). Substitute real, currently-still-problematic inputs discovered fresh at verification time rather than trusting the plan's literal examples once an earlier phase has already neutralized them.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/833_harden_literature_retrieval_tokenization/summaries/01_harden-retrieval-tokenization-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["verification", "plan-execution", "test-design", "phased-implementation"]
+    }
+  ],
+  "modified_files": [
+    ".claude/scripts/literature-search.sh",
+    ".claude/scripts/literature-briefing.sh",
+    ".claude/scripts/literature-schema.sql",
+    "specs/833_harden_literature_retrieval_tokenization/plans/01_harden-retrieval-tokenization.md",
+    "specs/833_harden_literature_retrieval_tokenization/summaries/01_harden-retrieval-tokenization-summary.md",
+    "specs/833_harden_literature_retrieval_tokenization/progress/phase-1-progress.json",
+    "specs/833_harden_literature_retrieval_tokenization/progress/phase-2-progress.json",
+    "specs/833_harden_literature_retrieval_tokenization/progress/phase-3-progress.json",
+    "specs/833_harden_literature_retrieval_tokenization/progress/phase-4-progress.json",
+    "specs/833_harden_literature_retrieval_tokenization/progress/phase-5-progress.json",
+    "specs/833_harden_literature_retrieval_tokenization/.orchestrator-handoff.json"
+  ],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/833_harden_literature_retrieval_tokenization/summaries/01_harden-retrieval-tokenization-summary.md",
+      "summary": "Implementation summary for task 833: fallback ladder, ligature fold, additive trigram table, honest degraded envelope/rendering, real-corpus verification."
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1749673500_a3b2c1_663",
+  "task_number": 663,
+  "phases_completed": 7,
+  "phases_total": 7,
+  "summary": "Created cslib extension scaffold with manifest, EXTENSION.md, README.md, index-entries, and stub files",
+  "completion_data": {
+    "completion_summary": "Created complete cslib extension scaffold at .claude/extensions/cslib/ with manifest.json (task_type cslib, dependencies [core, lean], routing table), EXTENSION.md merge fragment, README.md documentation, 10-entry index-entries.json for context discovery, and minimal stub files for two agents (opus/sonnet), two skills, and one rule targeting **/*.lean paths."
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/663_create_cslib_extension_scaffold/summaries/01_scaffold-summary.md",
+      "summary": "Extension scaffold implementation summary"
+    }
+  ],
+  "memory_candidates": []
+}

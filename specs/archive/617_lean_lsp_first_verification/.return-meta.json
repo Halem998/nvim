@@ -1,0 +1,32 @@
+{
+  "status": "implemented",
+  "started_at": "2026-05-25T00:00:00Z",
+  "completed_at": "2026-05-25T00:30:00Z",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/617_lean_lsp_first_verification/summaries/01_lsp-first-summary.md",
+      "summary": "Implementation summary for task 617"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Updated three lean extension files to implement LSP-first verification policy: added lean_verify to all tool tables, replaced per-step lake build with lean_goal + lean_verify across all three files, positioned lean_multi_attempt as pre-edit trial step, and established three-tier verification cadence."
+  },
+  "memory_candidates": [
+    {
+      "content": "Lean extension LSP-first verification policy: three-tier cadence - per-step uses lean_goal + lean_verify, phase-end uses lake build Module.Name (scoped), final verification uses full lake build. lean_verify is for axiom/sorry checks. lean_multi_attempt is used BEFORE editing (pre-edit trial). Never run lake build per-step.",
+      "category": "PATTERN",
+      "source_artifact": "specs/617_lean_lsp_first_verification/summaries/01_lsp-first-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["lean", "lsp", "verification", "lake-build", "lean_verify", "three-tier"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1779752738_a86ca2",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
+  }
+}

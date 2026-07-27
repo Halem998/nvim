@@ -1,0 +1,54 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "task_number": 901,
+  "task_name": "orchestrate_dry_run_admission_report",
+  "session_id": "sess_1785007876_a13284_901",
+  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+  "delegation_depth": 2,
+  "artifacts": [
+    {
+      "path": "specs/901_orchestrate_dry_run_admission_report/summaries/01_dry-run-admission-report-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary: DRY_RUN_FLAG parser support, the shared triage classifier and dry-run report scripts, orchestrate.md/SKILL.md wiring, manifest registration, and a 20-assertion fixture test suite."
+    }
+  ],
+  "phases_completed": 6,
+  "phases_total": 6,
+  "modified_files": [
+    "agent-system/extensions/core/scripts/parse-command-args.sh",
+    "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/manifest.json",
+    "specs/901_orchestrate_dry_run_admission_report/fixtures/state-dry-run.json",
+    "specs/901_orchestrate_dry_run_admission_report/fixtures/handoffs/954-handoff.json",
+    "specs/901_orchestrate_dry_run_admission_report/fixtures/handoffs/955-handoff.json",
+    "specs/901_orchestrate_dry_run_admission_report/fixtures/handoffs/956-handoff.json",
+    "specs/901_orchestrate_dry_run_admission_report/tests/test-triage-classify.sh",
+    "specs/901_orchestrate_dry_run_admission_report/tests/test-dry-run-report.sh",
+    "specs/901_orchestrate_dry_run_admission_report/plans/01_dry-run-admission-report.md",
+    "specs/901_orchestrate_dry_run_admission_report/summaries/01_dry-run-admission-report-summary.md"
+  ],
+  "completion_data": {
+    "completion_summary": "Added a read-only --dry-run flag to /orchestrate that prints a six-section admission report (header, checks run, admitted, excluded, notes, recommended split), backed by a new shared handoff-triage classifier consumed by both the live Stage MT-4 dispatch and the dry-run report so the two paths cannot silently diverge."
+  },
+  "memory_candidates": [
+    {
+      "content": "A jq invocation that references only --argjson/--slurpfile variables (no `.` on stdin) MUST still pass -n (null input). Without -n, jq blocks on/reads an empty stdin and silently emits ZERO output with exit 0 -- no error, just an empty result that propagates as an empty variable through `set -uo pipefail` scripts (no -e), making the bug very easy to miss in code review since the script 'runs successfully'. Always pass -n whenever a jq filter's only inputs are --argjson/--arg/--slurpfile bindings.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/901_orchestrate_dry_run_admission_report/summaries/01_dry-run-admission-report-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["jq", "null-input", "silent-failure", "bash", "set -uo pipefail"]
+    },
+    {
+      "content": "When a live dispatch path and a read-only preview/dry-run path must agree on a routing rule (e.g. task-status -> next-action), extract the rule into its own script taking an explicit mode/engine argument rather than letting the preview reimplement or approximate the live logic. Both callers invoke the SAME script; a genuine behavioral fork (e.g. single-task vs multi-task engines disagreeing on one edge case) is then represented as an explicit engine argument and asserted by a fixture test, not silently papered over. This is the 'one code path, two consumers' pattern.",
+      "category": "PATTERN",
+      "source_artifact": "specs/901_orchestrate_dry_run_admission_report/summaries/01_dry-run-admission-report-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["dry-run", "shared-classifier", "one-code-path", "orchestration", "preview-fidelity"]
+    }
+  ],
+  "next_steps": "All 6 phases implemented and verified. Awaiting core-extension redeploy (from agent-system/extensions/core/** to .claude/) before the new --dry-run flag and scripts become live."
+}

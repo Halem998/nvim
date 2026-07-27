@@ -1,0 +1,33 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1783731064_fd2024_845",
+  "task_number": 845,
+  "phases_completed": 3,
+  "phases_total": 3,
+  "completion_data": {
+    "completion_summary": "Restored the --hard/routing_hard 5-step precedence resolution in command-route-skill.sh by recovering the verbatim implementation from commit 574bf515a, applying it to the extension-source copy, and byte-syncing it to the deployed copy. Test suite now fully passes (12/12, up from 6/14)."
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/845_implement_routing_hard_precedence_in_router/summaries/01_routing-hard-precedence-summary.md",
+      "summary": "Implementation summary for the routing_hard precedence restoration"
+    }
+  ],
+  "modified_files": [
+    ".claude/extensions/core/scripts/command-route-skill.sh",
+    ".claude/scripts/command-route-skill.sh",
+    "specs/845_implement_routing_hard_precedence_in_router/plans/01_routing-hard-precedence.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When restoring a regressed shell script that exists in both an extension-source copy and a deployed copy, always patch the extension-source copy FIRST (source of truth), then byte-sync (cp, not hand-edit) to the deployed copy. Verify with cmp -s / diff -q. Patching deployed-only recreates the regression on the next extension sync (this is exactly how the original command-route-skill.sh --hard precedence bug was introduced in the first place).",
+      "category": "PATTERN",
+      "source_artifact": "specs/845_implement_routing_hard_precedence_in_router/summaries/01_routing-hard-precedence-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["extension-source", "byte-sync", "regression", "drift-guard", "command-route-skill"]
+    }
+  ]
+}

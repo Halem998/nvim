@@ -1,0 +1,55 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/772_hardmode_orchestrator_pure_dispatcher/plans/01_orchestrator-pure-dispatcher.md",
+      "summary": "6-phase plan making skill-orchestrate-hard a pure dispatcher (Edit removal, Bash/Read scoping, H7 disable, skeleton routing, Stage 5 gate, dual-copy sync)."
+    },
+    {
+      "type": "summary",
+      "path": "specs/772_hardmode_orchestrator_pure_dispatcher/summaries/01_orchestrator-pure-dispatcher-summary.md",
+      "summary": "Implementation summary: all 6 phases complete, with deviations recorded (frontmatter prose-fallback, single Per-Phase Dispatch handler, centralized status-update script for skeleton-exhaustion routing, drift-detection preserved in Stage 5 rewrite)."
+    }
+  ],
+  "partial_progress": {
+    "stage": "all_phases_complete",
+    "details": "All 6 phases completed and verified. Dual-copy diff -q empty. Reserved regions for tasks 773/779 confirmed unchanged.",
+    "phases_completed": 6,
+    "phases_total": 6
+  },
+  "metadata": {
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "session_id": "sess_1783092185_cd6c84_772",
+    "phases_completed": 6,
+    "phases_total": 6
+  },
+  "completion_data": {
+    "completion_summary": "Made skill-orchestrate-hard (deployed + extensions/core mirror, byte-identical) a pure dispatcher: removed Edit from allowed-tools, documented Bash/Read constraints in prose (frontmatter multi-pattern scoping had no in-repo precedent, so fell back to Agent, Bash, Read + prose forbid-list), disabled Parallel Wave Dispatch (H7) so single blocking phase dispatch is unambiguous, replaced integer-increment phase selection with heading-scan plus skeleton-exhaustion routing to pr_ready from sorry_inventory[].follow_up_task, and gated Stage 5's implemented postflight transition on phases_completed >= phases_total so a single per-phase handoff cannot prematurely complete the task."
+  },
+  "memory_candidates": [
+    {
+      "content": "Claude Code skill frontmatter `allowed-tools:` has no in-repo precedent for multi-pattern-per-line tool scoping (e.g. `Bash(cmd1:*), Bash(cmd2:*), Read(path/*)`). Only single-pattern precedent found repo-wide: `skill-git-workflow: allowed-tools: Bash(git:*)`. settings.json's `permissions.allow` array is a separate mechanism (JSON list) and not evidence for frontmatter multi-pattern support. When a plan calls for multi-pattern frontmatter scoping and no sandboxed harness exists to verify enforcement, prefer the documented prose-forbid-list fallback (unscoped tool name + an explicit prose 'Forbidden Operations' section) over shipping unverified syntax.",
+      "category": "PATTERN",
+      "source_artifact": "specs/772_hardmode_orchestrator_pure_dispatcher/summaries/01_orchestrator-pure-dispatcher-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["allowed-tools", "frontmatter", "skill-definition", "tool-scoping", "Claude-Code"]
+    },
+    {
+      "content": "When a skill's state-machine prose mixes multiple '#### State: X' handlers for the same state (e.g. a primary handler plus an 'optional' parallel variant), verification scripts/graders that grep for 'exactly one handler' will fail unless the alternate path's heading is removed entirely (not just its body/code-block). Disabling a feature documented as its own heading should demote it to a plain paragraph without a heading, not just mark the heading 'DISABLED'.",
+      "category": "PATTERN",
+      "source_artifact": "specs/772_hardmode_orchestrator_pure_dispatcher/summaries/01_orchestrator-pure-dispatcher-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["skill-orchestrate-hard", "state-machine", "verification", "disabling-features"]
+    },
+    {
+      "content": "wrap-up.md's orchestrator handoff schema (H9 contract) canonical sorry_inventory entry schema is {file, line, statement, strategic, assumption, why_deferred, follow_up_task} at the array level, with a top-level `skeleton` boolean on the handoff itself. `follow_up_task` (singular, per sorry_inventory entry) is the actually-shipped field for routing skeleton-exhaustion follow-ups — NOT a top-level `.follow_up_tasks` (plural) field, which some skills (e.g. skill-implementer-hard Stage 3b) optimistically read but which wrap-up.md never populates. Any orchestrator logic deriving follow-up tasks from a skeleton handoff must read `[.sorry_inventory[]?.follow_up_task | select(. != null)] | unique`.",
+      "category": "CONFIG",
+      "source_artifact": "specs/772_hardmode_orchestrator_pure_dispatcher/summaries/01_orchestrator-pure-dispatcher-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["wrap-up.md", "sorry_inventory", "follow_up_task", "skeleton", "handoff-schema", "H9"]
+    }
+  ]
+}

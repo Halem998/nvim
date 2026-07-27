@@ -1,0 +1,53 @@
+{
+  "task": 797,
+  "status": "implemented",
+  "summary": "Implemented assisted Zotero export generation for literature-discover.sh Tier 2: a new generator (zotero-generate-export.sh, 3 fallback paths, deterministic citekey synthesis, staleness stamp), a new stateless classifier (zotero-export-status.sh, 4 directive tokens), and an AskUserQuestion-based offer wired into /literature's discover workflow via a separate non-suppressed invocation. All 4 plan phases completed, dual-copied, manifest-registered, and verified.",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "blockers": [],
+  "continuation_context": null,
+  "deviations": [
+    {
+      "phase": 3,
+      "description": "Used a two-option AskUserQuestion (\"Generate now\" / \"Skip this run\") instead of the three-option literature-lit-flag-resolve.sh precedent, since there is no equivalent third \"create task\" action for a one-time local Zotero snapshot."
+    },
+    {
+      "phase": 4,
+      "description": "shellcheck is not installed on this machine; bash -n was used as the syntax-correctness gate for all scripts instead. Recommend running shellcheck in a CI environment as a follow-up."
+    }
+  ],
+  "unverifiable_on_this_box": [
+    "Path 1 (Zotero 7 local API) live pull -- requires a running Zotero instance",
+    "Path 2 (Better BibTeX JSON-RPC citekey enrichment) -- requires running Zotero + Better BibTeX plugin",
+    "ZOTERO_EXPORT_MISSING_RUNNING classifier directive -- requires a reachable local Zotero API"
+  ],
+  "artifacts": {
+    "plan": "specs/797_literature_zotero_export_assisted_setup/plans/01_assisted-zotero-export-generation.md",
+    "summary": "specs/797_literature_zotero_export_assisted_setup/summaries/01_assisted-zotero-export-generation-summary.md",
+    "scripts_new": [
+      ".claude/extensions/literature/scripts/zotero-generate-export.sh",
+      ".claude/scripts/zotero-generate-export.sh",
+      ".claude/extensions/literature/scripts/zotero-export-status.sh",
+      ".claude/scripts/zotero-export-status.sh"
+    ],
+    "scripts_edited": [
+      ".claude/extensions/literature/scripts/literature-discover.sh",
+      ".claude/scripts/literature-discover.sh"
+    ],
+    "commands_edited": [
+      ".claude/extensions/literature/commands/literature.md"
+    ],
+    "manifest_edited": [
+      ".claude/extensions/literature/manifest.json"
+    ]
+  },
+  "verification": {
+    "bash_syntax": "pass (bash -n on all 6 script instances)",
+    "shellcheck": "not run (tool unavailable on this machine)",
+    "byte_identical_diffs": "pass (all 3 canonical/flat pairs)",
+    "manifest_membership": "pass (both new scripts present, jq empty passes)",
+    "end_to_end_smoke_test": "pass (classifier -> generator Path 3 -> valid JSON array + staleness stamp -> zotero-search.sh consumption, both on the real empty on-box sqlite and a synthetic populated fixture with citekey collision disambiguation)",
+    "discover_stdout_contract": "pass (literature-discover.sh still emits a pure JSON array on stdout on both canonical and flat copies; new hint appears only on stderr)"
+  },
+  "next_steps": "Task complete. Optional follow-ups: run shellcheck in a CI environment where it is available; live-test Path 1/Path 2 on a machine with Zotero running (and Better BibTeX installed for Path 2)."
+}

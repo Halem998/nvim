@@ -1,0 +1,21 @@
+{
+  "status": "implemented",
+  "summary": "Added --review flag to /pr command via STEP 0 early-exit block in .claude/extensions/cslib/commands/pr.md. Parses GitHub PR URLs, Zulip thread URLs, and free-text descriptions into a typed sources array; creates a state.json task with task_type 'pr' and sources field. All 3 phases complete.",
+  "artifacts": [
+    {
+      "path": "specs/722_add_pr_review_flag/summaries/01_pr-review-flag-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary covering what changed, decisions made, and one plan deviation (no tmp-dir needed)"
+    },
+    {
+      "path": ".claude/extensions/cslib/commands/pr.md",
+      "type": "modified_file",
+      "summary": "STEP 0 block (~295 lines) added before STEP 1 with --review detection, source parsing, and task creation"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "phases_completed": 3,
+  "phases_total": 3,
+  "next_action_hint": "complete"
+}

@@ -1,0 +1,35 @@
+{
+  "status": "implemented",
+  "summary": "Added reload functionality to extension picker. CR on a loaded extension now shows a vim.ui.select submenu (Unload/Reload/Cancel) instead of directly unloading. A new [Reload All] special entry reloads all loaded extensions in dependency-safe order with error summary notification. Both files verified with nvim --headless dofile.",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/ai/claude/commands/picker/init.lua",
+      "summary": "Added vim.ui.select submenu for loaded extensions on CR; added is_reload_all handler with dependency-safe loop; updated four guard conditions"
+    },
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/ai/claude/commands/picker/display/entries.lua",
+      "summary": "Added [Reload All] special entry in create_special_entries() just above [Keyboard Shortcuts]"
+    },
+    {
+      "type": "summary",
+      "path": "specs/618_picker_reload_extensions/summaries/01_picker-reload-summary.md",
+      "summary": "Implementation summary with verification and decision notes"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added reload functionality to the extension picker: pressing CR on a loaded extension shows a vim.ui.select submenu with Unload/Reload/Cancel options; a new [Reload All] special entry reloads all loaded extensions in dependency-safe order (non-core first, core last) with error collection and summary notification.",
+    "roadmap_items": []
+  },
+  "metadata": {
+    "session_id": "sess_1779754251_1ba165",
+    "duration_seconds": 300,
+    "agent_type": "neovim-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"],
+    "phases_completed": 2,
+    "phases_total": 2
+  },
+  "next_steps": "Test changes by opening Neovim and using <leader>al"
+}

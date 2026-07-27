@@ -1,0 +1,55 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Executed all 5 phases of plans/02_email-all-emit-tagged.md across two repos. Phase 1 (.dotfiles): added a genuinely read-only email-classify --emit-tagged mode to modules/home/email/agent-tools/classify.nix that derives proposed_action strictly from a message's existing +proposed-* tag (never recomputed, never re-tagged; no notmuch tag call in the branch), using classify_one() only for display confidence/reason (prefixed tag-derived;), unbounded (no --limit/MAX_BATCH_SIZE). Placed the branch after classify_one()'s definition (a deviation from the plan's line-80 reference, required so the branch could call the function bash requires be defined first). Phase 2 (.dotfiles): documented --emit-tagged in wrapper-contract.md (§1 table + new §12 addendum). Both committed together in ~/.dotfiles (commit ce20df9). Phase 3 (nvim repo): switched skill-email-cleanup SKILL.md's --all mode Stage 1 residual count-probe and Stage 2 residual pass to --emit-tagged, added a distinct '0 new, all residual' status before Stage 2.5, and dropped the now-inapplicable per-tag completeness caveat (new-message probe unchanged, still --limit 0). Phase 4 (nvim repo): updated wrapper-contracts.md (§1, §6, new §10a) and corrected the 'emit-on-change' mischaracterization in §10. Phases 3-4 committed together (commit b0aa8743b). Phase 5: verified flag name/argument shape and mode semantics agree across both repos' docs and the implementation, and confirmed no changes leaked into mode=default or the mutation wrappers; committed with the plan/summary updates (commit eac47cda2). No live notmuch mailbox was reachable in this environment, so two optional live-mailbox verification steps (Phase 1's overwrite-to-empty probe, Phase 5's end-to-end --all dry pass) were substituted with static/synthetic logic checks and recorded as plan deviations rather than blocking completion.",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": "~/.dotfiles/modules/home/email/agent-tools/classify.nix"
+    },
+    {
+      "type": "implementation",
+      "path": "~/.dotfiles/specs/072_email_workflow_infrastructure_prereqs/handoffs/wrapper-contract.md"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/email/skills/skill-email-cleanup/SKILL.md"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"
+    },
+    {
+      "type": "plan",
+      "path": "specs/820_email_all_resurface_classified_gap/plans/02_email-all-emit-tagged.md"
+    },
+    {
+      "type": "summary",
+      "path": "specs/820_email_all_resurface_classified_gap/summaries/02_email-all-emit-tagged-summary.md"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "complete",
+  "files_modified": [
+    "specs/820_email_all_resurface_classified_gap/plans/02_email-all-emit-tagged.md",
+    "specs/820_email_all_resurface_classified_gap/summaries/02_email-all-emit-tagged-summary.md",
+    "specs/820_email_all_resurface_classified_gap/.return-meta.json",
+    "specs/820_email_all_resurface_classified_gap/.orchestrator-handoff.json",
+    ".claude/extensions/email/skills/skill-email-cleanup/SKILL.md",
+    ".claude/extensions/email/context/project/email/domain/wrapper-contracts.md"
+  ],
+  "decisions_made": [
+    "Placed the --emit-tagged branch in classify.nix after classify_one()'s definition rather than near line 80 (alongside --append-approved) as the plan's reference design suggested, because the branch calls classify_one() for display fields and bash requires the function be defined before the call site.",
+    "Dropped the '--all' mode's residual completeness caveat (previously bounded to CHUNK_SIZE per prior-tag bucket): --emit-tagged has no --limit and processes the full per-tag match in one call, so residual coverage is complete by construction rather than an estimate. Added a softer performance-only note instead, since no live mailbox was available to independently confirm scale acceptability.",
+    "Committed .dotfiles Phases 1-2 together (single commit, since Phase 2's doc update directly documents Phase 1's change) and nvim-repo Phases 3-4 together (single commit, since both are doc/skill updates consuming the same new flag), per the plan's 'may share a commit if executed together' guidance.",
+    "Kept two-repo commit hygiene strict: all .dotfiles changes committed only in ~/.dotfiles (commit ce20df9); all nvim-repo content changes committed only in .config/nvim (commits b0aa8743b, eac47cda2). Did not touch specs/state.json or specs/TODO.md, leaving the task-tracking commit to the orchestrator."
+  ],
+  "dead_ends": [
+    "Do not call classify_one() for the action in --emit-tagged -- it must come only from the tag case block, or the rule-drift silent-rewrite risk this task closes would reappear.",
+    "Do not move the new-message count probe to --emit-tagged -- untagged messages have no +proposed-* tag to read; it correctly stays on the --limit 0 NOTE-line oracle.",
+    "Do not place the --emit-tagged branch before classify_one()'s definition in classify.nix -- bash will fail with 'command not found' since functions must be defined before use in a shell script's execution order."
+  ],
+  "plan_markers_verified": true,
+  "completion_summary": "Implementation complete: added a genuinely read-only email-classify --emit-tagged mode in .dotfiles (tag-derived action, display-only confidence, no notmuch tag call, no batch cap) and switched skill-email-cleanup's --all mode residual count-probe and residual pass to consume it, closing both the destructive candidate-manifest overwrite race and the silent-rewrite-on-rule-drift risk. Both repos' contract docs were updated to document the new mode and correct the prior emit-on-change mischaracterization of classify's default mode. All 5 plan phases completed; two optional live-mailbox verification steps were substituted with static/synthetic checks and recorded as deviations, with a recommendation that the user run one real /email --all pass to confirm live behavior."
+}

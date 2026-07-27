@@ -1,0 +1,24 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 640,
+  "session_id": "sess_20260608_impl640",
+  "started_at": "2026-06-08T00:00:00Z",
+  "completed_at": "2026-06-08T00:30:00Z",
+  "phases_completed": 2,
+  "phases_total": 2,
+  "summary_path": "specs/640_todo_topic_revision/summaries/01_topic-revision-summary.md",
+  "completion_data": {
+    "completion_summary": "Added Stage 2.5 (TopicRevision) and Stage 10.3 (OrphanTopicCleanup) to skill-todo/SKILL.md, and expanded /task --sync Step 6.5 with 'New topic...' AskUserQuestion option and active_topics maintenance matching the Step 4.5 canonical pattern.",
+    "roadmap_items": []
+  },
+  "memory_candidates": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/640_todo_topic_revision/summaries/01_topic-revision-summary.md",
+      "summary": "Implementation summary for task 640 - topic revision stages in skill-todo and task --sync expansion"
+    }
+  ]
+}

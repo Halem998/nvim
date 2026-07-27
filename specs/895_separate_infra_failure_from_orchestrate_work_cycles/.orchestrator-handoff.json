@@ -1,0 +1,34 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "All 6 plan phases completed: added the shared infra-failure-discrimination.md pattern doc, MAX_INFRA_FAILURES=3 counter plumbing, Stage 5 two-signal discrimination branch, Stage MT-4 per-task defer-not-fail branch, the matching hard-mode Stage 2/4/5/7 edits, and the architecture/command doc updates. All Testing & Validation checks (bash -n, jq empty, dispatch-site parity, bound trace, conservative-default trace, .claude/ leak check, citation check) passed.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/895_separate_infra_failure_from_orchestrate_work_cycles/summaries/01_infra-failure-vs-work-cycle-summary.md",
+      "summary": "Implementation summary covering all 6 phases, dispatch-site parity audit with exclusion lists, and hand-traced bound/default verification."
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/context/patterns/infra-failure-discrimination.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/context/patterns/mcp-tool-recovery.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/commands/orchestrate.md"
+  ],
+  "decisions_made": [
+    "Followed the plan's exact replacement text for all 16 edit sites verbatim rather than re-deriving the discrimination logic.",
+    "Preserved the AND (never weakened to OR/fallthrough) at every discrimination site in both orchestrator variants.",
+    "Confirmed rather than edited two Phase 5 items already correct: hard-mode Multi-Task Mode delegation is unchanged, and Stage 3b's loop-guard jq write already preserves infra_failures via field assignment.",
+    "Did not deploy .claude/ (out of scope per plan Non-Goals); validated the source-store index entry directly with jq rather than via the deployed validator."
+  ],
+  "dead_ends": [],
+  "continuation_context": null,
+  "plan_markers_verified": true,
+  "session_id": "sess_1784989231_f82b61"
+}

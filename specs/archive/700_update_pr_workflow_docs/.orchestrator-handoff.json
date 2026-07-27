@@ -1,0 +1,14 @@
+{
+  "status": "planned",
+  "summary": "4-phase plan to update PR workflow docs: EXTENSION.md skill table, pr-prohibition.md (both copies), and pr.md stale references",
+  "artifacts": [
+    {
+      "path": "specs/700_update_pr_workflow_docs/plans/01_implementation-plan.md",
+      "type": "plan",
+      "summary": "4-phase implementation plan for documentation updates reflecting PR workflow separation"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "implement"
+}

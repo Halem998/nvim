@@ -1,0 +1,10 @@
+{
+  "status": "implemented",
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/nvim/agents/neovim-implementation-agent.md",
+    "agent-system/extensions/nix/agents/nix-implementation-agent.md",
+    "agent-system/extensions/email/agents/email-implementation-agent.md"
+  ]
+}

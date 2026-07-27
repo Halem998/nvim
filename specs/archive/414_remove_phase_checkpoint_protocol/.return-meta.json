@@ -1,0 +1,20 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/414_remove_phase_checkpoint_protocol/plans/01_checkpoint-removal-plan.md",
+      "summary": "Revised plan conforming to plan-format.md with all required metadata, sections, and phase format"
+    }
+  ],
+  "next_steps": "Run /implement 414 to execute the revised plan",
+  "metadata": {
+    "session_id": "sess_1776069753_5197b6",
+    "agent_type": "reviser-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "revise", "reviser-agent"],
+    "phase_count": 4,
+    "estimated_hours": 1,
+    "reports_integrated": ["01_checkpoint-protocol-audit.md"]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/746_enforce_plan_checkbox_tracking/plans/01_plan-checkbox-tracking.md",
+      "summary": "3-phase plan: harden self-review gate, add postflight checkbox scan, extend handoff schema with subtasks_completed"
+    }
+  ],
+  "next_steps": "Run /implement 746 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1750362000_a7b3c1",
+    "agent_type": "planner-agent",
+    "duration_seconds": 180,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 2,
+    "dependency_waves": [[1, 2], [3]]
+  },
+  "memory_candidates": []
+}

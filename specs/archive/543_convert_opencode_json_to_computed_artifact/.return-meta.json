@@ -1,0 +1,21 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "path": "specs/543_convert_opencode_json_to_computed_artifact/summaries/01_convert-opencode-json-summary.md",
+      "type": "summary",
+      "summary": "Replaced merge-target approach for opencode.json with computed-artifact regeneration. Added generate_opencode_json(), updated init.lua/sync.lua/verify.lua/opencode core installer, removed deprecated merge/unmerge functions, updated 16 extension manifests, added permission block to base template, and documented the pattern."
+    }
+  ],
+  "metadata": {
+    "phases_completed": 9,
+    "phases_total": 9
+  },
+  "completion_data": {
+    "completion_summary": "Converted opencode.json from per-extension merge/unmerge to computed-artifact regeneration with centralized permission configuration."
+  },
+  "partial_progress": {
+    "handoff_path": ""
+  },
+  "memory_candidates": []
+}

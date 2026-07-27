@@ -1,0 +1,21 @@
+{
+  "status": "implemented",
+  "summary": "Added interactive --lit detection: created literature-create-setup-task.sh, updated AskUserQuestion detection block in Stage 4a of all 6 skill SKILL.md files, and updated CLAUDE.md documentation",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/760_create_literature_sub_index_for_cslib/plans/01_lit-setup-plan.md",
+      "summary": "Implementation plan with 4 sequential phases covering helper script, skill amendments, fork dispatch, and documentation"
+    },
+    {
+      "type": "summary",
+      "path": "specs/760_create_literature_sub_index_for_cslib/summaries/01_lit-setup-summary.md",
+      "summary": "Execution summary for all 4 phases of task 760 implementation"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "phases_completed": 4,
+  "phases_total": 4,
+  "next_action_hint": "complete"
+}

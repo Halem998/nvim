@@ -1,0 +1,38 @@
+{
+  "agent_type": "general-implementation-agent",
+  "task_number": 753,
+  "session_id": "sess_1781910367_99f70a_753",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "status": "implemented",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "completion_data": {
+    "completion_summary": "Implemented --zot flag for /research, /plan, and /implement commands by writing zotero-retrieve.sh (6-field weighted scoring, chunk reading, token budgeting), wiring zot_flag through 3 command files and 3 skill files, threading zot_flag through all 12 dispatch locations in skill-orchestrate, and updating EXTENSION.md and retrieval-flags.md documentation."
+  },
+  "memory_candidates": [
+    {
+      "content": "The --zot flag injection pattern for Zotero context follows --lit exactly: (1) parse flag in command file Stage 1.5, (2) pass zot_flag in delegation args, (3) retrieve in skill Stage 4a via zotero-retrieve.sh, (4) inject in Stage 5 prompt. skill-orchestrate requires 12 injection points matching lit_flag count (grep -c 'lit_flag' to verify parity).",
+      "category": "PATTERN",
+      "source_artifact": "specs/753_implement_zotero_context_injection/summaries/01_context-injection-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["zot_flag", "zotero", "context-injection", "lit_flag", "skill-orchestrate", "retrieval"]
+    }
+  ],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/753_implement_zotero_context_injection/summaries/01_context-injection-summary.md",
+      "summary": "Zotero context injection implementation summary covering all 4 phases and 9 modified files"
+    },
+    {
+      "type": "script",
+      "path": ".claude/extensions/zotero/scripts/zotero-retrieve.sh",
+      "summary": "Core retrieval script with 6-field scoring, chunk reading, and token budgeting"
+    },
+    {
+      "type": "script",
+      "path": ".claude/scripts/zotero-retrieve.sh",
+      "summary": "Copy of zotero-retrieve.sh installed for skill consumption"
+    }
+  ]
+}

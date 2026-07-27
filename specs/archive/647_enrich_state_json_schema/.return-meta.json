@@ -1,0 +1,22 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/647_enrich_state_json_schema/plans/01_enrich-state-schema.md",
+      "summary": "4-phase plan for state.json schema enrichment: backfill missing fields, update schema docs, update script fallback chain, validate completeness"
+    }
+  ],
+  "next_steps": "Run /implement 647 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1781130828_de7a25_647",
+    "agent_type": "planner-agent",
+    "duration_seconds": 300,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 2,
+    "dependency_waves": [[1, 2], [3], [4]]
+  },
+  "memory_candidates": []
+}

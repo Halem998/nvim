@@ -1,0 +1,16 @@
+{
+  "status": "researched",
+  "summary": "Task 693 is a false positive: literature-retrieve.sh already exists at .claude/scripts/literature-retrieve.sh (created 2026-06-12 in commit ff9980cc3 as part of tasks 689-690). The script is executable, implements TOKEN_BUDGET=4000 and MAX_FILES=10, and is correctly called from all three skills (researcher, planner, implementer) in both .claude/skills/ and .claude/extensions/core/skills/. LIT_FLAG is properly parsed in parse-command-args.sh and threaded through skill-orchestrate. No implementation work is needed; the task should be marked complete or abandoned.",
+  "artifacts": [
+    {
+      "path": "specs/693_fix_lit_flag_missing_script/reports/01_lit-flag-research.md",
+      "type": "report",
+      "summary": "Confirms literature-retrieve.sh was already created by tasks 689-690, documents all call sites and integration points, recommends closing task 693 as already-completed."
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "plan",
+  "phases_completed": 0,
+  "phases_total": 0
+}

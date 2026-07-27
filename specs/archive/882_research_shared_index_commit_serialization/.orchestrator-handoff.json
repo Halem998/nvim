@@ -1,0 +1,24 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Exposed task-lock.sh's scope mutex as scope-acquire/scope-release, bracketed orchestrator-postflight.sh Stages 7-8a (state.json RMW + TODO regen) with a re-entrancy-guarded, holder-declared-staleness mutex shared with update-task-status.sh's standalone path, and added honest Stage 9 commit-message addendums naming other tasks whose rows a commit carries. All 6 phases verified live against .claude/scripts/ without creating any real commit.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/882_research_shared_index_commit_serialization/summaries/01_scope-mutex-serialization-summary.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/scripts/task-lock.sh",
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md"
+  ],
+  "decisions_made": [
+    "POSTFLIGHT_SCOPE_STALE_SEC=30 (measured worst-case ~400ms; 6x is below the plan's 30s floor)",
+    "update-task-status.sh reuses its pre-existing EXIT trap (extended, idempotent) instead of a second trap"
+  ],
+  "dead_ends": [],
+  "plan_markers_verified": true
+}

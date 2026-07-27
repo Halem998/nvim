@@ -1,0 +1,24 @@
+{
+  "status": "implemented",
+  "started_at": "2026-06-12T00:00:00Z",
+  "completed_at": "2026-06-12T01:00:00Z",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/676_cslib_extension_hard_mode_variants/summaries/01_cslib-hard-mode-summary.md",
+      "summary": "Implementation of hard-mode routing for cslib extension: 2 agents, 2 skills, manifest routing_hard block, EXTENSION.md update, 2 index-entries"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added hard-mode routing to the cslib extension with routing_hard manifest block, 2 hard-mode agents (cslib-research-hard-agent with H2+H3+H4 and BibKey verification, cslib-implementation-hard-agent with H2+H7+H9 and sorry_inventory), 2 hard-mode skill wrappers, EXTENSION.md hard-mode table rows and guidance, and 2 index-entries.json entries."
+  },
+  "memory_candidates": [],
+  "metadata": {
+    "session_id": "sess_1781288710_ad1e5a_676",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
+}

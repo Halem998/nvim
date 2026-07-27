@@ -1,0 +1,44 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1781482254_239635_702",
+  "task_number": 702,
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "phases_completed": 4,
+  "phases_total": 4,
+  "completed_at": "2026-06-14T18:30:00Z",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/702_create_literature_command/summaries/01_lit-command-summary.md",
+      "summary": "Implementation summary for all 4 phases"
+    },
+    {
+      "type": "command",
+      "path": ".claude/commands/literature.md",
+      "summary": "Command entry point for /literature"
+    },
+    {
+      "type": "skill",
+      "path": ".claude/skills/skill-literature/SKILL.md",
+      "summary": "Direct-execution skill with all 5 sub-modes"
+    },
+    {
+      "type": "agent",
+      "path": ".claude/agents/literature-agent.md",
+      "summary": "Agent documentation file"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Created /literature command with skill (5 sub-modes: status, scan, convert, validate, index) and agent documentation, registered in core manifest, merge-sources, and CLAUDE.md."
+  },
+  "memory_candidates": [
+    {
+      "content": "The /literature command follows the direct-execution pattern (Pattern B) like /distill and /fix-it: command.md parses args and delegates to skill-literature via the Skill tool; skill-literature runs inline with AskUserQuestion — no agent subagent is spawned. pdftotext (poppler, available) is the primary conversion tool; djvutxt (djvulibre) is not installed and requires graceful degradation. Token counting: chars/4 + 20 (same as memory-harvest.sh). Chunking: 10 pages per chunk = ~4000 tokens.",
+      "category": "PATTERN",
+      "source_artifact": "specs/702_create_literature_command/summaries/01_lit-command-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["literature", "pdf", "convert", "direct-execution", "pdftotext", "chunking"]
+    }
+  ]
+}

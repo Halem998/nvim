@@ -1,0 +1,63 @@
+{
+  "status": "implemented",
+  "metadata": {
+    "session_id": "sess_1783723116_10f020_841",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  },
+  "completion_data": {
+    "completion_summary": "Backported the 6 drifted literature scripts (search/briefing/schema/chunk/convert/ingest) verbatim deployed->extension-source, added literature-fidelity-audit.sh to the extension source and manifest, and installed a content-diff drift guard in check-extension-docs.sh (proven to fail on injected divergence and recover to PASS on revert). All 7 reconciled pairs are byte-identical, unadjudicated marker counts match (2/3), fidelity-audit --dry-run output is byte-identical to the pre-task baseline, and no deployed .claude/scripts/ target file was modified."
+  },
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/841_reconcile_literature_extension_source_drift/plans/01_reconciliation-plan.md",
+      "summary": "5-phase reconciliation plan, all phases marked [COMPLETED] with deviation annotations"
+    },
+    {
+      "type": "summary",
+      "path": "specs/841_reconcile_literature_extension_source_drift/summaries/01_reconciliation-summary.md",
+      "summary": "Implementation summary: backport, fidelity-audit addition, drift guard, and full verification results including two honestly-reported deviations"
+    }
+  ],
+  "modified_files": [
+    ".claude/extensions/literature/scripts/literature-search.sh",
+    ".claude/extensions/literature/scripts/literature-briefing.sh",
+    ".claude/extensions/literature/scripts/literature-schema.sql",
+    ".claude/extensions/literature/scripts/literature-chunk.sh",
+    ".claude/extensions/literature/scripts/literature-convert.sh",
+    ".claude/extensions/literature/scripts/literature-ingest.sh",
+    ".claude/extensions/literature/scripts/literature-fidelity-audit.sh",
+    ".claude/extensions/literature/manifest.json",
+    ".claude/scripts/check-extension-docs.sh",
+    ".claude/extensions/core/scripts/check-extension-docs.sh",
+    "specs/841_reconcile_literature_extension_source_drift/.baseline-fidelity-audit-dryrun.txt",
+    "specs/841_reconcile_literature_extension_source_drift/plans/01_reconciliation-plan.md",
+    "specs/841_reconcile_literature_extension_source_drift/summaries/01_reconciliation-summary.md",
+    "specs/841_reconcile_literature_extension_source_drift/progress/phase-1-progress.json",
+    "specs/841_reconcile_literature_extension_source_drift/progress/phase-2-progress.json",
+    "specs/841_reconcile_literature_extension_source_drift/progress/phase-3-progress.json",
+    "specs/841_reconcile_literature_extension_source_drift/progress/phase-4-progress.json",
+    "specs/841_reconcile_literature_extension_source_drift/progress/phase-5-progress.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo, check-extension-docs.sh's manifest.provides.scripts entries can include the doc-lint script itself (e.g. core declares check-extension-docs.sh). Any edit to a deployed .claude/scripts/<name> that is also a provides.scripts entry must be mirrored into that extension's own source (.claude/extensions/<ext>/scripts/<name>), otherwise a newly-added content-diff drift guard will immediately self-flag the edit as drift the moment it is introduced.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/841_reconcile_literature_extension_source_drift/summaries/01_reconciliation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["check-extension-docs", "self-referential-drift", "provides.scripts", "core-extension"]
+    },
+    {
+      "content": "check-extension-docs.sh in this repo has pre-existing, long-standing FAIL entries unrelated to any specific task: core reports 3 undeclared-script-reference failures (literature-briefing-invoke.sh, orchestrator-postflight.sh, task-lock.sh referenced in docs but not in provides.scripts) and lean reports 2 routing_hard-target-not-deployed failures (skill-lean-research-hard, skill-lean-implementation-hard). Verified via git stash (task 841) that these exist identically with and without unrelated changes. Do not assume script-wide exit 1 means your own change broke something -- check whether the specific extension section you touched is PASS.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/841_reconcile_literature_extension_source_drift/summaries/01_reconciliation-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["check-extension-docs", "pre-existing-failures", "core-extension", "lean-extension", "doc-lint-baseline"]
+    }
+  ],
+  "next_steps": "Task complete. Recommend future task to address the 5 pre-existing unrelated check-extension-docs.sh failures in core (3 undeclared script references) and lean (2 routing_hard undeployed targets), out of scope for task 841."
+}

@@ -1,0 +1,28 @@
+{
+  "status": "implemented",
+  "task_number": 893,
+  "session_id": "sess_1784991755_1b4381_893",
+  "artifacts": [
+    {
+      "path": "specs/893_close_stranded_status_detection_gap_for_not_started/plans/01_stranded-status-detection-gap.md",
+      "type": "plan",
+      "summary": "3-phase plan adding a not_started) branch to reconcile-task-status.sh with an artifact_newer_than_last_update() mtime guard against /task --recover false positives, plus a 10-case sandbox verification matrix."
+    },
+    {
+      "path": "specs/893_close_stranded_status_detection_gap_for_not_started/summaries/01_stranded-status-detection-gap-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary: not_started) dispatch branch with mtime-gated promotion, verified against a 10-case sandbox matrix; fix is source-store only and inert until user re-deploys via <leader>al."
+    }
+  ],
+  "phases_total": 3,
+  "phases_completed": 3,
+  "files_modified": [
+    "agent-system/extensions/core/scripts/reconcile-task-status.sh"
+  ],
+  "blockers": [],
+  "continuation_context": {
+    "is_successor": false,
+    "notes": "All 3 phases genuinely passed, including a false-positive acceptance matrix (T2/T3/T4/T5/T7 all confirmed not_started after a LIVE sandbox run) and a byte-identical T10 regression pass. No continuation needed. The fix is inert until the user runs <leader>al to redeploy .claude/ from the source store -- an agent cannot perform that step."
+  },
+  "next_steps": "Task complete. User must re-deploy via <leader>al (\"Load Core\" / \"Sync all\") for the fix to take effect in .claude/scripts/reconcile-task-status.sh."
+}

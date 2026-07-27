@@ -1,0 +1,20 @@
+{
+  "status": "implemented",
+  "summary": "Added --search and --task N modes to /literature command and skill-literature. Implemented 7-step search handler (Zotero library lookup + Literature/ index cross-reference + multi-select AskUserQuestion with [IMPORTED]/[PDF AVAILABLE]/[NO PDF] tags) and 5-step import pipeline (PDF symlink + handle_convert with PREFILL vars + jq index patch + git commit). Updated literature-agent.md with Zotero Integration section and exit-code contract table. All 6 files verified IDENTICAL between extension source and core installed locations.",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "blockers": [],
+  "continuation_context": null,
+  "artifacts": [
+    {
+      "path": "specs/714_enhance_literature_command_zotero/summaries/01_literature-zotero-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary: 4 phases completed, 6 files modified (command, skill, agent x2 each + manifest)"
+    },
+    {
+      "path": "specs/714_enhance_literature_command_zotero/plans/01_literature-zotero-plan.md",
+      "type": "plan",
+      "summary": "All 4 phases marked COMPLETED with checked-off tasks"
+    }
+  ]
+}

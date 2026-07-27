@@ -1,0 +1,22 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/661_fix_hook_regexes_lifecycle_notify/plans/01_hook-regex-lifecycle.md",
+      "summary": "2-phase implementation plan for fixing hook regexes and creating lifecycle-notify.sh"
+    }
+  ],
+  "next_steps": "Run /implement 661 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1781200006_200d87_661",
+    "agent_type": "planner-agent",
+    "duration_seconds": 120,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 2,
+    "estimated_hours": 1,
+    "dependency_waves": [[1, 2]]
+  },
+  "memory_candidates": []
+}

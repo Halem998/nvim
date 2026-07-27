@@ -1,0 +1,15 @@
+{
+  "status": "implemented",
+  "summary": "Added hard-mode routing to the lean4 extension: 2 hard agents, 2 hard skills, 2 lean4 contract overrides, manifest/index/docs updates",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "blockers": [],
+  "continuation_context": null,
+  "artifacts": [
+    {
+      "path": "specs/675_lean4_extension_hard_mode_variants/summaries/01_lean4-hard-mode-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary for task 675: lean4 extension hard mode variants"
+    }
+  ]
+}

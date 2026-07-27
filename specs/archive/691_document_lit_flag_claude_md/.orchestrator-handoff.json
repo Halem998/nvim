@@ -1,0 +1,9 @@
+{
+  "status": "implemented",
+  "summary": "Documented --lit flag in CLAUDE.md merge source (.claude/extensions/core/merge-sources/claudemd.md), memory extension EXTENSION.md (.claude/extensions/memory/EXTENSION.md), and generated CLAUDE.md (.claude/CLAUDE.md). Changes include: [--lit] added to /research, /plan, /implement, /orchestrate command rows; new Literature Mode section with specs/literature/ directory convention and --clean/--lit interaction table; Literature-Augmented Research subsection in memory extension docs. All 6 verification grep checks pass.",
+  "artifacts": [{"path": "specs/691_document_lit_flag_claude_md/summaries/01_document-lit-flag-summary.md", "type": "summary"}],
+  "blockers": [],
+  "phases_completed": 2,
+  "phases_total": 2,
+  "next_action_hint": "complete"
+}

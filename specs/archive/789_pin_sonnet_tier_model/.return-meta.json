@@ -1,0 +1,38 @@
+{
+  "status": "partial",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 789,
+  "task_slug": "pin_sonnet_tier_model",
+  "plan_path": "specs/789_pin_sonnet_tier_model/plans/01_pin-sonnet-tier.md",
+  "research_inputs": "specs/789_pin_sonnet_tier_model/reports/01_pin-sonnet-tier.md",
+  "phases_completed": 1,
+  "phases_total": 2,
+  "partial_progress": {
+    "stage": "awaiting_user_activation",
+    "details": "Phase 1 (edit settings.json source) completed and verified with jq. Phase 2 (home-manager switch activation) is a USER-EXECUTION step per the plan and was deliberately not run by the agent. This is the plan's documented acceptable terminal state, not a failure.",
+    "phases_completed": 1,
+    "phases_total": 2,
+    "user_action_required": "home-manager switch --flake /home/benjamin/.dotfiles"
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/789_pin_sonnet_tier_model/summaries/01_pin-sonnet-tier-summary.md",
+      "summary": "Phase 1 implementation summary: settings.json diff, verification output, and deferred activation command"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added ANTHROPIC_DEFAULT_SONNET_MODEL=\"claude-sonnet-5[1m]\" to the env block of /home/benjamin/.dotfiles/config/claude/settings.json and reworded _MODEL_NOTE to cover both Opus and Sonnet pins; verified valid JSON and unchanged Opus pin. Activation via home-manager switch is deferred to the user.",
+    "roadmap_items": []
+  },
+  "memory_candidates": [
+    {
+      "content": "Home-Manager Claude Code settings source at ~/.dotfiles/config/claude/settings.json is copy-on-rebuild (not symlinked) to ~/.claude/settings.json via home.activation.claudeSettings in modules/home/core/shell.nix. Model tier pins (ANTHROPIC_DEFAULT_OPUS_MODEL, ANTHROPIC_DEFAULT_SONNET_MODEL) live in the source file's env block and require `home-manager switch --flake ~/.dotfiles` to deploy; editing the live ~/.claude/settings.json directly is lost on next rebuild.",
+      "category": "CONFIG",
+      "source_artifact": "specs/789_pin_sonnet_tier_model/summaries/01_pin-sonnet-tier-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["home-manager", "claude settings.json", "ANTHROPIC_DEFAULT_SONNET_MODEL", "dotfiles", "model pin"]
+    }
+  ]
+}

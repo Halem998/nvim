@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "summary": "Fixed 4 bugs in artifact counter system: (1) reviser now uses next_num directly and increments counter in new Stage 8a postflight, (2) collision detection loops added to all 4 skill files, (3) disk reconciliation blocks added using find+sed to handle legacy counter drift, (4) plan_version vs artifact number confusion documented in plan-format.md and artifact-formats.md. All 4 extension core copies synced and verified byte-identical.",
+  "artifacts": [
+    {
+      "path": "specs/670_fix_artifact_counter_system/summaries/03_execution-summary.md",
+      "type": "summary",
+      "summary": "Execution summary covering all 4 phases: skill-reviser fixes, planner/researcher/team-research reconciliation+collision detection, documentation updates, and extension core sync"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "complete",
+  "phases_completed": 4,
+  "phases_total": 4
+}

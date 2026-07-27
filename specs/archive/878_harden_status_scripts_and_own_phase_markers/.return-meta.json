@@ -1,0 +1,47 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1784151328_c3716f_878",
+  "task_number": 878,
+  "task_name": "harden_status_scripts_and_own_phase_markers",
+  "task_type": "meta",
+  "phases_completed": 6,
+  "phases_total": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/878_harden_status_scripts_and_own_phase_markers/summaries/01_harden-status-scripts-phase-markers-summary.md",
+      "summary": "Fixed all five verified defects (A-E) in update-task-status.sh, update-plan-status.sh, update-phase-status.sh, and general-implementation-agent.md, mirrored canonical agent-system/ edits to the gitignored .claude/ tree, and verified each fix against isolated mktemp fixtures."
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/scripts/update-plan-status.sh",
+    "agent-system/extensions/core/scripts/update-phase-status.sh",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    ".claude/scripts/update-task-status.sh",
+    ".claude/scripts/update-plan-status.sh",
+    ".claude/scripts/update-phase-status.sh",
+    ".claude/agents/general-implementation-agent.md"
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed all five verified defects (A-E) across the three task-status scripts and the base implementation agent: admitted partial/blocked as task-level termini, made plan selection version-ordered at all three sites, scoped the idempotency early-exit to state.json only, encoded a fatal-vs-warn decision table for silenced failures, and wired the base agent to own every phase transition via update-phase-status.sh with a Stage 5a self-repair backstop. All six phases verified against isolated fixtures; canonical agent-system/ and gitignored .claude/ mirror trees confirmed byte-identical."
+  },
+  "memory_candidates": [
+    {
+      "content": "When hardening the three task-status scripts (update-task-status.sh, update-plan-status.sh, update-phase-status.sh), never verify by running them against the real specs/ tree -- they are the machinery that records task status, including for the very task doing the hardening. Build an isolated mktemp fixture per phase: mkdir -p $FIXTURE/.claude/scripts and $FIXTURE/specs/{N}_fixture/plans, cp the scripts in, write a minimal specs/state.json and a plan file with '### Phase N:' headings generated behind `echo` (never as a literal heredoc line, or the scripts under repair will latch onto the fixture-builder's own source text). update-phase-status.sh resolves its own repo_root via SCRIPT_DIR/../.., so it works correctly regardless of cwd; update-plan-status.sh does NOT -- it uses bare relative `specs/...` paths, so it must be invoked with `cd \"$FIXTURE\" && bash ...` or it silently resolves against the real repo root instead.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/878_harden_status_scripts_and_own_phase_markers/summaries/01_harden-status-scripts-phase-markers-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["status-scripts", "fixture-testing", "mktemp", "isolated-verification", "update-task-status", "self-testing-machinery"]
+    },
+    {
+      "content": "Two-tier version-ordered file selection, for picking the 'current' artifact out of a directory that may mix the conforming MM_{short-slug}.md convention with legacy filenames (e.g. implementation-NNN.md): first try `ls DIR/[0-9][0-9]_*.md 2>/dev/null | sort | tail -1`; only if that's empty, fall back to `ls DIR/*.md 2>/dev/null | sort | tail -1`. A plain single-tier `sort | tail -1` across mixed conventions is unsafe -- 'implementation-001.md' sorts after '02_revised.md' because 'i' > '0', silently picking the legacy file. Always guard both `ls` calls with `2>/dev/null` and `|| true` (or `|| echo \"\"`) under `set -euo pipefail` so an empty directory yields an empty string instead of aborting.",
+      "category": "PATTERN",
+      "source_artifact": "specs/878_harden_status_scripts_and_own_phase_markers/summaries/01_harden-status-scripts-phase-markers-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["version-ordering", "plan-selection", "mtime-vs-version", "two-tier-fallback", "sort-tail"]
+    }
+  ]
+}

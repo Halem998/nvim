@@ -1,0 +1,28 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1781729302_ae67df_741",
+  "task_number": 741,
+  "phases_completed": 2,
+  "phases_total": 2,
+  "completion_data": {
+    "completion_summary": "Updated generate-todo.sh (lines 284, 290) to emit artifact links as markdown format [path](specs/path). Updated artifact-linking-todo.md, artifact-formats.md, and state-management-schema.md to reflect the new convention. Regenerated TODO.md with 33 confirmed clickable markdown links."
+  },
+  "memory_candidates": [
+    {
+      "content": "generate-todo.sh artifact link format: both single-artifact (line 284) and multi-artifact (line 290) printf calls use `[%s](specs/%s)` with the path variable passed twice. The link text omits the specs/ prefix while the URL includes it.",
+      "category": "PATTERN",
+      "source_artifact": "specs/741_todo_artifact_markdown_links/summaries/01_markdown-links-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["generate-todo", "artifact-links", "markdown-links", "TODO.md", "printf-format"]
+    }
+  ],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/741_todo_artifact_markdown_links/summaries/01_markdown-links-summary.md",
+      "summary": "Execution summary for task 741 markdown link conversion"
+    }
+  ]
+}

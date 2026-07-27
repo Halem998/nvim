@@ -1,0 +1,20 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/129_fix_plan_format_in_implementation_001_md/plans/implementation-001.md",
+      "summary": "1-phase implementation plan for fix_plan_format_in_implementation_001_md"
+    }
+  ],
+  "next_steps": "Run /implement 129 to execute the plan",
+  "metadata": {
+    "session_id": "sess_revised_plan_129",
+    "agent_type": "planner-agent",
+    "duration_seconds": 120,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 1,
+    "estimated_hours": 0.5
+  }
+}

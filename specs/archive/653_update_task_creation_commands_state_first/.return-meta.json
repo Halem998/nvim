@@ -1,0 +1,14 @@
+{
+  "task_number": 653,
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "session_id": "sess_1781130828_de7a25_653",
+  "artifact_path": "specs/653_update_task_creation_commands_state_first/plans/01_task-creation-state-first.md",
+  "summary": "Created 6-phase implementation plan for migrating all task creation commands to state.json-first pattern. Covers commands/task.md (6 modes), review.md, implement.md, skill-spawn, skill-fix-it, skill-project-overview, meta-builder-agent, archive-task.sh, vault-operation.sh, plus 7 extension copies. Total estimated effort: 6 hours.",
+  "next_steps": "Run /implement 653 to execute the plan",
+  "phase_count": 6,
+  "estimated_hours": 6,
+  "dependency_waves": [[1], [2, 3, 4], [5], [6]],
+  "memory_candidates": []
+}

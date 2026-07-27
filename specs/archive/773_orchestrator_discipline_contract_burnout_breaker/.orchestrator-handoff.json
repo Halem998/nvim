@@ -1,0 +1,54 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "All 6 phases of the orchestrator discipline contract and burnout circuit-breaker plan complete. Created single-copy .claude/context/contracts/orchestrator-discipline.md (6 sections: provenance, Prohibited Actions, The Only Two Allowed Responses, Burnout Circuit-Breaker Signals, Forced-Handoff/Forced-Dispatch Mechanism, Domain Specialization) and registered it in index.json with an all-empty load_when following convergence.md's precedent. Wired Stage 1c (once-per-invocation orchestrator-discipline preamble, after Stage 1b) and Stage 3c (every-cycle burnout circuit-breaker gate, after Stage 3b and before Stage 4's state handlers) into skill-orchestrate-hard/SKILL.md, edited identically in both .claude/skills/ and .claude/extensions/core/skills/. Extended loop_guard_file's JSON shape with a burnout_signals_this_session scalar counter (initialized to 0 in Stage 2, incremented via a 3b-style jq write in Stage 3c). Added the previously-missing recovery.md entry to the Context References prose list alongside the new orchestrator-discipline.md entry. Verified diff -q byte-identity between both SKILL.md copies, index.json validity with an all-empty load_when, presence of all required strings (Stage 1c, Stage 3c, orchestrator-discipline.md, recovery.md, burnout_signals_this_session) in both copies, absence of any core-extension mirror of the contract or index.json, and that task 772's BEGIN/END blocks and task 779's CONTRACT SLOTS block are unmodified.",
+  "artifacts": [
+    {
+      "path": ".claude/context/contracts/orchestrator-discipline.md",
+      "type": "context",
+      "summary": "New single-copy orchestrator-role discipline contract (6 sections, 86 lines)"
+    },
+    {
+      "path": ".claude/context/index.json",
+      "type": "context",
+      "summary": "Added one entry for contracts/orchestrator-discipline.md with all-empty load_when"
+    },
+    {
+      "path": ".claude/skills/skill-orchestrate-hard/SKILL.md",
+      "type": "skill",
+      "summary": "Added Context References entries (orchestrator-discipline.md + recovery.md), Stage 1c preamble, Stage 3c burnout gate, loop_guard_file burnout_signals_this_session counter"
+    },
+    {
+      "path": ".claude/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+      "type": "skill",
+      "summary": "Byte-identical dual-copy of the primary SKILL.md edit (diff -q verified clean)"
+    },
+    {
+      "path": "specs/773_orchestrator_discipline_contract_burnout_breaker/summaries/01_orchestrator-discipline-burnout-breaker-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary for task 773"
+    }
+  ],
+  "phases_completed": 6,
+  "phases_total": 6,
+  "blockers": [],
+  "next_action_hint": "none",
+  "decisions_made": [
+    "Wiring is reference-plus-inline-directive at two loop-top sub-stages (Stage 1c once-per-invocation preamble after Stage 1b; Stage 3c every-cycle burnout gate after Stage 3b, before Stage 4), not a build_hard_mode_prompt_context contract slot.",
+    "orchestrator-discipline.md is single-copy under .claude/context/contracts/ with an all-empty index.json load_when, following convergence.md exactly.",
+    "Burnout counter (burnout_signals_this_session) reuses the existing loop_guard_file; no new sidecar file, no new handoff-artifact type — forced handoff reuses fresh-audit dispatch (Stage 4b shape) and Stage 6 escalation.",
+    "SKILL.md edits applied to both .claude/skills/ and .claude/extensions/core/skills/ copies atomically, verified byte-identical with diff -q (779 Phase 6 pattern).",
+    "Corollary: recovery.md (created by 779) added to the Context References prose list, where it was previously missing."
+  ],
+  "files_modified": [
+    ".claude/context/contracts/orchestrator-discipline.md",
+    ".claude/context/index.json",
+    ".claude/skills/skill-orchestrate-hard/SKILL.md",
+    ".claude/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "specs/773_orchestrator_discipline_contract_burnout_breaker/plans/01_orchestrator-discipline-burnout-breaker.md",
+    "specs/773_orchestrator_discipline_contract_burnout_breaker/summaries/01_orchestrator-discipline-burnout-breaker-summary.md",
+    "specs/state.json"
+  ],
+  "plan_markers_verified": true
+}

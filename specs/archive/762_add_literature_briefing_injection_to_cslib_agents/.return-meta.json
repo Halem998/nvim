@@ -1,0 +1,20 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1782255422_7edccd_762",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 762,
+  "phases_completed": 2,
+  "phases_total": 2,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/762_add_literature_briefing_injection_to_cslib_agents/summaries/01_lit-injection-agents-summary.md",
+      "summary": "Implementation summary for task 762: literature-briefing injection to CSLib agents"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added <literature-briefing> acknowledgment sections to all 4 CSLib agent files (cslib-research-agent, cslib-implementation-agent, cslib-research-hard-agent, cslib-implementation-hard-agent). Base agents received a new ## Literature Briefing Context section; hard-mode agents received a Context References entry with Tier 1 auto-confirmation note. All 4 CSLib skill files were verified to already have lit_context retrieval and injection instructions (contributed by parallel task 761)."
+  },
+  "memory_candidates": []
+}

@@ -1,0 +1,48 @@
+{
+  "status": "implemented",
+  "task_number": 816,
+  "session_id": "sess_1783200919_fce5b6",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "phases_completed": 3,
+  "phases_total": 3,
+  "completion_data": {
+    "completion_summary": "Discharged task 815's Phase 6 (email/ extension multi-account) documentation closure: refreshed wrapper-contracts.md §2/§11 with the confirmed --account <gmail|logos> enum and per-account folder-token + mbsync-channel tables verbatim from .dotfiles task 80's closure report, generalized archive-mode-risk.md's illustrative Gmail-only tokens to be account-neutral, and flipped task 815's Phase 6 marker from [BLOCKED] to [COMPLETED] across all coupled edit sites. Task 815 is now fully closed across all six phases."
+  },
+  "memory_candidates": [
+    {
+      "content": "When a documentation-closure task's verification criterion is stated as a whole-file grep check (e.g. 'zero remaining [STATUS] references anywhere in file X'), don't scope the edit to only the explicitly enumerated edit sites -- run the literal grep after the enumerated edits and resolve any additional hits it catches (e.g. historical narrative mentions in an Overview or Risks table), even if they weren't in the original site list. The verification criterion is the actual contract, not the task list.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/816_close_task815_phase6_wrapper_contract_docs/summaries/01_phase6-docs-closure-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["verification-criterion", "grep-check", "whole-file-scope", "plan-closure", "status-marker"]
+    },
+    {
+      "content": "check-extension-docs.sh can exit 1 due to pre-existing failures in unrelated extensions (e.g. core script-reference drift, lean hard-mode skill targets undeployed) even when the extension actually being edited reports PASS. Before treating a nonzero exit as a regression, use `git stash` / `git stash pop` to diff the script's output before and after your edits -- if the same FAILs appear in both runs, they predate your change and are out of scope.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/816_close_task815_phase6_wrapper_contract_docs/summaries/01_phase6-docs-closure-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["check-extension-docs", "pre-existing-failure", "git-stash-diff", "regression-isolation"]
+    }
+  ],
+  "modified_files": [
+    ".claude/extensions/email/context/project/email/domain/wrapper-contracts.md",
+    ".claude/extensions/email/context/project/email/domain/archive-mode-risk.md",
+    "specs/815_revise_email_extension_multi_account/plans/01_email-multi-account-support.md",
+    "specs/816_close_task815_phase6_wrapper_contract_docs/plans/01_phase6-docs-closure.md",
+    "specs/816_close_task815_phase6_wrapper_contract_docs/summaries/01_phase6-docs-closure-summary.md",
+    "specs/816_close_task815_phase6_wrapper_contract_docs/progress/phase-1-progress.json",
+    "specs/816_close_task815_phase6_wrapper_contract_docs/progress/phase-2-progress.json",
+    "specs/816_close_task815_phase6_wrapper_contract_docs/progress/phase-3-progress.json",
+    "specs/816_close_task815_phase6_wrapper_contract_docs/.orchestrator-handoff.json",
+    "specs/state.json",
+    "specs/TODO.md"
+  ],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/816_close_task815_phase6_wrapper_contract_docs/summaries/01_phase6-docs-closure-summary.md",
+      "summary": "Implementation summary for task 816's 3-phase documentation closure of task 815's Phase 6."
+    }
+  ]
+}

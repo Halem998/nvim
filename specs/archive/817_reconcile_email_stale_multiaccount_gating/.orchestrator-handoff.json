@@ -1,0 +1,29 @@
+{
+  "status": "implemented",
+  "summary": "Executed all 5 phases of the reconciliation plan. Rewrote stale 'documented-but-gated / pending .dotfiles task 79' multi-account language in commands/email.md, EXTENSION.md, skill-email-cleanup/SKILL.md, and skill-email-sync/SKILL.md to match the verified wrapper-contracts.md ground truth: --account <gmail|logos> is a live, accepted enum (verified 9/9 by .dotfiles task 80). Converted the cleanup skill's precondition gate into a light 'Account Liveness Check', fixed the broken '--help' probe to 'email-census --account logos' with exit/stderr checking, and aligned gate naming ('Phase-1' -> 'step-1' precondition gate) between skill-email-sync and commands/email.md. check-extension-docs.sh [email] PASS with the same 2 pre-existing unrelated warns (no new warnings). Grep sweep for retired phrasings across all four files returns zero hits.",
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "Task complete. No further action needed.",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "artifacts": [
+    "specs/817_reconcile_email_stale_multiaccount_gating/plans/01_reconcile-multiaccount-gating.md",
+    "specs/817_reconcile_email_stale_multiaccount_gating/summaries/01_reconcile-multiaccount-gating-summary.md",
+    ".claude/extensions/email/commands/email.md",
+    ".claude/extensions/email/EXTENSION.md",
+    ".claude/extensions/email/skills/skill-email-cleanup/SKILL.md",
+    ".claude/extensions/email/skills/skill-email-sync/SKILL.md"
+  ],
+  "plan_ref": {
+    "path": "specs/817_reconcile_email_stale_multiaccount_gating/plans/01_reconcile-multiaccount-gating.md",
+    "dependency_waves": [[1, 2, 3, 4], [5]],
+    "estimated_hours": 2,
+    "deviation_note": "EXTENSION.md's mail-guard.sh footnote required removing the literal string 'task 79' entirely (not just past-tensing it to 'task 79 added') because the Phase 5 grep sweep's 'task 79' pattern matches the substring regardless of tense. Anticipated by the plan's own 'update or remove' instruction; not a deviation from plan intent."
+  },
+  "verification": {
+    "check_extension_docs": "PASS ([email], same 2 pre-existing unrelated warns, no new warnings)",
+    "grep_sweep": "zero hits across all four files for task 79|gmail-reserved|documented[- ]but[- ]gated|documented but gated|currently.reserved|Phase-1 precondition|do not yet accept|don't yet accept|once the wrapper",
+    "probe_fix_confirmed": "skill-email-cleanup/SKILL.md now documents email-census --account logos (no --help) with exit/stderr checking",
+    "gate_naming_confirmed": "skill-email-sync/SKILL.md reads step-1 precondition gate"
+  }
+}

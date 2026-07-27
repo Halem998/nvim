@@ -1,0 +1,26 @@
+{
+  "status": "implemented",
+  "summary": "Replaced the silently-corrupting engine selection in literature-convert.sh with an explicit pymupdf4llm-primary + PyMuPDF-column-clustering-fallback tier system, fixed BUGS 2-4, and added a loud-failing quality gate (exit code 3) wired into literature-ingest.sh, all verified against real corpus PDFs and a new forced-fallback/regression test harness.",
+  "phases_completed": 7,
+  "phases_total": 7,
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "Task complete. Recommended follow-ups (not blocking): (1) task #832 should treat literature-convert.sh exit 3 as skip+log during corpus reconversion, and should expect Goldblatt/Hodkinson/Venema 2003 specifically to fail the primary tier's quality gate (route it through LITERATURE_CONVERTER=pymupdf); (2) task #833 should perform its own FTS-time ligature folding for unicode61 matching, per the ligature-folding-boundary contract in the summary; (3) optionally capture the nix-ld/uv-venv shim pattern as a .memory/ entry (memory candidates already included in .return-meta.json for /todo to harvest).",
+  "artifacts": [
+    {
+      "path": "specs/831_fix_literature_conversion_pipeline_correctness/summaries/01_conversion-pipeline-fix-summary.md",
+      "type": "summary",
+      "summary": "Full implementation summary: what changed, decisions, plan deviations, verification evidence for BUGS 1-4 and the quality gate, and the complete #832/#833 interface contracts (exit codes, output format, breadcrumb format, ligature-folding boundary, known limitations, nix unblock prerequisite)."
+    }
+  ],
+  "modified_files": [
+    ".claude/scripts/literature-chunk.sh",
+    ".claude/scripts/literature-convert.sh",
+    ".claude/scripts/literature-ingest.sh",
+    ".claude/scripts/literature-pyenv-provision.sh",
+    ".claude/scripts/tests/generate-test-fixtures.py",
+    ".claude/scripts/tests/test-literature-convert.sh",
+    ".gitignore",
+    "specs/831_fix_literature_conversion_pipeline_correctness/summaries/01_conversion-pipeline-fix-summary.md"
+  ]
+}

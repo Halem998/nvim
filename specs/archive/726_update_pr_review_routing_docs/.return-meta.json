@@ -1,0 +1,24 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1781547115_2dc6c5_726",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 726,
+  "slug": "update_pr_review_routing_docs",
+  "started_at": "2026-06-15T20:03:00Z",
+  "completed_at": "2026-06-15T20:05:00Z",
+  "phases_completed": 2,
+  "phases_total": 2,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/726_update_pr_review_routing_docs/summaries/01_pr-review-routing-docs-summary.md",
+      "summary": "Implementation summary confirming both EXTENSION.md and pr-prohibition.md already contained the required pr-review workflow documentation"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Verified and documented the pr-review workflow registration in CSLib EXTENSION.md (skill-pr-review-implementation row and Commands section) and pr-prohibition.md (pr-review workflow subsection with coexistence table). Both files were already complete from prior task work; plan was updated to reflect completed state.",
+    "roadmap_items": []
+  },
+  "memory_candidates": []
+}

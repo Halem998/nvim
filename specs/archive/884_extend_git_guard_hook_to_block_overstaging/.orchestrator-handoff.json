@@ -1,0 +1,25 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Extended guard-destructive-git.sh with three independent over-staging detectors (git add -A/--all, bare dot, git commit -a/-am/--all), placed before the MATCHED destructive chain so a snapshot marker never exempts over-staging. Fixed two prose locations that taught blocked commands. 26/26 manual verification cases passed against the tracked source hook.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/884_extend_git_guard_hook_to_block_overstaging/summaries/01_extend-git-guard-overstaging-summary.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/hooks/guard-destructive-git.sh",
+    "agent-system/extensions/core/context/orchestration/postflight-pattern.md",
+    "agent-system/extensions/core/skills/skill-project-overview/SKILL.md"
+  ],
+  "decisions_made": [
+    "Over-staging detectors block independently (own exit 2) before the MATCHED chain, so a fresh snapshot marker never exempts over-staging.",
+    "Quoted spans stripped before flag-scanning to avoid false-positiving on -a-containing commit messages.",
+    "No exemption built for git-snapshot.sh; its internal git add -A is invisible to the hook."
+  ],
+  "dead_ends": [
+    "Skipped real git-snapshot.sh for the marker test (would stash a concurrent session's changes); constructed the marker file directly instead."
+  ],
+  "plan_markers_verified": true
+}

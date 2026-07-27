@@ -1,0 +1,13 @@
+{
+  "status": "implemented",
+  "summary": "Fixed artifact linking bug in SKILL.md Stage 5 (skill_link_artifacts was never called during orchestration); added multi-task mode to skill-orchestrate with Stages MT-1 through MT-5 for wave-based phase-aware dispatch; updated orchestrate.md Step 4 to use single skill dispatch instead of N instances; updated extension mirrors to match.",
+  "blockers": [],
+  "phases_completed": 4,
+  "phases_total": 4,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/625_orchestrate_single_agent_multi_task/summaries/01_orchestrate-refactor-summary.md"
+    }
+  ]
+}

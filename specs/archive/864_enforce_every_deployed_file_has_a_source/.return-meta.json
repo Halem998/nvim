@@ -1,0 +1,107 @@
+{
+  "status": "implemented",
+  "metadata": {
+    "session_id": "sess_1784073170_af81356c",
+    "agent_type": "general-implementation-agent",
+    "task_number": 864,
+    "task_type": "meta",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  },
+  "plan_path": "specs/864_enforce_every_deployed_file_has_a_source/plans/01_deployed-file-source-hard-gate.md",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/864_enforce_every_deployed_file_has_a_source/plans/01_deployed-file-source-hard-gate.md",
+      "summary": "All 6 phases marked [COMPLETED] with per-task completion annotations and recorded deviations."
+    },
+    {
+      "type": "summary",
+      "path": "specs/864_enforce_every_deployed_file_has_a_source/summaries/01_deployed-file-source-hard-gate-summary.md",
+      "summary": "Implementation summary covering files changed, decisions, deviations, and verification."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Repaired the 19+2 broken/dead install-extension.sh symlinks (relative-path fix in both dual-write copies), backfilled all 23 deployed-only orphans into their correct owning extensions (4 core, 8 literature, 1 nvim, plus 4 additional core context/patterns backfills and the fork-patterns.md/literature-organization.md ambiguous-case resolutions), and extended check-extension-docs.sh with 5 new per-category orphan + broken-symlink checks (Rules J-N), landed advisory-first then promoted to a hard, blocking gate that exits 0 on the remediated tree. Added minimal CI wiring (.github/workflows/check-extension-docs.yml) since none existed."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/install-extension.sh",
+    ".claude/scripts/install-extension.sh",
+    ".claude/context/index.json",
+    ".claude/agents/cslib-implementation-agent.md",
+    ".claude/agents/cslib-implementation-hard-agent.md",
+    ".claude/agents/cslib-research-agent.md",
+    ".claude/agents/cslib-research-hard-agent.md",
+    ".claude/agents/cslib-vet-agent.md",
+    ".claude/agents/literature-agent.md",
+    ".claude/agents/pr-review-implementation-agent.md",
+    ".claude/agents/pr-review-research-agent.md",
+    ".claude/commands/literature.md",
+    ".claude/commands/pr.md",
+    ".claude/commands/vet.md",
+    ".claude/commands/zotero.md",
+    ".claude/skills/skill-cslib-implementation",
+    ".claude/skills/skill-cslib-implementation-hard",
+    ".claude/skills/skill-cslib-research",
+    ".claude/skills/skill-cslib-research-hard",
+    ".claude/skills/skill-cslib-vet",
+    ".claude/skills/skill-literature",
+    ".claude/skills/skill-pr-implementation",
+    ".claude/skills/skill-pr-review-implementation",
+    ".claude/skills/skill-pr-review-research",
+    ".claude/skills/skill-zotero",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/rules/no-task-references-in-deliverables.md",
+    "agent-system/extensions/core/commands/README.md",
+    ".claude/commands/README.md",
+    "agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh",
+    "agent-system/extensions/core/scripts/validate-handoff.sh",
+    "agent-system/extensions/literature/manifest.json",
+    "agent-system/extensions/literature/scripts/literature-audit.sh",
+    "agent-system/extensions/literature/scripts/literature-pyenv-provision.sh",
+    "agent-system/extensions/literature/scripts/zotero-resolve-pdf.sh",
+    "agent-system/extensions/literature/scripts/.zotero-title-sim.py",
+    "agent-system/extensions/literature/scripts/tests/generate-test-fixtures.py",
+    "agent-system/extensions/literature/scripts/tests/test-literature-convert.sh",
+    "agent-system/extensions/literature/context/project/literature/patterns/chunk-file-conventions.md",
+    "agent-system/extensions/literature/context/project/literature/patterns/zotero-pdf-resolution.md",
+    "agent-system/extensions/literature/context/guides/literature-organization.md",
+    "agent-system/extensions/nvim/context/project/neovim/domain/extension-deploy-modes.md",
+    ".claude/context/project/neovim/domain/extension-deploy-modes.md",
+    ".claude/context/patterns/fork-patterns.md",
+    "agent-system/extensions/core/context/patterns/batch-drain-loop.md",
+    "agent-system/extensions/core/context/patterns/context-protective-lead.md",
+    "agent-system/extensions/core/context/patterns/topic-assignment-pattern.md",
+    "agent-system/extensions/core/context/guides/hard-mode-routing.md",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    ".claude/scripts/check-extension-docs.sh",
+    ".github/workflows/check-extension-docs.yml",
+    "specs/state.json",
+    "specs/TODO.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "install-extension.sh's symlink-creation sites hardcode a relative path string (rel_path=\"../<depth>/extensions/$EXT_NAME/...\") rather than deriving it from the actual filesystem depth. Any future relocation of the extension source-store root will silently break every existing symlink it created, and the script cannot self-repair: install_commands/install_skills only warn on a mismatched existing symlink target, and install_agents does not validate an existing symlink's target at all. Repair requires an explicit delete-then-recreate (delete stale symlinks, then re-run install-extension.sh for the affected extension) -- simply fixing the hardcoded path and re-running the installer over an already-broken symlink is a no-op, because the install functions treat 'symlink already exists' (even dangling) as 'nothing to do'.",
+      "category": "PATTERN",
+      "source_artifact": "specs/864_enforce_every_deployed_file_has_a_source/summaries/01_deployed-file-source-hard-gate-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["install-extension.sh", "symlink-repair", "delete-recreate", "relative-path", "source-store-relocation"]
+    },
+    {
+      "content": "When adding a multi-severity check to a shell-based lint/gate script that must land advisory-first and later promote to blocking (a common two-phase rollout pattern for new gate rules), route all new checks through one shared reporter function controlled by a single mode variable (e.g. orphan_report() gated by ORPHAN_GATE_MODE=\"advisory\"|\"hard\"), rather than writing separate info/fail branches per check. The later promotion becomes a single default-value flip instead of N separate edits, and both severities stay trivially testable via an env-var override without touching the checked-in default.",
+      "category": "PATTERN",
+      "source_artifact": "specs/864_enforce_every_deployed_file_has_a_source/summaries/01_deployed-file-source-hard-gate-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["advisory-to-hard", "gate-promotion", "shared-reporter", "shell-lint-script", "toggle-pattern"]
+    },
+    {
+      "content": "A merge-into-shared-JSON step (here: install-extension.sh's merge_index_entries, which jq-merges an extension's index-entries.json fragment into the deployed context/index.json) can transiently drop unrelated pre-existing entries as a side effect, even when the merge's own logic appears correct in isolated replica testing. Before trusting any such merge step's output, diff the full set of entry keys/paths before vs after (not just spot-checking the newly-added entries) to catch silent unrelated drops.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/864_enforce_every_deployed_file_has_a_source/summaries/01_deployed-file-source-hard-gate-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["json-merge-verification", "before-after-diff", "index.json", "merge_index_entries", "data-loss-detection"]
+    }
+  ]
+}

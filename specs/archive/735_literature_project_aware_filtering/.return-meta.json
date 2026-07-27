@@ -1,0 +1,30 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1781640194_13c186",
+  "task_number": 735,
+  "completed_at": "2026-06-16T00:00:00Z",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "completion_data": {
+    "completion_summary": "Added project-aware filtering to both literature scripts: detect_project() in literature-retrieve.sh adds project hint to Tier 1 tool block and pre-filters Tier 2 keyword entries by project_tags; --project flag in literature-search.sh builds doc_id IN set from index.json for SQL filtering with zero-result fallback.",
+    "roadmap_items": []
+  },
+  "memory_candidates": [
+    {
+      "content": "When adding project-scoped filtering to FTS5 SQLite search (literature-search.sh), the pattern is: (1) parse --project flag before subcommand dispatch with a pre-scan loop; (2) load allowed doc_ids from index.json via jq with case-insensitive matching; (3) inject AND d.doc_id IN (placeholders) into SQL when doc_ids are non-empty; (4) re-run without filter on zero results for graceful fallback. This avoids adding project_tags column to SQLite and keeps the filter logic in bash/Python rather than the DB schema.",
+      "category": "PATTERN",
+      "source_artifact": "specs/735_literature_project_aware_filtering/summaries/01_project-aware-filtering-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["literature", "FTS5", "project-filter", "doc_id", "fallback", "index.json"]
+    }
+  ],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/735_literature_project_aware_filtering/summaries/01_project-aware-filtering-summary.md",
+      "summary": "Implementation summary for project-aware literature filtering"
+    }
+  ]
+}

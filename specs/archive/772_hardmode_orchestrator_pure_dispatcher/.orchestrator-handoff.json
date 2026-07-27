@@ -1,0 +1,23 @@
+{
+  "status": "implemented",
+  "summary": "All 6 phases complete: skill-orchestrate-hard/SKILL.md and its extensions/core mirror are now a pure dispatcher. Edit removed from allowed-tools (fell back to Agent, Bash, Read + prose forbid-list, no in-repo precedent for multi-pattern frontmatter scoping). Tool Constraints (Pure Dispatcher) prose section added. Parallel Wave Dispatch (H7) disabled. next_phase heading-scan replaces integer increment, with skeleton-exhaustion routing to pr_ready via sorry_inventory[].follow_up_task. Stage 5 implemented transition gated on phases_completed >= phases_total. diff -q between both copies returns empty; reserved regions (build_hard_mode_prompt_context body for 779, Stage 1b-3b loop-top for 773) verified byte-identical to pre-772 baseline.",
+  "skeleton": false,
+  "phases_completed": 6,
+  "phases_total": 6,
+  "sorry_inventory": [],
+  "artifacts": [
+    {
+      "path": "specs/772_hardmode_orchestrator_pure_dispatcher/plans/01_orchestrator-pure-dispatcher.md",
+      "type": "plan",
+      "summary": "6-phase implementation plan editing skill-orchestrate-hard/SKILL.md and its extensions/core mirror for the five pure-dispatcher requirements."
+    },
+    {
+      "path": "specs/772_hardmode_orchestrator_pure_dispatcher/summaries/01_orchestrator-pure-dispatcher-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary of all 6 phases with deviations and verification results."
+    }
+  ],
+  "blockers": [],
+  "continuation_path": null,
+  "next_action_hint": "Task ready for status transition to pr_ready/completed. Note for tasks 773 and 779: both must compose around the delimited HTML-comment regions this task introduced (Tool Constraints section, Parallel Wave Dispatch DISABLED note, heading-scan + skeleton-exhaustion block, Stage 5 rewrite) and must not touch build_hard_mode_prompt_context() body or the Stage 1b-3b loop-top region, both confirmed untouched by this task."
+}

@@ -1,0 +1,29 @@
+{
+  "agent_type": "general-implementation-agent",
+  "status": "implemented",
+  "session_id": "sess_1781461813_4483e1_682",
+  "task_number": 682,
+  "task_type": "meta",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "phases_completed": 3,
+  "phases_total": 3,
+  "completion_data": {
+    "completion_summary": "Rewrote task.md step 4 with a 5-step keyword_overrides precedence chain enabling extensions to register task-type keywords and aliases; documented the schema in extension-development.md and updated CLAUDE.md merge source and live file."
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/682_extension_keyword_overrides_task_command/summaries/03_execution-summary.md",
+      "summary": "Implementation summary for 3-phase keyword_overrides task"
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "Extension keyword_overrides pattern: Extensions can register 'keyword_overrides' in manifest.json to claim task types during /task creation. Schema: {\"task_type\": {\"aliases\": [...], \"keywords\": [...]}}. Keywords are scanned using jq with whole-word matching (\\b boundaries). Aliases remap hardcoded-table/project-default results only (not other extension keyword results). First-match-wins across manifests in glob order. Precedence: meta > extension keywords > project default > hardcoded table, with alias remapping after project default and hardcoded table steps.",
+      "category": "PATTERN",
+      "source_artifact": "specs/682_extension_keyword_overrides_task_command/summaries/03_execution-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["keyword_overrides", "extension", "task_type", "manifest", "detection", "aliases"]
+    }
+  ]
+}

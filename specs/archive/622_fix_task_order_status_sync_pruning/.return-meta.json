@@ -1,0 +1,22 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/622_fix_task_order_status_sync_pruning/plans/01_status-sync-plan.md",
+      "summary": "3-phase plan: add Task Order prohibition to artifact-linking-todo.md, wire Mode B through lean extension implementer, end-to-end verification"
+    }
+  ],
+  "next_steps": "Run /implement 622 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1780334913_bf063c",
+    "agent_type": "planner-agent",
+    "duration_seconds": 120,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 1.5,
+    "dependency_waves": [[1, 2], [3]]
+  },
+  "memory_candidates": []
+}

@@ -1,0 +1,31 @@
+{
+  "status": "implemented",
+  "summary": "Delegated both zotero-resolve-sqlite-path.sh consumer sites to the shared resolver: literature-audit.sh's DEFAULT_SEARCH_PATHS third element now derives from ZOTERO_DATA_DIR=$(dirname $(zotero-resolve-sqlite-path.sh)) instead of a hardcoded $HOME/Zotero/storage, and zotero-setup.sh's _detect_data_dir() Step 3 now calls the resolver plus dirname instead of its own 3-candidate for-loop, with Steps 1/2 and the four call sites untouched. The cmd_detect stderr diagnostic was reworded to describe the delegated ladder truthfully. Verified live: a pre-patch baseline (Phase 1) showed zotero-setup.sh --detect diverging from the resolver (stale /home/benjamin/Zotero, which has no storage dir, vs. the resolver's live /home/benjamin/Documents/Zotero, which has 939 storage entries); post-patch (Phase 4), --detect, dirname(resolver), and the re-derived audit search path all agree on /home/benjamin/Documents/Zotero, and a live literature-audit.sh --xref run confirmed its 5 test PDFs actually came from the resolver-derived storage directory (the first two search paths contributed 0). All scope/safety checks passed: only the two intended scripts plus specs/904_.../  changed, no .claude/ paths written, the resolver itself is untouched, ~/Zotero and zotero-library.json were not touched, and no new task-number citation was introduced.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/904_zotero_resolver_delegation_audit_setup/plans/01_zotero-resolver-delegation.md",
+      "summary": "Implementation plan, all 4 phases marked [COMPLETED] with per-task completion annotations"
+    },
+    {
+      "type": "summary",
+      "path": "specs/904_zotero_resolver_delegation_audit_setup/summaries/01_zotero-resolver-delegation-summary.md",
+      "summary": "Implementation summary with pre/post-patch baseline values and three-way agreement verification"
+    },
+    {
+      "type": "code",
+      "path": "agent-system/extensions/literature/scripts/literature-audit.sh",
+      "summary": "DEFAULT_SEARCH_PATHS third element delegated to the resolver via a new ZOTERO_DATA_DIR variable"
+    },
+    {
+      "type": "code",
+      "path": "agent-system/extensions/literature/scripts/zotero-setup.sh",
+      "summary": "_detect_data_dir() Step 3 delegated to the resolver; cmd_detect stderr diagnostic reworded"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "No further action required for this task. The definition of done (three-way agreement between zotero-setup.sh --detect, the literature-audit.sh storage search path, and direct zotero-resolve-sqlite-path.sh invocation) is met and verified live on this machine.",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "plan_markers_verified": true
+}

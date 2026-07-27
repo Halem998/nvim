@@ -1,0 +1,21 @@
+{
+  "status": "implemented",
+  "summary": "Added bootstrap_task_order_section() to generate-task-order.sh that idempotently inserts ## Task Order before ## Tasks (or at EOF) when missing. Wired call before replace_section() in update mode. Fixed a pipefail safety bug (added || true to grep pipeline) discovered during verification.",
+  "artifacts": [
+    {
+      "path": "specs/632_fix_task_order_bootstrap/summaries/01_bootstrap-implementation-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary covering the bootstrap function, || true pipefail fix, all 5 verification tests passed"
+    },
+    {
+      "path": ".claude/scripts/generate-task-order.sh",
+      "type": "modified_file",
+      "summary": "Added bootstrap_task_order_section() function and wired it before replace_section() in update mode"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "phases_completed": 3,
+  "phases_total": 3,
+  "next_action_hint": "complete"
+}

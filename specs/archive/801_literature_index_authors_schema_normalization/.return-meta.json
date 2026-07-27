@@ -1,0 +1,85 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "code",
+      "path": ".claude/skills/skill-literature/SKILL.md",
+      "summary": "Extended /literature --validate Step 2/4 with an authors-shape check (authors:not-array, authors:non-string-element, authors:possibly-comma-joined) as a distinct authors_shape_warnings category"
+    },
+    {
+      "type": "code",
+      "path": ".claude/scripts/literature-normalize-authors.sh",
+      "summary": "New reusable, dry-run-by-default authors-normalization script (--apply/--write to persist), idempotent, mirrors zotero-index-add.sh's split pattern"
+    },
+    {
+      "type": "code",
+      "path": ".claude/extensions/literature/scripts/literature-normalize-authors.sh",
+      "summary": "Deployed copy of the normalization script, registered in .claude/extensions/literature/manifest.json provides.scripts"
+    },
+    {
+      "type": "doc",
+      "path": ".claude/context/project/literature/domain/literature-index.md",
+      "summary": "Added Tooling Ownership Boundary section documenting that migrate-from-repo.sh and the central index.json are owned by the external ~/Projects/Literature repo"
+    },
+    {
+      "type": "deliverable",
+      "path": "specs/801_literature_index_authors_schema_normalization/deliverables/migrate-from-repo-authors-normalize.patch",
+      "summary": "Advisory unified diff fixing migrate-from-repo.sh's two authors-handling bugs; verified with git apply --check in an isolated scratch repo; NOT applied to the live external repo"
+    },
+    {
+      "type": "deliverable",
+      "path": "specs/801_literature_index_authors_schema_normalization/deliverables/normalization-dry-run-diff.txt",
+      "summary": "Captured dry-run output against the live global index: 122 entries flagged (12 string-typed + 110 malformed one-element arrays), matching the research report's histogram exactly"
+    },
+    {
+      "type": "deliverable",
+      "path": "specs/801_literature_index_authors_schema_normalization/deliverables/apply-guide.md",
+      "summary": "User-facing step-by-step guide to apply the patch and normalization in ~/Projects/Literature and commit there; notes deferred SKILL.md:~1696 follow-up bug"
+    },
+    {
+      "type": "summary",
+      "path": "specs/801_literature_index_authors_schema_normalization/summaries/01_authors-schema-normalization-summary.md",
+      "summary": "Full implementation summary for all 4 phases"
+    },
+    {
+      "type": "plan",
+      "path": "specs/801_literature_index_authors_schema_normalization/plans/01_authors-schema-normalization.md",
+      "summary": "All 4 phases marked [COMPLETED], all checklist items checked off with completion notes"
+    }
+  ],
+  "next_steps": "User should follow deliverables/apply-guide.md to apply the migrate-from-repo.sh patch and normalize the live ~/Projects/Literature/index.json (external repo, out of scope for agent automation). No further /implement action needed in this repo.",
+  "metadata": {
+    "session_id": "sess_1782936248_41a19c_801",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  },
+  "completion_data": {
+    "completion_summary": "Extended /literature --validate with an authors-shape check, added a reusable dry-run-by-default literature-normalize-authors.sh normalization script, documented the migrate-from-repo.sh tooling ownership boundary, and prepared (without applying) a patch, dry-run diff, and apply-guide for the external ~/Projects/Literature repo's authors-schema fix."
+  },
+  "memory_candidates": [
+    {
+      "content": "When validating/normalizing a comma-joined-vs-single-author-name ambiguity (e.g. 'Last, First' vs packed 'First Last, First Last, ...'), a robust heuristic is: flag as multi-author-joined only if a string contains 2+ ', ' occurrences, OR exactly one ', ' followed by 2+ non-initial capitalized tokens (regex [A-Z][a-zA-Z]+, at least 2 chars) in the remainder. This correctly distinguishes 'Gabbay, Dov M.' (single author, initial after comma) from 'Patrick Blackburn, Maarten de Rijke' (two authors) without false positives, verified against a 270-entry real corpus.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/801_literature_index_authors_schema_normalization/summaries/01_authors-schema-normalization-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["jq", "heuristic", "authors", "comma-joined", "name-parsing"]
+    },
+    {
+      "content": "This repo's doc-lint (.claude/scripts/check-extension-docs.sh) requires any script referenced from an extension's SKILL.md/agent docs to be (a) listed in that extension's manifest.json provides.scripts array AND (b) physically present on disk under .claude/extensions/{ext}/scripts/, in addition to any canonical copy under .claude/scripts/. Both are required or the extension FAILs the lint.",
+      "category": "CONFIG",
+      "source_artifact": "specs/801_literature_index_authors_schema_normalization/summaries/01_authors-schema-normalization-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["check-extension-docs", "manifest.json", "provides.scripts", "doc-lint", "extensions"]
+    },
+    {
+      "content": "When a task's scope explicitly forbids writing to an external/sibling repo (e.g. ~/Projects/Literature), verify non-mutation empirically at each step (md5sum of the specific files read, git status/diff content review to rule out pre-existing unrelated dirty state from a separate project sharing the same directory tree) rather than assuming read-only tool usage was sufficient. Sibling repos can have their own independent .claude/ Claude Code config that coincidentally resembles the current repo's files.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/801_literature_index_authors_schema_normalization/summaries/01_authors-schema-normalization-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["external-repo", "read-only", "verification", "cross-repo-boundary", "md5sum"]
+    }
+  ]
+}

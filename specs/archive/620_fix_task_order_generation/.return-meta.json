@@ -1,0 +1,33 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1780333741_6b6a4e",
+  "task_number": 620,
+  "phases_completed": 3,
+  "phases_total": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/620_fix_task_order_generation/summaries/01_fix-task-order-summary.md",
+      "summary": "Implementation summary for task 620 - all 3 phases completed"
+    },
+    {
+      "type": "plan",
+      "path": "specs/620_fix_task_order_generation/plans/01_fix-task-order.md",
+      "summary": "Completed 3-phase implementation plan"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed generate-task-order.sh to un-slugify project_name fallbacks, added /revise postflight Stage 7a for Task Order regeneration in skill-reviser/SKILL.md, and updated state-management.md and task-order-format.md to document the complete regeneration trigger table."
+  },
+  "memory_candidates": [
+    {
+      "content": "When generate-task-order.sh falls back to project_name (when description is null), add desc=\"${desc//_/ }\" after loading the description in build_graph() to convert underscore slugs to readable space-separated text. The jq query uses (.description // .project_name) so this replacement handles both cases uniformly.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/620_fix_task_order_generation/summaries/01_fix-task-order-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["generate-task-order", "un-slugify", "project_name", "description", "task-order", "bash"]
+    }
+  ]
+}

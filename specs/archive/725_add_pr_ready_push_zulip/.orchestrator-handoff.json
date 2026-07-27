@@ -1,0 +1,21 @@
+{
+  "status": "implemented",
+  "summary": "Added STEP 0.5 to /pr command for PR READY review tasks: detects pr_ready status + sources array, commits/pushes changes, posts GitHub PR comment via gh pr comment --body-file, optionally sends Zulip message via zulip-send with ~/.zuliprc placeholder detection, then transitions task to [COMPLETED] via update-task-status.sh postflight.",
+  "artifacts": [
+    {
+      "path": "specs/725_add_pr_ready_push_zulip/summaries/01_pr-ready-push-zulip-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary for task 725 documenting STEP 0.5 addition to pr.md"
+    },
+    {
+      "path": ".claude/extensions/cslib/commands/pr.md",
+      "type": "implementation",
+      "summary": "Modified pr.md with ~390 lines of STEP 0.5 (sub-steps 0.5.1-0.5.7)"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "phases_completed": 3,
+  "phases_total": 3,
+  "next_action_hint": "complete"
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Fixed both defects in M.list_extensions: readdir now filters dot-prefixed directories, and the invalid-manifest warning uses vim.notify_once for dedup. Added an isolated regression spec (3/3 passing). Verified headless: dot dir absent with no warning, malformed dir excluded with exactly one warning across two calls, valid extension unaffected.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/888_harden_extension_discovery_against_stray_dirs/summaries/01_harden-extension-discovery-summary.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "lua/neotex/plugins/ai/shared/extensions/manifest.lua",
+    "lua/neotex/plugins/ai/shared/extensions/manifest_spec.lua"
+  ],
+  "decisions_made": [
+    "Used vim.fn.readdir's predicate argument and vim.notify_once (stdlib), not hand-rolled filtering/dedup state",
+    "New regression spec placed at shared/extensions/manifest_spec.lua (new file) rather than the existing claude/extensions/manifest_spec.lua, to isolate temp-dir-only tests from the wrapper spec's live agent-system/extensions/ fixture"
+  ],
+  "dead_ends": [
+    "Memoizing/caching list_extensions() results to dedupe warnings — rejected: would stale manager.get_status()'s live update-available version check"
+  ],
+  "plan_markers_verified": true
+}

@@ -1,0 +1,64 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/495_multi_subagent_continuation_loop/plans/01_continuation-plan.md",
+      "summary": "Implementation plan with 4 phases for adding multi-subagent continuation loop to skill-implementer"
+    },
+    {
+      "type": "summary",
+      "path": "specs/495_multi_subagent_continuation_loop/summaries/01_continuation-summary.md",
+      "summary": "Implementation summary documenting all changes across agent, skill, schema, and pattern files"
+    },
+    {
+      "type": "implementation",
+      "path": ".opencode/skills/skill-implementer/SKILL.md",
+      "summary": "Updated skill-implementer with continuation loop, loop guard, and successor spawning logic"
+    },
+    {
+      "type": "implementation",
+      "path": ".opencode/agent/subagents/general-implementation-agent.md",
+      "summary": "Updated general-implementation-agent with progress tracking, handoff writing, and context exhaustion detection"
+    },
+    {
+      "type": "handoff",
+      "path": "specs/495_multi_subagent_continuation_loop/handoffs/phase-2-handoff-20260504T020000Z.md",
+      "summary": "Mock handoff artifact for validation"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added multi-subagent continuation loop to skill-implementer with automatic successor spawning, context exhaustion detection, handoff artifacts, and progress tracking. Updated general-implementation-agent with progress file initialization, handoff writing, and successor behavior. Created two reusable pattern documentation files."
+  },
+  "memory_candidates": [
+    {
+      "content": "The multi-subagent continuation loop pattern enables automatic context exhaustion recovery: (1) agent writes handoff + progress file before returning partial, (2) skill detects handoff_path in metadata, (3) skill spawns successor with continuation_context injected into delegation context, (4) loop continues up to max 3 times tracked via .continuation-loop-guard file. Per-subagent git commits (Stage 6b) ensure progress is checkpointed. This pattern generalizes to any skill delegating to long-running subagents.",
+      "category": "PATTERN",
+      "source_artifact": "specs/495_multi_subagent_continuation_loop/summaries/01_continuation-summary.md",
+      "confidence": 0.95,
+      "suggested_keywords": ["continuation-loop", "subagent", "handoff", "context-exhaustion", "successor-spawn", "skill-pattern"]
+    },
+    {
+      "content": "Use a .loop-guard file in the task directory to track iteration counts across potential skill interruptions. The file stores session_id, continuation_count, max_continuations, and timestamps. On loop entry, read the guard; on each iteration, update it; on final cleanup, remove it. This provides resilience against SubagentStop hooks or unexpected terminations mid-loop.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/495_multi_subagent_continuation_loop/summaries/01_continuation-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["loop-guard", "interruption-resilience", "state-persistence", "task-directory", "continuation-tracking"]
+    },
+    {
+      "content": "Per-subagent git commits inside a continuation loop provide better recoverability than a single final commit. After each subagent returns (implemented, partial, or failed), commit with a phase-specific message before deciding whether to spawn a successor. This ensures earlier progress is preserved if a later continuation fails or the loop is interrupted.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/495_multi_subagent_continuation_loop/summaries/01_continuation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-commit", "checkpoint", "continuation-loop", "recoverability", "per-subagent"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_20260504_495_impl",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
+}

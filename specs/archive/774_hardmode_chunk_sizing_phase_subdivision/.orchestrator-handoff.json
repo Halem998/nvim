@@ -1,0 +1,45 @@
+{
+  "status": "implemented",
+  "summary": "Implemented all 8 phases of task 774 (PLANNING leg of the three-leg --hard model). Tightened H8 phase sizing in planner-hard-agent.md to a bounded-unit PRIMARY criterion with line count demoted to secondary/advisory and an explicit phase-count escape valve (Complex capped at 6-8 phases -> skeleton). Added a skeleton+follow-up decomposition mechanism: planner-hard-agent.md Stage 4a emits skeleton phases + new_tasks array (spawn-agent's exact 0-based schema) + {{FOLLOWUP:i}} placeholder tokens + .skeleton-return.json; skill-planner-hard/SKILL.md Stage 6b allocates real task numbers (duplicate-with-modification of skill-spawn Stages 7-11) with the SETTLED REVERSED dependency direction (follow-ups depend on the skeleton task), and Stage 6c substitutes all placeholder tokens in one pass. Added a plan-time ## Planned Strategic Sorries schema to plan-format.md (plan_metadata.skeleton + follow_up_tasks, 5-column table) reusing task 778's exact sorry_inventory field names verbatim. Fixed both pre-existing skill-implementer-hard Stage 3b defects: handoff path scoped to ${task_dir}/.orchestrator-handoff.json (was un-scoped specs/.orchestrator-handoff.json), and integer-increment phase selection replaced with a heading-scan of the plan file (addresses N.1/N.2 sub-phases and sparse numbering) plus skeleton-exhaustion detection. Settled follow_up_task on plain integers in general-implementation-hard-agent.md (corrected the dotted \"774.2\" worked example to \"781\"). All five in-scope files kept in lockstep between deployed and .claude/extensions/core/ copies (byte-identical for the three non-SKILL.md files; the two SKILL.md pairs differ only by the pre-existing literature-script-name drift, mirrored not fixed). No out-of-scope files touched (wrap-up.md, anti-analysis.md, skill-orchestrate-hard, skill-spawn, spawn-agent, and standard-mode planner/implementer files all verified untouched via git diff --stat).",
+  "phases_completed": 8,
+  "phases_total": 8,
+  "artifacts": [
+    {
+      "path": "specs/774_hardmode_chunk_sizing_phase_subdivision/plans/01_skeleton-followup-phase-sizing.md",
+      "type": "plan",
+      "summary": "8-phase implementation plan, all phases marked [COMPLETED] with per-task completion annotations."
+    },
+    {
+      "path": "specs/774_hardmode_chunk_sizing_phase_subdivision/summaries/01_skeleton-followup-phase-sizing-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary covering all 8 phases, decisions, one accepted deviation (pre-existing unrelated lean extension doc-lint FAIL), and verification results."
+    },
+    {
+      "path": ".claude/agents/planner-hard-agent.md",
+      "type": "code",
+      "summary": "H8 tightened to bounded-unit primary criterion + phase-count escape valve; Stage 4a skeleton decomposition sub-stage added; wrap-up.md/anti-analysis.md added to Context References."
+    },
+    {
+      "path": ".claude/context/formats/plan-format.md",
+      "type": "code",
+      "summary": "plan_metadata.skeleton/follow_up_tasks fields and ## Planned Strategic Sorries conditional section added, reusing 778's sorry_inventory field names verbatim."
+    },
+    {
+      "path": ".claude/skills/skill-planner-hard/SKILL.md",
+      "type": "code",
+      "summary": "Stage 6b (skeleton task allocation, reversed dependency direction) and Stage 6c (placeholder-token substitution pass) added."
+    },
+    {
+      "path": ".claude/skills/skill-implementer-hard/SKILL.md",
+      "type": "code",
+      "summary": "Stage 3b handoff path scoped to task dir; integer-increment phase selection replaced with heading-scan + skeleton-exhaustion detection."
+    },
+    {
+      "path": ".claude/agents/general-implementation-hard-agent.md",
+      "type": "code",
+      "summary": "follow_up_task worked example corrected from dotted \"774.2\" to plain-integer \"781\"; convention documented."
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "Task 774 implementation complete. All five in-scope dual-copy files verified in lockstep. One accepted deviation: check-extension-docs.sh exits 1 due to a pre-existing unrelated [lean] extension FAIL (routing_hard targets not deployed, confirmed pre-existing via git log --follow, out of task 774's territory). Consider running /implement 772 or /implement 777 next per the three-leg --hard model, or a future task to address the pre-existing lean doc-lint FAIL if strict exit-0 becomes a CI gate."
+}

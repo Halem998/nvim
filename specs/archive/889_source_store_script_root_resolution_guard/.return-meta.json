@@ -1,0 +1,68 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "task_number": 889,
+  "session_id": "sess_1784185160_df2d91_889",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "artifacts": [
+    {"type": "plan", "path": "specs/889_source_store_script_root_resolution_guard/plans/01_root-resolution-guard.md"},
+    {"type": "summary", "path": "specs/889_source_store_script_root_resolution_guard/summaries/01_root-resolution-guard-summary.md"}
+  ],
+  "phase_count": 6,
+  "phases_completed": 6,
+  "phases_total": 6,
+  "estimated_hours": 3,
+  "dependency_waves": [[1, 2], [3, 4], [5], [6]],
+  "next_steps": "Run <leader>al 'Sync all (replace existing)' to deploy the guard into .claude/scripts/, then STRICT_CORE_DEPLOY=1 bash .claude/scripts/check-extension-docs.sh to confirm drift is resolved.",
+  "completion_data": {
+    "completion_summary": "Added deploy-root-guard.sh sourced into all 24 core scripts immediately after their root computation, so a source-store invocation fails loudly with zero stray artifacts while a deploy-tree invocation is unaffected; de-anchored the .agent-logs .gitignore entry and reconciled check-extension-docs.sh's stale comment. Verified both guard branches live (not by diff-reading): source-store exit 1 with no stray dirs, simulated deploy tree passes through silently, .opencode acceptance confirmed directly."
+  },
+  "memory_candidates": [
+    {
+      "content": "In the agent-system source store, scripts that resolve their repo root as \"$(cd \"${SCRIPT_DIR}/../..\" && pwd)\" are only correct in a deploy tree (.claude/scripts/ or .opencode/scripts/ — the deploy tree is NOT singular). Run from agent-system/extensions/core/scripts/ the same expression silently resolves to agent-system/extensions/ rather than failing. Guard structurally on the grandparent dir name via ${SCRIPT_DIR%/*} parameter expansion (basename(SCRIPT_DIR) is always literally 'scripts' and carries no signal). Never use `git rev-parse --show-toplevel` as the fix: it silently succeeds by finding the true root, masking the invocation error. When sourcing a shared guard helper into these scripts, always write `. \"${SCRIPT_DIR}/guard.sh\" || exit 1` — several core scripts use `set -uo pipefail` or no `set` at all, so a bare source of a missing helper prints an error but CONTINUES with an unvalidated root. Related: editing any deployed-identical source script flips check-extension-docs.sh Rule F (check_deployed_script_drift, a hard fail) red until a manual <leader>al sync; this is expected and cannot be resolved headlessly.",
+      "category": "PATTERN",
+      "source_artifact": "specs/889_source_store_script_root_resolution_guard/summaries/01_root-resolution-guard-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["source-store", "root-resolution", "deploy-tree", "script-guard", "deploy-drift", "set-e"]
+    },
+    {
+      "content": "A single shared sourced guard/helper file (~25 lines) that validates its own BASH_SOURCE[0] location beats N per-caller inline copies when the check is caller-independent: it needs no arguments, is indifferent to each caller's differently-named root variable, and centralizes future edits (e.g. adding a third accepted deploy-tree name) to one file instead of N. Net new code was ~37 lines (helper + 24 one-line callers) vs. ~120 for 24 self-contained inline blocks.",
+      "category": "PATTERN",
+      "source_artifact": "specs/889_source_store_script_root_resolution_guard/summaries/01_root-resolution-guard-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["shared-helper", "sourced-guard", "minimal-code", "self-locating-check"]
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/scripts/deploy-root-guard.sh",
+    "agent-system/extensions/core/manifest.json",
+    ".gitignore",
+    "agent-system/extensions/core/scripts/archive-task.sh",
+    "agent-system/extensions/core/scripts/events-append.sh",
+    "agent-system/extensions/core/scripts/events-query.sh",
+    "agent-system/extensions/core/scripts/export-to-markdown.sh",
+    "agent-system/extensions/core/scripts/generate-task-order.sh",
+    "agent-system/extensions/core/scripts/generate-todo.sh",
+    "agent-system/extensions/core/scripts/install-extension.sh",
+    "agent-system/extensions/core/scripts/literature-retrieve.sh",
+    "agent-system/extensions/core/scripts/manage-topics.sh",
+    "agent-system/extensions/core/scripts/memory-harvest.sh",
+    "agent-system/extensions/core/scripts/memory-retrieve.sh",
+    "agent-system/extensions/core/scripts/reconcile-artifacts.sh",
+    "agent-system/extensions/core/scripts/reconcile-task-status.sh",
+    "agent-system/extensions/core/scripts/roadmap-sync.sh",
+    "agent-system/extensions/core/scripts/task-lock.sh",
+    "agent-system/extensions/core/scripts/uninstall-extension.sh",
+    "agent-system/extensions/core/scripts/update-phase-status.sh",
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/scripts/validate-context-budgets.sh",
+    "agent-system/extensions/core/scripts/validate-context-index.sh",
+    "agent-system/extensions/core/scripts/validate-extension-index.sh",
+    "agent-system/extensions/core/scripts/validate-wiring.sh",
+    "agent-system/extensions/core/scripts/vault-operation.sh",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+    "specs/889_source_store_script_root_resolution_guard/plans/01_root-resolution-guard.md",
+    "specs/889_source_store_script_root_resolution_guard/summaries/01_root-resolution-guard-summary.md"
+  ]
+}

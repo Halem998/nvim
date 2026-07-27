@@ -1,0 +1,27 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 680,
+  "session_id": "sess_20260612_680",
+  "started_at": "2026-06-12T00:00:00Z",
+  "completed_at": "2026-06-12T00:00:00Z",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "artifact_path": "specs/680_fix_stop_hook_tts/summaries/01_implementation-summary.md",
+  "artifact_type": "summary",
+  "artifact_summary": "Implementation summary for Stop hook TTS fix: cooldown in tts-notify.sh, TTS call in claude-stop-notify.sh, and idle_prompt in settings.json Notification matcher",
+  "completion_data": {
+    "completion_summary": "Added 10-second cooldown dedup to tts-notify.sh (shared /tmp/claude-tts-last-notify), inserted tts-notify.sh call in the claude-stop-notify.sh non-workflow-active branch for audible Stop notifications, and added idle_prompt to the Notification hook matcher in settings.json.",
+    "roadmap_items": []
+  },
+  "memory_candidates": [
+    {
+      "content": "When adding new callers to tts-notify.sh, the shared cooldown file /tmp/claude-tts-last-notify deduplicates TTS announcements within 10 seconds across all callers (Stop hook, lifecycle path, Notification hook). Set TTS_COOLDOWN=0 to bypass cooldown for testing.",
+      "category": "PATTERN",
+      "source_artifact": "specs/680_fix_stop_hook_tts/summaries/01_implementation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["tts", "cooldown", "dedup", "claude-stop-notify", "tts-notify", "notification"]
+    }
+  ]
+}

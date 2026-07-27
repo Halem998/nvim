@@ -1,0 +1,47 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Executed the 3-phase plan for task 829 in full. Phase 1 created lua/neotex/util/tts.lua with module state, config, and pure helpers (notify, command_exists, get_sample_rate reading the .onnx.json sidecar, get_text for cursor-to-EOF extraction, resolve_player, is_playing, health). Phase 2 added the playback engine: start()/stop()/toggle() spawning `sh -c \"piper -m <model> --output_raw -q | play ...\"` via jobstart, feeding text via chansend/chanclose(stdin), resetting job_id in a single on_exit shared by natural completion and manual stop, and lazily registering VimLeavePre cleanup via a guarded ensure_cleanup() inside start() (not an unwired setup()). Phase 3 registered <leader>vl in the existing <leader>v voice which-key group and broadened the section comment to (STT + TTS). All three phases verified headlessly using the real, unstubbed piper|play pipeline (not mocks): start/stop/toggle state transitions, empty-buffer guard (no job spawned, is_playing stays false), mid-playback :qa cleanup (VimLeavePre fires, no orphaned piper/play processes), and health() reporting all dependencies satisfied. The plan's headless `verbose nmap <leader>vl` verification step was investigated and found infeasible in this environment: which-key.nvim v3's wk.add() queues specs and only materializes real vim.keymap.set bindings via a vim.schedule_wrap'd loader requiring a genuine interactive event loop, which never fires under `nvim --headless -c ... -c qa` (confirmed identically for the pre-existing, already-working <leader>vh mapping, so this is a pre-existing tooling limitation, not a regression introduced by this change). Substituted with grep confirming exactly one <leader>vl binding plus a clean full-config headless load. All plan checkboxes are checked with deviation annotations where the implementation departed from the literal plan text (all functionally equivalent, documented inline); plan Status markers for all 3 phases are [COMPLETED].",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": "lua/neotex/util/tts.lua"
+    },
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/editor/which-key.lua"
+    },
+    {
+      "type": "plan",
+      "path": "specs/829_add_leader_vl_piper_tts_read_buffer/plans/01_piper-tts-toggle.md"
+    },
+    {
+      "type": "summary",
+      "path": "specs/829_add_leader_vl_piper_tts_read_buffer/summaries/01_piper-tts-toggle-summary.md"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "complete",
+  "files_modified": [
+    "lua/neotex/util/tts.lua",
+    "lua/neotex/plugins/editor/which-key.lua",
+    "specs/829_add_leader_vl_piper_tts_read_buffer/plans/01_piper-tts-toggle.md",
+    "specs/829_add_leader_vl_piper_tts_read_buffer/summaries/01_piper-tts-toggle-summary.md",
+    "specs/829_add_leader_vl_piper_tts_read_buffer/handoffs/phase-1-handoff-20260708T224918Z.md",
+    "specs/829_add_leader_vl_piper_tts_read_buffer/handoffs/phase-2-handoff-20260708T225200Z.md",
+    "specs/829_add_leader_vl_piper_tts_read_buffer/handoffs/phase-3-handoff-20260708T225800Z.md"
+  ],
+  "decisions_made": [
+    "resolve_player(sample_rate) takes a sample-rate parameter (deviation from the plan's no-arg signature) so it directly emits a fully-formed player command string.",
+    "start() checks piper existence, then model readability, then resolves the player with the sidecar sample rate — ordering necessitated by needing the sample rate before formatting the player command.",
+    "Cleanup augroup (TTSPlayback) registered lazily inside start(), guarded by cleanup_registered, per the plan's explicit fix for the sleep-inhibit.lua unwired-setup() gap.",
+    "Icon (speaker) used for <leader>vl to visually distinguish it from the STT mic-family icons.",
+    "which-key headless verification substituted with grep + structural-equivalence check after confirming the verbose-nmap approach is infeasible for any which-key-managed mapping in this environment (tested against the pre-existing <leader>vh entry)."
+  ],
+  "dead_ends": [
+    "Do not retry headless `verbose nmap <leader>vl` verification, or attempt to force which-key's queued mappings to materialize via doautocmd/sleep/feedkeys tricks — investigated (doautocmd User VeryLazy, sleep, nvim_feedkeys) and confirmed which-key.nvim v3's scheduled loader (config.lua's vim.schedule_wrap(load)) does not fire in a non-interactive -c command sequence; this is a tooling limitation, not a bug to fix."
+  ],
+  "plan_markers_verified": true,
+  "completion_summary": "Added a <leader>vl toggle (lua/neotex/util/tts.lua + which-key entry) that reads the current buffer aloud from the cursor to end-of-buffer via a piper|play pipeline, stopping playback immediately on a second press, with auto-reset on natural completion and orphan-free cleanup on Neovim exit."
+}

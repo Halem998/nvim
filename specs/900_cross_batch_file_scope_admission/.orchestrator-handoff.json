@@ -1,0 +1,54 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "All 6 plan phases complete. orchestrate-batch-admit.sh (cross-batch file_scope admission predicate) implemented, registered in manifest.json, and proven by an 8/8-passing fixture test suite including a live smoke check. Verdict schema published in batch-admit-schema.md and indexed. Both /orchestrate call sites (commands/orchestrate.md Step 3, skill-orchestrate/SKILL.md Stage MT-3 step 4.5) wired to the script with the 2+ tasks guard removed. Registered as file-footprint-overlap.md's fourth consumer. All edits confined to agent-system/extensions/core/** and specs/900_cross_batch_file_scope_admission/**; nothing under .claude/** touched.",
+  "artifacts": [
+    {
+      "path": "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+      "type": "script",
+      "summary": "New cross-batch file_scope admission predicate; single state.json read, NDJSON verdicts"
+    },
+    {
+      "path": "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+      "type": "doc",
+      "summary": "Canonical orchestrate-batch-admit-v1 verdict schema document"
+    },
+    {
+      "path": "specs/900_cross_batch_file_scope_admission/fixtures/state-cross-batch.json",
+      "type": "fixture",
+      "summary": "Frozen fixture for the regression test suite"
+    },
+    {
+      "path": "specs/900_cross_batch_file_scope_admission/tests/test-batch-admit.sh",
+      "type": "test",
+      "summary": "Deterministic regression suite; 8/8 assertions pass including live smoke check"
+    },
+    {
+      "path": "specs/900_cross_batch_file_scope_admission/summaries/01_cross-batch-admission-control-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary for all 6 phases"
+    }
+  ],
+  "blockers": [],
+  "phases_completed": 6,
+  "phases_total": 6,
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+    "agent-system/extensions/core/docs/README.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
+    "specs/900_cross_batch_file_scope_admission/fixtures/state-cross-batch.json",
+    "specs/900_cross_batch_file_scope_admission/tests/test-batch-admit.sh"
+  ],
+  "decisions_made": [
+    "Phase 2 test scenario 'candidates 900 902' asserts 900's genuine cross-batch defer against 906 rather than the plan's original admit prediction, since the mandated verbatim fixture data for 900/902/906/907 contains a real, independent 900-906 collision; the in-batch direction property is still verified via 902's line.",
+    "Added three helper synthetic fixture entries beyond the plan's mandated two, to isolate the terminal-exclusion and edge-exclusion assertions from the real 900/902/906/907 collisions."
+  ],
+  "dead_ends": [],
+  "plan_markers_verified": true
+}

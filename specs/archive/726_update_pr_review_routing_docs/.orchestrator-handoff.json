@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "summary": "Verified and documented the pr-review workflow in EXTENSION.md and pr-prohibition.md. Both files already contained the required content from prior tasks 722-725; plan checklist updated to reflect completed state.",
+  "artifacts": [
+    {
+      "path": "specs/726_update_pr_review_routing_docs/summaries/01_pr-review-routing-docs-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary confirming EXTENSION.md skill-agent mapping row and Commands section, and pr-prohibition.md pr-review workflow subsection, are all present and correct"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "phases_completed": 2,
+  "phases_total": 2,
+  "next_action_hint": "complete"
+}

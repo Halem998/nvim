@@ -1,0 +1,47 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "All 8 phases complete and verified. skill-base.sh gained SKILL_REPO_ROOT + absolute TASK_DIR_ABS/handoff_path; validate-handoff-location.sh PostToolUse hook created and registered; core+lean hard-mode write instructions now name an absolute handoff_path/task_dir; skill-orchestrate and skill-orchestrate-hard thread the absolute anchor through every dispatch context; both orchestrators' Stage 5 gained a dispatch_start_ts-based staleness gate and a two-path stray-handoff sweep (move-aside, never delete); handoff-schema.md documents the full Path Resolution Contract including the hook's honest structural blindness to the Bash-redirect write path.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/892_prevent_stale_and_misplaced_orchestrator_handoff_reads/summaries/01_stale-misplaced-handoff-reads-summary.md",
+      "summary": "Full implementation summary: files changed per phase, decisions, verification results, and two verification-text precision notes."
+    },
+    {
+      "type": "plan",
+      "path": "specs/892_prevent_stale_and_misplaced_orchestrator_handoff_reads/plans/01_stale-misplaced-handoff-reads.md",
+      "summary": "All 8 phase headings marked [COMPLETED]; all 45 checklist items checked; plan-level Status set to [COMPLETED]."
+    }
+  ],
+  "phases_completed": 8,
+  "phases_total": 8,
+  "blockers": [],
+  "next_action_hint": "None — task complete. Deployment to .claude/ happens separately via the extension picker's Load Core sync, out of scope for this task.",
+  "files_modified": [
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/hooks/validate-handoff-location.sh",
+    "agent-system/extensions/core/merge-sources/settings-hooks.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/context/contracts/wrap-up.md",
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
+    "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+    "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "specs/892_prevent_stale_and_misplaced_orchestrator_handoff_reads/plans/01_stale-misplaced-handoff-reads.md",
+    "specs/892_prevent_stale_and_misplaced_orchestrator_handoff_reads/summaries/01_stale-misplaced-handoff-reads-summary.md"
+  ],
+  "decisions_made": [
+    "Followed the plan's given replacement text verbatim per its Constraint 3 (quoted text authoritative over line numbers) rather than re-deriving wording.",
+    "Kept the dual-path root cause separate throughout: Phase 1's skill-base.sh fix is explicitly not the cause of the observed stray; Phases 3-6 fix the actual trigger (missing directory anchor in hard-mode write instructions).",
+    "Preserved the hook's honest coverage limitation in all three required locations (hook header, skill-base.sh write-site comment, handoff-schema.md) without softening or overstating.",
+    "Stray sweep bounded to exactly two exact paths, moves aside via mv (never deletes), never a recursive find, matching the plan's exact text.",
+    "Left two pre-existing delegation_context: sites in skill-orchestrate-hard/SKILL.md (H5 three-strikes divergence-audit re-dispatch, blocker-research dispatch) untouched — the plan's Phase 6 task list gave exact edit text for only four specific dispatch sites, and no edit text was given for these two."
+  ],
+  "dead_ends": [],
+  "continuation_context": null
+}

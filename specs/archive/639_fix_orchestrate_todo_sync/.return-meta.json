@@ -1,0 +1,29 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1780943406_504cdf",
+  "task_number": 639,
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "phases_completed": 3,
+  "phases_total": 3,
+  "completion_data": {
+    "completion_summary": "Replaced all 16 bash function references (skill_preflight_update x8, skill_postflight_update x6, skill_link_artifact_from_handoff x2) in skill-orchestrate/SKILL.md with standalone bash commands. The fix ensures TODO.md status sync and artifact linking fire correctly during orchestration without requiring skill-base.sh to be sourced.",
+    "roadmap_items": []
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/639_fix_orchestrate_todo_sync/summaries/01_fix-summary.md",
+      "summary": "Implementation summary for task 639"
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "skill-orchestrate SKILL.md is read by the executing agent as markdown guidance, not executed as a bash script. Functions from skill-base.sh (skill_preflight_update, skill_postflight_update, skill_link_artifact_from_handoff) are unavailable. All bash operations in SKILL.md must use standalone bash commands (e.g., `bash .claude/scripts/update-task-status.sh ...`) rather than function calls. This pattern applies to all SKILL.md files: agent guidance documents cannot call shell functions from sourced scripts.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/639_fix_orchestrate_todo_sync/summaries/01_fix-summary.md",
+      "confidence": 0.95,
+      "suggested_keywords": ["skill-orchestrate", "SKILL.md", "skill-base.sh", "bash functions", "agent guidance", "update-task-status"]
+    }
+  ]
+}

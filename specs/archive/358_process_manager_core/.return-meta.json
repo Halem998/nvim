@@ -1,0 +1,11 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "task_number": 358,
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "phases_completed": 3,
+  "phases_total": 3,
+  "completion_data": {
+    "completion_summary": "Created lua/neotex/util/process.lua with full process manager: job registry, start/stop/list lifecycle, port auto-detection, browser auto-open, VimLeavePre cleanup, filetype launcher registry with slidev and typst defaults, and virtual process registration."
+  }
+}

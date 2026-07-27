@@ -1,0 +1,15 @@
+{
+  "status": "implemented",
+  "summary": "Added advisory-only churn detection to skill-orchestrate/SKILL.md: 3 signals tracked (plan revisions, no-progress dispatches, analysis-only), counters persisted in loop guard, one-time advisory emitted to stderr when thresholds crossed. ~80 lines added across Stage 2, new Stage 5b function, and Stage 5 call site. No dispatch routing altered.",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "blockers": [],
+  "continuation_context": null,
+  "artifacts": [
+    {
+      "path": "specs/678_auto_escalation_advisory_v2/summaries/01_auto-escalation-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary: 3 phases completed, churn advisory added to standard orchestrator as advisory-only feature"
+    }
+  ]
+}

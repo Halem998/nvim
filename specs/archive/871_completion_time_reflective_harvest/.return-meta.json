@@ -1,0 +1,51 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/871_completion_time_reflective_harvest/summaries/01_reflective-harvest-summary.md",
+      "summary": "Implementation summary covering all 6 phases of the reflective-harvest feature with verification results"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a structured completion-time reflection object surfaced through .return-meta.json, persisted with overwrite semantics on state.json at the orchestrator-postflight.sh completion seam, logged as a reflection event, surfaced read-only in skill-todo's harvest prompt, and functionally included in /learn --task N."
+  },
+  "memory_candidates": [
+    {
+      "content": "When a new free-text object field must be written into a shared JSON state file (like state.json) alongside existing fields written via a python3 triple-quote bash-interpolation pattern, don't extend that pattern to the new field. Use `jq --argjson VAR \"$json_var\"` instead — it passes the JSON value as a genuine argument rather than string-interpolating it into script source, so embedded quotes/newlines in free text can never break the write.",
+      "category": "PATTERN",
+      "source_artifact": "specs/871_completion_time_reflective_harvest/summaries/01_reflective-harvest-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["jq", "argjson", "state.json", "free-text", "bash-interpolation", "python3-triple-quote"]
+    },
+    {
+      "content": "When adding a new top-level metadata field alongside an existing append-semantics field (e.g. memory_candidates), state its overwrite-vs-append semantics explicitly in both the producer-side format doc (return-metadata-file.md) and the consumer-side schema doc (state-management-schema.md), mirroring the existing field's documentation structure exactly. This keeps producer/consumer docs mechanically consistent and makes the semantic difference (overwrite vs append) impossible to miss during future edits.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/871_completion_time_reflective_harvest/summaries/01_reflective-harvest-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["documentation", "schema-sync", "overwrite-semantics", "append-semantics", "return-meta"]
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/context/reference/state-management-schema.md",
+    "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+    "agent-system/extensions/core/skills/skill-todo/SKILL.md",
+    "agent-system/extensions/memory/skills/skill-memory/SKILL.md",
+    "agent-system/extensions/memory/commands/learn.md",
+    "agent-system/extensions/core/scripts/memory-harvest.sh",
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/memory/EXTENSION.md",
+    "specs/871_completion_time_reflective_harvest/plans/01_reflective-harvest.md",
+    "specs/871_completion_time_reflective_harvest/summaries/01_reflective-harvest-summary.md"
+  ],
+  "next_steps": "No further action required. The reflection field is now live end-to-end: implementation agents may emit .return-meta.json's reflection object, postflight will persist it, and /todo + /learn --task N will surface it.",
+  "metadata": {
+    "session_id": "sess_1784102843_ae113e_871",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
+}

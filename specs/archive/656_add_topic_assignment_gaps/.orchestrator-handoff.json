@@ -1,0 +1,21 @@
+{
+  "status": "implemented",
+  "summary": "Added topic assignment to 6 task creation points across 5 files using Mode C suggest-wrap (fix-it, review), Mode A picker-insert (project-overview), and Mode B inherit-with-fallback (spawn, task --expand, task --review). All inline jq active_topics manipulation replaced with manage-topics.sh calls. All 5 files mirrored to extension copies under .claude/extensions/core/.",
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "complete",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "artifacts": [
+    {
+      "path": "specs/656_add_topic_assignment_gaps/plans/01_add-topic-gaps-plan.md",
+      "type": "plan",
+      "summary": "All 4 phases completed"
+    },
+    {
+      "path": "specs/656_add_topic_assignment_gaps/summaries/01_add-topic-gaps-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary covering Mode C (fix-it, review), Mode A (project-overview), Mode B (spawn, task --expand, task --review) patterns and extension copy sync"
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/lean/context/contracts/context-hygiene.md",
+      "summary": "New standalone Lean4/CSLib context-hygiene contract: goal-state query discipline, bounded file reads, hypothesis pruning, Enforcement paragraph"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/lean/index-entries.json",
+      "summary": "Registered context-hygiene.md with load_when.agents listing all four hard-agent consumers"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/lean/agents/lean-research-hard-agent.md",
+      "summary": "Wired context-hygiene contract (Context References + inline block), added lean_minimal_hypotheses, added missing context-exhaustion-detection.md reference"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/lean/agents/lean-implementation-hard-agent.md",
+      "summary": "Wired context-hygiene contract (Context References + inline block), added lean_minimal_hypotheses"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/cslib/agents/cslib-research-hard-agent.md",
+      "summary": "Wired context-hygiene contract (Context References + inline block), added lean_minimal_hypotheses, added missing context-exhaustion-detection.md reference"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/cslib/agents/cslib-implementation-hard-agent.md",
+      "summary": "Wired context-hygiene contract (Context References + inline block), added lean_minimal_hypotheses"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md",
+      "summary": "Documented lean_minimal_hypotheses in the Core Tools section with cross-link to context-hygiene.md"
+    },
+    {
+      "type": "summary",
+      "path": "specs/782_formal_domain_goal_state_context_hygiene/summaries/01_context-hygiene-contract-summary.md",
+      "summary": "Implementation summary including the FLAGGED manual cross-repo re-install step for /home/benjamin/Projects/cslib"
+    }
+  ],
+  "partial_progress": {
+    "stage": "complete",
+    "details": "All 6 phases completed",
+    "phases_completed": 6,
+    "phases_total": 6
+  },
+  "completion_data": {
+    "completion_summary": "Authored the Lean4/CSLib context-hygiene contract, registered it in the lean extension index for all four hard-agent consumers, wired it (Context References bullet + inline internalization block, byte-identical across all four) into lean-research-hard-agent, lean-implementation-hard-agent, cslib-research-hard-agent, and cslib-implementation-hard-agent, documented the previously-undocumented lean_minimal_hypotheses tool, closed the context-exhaustion-detection.md wiring gap in both research hard agents, and flagged the required cross-repo re-install for /home/benjamin/Projects/cslib (not performed, out of scope)."
+  },
+  "memory_candidates": [
+    {
+      "content": "When wiring a shared behavioral contract into multiple self-contained sibling agent files (e.g. lean/cslib hard agents that intentionally do not @-reference each other), lock the exact Context References bullet + inline internalization block text once (e.g. in the plan's working notes), paste it verbatim into every consumer, then verify drift with md5sum on the extracted section across all files before marking the wiring phase complete.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/782_formal_domain_goal_state_context_hygiene/summaries/01_context-hygiene-contract-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["contract-wiring", "drift-prevention", "self-contained-agents", "verbatim-text", "md5sum-verification"]
+    },
+    {
+      "content": "Extension-local agents (e.g. .claude/extensions/{ext}/agents/*.md) deploy to .claude/agents/ via symlinks for some extensions (cslib) but may be entirely absent from .claude/agents/ for others (lean, observed in this repo) -- always verify actual symlink/deployment state with `ls -la .claude/agents/` and `readlink -f` before assuming a canonical-source edit will reach the deployed agent; edit the canonical extension source regardless, since that is authoritative.",
+      "category": "PATTERN",
+      "source_artifact": "specs/782_formal_domain_goal_state_context_hygiene/summaries/01_context-hygiene-contract-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["extension-deployment", "symlinks", "canonical-source", "agents-directory"]
+    },
+    {
+      "content": "Extensions consumed by a separate repo (e.g. /home/benjamin/Projects/cslib consuming .claude/extensions/lean and .claude/extensions/cslib) use file-copy installation via .claude/scripts/install-extension.sh, not a live link -- any edit to shared extension context/agents/index-entries.json in the authoring repo requires a manual re-run of install-extension.sh inside each consuming repo to propagate; this must be explicitly flagged in the implementation summary/handoff rather than assumed to sync automatically.",
+      "category": "CONFIG",
+      "source_artifact": "specs/782_formal_domain_goal_state_context_hygiene/summaries/01_context-hygiene-contract-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["cross-repo-sync", "install-extension", "source_dir", "extension-consumers", "flagged-manual-step"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1783091711_10490",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
+}

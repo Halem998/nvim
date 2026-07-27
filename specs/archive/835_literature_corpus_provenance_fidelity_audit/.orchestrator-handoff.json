@@ -1,0 +1,21 @@
+{
+  "status": "implemented",
+  "summary": "Implemented and verified a five-phase provenance/fidelity system for the ~/Projects/Literature corpus: a re-runnable auditor stamped a five-value provenance_fidelity field onto 153 index.json entries (flagging exactly rabinovich_2014, zero false positives against the 5 disclosed partials), and both literature-search.sh and literature-briefing.sh now loudly flag/quarantine non-verified entries with fail-open semantics.",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "Task complete. Optional follow-ups: (1) task #832's 'reconvert all 97 dirs' premise should be /revised now that 835's corrected classification is stamped and available; (2) consider OCR re-extraction for the 4 unverified_no_baseline dirs (burgess_1984, gabbay_1994, thomason_1984, vardi_wolper_1986); (3) ~/Projects/Literature is its own git repo and now shows index.json as a pending modification the user may want to review/commit there separately.",
+  "artifacts": [
+    {
+      "path": "specs/835_literature_corpus_provenance_fidelity_audit/summaries/01_provenance-fidelity-flagging-summary.md",
+      "type": "summary",
+      "summary": "Full implementation summary: what changed, decisions, plan deviations (with rationale), and verification evidence across all 5 phases."
+    }
+  ],
+  "modified_files": [
+    ".claude/scripts/literature-fidelity-audit.sh",
+    ".claude/scripts/literature-search.sh",
+    ".claude/scripts/literature-briefing.sh"
+  ]
+}

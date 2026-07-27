@@ -1,0 +1,25 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Added deploy-root-guard.sh, sourced into all 24 core scripts right after their root computation; source-store runs now exit 1 with no stray artifacts, deploy-tree runs unaffected. De-anchored .gitignore's .agent-logs entry. Verified live both ways (guard fires, guard silent, no stray dirs), not by diff-reading alone. Rule F doc-lint now correctly reports 24 drift failures (expected, unresolvable headlessly) until the user runs <leader>al Sync all.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/889_source_store_script_root_resolution_guard/summaries/01_root-resolution-guard-summary.md"},
+    {"type": "plan", "path": "specs/889_source_store_script_root_resolution_guard/plans/01_root-resolution-guard.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/scripts/deploy-root-guard.sh (new)",
+    "agent-system/extensions/core/manifest.json",
+    ".gitignore",
+    "23 uniform core scripts + check-extension-docs.sh (one guard line each)",
+    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"
+  ],
+  "decisions_made": [
+    "Single ~25-line shared guard helper instead of 24 inline blocks (~37 vs ~120 net new lines)",
+    "check-extension-docs.sh guard gated on REPO_ROOT being unset, preserving its deliberate override"
+  ],
+  "dead_ends": [],
+  "plan_markers_verified": true
+}

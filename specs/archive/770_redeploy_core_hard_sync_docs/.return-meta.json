@@ -1,0 +1,40 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "task_number": 770,
+  "session_id": "sess_1782320124_aa5841_770",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "started_at": "2026-06-24T00:00:00Z",
+  "completed_at": "2026-06-24T01:30:00Z",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "completion_data": {
+    "completion_summary": "Updated the core CLAUDE.md merge-source Routing Mechanism from the outdated 4-step description to the accurate 5-step algorithm (documenting non-core/core precedence, compound-key fallbacks, and the SKILL.md safety gate); authored a propagation procedure document in the task summary and extension-development.md covering BimodalLogic's 4 missing items and the Ctrl-l update path; verified doc-lint shows exactly the 4 documented FAILs with zero new regressions."
+  },
+  "artifacts": [
+    {
+      "type": "file_modified",
+      "path": ".claude/extensions/core/merge-sources/claudemd.md",
+      "summary": "Replaced 4-step Routing Mechanism with accurate 5-step algorithm including non-core/core precedence, compound-key fallbacks, and SKILL.md safety gate on Step 5 only"
+    },
+    {
+      "type": "summary",
+      "path": "specs/770_redeploy_core_hard_sync_docs/summaries/01_redeploy-core-hard-sync-summary.md",
+      "summary": "Implementation summary with full re-deploy propagation procedure: install-extension.sh vs Ctrl-l distinction, BimodalLogic's 4 missing items, step-by-step Ctrl-l procedure, and CLAUDE.md regeneration user action"
+    },
+    {
+      "type": "file_modified",
+      "path": ".claude/context/guides/extension-development.md",
+      "summary": "Added 'Deploy Mechanisms' section comparing install-extension.sh (new projects, symlinks) vs extension loader Ctrl-l (existing projects, overwrite on confirm) with decision table"
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "The extension system has two distinct deploy mechanisms: (1) install-extension.sh scans the filesystem and creates symlinks - for new project setup only, skips existing non-symlinks; (2) the extension loader (Ctrl-l in extension picker) reads manifest.provides arrays and copies files with overwrite-on-confirm - the correct update path for existing projects. Use Ctrl-l when picking up new files added to manifest.provides after initial deployment.",
+      "category": "PATTERN",
+      "source_artifact": "specs/770_redeploy_core_hard_sync_docs/summaries/01_redeploy-core-hard-sync-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["extension-deploy", "install-extension.sh", "Ctrl-l", "extension-loader", "update-procedure", "symlink-vs-copy"]
+    }
+  ]
+}

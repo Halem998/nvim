@@ -1,0 +1,15 @@
+{
+  "status": "implemented",
+  "summary": "Added Stage 2.5 (TopicRevision) and Stage 10.3 (OrphanTopicCleanup) to skill-todo/SKILL.md and expanded /task --sync Step 6.5 with 'New topic...' option matching Step 4.5 canonical pattern",
+  "artifacts": [
+    {
+      "path": "specs/640_todo_topic_revision/summaries/01_topic-revision-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary covering both phases: SKILL.md topic revision stages and task.md Step 6.5 expansion"
+    }
+  ],
+  "blockers": [],
+  "phases_completed": 2,
+  "phases_total": 2,
+  "next_action_hint": "none"
+}

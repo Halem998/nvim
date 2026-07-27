@@ -1,0 +1,52 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "task_number": 905,
+  "session_id": "sess_1785106348_990c69_905",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "artifacts": [
+    {
+      "path": "specs/905_zotero_export_freshness_end_to_end/plans/01_zotero-export-freshness-plan.md",
+      "type": "plan",
+      "summary": "5-phase plan: freshness helper + manifest entry, ZOTERO_EXPORT_STALE directive, /literature STALE offer, zotero-search.sh banner + exit 3, acceptance verification"
+    },
+    {
+      "path": "specs/905_zotero_export_freshness_end_to_end/summaries/01_zotero-export-freshness-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary: all 5 phases completed and live-verified; scope boundary (search-side guard inert for two named consumers) recorded honestly"
+    }
+  ],
+  "phase_count": 5,
+  "phases_completed": 5,
+  "phases_total": 5,
+  "estimated_hours": 5,
+  "dependency_waves": [[1], [2, 4], [3], [5]],
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/zotero-export-freshness.sh",
+    "agent-system/extensions/literature/manifest.json",
+    "agent-system/extensions/literature/scripts/zotero-export-status.sh",
+    "agent-system/extensions/literature/scripts/zotero-search.sh",
+    "agent-system/extensions/literature/commands/literature.md"
+  ],
+  "completion_data": {
+    "completion_summary": "Landed a shared zotero-export-freshness.sh classifier, a fifth ZOTERO_EXPORT_STALE directive in zotero-export-status.sh, an assisted-regeneration offer (interactive + autonomous [zotero:auto]) in /literature Mode A step 0, and a [STALE EXPORT ...] banner plus exit code 3 in zotero-search.sh. All five plan phases verified live against the real stale export (2026-07-01 vs sqlite 2026-07-15); no reachable helper-token path yields a silent clean zero-result. Recorded, not papered over: the zotero-search.sh guard is inert for its two current callers (literature-discover.sh, skill-cite/SKILL.md) pending a follow-up task to wire them.",
+    "roadmap_items": []
+  },
+  "next_steps": "Task complete. Recommended follow-up (separate task, out of this file_scope): wire literature-discover.sh's tier2_search() and skills/skill-cite/SKILL.md to distinguish zotero-search.sh's new exit code 3 and surface its [STALE EXPORT ...] banner instead of discarding stderr and collapsing all non-zero exits together.",
+  "memory_candidates": [
+    {
+      "content": "In this repo's agent-system extension layout, an extension's manifest.json provides.scripts array is a deployment ALLOWLIST, not documentation: the loader copies only the enumerated scripts flat into .claude/scripts/, and check-extension-docs.sh Rule E (check_referenced_scripts_declared) fails on a script referenced in docs but absent from the array. Any task whose file_scope adds a NEW script under agent-system/extensions/*/scripts/ therefore has an implicit fifth file — the manifest entry — without which the new script never deploys and the change is inert at runtime, while still looking complete in the source store. Plans that add a new extension script should treat the manifest entry as part of the same phase as the script itself, so the script is deployable at its own commit boundary.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/905_zotero_export_freshness_end_to_end/plans/01_zotero-export-freshness-plan.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["manifest.json", "provides.scripts", "extension-loader", "deployment-allowlist", "check-extension-docs", "new-script"]
+    },
+    {
+      "content": "In bash scripts running `set -euo pipefail`, a `VAR=\"$(cmd1 | grep -oP 'pattern' | head -1)\"` pipeline silently aborts the WHOLE SCRIPT when grep finds zero matches (grep exits 1 on no-match, and pipefail propagates that through the pipeline, and set -e then kills the script at the assignment). This is a second, easy-to-miss failure mode distinct from \"the called command itself might fail\" — it bit a capture-guarded helper invocation whose OWN exit was already guarded with `|| VAR=\"\"`, because the guard was only on the helper call, not on a downstream grep-based parsing pipeline applied to its output. Any downstream `grep`/`head`/`tail` pipeline built on a value that might legitimately be empty or non-matching needs its own `|| VAR=\"\"` guard, verified live via a forced-failure test (renaming the dependency) rather than reasoned about in the abstract.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/905_zotero_export_freshness_end_to_end/summaries/01_zotero-export-freshness-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["set -euo pipefail", "grep -oP", "pipefail", "bash", "capture-guard", "forced-failure-test"]
+    }
+  ]
+}

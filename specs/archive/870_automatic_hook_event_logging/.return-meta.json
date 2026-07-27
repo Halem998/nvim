@@ -1,0 +1,54 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/870_automatic_hook_event_logging/summaries/01_hook-event-instrumentation-summary.md",
+      "summary": "Instrumented skill-base.sh lifecycle functions and orchestrator-postflight.sh status resolution, added PostToolUse and Stop/SubagentStop event-logger hooks, and synced manifest.json/settings.json/EXTENSION.md as the first real callers of events-append.sh."
+    }
+  ],
+  "next_steps": "Task 870 complete. A future, separate sync task can deploy the updated agent-system/extensions/core/ scripts to the live .claude/ tree to resolve the check-extension-docs.sh deployed-vs-source drift noted in Phase 7/the summary.",
+  "metadata": {
+    "session_id": "sess_1784102843_ae113e_870",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  },
+  "completion_data": {
+    "completion_summary": "Wired events-append.sh up as the unified event store's first real caller: instrumented all four skill-base.sh lifecycle functions and orchestrator-postflight.sh's status resolution with non-blocking timed event emissions, added PostToolUse (events-log-artifact.sh) and Stop/SubagentStop (events-log-lifecycle.sh) logger hooks, registered both in manifest.json/root-files/settings.json, and synced EXTENSION.md's hook count and capability list."
+  },
+  "memory_candidates": [
+    {
+      "content": "specs/errors.json's schema is a top-level object {\"errors\": [...]}, not a bare JSON array. When cross-linking a session's most recent error entry, use jq '.errors[]? | select(.context.session_id == $sid) | ...' -- select(.errors[]) directly on the file will error if you assume a bare array.",
+      "category": "PATTERN",
+      "source_artifact": "specs/870_automatic_hook_event_logging/summaries/01_hook-event-instrumentation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["errors.json", "jq", "schema", "cross-link", "error_ref"]
+    },
+    {
+      "content": "Claude Code Stop/SubagentStop hook stdin never carries a workflow session_id or task number directly. The established correlation chain in this repo is: SubagentStop -> find the .postflight-pending marker file (which DOES carry session_id/skill/operation) via `find specs -maxdepth 3 -name \".postflight-pending\"`; Stop -> read .claude/tmp/workflow-active (format: \"<task_number> <timestamp>\", written by update-task-status.sh preflight) for a task number, falling back to a task-number regex over last_assistant_message (mirror memory-nudge.sh), then resolve session_id by looking up that task number against specs/state.json's active_projects[].session_id (populated on every preflight). If no session_id can be resolved this way, exit {} cleanly rather than emitting a sessionless event.",
+      "category": "PATTERN",
+      "source_artifact": "specs/870_automatic_hook_event_logging/summaries/01_hook-event-instrumentation-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["Stop hook", "SubagentStop", "session_id correlation", "workflow-active", "postflight-pending"]
+    },
+    {
+      "content": "To verify a batch of JSONL event lines against context/schemas/events-schema.json in a scratch e2e test, use Python's jsonschema.Draft7Validator(schema).iter_errors(obj) per parsed line rather than hand-rolled jq field checks -- it directly enforces the pattern/enum/required constraints (e.g. event_id's evt_{ms}_{6} pattern, session_id's sess_{ts}_{alnum} pattern, category's closed enum) with precise error messages, catching test-fixture mistakes (like a non-conforming session_id) immediately.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/870_automatic_hook_event_logging/summaries/01_hook-event-instrumentation-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["jsonschema", "JSON Schema validation", "events.jsonl", "e2e testing", "Draft7Validator"]
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+    "agent-system/extensions/core/hooks/events-log-artifact.sh",
+    "agent-system/extensions/core/hooks/events-log-lifecycle.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/root-files/settings.json",
+    "agent-system/extensions/core/EXTENSION.md"
+  ]
+}

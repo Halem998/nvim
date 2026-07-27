@@ -1,0 +1,49 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Relocated the global extension source store from ~/.config/nvim/.claude/extensions/ to ~/.config/nvim/agent-system/extensions/ via history-preserving git mv (981 renamed files), repointed the single canonical config default (config.lua:55, M.claude preset), derived sync.lua's core_source_base from that canonical value to permanently close the drift class, repointed both shell scripts' defaults in source and deployed copies while keeping the pairs byte-identical, updated the manifest_spec.lua test fixture, swept documentation prose naming the source location (narrowing an initial 1506-hit grep to ~15 genuine source-store descriptions after classifying the remainder as out-of-scope: specs/** historical artifacts, .claude/** disposable deploy-tree copies, do-not-touch manifest.json runtime stubs, and a pre-existing unrelated @-reference citation pattern), and verified all three acceptance properties (picker listing, arbitrary-CWD deploy, full self-rebuild) strictly against scratchpad fake project dirs and a full rsync scratch copy of the repo. The real ~/.config/nvim/.claude tree was never destructively touched.",
+  "artifacts": [
+    {"type": "plan", "path": "specs/863_relocate_extension_source_store_out_of_claude/plans/01_relocate-extension-store.md"},
+    {"type": "summary", "path": "specs/863_relocate_extension_source_store_out_of_claude/summaries/01_relocate-extension-store-summary.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "complete",
+  "files_modified": [
+    "agent-system/extensions/ (relocated from .claude/extensions/, 981 files, git mv)",
+    "lua/neotex/plugins/ai/shared/extensions/config.lua",
+    "lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    ".claude/scripts/check-extension-docs.sh",
+    "agent-system/extensions/core/scripts/validate-extension-index.sh",
+    ".claude/scripts/validate-extension-index.sh",
+    "lua/neotex/plugins/ai/claude/extensions/manifest_spec.lua",
+    "lua/neotex/plugins/ai/shared/README.md",
+    "agent-system/extensions/core/context/architecture/context-layers.md",
+    "agent-system/extensions/core/docs/guides/creating-extensions.md",
+    "agent-system/extensions/core/docs/guides/adding-domains.md",
+    "agent-system/extensions/core/context/guides/extension-development.md",
+    "agent-system/extensions/core/docs/architecture/extension-system.md",
+    "agent-system/extensions/core/docs/architecture/system-overview.md",
+    "agent-system/extensions/core/context/architecture/system-overview.md",
+    "agent-system/extensions/core/README.md",
+    "agent-system/extensions/core/docs/README.md",
+    "agent-system/extensions/core/context/meta/context-revision-guide.md",
+    "agent-system/extensions/README.md",
+    "agent-system/extensions/literature/scripts/deprecated/README.md",
+    ".context/README.md",
+    "specs/863_relocate_extension_source_store_out_of_claude/plans/01_relocate-extension-store.md",
+    "specs/state.json",
+    "specs/TODO.md"
+  ],
+  "decisions_made": [
+    "Phase 2: derived core_source_base from the already-in-scope extension_cfg local (populated by get_extension_config) rather than a fresh ext_config.claude(global_dir) call -- same canonical source, avoids a redundant require-call re-derivation",
+    "Phase 3: skipped the optional EXT_DIR-style override parity addition to validate-extension-index.sh -- not required by acceptance criteria",
+    "Phase 5: substituted manager.load(\"core\"/\"nvim\", {project_dir=..., confirm=false}) for the plan's suggested sync.scan_all_artifacts + execute path, since sync.load_all_globally() hard-codes project_dir = vim.fn.getcwd() and gates on an interactive vim.fn.confirm() dialog unsuitable for headless verification; manager.load exercises the identical manifest.lua/loader.lua source-resolution code and accepts injectable paths",
+    "Phase 6: narrowed the naive 1506-hit grep sweep to explicit exclusion categories (specs/** historical, .claude/** deployed-disposable, manifest.json runtime-stub do-not-touch references, and a pre-existing unrelated @-reference deployed-path citation pattern verified via loader.lua:273's copy_context_dirs to have been already-wrong pre-relocation) rather than hand-editing every hit",
+    "Noted but did not fix two ephemeral, self-healing staleness artifacts, both out of scope and non-blocking: 6 permission strings in .claude/settings.local.json (per the plan's existing Risk mitigation) and 6 source_dir fields in .claude/extensions.json (confirmed write-only state with no read-back consumer anywhere in the codebase; self-corrects on next extension reload, demonstrated directly in the Phase 5 self-rebuild scratch test)"
+  ],
+  "dead_ends": [],
+  "phases_completed": 6,
+  "phases_total": 6
+}

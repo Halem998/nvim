@@ -1,0 +1,21 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/688_add_lit_flag_parse_command_args/plans/01_lit-flag-parse-plan.md",
+      "summary": "2-phase plan to add --lit flag to parse-command-args.sh and its extension core copy"
+    }
+  ],
+  "next_steps": "Run /implement 688 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1749686400_plan688",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 2,
+    "estimated_hours": 0.5,
+    "dependency_waves": [[1], [2]]
+  },
+  "memory_candidates": []
+}

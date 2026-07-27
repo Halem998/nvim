@@ -1,0 +1,21 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/865_make_claude_wipe_lossless_and_regenerable/plans/01_wipe-lossless-regenerable.md",
+      "summary": "7-phase plan: relocate extensions.json to preset-scoped root dotfile, add regenerate-from-selection, install-once + backup/restore for settings, relocate logs/, headless scratch verification"
+    }
+  ],
+  "next_steps": "Run /implement 865 to execute the plan",
+  "metadata": {
+    "session_id": "session_015xg2GjzikZ3YpB7gBPtFxc",
+    "agent_type": "planner-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 9,
+    "dependency_waves": [[1, 4, 6], [2, 3], [5], [7]]
+  },
+  "memory_candidates": []
+}

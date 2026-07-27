@@ -1,0 +1,24 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1749607200_a3b2c1_655",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "phases_completed": 4,
+  "phases_total": 4,
+  "completion_data": {
+    "completion_summary": "Replaced duplicated inline topic picker logic in 4 locations across 3 files with references to topic-assignment-pattern.md and manage-topics.sh calls. Net reduction ~111 lines. All extension copies synced."
+  },
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/655_refactor_existing_topic_pickers/plans/01_refactor-topic-pickers-plan.md",
+      "summary": "All 4 phases completed"
+    },
+    {
+      "type": "summary",
+      "path": "specs/655_refactor_existing_topic_pickers/summaries/01_refactor-topic-pickers-summary.md",
+      "summary": "Implementation summary for task 655"
+    }
+  ],
+  "memory_candidates": []
+}

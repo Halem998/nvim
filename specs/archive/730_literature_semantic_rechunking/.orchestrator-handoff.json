@@ -1,0 +1,21 @@
+{
+  "status": "implemented",
+  "summary": "Split Blackburn 2002 into 35 semantic chunks using page running header detection. Removed 13 redundant flat files. Updated index.json from 183 to 212 entries with all paths resolving. Phases 3/5 skipped (cslib has no literature directory per task 728/731). Renames in Phase 2 skipped (task 729 already completed them).",
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "none",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/730_literature_semantic_rechunking/summaries/01_semantic-rechunking-summary.md",
+      "summary": "Semantic re-chunking complete: Blackburn 2002 split into 35 chunks, 13 flat files removed, index.json updated"
+    },
+    {
+      "type": "script",
+      "path": "specs/730_literature_semantic_rechunking/semantic_split.py",
+      "summary": "Reusable Python semantic splitter using page running header detection for OCR'd PDFs"
+    }
+  ]
+}

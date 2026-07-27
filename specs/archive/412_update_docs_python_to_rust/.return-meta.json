@@ -1,0 +1,13 @@
+{
+  "status": "in_progress",
+  "task_number": 412,
+  "task_name": "update_docs_python_to_rust",
+  "task_type": "meta",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1776067171_f8da79",
+  "plan_path": "specs/412_update_docs_python_to_rust/plans/01_update-docs-python-rust.md",
+  "summary_path": "specs/412_update_docs_python_to_rust/summaries/01_update-docs-python-rust-summary.md",
+  "phases_completed": 0,
+  "phases_total": 4
+}

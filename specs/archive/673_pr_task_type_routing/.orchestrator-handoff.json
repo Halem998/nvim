@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "summary": "Added pr task type routing to cslib extension with manifest routing entries, index-entries context scoping, new skill-pr-implementation SKILL.md, and EXTENSION.md documentation",
+  "artifacts": [
+    {
+      "path": "specs/673_pr_task_type_routing/summaries/01_implementation-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary covering all 3 phases: manifest routing, skill creation, and EXTENSION.md docs"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "complete",
+  "phases_completed": 3,
+  "phases_total": 3
+}

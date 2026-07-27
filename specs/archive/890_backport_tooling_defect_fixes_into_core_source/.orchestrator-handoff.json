@@ -1,0 +1,39 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Executed all 5 phases of the back-port plan. All six target files under agent-system/extensions/core/ now carry the intended Defect 1-5 fixes: roadmap-integration.sh (argv-overflow + table-format matcher), review.md (silent-guard exit-code capture), generate-task-order.sh (undeclared-topic warning symmetry, applied via targeted edit only, deploy-root-guard.sh sourcing preserved and verified before/after), task-order-format.md (append-extras doc paragraph), the new validate-no-task-references.sh advisory hook (chmod +x), and settings-hooks.json (new standalone PostToolUse Write|Edit block). All five defects verified live in the source context. Zero .claude/** files touched; zero task-number citations introduced outside specs/**; manifest.json unchanged.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/890_backport_tooling_defect_fixes_into_core_source/plans/01_backport-defect-fixes.md"
+    },
+    {
+      "type": "summary",
+      "path": "specs/890_backport_tooling_defect_fixes_into_core_source/summaries/01_backport-defect-fixes-summary.md"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "complete",
+  "files_modified": [
+    "agent-system/extensions/core/scripts/roadmap-integration.sh",
+    "agent-system/extensions/core/commands/review.md",
+    "agent-system/extensions/core/scripts/generate-task-order.sh",
+    "agent-system/extensions/core/context/formats/task-order-format.md",
+    "agent-system/extensions/core/hooks/validate-no-task-references.sh",
+    "agent-system/extensions/core/merge-sources/settings-hooks.json",
+    "specs/890_backport_tooling_defect_fixes_into_core_source/plans/01_backport-defect-fixes.md",
+    "specs/890_backport_tooling_defect_fixes_into_core_source/summaries/01_backport-defect-fixes-summary.md"
+  ],
+  "decisions_made": [
+    "generate-task-order.sh (Defect 4) applied via targeted Edit only, never a whole-file copy; baseline and regression grep assertions for deploy-root-guard.sh both passed, and a post-edit diff against the reference file showed only the (intentionally preserved) guard line as a remaining difference.",
+    "roadmap-integration.sh, review.md, and task-order-format.md applied via whole-file copy after confirming no drift (grep for deploy-root-guard.sh absence in both versions for the script; clean additive diffs for the other two).",
+    "settings-hooks.json received only the single new PostToolUse Write|Edit block (not the deploy tree's full array) to avoid dropping unrelated events-log-artifact.sh wiring out of scope for this task; manifest.json required no edit since provides.hooks already listed the hook.",
+    "Defect 3's literal 'annotations_made non-zero' verification criterion was reinterpreted: the write-back mechanism is checkbox-line-specific and unmodified by this defect's diff, confirmed via byte-identical output between the new source and the finished reference file on the same fixture (not a regression). The substantive fix was verified instead via roadmap_matches, which is now correctly populated where the pre-fix (git-history) version produced an empty array on the same synthetic table-format fixture."
+  ],
+  "dead_ends": [
+    "Whole-file cp of generate-task-order.sh would have silently regressed the deploy-root-guard.sh sourcing line -- confirmed this risk was real by diffing against the finished reference file, which genuinely lacks that line.",
+    "A synthetic pure-table (no-checkbox) ROADMAP.md fixture cannot produce a non-zero annotations_made count regardless of how correct the table-parsing/matching fix is, because the annotation write-back step only replaces literal checkbox lines -- this is a pre-existing code-level limitation shared identically by the finished reference implementation, not something introduced by or fixable within this back-port's scope."
+  ],
+  "plan_markers_verified": true
+}

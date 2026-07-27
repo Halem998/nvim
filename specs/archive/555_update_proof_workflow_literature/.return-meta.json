@@ -1,0 +1,24 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1778620199_4b92cb",
+  "task_number": 555,
+  "started_at": "2026-05-12T19:00:00Z",
+  "completed_at": "2026-05-12T19:15:00Z",
+  "completion_data": {
+    "completion_summary": "Added literature-first stages to 3 proof workflow documents: Stage 1.5 and modified Stage 4B/Tactic Selection in lean-implementation-flow.md, Step 0 and modified Step 2/dependencies/criteria in end-to-end-proof-workflow.md, and literature-guided strategy/sketch/references in proof-construction.md. All changes are mode-gated."
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/555_update_proof_workflow_literature/summaries/01_proof-workflow-literature-summary.md",
+      "summary": "Implementation summary with verification results for all 3 phases"
+    }
+  ],
+  "metadata": {
+    "phases_completed": 3,
+    "phases_total": 3
+  },
+  "memory_candidates": []
+}

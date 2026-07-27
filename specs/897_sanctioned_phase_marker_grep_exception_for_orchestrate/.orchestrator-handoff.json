@@ -1,0 +1,33 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Implemented all 4 phases: sanctioned count-only phase-marker grep recovery path wired into Stage 5's missing/stale-handoff branch in both skill-orchestrate and skill-orchestrate-hard, with the recovery-only carve-out prose in each skill, and both architecture docs (handoff-schema.md, orchestrate-state-machine.md) reconciled to state the accurate three-exception reading contract instead of the prior unqualified never-reads claim.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/summaries/01_phase-marker-grep-recovery-summary.md",
+      "summary": "Implementation summary covering all 4 phases, decisions, deviations, and verification results"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"
+  ],
+  "decisions_made": [
+    "Reflowed the base skill's Stage 5 TOKEN BOUND comment onto one line so the exact phrase '≤10 tokens per recovery event' matches on a single grep line",
+    "Lowercased 'Phase-marker' to 'phase-marker' in the hard skill's Stage 5 recovery-block leading comment header to case-match the allowlist phrasing and satisfy the case-sensitive verification grep",
+    "Also updated the Context Flatness Guarantee section in orchestrate-state-machine.md (carried the same unqualified never-reads claim, outside Phase 3's two explicitly named tasks) to satisfy the phase's repo-wide contradiction-scan verification",
+    ".claude/ redeployment deliberately not performed -- out-of-band via the extension picker, per the plan's explicit non-goal"
+  ],
+  "continuation_context": null,
+  "phases_completed": 4,
+  "phases_total": 4,
+  "session_id": "sess_1784998517_0638c7_897",
+  "task_number": 897,
+  "timestamp": "2026-07-25T17:45:00Z"
+}

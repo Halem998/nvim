@@ -1,0 +1,32 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1781130828_de7a25_651",
+  "task_number": 651,
+  "task_type": "meta",
+  "started_at": "2026-06-10T00:00:00Z",
+  "completed_at": "2026-06-10T01:00:00Z",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/651_update_rules_and_documentation/summaries/01_docs-rules-update-summary.md",
+      "summary": "Documentation and rules update summary for state.json-first architecture migration"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Updated 14+ files across rules, skills, context, and architecture docs to consistently describe the new state.json-first update flow. Removed all Edit-TODO.md instructions, artifact-linking-todo.md references, Python-based TODO.md removal, and two-phase commit language. Replaced with generate-todo.sh pipeline descriptions.",
+    "roadmap_items": []
+  },
+  "memory_candidates": [
+    {
+      "content": "When updating doc/rule files to reflect a new architecture pattern, always check for extension copies in .claude/extensions/core/ and sync them. The main copy and extension copy must stay identical. Extension copies exist in: rules/, context/workflows/, docs/architecture/, context/patterns/, context/standards/, context/orchestration/, scripts/, skills/.",
+      "category": "PATTERN",
+      "source_artifact": "specs/651_update_rules_and_documentation/summaries/01_docs-rules-update-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["extension", "sync", "core", "mirror", "documentation", "duplicate"]
+    }
+  ]
+}

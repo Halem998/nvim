@@ -1,0 +1,60 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 855,
+  "session_id": "sess_1783968617_ea7ceb",
+  "plan_path": "specs/855_prevent_task_number_references_in_deliverables/plans/01_prevent-task-references.md",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/855_prevent_task_number_references_in_deliverables/summaries/01_prevent-task-references-summary.md",
+      "summary": "Implementation summary for all 5 phases: rule, advisory hook, six-agent reinforcement, doc-policy clause, end-to-end validation"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented all four task-number-leakage enforcement layers: a new auto-applied rule, an advisory PostToolUse hook hand-verified as wired into settings.json, MUST NOT reinforcement clauses in all six implementation agents, and a documentation-policy clause mirrored across both canonical and deployed copies. End-to-end validation confirmed the regex (10/10 positives, 0/13 negatives), hook wiring, agent coverage, and byte-identical doc copies."
+  },
+  "modified_files": [
+    ".claude/rules/no-task-references-in-deliverables.md",
+    ".claude/extensions/core/merge-sources/claudemd.md",
+    ".claude/CLAUDE.md",
+    ".claude/hooks/validate-no-task-references.sh",
+    ".claude/settings.json",
+    ".claude/extensions/core/manifest.json",
+    ".claude/extensions.json",
+    ".claude/agents/general-implementation-agent.md",
+    ".claude/agents/general-implementation-hard-agent.md",
+    ".claude/agents/neovim-implementation-agent.md",
+    ".claude/agents/nix-implementation-agent.md",
+    ".claude/extensions/cslib/agents/cslib-implementation-agent.md",
+    ".claude/extensions/cslib/agents/cslib-implementation-hard-agent.md",
+    ".claude/extensions/nvim/context/project/neovim/standards/documentation-policy.md",
+    ".claude/context/project/neovim/standards/documentation-policy.md",
+    "specs/855_prevent_task_number_references_in_deliverables/plans/01_prevent-task-references.md",
+    "specs/855_prevent_task_number_references_in_deliverables/progress/phase-1-progress.json",
+    "specs/855_prevent_task_number_references_in_deliverables/progress/phase-2-progress.json",
+    "specs/855_prevent_task_number_references_in_deliverables/progress/phase-3-progress.json",
+    "specs/855_prevent_task_number_references_in_deliverables/progress/phase-4-progress.json",
+    "specs/855_prevent_task_number_references_in_deliverables/progress/phase-5-progress.json",
+    "specs/855_prevent_task_number_references_in_deliverables/summaries/01_prevent-task-references-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When an agent-file target under .claude/agents/ is actually a symlink to .claude/extensions/{ext}/agents/*.md (as with cslib-implementation-agent.md and cslib-implementation-hard-agent.md), the Edit tool refuses to write through the symlink -- resolve it first with `readlink -f` and edit the real target file directly. Also remember `grep -r` does not follow symlinks by default, so a `grep -rl <pattern> .claude/agents/` coverage check will silently omit symlinked agent files; verify those separately with a direct `grep -l <pattern> <symlink-path>` (which does follow through to the target) or `grep -rL`.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/855_prevent_task_number_references_in_deliverables/summaries/01_prevent-task-references-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["symlink", "Edit-tool", "grep-recursive", "agent-files", "cslib-extension"]
+    },
+    {
+      "content": "For a hook that must reference the very pattern it forbids (e.g. an anti-task-number-citation rule whose own rule text needs to give a 'before' example of a task-number citation), phrase the illustrative example inside a markdown code fence under a 'Before'/'Bad example' label using letter-only placeholders (\"task N\", \"tasks N-M\") rather than a real digit-bearing citation in prose -- this satisfies both the dogfooding constraint (the rule file itself must not read as a real citation) and keeps the regex-based advisory hook from mis-firing outside its intended illustrative-example fencing.",
+      "category": "PATTERN",
+      "source_artifact": "specs/855_prevent_task_number_references_in_deliverables/summaries/01_prevent-task-references-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["self-referential-rule", "advisory-hook", "dogfooding", "regex-design"]
+    }
+  ]
+}

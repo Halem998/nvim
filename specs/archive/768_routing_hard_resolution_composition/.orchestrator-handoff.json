@@ -1,0 +1,64 @@
+{
+  "status": "implemented",
+  "summary": "All 4 phases completed successfully. command-route-skill.sh now implements the full 5-step --hard routing resolution. All 3 command callers (implement, research, plan) pass effort_flag to the script. Context doc created and indexed. 12-case test harness runs clean (exit 0).",
+  "artifacts": [
+    {
+      "path": ".claude/scripts/command-route-skill.sh",
+      "type": "script",
+      "summary": "Extended with 4th effort_flag arg and 5-step hard-mode resolution (Steps 4a-4e)"
+    },
+    {
+      "path": ".claude/commands/implement.md",
+      "type": "command",
+      "summary": "STAGE 2: added 4th arg EFFORT_FLAG to command-route-skill.sh call"
+    },
+    {
+      "path": ".claude/commands/research.md",
+      "type": "command",
+      "summary": "STAGE 2: replaced inline manifest scan with centralized script call"
+    },
+    {
+      "path": ".claude/commands/plan.md",
+      "type": "command",
+      "summary": "STAGE 2: replaced inline manifest scan with centralized script call"
+    },
+    {
+      "path": ".claude/context/guides/hard-mode-routing.md",
+      "type": "context",
+      "summary": "New composition-model doc: 5-step precedence, extension-overrides-core, SKILL.md safety gate"
+    },
+    {
+      "path": ".claude/tests/test-command-route-skill.sh",
+      "type": "test",
+      "summary": "Resolver test harness: 12 tests, all passing (exit 0)"
+    },
+    {
+      "path": "specs/768_routing_hard_resolution_composition/summaries/01_hard-routing-resolution-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary for task 768"
+    }
+  ],
+  "phases_completed": 4,
+  "phases_total": 4,
+  "continuation_context": null,
+  "next_action_hint": "Run /todo 768 to archive task or proceed to task 770 (CLAUDE.md sync).",
+  "blockers": [],
+  "test_results": {
+    "test_file": ".claude/tests/test-command-route-skill.sh",
+    "passed": 12,
+    "failed": 0,
+    "exit_code": 0
+  },
+  "verification": {
+    "syntax_check": "pass",
+    "variable_leak_check": "pass",
+    "claude_md_unchanged": true,
+    "orchestrate_hard_unchanged": true
+  },
+  "deviations": [
+    {
+      "description": "Test tuple (research, lean4, hard) replaced with (research, cslib, hard) because skill-lean-research-hard is declared in lean extension manifest but the SKILL.md file is not deployed on disk — using cslib instead which has deployed hard skills.",
+      "type": "altered"
+    }
+  ]
+}

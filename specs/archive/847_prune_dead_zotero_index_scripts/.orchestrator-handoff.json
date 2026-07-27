@@ -1,0 +1,31 @@
+{
+  "status": "implemented",
+  "summary": "Executed the 4-phase QUARANTINE-NEVER-DELETE prune plan for the two confirmed dead-code scripts (zotero-index-add.sh, zotero-index-remove.sh). Phase 1: git mv'd both scripts (history-preserving) into a new .claude/extensions/literature/scripts/deprecated/ subdirectory, with a new deprecated/README.md quarantine note. Phase 2: removed both provides.scripts entries from manifest.json (jq validated clean, five other deferred zotero scripts remain declared). Phase 3: reconciled all four check-extension-docs.sh Rule E doc surfaces -- README.md (removed the two rows from both the 'Available Scripts' and 'Deployment Status -> Inactive' tables, since even a reworded Reason column would have left the literal `.sh` token in the Artifact column and still failed Rule E; added a de-literalized prose 'Removed (task 847)' note instead, and fixed the 'seven zotero scripts' count sentence to 'five'), EXTENSION.md (lines 81-82 rows removed), agents/literature-agent.md (lines 172-173 rows removed), skills/skill-literature/SKILL.md (line 422 comment reworded to drop the literal token). Phase 4: verified check-extension-docs.sh exits 0 with `literature PASS` / `PASS: all extensions OK`; both scripts confirmed present under scripts/deprecated/ (not hard-deleted); the flat scripts/ directory no longer lists either script; the other five deferred zotero scripts (read/write/setup/chunk/attach-chunks.sh) are byte-for-byte unchanged (git diff empty); grep for zotero-index-add/remove across .claude/ surfaces only quarantined self-references, the deprecated/README.md note, the two explicitly-out-of-scope echo hint lines in zotero-chunk.sh/zotero-attach-chunks.sh, and one harmless non-invoking stale path comment in literature-normalize-authors.sh:9 (outside this task's file scope, not scanned by Rule E, left untouched). All 4 phases committed individually. No PR created, no push performed (autonomous orchestrator dispatch).",
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "Task complete, no further action required. Optional future cleanup (out of scope for this task): the stale non-invoking path comment at .claude/extensions/literature/scripts/literature-normalize-authors.sh:9 (and its deployed copy .claude/scripts/literature-normalize-authors.sh:9) still references the pre-move zotero-index-add.sh path/line numbers.",
+  "artifacts": [
+    {
+      "path": "specs/847_prune_dead_zotero_index_scripts/plans/01_prune-zotero-index-scripts.md",
+      "type": "plan",
+      "summary": "4-phase QUARANTINE-NEVER-DELETE prune plan, all phases marked [COMPLETED]: git mv scripts to scripts/deprecated/, remove manifest provides.scripts entries, reconcile all four Rule-E doc surfaces (README + widened-scope EXTENSION.md/literature-agent.md/SKILL.md), verify check-extension-docs.sh exits 0 with literature PASS and quarantined files preserved."
+    },
+    {
+      "path": "specs/847_prune_dead_zotero_index_scripts/summaries/01_prune-zotero-index-scripts-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary: both scripts quarantined via git mv into scripts/deprecated/, manifest.json and four doc surfaces reconciled, check-extension-docs.sh verified PASS, five other deferred zotero scripts confirmed untouched."
+    }
+  ],
+  "modified_files": [
+    ".claude/extensions/literature/scripts/deprecated/zotero-index-add.sh",
+    ".claude/extensions/literature/scripts/deprecated/zotero-index-remove.sh",
+    ".claude/extensions/literature/scripts/deprecated/README.md",
+    ".claude/extensions/literature/manifest.json",
+    ".claude/extensions/literature/README.md",
+    ".claude/extensions/literature/EXTENSION.md",
+    ".claude/extensions/literature/agents/literature-agent.md",
+    ".claude/extensions/literature/skills/skill-literature/SKILL.md"
+  ],
+  "phases_completed": 4,
+  "phases_total": 4
+}

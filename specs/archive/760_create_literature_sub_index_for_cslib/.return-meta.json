@@ -1,0 +1,31 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1782255422_7edccd_760",
+  "task_number": 760,
+  "phases_completed": 4,
+  "phases_total": 4,
+  "started_at": "2026-06-23T00:00:00Z",
+  "completed_at": "2026-06-23T00:00:00Z",
+  "completion_data": {
+    "completion_summary": "Added interactive literature index setup detection to --lit flag: created literature-create-setup-task.sh helper script, inserted AskUserQuestion detection block into Stage 4a of all 6 skill SKILL.md files (researcher, planner, implementer, and their --hard variants), and updated documentation in CLAUDE.md and its merge source.",
+    "roadmap_items": []
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/760_create_literature_sub_index_for_cslib/summaries/01_lit-setup-summary.md",
+      "summary": "Implementation summary covering all 4 phases: helper script creation, skill SKILL.md updates for all 6 skills, fork-orchestrate inline logic, and documentation updates"
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "AskUserQuestion cannot be invoked from bash scripts — it must be called inline in SKILL.md as Claude executes the skill. When a skill needs user interaction, embed the AskUserQuestion call as pseudocode/prose instructions in the SKILL.md, and extract all bash side effects into a separate shared script. This pattern was implemented in Stage 4a of 6 skill SKILL.md files for the --lit flag detection flow.",
+      "category": "PATTERN",
+      "source_artifact": "specs/760_create_literature_sub_index_for_cslib/summaries/01_lit-setup-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["AskUserQuestion", "SKILL.md", "inline", "bash", "skill-execution", "interactive"]
+    }
+  ]
+}

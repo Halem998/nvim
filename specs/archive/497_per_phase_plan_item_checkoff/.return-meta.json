@@ -1,0 +1,29 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_20260504_497_impl",
+  "task_id": "497",
+  "task_slug": "per_phase_plan_item_checkoff",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "completion_data": {
+    "completion_summary": "Added Stage 4B-ii per-phase plan item check-off to general-implementation-agent across all 4 file copies, updated handoff-artifact and plan-format documentation, and created test scenarios demonstrating before/after plan state."
+  },
+  "memory_candidates": [
+    {
+      "content": "When modifying general-implementation-agent.md, always apply identical edits to all 4 copies (.opencode/agent/subagents/, .opencode/extensions/core/agents/, .claude/agents/, .claude/extensions/core/agents/). The .claude copies have 1 extra blank line at the start (line 30), so sed/grep offsets differ by 1 but content is identical. Verify with diff on relevant sections, not just line counts.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/497_per_phase_plan_item_checkoff/summaries/01_checkoff-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["agent-sync", "mirror-copies", "general-implementation-agent", "line-count-difference", "claude-opencode-sync"]
+    },
+    {
+      "content": "Plan file checklist syntax convention: Use `- [ ] **Task {P}.{N}**: {description}` format within phase Tasks sections. Agents convert `- [ ]` to `- [x]` during implementation, optionally appending `*(completed: brief note)*`. The JSON progress file remains the primary machine-readable source; plan check-off is human-readable augmentation only.",
+      "category": "PATTERN",
+      "source_artifact": "specs/497_per_phase_plan_item_checkoff/summaries/01_checkoff-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["plan-checklist", "task-checkoff", "progress-tracking", "human-readable-progress", "plan-format"]
+    }
+  ]
+}

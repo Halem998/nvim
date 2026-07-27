@@ -1,0 +1,51 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "task_number": 876,
+  "session_id": "sess_1784150280_81495e",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "artifact_number": 1,
+  "plan_path": "specs/876_wire_preflight_into_orchestrate_paths/plans/01_wire-preflight-orchestrate.md",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/876_wire_preflight_into_orchestrate_paths/summaries/01_wire-preflight-orchestrate-summary.md",
+      "summary": "Wired skill_preflight_update() into every research/plan/implement dispatch site on both /orchestrate paths (base + hard, single-task and multi-task), renamed the two misleading Stage 2 headings, and documented the transition in the state-machine architecture doc."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/876_wire_preflight_into_orchestrate_paths/handoffs/phase-5-handoff-20260715T220500Z.md",
+      "summary": "Final phase-end handoff confirming all 5 phases complete; no further work expected."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Wired the existing skill_preflight_update() wrapper into every research/plan/implement Agent-tool dispatch site on both /orchestrate paths (skill-orchestrate single-task and Stage MT-4 multi-task; skill-orchestrate-hard single-task with the H4 adversarial-verification ordering constraint preserved), renamed both misleading 'Stage 2: Preflight' loop-guard headings, and documented the dispatch() preflight transition in orchestrate-state-machine.md. No new scripts."
+  },
+  "memory_candidates": [
+    {
+      "content": "This repo's .claude/ directory is a disposable, gitignored deploy tree (see /.claude/ in .gitignore) regenerated from agent-system/extensions/{name}/ per the project-root .claude-extensions.json. Any edit intended to persist in git (skills, agents, docs, rules) must target the canonical source under agent-system/extensions/{extension}/... and should also be mirrored into the deployed .claude/ copy so the current session's live skill definitions match immediately without waiting for a redeploy. git status/git add on .claude/ paths will silently no-op or error (\"paths are ignored\").",
+      "category": "PATTERN",
+      "source_artifact": "specs/876_wire_preflight_into_orchestrate_paths/summaries/01_wire-preflight-orchestrate-summary.md",
+      "confidence": 0.95,
+      "suggested_keywords": ["claude-extensions", "agent-system", "deploy-tree", "gitignore", "canonical-source", "meta-task"]
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    ".claude/skills/skill-orchestrate/SKILL.md",
+    ".claude/skills/skill-orchestrate-hard/SKILL.md",
+    ".claude/docs/architecture/orchestrate-state-machine.md",
+    "specs/876_wire_preflight_into_orchestrate_paths/plans/01_wire-preflight-orchestrate.md",
+    "specs/876_wire_preflight_into_orchestrate_paths/summaries/01_wire-preflight-orchestrate-summary.md",
+    "specs/876_wire_preflight_into_orchestrate_paths/handoffs/phase-5-handoff-20260715T220500Z.md",
+    "specs/876_wire_preflight_into_orchestrate_paths/progress/phase-1-progress.json",
+    "specs/876_wire_preflight_into_orchestrate_paths/progress/phase-2-progress.json",
+    "specs/876_wire_preflight_into_orchestrate_paths/progress/phase-3-progress.json",
+    "specs/876_wire_preflight_into_orchestrate_paths/progress/phase-4-progress.json",
+    "specs/876_wire_preflight_into_orchestrate_paths/progress/phase-5-progress.json"
+  ]
+}

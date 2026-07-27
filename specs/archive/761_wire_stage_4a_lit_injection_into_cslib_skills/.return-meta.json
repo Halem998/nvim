@@ -1,0 +1,21 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/761_wire_stage_4a_lit_injection_into_cslib_skills/plans/01_lit-injection-plan.md",
+      "summary": "3-phase implementation plan to wire lit_context injection into 4 CSLib skill files"
+    }
+  ],
+  "next_steps": "Run /implement 761 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1782255422_7edccd_761",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 1,
+    "dependency_waves": [[1, 2], [3]]
+  },
+  "memory_candidates": []
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "return-metadata-v1",
+  "status": "implemented",
+  "task_number": 900,
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1784998517_0638c7_900",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "artifacts": [
+    {
+      "path": "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+      "type": "script",
+      "summary": "New cross-batch file_scope admission predicate; single state.json read, NDJSON verdicts"
+    },
+    {
+      "path": "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+      "type": "doc",
+      "summary": "Canonical orchestrate-batch-admit-v1 verdict schema document"
+    },
+    {
+      "path": "specs/900_cross_batch_file_scope_admission/fixtures/state-cross-batch.json",
+      "type": "fixture",
+      "summary": "Frozen fixture for the regression test suite"
+    },
+    {
+      "path": "specs/900_cross_batch_file_scope_admission/tests/test-batch-admit.sh",
+      "type": "test",
+      "summary": "Deterministic regression suite; 8/8 assertions pass including live smoke check"
+    },
+    {
+      "path": "specs/900_cross_batch_file_scope_admission/summaries/01_cross-batch-admission-control-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary for all 6 phases"
+    }
+  ],
+  "phases_completed": 6,
+  "phases_total": 6,
+  "completion_data": {
+    "completion_summary": "Implemented orchestrate-batch-admit.sh, a cross-batch file_scope admission predicate comparing every candidate against all non-terminal tasks in state.json, wired it into both /orchestrate call sites with the 2+ tasks guard removed, published its verdict schema, registered it as file-footprint-overlap.md's fourth consumer, and proved it with a deterministic fixture test suite (8/8 passing, including a live smoke check)."
+  },
+  "memory_candidates": [
+    {
+      "content": "jq gotcha: inside a pipeline like `$array | index(.field)`, the `.` inside index(...)'s argument is evaluated against $array (the piped-in value), NOT the outer context's current object. Binding the outer value to a named variable first (`. as $t | ... index($t.field) ...`) avoids 'Cannot index array with string' errors when building select() filters that need both the piped array and an outer object's field.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/900_cross_batch_file_scope_admission/summaries/01_cross-batch-admission-control-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["jq", "index", "pipeline", "context-binding", "select"]
+    },
+    {
+      "content": "When embedding a multi-line jq program as a single-quoted bash string, ANY apostrophe in a comment or prose line inside that program (e.g. \"the function's convention\") silently terminates the bash single-quoted string early and produces a confusing 'syntax error near unexpected token' pointing at jq code, not the apostrophe. Grep the embedded program for stray apostrophes before debugging jq syntax when bash -n fails on a script containing an inline jq heredoc/string.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/900_cross_batch_file_scope_admission/summaries/01_cross-batch-admission-control-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["bash", "jq", "single-quote", "apostrophe", "syntax-error"]
+    },
+    {
+      "content": "For a core script that must read specs/state.json exactly once and needs no other main input, use `jq -n -c --argjson X ... --slurpfile Y \"$FILE\" '...'` (note the `-n`) and do NOT also pass \"$FILE\" as a positional argument to jq -- that would cause a second read. The -n flag lets the whole jq program run against argjson/slurpfile-bound variables only.",
+      "category": "PATTERN",
+      "source_artifact": "specs/900_cross_batch_file_scope_admission/summaries/01_cross-batch-admission-control-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["jq", "slurpfile", "single-read", "state.json", "core-script"]
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+    "agent-system/extensions/core/docs/README.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
+    "specs/900_cross_batch_file_scope_admission/fixtures/state-cross-batch.json",
+    "specs/900_cross_batch_file_scope_admission/tests/test-batch-admit.sh"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "status": "researched",
+  "summary": "Round 2 research complete: designed global-to-local workflow for Literature/ as global markdown repo with specs/literature/ as curated local working set. Proposed 5 new /literature sub-modes (--pull, --push, --new, --sync, --catalog), merged two-tier retrieval for --lit, and identified 70 unmigrated cslib entries. Report at specs/721_design_targeted_literature_retrieval/reports/02_global-local-workflow-research.md",
+  "phases_completed": 1,
+  "phases_total": 1,
+  "blockers": [],
+  "continuation_context": null,
+  "artifacts": [
+    {
+      "path": "specs/721_design_targeted_literature_retrieval/reports/02_global-local-workflow-research.md",
+      "type": "report",
+      "summary": "Round 2 research: global-local literature workflow design with command proposals, merged retrieval architecture, and phased implementation plan"
+    }
+  ]
+}

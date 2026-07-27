@@ -1,0 +1,10 @@
+{
+  "status": "implemented",
+  "artifact_path": "specs/681_fix_orchestrator_final_tts/summaries/01_implementation-summary.md",
+  "artifact_type": "summary",
+  "artifact_summary": "Implementation summary for orchestrate-active marker mechanism fixing final-completion TTS and tab opacity integration across 4 phases.",
+  "completion_summary": "Implemented orchestrate-active file-based marker enabling lifecycle-notify.sh to suppress TTS during mid-orchestrate transitions while preserving tab colors, clearing markers at all exit paths so the Stop hook fires TTS on final completion.",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "memory_candidates": []
+}

@@ -1,0 +1,43 @@
+{
+  "status": "implemented",
+  "summary": "Fixed both defects in M.list_extensions: readdir now filters dot-prefixed directories, and the invalid-manifest warning uses vim.notify_once for dedup. Two-line diff plus a new isolated regression spec; both defects verified behaviorally in headless Neovim.",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/ai/shared/extensions/manifest.lua",
+      "summary": "Dot-prefix readdir filter and vim.notify_once dedup in M.list_extensions"
+    },
+    {
+      "type": "test",
+      "path": "lua/neotex/plugins/ai/shared/extensions/manifest_spec.lua",
+      "summary": "New isolated regression spec: dot-skip, warn-once, valid-extension-still-returned"
+    },
+    {
+      "type": "summary",
+      "path": "specs/888_harden_extension_discovery_against_stray_dirs/summaries/01_harden-extension-discovery-summary.md",
+      "summary": "Implementation summary with verification"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Hardened extension discovery against stray directories: M.list_extensions now skips dot-prefixed entries during the readdir scan and dedups the invalid-manifest warning via vim.notify_once, eliminating the ~120 repeated warnings from a single stray directory across the function's 12+ call sites. Added an isolated regression spec covering both behaviors plus a non-over-matching guard."
+  },
+  "modified_files": [
+    "lua/neotex/plugins/ai/shared/extensions/manifest.lua",
+    "lua/neotex/plugins/ai/shared/extensions/manifest_spec.lua",
+    "specs/888_harden_extension_discovery_against_stray_dirs/plans/01_harden-extension-discovery.md",
+    "specs/888_harden_extension_discovery_against_stray_dirs/progress/phase-1-progress.json",
+    "specs/888_harden_extension_discovery_against_stray_dirs/progress/phase-2-progress.json",
+    "specs/888_harden_extension_discovery_against_stray_dirs/handoffs/phase-1-handoff-20260716T071500Z.md",
+    "specs/888_harden_extension_discovery_against_stray_dirs/summaries/01_harden-extension-discovery-summary.md"
+  ],
+  "metadata": {
+    "session_id": "sess_1784185160_df2d91_888",
+    "duration_seconds": 900,
+    "agent_type": "neovim-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"],
+    "phases_completed": 2,
+    "phases_total": 2
+  },
+  "next_steps": "Task ready for postflight/status update to [PR READY] or [COMPLETED] per orchestrator lifecycle; no manual follow-up required."
+}

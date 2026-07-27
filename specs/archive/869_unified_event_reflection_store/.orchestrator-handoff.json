@@ -1,0 +1,29 @@
+{
+  "status": "implemented",
+  "summary": "Implemented the append-only specs/events.jsonl event/reflection store plumbing under agent-system/extensions/core/, following the 5-phase plan. Phase 1 authored the contract: context/formats/events-format.md (documented schema, lazy-creation/never-gitignored convention, field table, category closed enum, event_type/checkpoint open-string vocab, detail open-object contract, error_ref cross-link) and context/schemas/events-schema.json (draft-07 JSON Schema). Phase 2 built events-append.sh: jq -c -n line construction, category-enum and detail-json validation before any write, flock-guarded lazy-creating append; two bugs found and fixed during verification (a SIGPIPE-under-pipefail issue in the random-ID pipeline, and a bash default-value-expansion bug corrupting non-empty --detail-json). Phase 3 built events-query.sh: native jq streaming filters (session/task/category/event-type/checkpoint/since/until) with jsonl|json-array|summary-counts output formats, tolerating an absent store. Phase 4 synced manifest.json (52 scripts total, up from 50), index-entries.json (2 new discovery entries, positioned alphabetically), and EXTENSION.md (corrected stale scripts count, added a Key Capabilities bullet). Phase 5 ran a full append/query round-trip, lazy-creation, graceful-absence, and required-key schema-conformance verification against the real specs/ directory via a temporary local test harness (since the scripts' PROJECT_ROOT resolution only matches their eventual .claude/scripts/ deployment depth) -- all criteria passed, and specs/events.jsonl was left in its pre-task lazily-absent state. All edits scoped to agent-system/extensions/core/ only; .claude/ and .opencode/ were never touched (they propagate via the separate, pre-existing sync mechanism), and CLAUDE.md was not hand-edited.",
+  "artifacts": [
+    {
+      "path": "specs/869_unified_event_reflection_store/plans/01_event-store-plumbing.md",
+      "type": "plan",
+      "summary": "5-phase plan: schema doc + JSON Schema (Phase 1), events-append.sh (Phase 2), events-query.sh (Phase 3), manifest/index-entries/EXTENSION.md sync (Phase 4), end-to-end verification (Phase 5). All 5 phases marked [COMPLETED]."
+    },
+    {
+      "path": "specs/869_unified_event_reflection_store/summaries/01_event-store-plumbing-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary covering all changed files, decisions, one plan deviation (verification harness location), two in-flight bug fixes, and full verification results."
+    }
+  ],
+  "blockers": [],
+  "phases_completed": 5,
+  "phases_total": 5,
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/events-format.md",
+    "agent-system/extensions/core/context/schemas/events-schema.json",
+    "agent-system/extensions/core/scripts/events-append.sh",
+    "agent-system/extensions/core/scripts/events-query.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/EXTENSION.md"
+  ],
+  "next_action_hint": "Task 869 is fully implemented and verified; no further /implement runs needed for this plan. Downstream tasks (hook-based lifecycle logging, completion-time reflection capture, /distill dream-mode consumer) can now build on the specs/events.jsonl contract documented in context/formats/events-format.md and context/schemas/events-schema.json."
+}

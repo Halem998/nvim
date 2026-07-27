@@ -1,0 +1,20 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1780365000_c4d5e6",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 626,
+  "phases_completed": 1,
+  "phases_total": 1,
+  "completion_data": {
+    "completion_summary": "Synced Section 13 (68 lines) from canonical multi-task-operations.md to extension mirror, ensuring both files are byte-for-byte identical at 581 lines. Added orchestrate-specific behavior documentation covering wave dispatch rationale, intra-batch dependency resolution, failed predecessor handling, and a dispatch model comparison table."
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/626_orchestrate_command_single_dispatch/summaries/01_command-single-dispatch-summary.md",
+      "summary": "Implementation summary for task 626"
+    }
+  ],
+  "memory_candidates": []
+}

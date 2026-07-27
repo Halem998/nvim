@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "summary": "Revised pr-description-format.md: harmonized title to 'PR Description:' prefix, renamed AI Disclosure to AI Tools Used, reordered sections, added Breaking Changes (#8), Relationship to Other PRs (#5), Contribution Roadmap (#6), and dual-format Changed Files (Format A linked list + B diff-stat + C table).",
+  "artifacts": [
+    {
+      "path": "specs/706_revise_pr_description_format_template/summaries/01_execution-summary.md",
+      "type": "summary",
+      "summary": "Execution summary listing all six phases completed and every change applied to pr-description-format.md"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "phases_completed": 6,
+  "phases_total": 6,
+  "next_action_hint": "complete"
+}

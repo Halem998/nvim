@@ -1,0 +1,39 @@
+{
+  "task_number": 837,
+  "status": "implemented",
+  "summary": "Fixed contract drift at its root: registered \"contracts\" in core/manifest.json provides.context and migrated the 8 core contract files into the core extension source as canonical, extended check-extension-docs.sh with a provides.context disk-existence check and a project-wide dangling-contract-reference scan, wired the validator into sync.lua's Load Core path with loud ERROR-level notification, and documented the provides.context sync contract plus a self-contained downstream reconciliation procedure.",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "artifacts": [
+    {
+      "path": "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/plans/01_contract-drift-lint-wiring.md",
+      "type": "plan",
+      "summary": "5-phase plan, all phases [COMPLETED]: Phase 1 register+migrate contracts to core extension source and reconcile index-entries.json (context-hygiene.md stays lean-scoped); Phase 2 provides.context disk-existence check; Phase 3 dangling .claude/context/contracts/*.md reference scan across deployed skills/agents/rules/commands; Phase 4 wire validator into sync.lua with loud failure; Phase 5 document provides.context contract and downstream reconciliation as a propagation step."
+    },
+    {
+      "path": "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/summaries/01_contract-drift-lint-wiring-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary covering all 5 phases, verification results, one plan deviation (inline vs sibling function for the provides.context check), and notes on out-of-scope downstream reconciliation."
+    }
+  ],
+  "modified_files": [
+    ".claude/extensions/core/manifest.json",
+    ".claude/extensions/core/context/contracts/adversarial-verification.md",
+    ".claude/extensions/core/context/contracts/anti-analysis.md",
+    ".claude/extensions/core/context/contracts/convergence.md",
+    ".claude/extensions/core/context/contracts/orchestrator-discipline.md",
+    ".claude/extensions/core/context/contracts/recovery.md",
+    ".claude/extensions/core/context/contracts/reference-grounding.md",
+    ".claude/extensions/core/context/contracts/territory.md",
+    ".claude/extensions/core/context/contracts/wrap-up.md",
+    ".claude/extensions/core/index-entries.json",
+    ".claude/extensions/core/scripts/check-extension-docs.sh",
+    ".claude/scripts/check-extension-docs.sh",
+    "lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua",
+    ".claude/docs/guides/creating-extensions.md",
+    "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/plans/01_contract-drift-lint-wiring.md",
+    "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/summaries/01_contract-drift-lint-wiring-summary.md"
+  ],
+  "blockers": [],
+  "next_steps": "Task complete. Downstream reconciliation for BimodalLogic, cslib, Logos/Hardware, and the other listed child repos is documented in .claude/docs/guides/creating-extensions.md as a procedure to be run from each affected repo (out of this task's scope per its Non-Goals)."
+}

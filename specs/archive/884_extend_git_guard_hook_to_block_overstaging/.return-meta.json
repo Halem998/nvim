@@ -1,0 +1,40 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "task_number": 884,
+  "session_id": "sess_1784155855_f90cfe_884",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "phases_completed": 4,
+  "phases_total": 4,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/884_extend_git_guard_hook_to_block_overstaging/summaries/01_extend-git-guard-overstaging-summary.md",
+      "summary": "Extended guard-destructive-git.sh with three independent over-staging detectors and fixed two prose locations that taught blocked commands; 26/26 manual verification cases passed."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Extended the tracked-source guard-destructive-git.sh hook with three independent over-staging detectors (git add -A/--all, bare-dot pathspec, git commit -a/-am/--all) placed before the existing MATCHED destructive-command chain so a snapshot marker can never exempt over-staging, and fixed two prose locations (postflight-pattern.md, skill-project-overview/SKILL.md) that previously instructed agents to run commands the hook now blocks. Verified 26/26 cases (9 must-block, 14 must-not-block including quoted-message false-positive cases, 3 existing-detector sanity checks) plus marker-independence directly against the tracked source hook file."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/hooks/guard-destructive-git.sh",
+    "agent-system/extensions/core/context/orchestration/postflight-pattern.md",
+    "agent-system/extensions/core/skills/skill-project-overview/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a plan's own suggested 'e.g.' example text for a fix is itself expected to satisfy that same plan's literal grep-based verification check, check for self-contradiction before implementing verbatim: the plan's suggested remediation wording contained the literal substring the verification grep asserted must be absent. Reworded to preserve intent (list forbidden flags) without the literal blocked-command string, and recorded the substitution as a plan deviation rather than either failing the check or blindly using text that would fail it.",
+      "category": "PATTERN",
+      "source_artifact": "specs/884_extend_git_guard_hook_to_block_overstaging/summaries/01_extend-git-guard-overstaging-summary.md",
+      "confidence": 0.6,
+      "suggested_keywords": ["plan-verification-conflict", "literal-grep-check", "remediation-wording", "deviation-annotation"]
+    },
+    {
+      "content": "On a shared/concurrent working tree (multiple orchestrator tasks running in parallel), a scoped 'git add <task-dir>/' immediately followed by 'git commit' can still sweep in unrelated files if another session staged them in the shared index between the add and commit, or earlier. Caught via git show --stat on the resulting commit; fixed non-destructively with 'git reset' (mixed, NOT --hard) which unstages without discarding any content, then re-staged precisely and re-committed. Always spot-check 'git show --stat' immediately after a commit in a concurrent-task environment, not just 'git status --short' before staging.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/884_extend_git_guard_hook_to_block_overstaging/summaries/01_extend-git-guard-overstaging-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["concurrent-tasks", "over-staging", "git-reset-mixed", "shared-index", "post-commit-verification"]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "task_id": 356,
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "session_id": "sess_1775231615_6d12da",
+  "artifact_path": "specs/356_plan_phase_dependencies/plans/01_plan-phase-deps.md",
+  "phase_count": 3,
+  "estimated_hours": 2,
+  "dependency_waves": [[1], [2, 3]],
+  "next_steps": "Run /implement 356 to execute the plan"
+}

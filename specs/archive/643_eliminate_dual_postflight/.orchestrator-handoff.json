@@ -1,0 +1,21 @@
+{
+  "status": "implemented",
+  "summary": "Added orchestrator_mode guard to skill_postflight_update and updated 3 skill call sites",
+  "blockers": [],
+  "artifacts": [
+    {
+      "path": "specs/643_eliminate_dual_postflight/summaries/01_implementation-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary covering skill-base.sh guard addition and 3 SKILL.md call site updates"
+    }
+  ],
+  "next_action_hint": "complete",
+  "phases_completed": 2,
+  "phases_total": 2,
+  "files_modified": [
+    ".claude/scripts/skill-base.sh",
+    ".claude/skills/skill-researcher/SKILL.md",
+    ".claude/skills/skill-planner/SKILL.md",
+    ".claude/skills/skill-implementer/SKILL.md"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "status": "implemented",
+  "summary": "Created literature-retrieve.sh script and added lit_flag-gated literature context injection to skill-researcher, skill-planner, and skill-implementer (Stage 4a retrieval + Stage 5 prompt injection). Threaded lit_flag through skill-orchestrate Stage 0/1 extraction and all 7 dispatch contexts (4 single-task + 3 multi-task). All changes synced to core extension copies (5 pairs verified byte-identical).",
+  "artifacts": [{"path": "specs/689_lit_context_injection_skill_preflight/summaries/01_lit-context-injection-summary.md", "type": "summary"}],
+  "blockers": [],
+  "phases_completed": 3,
+  "phases_total": 3,
+  "next_action_hint": "complete"
+}

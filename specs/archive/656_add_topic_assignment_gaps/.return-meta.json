@@ -1,0 +1,36 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1749607200_a3b2c1_656",
+  "task_number": 656,
+  "started_at": "2026-06-10T00:00:00Z",
+  "completed_at": "2026-06-10T01:00:00Z",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "completion_data": {
+    "completion_summary": "Added topic assignment to 6 task creation points across 5 files using Mode C suggest-wrap (fix-it, review), Mode A picker-insert (project-overview), and Mode B inherit-with-fallback (spawn, task --expand, task --review). All inline jq active_topics manipulation replaced with manage-topics.sh calls. All 5 files mirrored to extension copies.",
+    "roadmap_items": []
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/656_add_topic_assignment_gaps/summaries/01_add-topic-gaps-summary.md",
+      "summary": "Implementation summary covering all 4 phases"
+    },
+    {
+      "type": "plan",
+      "path": "specs/656_add_topic_assignment_gaps/plans/01_add-topic-gaps-plan.md",
+      "summary": "All 4 phases completed"
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "When adding topic assignment to skill/command files in the agent system, use manage-topics.sh subcommands (list, add, set) instead of inline jq. The `set` subcommand calls `add` internally, so standalone `add` is only needed when no `set` follows. Always call `manage-topics.sh set TASK_NUM TOPIC` AFTER the task entry exists in state.json (exits 4 if task not found). Wrap all calls non-blocking: `2>/dev/null || echo 'Warning...'`.",
+      "category": "PATTERN",
+      "source_artifact": "specs/656_add_topic_assignment_gaps/summaries/01_add-topic-gaps-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["manage-topics.sh", "topic-assignment", "active_topics", "state.json", "task-creation"]
+    }
+  ]
+}

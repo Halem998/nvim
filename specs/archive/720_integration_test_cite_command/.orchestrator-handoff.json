@@ -1,0 +1,26 @@
+{
+  "status": "implemented",
+  "summary": "Fixed three bugs: added author_paren_year pattern (Smith (2020) now detected), made theorem_attr_ref case-insensitive (By Lemma 2.1 now detected), and added LITERATURE_DIR two-tier fallback to skill-cite. All integration tests pass, real artifact scan returns 26 citations.",
+  "artifacts": [
+    {
+      "path": "specs/720_integration_test_cite_command/reports/01_integration-test-research.md",
+      "type": "report",
+      "summary": "Integration test results: 3 bugs identified across cite-extract.sh and skill-cite SKILL.md"
+    },
+    {
+      "path": ".claude/extensions/literature/scripts/cite-extract.sh",
+      "type": "implementation",
+      "summary": "Added author_paren_year pattern and fixed theorem_attr_ref to use Pi flags for case-insensitive matching"
+    },
+    {
+      "path": ".claude/extensions/literature/skills/skill-cite/SKILL.md",
+      "type": "implementation",
+      "summary": "Fixed Step 6 to use LITERATURE_DIR two-tier fallback matching skill-literature behavior"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "phases_completed": 3,
+  "phases_total": 3,
+  "next_action_hint": "complete"
+}

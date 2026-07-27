@@ -1,0 +1,61 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1783879475_193202_822",
+  "task_number": 822,
+  "phases_completed": 6,
+  "phases_total": 6,
+  "completion_data": {
+    "completion_summary": "Implemented the task 821 email-to-memory-preferences design: a deterministic email-preference-harvest.sh helper (normalization/redaction/tally/dedup/threshold), skill-memory namespace awareness (exact-key dedup, category recognition, zero-retrieval purge exemption), a memory-retrieve.sh cross-contamination filter, the skill-email-cleanup Stage 7 opt-in harvest gate in both Default and --all modes, a 35-assertion passing test suite, and doc-lint-clean documentation updates across both extensions."
+  },
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/822_email_cleanup_memory_vault_contribution/plans/01_email-memory-harvest-implementation.md",
+      "summary": "All 6 phases marked [COMPLETED]; Testing & Validation checklist fully checked"
+    },
+    {
+      "type": "summary",
+      "path": "specs/822_email_cleanup_memory_vault_contribution/summaries/01_email-memory-harvest-implementation-summary.md",
+      "summary": "Implementation summary covering all 6 phases, decisions, verification, and notes"
+    }
+  ],
+  "modified_files": [
+    ".claude/scripts/email-preference-harvest.sh",
+    ".claude/extensions/email/scripts/email-preference-harvest.sh",
+    ".claude/extensions/email/manifest.json",
+    ".claude/extensions/memory/skills/skill-memory/SKILL.md",
+    ".claude/scripts/memory-retrieve.sh",
+    ".claude/extensions/core/scripts/memory-retrieve.sh",
+    ".claude/extensions/email/skills/skill-email-cleanup/SKILL.md",
+    ".claude/tests/test-email-preference-harvest.sh",
+    ".claude/extensions/email/README.md",
+    ".claude/extensions/memory/README.md",
+    "specs/822_email_cleanup_memory_vault_contribution/plans/01_email-memory-harvest-implementation.md",
+    "specs/822_email_cleanup_memory_vault_contribution/summaries/01_email-memory-harvest-implementation-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When adding deterministic logic that a skill's prose needs to call AND that must be unit-testable, expose it as a standalone bash script with pure, single-purpose subcommands (e.g. `script.sh normalize`, `script.sh tally-op`) that each read only their explicit args/files and print JSON to stdout. This lets a bash-assertion test file exercise each function in isolation via subshell command substitution, and lets skill prose document a stable CLI contract instead of inlining shell logic. Used for .claude/scripts/email-preference-harvest.sh (7 subcommands) and its test .claude/tests/test-email-preference-harvest.sh (35 assertions, all pure command substitution + jq).",
+      "category": "PATTERN",
+      "source_artifact": "specs/822_email_cleanup_memory_vault_contribution/summaries/01_email-memory-harvest-implementation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "testability", "pure-functions", "subcommands", "unit-testing"]
+    },
+    {
+      "content": "check-extension-docs.sh's check_deployed_script_drift rule requires any script declared in an extension's manifest.provides.scripts to be byte-identical between the deployed copy (.claude/scripts/<name>) and the extension's own source copy (.claude/extensions/<ext>/scripts/<name>). When creating or editing such a shared script, always cp the deployed copy over the extension-source copy (or vice versa) before running check-extension-docs.sh, or the doc-lint FAILs with 'deployed script content drift'. Confirmed via memory-retrieve.sh (owned by core) and the new email-preference-harvest.sh (owned by email).",
+      "category": "CONFIG",
+      "source_artifact": "specs/822_email_cleanup_memory_vault_contribution/summaries/01_email-memory-harvest-implementation-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["check-extension-docs", "doc-lint", "extension-scripts", "drift", "manifest"]
+    },
+    {
+      "content": "For a memory vault topic namespace meant for programmatic/aggregated writes (not free-text /learn segments), the reserved-namespace pattern is: (1) an exact topic== match short-circuits skill-memory's fuzzy classification straight to UPDATE/EXTEND, since the identity key is already deterministic; (2) memory-retrieve.sh gets a topic-prefix map(select(...)) exclusion so the namespace never leaks into general auto-retrieval; (3) /distill's zero-retrieval penalty AND purge OR-condition both get a topic-prefix exemption, since a low retrieval_count is expected (not staleness) when general auto-retrieval deliberately never selects the namespace. Implemented for email/preferences/* in task 822; reusable for any future write-only, externally-keyed memory namespace.",
+      "category": "PATTERN",
+      "source_artifact": "specs/822_email_cleanup_memory_vault_contribution/summaries/01_email-memory-harvest-implementation-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["memory-vault", "reserved-namespace", "skill-memory", "purge-exemption", "retrieval-filter"]
+    }
+  ]
+}

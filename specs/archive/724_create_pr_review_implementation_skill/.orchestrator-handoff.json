@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "summary": "Created skill-pr-review-implementation and pr-review-implementation-agent for the CSLib extension. The skill dispatches between review-response workflow (sources present) and legacy PR description workflow (sources absent), and transitions tasks to [PR READY] using preflight pr_ready. Updated manifest.json to register the new skill and agent, and changed routing.implement.pr from skill-pr-implementation to skill-pr-review-implementation.",
+  "artifacts": [
+    {
+      "path": "specs/724_create_pr_review_implementation_skill/summaries/01_pr-review-impl-skill-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary for task 724: skill-pr-review-implementation and pr-review-implementation-agent creation"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "phases_completed": 3,
+  "phases_total": 3,
+  "next_action_hint": "complete"
+}

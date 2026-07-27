@@ -1,0 +1,17 @@
+{
+  "status": "implemented",
+  "summary": "Implemented 3 index management scripts (zotero-index-add.sh, zotero-index-remove.sh, zotero-search-index.sh) and wired --task N mode into /zotero command and SKILL.md",
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "none",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "subtasks_completed": ["phase-1", "phase-2", "phase-3", "phase-4"],
+  "artifacts": [
+    {
+      "path": "specs/751_implement_zotero_search_local_index/summaries/01_search-index-summary.md",
+      "type": "summary",
+      "summary": "Full implementation of 3 Category C index management scripts plus --task N mode wiring; all scripts executable and passing syntax checks"
+    }
+  ]
+}

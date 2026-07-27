@@ -1,0 +1,56 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/842_literature_convert_chunk_index_coverage/summaries/01_coverage-fix-summary.md",
+      "summary": "Full implementation summary: forward fix, backfill, Job 4 guard, live verification, and all plan deviations."
+    }
+  ],
+  "next_steps": "None -- task fully implemented and verified. Optional follow-up: investigate baier_katoen_2008 section07's chunker pass-2 subdivision anomaly (1 giant chunk vs ~100+) if retrieval granularity matters later.",
+  "completion_data": {
+    "completion_summary": "Wired handle_convert() to chunk+index every converted .md (SKILL.md Convert Step 3h/4); backfilled 21 recoverable dirs plus the 12-file baier_katoen_2008 book; extended Job 4 to classify UNEXPECTED vs expected-empty coverage. Live-verified against the corpus: sources/<dir>/ coverage went 72/25 (covered/missing) to 94/3, with all 3 remaining dirs (gabbay_2000, negri_von_plato_2001, and the newly-discovered troelstra_schwichtenberg_2000) confirmed as legitimately un-backfillable (no valid .md)."
+  },
+  "metadata": {
+    "session_id": "sess_1783727261_4a4b8c_842",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  },
+  "memory_candidates": [
+    {
+      "content": "literature-chunk.sh writes chunks.json in mode 'w' (overwrite, no append). When a doc has multiple valid .md files that must share one doc_id (a multi-file book or a document split across chapter files), chunk each file into a DISTINCT subdirectory (e.g. sources/<dir>/.chunks/<name>/) all passing the same --doc-id; literature-build-index.sh --global/--local recursively discovers every chunks.json under the target dir and keys chunks by the in-manifest doc_id field, so distinct subdirs aggregate naturally without any chunker contract change or manifest-merge logic.",
+      "category": "PATTERN",
+      "source_artifact": "specs/842_literature_convert_chunk_index_coverage/summaries/01_coverage-fix-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["literature-chunk.sh", "chunks.json", "multi-file-doc-id", "literature-build-index.sh", "distinct-subdirectory-chunking"]
+    },
+    {
+      "content": "In the literature pipeline, .claude/skills/skill-literature/SKILL.md is a symlink to ../extensions/literature/skills/skill-literature/SKILL.md (not a separate copy). Editing the extension source automatically keeps the deployed path in sync -- `cp` + `diff -q` checks pass trivially. `git add`/`git status` on the symlinked deployed path errors with 'beyond a symbolic link'; stage only the extension source path in commits.",
+      "category": "CONFIG",
+      "source_artifact": "specs/842_literature_convert_chunk_index_coverage/summaries/01_coverage-fix-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["skill-literature", "symlink", "deployed-copy", "drift-guard", "git-add-symlink-error"]
+    },
+    {
+      "content": "literature-search.sh's default ranked output excludes docs without a provenance_fidelity stamp (fail-open to 'unverified'), because that field is written by a separate literature-fidelity-audit.sh --write pass, not by handle_convert()/literature-ingest.sh at conversion/chunk time. A freshly chunked+indexed doc is immediately present in chunks_data and findable via `--include-unverified`, but invisible to default search until fidelity-audited. This is expected, pre-existing behavior, not a coverage bug.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/842_literature_convert_chunk_index_coverage/summaries/01_coverage-fix-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["literature-search.sh", "provenance_fidelity", "literature-fidelity-audit.sh", "include-unverified", "search-default-filtering"]
+    }
+  ],
+  "modified_files": [
+    ".claude/extensions/literature/skills/skill-literature/SKILL.md",
+    "specs/842_literature_convert_chunk_index_coverage/plans/01_coverage-fix-plan.md",
+    "specs/842_literature_convert_chunk_index_coverage/summaries/01_coverage-fix-summary.md",
+    "specs/842_literature_convert_chunk_index_coverage/progress/phase-1-progress.json",
+    "specs/842_literature_convert_chunk_index_coverage/progress/phase-2-progress.json",
+    "specs/842_literature_convert_chunk_index_coverage/progress/phase-3-progress.json",
+    "specs/842_literature_convert_chunk_index_coverage/progress/phase-4-progress.json",
+    "specs/842_literature_convert_chunk_index_coverage/progress/phase-5-progress.json",
+    "specs/842_literature_convert_chunk_index_coverage/.orchestrator-handoff.json"
+  ]
+}

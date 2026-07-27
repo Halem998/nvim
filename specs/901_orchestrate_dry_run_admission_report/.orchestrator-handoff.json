@@ -1,0 +1,33 @@
+{
+  "status": "implemented",
+  "summary": "Implemented all 6 phases of the /orchestrate --dry-run admission report plan. Added DRY_RUN_FLAG to parse-command-args.sh; created the shared read-only orchestrate-triage-classify.sh classifier (engine=single|mt, both precedence tables transcribed, the Stage 4/Stage MT-4 divergence asserted by test); created orchestrate-dry-run-report.sh composing batch-admit + task-lock check + predecessor scan + triage into a six-section report; wired --dry-run into commands/orchestrate.md STAGE 0 as a short-circuit with an explicit prohibition block; wired Stage MT-4 in skill-orchestrate/SKILL.md to call the shared classifier (with a documented degradation fallback to the retained grouping table) and cross-referenced the single-task partial handler. Both new scripts registered in manifest.json. Two fixture test suites (6 + 14 assertions) pass 100% using the scratch-deploy-tree pattern, asserting read-only behavior, exact table-row reproduction, the engine divergence, lock nuances (self-held vs foreign vs stale), MAX_TASKS trim reporting, and Kahn-ordering wave assignment.",
+  "artifacts": [
+    {
+      "path": "specs/901_orchestrate_dry_run_admission_report/summaries/01_dry-run-admission-report-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary: DRY_RUN_FLAG parser support, the shared triage classifier and dry-run report scripts, orchestrate.md/SKILL.md wiring, manifest registration, and a 20-assertion fixture test suite, all under agent-system/extensions/core/**."
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "phases_completed": 6,
+  "phases_total": 6,
+  "modified_files": [
+    "agent-system/extensions/core/scripts/parse-command-args.sh",
+    "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/manifest.json",
+    "specs/901_orchestrate_dry_run_admission_report/fixtures/state-dry-run.json",
+    "specs/901_orchestrate_dry_run_admission_report/fixtures/handoffs/954-handoff.json",
+    "specs/901_orchestrate_dry_run_admission_report/fixtures/handoffs/955-handoff.json",
+    "specs/901_orchestrate_dry_run_admission_report/fixtures/handoffs/956-handoff.json",
+    "specs/901_orchestrate_dry_run_admission_report/tests/test-triage-classify.sh",
+    "specs/901_orchestrate_dry_run_admission_report/tests/test-dry-run-report.sh",
+    "specs/901_orchestrate_dry_run_admission_report/plans/01_dry-run-admission-report.md",
+    "specs/901_orchestrate_dry_run_admission_report/summaries/01_dry-run-admission-report-summary.md",
+    "specs/901_orchestrate_dry_run_admission_report/.return-meta.json"
+  ],
+  "next_action_hint": "All 6 phases complete and verified. The new scripts (orchestrate-triage-classify.sh, orchestrate-dry-run-report.sh) and modified files (parse-command-args.sh, orchestrate.md, skill-orchestrate/SKILL.md, manifest.json) live under agent-system/extensions/core/** and become active in .claude/ only after the next core-extension redeploy from the source store."
+}

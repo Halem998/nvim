@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "task_number": 882,
+  "session_id": "sess_1784155855_f90cfe_882",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "artifact_path": "specs/882_research_shared_index_commit_serialization/summaries/01_scope-mutex-serialization-summary.md",
+  "artifact_type": "summary",
+  "artifact_summary": "All six plan phases completed and verified: scope-acquire/scope-release CLI on task-lock.sh, orchestrator-postflight.sh Stages 7-8a bracketed with a re-entrancy-guarded holder-declared-staleness mutex shared with update-task-status.sh's standalone path, honest Stage 9 commit-message addendum, and documentation of the new CLI and the state-write hazard.",
+  "artifacts": [
+    {
+      "path": "specs/882_research_shared_index_commit_serialization/summaries/01_scope-mutex-serialization-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary for the scope-mutex state-write serialization work."
+    }
+  ],
+  "phases_completed": 6,
+  "phases_total": 6,
+  "completion_data": {
+    "completion_summary": "Exposed task-lock.sh's existing scope mutex as a scope-acquire/scope-release CLI, bracketed orchestrator-postflight.sh's Stages 7-8a state.json read-modify-write + TODO.md regen window with a re-entrancy-guarded, holder-declared-staleness mutex shared with update-task-status.sh's standalone path (via a SCOPE_MUTEX_HELD inherited-guard), and made Stage 9 commit messages honestly name every other task whose index rows a commit carries. All changes verified against the live .claude/scripts/ deploy copy without creating any real commit or disturbing other tasks' data."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/task-lock.sh",
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When testing destructive or concurrency-sensitive shell script changes (locks, mutexes, status writers) against a live, shared, actively-used state file (e.g. a task tracker's state.json), never test against the real record you are yourself part of. Add a disposable scratch row via a targeted jq read-modify-write (never a wholesale file overwrite, which risks clobbering a concurrent session's simultaneous write), run the real tests against that scratch row, then remove it via a targeted jq del() -- also never a wholesale overwrite. If a test accidentally mutates or deletes a real, live lock/record (e.g. an unconditional 'release' call hitting the wrong target), restore it immediately with the correct values before continuing, and treat the mistake as a signal to isolate further testing onto disposable scratch data.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/882_research_shared_index_commit_serialization/summaries/01_scope-mutex-serialization-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["testing", "concurrency", "scratch-data", "state-json", "destructive-testing", "isolation"]
+    },
+    {
+      "content": "When ambient system load (e.g. several concurrent sibling agent sessions) makes wall-clock-based regression tests unreliable -- a previously-fast operation measuring orders of magnitude slower under load, unrelated to the change under test -- replace an absolute before/after timing comparison with a load-independent A/B comparison: run the identical contended scenario twice, once with the fix/guard active and once without, under the SAME ambient load, and compare the two runs directly. This isolates the change's actual effect (e.g. a mutex guard eliminating a multi-second contention wait) from noise that would otherwise make a single before/after wall-clock delta meaningless.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/882_research_shared_index_commit_serialization/summaries/01_scope-mutex-serialization-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["timing", "regression-testing", "concurrency", "ab-testing", "system-load", "deadlock-detection"]
+    },
+    {
+      "content": "In bash, only the LAST-installed 'trap ... EXIT' for a given script is active -- a second trap install silently clobbers the first rather than composing with it. When a script already has an EXIT trap (e.g. for tmp-file cleanup) and a change needs an additional cleanup action to fire on every exit path (e.g. releasing a mutex), extend the existing trap function's body rather than installing a second trap. Make the added action idempotent (guard it behind an 'did I acquire and not yet release' flag) so that if it is ALSO invoked explicitly at the natural end of the critical section, the trap-fired duplicate at script exit is a safe no-op rather than a double-release bug.",
+      "category": "PATTERN",
+      "source_artifact": "specs/882_research_shared_index_commit_serialization/summaries/01_scope-mutex-serialization-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "exit-trap", "cleanup", "idempotency", "mutex-release", "shell-scripting"]
+    }
+  ]
+}

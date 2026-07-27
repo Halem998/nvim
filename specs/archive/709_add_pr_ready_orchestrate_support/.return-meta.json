@@ -1,0 +1,21 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/709_add_pr_ready_orchestrate_support/plans/01_pr-ready-orchestrate-plan.md",
+      "summary": "Single-phase implementation plan with 6 additive insertions to skill-orchestrate SKILL.md for pr_ready state handling and pr_description artifact support"
+    }
+  ],
+  "next_steps": "Run /implement 709 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1781495628_8ba2f3_709",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 1,
+    "estimated_hours": 0.5,
+    "dependency_waves": [[1]]
+  },
+  "memory_candidates": []
+}

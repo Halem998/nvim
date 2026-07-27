@@ -1,0 +1,11 @@
+{
+  "status": "implemented",
+  "task_number": 359,
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "phases_completed": 2,
+  "phases_total": 2,
+  "completion_data": {
+    "completion_summary": "Created lua/neotex/plugins/tools/process-picker.lua with telescope picker for background processes: fixed-width column display, buffer previewer with stdout/stderr, CR to kill and refresh, C-o to open port in browser."
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/834_retire_stale_per_repo_literature_copies/summaries/01_retire-stale-literature-copies-summary.md",
+      "summary": "Verified 31/31 PDFs byte-identical to central by sha256 (including the gabbay_1994->gabbay_2000 relocation), created and re-hash-verified a 166MB backup, deleted ~/Projects/BimodalLogic/specs/literature/sources/, confirmed --lit unaffected pre/post-delete, committed the 192-file deletion locally in BimodalLogic (no push/PR), and swept ~/Projects/ for other stale copies (cslib, cslib-refactor-prop_logic, plus two newly found: Logos/Hardware and BimodalLogic agent-worktrees) without deleting any of them."
+    }
+  ],
+  "partial_progress": {
+    "phases_completed": 8,
+    "phases_total": 8
+  },
+  "completion_data": {
+    "completion_summary": "Retired the stale per-repo literature copy at ~/Projects/BimodalLogic/specs/literature/sources/ after total sha256 equivalence verification against the central corpus and a re-hash-verified backup, committed the deletion locally in BimodalLogic (no push/PR), confirmed --lit resolution unaffected, and swept ~/Projects/ for other stale copies without deleting them."
+  },
+  "memory_candidates": [
+    {
+      "content": "When a .gitignore rule is added to a repo after files matching that pattern are already tracked, git continues to track those pre-existing files (git check-ignore reports them as 'not ignored' due to the tracked-file exception). Before assuming a gitignored pattern makes files git-unrecoverable in a cleanup/deletion task, run `git ls-files <pattern>` to check whether some of those files are actually still tracked -- the real git-recoverability margin may be wider than a size/count estimate based on the .gitignore rule alone.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/834_retire_stale_per_repo_literature_copies/summaries/01_retire-stale-literature-copies-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["git", "gitignore", "tracked-files", "backup-verification", "deletion-safety"]
+    },
+    {
+      "content": "For irreversible/destructive cross-repo cleanup tasks (deleting large gitignored data outside the working repo), the safe pattern is: (1) record a full sha256 manifest and re-verify equivalence against the surviving source-of-truth immediately before any destructive action -- treat ANY mismatch or missing file as a hard abort, not a partial success; (2) create a backup and independently re-hash it against the pre-delete manifest before deleting anything; (3) delete only the exact target path; (4) re-run any read-only regression check (e.g. a briefing/resolution script) before and after, diffing the two outputs for byte-identical output as the zero-cost check; (5) commit the tracked-file deletion locally only, never push/PR from an automated agent.",
+      "category": "PATTERN",
+      "source_artifact": "specs/834_retire_stale_per_repo_literature_copies/summaries/01_retire-stale-literature-copies-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["backup-then-verify-then-delete", "data-safety", "sha256-verification", "cross-repo-cleanup", "irreversible-operations"]
+    }
+  ],
+  "modified_files": [
+    "specs/834_retire_stale_per_repo_literature_copies/plans/01_retire-stale-literature-copies.md",
+    "specs/834_retire_stale_per_repo_literature_copies/progress/phase-1-progress.json",
+    "specs/834_retire_stale_per_repo_literature_copies/progress/phase-2-progress.json",
+    "specs/834_retire_stale_per_repo_literature_copies/progress/phase-3-progress.json",
+    "specs/834_retire_stale_per_repo_literature_copies/progress/phase-4-progress.json",
+    "specs/834_retire_stale_per_repo_literature_copies/progress/phase-5-progress.json",
+    "specs/834_retire_stale_per_repo_literature_copies/progress/phase-6-progress.json",
+    "specs/834_retire_stale_per_repo_literature_copies/progress/phase-7-progress.json",
+    "specs/834_retire_stale_per_repo_literature_copies/progress/phase-8-progress.json",
+    "specs/834_retire_stale_per_repo_literature_copies/summaries/01_retire-stale-literature-copies-summary.md"
+  ],
+  "metadata": {
+    "session_id": "sess_1783620265_b5399e_834",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 8,
+    "phases_total": 8
+  }
+}

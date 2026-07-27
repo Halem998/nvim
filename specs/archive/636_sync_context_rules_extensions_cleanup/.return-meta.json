@@ -1,0 +1,31 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 636,
+  "task_slug": "sync_context_rules_extensions_cleanup",
+  "session_id": "sess_1780937814_cf41b4",
+  "started_at": "2026-06-08T00:00:00Z",
+  "completed_at": "2026-06-08T10:30:00Z",
+  "phases_completed": 6,
+  "phases_total": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/636_sync_context_rules_extensions_cleanup/summaries/01_sync-cleanup-summary.md",
+      "summary": "Implementation summary documenting all file changes across 6 phases"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Synced 95 stale context files, copied 11 missing extension files, added 3 hook scripts, updated nvim/nix manifests with hooks and plan routing, merged index.json from 106 to 150 entries, and backported 4 permissions plus hook timeouts to .claude/settings.json."
+  },
+  "memory_candidates": [
+    {
+      "content": "When syncing content from .claude/ to .opencode/, use `sed 's|\\.claude/|.opencode/|g'` for path-prefix substitution in file content. For index.json, use a jq script that applies walk(gsub) substitution on all string values rather than per-field substitution. The complex redirect approach (command > file) silently fails in bash scripts; use a separate script file with chmod +x and run it with `bash scriptfile`.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/636_sync_context_rules_extensions_cleanup/summaries/01_sync-cleanup-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["sync", "opencode", "claude", "path-substitution", "index-json", "jq"]
+    }
+  ]
+}

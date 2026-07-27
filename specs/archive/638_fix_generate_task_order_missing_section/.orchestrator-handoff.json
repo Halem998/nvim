@@ -1,0 +1,10 @@
+{
+  "status": "implemented",
+  "summary": "Applied bootstrap_task_order_section() function and un-slugify fix from nvim reference to all four downstream project copies of generate-task-order.sh; all diffs are empty, bash -n passes, validation confirmed on 3 of 4 projects (ModelChecker has pre-existing empty-state.json unbound variable issue unrelated to this patch)",
+  "artifacts": [{"type": "summary", "path": "specs/638_fix_generate_task_order_missing_section/summaries/01_fix-summary.md"}],
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "complete",
+  "phases_completed": 2,
+  "phases_total": 2
+}

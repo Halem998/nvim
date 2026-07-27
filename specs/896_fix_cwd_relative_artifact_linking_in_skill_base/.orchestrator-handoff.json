@@ -1,0 +1,27 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Anchored skill_link_artifacts' three internal paths (specs/state.json, specs/tmp/state.json, .claude/scripts/generate-todo.sh) on SKILL_REPO_ROOT in skill-base.sh and added the missing mkdir -p for specs/tmp, scoped strictly to that one function. Added an opt-in --task N filter to reconcile-artifacts.sh (while/shift argument loop, numeric validation, if/continue guard in the main loop, scope-aware summary echoes) while keeping its no-argument repo-wide sweep byte-for-byte unchanged. All 5 plan phases completed with executable verification from a non-root working directory against a throwaway deployed-shaped harness under the session scratch directory: artifact registration now succeeds from any cwd, missing specs/tmp is a non-issue, remove-then-add dedup semantics are intact, --task N real runs leave every other task's artifacts array untouched, and the unfiltered sweep matches the pre-fix baseline exactly.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/896_fix_cwd_relative_artifact_linking_in_skill_base/summaries/01_cwd-relative-artifact-linking-fix-summary.md"
+    }
+  ],
+  "phases_completed": 5,
+  "phases_total": 5,
+  "blockers": [],
+  "next_action_hint": "All 5 phases complete and verified. Task 896 is ready to transition out of [IMPLEMENTING]; no further implementation work required.",
+  "files_modified": [
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/reconcile-artifacts.sh"
+  ],
+  "decisions_made": [
+    "Verification ran exclusively against a throwaway harness under the session scratch directory (never in place in agent-system/extensions/ or against the live repo), because deploy-root-guard.sh hard-fails when executed from the source store -- a pre-existing, out-of-scope constraint on how verification must be performed, confirmed rather than fixed.",
+    "All harness skill_link_artifacts invocations used env -u SKILL_REPO_ROOT so a stale exported anchor could never mask a still-broken BASH_SOURCE-relative computation.",
+    "Phase 5's 'exactly two changed files' diff-stat check does not hold literally because a concurrently running implementation agent (per this task's explicit concurrency constraint) modified a disjoint set of files (skill-orchestrate{,-hard}/SKILL.md and two docs files) in the same working tree during this run; verification was re-scoped to confirm this implementation's own two files are the only agent-system/ files it touched, which holds -- recorded as a deviation in progress/phase-5-progress.json."
+  ],
+  "dead_ends": [],
+  "continuation_context": null
+}

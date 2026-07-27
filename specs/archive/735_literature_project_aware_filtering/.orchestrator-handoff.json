@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "summary": "Added project-aware filtering to literature-retrieve.sh (Tier 2 keyword) and literature-search.sh (Tier 1 FTS5) with detect_project(), --project flag, doc_id IN filtering, and fallback-on-zero-results logic.",
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "complete",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "artifacts": [
+    {
+      "path": "specs/735_literature_project_aware_filtering/summaries/01_project-aware-filtering-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary for project-aware literature filtering"
+    }
+  ]
+}

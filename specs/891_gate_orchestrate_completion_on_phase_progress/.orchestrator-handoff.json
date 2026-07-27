@@ -1,0 +1,19 @@
+{
+  "status": "implemented",
+  "summary": "Gated the base-mode skill-orchestrate implemented->completed transitions on phase progress. Stage 5 (single-task) implemented) arm now uses `[ \"$phases_total\" -eq 0 ] || [ \"$phases_completed\" -ge \"$phases_total\" ]` (pass-through when no phase accounting present). Stage MT-4 (multi-task) step 2 now reads phases_completed/phases_total per task and step 3's implemented bullet applies the same gate. Confirmed (read-only, no edit) that skill-orchestrate-hard/SKILL.md Stage 5 already implements the equivalent (stricter, AND-form) guard. All edits are in agent-system/extensions/core/skills/skill-orchestrate/SKILL.md only; .claude/ untouched.",
+  "artifacts": [
+    {
+      "path": "specs/891_gate_orchestrate_completion_on_phase_progress/summaries/01_gate-completion-on-phase-progress-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary covering both edit sites, the confirmation-only hard-mode finding, the deliberate base/hard-mode expression asymmetry, and the recommended update-task-status.sh follow-up."
+    }
+  ],
+  "phases_total": 3,
+  "phases_completed": 3,
+  "blockers": [],
+  "files_modified": [
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+  ],
+  "continuation_context": null,
+  "next_action_hint": "Task complete; no further action needed. .claude/ deploy tree regeneration (via <leader>al) is a separate user action to make the fix live."
+}

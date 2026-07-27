@@ -1,0 +1,17 @@
+{
+  "task_id": "537",
+  "task_name": "fix_manifest_absolute_paths",
+  "status": "planned",
+  "plan_file": "specs/537_fix_manifest_absolute_paths/plans/01_fix-manifest-paths.md",
+  "phases": [
+    "Phase 1: Update /implement commands",
+    "Phase 2: Update /research commands",
+    "Phase 3: Update /plan commands",
+    "Phase 4: Update core mirrors (.opencode/extensions/core/)",
+    "Phase 5: Update .claude/ equivalents",
+    "Phase 6: Add explicit [WARN] when no manifests found"
+  ],
+  "files_affected": 12,
+  "globs_fixed": 24,
+  "approach": "Derive project_root via git rev-parse --show-toplevel, replace relative globs with absolute paths, add manifest_count accumulator and [WARN] on zero manifests"
+}

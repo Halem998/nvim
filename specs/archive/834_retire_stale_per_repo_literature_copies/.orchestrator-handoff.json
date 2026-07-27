@@ -1,0 +1,28 @@
+{
+  "status": "implemented",
+  "summary": "Retired ~/Projects/BimodalLogic/specs/literature/sources/ after total sha256 equivalence verification (31/31 PDFs matched central) and a re-hash-verified backup, deleted sources/ and committed the 192-file deletion locally in BimodalLogic (commit 60cef7179, no push/PR), confirmed --lit unaffected pre/post-delete, and swept ~/Projects/ for other stale copies without deleting any of them.",
+  "phases_completed": 8,
+  "phases_total": 8,
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "Task complete. Optional follow-up: create a near-identical delete-after-verify task for ~/Projects/cslib/specs/literature/ and ~/Projects/cslib-refactor-prop_logic/specs/literature/ (25 MB each, same stale-copy pattern) via /task or /spawn. Also flagged for separate triage: ~/Projects/Logos/Hardware/specs/literature/ (different convention, 68 MB flat PDF corpus) and three BimodalLogic .claude/worktrees/agent-*/specs/literature/ copies (1.7 MB each, stale worktree snapshots). Backup archive ~/Projects/backup-bimodallogic-literature-sources-20260709.tar.gz (166 MB) should be retained ~7 days before user-confirmed cleanup.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/834_retire_stale_per_repo_literature_copies/summaries/01_retire-stale-literature-copies-summary.md",
+      "summary": "Full equivalence-verification evidence, backup lifecycle, deletion/commit record, and ~/Projects/ sweep findings for task 834."
+    }
+  ],
+  "modified_files": [
+    "specs/834_retire_stale_per_repo_literature_copies/plans/01_retire-stale-literature-copies.md",
+    "specs/834_retire_stale_per_repo_literature_copies/progress/phase-1-progress.json",
+    "specs/834_retire_stale_per_repo_literature_copies/progress/phase-2-progress.json",
+    "specs/834_retire_stale_per_repo_literature_copies/progress/phase-3-progress.json",
+    "specs/834_retire_stale_per_repo_literature_copies/progress/phase-4-progress.json",
+    "specs/834_retire_stale_per_repo_literature_copies/progress/phase-5-progress.json",
+    "specs/834_retire_stale_per_repo_literature_copies/progress/phase-6-progress.json",
+    "specs/834_retire_stale_per_repo_literature_copies/progress/phase-7-progress.json",
+    "specs/834_retire_stale_per_repo_literature_copies/progress/phase-8-progress.json",
+    "specs/834_retire_stale_per_repo_literature_copies/summaries/01_retire-stale-literature-copies-summary.md"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "status": "implemented",
+  "session_id": "sess_1783620265_b5399e_831",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "phases_completed": 7,
+  "phases_total": 7,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/831_fix_literature_conversion_pipeline_correctness/summaries/01_conversion-pipeline-fix-summary.md",
+      "summary": "Full implementation summary including verification evidence for BUGS 1-4, the quality gate, and #832/#833 interface contracts"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Replaced the silently-corrupting pdftotext-layout/marker-preference engine in literature-convert.sh with an explicit pymupdf4llm-primary + PyMuPDF-column-clustering-fallback tier system, fixed BUG 2 (3-page TOC truncation), BUG 3 (doubled breadcrumbs + fragment headings), and BUG 4 (ligatures/hyphenation), added a loud-failing quality gate (exit code 3) wired into literature-ingest.sh, and built a forced-fallback + two-column regression test harness that surfaced and fixed a real calibration bug and a real previously-undetected pymupdf4llm defect."
+  },
+  "memory_candidates": [
+    {
+      "content": "On this NixOS machine, pip-installed compiled-extension Python packages (e.g. pymupdf4llm's PyMuPDF _extra wheel) fail with 'libstdc++.so.6: cannot open shared object file' when run outside a nix-built Python. Fix: resolve stdenv.cc.cc.lib via `nix-build '<nixpkgs>' -A stdenv.cc.cc.lib --no-out-link` (cache the result — it's slow), then prepend `<result>/lib` to LD_LIBRARY_PATH (combined with the existing $NIX_LD_LIBRARY_PATH) when invoking the venv's python. See .claude/scripts/literature-pyenv-provision.sh for a reusable, idempotent implementation of this pattern (uv venv creation + pinned install + shim resolution + graceful-unavailability detection).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/831_fix_literature_conversion_pipeline_correctness/summaries/01_conversion-pipeline-fix-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["nix-ld", "libstdc++", "uv venv", "pymupdf4llm", "NixOS pip wheels"]
+    },
+    {
+      "content": "When building a quality-gate heuristic that compares a suspicious-signal average against a document-wide statistical baseline (e.g. 'average glued line length > 1.5x median line length'), verify the baseline doesn't get contaminated by the very defect being measured when that defect affects the MAJORITY of the document. In task 831, comparing glued-line length against the whole-document median failed to catch the actual motivating bug case (79% of lines glued) because the glued lines themselves dominated and inflated the median. Fix: compute the baseline from the complement set (non-glued lines) specifically, falling back to the whole set only when the complement is empty.",
+      "category": "PATTERN",
+      "source_artifact": "specs/831_fix_literature_conversion_pipeline_correctness/summaries/01_conversion-pipeline-fix-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["quality gate", "detector calibration", "baseline contamination", "outlier detection"]
+    },
+    {
+      "content": "When writing synthetic PDF test fixtures with PyMuPDF for multi-column layout tests, use page.insert_textbox(rect, text) with a column-width-constrained rectangle, NOT page.insert_text((x,y), long_unwrapped_sentence). insert_text draws the whole string as one unwrapped line, which for realistic sentence lengths at 10pt font can span 300+ points wide — easily overlapping a neighboring column's x-range and defeating any column-band-clustering algorithm under test (the resulting fixture is not representative of real multi-column PDFs, where text is always wrapped within its column's width). Discovered while building task 831's forced-fallback/two-column regression test harness.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/831_fix_literature_conversion_pipeline_correctness/summaries/01_conversion-pipeline-fix-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["PyMuPDF", "synthetic PDF fixture", "insert_textbox", "column layout testing"]
+    }
+  ],
+  "modified_files": [
+    ".claude/scripts/literature-chunk.sh",
+    ".claude/scripts/literature-convert.sh",
+    ".claude/scripts/literature-ingest.sh",
+    ".claude/scripts/literature-pyenv-provision.sh",
+    ".claude/scripts/tests/generate-test-fixtures.py",
+    ".claude/scripts/tests/test-literature-convert.sh",
+    ".gitignore",
+    "specs/831_fix_literature_conversion_pipeline_correctness/summaries/01_conversion-pipeline-fix-summary.md"
+  ]
+}

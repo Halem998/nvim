@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "summary": "Extracted duplicate artifact-type case block from Stage 5 and Stage MT-4 in skill-orchestrate/SKILL.md into new skill_link_artifact_from_handoff() helper in skill-base.sh. Both call sites replaced with single-line calls. Syntax verified.",
+  "artifacts": [
+    {
+      "path": "specs/630_consolidate_orchestrate_postflight/summaries/01_consolidate-postflight-summary.md",
+      "type": "summary",
+      "summary": "Execution summary for task 630 — consolidate orchestrate postflight artifact linking"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "complete",
+  "phases_completed": 3,
+  "phases_total": 3
+}

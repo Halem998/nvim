@@ -1,0 +1,66 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "design",
+      "path": ".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md",
+      "summary": "Design specification resolving gaps G1-G8 for routing confirmed email-cleanup decisions into sender/domain-aggregated memory-vault preferences; identity key verified against a real read-only email-classify sample."
+    },
+    {
+      "type": "summary",
+      "path": "specs/821_email_to_memory_contribution_architecture/summaries/01_email-memory-contribution-summary.md",
+      "summary": "Implementation summary for task 821"
+    },
+    {
+      "type": "roadmap",
+      "path": "specs/ROADMAP.md",
+      "summary": "Added Email/Memory Integration subsection with two hand-authored entries"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1783879475_193202_821",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  },
+  "completion_data": {
+    "completion_summary": "Produced a design specification resolving all 8 gaps (G1-G8) for routing confirmed email-cleanup decisions into sender/domain-aggregated memory-vault preferences, with the identity-normalization key empirically verified against a real read-only email-classify sample (2128 messages, 751 senders) rather than shipped provisional-unverified, plus two hand-authored ROADMAP.md entries and an explicit 822 scope recommendation."
+  },
+  "memory_candidates": [
+    {
+      "content": "email-classify --emit-tagged is genuinely read-only (verified: no notmuch tag call, wrapper-contracts.md sec10a) and can be used to pull real sender/manifest data for design-time verification without mutating the live mailbox, as long as prior +proposed-* tags already exist from earlier classify passes (check with `notmuch count 'tag:proposed-delete or tag:proposed-archive or tag:proposed-unsure or tag:proposed-keep'` first). Prefer this over the provisional-unverified fallback when email-census/email-classify are on $PATH.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/821_email_to_memory_contribution_architecture/summaries/01_email-memory-contribution-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["email-classify", "emit-tagged", "read-only-verification", "wrapper-contracts", "identity-key"]
+    },
+    {
+      "content": "memory-retrieve.sh (the auto-retrieval script for /research, /plan, /implement) has no topic/namespace exclusion filter -- it scores corpus-wide by keyword overlap plus a topic/category bonus only. Any future reserved-namespace memory category (e.g. email/preferences/*) needs an explicit topic-prefix pre-filter added to the jq scoring block before it is safe from leaking into unrelated <memory-context> blocks.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/821_email_to_memory_contribution_architecture/summaries/01_email-memory-contribution-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["memory-retrieve", "namespace-filter", "cross-contamination", "memory-vault", "topic-prefix"]
+    },
+    {
+      "content": "No memory file in .memory/10-Memories/ currently uses a `category:` frontmatter field (verified: 0 of 19 files) -- the `category` seen in memory-index.json entries is synthesized from `tags` at index-build time, not read from real frontmatter. Any design proposing a schema-additive `category:` field should note this is a genuinely new mechanism, not an extension of an existing one.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/821_email_to_memory_contribution_architecture/summaries/01_email-memory-contribution-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["memory-schema", "frontmatter", "category-field", "memory-index"]
+    }
+  ],
+  "modified_files": [
+    ".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md",
+    "specs/ROADMAP.md",
+    "specs/821_email_to_memory_contribution_architecture/plans/01_email-memory-contribution.md",
+    "specs/821_email_to_memory_contribution_architecture/summaries/01_email-memory-contribution-summary.md",
+    "specs/821_email_to_memory_contribution_architecture/progress/phase-1-progress.json",
+    "specs/821_email_to_memory_contribution_architecture/progress/phase-2-progress.json",
+    "specs/821_email_to_memory_contribution_architecture/progress/phase-3-progress.json",
+    "specs/821_email_to_memory_contribution_architecture/progress/phase-4-progress.json",
+    "specs/821_email_to_memory_contribution_architecture/progress/phase-5-progress.json",
+    "specs/821_email_to_memory_contribution_architecture/progress/phase-6-progress.json"
+  ]
+}

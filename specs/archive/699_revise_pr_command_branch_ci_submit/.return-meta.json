@@ -1,0 +1,22 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/699_revise_pr_command_branch_ci_submit/plans/01_implementation-plan.md",
+      "summary": "4-phase implementation plan for /pr command revision with STEP 2 hard error, STEP 5b cache management, and STEP 8/9 header updates"
+    }
+  ],
+  "next_steps": "Run /implement 699 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1718400600_plan699",
+    "agent_type": "planner-agent",
+    "duration_seconds": 120,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 1.5,
+    "dependency_waves": [[1, 2, 3], [4]]
+  },
+  "memory_candidates": []
+}

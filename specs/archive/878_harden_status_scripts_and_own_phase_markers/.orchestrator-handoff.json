@@ -1,0 +1,26 @@
+{
+  "status": "implemented",
+  "summary": "All six phases complete and verified: fixed the five verified defects (partial/blocked task-level termini, version-ordered plan selection at all three sites, idempotency early-exit scoped to state.json only, fatal-vs-warn stderr decision table, and the base agent wired to own every phase transition via update-phase-status.sh) across update-task-status.sh, update-plan-status.sh, update-phase-status.sh, and general-implementation-agent.md, with canonical agent-system/ and gitignored .claude/ mirrors confirmed byte-identical.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/878_harden_status_scripts_and_own_phase_markers/summaries/01_harden-status-scripts-phase-markers-summary.md",
+      "summary": "Full implementation summary with what changed, decisions, deviations, and verification evidence for all six phases."
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/scripts/update-plan-status.sh",
+    "agent-system/extensions/core/scripts/update-phase-status.sh",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    ".claude/scripts/update-task-status.sh",
+    ".claude/scripts/update-plan-status.sh",
+    ".claude/scripts/update-phase-status.sh",
+    ".claude/agents/general-implementation-agent.md"
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "complete",
+  "phases_completed": 6,
+  "phases_total": 6
+}

@@ -1,0 +1,84 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "partial",
+  "summary": "Executed the 8-phase Logos/ProtonMail-Bridge repair plan under strict safety constraints (live user data, cross-repo, partially destructive). Phases 1 (freeze+backup), 2 (mbsync.nix config fix, cross-repo commit a8f65ad in ~/.dotfiles, home-manager switch verified), 3 (Labels-mirror redundancy verification), 4 (Labels cleanup -- PARTIAL via documented safety fallback), and 6 (headerless test-message removal from .Sent) completed. Phase 5 (Trash/Archive UID dedup) is BLOCKED by a critical discovery: verified ALL 862 duplicate-UID pairs (860 Trash + 2 Archive) have DIFFERENT Message-Id values between the two files in each pair -- these are 862 distinct, irreplaceable real messages colliding on the same local UID number from the 2026-02-09 import corruption, NOT redundant copies as the plan assumed. Deleting either member of any pair would destroy real mail with zero redundancy. No safe automated resolution exists without a live IMAP verification pass against the Bridge server (out of scope) or an uncertain rename-only workaround that risks creating new server-side duplicates. Phase 3 also found a related, smaller-scale plan-invalidating discovery: 98.4%/99.8%/62.5%/100% of .Labels.Important/.Labels.Letters/.Labels.EuroTrip/.Labels.CrazyTown content has NO copy anywhere else in the tree (this account has no All-Mail-equivalent channel), so bulk deletion there was also skipped via the plan's own documented Abort-criteria fallback (leave inert). Phases 7 (reconcile) and 8 (reindex + lift freeze) were consequently NOT attempted since both depend on Phase 5. email-freeze remains active. No data was lost: all destructive steps stopped before any irreversible action once the underlying assumptions were disproven by direct verification.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/826_logos_maildir_duplication_mbsync_repair/plans/01_logos-mbsync-maildir-repair.md"
+    },
+    {
+      "type": "report",
+      "path": "specs/826_logos_maildir_duplication_mbsync_repair/reports/01_logos-maildir-mbsync-diagnosis.md"
+    },
+    {
+      "type": "summary",
+      "path": "specs/826_logos_maildir_duplication_mbsync_repair/summaries/01_logos-mbsync-maildir-repair-summary.md"
+    },
+    {
+      "type": "handoff",
+      "path": "specs/826_logos_maildir_duplication_mbsync_repair/handoffs/phase-1-handoff-20260706T022600Z.md"
+    },
+    {
+      "type": "handoff",
+      "path": "specs/826_logos_maildir_duplication_mbsync_repair/handoffs/phase-2-handoff-20260706T023200Z.md"
+    },
+    {
+      "type": "handoff",
+      "path": "specs/826_logos_maildir_duplication_mbsync_repair/handoffs/phase-3-handoff-20260706T024500Z.md"
+    },
+    {
+      "type": "report",
+      "path": "specs/826_logos_maildir_duplication_mbsync_repair/handoffs/phase-3-verification-report.md"
+    },
+    {
+      "type": "handoff",
+      "path": "specs/826_logos_maildir_duplication_mbsync_repair/handoffs/phase-4-handoff-20260706T025200Z.md"
+    },
+    {
+      "type": "report",
+      "path": "specs/826_logos_maildir_duplication_mbsync_repair/handoffs/phase-5-blocker-report.md"
+    },
+    {
+      "type": "handoff",
+      "path": "specs/826_logos_maildir_duplication_mbsync_repair/handoffs/phase-5-handoff-20260706T031500Z.md"
+    },
+    {
+      "type": "handoff",
+      "path": "specs/826_logos_maildir_duplication_mbsync_repair/handoffs/phase-6-handoff-20260706T034500Z.md"
+    }
+  ],
+  "blockers": [
+    "Phase 5 (Trash/Archive UID dedup): all 862 duplicate-UID pairs verified to contain two messages with DIFFERENT Message-Id values -- no redundancy exists to dedup. Requires a follow-up task with live IMAP verification against the Bridge server (or human-reviewed manual resolution for the 2 tractable Archive pairs) before any keep/remove decision can be made safely. Blocks Phase 7 (reconcile) and Phase 8 (reindex + lift freeze).",
+    "Phase 4 (Labels-mirror cleanup): 98.4%/99.8%/62.5%/100% of .Labels.Important/.Labels.Letters/.Labels.EuroTrip/.Labels.CrazyTown content has no copy elsewhere in the tree. Left inert per the plan's own Abort-criteria fallback; the ~38,041-file bloat-reclamation goal is not achieved. Lower priority than the Phase 5 blocker since these files are harmless (will not resync, not growing)."
+  ],
+  "next_action_hint": "spawn",
+  "files_modified": [
+    "~/.dotfiles/modules/home/email/mbsync.nix (cross-repo, committed a8f65ad)",
+    "~/Mail/Logos/.Sent/cur/1771019138.#1M604459477P4171775V66306I26262783.hamsa,U=12:2,S (removed, backed up)",
+    "specs/826_logos_maildir_duplication_mbsync_repair/plans/01_logos-mbsync-maildir-repair.md",
+    "specs/826_logos_maildir_duplication_mbsync_repair/summaries/01_logos-mbsync-maildir-repair-summary.md",
+    "specs/826_logos_maildir_duplication_mbsync_repair/handoffs/*.md",
+    "specs/826_logos_maildir_duplication_mbsync_repair/.orchestrator-handoff.json"
+  ],
+  "decisions_made": [
+    "Ran an independent Logos-specific backup in Phase 1 (state files + per-folder tarballs + baseline counts under ~/Mail/.logos-backup-20260706/) because email-freeze's own backup only covers ~/Mail/Gmail.",
+    "Verified the Phase 2 config fix at three levels (Nix build, home-manager switch, live generated .mbsyncrc content) before considering it done.",
+    "Discarded an initial Phase 3 extraction script whose colon-split parsing broke on maildir filenames containing literal colons in the U=NNN:2,FLAGS suffix; rebuilt using NUL-separated grep -Z -H and independently spot-checked both a positive and multiple negative cases before trusting the result.",
+    "Verified Phase 5's Message-Id equality across ALL 862 duplicate-UID pairs (not a sample) before drawing any conclusion, given the irreversibility of a wrong deletion decision.",
+    "Considered and rejected a blind rename-only workaround for Phase 5 (strip the colliding U=NNN token without server verification) because it risks mbsync re-uploading the renamed file and creating a new server-side duplicate on the next reconcile.",
+    "Marked Phase 4 [PARTIAL] and Phase 5 [PARTIAL]/Phase 7-8 [BLOCKED] rather than forcing through destructive steps whose safety could not be established, per the explicit orchestrator safety directive.",
+    "Left email-freeze active at the end of this run rather than lifting it, since the Phase 5 corruption remains unresolved and lifting the freeze risks an accidental mbsync -a trigger via notmuch's preNew hook or aerc's $ keybind."
+  ],
+  "dead_ends": [
+    "Do not delete either member of any .Trash/.Archive duplicate-UID pair based on flags, filename batch, or any heuristic without live IMAP server verification -- every one of the 862 pairs checked has two genuinely distinct, real messages, not copies.",
+    "Do not clear .Trash/.Archive .mbsyncstate/.uidvalidity while the filename-level U=NNN collision is still physically present -- this does not fix the corruption and may cause unpredictable behavior on the next mbsync logos.",
+    "Do not bulk-delete or bulk-move .Labels.Important/.Labels.Letters content without a dedicated follow-up task and human review -- 98%+ of it has no other local copy.",
+    "Do not trust a colon-split parse of maildir grep -H output -- maildir filenames contain literal colons in the flag suffix (U=NNN:2,FLAGS); use grep -Z (NUL-separated) instead.",
+    "Do not run mbsync logos (or /email --logos --sync) until the Phase 5 blocker is resolved by a dedicated follow-up task.",
+    "Do not lift email-freeze until the Phase 5 blocker is resolved and Phase 7's reconcile succeeds."
+  ],
+  "plan_markers_verified": true,
+  "completion_summary": "Applied and verified the mbsync.nix config fix (removed logos-labels from Group logos, cross-repo commit in ~/.dotfiles, home-manager switch verified) and removed the confirmed headerless test message from .Sent. Discovered during safety verification that both remaining destructive steps in the plan (Labels-mirror bulk deletion and Trash/Archive UID dedup) rest on invalidated assumptions -- the vast majority of Labels content and 100% of the duplicate-UID pairs are NOT redundant copies but irreplaceable distinct messages -- so both were left untouched per the plan's own safety fallback rather than risk data loss. Recommend spawning a follow-up task for a live IMAP-verified resolution of the Trash/Archive UID collision before the mbsync reconcile can succeed."
+}

@@ -1,0 +1,38 @@
+{
+  "status": "implemented",
+  "task_number": 498,
+  "artifact_number": "01",
+  "slug": "spawn_any_state_interactive",
+  "session_id": "sess_1746460800_spawn498",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "phases_completed": 4,
+  "phases_total": 4,
+  "partial_progress": null,
+  "completion_data": {
+    "completion_summary": "Updated /spawn command to work from any non-terminal state with terminal-state-only validation, added holistic analysis mode with interactive AskUserQuestion confirmation to spawn-agent, and enhanced skill-spawn with previous_status preservation and empty-task handling. All changes applied to both .opencode/ and .claude/ trees."
+  },
+  "memory_candidates": [
+    {
+      "content": "When modifying files that exist in both .opencode/ and .claude/ trees, search for all copies (including in extensions/core/ subdirectories) before starting edits. The system maintains duplicate command files in both root commands/ and extensions/core/commands/ paths, and leaving one set unmodified creates inconsistency. Use glob or grep first to discover all instances.",
+      "category": "PATTERN",
+      "source_artifact": "specs/498_spawn_any_state_interactive/summaries/01_spawn-any-state-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["cross-tree parity", "file duplication", "extensions/core", "commands", "sync"]
+    },
+    {
+      "content": "The spawn command has two semantic modes: blocker-driven (status is blocked/implementing/partial or blocker_prompt provided) and holistic (all other non-terminal states). This dual-mode pattern can be applied to other commands that need different behavior based on task state. The mode is passed via delegation context as analysis_mode field.",
+      "category": "PATTERN",
+      "source_artifact": "specs/498_spawn_any_state_interactive/summaries/01_spawn-any-state-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["dual-mode", "analysis_mode", "blocker-driven", "holistic", "spawn"]
+    },
+    {
+      "content": "When implementing interactive confirmation in agents using AskUserQuestion with multiSelect, always provide a clear empty-selection handling path. The agent should write a valid return file with an empty array rather than omitting the file, so that the calling skill can distinguish between 'user cancelled' and 'agent failed' states.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/498_spawn_any_state_interactive/summaries/01_spawn-any-state-summary.md",
+      "confidence": 0.88,
+      "suggested_keywords": ["AskUserQuestion", "multiSelect", "empty selection", "cancellation", "agent return file"]
+    }
+  ]
+}

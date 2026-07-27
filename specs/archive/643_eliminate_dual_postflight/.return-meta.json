@@ -1,0 +1,28 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1780976739_21f335_643",
+  "task_number": 643,
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "phases_completed": 2,
+  "phases_total": 2,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/643_eliminate_dual_postflight/summaries/01_implementation-summary.md",
+      "summary": "Implementation summary for task 643: orchestrator_mode guard in skill_postflight_update + 3 call site updates"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added optional 5th orchestrator_mode parameter to skill_postflight_update() in skill-base.sh that skips update-task-status.sh when true (while preserving extension hooks), and updated the three core skill call sites (researcher, planner, implementer) to pass $orchestrator_mode as the 5th argument."
+  },
+  "memory_candidates": [
+    {
+      "content": "When adding optional parameters to a bash function for backward compatibility, use the pattern `local param=\"${N:-default}\"` where N is the positional number. This allows callers that omit the parameter to get the old behavior automatically without code changes. Applied in skill_postflight_update() with orchestrator_mode as 5th param defaulting to false.",
+      "category": "PATTERN",
+      "source_artifact": "specs/643_eliminate_dual_postflight/summaries/01_implementation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "optional-parameter", "backward-compatibility", "default-value", "function-signature"]
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/887_research_telemetry_source_architecture_and_distill_redesign/reports/01_telemetry-source-architecture.md",
+      "summary": "Research report settling the OTel/events.jsonl seam, the 12-sub-mode source contracts, cross-repo script resolution, and the skill-learn/skill-distill split"
+    },
+    {
+      "type": "handoff",
+      "path": "specs/887_research_telemetry_source_architecture_and_distill_redesign/.orchestrator-handoff.json",
+      "summary": "Orchestrator handoff JSON with research decisions and residual risks"
+    }
+  ],
+  "next_steps": "Run /revise 887 to incorporate the design, then /expand into implementation tasks",
+  "metadata": {
+    "session_id": "sess_1784135810_7e6755_887",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 12
+  },
+  "memory_candidates": [
+    {
+      "content": "In this agent-system codebase, memory-retrieve.sh, memory-harvest.sh, events-query.sh, and events-append.sh all resolve PROJECT_ROOT as `cd \"$(dirname \"${BASH_SOURCE[0]}\")/../..\" && pwd`. Because BASH_SOURCE[0] is the literal invocation string, and every call site invokes them as the relative path `bash .claude/scripts/{name}.sh`, a chained `cd \"$TARGET_ROOT\" && bash .claude/scripts/{name}.sh ...` (same Bash tool call) correctly redirects PROJECT_ROOT to $TARGET_ROOT with zero script changes. An absolute-path invocation, or a `cd` issued in an earlier Bash tool call, defeats this silently.",
+      "category": "PATTERN",
+      "source_artifact": "specs/887_research_telemetry_source_architecture_and_distill_redesign/reports/01_telemetry-source-architecture.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["cd-chaining", "PROJECT_ROOT", "cross-repo", "BASH_SOURCE", "global-root"]
+    },
+    {
+      "content": "Claude Code's standard OTel resource attributes (monitoring-usage docs, verified 2026-07) are session.id, user.id, user.email, user.account_uuid, user.account_id, organization.id, app.version, app.entrypoint, terminal.type -- cwd is NOT among them. Every Claude Code hook, however, DOES receive both session_id (same UUIDv4 as OTel's session.id) and cwd on every invocation's JSON stdin (common fields: session_id, prompt_id, transcript_path, cwd, permission_mode, hook_event_name). A hook is therefore the correct bridge point for capturing cwd/session correlation that OTel itself does not carry by default.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/887_research_telemetry_source_architecture_and_distill_redesign/reports/01_telemetry-source-architecture.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["otel", "claude-code-hooks", "session-id", "cwd", "telemetry"]
+    },
+    {
+      "content": "In agent-system's unified event store, events-log-lifecycle.sh (Stop/SubagentStop) and events-log-artifact.sh (PostToolUse) both already parse full hook stdin JSON but only extract narrow fields (agent_id/last_assistant_message; file_path respectively) -- they discard the session_id/cwd fields the hooks contract guarantees are present on every invocation. Any future cross-source correlation work in this codebase can extend these two existing hooks rather than registering new ones.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/887_research_telemetry_source_architecture_and_distill_redesign/reports/01_telemetry-source-architecture.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["events-jsonl", "hooks", "stdin", "correlation", "events-log-lifecycle"]
+    }
+  ]
+}

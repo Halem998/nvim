@@ -1,0 +1,20 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1780976739_21f335_642",
+  "task_number": 642,
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "phases_completed": 1,
+  "phases_total": 1,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/642_fix_orchestrator_mode_dispatch/summaries/01_implementation-summary.md",
+      "summary": "Implementation complete: 4 orchestrator_mode dispatch contexts fixed in skill-orchestrate/SKILL.md"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Changed orchestrator_mode from false to true at 4 research/plan dispatch locations in skill-orchestrate/SKILL.md, enabling handoff JSON writing for all lifecycle phases in the orchestrator postflight chain."
+  },
+  "memory_candidates": []
+}

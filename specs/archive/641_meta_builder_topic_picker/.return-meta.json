@@ -1,0 +1,28 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_20260608_641_impl",
+  "task_number": 641,
+  "phases_completed": 3,
+  "phases_total": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/641_meta_builder_topic_picker/summaries/01_topic-picker-summary.md",
+      "summary": "Implementation summary: Stage 3.5 rename, new Stage 4.5 AssignTopic, Stage 5/6 updates, cross-references in 6 files"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Replaced the nonexistent keyword heuristic in meta-builder-agent with a real interactive topic picker (Stage 4.5: AssignTopic) that reads active_topics from state.json and renamed Stage 3.5 from AnalyzeTopics to AnalyzeConsolidation across 6 files to eliminate naming confusion."
+  },
+  "memory_candidates": [
+    {
+      "content": "When meta-builder-agent.md and .claude/extensions/core/agents/meta-builder-agent.md diverge, both files need to be updated in parallel — the extension copy is a mirror and must stay in sync with the main agent file.",
+      "category": "PATTERN",
+      "source_artifact": "specs/641_meta_builder_topic_picker/summaries/01_topic-picker-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["meta-builder-agent", "extension-mirror", "sync", "agent-files"]
+    }
+  ]
+}

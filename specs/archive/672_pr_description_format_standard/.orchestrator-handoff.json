@@ -1,0 +1,36 @@
+{
+  "status": "implemented",
+  "summary": "Created canonical CSLib PR description format file, registered in context index, updated pr-conventions.md to reference it, and aligned /pr command STEP 9 template",
+  "artifacts": [
+    {
+      "path": "specs/672_pr_description_format_standard/summaries/01_implementation-summary.md",
+      "type": "summary",
+      "summary": "Full implementation summary covering all 4 phases, files changed, decisions, and verification"
+    },
+    {
+      "path": ".claude/extensions/cslib/context/project/cslib/standards/pr-description-format.md",
+      "type": "created",
+      "summary": "New canonical PR description format file with required sections, optional sections, and What NOT to Include"
+    },
+    {
+      "path": ".claude/extensions/cslib/index-entries.json",
+      "type": "modified",
+      "summary": "Added entry for pr-description-format.md after pr-conventions.md entry"
+    },
+    {
+      "path": ".claude/extensions/cslib/context/project/cslib/standards/pr-conventions.md",
+      "type": "modified",
+      "summary": "Replaced outdated inline template section with reference to new format file"
+    },
+    {
+      "path": ".claude/extensions/cslib/commands/pr.md",
+      "type": "modified",
+      "summary": "Updated STEP 9 template: removed CI checkboxes and flat Changes list, added Context and File-by-file sections"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "complete",
+  "phases_completed": 4,
+  "phases_total": 4
+}

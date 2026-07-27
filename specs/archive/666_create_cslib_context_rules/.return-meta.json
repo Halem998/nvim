@@ -1,0 +1,38 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1749673500_a3b2c1_666",
+  "task_number": 666,
+  "started_at": "2026-06-11T00:00:00Z",
+  "completed_at": "2026-06-11T01:00:00Z",
+  "phases_completed": 6,
+  "phases_total": 6,
+  "completion_data": {
+    "completion_summary": "Created rules/cslib.md and 11 context files under .claude/extensions/cslib/context/project/cslib/ covering domain/, patterns/, standards/, and tools/ subdirectories. Content derived from CSLib source documents (CONTRIBUTING.md, NOTATION.md, ORGANISATION.md, lakefile.toml). Includes citation-conventions.md adapted from existing CSLib standards.",
+    "roadmap_items": []
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/666_create_cslib_context_rules/summaries/01_context-rules-summary.md",
+      "summary": "Context and rules implementation summary for task 666"
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "CSLib checkInitImports distinction: `weak.linter.checkInitImports` is disabled in lakefile.toml (incompatibility with current setup), but `lake exe checkInitImports` (standalone executable) is still active and required by CI. Always run the exe, not just lake build.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/666_create_cslib_context_rules/summaries/01_context-rules-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["cslib", "checkInitImports", "lake", "CI", "linter", "lakefile"]
+    },
+    {
+      "content": "CSLib BibKey naming convention: CamelCase format (`Blackburn2001`, `ChagrovZakharyaschev1997`) not mathlib lowercase (`bourbaki1966`). Format: concatenate author surnames then append year. BibKeys resolve to entries in root `references.bib`.",
+      "category": "PATTERN",
+      "source_artifact": "specs/666_create_cslib_context_rules/summaries/01_context-rules-summary.md",
+      "confidence": 0.95,
+      "suggested_keywords": ["cslib", "citation", "BibKey", "references.bib", "bibliography", "CamelCase"]
+    }
+  ]
+}

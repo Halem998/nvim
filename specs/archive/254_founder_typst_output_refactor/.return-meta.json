@@ -1,0 +1,31 @@
+{
+  "status": "researched",
+  "summary": "Created 2 tasks for founder extension typst output refactor: fix plan agent phase enforcement (#253) and update implement agent for typst output (#254).",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "specs/TODO.md",
+      "summary": "Tasks #253 and #254 added to TODO.md"
+    },
+    {
+      "type": "research",
+      "path": "specs/253_fix_founder_plan_agent_typst_phase/reports/01_meta-research.md",
+      "summary": "Research report for plan agent typst phase enforcement"
+    },
+    {
+      "type": "research",
+      "path": "specs/254_update_founder_implement_agent_typst/reports/01_meta-research.md",
+      "summary": "Research report for implement agent typst output"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1742468400_f8e2a1",
+    "duration_seconds": 120,
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "meta", "skill-meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "tasks_created": 2
+  },
+  "next_steps": "Run /research 253 to begin research on foundational task"
+}

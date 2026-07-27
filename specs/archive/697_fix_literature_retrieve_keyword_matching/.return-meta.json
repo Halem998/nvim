@@ -1,0 +1,28 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/697_fix_literature_retrieve_keyword_matching/reports/01_literature-retrieve-research.md",
+      "summary": "Research report identifying manifest gap as primary blocker plus 4 script defects with rewrite plan following memory-retrieve.sh pattern"
+    }
+  ],
+  "next_steps": "Run /plan 697 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1781470284_58cfdb",
+    "agent_type": "general-research-agent",
+    "duration_seconds": 300,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 8
+  },
+  "memory_candidates": [
+    {
+      "content": "When an extension script exists in .claude/extensions/core/scripts/ but is not listed in the provides.scripts array in manifest.json, the Load Core sync mechanism (sync.lua line 832) filters it out using the allow-list, preventing deployment to child projects. Always verify new scripts are added to manifest.json provides.scripts.",
+      "category": "PATTERN",
+      "source_artifact": "specs/697_fix_literature_retrieve_keyword_matching/reports/01_literature-retrieve-research.md",
+      "confidence": 0.95,
+      "suggested_keywords": ["manifest", "provides.scripts", "sync", "extension", "load-core", "literature-retrieve"]
+    }
+  ]
+}

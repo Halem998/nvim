@@ -1,0 +1,58 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "task_number": 902,
+  "task_name": "self_modification_hazard_gate",
+  "session_id": "sess_1785007876_a13284_902",
+  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+  "plan_path": "specs/902_self_modification_hazard_gate/plans/01_self-modification-hazard-gate.md",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "artifacts": [
+    {
+      "path": "specs/902_self_modification_hazard_gate/summaries/01_self-modification-hazard-gate-summary.md",
+      "type": "summary",
+      "summary": "Full implementation summary covering all 5 phases: critical-path data declaration, gate implementation with v2 schema, dry-run report surfacing, live dispatch wiring, and test regression."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a self-modification hazard gate to /orchestrate admission control: a data-declared nine-file orchestrator-critical-path set, a v2 verdict schema with a self_modifying flag and defer_reason discriminator, invocation-scoped solo-only deferral wired into both live dispatch paths (commands/orchestrate.md and skill-orchestrate/SKILL.md, with a convergent deferred_self_modifying exclusion set), dry-run report visibility with plain-language reasons, and a new 14-assertion test suite plus updated v2 regression across all four affected test suites (all green: 14/14, 8/8, 6/6, 14/14)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
+    "agent-system/extensions/core/context/reference/README.md",
+    "agent-system/extensions/core/context/reference/orchestrator-critical-paths.json",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+    "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+    "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "specs/900_cross_batch_file_scope_admission/tests/test-batch-admit.sh",
+    "specs/902_self_modification_hazard_gate/fixtures/state-self-mod.json",
+    "specs/902_self_modification_hazard_gate/tests/test-self-modifying-gate.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In jq, a helper function intended to return \"first match or null\" must end with plain `first` (which yields `null` on an empty array), NEVER `first // empty`, if its result is consumed via `... as $x | ...` OUTSIDE an array/object comprehension. `// empty` is safe inside a `[ ... ]` comprehension (an empty result there just means \"this iteration contributes nothing\"), but at top level `as $x |` binds by iterating its generator: a generator that yields zero results (empty) makes the ENTIRE downstream pipeline for that input produce zero outputs, silently dropping it rather than erroring. Symptom: a per-candidate NDJSON emitter that silently omits lines for exactly the candidates where the helper found no match, with no error and exit 0 -- easy to miss without directly testing a no-match candidate in isolation.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/902_self_modification_hazard_gate/summaries/01_self-modification-hazard-gate-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["jq", "first-vs-empty", "as-binding", "silent-data-loss", "array-comprehension"]
+    },
+    {
+      "content": "In jq, the `//` alternative operator treats a literal `false` value (not just `null`) as falsy. A pattern like `field // \"null\"` or `field // default` intended to detect \"field is absent/null\" will ALSO match a legitimately present `field: false`, silently misclassifying it as the absent/default case. When a boolean field's `false` value is meaningfully different from its absence, extract it with `jq -c '.field'` (no `//` fallback) and compare the compact-output token (`true`/`false`/`null`) directly, rather than using `//` for presence detection.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/902_self_modification_hazard_gate/summaries/01_self-modification-hazard-gate-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["jq", "alternative-operator", "false-is-falsy", "boolean-field-detection", "degraded-state-detection"]
+    },
+    {
+      "content": "When writing a scratch-deploy-tree fixture test for a predicate that scans an ENTIRE state file (not just its CLI arguments) for cross-candidate comparisons, giving two fixture candidates identical or overlapping scope fields for one assertion's sake can silently contaminate every OTHER assertion that uses either candidate in isolation, because the predicate always compares against the whole file regardless of which candidates were passed as arguments. Fix: keep a dedicated, fully-isolated \"ordinary baseline\" candidate separate from any candidate pair deliberately constructed to test a specific interaction (collision direction, precedence, etc.), rather than reusing one candidate in both roles.",
+      "category": "PATTERN",
+      "source_artifact": "specs/902_self_modification_hazard_gate/summaries/01_self-modification-hazard-gate-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["test-fixture-design", "scratch-deploy-tree", "test-isolation", "cross-candidate-contamination", "state-file-scan"]
+    }
+  ]
+}

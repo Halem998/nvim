@@ -1,0 +1,45 @@
+{
+  "status": "implemented",
+  "started_at": "2026-07-13T14:58:19-07:00",
+  "summary": "All 4 phases executed and verified. <leader>me now gates only on a foreground `notmuch new --no-hooks` (sub-second, works with duplicate-UID-15 unrepaired) and opens aerc immediately; server syncing moved to one deduplicated background hook-ful `notmuch new` pipeline shared by <leader>me (quiet) and <leader>mN (loud); mbsync -a and email-census deleted from mail.lua; himalaya auto-sync timer disabled by default with the config.get falsy bug fixed and the toggle's re-enable path repaired.",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/tools/mail.lua",
+      "summary": "Index-only launch gate, deduplicated background sync pipeline, lock-wait feedback notice, rewritten architecture comments"
+    },
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/tools/himalaya/config/init.lua",
+      "summary": "ui.auto_sync_enabled = false default; M.get falsy-value fix"
+    },
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/tools/himalaya/commands/sync.lua",
+      "summary": "HimalayaAutoSyncToggle flips live config so re-enable works"
+    },
+    {
+      "type": "summary",
+      "path": "specs/858_mail_launch_gate_performance/summaries/02_fast-responsive-aerc-launch-summary.md",
+      "summary": "Implementation summary with verification evidence and plan deviations"
+    },
+    {
+      "type": "handoff",
+      "path": "specs/858_mail_launch_gate_performance/.orchestrator-handoff.json",
+      "summary": "Orchestrator handoff: implemented, 4/4 phases, no blockers, verification findings"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Redesigned the <leader>me aerc launch: gate is now a foreground `notmuch new --no-hooks` (0.14-0.58 s) so aerc opens sub-second even with the duplicate-UID collision unrepaired; all server syncing runs in one backgrounded, in-flight-guarded, hook-ful `notmuch new` pipeline (preNew = mail-sync both) with warn-never-block semantics; mbsync -a and the census launch check were deleted and the himalaya auto-sync timer no longer fires by default."
+  },
+  "metadata": {
+    "session_id": "sess_1783979541_058844",
+    "duration_seconds": 2100,
+    "agent_type": "neovim-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  },
+  "next_steps": "Open Neovim and press <leader>me to confirm the fast launch interactively; note the himalaya auto-sync behavior change (re-enable per-session with :HimalayaAutoSyncToggle)."
+}

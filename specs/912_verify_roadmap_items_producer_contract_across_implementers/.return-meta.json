@@ -1,0 +1,42 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 912,
+  "session_id": "sess_1785116996_862366_912",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/912_verify_roadmap_items_producer_contract_across_implementers/summaries/01_roadmap-items-producer-fix-summary.md",
+      "summary": "Verified cross-matrix (core, core-hard, lean, lean-hard, web all now satisfy both links of the roadmap_items producer/consumer contract); recorded three follow-ups (nix/neovim/epi mirror-image gap, shared-postflight-script extraction, claudemd.md coordination note) plus the redeploy caveat."
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md"
+  ],
+  "completion_data": {
+    "completion_summary": "Repaired the roadmap_items producer/consumer contract across all five core/lean/web implementer paths: fixed the dead-code roadmap_items drop in skill-lean-implementation-hard, made skill-implementer-hard's Stage 7a precise and self-contained, and closed the confirmed root cause by adding a completion_data pointer instruction to the three implementation agents (general-implementation-hard, lean-implementation, lean-implementation-hard) that never generated it, under a declared file_scope expansion."
+  },
+  "memory_candidates": [
+    {
+      "content": "When multiple SKILL.md/agent.md files implement the same producer/consumer metadata contract (e.g. completion_data -> state.json propagation), the working instances avoid drift by naming the exact field in their own local field enumeration and pointing at the shared schema doc by path -- not by duplicating the schema. When one instance is broken, check whether it silently references the schema abstractly (via a bare @-import with no local field name) rather than naming the field explicitly; that's the actual failure pattern, not missing documentation.",
+      "category": "PATTERN",
+      "source_artifact": "specs/912_verify_roadmap_items_producer_contract_across_implementers/summaries/01_roadmap-items-producer-fix-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["completion_data", "roadmap_items", "producer-consumer-contract", "schema-pointer", "skill-agent-drift"]
+    },
+    {
+      "content": "In a multi-agent session where several /implement dispatches run concurrently against the same repo, specs/state.json and specs/TODO.md legitimately carry other in-flight tasks' current index rows when committed, because they are shared, wholesale-regenerated files. The honest way to handle this (per git-staging-scope.md) is to stage them normally and append a commit-message line naming which other tasks' rows are carried (e.g. 'Also carries current index rows for tasks: 910, 911') rather than trying to surgically split the diff.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/912_verify_roadmap_items_producer_contract_across_implementers/summaries/01_roadmap-items-producer-fix-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["concurrent-agents", "state.json", "git-staging-scope", "shared-index-files", "commit-honesty"]
+    }
+  ]
+}

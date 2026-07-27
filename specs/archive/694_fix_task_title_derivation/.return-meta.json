@@ -1,0 +1,35 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1781465115_64292a_694",
+  "task_number": 694,
+  "started_at": "2026-06-14T00:00:00Z",
+  "completed_at": "2026-06-14T00:10:00Z",
+  "phases_completed": 2,
+  "phases_total": 2,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/694_fix_task_title_derivation/plans/01_implementation-plan.md",
+      "summary": "Implementation plan with 2 phases to remove redundant title field from task.md jq templates"
+    },
+    {
+      "type": "summary",
+      "path": "specs/694_fix_task_title_derivation/summaries/02_title-derivation-summary.md",
+      "summary": "Execution summary for task 694 title derivation fix"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Removed redundant 'title': $desc from the jq task-creation template and fixed the Expand mode comment across all three copies of task.md (nvim commands, extension core, and cslib). New tasks now rely on generate-todo.sh's project_name fallback for title derivation."
+  },
+  "memory_candidates": [
+    {
+      "content": "When a task.md jq template sets 'title': $desc (same value as description), task titles in TODO.md will display as the full multi-sentence description instead of a concise derived title. The generate-todo.sh fallback derives clean titles from project_name (replace underscores with spaces, capitalize first letter) when the title field is absent. Fix: remove the 'title' field from jq templates entirely and rely on the fallback.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/694_fix_task_title_derivation/summaries/02_title-derivation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["task.md", "title derivation", "jq template", "generate-todo", "project_name", "task creation"]
+    }
+  ]
+}

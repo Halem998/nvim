@@ -1,0 +1,47 @@
+{
+  "status": "implemented",
+  "summary": "Extended check-extension-docs.sh with four consistency check rules (A-D). Script now exits 1 with 4 FAILs: 2 pre-existing (core dispatch-agent.sh missing, /zulip README gap) + 2 new lean routing_hard violations (skill-lean-research-hard, skill-lean-implementation-hard undeployed because lean is not installed). Core extension copy synced byte-identical. 22-assertion fixture harness passes all assertions.",
+  "artifacts": [
+    {
+      "path": "specs/769_routing_hard_consistency_guard/summaries/01_routing-guard-consistency-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary with decisions, deviations, verification results, and FAIL attribution"
+    },
+    {
+      "path": ".claude/scripts/check-extension-docs.sh",
+      "type": "script",
+      "summary": "Main working copy with Rules A-D implemented"
+    },
+    {
+      "path": ".claude/extensions/core/scripts/check-extension-docs.sh",
+      "type": "script",
+      "summary": "Byte-identical core extension copy"
+    },
+    {
+      "path": "specs/769_routing_hard_consistency_guard/test-guard.sh",
+      "type": "harness",
+      "summary": "22-assertion fixture harness; all assertions pass; exit 0"
+    }
+  ],
+  "phases_completed": 5,
+  "phases_total": 5,
+  "continuation_context": null,
+  "next_action_hint": "Update task status to [PR READY] or [COMPLETED] in state.json. No PR needed for meta tasks — commit and mark complete.",
+  "blockers": [],
+  "verification": {
+    "harness_result": "22/22 assertions pass; exit 0",
+    "real_guard_fail_count": 4,
+    "fail_attribution": {
+      "pre_existing": [
+        "manifest script entry missing on disk: scripts/dispatch-agent.sh",
+        "command /zulip listed in manifest but not mentioned in README.md"
+      ],
+      "new": [
+        "routing_hard target declared but not deployed (and extension not installed): skill-lean-research-hard",
+        "routing_hard target declared but not deployed (and extension not installed): skill-lean-implementation-hard"
+      ]
+    },
+    "core_copy_identical": true,
+    "no_fixture_residue": true
+  }
+}

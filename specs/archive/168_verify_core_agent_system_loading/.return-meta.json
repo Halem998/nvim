@@ -1,0 +1,40 @@
+{
+  "status": "implemented",
+  "summary": "Fixed core agent system loading: normalized 22 index-entries.json path prefixes, added loader path normalization for defense-in-depth, fixed epidemiology manifest merge_target_key, synced manifest parity, expanded routing table, created validation script.",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/ai/shared/extensions/merge.lua",
+      "summary": "Added normalize_index_path() function for defense-in-depth path handling"
+    },
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/ai/shared/extensions/init.lua",
+      "summary": "Added bare-array fallback for index-entries.json parsing"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/scripts/validate-extension-index.sh",
+      "summary": "Created validation script for index-entries.json files"
+    },
+    {
+      "type": "summary",
+      "path": "specs/168_verify_core_agent_system_loading/summaries/implementation-summary-20260310.md",
+      "summary": "Implementation summary with all changes and verification results"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed 22 index-entries.json path prefixes, added loader path normalization and bare-array fallback, fixed epidemiology manifest, synced manifest parity, expanded routing table, created validation script.",
+    "claudemd_suggestions": "Updated .claude/context/core/routing.md with complete language table, added .claude/scripts/validate-extension-index.sh"
+  },
+  "metadata": {
+    "session_id": "sess_1773169204_cd09b0",
+    "duration_seconds": 7200,
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  },
+  "next_steps": "Run validation script on target projects after extension loading to verify index.json paths"
+}

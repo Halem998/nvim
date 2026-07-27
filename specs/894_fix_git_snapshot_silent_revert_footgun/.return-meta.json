@@ -1,0 +1,61 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1784991755_1b4381_894",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 894,
+  "task_name": "fix_git_snapshot_silent_revert_footgun",
+  "artifacts": [
+    {
+      "path": "specs/894_fix_git_snapshot_silent_revert_footgun/plans/01_git-snapshot-revert-footgun.md",
+      "type": "plan",
+      "summary": "Six-phase plan fixing the git-snapshot.sh silent-revert footgun and conditional resolution failure, with exact replacement text for every edit."
+    },
+    {
+      "path": "specs/894_fix_git_snapshot_silent_revert_footgun/summaries/01_git-snapshot-revert-footgun-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary: all 6 phases complete, --no-revert mode added, call sites routed by semantic family, verified in an isolated scratch repo."
+    }
+  ],
+  "phase_count": 6,
+  "phases_completed": 6,
+  "phases_total": 6,
+  "estimated_hours": 5.5,
+  "dependency_waves": [[1], [2], [3, 4], [5], [6]],
+  "research_inputs": [
+    "specs/894_fix_git_snapshot_silent_revert_footgun/reports/01_git-snapshot-revert-footgun.md"
+  ],
+  "modified_files": [
+    ".gitignore",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/core/agents/general-research-agent.md",
+    "agent-system/extensions/core/agents/general-research-hard-agent.md",
+    "agent-system/extensions/core/context/contracts/recovery.md",
+    "agent-system/extensions/core/context/patterns/checkpoint-before-overflow.md",
+    "agent-system/extensions/core/hooks/guard-destructive-git.sh",
+    "agent-system/extensions/core/rules/git-workflow.md",
+    "agent-system/extensions/core/scripts/git-snapshot.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed git-snapshot.sh's silent-revert footgun and conditional resolution-failure message: added --help, unknown-option rejection, per-failure-reason diagnostics, pre-op/post-op stderr warnings, and a new opt-in --no-revert mode (git stash create/store + untracked-file backup) that leaves the working tree untouched. Updated all 9 call sites across the source store to pass the task number explicitly and route to the mode matching their semantic family (rollback-ladder vs. defensive-checkpoint). Verified all 4 modes and every failure path in an isolated scratch repo, including a standing regression guard reconfirming --branch also reverts the tree."
+  },
+  "memory_candidates": [
+    {
+      "content": "When one helper script is invoked from many call sites, classify the call sites into semantic families BEFORE proposing any default-behavior change. In the agent system's git-snapshot helper, the same script served two opposite intents: a rollback-ladder family where the working-tree revert was the intended handoff into an imminent destructive git command, and a defensive-checkpoint family where that same revert silently destroyed the very work the checkpoint existed to protect. Flipping the default would have fixed one family and broken the other; the correct decomposition is to keep the default, add an explicit opt-in mode, and route each family to the mode matching its intent. Two reusable corollaries. (1) Non-destructive git snapshotting: `git stash create` plus `git stash store` produces a real, listable stash entry without ever touching the working tree, unlike every `git stash push` form; its only gap is untracked files, closed at parity with `stash -u` by copying `git ls-files --others --exclude-standard` output. (2) A shell function invoked as `VAR=$(fn ...)` runs in a subshell, so a diagnostic reason it assigns to a variable is silently discarded -- echo the reason to stderr instead, which passes through command substitution unchanged.",
+      "category": "PATTERN",
+      "source_artifact": "specs/894_fix_git_snapshot_silent_revert_footgun/plans/01_git-snapshot-revert-footgun.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["call-site-families", "default-behavior-change", "git-stash-create", "non-destructive-snapshot", "subshell-variable-loss", "shared-helper-script"]
+    },
+    {
+      "content": "When a phased plan gives literal anchor-and-replace edit instructions across sequential phases that touch the same region of a file, a later phase's anchor text may no longer be contiguous after an earlier phase already inserted content in between. Detect this before applying the edit (diff the anchor against the file's current state, not the plan's assumed prior state) and split the edit into multiple smaller Edit calls that individually preserve each earlier phase's insertion, rather than doing one large contiguous replacement that would silently delete the earlier phase's work. Applies generally to any multi-phase implementation plan with pre-written replacement-text blocks for a shared file.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/894_fix_git_snapshot_silent_revert_footgun/summaries/01_git-snapshot-revert-footgun-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["phased-plan-execution", "anchor-drift", "sequential-edits", "edit-tool", "plan-replacement-text"]
+    }
+  ],
+  "next_steps": "None. Task complete; all 6 phases implemented, committed, and verified."
+}

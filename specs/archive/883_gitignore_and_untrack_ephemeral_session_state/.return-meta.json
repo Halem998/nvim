@@ -1,0 +1,38 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "task_number": 883,
+  "session_id": "sess_1784155855_f90cfe_883",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "plan_path": "specs/883_gitignore_and_untrack_ephemeral_session_state/plans/01_gitignore-untrack-ephemeral-state.md",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/883_gitignore_and_untrack_ephemeral_session_state/summaries/01_gitignore-untrack-ephemeral-state-summary.md"
+    }
+  ],
+  "modified_files": [
+    ".gitignore"
+  ],
+  "completion_data": {
+    "completion_summary": "Added 9 ephemeral-orchestration-state patterns to the repo-root .gitignore and untracked 202 currently-tracked matches via git rm --cached (index-only, working tree fully preserved), verified across three phases with no regressions to durable artifacts or the in-flight sibling batch."
+  },
+  "memory_candidates": [
+    {
+      "content": "When a plan asserts an exact live-derived count (e.g. 'manifest must be exactly N') and concurrent sibling tasks are actively committing during execution, treat the count as a live invariant to re-verify, not a frozen constant: re-derive it, diff the delta against the expected pattern categories, and proceed only if every added/removed item matches an already-intended category (no unexpected new category). This is the correct response to legitimate concurrent drift, distinct from a hard-stop-worthy anomaly (e.g. an unrelated durable file appearing in the manifest).",
+      "category": "PATTERN",
+      "source_artifact": "specs/883_gitignore_and_untrack_ephemeral_session_state/summaries/01_gitignore-untrack-ephemeral-state-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["concurrent-drift", "manifest-count", "live-invariant", "sibling-task", "reconciliation"]
+    },
+    {
+      "content": "For a git-workflow gitignore-and-untrack task under a postflight that runs a pathspec-less 'git commit' (commits the entire index), the safe pattern is: stage exactly the intended paths, assert 'git diff --cached --name-only' matches expectations exactly, commit immediately, and never let the phase end with anything staged. This keeps a concurrent sibling task's own postflight commit from silently sweeping in unrelated staged content. Verified live across a 2-commit sequence (.gitignore-only commit, then a 202-file git-rm --cached commit) with zero cross-contamination.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/883_gitignore_and_untrack_ephemeral_session_state/summaries/01_gitignore-untrack-ephemeral-state-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-staging-scope", "atomic-commit", "postflight", "concurrent-tasks", "git-rm-cached"]
+    }
+  ]
+}

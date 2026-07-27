@@ -1,0 +1,25 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1781482254_239635_703",
+  "task_number": 703,
+  "phases_completed": 2,
+  "phases_total": 2,
+  "artifacts": [
+    {
+      "type": "guide",
+      "path": ".claude/context/guides/literature-organization.md",
+      "summary": "Literature organization guide: 318 lines covering directory structure, index.json schema, naming conventions, chunk sizing, and --lit injection mechanics"
+    },
+    {
+      "type": "summary",
+      "path": "specs/703_create_literature_organization_guide/summaries/01_lit-org-guide-summary.md",
+      "summary": "Implementation summary for task 703"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Created .claude/context/guides/literature-organization.md (318 lines) documenting specs/literature/ conventions, index.json schema, chunk sizing policy, --lit injection mechanics, and a step-by-step procedure for adding new papers; registered the guide in .claude/context/index.json."
+  },
+  "memory_candidates": []
+}

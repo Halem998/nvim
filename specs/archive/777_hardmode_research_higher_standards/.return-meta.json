@@ -1,0 +1,38 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/777_hardmode_research_higher_standards/summaries/01_harden-research-verification-summary.md",
+      "summary": "All 7 phases (including optional Phase 6) completed: created H4 adversarial-verification.md contract + lean parity copy, added H3 Source-Coverage Minimums to reference-grounding.md (core + lean), registered the contract in index.json + lean index-entries.json, rewrote Stage 4.5 in all three research-hard agents with a required Claim Verification Table + Contradiction Log, added the contract to skill-researcher-hard Context References (both copies), and strengthened the orchestrate-hard H4 grep gate (both copies). All dual-copy pairs verified in sync; no standard-mode research files touched."
+    }
+  ],
+  "next_steps": "Task 777 complete. Run /merge when ready to submit for review.",
+  "metadata": {
+    "session_id": "sess_1783089459_c17000_777",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  },
+  "completion_data": {
+    "completion_summary": "Created the missing H4 adversarial-verification.md contract (Claim Verification Bar, Confidence Level Taxonomy, Contradiction Resolution Protocol, Forbidden Verification Outputs, Domain Specialization), added per-tier source-coverage minimums to the H3 reference-grounding.md contract, and rewrote Stage 4.5 in all three research-hard agents (general, cslib, lean) to require a structured Claim Verification Table and Contradiction Log, keeping every dual-copy file pair in sync."
+  },
+  "memory_candidates": [
+    {
+      "content": "In this repo's .claude/ deployment model, target files for meta edits often exist as dual copies that must be updated together to survive sync: (1) core agents like general-research-hard-agent.md exist byte-identical at .claude/agents/ AND .claude/extensions/core/agents/ (edit both -- use `cp` after editing one to guarantee byte-identity); (2) cslib agents at .claude/agents/ are SYMLINKS into .claude/extensions/cslib/agents/ (edit the extension file only); (3) skill SKILL.md files exist at .claude/skills/ AND .claude/extensions/core/skills/ but may DIFFER (edit both, matching sections); (4) contract files at .claude/context/contracts/*.md are git-tracked canonical (NOT provided by core extension), while the lean extension bundles its own DIFFERING copies under .claude/extensions/lean/context/contracts/ -- new core contracts need a lean parity copy too if lean-only deployments should retain them; (5) .claude/context/index.json is git-tracked and maintained directly (no generate-index script; only validate-index.sh / validate-context-index.sh), and contract index entries are not all sourced from extension index-entries.json -- new contract entries need mirroring into the relevant extension's index-entries.json. Before any meta edit, check for a symlink (readlink) and a same-named extension-source copy. Also: `bash .claude/scripts/validate-context-index.sh` line-count mismatches are warnings (10% tolerance), not hard failures -- pre-existing domain/field errors elsewhere in index.json won't block a correctly-formed new entry, but always diff against a git-stash baseline before attributing pre-existing errors to your own change, since a naive `git stash` can transiently pull in other in-flight parallel agents' uncommitted edits across the whole working tree.",
+      "category": "PATTERN",
+      "source_artifact": "specs/777_hardmode_research_higher_standards/summaries/01_harden-research-verification-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["dual-copy", "deployment-model", "extensions", "symlink", "contracts", "index.json", "validate-context-index"]
+    },
+    {
+      "content": "When strengthening a hard-mode (H-technique) contract that other domain agents specialize (e.g., H4 adversarial verification specialized by cslib's BibKey checks and lean's lean_hover_info checks), preserve the domain specialization by re-expressing it as a value plugged into a shared structural bar's column (e.g., the 'Verification Method' column of a Claim Verification Table) rather than deleting or generically rewriting the domain-specific mechanics. This keeps the contract structurally uniform across agents (grep-checkable table headers) while letting each domain agent's Stage 4.5 documentation show concretely which values that column takes for its domain.",
+      "category": "PATTERN",
+      "source_artifact": "specs/777_hardmode_research_higher_standards/summaries/01_harden-research-verification-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["hard-mode", "H4", "domain-specialization", "contract-design", "verification-table"]
+    }
+  ]
+}

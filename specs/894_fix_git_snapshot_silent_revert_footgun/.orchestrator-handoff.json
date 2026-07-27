@@ -1,0 +1,43 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Implemented all 6 phases fixing git-snapshot.sh's silent-revert footgun: --help/option rejection, per-reason resolution diagnostics, pre/post-op stderr warnings, a new opt-in --no-revert mode (stash create/store + untracked backup), and call-site updates across 9 files routing each semantic family to the correct mode. Verified in an isolated scratch repo (7 cases, 44 assertions, all passed), including a standing regression guard reconfirming --branch also reverts the tree.",
+  "artifacts": [
+    {
+      "path": "specs/894_fix_git_snapshot_silent_revert_footgun/plans/01_git-snapshot-revert-footgun.md",
+      "type": "plan",
+      "summary": "Six-phase plan fixing git-snapshot.sh: loud stderr pre-op/post-op revert warnings, --help plus unknown-option rejection, richer resolution-failure diagnostics naming the specific cause, a new opt-in --no-revert mode built on `git stash create` + `git stash store` plus an untracked-backup-{ts}/ copy, and call-site updates splitting rollback-ladder sites (keep default, pass task number) from defensive-checkpoint sites (switch to --no-revert). All 51 checklist items complete."
+    },
+    {
+      "path": "specs/894_fix_git_snapshot_silent_revert_footgun/summaries/01_git-snapshot-revert-footgun-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary: all 6 phases complete, --no-revert mode added, call sites routed by semantic family, verified in an isolated scratch repo, two plan deviations recorded (both textual refinements, no functional drift)."
+    }
+  ],
+  "phases_total": 6,
+  "phases_completed": 6,
+  "blockers": [],
+  "files_modified": [
+    ".gitignore",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/core/agents/general-research-agent.md",
+    "agent-system/extensions/core/agents/general-research-hard-agent.md",
+    "agent-system/extensions/core/context/contracts/recovery.md",
+    "agent-system/extensions/core/context/patterns/checkpoint-before-overflow.md",
+    "agent-system/extensions/core/hooks/guard-destructive-git.sh",
+    "agent-system/extensions/core/rules/git-workflow.md",
+    "agent-system/extensions/core/scripts/git-snapshot.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+  ],
+  "decisions_made": [
+    "--no-revert implemented as a third opt-in mode, never a default, per the plan's design decision",
+    "Mechanism is git stash create + git stash store (no working-tree touch) plus a git-ls-files-based untracked-file copy to untracked-backup-{ts}/",
+    "Phase 3's mode-dispatch edit was split into two Edits to preserve the Phase 2 pre-op warning block that the plan's literal anchor text did not account for"
+  ],
+  "dead_ends": [],
+  "continuation_context": null,
+  "plan_markers_verified": true,
+  "next_action_hint": "none"
+}

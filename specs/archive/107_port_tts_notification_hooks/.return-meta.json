@@ -1,0 +1,45 @@
+{
+  "status": "implemented",
+  "summary": "Extended TTS notifications to trigger on Notification hook events (permission_prompt, idle_prompt, elicitation_dialog). Added stdin JSON parsing to tts-notify.sh for event-specific messages. Ported comprehensive TTS/STT guide with software dependencies, corrected cooldown documentation.",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": ".claude/hooks/tts-notify.sh",
+      "summary": "Extended with stdin JSON parsing and notification type-specific messages"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/settings.json",
+      "summary": "Added Notification hook for input-needed events"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/docs/guides/tts-stt-integration.md",
+      "summary": "Comprehensive TTS/STT guide with software dependencies and Notification event documentation"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/docs/guides/neovim-integration.md",
+      "summary": "Updated TTS section with Notification hooks and corrected cooldown value"
+    },
+    {
+      "type": "summary",
+      "path": "specs/107_port_tts_notification_hooks/summaries/implementation-summary-20260302.md",
+      "summary": "Implementation summary for TTS notification hooks extension"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Extended tts-notify.sh to support Notification hook events with event-specific messages, added Notification hook to settings.json, and created comprehensive TTS/STT integration documentation with software dependencies.",
+    "claudemd_suggestions": "Added tts-stt-integration.md to .claude/docs/guides/, updated neovim-integration.md with Notification hook documentation and cross-references"
+  },
+  "metadata": {
+    "session_id": "sess_1772485491_d8db97",
+    "duration_seconds": 1200,
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
+  },
+  "next_steps": "Test TTS notifications in live Claude Code session with permission prompts"
+}

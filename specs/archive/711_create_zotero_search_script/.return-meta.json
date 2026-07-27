@@ -1,0 +1,37 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1781500889_343926",
+  "task_number": 711,
+  "started_at": "2026-06-14T00:00:00Z",
+  "completed_at": "2026-06-14T00:30:00Z",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "completion_data": {
+    "completion_summary": "Created zotero-search.sh script in the literature extension with weighted CSL-JSON keyword search, PDF path verification, and --format=pretty output. Updated literature extension manifest.json to register the script under provides.scripts."
+  },
+  "memory_candidates": [
+    {
+      "content": "When a jq function returns an array (e.g., def pdf_candidates(entry): [...];), do NOT wrap the call in another array constructor in the output object. Writing `pdf_paths: [pdf_candidates(.)]` produces a nested array [[v1,v2]] rather than a flat array [v1,v2]. Use `pdf_paths: pdf_candidates(.)` directly.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/711_create_zotero_search_script/summaries/02_zotero-search-summary.md",
+      "confidence": 0.95,
+      "suggested_keywords": ["jq", "array", "nested", "function", "output-object"]
+    },
+    {
+      "content": "Bash heredoc show_usage() pattern: use a fixed heredoc rather than sed ranges over the script header to avoid duplicate output caused by overlapping sed range patterns. Write the usage text explicitly in the heredoc inside show_usage(). Accept an optional fd argument (default 2) so --help can redirect to stdout (fd 1) while error usage goes to stderr (fd 2).",
+      "category": "PATTERN",
+      "source_artifact": "specs/711_create_zotero_search_script/summaries/02_zotero-search-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "heredoc", "usage", "help", "stderr", "stdout"]
+    }
+  ],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/711_create_zotero_search_script/summaries/02_zotero-search-summary.md",
+      "summary": "Implementation summary covering all 3 phases with decisions, no deviations, and 10-test verification"
+    }
+  ]
+}

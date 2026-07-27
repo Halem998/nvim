@@ -1,0 +1,46 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1749607200_a3b2c1_654",
+  "task_number": 654,
+  "started_at": "2026-06-10T00:00:00Z",
+  "completed_at": "2026-06-10T00:30:00Z",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "completion_data": {
+    "completion_summary": "Created manage-topics.sh script with list/add/set/validate subcommands and topic-assignment-pattern.md pattern document covering all three picker modes (Interactive, Inherit, Suggest); registered pattern in context index.json. All 9 verification tests passed.",
+    "roadmap_items": []
+  },
+  "memory_candidates": [
+    {
+      "content": "manage-topics.sh provides topic state management for state.json: list (print active topics), add TOPIC (idempotent append using index($t)==null), set TASK_NUM TOPIC (update task field + active_topics in single jq pass), validate TOPIC (exit 0/1 for presence check). Script at .claude/scripts/manage-topics.sh. Pattern at .claude/context/patterns/topic-assignment-pattern.md.",
+      "category": "PATTERN",
+      "source_artifact": "specs/654_create_topic_management_utilities/summaries/01_topic-management-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["manage-topics", "topic-management", "active-topics", "state-json", "picker", "idempotent"]
+    }
+  ],
+  "artifacts": [
+    {
+      "path": ".claude/scripts/manage-topics.sh",
+      "type": "script",
+      "summary": "New script with list, add, set, validate subcommands for topic state management"
+    },
+    {
+      "path": ".claude/context/patterns/topic-assignment-pattern.md",
+      "type": "pattern",
+      "summary": "Pattern doc covering Interactive, Inherit, and Suggest topic assignment modes"
+    },
+    {
+      "path": ".claude/context/index.json",
+      "type": "config",
+      "summary": "Updated with new topic-assignment-pattern.md entry"
+    },
+    {
+      "path": "specs/654_create_topic_management_utilities/summaries/01_topic-management-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary"
+    }
+  ]
+}

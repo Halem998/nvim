@@ -1,0 +1,55 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1782320124_aa5841_769",
+  "task_number": 769,
+  "task_type": "meta",
+  "plan_path": "specs/769_routing_hard_consistency_guard/plans/01_routing-guard-consistency.md",
+  "started_at": "2026-06-24T00:00:00Z",
+  "completed_at": "2026-06-24T01:00:00Z",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "summary_path": "specs/769_routing_hard_consistency_guard/summaries/01_routing-guard-consistency-summary.md",
+  "artifacts": [
+    {
+      "type": "script",
+      "path": ".claude/scripts/check-extension-docs.sh",
+      "summary": "Extended with Rules A-D; env-overridable REPO_ROOT/EXT_DIR for fixture testing"
+    },
+    {
+      "type": "script",
+      "path": ".claude/extensions/core/scripts/check-extension-docs.sh",
+      "summary": "Byte-identical sync of working copy"
+    },
+    {
+      "type": "harness",
+      "path": "specs/769_routing_hard_consistency_guard/test-guard.sh",
+      "summary": "22-assertion fixture harness covering all 4 rules; exits 0"
+    },
+    {
+      "type": "summary",
+      "path": "specs/769_routing_hard_consistency_guard/summaries/01_routing-guard-consistency-summary.md",
+      "summary": "Implementation summary with decisions, deviations, and verification results"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Extended check-extension-docs.sh with four consistency check rules (A: undeclared skill dirs, B: unresolvable routing targets, C: deployment with install-gated severity, D: deployed skill agent existence). Script now exits 1 with 4 FAILs (2 pre-existing + 2 new lean routing_hard violations). Core extension copy synced byte-identical. 22-assertion fixture harness proves all rules fire correctly."
+  },
+  "memory_candidates": [
+    {
+      "content": "When capturing bash command exit code alongside stdout in a subshell assignment, `output=$(cmd 2>&1) || true; exit_code=$?` always returns 0 for exit_code because `$?` captures the exit of `|| true`. Use a temp file instead: `cmd > tmpout 2>&1; exit_code=$?; output=$(cat tmpout); rm tmpout`.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/769_routing_hard_consistency_guard/summaries/01_routing-guard-consistency-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash", "exit-code", "subshell", "command-substitution", "test-harness"]
+    },
+    {
+      "content": "Routing values in extension manifests may use colon sub-operation suffixes (e.g., `skill-grant:assemble`). When validating routing targets against provides.skills or the deployed tree, strip the suffix with `${target%%:*}` to get the base skill name. Failure to do this causes false-positive FAILs from the present extension's compound routing values.",
+      "category": "PATTERN",
+      "source_artifact": "specs/769_routing_hard_consistency_guard/summaries/01_routing-guard-consistency-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["routing", "extension-manifest", "colon-notation", "skill-name", "present-extension"]
+    }
+  ]
+}

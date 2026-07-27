@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "summary": "Simplified state update pipeline to state.json-first with generate-todo.sh regeneration",
+  "artifacts": [
+    {
+      "path": "specs/649_simplify_state_update_pipeline/summaries/01_pipeline-simplification-summary.md",
+      "type": "summary",
+      "summary": "Pipeline simplification implementation summary"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "phases_completed": 5,
+  "phases_total": 5,
+  "next_action_hint": "none"
+}

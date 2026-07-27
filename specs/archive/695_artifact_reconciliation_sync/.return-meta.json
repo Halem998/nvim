@@ -1,0 +1,35 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1781465115_64292a_695",
+  "task_number": 695,
+  "started_at": "2026-06-14T00:00:00Z",
+  "completed_at": "2026-06-14T00:30:00Z",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "artifacts": [
+    {
+      "type": "script",
+      "path": ".claude/scripts/reconcile-artifacts.sh",
+      "summary": "Artifact reconciliation script with --dry-run support and append-only semantics"
+    },
+    {
+      "type": "summary",
+      "path": "specs/695_artifact_reconciliation_sync/summaries/02_artifact-reconciliation-summary.md",
+      "summary": "Implementation summary for task 695"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Created reconcile-artifacts.sh that backfills 54 missing artifact registrations across 22 tasks with append-only semantics, and integrated it as Step 2.5 in the --sync flow of task.md (both project and extension core copies)."
+  },
+  "memory_candidates": [
+    {
+      "content": "The reconcile-artifacts.sh script uses append-only semantics (no remove-by-type step) when backfilling artifacts during --sync. This preserves team research tasks that have multiple report files per task. The key deduplication pattern is: check if rel_path already exists in state.json artifacts before appending. Use `grep -qF \"$rel_path\"` after piping jq output for safe string matching.",
+      "category": "PATTERN",
+      "source_artifact": "specs/695_artifact_reconciliation_sync/summaries/02_artifact-reconciliation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["reconcile-artifacts", "artifact-backfill", "append-only", "state-json", "sync-mode", "deduplication"]
+    }
+  ]
+}

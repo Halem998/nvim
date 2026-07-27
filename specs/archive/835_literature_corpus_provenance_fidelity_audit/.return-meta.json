@@ -1,0 +1,47 @@
+{
+  "status": "implemented",
+  "session_id": "sess_1783620265_b5399e_835",
+  "agent_type": "general-implementation-agent",
+  "delegation_depth": 1,
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "phases_completed": 5,
+  "phases_total": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/835_literature_corpus_provenance_fidelity_audit/summaries/01_provenance-fidelity-flagging-summary.md",
+      "summary": "Implementation summary: fidelity detector, index.json stamping, and retrieval-script loud flagging, all phases completed and verified."
+    }
+  ],
+  "modified_files": [
+    ".claude/scripts/literature-fidelity-audit.sh",
+    ".claude/scripts/literature-search.sh",
+    ".claude/scripts/literature-briefing.sh"
+  ],
+  "completion_data": {
+    "completion_summary": "Built a re-runnable provenance/fidelity detector (literature-fidelity-audit.sh) that stamps a five-value provenance_fidelity field onto 153 ~/Projects/Literature/index.json entries with zero false positives against the 5 disclosed-partial benchmarks, and made literature-search.sh and literature-briefing.sh loudly flag and quarantine non-verified entries with fail-open semantics throughout."
+  },
+  "memory_candidates": [
+    {
+      "content": "The ~/Projects/Literature corpus has TWO independent doc_id namespaces that must not be conflated: chunks_data.doc_id (SQLite, used by literature-search.sh) is always the bare source directory name (e.g. 'blackburn_2002'); specs/literature-index.json's doc_id (used by literature-briefing.sh per-repo mode) is index.json's own top-level `.id` field, which frequently differs from the directory name (e.g. 'blackburn_2002_book'). A doc_id-keyed lookup written for one script's namespace will silently fail-open for most of the corpus if reused against the other script without adjustment. Discovered via live testing against .literature.db during task 835, not by static inspection.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/835_literature_corpus_provenance_fidelity_audit/summaries/01_provenance-fidelity-flagging-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["literature-corpus", "doc_id-namespace", "chunks_data", "index.json", "fail-open"]
+    },
+    {
+      "content": "In ~/Projects/Literature/index.json, some directories' child entries reference a parent_doc value with NO corresponding top-level id row at all (a 'phantom parent' -- e.g. doets_1987, venema_1991, thomason_1984). Any tool that maps a source directory to its index.json entries should resolve by `.path` prefix match against 'sources/<dir>/' rather than by id/parent_doc name matching, and should fall back to writing/reading directly on child entries when no true root entry exists for that directory. A strict 'parent-only' design will silently miss ~15 directories.",
+      "category": "PATTERN",
+      "source_artifact": "specs/835_literature_corpus_provenance_fidelity_audit/summaries/01_provenance-fidelity-flagging-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["literature-index", "phantom-parent", "path-prefix-matching", "index.json"]
+    },
+    {
+      "content": "When computing a document-level word-ratio (or any per-document aggregate metric) over a corpus where documents may span multiple .md/.pdf files in one directory, aggregate at the whole-document level by summing across ALL files in the directory -- never sample or measure a single file. Single-file sampling in the ~/Projects/Literature corpus flipped ~7 genuinely healthy, fully-converted documents (e.g. blackburn_2002: 0.03 sampled vs 1.044 true aggregate ratio) into false low-ratio flags.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/835_literature_corpus_provenance_fidelity_audit/summaries/01_provenance-fidelity-flagging-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["word-ratio", "document-aggregation", "literature-corpus", "single-file-sampling-bug"]
+    }
+  ]
+}

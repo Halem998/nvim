@@ -1,0 +1,45 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/775_lit_global_corpus_fallback_briefing/plans/01_lit-global-corpus-briefing.md",
+      "summary": "6-phase plan for --lit no-silent-fallback global-corpus briefing: briefing --global mode, shared resolve helper, six Stage 4a rewrites, autonomous default, scoped CLAUDE.md doc update"
+    },
+    {
+      "type": "summary",
+      "path": "specs/775_lit_global_corpus_fallback_briefing/summaries/01_lit-global-corpus-briefing-summary.md",
+      "summary": "Implementation summary: all 6 phases completed"
+    }
+  ],
+  "next_steps": "Task 775 implementation complete; ready for postflight/status update",
+  "metadata": {
+    "session_id": "sess_1782923730_e38a8e_775",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phase_count": 6,
+    "phases_completed": 6,
+    "estimated_hours": 5.5,
+    "dependency_waves": [[1], [2], [3], [4], [5], [6]]
+  },
+  "completion_data": {
+    "completion_summary": "Added a live global-corpus briefing mode to literature-briefing.sh, a shared literature-lit-flag-resolve.sh directive helper, and rewrote Stage 4a in all six --lit-aware skills (standard + hard) to a non-silent three-option flow with a deterministic, visibly-logged autonomous default; updated claudemd.md's Interactive Sub-Index Setup Detection section to match."
+  },
+  "memory_candidates": [
+    {
+      "content": "When retrofitting a no-silent-fallback contract onto N duplicated Stage 4a decision blocks that must both classify deterministically AND issue an inline AskUserQuestion, split the two concerns: factor only the classification into one shell helper that prints a single directive token on stdout (rationale to stderr), and let each skill's Stage 4a branch on that token, issuing AskUserQuestion only for the interactive directive. Verify convergence by diffing the case/esac block text across all N files byte-for-byte rather than trusting visual similarity. Detect autonomous vs interactive context via an existing orchestrator_mode context field (no new flag needed) to select a deterministic, visibly-announced default (e.g. a [lit:auto] stderr notice) instead of prompting when no human is available.",
+      "category": "PATTERN",
+      "source_artifact": "specs/775_lit_global_corpus_fallback_briefing/summaries/01_lit-global-corpus-briefing-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["shared-helper", "directive-token", "AskUserQuestion", "orchestrator_mode", "no-silent-fallback", "stage-4a", "mirror-consistency"]
+    },
+    {
+      "content": "literature-search.sh already implements its own zero-filtered-results retry-unfiltered fallback internally (confirmed by source read, lines ~269-349) when called with --project. Callers building on top of it (e.g. literature-briefing.sh --global) should call it once with --project and rely on this internal fallback rather than re-implementing the retry logic themselves.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/775_lit_global_corpus_fallback_briefing/summaries/01_lit-global-corpus-briefing-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["literature-search.sh", "project-filter", "fallback", "BM25", "literature-briefing"]
+    }
+  ]
+}

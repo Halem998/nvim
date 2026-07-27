@@ -1,0 +1,69 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": ".claude/scripts/lean-sorry-census.sh",
+      "summary": "Shared Lean sorry census script: depth-counting comment/string stripper piped into a \\bsorry\\b scan, with opt-in --cross-check against lake build warnings"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/lean/scripts/lean-sorry-census.sh",
+      "summary": "Byte-identical extension source-of-truth copy for packaging"
+    },
+    {
+      "type": "implementation",
+      "path": "specs/783_fix_sorry_census_exclude_comments/fixtures/SorryCensus.lean",
+      "summary": "9-case fixture corpus covering every false-positive pattern including the task-431 multi-line docstring and commented-out TODO stub cases"
+    },
+    {
+      "type": "implementation",
+      "path": "specs/783_fix_sorry_census_exclude_comments/fixtures/run-census-test.sh",
+      "summary": "Assertion harness verifying sorry_count and reported file:line list against the fixture"
+    },
+    {
+      "type": "implementation",
+      "path": "specs/783_fix_sorry_census_exclude_comments/fixtures/lake-project",
+      "summary": "Minimal buildable Lake project used to validate --cross-check against real lake build sorry warnings, including a deliberate-mismatch test"
+    },
+    {
+      "type": "summary",
+      "path": "specs/783_fix_sorry_census_exclude_comments/summaries/01_sorry-census-comment-stripper-summary.md",
+      "summary": "Implementation summary covering all 5 phases, deviations, and verification results"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Created the shared lean-sorry-census.sh comment-stripping census script (validated against a 9-case fixture corpus and a buildable Lake project cross-check, including a proven deliberate-mismatch detection), replaced all 5 duplicated raw-grep sorry census call sites across the cslib and lean implementation agents with calls to the shared script, updated the pr-description-format.md example, and packaged the script as a source-of-truth copy in the lean extension's provides.scripts."
+  },
+  "memory_candidates": [
+    {
+      "content": "Lean 4's `/- -/` block comments nest arbitrarily, so no `grep`/regex filter chain can correctly strip them (nesting is not a regular language). A single-pass, depth-counting character-scan stripper (python3) that tracks comment depth and string-literal state, preserving newlines in place of stripped content, correctly handles nested block comments, `--` line comments, `/-- -/` docstrings, and string literals while keeping line numbers aligned with the original file. Mask (rather than preserve) string-literal interiors with spaces if the goal is a content-based keyword scan (e.g. `sorry` census) so keywords appearing only as string text are correctly excluded.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/783_fix_sorry_census_exclude_comments/summaries/01_sorry-census-comment-stripper-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["lean4", "comment-stripping", "sorry-census", "nested-comments", "depth-counting"]
+    },
+    {
+      "content": "For an opt-in compiler cross-check flag that reuses `lake build` output (e.g. `--cross-check` invoking `lake build 2>&1 | grep -c \"declaration uses 'sorry'\"`), make the flag self-contained (run its own `lake build` inside the check) rather than assuming a build already ran earlier in the same call site's step sequence -- call-site step ordering varies across agents (some run the build before the check, some after) and a self-contained flag works correctly regardless.",
+      "category": "PATTERN",
+      "source_artifact": "specs/783_fix_sorry_census_exclude_comments/summaries/01_sorry-census-comment-stripper-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["lake-build", "cross-check", "verification", "lean4"]
+    },
+    {
+      "content": "In this repo's .claude/ extension deployment model: deployed cslib agents in .claude/agents/ are symlinks into .claude/extensions/cslib/agents/, so editing extension-source auto-propagates (verify with `readlink`). lean agents are NOT deployed to .claude/agents/ in this repo. install-extension.sh deploys agents/commands/skills but NOT scripts -- .claude/scripts/ is a real, version-controlled directory that is the canonical home for shared scripts referenced by any agent; for extension-packaging completeness, place a source-of-truth copy in the owning extension's scripts/ dir and register it in that extension's manifest.json provides.scripts.",
+      "category": "CONFIG",
+      "source_artifact": "specs/783_fix_sorry_census_exclude_comments/summaries/01_sorry-census-comment-stripper-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["extension-deployment", "symlinks", "provides.scripts", "install-extension"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_783_orchestrator",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
+}

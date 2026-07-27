@@ -1,0 +1,48 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1784991755_1b4381_893",
+  "task_number": 893,
+  "task_name": "close_stranded_status_detection_gap_for_not_started",
+  "task_type": "meta",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/893_close_stranded_status_detection_gap_for_not_started/summaries/01_stranded-status-detection-gap-summary.md",
+      "summary": "Implementation summary: not_started) dispatch branch with mtime-gated promotion, verified against a 10-case sandbox matrix."
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/scripts/reconcile-task-status.sh"
+  ],
+  "completion_data": {
+    "completion_summary": "Added a not_started) dispatch branch to reconcile-task-status.sh with a new artifact_newer_than_last_update() mtime guard, promoting to planned (fresh plan) or partial (fresh phase handoff, defense-in-depth) while refusing to promote /task --recover-shaped false positives. Verified via a 10-case sandbox matrix (all false-positive cases T2/T3/T4/T5/T7 confirmed not_started after a LIVE run; T10 regression byte-identical to the pre-change baseline). Fix is source-store only and inert until the user re-deploys via <leader>al."
+  },
+  "memory_candidates": [
+    {
+      "content": "When adding artifact-presence-based auto-promotion to a task-state reconciler, artifact PRESENCE alone is not sufficient signal to distinguish a crashed/stranded run from a deliberately-reset task whose old artifacts were restored alongside it (e.g. a recover/restore workflow that moves a whole task directory back and re-stamps a reset timestamp on the same write). Artifact RECENCY relative to the state's last-updated timestamp is a cheap, effective local disambiguator: a crashed run's artifact necessarily postdates the last successful status write, while a restored task's artifacts all predate the reset stamp. Ties must refuse, not permit (strict greater-than, not greater-or-equal), since a directory move can land on the same whole-second mtime. This matters most on unattended/autonomous promotion paths where no human reviews the outcome before it takes effect.",
+      "category": "PATTERN",
+      "source_artifact": "specs/893_close_stranded_status_detection_gap_for_not_started/summaries/01_stranded-status-detection-gap-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["reconcile", "stranded-status", "mtime-guard", "auto-promotion", "false-positive", "state-recovery"]
+    },
+    {
+      "content": "When verifying a bash script change via sandbox execution, self-referential comment text (a header note that says 'see helper_name below') inflates a naive grep -c 'helper_name' count beyond what a plan's stated verification step may anticipate. This is harmless to functional correctness but worth checking for directly (grep -n, not just grep -c) before treating a count mismatch as a real defect.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/893_close_stranded_status_detection_gap_for_not_started/summaries/01_stranded-status-detection-gap-summary.md",
+      "confidence": 0.6,
+      "suggested_keywords": ["grep-count", "verification", "self-reference", "sandbox-testing"]
+    },
+    {
+      "content": "In a shared repository with multiple concurrent agents committing to agent-system/ (or any shared source tree) simultaneously, a `git add <scoped paths>` followed by `git commit` can appear to fail with 'no changes added to commit' even though the content was genuinely committed -- because a race with another agent's own commit (which staged and committed overlapping working-tree state first) already carried the intended changes into history, just under a different commit message/attribution. Verify via `git log --oneline -- <path>` and `git show <commit>:<path>` diffed against the pre-change baseline, rather than assuming a nonzero exit from `git commit` means data loss.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/893_close_stranded_status_detection_gap_for_not_started/summaries/01_stranded-status-detection-gap-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["concurrent-agents", "git-race", "commit-bundling", "multi-agent-repo"]
+    }
+  ],
+  "next_steps": "Task complete. User must re-deploy via <leader>al (\"Load Core\" / \"Sync all\") for the fix to take effect in .claude/scripts/reconcile-task-status.sh."
+}

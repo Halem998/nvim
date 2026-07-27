@@ -1,0 +1,51 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/context/formats/progress-file.md",
+      "summary": "Documented the per-objective files_touched field: table row, immutability note, path-form/additivity prose, schema skeleton, and worked example"
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/context/formats/return-metadata-file.md",
+      "summary": "Added the modified_files (optional) field-specification section, schema skeleton entry, and Implementation Success example entry"
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/nvim/context/project/neovim/guides/neovim-integration.md",
+      "summary": "Repointed two dangling See Also links from a 6-level-up to the deploy-correct 4-level-up relative path"
+    },
+    {
+      "type": "summary",
+      "path": "specs/880_document_modified_files_schema_and_fix_dangling_links/summaries/01_modified-files-schema-docs-summary.md",
+      "summary": "Implementation summary with verification results and one plan deviation"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Documented the modified_files (return-metadata-file.md) and files_touched (progress-file.md) schema fields that the targeted-staging contract depends on, including their retrospective-vs-prospective contrast with state.json's file_scope, and repointed two dangling 6-level-up See Also links in neovim-integration.md to the deploy-correct 4-level-up path."
+  },
+  "memory_candidates": [
+    {
+      "content": "When a documentation-only implementation task edits a file with pre-existing defects unrelated to the task's scope (e.g. a stale non-JSON fenced block, or pre-existing citations the deliverable rule would normally forbid), don't silently fix or silently ignore them. Instead, isolate exactly what the current task's edits introduced by running `git diff <pre-task-commit>..HEAD -- <file> | grep '^+'` and checking only the added lines against the constraint. This distinguishes 'my new content is clean' from 'the whole file is clean', letting verification pass honestly while leaving out-of-scope pre-existing issues untouched per the plan's Non-Goals, and documents the finding in the deviation/summary rather than papering over it.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/880_document_modified_files_schema_and_fix_dangling_links/summaries/01_modified-files-schema-docs-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["added-lines-diff", "verification-scope", "pre-existing-defect", "deliverable-rule", "git-diff-sweep"]
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/progress-file.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/nvim/context/project/neovim/guides/neovim-integration.md"
+  ],
+  "next_steps": "Task complete. The agent-emitter side (making general-implementation-agent.md and other citing documents reference the newly-documented sections) is a separate, unblocked follow-up task.",
+  "metadata": {
+    "session_id": "sess_1784155855_f90cfe_880",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
+}

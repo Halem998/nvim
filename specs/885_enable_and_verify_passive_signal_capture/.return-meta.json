@@ -1,0 +1,91 @@
+{
+  "status": "partial",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 885,
+  "session_id": "sess_1784135810_7e6755_885",
+  "started_at": "2026-07-15T19:40:00Z",
+  "completed_at": "2026-07-15T20:45:00Z",
+  "partial_progress": {
+    "stage": "phases_1_4_landed_5_6_blocked",
+    "details": "Phases 1-4 (all regeneration-independent, source-store edits under agent-system/extensions/core/**) are complete, committed, and individually run-and-observed verified. Phases 5-6 are genuinely gated on a human-driven <leader>al 'Sync all (replace existing)' regeneration (no headless/CI path exists) followed by accumulated real command usage for event-flow verification -- neither can be completed or verified in this session. This is the expected, honest terminus, not a failure. See HANDOFF.md for the exact user-executable procedure.",
+    "phases_completed": 4,
+    "phases_total": 6
+  },
+  "blockers": [
+    {
+      "phase": 5,
+      "description": "Manual <leader>al regeneration in nvim and at least one other repo (e.g. ~/.dotfiles). No headless/CI path exists: execute_sync is a module-local closure with no exported entry point, and vim.fn.confirm() is unconditional. Blocks on a human choosing 'Sync all (replace existing)' at the picker's confirm dialog.",
+      "resolution": "See specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md Part A for the exact keystroke procedure and independently verifiable success criteria."
+    },
+    {
+      "phase": 6,
+      "description": "End-to-end event-flow verification is doubly gated: first on Phase 5's regeneration, then on accumulated real /research, /plan, or /implement invocations post-regeneration so lifecycle/artifact hooks actually fire. Cannot be verified today by inspecting source code alone.",
+      "resolution": "See specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md Part C for what 'end-to-end verified' will mean once unblocked."
+    },
+    {
+      "phase": "scope_3_4",
+      "description": "CLAUDE_CODE_ENABLE_TELEMETRY + OTel exporters and cleanupPeriodDays:365 belong in ~/.dotfiles/config/claude/settings.json (Home-Manager-managed), not this repo. This task deliberately does not edit that file.",
+      "resolution": "See specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md Part B for the exact copy-pasteable snippet."
+    }
+  ],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/885_enable_and_verify_passive_signal_capture/summaries/01_passive-signal-capture-deploy-summary.md",
+      "summary": "Implementation summary for Phases 1-4 (landed, verified) and the handoff for Phases 5-6 ([BLOCKED])."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md",
+      "summary": "Durable, user-executable handoff: exact <leader>al regeneration procedure with independently verifiable success criteria, and the dotfiles telemetry/retention snippet."
+    },
+    {
+      "type": "pattern",
+      "path": "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+      "summary": "Source-store note documenting that <leader>al regeneration has no headless/CI equivalent, for future reference."
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+    "agent-system/extensions/core/hooks/events-log-lifecycle.sh",
+    "agent-system/extensions/core/hooks/events-log-artifact.sh",
+    "agent-system/extensions/core/context/schemas/events-schema.json",
+    "agent-system/extensions/core/scripts/events-append.sh",
+    "agent-system/extensions/core/scripts/events-query.sh",
+    "agent-system/extensions/core/context/formats/events-format.md",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md",
+    "specs/885_enable_and_verify_passive_signal_capture/plans/01_passive-signal-capture-deploy.md"
+  ],
+  "completion_data": {
+    "completion_summary": "Landed and verified Phases 1-4 of the passive-signal-capture deploy plan: replaced the || true silent-fail idiom at all 10 events-append.sh call sites with an observable-but-non-fatal wrapper (catching a real set -e correctness bug along the way); added a nullable cwd schema field with derived-repo query support; extended check-extension-docs.sh with an ADVISORY (not hard-FAIL) core deploy-drift gate per a binding concurrency guardrail; and documented the no-headless-regeneration constraint plus a full user handoff. Phases 5-6 (manual regeneration; event-flow verification) are genuinely blocked on human action and accumulated usage, and are handed off, not faked.",
+    "roadmap_items": []
+  },
+  "memory_candidates": [
+    {
+      "content": "When writing a shell wrapper meant to be non-fatal (always return 0) around an external command invocation, the invocation itself MUST be inside an if/else (or otherwise protected from `set -e`), not just followed by `rc=$?`. Under `set -e` (or `set -euo pipefail`), a bare `cmd; rc=$?` still aborts the script the instant `cmd` exits non-zero -- the `rc=$?` line is never reached. Pattern: `if cmd; then rc=0; else rc=$?; fi` instead of `cmd; rc=$?`. This bug is easy to miss because it only manifests when the wrapped command actually fails, and tests that only exercise the present/absent-helper path (not the present-but-failing path) won't catch it.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/885_enable_and_verify_passive_signal_capture/summaries/01_passive-signal-capture-deploy-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash", "set -e", "non-fatal wrapper", "exit code capture", "if-guard"]
+    },
+    {
+      "content": "For a doc-lint/gate script that must surface a KNOWN, currently-expected, user-gated condition (e.g. deploy drift that only a manual regeneration step can fix) without breaking every caller's existing pass/fail verdict -- especially when concurrent/sibling processes rely on the same gate for unrelated validation -- implement an ADVISORY lane, not a hard FAIL: a separate counter and always-visible summary section (deliberately ignoring --quiet) that never affects the exit code by default, plus an opt-in env-var (e.g. STRICT_CORE_DEPLOY=1) that promotes the same detections to real failures for callers who explicitly want the stricter gate (e.g. a post-fix verification run). This avoids the false choice between 'invisible' (silent info-skip) and 'blocks everyone' (hard FAIL).",
+      "category": "PATTERN",
+      "source_artifact": "specs/885_enable_and_verify_passive_signal_capture/summaries/01_passive-signal-capture-deploy-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["doc-lint", "advisory lane", "opt-in strict mode", "gate design", "concurrent callers"]
+    },
+    {
+      "content": "For cross-repo event/log federation where a 'repo' identifier is derived from a stored working-directory path (cwd), prefer a pure computation (e.g. basename(cwd) via jq) over shelling out to `git rev-parse --show-toplevel` per row when the consuming query tool already does native streaming jq filtering with no per-row subprocess spawns. This keeps performance characteristics unchanged and avoids introducing a git dependency into a log-query path; document the simplification explicitly so a future reader doesn't assume 'repo' means 'verified git toplevel'.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/885_enable_and_verify_passive_signal_capture/summaries/01_passive-signal-capture-deploy-summary.md",
+      "confidence": 0.6,
+      "suggested_keywords": ["jq", "cross-repo", "derived field", "events store", "basename"]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "summary": "All 6 plan phases complete. roadmap-integration.sh now plumbs a line_index/raw_line/status_index reference from parser through matcher to annotator so table-row matches can be located and rewritten in place (checkbox path byte-identical to pre-change baseline); the script always emits a machine-readable roadmap-structure marker plus two conditional loud banners (unparseable_roadmap, annotation_noop) and additive JSON fields; /review was extended, as the plan's single declared file_scope expansion, to extract, surface in the transcript and report, and disambiguate the new signal in its commit message. Verified via a 9-run fixture matrix (checkbox regression, table annotation with column-agnostic and collision-safe location, unparseable banner, engineered no-op banner) plus a full review.md extraction/warning-emission drive against two of those fixtures.",
+  "phases_completed": 6,
+  "phases_total": 6,
+  "plan_markers_verified": true,
+  "artifacts": [
+    {
+      "path": "specs/910_fix_roadmap_annotation_silent_noop/summaries/01_roadmap-annotation-signal-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary: table-row source-line plumbing, always-on roadmap-structure marker with conditional loud banners and additive JSON fields, fixture-based end-to-end verification matrix, and the declared file_scope expansion surfacing the new signal in /review."
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "Task 910 is fully implemented and verified; ready for status transition to [COMPLETED]. One pre-existing, out-of-scope task-number citation in review.md (unrelated to this task, outside every section this task's Phase 6 touched) was noted but intentionally not fixed -- see the implementation summary's Plan Deviations section if a future cleanup task is considered."
+}

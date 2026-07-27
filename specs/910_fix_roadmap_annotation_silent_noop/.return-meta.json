@@ -1,0 +1,84 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "task_number": 910,
+  "session_id": "sess_1785116996_862366_910",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "plan_path": "specs/910_fix_roadmap_annotation_silent_noop/plans/01_roadmap-annotation-signal.md",
+  "phases_completed": 6,
+  "phases_total": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/910_fix_roadmap_annotation_silent_noop/summaries/01_roadmap-annotation-signal-summary.md",
+      "summary": "Implementation summary: table-row source-line plumbing (parser->matcher->annotator), always-on roadmap-structure marker with two conditional loud banners and additive JSON fields, fixture-based end-to-end verification matrix, and the declared file_scope expansion surfacing the new signal in /review."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed roadmap-integration.sh silently reporting success while annotating nothing: table-row matches are now located via a plumbed line-index/raw_line/status_index reference and rewritten in place preserving pipe-table structure; the script always emits a machine-readable roadmap-structure marker plus loud unparseable/no-op banners and additive JSON fields (roadmap_structure, warnings, high_confidence_matches, silent_noop); and /review (the sole consumer) was extended, as a declared file_scope expansion, to extract, surface in the transcript and report, and disambiguate the new signal in its commit message."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/roadmap-integration.sh",
+    "agent-system/extensions/core/commands/review.md",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/checkbox-roadmap.md",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/table-roadmap.md",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/unstructured-roadmap.md",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/fixture-state.json",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/checkbox-annotate.json",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/checkbox-annotate.md",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/checkbox-annotate.stderr.txt",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/checkbox-baseline-annotated.md",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/checkbox-baseline-annotate.json",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/checkbox-baseline-annotate.stderr.txt",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/checkbox-dryrun.json",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/checkbox-dryrun.md",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/checkbox-dryrun.stderr.txt",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/checkbox-parseonly.json",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/checkbox-parseonly.md",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/checkbox-parseonly.stderr.txt",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/table-annotate.json",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/table-annotate.md",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/table-annotate.stderr.txt",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/table-dryrun.json",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/table-dryrun.md",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/table-dryrun.stderr.txt",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/table-parseonly.json",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/table-parseonly.md",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/table-parseonly.stderr.txt",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/table-reannotate.json",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/table-reannotate.md",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/table-reannotate.stderr.txt",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/unstructured-annotate.json",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/unstructured-annotate.md",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/unstructured-annotate.stderr.txt",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/unstructured-dryrun.json",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/unstructured-dryrun.md",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/unstructured-dryrun.stderr.txt",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/unstructured-parseonly.json",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/unstructured-parseonly.md",
+    "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/unstructured-parseonly.stderr.txt"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a shell script must diagnose 'ran successfully but did nothing meaningful,' emit two complementary signals rather than one literal condition: an always-on machine-readable structure marker (e.g. `<!-- roadmap-structure phases=N checkboxes=M table_rows=T parseable=true|false -->`, mirroring literature-briefing.sh's `<!-- lit-coverage ... -->` convention) plus conditional loud bracketed banners, AND additive JSON fields (never stderr-only) when the payload's consumer parses specific fields rather than scanning transcripts. Split a naive single unparseable-condition check into two signals if a valid, fully-handleable input shape can otherwise coincide with the 'nothing recognized' shape (e.g. a table-only roadmap has phases==0 && checkboxes==0, identical to truly unparseable, unless a third count like table_rows is also checked).",
+      "category": "PATTERN",
+      "source_artifact": "specs/910_fix_roadmap_annotation_silent_noop/summaries/01_roadmap-annotation-signal-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["silent-noop", "structure-marker", "loud-banner", "additive-json", "diagnostic-signal"]
+    },
+    {
+      "content": "When a script must locate and rewrite a specific line it parsed earlier (not just search for it again), capture a (line_index, raw_line) reference pair at parse time and use it -- never re-derive location from content text, which can collide across rows with identical text. Before writing, re-verify the on-disk line at that index still equals the captured raw_line; treat any mismatch as a recorded skip, never a blind write. This pattern generalizes beyond markdown table rows to any text-rewriting pipeline with a parse-then-annotate split.",
+      "category": "PATTERN",
+      "source_artifact": "specs/910_fix_roadmap_annotation_silent_noop/summaries/01_roadmap-annotation-signal-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["line-reference", "safe-rewrite", "parse-then-annotate", "text-mutation", "collision-safe"]
+    },
+    {
+      "content": "A dry-run mode that increments a 'would succeed' counter without confirming the target actually exists over-reports success. Fix by gating the dry-run increment on the exact same existence/agreement check the real apply path performs, so dry-run and apply can never diverge on what counts as achievable.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/910_fix_roadmap_annotation_silent_noop/summaries/01_roadmap-annotation-signal-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["dry-run", "over-report", "existence-check", "shared-gate"]
+    }
+  ]
+}

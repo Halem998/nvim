@@ -1,0 +1,57 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 773,
+  "session_id": "sess_1783096045_wnia2f_773",
+  "started_at": "2026-07-03T16:24:00Z",
+  "completed_at": "2026-07-03T16:28:05Z",
+  "phases_completed": 6,
+  "phases_total": 6,
+  "artifacts": [
+    {
+      "type": "context",
+      "path": ".claude/context/contracts/orchestrator-discipline.md",
+      "summary": "New single-copy orchestrator-role discipline contract (6 sections, 86 lines)"
+    },
+    {
+      "type": "context",
+      "path": ".claude/context/index.json",
+      "summary": "Added one entry for contracts/orchestrator-discipline.md with all-empty load_when"
+    },
+    {
+      "type": "skill",
+      "path": ".claude/skills/skill-orchestrate-hard/SKILL.md",
+      "summary": "Added Context References entries, Stage 1c preamble, Stage 3c burnout gate, loop_guard_file burnout_signals_this_session counter"
+    },
+    {
+      "type": "skill",
+      "path": ".claude/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+      "summary": "Byte-identical dual-copy edit (diff -q verified clean)"
+    },
+    {
+      "type": "summary",
+      "path": "specs/773_orchestrator_discipline_contract_burnout_breaker/summaries/01_orchestrator-discipline-burnout-breaker-summary.md",
+      "summary": "Implementation summary for task 773"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added .claude/context/contracts/orchestrator-discipline.md (single-copy, 6-section orchestrator-role discipline contract) and registered it in index.json with empty load_when; wired it into skill-orchestrate-hard (dual-copy) via a new Stage 1c once-per-invocation preamble and a new Stage 3c every-cycle burnout circuit-breaker gate reusing existing dispatch/escalation paths plus a loop_guard_file burnout_signals_this_session counter; added the missing recovery.md Context References entry; verified both SKILL.md copies remain byte-identical."
+  },
+  "memory_candidates": [
+    {
+      "content": "In this repo, contracts under .claude/context/contracts/*.md and .claude/context/index.json are SINGLE-COPY only (no mirror under .claude/extensions/core/context/). By contrast, SKILL.md files ARE dual-copied byte-identically between .claude/skills/ and .claude/extensions/core/skills/ and must be edited in lockstep, verified with `diff -q`. Confirmed by task 773's implementation (Phase 6 verification): copying the edited primary SKILL.md over the extensions/core copy after editing is a reliable way to guarantee byte-identity rather than replaying each Edit twice.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/773_orchestrator_discipline_contract_burnout_breaker/summaries/01_orchestrator-discipline-burnout-breaker-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["dual-copy", "SKILL.md", "diff -q", "extensions/core", "byte-identical"]
+    },
+    {
+      "content": "A contract that governs the ORCHESTRATOR loop itself (not a sub-agent dispatch prompt) is wired via reference-plus-inline-directive at loop-top sub-stages of skill-orchestrate-hard (a once-per-invocation preamble stage plus an every-cycle gate stage), NOT via a build_hard_mode_prompt_context contract slot, because the orchestrator's own turns have no prompt string to inject into. Its self-monitoring 'forced handoff' reuses existing dispatch/escalation paths (e.g. the churn-detection divergence-audit dispatch shape, and the standard blocker-escalation stage) plus a scalar counter piggybacked on an existing loop-guard state file, avoiding any new artifact type.",
+      "category": "PATTERN",
+      "source_artifact": "specs/773_orchestrator_discipline_contract_burnout_breaker/summaries/01_orchestrator-discipline-burnout-breaker-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrator-contract", "burnout", "loop-top-gate", "hard-mode", "self-monitoring", "circuit-breaker"]
+    }
+  ]
+}

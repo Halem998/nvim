@@ -1,0 +1,15 @@
+{
+  "status": "implemented",
+  "summary": "Added hard-mode routing to cslib extension: routing_hard manifest block, 2 hard agents (cslib-research-hard-agent with H2+H3+H4+BibKey, cslib-implementation-hard-agent with H2+H7+H9+sorry_inventory), 2 hard skill wrappers, EXTENSION.md update with guidance, 2 index-entries.json entries",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "blockers": [],
+  "continuation_context": null,
+  "artifacts": [
+    {
+      "path": "specs/676_cslib_extension_hard_mode_variants/summaries/01_cslib-hard-mode-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary for task 676: cslib extension hard-mode variants"
+    }
+  ]
+}

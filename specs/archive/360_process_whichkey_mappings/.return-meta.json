@@ -1,0 +1,12 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 360,
+  "session_id": "sess_1775235900_batch360",
+  "phases_completed": 1,
+  "phases_total": 1,
+  "completion_data": {
+    "completion_summary": "Added 4 process management keymappings (xl/xp/xk/xo) to which-key.lua using process.launch(), picker.show(), process.stop_all(), and port-based browser open with pcall wrappers for graceful degradation."
+  }
+}

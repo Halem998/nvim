@@ -1,0 +1,22 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/627_fix_task_order_regeneration/plans/01_task-order-regen.md",
+      "summary": "3-phase implementation plan for fixing Task Order regeneration bugs"
+    }
+  ],
+  "next_steps": "Run /implement 627 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1717286400_plan627",
+    "agent_type": "planner-agent",
+    "duration_seconds": 300,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 2.5,
+    "dependency_waves": [[1], [2], [3]]
+  },
+  "memory_candidates": []
+}

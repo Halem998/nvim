@@ -1,0 +1,50 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1783723116_10f020_840",
+  "task_number": 840,
+  "phases_completed": 6,
+  "phases_total": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/840_literature_rebuild_subindex_command/summaries/01_rebuild-summary.md",
+      "summary": "Implementation summary for /literature --rebuild: all 6 phases complete and live-verified against cslib, BimodalLogic, this repo (absent sub-index), and the global Literature corpus."
+    }
+  ],
+  "modified_files": [
+    ".claude/extensions/literature/commands/literature.md",
+    ".claude/extensions/literature/skills/skill-literature/SKILL.md",
+    ".claude/context/project/literature/domain/literature-index.md",
+    "specs/840_literature_rebuild_subindex_command/plans/01_rebuild-plan.md",
+    "specs/840_literature_rebuild_subindex_command/summaries/01_rebuild-summary.md",
+    "specs/840_literature_rebuild_subindex_command/.orchestrator-handoff.json"
+  ],
+  "completion_data": {
+    "completion_summary": "Added /literature --rebuild [--dry-run], bringing a repo's per-repo literature sub-index into conformance with the global corpus via four selectable jobs (dangling-ref lint, structural-minimum schema check, coverage refresh, per-directory chunk/search-index coverage audit); all edits scoped to the literature extension source and live-verified against cslib, BimodalLogic, and the global corpus with zero unconfirmed mutations."
+  },
+  "memory_candidates": [
+    {
+      "content": "In the Literature corpus's SQLite FTS5 database (.literature.db), chunks_data.doc_id for sources/<dir>/-rooted documents is keyed on the DIRECTORY BASENAME itself (e.g. doc_id='blackburn_2002' for sources/blackburn_2002/), not on any individual index.json chapter/section entry's .id or its parent_doc chain. This differs from literature-fidelity-audit.sh's 'Target entry resolution' (root-vs-child parent_doc fan-out), which answers a different question (which index.json entries to stamp with provenance_fidelity). Any future script needing per-directory chunk/search coverage should query chunks_data WHERE doc_id = <directory basename> directly, not attempt parent_doc fan-out resolution.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/840_literature_rebuild_subindex_command/summaries/01_rebuild-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["literature", "chunks_data", "doc_id", "FTS5", "coverage-audit"]
+    },
+    {
+      "content": "Per-repo literature sub-indexes (specs/literature-index.json) diverge from the nominal {doc_id, relevance, source} schema in load-bearing ways across live repos: cslib omits 'source' entirely; BimodalLogic uses 'reason' instead of 'relevance' plus extra curation fields (hazard, citation_rule, known_corrections, audits) documenting real citation-fidelity issues. Any schema-conformance check on this file must validate structural minimums only (non-empty doc_id AND relevance-or-reason present) and must never flag/strip/normalize extra fields — doing so would destroy human curation data.",
+      "category": "PATTERN",
+      "source_artifact": "specs/840_literature_rebuild_subindex_command/summaries/01_rebuild-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["literature", "sub-index", "schema-conformance", "structural-minimum", "curation-data"]
+    },
+    {
+      "content": "When a plan's verification step requires exercising a mutating script (e.g. literature-create-setup-task.sh, which unconditionally creates a real task in the current repo's specs/state.json), do not execute it for real just to verify control-flow correctness against the live repo's own production state. Instead: verify the detection condition is real (e.g. file absence), trace/execute the surrounding control flow with the actual mutating call replaced by a no-op/echo, and confirm via sha256 that no unintended state changed. Document this substitution explicitly in the verification report so the caveat is honest and visible, rather than silently skipping the check or silently causing an unwanted side effect.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/840_literature_rebuild_subindex_command/summaries/01_rebuild-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["verification", "mutating-script", "side-effects", "dry-run", "sha256-check"]
+    }
+  ]
+}

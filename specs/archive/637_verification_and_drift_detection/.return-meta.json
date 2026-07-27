@@ -1,0 +1,29 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1780939217_912b75",
+  "task_number": 637,
+  "task_slug": "verification_and_drift_detection",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "completion_data": {
+    "completion_summary": "Fixed all 5 drift gaps between .claude/ and .opencode/ systems: corrected 4 broken agent paths in nvim and nix extension opencode-agents.json files, updated 3 hook scripts to log to .opencode/logs instead of .claude/logs, fixed .claude/ path references in 5 validation scripts (plus their core/scripts mirrors), registered synthesis-agent in core opencode-agents.json, and corrected the stale rules README to accurately reflect the actual files in .opencode/rules/."
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/637_verification_and_drift_detection/summaries/01_verification-fix-summary.md",
+      "summary": "Implementation summary covering all 5 phases with verification results and deviation notes"
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "When porting agent systems from .claude/ to .opencode/, extension agents (neovim, nix) have their prompt files in .opencode/extensions/{ext}/agents/, NOT in .opencode/agent/subagents/. Only core agents live in .opencode/agent/subagents/. This distinction is critical for opencode-agents.json prompt path references.",
+      "category": "PATTERN",
+      "source_artifact": "specs/637_verification_and_drift_detection/summaries/01_verification-fix-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["opencode", "agent-paths", "extension-agents", "opencode-agents.json", "port", "drift"]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "All 4 plan phases completed and committed. Authored .claude/extensions/lean/rules/plan-compliance.md (60 lines), registered it in lean's manifest provides.rules, surfaced it in EXTENSION.md and README.md, and proved propagation end-to-end against ~/Projects/BimodalLogic (registered lean4.md present downstream, unregistered pr-prohibition.md correctly absent, confirming the registration mechanism). Two documented deviations: a literal Phase 3 verification guard tripped on a pre-existing unrelated .claude/CLAUDE.md diff from an earlier task, and Phase 4 deliberately did not edit check-extension-docs.sh (the plan's own Phase 4 specifies verification-only with an inline bash check, which was followed literally over the delegation prompt's paraphrase).",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/860_enforce_plan_compliance_rule/summaries/01_plan-compliance-rule-summary.md"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    ".claude/extensions/lean/rules/plan-compliance.md",
+    ".claude/extensions/lean/manifest.json",
+    ".claude/extensions/lean/EXTENSION.md",
+    ".claude/extensions/lean/README.md",
+    "specs/860_enforce_plan_compliance_rule/plans/01_plan-compliance-rule.md",
+    "specs/860_enforce_plan_compliance_rule/progress/phase-1-progress.json",
+    "specs/860_enforce_plan_compliance_rule/progress/phase-2-progress.json",
+    "specs/860_enforce_plan_compliance_rule/progress/phase-3-progress.json",
+    "specs/860_enforce_plan_compliance_rule/progress/phase-4-progress.json",
+    "specs/860_enforce_plan_compliance_rule/summaries/01_plan-compliance-rule-summary.md",
+    "specs/860_enforce_plan_compliance_rule/.orchestrator-handoff.json",
+    "specs/860_enforce_plan_compliance_rule/.return-meta.json"
+  ],
+  "decisions_made": [
+    "Followed the plan literally for Phase 4: performed the disk->manifest reverse check as the plan's own inline verification bash rather than editing check-extension-docs.sh, since the plan's Phase 4 explicitly declares 'Files to modify: None' and the plan is the priority-1 authoritative source over the delegation prompt's paraphrase.",
+    "Treated the Phase 3 verification guard's literal .claude/CLAUDE.md diff-check failure as a pre-existing, unrelated dirty-tree condition (task 855's uncommitted edit, confirmed via git log) rather than a real Decision-2 violation, since none of this task's commits touch that file.",
+    "EXTENSION.md had no prior ### Rules section at all, so one was created fresh (mirroring nvim's ### Rules style) listing both lean4.md and plan-compliance.md, satisfying the plan's 'extend if present, otherwise create' instruction."
+  ],
+  "dead_ends": [],
+  "plan_markers_verified": true
+}

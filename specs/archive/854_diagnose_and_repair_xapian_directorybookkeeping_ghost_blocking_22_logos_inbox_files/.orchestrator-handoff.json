@@ -1,0 +1,21 @@
+{
+  "status": "implemented",
+  "summary": "The 22 files were already indexed but tag:trash + search.exclude_tags produced a false 'unindexed' diagnosis; no repair needed; documented root cause + extended wrapper-contracts.md section 13.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/854_diagnose_and_repair_xapian_directorybookkeeping_ghost_blocking_22_logos_inbox_files/summaries/01_diagnose-repair-xapian-ghost-summary.md",
+      "summary": "Documents the false 'unindexed' premise, the Tier 1/Tier 2 read-only diagnostic path, the definitive root cause (indexed + tag:trash + search.exclude_tags, compounded by task 852's trash-excluding diff methodology), the no-repair resolution, and integrity guarantees."
+    },
+    {
+      "type": "context_extension",
+      "path": ".claude/extensions/email/context/project/email/domain/wrapper-contracts.md",
+      "summary": "Extended section 13's existing task-852 hazard note with the concrete task-854 finding and corrected on-disk-vs-indexed audit guidance."
+    }
+  ],
+  "phases_completed": 6,
+  "phases_total": 6,
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "complete"
+}

@@ -1,0 +1,83 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/853_fix_email_wrapper_account_arg/reports/01_wrapper-account-arg-parsing.md",
+      "summary": "Root-caused mkPreamble's missing positional-arg case arm in ~/.dotfiles lib.nix, corrected the task's binary list (email-reindex is unaffected; email-unsubscribe-extract is the real fifth binary), and produced an exact minimal diff that aliases bare 'gmail'/'logos' tokens to --account with a loud log() note, gated to avoid breaking classify/unsubscribe-extract's [QUERY] positional-arg feature."
+    },
+    {
+      "type": "plan",
+      "path": "specs/853_fix_email_wrapper_account_arg/plans/01_wrapper-account-arg-fix.md",
+      "summary": "3-phase plan to add an enum-aware (gmail|logos) positional-alias case arm to mkPreamble's arg loop in ~/.dotfiles lib.nix, gated on ACCOUNT_EXPLICIT with a loud log() NOTE so it fixes the silent-wrong-account bug across all five sharing wrappers without breaking classify/unsubscribe-extract's [QUERY] feature. Phase 1 applies the fix, Phase 2 verifies Nix evaluation (no switch/commit/push), Phase 3 documents the user-applied rebuild plus a post-rebuild verification matrix for the five wrappers."
+    },
+    {
+      "type": "summary",
+      "path": "specs/853_fix_email_wrapper_account_arg/summaries/01_wrapper-account-arg-fix-summary.md",
+      "summary": "Implementation summary documenting the applied lib.nix fix, Nix-eval and in-session functional verification (5/5 scenarios matched expected behavior), and the post-rebuild verification checklist for the user."
+    }
+  ],
+  "next_steps": "User reviews and commits the lib.nix change in ~/.dotfiles, then runs 'home-manager switch' there to deploy. Afterward, run the post-rebuild verification checklist in the implementation summary against the five live wrapper binaries.",
+  "metadata": {
+    "session_id": "sess_1783962236_292cee_853",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phase_count": 3,
+    "phases_completed": 3,
+    "phases_total": 3,
+    "estimated_hours": 1,
+    "dependency_waves": [[1], [2], [3]]
+  },
+  "completion_data": {
+    "completion_summary": "Fixed the silent-wrong-account bug in ~/.dotfiles/modules/home/email/agent-tools/lib.nix's shared mkPreamble arg loop by adding an ACCOUNT_EXPLICIT-gated gmail|logos positional-alias case arm with a loud log() NOTE; verified via nix-instantiate eval, a real writeShellScriptBin build through the live flake, bash -n, and an in-session functional exercise of all 5 verification-matrix scenarios. The home-manager rebuild to deploy the fix is a user-applied step, documented as a checklist in the summary."
+  },
+  "modified_files": [
+    "/home/benjamin/.dotfiles/modules/home/email/agent-tools/lib.nix"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In ~/.dotfiles/modules/home/email/agent-tools/, email-reindex (defined in mbsync.nix, not agent-tools/) is explicitly commented 'NOT part of the 5-binary agent contract' and does not use mkPreamble/mkMutationPreamble or --account at all -- it's account-agnostic (notmuch new --no-hooks over the whole db). The actual five mkPreamble-sharing binaries are email-census, email-classify, email-unsubscribe-extract, email-archive-confirmed, email-delete-confirmed. Task descriptions referencing 'the five wrapper binaries' should be checked against this list rather than assumed.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/853_fix_email_wrapper_account_arg/reports/01_wrapper-account-arg-parsing.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "email-agent-tools",
+        "mkPreamble",
+        "email-reindex",
+        "wrapper-contract",
+        "dotfiles"
+      ]
+    },
+    {
+      "content": "When fixing a shared getopts-style arg-parsing loop that multiple downstream consumers inherit, check whether any consumer relies on the loop's catch-all/passthrough behavior (e.g. leftover positional args becoming a query string) before adding a blanket reject/error case -- a per-token-value alias (matching only the specific ambiguous literal values) combined with a loud log() note is often the safer minimal fix versus a uniform hard-reject.",
+      "category": "PATTERN",
+      "source_artifact": "specs/853_fix_email_wrapper_account_arg/reports/01_wrapper-account-arg-parsing.md",
+      "confidence": 0.7,
+      "suggested_keywords": [
+        "getopts",
+        "shell-arg-parsing",
+        "shared-preamble",
+        "positional-args",
+        "fail-loud"
+      ]
+    },
+    {
+      "content": "For a Nix home-manager module change that generates a shell script via pkgs.writeShellScriptBin, you can verify both the Nix evaluation AND the generated bash's runtime behavior without ever running home-manager switch: build a standalone derivation via 'nix build -f <scratch.nix>' where the scratch expression does 'builtins.getFlake \"<absolute-repo-path>\"' to get the real flake's homeConfigurations.<user>.pkgs, then call the target pkgs.writeShellScriptBin with the module's helper function directly. This produces a real /nix/store binary built through the live flake's pkgs that can be run directly (with env vars overridden to avoid touching real state) to functionally verify arg-parsing logic pre-deployment.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/853_fix_email_wrapper_account_arg/summaries/01_wrapper-account-arg-fix-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "nix-build",
+        "getFlake",
+        "writeShellScriptBin",
+        "home-manager",
+        "pre-deployment-verification"
+      ]
+    }
+  ]
+}

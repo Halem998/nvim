@@ -1,0 +1,38 @@
+{
+  "task_number": 496,
+  "project_name": "prior_implementation_context_injection",
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_20260504_496",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "partial_progress": null,
+  "completion_data": {
+    "completion_summary": "Added prior-implementation context injection to /research command. Skill-researcher now collects summaries, handoffs, progress files, and plans from tasks in implementing/partial status and injects them into the research subagent prompt. Updated 5 files across .opencode/ and .claude/ systems.",
+    "roadmap_items": []
+  },
+  "memory_candidates": [
+    {
+      "content": "When injecting multiple context blocks into a subagent prompt, establish a clear priority ordering: delegation JSON first, then format specification, then task-specific context (prior implementation), then general context (memory), then optional context (roadmap), then task instructions. This ensures the agent sees implementation state before general memories when researching partially-completed tasks.",
+      "category": "PATTERN",
+      "source_artifact": "specs/496_prior_implementation_context_injection/summaries/01_prior-context-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["context injection", "prompt ordering", "subagent prompt", "research workflow", "prior implementation"]
+    },
+    {
+      "content": "For artifact collection with line budget caps, use a temp-file-free approach with bash string accumulation and `echo -e | wc -l` for line counting, then `echo -e | head -n` for truncation. Prioritize artifact types by value: summaries (200 lines) > handoffs (150 lines) > progress (50 lines) > plans (100 lines). Always append a truncation notice when content exceeds the budget.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/496_prior_implementation_context_injection/summaries/01_prior-context-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["artifact collection", "line budget", "truncation", "bash string accumulation", "context budget"]
+    },
+    {
+      "content": "When a skill system has two parallel implementations (.opencode/ and .claude/), check existing stage numbering in both before adding new stages. The .claude/ skill-researcher already had Stage 4c (Roadmap Consultation), so the new prior-context stage was added as Stage 4d to avoid conflicts. Always verify both file versions to maintain consistency.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/496_prior_implementation_context_injection/summaries/01_prior-context-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["dual system", "stage numbering", "opencode claude parity", "skill versioning", "conflict avoidance"]
+    }
+  ]
+}

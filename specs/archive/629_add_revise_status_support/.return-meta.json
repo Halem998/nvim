@@ -1,0 +1,20 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 629,
+  "session_id": "sess_1780355893_0b199c_629",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/629_add_revise_status_support/summaries/01_revise-implementation-summary.md",
+      "summary": "Implementation summary covering all 4 phases and 3 modified files"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added 'revise' as a valid target_status to update-task-status.sh with correct REVISING/REVISED mappings, added 'revised' to skill-base.sh postflight allow-list, and updated skill-reviser SKILL.md to call preflight with 'revise' and use the correct postflight target, bringing /revise into parity with /research, /plan, and /implement status lifecycle."
+  },
+  "memory_candidates": []
+}

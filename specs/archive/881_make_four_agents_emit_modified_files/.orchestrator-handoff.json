@@ -1,0 +1,22 @@
+{
+  "status": "implemented",
+  "summary": "Three-class modified_files emission landed in 5 tracked source files (commit 8eed03be8). Hard-agent class behaviorally verified by synthetic probe: emits modified_files per its own definition, dedup works. nvim/nix/email classes verified by source inspection only - behavioral probes did not complete (implementer churn-stopped after 4 stalls).",
+  "next_action_hint": "none",
+  "blockers": [],
+  "phases_completed": 5,
+  "phases_total": 5,
+  "artifacts": [
+    {
+      "path": "specs/881_make_four_agents_emit_modified_files/plans/01_three-class-modified-files-emission.md",
+      "type": "plan",
+      "summary": "Three-class emission plan"
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/nvim/agents/neovim-implementation-agent.md",
+    "agent-system/extensions/nix/agents/nix-implementation-agent.md",
+    "agent-system/extensions/email/agents/email-implementation-agent.md"
+  ]
+}

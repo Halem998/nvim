@@ -1,0 +1,43 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/838_fix_planner_return_meta_clobber/summaries/01_planner-return-meta-fix-summary.md",
+      "summary": "Added memory_candidates read+Stage 7a propagate to skill-planner, verified skill-planner-hard reference, documented propagate-before-cleanup contract"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed skill-planner postflight to propagate memory_candidates via a new Stage 7a before .return-meta.json cleanup, verified the skill-planner-hard cross-reference, and documented the propagate-before-cleanup contract in return-metadata-file.md."
+  },
+  "memory_candidates": [
+    {
+      "content": "When a set of sibling skills (e.g. skill-researcher, skill-planner, skill-implementer and their -hard variants) is supposed to implement an identical postflight pattern (like memory_candidates propagation), audit ALL siblings with a single grep across the family rather than assuming parity -- one skill silently diverging (skill-planner lacked the Stage 7a read+append that its five siblings had) can persist for a long time because postflight failures are silent (no error, just discarded data).",
+      "category": "PATTERN",
+      "source_artifact": "specs/838_fix_planner_return_meta_clobber/summaries/01_planner-return-meta-fix-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["postflight", "memory_candidates", "skill-parity", "return-meta", "audit"]
+    },
+    {
+      "content": "In this repo's hard-mode skills (skill-researcher-hard, skill-planner-hard, skill-implementer-hard), a terse 'Same as `skill-{base}` Stage N' cross-reference is the established house style for postflight stages that are structurally identical to the base skill (e.g. Stage 7a memory_candidates propagation, Stage 8 artifact linking) -- inlining a duplicate block in the hard variant would be inconsistent with this convention, not an improvement.",
+      "category": "CONFIG",
+      "source_artifact": "specs/838_fix_planner_return_meta_clobber/summaries/01_planner-return-meta-fix-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["skill-hard", "postflight", "cross-reference", "house-style", "stage-7a"]
+    }
+  ],
+  "modified_files": [
+    ".claude/skills/skill-planner/SKILL.md",
+    ".claude/context/formats/return-metadata-file.md"
+  ],
+  "phases_completed": 4,
+  "phases_total": 4,
+  "metadata": {
+    "session_id": "sess_1783879475_193202_838",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "status": "partial",
+  "metadata": {
+    "cycles_used": 2,
+    "final_state": "blocked",
+    "blocker": "human-action: live server sync verification"
+  }
+}

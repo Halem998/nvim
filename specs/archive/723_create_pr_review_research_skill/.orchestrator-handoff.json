@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "summary": "Created skill-pr-review-research and pr-review-research-agent in the CSLib extension. All 3 phases complete: agent definition (GitHub 4-endpoint fetching + Zulip graceful degradation), thin-wrapper skill (sources extraction + full postflight), manifest routing update (pr research now routes to skill-pr-review-research) and EXTENSION.md docs.",
+  "artifacts": [
+    {
+      "path": "specs/723_create_pr_review_research_skill/summaries/01_pr-review-research-skill-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary for task 723: pr-review-research skill and agent creation within CSLib extension"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "phases_completed": 3,
+  "phases_total": 3,
+  "next_action_hint": "complete"
+}

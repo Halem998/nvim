@@ -1,0 +1,26 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "task_number": 861,
+  "task_name": "add_rule_drift_check_to_extension_lint",
+  "task_type": "meta",
+  "session_id": "sess_1784064322_70bafc_861",
+  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+  "delegation_depth": 4,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/861_add_rule_drift_check_to_extension_lint/summaries/01_rule-drift-check-lint-summary.md"
+    }
+  ],
+  "phases_completed": 3,
+  "phases_total": 3,
+  "completion_data": {
+    "completion_summary": "Added check_deployed_rule_drift() to check-extension-docs.sh, dual-written to both deployed and extension-source copies, wired into the per-extension dispatch block, and verified against a measured baseline including a negative-path test proving real drift detection."
+  },
+  "memory_candidates": [],
+  "modified_files": [
+    ".claude/scripts/check-extension-docs.sh",
+    ".claude/extensions/core/scripts/check-extension-docs.sh"
+  ]
+}

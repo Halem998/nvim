@@ -1,0 +1,15 @@
+{
+  "task_id": 411,
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1776066741_766660",
+  "plan_path": "specs/411_update_extension_trigger_wording/plans/01_update-trigger-wording.md",
+  "summary_path": "specs/411_update_extension_trigger_wording/summaries/01_update-trigger-wording-summary.md",
+  "phases_completed": 1,
+  "phases_total": 1,
+  "completion_data": {
+    "completion_summary": "Replaced Neovim-specific trigger wording in 5 extension skill files with mechanism-agnostic alternatives.",
+    "claudemd_suggestions": "Updated 5 extension SKILL.md files (2 epidemiology, 3 present) to remove <leader>ac references"
+  }
+}

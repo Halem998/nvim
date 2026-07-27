@@ -1,0 +1,13 @@
+{
+  "status": "implemented",
+  "summary": "Synced Section 13 from canonical multi-task-operations.md to extension mirror",
+  "blockers": [],
+  "phases_completed": 1,
+  "phases_total": 1,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/626_orchestrate_command_single_dispatch/summaries/01_command-single-dispatch-summary.md"
+    }
+  ]
+}

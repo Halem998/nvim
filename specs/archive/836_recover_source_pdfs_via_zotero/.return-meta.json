@@ -1,0 +1,60 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 836,
+  "task_name": "recover_source_pdfs_via_zotero",
+  "task_type": "meta",
+  "session_id": "sess_1783626090_1b5169_836",
+  "plan_path": "specs/836_recover_source_pdfs_via_zotero/plans/01_recover-source-pdfs-zotero.md",
+  "phases_completed": 7,
+  "phases_total": 7,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/836_recover_source_pdfs_via_zotero/summaries/01_recover-source-pdfs-zotero-summary.md",
+      "summary": "Full 52-entry disposition table and verification evidence for the Zotero PDF recovery task."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Built a read-only Zotero PDF resolver, swept all 52 no_source_pdf entries, gated non-key-anchored matches on year/similarity, and idempotently recovered 7 of 52 PDFs into sources/<doc_id>/. index.json was updated with verified zotero_key/zotero_path fields and re-audited (no_source_pdf 52->45). 1 entry needs human disambiguation, 2 confirmed false positives were rejected, and 42 (dominated by a 30-entry arXiv cluster) are confirmed absent from this Zotero library -- the correct outcome, not a resolution failure. pdfs/ was never recreated."
+  },
+  "modified_files": [
+    ".claude/scripts/zotero-resolve-pdf.sh",
+    ".claude/scripts/.zotero-title-sim.py",
+    ".claude/context/project/literature/patterns/zotero-pdf-resolution.md",
+    ".claude/extensions/literature/index-entries.json",
+    "specs/836_recover_source_pdfs_via_zotero/plans/01_recover-source-pdfs-zotero.md",
+    "specs/836_recover_source_pdfs_via_zotero/artifacts/corpus-baseline.txt",
+    "specs/836_recover_source_pdfs_via_zotero/artifacts/environment.json",
+    "specs/836_recover_source_pdfs_via_zotero/artifacts/backup-path.txt",
+    "specs/836_recover_source_pdfs_via_zotero/artifacts/resolution-manifest.json",
+    "specs/836_recover_source_pdfs_via_zotero/artifacts/dry-run-report.md",
+    "specs/836_recover_source_pdfs_via_zotero/artifacts/apply-log.json",
+    "specs/836_recover_source_pdfs_via_zotero/artifacts/fidelity-delta.md",
+    "specs/836_recover_source_pdfs_via_zotero/summaries/01_recover-source-pdfs-zotero-summary.md",
+    "specs/836_recover_source_pdfs_via_zotero/progress/phase-1-progress.json",
+    "specs/836_recover_source_pdfs_via_zotero/progress/phase-2-progress.json",
+    "specs/836_recover_source_pdfs_via_zotero/progress/phase-3-progress.json",
+    "specs/836_recover_source_pdfs_via_zotero/progress/phase-4-progress.json",
+    "specs/836_recover_source_pdfs_via_zotero/progress/phase-5-progress.json",
+    "specs/836_recover_source_pdfs_via_zotero/progress/phase-6-progress.json",
+    "specs/836_recover_source_pdfs_via_zotero/.orchestrator-handoff.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When building a Zotero-library resolver: (1) index.json-style zotero_key fields populated by prior tooling may be Better-BibTeX citekeys (e.g. 'Burgess1982I'), not real Zotero API item keys (8-char alphanumeric like '7XEG8NM9') -- a direct GET /items/<key>/children 404s on a citekey. Use the field's presence as a trust signal, not a literal API path. (2) Zotero's quick search (q=) requires all query tokens present, so an over-specific title query (carrying a slug-derived trailing word not in the real bibliographic title) silently returns zero hits -- mitigate with progressive right-truncation (drop trailing words to a 2-word floor) before falling back to author-only search. (3) Author-only fallback queries collide on common/substring surnames (e.g. 'Een' substring-matching 'Shaheen'), producing low-similarity (0.1-0.4) false positives -- apply a similarity floor (~0.4) and always select the highest-similarity candidate with a resolvable attachment, never just the first API result. (4) The storage root must always be derived from the same dataDir resolution used for the sqlite path (dirname of the resolved sqlite path + '/storage'), never hardcoded to ~/Zotero/storage/, since a custom Zotero Data Directory silently breaks that assumption.",
+      "category": "PATTERN",
+      "source_artifact": "specs/836_recover_source_pdfs_via_zotero/summaries/01_recover-source-pdfs-zotero-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["zotero", "pdf-resolution", "citekey", "title-similarity", "storage-root", "quick-search"]
+    },
+    {
+      "content": "When a plan phase's precondition (e.g. 'corpus git tree must be clean, stop if dirty') is violated, investigate before hard-stopping: check whether the dirty state is a prior task's own uncommitted, needed dependency (confirmed via git diff sampling and cross-checking expected counts) versus a genuine hazard. If benign, proceed but disqualify the plan's higher-risk rollback paths (e.g. bulk 'git checkout --') for the remainder of the task, relying only on file-level restore. Document the investigation and decision inline in the phase's checklist annotation and a dedicated deviation field, rather than either blindly stopping (wasting a large planned task) or blindly proceeding (ignoring a real safety gate).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/836_recover_source_pdfs_via_zotero/summaries/01_recover-source-pdfs-zotero-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["dirty-tree-investigation", "rollback-safety", "precondition-check", "external-corpus-mutation"]
+    }
+  ]
+}

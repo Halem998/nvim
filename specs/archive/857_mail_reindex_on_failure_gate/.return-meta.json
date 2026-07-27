@@ -1,0 +1,32 @@
+{
+  "status": "implemented",
+  "summary": "Extracted run_notmuch_new(cb) helper in mail.lua and chained it in both mbsync on_exit branches so the census fallback always reads a post-reindex notmuch database; on_done(false) still fires on any mbsync failure, inside the notmuch on_exit. Headless load check passed; gate logic and keymap specs byte-unchanged.",
+  "modified_files": [
+    "lua/neotex/plugins/tools/mail.lua"
+  ],
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/tools/mail.lua",
+      "summary": "Both-branch notmuch reindex via run_notmuch_new helper; census.nix signal-quality doc comment; <leader>mN header fix"
+    },
+    {
+      "type": "summary",
+      "path": "specs/857_mail_reindex_on_failure_gate/summaries/01_reindex-on-failure-gate-summary.md",
+      "summary": "Implementation summary with verification results and constraint confirmation"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "sync_all_mail now runs notmuch new on both mbsync outcomes via an extracted run_notmuch_new helper, so the aerc launch gate's census fallback always evaluates a post-reindex index; on_done(false) is preserved on mbsync failure (never fail-open). Also documented external census signal-quality ownership and fixed the <leader>mN header-comment drift."
+  },
+  "metadata": {
+    "session_id": "sess_1783972043_17c8e3",
+    "agent_type": "neovim-implementation-agent",
+    "task_number": 857,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"],
+    "phases_completed": 2,
+    "phases_total": 2
+  },
+  "next_steps": "Optional manual smoke test: simulate mbsync failure (network off), press <leader>me, confirm ERROR + WARN notifications and census-gated launch"
+}

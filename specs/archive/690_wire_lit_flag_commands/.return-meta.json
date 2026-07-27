@@ -1,0 +1,30 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 690,
+  "session_id": "sess_1749686400_a3b7c9",
+  "started_at": "2026-06-12T00:10:00Z",
+  "completed_at": "2026-06-12T00:30:00Z",
+  "phases_completed": 2,
+  "phases_total": 2,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/690_wire_lit_flag_commands/summaries/01_wire-lit-commands-summary.md",
+      "summary": "Implementation summary: wired --lit flag through all 4 workflow commands and synced 8 files"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added --lit flag support to all four workflow commands (research.md, plan.md, implement.md, orchestrate.md) with Options table documentation, STAGE 1.5 extraction where applicable, and lit_flag appended to all skill invocation args strings. Synced all four extension core copies to be byte-identical to their active counterparts."
+  },
+  "memory_candidates": [
+    {
+      "content": "When threading a new flag through workflow commands: (1) commands that do inline flag parsing (research.md, plan.md) need a new numbered item in STAGE 1.5 plus the flag added to the focus_prompt strip list; (2) commands that delegate to parse-command-args.sh (implement.md, orchestrate.md) only need the export comment and skill args updated; (3) always sync extension core copies in .claude/extensions/core/commands/ immediately after editing; (4) use lowercase var names in inline-parsing commands and uppercase in parse-command-args.sh commands, but keep skill args lowercase (lit_flag={LIT_FLAG} pattern).",
+      "category": "PATTERN",
+      "source_artifact": "specs/690_wire_lit_flag_commands/summaries/01_wire-lit-commands-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["flag-threading", "workflow-commands", "parse-command-args", "extension-core-sync", "skill-args"]
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "status": "implemented",
+  "task_number": 815,
+  "task_type": "meta",
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1783196275_db6362",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "timestamp": "2026-07-04T21:50:00Z",
+  "plan_path": "specs/815_revise_email_extension_multi_account/plans/01_email-multi-account-support.md",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/email/commands/email.md",
+      "summary": "Added --account <gmail|logos> / --logos selector, threaded account through cleanup/sync delegation args, per-account --archive docs, unknown-account error, precondition gate for account=logos."
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/email/skills/skill-email-cleanup/SKILL.md",
+      "summary": "Load-bearing account-aware BASE_QUERY derivation, --account passthrough to every wrapper call, per-account pilot-gate scoping, Account Precondition Gate section."
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/email/skills/skill-email-sync/SKILL.md",
+      "summary": "Default mbsync channel from resolved account (gmail/logos), preserved never-mbsync--a invariant, per-account prose."
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/email/EXTENSION.md",
+      "summary": "Documented --account/--logos command row, account-isolation safety invariants, gated posture, mail-guard.sh no-change rationale."
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/email/manifest.json",
+      "summary": "Appended logos/protonmail/proton keyword_overrides for optional routing."
+    },
+    {
+      "type": "summary",
+      "path": "specs/815_revise_email_extension_multi_account/summaries/01_email-multi-account-support-summary.md",
+      "summary": "Implementation summary for Phases 1-5 (landed) with Phase 6 blocked-pending-task-79 documented."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added multi-account (Gmail + Logos/Protonmail Bridge) support to the .claude/ email extension across Phases 1-5: --account/--logos selector in commands/email.md, account-aware BASE_QUERY + --account passthrough in skill-email-cleanup, account-to-channel default in skill-email-sync, and documentation/keyword updates in EXTENSION.md/manifest.json. The Gmail-only path is byte-for-byte unchanged; /email --logos is parsed and documented but routed through an actionable precondition gate that fails loudly pending .dotfiles task 79's wrapper binaries. Phase 6 (live end-to-end verification) remains intentionally [BLOCKED] pending that external landing; a follow-up task is recommended once task 79 lands."
+  },
+  "memory_candidates": [
+    {
+      "content": "When adding a second account/tenant dimension to an existing single-account agent skill, resolve the selector exactly ONCE at the top of the flow (before any branch that could re-derive it) and thread the SAME resolved value through every downstream call (query construction, wrapper/API calls, gate checks). This prevents 'account drift' where e.g. a census runs under one account and a mutation runs under another. Pair this with per-account-keyed side files (e.g. a pilot-acknowledgement record) so an approval/gate satisfied for account A can never silently license the same operation for account B.",
+      "category": "PATTERN",
+      "source_artifact": "specs/815_revise_email_extension_multi_account/summaries/01_email-multi-account-support-summary.md",
+      "confidence": 0.78,
+      "suggested_keywords": ["multi-account", "account-resolution", "gate-scoping", "pilot-gate", "drift-prevention"]
+    },
+    {
+      "content": "This nvim config repo drives .claude/CLAUDE.md generation via a Neovim-plugin extension picker (lua/neotex/plugins/ai/shared/extensions/merge.lua's generate_claudemd), not a standalone bash script. It regenerates the ENTIRE CLAUDE.md by concatenating each LOADED extension's EXTENSION.md (per .claude/extensions.json's loaded set) in dependency order. Editing an extension's EXTENSION.md alone does not propagate to CLAUDE.md until a user runs the picker's load/sync action for that extension. When verifying 'does this propagate to CLAUDE.md', check whether the extension is actually in .claude/extensions.json's loaded set first -- if not, propagation is unobservable and that is a pre-existing condition, not a defect in the edit.",
+      "category": "CONFIG",
+      "source_artifact": "specs/815_revise_email_extension_multi_account/summaries/01_email-multi-account-support-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["extension-picker", "generate_claudemd", "extensions.json", "merge-pipeline", "claudemd-propagation"]
+    }
+  ],
+  "modified_files": [
+    ".claude/extensions/email/commands/email.md",
+    ".claude/extensions/email/skills/skill-email-cleanup/SKILL.md",
+    ".claude/extensions/email/skills/skill-email-sync/SKILL.md",
+    ".claude/extensions/email/EXTENSION.md",
+    ".claude/extensions/email/manifest.json",
+    "specs/815_revise_email_extension_multi_account/plans/01_email-multi-account-support.md",
+    "specs/815_revise_email_extension_multi_account/summaries/01_email-multi-account-support-summary.md"
+  ],
+  "next_steps": "Phase 6 remains [BLOCKED] pending .dotfiles task 79 landing + home-manager switch. Recommend spawning a follow-up task (e.g. /spawn 815 or a new /task) once task 79 lands, scoped to: email-census --help flag re-confirmation, live /email --logos end-to-end verification, and the wrapper-contracts.md §2/§11 refresh.",
+  "metadata": {
+    "session_id": "sess_1783196275_db6362",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 6
+  }
+}

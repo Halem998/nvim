@@ -1,0 +1,24 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/382_simplify_revise_command/summaries/01_simplify-revise-command-summary.md",
+      "summary": "Implementation summary for /revise command simplification"
+    }
+  ],
+  "next_steps": "Run /todo to archive task 382",
+  "metadata": {
+    "session_id": "sess_1775713901_2dc5df",
+    "agent_type": "general-implementation-agent",
+    "duration_seconds": 1800,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  },
+  "completion_data": {
+    "completion_summary": "Refactored /revise from 2-layer to 3-layer architecture: created reviser-agent.md, converted skill-reviser to thin wrapper with Task delegation, simplified revise.md command by removing status-based ABORTs, updated CLAUDE.md tables.",
+    "claudemd_suggestions": "Updated CLAUDE.md Skill-to-Agent Mapping (skill-reviser -> reviser-agent) and Agents table (added reviser-agent). Created new agent file and rewrote skill file."
+  }
+}

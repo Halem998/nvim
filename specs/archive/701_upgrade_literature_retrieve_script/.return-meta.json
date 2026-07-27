@@ -1,0 +1,30 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1781482254_239635_701",
+  "task_number": 701,
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "started_at": "2026-06-14T00:00:00Z",
+  "completed_at": "2026-06-14T00:30:00Z",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/701_upgrade_literature_retrieve_script/summaries/01_upgrade-lit-retrieve-summary.md",
+      "summary": "Implementation summary for all three phases of the literature-retrieve.sh upgrade"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Upgraded literature-retrieve.sh to read TOKEN_BUDGET from index.json (default 8000, was hardcoded 4000), discover and normalize subdirectory chapters[] indexes into the unified scoring pool, and deduplicate merged entries with root-wins precedence; both script copies are byte-identical."
+  },
+  "memory_candidates": [
+    {
+      "content": "literature-retrieve.sh chapters[] normalization pattern: subdirectory index.json files use a 'chapters' array with a 'file' field instead of 'entries' array with a 'path' field. Normalize with jq: map({id: ($subdir + \"_\" + .file), path: ($subdir + \"/\" + .file), title: .title, token_count: .token_count, keywords: (.keywords // []), summary: (.summary // \"\")}). Use find -maxdepth 2 -name index.json ! -path \"$INDEX_FILE\" for one-level-deep discovery.",
+      "category": "PATTERN",
+      "source_artifact": "specs/701_upgrade_literature_retrieve_script/summaries/01_upgrade-lit-retrieve-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["literature", "chapters", "index.json", "normalization", "subdirectory", "jq"]
+    }
+  ]
+}

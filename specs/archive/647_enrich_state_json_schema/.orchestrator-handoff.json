@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "summary": "State.json schema enriched to v1.1.0: added title to 11 tasks, description to 4 tasks, effort/topic/dependencies to legacy tasks 87 and 78. Updated state-management-schema.md to document title and description as required fields. Updated generate-task-order.sh fallback chain to prefer title over description. Regenerated Task Order in TODO.md with human-readable titles.",
+  "artifacts": [
+    {
+      "path": "specs/647_enrich_state_json_schema/summaries/01_enrichment-summary.md",
+      "type": "summary",
+      "summary": "Enrichment execution summary"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "phases_completed": 4,
+  "phases_total": 4,
+  "next_action_hint": "none"
+}

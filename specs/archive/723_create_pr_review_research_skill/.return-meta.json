@@ -1,0 +1,30 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": "specs/723_create_pr_review_research_skill/summaries/01_pr-review-research-skill-summary.md",
+      "summary": "Implementation summary for pr-review-research skill and agent creation"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1781547115_2dc6c5_723",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
+  },
+  "completion_data": {
+    "completion_summary": "Created skill-pr-review-research and pr-review-research-agent in the CSLib extension. The agent fetches GitHub PR data via gh api (4 endpoints: metadata, reviews, conversation comments, inline comments), optionally fetches Zulip thread content with graceful degradation when unconfigured, and synthesizes findings into a structured research report. Manifest routing updated so pr research tasks route to skill-pr-review-research instead of skill-researcher.",
+    "roadmap_items": []
+  },
+  "memory_candidates": [
+    {
+      "content": "PR review research agent pattern: use gh api for 4 GitHub endpoints (pulls/{num} metadata, pulls/{num}/reviews, issues/{num}/comments for conversation, pulls/{num}/comments for inline). Use --paginate for endpoints with many results. Truncate diff_hunk to first 5 lines. Check ~/.zuliprc for placeholder URLs before Zulip fetch using configparser pattern.",
+      "category": "PATTERN",
+      "source_artifact": "specs/723_create_pr_review_research_skill/summaries/01_pr-review-research-skill-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["github", "pr", "review", "zulip", "gh-api", "research-agent"]
+    }
+  ]
+}

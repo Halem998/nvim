@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "summary": "Deleted status-transitions.md and all references (index.json, extensions.json, architecture.md, context-revision-guide.md, README.md); replaced stale status-sync-manager instructions in status-markers.md with correct skill-base.sh documentation; added header note to inline-status-update.md; documented orchestrate interaction in skill-status-sync/SKILL.md and rules/state-management.md. All primary edits mirrored to core extension copies. All 5 phases completed and verified.",
+  "artifacts": [
+    {
+      "path": "specs/631_cleanup_stale_status_docs/summaries/01_stale-status-docs-summary.md",
+      "type": "summary",
+      "summary": "Execution summary covering all 5 phases of documentation cleanup"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "complete",
+  "phases_completed": 5,
+  "phases_total": 5
+}

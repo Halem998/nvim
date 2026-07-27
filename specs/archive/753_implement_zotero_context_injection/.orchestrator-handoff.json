@@ -1,0 +1,17 @@
+{
+  "status": "implemented",
+  "summary": "Implemented --zot flag: zotero-retrieve.sh with 6-field weighted scoring, wired zot_flag through 3 command files, 3 skill files, and 12 dispatch locations in skill-orchestrate; documentation updated",
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "none",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "subtasks_completed": ["phase-1", "phase-2", "phase-3", "phase-4"],
+  "artifacts": [
+    {
+      "path": "specs/753_implement_zotero_context_injection/summaries/01_context-injection-summary.md",
+      "type": "summary",
+      "summary": "Zotero context injection implementation summary covering all 4 phases and 9 modified files"
+    }
+  ]
+}

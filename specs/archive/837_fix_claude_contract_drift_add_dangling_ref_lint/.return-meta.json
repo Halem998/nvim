@@ -1,0 +1,60 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/plans/01_contract-drift-lint-wiring.md",
+      "summary": "5-phase plan, all phases [COMPLETED]"
+    },
+    {
+      "type": "summary",
+      "path": "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/summaries/01_contract-drift-lint-wiring-summary.md",
+      "summary": "Implementation summary covering all 5 phases and verification results"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1783879475_193202_837",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  },
+  "completion_data": {
+    "completion_summary": "Registered \"contracts\" in core/manifest.json provides.context and migrated the 8 core contract files into the core extension source; extended check-extension-docs.sh with a provides.context disk-existence check and a project-wide dangling-contract-reference scan; wired the validator into sync.lua's Load Core path with loud ERROR-level notification; documented the provides.context sync contract and downstream reconciliation procedure."
+  },
+  "modified_files": [
+    ".claude/extensions/core/manifest.json",
+    ".claude/extensions/core/context/contracts/adversarial-verification.md",
+    ".claude/extensions/core/context/contracts/anti-analysis.md",
+    ".claude/extensions/core/context/contracts/convergence.md",
+    ".claude/extensions/core/context/contracts/orchestrator-discipline.md",
+    ".claude/extensions/core/context/contracts/recovery.md",
+    ".claude/extensions/core/context/contracts/reference-grounding.md",
+    ".claude/extensions/core/context/contracts/territory.md",
+    ".claude/extensions/core/context/contracts/wrap-up.md",
+    ".claude/extensions/core/index-entries.json",
+    ".claude/extensions/core/scripts/check-extension-docs.sh",
+    ".claude/scripts/check-extension-docs.sh",
+    "lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua",
+    ".claude/docs/guides/creating-extensions.md",
+    "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/plans/01_contract-drift-lint-wiring.md",
+    "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/summaries/01_contract-drift-lint-wiring-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "manifest.json's provides.context array is the sole propagation signal for extension context: copy_context_dirs() (loader.lua) and the Load Core full-sync path both only sync context subdirs/files whose name is listed in provides.context. If files exist on disk under an extension's context/ dir but the category name is never added to provides.context, they are invisible to sync forever -- there is no 'copy everything' fallback. If a source repo's deployed .claude/context/ layer was hand-populated (bypassing provides.context), the source looks healthy while every downstream repo silently never receives those files, producing dangling references only discoverable by grepping for the referenced path pattern across deployed skills/agents/rules.",
+      "category": "PATTERN",
+      "source_artifact": "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/summaries/01_contract-drift-lint-wiring-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["provides.context", "extension-sync", "copy_context_dirs", "Load Core", "dangling-reference"]
+    },
+    {
+      "content": "check-extension-docs.sh doc-lint pattern: per-extension checks live in functions invoked inside the for-loop over EXT_DIR/*/  (using CURRENT_EXT + EXTENSION_STATUS[] + fail()/info() helpers). Project-wide checks that are NOT scoped to a single extension (e.g. scanning ALL deployed skills/agents/rules for a pattern) should set CURRENT_EXT to a synthetic bucket name (e.g. 'project-wide'), register it in EXTENSION_STATUS before calling the check function, and invoke it once after the per-extension loop, before the summary table -- this reuses the same fail()/exit-code machinery without conflating project-wide FAILs with a specific extension's status.",
+      "category": "PATTERN",
+      "source_artifact": "specs/837_fix_claude_contract_drift_add_dangling_ref_lint/summaries/01_contract-drift-lint-wiring-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["check-extension-docs.sh", "doc-lint", "project-wide-check", "bash-validator-pattern"]
+    }
+  ]
+}

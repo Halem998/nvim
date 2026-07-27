@@ -1,0 +1,48 @@
+{
+  "status": "implemented",
+  "summary": "Created cslib-research-agent and cslib-implementation-agent with full CSLib-specific content",
+  "artifacts": [
+    {
+      "type": "agent",
+      "path": ".claude/extensions/cslib/agents/cslib-research-agent.md",
+      "summary": "Complete research agent with reuse-first search strategy, CSLib namespace map, and opus model"
+    },
+    {
+      "type": "agent",
+      "path": ".claude/extensions/cslib/agents/cslib-implementation-agent.md",
+      "summary": "Complete implementation agent with 7-step CI pipeline, AI disclosure requirement, and sonnet model"
+    },
+    {
+      "type": "summary",
+      "path": "specs/664_create_cslib_agents/summaries/01_agents-summary.md",
+      "summary": "Agent implementation summary"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Created cslib-research-agent.md (model: opus) and cslib-implementation-agent.md (model: sonnet) at .claude/extensions/cslib/agents/, replacing stubs with complete agent definitions including CSLib-specific reuse-first search strategy, 7-step CI pipeline, AI disclosure requirement, and zero-debt policy enforcement."
+  },
+  "metadata": {
+    "session_id": "sess_1749673500_a3b2c1_664",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
+  },
+  "memory_candidates": [
+    {
+      "content": "CSLib agents use a reuse-first search protocol: check Cslib.Foundations.* via lean_local_search before recommending any new definition, then check existing typeclasses (LTS, HasImp, HasBox, HasBot, HasDia, HasTop), then Mathlib via lean_leansearch. The Cslib.Logic namespace spans two directories: Cslib/Foundations/Logic/ and Cslib/Logics/.",
+      "category": "PATTERN",
+      "source_artifact": "specs/664_create_cslib_agents/summaries/01_agents-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["cslib", "reuse-first", "lean_local_search", "namespaces", "formalization"]
+    },
+    {
+      "content": "CSLib CI pipeline has 7 mandatory steps in order: (1) lake build Module.Name, (2) lake exe checkInitImports, (3) lake lint, (4) lake exe lint-style, (5) lake shake --add-public --keep-implied --keep-prefix, (6) lake exe mk_all --module, (7) lake test. Step 2 (checkInitImports) is commonly missed and causes CI failure if Cslib.Init is not imported.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/664_create_cslib_agents/summaries/01_agents-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["cslib", "CI", "lake", "pipeline", "checkInitImports", "lint"]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1781284922_643662_673",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 673,
+  "phases_completed": 3,
+  "phases_total": 3,
+  "started_at": "2026-06-12T00:00:00Z",
+  "completed_at": "2026-06-12T00:30:00Z",
+  "completion_data": {
+    "completion_summary": "Added pr task type routing to cslib extension: manifest.json routing entries, index-entries.json language scoping for 3 PR-relevant context files, new skill-pr-implementation/SKILL.md with pr_ready postflight transition, and EXTENSION.md documentation updates.",
+    "roadmap_items": []
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/673_pr_task_type_routing/summaries/01_implementation-summary.md",
+      "summary": "Implementation summary for pr task type routing in cslib extension"
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "When adding a new task type to a cslib extension manifest, three routing entries are needed (research, plan, implement). The implement entry requires a custom skill if the postflight status differs from the default (e.g., pr_ready instead of implement/completed). Context injection for the new task type is activated by adding the type string to load_when.languages arrays in index-entries.json.",
+      "category": "PATTERN",
+      "source_artifact": "specs/673_pr_task_type_routing/summaries/01_implementation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["cslib", "extension", "routing", "task-type", "manifest", "pr"]
+    }
+  ]
+}

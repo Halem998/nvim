@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "summary": "Upgraded literature-retrieve.sh: configurable TOKEN_BUDGET from index.json (default 8000), subdirectory chapters[] normalization, unified merged entry pool; both script copies are byte-identical",
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "complete",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "artifacts": [
+    {
+      "path": "specs/701_upgrade_literature_retrieve_script/summaries/01_upgrade-lit-retrieve-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary covering all three phases: configurable budget, subdirectory discovery, scoring integration"
+    }
+  ]
+}

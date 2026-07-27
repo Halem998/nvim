@@ -1,0 +1,22 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1781500889_343926_714",
+  "task_number": 714,
+  "plan_path": "specs/714_enhance_literature_command_zotero/plans/01_literature-zotero-plan.md",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "completed_at": "2026-06-14T00:00:00Z",
+  "completion_data": {
+    "completion_summary": "Added --search and --task N Zotero search/import modes to /literature command: 7-step search handler with Zotero library lookup, Literature/ index cross-reference, multi-select results ([IMPORTED]/[PDF AVAILABLE]/[NO PDF] tags), and 5-step import pipeline (PDF symlink, convert with PREFILL vars, jq index patch with bib_key/zotero_key/zotero_path/project_tags, non-blocking git commit). Updated agent documentation with Zotero Integration section."
+  },
+  "memory_candidates": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/714_enhance_literature_command_zotero/summaries/01_literature-zotero-summary.md",
+      "summary": "Implementation summary for task 714: 4 phases, 6 files modified"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "status": "implemented",
+  "summary": "Fixed the --lit consumer-side silent-failure anti-pattern across all six core skills (skill-researcher, skill-planner, skill-implementer, and their -hard variants). Previously each of the 18 Stage 4a invocation sites (3 per skill) ran `lit_context=$(bash .claude/scripts/literature-briefing.sh 2>/dev/null) || lit_context=\"\"`, discarding stderr and collapsing a script crash into the same empty value a legitimately-empty briefing produces, violating CLAUDE.md's '--lit is never a silent no-op' contract. Created a new shared wrapper, .claude/scripts/literature-briefing-invoke.sh, that passes args through to literature-briefing.sh unchanged, lets stderr flow, and on non-zero exit emits a visible '[lit] briefing generation failed (exit N)' notice to stderr while still exiting 0 to preserve callers' fallback semantics. Repointed all 18 sites at the wrapper with 2>/dev/null removed, and rewrote the stale '# - script exited with error' trailing comment in the live bash block of each skill (skill-implementer-hard had no such comment block to rewrite, correctly left as-is). Verified: zero residual literature-briefing.sh 2>/dev/null occurrences, exactly 3 literature-briefing-invoke.sh references per skill, literature-briefing.sh / literature-lit-flag-resolve.sh / the four skill-cslib-* skills all byte-unchanged, wrapper syntax-clean and executable, and both success-path (stdout byte-identical to direct invocation) and failure-path (single stderr notice, empty stdout, wrapper exit 0) manually verified.",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "artifacts": [
+    {
+      "path": "specs/800_lit_briefing_failure_surfacing/summaries/01_lit-briefing-failure-surfacing-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary covering the wrapper script, all 18 invocation-site updates, the one plan deviation, and full Phase 4 verification results."
+    },
+    {
+      "path": "specs/800_lit_briefing_failure_surfacing/plans/01_lit-briefing-failure-surfacing.md",
+      "type": "plan",
+      "summary": "Plan file with all 4 phases marked [COMPLETED], checklist items checked, and the Phase 3 comment-rewrite deviation annotated inline."
+    },
+    {
+      "path": ".claude/scripts/literature-briefing-invoke.sh",
+      "type": "implementation",
+      "summary": "New wrapper script that surfaces literature-briefing.sh failures instead of swallowing them."
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "Meta task, no PR required. Diff is confined to the new wrapper script and the six SKILL.md files as declared in scope; ready for /todo archival."
+}

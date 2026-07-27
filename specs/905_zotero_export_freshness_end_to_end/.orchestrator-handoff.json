@@ -1,0 +1,32 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Implemented and live-verified all 5 phases of the plan. New zotero-export-freshness.sh classifier (with its manifest.json registration) compares the export's meta-stamp/mtime reference timestamp against the resolved Zotero sqlite mtime and emits one of four honest tokens. zotero-export-status.sh now delegates to it, narrowing ZOTERO_EXPORT_PRESENT to mean present-AND-fresh and folding everything else into a new ZOTERO_EXPORT_STALE directive. commands/literature.md's Mode A step 0 offers assisted regeneration on STALE both interactively (AskUserQuestion, --force) and autonomously ([zotero:auto] notice, never AskUserQuestion). zotero-search.sh independently guards with a [STALE EXPORT - export: DATE, sqlite: DATE] banner (stderr always, also stdout in --format=pretty) and a new exit code 3 for zero-results-while-unconfirmed (exit 2 stays reserved for confirmed-fresh zero-results). Verified live against the real stale export (2026-07-01 vs sqlite 2026-07-15): helper -> STALE, export-status -> STALE, search -> banner + exit 3. Forced-helper-failure test confirmed both consumers degrade to not-confirmed-fresh without aborting under set -euo pipefail (this also surfaced and fixed a second silent pipefail trap in a grep -oP | head -1 date-extraction pipeline). check-extension-docs.sh reports literature extension PASS with only pre-existing whole-extension deploy-drift advisories (not a regression). Source-store rule held: zero .claude/ modifications; all edits confined to agent-system/extensions/literature/** and specs/**. Scope boundary recorded honestly: the search-side guard is inert for zotero-search.sh's two current callers (literature-discover.sh, skill-cite/SKILL.md), both out of file_scope and both already discarding stderr / collapsing all non-zero exits together -- a follow-up task is recommended to wire them.",
+  "artifacts": [
+    {"type": "plan", "path": "specs/905_zotero_export_freshness_end_to_end/plans/01_zotero-export-freshness-plan.md"},
+    {"type": "summary", "path": "specs/905_zotero_export_freshness_end_to_end/summaries/01_zotero-export-freshness-summary.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "complete",
+  "files_modified": [
+    "agent-system/extensions/literature/scripts/zotero-export-freshness.sh",
+    "agent-system/extensions/literature/manifest.json",
+    "agent-system/extensions/literature/scripts/zotero-export-status.sh",
+    "agent-system/extensions/literature/scripts/zotero-search.sh",
+    "agent-system/extensions/literature/commands/literature.md",
+    "specs/905_zotero_export_freshness_end_to_end/plans/01_zotero-export-freshness-plan.md",
+    "specs/905_zotero_export_freshness_end_to_end/summaries/01_zotero-export-freshness-summary.md"
+  ],
+  "decisions_made": [
+    "Reference-timestamp resolution prefers the content-derived .zotero-library.meta.json _generated stamp over raw file mtime, falling back to mtime only when the stamp is absent/unparseable, with the fallback always named in the stderr rationale",
+    "Freshness helper's rationale carries explicit export_date=/sqlite_date= machine-parseable tokens (added during Phase 4) so zotero-search.sh's banner never has to regex-scrape free-form prose",
+    "Both consumers treat helper failure, empty output, or any unrecognized token identically to a genuine STALE/UNKNOWN result -- never silently PRESENT/fresh -- verified live via a forced-helper-rename test",
+    "Interactive and autonomous STALE handling in commands/literature.md were split into two separate bullets (not one combined bullet) to match the plan's explicit structural placement alongside the existing sibling bullets"
+  ],
+  "dead_ends": [
+    "Parsing export/sqlite dates out of the freshness helper's free-form human-readable rationale via ad hoc regex was tried first, then abandoned in favor of adding explicit export_date=/sqlite_date= tokens to the helper's own rationale -- more robust and avoids coupling zotero-search.sh to prose wording"
+  ],
+  "phases_completed": 5,
+  "phases_total": 5
+}

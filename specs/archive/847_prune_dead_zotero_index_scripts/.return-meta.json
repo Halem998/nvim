@@ -1,0 +1,92 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/847_prune_dead_zotero_index_scripts/reports/01_prune-zotero-index-scripts.md",
+      "summary": "Confirms zero live callers for zotero-index-add.sh/zotero-index-remove.sh (safe to prune), extension-source-only location, manifest.json declaration, exact README rows, recommends scripts/deprecated/ quarantine convention, and flags a file_scope gap (EXTENSION.md/literature-agent.md/SKILL.md) required to keep check-extension-docs.sh Rule E passing."
+    },
+    {
+      "type": "plan",
+      "path": "specs/847_prune_dead_zotero_index_scripts/plans/01_prune-zotero-index-scripts.md",
+      "summary": "4-phase QUARANTINE-NEVER-DELETE prune plan: (1) git mv both scripts into scripts/deprecated/, (2) remove manifest.json provides.scripts entries, (3) reconcile all four Rule-E doc surfaces (README + widened-scope EXTENSION.md/literature-agent.md/SKILL.md), (4) verify check-extension-docs.sh exits 0 with literature PASS and quarantined files preserved. file_scope widened to 7 source files per research finding 6."
+    },
+    {
+      "type": "summary",
+      "path": "specs/847_prune_dead_zotero_index_scripts/summaries/01_prune-zotero-index-scripts-summary.md",
+      "summary": "Quarantined zotero-index-add.sh/zotero-index-remove.sh into scripts/deprecated/ via git mv, removed both from manifest.json provides.scripts, and reconciled all Rule-E-scanned doc surfaces (README.md, EXTENSION.md, agents/literature-agent.md, skills/skill-literature/SKILL.md). check-extension-docs.sh exits 0 with literature PASS."
+    }
+  ],
+  "next_steps": "None — task complete. Optional future cleanup: stale non-invoking path comment at literature-normalize-authors.sh:9 references the pre-move zotero-index-add.sh path.",
+  "completion_data": {
+    "completion_summary": "Quarantined zotero-index-add.sh and zotero-index-remove.sh (zero live callers) into a new scripts/deprecated/ subdirectory via git mv, removed both from manifest.json provides.scripts, and reconciled README.md/EXTENSION.md/literature-agent.md/SKILL.md so check-extension-docs.sh Rule E remains PASS."
+  },
+  "phases_completed": 4,
+  "phases_total": 4,
+  "modified_files": [
+    ".claude/extensions/literature/scripts/deprecated/zotero-index-add.sh",
+    ".claude/extensions/literature/scripts/deprecated/zotero-index-remove.sh",
+    ".claude/extensions/literature/scripts/deprecated/README.md",
+    ".claude/extensions/literature/manifest.json",
+    ".claude/extensions/literature/README.md",
+    ".claude/extensions/literature/EXTENSION.md",
+    ".claude/extensions/literature/agents/literature-agent.md",
+    ".claude/extensions/literature/skills/skill-literature/SKILL.md"
+  ],
+  "metadata": {
+    "session_id": "sess_1783731064_fd2024_847",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phase_count": 4,
+    "estimated_hours": 1,
+    "dependency_waves": [[1, 2], [3], [4]]
+  },
+  "memory_candidates": [
+    {
+      "content": "check-extension-docs.sh Rule E scans the WHOLE file (all columns of a markdown table, not just prose) for [A-Za-z0-9_-]+\\.(sh|sql) tokens in README.md/EXTENSION.md/agents/*.md/skills/*/SKILL.md. When retiring a script from provides.scripts, rewording only a table's 'Reason'/description column while leaving the literal filename in the 'Artifact' column (e.g. a Deployment-Status 'Inactive' table) still trips Rule E once the manifest entry is gone -- the whole row (or at minimum the filename cell) must be removed or de-literalized (drop the .sh suffix), not just the surrounding prose.",
+      "category": "PATTERN",
+      "source_artifact": "specs/847_prune_dead_zotero_index_scripts/summaries/01_prune-zotero-index-scripts-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "check-extension-docs",
+        "Rule E",
+        "provides.scripts",
+        "drift-guard",
+        "script-pruning",
+        "markdown-table"
+      ]
+    },
+    {
+      "content": "check-extension-docs.sh Rule E (check_referenced_scripts_declared) scans README.md, EXTENSION.md, agents/*.md, and skills/*/SKILL.md (not .sh source files) for any [A-Za-z0-9_-]+\\.(sh|sql) token and FAILs if that token isn't declared in some extension's manifest.json provides.scripts/provides.hooks. When pruning a script from provides.scripts, all four doc-surface file types must be checked for lingering literal filename mentions, not just the primary README -- a plan that only edits README.md + manifest.json for a script removal will pass a naive read but regress this drift guard if EXTENSION.md/agents/*.md/SKILL.md still mention the old filename.",
+      "category": "PATTERN",
+      "source_artifact": "specs/847_prune_dead_zotero_index_scripts/reports/01_prune-zotero-index-scripts.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "check-extension-docs",
+        "Rule E",
+        "provides.scripts",
+        "drift-guard",
+        "script-pruning",
+        "manifest.json"
+      ]
+    },
+    {
+      "content": "This repo's only existing 'quarantine, don't delete' directory convention is lua/neotex/deprecated/ (Neovim plugin configs), which uses a subdirectory + README documenting purpose/migration-status/removal-policy rather than in-place filename-suffix renaming. No .claude/-scoped quarantine convention exists yet; when pruning dead .claude/ scripts under QUARANTINE-NEVER-DELETE, mirroring this pattern (a scripts/deprecated/ subdirectory with git mv, preserving history) is preferable to a .removed-<UTC> suffix rename because it removes stale doc-string mentions cleanly rather than requiring careful literal-string rewriting to dodge doc-lint regex checks.",
+      "category": "CONFIG",
+      "source_artifact": "specs/847_prune_dead_zotero_index_scripts/reports/01_prune-zotero-index-scripts.md",
+      "confidence": 0.6,
+      "suggested_keywords": [
+        "quarantine",
+        "deprecated",
+        "dead-code",
+        "convention",
+        "QUARANTINE-NEVER-DELETE"
+      ]
+    }
+  ]
+}

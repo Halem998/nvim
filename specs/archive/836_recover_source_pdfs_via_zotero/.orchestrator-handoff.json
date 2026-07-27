@@ -1,0 +1,49 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Built a read-only Zotero PDF resolver, swept all 52 no_source_pdf entries, gated non-key-anchored matches on year/similarity, and applied idempotently. Recovered 7 of 52 PDFs into sources/<doc_id>/, updated index.json (zotero_key/zotero_path), and re-ran the #835 fidelity audit (no_source_pdf 52->45). 1 needs human disambiguation, 2 confirmed false positives, 42 confirmed absent from this Zotero library. pdfs/ was never recreated.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/836_recover_source_pdfs_via_zotero/summaries/01_recover-source-pdfs-zotero-summary.md",
+      "summary": "Full 52-entry disposition table (7 recovered, 1 html-only, 1 needs-disambiguation, 43 absent-from-zotero including 2 rejected false positives), decisions, plan deviations, and verification evidence."
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    ".claude/scripts/zotero-resolve-pdf.sh",
+    ".claude/scripts/.zotero-title-sim.py",
+    ".claude/context/project/literature/patterns/zotero-pdf-resolution.md",
+    ".claude/extensions/literature/index-entries.json",
+    "specs/836_recover_source_pdfs_via_zotero/plans/01_recover-source-pdfs-zotero.md",
+    "specs/836_recover_source_pdfs_via_zotero/artifacts/corpus-baseline.txt",
+    "specs/836_recover_source_pdfs_via_zotero/artifacts/environment.json",
+    "specs/836_recover_source_pdfs_via_zotero/artifacts/backup-path.txt",
+    "specs/836_recover_source_pdfs_via_zotero/artifacts/resolution-manifest.json",
+    "specs/836_recover_source_pdfs_via_zotero/artifacts/dry-run-report.md",
+    "specs/836_recover_source_pdfs_via_zotero/artifacts/apply-log.json",
+    "specs/836_recover_source_pdfs_via_zotero/artifacts/fidelity-delta.md",
+    "specs/836_recover_source_pdfs_via_zotero/summaries/01_recover-source-pdfs-zotero-summary.md",
+    "specs/836_recover_source_pdfs_via_zotero/progress/phase-1-progress.json",
+    "specs/836_recover_source_pdfs_via_zotero/progress/phase-2-progress.json",
+    "specs/836_recover_source_pdfs_via_zotero/progress/phase-3-progress.json",
+    "specs/836_recover_source_pdfs_via_zotero/progress/phase-4-progress.json",
+    "specs/836_recover_source_pdfs_via_zotero/progress/phase-5-progress.json",
+    "specs/836_recover_source_pdfs_via_zotero/progress/phase-6-progress.json"
+  ],
+  "decisions_made": [
+    "index.json's pre-existing zotero_key field is a Better-BibTeX citekey, not a real Zotero API item key; resolver still title/author-searches but tiers by the field's presence rather than using it as a literal API path.",
+    "Added a 0.4 title-similarity floor and progressive title right-truncation to the resolver after an initial sweep produced 9 false-positive search-candidates in the arXiv cluster via common-surname collisions; all 30 arXiv-cluster entries now correctly resolve absent.",
+    "fine_2014_truthmaker-semantics-intuitionistic left as needs-confirmation per explicit plan instruction (year/title mismatch against best Zotero hit) -- not auto-accepted.",
+    "pnueli_1977 and een_2011 routed to decision: rejected (not needs-confirmation) since evidence is dispositive (wrong author / wrong domain), reserving needs-confirmation for the genuinely ambiguous fine_2014 case.",
+    "Literature repo commit staged index.json only -- the 7 recovered PDFs are excluded by that repo's own *.pdf .gitignore rule, matching its existing convention of not tracking binary PDFs."
+  ],
+  "dead_ends": [
+    "Using index.json's literal zotero_key field value as a direct Zotero API item-key path segment (GET /items/<key>/children) -- 404s, the field is a citekey not a real key.",
+    "Full-title-only search query with no truncation -- silently returns zero hits when the corpus title carries a trailing descriptor word not in the real bibliographic title.",
+    "Taking the first search candidate with any PDF attachment as the match -- picks wrong papers when an unrelated item with a PDF outranks the correct HTML-only item in API result order (pnueli_1977 case)."
+  ],
+  "plan_markers_verified": true
+}

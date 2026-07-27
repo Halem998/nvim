@@ -1,0 +1,50 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/literature/context/project/literature/patterns/adhoc-navigation-directive.md",
+      "summary": "New canonical pattern file for primary-session conversational --lit navigation (92 lines)"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/context/project/literature/patterns/adhoc-navigation-directive.md",
+      "summary": "Byte-identical mirror of the canonical pattern file"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/literature/index-entries.json",
+      "summary": "Registered the new pattern file with a sibling entry to agent-exploration.md"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/core/merge-sources/claudemd.md",
+      "summary": "Rewrote Literature Mode preamble + What --lit Does to the live briefing model, dropped TOKEN_BUDGET/MAX_FILES, deleted orphaned scoping note, added Ad-Hoc pointer subsection"
+    },
+    {
+      "type": "summary",
+      "path": "specs/776_lit_adhoc_dispatch_navigation_doc_sync/summaries/01_lit-adhoc-navigation-doc-sync-summary.md",
+      "summary": "Implementation summary with verification results and two recorded out-of-scope follow-ups"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Created the ad-hoc navigation directive pattern file (canonical + byte-identical mirror), registered it in the literature extension's index-entries.json, and rewrote the CLAUDE.md merge-source Literature Mode section to describe the live literature-briefing.sh -> <literature-briefing> model, dropping the stale TOKEN_BUDGET/MAX_FILES claim and orphaned scoping note."
+  },
+  "memory_candidates": [
+    {
+      "content": "The .claude/extensions/core/skills/*/SKILL.md mirrors under the core extension are a separate deployment source from the deployed .claude/skills/*/SKILL.md copies. Updates applied only to the deployed copies (e.g. task 775's Stage 4a --lit rewrite) do not propagate to these mirrors, creating latent drift: a future 'Load Core Agent System' sync would silently revert the deployed rewrite by re-deploying from the stale mirror. When a task modifies a deployed skill's SKILL.md, check whether the corresponding extensions/core/skills/ mirror also needs the same edit, or explicitly record the mirror as an out-of-scope follow-up.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/776_lit_adhoc_dispatch_navigation_doc_sync/summaries/01_lit-adhoc-navigation-doc-sync-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["merge-source", "skill-mirror", "extension-sync", "drift", "core-skills"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1782923730_e38a8e_776",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
+}

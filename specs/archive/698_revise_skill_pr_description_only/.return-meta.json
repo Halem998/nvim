@@ -1,0 +1,22 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/698_revise_skill_pr_description_only/plans/01_implementation-plan.md",
+      "summary": "3-phase plan to narrow skill-pr-implementation to pr-description.md composition only"
+    }
+  ],
+  "next_steps": "Run /implement 698 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1718400600_plan698",
+    "agent_type": "planner-agent",
+    "duration_seconds": 120,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 1,
+    "dependency_waves": [[1, 2], [3]]
+  },
+  "memory_candidates": []
+}

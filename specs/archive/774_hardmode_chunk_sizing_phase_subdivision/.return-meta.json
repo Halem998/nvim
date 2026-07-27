@@ -1,0 +1,44 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1783092185_cd6c84_774",
+  "task_number": 774,
+  "artifact_number": 1,
+  "plan_path": "specs/774_hardmode_chunk_sizing_phase_subdivision/plans/01_skeleton-followup-phase-sizing.md",
+  "phases_completed": 8,
+  "phases_total": 8,
+  "artifacts": [
+    {
+      "path": "specs/774_hardmode_chunk_sizing_phase_subdivision/summaries/01_skeleton-followup-phase-sizing-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary covering all 8 phases of task 774's --hard planning-leg work: tightened H8 phase sizing, skeleton+follow-up decomposition mechanism, plan-time strategic-sorry schema, Stage 3b bug fixes, and the plain-integer follow_up_task convention."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented all 8 phases of task 774: tightened H8 phase sizing (bounded-unit primary, phase-count escape valve) in planner-hard-agent.md; added skeleton+follow-up decomposition (placeholder tokens, reversed dependency direction, postflight substitution) across planner-hard-agent.md and skill-planner-hard/SKILL.md; added a plan-time ## Planned Strategic Sorries schema to plan-format.md reusing task 778's sorry_inventory field names verbatim; fixed two pre-existing skill-implementer-hard Stage 3b defects (un-scoped handoff path, integer-increment phase selection); and settled follow_up_task on plain integers in general-implementation-hard-agent.md. All five in-scope dual-copy files verified byte-identical (or drift-only for the two SKILL.md pairs) between deployed and .claude/extensions/core/ copies."
+  },
+  "memory_candidates": [
+    {
+      "content": "When a hard-mode plan/skill contract needs forward-reference task numbers that don't exist yet (e.g. skeleton-plan follow-up tasks), use a literal placeholder token (e.g. {{FOLLOWUP:i}}) written by the agent at plan-write time, resolved by a single postflight text-substitution pass in the invoking skill. This avoids re-entrant dispatch (agent can't allocate next_project_number) while keeping the substitution mechanically simple (one grep/sed pass, guarded to no-op when no skeleton return exists).",
+      "category": "PATTERN",
+      "source_artifact": "specs/774_hardmode_chunk_sizing_phase_subdivision/summaries/01_skeleton-followup-phase-sizing-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["placeholder-token", "postflight-substitution", "skeleton-plan", "task-allocation", "hard-mode"]
+    },
+    {
+      "content": "When mirroring an existing task-creation postflight pattern (e.g. skill-spawn's Stages 7-11) for a new but structurally similar consumer, check whether the new consumer needs the REVERSED dependency direction before copying verbatim. skill-spawn wires the parent to depend on new tasks (blocker resolution); a skeleton-plan follow-up pattern needs the inverse (follow-ups depend on the skeleton task), since the skeleton is what needs to stay unblocked and dispatchable. Copying the wrong direction silently deadlocks the source task.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/774_hardmode_chunk_sizing_phase_subdivision/summaries/01_skeleton-followup-phase-sizing-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["dependency-direction", "task-dependencies", "skill-spawn", "skeleton-plan", "deadlock"]
+    },
+    {
+      "content": "In this repo, several agents/skills are deployed both at .claude/{agents,skills,context}/... and mirrored at .claude/extensions/core/{agents,skills,context}/.... A pre-existing intentional drift exists in exactly one place: two lines in each skill-*-hard/SKILL.md reference literature-briefing-invoke.sh (deployed) vs literature-briefing.sh 2>/dev/null (extensions/core). When editing dual-copy files, diff before AND after editing to confirm only that known drift remains -- do not 'fix' it, and do not let new edits introduce additional unintended drift.",
+      "category": "CONFIG",
+      "source_artifact": "specs/774_hardmode_chunk_sizing_phase_subdivision/summaries/01_skeleton-followup-phase-sizing-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["dual-copy", "extensions-core", "literature-script-drift", "lockstep", "SKILL.md"]
+    }
+  ]
+}

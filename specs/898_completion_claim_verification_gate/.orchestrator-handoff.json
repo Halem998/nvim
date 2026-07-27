@@ -1,0 +1,33 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Implemented all 5 phases: added the shared skill_gate_completion_claim fail-closed gate to skill-base.sh, wired it into all three orchestrator call sites replacing the drifted inline gates, reconciled the two architecture docs to top-level phase accounting and the new refusal contract, and executed the 8-case unit harness plus the Phase 5 cycle-cap harness — all passed.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/898_completion_claim_verification_gate/summaries/01_completion-claim-verification-gate-summary.md",
+      "summary": "Implementation summary recording the DECISION POINT resolution, the two deliberate behavior changes, and the Load Core deploy requirement."
+    }
+  ],
+  "phases_completed": 5,
+  "phases_total": 5,
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"
+  ],
+  "decisions_made": [
+    "DECISION POINT resolved as (a): top-level phases_completed/phases_total is canonical; fixed the docs, not the readers.",
+    "One shared skill_gate_completion_claim in skill-base.sh, called identically from all three sites, rather than three hand-copied inline gates.",
+    "Case 3 unifies base and hard: base loses its phases_total==0 blind allow, hard loses its blind refuse; both fall back to plan_markers_verified.",
+    "A Load Core deploy is required before any of this takes effect at runtime under .claude/; no .claude/** file was touched."
+  ],
+  "dead_ends": [],
+  "continuation_context": null,
+  "plan_markers_verified": true
+}

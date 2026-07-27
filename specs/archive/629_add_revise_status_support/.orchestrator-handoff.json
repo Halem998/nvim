@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "summary": "Added 'revise' as a valid target_status to update-task-status.sh (usage string, validation, preflight/postflight case entries), added 'revised' to skill-base.sh postflight allow-list, and updated skill-reviser SKILL.md to call preflight with 'revise' and use correct postflight target 'revise' instead of 'plan'.",
+  "artifacts": [
+    {
+      "path": "specs/629_add_revise_status_support/summaries/01_revise-implementation-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary covering all 4 phases and 3 modified files"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "phases_completed": 4,
+  "phases_total": 4,
+  "next_action_hint": "complete"
+}

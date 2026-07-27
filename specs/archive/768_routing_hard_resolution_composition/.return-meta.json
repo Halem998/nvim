@@ -1,0 +1,67 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1782320124_aa5841_768",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 768,
+  "task_type": "meta",
+  "plan_path": "specs/768_routing_hard_resolution_composition/plans/01_hard-routing-resolution.md",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "started_at": "2026-06-24T00:00:00Z",
+  "completed_at": "2026-06-24T00:00:00Z",
+  "artifacts": [
+    {
+      "type": "script",
+      "path": ".claude/scripts/command-route-skill.sh",
+      "summary": "Extended with 4th effort_flag arg and 5-step hard-mode resolution (Steps 4a-4e)"
+    },
+    {
+      "type": "command",
+      "path": ".claude/commands/implement.md",
+      "summary": "STAGE 2: added 4th arg EFFORT_FLAG to command-route-skill.sh call"
+    },
+    {
+      "type": "command",
+      "path": ".claude/commands/research.md",
+      "summary": "STAGE 2: replaced inline manifest scan with centralized script call"
+    },
+    {
+      "type": "command",
+      "path": ".claude/commands/plan.md",
+      "summary": "STAGE 2: replaced inline manifest scan with centralized script call"
+    },
+    {
+      "type": "context",
+      "path": ".claude/context/guides/hard-mode-routing.md",
+      "summary": "New composition-model doc: 5-step precedence, extension-overrides-core, SKILL.md safety gate"
+    },
+    {
+      "type": "context",
+      "path": ".claude/context/index.json",
+      "summary": "New index entry for guides/hard-mode-routing.md"
+    },
+    {
+      "type": "test",
+      "path": ".claude/tests/test-command-route-skill.sh",
+      "summary": "Resolver test harness: 12 tests, all passing"
+    },
+    {
+      "type": "summary",
+      "path": "specs/768_routing_hard_resolution_composition/summaries/01_hard-routing-resolution-summary.md",
+      "summary": "Implementation summary for task 768"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented the --hard routing resolution in command-route-skill.sh (5-step precedence: non-core extension routing_hard first-match-wins, compound-key base-type fallback, core routing_hard, core compound-key fallback, -hard append only if SKILL.md exists). Wired effort_flag into /implement, /research, and /plan commands. Created context doc and 12-case test harness; all tests pass."
+  },
+  "memory_candidates": [
+    {
+      "content": "When implementing routing_hard in command-route-skill.sh, the core manifest is identified by routing_exempt:true field. Non-core manifests are scanned first (Steps 4a-4b) before core (Steps 4c-4d) to make 'extension overrides core' deterministic regardless of glob ordering. The -hard append fallback (Step 4e) gates on SKILL.md existence to prevent resolving to undeployed agents.",
+      "category": "PATTERN",
+      "source_artifact": "specs/768_routing_hard_resolution_composition/summaries/01_hard-routing-resolution-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["routing_hard", "hard-mode", "extension-override", "SKILL.md", "safety-gate", "command-route-skill"]
+    }
+  ]
+}

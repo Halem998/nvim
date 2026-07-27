@@ -1,0 +1,34 @@
+{
+  "artifact_id": "525_fix_lean_skill_path_field_refs",
+  "artifact_number": 525,
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "status": "implemented",
+  "started_at": "2026-05-04T00:00:00Z",
+  "completed_at": "2026-05-04T00:00:00Z",
+  "session_id": "sess_20260504_525_impl",
+  "task_id": "525",
+  "phase_count": 3,
+  "phases_completed": 3,
+  "phases_total": 3,
+  "estimated_hours": 1,
+  "completion_data": {
+    "completion_summary": "Removed 6 obsolete OC_ path prefixes and replaced 2 .language field checks with .task_type in .opencode/extensions/lean/skills/ SKILL.md files, restoring correctness and alignment with core skill routing."
+  },
+  "memory_candidates": [
+    {
+      "content": "When fixing legacy path prefixes across skill files, grep both the target tree AND the parallel .claude/ tree to confirm which already has fixes. This prevents redundant work and reveals scope-creep opportunities to document separately.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/525_fix_lean_skill_path_field_refs/summaries/01_lean-skill-fix-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["skill-fix", "path-prefix", "cross-tree", "grep-verification", "scope-creep"]
+    },
+    {
+      "content": "Lean skills use `padded_num` variable in metadata/git paths but never declare it. This is a latent bug that will break postflight when the variable is undefined. Fix: derive padded_num from task_number with zero-padding (e.g., printf '%03d').",
+      "category": "INSIGHT",
+      "source_artifact": "specs/525_fix_lean_skill_path_field_refs/summaries/01_lean-skill-fix-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["lean-skill", "padded_num", "undefined-variable", "postflight", "bug"]
+    }
+  ]
+}

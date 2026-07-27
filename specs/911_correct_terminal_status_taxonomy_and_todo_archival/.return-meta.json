@@ -1,0 +1,37 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "task_number": 911,
+  "session_id": "sess_1785116996_862366_911",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/911_correct_terminal_status_taxonomy_and_todo_archival/summaries/01_terminal-status-taxonomy-archival-summary.md",
+      "summary": "Widened /todo archival to include the expanded terminal status at both sites, added a subtasks-defer guard, fixed a jq index() binding bug in the Step 5B del() filter found via fixture testing, and split the conflated terminal-status bullet in the merge source."
+    }
+  ],
+  "metadata": {
+    "phases_completed": 5,
+    "phases_total": 5
+  },
+  "completion_data": {
+    "completion_summary": "Widened /todo's archival scan/routing/roadmap-exclusion at both commands/todo.md and skills/skill-todo/SKILL.md to include the expanded terminal status alongside completed/abandoned, added a subtasks-defer guard so an expanded parent waits for its subtasks to reach terminal status, corrected a jq index() binding bug in the Step 5B del() filter (verified against a representative state.json fixture), and split merge-sources/claudemd.md's conflated terminal/exception-state bullet into two correctly-labelled bullets."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/skills/skill-todo/SKILL.md",
+    "specs/911_correct_terminal_status_taxonomy_and_todo_archival/plans/01_terminal-status-taxonomy-archival.md",
+    "specs/911_correct_terminal_status_taxonomy_and_todo_archival/summaries/01_terminal-status-taxonomy-archival-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In jq, when subtracting a lookup array from a select() via a preceding pipe, e.g. `$deferred | index(.field)`, the `.` inside the piped expression's argument rebinds to the pipe's LHS output ($deferred, an array) rather than to the original filter input. This raises 'Cannot index array with string \"<field>\"'. Fix by binding the original item to a variable first: `. as $item | ($deferred | index($item.field))`. Always test jq filters with this pattern (pipe into a variable, then call a function taking a `.`-relative argument) against a representative fixture before trusting them.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/911_correct_terminal_status_taxonomy_and_todo_archival/summaries/01_terminal-status-taxonomy-archival-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["jq", "index", "pipe-context-rebinding", "del-filter", "Issue-1132"]
+    }
+  ]
+}

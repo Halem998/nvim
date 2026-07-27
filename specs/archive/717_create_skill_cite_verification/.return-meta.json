@@ -1,0 +1,21 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/717_create_skill_cite_verification/plans/01_skill-cite-plan.md",
+      "summary": "Single-phase implementation plan for skill-cite SKILL.md creation and manifest registration"
+    }
+  ],
+  "next_steps": "Run /implement 717 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1781560221_abe690_717",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 1,
+    "estimated_hours": 1.5,
+    "dependency_waves": [[1]]
+  },
+  "memory_candidates": []
+}

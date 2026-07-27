@@ -1,0 +1,21 @@
+{
+  "status": "planned",
+  "plan_file": "specs/536_clarify_delegation_chain/plans/01_clarify-delegation.md",
+  "research_file": "specs/536_clarify_delegation_chain/reports/01_delegation-chain-research.md",
+  "phases": [
+    "Phase 1: Add Delegation Chain Note to /implement DELEGATE section",
+    "Phase 2: Add Delegation Chain Note to /research DELEGATE section",
+    "Phase 3: Add Delegation Chain Note to /plan DELEGATE section",
+    "Phase 4: Include explanation of WHY two-step exists",
+    "Phase 5: Add warning: Do NOT use Skill(agent-name) directly",
+    "Phase 6: Update mirrors in .claude/ if applicable"
+  ],
+  "files_to_modify": [
+    ".opencode/commands/implement.md",
+    ".opencode/commands/research.md",
+    ".opencode/commands/plan.md",
+    ".claude/commands/implement.md",
+    ".claude/commands/research.md",
+    ".claude/commands/plan.md"
+  ]
+}

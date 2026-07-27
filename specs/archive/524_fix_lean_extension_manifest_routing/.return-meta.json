@@ -1,0 +1,28 @@
+{
+  "status": "implemented",
+  "session_id": "sess_20260504_lean_routing",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "agent_type": "general-implementation-agent",
+  "phases_completed": 1,
+  "phases_total": 1,
+  "task_number": 524,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/524_fix_lean_extension_manifest_routing/summaries/01_manifest-routing-summary.md",
+      "summary": "Added routing sections to lean, nvim, and typst extension manifests; verified with jq queries"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added routing sections to lean, nvim, and typst extension manifests so task types correctly resolve to specialized research and implementation skills."
+  },
+  "memory_candidates": [
+    {
+      "content": "Extension manifests must include a 'routing' section mapping task types to specialized skills per phase (research/implement). Without it, tasks fall through to generic agents. The routing object structure is: routing.{phase}.{task_type} = 'skill-name'. Plan phase typically falls back to generic skill-planner.",
+      "category": "PATTERN",
+      "source_artifact": "specs/524_fix_lean_extension_manifest_routing/summaries/01_manifest-routing-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["extension", "manifest", "routing", "skill-mapping", "task-type"]
+    }
+  ]
+}

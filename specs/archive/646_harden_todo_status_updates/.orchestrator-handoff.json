@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "summary": "Replaced sed patterns with awk single-pass in PHASE 2 (update_todo_task_entry) and PHASE 3 Mode A (update_todo_task_order). Both functions now use sub(/\\[[A-Z ]+\\]/, \"[NEW_STATUS]\") for direct replacement with proper failure detection.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "path": "specs/646_harden_todo_status_updates/summaries/01_implementation-summary.md",
+      "type": "summary",
+      "summary": "Describes awk single-pass replacement for sed extraction+replacement patterns in update-task-status.sh, with verification test output"
+    }
+  ],
+  "next_action_hint": "complete",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "files_modified": [".claude/scripts/update-task-status.sh"]
+}

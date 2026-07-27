@@ -1,0 +1,51 @@
+{
+  "status": "implemented",
+  "task_number": 875,
+  "summary": "All 6 phases completed. meta-builder-agent.md (source store, agent-system/extensions/core/agents/) now parses mode_target/target_root in Stage 1, holds $TARGET_ROOT for the run, and qualifies every read-only inventory operation, task-creation file_scope heuristic, and write/mutate operation against it. SCOPE BOUNDARY split into an actor/workflow rule (unchanged) and a location-correctness rule (new). Deployed .claude/ copy untouched and now diverges from source, as intended. Phase 6 static verification: source/deploy divergence confirmed, zero bare script invocations, contract field names match skill-meta/SKILL.md exactly, Category A reference lines byte-unchanged, no new task-number references, 7/8 bash blocks pass bash -n (the 8th is a pre-existing pseudocode-in-bash-fence defect predating this task, not introduced or worsened by it), scope discipline confirmed (only the target file and this task's own specs/ directory touched across all 6 commits). Live cross-repo /meta test explicitly NOT OBSERVED (blocked by workspace-trust dialog, as anticipated) -- documented as a manual user procedure in the summary, not claimed as a pass.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/875_teach_meta_builder_agent_global_mode_semantics/summaries/01_global-mode-semantics-meta-builder-summary.md",
+      "summary": "Full implementation summary with OBSERVED/NOT OBSERVED verification table and the manual live-test procedure for the user."
+    },
+    {
+      "type": "source_edit",
+      "path": "agent-system/extensions/core/agents/meta-builder-agent.md",
+      "summary": "The only file modified. Grew from 1429 to 1528 lines across 6 phases: $TARGET_ROOT contract (Stage 1), reframed SCOPE BOUNDARY (2 rules), qualified read-only inventory (5 sites, including one beyond the plan's explicit list found during Phase 6), retargeted task-creation file_scope to agent-system/extensions/core/**, qualified all write/mutate operations (scripts, git commit, task-dir creation, DeliverSummary, return JSON)."
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/agents/meta-builder-agent.md",
+    "specs/875_teach_meta_builder_agent_global_mode_semantics/plans/01_global-mode-semantics-meta-builder.md",
+    "specs/875_teach_meta_builder_agent_global_mode_semantics/summaries/01_global-mode-semantics-meta-builder-summary.md",
+    "specs/875_teach_meta_builder_agent_global_mode_semantics/.orchestrator-handoff.json"
+  ],
+  "next_steps": "Task complete from an implementation standpoint. The user should run the manual live-test procedure documented in the summary (interactive /meta from a foreign repo's CWD) when convenient -- this was never claimed as observed and is not a blocker for closing this task.",
+  "metadata": {
+    "session_id": "sess_1784135810_7e6755_875",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  },
+  "completion_data": {
+    "completion_summary": "Taught meta-builder-agent.md global-mode semantics: parses mode_target/target_root in Stage 1, qualifies every read/write path against $TARGET_ROOT, reframes SCOPE BOUNDARY into actor/workflow and location-correctness rules, and retargets task-creation file_scope to the agent-system source store."
+  },
+  "memory_candidates": [
+    {
+      "content": "When a script self-resolves its project root from BASH_SOURCE[0] (not CWD) and has no --state/--todo override flag (e.g. manage-topics.sh), the only correct multi-repo invocation is an absolute, fully-qualified path passed to `bash`. A chained `cd && script` also works but must be re-derived in every separate Bash tool call since shell cwd does not persist across invocations -- absolute paths avoid that failure mode entirely and should be the default; reserve chained cd for git only.",
+      "category": "PATTERN",
+      "source_artifact": "specs/875_teach_meta_builder_agent_global_mode_semantics/summaries/01_global-mode-semantics-meta-builder-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["target-root", "path-qualification", "bash-source", "multi-repo", "global-mode"]
+    },
+    {
+      "content": "Static `@`-file-reference syntax in agent definitions cannot be parameterized by a runtime variable (e.g. target_root) -- it always resolves against the current session's own deployment. Any context-loading instruction that must read a runtime-resolved path (e.g. analyze-mode inventorying a foreign repo) must be rewritten as an explicit runtime `Read {variable}/...` instruction instead of `@`-syntax.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/875_teach_meta_builder_agent_global_mode_semantics/summaries/01_global-mode-semantics-meta-builder-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["at-reference", "context-loading", "runtime-path", "agent-definition"]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "task_number": 771,
+  "session_id": "sess_1782330680_8c9229",
+  "status": "implemented",
+  "phases_completed": 1,
+  "phases_total": 1,
+  "completed_at": "2026-06-24T00:00:00Z",
+  "completion_summary": "Resolved all 4 doc-lint baseline FAILs across 3 file edits: removed stale dispatch-agent.sh from core manifest, added /zulip row to core README (count 15->16), and changed routing_hard uninstalled-extension branch in check-extension-docs.sh from FAIL to WARN with corrected policy comment.",
+  "verification": {
+    "command": "bash .claude/scripts/check-extension-docs.sh",
+    "exit_code": 0,
+    "result": "All 18 extensions PASS. lean routing_hard items now show as WARN (not FAIL). No FAIL lines in output.",
+    "json_valid": true,
+    "dispatch_agent_removed": true,
+    "zulip_row_added": true
+  },
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/771_resolve_doclint_baseline_fails/plans/01_resolve-doclint-baseline-fails.md",
+      "summary": "Phase 1 marked COMPLETED with all tasks checked off"
+    },
+    {
+      "type": "summary",
+      "path": "specs/771_resolve_doclint_baseline_fails/summaries/01_resolve-doclint-baseline-fails-summary.md",
+      "summary": "Implementation summary with verification results"
+    }
+  ],
+  "files_modified": [
+    ".claude/extensions/core/manifest.json",
+    ".claude/extensions/core/README.md",
+    ".claude/scripts/check-extension-docs.sh"
+  ]
+}

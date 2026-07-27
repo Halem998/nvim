@@ -1,0 +1,27 @@
+{
+  "status": "implemented",
+  "summary": "Upgraded /pr command task-mode: fixed state.json path bug, added pr-description.md loading and base_branch detection, redesigned STEPs 5/8/9/10, added STEP 10b for status transition, updated cslib scripts for pr_ready",
+  "artifacts": [
+    {
+      "path": "specs/674_upgrade_pr_command_task_integration/summaries/01_implementation-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary covering all 5 phases: bug fix, skill update, STEP redesigns, cslib script updates, integration verification"
+    },
+    {
+      "path": ".claude/extensions/cslib/commands/pr.md",
+      "type": "modified",
+      "summary": "STEP 2 bug fix + enhancements; STEP 5/8/9 task-mode redesign; STEP 10 base_branch fix; new STEP 10b"
+    },
+    {
+      "path": ".claude/extensions/cslib/skills/skill-pr-implementation/SKILL.md",
+      "type": "modified",
+      "summary": "Stage 7: added base_branch write to state.json task metadata"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "complete",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "cross_repo_note": "Files /home/benjamin/Projects/cslib/.claude/scripts/update-task-status.sh and /home/benjamin/Projects/cslib/.claude/scripts/generate-todo.sh were modified but are uncommitted in the cslib project. Commit them separately in that repository."
+}

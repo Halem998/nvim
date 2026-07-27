@@ -1,0 +1,23 @@
+{
+  "status": "implemented",
+  "skeleton": false,
+  "task_number": 807,
+  "task_type": "meta",
+  "session_id": "sess_1783099196_7b6d2a_807",
+  "orchestrator_mode": true,
+  "phases_completed": 3,
+  "phases_total": 3,
+  "blockers": [],
+  "sorry_inventory": [],
+  "continuation_path": null,
+  "continuation_context": null,
+  "plan_path": "specs/807_validate_handoff_skeleton_field/plans/01_validate-handoff-skeleton-field.md",
+  "artifacts": [
+    "specs/807_validate_handoff_skeleton_field/plans/01_validate-handoff-skeleton-field.md",
+    "specs/807_validate_handoff_skeleton_field/summaries/01_validate-handoff-skeleton-field-summary.md",
+    ".claude/scripts/validate-handoff.sh",
+    ".claude/tests/test-validate-handoff.sh"
+  ],
+  "summary": "Made .claude/scripts/validate-handoff.sh skeleton-aware: added an early status/skeleton read after Check 1, branched Check 3 into a strict skeleton-mode path (non-empty sorry_inventory, per-entry strategic-sorry enforcement of assumption/why_deferred/follow_up_task, status/skeleton invalid-combination check) versus a byte-identical standard-mode else path, and updated --help. Created .claude/tests/test-validate-handoff.sh with 5 fixtures (standard-unchanged, valid-skeleton, missing-inventory, missing-follow_up_task, wrong-status), modeled on test-command-route-skill.sh's run_test() pattern. Ran the harness (5/5 PASS, exit 0) and a regression guard against the production sample handoff specs/772_hardmode_orchestrator_pure_dispatcher/.orchestrator-handoff.json (exit 0, output confirmed byte-identical to pre-change via git-stash diff). All 3 plan phases completed with no deviations.",
+  "next_action_hint": "None. Task 807 is fully implemented and verified; ready for status transition to [PR READY]/[COMPLETED] per the standard workflow."
+}

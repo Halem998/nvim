@@ -1,0 +1,35 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1781547115_2dc6c5_722",
+  "task_number": 722,
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "started_at": "2026-06-15T00:00:00Z",
+  "completed_at": "2026-06-15T00:30:00Z",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "artifacts": [
+    {
+      "type": "modified_file",
+      "path": ".claude/extensions/cslib/commands/pr.md",
+      "summary": "Added --review flag as STEP 0 early-exit block with source parsing and task creation"
+    },
+    {
+      "type": "summary",
+      "path": "specs/722_add_pr_review_flag/summaries/01_pr-review-flag-summary.md",
+      "summary": "Implementation summary for task 722"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added --review flag to /pr command via a STEP 0 early-exit block in .claude/extensions/cslib/commands/pr.md. The flag accepts GitHub PR URLs, Zulip thread URLs, and free-text descriptions, classifies each into a typed sources array, and creates a task in state.json with task_type 'pr' and a sources field for downstream routing."
+  },
+  "memory_candidates": [
+    {
+      "content": "Command early-exit pattern: Add a STEP 0 block at the top of a command file that checks for a flag, performs an alternative workflow, and STOPs before the normal STEP 1. Non-matching invocations skip STEP 0 entirely. This avoids creating a separate command file or namespace conflict.",
+      "category": "PATTERN",
+      "source_artifact": "specs/722_add_pr_review_flag/summaries/01_pr-review-flag-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["command", "early-exit", "flag", "step-0", "pattern", "pr"]
+    }
+  ]
+}

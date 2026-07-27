@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "summary": "Changed orchestrator_mode from false to true at 4 dispatch locations in skill-orchestrate/SKILL.md: lines 208 (single-task research), 240 (single-task plan), 934 (multi-task research), 959 (multi-task plan). All 4 blocker/drift/reviser false values correctly unchanged.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "path": "specs/642_fix_orchestrator_mode_dispatch/summaries/01_implementation-summary.md",
+      "type": "summary",
+      "summary": "Implementation complete: 4 orchestrator_mode dispatch contexts fixed in skill-orchestrate/SKILL.md to enable handoff JSON writing for research and plan phases"
+    }
+  ],
+  "next_action_hint": "complete",
+  "phases_completed": 1,
+  "phases_total": 1,
+  "files_modified": [".claude/skills/skill-orchestrate/SKILL.md"]
+}

@@ -1,0 +1,47 @@
+{
+  "status": "implemented",
+  "summary": "Task 767 complete. Promoted hard-mode capability to first-class core extension source: 3 hard agent files copied into core/agents/, skill-orchestrate-hard/SKILL.md authored into core/skills/, core/manifest.json updated with 3 new agents, 4 new skills, and routing_hard section covering general/meta/markdown x research/plan/implement. Hardcoded absolute path fixed in general-implementation-hard-agent.md in both copies. All verification passes. Doc-lint has 2 pre-existing FAILs unrelated to task 767.",
+  "artifacts": [
+    {
+      "path": "specs/767_core_hard_mode_first_class/summaries/01_core-hard-mode-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary for task 767 with verification results and doc-lint findings"
+    },
+    {
+      "path": ".claude/extensions/core/agents/general-research-hard-agent.md",
+      "type": "new_file",
+      "summary": "Verbatim copy of general-research-hard-agent.md in core extension source"
+    },
+    {
+      "path": ".claude/extensions/core/agents/planner-hard-agent.md",
+      "type": "new_file",
+      "summary": "Verbatim copy of planner-hard-agent.md in core extension source"
+    },
+    {
+      "path": ".claude/extensions/core/agents/general-implementation-hard-agent.md",
+      "type": "new_file",
+      "summary": "Copy of general-implementation-hard-agent.md with portability path fix"
+    },
+    {
+      "path": ".claude/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+      "type": "new_file",
+      "summary": "Verbatim copy of skill-orchestrate-hard SKILL.md in core extension source"
+    },
+    {
+      "path": ".claude/extensions/core/manifest.json",
+      "type": "modified",
+      "summary": "Added 3 hard agents to provides.agents, 4 hard skills to provides.skills, new routing_hard section"
+    },
+    {
+      "path": ".claude/agents/general-implementation-hard-agent.md",
+      "type": "modified",
+      "summary": "Fixed 3 absolute path occurrences for lockstep with core source"
+    }
+  ],
+  "phases_completed": 4,
+  "phases_total": 4,
+  "continuation_context": null,
+  "next_action_hint": "Run /todo 767 to mark task completed, or proceed to tasks 768, 769, 770 which depend on this task's declarations.",
+  "blockers": [],
+  "doc_lint_note": "check-extension-docs.sh exits 1 due to 2 pre-existing FAILs in [core]: (1) dispatch-agent.sh listed in scripts but missing on disk — pre-dates task 767; (2) /zulip command not mentioned in README — gap from task 740. Neither introduced by task 767."
+}

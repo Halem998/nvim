@@ -1,0 +1,21 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/683_cslib_manifest_keyword_overrides/plans/01_cslib-keyword-overrides.md",
+      "summary": "1-phase implementation plan: insert keyword_overrides field into cslib manifest.json with cslib and pr entries"
+    }
+  ],
+  "next_steps": "Run /implement 683 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1781461813_4483e1_683",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 1,
+    "estimated_hours": 0.5,
+    "dependency_waves": 1
+  },
+  "memory_candidates": []
+}

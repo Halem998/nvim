@@ -1,0 +1,71 @@
+{
+  "task_number": 873,
+  "phase": "implement",
+  "status": "partial",
+  "session_id": "sess_1784135810_7e6755_873",
+  "timestamp": "2026-07-15T19:30:00Z",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "summary": "Implemented Phases 1-4 of global-default /meta target resolution: LOCAL_FLAG added to parse-command-args.sh; GLOBAL_ROOT resolution, mode/root threading, and chained postflight commit added to skill-meta/SKILL.md; semantics documented in commands/meta.md. All four phases verified live (bash -n, functional flag round-trips, shell-level chained-cd persistence tests). Phase 5 (live cross-repo /meta invocation) is BLOCKED: Claude Code's non-interactive workspace-trust-dialog gate prevents a headless run from ever reaching /meta's mode detection, so the mechanism's actual end-to-end behavior remains unverified. Reported honestly as unverified, not inferred.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/873_global_default_target_resolution_for_meta/summaries/01_global-default-target-resolution-summary.md",
+      "summary": "Implementation summary with full observed-vs-unverified breakdown per phase"
+    },
+    {
+      "type": "plan",
+      "path": "specs/873_global_default_target_resolution_for_meta/plans/01_global_default_target_resolution.md",
+      "summary": "Updated with per-phase completion annotations, deviation records, and Phase 5's BLOCKED status plus a manual verification procedure"
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/scripts/parse-command-args.sh",
+      "summary": "Added LOCAL_FLAG in five places mirroring CLEAN_FLAG"
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/skills/skill-meta/SKILL.md",
+      "summary": "GLOBAL_ROOT resolution, --local detection, mode_target/target_root threading, path-qualification imperative, chained postflight git commit"
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/commands/meta.md",
+      "summary": "--local documented; Target Resolution, Canonical Source vs Deploy Tree, Parallel Defaults, and Settings Dependency notes added"
+    }
+  ],
+  "metadata": {
+    "phases_completed": 4,
+    "phases_total": 5
+  },
+  "blockers": [
+    {
+      "phase": 5,
+      "description": "Live cross-repo /meta invocation could not be driven: Claude Code's non-interactive workspace-trust-dialog gate (\"this workspace has not been trusted\") fires before permissions, mode detection, or any skill/agent dispatch, for any freshly-created working directory run via `claude -p`. This is more fundamental than the plan's anticipated AskUserQuestion confirmation gate.",
+      "evidence": "Bounded 90s headless attempt from a scratch foreign repo with CLAUDE_AGENT_GLOBAL_ROOT set to a scratch global root produced exactly one line of output (the trust-dialog warning) and exited cleanly with no task created, no commit made, and no real repo touched.",
+      "resolution": "Requires a human running Claude Code interactively (which can accept the trust dialog) to complete verification. A copy-pasteable manual verification procedure is recorded in the plan's Phase 5 section."
+    },
+    {
+      "phase": 5,
+      "description": "Because the live test never reached skill-meta/meta-builder-agent dispatch, the Phase 2 Agent-prompt path-qualification imperative was never exercised. Whether meta-builder-agent (out of this task's scope) actually honors the threaded target_root remains unverified.",
+      "resolution": "To be exercised once the dependent agent-definition follow-up work lands and/or the manual verification procedure is run."
+    }
+  ],
+  "deviations": [
+    "Phase 5 run against a scratch global root + scratch foreign repo instead of the real ~/.config/nvim / ~/Projects/cslib repos, per explicit orchestrator instruction (two sibling tasks were concurrently writing to the real specs/state.json during this implementation).",
+    "Did not edit ~/.claude.json's hasTrustDialogAccepted flag to clear the workspace-trust gate, even though the error message named it as the fix -- that file is outside both the sanctioned edit targets and the scratch test harness."
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/scripts/parse-command-args.sh",
+    "agent-system/extensions/core/skills/skill-meta/SKILL.md",
+    "agent-system/extensions/core/commands/meta.md",
+    "specs/873_global_default_target_resolution_for_meta/plans/01_global_default_target_resolution.md",
+    "specs/873_global_default_target_resolution_for_meta/progress/phase-1-progress.json",
+    "specs/873_global_default_target_resolution_for_meta/progress/phase-2-progress.json",
+    "specs/873_global_default_target_resolution_for_meta/progress/phase-3-progress.json",
+    "specs/873_global_default_target_resolution_for_meta/progress/phase-4-progress.json",
+    "specs/873_global_default_target_resolution_for_meta/progress/phase-5-progress.json",
+    "specs/873_global_default_target_resolution_for_meta/summaries/01_global-default-target-resolution-summary.md"
+  ],
+  "next_command": "Manual verification of Phase 5 (see plan), then /implement 873 (or a status update) to close out; or /revise 873 if a headless verification strategy is found."
+}

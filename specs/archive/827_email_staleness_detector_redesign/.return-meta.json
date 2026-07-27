@@ -1,0 +1,54 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
+  "task_number": 827,
+  "session_id": "sess_1783957885_sv2g0b",
+  "plan_path": "specs/827_email_staleness_detector_redesign/plans/01_staleness-detector-redesign.md",
+  "phases_completed": 7,
+  "phases_total": 7,
+  "completion_data": {
+    "completion_summary": "Redesigned the /email staleness detector from an unreachable on-disk-files-vs-deduped-messages equality gate to a reachable file-vs-file comparison with bounded tolerance and a reindex-ran marker, propagated across staleness-detection.md, cross-repo census.nix/mbsync.nix (written, not built), wrapper-contracts.md, skill-email-cleanup SKILL.md, and lower-stakes docs, verified live to reach [ok] for both Gmail and Logos; two independent anomalies (22 unindexed Logos files, --account positional-arg bug) recommended as follow-up tasks."
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/827_email_staleness_detector_redesign/summaries/01_staleness-detector-redesign-summary.md",
+      "summary": "Full implementation summary: all 7 phases, live verification results, follow-up recommendations."
+    }
+  ],
+  "modified_files": [
+    ".claude/extensions/email/context/project/email/domain/staleness-detection.md",
+    ".claude/extensions/email/context/project/email/domain/wrapper-contracts.md",
+    ".claude/extensions/email/skills/skill-email-cleanup/SKILL.md",
+    ".claude/extensions/email/EXTENSION.md",
+    ".claude/extensions/email/README.md",
+    ".claude/extensions/email/commands/email.md",
+    ".claude/extensions/email/index-entries.json",
+    "specs/827_email_staleness_detector_redesign/plans/01_staleness-detector-redesign.md",
+    "specs/827_email_staleness_detector_redesign/summaries/01_staleness-detector-redesign-summary.md",
+    "specs/state.json",
+    "~/.dotfiles/modules/home/email/agent-tools/census.nix",
+    "~/.dotfiles/modules/home/email/mbsync.nix"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a freshness/staleness gate compares an on-disk file count against a notmuch count, use notmuch --output=files post-filtered by literal path prefix (e.g. `notmuch search --output=files 'path:X/cur or path:X/new' | grep -cE '/X/(cur|new)/'`), never `notmuch count folder:X` (deduped Message-ID count, wrong unit) nor a raw `notmuch count --output=files folder:X` (notmuch's --output=files returns ALL known files for a matching message across every folder/account, not just the queried folder — verified: folder:Gmail --output=files=238 vs 128 real files). Pair a file-vs-file comparison with a bounded tolerance (e.g. Δ=|on-disk-indexed|, T=max(5,ceil(0.10*on-disk))) rather than strict equality, since a small irreducible residual (duplicate-free but still-unindexed files) can make strict equality permanently unreachable for some accounts.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/827_email_staleness_detector_redesign/summaries/01_staleness-detector-redesign-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["notmuch", "staleness-gate", "output=files", "tolerance", "freshness-check"]
+    },
+    {
+      "content": "For a non-interactive implementation agent, task-system follow-up creation (/task, /spawn) requiring an interactive AskUserQuestion confirmation gate should be handled by recording concrete, actionable recommendations (with full diagnostic context / dead-ends ruled out) in the implementation summary rather than attempting to hand-roll state.json/TODO.md task entries directly. This preserves both scope discipline (no drive-by fix of the out-of-scope item) and correctness of the task-creation machinery (numbering, interactive confirmation) that only the proper /task or /spawn flow provides.",
+      "category": "PATTERN",
+      "source_artifact": "specs/827_email_staleness_detector_redesign/summaries/01_staleness-detector-redesign-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["follow-up-tasks", "scope-discipline", "task-creation", "non-interactive-agent"]
+    }
+  ]
+}

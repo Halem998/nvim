@@ -1,0 +1,45 @@
+{
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1781910367_99f70a_752",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 752,
+  "status": "implemented",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "completion_data": {
+    "completion_summary": "Implemented zotero-chunk.sh (PDF-to-markdown pipeline with index update) and zotero-attach-chunks.sh (idempotent chunk upload to Zotero) in .claude/extensions/zotero/scripts/, replacing stubs with full implementations. Both scripts are executable, pass syntax checks, follow exit code conventions (0/1/2), and integrate with SKILL.md handle_convert() and handle_attach() functions."
+  },
+  "artifacts": [
+    {
+      "type": "script",
+      "path": ".claude/extensions/zotero/scripts/zotero-chunk.sh",
+      "summary": "Full PDF-to-markdown chunking pipeline replacing stub"
+    },
+    {
+      "type": "script",
+      "path": ".claude/extensions/zotero/scripts/zotero-attach-chunks.sh",
+      "summary": "Idempotent chunk upload to Zotero replacing stub"
+    },
+    {
+      "type": "summary",
+      "path": "specs/752_implement_ondemand_pdf_markdown_conversion/summaries/01_pdf-conversion-summary.md",
+      "summary": "Implementation summary for task 752"
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "When implementing shell scripts that depend on a PDF path from a JSON index (like specs/zotero-index.json), read the path directly from the index via jq rather than invoking a CLI tool (like zot). This avoids runtime dependency on tools that may not be installed and keeps the script self-contained with only jq as a dependency.",
+      "category": "PATTERN",
+      "source_artifact": "specs/752_implement_ondemand_pdf_markdown_conversion/summaries/01_pdf-conversion-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["shell-script", "index-lookup", "dependency-avoidance", "jq", "pdf-path", "zotero"]
+    },
+    {
+      "content": "When calling literature-convert.sh from a downstream script, the output markdown filename is derived from the input PDF's basename (not from a citation key or custom name). To locate the output reliably, glob for *.md in the output directory after the call: `shopt -s nullglob; md_files=(\"$TMP_DIR\"/*.md); shopt -u nullglob`. This pattern works even if the PDF filename differs from the citation key.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/752_implement_ondemand_pdf_markdown_conversion/summaries/01_pdf-conversion-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["literature-convert", "glob", "output-filename", "markdown", "bash", "pdf-conversion"]
+    }
+  ]
+}

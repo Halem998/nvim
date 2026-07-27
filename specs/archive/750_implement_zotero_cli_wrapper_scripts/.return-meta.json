@@ -1,0 +1,34 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1781910367_99f70a_750",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 750,
+  "phases_completed": 3,
+  "phases_total": 3,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/750_implement_zotero_cli_wrapper_scripts/plans/01_cli-wrapper-plan.md",
+      "summary": "3-phase implementation plan for zotero-setup.sh, zotero-read.sh, and zotero-write.sh CLI wrapper scripts (all phases COMPLETED)"
+    },
+    {
+      "type": "summary",
+      "path": "specs/750_implement_zotero_cli_wrapper_scripts/summaries/01_cli-wrapper-summary.md",
+      "summary": "Implementation summary for all 3 Category A Zotero CLI wrapper scripts"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented all 3 Category A Zotero CLI wrapper scripts: zotero-setup.sh (4 sub-commands: --detect, --configure, --validate, --status), zotero-read.sh (9 read operations wrapping zot with JSON envelope parsing), and zotero-write.sh (4 write operations with --dry-run and --idempotency-key flags). All scripts use BASH_SOURCE[0]-relative project root resolution, the 0/1/2 exit code convention, and stderr/stdout separation.",
+    "subtasks_completed": ["1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8", "2.9", "2.10", "2.11", "2.12", "2.13", "2.14", "2.15", "2.16", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+  },
+  "memory_candidates": [
+    {
+      "content": "Zotero CLI wrapper pattern: Scripts wrapping zot (zotero-cli-cc) should use BASH_SOURCE[0]-relative ../../ path resolution (same as literature-retrieve.sh). ZOT_DATA_DIR resolution order: (1) env var, (2) specs/zotero-index.json .zot_data_dir field, (3) auto-detect common paths. JSON envelope: pass --json explicitly to zot for structured output {ok, data, meta}; extract .data or handle .error. Exit codes: 0=success, 1=runtime error, 2=not configured/not installed. PDF operations (pdf, outline, annotations) use plain text output without --json.",
+      "category": "PATTERN",
+      "source_artifact": "specs/750_implement_zotero_cli_wrapper_scripts/summaries/01_cli-wrapper-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["zotero", "zot", "cli-wrapper", "ZOT_DATA_DIR", "json-envelope", "bash-scripts"]
+    }
+  ]
+}

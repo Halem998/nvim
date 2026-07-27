@@ -1,0 +1,84 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/886_retroactive_bootstrap_harvest_from_transcript_window/plans/01_transcript-corpus-harvest.md",
+      "summary": "Six-phase plan, all phases [COMPLETED], Testing & Validation checklist fully checked off with observed numbers."
+    },
+    {
+      "type": "summary",
+      "path": "specs/886_retroactive_bootstrap_harvest_from_transcript_window/summaries/01_transcript-corpus-harvest-summary.md",
+      "summary": "Implementation summary: what changed, decisions, deviations, verification, notes."
+    },
+    {
+      "type": "dataset",
+      "path": "specs/886_retroactive_bootstrap_harvest_from_transcript_window/dataset/sessions.jsonl",
+      "summary": "829 validated rows, one per top-level transcript session."
+    },
+    {
+      "type": "dataset",
+      "path": "specs/886_retroactive_bootstrap_harvest_from_transcript_window/dataset/history-spine.jsonl",
+      "summary": "4,930 validated rows, one per history.jsonl sessionId."
+    },
+    {
+      "type": "dataset",
+      "path": "specs/886_retroactive_bootstrap_harvest_from_transcript_window/dataset/harvest-manifest.json",
+      "summary": "Run metadata and observed per-pass counts; fixed from a prior invalid-JSON state during this resume."
+    },
+    {
+      "type": "documentation",
+      "path": "specs/886_retroactive_bootstrap_harvest_from_transcript_window/dataset/README.md",
+      "summary": "Dataset schema, inferred_outcome formula, and honest known-gaps section."
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1784135810_7e6755_886",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  },
+  "completion_data": {
+    "completion_summary": "Resumed a killed implementation session, fixed two real bugs in the bootstrap harvest scripts (manifest-corrupting WARN-line parse bug, an unwired decode-failure counter), ran the read-only one-shot transcript+history.jsonl harvest to a validated 829-session / 4,930-history-row dataset, and registered the four harvest scripts as deployable memory-extension artifacts (provides.scripts, doc-lint clean).",
+    "roadmap_items": []
+  },
+  "memory_candidates": [
+    {
+      "content": "When a bash script's stderr summary line must be parsed by a caller (key=value extraction), and the script also emits WARN/diagnostic lines to the same stderr stream, anchor the parse to a machine-readable last-line contract (e.g. grep for a fixed '<scriptname>.sh: ' prefix and take the last match) rather than treating the whole stderr blob as the summary. Interleaved diagnostic lines before the real summary line will otherwise corrupt any naive whitespace/kv tokenization of the combined text.",
+      "category": "PATTERN",
+      "source_artifact": "specs/886_retroactive_bootstrap_harvest_from_transcript_window/summaries/01_transcript-corpus-harvest-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["stderr parsing", "bash", "kv-line", "manifest generation", "diagnostic vs summary output"]
+    },
+    {
+      "content": "When self-exclusion or content filtering in a data harvest checks for a session/entity id, match on the exact structured field (e.g. session_id == X) rather than doing a raw substring grep across the whole output. Substring matches produce false positives when an id happens to appear inside an unrelated field's value (e.g. a scratchpad path that embeds a session id as a directory component). Precise field-match validation avoids misdiagnosing a correctly-working exclusion as broken.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/886_retroactive_bootstrap_harvest_from_transcript_window/summaries/01_transcript-corpus-harvest-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["self-exclusion", "data validation", "false positive", "substring vs exact match", "audit"]
+    },
+    {
+      "content": "Extension manifests with a `provides.scripts` array (memory extension pattern) must list every deployable script by filename; loader.lua's copy_scripts() returns early and silently deploys nothing if the key is absent entirely -- an easy silent-failure mode when new scripts are added to an extension's scripts/ directory without touching manifest.json.",
+      "category": "CONFIG",
+      "source_artifact": "specs/886_retroactive_bootstrap_harvest_from_transcript_window/summaries/01_transcript-corpus-harvest-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["extension manifest", "provides.scripts", "loader.lua", "silent deploy failure", "doc-lint"]
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/memory/README.md",
+    "agent-system/extensions/memory/manifest.json",
+    "agent-system/extensions/memory/scripts/bootstrap-harvest-attribution.sh",
+    "agent-system/extensions/memory/scripts/bootstrap-harvest-history.sh",
+    "agent-system/extensions/memory/scripts/bootstrap-harvest-transcripts.sh",
+    "agent-system/extensions/memory/scripts/bootstrap-harvest.sh",
+    "specs/886_retroactive_bootstrap_harvest_from_transcript_window/dataset/README.md",
+    "specs/886_retroactive_bootstrap_harvest_from_transcript_window/dataset/harvest-manifest.json",
+    "specs/886_retroactive_bootstrap_harvest_from_transcript_window/dataset/history-spine.jsonl",
+    "specs/886_retroactive_bootstrap_harvest_from_transcript_window/dataset/sessions.jsonl",
+    "specs/886_retroactive_bootstrap_harvest_from_transcript_window/plans/01_transcript-corpus-harvest.md",
+    "specs/886_retroactive_bootstrap_harvest_from_transcript_window/summaries/01_transcript-corpus-harvest-summary.md"
+  ],
+  "phases_completed": 6,
+  "phases_total": 6
+}

@@ -1,0 +1,14 @@
+{
+  "status": "implemented",
+  "summary": "Fixed all 5 opencode drift gaps: agent paths in nvim/nix extension opencode-agents.json, hook log dir paths in 3 hooks, .claude/ references in 5 validation scripts (plus core/scripts mirrors), synthesis-agent registration in core opencode-agents.json, and stale rules README cleanup",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/637_verification_and_drift_detection/summaries/01_verification-fix-summary.md"
+    }
+  ],
+  "next_action_hint": "complete",
+  "phases_completed": 5,
+  "phases_total": 5
+}

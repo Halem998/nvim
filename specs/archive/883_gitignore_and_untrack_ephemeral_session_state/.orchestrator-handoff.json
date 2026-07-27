@@ -1,0 +1,20 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Added 9 ephemeral-orchestration-state patterns to the repo-root .gitignore and untracked 202 currently-tracked matches via git rm --cached (index-only; all working-tree files intact). All check-ignore/negative-control/audit verifications passed across 3 phases.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/883_gitignore_and_untrack_ephemeral_session_state/summaries/01_gitignore-untrack-ephemeral-state-summary.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    ".gitignore"
+  ],
+  "decisions_made": [
+    ".orchestrator-handoff.json confirmed ephemeral per handoff-schema.md and untracked, not preserved",
+    "Manifest count deviated to 202 (not 198) from live sibling task 880/884 activity; confirmed every added path matched an intended pattern before proceeding"
+  ],
+  "dead_ends": [],
+  "plan_markers_verified": true
+}

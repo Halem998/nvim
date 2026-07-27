@@ -1,0 +1,38 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1781500889_343926",
+  "task_number": 710,
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "plan_path": "specs/710_research_centralized_literature_zotero/plans/02_centralized-literature-plan.md",
+  "started_at": "2026-06-14T00:00:00Z",
+  "completed_at": "2026-06-14T01:00:00Z",
+  "phases_completed": 6,
+  "phases_total": 6,
+  "completion_data": {
+    "completion_summary": "Implemented centralized literature management: added LITERATURE_DIR env var with two-tier fallback to literature-retrieve.sh and skill-literature/SKILL.md, created ~/Projects/Literature/ with v2 index schema, migrated 183 BimodalLogic entries, configured env var in settings.json and home.nix, deployed updated scripts to BimodalLogic, and updated ROADMAP.md and extension documentation."
+  },
+  "memory_candidates": [
+    {
+      "content": "jq -n --argjson passes JSON as command-line argument. When JSON exceeds ~128KB (OS limit), the error 'Argument list too long' occurs. Fix: use --slurpfile with temp files instead. Pattern: echo \"$json\" > tmpfile && jq -n --slurpfile var tmpfile '$var[0]'. Always use slurpfile for potentially large JSON arrays (e.g., literature indexes with 100+ entries).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/710_research_centralized_literature_zotero/summaries/03_centralized-literature-summary.md",
+      "confidence": 0.95,
+      "suggested_keywords": ["jq", "argument-list-too-long", "slurpfile", "bash", "large-json", "temp-file"]
+    },
+    {
+      "content": "The centralized literature repository at ~/Projects/Literature/ is the canonical source for all projects. LITERATURE_DIR=/home/benjamin/Projects/Literature is configured in .claude/settings.json (immediate effect in Claude Code) and ~/.dotfiles/home.nix (requires home-manager switch for shell sessions). The migration script at ~/Projects/Literature/scripts/migrate-from-repo.sh can import from additional per-project specs/literature/ directories.",
+      "category": "CONFIG",
+      "source_artifact": "specs/710_research_centralized_literature_zotero/summaries/03_centralized-literature-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["LITERATURE_DIR", "centralized", "literature", "Projects/Literature", "configuration"]
+    }
+  ],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/710_research_centralized_literature_zotero/summaries/03_centralized-literature-summary.md",
+      "summary": "Implementation summary covering all 6 phases, 183 migrated entries, decisions, and deviations"
+    }
+  ]
+}

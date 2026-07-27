@@ -1,0 +1,29 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1781288710_ad1e5a_678",
+  "task_number": 678,
+  "phases_completed": 3,
+  "phases_total": 3,
+  "completion_data": {
+    "completion_summary": "Added advisory-only churn detection to skill-orchestrate/SKILL.md: extended loop guard schema with churn_advisory sub-object, implemented check_churn_advisory() function with three signals (plan revisions, no-progress dispatches, analysis-only), and wired the call into Stage 5 between postflight and artifact linking.",
+    "roadmap_items": []
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/678_auto_escalation_advisory_v2/summaries/01_auto-escalation-summary.md",
+      "summary": "Implementation summary for task 678 churn advisory: 3 phases completed, ~80 lines added to SKILL.md"
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "When adding advisory-only features to orchestrator SKILL.md files, use the pattern: (1) extend loop guard JSON schema with a sub-object for new counters in Stage 2, (2) define a new Stage Nb function section, (3) call it from the appropriate Stage N after postflight but before artifact linking. Stage 7's selective jq merge (.field = $val) pattern naturally preserves unmentioned sub-objects, so no Stage 7 changes are needed for additive fields.",
+      "category": "PATTERN",
+      "source_artifact": "specs/678_auto_escalation_advisory_v2/summaries/01_auto-escalation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["skill-orchestrate", "loop-guard", "advisory", "churn-detection", "stage-5", "selective-merge"]
+    }
+  ]
+}

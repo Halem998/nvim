@@ -1,0 +1,40 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1784998517_0638c7_896",
+  "task_number": 896,
+  "plan_path": "specs/896_fix_cwd_relative_artifact_linking_in_skill_base/plans/01_cwd-relative-artifact-linking-fix.md",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/896_fix_cwd_relative_artifact_linking_in_skill_base/summaries/01_cwd-relative-artifact-linking-fix-summary.md",
+      "summary": "Implementation summary: skill_link_artifacts anchored on SKILL_REPO_ROOT, reconcile-artifacts.sh gained an opt-in --task N filter, both verified from a non-root cwd against a scratch harness."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Anchored skill_link_artifacts' three cwd-relative paths on SKILL_REPO_ROOT and added a missing mkdir -p for specs/tmp in skill-base.sh; added an opt-in --task N filter to reconcile-artifacts.sh while keeping its default no-argument sweep byte-for-byte unchanged. Verified with executable non-root-cwd regression tests against a throwaway harness."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/reconcile-artifacts.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a bash function inside a repo's core scripts hardcodes cwd-relative paths (e.g. 'specs/state.json') instead of an already-exported repo-root anchor variable, it silently no-ops (or errors on a missing intermediate directory) whenever invoked from a non-root working directory. The fix pattern is: anchor every path operand -- including redirect targets and the source arg to `mv` -- on the anchor variable, and add any missing `mkdir -p` for intermediate directories the redirects depend on (e.g. a tmp dir used for atomic jq round-trips) as the first statement before the first write.",
+      "category": "PATTERN",
+      "source_artifact": "specs/896_fix_cwd_relative_artifact_linking_in_skill_base/summaries/01_cwd-relative-artifact-linking-fix-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["cwd-relative-paths", "SKILL_REPO_ROOT", "bash-anchor-pattern", "mkdir-p-guard", "atomic-jq-writeback"]
+    },
+    {
+      "content": "Converting a bash `for arg in \"$@\"; do case \"$arg\" in ... esac; done` argument parser to accept a flag with a value (e.g. `--task N`) requires switching to `while [[ $# -gt 0 ]]; do case \"$1\" in ... shift [N]; done` -- the for-loop form iterates positional args by value and cannot consume/shift a following token, so a naive addition of a value-taking flag causes the flag's value to fall through to the catch-all and abort. Support both two-token (`--flag value`, shift 2) and single-token (`--flag=value`, shift 1) forms for compatibility.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/896_fix_cwd_relative_artifact_linking_in_skill_base/summaries/01_cwd-relative-artifact-linking-fix-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash-arg-parsing", "while-shift-loop", "flag-with-value", "getopts-alternative"]
+    }
+  ]
+}

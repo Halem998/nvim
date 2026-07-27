@@ -1,0 +1,36 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1749675000_667_orch",
+  "task_number": 667,
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "started_at": "2026-06-11T00:30:00Z",
+  "completed_at": "2026-06-11T01:00:00Z",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "summary": "Created cslib /pr command with full CI pipeline, user approval gates, and manifest update",
+  "completion_data": {
+    "completion_summary": "Created .claude/extensions/cslib/commands/pr.md with an 11-step PR workflow including 3-mode input dispatch (task/path/description), 7-step CI pipeline with auto-fix offers, conventional commit title composition via AskUserQuestion, and optional merge-back. Updated manifest.json to register the command."
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/667_create_cslib_pr_command/summaries/01_pr-command-summary.md",
+      "summary": "PR command implementation summary"
+    },
+    {
+      "type": "command",
+      "path": ".claude/extensions/cslib/commands/pr.md",
+      "summary": "CSLib /pr command with full workflow"
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "CSLib extension PR workflow pattern: The /pr command for cslib uses command-only architecture (no separate skill) due to requiring 4+ interactive AskUserQuestion gates. Input modes: task number (integer), path (contains /), free-text description. CI pipeline is 7 steps: lake build, checkInitImports, lint, lint-style (--fix available), test, mk_all (conditional on new .lean files), shake (--fix available). PR target is always leanprover/cslib with --base main via gh pr create. Fork model: origin=benbrastmckie/cslib, upstream=leanprover/cslib.",
+      "category": "PATTERN",
+      "source_artifact": "specs/667_create_cslib_pr_command/summaries/01_pr-command-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["cslib", "pr-workflow", "ci-pipeline", "lake", "gh-cli", "conventional-commit"]
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/844_finish_or_defer_zotero_cite_install/summaries/01_install-summary.md",
+      "summary": "Activated the /cite trio + zotero-search.sh via byte-for-byte deploy, defer-and-documented 7 zotero scripts in README, verified check-extension-docs.sh exit 0 with literature PASS."
+    }
+  ],
+  "next_steps": "Task complete. Optional follow-ups: register literature extension in .claude/extensions.json via loader flow; prune dead-code zotero-index-add.sh/zotero-index-remove.sh in a future task.",
+  "metadata": {
+    "session_id": "sess_1783728731_72f337_844",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  },
+  "completion_data": {
+    "completion_summary": "Activated the /cite trio (cite-extract.sh, skill-cite, cite.md) and zotero-search.sh via byte-for-byte deployment from extension source; defer-and-documented the 7 remaining zotero scripts in the literature README with named reasons; documented the extensions.json tracking gap as a follow-up. check-extension-docs.sh verified exit 0 with all 19 extensions PASS (including literature and lean, zero regressions)."
+  },
+  "modified_files": [
+    ".claude/scripts/cite-extract.sh",
+    ".claude/skills/skill-cite/SKILL.md",
+    ".claude/commands/cite.md",
+    ".claude/scripts/zotero-search.sh",
+    ".claude/extensions/literature/README.md",
+    "specs/844_finish_or_defer_zotero_cite_install/plans/01_install-plan.md",
+    "specs/844_finish_or_defer_zotero_cite_install/summaries/01_install-summary.md",
+    "specs/844_finish_or_defer_zotero_cite_install/progress/phase-1-progress.json",
+    "specs/844_finish_or_defer_zotero_cite_install/progress/phase-2-progress.json",
+    "specs/844_finish_or_defer_zotero_cite_install/progress/phase-3-progress.json",
+    "specs/844_finish_or_defer_zotero_cite_install/progress/phase-4-progress.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "check-extension-docs.sh's check_deployed_script_drift() (Rule F) treats a manifest-declared script with an ABSENT deployed copy as an intentional 'not deployed' info line, never a FAIL -- it only FAILs on content mismatch when BOTH the deployed and extension-source copies exist. This lets an extension manifest declare a superset of scripts (some deployed/live, some source-only/deferred) without tripping the drift guard, as long as truly-deployed copies stay byte-identical to source.",
+      "category": "PATTERN",
+      "source_artifact": "specs/844_finish_or_defer_zotero_cite_install/summaries/01_install-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["check-extension-docs", "drift-guard", "manifest", "provides.scripts", "deploy"]
+    },
+    {
+      "content": "Before trusting a research report's claim that a file is 'never deployed' or 'source-only', re-verify against the live filesystem at implementation time -- research and implementation can be separated by unrelated commits from other tasks that change deployment state (e.g. task 763 deployed test-lit-pipeline.sh independently of the zotero/cite research in task 844, making an earlier finding stale).",
+      "category": "INSIGHT",
+      "source_artifact": "specs/844_finish_or_defer_zotero_cite_install/summaries/01_install-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["research-staleness", "verification", "deployment-state", "drift"]
+    }
+  ]
+}

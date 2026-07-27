@@ -1,0 +1,30 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "session_id": "sess_1781284922_643662_672",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 672,
+  "phases_completed": 4,
+  "phases_total": 4,
+  "started_at": "2026-06-12T00:00:00Z",
+  "completed_at": "2026-06-12T10:35:00Z",
+  "completion_data": {
+    "completion_summary": "Created canonical pr-description-format.md for the cslib extension, registered it in the context index, replaced the outdated pr-conventions.md inline template with a reference link, and updated the /pr command STEP 9 template to match the canonical format (removing CI checkboxes, adding Context and File-by-file sections)."
+  },
+  "memory_candidates": [
+    {
+      "content": "When creating documentation format files that contain nested code fences, use 4-backtick (````markdown) outer fences to allow 3-backtick examples inside without escaping. This applies to pr-description-format.md style files that show markdown examples with code blocks.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/672_pr_description_format_standard/summaries/01_implementation-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["markdown", "code fence", "nested", "backtick", "documentation", "format"]
+    }
+  ],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/672_pr_description_format_standard/summaries/01_implementation-summary.md",
+      "summary": "Implementation summary for PR description format standardization"
+    }
+  ]
+}

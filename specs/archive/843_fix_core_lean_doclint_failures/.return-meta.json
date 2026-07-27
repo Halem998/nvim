@@ -1,0 +1,45 @@
+{
+  "status": "implemented",
+  "metadata": {
+    "session_id": "sess_1783728731_72f337_843",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/843_fix_core_lean_doclint_failures/summaries/01_doclint-fix-summary.md",
+      "summary": "Implementation summary: core script backport+registration and lean WARN restoration cleared all 4 doc-lint FAILs; check-extension-docs.sh exits 0, all sections PASS, Rule F byte-identity intact, literature unaffected."
+    }
+  ],
+  "modified_files": [
+    ".claude/extensions/core/scripts/orchestrator-postflight.sh",
+    ".claude/extensions/core/manifest.json",
+    ".claude/scripts/check-extension-docs.sh",
+    ".claude/extensions/core/scripts/check-extension-docs.sh",
+    "specs/843_fix_core_lean_doclint_failures/plans/01_doclint-fix-plan.md",
+    "specs/843_fix_core_lean_doclint_failures/summaries/01_doclint-fix-summary.md"
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed all 4 doc-lint FAILs (2 core, 2 lean) by backporting orchestrator-postflight.sh into core extension source plus registering both it and task-lock.sh in provides.scripts, and restoring task #771's WARN classification for the two lean -hard routing_hard targets in both copies of check-extension-docs.sh. check-extension-docs.sh now exits 0 with all 19 extension sections PASS; Rule F byte-identity and the literature section are both intact."
+  },
+  "memory_candidates": [
+    {
+      "content": "In this .claude/ agent system, check-extension-docs.sh is itself a core provides.scripts entry, so any edit to it must be applied byte-identically to BOTH .claude/scripts/check-extension-docs.sh (deployed) and .claude/extensions/core/scripts/check-extension-docs.sh (source), or the #841 Rule F deployed-vs-source drift guard fails. Safest mechanism: edit the deployed copy first, verify with bash -n and a manual diff against the pre-edit source to confirm no other content differs, then `cp` the fully-edited deployed file over the source copy rather than hand-editing both independently — this guarantees byte-identity by construction instead of by double independent editing.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/843_fix_core_lean_doclint_failures/summaries/01_doclint-fix-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["check-extension-docs", "drift-guard", "deployed-vs-source", "byte-identical", "core-manifest", "doc-lint"]
+    },
+    {
+      "content": "The recurring core doc-lint bug class in .claude/ is 'referenced-but-unpackaged script': a script exists deployed under .claude/scripts/ and is referenced by skills/agents/docs, but was never added to core's provides.scripts (or never backported into .claude/extensions/core/scripts/ as source-of-truth). Fix pattern (per task #793 precedent, reapplied by #843): copy deployed content into .claude/extensions/core/scripts/ FIRST via `cp` (never hand-edit — it's the sole in-use version), verify with diff -q, THEN register in provides.scripts. A manifest-only edit without the source backport trips a NEW 'manifest script entry missing on disk' FAIL.",
+      "category": "PATTERN",
+      "source_artifact": "specs/843_fix_core_lean_doclint_failures/summaries/01_doclint-fix-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["provides.scripts", "backport", "extension-source", "missing-on-disk", "core-manifest", "doc-lint"]
+    }
+  ],
+  "errors": []
+}

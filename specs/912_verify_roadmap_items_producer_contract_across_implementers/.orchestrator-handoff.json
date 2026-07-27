@@ -1,0 +1,18 @@
+{
+  "status": "implemented",
+  "task_number": 912,
+  "session_id": "sess_1785116996_862366_912",
+  "summary": "All 5 phases of the roadmap_items producer-contract fix are complete. Phase 1 repaired the dead-code roadmap_items drop in skill-lean-implementation-hard/SKILL.md. Phase 2 replaced skill-implementer-hard/SKILL.md's imprecise Stage 7a cross-reference with a precise inline restatement (and added the missing roadmap_items extraction it depends on). Phase 3 declared the file_scope expansion in state.json (5 -> 8 paths) before any expanded-scope edit. Phase 4 closed the confirmed root cause by adding a one-line completion_data pointer instruction to the three agents that never generated it (general-implementation-hard-agent.md, lean-implementation-hard-agent.md, lean-implementation-agent.md), each pointing at the existing shared return-metadata-file.md schema rather than duplicating it. Phase 5 rebuilt and verified the cross-matrix: core, core-hard, lean, lean-hard, and web all now satisfy both links (agent generates completion_data; SKILL.md propagates completion_summary and roadmap_items). skill-implementer, skill-lean-implementation, skill-web-implementation, and merge-sources/claudemd.md were confirmed untouched. Two incidental pre-existing task-number citations were fixed with durable anchors in files already being edited, since the plan's own final grep check covers whole-file scope. Three follow-ups recorded in the summary: (1) the mirror-image nix/neovim/epidemiology gap where the agent generates completion_data but the SKILL.md never propagates it, (2) extracting the now-5x-duplicated postflight jq block into a shared script, (3) a coordination note that claudemd.md's producer/consumer contract text may need a follow-up update once the concurrent terminal-status-taxonomy task completes. All edits are confined to agent-system/extensions/** plus specs/state.json/TODO.md/task-dir -- no .claude/** edits, per the source-store rule.",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "plan_markers_verified": true,
+  "artifacts": [
+    {
+      "path": "specs/912_verify_roadmap_items_producer_contract_across_implementers/summaries/01_roadmap-items-producer-fix-summary.md",
+      "type": "summary",
+      "summary": "Verified cross-matrix (core, core-hard, lean, lean-hard, web all now satisfy both links of the roadmap_items producer/consumer contract); recorded three follow-ups (nix/neovim/epi mirror-image gap, shared-postflight-script extraction, claudemd.md coordination note) plus the redeploy caveat."
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "Task complete. Recommended follow-up tasks (not created by this dispatch, left for the orchestrator/user to decide): (1) fix the nix/neovim/epidemiology mirror-image gap (SKILL.md never propagates completion_data that the agent already generates), (2) extract the duplicated postflight completion_data jq block into a shared script, (3) once the concurrent terminal-status-taxonomy task lands, check whether merge-sources/claudemd.md's producer/consumer contract text needs a follow-up update to match this task's fixes. The redeploy of agent-system/extensions/ to .claude/ (a separate operator step) is required before these fixes take effect at runtime."
+}

@@ -1,0 +1,22 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/751_implement_zotero_search_local_index/plans/01_search-index-plan.md",
+      "summary": "4-phase plan for index management scripts and --task N mode wiring; 5 hours estimated"
+    }
+  ],
+  "next_steps": "Run /implement 751 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1781910367_99f70a_751",
+    "agent_type": "planner-agent",
+    "duration_seconds": 300,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 5,
+    "dependency_waves": [[1, 2], [3], [4]]
+  },
+  "memory_candidates": []
+}

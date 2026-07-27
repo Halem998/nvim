@@ -1,0 +1,28 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 646,
+  "session_id": "sess_1780976739_21f335_646",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/646_harden_todo_status_updates/summaries/01_implementation-summary.md",
+      "summary": "Implementation summary for replacing sed patterns with awk single-pass in update-task-status.sh"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Replaced brittle sed two-step extraction+replacement in update_todo_task_entry and update_todo_task_order Mode A with awk single-pass using sub(/\\[[A-Z ]+\\]/, \"[NEW_STATUS]\"), adding non-zero exit codes for genuine failures instead of silent no-ops."
+  },
+  "memory_candidates": [
+    {
+      "content": "When replacing sed status extraction+replacement patterns in bash scripts, use awk single-pass with `match($0, /\\[([A-Z ]+)\\]/, arr)` for extraction and `sub(/\\[[A-Z ]+\\]/, \"[NEW]\")`  for replacement. Capture awk output into a variable via `result=$(awk ... ) || { handle_failure; }` to prevent `set -euo pipefail` from aborting the script on a non-zero awk exit. Use `printf '%s\\n'` (not echo) to write multiline awk output to a temp file to avoid trailing-newline corruption.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/646_harden_todo_status_updates/summaries/01_implementation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["awk", "sed", "status-replacement", "bash", "single-pass", "set-e-pipefail"]
+    }
+  ]
+}

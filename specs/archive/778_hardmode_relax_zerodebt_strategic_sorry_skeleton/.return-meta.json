@@ -1,0 +1,69 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "contract",
+      "path": ".claude/context/contracts/anti-analysis.md",
+      "summary": "5-condition strategic-sorry acceptance test added under a retitled, --hard-only-noted Sub-Sorry Policy section"
+    },
+    {
+      "type": "contract",
+      "path": ".claude/context/contracts/wrap-up.md",
+      "summary": "skeleton boolean field, 7-field canonical sorry_inventory schema, status/skeleton interaction table, --hard-only build-green exception"
+    },
+    {
+      "type": "skill",
+      "path": ".claude/skills/skill-implementer-hard/SKILL.md",
+      "summary": "Stage 6 parses skeleton/sorry_inventory and logs skeleton dispatches; Stage 7 comment confirms unchanged postflight gate"
+    },
+    {
+      "type": "skill",
+      "path": ".claude/extensions/core/skills/skill-implementer-hard/SKILL.md",
+      "summary": "Identical Stage 6/7 edit; byte-identical to deployed copy for the edited section"
+    },
+    {
+      "type": "agent",
+      "path": ".claude/agents/general-implementation-hard-agent.md",
+      "summary": "Strategic-Sorry Skeleton subsection, third worked handoff example, MUST-DO follow_up_task line"
+    },
+    {
+      "type": "agent",
+      "path": ".claude/extensions/core/agents/general-implementation-hard-agent.md",
+      "summary": "Identical edit, confirmed byte-identical to deployed copy"
+    },
+    {
+      "type": "summary",
+      "path": "specs/778_hardmode_relax_zerodebt_strategic_sorry_skeleton/summaries/01_strategic-sorry-skeleton-policy-summary.md",
+      "summary": "Implementation summary with verification results and downstream notes for tasks 772/774"
+    }
+  ],
+  "phases_completed": 5,
+  "phases_total": 5,
+  "completion_data": {
+    "completion_summary": "Broadened anti-analysis.md into a domain-agnostic 5-condition strategic-sorry acceptance test permitting main-target-level placeholders at deliberate skeleton division points; added a skeleton boolean and extended 7-field sorry_inventory schema to wrap-up.md with a --hard-only build-green exception (no 4th status enum value); updated skill-implementer-hard Stage 6 parsing/logging and general-implementation-hard-agent Stage 5 with an 'implemented (skeleton)' handoff example across both deployed and extensions/core dual copies (verified byte-identical); recorded an explicit downstream note that lean/cslib hard-mode overrides contradict the new core policy, flagged for a follow-up task via 772."
+  },
+  "memory_candidates": [
+    {
+      "content": "Hard-mode contracts (.claude/context/contracts/anti-analysis.md, wrap-up.md) are single-copy files loaded exclusively by -hard skills/agents, so a policy relaxation confined to these two files is structurally --hard-only by construction; make that gate explicit with a one-line '--hard-only' note at the top of each contract so the invariant is stated, not just implied. When adding a new outcome type to a status-gated schema (e.g. an 'implemented (skeleton)' outcome), prefer adding a new boolean field alongside the existing status enum rather than a 4th enum value -- this avoids touching every status == \"implemented\" consumer (validate-handoff.sh, postflight gates) while still making the new outcome machine-distinguishable.",
+      "category": "PATTERN",
+      "source_artifact": "specs/778_hardmode_relax_zerodebt_strategic_sorry_skeleton/summaries/01_strategic-sorry-skeleton-policy-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["hard-mode", "contracts", "status-enum", "boolean-field", "schema-extension", "sorry-inventory"]
+    },
+    {
+      "content": "When editing dual-tracked skill/agent files (deployed .claude/skills|agents/ copy + .claude/extensions/core/ source copy) in this repo, diff the pair BEFORE editing -- pre-existing unrelated divergences (e.g. from other concurrently-landed tasks) are common and must not be conflated with divergence introduced by your own edit. Scope the post-edit diff check to 'no NEW differences beyond the pre-existing baseline' rather than assuming byte-identity was true before you started.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/778_hardmode_relax_zerodebt_strategic_sorry_skeleton/summaries/01_strategic-sorry-skeleton-policy-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["dual-copy", "extensions-core", "diff", "byte-identity", "territory", "parallel-agents"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1783090407_348a96_778",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
+}

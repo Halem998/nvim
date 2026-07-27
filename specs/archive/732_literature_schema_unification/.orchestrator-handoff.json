@@ -1,0 +1,14 @@
+{
+  "status": "implemented",
+  "summary": "Removed 6 redundant directory entries (burgess_1982, burgess_1982b, venema_1991, venema_1993, derijke_1995, venema_1993_since) from ~/Projects/Literature/index.json. Fixed token_count on blackburn_2001 (247014) and gabbay_1994 (36472). Validated: 206 entries, 0 orphans, 0 unindexed files, 0 duplicate IDs, 205/206 entries fully v2-compliant. cslib phases skipped (no specs/literature/ directory exists in cslib).",
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "none",
+  "phases_completed": 2,
+  "phases_total": 2,
+  "artifacts": [{
+    "type": "summary",
+    "path": "specs/732_literature_schema_unification/summaries/01_schema-unification-summary.md",
+    "summary": "Schema unification complete: 6 entries removed, 2 token_counts fixed, index validated at 206 entries"
+  }]
+}

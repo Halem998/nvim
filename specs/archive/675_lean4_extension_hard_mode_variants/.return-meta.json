@@ -1,0 +1,40 @@
+{
+  "status": "implemented",
+  "started_at": "2026-06-12T00:00:00Z",
+  "completed_at": "2026-06-12T01:00:00Z",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/675_lean4_extension_hard_mode_variants/summaries/01_lean4-hard-mode-summary.md",
+      "summary": "Implementation summary: created 6 new files and updated 3 existing files to add hard-mode routing to the lean4 extension"
+    }
+  ],
+  "partial_progress": null,
+  "completion_data": {
+    "completion_summary": "Added hard-mode routing to the lean4 extension: created lean-research-hard-agent and lean-implementation-hard-agent (both model: opus), lean4 contract overrides for H2 and H3, skill-lean-research-hard and skill-lean-implementation-hard, and updated manifest.json with routing_hard, index-entries.json with 2 new contract entries, and EXTENSION.md with Lean Hard Mode documentation.",
+    "roadmap_items": []
+  },
+  "memory_candidates": [
+    {
+      "content": "Lean4 hard-mode contract overrides live in .claude/extensions/lean/context/contracts/ (separate from core .claude/context/contracts/). The anti-analysis.md override sets the H2 formal proof line bar at 30% of tool calls (not core's 20%) to account for lean4 search overhead. The reference-grounding.md override requires a 5-column lemma mapping table (Source, Prop/Location, Lean Identifier, Type Signature, Status) for all Tier 1 tasks.",
+      "category": "PATTERN",
+      "source_artifact": "specs/675_lean4_extension_hard_mode_variants/summaries/01_lean4-hard-mode-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["lean4", "hard-mode", "contracts", "anti-analysis", "reference-grounding", "H2", "H3"]
+    },
+    {
+      "content": "When creating hard-mode extension agents, make them self-contained with NO @-references to their base agent files. Include all lean-specific sections (blocked tools, allowed tools, search decision tree, zero-debt policy) inline. This prevents accidental base agent override and ensures the hard-mode contracts are the only behavioral layer active.",
+      "category": "PATTERN",
+      "source_artifact": "specs/675_lean4_extension_hard_mode_variants/summaries/01_lean4-hard-mode-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["hard-mode", "agent", "self-contained", "extension", "behavioral-contracts"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1781288710_ad1e5a_675",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
+}

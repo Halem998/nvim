@@ -1,0 +1,39 @@
+{
+  "task_number": 534,
+  "task_type": "meta",
+  "status": "planned",
+  "plan_file": "specs/534_sync_extension_routing_tables/plans/01_sync-routing-tables.md",
+  "research_file": "specs/534_sync_extension_routing_tables/reports/01_routing-tables-research.md",
+  "phases": [
+    {
+      "phase": 1,
+      "title": "Audit current tables across all 3 command docs",
+      "status": "pending"
+    },
+    {
+      "phase": 2,
+      "title": "Add missing task types to /implement table (with correct skills)",
+      "status": "pending"
+    },
+    {
+      "phase": 3,
+      "title": "Add missing task types to /research table",
+      "status": "pending"
+    },
+    {
+      "phase": 4,
+      "title": "Add missing task types to /plan table",
+      "status": "pending"
+    },
+    {
+      "phase": 5,
+      "title": "Update Anti-Bypass Constraint to reference all applicable skills",
+      "status": "pending"
+    },
+    {
+      "phase": 6,
+      "title": "Validate consistency across all three tables",
+      "status": "pending"
+    }
+  ]
+}

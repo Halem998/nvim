@@ -1,0 +1,20 @@
+{
+  "status": "implemented",
+  "summary": "Created zotero-search.sh in .claude/extensions/literature/scripts/ with weighted CSL-JSON keyword search (title 3x, keyword 2x, abstract/author 1x), single-pass jq scoring, bash PDF path verification post-pass, --limit and --format=pretty flags, 3-tier library path fallback chain, and graceful missing-library error with setup instructions. Updated manifest.json to register the script under provides.scripts. All 10 integration tests pass.",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "blockers": [],
+  "continuation_context": null,
+  "artifacts": [
+    {
+      "path": "specs/711_create_zotero_search_script/summaries/02_zotero-search-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary with decisions, deviations (none), and verification results for all phases"
+    },
+    {
+      "path": ".claude/extensions/literature/scripts/zotero-search.sh",
+      "type": "script",
+      "summary": "Main zotero-search.sh script: argument parsing, library resolution, jq scoring, PDF verification, JSON/pretty output"
+    }
+  ]
+}

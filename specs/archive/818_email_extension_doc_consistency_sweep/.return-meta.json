@@ -1,0 +1,70 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/email/context/project/email/domain/archive-mode-risk.md",
+      "summary": "Retitled off All Mail Scope, added mirrored per-account archive table, made Gate #1 and Gate #3 account-generic"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/email/skills/skill-email-cleanup/SKILL.md",
+      "summary": "Collapsed pilot-ack either/or ambiguity into single hardcoded archive-pilot-ack.json array-of-records convention"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/email/README.md",
+      "summary": "Refreshed Purpose, added Accounts subsection, made --archive and --sync sections account-generic"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/email/skills/skill-email-sync/SKILL.md",
+      "summary": "Added Stage 3 channel/account mismatch warning and cross-reference on override-wins bullet"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/email/commands/email.md",
+      "summary": "Added --sync mismatch descriptive clause and interactive_errors bullet"
+    },
+    {
+      "type": "summary",
+      "path": "specs/818_email_extension_doc_consistency_sweep/summaries/01_email-doc-consistency-sweep-summary.md",
+      "summary": "Implementation summary with verification results for all 5 phases"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Applied all four MEDIUM findings (3-6) from review-2026-07-04 to .claude/extensions/email/: fully account-generalized archive-mode-risk.md, hardcoded a single-file pilot-ack convention in skill-email-cleanup/SKILL.md, refreshed README.md for the multi-account feature, and added a consistent --sync channel/account mismatch warning to skill-email-sync/SKILL.md and commands/email.md. check-extension-docs.sh [email] PASS."
+  },
+  "memory_candidates": [
+    {
+      "content": "When a doc-consistency-sweep task depends on a prior task that already edited some of the same files (e.g. task 817 before 818), locate edit sites by content/grep rather than trusting the research report's line numbers, even when the report claims to have re-verified them against disk — line numbers drift quickly across sequential doc-editing tasks touching the same file set. Re-grep the exact phrase from the plan/report before editing.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/818_email_extension_doc_consistency_sweep/summaries/01_email-doc-consistency-sweep-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["doc-consistency-sweep", "grep-not-line-numbers", "sequential-edits", "line-drift"]
+    },
+    {
+      "content": "For account-generic (multi-account) documentation, prefer mirroring an authoritative per-account table (e.g. skill-email-cleanup/SKILL.md's 'Archive of record, per account' table with gmail ~64,000 / logos ~54 messages) into secondary docs rather than re-deriving or re-hardcoding the same figures independently. This keeps the numbers from drifting apart across files that describe the same underlying data.",
+      "category": "PATTERN",
+      "source_artifact": "specs/818_email_extension_doc_consistency_sweep/summaries/01_email-doc-consistency-sweep-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["multi-account", "mirror-table", "single-source-of-truth", "email-extension"]
+    }
+  ],
+  "modified_files": [
+    ".claude/extensions/email/context/project/email/domain/archive-mode-risk.md",
+    ".claude/extensions/email/skills/skill-email-cleanup/SKILL.md",
+    ".claude/extensions/email/README.md",
+    ".claude/extensions/email/skills/skill-email-sync/SKILL.md",
+    ".claude/extensions/email/commands/email.md"
+  ],
+  "next_steps": "Ready for /todo archival. No further action needed for task 818.",
+  "metadata": {
+    "session_id": "sess_1783227911_33260c_818",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "status": "implemented",
+  "summary": "Replaced duplicated inline topic picker logic in 4 locations across 3 files (commands/task.md steps 4.5 and --sync 6.5, agents/meta-builder-agent.md stages 4.5 and 6 step 4b, skills/skill-todo/SKILL.md new stage 2.5) with references to topic-assignment-pattern.md and manage-topics.sh calls. All 6 files (3 live + 3 extension copies) are synced.",
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "complete",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "artifacts": [
+    {
+      "path": "specs/655_refactor_existing_topic_pickers/plans/01_refactor-topic-pickers-plan.md",
+      "type": "plan",
+      "summary": "All phases completed"
+    },
+    {
+      "path": "specs/655_refactor_existing_topic_pickers/summaries/01_refactor-topic-pickers-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary with verification results"
+    }
+  ]
+}

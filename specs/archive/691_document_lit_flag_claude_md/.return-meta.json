@@ -1,0 +1,31 @@
+{
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "status": "implemented",
+  "task_number": 691,
+  "session_id": "sess_20260612_691_impl",
+  "phases_completed": 2,
+  "phases_total": 2,
+  "started_at": "2026-06-12T00:00:00Z",
+  "completed_at": "2026-06-12T00:30:00Z",
+  "completion_data": {
+    "completion_summary": "Documented --lit flag in CLAUDE.md merge source, memory EXTENSION.md, and generated CLAUDE.md: added [--lit] to 4 command rows, new Literature Mode section with specs/literature/ convention, and Literature-Augmented Research subsection.",
+    "roadmap_items": []
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/691_document_lit_flag_claude_md/summaries/01_document-lit-flag-summary.md",
+      "summary": "Implementation summary for task 691 - --lit flag documentation"
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "The --lit flag injects files from specs/literature/ as <literature-context> into agent prompts. It is independent of --clean: --clean suppresses memory retrieval while --lit adds literature injection. They can be combined. The literature-retrieve.sh script has TOKEN_BUDGET=4000 tokens and MAX_FILES=10. The directory is user-maintained, not task-scoped, and is silently skipped when absent.",
+      "category": "CONFIG",
+      "source_artifact": "specs/691_document_lit_flag_claude_md/summaries/01_document-lit-flag-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["--lit", "literature-retrieve", "specs/literature", "--clean", "context injection", "literature mode"]
+    }
+  ]
+}

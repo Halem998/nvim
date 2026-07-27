@@ -1,0 +1,43 @@
+{
+  "status": "implemented",
+  "summary": "All 7 phases of the /email staleness detector redesign completed and verified live: both Gmail and Logos reach [ok] under the new file-vs-file + bounded-tolerance + reindex-marker gate, with the cross-repo census.nix/mbsync.nix edits written (not built/committed) for the user to review and deploy.",
+  "blockers": [],
+  "phases_completed": 7,
+  "phases_total": 7,
+  "modified_files": [
+    ".claude/extensions/email/context/project/email/domain/staleness-detection.md",
+    ".claude/extensions/email/context/project/email/domain/wrapper-contracts.md",
+    ".claude/extensions/email/skills/skill-email-cleanup/SKILL.md",
+    ".claude/extensions/email/EXTENSION.md",
+    ".claude/extensions/email/README.md",
+    ".claude/extensions/email/commands/email.md",
+    ".claude/extensions/email/index-entries.json",
+    "specs/827_email_staleness_detector_redesign/plans/01_staleness-detector-redesign.md",
+    "specs/827_email_staleness_detector_redesign/summaries/01_staleness-detector-redesign-summary.md",
+    "specs/state.json",
+    "~/.dotfiles/modules/home/email/agent-tools/census.nix",
+    "~/.dotfiles/modules/home/email/mbsync.nix"
+  ],
+  "continuation_context": null,
+  "task_number": 827,
+  "session_id": "sess_1783957885_sv2g0b",
+  "verification": {
+    "gmail": "on-disk=128 indexed-files=128 divergence=0 tol=13 [ok]",
+    "logos": "on-disk=341 indexed-files=319 divergence=22 tol=35 [ok]",
+    "method": "standalone read-only shell snippet (plan Phase 6), not the installed email-census (which still runs the old logic until the user runs home-manager switch in ~/.dotfiles)"
+  },
+  "follow_up_recommendations": [
+    {
+      "title": "22 unindexed Logos files (independent notmuch indexing anomaly)",
+      "detail": "22 files in ~/Mail/Logos/cur since 2026-07-06 are absent from the notmuch index; two email-reindex runs (incl. one after forcing mtime forward) did not index them. new.ignore and hardlink/inode dedup ruled out. Root cause not identified. See implementation summary for full diagnostic dead-ends already ruled out.",
+      "suggested_creation": "/spawn 827 or /task"
+    },
+    {
+      "title": "email-census / wrapper binaries silently discard positional --account argument",
+      "detail": "Only `--account <val>` works; a bare positional account arg is silently ignored. Root cause is the shared frozen lib.nix mkPreamble arg-parsing loop, affecting all five wrapper binaries plus email-census. Deliberately deferred to preserve scope discipline around the frozen preamble.",
+      "suggested_creation": "/spawn 827 or /task"
+    }
+  ],
+  "cross_repo_notice": "census.nix and mbsync.nix in ~/.dotfiles were edited (Edit tool writes only). No home-manager switch, nixos-rebuild, nix flake check, or git commit/push was run in ~/.dotfiles. The user must review, rebuild, and commit/push there at their own discretion, then re-verify the deployed email-census output for both accounts.",
+  "known_unrelated_issue": "specs/TODO.md could not be regenerated via generate-todo.sh due to a pre-existing unrelated bug in .claude/scripts/generate-task-order.sh (line 899: 'all_task_nums: unbound variable'). specs/state.json (the source of truth) was updated correctly to status=completed with completion_summary set; TODO.md regeneration is out of scope for task 827 and was not fixed here."
+}

@@ -1,0 +1,40 @@
+{
+  "status": "implemented",
+  "summary": "Implemented all 6 plan phases as a single design specification document resolving research gaps G1-G8, with the identity key empirically verified against a real read-only email-classify sample instead of shipped provisional-unverified.",
+  "phases_completed": 6,
+  "phases_total": 6,
+  "artifact": {
+    "path": ".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md",
+    "type": "design",
+    "summary": "Design specification for routing confirmed skill-email-cleanup decisions into sender/domain-aggregated memory-vault preferences: post-Stage-6 capture point, verified normalized identity key, email/preferences/{account}/{key} schema with per-action tally, deterministic exact-key dedup with tally-based CREATE/UPDATE/EXTEND, retrieval/distill guardrails, opt-in gate, named read-back contract (seed for task 823), deferred design notes, and an explicit 822 scope recommendation."
+  },
+  "additional_artifacts": [
+    {
+      "path": "specs/821_email_to_memory_contribution_architecture/summaries/01_email-memory-contribution-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary for task 821"
+    },
+    {
+      "path": "specs/ROADMAP.md",
+      "type": "roadmap",
+      "summary": "Added Email/Memory Integration subsection with two hand-authored entries (read-back for email-classify; generalize harvest beyond email)"
+    }
+  ],
+  "modified_files": [
+    ".claude/extensions/email/context/project/email/design/email-to-memory-preferences.md",
+    "specs/ROADMAP.md",
+    "specs/821_email_to_memory_contribution_architecture/plans/01_email-memory-contribution.md",
+    "specs/821_email_to_memory_contribution_architecture/summaries/01_email-memory-contribution-summary.md",
+    "specs/821_email_to_memory_contribution_architecture/progress/phase-1-progress.json",
+    "specs/821_email_to_memory_contribution_architecture/progress/phase-2-progress.json",
+    "specs/821_email_to_memory_contribution_architecture/progress/phase-3-progress.json",
+    "specs/821_email_to_memory_contribution_architecture/progress/phase-4-progress.json",
+    "specs/821_email_to_memory_contribution_architecture/progress/phase-5-progress.json",
+    "specs/821_email_to_memory_contribution_architecture/progress/phase-6-progress.json"
+  ],
+  "resolved_soft_decisions": [
+    "Phase 2 identity-key verification: email-census/email-classify were available on $PATH; ran a genuinely read-only email-classify --emit-tagged sample (2128 messages, 751 unique senders) instead of invoking the provisional-unverified fallback. Key ships VERIFIED.",
+    "Phase 5 scope decision: took the plan's documented default per orchestrator instruction -- recommend folding revocation UX, cross-account scoping, archive-scope isolation, and a minimal success metric into task 822 (queued, depends on 821) rather than blocking on interactive user confirmation."
+  ],
+  "blockers": []
+}

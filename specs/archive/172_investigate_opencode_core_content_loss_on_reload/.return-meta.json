@@ -1,0 +1,44 @@
+{
+  "status": "implemented",
+  "summary": "Fixed AGENTS.md core content loss by creating global AGENTS.md source file, updating sync.lua root_file_names, modifying all 11 extension manifests to target AGENTS.md, and hardening inject_section to seed from README.md when creating new files.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/172_investigate_opencode_core_content_loss_on_reload/plans/implementation-002.md",
+      "summary": "3-phase revised implementation plan for AGENTS.md fix"
+    },
+    {
+      "type": "implementation",
+      "path": ".opencode/AGENTS.md",
+      "summary": "Global AGENTS.md with 165 lines of core system documentation"
+    },
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua",
+      "summary": "Added AGENTS.md to opencode root_file_names"
+    },
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/ai/shared/extensions/merge.lua",
+      "summary": "Hardened inject_section with README.md seeding"
+    },
+    {
+      "type": "summary",
+      "path": "specs/172_investigate_opencode_core_content_loss_on_reload/summaries/implementation-summary-20260310.md",
+      "summary": "Implementation summary with verification results"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed AGENTS.md core content loss on extension reload. Created global AGENTS.md (165 lines), updated sync.lua to include AGENTS.md in root_file_names, modified all 11 extension manifests to target AGENTS.md, and hardened inject_section to seed from README.md when creating new files."
+  },
+  "metadata": {
+    "session_id": "sess_1773180725_2079ea",
+    "duration_seconds": 1800,
+    "agent_type": "neovim-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
+  },
+  "next_steps": "Test changes by running <leader>ao to sync global AGENTS.md to a project, then reload extensions to verify content is preserved"
+}

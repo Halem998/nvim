@@ -1,0 +1,31 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1781500889_343926_715",
+  "task_number": 715,
+  "started_at": "2026-06-14T00:00:00Z",
+  "completed_at": "2026-06-14T00:20:00Z",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "completion_data": {
+    "completion_summary": "Updated EXTENSION.md, README.md, claudemd.md, and CLAUDE.md to document Zotero search and import capabilities including --search and --task commands, enriched index schema fields, Zotero Search and Import workflow section, and updated skill-literature description.",
+    "roadmap_items": []
+  },
+  "memory_candidates": [
+    {
+      "content": "When adding a new command to the literature extension, updates are needed in 4 places: (1) .claude/extensions/literature/EXTENSION.md Commands table, (2) .claude/extensions/literature/README.md Commands table, (3) .claude/extensions/core/merge-sources/claudemd.md Command Reference table, and (4) .claude/CLAUDE.md Command Reference table. The claudemd.md and CLAUDE.md must match exactly.",
+      "category": "PATTERN",
+      "source_artifact": "specs/715_update_literature_extension_docs/summaries/01_docs-update-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["literature", "extension", "documentation", "command", "sync", "claudemd"]
+    }
+  ],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/715_update_literature_extension_docs/summaries/01_docs-update-summary.md",
+      "summary": "Implementation summary for task 715 documentation updates"
+    }
+  ]
+}

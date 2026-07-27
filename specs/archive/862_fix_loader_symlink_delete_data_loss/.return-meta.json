@@ -1,0 +1,49 @@
+{
+  "status": "implemented",
+  "summary": "All 6 phases complete. Fixed the extension loader's symlink data-loss bug: remove_installed_files() now skips (never deletes) files reached through symlinked ancestor directories or file-level symlinks, bounded by opts.project_dir; .syncprotect protection is now symmetric between copy and remove via filtering at the init.lua call sites; the copy path preserves pre-existing symlinks instead of silently flattening them. Verified at every layer with real headless-nvim tests: scratch unit tests (Phases 2-4) and a full scratch integration test against the real manager.load/unload/reload functions (Phase 5) prove zero data loss and zero flattening for symlink deploy mode, with discriminating power proven against the actual pre-fix code. Restored the two previously-flattened symlinks after content verification and recorded the ownership rule in a new context document (Phase 6). No loader operation was ever run against the real .claude/ tree.",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/ai/shared/extensions/loader.lua",
+      "summary": "Symlink-aware remove_installed_files with bounded ancestor walk; symlink-preserving copy_simple_files and copy_skill_dirs; ownership-invariant LuaDoc on all three functions"
+    },
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/ai/shared/extensions/init.lua",
+      "summary": ".syncprotect filtering and project_dir threading at both remove_installed_files call sites (manager.unload, manager.load rollback); load/unload notifications extended with symlink-skip counts"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/agents/literature-agent.md",
+      "summary": "Restored from flattened regular file to symlink pointing at extension source, after byte-identical content verification"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/commands/literature.md",
+      "summary": "Restored from flattened regular file to symlink pointing at extension source, after byte-identical content verification"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/context/project/neovim/domain/extension-deploy-modes.md",
+      "summary": "New domain context document recording the dual-deploy-mechanism architecture, vim.fn.delete() symlink semantics, and the ownership rule as a durable invariant"
+    },
+    {
+      "type": "summary",
+      "path": "specs/862_fix_loader_symlink_delete_data_loss/summaries/01_loader-symlink-delete-data-loss-summary.md",
+      "summary": "Full implementation summary with verification evidence per phase and plan deviations"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed the extension loader's symlink data-loss bug (ancestor-directory deletion through symlinked skill directories) with a symmetric copy/remove ownership rule, made .syncprotect protection apply on unload as well as load, and restored two previously-flattened symlinks. Verified end-to-end against real manager.load/unload/reload with zero data loss and zero flattening."
+  },
+  "metadata": {
+    "session_id": "sess_1784064322_70bafc_862",
+    "duration_seconds": 2700,
+    "agent_type": "neovim-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "neovim-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  },
+  "next_steps": "Task ready for status transition to [PR READY] or [COMPLETED] per the project's non-pr task-type terminus. Optional follow-ups recorded in the plan's Non-Goals: dangling skill-zotero/zotero.md symlink cleanup, an installed_symlinks state category, and an install-extension.sh-style target-mismatch warning on the copy path -- none required for this fix."
+}

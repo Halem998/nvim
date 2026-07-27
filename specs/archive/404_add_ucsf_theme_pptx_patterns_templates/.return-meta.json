@@ -1,0 +1,13 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1776182400_i404",
+  "task_number": 404,
+  "phases_completed": 5,
+  "phases_total": 5,
+  "completion_data": {
+    "completion_summary": "Ported UCSF institutional theme, PPTX generation patterns, Slidev pitfalls, and project templates into nvim present/ extension. Created 13 new text files, copied 1 binary .pptx template, updated 5 existing files, added 8 index entries.",
+    "claudemd_suggestions": "none"
+  }
+}

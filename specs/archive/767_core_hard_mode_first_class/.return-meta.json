@@ -1,0 +1,30 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "task_number": 767,
+  "session_id": "sess_1782320124_aa5841_767",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "started_at": "2026-06-24T00:00:00Z",
+  "completed_at": "2026-06-24T00:30:00Z",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/767_core_hard_mode_first_class/summaries/01_core-hard-mode-summary.md",
+      "summary": "Implementation summary for task 767: hard-mode agents and skills promoted to core extension source"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Promoted hard-mode capability to first-class core extension status: copied 3 hard agent files into core/agents/, authored skill-orchestrate-hard/SKILL.md into core/skills/, updated core/manifest.json with 3 new agents, 4 new skills, and a routing_hard section covering general/meta/markdown x research/plan/implement. Fixed hardcoded absolute path in general-implementation-hard-agent.md in both core source and deployed copy."
+  },
+  "memory_candidates": [
+    {
+      "content": "When copying agent/skill files from deployed .claude/ tree into extension source (.claude/extensions/core/), fix any hardcoded absolute paths to relative paths (e.g., bash /home/user/.config/nvim/.claude/scripts/X.sh -> bash .claude/scripts/X.sh). Apply the same fix to both the new source copy AND the deployed file to maintain lockstep. Use grep -c to count remaining absolute refs and verify 0.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/767_core_hard_mode_first_class/summaries/01_core-hard-mode-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["extension-source", "path-fix", "absolute-path", "lockstep", "agent-copy"]
+    }
+  ]
+}

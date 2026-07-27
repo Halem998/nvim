@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "summary": "Added keyword_overrides field to cslib extension manifest.json with cslib entry (5 lean-related keywords, lean4 alias) and pr entry (7 PR-workflow keywords). JSON validated, all 4 verification checks passed.",
+  "artifacts": [
+    {
+      "path": "specs/683_cslib_manifest_keyword_overrides/summaries/03_execution-summary.md",
+      "type": "summary",
+      "summary": "Single-phase implementation: inserted keyword_overrides between routing_hard and merge_targets in manifest.json"
+    }
+  ],
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "complete",
+  "phases_completed": 1,
+  "phases_total": 1
+}

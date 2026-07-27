@@ -1,0 +1,21 @@
+{
+  "status": "implemented",
+  "summary": "Created .claude/context/contracts/recovery.md (fix-forward disambiguation + 3-rung Recovery Ladder grounded in task 778/780 mechanisms) and registered it in index.json. Wired references into skill-orchestrate-hard (5th CONTRACT SLOT), skill-implementer-hard (reference list + dispatch text), general-implementation-hard-agent.md (Context Ref + new Recovery Ladder section), and error-handling.md (reworded Build Error Recovery step 3). All dual deployed/core copies verified consistent (pre-existing skill-implementer-hard drift mirrored, not touched).",
+  "phases_completed": 6,
+  "phases_total": 6,
+  "artifacts": [
+    {"type": "contract", "path": ".claude/context/contracts/recovery.md"},
+    {"type": "index", "path": ".claude/context/index.json"},
+    {"type": "skill", "path": ".claude/skills/skill-orchestrate-hard/SKILL.md"},
+    {"type": "skill", "path": ".claude/extensions/core/skills/skill-orchestrate-hard/SKILL.md"},
+    {"type": "skill", "path": ".claude/skills/skill-implementer-hard/SKILL.md"},
+    {"type": "skill", "path": ".claude/extensions/core/skills/skill-implementer-hard/SKILL.md"},
+    {"type": "agent", "path": ".claude/agents/general-implementation-hard-agent.md"},
+    {"type": "agent", "path": ".claude/extensions/core/agents/general-implementation-hard-agent.md"},
+    {"type": "rule", "path": ".claude/rules/error-handling.md"},
+    {"type": "rule", "path": ".claude/extensions/core/rules/error-handling.md"},
+    {"type": "summary", "path": "specs/779_hardmode_fix_forward_recovery_contract/summaries/01_recovery-contract-fix-forward-summary.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "Task complete; ready for /todo archival. No further action required."
+}

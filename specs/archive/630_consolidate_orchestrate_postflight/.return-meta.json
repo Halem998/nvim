@@ -1,0 +1,29 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1780357272_59e91f",
+  "task_number": 630,
+  "task_type": "meta",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/630_consolidate_orchestrate_postflight/summaries/01_consolidate-postflight-summary.md",
+      "summary": "Implementation summary for consolidating duplicate artifact-linking case blocks into skill_link_artifact_from_handoff() helper"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added skill_link_artifact_from_handoff() helper to skill-base.sh and replaced two duplicate 24-line case blocks in skill-orchestrate/SKILL.md with single-line calls to the new helper, eliminating ~40 lines of duplication."
+  },
+  "memory_candidates": [
+    {
+      "content": "When extracting duplicate bash case blocks into a shared helper function in skill-base.sh, use the in-memory variable pattern (pass the JSON string as a parameter) rather than reading the file again — both Stage 5 and Stage MT-4 in skill-orchestrate already have the handoff content in a $handoff variable.",
+      "category": "PATTERN",
+      "source_artifact": "specs/630_consolidate_orchestrate_postflight/summaries/01_consolidate-postflight-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["skill-base.sh", "bash", "helper function", "handoff", "artifact linking", "orchestrate"]
+    }
+  ]
+}

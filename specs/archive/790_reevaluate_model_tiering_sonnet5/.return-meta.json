@@ -1,0 +1,38 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 790,
+  "task_slug": "reevaluate_model_tiering_sonnet5",
+  "started_at": "2026-06-30T00:00:00Z",
+  "completed_at": "2026-06-30T00:35:00Z",
+  "phase_count": 4,
+  "phases_completed": 4,
+  "phases_total": 4,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/790_reevaluate_model_tiering_sonnet5/summaries/01_reevaluate-tiering-summary.md",
+      "summary": "Implementation summary: stale benchmark/version-string cleanup, orchestrator-1M rationale relaxation, and neovim-research opus->sonnet prose fix across nvim and dotfiles trees; zero agent model: field changes"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Refreshed stale SWE-bench benchmark text and hardcoded 4.6 version strings to durable qualitative framing, relaxed the orchestrator-1M-context rationale for Sonnet 5's native 1M context, and fixed 5 stale neovim-research opus prose sites to sonnet across both the nvim and dotfiles .claude/ trees. Confirmed via grep and git diff --stat that zero agent or command model: frontmatter fields were changed (re-tiering evaluated, zero moves warranted)."
+  },
+  "memory_candidates": [
+    {
+      "content": "The dotfiles repo (~/.dotfiles) has an external auto-commit mechanism unrelated to .claude/ orchestration that periodically snapshots working-tree changes into commits with message 'checkpoint: auto-commit before update' (observed committing edits within ~2 minutes of them landing on disk). Agents following the 'leave dotfiles edits uncommitted for user review' convention should be aware this external process may commit their edits before the agent's own verification pass completes, independent of any git commit the agent itself runs.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/790_reevaluate_model_tiering_sonnet5/summaries/01_reevaluate-tiering-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["dotfiles", "auto-commit", "external-process", "git-workflow", "uncommitted-edits"]
+    },
+    {
+      "content": "The Edit tool can occasionally report 'has been updated successfully' for a file edit that does not persist to disk, when multiple Edit calls to different files are batched in one message and one of them targets a file not yet Read in the current session (a sibling call in the same batch fails with 'File has not been read yet' but the successful-looking one may not have actually written). Always verify high-stakes batched edits with a follow-up grep or git diff rather than trusting the tool's success message alone, especially after mixed-success batches.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/790_reevaluate_model_tiering_sonnet5/summaries/01_reevaluate-tiering-summary.md",
+      "confidence": 0.6,
+      "suggested_keywords": ["edit-tool", "batched-edits", "verification", "silent-failure", "grep-after-edit"]
+    }
+  ]
+}

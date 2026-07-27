@@ -1,0 +1,28 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Widened /todo archival at both commands/todo.md and skill-todo/SKILL.md to include the expanded terminal status alongside completed/abandoned, added a subtasks-defer guard for expanded parents with active subtasks, and split merge-sources/claudemd.md's conflated terminal/exception-state bullet. Corrected and fixture-verified a jq index() binding bug in the Step 5B del() filter. All 5 phases complete and verified.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/911_correct_terminal_status_taxonomy_and_todo_archival/summaries/01_terminal-status-taxonomy-archival-summary.md",
+      "summary": "Full implementation summary covering all 5 phases, the jq deviation fix, and verification results."
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/skills/skill-todo/SKILL.md"
+  ],
+  "decisions_made": [
+    "Fixed the plan's Step 5B del() filter snippet with '. as $item |' binding after finding it fails to parse due to jq pipe-context rebinding; verified against a state.json fixture",
+    "Left Stage 2.5 TopicRevision and Step 3.5.2 in the source files untouched (already correct / dead code, respectively)"
+  ],
+  "dead_ends": [],
+  "phases_completed": 5,
+  "phases_total": 5,
+  "plan_markers_verified": true
+}

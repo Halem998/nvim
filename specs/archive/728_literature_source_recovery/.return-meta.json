@@ -1,0 +1,21 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/728_literature_source_recovery/plans/01_source-recovery-plan.md",
+      "summary": "2-phase plan to copy 32 BimodalLogic PDFs and 1 cslib DJVU into Literature/pdfs/, then verify coverage against index.json"
+    }
+  ],
+  "next_steps": "Run /implement 728 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1718560200_plan728",
+    "agent_type": "planner-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 2,
+    "estimated_hours": 1,
+    "dependency_waves": [[1], [2]]
+  },
+  "memory_candidates": []
+}

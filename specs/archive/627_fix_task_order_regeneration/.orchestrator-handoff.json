@@ -1,0 +1,13 @@
+{
+  "status": "implemented",
+  "summary": "Fixed shift 3/shift 2 argument-parsing bugs in generate-task-order.sh, added active_topics array maintenance to all five task-creating commands (task.md, meta-builder-agent.md, skill-fix-it, skill-spawn, errors.md), and standardized task.md Part C invocation. All changes applied to both project files and core extension mirror copies.",
+  "blockers": [],
+  "phases_completed": 3,
+  "phases_total": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/627_fix_task_order_regeneration/summaries/01_task-order-regen-summary.md"
+    }
+  ]
+}

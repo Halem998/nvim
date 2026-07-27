@@ -1,0 +1,37 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": ".claude/extensions/cslib/commands/pr.md",
+      "summary": "Added STEP 0.5 (~390 lines) with 7 sub-steps for PR READY review response workflow"
+    },
+    {
+      "type": "summary",
+      "path": "specs/725_add_pr_ready_push_zulip/summaries/01_pr-ready-push-zulip-summary.md",
+      "summary": "Implementation summary documenting all changes and decisions for task 725"
+    }
+  ],
+  "next_steps": "Run /todo to archive task 725 as completed",
+  "completion_data": {
+    "completion_summary": "Added STEP 0.5 to /pr command enabling PR READY review tasks to commit/push changes, post GitHub PR comments via gh pr comment, and optionally send Zulip messages via zulip-send, all with explicit AskUserQuestion approval gates and automatic task completion."
+  },
+  "memory_candidates": [
+    {
+      "content": "The /pr command in cslib extension uses a multi-step early-exit pattern: STEP 0 (--review flag), STEP 0.5 (pr_ready task detection), then STEP 1+ (normal PR flow). Detection for STEP 0.5 requires ALL THREE: pure integer arg + status=='pr_ready' + non-empty sources array in cslib state.json. This ensures normal task-mode flow is completely unaffected.",
+      "category": "PATTERN",
+      "source_artifact": "specs/725_add_pr_ready_push_zulip/summaries/01_pr-ready-push-zulip-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["pr-command", "cslib", "pr_ready", "early-exit", "sources", "detection"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1781547115_2dc6c5_725",
+    "agent_type": "general-implementation-agent",
+    "duration_seconds": 1200,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
+  }
+}

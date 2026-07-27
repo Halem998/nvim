@@ -1,0 +1,60 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "task_number": 897,
+  "session_id": "sess_1784998517_0638c7_897",
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/summaries/01_phase-marker-grep-recovery-summary.md"
+    }
+  ],
+  "phases_completed": 4,
+  "phases_total": 4,
+  "completion_data": {
+    "completion_summary": "Added a sanctioned, count-only phase-marker grep recovery path to both orchestrate skills' Stage 5 missing/stale-handoff branches, with the exception carve-out prose in each SKILL.md and the reading-contract reconciled in handoff-schema.md and orchestrate-state-machine.md."
+  },
+  "memory_candidates": [
+    {
+      "content": "Grep-based verification checks in a plan should specify exact case-sensitive substrings that both the source prose and the copied/adapted bash-comment block will actually contain byte-for-byte; when a block is deliberately copied across two variant files with only named adaptations (e.g. log prefix + one sentence), any pre-existing casing in the copied block's header must match the new prose's casing for a literal (non -i) grep count check to succeed.",
+      "category": "PATTERN",
+      "source_artifact": "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/summaries/01_phase-marker-grep-recovery-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["grep verification", "plan phase verification", "case-sensitive", "bash comment blocks", "cross-file consistency"]
+    },
+    {
+      "content": "When a plan's Phase N verification step scans a whole directory tree for a contradicting pattern (e.g. `grep -rn \"NEVER reads\" docs/ context/`), check for other occurrences of that pattern beyond the specific file(s) named in that phase's task list -- a phase-scoped fix can leave a sibling doc section with the same stale claim, which then fails the phase's own repo-wide verification even though the named tasks were completed correctly.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/summaries/01_phase-marker-grep-recovery-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["verification scope", "doc reconciliation", "repo-wide grep check", "plan tasks vs verification"]
+    },
+    {
+      "content": "Under the git-workflow concurrency constraint (another implementation agent running on different files in the same repo), git status/diff will show files this agent never touched. Scope every git audit command (git diff --stat, task-reference grep, etc.) to this task's own declared file list rather than the whole tree, and document any unscoped discrepancy as a concurrency-attributable deviation rather than treating it as a defect.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/summaries/01_phase-marker-grep-recovery-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["concurrent agents", "git audit scoping", "source-store audit", "multi-agent implementation"]
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/plans/01_phase-marker-grep-recovery.md",
+    "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/summaries/01_phase-marker-grep-recovery-summary.md",
+    "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/progress/phase-1-progress.json",
+    "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/progress/phase-2-progress.json",
+    "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/progress/phase-3-progress.json",
+    "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/progress/phase-4-progress.json",
+    "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/handoffs/phase-1-handoff-20260725T170931Z.md",
+    "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/handoffs/phase-2-handoff-20260725T172000Z.md",
+    "specs/897_sanctioned_phase_marker_grep_exception_for_orchestrate/.orchestrator-handoff.json"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Documented modified_files (return-metadata-file.md) and files_touched (progress-file.md) schema fields, including their retrospective/prospective contrast with state.json's file_scope. Repointed two dangling 6-level-up See Also links in neovim-integration.md to the deploy-correct 4-level-up path. All 4 plan phases completed; source mirrored to deploy tree.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/880_document_modified_files_schema_and_fix_dangling_links/summaries/01_modified-files-schema-docs-summary.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/context/formats/progress-file.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/nvim/context/project/neovim/guides/neovim-integration.md"
+  ],
+  "decisions_made": [
+    "Edited only the tracked agent-system/extensions/ source tree, never the gitignored .claude/ deploy tree",
+    "Computed the neovim-integration.md link depth against the deployed location (4 levels up), not the source tree, per the plan's explicit instruction",
+    "Left two pre-existing task-number citations and one pre-existing non-JSON fenced block in return-metadata-file.md untouched (out of scope per plan Non-Goals)"
+  ],
+  "dead_ends": [],
+  "plan_markers_verified": true
+}

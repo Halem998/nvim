@@ -1,0 +1,94 @@
+{
+  "status": "implemented",
+  "session_id": "sess_1775849000_d6e8f4",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "/implement", "skill-implementer", "general-implementation-agent"],
+  "task_number": 396,
+  "task_name": "review_claude_architecture_docs",
+  "summary": "Completed 10-phase .claude/ architecture documentation audit: added READMEs for 11 extensions, fixed core-doc drift, consolidated duplicate documentation standards, rewrote 4 stale templates and creating-commands guide, migrated code-reviewer frontmatter, added doc-lint script, and populated ROADMAP.",
+  "artifacts": [
+    {
+      "path": "specs/396_review_claude_architecture_docs/summaries/01_docs-audit-summary.md",
+      "type": "summary",
+      "summary": "Full implementation summary covering all 10 phases with file lists, verification results, and decision notes"
+    },
+    {
+      "path": ".claude/extensions/filetypes/README.md",
+      "type": "documentation",
+      "summary": "Full founder-style README for filetypes extension (Tier 1 primary deliverable)"
+    },
+    {
+      "path": ".claude/extensions/lean/README.md",
+      "type": "documentation",
+      "summary": "Lean 4 extension README with lean-lsp MCP setup"
+    },
+    {
+      "path": ".claude/extensions/formal/README.md",
+      "type": "documentation",
+      "summary": "Formal extension README documenting research-only fall-through pattern"
+    },
+    {
+      "path": ".claude/extensions/nvim/README.md",
+      "type": "documentation",
+      "summary": "Nvim extension README (highest-traffic extension)"
+    },
+    {
+      "path": ".claude/extensions/nix/README.md",
+      "type": "documentation",
+      "summary": "Nix extension README with mcp-nixos setup"
+    },
+    {
+      "path": ".claude/extensions/web/README.md",
+      "type": "documentation",
+      "summary": "Web extension README documenting /tag user-only command"
+    },
+    {
+      "path": ".claude/extensions/latex/README.md",
+      "type": "documentation",
+      "summary": "LaTeX simple extension README"
+    },
+    {
+      "path": ".claude/extensions/python/README.md",
+      "type": "documentation",
+      "summary": "Python simple extension README"
+    },
+    {
+      "path": ".claude/extensions/typst/README.md",
+      "type": "documentation",
+      "summary": "Typst simple extension README"
+    },
+    {
+      "path": ".claude/extensions/z3/README.md",
+      "type": "documentation",
+      "summary": "Z3 simple extension README"
+    },
+    {
+      "path": ".claude/extensions/epidemiology/README.md",
+      "type": "documentation",
+      "summary": "Epidemiology simple extension README"
+    },
+    {
+      "path": ".claude/templates/extension-readme-template.md",
+      "type": "template",
+      "summary": "Canonical extension README template with section-applicability matrix"
+    },
+    {
+      "path": ".claude/scripts/check-extension-docs.sh",
+      "type": "script",
+      "summary": "Doc-lint script validating extension READMEs and manifests (exits 0 on clean state)"
+    },
+    {
+      "path": "specs/ROADMAP.md",
+      "type": "roadmap",
+      "summary": "Populated with documentation-infrastructure items surfaced during task 396"
+    }
+  ],
+  "metadata": {
+    "phases_completed": 10,
+    "phases_total": 10
+  },
+  "completion_data": {
+    "completion_summary": "Completed 10-phase .claude/ architecture documentation audit: added 11 extension READMEs (all 14 extensions now documented), fixed core-doc drift across 7 files, consolidated duplicate documentation-standards files, rewrote 4 stale templates plus creating-commands guide, migrated code-reviewer-agent frontmatter, added doc-lint script that passes against final state, and populated ROADMAP with documentation-infrastructure follow-ups.",
+    "claudemd_suggestions": "Updated .claude/CLAUDE.md: added plan-format-enforcement.md to Rules References, removed Co-Authored-By trailer from commit convention example, added check-extension-docs.sh to Utility Scripts. Updated .claude/README.md: added reviser-agent to agents table. Multiple context/reference files updated (skill-agent-mapping.md, reference/README.md) to match current skill roster."
+  }
+}

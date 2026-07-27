@@ -1,0 +1,48 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/800_lit_briefing_failure_surfacing/plans/01_lit-briefing-failure-surfacing.md",
+      "summary": "4-phase plan: create literature-briefing-invoke.sh wrapper, update 18 Stage 4a sites across six skills, rewrite stale comment, verify scope"
+    },
+    {
+      "type": "implementation",
+      "path": ".claude/scripts/literature-briefing-invoke.sh",
+      "summary": "New failure-surfacing wrapper around literature-briefing.sh"
+    },
+    {
+      "type": "summary",
+      "path": "specs/800_lit_briefing_failure_surfacing/summaries/01_lit-briefing-failure-surfacing-summary.md",
+      "summary": "Implementation summary for all 4 phases"
+    }
+  ],
+  "next_steps": "Task ready for /todo archival; changes are local (meta task, no PR required)",
+  "metadata": {
+    "session_id": "sess_1782936248_41a19c_800",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  },
+  "completion_data": {
+    "completion_summary": "Created .claude/scripts/literature-briefing-invoke.sh, a failure-surfacing wrapper around literature-briefing.sh, and repointed all 18 Stage 4a invocation sites (3 per skill x 6 skills: skill-researcher, skill-planner, skill-implementer, and their -hard variants) to call it instead of the raw script with 2>/dev/null, so --lit briefing crashes now emit a visible [lit] briefing generation failed (exit N) notice instead of being silently swallowed."
+  },
+  "memory_candidates": [
+    {
+      "content": "When a shared script is invoked identically at N sites across M files with a silent-failure anti-pattern (script 2>/dev/null || fallback=\"\"), the clean fix is a thin wrapper script that captures stdout, lets stderr flow, inspects the exit code, and emits a visible notice on failure while still exiting 0 to preserve the existing || fallback= call-site semantics. This requires zero call-site restructuring beyond a find/replace of the script name.",
+      "category": "PATTERN",
+      "source_artifact": "specs/800_lit_briefing_failure_surfacing/summaries/01_lit-briefing-failure-surfacing-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["silent-failure", "wrapper-script", "stderr-surfacing", "fallback-preservation", "exit-code"]
+    },
+    {
+      "content": "When multiple identically-worded comment blocks exist in the same file for different subsystems (e.g. memory_context vs lit_context both ending in '# - script exited with error'), disambiguate Edit tool old_string matches using the distinguishing header line above the comment block (e.g. '# lit_context will be empty string if:' vs '# memory_context will be empty string if:'), not just the trailing line, to avoid accidentally editing the wrong occurrence or triggering a non-unique-match error.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/800_lit_briefing_failure_surfacing/summaries/01_lit-briefing-failure-surfacing-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["edit-tool", "disambiguation", "duplicate-comment", "skill-md", "targeted-replace"]
+    }
+  ]
+}

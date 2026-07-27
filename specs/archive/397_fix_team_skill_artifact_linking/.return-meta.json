@@ -1,0 +1,22 @@
+{
+  "status": "implemented",
+  "session_id": "sess_1775853279_ac8094",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "summary": "Added four-case TODO.md artifact-linking sub-step to all three team-mode skills mirroring single-agent Stage 8 verbatim, and registered follow-up task 398 for shared-helper extraction.",
+  "artifacts": [
+    {
+      "path": "specs/397_fix_team_skill_artifact_linking/summaries/01_fix-team-skill-artifact-linking-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary for task 397 adding TODO.md artifact linking to skill-team-research/plan/implement."
+    }
+  ],
+  "metadata": {
+    "phases_completed": 6,
+    "phases_total": 6
+  },
+  "completion_data": {
+    "completion_summary": "Added count-aware TODO.md artifact-linking sub-step to skill-team-research, skill-team-plan, and skill-team-implement postflight stages, mirroring single-agent skill Stage 8 verbatim; registered follow-up task 398 for shared-helper extraction.",
+    "claudemd_suggestions": "Modified .claude/skills/skill-team-research/SKILL.md Stage 10, .claude/skills/skill-team-plan/SKILL.md Stage 10, and .claude/skills/skill-team-implement/SKILL.md Stage 12 to add TODO.md linking sub-steps."
+  }
+}

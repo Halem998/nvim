@@ -1,0 +1,21 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Added check_deployed_rule_drift() to check-extension-docs.sh as a near-verbatim mirror of check_deployed_script_drift(), wired into the per-extension dispatch block next to check_undeclared_rules. All 3 phases complete. Phase 1 baseline: exit 0, 'PASS: all extensions OK', two copies byte-identical (re-verified, matched plan-time measurement). Phase 2 dual-wrote the new function and dispatch call to both .claude/scripts/check-extension-docs.sh and .claude/extensions/core/scripts/check-extension-docs.sh, confirmed byte-identical via diff -q. Phase 3 verified exit-code parity with baseline (0), expected per-extension pass/skip behavior (core/nix/nvim silent pass, cslib/latex/lean/web info-note skip, zero drift FAILs), absence of self-drift, and a negative-path check that genuinely detected an injected drift (FAIL + exit 1) before being cleanly reverted (confirmed via empty git diff). One plan deviation: git checkout -- was blocked by the guard-destructive-git.sh hook during the negative-path revert; used git-snapshot.sh + precise Edit-tool line removal instead, with a transient unrelated manage-topics.sh drift from another concurrent agent's stashed work surfacing and self-resolving via git stash pop. No production code beyond the two intended files was touched.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/861_add_rule_drift_check_to_extension_lint/summaries/01_rule-drift-check-lint-summary.md",
+      "summary": "Full implementation summary with verification evidence for all three phases, including the negative-path drift-detection proof and the plan deviation note on the blocked git checkout."
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "Task complete. No further action needed; the new drift check is live in both deployed copies of check-extension-docs.sh.",
+  "phases_completed": 3,
+  "phases_total": 3,
+  "modified_files": [
+    ".claude/scripts/check-extension-docs.sh",
+    ".claude/extensions/core/scripts/check-extension-docs.sh"
+  ]
+}

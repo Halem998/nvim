@@ -1,0 +1,21 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/378_meeting_format_context_files/plans/01_meeting-format-plan.md",
+      "summary": "2-phase plan for creating meeting-format template and csv-tracker pattern context files"
+    }
+  ],
+  "next_steps": "Run /implement 378 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1712534400_plan378",
+    "agent_type": "planner-agent",
+    "duration_seconds": 120,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 2,
+    "estimated_hours": 1.5,
+    "dependency_waves": [[1, 2]]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "status": "implemented",
+  "summary": "Relocated the global extension source store from ~/.config/nvim/.claude/extensions/ to ~/.config/nvim/agent-system/extensions/ via history-preserving git mv, repointed config.lua's canonical default and derived sync.lua's core_source_base from it, kept both shell scripts byte-identical across source and deployed copies, updated the manifest_spec.lua fixture, swept documentation prose naming the source location, and verified all three acceptance properties strictly in scratchpad fake project dirs and a full scratch copy of the repo. The real ~/.config/nvim/.claude tree was never destructively touched.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/863_relocate_extension_source_store_out_of_claude/plans/01_relocate-extension-store.md",
+      "summary": "6-phase plan, all phases marked [COMPLETED] with deviation annotations recorded inline on checklist items"
+    },
+    {
+      "type": "summary",
+      "path": "specs/863_relocate_extension_source_store_out_of_claude/summaries/01_relocate-extension-store-summary.md",
+      "summary": "Full implementation summary with What Changed, Decisions, Plan Deviations, and Verification sections"
+    }
+  ],
+  "partial_progress": {
+    "stage": "complete",
+    "details": "All 6 phases implemented and verified; state.json/TODO.md updated to completed"
+  },
+  "completion_data": {
+    "completion_summary": "Relocated the global extension source store from ~/.config/nvim/.claude/extensions/ to ~/.config/nvim/agent-system/extensions/ via history-preserving git mv, repointed the canonical config default and the sync.lua drift-prone literal, kept both shell scripts byte-identical across source and deployed copies, updated the manifest_spec.lua fixture, swept documentation prose naming the source location, and verified all three acceptance properties (picker listing, arbitrary-CWD deploy, and full self-rebuild) strictly against scratchpad fake project dirs.",
+    "roadmap_items": ["Relocate the extension source store out of any deployed .claude/ tree so .claude/ is a 100%-disposable copy-deploy build artifact"]
+  },
+  "metadata": {
+    "session_id": "sess_1784070109_39d07a_863",
+    "agent_type": "neovim-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  },
+  "next_steps": "Dependent tasks 864 (enforce_every_deployed_file_has_a_source) and 865 (make_claude_wipe_lossless_and_regenerable) are now unblocked."
+}

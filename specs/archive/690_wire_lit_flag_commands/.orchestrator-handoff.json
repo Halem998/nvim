@@ -1,0 +1,9 @@
+{
+  "status": "implemented",
+  "summary": "Wired --lit flag through all four workflow commands (research.md, plan.md, implement.md, orchestrate.md). Added Options table documentation, STAGE 1.5 flag extraction in research.md and plan.md, and lit_flag appended to all skill invocation args strings. Synced all four extension core copies to be byte-identical. All 8 files verified to contain lit_flag.",
+  "artifacts": [{"path": "specs/690_wire_lit_flag_commands/summaries/01_wire-lit-commands-summary.md", "type": "summary"}],
+  "blockers": [],
+  "phases_completed": 2,
+  "phases_total": 2,
+  "next_action_hint": "complete"
+}
