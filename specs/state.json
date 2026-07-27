@@ -961,7 +961,7 @@
     {
       "project_number": 916,
       "project_name": "fix_orchestrate_completion_summary_propagation",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Populate completion_summary from return metadata on every /orchestrate path",
@@ -975,7 +975,7 @@
         "agent-system/extensions/core/commands/orchestrate.md"
       ],
       "created": "2026-07-27T06:31:44Z",
-      "last_updated": "2026-07-27T07:37:27Z",
+      "last_updated": "2026-07-27T07:57:52Z",
       "session_id": "sess_1785137007_a53849",
       "artifacts": [
         {
@@ -987,8 +987,14 @@
           "path": "specs/916_fix_orchestrate_completion_summary_propagation/plans/01_completion-summary-propagation.md",
           "type": "plan",
           "summary": "Six-phase plan converging all four /orchestrate paths and the three producer-side copies onto one shared reader extension (orchestrate-recover-outcome.sh) and one shared writer (skill_propagate_completion_summary in skill-base.sh), and deleting the broken commands/orchestrate.md CHECKPOINT 2 clobber."
+        },
+        {
+          "path": "specs/916_fix_orchestrate_completion_summary_propagation/summaries/01_completion-summary-propagation-summary.md",
+          "type": "summary",
+          "summary": "Converged all six completion_summary/roadmap_items propagation call sites onto one shared reader extension (orchestrate-recover-outcome.sh) and one shared writer function (skill_propagate_completion_summary in skill-base.sh); deleted the broken commands/orchestrate.md CHECKPOINT 2 clobber; discovered and fixed a bash parameter-expansion brace-matching bug during implementation that would otherwise have silently defeated the fix."
         }
-      ]
+      ],
+      "completion_summary": "Converged all six completion_summary/roadmap_items propagation call sites (skill-implementer, skill-implementer-hard, orchestrator-postflight.sh, skill-orchestrate Stage 5, skill-orchestrate Stage MT-4, skill-orchestrate-hard Stage 5) onto one shared reader extension in orchestrate-recover-outcome.sh and one shared writer function (skill_propagate_completion_summary) in skill-base.sh. Deleted commands/orchestrate.md's broken CHECKPOINT 2 clobber. Discovered and fixed a bash brace-matching bug in the plan's sketched idiom that would have silently made completion_summary empty on every real invocation; caught via functional fixture simulation, not just syntax checking. Flagged two out-of-scope sibling defects (commands/implement.md's identical clobber; a low-impact pre-existing brace-matching bug in two diagnostic-only log lines) as follow-up candidates."
     }
   ],
   "completed_projects": [],

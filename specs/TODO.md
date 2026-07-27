@@ -11,11 +11,10 @@ next_project_number: 917
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,914,915,916 | -- | agent-system |
-| 2 | 885 | 916 | agent-system |
-| 3 | 887,906 | 873,885 | agent-system |
-| 4 | 907 | 906 | agent-system |
-| 5 | 908 | 907 | agent-system |
+| 1 | 873,885,914,915 | -- | agent-system |
+| 2 | 887,906 | 873,885 | agent-system |
+| 3 | 907 | 906 | agent-system |
+| 4 | 908 | 907 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -23,24 +22,24 @@ next_project_number: 917
 
 873 [BLOCKED] — Make /meta create tasks in the GLOBAL agent-system root by defaul
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
+885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
+  └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use (see above)
+  └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+    └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+      └─ 908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-916 [IMPLEMENTING] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-  └─ 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
-    └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use (see above)
-    └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-      └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-        └─ 908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
 
 ## Tasks
 
 ### 916. Populate completion_summary from return metadata on every /orchestrate path
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 913
 - **Research**: [916_fix_orchestrate_completion_summary_propagation/reports/01_completion-summary-propagation.md]
 - **Plan**: [916_fix_orchestrate_completion_summary_propagation/plans/01_completion-summary-propagation.md]
+- **Summary**: [916_fix_orchestrate_completion_summary_propagation/summaries/01_completion-summary-propagation-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
