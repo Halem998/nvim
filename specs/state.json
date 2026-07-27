@@ -1051,7 +1051,7 @@
     {
       "project_number": 917,
       "project_name": "converge_orchestrate_partial_triage_engines",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Converge single-task /orchestrate partial triage onto the mt engine",
@@ -1066,7 +1066,7 @@
         "specs/901_orchestrate_dry_run_admission_report/tests/test-triage-classify.sh"
       ],
       "created": "2026-07-27T08:24:53Z",
-      "last_updated": "2026-07-27T15:17:05Z",
+      "last_updated": "2026-07-27T15:30:09Z",
       "session_id": "sess_1785164569_185813",
       "artifacts": [
         {
@@ -1078,8 +1078,14 @@
           "path": "specs/917_converge_orchestrate_partial_triage_engines/plans/01_converge-partial-triage-engines.md",
           "type": "plan",
           "summary": "Six-phase plan converging single-task partial triage onto the mt engine, both decisions resolved, regression test folded in"
+        },
+        {
+          "path": "specs/917_converge_orchestrate_partial_triage_engines/summaries/01_converge-partial-triage-engines-summary.md",
+          "type": "summary",
+          "summary": "Converged single-task partial triage onto mt engine; three-way agreement restored; both decisions documented"
         }
-      ]
+      ],
+      "completion_summary": "Removed the engine fork so both single-task and multi-task /orchestrate engines route a partial-with-neither-continuation-nor-blockers task to implement instead of the single-task engine exiting with a referral to /implement; converged 6 source-store files plus 1 regression test into three-way agreement (classifier header table, Stage 4 prose, Stage MT-4 table), with both required decisions (keep the blocked-row divergence; retain exit_partial as a reserved schema value) resolved and documented. Verified via a green regression suite and a redeploy-parity check."
     },
     {
       "project_number": 918,

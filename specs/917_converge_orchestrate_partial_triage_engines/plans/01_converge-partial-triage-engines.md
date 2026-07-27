@@ -1,7 +1,7 @@
 # Implementation Plan: Task #917
 
 - **Task**: 917 - Converge single-task /orchestrate partial triage onto the mt engine
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/917_converge_orchestrate_partial_triage_engines/reports/01_converge-partial-triage-engines.md

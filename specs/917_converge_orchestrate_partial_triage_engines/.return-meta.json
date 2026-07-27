@@ -1,55 +1,7 @@
 {
   "status": "implemented",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/917_converge_orchestrate_partial_triage_engines/plans/01_converge-partial-triage-engines.md",
-      "summary": "Six-phase plan converging the single-task /orchestrate partial triage onto the mt engine, with both required decisions resolved and the out-of-scope regression test folded in"
-    },
-    {
-      "type": "summary",
-      "path": "specs/917_converge_orchestrate_partial_triage_engines/summaries/01_converge-partial-triage-engines-summary.md",
-      "summary": "Implementation summary for all 6 phases: engine convergence, dry-run reporter lockstep edit, Stage 4 dispatch rewrite, Stage MT-4 reconciliation, doc/entry-point alignment, and MAX_CYCLES trace + redeploy verification"
-    }
-  ],
-  "next_steps": "Task implementation complete. Ready for /todo archival or further review.",
   "metadata": {
-    "session_id": "sess_1785164569_185813",
-    "agent_type": "general-implementation-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 6,
-    "phases_total": 6
-  },
-  "completion_data": {
-    "completion_summary": "Removed the engine fork so both single-task and multi-task /orchestrate engines route a partial-with-neither-continuation-nor-blockers task to implement instead of the single-task engine exiting with a referral to /implement; converged 6 source-store files plus 1 regression test into three-way agreement (classifier header table, Stage 4 prose, Stage MT-4 table), with both required decisions (keep the blocked-row divergence; retain exit_partial as a reserved schema value) resolved and documented. Verified via a green regression suite and a redeploy-parity check."
-  },
-  "memory_candidates": [
-    {
-      "content": "When auditing whether a behavioral divergence between two code paths is intentional design or an unreviewed assertion, apply the independent-corroboration test: does the OTHER path's own handler implement the divergence in its own code, or does only a shared classifier/table assert it? A divergence implemented independently by both sides' handlers is a design (keep it, document the justification). A divergence asserted only in one shared table -- especially one citing an untraceable historical decision -- is an unreviewed assertion (converge it). This test cleanly separated two superficially identical rows in the same routing table, where one row was a real semantic difference and the other was a latent defect.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/917_converge_orchestrate_partial_triage_engines/plans/01_converge-partial-triage-engines.md",
-      "confidence": 0.82,
-      "suggested_keywords": ["divergence-audit", "routing-table", "independent-corroboration", "convergence", "design-vs-defect"]
-    },
-    {
-      "content": "When adding a new pre-dispatch probe call that reuses a helper script originally built for post-dispatch staleness gating (e.g. orchestrate-recover-outcome.sh's window_start_ts), pass a distinct, explicitly-named zero/disabled value (e.g. prior_meta_probe_window=0) rather than reusing the existing post-dispatch variable name. Reusing the name silently binds the new call to semantics ('current dispatch's window') that do not apply to the new pre-dispatch call shape ('prior cycle's leftover state, regardless of age'). Name the variable for what IT represents, not what the shared helper's other callers call their argument.",
-      "category": "PATTERN",
-      "source_artifact": "specs/917_converge_orchestrate_partial_triage_engines/plans/01_converge-partial-triage-engines.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["staleness-gate", "variable-naming", "shared-helper", "pre-dispatch-probe", "orchestrate"]
-    }
-  ],
-  "modified_files": [
-    "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
-    "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh",
-    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
-    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
-    "agent-system/extensions/core/commands/orchestrate.md",
-    "specs/901_orchestrate_dry_run_admission_report/tests/test-triage-classify.sh",
-    "specs/state.json",
-    "specs/TODO.md",
-    "specs/917_converge_orchestrate_partial_triage_engines/plans/01_converge-partial-triage-engines.md",
-    "specs/917_converge_orchestrate_partial_triage_engines/summaries/01_converge-partial-triage-engines-summary.md"
-  ]
+    "cycles_used": 3,
+    "final_state": "completed"
+  }
 }

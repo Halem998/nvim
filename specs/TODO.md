@@ -11,8 +11,8 @@ next_project_number: 932
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 885,914,915,917,918,919,920,922,928,929 | -- | agent-system, extensions |
-| 2 | 887,923,924,930,931 | 885,917,918,922,928 | agent-system, literature |
+| 1 | 885,914,915,918,919,920,922,928,929,931 | -- | agent-system, extensions |
+| 2 | 887,923,924,930 | 885,918,922,928 | agent-system, literature |
 | 3 | 925 | 924 | agent-system |
 | 4 | 926,927 | 919,925 | agent-system |
 
@@ -24,8 +24,6 @@ next_project_number: 932
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-917 [IMPLEMENTING] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-  └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co
 918 [NOT STARTED] — resolve_task_dir() in task-lock.sh hard-fails for a task whose di
   └─ 923 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 919 [NOT STARTED] — Fifteen agent definitions instruct writing .return-meta.json but 
@@ -47,6 +45,8 @@ next_project_number: 932
 930 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ### Uncategorized
+
+931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co
 
 ## Tasks
 
@@ -510,12 +510,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 917. Converge single-task /orchestrate partial triage onto the mt engine
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [917_converge_orchestrate_partial_triage_engines/reports/01_converge-partial-triage-engines.md]
 - **Plan**: [917_converge_orchestrate_partial_triage_engines/plans/01_converge-partial-triage-engines.md]
+- **Summary**: [917_converge_orchestrate_partial_triage_engines/summaries/01_converge-partial-triage-engines-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
