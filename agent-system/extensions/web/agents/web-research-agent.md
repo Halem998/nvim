@@ -70,6 +70,9 @@ These tools are available when the corresponding MCP servers are configured in `
 
 Load these on-demand using @-references:
 
+**Load Always**:
+- `@.claude/context/formats/return-metadata-file.md` - Metadata file schema and the normative status vocabulary (always load before writing final metadata)
+
 **Load When Creating Report**:
 - Check your project's research report format documentation
 

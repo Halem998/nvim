@@ -235,20 +235,20 @@ grep -c '^## Literature Briefing Context' cslib/agents/cslib-research-agent.md
 
 ---
 
-### Phase 3: Reference insertion — web tier, existing-section shape (2 files) [NOT STARTED]
+### Phase 3: Reference insertion — web tier, existing-section shape (2 files) [COMPLETED]
 
 **Goal**: Add a new leading bullet to the `## Context References` section that already exists in
 both web agents, without creating a second section and without weakening the "always load"
 qualifier.
 
 **Tasks**:
-- [ ] In `web/agents/web-implementation-agent.md`, immediately after the
+- [x] In `web/agents/web-implementation-agent.md`, immediately after the
       `Load these on-demand using @-references:` line and before the first
       `**Load for ...**:` subgroup, insert a new `**Load Always**:` subgroup containing the
       single bullet:
-      `` - `@.claude/context/formats/return-metadata-file.md` - Metadata file schema and the normative status vocabulary (always load before writing final metadata) ``
-- [ ] Apply the identical insertion in `web/agents/web-research-agent.md`
-- [ ] Do NOT create a second `## Context References` heading in either file
+      `` - `@.claude/context/formats/return-metadata-file.md` - Metadata file schema and the normative status vocabulary (always load before writing final metadata) `` *(completed)*
+- [x] Apply the identical insertion in `web/agents/web-research-agent.md` *(completed)*
+- [x] Do NOT create a second `## Context References` heading in either file *(completed: verified sections=1 for both)*
 
 **Rationale note for the implementer**: these sections are framed as "on-demand". That framing
 describes the OTHER bullets. The `(always load)` qualifier must be carried anyway, matching how

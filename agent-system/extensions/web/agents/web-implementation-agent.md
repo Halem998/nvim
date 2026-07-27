@@ -66,6 +66,9 @@ These tools are available when the corresponding MCP servers are configured in `
 
 Load these on-demand using @-references:
 
+**Load Always**:
+- `@.claude/context/formats/return-metadata-file.md` - Metadata file schema and the normative status vocabulary (always load before writing final metadata)
+
 **Load for Web Work**:
 - `@.claude/context/project/web/domain/astro-framework.md` - Astro 5/6 reference
 - `@.claude/context/project/web/domain/tailwind-v4.md` - Tailwind CSS v4 reference
