@@ -216,46 +216,52 @@ the annotator does not have to re-derive it.
 
 ---
 
-### Phase 3: Source-Aware Annotation of Table Rows [NOT STARTED]
+### Phase 3: Source-Aware Annotation of Table Rows [COMPLETED]
 
 **Goal**: Make Step 2.5.3 branch on match source and rewrite a matched table row in place,
 preserving its pipe structure, instead of searching for a checkbox line that cannot exist.
 
 **Tasks**:
-- [ ] Extract `SOURCE`, `LINE_INDEX`, `RAW_LINE`, and `STATUS_INDEX` from each match via `jq -r`,
+- [x] Extract `SOURCE`, `LINE_INDEX`, `RAW_LINE`, and `STATUS_INDEX` from each match via `jq -r`,
       alongside the existing `ITEM_TEXT`/`TASK_NUM`/`COMPLETION_DATE` extraction. Use
-      `.source // ""` so checkbox matches yield an empty string.
-- [ ] Keep the annotation-suffix construction (`*(Completed: Task N, DATE)*` / `*(Completed: Task
+      `.source // ""` so checkbox matches yield an empty string. *(completed)*
+- [x] Keep the annotation-suffix construction (`*(Completed: Task N, DATE)*` / `*(Completed: Task
       N)*`) exactly where it is, as the single source of truth for the marker format used by both
-      branches.
-- [ ] **Checkbox branch (`SOURCE` empty)**: leave the existing `OLD_LINE`/`NEW_LINE`/`awk`/`diff`
-      logic unmodified.
-- [ ] **Table branch (`SOURCE == "status_table"`)**:
-  - [ ] Replace the `grep -F "$ITEM_TEXT" | head -1` already-annotated heuristic with a precise
+      branches. *(completed)*
+- [x] **Checkbox branch (`SOURCE` empty)**: leave the existing `OLD_LINE`/`NEW_LINE`/`awk`/`diff`
+      logic unmodified. *(completed: byte-identical to pre-task baseline, verified against
+      `specs/ROADMAP.md`)*
+- [x] **Table branch (`SOURCE == "status_table"`)**: *(completed)*
+  - [x] Replace the `grep -F "$ITEM_TEXT" | head -1` already-annotated heuristic with a precise
         check: read the on-disk line at `LINE_INDEX + 1`; if it contains `*(Completed:`, count it
         as `already_annotated` and continue. Component text is never used to locate a line.
-  - [ ] If the on-disk line at `LINE_INDEX + 1` does not equal `RAW_LINE`, skip with new reason
+        *(completed)*
+  - [x] If the on-disk line at `LINE_INDEX + 1` does not equal `RAW_LINE`, skip with new reason
         `table_row_line_mismatch` (stale reference / file changed underneath) and continue.
-        Never write on a mismatch.
-  - [ ] Build the replacement line with a small `python3` invocation that mirrors the parser's own
+        Never write on a mismatch. *(completed: guard wired and code-reviewed; unreachable in a
+        single run per this same phase's own verification note, accepted as defensive)*
+  - [x] Build the replacement line with a small `python3` invocation that mirrors the parser's own
         parse: match `^\|(.*)\|(\s*)$`, `split('|')` the inner text, append
         ` {ANNOTATION_SUFFIX}` to the `STATUS_INDEX` cell (preserving that cell's leading
         whitespace and its trailing single space), rejoin with `|`, and re-append the captured
-        trailing whitespace. Column count must be identical before and after.
-  - [ ] Apply with `awk -v ln=... -v old=... -v new=...` replacing only the line where
+        trailing whitespace. Column count must be identical before and after. *(completed:
+        verified on 3-, 4-, and 5-column fixtures)*
+  - [x] Apply with `awk -v ln=... -v old=... -v new=...` replacing only the line where
         `NR == ln && $0 == old`, writing to a temp file and `mv`-ing on change, mirroring the
-        existing checkbox apply.
-  - [ ] On no-change, record the new reason `table_row_not_found_at_line` rather than the
-        misleading `line_not_found_exact`.
-- [ ] **Fix the dry-run over-report on both branches**: today `--dry-run` increments
+        existing checkbox apply. *(completed)*
+  - [x] On no-change, record the new reason `table_row_not_found_at_line` rather than the
+        misleading `line_not_found_exact`. *(completed)*
+- [x] **Fix the dry-run over-report on both branches**: today `--dry-run` increments
       `ANNOTATIONS_MADE` without confirming the target line exists, so a dry run reports success
       for edits that would fail. Gate the dry-run increment on the same existence check the apply
       path performs (exact-line presence for checkboxes; `LINE_INDEX`/`RAW_LINE` agreement for
-      table rows), and print a `[dry-run] would skip: {reason}` line otherwise.
-- [ ] Make the dry-run and success stderr messages source-aware so a table-row annotation is
-      distinguishable from a checkbox annotation in the transcript.
-- [ ] Document the invariant in a comment: every annotation replaces exactly one line with
+      table rows), and print a `[dry-run] would skip: {reason}` line otherwise. *(completed)*
+- [x] Make the dry-run and success stderr messages source-aware so a table-row annotation is
+      distinguishable from a checkbox annotation in the transcript. *(completed: "(checkbox)" /
+      "(table row)" tags on every dry-run and applied-annotation message)*
+- [x] Document the invariant in a comment: every annotation replaces exactly one line with
       exactly one line, so captured `line_index` values remain valid for the whole annotate loop.
+      *(completed)*
 
 **Timing**: 1.5 hours
 

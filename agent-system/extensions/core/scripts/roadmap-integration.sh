@@ -456,13 +456,19 @@ PYEOF
 # ─── Step 2.5.3: Annotate completed roadmap items ────────────────────────────
 #
 # Annotation format:
-#   - [x] {item text} *(Completed: Task {N}, {DATE})*
+#   Checkbox path:   - [x] {item text} *(Completed: Task {N}, {DATE})*
+#   Table-row path:  the same suffix appended to the matched status cell, e.g.
+#                     | Component | Complete (task N) *(Completed: Task N, DATE)* | Location |
 #
 # Safety rules:
 #   - Skip items already annotated (contain "*(Completed:")
 #   - Preserve existing formatting and indentation
 #   - One edit per item (no batch edits)
 #   - Only high-confidence matches auto-annotate
+#
+# Invariant: every annotation replaces exactly one line with exactly one line, so a match's
+# captured line_index remains valid for the entire annotate loop -- no index ever shifts because
+# a prior iteration inserted or removed a line.
 
 ANNOTATIONS_MADE=0
 ITEMS_SKIPPED=0
@@ -478,57 +484,170 @@ if [[ "$DO_ANNOTATE" == "true" ]]; then
     ITEM_TEXT=$(echo "$MATCH" | jq -r '.roadmap_item')
     TASK_NUM=$(echo "$MATCH" | jq -r '.matched_task')
     COMPLETION_DATE=$(echo "$MATCH" | jq -r '.completion_date // ""')
+    # .source // "" makes checkbox matches (which have no "source" key at all) yield an empty
+    # string, so this one field cleanly distinguishes the two annotation paths below.
+    SOURCE=$(echo "$MATCH" | jq -r '.source // ""')
+    LINE_INDEX=$(echo "$MATCH" | jq -r '.line_index // ""')
+    RAW_LINE=$(echo "$MATCH" | jq -r '.raw_line // ""')
+    STATUS_INDEX=$(echo "$MATCH" | jq -r '.status_index // ""')
 
-    # Safety check: skip if already annotated
-    if grep -q "*(Completed:" "$ROADMAP_PATH" 2>/dev/null && \
-       grep -q "$ITEM_TEXT" "$ROADMAP_PATH" 2>/dev/null; then
-      # Check if this specific line is already annotated
-      MATCHING_LINE=$(grep -F "$ITEM_TEXT" "$ROADMAP_PATH" 2>/dev/null | head -1)
-      if echo "$MATCHING_LINE" | grep -q "*(Completed:"; then
-        ITEMS_SKIPPED=$((ITEMS_SKIPPED + 1))
-        SKIPPED_REASONS+=("already_annotated")
-        continue
-      fi
-    fi
-
-    # Build annotation suffix
+    # Annotation-suffix construction stays exactly here: the single source of truth for the
+    # completion marker format used by both branches below.
     if [[ -n "$COMPLETION_DATE" ]]; then
       ANNOTATION_SUFFIX="*(Completed: Task $TASK_NUM, $COMPLETION_DATE)*"
     else
       ANNOTATION_SUFFIX="*(Completed: Task $TASK_NUM)*"
     fi
 
-    # Build old and new strings for sed substitution
-    OLD_LINE="- [ ] $ITEM_TEXT"
-    NEW_LINE="- [x] $ITEM_TEXT $ANNOTATION_SUFFIX"
+    if [[ "$SOURCE" != "status_table" ]]; then
+      # ─── Checkbox branch: pre-existing OLD_LINE/NEW_LINE/awk logic, unmodified ────────────
+      # Safety check: skip if already annotated
+      if grep -q "*(Completed:" "$ROADMAP_PATH" 2>/dev/null && \
+         grep -q "$ITEM_TEXT" "$ROADMAP_PATH" 2>/dev/null; then
+        # Check if this specific line is already annotated
+        MATCHING_LINE=$(grep -F "$ITEM_TEXT" "$ROADMAP_PATH" 2>/dev/null | head -1)
+        if echo "$MATCHING_LINE" | grep -q "*(Completed:"; then
+          ITEMS_SKIPPED=$((ITEMS_SKIPPED + 1))
+          SKIPPED_REASONS+=("already_annotated")
+          continue
+        fi
+      fi
 
-    if [[ "$DRY_RUN" == "true" ]]; then
-      echo "[dry-run] Would annotate: $OLD_LINE" >&2
-      echo "[dry-run]           with: $NEW_LINE" >&2
-      ANNOTATIONS_MADE=$((ANNOTATIONS_MADE + 1))
-    else
-      # Apply annotation: replace first occurrence of the unchecked item
-      # Use a temp file to avoid in-place issues
-      TMPFILE=$(mktemp)
-      # Replace only the first match of this exact line
-      awk -v old="$OLD_LINE" -v new="$NEW_LINE" '
-        !replaced && $0 == old {
-          print new
-          replaced = 1
-          next
-        }
-        { print }
-      ' "$ROADMAP_PATH" > "$TMPFILE"
+      # Build old and new strings for sed substitution
+      OLD_LINE="- [ ] $ITEM_TEXT"
+      NEW_LINE="- [x] $ITEM_TEXT $ANNOTATION_SUFFIX"
 
-      if diff -q "$TMPFILE" "$ROADMAP_PATH" > /dev/null 2>&1; then
-        # No change was made (line not found as exact match)
-        ITEMS_SKIPPED=$((ITEMS_SKIPPED + 1))
-        SKIPPED_REASONS+=("line_not_found_exact")
-        rm -f "$TMPFILE"
+      # Existence check shared by dry-run and apply, so dry-run can never over-report an
+      # annotation it could not actually apply: does the exact unchecked line exist at all?
+      LINE_EXISTS=false
+      if grep -qxF "$OLD_LINE" "$ROADMAP_PATH" 2>/dev/null; then
+        LINE_EXISTS=true
+      fi
+
+      if [[ "$DRY_RUN" == "true" ]]; then
+        if [[ "$LINE_EXISTS" == "true" ]]; then
+          echo "[dry-run] Would annotate (checkbox): $OLD_LINE" >&2
+          echo "[dry-run]                      with: $NEW_LINE" >&2
+          ANNOTATIONS_MADE=$((ANNOTATIONS_MADE + 1))
+        else
+          echo "[dry-run] would skip (checkbox): line_not_found_exact" >&2
+          ITEMS_SKIPPED=$((ITEMS_SKIPPED + 1))
+          SKIPPED_REASONS+=("line_not_found_exact")
+        fi
       else
-        mv "$TMPFILE" "$ROADMAP_PATH"
+        # Apply annotation: replace first occurrence of the unchecked item
+        # Use a temp file to avoid in-place issues
+        TMPFILE=$(mktemp)
+        # Replace only the first match of this exact line
+        awk -v old="$OLD_LINE" -v new="$NEW_LINE" '
+          !replaced && $0 == old {
+            print new
+            replaced = 1
+            next
+          }
+          { print }
+        ' "$ROADMAP_PATH" > "$TMPFILE"
+
+        if diff -q "$TMPFILE" "$ROADMAP_PATH" > /dev/null 2>&1; then
+          # No change was made (line not found as exact match)
+          ITEMS_SKIPPED=$((ITEMS_SKIPPED + 1))
+          SKIPPED_REASONS+=("line_not_found_exact")
+          rm -f "$TMPFILE"
+        else
+          mv "$TMPFILE" "$ROADMAP_PATH"
+          ANNOTATIONS_MADE=$((ANNOTATIONS_MADE + 1))
+          echo "Annotated (checkbox): Task $TASK_NUM -> $ITEM_TEXT" >&2
+        fi
+      fi
+    else
+      # ─── Table-row branch: locate by (line_index, raw_line), rewrite in place ─────────────
+      # Component text is never used to locate a line here -- two rows with identical component
+      # text would collide on a text-based lookup, so location is strictly by the captured
+      # (line_index, raw_line) pair.
+      ON_DISK_LINE=""
+      if [[ -n "$LINE_INDEX" ]]; then
+        ON_DISK_LINE=$(sed -n "$((LINE_INDEX + 1))p" "$ROADMAP_PATH")
+      fi
+
+      # Precise already-annotated check: read the on-disk line at the captured index instead of
+      # grepping for component text.
+      if [[ "$ON_DISK_LINE" == *"*(Completed:"* ]]; then
+        ITEMS_SKIPPED=$((ITEMS_SKIPPED + 1))
+        SKIPPED_REASONS+=("already_annotated")
+        [[ "$DRY_RUN" == "true" ]] && echo "[dry-run] would skip (table row): already_annotated" >&2
+        continue
+      fi
+
+      # Stale-reference guard: if the on-disk line at LINE_INDEX no longer equals the RAW_LINE
+      # captured at parse time, the file changed underneath us -- never write on a mismatch.
+      if [[ -z "$LINE_INDEX" || "$ON_DISK_LINE" != "$RAW_LINE" ]]; then
+        ITEMS_SKIPPED=$((ITEMS_SKIPPED + 1))
+        SKIPPED_REASONS+=("table_row_line_mismatch")
+        [[ "$DRY_RUN" == "true" ]] && echo "[dry-run] would skip (table row): table_row_line_mismatch" >&2
+        continue
+      fi
+
+      # Build the replacement line with the same parse the parser itself used: match
+      # ^\|(.*)\|(\s*)$, split('|') the inner text, append the suffix to the STATUS_INDEX cell
+      # (preserving its leading whitespace and its trailing single space), rejoin with '|', and
+      # re-append the captured trailing whitespace. Column count is identical before and after.
+      NEW_LINE=$(python3 - "$RAW_LINE" "$STATUS_INDEX" "$ANNOTATION_SUFFIX" << 'PYEOF'
+import re
+import sys
+
+raw_line, status_index, suffix = sys.argv[1], int(sys.argv[2]), sys.argv[3]
+m = re.match(r'^\|(.*)\|(\s*)$', raw_line)
+if not m:
+    print("")
+    sys.exit(0)
+inner, trailing = m.group(1), m.group(2)
+cols = inner.split('|')
+if status_index < 0 or status_index >= len(cols):
+    print("")
+    sys.exit(0)
+cell = cols[status_index]
+cell_match = re.match(r'^(\s*)(.*?)(\s?)$', cell)
+lead, body, trail_space = cell_match.group(1), cell_match.group(2), cell_match.group(3)
+cols[status_index] = f"{lead}{body} {suffix}{trail_space}"
+print("|" + "|".join(cols) + "|" + trailing)
+PYEOF
+)
+
+      if [[ -z "$NEW_LINE" ]]; then
+        ITEMS_SKIPPED=$((ITEMS_SKIPPED + 1))
+        SKIPPED_REASONS+=("table_row_not_found_at_line")
+        [[ "$DRY_RUN" == "true" ]] && echo "[dry-run] would skip (table row): table_row_not_found_at_line" >&2
+        continue
+      fi
+
+      if [[ "$DRY_RUN" == "true" ]]; then
+        echo "[dry-run] Would annotate (table row): $RAW_LINE" >&2
+        echo "[dry-run]                       with: $NEW_LINE" >&2
         ANNOTATIONS_MADE=$((ANNOTATIONS_MADE + 1))
-        echo "Annotated: Task $TASK_NUM -> $ITEM_TEXT" >&2
+      else
+        # Apply with awk, replacing only the exact captured line at the exact captured index --
+        # mirrors the checkbox branch's temp-file-then-mv apply.
+        TARGET_LINE=$((LINE_INDEX + 1))
+        TMPFILE=$(mktemp)
+        awk -v ln="$TARGET_LINE" -v old="$RAW_LINE" -v new="$NEW_LINE" '
+          NR == ln && $0 == old {
+            print new
+            next
+          }
+          { print }
+        ' "$ROADMAP_PATH" > "$TMPFILE"
+
+        if diff -q "$TMPFILE" "$ROADMAP_PATH" > /dev/null 2>&1; then
+          # No change was made -- misleading to call this "line_not_found_exact" (that name
+          # implies a checkbox-style text search); this is a line-index-targeted apply instead.
+          ITEMS_SKIPPED=$((ITEMS_SKIPPED + 1))
+          SKIPPED_REASONS+=("table_row_not_found_at_line")
+          rm -f "$TMPFILE"
+        else
+          mv "$TMPFILE" "$ROADMAP_PATH"
+          ANNOTATIONS_MADE=$((ANNOTATIONS_MADE + 1))
+          echo "Annotated (table row): Task $TASK_NUM -> $ITEM_TEXT" >&2
+        fi
       fi
     fi
   done

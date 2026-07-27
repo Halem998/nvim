@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "phase_name": "Source-Aware Annotation of Table Rows",
+  "started_at": "2026-07-26T00:15:00Z",
+  "last_updated": "2026-07-26T01:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Branch Step 2.5.3 on match source; rewrite table rows in place via line-index-targeted apply; fix dry-run over-report; source-aware stderr messages",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.idempotence-verification-wording",
+      "description": "Re-running --annotate on an already-annotated table row yields annotations_made: 0",
+      "type": "altered",
+      "reason": "The Step 2.5.2 matcher already filters out rows whose status text contains \"*(Completed:\" before they ever reach the annotate loop (identical to the pre-existing checkbox path's own matcher-level filter via item.get('completed')). So the second run's high-confidence match list is empty rather than containing one match that the annotator skips with reason 'already_annotated'. Net effect (0 annotations, no duplicate marker, idempotent) is identical to the plan's intent; only which layer performs the filtering differs, and it differs identically to how the unmodified checkbox path already behaves.",
+      "annotation": "*(deviation: altered — matcher-level filtering makes the annotator's already_annotated skip path a defensive backstop, mirroring the pre-existing checkbox path's own dead-path symmetry)*"
+    }
+  ]
+}
