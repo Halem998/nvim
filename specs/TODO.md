@@ -20,7 +20,7 @@ next_project_number: 937
 ### Agent System
 
 887 [PLANNED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
-920 [RESEARCHED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
+920 [PLANNED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
   └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co
 933 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
   └─ 934 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
@@ -622,11 +622,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 920. Validate dispatch_status against the schema enum so an off-schema value fails loudly instead of silently no-opping
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 936
 - **Research**: [920_validate_dispatch_status_against_schema_enum/reports/01_validate-dispatch-status-schema-enum.md]
+- **Plan**: [920_validate_dispatch_status_against_schema_enum/plans/01_validate-dispatch-status-schema-enum.md]
 
 **Description**: An off-schema dispatch_status read from .orchestrator-handoff.json silently no-ops the postflight, stranding a task that in fact completed successfully.
 

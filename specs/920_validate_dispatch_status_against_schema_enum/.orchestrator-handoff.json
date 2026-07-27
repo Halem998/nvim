@@ -1,16 +1,18 @@
 {
-  "phase": "research",
-  "status": "researched",
-  "summary": "Verified all three defect sites (skill-orchestrate Stage 5, skill-orchestrate-hard mirrored Stage 5, skill-orchestrate multi-task Stage MT-4 step 3) quote-for-quote as described. Confirmed the handoff enum and .return-meta.json enum are identical (six values), resolving the vocabulary-divergence question. Found two existing precedents for citing the normative table via a sync comment rather than a mechanical import. Flagged skill_postflight_update in scripts/skill-base.sh as a necessary fourth site to give partial/blocked genuine state.json transitions, and clarified artifacts[0].type is safe only for phase inference, not success inference.",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Created a 4-phase plan (2.75h, 3 dependency waves) replacing the silent dispatch_status catch-all with a three-tier structure at all three named sites: success values unchanged, partial|failed|blocked explicitly recognized with honest logging, and off-schema values emitting a loud [OFF-SCHEMA DISPATCH STATUS - ...] stderr banner followed by EXIT (partial) in Stage 5 or a failed_tasks charge in MT-4. Enum drawn from context/formats/return-metadata-file.md via the command-gate-out.sh sync-comment precedent, with in_progress documented as a deliberate exclusion. artifacts[0].type inference scoped to phase identification only, never a success verdict. Scope decision: option (a) -- stayed within the declared two-SKILL.md file_scope; scripts/skill-base.sh recorded as an explicit named follow-up because task 931 already declares it (and skill-orchestrate/SKILL.md) in its own file_scope, and the plan states precisely what remains non-functional until that follow-up lands.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/920_validate_dispatch_status_against_schema_enum/reports/01_validate-dispatch-status-schema-enum.md"
+      "type": "plan",
+      "path": "specs/920_validate_dispatch_status_against_schema_enum/plans/01_validate-dispatch-status-schema-enum.md",
+      "summary": "Four-phase implementation plan with dependency waves, per-phase verification tiers and scope hypotheses, an explicit scope decision, and a non-functional-gaps record"
     }
   ],
   "blockers": [],
   "phases_completed": 0,
-  "phases_total": 0,
-  "plan_markers_verified": "absent",
-  "next_action_hint": "Run /plan 920 to create the implementation plan. The plan should decide whether scripts/skill-base.sh's skill_postflight_update is in scope (needed for partial/blocked to produce a real state.json transition) and how dispatch_status=failed should be handled given update-task-status.sh has no postflight:failed mapping today."
+  "phases_total": 4,
+  "plan_markers_verified": true,
+  "next_action_hint": "Run /implement 920. Phase 1 is the reference implementation (base-mode Stage 5); Phases 2 and 3 mirror it into hard mode and MT-4 and can run in parallel; Phase 4 runs the source-store, no-task-reference, and cross-site consistency gates. Do not edit scripts/skill-base.sh -- it is deliberately out of scope and belongs to a named follow-up sequenced after task 931.",
+  "continuation_context": null
 }
