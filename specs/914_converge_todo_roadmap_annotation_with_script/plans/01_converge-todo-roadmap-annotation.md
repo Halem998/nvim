@@ -212,41 +212,41 @@ recorded, not silently absorbed into this phase.
 
 ---
 
-### Phase 3: Rewrite `/todo` Step 5.5 annotation to reuse the script [NOT STARTED]
+### Phase 3: Rewrite `/todo` Step 5.5 annotation to reuse the script [COMPLETED]
 
 **Goal**: `commands/todo.md` stops hand-writing roadmap line rewrites for completed tasks and
 delegates them to `roadmap-integration.sh --annotate` against a filtered snapshot, while keeping
 its own abandoned-task annotation gated on the parseable signal.
 
 **Tasks**:
-- [ ] Replace Step 5.5's match-tuple parsing and its three Edit-based annotation recipes for
+- [x] Replace Step 5.5's match-tuple parsing and its three Edit-based annotation recipes for
   *completed* tasks with: build a filtered state snapshot, then invoke
-  `bash .claude/scripts/roadmap-integration.sh --roadmap specs/ROADMAP.md --state "$snapshot" --annotate`.
-- [ ] Specify snapshot construction precisely, and state why: create a scratch directory with
+  `bash .claude/scripts/roadmap-integration.sh --roadmap specs/ROADMAP.md --state "$snapshot" --annotate`. *(completed)*
+- [x] Specify snapshot construction precisely, and state why: create a scratch directory with
   `mktemp -d`, write the snapshot as `<scratchdir>/state.json`, and populate it as
   `{"active_projects": [ <the completed entries of roadmap_eligible_tasks[]> ]}` captured at
   Step 3.5 **before** Step 5 archival removed them from `active_projects`. Record that reading the
   live `specs/state.json` here would find none of the tasks being archived, because Step 5.5 runs
-  after archival.
-- [ ] State the two snapshot safety rules as explicit prose: the snapshot is a `--state` **input
+  after archival. *(completed)*
+- [x] State the two snapshot safety rules as explicit prose: the snapshot is a `--state` **input
   only** and is never written back over `specs/state.json`; and because the script resolves its
   archive input as the sibling `<scratchdir>/archive/state.json`, which does not exist, previously
   archived tasks are deliberately excluded from this run's annotation. Remove the scratch
-  directory via `trap`.
-- [ ] Note that `/todo` therefore never implements checkbox or table-row rewriting itself — it
-  constructs an input and reads a payload.
-- [ ] Keep the abandoned-task annotation branch (`- [ ] {item} *(Task {N} abandoned: {reason})*`,
+  directory via `trap`. *(completed)*
+- [x] Note that `/todo` therefore never implements checkbox or table-row rewriting itself — it
+  constructs an input and reads a payload. *(completed)*
+- [x] Keep the abandoned-task annotation branch (`- [ ] {item} *(Task {N} abandoned: {reason})*`,
   checkbox stays unchecked) as `/todo`-owned logic, and state that the shared script has no
   abandoned-status code path at all. Gate the branch on `roadmap_structure.parseable`: when
   `parseable` is false, do not attempt the annotation and emit the unparseable warning instead of
-  silently no-op'ing.
-- [ ] Update Step 5.5's tracking block to record `annotations_made`, `items_skipped`,
+  silently no-op'ing. *(completed)*
+- [x] Update Step 5.5's tracking block to record `annotations_made`, `items_skipped`,
   `skipped_reasons`, `high_confidence_matches`, and `silent_noop` from the annotate payload,
   alongside `/todo`'s own `roadmap_abandoned_annotated` count. Retire the `by_match_type`
-  `explicit`/`exact`/`summary` breakdown, which described the removed matcher.
-- [ ] Keep the existing Safety Rules bullet list, revised to name which rules the script now
+  `explicit`/`exact`/`summary` breakdown, which described the removed matcher. *(completed)*
+- [x] Keep the existing Safety Rules bullet list, revised to name which rules the script now
   enforces (already-annotated skip, one-line-for-one-line replacement, stale-line guard via
-  `line_index`/`raw_line`) versus which remain `/todo`'s own for the abandoned path.
+  `line_index`/`raw_line`) versus which remain `/todo`'s own for the abandoned path. *(completed)*
 
 **Timing**: 1.25 hours
 

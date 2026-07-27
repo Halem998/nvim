@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Rewrite /todo Step 5.5 annotation to reuse the script",
+  "started_at": "2026-07-27T00:00:00Z",
+  "last_updated": "2026-07-27T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace completed-task annotation recipes with --annotate against filtered snapshot", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 2, "description": "Specify snapshot construction (mktemp -d, pre-archival eligible_tasks capture)", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 3, "description": "State snapshot safety rules (input-only, sibling archive absence, trap cleanup)", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 4, "description": "Keep abandoned-task annotation as /todo-owned, gated on parseable", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 5, "description": "Update tracking block fields, retire by_match_type breakdown", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 6, "description": "Revise Safety Rules bullets to name script-enforced vs /todo-owned rules", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -624,80 +624,84 @@ Track misplaced operations for output reporting:
 
 ### 5.5. Update Roadmap for Archived Tasks
 
-**Context**: Load @.claude/context/patterns/roadmap-update.md for matching strategy.
+`/todo` never implements checkbox or table-row rewriting itself: it constructs a filtered input
+and reads a payload from `roadmap-integration.sh`. Completed-task annotation is delegated
+entirely to the script's `--annotate` mode; abandoned-task annotation stays `/todo`-owned, since
+the script has no code path for it at all (see the script's header "Caller contract").
 
-For each archived task with roadmap matches (from Step 3.5):
+**1. Build the filtered snapshot -- MUST be captured from Step 3.5's pre-archival data**:
 
-**1. Read current ROADMAP.md content**
+Step 5.5 runs *after* Step 5 archival. By then, archived tasks have already been removed from
+`active_projects` and moved into `specs/archive/state.json`. An `--annotate` call pointed at the
+live `specs/state.json` at this point would therefore see none of the tasks being archived --
+the snapshot must instead be synthesized from `roadmap_eligible_tasks[]`, captured at Step 3.5
+*before* Step 5's archival mutated state:
 
-**2. Parse match tuple** (from Step 3.5):
 ```bash
-# roadmap_matches[] entries are: project_num:status:match_type:line_num:item_text
-# Parse components
-project_num=$(echo "$match" | cut -d: -f1)
-status=$(echo "$match" | cut -d: -f2)
-match_type=$(echo "$match" | cut -d: -f3)  # explicit, exact, or summary
-line_num=$(echo "$match" | cut -d: -f4)
-item_text=$(echo "$match" | cut -d: -f5-)
+# Scratch directory for the snapshot -- input only, never a write target. Removed via trap.
+snapshot_dir=$(mktemp -d)
+trap 'rm -rf "$snapshot_dir"' EXIT
+
+# Filter Step 3.5's pre-archival roadmap_eligible_tasks[] to completed-status entries only.
+# (Abandoned-status entries are handled by /todo's own branch in step 3 below, not by the script.)
+completed_eligible_json=$(printf '%s\n' "${roadmap_eligible_tasks[@]}" | jq -s '[.[] | select(.status == "completed")]')
+jq -n --argjson projects "$completed_eligible_json" '{"active_projects": $projects}' > "${snapshot_dir}/state.json"
 ```
 
-**3. For each match, determine if already annotated**:
+Two safety rules govern this snapshot:
+- **Input only, never written back**: the snapshot is passed solely as `--state`; the real
+  `specs/state.json` is never touched by this step.
+- **No sibling archive on purpose**: `roadmap-integration.sh` resolves its archive input as the
+  sibling `${STATE_PATH%state.json}archive/state.json` (see the script's header). Since
+  `${snapshot_dir}/archive/state.json` does not exist, previously archived tasks are deliberately
+  excluded from this run's annotation -- only this run's newly-completed tasks are ever
+  annotated. This is documented, load-bearing behavior, not an accident to work around.
+
+**2. Invoke the script in `--annotate` mode against the real ROADMAP.md, filtered snapshot as state**:
 ```bash
-# Skip if already has completion or abandonment annotation
-if echo "$line_content" | grep -qE '\*(Completed:|\*(Abandoned:|\*(Task [0-9]+ abandoned:'; then
-  echo "Skipped: Line $line_num already annotated"
-  ((roadmap_skipped++))
-  continue
-fi
+annotate_output=$(bash .claude/scripts/roadmap-integration.sh \
+  --roadmap specs/ROADMAP.md \
+  --state "${snapshot_dir}/state.json" \
+  --annotate) || true
+
+annotate_summary=$(echo "$annotate_output" | jq '.annotation_summary')
+roadmap_completed_annotated=$(echo "$annotate_summary" | jq '.annotations_made')
+roadmap_items_skipped=$(echo "$annotate_summary" | jq '.items_skipped')
+roadmap_skipped_reasons=$(echo "$annotate_summary" | jq '.skipped_reasons')
+roadmap_high_confidence_matches=$(echo "$annotate_summary" | jq '.high_confidence_matches')
+roadmap_silent_noop=$(echo "$annotate_summary" | jq '.silent_noop')
 ```
 
-**4. Apply appropriate annotation based on match type**:
+**3. Abandoned-task annotation -- `/todo`-owned, gated on `parseable`**:
 
-For completed tasks with **explicit** match (via roadmap_items):
+The script has no abandoned-status branch at all (its `COMPLETED_TASKS` query only ever selects
+`status == "completed"`). `/todo` retains this annotation itself, gated on the same
+`roadmap_structure.parseable` flag Step 3.5 captured: when `parseable` is `false`, do not attempt
+the annotation -- emit the unparseable warning (Step 4) instead of silently no-op'ing.
+
+For each abandoned task in `roadmap_eligible_matches[]` (Step 3.5), skip if the matched line
+already contains `*(Task {N} abandoned:` or `*(Completed:`, else:
 ```
 Edit old_string: "- [ ] {item_text}"
-     new_string: "- [x] {item_text} *(Completed: Task {N}, {DATE})*"
+     new_string: "- [ ] {item_text} *(Task {N} abandoned: {short_reason})*"
 ```
+Track `roadmap_abandoned_annotated` as the count of these edits applied.
 
-For completed tasks with **exact** match (via Task N reference):
-```
-Edit old_string: "- [ ] {item_text} (Task {N})"
-     new_string: "- [x] {item_text} (Task {N}) *(Completed: Task {N}, {DATE})*"
-```
+**4. Track changes for output reporting**:
+- `roadmap_completed_annotated` - from the script's `annotation_summary.annotations_made`
+- `roadmap_abandoned_annotated` - from `/todo`'s own abandoned-path count (step 3 above)
+- `roadmap_items_skipped` / `roadmap_skipped_reasons` - from the script's `annotation_summary`
+- `roadmap_high_confidence_matches` / `roadmap_silent_noop` - from the script's
+  `annotation_summary`, so a no-op annotate run can never be indistinguishable from success
 
-For abandoned tasks (checkbox stays unchecked):
-```
-Edit old_string: "- [ ] {item_text} (Task {N})"
-     new_string: "- [ ] {item_text} (Task {N}) *(Task {N} abandoned: {short_reason})*"
-```
-
-**5. Track changes**:
-```json
-{
-  "roadmap_updates": {
-    "completed_annotated": 2,
-    "abandoned_annotated": 1,
-    "skipped_already_annotated": 1,
-    "by_match_type": {
-      "explicit": 1,
-      "exact": 1,
-      "summary": 0
-    }
-  }
-}
-```
-
-Track roadmap operations for output reporting:
-- roadmap_completed_annotated: count of completed task items marked
-- roadmap_abandoned_annotated: count of abandoned task items annotated
-- roadmap_skipped: count of items skipped (already annotated)
-- roadmap_by_match_type: breakdown by match type (explicit/exact/summary)
-
-**Safety Rules** (from roadmap-update.md):
-- Skip items already containing `*(Completed:` or `*(Task` annotations
-- Preserve existing formatting and indentation
-- One edit per item (no batch edits to same line)
-- Never remove existing content
+**Safety Rules**:
+- Enforced by `roadmap-integration.sh` for the completed-task path: skip items already containing
+  `*(Completed:` (checkbox and table-row branches both check this at the exact captured line, not
+  by text search); one edit per item; the table-row branch additionally guards against a stale
+  `line_index`/`raw_line` mismatch before writing.
+- Remain `/todo`'s own responsibility for the abandoned-task path: skip items already containing
+  `*(Task {N} abandoned:` or `*(Completed:`; preserve existing formatting and indentation; one
+  edit per item; never remove existing content.
 
 ### 5.6. Sync Repository Metrics
 
