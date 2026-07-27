@@ -201,21 +201,21 @@ rule file, deploys with the core extension, and appears in the documented auto-a
 
 ---
 
-### Phase 2: Register the Hook in the PostToolUse Matcher [NOT STARTED]
+### Phase 2: Register the Hook in the PostToolUse Matcher [COMPLETED]
 
 **Goal**: `validate-meta-write.sh` actually executes. Without this, nothing else in this plan has
 runtime effect.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/merge-sources/settings-hooks.json`, add a third command
+- [x] In `agent-system/extensions/core/merge-sources/settings-hooks.json`, add a third command
       entry to the SAME `hooks` array as its two existing siblings under the first
       `"matcher": "Write|Edit"` block (not a new matcher block), so it fires in the same
       PostToolUse pass.
-- [ ] Use the invocation form of `validate-no-task-references.sh`, the advisory/exit-0 sibling:
+- [x] Use the invocation form of `validate-no-task-references.sh`, the advisory/exit-0 sibling:
       `{ "type": "command", "command": "bash .claude/hooks/validate-meta-write.sh 2>/dev/null || echo '{}'" }`
       Do NOT copy `validate-handoff-location.sh`'s form -- it deliberately omits the `|| echo '{}'`
       fallback because it uses exit 2 to surface a blocking error, which is not this hook's model.
-- [ ] Make no other change to the file: matcher strings, existing entries, and the second
+- [x] Make no other change to the file: matcher strings, existing entries, and the second
       `Write|Edit` block (events-log-artifact.sh) stay byte-identical.
 
 **Timing**: 15 minutes
