@@ -1,7 +1,7 @@
 # Implementation Plan: Task #923
 
 - **Task**: 923 - reap_stale_task_locks
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.75 hours
 - **Dependencies**: None (the sibling `resolve_task_dir` / `create_mode` change is COMPLETE and already present in the source-store file)
 - **Research Inputs**: `specs/923_reap_stale_task_locks/reports/01_reap-stale-task-locks.md`

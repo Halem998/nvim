@@ -1222,24 +1222,43 @@
     {
       "project_number": 923,
       "project_name": "reap_stale_task_locks",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Reap stale task locks instead of re-warning about them on every invocation forever",
       "description": "SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.\n\nLINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.\n\nOBSERVED, not hypothetical. While orchestrating a large task in a consuming repo, GATE IN emitted warnings that two OTHER tasks held locks whose heartbeats were 920 and 582 minutes old (15.3 and 9.7 hours), and whose file_scope overlapped the running task's. The system correctly identified both as stale and correctly proceeded. It then never cleaned them, never flagged them for repair, and re-emitted the identical warnings on EVERY subsequent invocation for the remainder of the session.\n\nMECHANISM. scripts/task-lock.sh exposes nine subcommands -- acquire, heartbeat, release, check, init-marker, scope-acquire, scope-release, commit-acquire, commit-release -- and NO reap, gc, prune, or list. Foreign stale locks are warn-only by explicit design; the script's own comments state the rule as never touching the foreign lock. That design choice is CORRECT for the acquire/check paths (a lock query must not have destructive side effects on another session's state) but it leaves no path anywhere in the system that ever removes a stale lock. The result is a monotonically growing set of permanent warnings that train the reader to ignore lock warnings entirely -- which is the real cost, since a genuine conflict warning becomes indistinguishable from the accumulated noise.\n\nWHERE THE REAPING SHOULD LIVE -- A DECISION, NOT A PRESUMPTION. /refresh already sweeps orphaned marker files under specs/ with almost exactly the required shape (age threshold, glob over task directories, dry-run support). Two candidate designs:\n  (a) add a reap/prune subcommand to scripts/task-lock.sh that reuses its EXISTING holder-field reader and age computation and honors the holder-declared staleness window, with /refresh as the only caller;\n  (b) implement the sweep entirely in the refresh path.\nDesign (a) is FAVORED on the grounds that staleness semantics are holder-declared and already implemented inside task-lock.sh, and duplicating that logic into a second file is precisely how two copies drift apart. But establish this during research rather than assuming it.\n\nBINDING CONSTRAINTS ON ANY FIX:\n\n1. Reaping MUST NOT happen implicitly on the acquire, check, heartbeat, or release paths. The existing never-touch-the-foreign-lock rule on those paths is correct and STAYS. Reaping is an explicit, separately-invoked operation.\n\n2. Reaping MUST honor the holder-declared staleness window written into the lock directory, not a fresh caller-chosen threshold. The whole point of holder-declared staleness is that every waiter honors the SAME window; a reaper that picks its own threshold breaks that invariant.\n\n3. Provide a dry-run / report mode, consistent with /refresh's existing dry-run.\n\n4. A reaped lock must be REPORTED, not silently removed. The goal is to replace a repeating warning with a one-time actionable event, not to make the condition invisible.\n\n5. Decide and DOCUMENT whether reaping is safe when the holding session may still be alive but merely slow. A 920-minute-old heartbeat is unambiguous; the threshold at which it stops being unambiguous must be stated rather than left to the reader.\n\nDEPENDENCY NOTE: depends on task 918 for file serialization only. Task 918 also edits scripts/task-lock.sh (create-task-directory-before-acquire); the two tasks are unrelated in content and share only the file.\n\nHonor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.",
       "file_scope": [
-        "agent-system/extensions/core/scripts/task-lock.sh",
+        "agent-system/extensions/core/commands/refresh.md",
         "agent-system/extensions/core/context/patterns/task-lock.md",
-        "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
-        "agent-system/extensions/core/commands/refresh.md"
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/scripts/task-lock.sh",
+        "agent-system/extensions/core/scripts/test-task-lock-reap.sh",
+        "agent-system/extensions/core/skills/skill-refresh/SKILL.md"
       ],
       "dependencies": [
         918
       ],
       "created": "2026-07-27T10:27:21Z",
-      "last_updated": "2026-07-27T10:27:21Z",
-      "session_id": "sess_1785147256_d55ce4",
-      "artifacts": []
+      "last_updated": "2026-07-27T17:50:58Z",
+      "session_id": "sess_1785173027_25410e",
+      "artifacts": [
+        {
+          "path": "specs/923_reap_stale_task_locks/reports/01_reap-stale-task-locks.md",
+          "type": "report",
+          "summary": "No holder-declared staleness field exists (global env var instead); 3 live orphans under specs/archive/ invisible to maxdepth-2 scan; design (a) evidence-backed"
+        },
+        {
+          "path": "specs/923_reap_stale_task_locks/plans/01_reap-stale-task-locks.md",
+          "type": "plan",
+          "summary": "4 phases; premise correction shipped in docs; TASK_LOCK_REAP_MIN = STALE_MIN*4; maxdepth-2 bug gets a negative teeth-check"
+        },
+        {
+          "path": "specs/923_reap_stale_task_locks/summaries/01_reap-stale-task-locks-summary.md",
+          "type": "summary",
+          "summary": "reap subcommand with TASK_LOCK_REAP_MIN; 6-case isolated fixture with negative teeth-check; premise correction shipped in task-lock.md"
+        }
+      ],
+      "completion_summary": "Added an explicit-invocation-only reap subcommand to task-lock.sh (deriving its 120-minute default threshold as 4x TASK_LOCK_STALE_MIN), wired it into /refresh, proved the contract with a 6-case isolated-temp-root fixture including a manually-verified negative teeth-check, and documented the full threshold derivation and the correction to the task's own originating premise in task-lock.md."
     },
     {
       "project_number": 924,

@@ -11,7 +11,7 @@ next_project_number: 932
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 885,914,915,920,923,925,928,929,931 | -- | agent-system, extensions |
+| 1 | 885,914,915,920,925,928,929,931 | -- | agent-system, extensions |
 | 2 | 887,926,927,930 | 885,925,928 | agent-system, literature |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -23,7 +23,6 @@ next_project_number: 932
 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
-923 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 925 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
   └─ 926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
   └─ 927 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
@@ -319,10 +318,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 923. Reap stale task locks instead of re-warning about them on every invocation forever
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 918
+- **Research**: [923_reap_stale_task_locks/reports/01_reap-stale-task-locks.md]
+- **Plan**: [923_reap_stale_task_locks/plans/01_reap-stale-task-locks.md]
+- **Summary**: [923_reap_stale_task_locks/summaries/01_reap-stale-task-locks-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
