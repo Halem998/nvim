@@ -172,29 +172,30 @@ every branch, so no caller ever needs a second reader of `.return-meta.json`.
 
 ---
 
-### Phase 2: Add the shared writer to skill-base.sh [NOT STARTED]
+### Phase 2: Add the shared writer to skill-base.sh [COMPLETED]
 
 **Goal**: One function implements the guarded completion-data write, replacing four
 independently-maintained copies.
 
 **Tasks**:
 
-- [ ] Add `skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type"`
+- [x] Add `skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type"`
       to `scripts/skill-base.sh`, positioned immediately adjacent to
       `skill_propagate_memory_candidates` (currently lines 429-450) so the two Stage-7b-adjacent
-      propagation helpers sit together.
-- [ ] Body implements exactly the guarded two-write logic already duplicated in the three producer
+      propagation helpers sit together. *(completed)*
+- [x] Body implements exactly the guarded two-write logic already duplicated in the three producer
       copies: write `completion_summary` only when non-empty; write `roadmap_items` only when
-      `task_type` is not `meta` AND the value is neither empty nor `"[]"`.
-- [ ] Use `jq --arg` / `--argjson` against `"${SKILL_REPO_ROOT}/specs/state.json"` via
+      `task_type` is not `meta` AND the value is neither empty nor `"[]"`. *(completed)*
+- [x] Use `jq --arg` / `--argjson` against `"${SKILL_REPO_ROOT}/specs/state.json"` via
       `"${SKILL_REPO_ROOT}/specs/tmp/state.json"`, mirroring `skill_link_artifacts`' idiom
       (lines 466-472). Deliberately **not** the Python-interpolation idiom of
       `skill_propagate_memory_candidates` — arbitrary prose in a summary must not be able to
       break the write, and `SKILL_REPO_ROOT` is what makes the write testable against a fixture.
-- [ ] `mkdir -p "${SKILL_REPO_ROOT}/specs/tmp"` before the first write, as `skill_link_artifacts`
-      does.
-- [ ] Add a header comment stating the function's contract and naming its six callers, in the
-      style of the surrounding functions.
+      *(completed)*
+- [x] `mkdir -p "${SKILL_REPO_ROOT}/specs/tmp"` before the first write, as `skill_link_artifacts`
+      does. *(completed)*
+- [x] Add a header comment stating the function's contract and naming its six callers, in the
+      style of the surrounding functions. *(completed)*
 
 **Timing**: 45 minutes
 

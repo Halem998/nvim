@@ -450,6 +450,46 @@ with open('specs/state.json', 'w') as f:
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Stage 7b: Propagate completion_summary + roadmap_items to state.json
+# Usage: skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type"
+#
+# Single shared implementation of the guarded completion-data write, replacing what were
+# previously three independently-maintained copies (skill-implementer, skill-implementer-hard,
+# and the orphaned orchestrator-postflight.sh Stage 7b). Every caller — the plain /implement
+# producer path AND all four /orchestrate paths (base single-task, base multi-task Stage MT-4,
+# hard single-task, hard multi-task via inherited MT-4) — converges on this one function.
+#
+# Guard semantics (unchanged from the prior three copies):
+#   - completion_summary is written only when non-empty.
+#   - roadmap_items is written only when task_type is not "meta" AND the value is neither
+#     empty nor the literal string "[]".
+#
+# Uses jq --arg/--argjson exclusively (never shell-interpolated Python string literals), so
+# arbitrary prose in a summary — quotes, newlines, triple-quotes, backslashes — cannot break the
+# write. Operates against "${SKILL_REPO_ROOT}/specs/state.json" via a "${SKILL_REPO_ROOT}/specs/tmp/state.json"
+# scratch file, mirroring skill_link_artifacts' idiom above, which is what makes this function
+# testable against a fixture repo via SKILL_REPO_ROOT override.
+skill_propagate_completion_summary() {
+  local task_number="$1"
+  local completion_summary="$2"
+  local roadmap_items="$3"
+  local task_type="$4"
+  if [ -n "$completion_summary" ] || { [ "$task_type" != "meta" ] && [ "$roadmap_items" != "[]" ] && [ -n "$roadmap_items" ]; }; then
+    mkdir -p "${SKILL_REPO_ROOT}/specs/tmp"
+  fi
+  if [ -n "$completion_summary" ]; then
+    jq --arg summary "$completion_summary" \
+      '(.active_projects[] | select(.project_number == '"$task_number"')).completion_summary = $summary' \
+      "${SKILL_REPO_ROOT}/specs/state.json" > "${SKILL_REPO_ROOT}/specs/tmp/state.json" && mv "${SKILL_REPO_ROOT}/specs/tmp/state.json" "${SKILL_REPO_ROOT}/specs/state.json"
+  fi
+  if [ "$task_type" != "meta" ] && [ "$roadmap_items" != "[]" ] && [ -n "$roadmap_items" ]; then
+    jq --argjson items "$roadmap_items" \
+      '(.active_projects[] | select(.project_number == '"$task_number"')).roadmap_items = $items' \
+      "${SKILL_REPO_ROOT}/specs/state.json" > "${SKILL_REPO_ROOT}/specs/tmp/state.json" && mv "${SKILL_REPO_ROOT}/specs/tmp/state.json" "${SKILL_REPO_ROOT}/specs/state.json"
+  fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Stage 8: Link artifacts to state.json and TODO.md
 # Usage: skill_link_artifacts "$task_number" "$artifact_path" "$artifact_type" "$artifact_summary" "$field_name" "$next_field"
 # artifact_type: "research" | "plan" | "summary"

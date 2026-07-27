@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Extend the shared reader with completion data",
+  "started_at": "2026-07-27T07:40:00Z",
+  "last_updated": "2026-07-27T07:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extract completion_summary/roadmap_items alongside existing extraction", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh"]},
+    {"id": 2, "description": "Extend emit() with two braced positional params", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh"]},
+    {"id": 3, "description": "Update all six emit call sites with new args", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh"]},
+    {"id": 4, "description": "Add both fields to header Output table", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh"]},
+    {"id": 5, "description": "Leave exit codes/staleness/vocabulary untouched", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
