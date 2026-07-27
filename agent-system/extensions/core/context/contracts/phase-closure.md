@@ -16,8 +16,11 @@ genre convention; the actual load-bearing mechanism, in this codebase, is an exp
 contract carries that bullet in `agents/general-implementation-agent.md` (standard mode),
 `agents/general-implementation-hard-agent.md` (hard mode), and both `skills/skill-implementer/SKILL.md`
 and `skills/skill-implementer-hard/SKILL.md` (discoverability references — the skills delegate
-loading to their respective agents). See `context/architecture/context-layers.md`'s "Contracts
-directory: convention vs. load path" subsection for the full finding.
+loading to their respective agents). It is additionally referenced from every non-core extension
+implementer agent that runs a plan-phase loop, and from any extension skill file maintaining its
+own contract-bullet list, following the same explicit-bullet mechanism rather than a separate
+injection path. See `context/architecture/context-layers.md`'s "Contracts directory: convention
+vs. load path" subsection for the full finding.
 
 ## Close-before-open
 

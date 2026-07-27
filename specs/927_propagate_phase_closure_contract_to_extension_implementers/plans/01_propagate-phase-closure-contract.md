@@ -359,28 +359,31 @@ path, stop and report rather than creating a new bullet list in a thin dispatche
 
 ---
 
-### Phase 5: Refresh the referrer enumerations [NOT STARTED]
+### Phase 5: Refresh the referrer enumerations [COMPLETED]
 
 **Goal**: Update the three documents that enumerate which files reference these contracts, so their
 statements remain true after propagation — without hardcoding a per-file list that will rot on the next
 extension added.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/context/contracts/phase-closure.md`, under its
+- [x] In `agent-system/extensions/core/context/contracts/phase-closure.md`, under its
       `## Loaded via explicit reference in BOTH modes` section, extend the referrer sentence (which
       today names only the four core files) with a **non-enumerating** clause covering the extension
       surface — e.g. that it is additionally referenced from every non-core extension implementer agent
       that runs a plan-phase loop, and from any extension skill maintaining its own contract-bullet
-      list. Do not paste a fourteen-path list.
-- [ ] Apply the same edit to
+      list. Do not paste a fourteen-path list. *(completed)*
+- [x] Apply the same edit to
       `agent-system/extensions/core/context/contracts/pre-edit-gate.md`'s equivalent section.
-- [ ] In `agent-system/extensions/core/context/architecture/context-layers.md`, update Finding (i)'s
+      *(completed)*
+- [x] In `agent-system/extensions/core/context/architecture/context-layers.md`, update Finding (i)'s
       closing sentence (which today asserts both contracts are referenced from the four core files
       "alike") so it does not read as an exhaustive list. Leave Finding (ii) and the **Consequence**
       paragraph substantively intact — they remain true, and the `cslib-implementation-hard-agent.md`
-      precedent named there is still the durable example.
-- [ ] Verify no task-number citation (`task N`, `tasks N-M`, `(task N)`) was introduced in any of the
-      three files. Cite durable anchors — file names and section headings — only.
+      precedent named there is still the durable example. *(completed: Finding (ii) and Consequence
+      left byte-for-byte unchanged; only Finding (i)'s closing sentence was edited)*
+- [x] Verify no task-number citation (`task N`, `tasks N-M`, `(task N)`) was introduced in any of the
+      three files. Cite durable anchors — file names and section headings — only. *(completed:
+      `grep -inE '\btasks? [0-9]+'` over the diff returns no matches)*
 
 **Timing**: 0.5 hours
 
@@ -393,7 +396,10 @@ extension added.
 **Scope Hypothesis**: This phase asserts exactly **3** documents carry a referrer enumeration needing
 refresh. Confirm by grepping the source store for other files naming both contracts:
 `grep -rln 'phase-closure.md' agent-system/extensions/ | grep -v '/agents/\|/skills/'`. Any additional
-hit is evaluated and either updated or recorded as needing no change.
+hit is evaluated and either updated or recorded as needing no change. *(confirmed at implementation
+time: the grep returns exactly the 3 asserted documents plus one incidental 4th hit,
+`core/index-entries.json` — a mechanical index-entry `"path": "contracts/phase-closure.md"` field,
+not a prose referrer-enumeration sentence. Evaluated and recorded as needing no change.)*
 
 **Files to modify**:
 - `agent-system/extensions/core/context/contracts/phase-closure.md` - referrer sentence generalized
