@@ -144,7 +144,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Widen `commands/todo.md` archival to include `expanded` [NOT STARTED]
+### Phase 2: Widen `commands/todo.md` archival to include `expanded` [COMPLETED]
 
 **Goal**: `/todo`'s command definition scans, filters, routes, and reports `expanded` tasks
 alongside `completed`/`abandoned`, and excludes them from ROADMAP.md matching.
@@ -152,42 +152,43 @@ alongside `completed`/`abandoned`, and excludes them from ROADMAP.md matching.
 **Hard constraint**: no filter in this phase may admit `partial` or `blocked`.
 
 **Tasks**:
-- [ ] Frontmatter line 2 (`description: Archive completed and abandoned tasks`) and body line 10
+- [x] Frontmatter line 2 (`description: Archive completed and abandoned tasks`) and body line 10
       (`Archive completed and abandoned tasks to clean up active task list.`): update both to
-      name all three archivable statuses.
-- [ ] Step 2 "Scan for Archivable Tasks" (lines 26-32): add a third bullet
+      name all three archivable statuses. *(completed)*
+- [x] Step 2 "Scan for Archivable Tasks" (lines 26-32): add a third bullet
       `- Tasks with status = "expanded"` to the state.json list, and `- Entries marked [EXPANDED]`
-      to the TODO.md cross-reference list.
-- [ ] Step 3.5.1 (lines 153-167): expanded tasks must be excluded from ROADMAP.md matching for
+      to the TODO.md cross-reference list. *(completed)*
+- [x] Step 3.5.1 (lines 153-167): expanded tasks must be excluded from ROADMAP.md matching for
       the same reason meta tasks are — an expanded task has no `completion_summary` of its own by
       construction (its subtasks carry the deliverables). Rename the two buckets from
       `meta_tasks[]` / `non_meta_tasks[]` to `roadmap_excluded_tasks[]` /
       `roadmap_eligible_tasks[]`, and route a task into the excluded bucket when
       `task_type == "meta"` OR `status == "expanded"`. Add a one-line comment stating the
       structural reason (no `completion_summary` by construction) so a future reader does not
-      "fix" this by requiring one.
-- [ ] Update the two downstream references to the renamed buckets: the loop header at line 197
+      "fix" this by requiring one. *(completed)*
+- [x] Update the two downstream references to the renamed buckets: the loop header at line 197
       (`for task in "${non_meta_tasks[@]}"`) and the Track list at lines 249-254 (the
-      `meta_tasks[]` / `non_meta_tasks[]` descriptions).
-- [ ] Step 5A prose (line 392): state that `completed` AND `expanded` tasks go to
+      `meta_tasks[]` / `non_meta_tasks[]` descriptions). *(completed: also updated the Step
+      3.5.3 heading/comment prose from "non-meta" to "roadmap-eligible" for consistency)*
+- [x] Step 5A prose (line 392): state that `completed` AND `expanded` tasks go to
       `completed_projects`, and `abandoned` tasks go to `archived_projects`. Do not introduce a
-      third array.
-- [ ] Step 5B (lines 396-402): widen the `del()` filter to
+      third array. *(completed)*
+- [x] Step 5B (lines 396-402): widen the `del()` filter to
       `select(.status == "completed" or .status == "abandoned" or .status == "expanded")`,
       and update the explanatory comment on line 398 to match. Keep the `del()` form — it is the
       Issue #1132-safe pattern and must not be rewritten as `map(select(... != ...))`.
       NOTE: Phase 3 amends this same filter again with the deferred-parent exclusion; write it
-      here in a shape that is easy to extend.
-- [ ] Step 5D header (line 412, `For each archived task (completed or abandoned):`): include
-      expanded.
-- [ ] Step 4 dry-run output template (lines 264-272): add an `Expanded:` block alongside
-      `Completed:` and `Abandoned:`.
-- [ ] Step 7 output template (line 836, `Tasks: {C} completed, {A} abandoned`): add an expanded
-      count.
-- [ ] Notes > "Task Archival" (line 869 onward): update the prose to describe the three
+      here in a shape that is easy to extend. *(completed)*
+- [x] Step 5D header (line 412, `For each archived task (completed or abandoned):`): include
+      expanded. *(completed)*
+- [x] Step 4 dry-run output template (lines 264-272): add an `Expanded:` block alongside
+      `Completed:` and `Abandoned:`. *(completed)*
+- [x] Step 7 output template (line 836, `Tasks: {C} completed, {A} abandoned`): add an expanded
+      count. *(completed)*
+- [x] Notes > "Task Archival" (line 869 onward): update the prose to describe the three
       archivable statuses and state plainly that `partial` and `blocked` are NOT archivable
       because they are resumable, citing `status-markers.md` as the authority. Use durable
-      anchors only — no task numbers.
+      anchors only — no task numbers. *(completed)*
 
 **Timing**: 0.75 hours
 

@@ -1,5 +1,5 @@
 ---
-description: Archive completed and abandoned tasks
+description: Archive completed, abandoned, and expanded tasks
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), Bash(mv:*), Bash(mkdir:*), Bash(ls:*), Bash(find:*), Bash(jq:*), TaskCreate, TaskUpdate, AskUserQuestion
 argument-hint: "[--dry-run]"
 model: sonnet
@@ -7,7 +7,7 @@ model: sonnet
 
 # /todo Command
 
-Archive completed and abandoned tasks to clean up active task list.
+Archive completed, abandoned, and expanded tasks to clean up active task list.
 
 ## Arguments
 
@@ -26,10 +26,12 @@ dry_run = "--dry-run" in $ARGUMENTS
 Read specs/state.json and identify:
 - Tasks with status = "completed"
 - Tasks with status = "abandoned"
+- Tasks with status = "expanded"
 
 Read specs/TODO.md and cross-reference:
 - Entries marked [COMPLETED]
 - Entries marked [ABANDONED]
+- Entries marked [EXPANDED]
 
 ### 2.5. Detect Orphaned Directories
 
@@ -148,20 +150,24 @@ For each archivable task, collect:
 
 Use structured extraction from completion_summary fields, falling back to exact `(Task {N})` matching.
 
-**IMPORTANT**: Meta tasks (task_type: "meta") are excluded from ROADMAP.md matching since they modify system infrastructure rather than project deliverables.
+**IMPORTANT**: Meta tasks (task_type: "meta") are excluded from ROADMAP.md matching since they
+modify system infrastructure rather than project deliverables. Expanded tasks are excluded for a
+structural reason: an expanded task has no `completion_summary` of its own by construction (its
+subtasks carry the deliverables), so a future reader must not "fix" this by requiring one.
 
-**Step 3.5.1: Separate meta and non-meta tasks**:
+**Step 3.5.1: Separate roadmap-excluded and roadmap-eligible tasks**:
 ```bash
-# Separate archivable tasks by task_type
-meta_tasks=()
-non_meta_tasks=()
+# Separate archivable tasks: excluded from ROADMAP.md matching vs. eligible for it
+roadmap_excluded_tasks=()
+roadmap_eligible_tasks=()
 
 for task in "${archivable_tasks[@]}"; do
   task_type=$(echo "$task" | jq -r '.task_type // "general"')
-  if [ "$task_type" = "meta" ]; then
-    meta_tasks+=("$task")
+  task_status=$(echo "$task" | jq -r '.status')
+  if [ "$task_type" = "meta" ] || [ "$task_status" = "expanded" ]; then
+    roadmap_excluded_tasks+=("$task")
   else
-    non_meta_tasks+=("$task")
+    roadmap_eligible_tasks+=("$task")
   fi
 done
 ```
@@ -186,15 +192,15 @@ completed_with_summaries=$(jq -rf specs/tmp/todo_nonmeta_$$.jq specs/state.json)
 rm -f specs/tmp/todo_nonmeta_$$.jq
 ```
 
-**Step 3.5.3: Match non-meta tasks against ROADMAP.md**:
+**Step 3.5.3: Match roadmap-eligible tasks against ROADMAP.md**:
 ```bash
 # Initialize roadmap tracking
 roadmap_matches=()
 roadmap_completed_count=0
 roadmap_abandoned_count=0
 
-# Only iterate non-meta tasks for roadmap matching
-for task in "${non_meta_tasks[@]}"; do
+# Only iterate roadmap-eligible tasks for roadmap matching (excludes meta and expanded)
+for task in "${roadmap_eligible_tasks[@]}"; do
   project_num=$(echo "$task" | jq -r '.project_number')
   status=$(echo "$task" | jq -r '.status')
   completion_summary=$(echo "$task" | jq -r '.completion_summary // empty')
@@ -247,8 +253,9 @@ done
 ```
 
 Track:
-- `meta_tasks[]` - Array of meta tasks (excluded from ROADMAP.md matching)
-- `non_meta_tasks[]` - Array of non-meta tasks (matched against ROADMAP.md)
+- `roadmap_excluded_tasks[]` - Array of tasks excluded from ROADMAP.md matching (meta tasks, and
+  expanded tasks since they have no `completion_summary` of their own by construction)
+- `roadmap_eligible_tasks[]` - Array of tasks matched against ROADMAP.md
 - `roadmap_matches[]` - Array of task:status:match_type:line_num:item_text tuples
 - `roadmap_completed_count` - Count of completed task matches
 - `roadmap_abandoned_count` - Count of abandoned task matches
@@ -269,6 +276,9 @@ Completed:
 
 Abandoned:
 - #{N3}: {title} (abandoned {date})
+
+Expanded:
+- #{N10}: {title} (expanded {date})
 
 Orphaned directories in specs/ (will be moved to archive/): {N}
 - {N4}_{SLUG4}/
@@ -389,15 +399,17 @@ Read or create specs/archive/state.json:
 }
 ```
 
-Move each task from state.json `active_projects` to archive/state.json `completed_projects` (for completed tasks) or `archived_projects` (for abandoned tasks).
+Move each task from state.json `active_projects` to archive/state.json `completed_projects` (for
+completed AND expanded tasks) or `archived_projects` (for abandoned tasks). Expanded tasks join
+`completed_projects` — there is no third array.
 
 **B. Update state.json**
 
 Remove archived tasks from active_projects array using `del()` pattern (avoids Issue #1132 with `!=` operator):
 ```bash
-# Use del() instead of map(select(.status != "completed" and .status != "abandoned"))
+# Use del() instead of map(select(.status != "completed" and .status != "abandoned" and .status != "expanded"))
 # This pattern is Issue #1132-safe
-jq 'del(.active_projects[] | select(.status == "completed" or .status == "abandoned"))' \
+jq 'del(.active_projects[] | select(.status == "completed" or .status == "abandoned" or .status == "expanded"))' \
   specs/state.json > specs/state.json.tmp && mv specs/state.json.tmp specs/state.json
 ```
 
@@ -409,7 +421,7 @@ Remove archived task entries from main sections.
 
 **CRITICAL**: This step MUST be executed - do not skip it.
 
-For each archived task (completed or abandoned):
+For each archived task (completed, abandoned, or expanded):
 ```bash
 # Variables from task data
 project_number={N}
@@ -833,7 +845,7 @@ Use grouped counts instead of listing individual items:
 ```
 Archived {N} tasks
 
-Tasks: {C} completed, {A} abandoned
+Tasks: {C} completed, {A} abandoned, {E} expanded
 Directories: {D} moved
 
 {If orphans or misplaced processed:}
@@ -867,6 +879,12 @@ If no roadmap items were updated (no matches found in Step 3.5):
 ## Notes
 
 ### Task Archival
+- Archivable statuses are exactly `completed`, `abandoned`, and `expanded` — these are the
+  terminal states defined in `context/standards/status-markers.md`'s Validation Rules section.
+  `partial` and `blocked` are NOT archivable: they are non-terminal, resumable states, and any
+  command may pick a task back up from them.
+- `completed` and `expanded` tasks route to archive/state.json's `completed_projects` array;
+  `abandoned` tasks route to `archived_projects`. There is no third array for `expanded`.
 - Artifacts (plans, reports, summaries) are preserved in archive/{NNN}_{SLUG}/
 - Tasks can be recovered with `/task --recover N`
 - Archive is append-only (for audit trail)
