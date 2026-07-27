@@ -172,29 +172,31 @@ turn out to be listed, add the entry and note the correction.
 
 ---
 
-### Phase 2: Fix the `validate-no-task-references.sh` separator regex [NOT STARTED]
+### Phase 2: Fix the `validate-no-task-references.sh` separator regex [COMPLETED]
 
 **Goal**: Make the hook see the separator and suffix forms it is structurally blind to today, and
 add the task-qualified Phase form per D5.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/hooks/validate-no-task-references.sh`, replace the quoted
+- [x] In `agent-system/extensions/core/hooks/validate-no-task-references.sh`, replace the quoted
       pattern `'\b[Tt]asks?[[:space:]]+[0-9]+(-[0-9]+)?\b'` in the `grep -qiE` guard with a
       separator-aware pattern. Candidate to validate, not to paste blindly:
       `'\b[Tt]asks?([[:space:]]+#?|[-_#])[0-9]+(-[0-9]+)?\b'`.
   - The separator group must be an explicit alternation, **not** a bracket class containing `-`,
     to avoid the mid-class range-interpretation trap.
   - `[[:space:]]+#?` covers both `task 788` and `Task #788`; `[-_#]` covers `task-788`,
-    `task_788`, and `task#788`.
-- [ ] Add the task-qualified compound Phase branch (D5): match `task N phase P` and
+    `task_788`, and `task#788`. *(completed: candidate validated as-is via manual spot checks;
+    shipped as `TASK_SEP='([[:space:]]+#?|[-_#])'`, used to build `TASK_PATTERN`.)*
+- [x] Add the task-qualified compound Phase branch (D5): match `task N phase P` and
       `phase P of task N`. A bare `Phase N` must **not** match. Anchor the new branch on the same
-      separator group so `task-788 phase-3` is caught too.
-- [ ] Update the advisory `additionalContext` message text so it names the form that matched
+      separator group so `task-788 phase-3` is caught too. *(completed: `PHASE_PATTERN` built from
+      the same `TASK_SEP`, checked before `TASK_PATTERN` so the phase-specific message wins.)*
+- [x] Update the advisory `additionalContext` message text so it names the form that matched
       (task citation vs. task-qualified phase citation) rather than only the old `'task N' or
-      'tasks N-M'` wording.
-- [ ] Leave every other behavior byte-identical: the stdin/env-fallback parsing, the
+      'tasks N-M'` wording. *(completed: two distinct message branches, one per pattern.)*
+- [x] Leave every other behavior byte-identical: the stdin/env-fallback parsing, the
       `specs/*|*/specs/*` exemption, the empty-`FILE` and empty-`CONTENT` early exits, and the
-      unconditional `exit 0`. This hook stays advisory and non-blocking.
+      unconditional `exit 0`. This hook stays advisory and non-blocking. *(completed: unchanged.)*
 
 **Timing**: 1 hour
 

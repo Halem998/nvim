@@ -50,10 +50,33 @@ if [ -z "$CONTENT" ]; then
   exit 0
 fi
 
-# Task-number citation pattern: "task N", "tasks N-M", "(task N)", case-insensitive on the
-# "task(s)" token. Whole-word boundaries via \b to avoid matching inside larger identifiers.
-if echo "$CONTENT" | grep -qiE '\b[Tt]asks?[[:space:]]+[0-9]+(-[0-9]+)?\b'; then
-  echo "{\"additionalContext\": \"Reminder: ${FILE} appears to cite a task number (e.g. 'task N' or 'tasks N-M'). Per .claude/rules/no-task-references-in-deliverables.md, deliverable files outside specs/** must not cite ephemeral task-management metadata -- task numbers are renumbered during vault operations and are meaningless to a future reader. Reference a durable anchor instead (a sibling document's filename, a section heading, a decision-record name, or a verified fact) rather than the task number. This is advisory only and does not block the write.\"}"
+# Separator group between "task(s)"/"phase" and its number: whitespace (optionally followed by
+# "#"), or a single "-", "_", "#". An explicit alternation, NOT a bracket class containing "-"
+# (a "-" inside a bracket class can be silently read as a range operator depending on position;
+# alternation avoids that trap entirely). Covers "task 788", "task-788", "task_788", "task#788",
+# and "Task #788" alike.
+TASK_SEP='([[:space:]]+#?|[-_#])'
+
+# Task-number citation pattern: "task N", "tasks N-M", "task-N", "task_N", "task#N", "Task #N",
+# case-insensitive on the "task(s)" token (grep -i handles case; [Tt] kept for readability).
+# Whole-word boundaries via \b to avoid matching inside larger identifiers (e.g. "taskbar788").
+TASK_PATTERN="\\b[Tt]asks?${TASK_SEP}[0-9]+(-[0-9]+)?\\b"
+
+# Task-qualified compound Phase pattern: "task N phase P" or "phase P of task N" only. A bare
+# "Phase N" with no adjacent task reference is deliberately NOT matched here -- it is
+# indistinguishable from a document's own internal structure (plan headings, skill pipeline
+# stages) and would generate constant false positives. The compound form is unambiguously a
+# citation of a specs/-scoped plan's internals. Anchored on the same TASK_SEP separator group so
+# "task-788 phase-3" is caught too.
+PHASE_PATTERN="\\b([Tt]asks?${TASK_SEP}[0-9]+[[:space:]]+[Pp]hase${TASK_SEP}[0-9]+|[Pp]hase${TASK_SEP}[0-9]+[[:space:]]+of[[:space:]]+[Tt]asks?${TASK_SEP}[0-9]+)\\b"
+
+if echo "$CONTENT" | grep -qiE "$PHASE_PATTERN"; then
+  echo "{\"additionalContext\": \"Reminder: ${FILE} appears to cite a task-qualified phase reference (e.g. 'task N phase P' or 'phase P of task N'). Per .claude/rules/no-task-references-in-deliverables.md, deliverable files outside specs/** must not cite ephemeral task-management metadata -- task numbers (and phase references scoped to them) are renumbered during vault operations and are meaningless to a future reader. Reference a durable anchor instead (a sibling document's filename, a section heading, a decision-record name, or a verified fact) rather than the task/phase number. This is advisory only and does not block the write.\"}"
+  exit 0
+fi
+
+if echo "$CONTENT" | grep -qiE "$TASK_PATTERN"; then
+  echo "{\"additionalContext\": \"Reminder: ${FILE} appears to cite a task number (e.g. 'task N', 'tasks N-M', 'task-N', 'task_N', or 'Task #N'). Per .claude/rules/no-task-references-in-deliverables.md, deliverable files outside specs/** must not cite ephemeral task-management metadata -- task numbers are renumbered during vault operations and are meaningless to a future reader. Reference a durable anchor instead (a sibling document's filename, a section heading, a decision-record name, or a verified fact) rather than the task number. This is advisory only and does not block the write.\"}"
   exit 0
 fi
 

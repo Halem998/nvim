@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Fix the validate-no-task-references.sh separator regex",
+  "started_at": "2026-07-27T00:15:00Z",
+  "last_updated": "2026-07-27T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace whitespace-only separator with alternation-based TASK_SEP", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/validate-no-task-references.sh"]},
+    {"id": 2, "description": "Add task-qualified compound Phase branch (D5)", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/validate-no-task-references.sh"]},
+    {"id": 3, "description": "Update advisory message text to distinguish task vs phase citation", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/validate-no-task-references.sh"]},
+    {"id": 4, "description": "Preserve stdin/env-fallback parsing, specs/ exemption, empty-input exits, unconditional exit 0", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "bash -n passed. Manual spot checks: task-788 -> additionalContext (task form); bare '### Phase 3: Something' -> {}; 'task 926 phase 3' -> additionalContext (phase form); 'phase 3 of task 926' -> additionalContext (phase form); specs/foo.md with 'task 926' -> {} (exemption). All exits were 0."
+}
