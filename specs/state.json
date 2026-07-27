@@ -796,7 +796,7 @@
     {
       "project_number": 910,
       "project_name": "fix_roadmap_annotation_silent_noop",
-      "status": "not_started",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Fix roadmap-integration.sh reporting success while annotating nothing",
@@ -805,14 +805,26 @@
       "file_scope": [
         "agent-system/extensions/core/scripts/roadmap-integration.sh"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/910_fix_roadmap_annotation_silent_noop/reports/01_roadmap-annotation-silent-noop.md",
+          "type": "report",
+          "summary": "Full root-cause trace of the table-row annotation line-lookup bug, recommendation for a dual fix (line-lookup repair + unparseable-roadmap warning), and confirmation of /review vs /todo payload consumption."
+        },
+        {
+          "path": "specs/910_fix_roadmap_annotation_silent_noop/plans/01_roadmap-annotation-signal.md",
+          "type": "plan",
+          "summary": "Six-phase plan covering table-row annotation line-lookup repair, structure/no-op signalling, fixture verification, and the declared review.md consumer expansion."
+        }
+      ],
       "created": "2026-07-26T23:43:25Z",
-      "last_updated": "2026-07-26T23:43:25Z"
+      "last_updated": "2026-07-27T02:04:47Z",
+      "session_id": "sess_1785116996_862366_910"
     },
     {
       "project_number": 911,
       "project_name": "correct_terminal_status_taxonomy_and_todo_archival",
-      "status": "not_started",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Correct the terminal-status taxonomy so /todo can archive expanded tasks",
@@ -823,14 +835,26 @@
         "agent-system/extensions/core/skills/skill-todo/SKILL.md",
         "agent-system/extensions/core/merge-sources/claudemd.md"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/911_correct_terminal_status_taxonomy_and_todo_archival/reports/01_terminal-status-taxonomy-todo-archival.md",
+          "type": "report",
+          "summary": "Full findings: filter bug confirmed at both sites, taxonomy correct at authoritative source, single defective claudemd.md line identified, reachability investigated with concrete cross-task citation evidence and a scoped mitigation recommendation."
+        },
+        {
+          "path": "specs/911_correct_terminal_status_taxonomy_and_todo_archival/plans/01_terminal-status-taxonomy-archival.md",
+          "type": "plan",
+          "summary": "5 phases: (1) split the terminal/exception bullet in merge-sources/claudemd.md; (2) widen commands/todo.md scan, del() filter, completed_projects routing, ROADMAP exclusion, and reporting to include expanded; (3) add the subtasks-defer guard plus the load-bearing deferred-parent subtraction from the Step 5B del() filter; (4) mirror both changes across skill-todo/SKILL.md stages 2, 5, 7, 8, 10, 13, 15, 16; (5) cross-site consistency and constraint verification. Waves: [1,2] -> [3] -> [4] -> [5]."
+        }
+      ],
       "created": "2026-07-26T23:43:25Z",
-      "last_updated": "2026-07-26T23:43:25Z"
+      "last_updated": "2026-07-27T02:04:49Z",
+      "session_id": "sess_1785116996_862366_911"
     },
     {
       "project_number": 912,
       "project_name": "verify_roadmap_items_producer_contract_across_implementers",
-      "status": "not_started",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Establish whether the roadmap_items producer contract actually runs outside the core implementer",
@@ -841,11 +865,26 @@
         "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
         "agent-system/extensions/lean/skills/skill-lean-implementation/SKILL.md",
         "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md",
-        "agent-system/extensions/web/skills/skill-web-implementation/SKILL.md"
+        "agent-system/extensions/web/skills/skill-web-implementation/SKILL.md",
+        "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+        "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+        "agent-system/extensions/core/agents/general-implementation-hard-agent.md"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/912_verify_roadmap_items_producer_contract_across_implementers/reports/01_roadmap-items-producer-gap.md",
+          "type": "report",
+          "summary": "Full investigation: confirms core skill-implementer works correctly (question 1); maps agent-generates x skill-propagates for core/web/nix/neovim/epidemiology/lean/lean-hard/core-hard (question 2); proposes an in-scope fix (skill-lean-implementation-hard missing write, skill-implementer-hard imprecise cross-ref) plus a recommended follow-up for the true root-cause fix in three agent files outside the declared file_scope, using the already-existing shared return-metadata-file.md schema rather than duplicating it (question 3)."
+        },
+        {
+          "path": "specs/912_verify_roadmap_items_producer_contract_across_implementers/plans/01_roadmap-items-producer-fix.md",
+          "type": "plan",
+          "summary": "5 phases, 3 dependency waves, 2.5h. Waves: [1,2,3] -> [4] -> [5]. Modifies 5 source-store files plus specs/state.json; no edits to .claude/** and none to merge-sources/claudemd.md."
+        }
+      ],
       "created": "2026-07-26T23:43:25Z",
-      "last_updated": "2026-07-26T23:43:25Z"
+      "last_updated": "2026-07-27T02:04:51Z",
+      "session_id": "sess_1785116996_862366_912"
     }
   ],
   "completed_projects": [],

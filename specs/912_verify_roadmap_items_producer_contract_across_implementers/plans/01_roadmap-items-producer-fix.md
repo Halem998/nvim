@@ -231,20 +231,25 @@ what the hard-mode core path is contractually required to propagate.
 
 ---
 
-### Phase 3: Declare the file_scope expansion in state.json [NOT STARTED]
+### Phase 3: Declare the file_scope expansion in state.json [COMPLETED]
 
 **Goal**: The widening of `file_scope` to three agent files is recorded before any expanded-scope
 edit is made, so no edit lands outside a declared scope.
 
 **Tasks**:
-- [ ] Read the current `file_scope` array for task 912 in `specs/state.json`
-- [ ] Append exactly three paths via `jq`, preserving the existing five:
+- [x] Read the current `file_scope` array for task 912 in `specs/state.json` *(completed)*
+- [x] Append exactly three paths via `jq`, preserving the existing five:
       `agent-system/extensions/lean/agents/lean-implementation-agent.md`,
       `agent-system/extensions/lean/agents/lean-implementation-hard-agent.md`,
-      `agent-system/extensions/core/agents/general-implementation-hard-agent.md`
-- [ ] Write via the `specs/tmp/state.json` + `mv` pattern; do not hand-edit `specs/TODO.md`
-- [ ] Run `bash .claude/scripts/generate-todo.sh` to resync the rendered view
-- [ ] Confirm no other task entry was modified
+      `agent-system/extensions/core/agents/general-implementation-hard-agent.md` *(completed)*
+- [x] Write via the `specs/tmp/state.json` + `mv` pattern; do not hand-edit `specs/TODO.md`
+      *(completed)*
+- [x] Run `bash .claude/scripts/generate-todo.sh` to resync the rendered view *(completed)*
+- [x] Confirm no other task entry was modified *(completed: my own `jq` command touched only the
+      912 object; sibling tasks 910/911 already carried their own concurrent, in-progress index
+      updates on disk before this phase ran, per `git-staging-scope.md`'s "shared index files may
+      legitimately carry other tasks' current rows" contract — noted honestly in the Phase 3
+      commit message rather than treated as a violation)*
 
 **Timing**: 0.25 hours
 

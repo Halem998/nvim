@@ -27,9 +27,9 @@ next_project_number: 914
   └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
       └─ 908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
-910 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-911 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-912 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+910 [IMPLEMENTING] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+911 [IMPLEMENTING] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+912 [IMPLEMENTING] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 913 [NOT STARTED] — Fix Stage 5 of skill-orchestrate treating a missing .orchestrator
 
 ## Tasks
@@ -61,10 +61,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 912. Establish whether the roadmap_items producer contract actually runs outside the core implementer
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [912_verify_roadmap_items_producer_contract_across_implementers/reports/01_roadmap-items-producer-gap.md]
+- **Plan**: [912_verify_roadmap_items_producer_contract_across_implementers/plans/01_roadmap-items-producer-fix.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/ and agent-system/extensions/<ext>/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
@@ -89,10 +91,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 911. Correct the terminal-status taxonomy so /todo can archive expanded tasks
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [911_correct_terminal_status_taxonomy_and_todo_archival/reports/01_terminal-status-taxonomy-todo-archival.md]
+- **Plan**: [911_correct_terminal_status_taxonomy_and_todo_archival/plans/01_terminal-status-taxonomy-archival.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
@@ -115,10 +119,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 910. Fix roadmap-integration.sh reporting success while annotating nothing
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [910_fix_roadmap_annotation_silent_noop/reports/01_roadmap-annotation-silent-noop.md]
+- **Plan**: [910_fix_roadmap_annotation_silent_noop/plans/01_roadmap-annotation-signal.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
