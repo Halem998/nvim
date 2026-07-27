@@ -1,6 +1,21 @@
 {
   "completed_projects": [
     {
+      "project_number": 921,
+      "project_name": "throwaway_verify_meta_task_creation_pipeline",
+      "status": "abandoned",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "THROWAWAY VERIFICATION TASK — confirm /meta creates a task end-to-end; abandon after checking",
+      "description": "Disposable task created solely to verify that the /meta prompt-mode pipeline correctly writes a state.json entry, increments next_project_number, regenerates TODO.md, and creates the task directory at the resolved global target_root.\n\nNo system change is intended. file_scope is deliberately EMPTY: no file outside specs/ should ever be edited under this task.\n\nVERIFICATION IS COMPLETE when all three of the following hold:\n  1. This entry appears in specs/state.json with project_number 921\n  2. A matching entry appears in specs/TODO.md\n  3. The directory specs/921_throwaway_verify_meta_task_creation_pipeline/ exists on disk\n\nDISPOSAL: once the three checks above pass, run /task --abandon 921 (or let /todo archive it). This task must NEVER be researched, planned, or implemented -- there is nothing to build. Its entire purpose was served the moment it appeared in state.json and TODO.md.\n\nSOURCE-STORE RULE (stated for consistency with sibling meta tasks, though no edit is authorized here): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. This task edits neither.",
+      "file_scope": [],
+      "created": "2026-07-27T10:03:15Z",
+      "last_updated": "2026-07-27T10:03:15Z",
+      "session_id": "sess_1785146435_6589a6",
+      "artifacts": [],
+      "abandoned": "2026-07-27T10:12:20Z"
+    },
+    {
       "project_number": 814,
       "project_name": "synthesize_improvement_roadmap",
       "status": "completed",
