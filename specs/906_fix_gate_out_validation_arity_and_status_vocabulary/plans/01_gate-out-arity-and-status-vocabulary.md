@@ -314,30 +314,36 @@ spurious `[FAIL]`.
 
 ---
 
-### Phase 4: Fix the forbidden status vocabulary in skill-orchestrate [NOT STARTED]
+### Phase 4: Fix the forbidden status vocabulary in skill-orchestrate [COMPLETED]
 
 **Goal**: `skill-orchestrate` no longer emits `"completed"` into `.return-meta.json` or
 `.return-meta-multi.json`; both `"partial"` branches are untouched.
 
 **Tasks**:
-- [ ] Stage 8 clean exit (anchor: the `jq -n \` block containing `--arg status "completed"`
+- [x] Stage 8 clean exit (anchor: the `jq -n \` block containing `--arg status "completed"`
       writing `> "${TASK_DIR}/.return-meta.json"`, at line 934 as of planning): change
-      `"completed"` to `"implemented"`.
-- [ ] Confirm the immediately following partial-exit block (`--arg status "partial"`, ~line 951)
-      is left EXACTLY as-is. `"partial"` is in the valid vocabulary.
-- [ ] Stage MT-5 `exit_status` determination (anchor: the bullet reading ``AND
+      `"completed"` to `"implemented"`. *(completed)*
+- [x] Confirm the immediately following partial-exit block (`--arg status "partial"`, ~line 951)
+      is left EXACTLY as-is. `"partial"` is in the valid vocabulary. *(confirmed unchanged via
+      git diff)*
+- [x] Stage MT-5 `exit_status` determination (anchor: the bullet reading ``AND
       `deferred_self_modifying` is empty → `"completed"` (remove `mt_state_file`)``, ~line 1396):
       change the arrow target from `"completed"` to `"implemented"`. This is prose instructing the
       agent what logic to implement, not literal bash — it is a text edit to the bullet.
-- [ ] Confirm the `"partial"` bullet immediately below (including its "incomplete by design"
-      rationale prose) is left EXACTLY as-is.
-- [ ] Add one short clause at the Stage 8 write and at the MT-5 bullet noting that the status
+      *(completed)*
+- [x] Confirm the `"partial"` bullet immediately below (including its "incomplete by design"
+      rationale prose) is left EXACTLY as-is. *(confirmed unchanged apart from updating the
+      "never X" cross-reference word from "completed" to "implemented", required by this same
+      task since it names the sibling branch's new value)*
+- [x] Add one short clause at the Stage 8 write and at the MT-5 bullet noting that the status
       value comes from the vocabulary defined in `context/formats/return-metadata-file.md`, so a
       future reader does not "correct" it back. Keep it to a sentence; the fuller normative
-      statement lands in Phase 6. No task-number citations.
-- [ ] Re-grep the whole file for `--arg status "completed"` and for `→ "completed"` to confirm no
+      statement lands in Phase 6. No task-number citations. *(completed)*
+- [x] Re-grep the whole file for `--arg status "completed"` and for `→ "completed"` to confirm no
       further `.return-meta*.json` writer remains. Any hit that writes **state.json** task status
       is correct and MUST be left alone — check what each hit writes to before changing anything.
+      *(completed: zero `--arg status "completed"` hits remain; remaining `"completed"` hits are
+      all state.json/`fresh_status` task-status references or this task's own clarifying prose)*
 
 **Timing**: 0.5 hours
 

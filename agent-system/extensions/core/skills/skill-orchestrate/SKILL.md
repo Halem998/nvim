@@ -924,14 +924,17 @@ echo "[orchestrate] Task $task_number: orchestration paused."
 echo "Status: $current_status | Cycles: $cycle_count/$MAX_CYCLES | Run /orchestrate $task_number to continue."
 ```
 
-Write metadata file.
+Write metadata file. `status` here is the `.return-meta.json` skill-status vocabulary defined
+normatively in `context/formats/return-metadata-file.md` — it is NOT the state.json task-status
+vocabulary (`current_status` above, where `"completed"` is correct); do not "correct" this value
+back to `"completed"`.
 
 On clean exit:
 
 ```bash
 mkdir -p "${TASK_DIR}/summaries"
 jq -n \
-  --arg status "completed" \
+  --arg status "implemented" \
   --argjson cycles "$cycle_count" \
   --arg final_state "$current_status" \
   '{
@@ -1392,12 +1395,15 @@ After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or MAX_
 
 1. Read from `mt_state_file`: `completed_tasks`, `failed_tasks`, `deferred_self_modifying`,
    `cycles_used`, counts.
-2. Determine `exit_status`:
-   - `failed_count == 0` AND `deferred_self_modifying` is empty → `"completed"` (remove
+2. Determine `exit_status` — this is the `.return-meta-multi.json` skill-status vocabulary
+   (normatively defined in `context/formats/return-metadata-file.md`), distinct from the
+   `tasks_completed` array below (which records state.json task status, where `"completed"` is
+   correct):
+   - `failed_count == 0` AND `deferred_self_modifying` is empty → `"implemented"` (remove
      `mt_state_file`)
    - `failed_count > 0` OR `deferred_self_modifying` is non-empty → `"partial"` (preserve
      `mt_state_file` for diagnostics). A non-empty `deferred_self_modifying` alone (zero
-     `failed_tasks`) still yields `"partial"`, never `"completed"` — the invocation did not
+     `failed_tasks`) still yields `"partial"`, never `"implemented"` — the invocation did not
      actually finish everything it was asked to; one task remains undispatched pending a solo
      re-run. This is distinct from a failure: the task is not in `failed_tasks` and was never
      status-mutated, so `"partial"` here means "incomplete by design", not "broken".
