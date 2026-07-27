@@ -1,7 +1,7 @@
 # Implementation Plan: Task #907
 
 - **Task**: 907 - Establish an orchestrator runtime-file tracking policy so ephemeral loop guards are never committed
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: 885, 902, 906, 909 (serialization-for-file-overlap edges only; no logical prerequisites)
 - **Research Inputs**: specs/907_orchestrator_runtime_file_tracking_policy/reports/01_runtime-file-tracking-policy.md

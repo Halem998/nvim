@@ -749,7 +749,7 @@
     {
       "project_number": 907,
       "project_name": "orchestrator_runtime_file_tracking_policy",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Establish an orchestrator runtime-file tracking policy so ephemeral loop guards are never committed",
@@ -769,9 +769,26 @@
         "agent-system/extensions/core/templates/"
       ],
       "created": "2026-07-25T00:00:00Z",
-      "last_updated": "2026-07-26T22:38:42Z",
-      "session_id": "sess_1784992166_dab179_907",
-      "artifacts": []
+      "last_updated": "2026-07-27T09:04:49Z",
+      "session_id": "sess_1785140952_60ab90",
+      "artifacts": [
+        {
+          "path": "specs/907_orchestrator_runtime_file_tracking_policy/reports/01_runtime-file-tracking-policy.md",
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/907_orchestrator_runtime_file_tracking_policy/plans/01_runtime-file-tracking-policy.md",
+          "type": "plan",
+          "summary": "Seven-phase plan implementing the decided two-class orchestrator runtime-file tracking policy: new canonical standard, exclusion-pathspec staging narrowing at both orchestrate staging sites, skill ephemerality notes, handoff-schema.md reconciliation, a shipped verification check script, the repo-root .gitignore reversal, and the three required demonstrations."
+        },
+        {
+          "path": "specs/907_orchestrator_runtime_file_tracking_policy/summaries/01_runtime-file-tracking-policy-summary.md",
+          "type": "summary",
+          "summary": "Execution summary for the seven-phase orchestrator runtime-file tracking policy implementation, with verbatim recorded output for all three required verifications and the two class-adoption/staging deviations."
+        }
+      ],
+      "completion_summary": "Shipped the canonical orchestrator-runtime-files.md two-class tracking policy, narrowed staging at both orchestrate commit sites with exclusion pathspecs, added ephemerality notes to both orchestrate skills, corrected handoff-schema.md's contradictory framing, shipped and registered a three-check verification script, and applied the settled reversal to this repo's own root .gitignore (un-ignoring .orchestrator-handoff.json and .return-meta.json while retaining full ephemeral coverage, plus adopting a newly-audited .drift-inspection.json ephemeral class). All three task-required verifications were demonstrated with recorded evidence in a disposable scratch repo."
     },
     {
       "project_number": 908,

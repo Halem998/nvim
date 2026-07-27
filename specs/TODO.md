@@ -11,9 +11,8 @@ next_project_number: 918
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,914,915,917 | -- | agent-system |
-| 2 | 887,907 | 873,885 | agent-system |
-| 3 | 908 | 907 | agent-system |
+| 1 | 873,885,908,914,915,917 | -- | agent-system |
+| 2 | 887 | 873,885 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -23,8 +22,7 @@ next_project_number: 918
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use (see above)
-  └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-    └─ 908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
+908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 917 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
@@ -356,10 +354,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 907. Establish an orchestrator runtime-file tracking policy so ephemeral loop guards are never committed
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 885, Task 902, Task 906, Task 909
+- **Research**: [907_orchestrator_runtime_file_tracking_policy/reports/01_runtime-file-tracking-policy.md]
+- **Plan**: [907_orchestrator_runtime_file_tracking_policy/plans/01_runtime-file-tracking-policy.md]
+- **Summary**: [907_orchestrator_runtime_file_tracking_policy/summaries/01_runtime-file-tracking-policy-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/core/** and NEVER .claude/**.
 
