@@ -397,13 +397,13 @@ coverage.
 
 ---
 
-### Phase 6: Document the standard census method [NOT STARTED]
+### Phase 6: Document the standard census method [COMPLETED]
 
 **Goal**: Write down the method so a count produced anywhere in this system carries its
 provenance and its independent confirmation with it.
 
 **Tasks**:
-- [ ] Write `agent-system/extensions/core/context/standards/census-methodology.md` stating the
+- [x] Write `agent-system/extensions/core/context/standards/census-methodology.md` stating the
       three-part rule as a contract:
   1. **Derive once.** A repo-wide count is produced by a single named method. Re-deriving a count
      ad hoc mid-discussion, by a different method, produces a second number, not a confirmation.
@@ -412,21 +412,27 @@ provenance and its independent confirmation with it.
   3. **Cross-check before publishing or acting.** A second, independent method must produce the
      same number first. Independence means a different mechanism, not the same grep with a
      different flag — the `lean-sorry-census.sh` pattern (a stripper as primary, the compiler's
-     own `declaration uses 'sorry'` warnings as authority) is the reference shape.
-- [ ] Enumerate the three bug classes the method exists to catch, each with the concrete failure
-      it produces and the `census-count.sh` subcommand that addresses it.
-- [ ] Include worked examples using the real CLI from Phase 4, including the dogfooding example:
+     own `declaration uses 'sorry'` warnings as authority) is the reference shape. *(completed)*
+- [x] Enumerate the three bug classes the method exists to catch, each with the concrete failure
+      it produces and the `census-count.sh` subcommand that addresses it. *(completed)*
+- [x] Include worked examples using the real CLI from Phase 4, including the dogfooding example:
       `membership` comparing core `manifest.json` `provides.scripts` against `scripts/*.sh` on
       disk. Present it as a documented example invocation only — it must not become a test
-      assertion, since it depends on live repo state.
-- [ ] State the tool's boundaries explicitly: `occurrences` handles line comments and simple
+      assertion, since it depends on live repo state. *(completed: 4 worked examples, all run
+      live and confirmed to match documented output — occurrences naive/real, cross-check MATCH,
+      cross-check MISMATCH, and the membership dogfooding example (65/65, both diff lists empty
+      at doc-writing time).)*
+- [x] State the tool's boundaries explicitly: `occurrences` handles line comments and simple
       non-nested block comments and delegates nesting-aware cases via `--comment-style none`;
-      `membership` checks declared membership, never transitive reachability.
-- [ ] Cross-reference `context/standards/shell-script-testing.md` (Phase 1) and
+      `membership` checks declared membership, never transitive reachability. *(completed.)*
+- [x] Cross-reference `context/standards/shell-script-testing.md` (Phase 1) and
       `context/standards/testing.md` (existing, generic; cross-reference only, do not supersede).
-- [ ] Add a matching `index-entries.json` entry with `load_when` broad enough that census
+      *(completed.)*
+- [x] Add a matching `index-entries.json` entry with `load_when` broad enough that census
       correctness surfaces across task types rather than being pinned to one — no restrictive
-      `task_types` filter, `agents` covering the research and implementation agents.
+      `task_types` filter, `agents` covering the research and implementation agents. *(completed:
+      `task_types: []`, `agents` covers both standard and hard-mode research/implementation
+      agents.)*
 
 **Timing**: 1 hour
 
@@ -440,10 +446,12 @@ provenance and its independent confirmation with it.
 
 **Verification**:
 - Every command shown in the doc is copy-pasteable and matches the actual Phase 4 CLI — run each
-  worked example once and confirm it produces the documented shape of output.
+  worked example once and confirm it produces the documented shape of output. *(confirmed: all 4
+  examples re-run fresh and diffed against the doc's documented output; identical.)*
 - `index-entries.json` still parses and the new entry's `line_count` matches the file's real
-  length.
-- No task-number citation appears in the doc (it is outside `specs/**`).
+  length. *(confirmed: parses, 113 entries; `line_count: 201` matches `wc -l` on the doc.)*
+- No task-number citation appears in the doc (it is outside `specs/**`). *(confirmed: dogfooded
+  the fixed hook against the doc's content — `{}`, no match.)*
 
 ---
 

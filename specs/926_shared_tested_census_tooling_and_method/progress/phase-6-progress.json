@@ -1,0 +1,19 @@
+{
+  "phase": 6,
+  "phase_name": "Document the standard census method",
+  "started_at": "2026-07-27T02:05:00Z",
+  "last_updated": "2026-07-27T02:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write census-methodology.md three-part rule", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/census-methodology.md"]},
+    {"id": 2, "description": "Enumerate three bug classes with concrete failure + subcommand mapping", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/census-methodology.md"]},
+    {"id": 3, "description": "Worked examples (occurrences, cross-check MATCH/MISMATCH, membership dogfooding)", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/census-methodology.md"]},
+    {"id": 4, "description": "State tool boundaries explicitly", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/census-methodology.md"]},
+    {"id": 5, "description": "Cross-reference shell-script-testing.md and testing.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/census-methodology.md"]},
+    {"id": 6, "description": "Add index-entries.json entry with broad load_when", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "Doc is 201 lines. All 4 worked examples (occurrences naive=4/real=2, cross-check MATCH exit 0, cross-check MISMATCH exit 1, membership dogfooding 65/65 empty diffs) re-run fresh and confirmed identical to documented output. index-entries.json parses, 113 entries, line_count field matches wc -l. Dogfooded the fixed hook against the doc's own content: {} (no task-reference violations)."
+}

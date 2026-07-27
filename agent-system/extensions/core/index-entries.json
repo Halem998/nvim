@@ -1755,6 +1755,34 @@
       }
     },
     {
+      "path": "standards/census-methodology.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "Standard method for repo-wide counts: derive once, record the exact command, cross-check by an independent second method before publishing or acting",
+      "line_count": 201,
+      "keywords": [
+        "standards",
+        "census",
+        "count",
+        "cross-check",
+        "occurrences",
+        "membership"
+      ],
+      "topics": [
+        "quality"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-agent",
+          "general-research-agent",
+          "general-implementation-hard-agent",
+          "general-research-hard-agent"
+        ],
+        "task_types": [],
+        "commands": []
+      }
+    },
+    {
       "path": "standards/ci-workflow.md",
       "domain": "core",
       "subdomain": "standards",
