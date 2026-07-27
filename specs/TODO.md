@@ -25,7 +25,7 @@ next_project_number: 932
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
 923 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-924 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+924 [IMPLEMENTING] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
   └─ 925 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 927 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
@@ -268,10 +268,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 924. Make closed-with-documented-reasoned-exclusions a first-class phase completion outcome
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 922
+- **Research**: [924_documented_reasoned_exclusions_phase_outcome/reports/01_documented-reasoned-exclusions.md]
+- **Plan**: [924_documented_reasoned_exclusions_phase_outcome/plans/01_reasoned-exclusions-phase-outcome.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 

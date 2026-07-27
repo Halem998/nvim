@@ -69,6 +69,11 @@ follow-up tasks created to discharge those division points. Both fields are popu
 
 ## Implementation Phases (format)
 - Heading: `### Phase N: {name} [STATUS]`
+- Valid `[STATUS]` values: `[NOT STARTED]`, `[IN PROGRESS]`, `[COMPLETED]`,
+  `[COMPLETED WITH EXCLUSIONS]`, `[PARTIAL]`, `[BLOCKED]`. See "Plan-level vs. phase-level
+  markers" below for the three-way distinction between `[COMPLETED]`, `[PARTIAL]`, and
+  `[COMPLETED WITH EXCLUSIONS]`, and status-markers.md's `[COMPLETED WITH EXCLUSIONS]`
+  subsection for the full outcome definition and admission test.
 - Under each phase include:
   - **Goal:** short statement
   - **Tasks:** bullet checklist
@@ -208,6 +213,45 @@ this table is a plan-unanticipated deviation. It is evaluated under a weaker cla
 `anti-analysis.md` 5-condition strategic-sorry test's condition 1 (not pre-declared) and MUST be
 flagged in the implementation summary, not silently accepted as equivalent to a planned one.
 
+## Reasoned Exclusions (format)
+
+Present whenever a phase heading carries `[COMPLETED WITH EXCLUSIONS]` (see
+status-markers.md's `[COMPLETED WITH EXCLUSIONS]` subsection for the outcome's semantics and
+five-condition admission test). Unlike `## Planned Strategic Sorries` above, this record is a
+**per-phase subsection nested at `####` inside the phase body** — not a document-level `##`
+section — because exclusions are phase-scoped by definition, whereas a skeleton's sorries span
+phases.
+
+```
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| {the excluded item} | {why it is not applicable} | {what confirms the reason -- command output, quoted match count, diff excerpt, or artifact reference} |
+```
+
+**Required**: this subsection is REQUIRED whenever the phase heading carries
+`[COMPLETED WITH EXCLUSIONS]`. Its minimum columns are `Item`, `Reason`, `Evidence`.
+
+**Field mapping to `sorry_inventory`**: this table is a field-for-field generalization of the
+`wrap-up.md` `sorry_inventory` schema, so the family reads as one concept:
+- `Item` generalizes `file`/`line`/`statement` to any domain — not every excluded item is a code
+  location.
+- `Reason` generalizes `assumption` + `why_deferred` into a single justification column.
+- `Evidence` is the new obligation with no sorry-side counterpart: a sorry is *tracked* by a
+  `follow_up_task`; an exclusion is *closed* by evidence instead.
+
+`follow_up_task` is deliberately absent from this table. Its absence is the defining difference
+between the two family members: a strategic sorry is deferred with a tracked follow-up, a
+reasoned exclusion is decided and will not be revisited, so there is nothing to track.
+
+**Relationship to Scope Hypothesis**: a reasoned exclusion is structurally the closing act of a
+**Scope Hypothesis** (see "Counts-are-hypotheses obligation" above) whose asserted count turned
+out to be an overcount — the Evidence column is where that confirmation lands. The record may be
+written at plan time, as a pre-emptive declaration alongside the phase's Scope Hypothesis line, or
+discovered mid-phase at implement time, with implement-time entries confirming or superseding any
+plan-time hypothesis.
+
 ## Status Marker Requirements
 - Use markers exactly as defined in status-markers.md.
 - Every phase starts as `[NOT STARTED]` and progresses through valid transitions.
@@ -231,6 +275,12 @@ vocabularies at two distinct grains, and their divergence is intentional, not an
   simultaneously carrying its own `[PARTIAL]` marker (e.g. a phase interrupted by context
   exhaustion) — the two `PARTIAL`s describe different grains of the same document and do not need
   to move together.
+- Phase-heading markers additionally include `[COMPLETED WITH EXCLUSIONS]`, a phase-heading-only
+  outcome absent from both the task-level vocabulary and the plan-level Status subset above. The
+  three-way distinction: `[COMPLETED]` = nothing was excluded; `[PARTIAL]` = work remains and is
+  resumable; `[COMPLETED WITH EXCLUSIONS]` = every remaining item was decided, justified, and will
+  not be revisited. See status-markers.md's `[COMPLETED WITH EXCLUSIONS]` subsection for the full
+  admission test and `## Reasoned Exclusions` above for its required record format.
 
 See status-markers.md for the full task-level vocabulary and the cross-reference to this
 subsection.

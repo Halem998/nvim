@@ -1244,7 +1244,7 @@
     {
       "project_number": 924,
       "project_name": "documented_reasoned_exclusions_phase_outcome",
-      "status": "not_started",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Make closed-with-documented-reasoned-exclusions a first-class phase completion outcome",
@@ -1265,9 +1265,20 @@
         922
       ],
       "created": "2026-07-27T10:27:21Z",
-      "last_updated": "2026-07-27T10:27:21Z",
-      "session_id": "sess_1785147256_d55ce4",
-      "artifacts": []
+      "last_updated": "2026-07-27T17:05:04Z",
+      "session_id": "sess_1785171084_0f7c36",
+      "artifacts": [
+        {
+          "path": "specs/924_documented_reasoned_exclusions_phase_outcome/reports/01_documented-reasoned-exclusions.md",
+          "type": "report",
+          "summary": "Trap confirmed both directions; skill-base.sh needs no change; 5 regex sites with 3 divergent shapes; proposes [COMPLETED WITH EXCLUSIONS]"
+        },
+        {
+          "path": "specs/924_documented_reasoned_exclusions_phase_outcome/plans/01_reasoned-exclusions-phase-outcome.md",
+          "type": "plan",
+          "summary": "5 phases; [COMPLETED WITH EXCLUSIONS] as second member of the strategic-sorry family; both trap sides resolved with mandatory negative fixtures"
+        }
+      ]
     },
     {
       "project_number": 925,

@@ -144,12 +144,60 @@ three are intentional:
   block) uses the subset `{NOT STARTED, IMPLEMENTING, PARTIAL, BLOCKED, ABANDONED, COMPLETED}`.
 - **Phase-heading markers** (`### Phase N: {name} [STATUS]`) are scoped to a single phase within
   a plan and never include `ABANDONED` — see plan-format.md's Implementation Phases format.
+  Alongside `[NOT STARTED]`, `[IN PROGRESS]`, `[COMPLETED]`, `[PARTIAL]`, and `[BLOCKED]`, the
+  phase-heading vocabulary also includes `[COMPLETED WITH EXCLUSIONS]` (see below) — a
+  phase-heading marker only, absent from both the task-level vocabulary above and the plan-level
+  Status subset.
 
 See plan-format.md's "Plan-level vs. phase-level markers" subsection (under Status Marker
 Requirements) for the full rationale: `ABANDONED` is deliberately plan/task-level only (no code
 path abandons a single phase while leaving siblings active), and plan-level `PARTIAL` is an
 aggregate whole-document signal distinct from, and compatible with, an individual phase heading
 carrying its own `[PARTIAL]`.
+
+---
+
+#### `[COMPLETED WITH EXCLUSIONS]` (phase-heading marker only)
+
+A third terminal phase-heading outcome, distinct from both plain outcomes on either side of it:
+
+- `[COMPLETED]` — nothing was excluded; every planned item was done.
+- `[PARTIAL]` — work remains and is resumable; a future dispatch is expected to continue it.
+- `[COMPLETED WITH EXCLUSIONS]` — every remaining item was **decided, justified, and will not be
+  revisited**. Nothing is left for a future dispatch to pick up; the phase is closed, not stalled.
+
+This outcome is a **generalization of the existing strategic-sorry mechanism**
+(`context/contracts/anti-analysis.md`'s "Strategic sorries" section), not a second, competing
+mechanism. Both are members of one documented family — "documented incompleteness that still
+counts as success" — differing on exactly one axis: a strategic sorry is *deferred with a
+tracked follow-up* (`sorry_inventory.follow_up_task` is non-null), while a reasoned exclusion is
+*decided and will not be revisited* (no follow-up field exists at all). See
+`context/contracts/anti-analysis.md` for the cross-reference in the other direction.
+
+**Character-class constraint**: the phase-accounting TOTAL regex in
+`scripts/update-task-status.sh`'s `count_plan_phases()` is `[A-Z][A-Z ]*` — uppercase letters and
+spaces only. Any phase-heading marker text, including this one, must satisfy that class exactly;
+a name containing a dash, digit, or parenthesis silently falls out of the denominator. This is
+why the chosen marker text is `COMPLETED WITH EXCLUSIONS` rather than a hyphenated or
+parenthetical variant.
+
+**Admission test**: A phase may close as `[COMPLETED WITH EXCLUSIONS]` only when ALL five
+conditions hold — this is a direct, mode-neutral and task-type-neutral generalization of the
+five-condition strategic-sorry test in `context/contracts/anti-analysis.md`:
+
+1. **Decision, not abandonment**: The exclusion is a deliberate decision that the remaining
+   item(s) are not applicable — not a stuck or abandoned attempt.
+2. **Tightly scoped**: The exclusion is scoped to specific, enumerated items — never "the rest of
+   the phase."
+3. **Documented reason**: Each excluded item carries a stated reason.
+4. **Evidenced**: Each reason carries evidence — command output, a quoted match count, a diff
+   excerpt, or an artifact reference confirming it.
+5. **No residual work**: Nothing remains that a future dispatch would need to do. This is exactly
+   why no follow-up task is recorded — there is nothing to hand off.
+
+Failing any one of these five conditions means the phase is `[PARTIAL]`, not exclusion-closed.
+See `context/formats/plan-format.md`'s `#### Reasoned Exclusions` record format for the required
+per-item record, and `context/contracts/anti-analysis.md` for the strategic-sorry counterpart.
 
 ---
 

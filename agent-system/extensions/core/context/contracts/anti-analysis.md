@@ -82,6 +82,15 @@ full `sorry_inventory` schema), rather than being forced toward `partial`/`block
 analysis-paralysis. Non-strategic main-target sorries — i.e. any that fail one or more of the
 five conditions — remain forbidden under the "Forbidden Conclusions" section above.
 
+**Family relationship**: a strategic sorry is one of two members of one documented family —
+"documented incompleteness that still counts as success." The other member is a **reasoned
+exclusion** (`[COMPLETED WITH EXCLUSIONS]`, a phase-heading marker), for phases whose remaining
+items are decided rather than merely deferred: see `context/standards/status-markers.md`'s
+`[COMPLETED WITH EXCLUSIONS]` subsection for its own five-condition admission test and
+`context/formats/plan-format.md`'s `#### Reasoned Exclusions` record format. The distinguishing
+axis: a strategic sorry is *deferred with a tracked follow-up* (`follow_up_task` non-null); a
+reasoned exclusion is *decided and will not be revisited* (no follow-up field exists at all).
+
 ## Settled-Design Preamble Protocol
 
 At the start of each dispatch, the agent MUST restate:
