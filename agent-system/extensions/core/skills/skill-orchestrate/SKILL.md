@@ -1343,6 +1343,37 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
      `fresh_status = "implementing"` and takes its `Otherwise` branch (not `completed_tasks`), and
      the per-task lock is still released. The task stays eligible in Stage MT-3's next cycle and
      is re-dispatched, bounded by `MAX_CYCLES_MT`.
+
+     **On allow**, immediately after that `skill_postflight_update` call, resolve and propagate
+     THIS task's completion data — re-resolved per task on every iteration, never carried over
+     from a previous task in the same wave (the same caution already given above for
+     `phases_completed`/`phases_total`/`plan_markers_verified`). Reuse this task's own
+     `$recover_json` from step 1 when `[ -n "${recover_json:-}" ]` (that task went through the
+     return-meta recovery branch this cycle), otherwise issue one additional scoped read using
+     this task's own `$task_dir` and the `$window_start` already computed for it in step 1 — the
+     handoff schema has no `completion_summary`/`roadmap_items` field, so a handoff-present task
+     never populates these for free:
+     ```bash
+     if [ -n "${recover_json:-}" ]; then
+       completion_json="$recover_json"
+     else
+       completion_json=$(bash .claude/scripts/orchestrate-recover-outcome.sh "$task_dir" "$window_start" 2>/dev/null)
+     fi
+     # NOTE: default via `[ -z ] && completion_json='{}'`, never `"${completion_json:-{}}"` — bash
+     # parameter-expansion default-word matching stops at the FIRST unescaped `}`, so that inline
+     # idiom silently appends a stray trailing `}` to any non-empty value, corrupting the JSON.
+     [ -z "${completion_json:-}" ] && completion_json='{}'
+     completion_summary=$(echo "$completion_json" | jq -r '.completion_summary // ""' 2>/dev/null) || completion_summary=""
+     roadmap_items=$(echo "$completion_json" | jq -c '.roadmap_items // []' 2>/dev/null) || roadmap_items="[]"
+     skill_propagate_completion_summary "$task_num" "$completion_summary" "$roadmap_items" "$task_type"
+     if [ -z "$completion_summary" ]; then
+       completion_reason=$(echo "$completion_json" | jq -r '.reason // "unknown"' 2>/dev/null) || completion_reason="unknown"
+       echo "[orchestrate] Task #${task_num}: WARNING: task completed with empty completion_summary (reason=${completion_reason})" >&2
+     fi
+     ```
+     `$task_type` here is the SAME per-task value already threaded into this task's own dispatch
+     context object above (Stage MT-2's routing table) — no new lookup is introduced, so a batch
+     mixing meta and non-meta tasks cannot leak one task's exclusion onto another's.
    - Other → no postflight update
 4. Call `skill_link_artifacts` if artifact path is present (same field mapping as Stage 5).
 5. Re-read fresh status from `state.json` (postflight may have updated it). Update `mt_state_file.current_statuses[task_num]`:

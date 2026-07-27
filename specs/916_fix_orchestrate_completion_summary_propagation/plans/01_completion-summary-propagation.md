@@ -325,27 +325,31 @@ downstream overwrites it.
 
 ---
 
-### Phase 5: Wire Stage MT-4 step 3 [NOT STARTED]
+### Phase 5: Wire Stage MT-4 step 3 [COMPLETED]
 
 **Goal**: The directly-observed multi-task defect is closed; hard-mode multi-task inherits the fix.
 
 **Tasks**:
 
-- [ ] `skills/skill-orchestrate/SKILL.md` Stage MT-4 step 3, `dispatch_status = "implemented"`
+- [x] `skills/skill-orchestrate/SKILL.md` Stage MT-4 step 3, `dispatch_status = "implemented"`
       branch (~lines 1319-1332): after the allowed `skill_postflight_update`, resolve this task's
       completion data — reuse this task's own `$recover_json` from MT-4 step 1 when present,
       otherwise one additional scoped call using this task's `$task_dir` and the `$window_start`
-      already computed per task in step 1.
-- [ ] Call `skill_propagate_completion_summary "$task_num" "$completion_summary" "$roadmap_items" "$task_type"`
+      already computed per task in step 1. *(completed: functional simulation against a fixture
+      confirmed correct behavior; used the same `[ -z ] && completion_json='{}'` fix as Phase 4,
+      not the brace-unsafe inline default)*
+- [x] Call `skill_propagate_completion_summary "$task_num" "$completion_summary" "$roadmap_items" "$task_type"`
       using the **per-task** `task_type` already threaded through MT-2/MT-4 into each dispatch
-      context object. Add no new lookup.
-- [ ] Emit the same per-task empty-summary warning, prefixed with `Task #${task_num}:` to match the
-      surrounding MT-4 log style.
-- [ ] State explicitly in the step text that these values are re-resolved per task and never
+      context object. Add no new lookup. *(completed)*
+- [x] Emit the same per-task empty-summary warning, prefixed with `Task #${task_num}:` to match the
+      surrounding MT-4 log style. *(completed)*
+- [x] State explicitly in the step text that these values are re-resolved per task and never
       carried over from a previous task in the same wave — matching the existing caution already
-      written for `phases_completed`/`phases_total`/`plan_markers_verified`.
-- [ ] Confirm and note in the step text that hard-mode multi-task reuses MT-1..MT-5, so no
-      corresponding edit exists in `skill-orchestrate-hard/SKILL.md`.
+      written for `phases_completed`/`phases_total`/`plan_markers_verified`. *(completed)*
+- [x] Confirm and note in the step text that hard-mode multi-task reuses MT-1..MT-5, so no
+      corresponding edit exists in `skill-orchestrate-hard/SKILL.md`. *(completed: confirmed
+      existing "Same as base skill-orchestrate multi-task stages (MT-1 through MT-5)" note at
+      skill-orchestrate-hard/SKILL.md:1129 is still present)*
 
 **Timing**: 40 minutes
 
