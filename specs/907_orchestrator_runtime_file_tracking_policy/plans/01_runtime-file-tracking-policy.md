@@ -248,7 +248,7 @@ execution carries no write conflict.
 
 ---
 
-### Phase 2: Narrow the staging contract and both orchestrate staging sites [NOT STARTED]
+### Phase 2: Narrow the staging contract and both orchestrate staging sites [COMPLETED]
 
 **Goal**: Make automated task-directory staging exclude the ephemeral classes explicitly, so it is
 correct in a consumer repo with zero gitignore coverage.
@@ -265,31 +265,27 @@ classes and nothing else. Verified working at plan time (git 2.54.0): staging a 
 `:(exclude)` for the loop guard, churn state, and `.lock/` staged only the durable file.
 
 **Tasks**:
-- [ ] Edit `agent-system/extensions/core/context/standards/git-staging-scope.md`:
-  - [ ] Lines 25-27 (`plan` scope) — stop presenting the bare `specs/{padded}_{slug}/` form as safe;
+- [x] Edit `agent-system/extensions/core/context/standards/git-staging-scope.md`:
+  - [x] Lines 25-27 (`plan` scope) — stop presenting the bare `specs/{padded}_{slug}/` form as safe;
         replace with the exclusion-pathspec form and a pointer to the new runtime-files standard.
-  - [ ] Lines 88-90 (`implement` reference template) — same change to the `stage_paths` array.
-  - [ ] Add a short subsection defining the canonical exclusion set once, so later readers extend
-        one list rather than three:
-        ```bash
-        task_dir="specs/${padded_num}_${project_name}"
-        ephemeral_excludes=(
-          ":(exclude)${task_dir}/.orchestrator-loop-guard"
-          ":(exclude)${task_dir}/.orchestrator-churn-state.json"
-          ":(exclude)${task_dir}/.lock/"
-        )
-        git add "$task_dir" "${ephemeral_excludes[@]}" "specs/TODO.md" "specs/state.json"
-        ```
-  - [ ] State that handoff and return-meta are deliberately **not** excluded — they are durable
+  - [x] Lines 88-90 (`implement` reference template) — same change to the `stage_paths` array.
+  - [x] Add a short subsection defining the canonical exclusion set once, so later readers extend
+        one list rather than three. *(completed: added a 4th exclusion, `.drift-inspection.json`,
+        alongside the three named here — see Phase 1's deviation note; the standard's own class
+        table adopted it as ephemeral for the same no-freshness-gate reason, so the exclusion set
+        stays internally consistent with the standard it implements)*
+  - [x] State that handoff and return-meta are deliberately **not** excluded — they are durable
         provenance and staging them is intended.
-  - [ ] Add the new standard to the "Related Documentation" list.
-- [ ] Edit `agent-system/extensions/core/commands/orchestrate.md` at **both** confirmed staging
+  - [x] Add the new standard to the "Related Documentation" list.
+- [x] Edit `agent-system/extensions/core/commands/orchestrate.md` at **both** confirmed staging
       sites, using the same exclusion set:
-  - [ ] Multi-task batch commit (~lines 365-373): the per-task loop appends
-        `specs/${tpadded}_${tname}/`; append the three exclusion pathspecs per task alongside it.
-  - [ ] CHECKPOINT 3 single-task commit (~lines 496-501): add the exclusions to `stage_paths`
+  - [x] Multi-task batch commit (~lines 365-373): the per-task loop appends
+        `specs/${tpadded}_${tname}/`; append the exclusion pathspecs per task alongside it.
+  - [x] CHECKPOINT 3 single-task commit (~lines 496-501): add the exclusions to `stage_paths`
         before `git add`.
-- [ ] Verify no task-number citations were introduced.
+- [x] Verify no task-number citations were introduced. *(completed: grep clean on both files;
+      one pre-existing, unrelated illustrative "task 785,787" example elsewhere in
+      `orchestrate.md` predates this change and is out of scope)*
 
 **Timing**: 1 hour
 

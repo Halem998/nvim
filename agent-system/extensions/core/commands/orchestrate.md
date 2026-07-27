@@ -359,7 +359,11 @@ skipped_count=${#skipped_tasks[@]}
 **Batch Git Commit**:
 
 Apply targeted staging per `.claude/context/standards/git-staging-scope.md` — iterate the scope
-over each task directory in the requested range, never a repo-wide add:
+over each task directory in the requested range, never a repo-wide add. Each task directory is
+staged alongside the canonical ephemeral-runtime-file exclusion set from that standard
+(`.claude/context/standards/orchestrator-runtime-files.md` documents the underlying two-class
+policy) so an in-flight loop guard, churn state, drift-inspection scratch file, or `.lock/`
+directory is never swept into a mid-batch commit:
 
 ```bash
 stage_paths=("specs/TODO.md" "specs/state.json")
@@ -368,7 +372,16 @@ for tnum in "${validated_tasks[@]}"; do
   tname=$(jq -r --argjson num "$tnum" \
     '.active_projects[] | select(.project_number == $num) | .project_name' \
     specs/state.json)
-  [ -n "$tname" ] && stage_paths+=("specs/${tpadded}_${tname}/")
+  if [ -n "$tname" ]; then
+    ttask_dir="specs/${tpadded}_${tname}"
+    stage_paths+=(
+      "${ttask_dir}/"
+      ":(exclude)${ttask_dir}/.orchestrator-loop-guard"
+      ":(exclude)${ttask_dir}/.orchestrator-churn-state.json"
+      ":(exclude)${ttask_dir}/.drift-inspection.json"
+      ":(exclude)${ttask_dir}/.lock/"
+    )
+  fi
 done
 git add "${stage_paths[@]}"
 ```
@@ -490,11 +503,24 @@ bash .claude/scripts/command-gate-out.sh "$task_number" "orchestrate" "$SESSION_
 ### CHECKPOINT 3: COMMIT
 
 Apply the `implement`-equivalent scope from `.claude/context/standards/git-staging-scope.md`
-(task dir + self-reported `modified_files`) — under-stage, never a repo-wide add:
+(task dir + self-reported `modified_files`), including the canonical ephemeral-runtime-file
+exclusion set from that same standard — under-stage, never a repo-wide add. This is the single
+most exposed staging site to the mid-lifecycle-sweep hazard `.claude/context/standards/
+orchestrator-runtime-files.md` documents: this checkpoint runs every cycle of a still-running
+`/orchestrate` loop, well before the loop guard's own termination-only cleanup fires.
 
 ```bash
-stage_paths=("specs/${PADDED_NUM}_${PROJECT_NAME}/" "specs/TODO.md" "specs/state.json")
-metadata_file="specs/${PADDED_NUM}_${PROJECT_NAME}/.return-meta.json"
+task_dir="specs/${PADDED_NUM}_${PROJECT_NAME}"
+stage_paths=(
+  "${task_dir}/"
+  ":(exclude)${task_dir}/.orchestrator-loop-guard"
+  ":(exclude)${task_dir}/.orchestrator-churn-state.json"
+  ":(exclude)${task_dir}/.drift-inspection.json"
+  ":(exclude)${task_dir}/.lock/"
+  "specs/TODO.md"
+  "specs/state.json"
+)
+metadata_file="${task_dir}/.return-meta.json"
 while IFS= read -r f; do
   [ -n "$f" ] && stage_paths+=("$f")
 done < <(jq -r '.modified_files[]? // empty' "$metadata_file" 2>/dev/null)

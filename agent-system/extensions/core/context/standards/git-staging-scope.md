@@ -10,6 +10,33 @@ produced — never a concurrent session's stray edits.
 This is the canonical authority referenced by `orchestrator-postflight.sh`, `skill-implementer`,
 `general-implementation-agent`, `git-workflow.md`, and `skill-git-workflow`.
 
+## Canonical Runtime-File Exclusion Set
+
+Every task-directory `git add` in this contract excludes the same fixed set of ephemeral runtime
+files, via git exclusion pathspecs (`:(exclude)...`) rather than an allowlist — an allowlist would
+also silently drop legitimate durable content that live task directories carry (`progress/`,
+`handoffs/`, `fixtures/`, `tests/`, `HANDOFF.md`), trading one silent-drop bug for another.
+Exclusion pathspecs instead subtract exactly the ephemeral classes and nothing else. See
+`context/standards/orchestrator-runtime-files.md` for the full two-class policy and the rationale
+(freshness-gate asymmetry) behind which files these are:
+
+```bash
+task_dir="specs/${padded_num}_${project_name}"
+ephemeral_excludes=(
+  ":(exclude)${task_dir}/.orchestrator-loop-guard"
+  ":(exclude)${task_dir}/.orchestrator-churn-state.json"
+  ":(exclude)${task_dir}/.drift-inspection.json"
+  ":(exclude)${task_dir}/.lock/"
+)
+```
+
+**`.orchestrator-handoff.json` and `.return-meta.json` are deliberately NOT in this set.** They
+are durable provenance under the settled policy in `orchestrator-runtime-files.md` — staging them
+is intended, not an oversight to fix later.
+
+Every scope below extends this same array rather than re-deriving its own exclusion list —
+extend it here once if a future audit adopts another ephemeral class.
+
 ## Per-Operation Scope
 
 ### `research`
@@ -19,20 +46,22 @@ No commit is created. `do_git_commit=false` for the `research` operation type in
 
 ### `plan`
 
-Stage exactly:
+Stage:
 
 ```
-specs/{padded}_{slug}/
+specs/{padded}_{slug}/ "${ephemeral_excludes[@]}"
 specs/TODO.md
 specs/state.json
 ```
 
 No dependency on agent self-report — the plan operation only ever touches files under the task
-directory plus the two shared index files.
+directory plus the two shared index files. The exclusion pathspecs above still apply: a plan
+dispatch can run inside an in-flight `/orchestrate` loop and must not sweep in the loop guard,
+churn state, drift-inspection scratch file, or a `.lock/` directory.
 
 ### `implement`
 
-Stage the `plan` scope above, PLUS:
+Stage the `plan` scope above (task directory with the same exclusions), PLUS:
 
 ```
 {plan_path}                      # the plan file itself (may have phase status edits)
@@ -80,12 +109,22 @@ Session: ${session_id}
 "
 ```
 
-For `implement`, extend the same pattern with the plan path and `modified_files`:
+For `implement`, extend the same pattern with the plan path, `modified_files`, and the canonical
+exclusion set (this template stages the whole task directory, unlike the team-research example
+above, so the exclusions are required here):
 
 ```bash
 padded_num=$(printf "%03d" "$task_number")
+task_dir="specs/${padded_num}_${project_name}"
+ephemeral_excludes=(
+  ":(exclude)${task_dir}/.orchestrator-loop-guard"
+  ":(exclude)${task_dir}/.orchestrator-churn-state.json"
+  ":(exclude)${task_dir}/.drift-inspection.json"
+  ":(exclude)${task_dir}/.lock/"
+)
 stage_paths=(
-  "specs/${padded_num}_${project_name}/"
+  "${task_dir}/"
+  "${ephemeral_excludes[@]}"
   "specs/TODO.md"
   "specs/state.json"
   "$plan_path"
@@ -169,3 +208,5 @@ the addendum and falls through to the plain commit message — it must never bre
 - `.claude/context/patterns/task-lock.md` — the `specs/.scope-lock/` scope-mutex CLI
   (`scope-acquire`/`scope-release`) that now brackets the state.json read-modify-write window
   referenced above
+- `.claude/context/standards/orchestrator-runtime-files.md` — the two-class ephemeral/durable
+  policy the canonical exclusion set above implements, with the full freshness-gate rationale
