@@ -1,0 +1,34 @@
+{
+  "phase": 1,
+  "phase_name": "Audit runtime file classes and author the canonical policy standard",
+  "started_at": "2026-07-27T00:00:00Z",
+  "last_updated": "2026-07-27T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Audit source store + filesystem for every runtime file name under specs/{task}/",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Write orchestrator-runtime-files.md canonical standard (class table, rationale, consumer setup, untracking guidance, prohibitions, forward-only note, defense-in-depth note)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"
+      ]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.1",
+      "description": "Audit source store for every runtime file written under a task directory",
+      "type": "altered",
+      "reason": "Audit surfaced two file names not among the task description's five known classes: .drift-inspection.json and .stray-handoff-*.json. Both required a disposition decision beyond the literal audit-sweep instruction.",
+      "annotation": "*(deviation: altered — audit surfaced .drift-inspection.json (adopted as ephemeral, same no-freshness-gate rationale as the loop guard) and .stray-handoff-*.json (reviewed, deliberately left unclassified as diagnostic evidence, not added to either class))*"
+    }
+  ]
+}
