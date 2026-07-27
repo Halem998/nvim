@@ -157,10 +157,13 @@ if [ "$MODE" = "write" ]; then
   echo "[fidelity-audit] Backup created and verified: $BACKUP_FILE" >&2
 fi
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 LITERATURE_DIR="$LITERATURE_DIR" \
 SOURCES_DIR="$SOURCES_DIR" \
 INDEX_FILE="$INDEX_FILE" \
 MODE="$MODE" \
+LITERATURE_SCRIPT_DIR="$SCRIPT_DIR" \
 python3 <<'PYEOF'
 import json
 import os
@@ -173,6 +176,41 @@ LITERATURE_DIR = os.environ["LITERATURE_DIR"]
 SOURCES_DIR = os.environ["SOURCES_DIR"]
 INDEX_FILE = os.environ["INDEX_FILE"]
 MODE = os.environ["MODE"]
+
+# Additive combining-mark (U+0338) signal (kept DISTINCT from pdf_word_count()'s
+# pdftotext -layout call below -- pdftotext itself substitutes a literal digit
+# "6" for the overlay mark and cannot serve as ground truth for this check; see
+# literature-combining-audit.sh's header for the full rationale). Reuses the
+# same PyMuPDF-based detection/anchoring module the standalone detector and
+# repair engine use, so this script's combining-mark numbers are never a
+# second, independently-drifting implementation.
+sys.path.insert(0, os.environ["LITERATURE_SCRIPT_DIR"])
+try:
+    from literature_combining_detect import scan_directory as _combining_scan_directory
+    _COMBINING_CHECK_AVAILABLE = True
+except ImportError as e:
+    print(f"[warn] literature_combining_detect not importable, combining-mark "
+          f"check disabled for this run: {e}", file=sys.stderr)
+    _COMBINING_CHECK_AVAILABLE = False
+
+
+def combining_mark_check(dirpath, dirname):
+    """Returns (checked: bool, dropped: bool|None, missing: int|None). Only
+    meaningful when the directory has both a PDF and non-chunk markdown (the
+    same precondition the standalone detector requires); otherwise
+    checked=False and the other two fields are None (not 0 -- "not checked" is
+    a distinct, undisclosed state from "checked, zero dropped")."""
+    if not _COMBINING_CHECK_AVAILABLE:
+        return False, None, None
+    try:
+        result = _combining_scan_directory(dirpath, dirname, on_no_markdown=None)
+    except Exception as e:
+        print(f"[warn] combining-mark check failed for {dirname}: {e}", file=sys.stderr)
+        return False, None, None
+    if result is None:
+        return False, None, None
+    missing = result["corrupted_count"]
+    return True, missing > 0, missing
 
 RATIO_THRESHOLD = 0.75
 PROOF_ADEQUACY_THRESHOLD = 0.6
@@ -304,6 +342,11 @@ def classify_dir(dirname, idx):
     has_pdf = len(pdfs) > 0
     has_md = len(mds) > 0
 
+    # Additive signal, computed once regardless of which provenance_fidelity
+    # branch below fires -- reported ALONGSIDE provenance_fidelity, never
+    # folded into the ratio>=RATIO_THRESHOLD gate or the six-value enum.
+    combining_checked, combining_dropped, combining_missing = combining_mark_check(dirpath, dirname)
+
     result = {
         "dir": dirname,
         "has_pdf": has_pdf,
@@ -314,6 +357,9 @@ def classify_dir(dirname, idx):
         "proof_fraction": None,
         "disclosed": None,
         "provenance_fidelity": None,
+        "combining_mark_checked": combining_checked,
+        "combining_mark_dropped": combining_dropped,
+        "combining_marks_missing": combining_missing,
     }
 
     if not has_pdf and has_md:
@@ -415,11 +461,13 @@ def main():
 
     counts = Counter(r["provenance_fidelity"] for r in results)
 
-    print("dir\tprovenance_fidelity\tword_ratio\tmd_words\tpdf_words\tdisclosed\tproof_fraction")
+    print("dir\tprovenance_fidelity\tword_ratio\tmd_words\tpdf_words\tdisclosed\tproof_fraction"
+          "\tcombining_mark_checked\tcombining_mark_dropped\tcombining_marks_missing")
     for r in results:
         print(
             f"{r['dir']}\t{r['provenance_fidelity']}\t{r['word_ratio']}\t"
-            f"{r['md_words']}\t{r['pdf_words']}\t{r['disclosed']}\t{r['proof_fraction']}"
+            f"{r['md_words']}\t{r['pdf_words']}\t{r['disclosed']}\t{r['proof_fraction']}\t"
+            f"{r['combining_mark_checked']}\t{r['combining_mark_dropped']}\t{r['combining_marks_missing']}"
         )
 
     print("\n--- Population summary ---", file=sys.stderr)
@@ -427,6 +475,12 @@ def main():
               "not_yet_converted", "unverified_no_baseline", "unadjudicated"):
         print(f"{k}: {counts.get(k, 0)}", file=sys.stderr)
     print(f"Total directories: {len(results)}", file=sys.stderr)
+
+    combining_checked_n = sum(1 for r in results if r["combining_mark_checked"])
+    combining_dropped_n = sum(1 for r in results if r["combining_mark_dropped"])
+    print(f"\n--- Combining-mark signal (additive, informational) ---", file=sys.stderr)
+    print(f"directories checked: {combining_checked_n}", file=sys.stderr)
+    print(f"directories with dropped marks: {combining_dropped_n}", file=sys.stderr)
 
     if MODE != "write":
         return
@@ -447,14 +501,26 @@ def main():
         for e in targets:
             prev_fidelity = e.get("provenance_fidelity")
             prev_ratio = e.get("word_ratio")
+            prev_combining_checked = e.get("combining_mark_checked")
+            prev_combining_dropped = e.get("combining_mark_dropped")
+            prev_combining_missing = e.get("combining_marks_missing")
             new_fidelity = r["provenance_fidelity"]
             new_ratio = r["word_ratio"]
-            if prev_fidelity == new_fidelity and prev_ratio == new_ratio:
+            new_combining_checked = r["combining_mark_checked"]
+            new_combining_dropped = r["combining_mark_dropped"]
+            new_combining_missing = r["combining_marks_missing"]
+            if (prev_fidelity == new_fidelity and prev_ratio == new_ratio
+                    and prev_combining_checked == new_combining_checked
+                    and prev_combining_dropped == new_combining_dropped
+                    and prev_combining_missing == new_combining_missing):
                 unchanged += 1
             else:
                 changed += 1
             e["provenance_fidelity"] = new_fidelity
             e["word_ratio"] = new_ratio
+            e["combining_mark_checked"] = new_combining_checked
+            e["combining_mark_dropped"] = new_combining_dropped
+            e["combining_marks_missing"] = new_combining_missing
             stamped += 1
 
     tmp_path = INDEX_FILE + ".tmp"

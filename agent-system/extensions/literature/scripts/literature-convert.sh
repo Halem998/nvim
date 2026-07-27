@@ -65,12 +65,110 @@
 
 set -uo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# --- Self-test: fixture-based check of compose_combining_overlays() (the
+# overlay-composition logic shared with the live conversion pipeline via
+# literature_combining_overlay.py). Runs no PDF conversion at all. ---
+if [ "${1:-}" = "--self-test" ]; then
+  LITERATURE_CONVERT_SCRIPT_DIR="$SCRIPT_DIR" python3 <<'PYEOF'
+import os
+import sys
+import unicodedata
+
+sys.path.insert(0, os.environ["LITERATURE_CONVERT_SCRIPT_DIR"])
+from literature_combining_overlay import compose_combining_overlays
+
+MARK = "̸"  # COMBINING LONG SOLIDUS OVERLAY
+failures = []
+
+
+def check(name, given, expect):
+    got = compose_combining_overlays(given)
+    if got != expect:
+        failures.append(
+            f"{name}: input={given!r} expected={expect!r} got={got!r}"
+        )
+    else:
+        print(f"[self-test] PASS: {name}")
+
+
+# 1. mark immediately before base (the original, already-supported case)
+check("mark-immediately-before-base", MARK + "=", "≠")
+
+# 2. mark separated from its base by intervening horizontal whitespace (the
+#    gap this phase's fix closes -- verified real: PDF extraction of this
+#    corpus produces "TS(PG1 ||| PG2)" + MARK + " " + "=")
+check("mark-space-before-base", MARK + " =", "≠")
+check("mark-tab-before-base", MARK + "\t=", "≠")
+
+# 3. base already before mark (canonical NFC order) -- must compose correctly
+#    without the reorder regex ever needing to fire.
+check("mark-after-base-canonical-order", "=" + MARK, "≠")
+
+# 4. ordinary accented Latin letter must NEVER be touched by the
+#    whitelist-restricted reorder step (only relation-symbol bases are
+#    eligible), and must still NFC-compose normally.
+check("accented-letter-non-interference", "e" + "́", "\xe9")  # -> "é"
+
+# 5. a mark-space-base pair spanning a NEWLINE must NOT be reordered (the
+#    plan's explicit safety constraint: only horizontal whitespace tolerated).
+newline_input = MARK + "\n="
+newline_result = compose_combining_overlays(newline_input)
+if newline_result == "≠":
+    failures.append(
+        f"newline-must-not-reorder: input={newline_input!r} incorrectly "
+        f"composed to {newline_result!r} -- a mark/base pair separated by a "
+        f"newline must be left alone"
+    )
+else:
+    print("[self-test] PASS: newline-must-not-reorder")
+
+# 6. a newly added base from the corpus-wide audit (plan-mandated: turnstile,
+#    precedes, rightwards-arrow, divides)
+check("new-base-turnstile", MARK + "⊢", "⊬")  # ⊢ -> ⊬
+check("new-base-precedes", MARK + "≺", "⊀")   # ≺ -> ⊀
+check("new-base-arrow", MARK + "→", "↛")      # → -> ↛
+check("new-base-divides", MARK + "|", "∤")         # | -> ∤
+
+# 7. idempotence: composing twice equals composing once, across every
+#    fixture used above.
+for name, given in [
+    ("mark-immediately-before-base", MARK + "="),
+    ("mark-space-before-base", MARK + " ="),
+    ("mark-after-base-canonical-order", "=" + MARK),
+    ("accented-letter-non-interference", "e" + "́"),
+    ("new-base-turnstile", MARK + "⊢"),
+]:
+    once = compose_combining_overlays(given)
+    twice = compose_combining_overlays(once)
+    if once != twice:
+        failures.append(
+            f"idempotence[{name}]: once={once!r} twice={twice!r} -- composing "
+            f"twice must equal composing once"
+        )
+    else:
+        print(f"[self-test] PASS: idempotence[{name}]")
+
+if failures:
+    print("\n[self-test] FAILURES:", file=sys.stderr)
+    for f in failures:
+        print(f"  - {f}", file=sys.stderr)
+    print(f"\n[self-test] {len(failures)} failure(s)", file=sys.stderr)
+    sys.exit(1)
+
+print(f"\n[self-test] All fixtures passed.")
+PYEOF
+  exit $?
+fi
+
 # --- Arguments ---
 INPUT="${1:-}"
 OUTPUT_DIR="${2:-}"
 
 if [ -z "$INPUT" ] || [ -z "$OUTPUT_DIR" ]; then
   echo "[convert] Usage: $0 <input.pdf|input.djvu> <output_dir>" >&2
+  echo "       $0 --self-test   (run the combining-overlay fixture self-test)" >&2
   exit 1
 fi
 
@@ -104,7 +202,8 @@ CONVERTER="${LITERATURE_CONVERTER:-auto}"
 
 log() { echo "[convert] $*" >&2; }
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# SCRIPT_DIR already computed at the top of the script (before the --self-test
+# branch, which needs it too).
 # shellcheck source=./literature-pyenv-provision.sh
 source "$SCRIPT_DIR/literature-pyenv-provision.sh"
 
@@ -152,12 +251,17 @@ run_unified_engine() {
   LITERATURE_CONVERT_INPUT="$input" \
   LITERATURE_CONVERT_OUTPUT="$output" \
   LITERATURE_CONVERT_MODE="$mode" \
+  LITERATURE_CONVERT_SCRIPT_DIR="$SCRIPT_DIR" \
   LD_LIBRARY_PATH="$ld_prefix" \
   "$py_bin" << 'PYEOF'
 import sys
 import os
 import re
+import unicodedata
 from collections import Counter
+
+sys.path.insert(0, os.environ["LITERATURE_CONVERT_SCRIPT_DIR"])
+from literature_combining_overlay import compose_combining_overlays  # noqa: E402
 
 pdf_path = os.environ["LITERATURE_CONVERT_INPUT"]
 out_path = os.environ["LITERATURE_CONVERT_OUTPUT"]
@@ -205,7 +309,15 @@ def rejoin_soft_wraps(text):
     return "\n\n".join(joined)
 
 
+# compose_combining_overlays() is imported from literature_combining_overlay.py
+# (see the sys.path.insert/import near the top of this heredoc) so the live
+# conversion pipeline and its fixture self-test (--self-test) share exactly one
+# definition of the reorder regex and base whitelist -- never two hand-maintained
+# copies that could drift.
+
+
 def normalize_unit(text):
+    text = compose_combining_overlays(text)
     text = fold_ligatures(text)
     text = dehyphenate(text)
     text = rejoin_soft_wraps(text)

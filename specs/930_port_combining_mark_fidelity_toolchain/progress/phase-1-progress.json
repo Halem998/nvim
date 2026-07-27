@@ -1,0 +1,31 @@
+{
+  "phase": 1,
+  "phase_name": "Rescue Copy of the 6 Divergent Files",
+  "started_at": "2026-07-27T11:33:00Z",
+  "last_updated": "2026-07-27T11:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Confirm DOWN exists, re-cmp all 6 files for freshness, check for 7th differing file",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Copy 4 new files and 2 modified files, set permissions, verify cmp and git status scope",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/scripts/literature_combining_overlay.py",
+        "agent-system/extensions/literature/scripts/literature_combining_detect.py",
+        "agent-system/extensions/literature/scripts/literature-combining-audit.sh",
+        "agent-system/extensions/literature/scripts/literature-repair-combining.sh",
+        "agent-system/extensions/literature/scripts/literature-convert.sh",
+        "agent-system/extensions/literature/scripts/literature-fidelity-audit.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

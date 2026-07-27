@@ -1,0 +1,16 @@
+{
+  "task_number": 930,
+  "session_id": "sess_1785176230_b4221f_930",
+  "phase": "plan",
+  "status": "planned",
+  "plan_path": "specs/930_port_combining_mark_fidelity_toolchain/plans/01_port-combining-mark-toolchain.md",
+  "research_path": "specs/930_port_combining_mark_fidelity_toolchain/reports/01_combining-mark-toolchain-port.md",
+  "phase_count": 5,
+  "estimated_hours": 2.5,
+  "complexity": "medium",
+  "dependency_waves": [[1], [2], [3, 4, 5]],
+  "blockers": [],
+  "notes": "Dependency on task 928 is a verification-ordering edge only; check-extension-docs.sh is already on disk with the required checks, so no phase is gated. Phases 1-2 are urgency-critical (source lives only in a disposable gitignored deploy tree). Phase 3 may land [PARTIAL] without blocking the port.",
+  "next_steps": "Run /implement 930 to execute the plan",
+  "completed_at": "2026-07-27T00:00:00Z"
+}
