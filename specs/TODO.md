@@ -1,5 +1,5 @@
 ---
-next_project_number: 928
+next_project_number: 931
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 928
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 885,914,915,917,918,919,920,922 | -- | agent-system |
-| 2 | 887,923,924 | 885,918,922 | agent-system |
+| 1 | 885,914,915,917,918,919,920,922,928,929 | -- | agent-system, extensions |
+| 2 | 887,923,924,930 | 885,918,922,928 | agent-system, literature |
 | 3 | 925 | 924 | agent-system |
 | 4 | 926,927 | 919,925 | agent-system |
 
@@ -35,8 +35,127 @@ next_project_number: 928
     └─ 925 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
       └─ 926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
       └─ 927 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
+929 [NOT STARTED] — SOURCE-STORE RULE (binding, and the subject of this task): the ag
+
+### Extensions
+
+928 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+
+### Literature
+
+930 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ## Tasks
+
+### 930. Port the combining-mark fidelity toolchain into the literature extension source
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: Task 928
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/ and the per-extension source directories under agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+URGENCY. The work described below exists ONLY inside /home/benjamin/Projects/BimodalLogic/.claude/scripts/, a gitignored disposable deploy tree. It is destroyed by the next extension reload in that repo. Recovering it costs a file copy plus a manifest edit; losing it costs no action at all.
+
+CAPTURED DIVERGENCE (verified 2026-07-27 by diffing that deploy tree against agent-system/extensions/literature/scripts/):
+
+  NEW -- absent upstream entirely:
+    literature_combining_overlay.py   (4,267 B)  Shared overlay-composition logic. TeX-descended PDFs encode negated relations as a base glyph plus U+0338 COMBINING LONG SOLIDUS OVERLAY rather than a precomposed codepoint, and PyMuPDF emits the mark in either order relative to its base -- sometimes with intervening whitespace. Plain NFC composition recovers neither case. Restricted to a base-character whitelist so ordinary letter diacritics are never reordered. Imported by literature-convert.sh and by its own fixture self-test, so the reorder regex and base whitelist cannot drift between the two.
+    literature_combining_detect.py   (16,541 B)  Shared PDF-vs-markdown ground-truth detection and anchoring. Imported by BOTH the audit and the repair tool so the two locate and classify occurrences identically -- the repair engine only ever acts on an occurrence using the exact anchor logic the detector used to report it.
+    literature-combining-audit.sh     (6,585 B)  Read-only corpus-wide silent-drop detector. A bare U+0338 grep cannot find the dangerous silent-drop class, which is why this exists.
+    literature-repair-combining.sh   (18,177 B)  Backup-guarded, anchored, dry-run-default in-place repair engine.
+
+  MODIFIED:
+    literature-convert.sh   30,073 B -> 34,500 B. The diff is a CLEAN SUPERSET: 113 added lines and 1 removed line, where the sole removed line is a SCRIPT_DIR assignment that moved to the top of the file. Adds the compose_combining_overlays import from the new shared module, a --self-test fixture mode, a widened overlay regex tolerating intervening whitespace between mark and base, and additional base characters for previously-missing relations. The port is therefore a straight file copy, not a merge.
+
+PHASE 1 IS A RE-CENSUS, NOT A TRANSCRIPTION OF THE LIST ABOVE. The originating implementation run in the downstream repo was still in flight when this census was taken. Do not trust the list; regenerate it. Scan the downstream .claude/scripts/ for every file that differs in content from -- or is absent from -- its agent-system/extensions/literature/scripts/ counterpart, and port whatever is actually there.
+  Specifically re-check literature-fidelity-audit.sh. At census time it was BYTE-IDENTICAL on both sides (18,685 B), so the anticipated second signal (a combining-mark / glyph-substitution check alongside its existing word-ratio heuristic, which is structurally blind to character-level semantic inversions) had NOT yet landed. It may have landed since.
+  COMPARE CONTENT, NOT MTIME. The downstream literature-fidelity-audit.sh already carries a newer mtime while being byte-identical, so an mtime-only scan reports a false positive on exactly this file. Use cmp/diff.
+
+MANIFEST REGISTRATION IS NOT OPTIONAL. agent-system/extensions/literature/manifest.json currently declares 33 provides.scripts entries and none of the four new files. An unregistered script never deploys, so an unregistered port is indistinguishable from no port at all.
+  - REGISTER THE .py MODULES TOO. They are not shell scripts, but provides.scripts already carries .py and .sql entries (literature-decode-font-offset.py, literature-schema.sql), so a shell-only assumption would silently drop the two modules that both new tools import -- yielding four registered-looking tools that fail at import time.
+  - If any ported file lands in a subdirectory, declare it with its full relative path prefix (the established convention: tests/generate-test-fixtures.py).
+
+VERIFICATION (do not skip; this is the step the dependency edge exists for):
+  1. Deploy into a consuming repo and confirm every ported file reappears in .claude/scripts/ with content matching the extension source.
+  2. Run the extension doc-lint and confirm it reports no undeclared scripts for the literature extension.
+  3. Run literature-convert.sh --self-test from the deployed copy and confirm the ported fixture mode passes.
+
+DEPENDENCY NOTE: the declared dependency is a VERIFICATION-ORDERING edge only. The doc-lint task supplies the disk-to-manifest check that makes step 2 above mechanically verifiable rather than eyeballed. Phases 1-3 (re-census, copy, manifest registration) do not require it. Given the urgency above, if the doc-lint task is delayed, PROCEED with the re-census, copy and registration and re-run verification once the lint lands -- do not leave this work stranded in a disposable tree waiting on a lint.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 929. Make the source-store / disposable-deploy boundary enforceable rather than prose
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding, and the subject of this task): the agent-system SOURCE of truth is agent-system/extensions/core/ and the per-extension source directories under agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store; edits to .claude/** are silently wiped on the next reload. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+DEFECT. That rule currently exists only as prose repeated inside individual task descriptions. It is not encoded in any always-loaded rule file, any implementer agent contract, or any hook that actually runs. Extension code has now been authored directly into the disposable copy across more than one task -- most recently an entire combining-mark fidelity toolchain (four new files plus a 113-line modification) written into a downstream repo's .claude/scripts/ instead of agent-system/extensions/literature/scripts/, where it would have been lost on the next reload.
+
+TWO VERIFIED ROOT CAUSES (checked 2026-07-27 against the live source store):
+
+  (a) THE EXISTING HOOK NEVER RUNS. core/hooks/validate-meta-write.sh is listed in core's provides.hooks and therefore deploys, but it is absent from core/merge-sources/settings-hooks.json -- that file registers only validate-no-task-references.sh and validate-handoff-location.sh under its Write|Edit PostToolUse matcher. The deployed downstream settings.json likewise contains no reference to it. The hook has never fired. (A prior archived infrastructure audit independently recorded this same finding as its single critical item; it was never acted on.)
+
+  (b) EVEN IF REGISTERED, IT WOULD NOT HAVE CAUGHT THIS. Its is_meta_path case list covers .claude/commands/, skills/, agents/, rules/, context/, extensions/ and */CLAUDE.md. It does NOT cover .claude/scripts/ or .claude/hooks/ -- and .claude/scripts/ is exactly where the lost toolchain was written. Worse, its advisory text ends: "If you are executing within /implement (general-implementation-agent), this write is legitimate and you may proceed." Under the source-store rule that advice is backwards: an /implement-lifecycle write into a deploy tree is the defect, not the exemption.
+
+REQUIRED WORK.
+  1. REGISTER THE HOOK. Add validate-meta-write.sh to the PostToolUse Write|Edit array in core/merge-sources/settings-hooks.json, beside its two siblings, following their existing invocation form. Without this step nothing else in this task has any runtime effect.
+  2. WIDEN AND RE-AIM IT. Add .claude/scripts/** and .claude/hooks/** to the covered path set. Rewrite the advisory message so it states the source-store rule and names the correct edit target (agent-system/extensions/<ext>/...), instead of granting /implement a blanket exemption.
+  3. ENCODE THE RULE DURABLY. Add it as a core rule file in the family of rules/no-task-references-in-deliverables.md (path-scoped, auto-applied), and add a MUST NOT clause to the implementer agent contracts so the constraint reaches agents that never see a hook message. PREFER ONE RULE FILE REFERENCED BY THE IMPLEMENTERS over prose copied into each -- copy-paste propagation across a dozen implementers is itself a recurring maintenance defect in this system; do not add another instance of it.
+
+MUST NOT OBSTRUCT (explicit non-goals):
+  - The hook stays ADVISORY and NON-BLOCKING, matching every existing validator in this family: it emits additionalContext and exits 0. Do not make it blocking.
+  - The deploy/reload process writes the entire .claude/ tree by design and must not be impeded. An advisory hook cannot impede it; if a stricter mechanism is considered instead, it must carve the loader out explicitly.
+  - Legitimate /meta-lifecycle work (task creation under specs/**) is already exempted by the hook's existing specs/*|*/specs/* skip and must remain so.
+
+KNOWN LIMITATION -- state it rather than pretending otherwise: a PostToolUse hook receives only a file_path argument. It cannot see which task type or lifecycle is running, so it cannot distinguish "authored into a deploy tree by mistake" from "written by the loader", and it cannot reason about which repo the path belongs to. It can only ever be an advisory nudge on path shape. The durable enforcement is item 3 (rule file plus agent contract); the hook is the reminder, not the guarantee. Do not over-claim enforcement in the rule's own text.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 928. Add a disk-driven check_undeclared_scripts check to the extension doc-lint
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/ and the per-extension source directories under agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+DEFECT. agent-system/extensions/core/scripts/check-extension-docs.sh has no disk-driven undeclared-scripts check. A script file present in an extension's scripts/ directory but absent from that extension's provides.scripts[] never deploys, and NOTHING in the doc-lint reports it.
+
+VERIFIED DOUBLE BLIND SPOT (checked 2026-07-27 against the live script):
+  - check_undeclared_skills (Rule A) covers skills/ disk -> manifest.
+  - check_undeclared_rules (Rule H) covers rules/ disk -> manifest.
+  - check_flat_category_orphans "scripts" "Rule M" runs the REVERSE direction, and enumerates its candidates via _git_deployed_files "scripts" (git ls-files .claude/scripts). An unregistered script never deploys, so it never appears in that enumeration -- Rule M is structurally incapable of seeing it.
+  - check_referenced_scripts_declared is REFERENCE-driven: it greps *.sh / *.sql filename tokens out of the extension's commands/, skills/*/SKILL.md, agents/, README.md and EXTENSION.md, then requires each referenced name to be declared somewhere. A new script never mentioned by name in any of those docs is invisible to it. Its regex also matches only \.(sh|sql)\b, so .py modules are outside its scope entirely.
+  Net: scripts/ is the one component category with no disk-to-manifest check.
+
+WHY THIS MATTERS: this is exactly the failure mode that makes an incomplete port look successful -- files copied into the extension source, manifest never updated, doc-lint green, nothing actually deployed.
+
+REQUIRED BEHAVIOR. Add check_undeclared_scripts <ext_path>, mirroring check_undeclared_skills / check_undeclared_rules, and register it in the per-extension check loop alongside them.
+
+  1. RECURSE. Unlike skills/ and rules/, scripts/ is not flat. Match by FULL RELATIVE PATH under scripts/, never by basename -- provides.scripts entries legitimately carry a path prefix (core declares lint/lint-postflight-boundary.sh; literature declares tests/generate-test-fixtures.py). Rule M's own comment already documents this convention; follow it.
+  2. ALL FILE TYPES, NOT JUST *.sh. provides.scripts already contains .py and .sql entries (literature-decode-font-offset.py, literature-schema.sql) and a dotfile entry (.zotero-title-sim.py), so a *.sh-only or non-dotfile glob under-reports. Enumerate every regular file.
+  3. EXEMPT deprecated/. literature/scripts/deprecated/ holds README.md plus two retired zotero-index scripts, all correctly undeclared and correctly never deployed. Skip that subtree.
+  4. DO NOT exempt tests/. tests/ files are declared with their path prefix (both of literature's are), so tests/ is in scope and already passes as-is.
+
+MEASURED BASELINE (2026-07-27, by simulating the proposed check across every extension source tree): exactly THREE files would be reported, and all three are GENUINE latent defects rather than noise:
+    nix/scripts/nix-context.sh, nix/scripts/nix-preflight.sh, nvim/scripts/nvim-context.sh
+  Each is referenced from its manifest's TOP-LEVEL lifecycle hooks object (nix: {"preflight":"scripts/nix-preflight.sh","context_injection":"scripts/nix-context.sh"}; nvim: {"context_injection":"scripts/nvim-context.sh"}) but appears in neither provides.scripts nor provides.hooks. Both extensions ARE loaded in this repo, yet .claude/scripts/nix-context.sh, .claude/scripts/nix-preflight.sh and .claude/scripts/nvim-context.sh do not exist -- so those lifecycle hooks silently never fire. Same failure family as the motivating defect.
+
+  DECISION REQUIRED, do not paper over it: determine whether the loader has ANY path that deploys lifecycle-hook scripts named in a manifest's top-level hooks object. The evidence above says it does not. If so these are TRUE POSITIVES -- fix them by adding the three files to their extensions' provides.scripts, rather than adding a blanket hooks-object exclusion to silence the check. Add such an exclusion ONLY if a real deploy path is found. A check tuned until it reports zero is worth nothing.
+
+SEVERITY. Prefer the fail helper (used by Rules A and H) over advisory / orphan_report: an undeployable component is a correctness bug, not a style note. Resolve the three baseline findings in the same change so the doc-lint stays green afterward.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
 
 ### 927. Propagate the depth-first phase-closure and pre-edit verification contract to extension implementers
 - **Status**: [NOT STARTED]
