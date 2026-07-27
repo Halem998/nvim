@@ -22,7 +22,9 @@
     "context": [
       "project/neovim"
     ],
-    "scripts": [],
+    "scripts": [
+      "nvim-context.sh"
+    ],
     "hooks": []
   },
   "routing": {

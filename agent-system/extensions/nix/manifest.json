@@ -22,7 +22,10 @@
     "context": [
       "project/nix"
     ],
-    "scripts": [],
+    "scripts": [
+      "nix-preflight.sh",
+      "nix-context.sh"
+    ],
     "hooks": []
   },
   "routing": {

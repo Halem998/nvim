@@ -186,21 +186,21 @@ REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.
 
 ---
 
-### Phase 2: Resolve the three baseline findings [NOT STARTED]
+### Phase 2: Resolve the three baseline findings [COMPLETED]
 
 **Goal**: The three lifecycle-hook scripts are declared in their extensions' `provides.scripts`,
 and the source-store doc-lint returns to a clean exit 0.
 
 **Tasks**:
-- [ ] Set `provides.scripts` to `["nix-preflight.sh", "nix-context.sh"]` in
-      `agent-system/extensions/nix/manifest.json` (currently `[]`).
-- [ ] Set `provides.scripts` to `["nvim-context.sh"]` in
-      `agent-system/extensions/nvim/manifest.json` (currently `[]`).
-- [ ] Leave each manifest's top-level `hooks` object exactly as-is -- it is a separate mechanism
-      from `provides.scripts` and this change does not couple them.
-- [ ] Confirm both files remain valid JSON and that formatting matches the surrounding manifest
-      style (indentation, key order within `provides`).
-- [ ] Do NOT add any hooks-object exclusion to Rule Q.
+- [x] Set `provides.scripts` to `["nix-preflight.sh", "nix-context.sh"]` in
+      `agent-system/extensions/nix/manifest.json` (currently `[]`). *(completed)*
+- [x] Set `provides.scripts` to `["nvim-context.sh"]` in
+      `agent-system/extensions/nvim/manifest.json` (currently `[]`). *(completed)*
+- [x] Leave each manifest's top-level `hooks` object exactly as-is -- it is a separate mechanism
+      from `provides.scripts` and this change does not couple them. *(completed)*
+- [x] Confirm both files remain valid JSON and that formatting matches the surrounding manifest
+      style (indentation, key order within `provides`). *(completed)*
+- [x] Do NOT add any hooks-object exclusion to Rule Q. *(completed)*
 
 **Timing**: 20 minutes
 
