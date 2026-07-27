@@ -517,84 +517,131 @@ for stray in "${sweep_root}/.orchestrator-handoff.json" "${sweep_root}/specs/.or
   fi
 done
 
+have_outcome=false
+
 if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
-  if [ "$handoff_stale" = "true" ]; then
-    echo "[orchestrate] ERROR: Skill did not write a handoff for THIS dispatch (a stale one from an earlier cycle is present)."
+  # ── Outcome recovery: .return-meta.json fallback (see "MUST NOT (Context Flatness
+  # Constraint) — Recovery exception (return-meta fallback)") ─────────────────────
+  # Base-mode research, plan, and implement dispatches never write a handoff — by contractual
+  # design for research (Stage 3.6 "Scoping Decision"), and simply never implemented for
+  # base-mode plan/implement (see docs/architecture/handoff-schema.md's Handoff Writers table).
+  # A missing handoff from one of those writers is the EXPECTED outcome, not a defect. Before
+  # assuming a defect, consult the one shared recovery script every call site (this stage, hard
+  # mode's mirrored Stage 5, and multi-task Stage MT-4 step 1) uses, so the rule cannot drift
+  # into three separately-maintained copies.
+  recover_json=$(bash .claude/scripts/orchestrate-recover-outcome.sh "$TASK_DIR" "${dispatch_start_ts:-9999999999}" 2>/dev/null)
+  recover_exit=$?
+  if [ "$recover_exit" -eq 0 ]; then
+    recovered=$(echo "$recover_json" | jq -r '.recovered // false' 2>/dev/null) || recovered=false
   else
-    echo "[orchestrate] ERROR: Skill did not write orchestrator handoff."
+    recovered=false
   fi
-  echo "This may mean orchestrator_mode was not propagated correctly, or the handoff was written outside the task directory."
 
-  # Infra-failure discrimination — see context/patterns/infra-failure-discrimination.md.
-  # TWO corroborating signals are required to exempt this cycle from the work-cycle budget:
-  #   (a) dispatch_was_transport_error — narrated judgment about the Agent tool call itself,
-  #       set at the dispatch site in Stage 4;
-  #   (b) meta_touched — mechanical check of whether the subagent's own Stage 0
-  #       early-metadata write landed inside this dispatch window.
-  # Either signal alone DEFAULTS TO CHARGING a genuine cycle. The defaults below are chosen
-  # so a dispatch site that forgot to set its variables also falls back to charging.
-  # Do not weaken the AND below into an OR or a fallthrough.
-  meta_file="${TASK_DIR}/.return-meta.json"
-  window_start="${dispatch_start_ts:-9999999999}"
-  meta_mtime=$(stat -c %Y "$meta_file" 2>/dev/null || stat -f %m "$meta_file" 2>/dev/null || echo 0)
-  if [ "$meta_mtime" -ge "$window_start" ]; then
-    meta_touched=true
+  if [ "$recovered" = "true" ]; then
+    dispatch_status=$(echo "$recover_json" | jq -r '.status')
+    phases_completed=$(echo "$recover_json" | jq -r '.phases_completed // 0')
+    phases_total=$(echo "$recover_json" | jq -r '.phases_total // 0')
+    plan_markers_verified="absent"
+    handoff_artifact_path=$(echo "$recover_json" | jq -r '.artifact_path // ""')
+    handoff_artifact_type=$(echo "$recover_json" | jq -r '.artifact_type // ""')
+    handoff_artifact_summary=$(echo "$recover_json" | jq -r '.artifact_summary // ""')
+    echo "[orchestrate] RECOVERY: no handoff written for this dispatch — expected outcome for this phase's writer (base-mode research/plan/implement never write one). .return-meta.json (fresh, within this dispatch window) reports status=$dispatch_status; recovering the dispatch outcome from it." >&2
+    have_outcome=true
+    # Deliberate: charge exactly one work cycle, identical to the handoff-present success path
+    # below — real work happened and produced a status transition, so infra_exempt_cycle stays
+    # false (its reset default at the top of this stage). This is NOT the infra-exempt case,
+    # which exists because no work happened at all; exempting a recovered success would also
+    # remove the only bound on a loop that keeps recovering.
   else
-    meta_touched=false
-  fi
-
-  if [ "${dispatch_was_transport_error:-false}" = "true" ] && [ "$meta_touched" = "false" ]; then
-    # Corroborated infra failure: the Agent tool call failed at the transport/API layer AND
-    # the subagent left no footprint at all. Charge infra_failures, never cycle_count.
-    infra_failures=$((infra_failures + 1))
-    jq --argjson infra "$infra_failures" \
-       --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-      '.infra_failures = $infra | .last_updated = $updated' \
-      "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
-    echo "[orchestrate] INFRA FAILURE $infra_failures/$MAX_INFRA_FAILURES — Agent tool transport/API failure with no subagent footprint. Not charged against MAX_CYCLES." >&2
-    infra_exempt_cycle=true
-  else
-    echo "[orchestrate] Missing handoff charged as a genuine work cycle (transport_error=${dispatch_was_transport_error:-false}, meta_touched=$meta_touched)." >&2
-  fi
-
-  # ── Phase-marker recovery grep (sanctioned narrow exception) ─────────────────
-  # PRECONDITION: reachable ONLY inside this missing/stale-handoff branch. Never runs on the
-  # normal path where a fresh handoff was read — the context-flatness invariant is untouched
-  # there. See "MUST NOT (Context Flatness Constraint) — Recovery exception" for the contract.
-  # TOKEN BOUND: two `grep -c` calls returning one integer each — ≤10 tokens per recovery event,
-  # no matched line content.
-  # These counts are DIAGNOSTIC ONLY: with no usable handoff there is no dispatch_status to
-  # trust, so they never drive a status transition. They exist to give the operator and the
-  # next cycle visibility into real phase progress that a missing handoff structurally cannot
-  # report.
-  recovery_plan_path="${plan_path:-}"
-  if [ -z "$recovery_plan_path" ]; then
-    # $plan_path is set by the planned/implementing dispatch handler; a missing handoff after a
-    # research or plan dispatch leaves it unset. Re-derive with the same idiom that handler uses.
-    recovery_plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
-  fi
-  if [ -n "$recovery_plan_path" ] && [ -f "$recovery_plan_path" ]; then
-    # `x=$(grep -c ...) || x=0` — grep exits 1 on zero matches. Never `$(grep -c ... || echo 0)`,
-    # which emits two lines in that case.
-    recovered_total=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: ' "$recovery_plan_path" 2>/dev/null) || recovered_total=0
-    recovered_completed=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: .*\[COMPLETED\]' "$recovery_plan_path" 2>/dev/null) || recovered_completed=0
-    echo "[orchestrate] RECOVERY: handoff unusable — plan headings show ${recovered_completed}/${recovered_total} phases [COMPLETED] in ${recovery_plan_path}." >&2
-
-    # Stagnation signal: an identical recovered_completed across consecutive recovery events
-    # means dispatches are burning cycles without advancing the plan. Logged, never enforced —
-    # MAX_CYCLES remains the only bound on this branch.
-    prev_recovered=$(jq -r '.last_recovered_phases_completed // -1' "$loop_guard_file" 2>/dev/null) || prev_recovered=-1
-    if [ "$prev_recovered" = "$recovered_completed" ]; then
-      echo "[orchestrate] RECOVERY: no phase progress since the previous recovery event (still ${recovered_completed}/${recovered_total}). Dispatches are not advancing the plan." >&2
+    if [ "$handoff_stale" = "true" ]; then
+      echo "[orchestrate] ERROR: Skill did not write a handoff for THIS dispatch (a stale one from an earlier cycle is present)."
+    else
+      echo "[orchestrate] ERROR: Skill did not write orchestrator handoff."
     fi
-    jq --argjson rc "$recovered_completed" --argjson rt "$recovered_total" \
-       --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-      '.last_recovered_phases_completed = $rc
-       | .last_recovered_phases_total = $rt
-       | .last_updated = $updated' \
-      "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
-  else
-    echo "[orchestrate] RECOVERY: no plan file available — phase progress cannot be recovered this cycle." >&2
+    echo "This may mean orchestrator_mode was not propagated correctly, or the handoff was written outside the task directory."
+    recovered_reported_status=$(echo "${recover_json:-{}}" | jq -r '.status // "unknown"' 2>/dev/null) || recovered_reported_status="unknown"
+    if [ "$recovered_reported_status" != "unknown" ]; then
+      echo "[orchestrate] .return-meta.json reports status=$recovered_reported_status (not recovered as a successful outcome)." >&2
+    fi
+
+    # Infra-failure discrimination — see context/patterns/infra-failure-discrimination.md.
+    # TWO corroborating signals are required to exempt this cycle from the work-cycle budget:
+    #   (a) dispatch_was_transport_error — narrated judgment about the Agent tool call itself,
+    #       set at the dispatch site in Stage 4;
+    #   (b) meta_touched — mechanical check of whether the subagent's own Stage 0
+    #       early-metadata write landed inside this dispatch window.
+    # Either signal alone DEFAULTS TO CHARGING a genuine cycle. The defaults below are chosen
+    # so a dispatch site that forgot to set its variables also falls back to charging.
+    # Do not weaken the AND below into an OR or a fallthrough.
+    meta_file="${TASK_DIR}/.return-meta.json"
+    window_start="${dispatch_start_ts:-9999999999}"
+    meta_mtime=$(stat -c %Y "$meta_file" 2>/dev/null || stat -f %m "$meta_file" 2>/dev/null || echo 0)
+    if [ "$meta_mtime" -ge "$window_start" ]; then
+      meta_touched=true
+    else
+      meta_touched=false
+    fi
+
+    if [ "${dispatch_was_transport_error:-false}" = "true" ] && [ "$meta_touched" = "false" ]; then
+      # Corroborated infra failure: the Agent tool call failed at the transport/API layer AND
+      # the subagent left no footprint at all. Charge infra_failures, never cycle_count.
+      infra_failures=$((infra_failures + 1))
+      jq --argjson infra "$infra_failures" \
+         --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+        '.infra_failures = $infra | .last_updated = $updated' \
+        "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+      echo "[orchestrate] INFRA FAILURE $infra_failures/$MAX_INFRA_FAILURES — Agent tool transport/API failure with no subagent footprint. Not charged against MAX_CYCLES." >&2
+      infra_exempt_cycle=true
+    else
+      echo "[orchestrate] Missing handoff charged as a genuine work cycle (transport_error=${dispatch_was_transport_error:-false}, meta_touched=$meta_touched)." >&2
+    fi
+
+    # ── Phase-marker recovery grep (sanctioned narrow exception) ─────────────────
+    # PRECONDITION: reachable ONLY inside this missing/stale-handoff, non-recovered branch.
+    # Never runs on the normal path where a fresh handoff was read, and never runs when
+    # return-meta recovery already succeeded above — the context-flatness invariant is
+    # untouched in both those cases. See "MUST NOT (Context Flatness Constraint) — Recovery
+    # exception (phase-marker grep)" for the contract.
+    # TOKEN BOUND: two `grep -c` calls returning one integer each — ≤10 tokens per recovery
+    # event, no matched line content.
+    # These counts are DIAGNOSTIC ONLY: with no usable handoff there is no dispatch_status to
+    # trust, so they never drive a status transition. They exist to give the operator and the
+    # next cycle visibility into real phase progress that a missing handoff structurally cannot
+    # report.
+    recovery_plan_path="${plan_path:-}"
+    if [ -z "$recovery_plan_path" ]; then
+      # $plan_path is set by the planned/implementing dispatch handler; a missing handoff after a
+      # research or plan dispatch leaves it unset. Re-derive with the same idiom that handler uses.
+      recovery_plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+    fi
+    if [ -n "$recovery_plan_path" ] && [ -f "$recovery_plan_path" ]; then
+      # `x=$(grep -c ...) || x=0` — grep exits 1 on zero matches. Never `$(grep -c ... || echo 0)`,
+      # which emits two lines in that case.
+      recovered_total=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: ' "$recovery_plan_path" 2>/dev/null) || recovered_total=0
+      recovered_completed=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: .*\[COMPLETED\]' "$recovery_plan_path" 2>/dev/null) || recovered_completed=0
+      echo "[orchestrate] RECOVERY: handoff unusable — plan headings show ${recovered_completed}/${recovered_total} phases [COMPLETED] in ${recovery_plan_path}." >&2
+
+      # Stagnation signal: an identical recovered_completed across consecutive recovery events
+      # means dispatches are burning cycles without advancing the plan. Logged, never enforced —
+      # MAX_CYCLES remains the only bound on this branch.
+      prev_recovered=$(jq -r '.last_recovered_phases_completed // -1' "$loop_guard_file" 2>/dev/null) || prev_recovered=-1
+      if [ "$prev_recovered" = "$recovered_completed" ]; then
+        echo "[orchestrate] RECOVERY: no phase progress since the previous recovery event (still ${recovered_completed}/${recovered_total}). Dispatches are not advancing the plan." >&2
+      fi
+      jq --argjson rc "$recovered_completed" --argjson rt "$recovered_total" \
+         --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+        '.last_recovered_phases_completed = $rc
+         | .last_recovered_phases_total = $rt
+         | .last_updated = $updated' \
+        "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
+    elif [ -d "${TASK_DIR}/plans" ]; then
+      echo "[orchestrate] RECOVERY: no plan file available — phase progress cannot be recovered this cycle." >&2
+    else
+      # Softened: no plans/ directory is the normal case after a research-phase dispatch, not a
+      # surprise. Keep the louder message above for the case a plans/ directory exists but yields
+      # no readable plan.
+      echo "[orchestrate] RECOVERY: no plans/ directory yet (normal after a research-phase dispatch) — phase progress recovery does not apply this cycle." >&2
+    fi
   fi
 else
   handoff=$(cat "$handoff_file")
@@ -620,6 +667,19 @@ else
     fi
   fi
 
+  # Artifact linking fields, populated here from the handoff — the shared tail below (reached
+  # via have_outcome) consumes them identically whether they came from here or from recovery.
+  handoff_artifact_path=$(echo "$handoff" | jq -r '.artifacts[0].path // ""')
+  handoff_artifact_type=$(echo "$handoff" | jq -r '.artifacts[0].type // ""')
+  handoff_artifact_summary=$(echo "$handoff" | jq -r '.artifacts[0].summary // ""')
+  have_outcome=true
+fi
+
+# ── Shared postflight tail ────────────────────────────────────────────────────
+# Reached from EITHER the handoff-present branch above OR a successful return-meta recovery —
+# never duplicated between them. A duplicated `case "$dispatch_status"` is exactly the drift
+# this fallback mechanism exists to prevent (see Phase 2 of the plan that introduced it).
+if [ "$have_outcome" = "true" ]; then
   # Postflight status update: trigger state.json + TODO.md Task Order regeneration
   case "$dispatch_status" in
     researched)
@@ -630,11 +690,13 @@ else
       ;;
     implemented)
       # Completion-claim verification gate: a dispatch reporting "implemented" must not flip the
-      # whole task to `completed` without corroborating evidence in the handoff. The three-case
-      # fail-closed logic lives in ONE place — skill_gate_completion_claim in skill-base.sh — so
-      # base mode, hard mode, and multi-task mode cannot drift apart again. See that function's
-      # header for the full case table (phase accounting present-and-complete always allows,
-      # present-and-incomplete always refuses, absent falls back to plan_markers_verified).
+      # whole task to `completed` without corroborating evidence. The three-case fail-closed
+      # logic lives in ONE place — skill_gate_completion_claim in skill-base.sh — so base mode,
+      # hard mode, and multi-task mode cannot drift apart again. See that function's header for
+      # the full case table (phase accounting present-and-complete always allows,
+      # present-and-incomplete always refuses, absent falls back to plan_markers_verified — the
+      # recovered path above always sets plan_markers_verified="absent", so an absent phase
+      # count on a recovered "implemented" claim is conservatively refused here, not allowed).
       if skill_gate_completion_claim "$task_number" "$phases_completed" "$phases_total" \
            "$plan_markers_verified" "[orchestrate]"; then
         # `warn`, deliberately NOT `refuse`: the script-side backstop reads the plan file's own
@@ -652,10 +714,8 @@ else
       ;;
   esac
 
-  # Artifact linking: extract artifact path/type from handoff and link in TODO.md + state.json
-  handoff_artifact_path=$(echo "$handoff" | jq -r '.artifacts[0].path // ""')
-  handoff_artifact_type=$(echo "$handoff" | jq -r '.artifacts[0].type // ""')
-  handoff_artifact_summary=$(echo "$handoff" | jq -r '.artifacts[0].summary // ""')
+  # Artifact linking: extract artifact path/type (from the handoff or recovered return-meta) and
+  # link in TODO.md + state.json.
   if [ -n "$handoff_artifact_path" ] && [ "$handoff_artifact_path" != "null" ]; then
     case "$handoff_artifact_type" in
       report)

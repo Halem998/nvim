@@ -118,6 +118,7 @@
       "migrate-directory-padding.sh",
       "orchestrate-batch-admit.sh",
       "orchestrate-dry-run-report.sh",
+      "orchestrate-recover-outcome.sh",
       "orchestrate-triage-classify.sh",
       "orphan-detection.sh",
       "parse-command-args.sh",
