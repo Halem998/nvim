@@ -208,13 +208,13 @@ alongside `completed`/`abandoned`, and excludes them from ROADMAP.md matching.
 
 ---
 
-### Phase 3: Add the subtasks-defer guard to `commands/todo.md` [NOT STARTED]
+### Phase 3: Add the subtasks-defer guard to `commands/todo.md` [COMPLETED]
 
 **Goal**: An expanded parent is not archived while any of its subtasks is still active and
 non-terminal, and the deferral is honored by every downstream step in the same run.
 
 **Tasks**:
-- [ ] In Step 3 "Prepare Archive List" (lines 125-132), after the archivable tasks are
+- [x] In Step 3 "Prepare Archive List" (lines 125-132), after the archivable tasks are
       collected, add a guard pass that partitions them into `archivable_tasks[]` (proceeds) and
       `deferred_expanded[]` (held back). Guard semantics:
       - Non-`expanded` tasks pass through untouched.
@@ -227,36 +227,36 @@ non-terminal, and the deferral is honored by every downstream step in the same r
       - Any other status blocks: the parent goes to `deferred_expanded[]` with its blocking count.
       - Use a `case` statement for the status classification rather than `!=` comparisons, per
         the jq/shell escaping guidance in the Notes section of this same file.
-- [ ] Record `deferred_expanded_nums[]` (bare project numbers) for use by the steps below.
-- [ ] **Amend the Step 5B `del()` filter** so a deferred parent is not removed from
+      *(completed)*
+- [x] Record `deferred_expanded_nums[]` (bare project numbers) for use by the steps below.
+      *(completed)*
+- [x] **Amend the Step 5B `del()` filter** so a deferred parent is not removed from
       `active_projects` even though its status matches. The blanket status filter alone is wrong
       here — without this, the guard defers the archive-list entry but the parent is still
       deleted from state.json, silently losing the task. Pass the deferred numbers in and subtract
-      them, using `index(...) == null` (never `!=`):
-
-      ```bash
-      deferred_json=$(printf '%s\n' "${deferred_expanded_nums[@]:-}" | jq -R 'select(length > 0) | tonumber' | jq -s '.')
-      jq --argjson deferred "$deferred_json" '
-        del(.active_projects[] | select(
-          (.status == "completed" or .status == "abandoned" or .status == "expanded")
-          and (($deferred | index(.project_number)) == null)
-        ))' specs/state.json > specs/state.json.tmp && mv specs/state.json.tmp specs/state.json
-      ```
-
-      `deferred_json` must default to `[]` when nothing was deferred.
-- [ ] Confirm Step 5A (archive/state.json insertion) and Step 5D (directory move) both iterate
+      them, using `index(...) == null` (never `!=`).
+      *(completed: deviation — the plan's literal snippet `($deferred | index(.project_number))`
+      does not parse the way intended. After the `$deferred |` pipe, `.` inside `index()`'s
+      argument rebinds to `$deferred` itself, not to the array element being tested, so jq raises
+      "Cannot index array with string \"project_number\"". Verified this failure directly against
+      a representative state.json fixture, then implemented and re-verified the corrected form
+      `. as $item | ($deferred | index($item.project_number))`, which binds the element to `$item`
+      before the pipe changes `.`'s context. `deferred_json` defaults to `[]` when nothing was
+      deferred, confirmed by test.)*
+- [x] Confirm Step 5A (archive/state.json insertion) and Step 5D (directory move) both iterate
       the guard-filtered archive list, not a freshly-recomputed status match. If either
       re-derives its own list from status, add an explicit note that it must consume the
-      guard-filtered list.
-- [ ] Step 4 dry-run output: add a `Deferred (expanded, subtasks still active):` block listing
+      guard-filtered list. *(completed)*
+- [x] Step 4 dry-run output: add a `Deferred (expanded, subtasks still active):` block listing
       each held-back parent and its blocking subtask count, so the deferral is visible before
-      any mutation.
-- [ ] Step 7 output: report the deferred count.
-- [ ] Notes > "Task Archival": document the guard in one short paragraph — expanded parents wait
+      any mutation. *(completed)*
+- [x] Step 7 output: report the deferred count. *(completed)*
+- [x] Notes > "Task Archival": document the guard in one short paragraph — expanded parents wait
       until their subtasks go terminal, so a subtask still being worked can read its parent's
       artifacts in place. State explicitly that this guard addresses only the parent/child case
       and that general cross-task artifact citations remain a known, pre-existing limitation of
       archival (plain `mv`, plus vault renumbering). Durable anchors only — no task numbers.
+      *(completed)*
 
 **Timing**: 0.5 hours
 

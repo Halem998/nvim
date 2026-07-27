@@ -126,12 +126,80 @@ Store count for later reporting.
 
 ### 3. Prepare Archive List
 
-For each archivable task, collect:
+For each archivable task, collect into `candidate_tasks[]`:
 - project_number
 - project_name (slug)
 - status
 - completion/abandonment date
 - artifact paths
+
+**Subtasks-defer guard**: partition `candidate_tasks[]` into `archivable_tasks[]` (proceeds) and
+`deferred_expanded[]` (held back for a later `/todo` run). An expanded parent is deferred while
+any task listed in its `subtasks[]` is still present in `active_projects` with a non-terminal
+status — this lets a subtask still being worked read its parent's artifacts in place. Use a
+`case` statement for status classification, per the jq/shell escaping guidance in the Notes
+section (never `!=`):
+
+```bash
+archivable_tasks=()
+deferred_expanded=()
+deferred_expanded_nums=()
+
+for task in "${candidate_tasks[@]}"; do
+  status=$(echo "$task" | jq -r '.status')
+  project_num=$(echo "$task" | jq -r '.project_number')
+
+  case "$status" in
+    expanded)
+      # A missing, null, or empty subtasks array means nothing is blocking - archive normally.
+      subtasks=$(echo "$task" | jq -c '.subtasks // []')
+      subtask_count=$(echo "$subtasks" | jq 'length')
+      if [ "$subtask_count" -eq 0 ]; then
+        archivable_tasks+=("$task")
+        continue
+      fi
+
+      blocking_count=0
+      for subtask_num in $(echo "$subtasks" | jq -r '.[]'); do
+        subtask_status=$(jq -r --argjson n "$subtask_num" \
+          '.active_projects[] | select(.project_number == $n) | .status' \
+          specs/state.json)
+
+        # An empty result means the subtask is already archived - not blocking.
+        if [ -z "$subtask_status" ]; then
+          continue
+        fi
+
+        case "$subtask_status" in
+          completed|abandoned|expanded)
+            # Terminal - not blocking.
+            ;;
+          *)
+            # Any other status blocks.
+            ((blocking_count++))
+            ;;
+        esac
+      done
+
+      if [ "$blocking_count" -gt 0 ]; then
+        deferred_expanded+=("$task")
+        deferred_expanded_nums+=("$project_num")
+      else
+        archivable_tasks+=("$task")
+      fi
+      ;;
+    *)
+      # Non-expanded tasks pass through untouched.
+      archivable_tasks+=("$task")
+      ;;
+  esac
+done
+```
+
+`deferred_expanded_nums[]` (bare project numbers) is consumed by Step 5B's `del()` filter below,
+so a deferred parent's archive-list entry is held back WITHOUT the parent being deleted from
+`active_projects`. Step 5A (archive/state.json insertion) and Step 5D (directory move) both
+iterate `archivable_tasks[]` — the guard-filtered list — never a freshly-recomputed status match.
 
 ### 3.5. Scan Roadmap for Task References (Structured Matching)
 
@@ -280,6 +348,9 @@ Abandoned:
 Expanded:
 - #{N10}: {title} (expanded {date})
 
+Deferred (expanded, subtasks still active): {N}
+- #{N11}: {title} ({blocking_count} subtask(s) still active)
+
 Orphaned directories in specs/ (will be moved to archive/): {N}
 - {N4}_{SLUG4}/
 - {N5}_{SLUG5}/
@@ -322,7 +393,8 @@ Total misplaced: {N}
 Run without --dry-run to archive.
 ```
 
-If no roadmap matches were found (from Step 3.5), omit the "Roadmap updates" section.
+If no roadmap matches were found (from Step 3.5), omit the "Roadmap updates" section. If no
+expanded parents were deferred (`deferred_expanded[]` is empty), omit the "Deferred" section.
 
 Exit here if dry run.
 
@@ -399,19 +471,34 @@ Read or create specs/archive/state.json:
 }
 ```
 
-Move each task from state.json `active_projects` to archive/state.json `completed_projects` (for
-completed AND expanded tasks) or `archived_projects` (for abandoned tasks). Expanded tasks join
-`completed_projects` — there is no third array.
+Move each task in `archivable_tasks[]` (the guard-filtered list from Step 3 — never a
+freshly-recomputed status match, so deferred expanded parents are excluded) from state.json
+`active_projects` to archive/state.json `completed_projects` (for completed AND expanded tasks)
+or `archived_projects` (for abandoned tasks). Expanded tasks join `completed_projects` — there is
+no third array.
 
 **B. Update state.json**
 
-Remove archived tasks from active_projects array using `del()` pattern (avoids Issue #1132 with `!=` operator):
+Remove archived tasks from active_projects array using `del()` pattern (avoids Issue #1132 with
+`!=` operator). **This filter must also subtract any deferred expanded parents**
+(`deferred_expanded_nums[]` from Step 3's subtasks-defer guard) — the blanket status match alone
+is wrong here: without the subtraction, a parent the guard deferred is still deleted from
+`active_projects` even though its archive-list entry was held back, silently losing the task.
+Use `index(...) == null` (never `!=`) to express the subtraction:
 ```bash
 # Use del() instead of map(select(.status != "completed" and .status != "abandoned" and .status != "expanded"))
 # This pattern is Issue #1132-safe
-jq 'del(.active_projects[] | select(.status == "completed" or .status == "abandoned" or .status == "expanded"))' \
-  specs/state.json > specs/state.json.tmp && mv specs/state.json.tmp specs/state.json
+# deferred_json must default to [] when nothing was deferred.
+deferred_json=$(printf '%s\n' "${deferred_expanded_nums[@]:-}" | jq -R 'select(length > 0) | tonumber' | jq -s '.')
+jq --argjson deferred "$deferred_json" '
+  del(.active_projects[] | select(
+    (.status == "completed" or .status == "abandoned" or .status == "expanded")
+    and (. as $item | ($deferred | index($item.project_number)) == null)
+  ))' specs/state.json > specs/state.json.tmp && mv specs/state.json.tmp specs/state.json
 ```
+(`. as $item | ...` is required here: without it, `index(.project_number)` evaluates `.` against
+`$deferred` itself after the pipe — not against the array element being tested — and jq errors
+with "Cannot index array with string". Verified against a representative state.json.)
 
 **C. Update TODO.md**
 
@@ -421,7 +508,8 @@ Remove archived task entries from main sections.
 
 **CRITICAL**: This step MUST be executed - do not skip it.
 
-For each archived task (completed, abandoned, or expanded):
+For each task in `archivable_tasks[]` (completed, abandoned, or expanded — deferred expanded
+parents excluded by the same guard-filtered list as Step 5A):
 ```bash
 # Variables from task data
 project_number={N}
@@ -848,6 +936,9 @@ Archived {N} tasks
 Tasks: {C} completed, {A} abandoned, {E} expanded
 Directories: {D} moved
 
+{If any expanded parents were deferred:}
+Deferred: {F} expanded parent(s) held back (subtasks still active)
+
 {If orphans or misplaced processed:}
 Cleanup: {O} orphans tracked, {P} misplaced moved
 
@@ -870,6 +961,7 @@ Next Steps:
 |---------|-----------|
 | Tasks | Always (with counts) |
 | Directories | directories_moved > 0 |
+| Deferred | deferred_expanded[] is non-empty |
 | Cleanup | orphans_tracked > 0 OR misplaced_moved > 0 |
 | Roadmap | roadmap items updated |
 
@@ -885,6 +977,13 @@ If no roadmap items were updated (no matches found in Step 3.5):
   command may pick a task back up from them.
 - `completed` and `expanded` tasks route to archive/state.json's `completed_projects` array;
   `abandoned` tasks route to `archived_projects`. There is no third array for `expanded`.
+- **Subtasks-defer guard**: an expanded parent waits to be archived until every task in its
+  `subtasks[]` reaches a terminal status, so a subtask still being worked can read its parent's
+  artifacts in place. A missing/empty `subtasks[]`, or a subtask no longer in `active_projects`
+  (already archived), is never treated as blocking. This guard addresses only the parent/child
+  case — general cross-task artifact citations remain a known, pre-existing limitation of
+  archival (a plain directory `mv`, plus vault renumbering, can still break a citation from one
+  archived task's artifacts into another's).
 - Artifacts (plans, reports, summaries) are preserved in archive/{NNN}_{SLUG}/
 - Tasks can be recovered with `/task --recover N`
 - Archive is append-only (for audit trail)
