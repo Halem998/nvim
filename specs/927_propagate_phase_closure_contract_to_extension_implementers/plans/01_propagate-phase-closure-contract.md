@@ -415,28 +415,38 @@ not a prose referrer-enumeration sentence. Evaluated and recorded as needing no 
 
 ---
 
-### Phase 6: Consistency sweep and anti-copy-paste audit [NOT STARTED]
+### Phase 6: Consistency sweep and anti-copy-paste audit [COMPLETED]
 
 **Goal**: Confirm the propagation is uniform, pointer-only, source-store-only, and free of the
 duplicate-section and prose-copy failure modes this task exists to avoid.
 
 **Tasks**:
-- [ ] Assert bullet coverage: for every agent file classified phase-loop-present in Phase 1,
+- [x] Assert bullet coverage: for every agent file classified phase-loop-present in Phase 1,
       `grep -c 'contracts/phase-closure.md'` and `grep -c 'contracts/pre-edit-gate.md'` each return 1.
-- [ ] Assert exclusions held: the two excluded agent files return 0 for both greps, and the
+      *(PASS: all 13 phase-loop-present files return 1/1)*
+- [x] Assert exclusions held: the two excluded agent files return 0 for both greps, and the
       `#### Reasoned Exclusions` table in this plan is fully populated with evidence.
-- [ ] Assert no duplicate sections: `grep -c '^## Context References'` returns exactly 1 for every
-      touched agent file.
-- [ ] Assert pointer-only propagation (the core anti-copy-paste check): grep the touched files for
+      *(PASS: both excluded files return 0/0; table populated)*
+- [x] Assert no duplicate sections: `grep -c '^## Context References'` returns exactly 1 for every
+      touched agent file. *(PASS: all 14 touched files return 1)*
+- [x] Assert pointer-only propagation (the core anti-copy-paste check): grep the touched files for
       distinctive phrases from the contracts' bodies (`close-before-open`, `cheapest-closure-first`,
       `stop-at-a-closed-boundary`, `Probe before edit`, `A planning-time list is a hypothesis`). Any
       hit outside `core/context/contracts/` and outside this plan indicates prose was copied and must
-      be reverted to a bullet.
-- [ ] Assert source-store discipline: `git status --short` shows zero modifications under `.claude/`.
-- [ ] Assert no task-number citations: grep the full diff for `task [0-9]`, `tasks [0-9]` outside
-      `specs/**`.
-- [ ] Assert diff shape: total added lines across Phases 2-4 equals two per touched file; no file shows
-      removed lines.
+      be reverted to a bullet. *(PASS with one pre-existing, out-of-scope hit noted:
+      `core/index-entries.json` contains "cheapest-closure-first" in a `summary` metadata field
+      registered by a prior task (925) when the contract was first authored — this file was not
+      touched by this task's Phase 2-5 edits (confirmed via `git diff --stat` showing no changes)
+      and is not one of the 14 propagation-target consumer files; it is index metadata describing
+      the contract, not a consumer-file prose copy, so it is out of this audit's scope. No hits
+      found in any of the 14 touched agent/skill files.)*
+- [x] Assert source-store discipline: `git status --short` shows zero modifications under `.claude/`.
+      *(PASS: no `.claude/` entries in git status)*
+- [x] Assert no task-number citations: grep the full diff for `task [0-9]`, `tasks [0-9]` outside
+      `specs/**`. *(PASS: no matches in `agent-system/` diff across all phase commits)*
+- [x] Assert diff shape: total added lines across Phases 2-4 equals two per touched file; no file shows
+      removed lines. *(PASS: 14 files x 2 lines = 28 insertions, 0 deletions, confirmed via
+      `git diff --stat` across the Phase 2-4 commit range)*
 
 **Timing**: 0.25 hours
 
@@ -460,17 +470,20 @@ and audit against that, not against these numbers.
 
 ## Testing & Validation
 
-- [ ] Every phase-loop-present non-core extension implementer agent carries exactly one
+- [x] Every phase-loop-present non-core extension implementer agent carries exactly one
       `phase-closure.md` bullet and exactly one `pre-edit-gate.md` bullet.
-- [ ] Every touched agent file has exactly one `## Context References` heading (no duplicate section
+- [x] Every touched agent file has exactly one `## Context References` heading (no duplicate section
       introduced alongside the sibling effort's).
-- [ ] The six files overlapping the completed sibling effort retain their pre-existing bullets
-      unchanged; the diff on those files shows additions only.
-- [ ] No contract prose appears outside `agent-system/extensions/core/context/contracts/`.
-- [ ] `git status --short` shows zero modified paths under `.claude/`.
-- [ ] The two exclusions are documented in this plan's `#### Reasoned Exclusions` table with evidence,
+- [x] The six files overlapping the completed sibling effort retain their pre-existing bullets
+      unchanged; the diff on those files shows additions only (confirmed: every touched file's diff
+      is additions-only, 2 lines each, 0 removed).
+- [x] No contract prose appears outside `agent-system/extensions/core/context/contracts/` (in any of
+      the 14 propagation-target files; the one incidental `index-entries.json` metadata hit predates
+      this task and is out of scope, see Phase 6's audit note).
+- [x] `git status --short` shows zero modified paths under `.claude/`.
+- [x] The two exclusions are documented in this plan's `#### Reasoned Exclusions` table with evidence,
       and neither excluded file was modified.
-- [ ] No file outside `specs/**` gained a task-number citation.
+- [x] No file outside `specs/**` gained a task-number citation.
 
 ## Artifacts & Outputs
 
