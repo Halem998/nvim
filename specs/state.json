@@ -824,7 +824,8 @@
       ],
       "created": "2026-07-26T23:43:25Z",
       "last_updated": "2026-07-27T02:22:13Z",
-      "session_id": "sess_1785116996_862366_910"
+      "session_id": "sess_1785116996_862366_910",
+      "completion_summary": "Fixed roadmap-integration.sh silently reporting success while annotating nothing: table-row matches are now located via a plumbed line-index/raw_line/status_index reference and rewritten in place preserving pipe-table structure; the script always emits a machine-readable roadmap-structure marker plus loud unparseable/no-op banners and additive JSON fields (roadmap_structure, warnings, high_confidence_matches, silent_noop); and /review (the sole consumer) was extended, as a declared file_scope expansion, to extract, surface in the transcript and report, and disambiguate the new signal in its commit message."
     },
     {
       "project_number": 911,
@@ -859,7 +860,8 @@
       ],
       "created": "2026-07-26T23:43:25Z",
       "last_updated": "2026-07-27T02:22:16Z",
-      "session_id": "sess_1785116996_862366_911"
+      "session_id": "sess_1785116996_862366_911",
+      "completion_summary": "Widened /todo's archival scan/routing/roadmap-exclusion at both commands/todo.md and skills/skill-todo/SKILL.md to include the expanded terminal status alongside completed/abandoned, added a subtasks-defer guard so an expanded parent waits for its subtasks to reach terminal status, corrected a jq index() binding bug in the Step 5B del() filter (verified against a representative state.json fixture), and split merge-sources/claudemd.md's conflated terminal/exception-state bullet into two correctly-labelled bullets."
     },
     {
       "project_number": 912,
@@ -899,7 +901,8 @@
       ],
       "created": "2026-07-26T23:43:25Z",
       "last_updated": "2026-07-27T02:22:20Z",
-      "session_id": "sess_1785116996_862366_912"
+      "session_id": "sess_1785116996_862366_912",
+      "completion_summary": "Repaired the roadmap_items producer/consumer contract across all five core/lean/web implementer paths: fixed the dead-code roadmap_items drop in skill-lean-implementation-hard, made skill-implementer-hard's Stage 7a precise and self-contained, and closed the confirmed root cause by adding a completion_data pointer instruction to the three implementation agents (general-implementation-hard, lean-implementation, lean-implementation-hard) that never generated it, under a declared file_scope expansion."
     }
   ],
   "completed_projects": [],
