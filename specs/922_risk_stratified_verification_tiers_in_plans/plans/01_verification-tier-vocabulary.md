@@ -273,30 +273,30 @@ three new per-phase fields.
 
 ---
 
-### Phase 2: Atomic-batch carve-out in git-workflow.md [NOT STARTED]
+### Phase 2: Atomic-batch carve-out in git-workflow.md [COMPLETED]
 
 **Goal**: Make an atomic multi-file refactor expressible by landing the carve-out inside the
 `### Commit-Per-Green-Substep Mandate` section itself, so the mandate cannot be read as demanding a
 green commit at each intra-batch file edit.
 
 **Tasks**:
-- [ ] In `rules/git-workflow.md`, inside `### Commit-Per-Green-Substep Mandate`, add a new bullet
+- [x] In `rules/git-workflow.md`, inside `### Commit-Per-Green-Substep Mandate`, add a new bullet
       (placed after the `**"Green" means verified, not merely attempted"**` bullet and before
       `**Staging reuses the existing `implement` scope verbatim**`) titled along the lines of
       `**Atomic-batch objectives**`.
-- [ ] Bullet content must establish: a plan may declare a phase `Commit Mode: atomic-batch`; in
+- [x] Bullet content must establish: a plan may declare a phase `Commit Mode: atomic-batch`; in
       that case the sub-step IS the whole batch — one `progress-file.md` objective spanning the
       declared file set; intermediate per-file states are expected red and MUST NOT be committed;
       the objective's green criterion is the batch-level verification at the phase's declared tier;
       one commit covers the batch.
-- [ ] State explicitly that this is consistent with, not an exception to, the existing definition
+- [x] State explicitly that this is consistent with, not an exception to, the existing definition
       of a sub-step as "a `progress-file.md` objective transitioning to `status: \"done\"`" — the
       definition was already unit-agnostic; this bullet makes the multi-file case explicit.
-- [ ] State the anti-abuse guard: the batch must be declared in the plan in advance; an implementer
+- [x] State the anti-abuse guard: the batch must be declared in the plan in advance; an implementer
       may NOT retroactively widen a batch to avoid committing green work.
-- [ ] Cross-reference `plan-format.md`'s `## Verification Tiers` section as the home of the
+- [x] Cross-reference `plan-format.md`'s `## Verification Tiers` section as the home of the
       `Commit Mode` field definition.
-- [ ] Confirm the existing "Do Not Commit / Partial or incomplete work" bullet does not contradict
+- [x] Confirm the existing "Do Not Commit / Partial or incomplete work" bullet does not contradict
       the carve-out; if it reads as forbidding a declared atomic batch, add a one-clause pointer to
       the carve-out rather than rewriting the bullet.
 

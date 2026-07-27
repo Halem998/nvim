@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Atomic-batch carve-out in git-workflow.md",
+  "started_at": "2026-07-27T00:15:00Z",
+  "last_updated": "2026-07-27T00:25:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add Atomic-batch objectives bullet inside Commit-Per-Green-Substep Mandate, and a pointer clause on the Do Not Commit bullet",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

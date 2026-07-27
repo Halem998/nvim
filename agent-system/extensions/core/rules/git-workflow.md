@@ -46,7 +46,10 @@ task {N}: {action} {description}
 
 ### Do Not Commit
 - Partial/incomplete work — half-applied, unverified edits (a file half-written, an edit made but
-  not yet checked to exist/be non-empty, a step abandoned mid-way)
+  not yet checked to exist/be non-empty, a step abandoned mid-way). This does not forbid a
+  declared `Commit Mode: atomic-batch` phase's expected-red intermediate per-file states — see
+  the "Atomic-batch objectives" bullet under Commit-Per-Green-Substep Mandate below for that
+  carve-out; it applies only to an explicitly pre-declared batch, never an ad hoc one.
 - Failed operations (rollback instead)
 
 ### Commit-Per-Green-Substep Mandate
@@ -69,6 +72,17 @@ this codebase already relies on for crash recovery, and has been removed.
   distinction. "Some tool calls happened" is NOT green; an unverified edit is still
   partial/incomplete work per the bullet above and stays uncommitted until it can be confirmed
   green.
+- **Atomic-batch objectives**: a plan may declare a phase `Commit Mode: atomic-batch` (see
+  `context/formats/plan-format.md`'s `## Verification Tiers` section, the authoritative home of
+  the `Commit Mode` field definition). When it does, the sub-step IS the whole batch: one
+  `progress-file.md` objective spans the phase's declared file set, and intermediate per-file
+  states are expected to be red and MUST NOT be committed. This is consistent with, not an
+  exception to, the sub-step granularity definition above — "a `progress-file.md` objective
+  transitioning to `status: "done"`" was already unit-agnostic; this bullet makes the
+  multi-file case explicit rather than redefining it. The objective's own green criterion is the
+  batch-level verification taken at the phase's declared tier; one commit then covers the whole
+  batch. **Anti-abuse guard**: the batch must be declared in the plan in advance — an implementer
+  may NOT retroactively widen a batch to avoid committing already-green work.
 - **Staging reuses the existing `implement` scope verbatim** — task dir + `plan_path` + the
   agent's self-reported `modified_files` (`.claude/context/standards/git-staging-scope.md`) and
   `checkpoint-before-overflow.md`'s green-commit branch. This is NOT a second staging codepath:
