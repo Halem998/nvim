@@ -1,5 +1,5 @@
 ---
-next_project_number: 918
+next_project_number: 921
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 918
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,908,914,915,917 | -- | agent-system |
+| 1 | 873,885,908,914,915,917,918,919,920 | -- | agent-system |
 | 2 | 887 | 873,885 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -26,8 +26,113 @@ next_project_number: 918
 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 917 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+918 [NOT STARTED] — resolve_task_dir() in task-lock.sh hard-fails for a task whose di
+919 [NOT STARTED] — Fifteen agent definitions instruct writing .return-meta.json but 
+920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
 
 ## Tasks
+
+### 920. Validate dispatch_status against the schema enum so an off-schema value fails loudly instead of silently no-opping
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: An off-schema dispatch_status read from .orchestrator-handoff.json silently no-ops the postflight, stranding a task that in fact completed successfully.
+
+SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+MECHANISM (anchor on symbols and distinctive strings, NOT line numbers -- files in this tree were observed being edited concurrently during investigation; re-locate at implement time). In skill-orchestrate/SKILL.md's Stage 5, the handoff-present branch assigns `dispatch_status=$(echo "$handoff" | jq -r '.status')` with NO validation, then sets have_outcome=true unconditionally. The shared postflight tail's `case "$dispatch_status"` matches only researched, planned, and implemented. Any other value falls to the `*)` branch, which prints a BENIGN-SOUNDING line ('Dispatch status ... -- no postflight update needed') and performs no postflight update. The task stays in its in-flight status (researching/planning/implementing) even though the dispatch fully succeeded, and nothing warns.
+
+SCHEMA: docs/architecture/handoff-schema.md defines the status enum as researched | planned | implemented | partial | failed | blocked. So partial, failed, and blocked are all IN the enum and all UNHANDLED at every site.
+
+THREE SITES, one coherent change (deliberately NOT split into three tasks -- splitting invites exactly the drift the existing in-file comment about a duplicated `case "$dispatch_status"` already warns against):
+  1. skill-orchestrate/SKILL.md -- Stage 5 handoff read and the shared postflight tail `*)` branch
+  2. skill-orchestrate-hard/SKILL.md -- the mirrored Stage 5 read and `*)` branch
+  3. skill-orchestrate/SKILL.md -- multi-task Stage MT-4 step 3, which has the same shape via its 'Other -> no postflight update' clause
+
+FIX DIRECTION: validate dispatch_status against the schema enum and treat an unrecognized value as a LOUD failure -- the same visible-banner family as the existing [UNVERIFIED ...] and [SPARSE COVERAGE ...] banners -- rather than a benign log line. Give partial, failed, and blocked explicit handling at all three sites. Consider inferring the intended phase from the handoff's artifact type as a recovery path. Guiding principle: a dispatch that succeeded must NEVER be silently indistinguishable from one that produced nothing.
+
+BINDING DESIGN CONSTRAINT: the validator MUST draw its allowed status set from the normative table in context/formats/return-metadata-file.md rather than restating the enum inline in SKILL.md. That table already declares itself normative for .return-meta.json, specs/.return-meta-multi.json, and .orchestrator-handoff.json's status field. Restating the enum inline would add a FOURTH drift site for the very vocabulary this work exists to unify.
+
+REPRODUCTION PATH (record as reproduction, NOT as root cause): the observed silent no-op required a base-mode research dispatch to have written a handoff at all -- which happened because the orchestrating session hand-wrote handoff instructions into the dispatch prompt, causing lean-research-agent to write a handoff it was never supposed to write, carrying "status": "success". An agent writing a handoff it was never supposed to write is a real reachable scenario this validation should catch.
+
+SCOPE NOTE -- the recovery path is ALREADY correctly guarded and needs no change: dispatch_status is assigned from recover_json only inside the `if [ "$recovered" = "true" ]` branch, and orchestrate-recover-outcome.sh sets recovered=true only for researched|planned|implemented, emitting STATUS_NOT_SUCCESS with exit 1 otherwise. A recovered dispatch_status is therefore always in-enum and can never reach `*)`. Do not 'fix' the recovery path; the defect is confined to the handoff-present path.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 919. Reference the normative status vocabulary in the 15 agents that write .return-meta.json without it
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Fifteen agent definitions instruct writing .return-meta.json but never reference the normative status vocabulary, so they improvise off-schema status values that fail downstream.
+
+SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/ and the sibling extension source directories under agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+OBSERVED LIVE. During an autonomous orchestration run, lean-research-agent emitted "status": "success" -- a value absent from the schema. Research had completed successfully with a valid report artifact, but the task was left stranded in its in-flight status.
+
+THE NORMATIVE SOURCE ALREADY EXISTS. context/formats/return-metadata-file.md declares itself the normative status vocabulary for .return-meta.json, specs/.return-meta-multi.json, and -- by reference -- .orchestrator-handoff.json's status field, stating that any writer of those files should draw its status value from that table rather than re-deriving or restating it elsewhere. The defect is not a missing contract; it is fifteen agents that never point at the existing one. lean-research-agent.md, for instance, instructs writing .return-meta.json with "status": "in_progress" at Stage 0 but contains ZERO references to return-metadata-file.md, so it never learns the final-status vocabulary.
+
+SCOPE -- the 15 agent files that write .return-meta.json with zero references to return-metadata-file.md (re-derive this list at implement time rather than trusting it verbatim; the check is: writes `.return-meta.json` AND does not mention `return-metadata-file`):
+  cslib/agents/cslib-implementation-agent.md
+  cslib/agents/cslib-research-agent.md
+  cslib/agents/pr-review-implementation-agent.md
+  cslib/agents/pr-review-research-agent.md
+  latex/agents/latex-implementation-agent.md
+  latex/agents/latex-research-agent.md
+  lean/agents/lean-research-agent.md
+  python/agents/python-implementation-agent.md
+  python/agents/python-research-agent.md
+  typst/agents/typst-implementation-agent.md
+  typst/agents/typst-research-agent.md
+  web/agents/web-implementation-agent.md
+  web/agents/web-research-agent.md
+  z3/agents/z3-implementation-agent.md
+  z3/agents/z3-research-agent.md
+
+FIX DIRECTION: add an @-reference to context/formats/return-metadata-file.md in each, pointing specifically at the normative status table. Strongly prefer a single shared reference over copy-pasting the enum into fifteen files -- copy-paste is precisely how the vocabulary drifts out of sync with its normative source. Mirror how the agents that DO reference it (planner-agent, general-implementation-agent, lean-implementation-agent) already do so, rather than inventing a new convention.
+
+CRITICAL SCOPE BOUNDARY -- DO NOT ADD HANDOFF CONTRACTS TO THESE AGENTS. An earlier framing of this defect proposed giving every orchestrator-dispatched agent an .orchestrator-handoff.json contract. That framing is INVERTED and was rejected after verification against the source:
+  - docs/architecture/handoff-schema.md states handoffs are written by SKILLS when orchestrator_mode is true, not by agents.
+  - general-research-agent.md explicitly instructs: do NOT use wrap-up.md's H9 schema or .orchestrator-handoff.json for research -- that schema and its consumer allowlist are implementation-agent-only.
+  - skill-orchestrate/SKILL.md states base-mode research, plan, and implement dispatches never write a handoff BY CONTRACTUAL DESIGN, and that a missing handoff from one of those writers is the EXPECTED outcome, not a defect. Those dispatches are routed through a .return-meta.json recovery path instead.
+Adding handoff writing to these agents would move base-mode dispatches OFF the guarded recovery path ONTO the unguarded handoff-read path, making the silent-no-op defect MORE reachable rather than less. Fix the vocabulary reference only.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 918. Create the task directory before lock acquire so GATE IN stops aborting on tasks whose directory does not exist
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: resolve_task_dir() in task-lock.sh hard-fails for a task whose directory does not exist yet, which aborts GATE IN entirely and blocks /orchestrate and every other command routing through command-gate-in.sh.
+
+SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+OBSERVED LIVE, not hypothetical. /orchestrate 180 in a consuming repo failed at GATE IN with 'ERROR: could not resolve task directory for task 180'. Worked around manually with mkdir -p specs/180_<slug>/{reports,plans,summaries}, after which GATE IN passed unchanged. Task creation does not always create the directory, so this is reachable through normal use rather than an edge case.
+
+MECHANISM (anchor on symbol names, NOT line numbers -- the file was observed being edited concurrently and line numbers shifted ~45 lines mid-investigation; re-locate at implement time): resolve_task_dir() resolves project_name from state.json, then guards the result with `if [ -d "$dir" ]` and only echoes the path when the directory ALREADY exists. The subsequent `find` fallback likewise matches only existing directories. Otherwise the function falls through to `return 1`. cmd_acquire() then prints 'ERROR: could not resolve task directory for task $task_number' and returns 1. command-gate-in.sh calls `task-lock.sh acquire` after its terminal-status guard, so a non-zero acquire aborts GATE IN.
+
+FIX DIRECTION (do not presume; choose during research/planning): either have the gate create the task directory before acquiring the lock, or give resolve_task_dir a create-if-missing mode. Two directions, one outcome -- establish which layer should own directory creation before committing to either.
+
+BINDING CONSTRAINTS on any fix:
+
+1. CREATE-IF-MISSING MUST BE OPT-IN AT THE ACQUIRE CALL SITE ONLY, never a change to resolve_task_dir's shared default. resolve_task_dir has FOUR call sites: cmd_acquire, plus the check, heartbeat, and release paths (all three of which print the same 'could not resolve task directory' error). A lock check, heartbeat, or release MUST NEVER have filesystem side effects -- a read-only status query that silently creates directories is a worse defect than the one being fixed.
+
+2. CREATION MUST ONLY FIRE WHEN project_name RESOLVED FROM state.json -- never from the `find` fallback branch. The find fallback exists to degrade gracefully when the state.json lookup fails; letting it create directories would allow a typo'd or nonexistent task number to create a stray directory.
+
+3. Verify the created directory shape matches what downstream consumers expect (reports/, plans/, summaries/ subdirectories) rather than creating a bare directory.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
 
 ### 917. Converge single-task /orchestrate partial triage onto the mt engine
 - **Status**: [NOT STARTED]
