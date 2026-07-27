@@ -263,28 +263,28 @@ and the absence of side effects on the read-only subcommands.
 
 ---
 
-### Phase 4: Confirm live and audit for drift [NOT STARTED]
+### Phase 4: Confirm live and audit for drift [COMPLETED]
 
 **Goal**: The originally observed GATE IN failure mode is gone in the real repo, and the deployed
 tree is confirmed current.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh` and record the result.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and confirm its
-      deploy-drift lane reports no drift for `task-lock.sh` or `context/patterns/task-lock.md`.
-- [ ] Pick a real `not_started` task from `specs/state.json` that has no directory on disk. If
+- [x] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh` and record the result. *(completed: PASS -- 11 check(s), 0 failure(s), exit 0)*
+- [x] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and confirm its
+      deploy-drift lane reports no drift for `task-lock.sh` or `context/patterns/task-lock.md`. *(completed: exit 0, "PASS: all extensions OK"; output grepped for "task-lock" with zero hits -- the 34 pre-existing literature/zotero advisories are unrelated to this change)*
+- [x] Pick a real `not_started` task from `specs/state.json` that has no directory on disk. If
       none exists, record that fact and skip to the read-only check below rather than fabricating
-      a task.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh`-independent read-only probes first:
+      a task. *(completed: task 914, converge_todo_roadmap_annotation_with_script, had no on-disk directory)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh`-independent read-only probes first:
       `bash .claude/scripts/task-lock.sh check <that task>` must exit 3 and leave the filesystem
-      unchanged (confirm with `ls specs/ | grep <padded>` before and after).
-- [ ] Then run `bash .claude/scripts/task-lock.sh acquire <that task> plan <a fresh session id>`
+      unchanged (confirm with `ls specs/ | grep <padded>` before and after). *(completed: exit 3, "914_" absent from `ls specs/` both before and after)*
+- [x] Then run `bash .claude/scripts/task-lock.sh acquire <that task> plan <a fresh session id>`
       and confirm exit 0, the directory now exists with the three subdirectories, and
-      `.lock/holder.json` names the session.
-- [ ] Release the lock with `bash .claude/scripts/task-lock.sh release <that task> <same session
+      `.lock/holder.json` names the session. *(completed: exit 0; specs/914_converge_todo_roadmap_annotation_with_script/{reports,plans,summaries,.lock/holder.json} all present; holder.json's session_id matches the fresh session used)*
+- [x] Release the lock with `bash .claude/scripts/task-lock.sh release <that task> <same session
       id>` and confirm `.lock/` is gone. **Retain** the created task directory — it is the
-      directory `state.json` already designates for that task; do not remove it.
-- [ ] Record in the phase notes which task was used, so a reviewer can reproduce.
+      directory `state.json` already designates for that task; do not remove it. *(completed: exit 0, .lock/ removed, reports/plans/summaries retained)*
+- [x] Record in the phase notes which task was used, so a reviewer can reproduce. *(completed: task 914, see notes above -- reproducible via `bash .claude/scripts/task-lock.sh check 914`, `acquire 914 plan <session>`, `release 914 <same session>`)*
 
 **Timing**: 0.75 hours
 
@@ -301,16 +301,16 @@ tree is confirmed current.
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on the modified `task-lock.sh`.
-- [ ] Exactly one `resolve_task_dir` call passes a second argument, and it is in `cmd_acquire`.
-- [ ] `cmd_heartbeat`, `cmd_release`, `cmd_check` show zero changed lines in the diff.
-- [ ] The seven-scenario fixture harness exits 0.
-- [ ] `check`/`heartbeat`/`release` against a directoryless task create nothing and return their
+- [x] `bash -n` passes on the modified `task-lock.sh`.
+- [x] Exactly one `resolve_task_dir` call passes a second argument, and it is in `cmd_acquire`.
+- [x] `cmd_heartbeat`, `cmd_release`, `cmd_check` show zero changed lines in the diff.
+- [x] The seven-scenario fixture harness exits 0.
+- [x] `check`/`heartbeat`/`release` against a directoryless task create nothing and return their
       documented exit codes (3/2/2), not a shell abort.
-- [ ] The glob fallback creates nothing for an unknown task number.
-- [ ] Slug drift resolves the on-disk directory rather than creating a second one.
-- [ ] `verify-deploy.sh` and the doc-lint deploy-drift lane both pass.
-- [ ] No new task-number citation appears in any file outside `specs/**`.
+- [x] The glob fallback creates nothing for an unknown task number.
+- [x] Slug drift resolves the on-disk directory rather than creating a second one.
+- [x] `verify-deploy.sh` and the doc-lint deploy-drift lane both pass.
+- [x] No new task-number citation appears in any file outside `specs/**`.
 
 ## Artifacts & Outputs
 

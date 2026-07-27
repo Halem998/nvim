@@ -1,8 +1,46 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "agent_type": "general-implementation-agent",
   "task_number": 918,
   "session_id": "sess_1785166809_2598b7",
   "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "plan_path": "specs/918_task_lock_create_task_dir_before_acquire/plans/01_task-lock-create-task-dir.md"
+  "plan_path": "specs/918_task_lock_create_task_dir_before_acquire/plans/01_task-lock-create-task-dir.md",
+  "phases_completed": 4,
+  "phases_total": 4,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/918_task_lock_create_task_dir_before_acquire/summaries/01_task-lock-create-task-dir-summary.md",
+      "summary": "Implementation summary: opt-in create-if-missing added to resolve_task_dir, contract doc updated, 7-scenario isolated fixture test (all pass), live probe confirmed against a real not_started task"
+    },
+    {
+      "type": "test",
+      "path": "specs/918_task_lock_create_task_dir_before_acquire/tests/test-task-lock-create.sh",
+      "summary": "7-scenario isolated-fixture harness proving acquire creates and check/heartbeat/release never create"
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/scripts/task-lock.sh",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "specs/918_task_lock_create_task_dir_before_acquire/tests/test-task-lock-create.sh"
+  ],
+  "completion_data": {
+    "completion_summary": "Added an opt-in create-if-missing mode to resolve_task_dir, passed only by cmd_acquire and reachable only from a state.json-derived path attempted after the existing glob fallback, so acquire against a not_started task with no directory yet succeeds and creates reports/plans/summaries while check/heartbeat/release remain provably side-effect-free. Updated the canonical contract doc, deployed the source store, and proved the behavior with a 7-scenario isolated-fixture test plus a live probe against a real task."
+  },
+  "memory_candidates": [
+    {
+      "content": "Some source-store scripts (this codebase's agent-system/extensions/core/scripts/*.sh) refuse direct execution outside a deployed .claude/scripts/ or .opencode/scripts/ tree via a structural deploy-root-guard.sh check on the script's own directory path. To test such a script's behavior in an isolated fixture without touching the real deploy tree or real state, build a mktemp -d root containing a .claude/scripts/ subdirectory (copy of the deployed script plus its guard), and a synthetic specs/state.json -- the guard only checks the parent directory NAME pattern (*/.claude or */.opencode), so a throwaway temp root satisfies it without any real deploy. This is the sanctioned pattern for testing deploy-guarded scripts in this codebase.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/918_task_lock_create_task_dir_before_acquire/summaries/01_task-lock-create-task-dir-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-root-guard", "isolated-fixture", "mktemp", "source-store", "bash-testing", "task-lock"]
+    },
+    {
+      "content": "When adding create-if-missing behavior to a resolver function with multiple resolution strategies (authoritative source lookup, then a fallback scan), attempt creation only AFTER every read-only fallback has been tried and failed, never inside an early branch that would short-circuit later fallbacks. Placing creation inside an early branch risks creating a second, divergent artifact when the authoritative source has drifted from what the fallback would have found (e.g. a renamed/relocated on-disk directory), silently splitting state across two locations instead of resolving the existing one.",
+      "category": "PATTERN",
+      "source_artifact": "specs/918_task_lock_create_task_dir_before_acquire/summaries/01_task-lock-create-task-dir-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["resolver-fallback", "create-if-missing", "drift", "idempotent-resolution", "slug-drift"]
+    }
+  ]
 }
