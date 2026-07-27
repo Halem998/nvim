@@ -1,12 +1,12 @@
 # Implementation Summary: Task #885
 
 **Task**: 885 - Enable and verify passive signal capture
-**Status**: [PARTIAL]
+**Status**: [COMPLETED]
 **Started**: 2026-07-15
 **Completed**: 2026-07-27 (Phases 1-4: 2026-07-15; Phases 5-6 re-verification: 2026-07-27;
-Phase 7 root-cause fix: 2026-07-27)
+Phase 7 root-cause fix: 2026-07-27; final closure: 2026-07-27)
 **Duration**: ~1 session (Phases 1-4) + ~1 session (Phases 5-6 independent re-verification) +
-~1 session (Phase 7 fix)
+~1 session (Phase 7 fix) + ~1 session (final re-verification and closure)
 **Artifacts**: reports/01_enable-verify-passive-signal-capture.md;
 plans/01_passive-signal-capture-deploy.md;
 summaries/01_passive-signal-capture-deploy-summary.md; HANDOFF.md
@@ -44,6 +44,20 @@ never defective. This session added the three missing registrations to the corre
 still terminates `[PARTIAL]` this run — a fresh `<leader>al` regeneration is still required to
 deploy the fix, and the separate, already-known duplicate `claude-stop-notify.sh` entry is still
 unresolved (add-only merge). See "Phase 7: Root-Cause Correction and Fix" below.
+
+**Final closure (later session, independently re-verified, not self-reported)**: the stale
+Phase 5/6 blocker text quoted above is now superseded. The regeneration described as needed has
+since happened: `.claude/settings.json` (re-checked directly via `jq`, live) now registers all
+three hook command entries exactly as Phase 7 designed them, `check-extension-docs.sh --quiet`
+exits 0 with `core: PASS`, and `STRICT_CORE_DEPLOY=1 ... | grep -c 'events-'` returns `0`.
+`specs/events.jsonl` (368 lines, re-checked live) now contains **26 `artifact_write`** and
+**70 `session_stop`** events emitted by the new hook paths — not the pre-existing direct-call
+channel — confirming both new hook mechanisms are live in production. `subagent_stop` is not yet
+observed live (`0` occurrences), but its mechanism was already independently function-verified
+via a sandboxed-tree test (see Phase 6 below); Phase 6 closes `[COMPLETED WITH EXCLUSIONS]` on
+that single, evidenced, no-residual-work item rather than remaining `[PARTIAL]` indefinitely
+waiting on a timing coincidence. All 7 phases are now closed and the task terminates
+`[COMPLETED]`. See "Final Re-Verification and Closure" below for full evidence.
 
 ## What Changed
 
@@ -172,17 +186,59 @@ Full per-phase deviation entries with reasons: see `progress/phase-{1,2,3,4}-pro
    Verified live in both repos: all six event files present, all three hook registrations
    (`PostToolUse`/`Stop`/`SubagentStop`) in `.claude/settings.json`, doc-lint `PASS` with zero
    FAILs, and `STRICT_CORE_DEPLOY=1 ... | grep -c 'events-'` returning 0 (was 9).
-1a. **Remaining, no restart needed**: a real `session_stop` fired at `10:50:39Z` in the live
-   store, after the `10:46:01Z` regeneration and inside the same running session — an earlier
-   claim here that a restart was required was wrong. Only `artifact_write` and `subagent_stop`
-   remain unobserved in production; both occur naturally during a normal task dispatch.
+1a. ~~**Remaining, no restart needed**~~ — **RESOLVED**. `artifact_write` (26 occurrences) and
+   `session_stop` (70 occurrences) are both confirmed live in `specs/events.jsonl` as of this
+   session's final re-verification. `subagent_stop` remains unobserved in production; this is
+   tracked as a closed reasoned exclusion on Phase 6 (mechanism independently function-verified;
+   production firing needs no further agent action — see the plan's Phase 6 Reasoned Exclusions
+   entry), not an open follow-up task.
 2. **New task recommended**: fix the install-once self-heal gap and the add-only, object-level
    dedup in `lua/neotex/plugins/ai/shared/extensions/loader.lua` and
    `lua/neotex/plugins/ai/claude/extensions/merge.lua`. Outside this task's
    `agent-system/extensions/**` edit scope.
 3. **Manual cleanup**: remove the duplicate `claude-stop-notify.sh` Stop-matcher entry from
-   already-deployed trees; no merge can do this.
+   already-deployed trees; no merge can do this. Not this task's edit scope.
 4. **Separate repo**: apply the telemetry/retention settings in `~/.dotfiles` (see Part B).
+
+## Final Re-Verification and Closure (this session)
+
+Independently re-checked every Phase 5/6 criterion the plan and HANDOFF.md state, against the
+live `.claude/` tree in this repo, rather than trusting the prior session's handoff (which had
+recorded the Phase 5 `settings.json` gap as still open ~12 hours earlier).
+
+**Phase 5 — confirmed `[COMPLETED]`** (heading already read `[COMPLETED]` on resume; re-verified,
+not merely trusted):
+- `jq '.hooks.Stop, .hooks.SubagentStop, .hooks.PostToolUse' .claude/settings.json` — all three
+  events hook command entries present exactly as Phase 7 designed them.
+- `bash .claude/scripts/check-extension-docs.sh --quiet` — exit 0, `core: PASS`; the only
+  remaining `[core]` line is the pre-existing, known-unfixable-by-regeneration duplicate
+  `claude-stop-notify.sh` Stop-matcher advisory (tracked as follow-up 3 above, not part of this
+  task's admission test for Phase 5 — the plan's own Phase 5 body already carves this specific
+  criterion out as unachievable by any regeneration).
+- `STRICT_CORE_DEPLOY=1 bash .claude/scripts/check-extension-docs.sh --quiet 2>&1 | grep -c 'events-'`
+  → `0`.
+
+**Phase 6 — re-verified and closed `[COMPLETED WITH EXCLUSIONS]`** (was `[PARTIAL]` on resume):
+- `specs/events.jsonl` (368 lines, up from the 181 lines the prior handoff recorded) —
+  `jq -r '.event_type' specs/events.jsonl | sort | uniq -c` →
+  `26 artifact_write`, `266 lifecycle_stage`, `6 orchestrator_status`, `70 session_stop`.
+- Both target new-hook event types are now live: `artifact_write` (`PostToolUse`/
+  `events-log-artifact.sh`) earliest at `2026-07-27T15:16:24.286Z`; `session_stop` (`Stop`/
+  `events-log-lifecycle.sh`) earliest at `2026-07-27T10:50:39.703Z` — both after the Phase 5/7
+  regeneration, confirming the new hook paths (not the pre-existing direct-call channel) are what
+  fired.
+- `subagent_stop` — `0` occurrences in the live store. Searched for a live `.postflight-pending`
+  marker (`find specs -maxdepth 4 -name ".postflight-pending"`) to see whether this session's own
+  subagent dispatch would produce one naturally; none was present at check time. Manufacturing a
+  synthetic line in the real `specs/events.jsonl` was rejected (the prior session's own Phase 6
+  verification explicitly confined synthetic hook-trigger tests to a sandboxed tree for this exact
+  reason). Closed via a documented Reasoned Exclusion on Phase 6 in the plan instead of remaining
+  `[PARTIAL]` indefinitely — see the plan's Phase 6 `#### Reasoned Exclusions` table for the full
+  five-condition admission-test satisfaction.
+
+**Outcome**: all 7 phases are now closed (`[COMPLETED]` x6, `[COMPLETED WITH EXCLUSIONS]` x1 for
+Phase 6). The task-level plan Status field and `state.json` status are updated to `[COMPLETED]` /
+`completed`.
 
 ## References
 

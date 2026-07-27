@@ -19,7 +19,7 @@ next_project_number: 937
 
 ### Agent System
 
-885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
+885 [IMPLEMENTING] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
   └─ 926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 887 [RESEARCHED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
     └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co
@@ -1740,7 +1740,7 @@ DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside s
 ---
 
 ### 885. Enable and verify passive signal capture
-- **Status**: [PARTIAL]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 874, Task 916

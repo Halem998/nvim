@@ -1,7 +1,7 @@
 # Implementation Plan: Task #885
 
 - **Task**: 885 - Enable and verify passive signal capture
-- **Status**: [PARTIAL]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours (agent) + user-owned manual regeneration (out of agent effort)
 - **Dependencies**: 874 (self-sync guard removal — CONFIRMED COMPLETE, commit dc6d5e450)
 - **Research Inputs**: reports/01_enable-verify-passive-signal-capture.md
@@ -469,7 +469,7 @@ carries the finished edits)
 
 ---
 
-### Phase 6: End-to-end verification of event flow (scope 1) [PARTIAL]
+### Phase 6: End-to-end verification of event flow (scope 1) [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Confirm events actually FLOW (not merely that files exist). DOUBLY GATED — first on the
 manual regeneration (Phase 5), then on accumulated REAL USAGE OVER TIME.
@@ -544,13 +544,50 @@ that Phase 1 hardened. Critically:
 So Phase 6's literal checklist (jsonl growing, 0 core FAILs, at least one lifecycle event firing)
 passes, but the NEW event types/hooks this task's Phase 5 deploy was meant to activate
 (PostToolUse artifact events; genuine Stop/SubagentStop session events) have zero observed
-firings in either repo, as a direct consequence of the Phase 5 `settings.json` gap. This phase is
-marked `[PARTIAL]`, not `[COMPLETED]`, because the specific new capability is unverified — do not
-infer full success from the pre-existing channel alone.
+firings in either repo, as a direct consequence of the Phase 5 `settings.json` gap.
 
-**Timing**: gated (was not verifiable at plan-authoring time; re-verified this session)
+**RE-VERIFIED (later session, independently, not self-reported — the stale-blocker claim above is
+superseded)**: at the time this section was last written, `specs/events.jsonl` held 181 lines and
+exactly zero `artifact`-category or `session_stop`/`subagent_stop` lines. That is no longer
+accurate. Re-checked live against the current file (368 lines):
 
-**Depends on**: 5 (Phase 5 is itself `[PARTIAL]`, so Phase 6's dependency is only partially met)
+- `.claude/settings.json` (the deployed copy, re-checked directly with `jq`) now registers all
+  three hook command entries exactly as Phase 7 designed them: `PostToolUse`/`"Write|Edit"` →
+  `events-log-artifact.sh`, `Stop`/`"*"` → `events-log-lifecycle.sh` (second object in the array,
+  alongside the pre-existing `claude-stop-notify.sh` matcher), and the new top-level
+  `SubagentStop`/`"*"` → `events-log-lifecycle.sh`. The Phase 5 gap this section previously
+  described is closed.
+- `bash .claude/scripts/check-extension-docs.sh --quiet` → exit 0, `core: PASS` in the Summary
+  table; the only remaining `[core]` ADVISORY line is the pre-existing duplicate
+  `claude-stop-notify.sh` Stop-matcher entry (already known-unfixable by any regeneration — see
+  Phase 7's scope boundaries; tracked as a follow-up, not part of this phase's admission test).
+  `STRICT_CORE_DEPLOY=1 ... | grep -c 'events-'` → `0`.
+- `jq -r '.event_type' specs/events.jsonl | sort | uniq -c` →
+  `26 artifact_write`, `266 lifecycle_stage`, `6 orchestrator_status`, `70 session_stop`.
+  **`artifact_write` (PostToolUse hook) and `session_stop` (Stop hook) are both now confirmed
+  flowing in the real store** — e.g. `evt_1785188483873_4Gs7WI` (`artifact_write`, task 936,
+  `2026-07-27T21:41:23.877Z`, `cwd` populated) and `evt_1785191580852_pBhQWh` (`session_stop`,
+  this task, `2026-07-27T22:33:00.857Z`). Earliest `artifact_write` observed:
+  `2026-07-27T15:16:24.286Z` — after the Phase 5/7 regeneration, confirming the new hook path
+  (not the pre-existing direct-call channel) is what is firing.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Live production firing of a `subagent_stop` event (via the `SubagentStop`/`events-log-lifecycle.sh` hook path) | The hook's correctness was already directly verified by executing it against a sandboxed deploy-shaped tree (see the trigger/precondition/emitted-event table earlier in this phase) — this is a production-timing gap, not a defect. Firing requires a `.postflight-pending` marker (created by `skill-base.sh`'s Stage 3 ahead of a subagent dispatch, per `.claude/hooks/subagent-postflight.sh`'s own marker-discovery logic) to be live at the exact moment a dispatched subagent's Stop event fires — a coincidence of ordinary orchestrated dispatch timing, not something any agent action can force. Manufacturing one synthetically in the real store was already rejected as out of scope by the prior session's Phase 6 verification (which deliberately confined its synthetic trigger tests to a sandboxed tree, never the real `specs/events.jsonl`), and that constraint still holds. | `jq -r '.event_type' specs/events.jsonl \| sort \| uniq -c` shows `0` for `subagent_stop` as of this re-verification (368 total lines), against `26 artifact_write` and `70 session_stop` now confirmed live — i.e. 2 of the 3 target hook-driven event types are proven flowing through the identical new-hook mechanism, and the third's mechanism was independently function-verified (not merely inferred) in the sandboxed harness documented above in this same phase. No further agent action remains: the event fires automatically the next time an ordinary subagent-dispatching skill invocation coincides with the marker window, which is standard operation, not a task the plan needs to schedule. |
+
+This satisfies the `[COMPLETED WITH EXCLUSIONS]` admission test (see
+`context/standards/status-markers.md`): the exclusion is a deliberate decision (not a stuck
+attempt), tightly scoped to the single still-unobserved `subagent_stop` production firing,
+documented with a stated reason, evidenced by the query above, and leaves no residual work for a
+future dispatch — the event will occur naturally as a side effect of ordinary subagent dispatch,
+requiring no scheduled follow-up task.
+
+**Timing**: gated (was not verifiable at plan-authoring time; re-verified this session, and again
+in a later session with materially improved live evidence)
+
+**Depends on**: 5 (Phase 5 is `[COMPLETED]`; Phase 6's dependency is now fully met)
 
 ---
 
@@ -708,6 +745,16 @@ its `env` block is project-scoped only and would miss cross-repo/ad-hoc invocati
       command, `check-extension-docs.sh --quiet` exits 0 with the advisory now naming all three as
       source-declared. Phase 5/6 status is unchanged by this phase — no deployment or event-flow
       claim is made; regeneration must still be re-run for this fix to take effect. *(completed)*
+- [x] Phase 6 (later session, independently re-verified): `.claude/settings.json` confirmed live
+      to register all three hooks (Phase 5's gap is closed); `check-extension-docs.sh --quiet`
+      exits 0 with `core: PASS` and only the known-unfixable `claude-stop-notify.sh` duplicate
+      remaining as an advisory; `specs/events.jsonl` (368 lines) now contains 26 `artifact_write`
+      and 70 `session_stop` events from the new hook paths (earliest `artifact_write` at
+      `2026-07-27T15:16:24.286Z`, after regeneration). `subagent_stop` is not yet observed live
+      (`0` occurrences) — closed via `[COMPLETED WITH EXCLUSIONS]` per the Reasoned Exclusions
+      entry in Phase 6 (mechanism independently function-verified via sandboxed test; production
+      firing requires no further agent action). Task terminus updated to `[COMPLETED]`.
+      *(completed)*
 
 ## Artifacts & Outputs
 

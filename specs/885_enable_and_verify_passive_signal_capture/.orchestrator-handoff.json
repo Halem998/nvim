@@ -1,10 +1,10 @@
 {
   "$schema": "orchestrator-handoff-v1",
   "phase": "implement",
-  "status": "partial",
+  "status": "implemented",
   "task_number": 885,
-  "session_id": "sess_1785147452_169888",
-  "summary": "Corrected the prior session's wrong 'settings.json merge routine is broken' diagnosis. Real root cause (independently verified): the events hook registrations were added only to the install-once root-files/settings.json, never to merge-sources/settings-hooks.json (the file the merge step actually reads) -- the merge itself was never defective. Fixed at source: added PostToolUse/events-log-artifact.sh, Stop/events-log-lifecycle.sh, and a new SubagentStop key/events-log-lifecycle.sh to merge-sources/settings-hooks.json, each a dedicated single-command matcher object. Verified via jq/grep/check-extension-docs.sh. No deployment occurred; Phases 5-6 remain [PARTIAL]; task terminus remains [PARTIAL].",
+  "session_id": "sess_1785191510_b4011e",
+  "summary": "Independently re-verified every blocker the prior handoff claimed (written ~12h earlier) and found them resolved: .claude/settings.json now registers all three events hooks (PostToolUse/Stop/SubagentStop), check-extension-docs.sh reports core: PASS with STRICT_CORE_DEPLOY events count 0, and specs/events.jsonl now holds 26 live artifact_write and 70 live session_stop events from the new hook paths. Closed Phase 6 as [COMPLETED WITH EXCLUSIONS] (subagent_stop not yet observed live; mechanism independently function-verified via a prior sandboxed test; no further agent action needed). All 7 phases closed; task terminates [COMPLETED].",
   "artifacts": [
     {
       "type": "plan",
@@ -15,51 +15,21 @@
       "path": "specs/885_enable_and_verify_passive_signal_capture/summaries/01_passive-signal-capture-deploy-summary.md"
     }
   ],
-  "blockers": [
-    {
-      "description": "merge-sources/settings-hooks.json now correctly declares the three events hook registrations, but this is a source-store-only fix. No deployed .claude/settings.json (nvim or ~/.dotfiles) has been updated -- a fresh <leader>al 'Sync all (replace existing)' regeneration is still required, and there is no headless/CI path to trigger it (execute_sync is a module-local closure gated behind an unconditional vim.fn.confirm()).",
-      "phase": "phase-5",
-      "target": ".claude/settings.json",
-      "severity": "hard"
-    },
-    {
-      "description": "The pre-existing duplicate claude-stop-notify.sh Stop-matcher entry in the already-deployed .claude/settings.json (both repos) cannot be resolved by any future merge -- merge.lua's deep_merge dedups at whole-matcher-object granularity via vim.deep_equal and is add-only, never removing an existing entry.",
-      "phase": "phase-5",
-      "target": ".claude/settings.json",
-      "severity": "soft"
-    },
-    {
-      "description": "Zero PostToolUse-artifact events and zero genuine Stop/SubagentStop-hook-driven session events exist anywhere in specs/events.jsonl in either repo, a direct consequence of the still-undeployed Phase 5 fix. Only the pre-existing preflight/postflight lifecycle channel is confirmed flowing.",
-      "phase": "phase-6",
-      "target": "specs/events.jsonl",
-      "severity": "hard"
-    },
-    {
-      "description": "The underlying defect -- install-once root-files (settings.json/settings.local.json) can never self-heal a missed addition once a target repo already exists, and merge.lua's dedup is add-only at object granularity -- lives in lua/neotex/plugins/ai/shared/extensions/loader.lua and merge.lua, under lua/**, outside this task family's agent-system/extensions/**-only edit scope.",
-      "phase": "follow-up",
-      "target": "lua/neotex/plugins/ai/shared/extensions/loader.lua,merge.lua",
-      "severity": "soft"
-    }
-  ],
+  "blockers": [],
   "next_action_hint": "none",
   "files_modified": [
-    "agent-system/extensions/core/merge-sources/settings-hooks.json",
     "specs/885_enable_and_verify_passive_signal_capture/plans/01_passive-signal-capture-deploy.md",
     "specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md",
     "specs/885_enable_and_verify_passive_signal_capture/summaries/01_passive-signal-capture-deploy-summary.md"
   ],
   "decisions_made": [
-    "Diagnosed and corrected the prior session's wrong root-cause framing ('settings.json merge routine is broken'): the merge step was never defective, it merged an input (merge-sources/settings-hooks.json) that never declared the events hooks.",
-    "Added the three missing hook registrations as their own dedicated single-command matcher objects rather than appending into existing shared matchers, to remain idempotent under merge.lua's whole-object vim.deep_equal dedup across repeated future merges.",
-    "Left the pre-existing duplicate claude-stop-notify.sh Stop-matcher entry untouched in merge-sources/settings-hooks.json -- removing it was outside this dispatch's explicit scope (recorded as a separate blocker/follow-up, not attempted).",
-    "Did not run the Stage 5a blanket 'repair stale phase headings to [COMPLETED]' backstop, because Phase 5 and Phase 6 are deliberately [PARTIAL] (gated on a manual regeneration and on real usage over time, respectively) -- mechanically flipping them to [COMPLETED] would have violated the explicit no-overclaiming constraint for this dispatch."
+    "Re-ran every independently-verifiable check the prior handoff specified (jq against deployed settings.json, check-extension-docs.sh --quiet, STRICT_CORE_DEPLOY grep, event-type counts in specs/events.jsonl) rather than trusting the handoff's ~12h-old prose, which claimed zero artifact/session_stop events -- directly contradicted by the live 26/70 counts found.",
+    "Closed Phase 6 as [COMPLETED WITH EXCLUSIONS] rather than leaving it [PARTIAL] indefinitely: subagent_stop's hook mechanism was already independently function-verified via a sandboxed test in an earlier session, and production firing requires no further agent action, only ordinary future subagent-dispatch timing -- satisfying all five conditions of the admission test in context/standards/status-markers.md.",
+    "Did not fabricate a synthetic subagent_stop event in the real specs/events.jsonl to force the count to non-zero -- a prior session's own Phase 6 verification explicitly confined synthetic hook-trigger tests to a sandboxed tree for this reason, and that constraint was honored here too.",
+    "Left the two genuinely out-of-scope follow-ups (duplicate claude-stop-notify.sh entry; install-once self-heal defect in lua/neotex/plugins/ai/shared/extensions/loader.lua and merge.lua) as carved-out follow-ups, not blockers on this task's closure -- both live outside agent-system/extensions/**, this task's binding edit scope."
   ],
   "dead_ends": [],
-  "phases_completed": 5,
+  "phases_completed": 7,
   "phases_total": 7,
-  "continuation_context": {
-    "handoff_path": "specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md",
-    "orchestrator_mode": true
-  },
-  "plan_markers_verified": false
+  "plan_markers_verified": true
 }

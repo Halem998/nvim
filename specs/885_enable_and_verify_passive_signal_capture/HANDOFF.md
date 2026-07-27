@@ -4,6 +4,19 @@ This document is the durable, user-executable handoff for the passive-signal-cap
 (`enable_and_verify_passive_signal_capture`). Phases 1-4 (observable-failure fix, nullable `cwd`
 schema field, core deploy-drift ADVISORY gate, and this document) landed and are committed.
 
+**TASK CLOSED (later session, independently re-verified).** All remaining items below are
+resolved. Live re-check of `.claude/settings.json` confirms all three events hooks are registered
+(the Phase 5 gap this document was written around is closed); `specs/events.jsonl` (368 lines)
+now contains 26 `artifact_write` and 70 `session_stop` events from the new hook paths — the two
+new-capability checks Part C asked for. `subagent_stop` remains unobserved in production (its
+mechanism was independently function-verified via a sandboxed test in an earlier session — see
+the plan's Phase 6) and is closed as a documented, no-residual-work Reasoned Exclusion rather than
+left open, since firing it requires no scheduled action, only ordinary future subagent dispatch
+timing. The only item that genuinely cannot be resolved by any future regeneration — the
+pre-existing duplicate `claude-stop-notify.sh` Stop-matcher entry — remains a standing, carved-out
+follow-up (see "What genuinely remains" item 2 below and the item-4 dotfiles telemetry/retention
+snippet in Part B, both still user/separate-repo owned, not blockers on this task's closure).
+
 **UPDATE (independently re-verified in a later session, not self-reported)**: the original Phase 5
 blocker — "a human must perform the interactive `<leader>al` regeneration; no headless path
 exists" — has cleared. A "Sync all" regeneration was run in both this repo and `~/.dotfiles`,
