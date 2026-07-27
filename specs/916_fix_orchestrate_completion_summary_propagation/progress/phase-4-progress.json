@@ -1,0 +1,20 @@
+{
+  "phase": 4,
+  "phase_name": "Wire both single-task Stage 5 sites and delete the broken clobber",
+  "started_at": "2026-07-27T08:31:00Z",
+  "last_updated": "2026-07-27T09:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "skill-orchestrate Stage 5 implemented) case wired, recover_json reuse guard", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Extract completion_summary/roadmap_items, call shared writer", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Emit empty-summary warning", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 4, "description": "Inline comment explaining second read", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 5, "description": "skill-orchestrate-hard identical edit, [hard-orchestrate] prefix", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]},
+    {"id": 6, "description": "Delete broken CHECKPOINT 2 clobber in commands/orchestrate.md", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "Used \"${completion_json:-{}}\" inline bash default-value idiom as sketched in the plan", "result": "failed", "reason": "bash parameter-expansion default-word matching stops at the first unescaped '}', so this idiom appends a stray trailing '}' to any non-empty completion_json, corrupting the JSON and forcing every downstream jq call to fail closed to empty string via 2>/dev/null -- would have silently defeated the entire fix on every real invocation. Caught by a functional simulation against a fixture, not just bash -n. Replaced with the two-step '[ -z ... ] && completion_json=\"{}\"' idiom in both skill-orchestrate and skill-orchestrate-hard."}
+  ],
+  "handoff_count": 0,
+  "notes": "Discovered the same pre-existing (not introduced by this task) buggy \"${recover_json:-{}}\" idiom already in production at skill-orchestrate/SKILL.md:562 and skill-orchestrate-hard/SKILL.md:823 (diagnostic-only 'recovered_reported_status' logging -- low impact, always silently falls back to \"unknown\"). Out of scope for this task's file list; flagged in the final summary as a follow-up candidate alongside the commands/implement.md sibling defect found in Phase 3."
+}

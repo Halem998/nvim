@@ -703,6 +703,32 @@ if [ "$have_outcome" = "true" ]; then
         # phase headings — structurally different evidence — so it is a valuable SECOND OPINION
         # here, not a veto over a decision this state machine made deliberately and loggedly.
         skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn"
+
+        # Populate completion_summary/roadmap_items. The handoff schema has no such field (H9
+        # wrap-up writes only status/summary/blockers/artifacts/phase counts — see
+        # docs/architecture/handoff-schema.md), so a handoff-present dispatch never populates
+        # these here for free; `.return-meta.json`'s `completion_data` is the only source. Reuse
+        # this cycle's own `$recover_json` when the recovery branch above already ran (guarded on
+        # non-empty, never on control-flow position — see that branch's own comment), otherwise
+        # issue one additional read through the same shared script so there is still only ONE
+        # reader of `.return-meta.json` in the codebase.
+        if [ -n "${recover_json:-}" ]; then
+          completion_json="$recover_json"
+        else
+          completion_json=$(bash .claude/scripts/orchestrate-recover-outcome.sh "$TASK_DIR" "${dispatch_start_ts:-9999999999}" 2>/dev/null)
+        fi
+        # NOTE: default via `[ -z ] && completion_json='{}'`, never `"${completion_json:-{}}"` —
+        # bash parameter-expansion default-word matching stops at the FIRST unescaped `}`, so that
+        # inline idiom silently appends a stray trailing `}` to any non-empty value, corrupting the
+        # JSON and forcing every jq call below to fail closed to "" via `2>/dev/null`.
+        [ -z "${completion_json:-}" ] && completion_json='{}'
+        completion_summary=$(echo "$completion_json" | jq -r '.completion_summary // ""' 2>/dev/null) || completion_summary=""
+        roadmap_items=$(echo "$completion_json" | jq -c '.roadmap_items // []' 2>/dev/null) || roadmap_items="[]"
+        skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$TASK_TYPE"
+        if [ -z "$completion_summary" ]; then
+          completion_reason=$(echo "$completion_json" | jq -r '.reason // "unknown"' 2>/dev/null) || completion_reason="unknown"
+          echo "[orchestrate] WARNING: task completed with empty completion_summary (reason=${completion_reason})" >&2
+        fi
       fi
       # On refuse: no status transition. State stays `implementing`, the gate already logged which
       # case fired, `cycle_count` still increments at the end of this stage, and Stage 4

@@ -263,33 +263,44 @@ copies.
 
 ---
 
-### Phase 4: Wire both single-task Stage 5 sites and delete the broken clobber [NOT STARTED]
+### Phase 4: Wire both single-task Stage 5 sites and delete the broken clobber [COMPLETED]
 
 **Goal**: Base and hard single-task `/orchestrate` populate completion data, and nothing
 downstream overwrites it.
 
 **Tasks**:
 
-- [ ] `skills/skill-orchestrate/SKILL.md` shared postflight tail, `implemented)` case
+- [x] `skills/skill-orchestrate/SKILL.md` shared postflight tail, `implemented)` case
       (~lines 686-711): inside the `if skill_gate_completion_claim ...; then` body, after
       `skill_postflight_update`, resolve completion data — reuse `$recover_json` when
       `[ -n "${recover_json:-}" ]` (the recovery branch ran this cycle), otherwise issue one
       additional `bash .claude/scripts/orchestrate-recover-outcome.sh "$TASK_DIR" "${dispatch_start_ts:-9999999999}"`
       call. Guard explicitly on the variable being non-empty, never on control-flow position.
-- [ ] Extract `completion_summary` / `roadmap_items` from that JSON and call
+      *(completed: functional simulation against a fixture confirmed the recover_json-reuse,
+      fresh-read, and empty-summary-warning branches all behave correctly)*
+- [x] Extract `completion_summary` / `roadmap_items` from that JSON and call
       `skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$TASK_TYPE"`.
-- [ ] Emit `[orchestrate] WARNING: task completed with empty completion_summary (reason=<reason>)`
+      *(completed: altered — used `[ -z "${completion_json:-}" ] && completion_json='{}'` instead
+      of the originally-sketched `"${completion_json:-{}}"` inline default. Testing found the
+      latter has a bash parameter-expansion pitfall: default-word matching stops at the FIRST
+      unescaped `}`, silently appending a stray trailing `}` to any non-empty value and making
+      every downstream `jq` call fail closed to `""` — i.e. it would have made
+      `completion_summary` empty on every real invocation, defeating this task's entire purpose.
+      Caught by a functional simulation, not just a syntax check.)*
+- [x] Emit `[orchestrate] WARNING: task completed with empty completion_summary (reason=<reason>)`
       when the resolved summary is empty, using the reader's own `reason` token. Non-fatal, never
-      silent.
-- [ ] Add an inline comment explaining the second read: the handoff-present branch never populates
+      silent. *(completed)*
+- [x] Add an inline comment explaining the second read: the handoff-present branch never populates
       completion data (the handoff schema has no such field), and hard mode's H9 wrap-up means the
       handoff is always present there — so the second read is the primary path, not a fallback.
-- [ ] `skills/skill-orchestrate-hard/SKILL.md` shared postflight tail, `implemented)` case
+      *(completed)*
+- [x] `skills/skill-orchestrate-hard/SKILL.md` shared postflight tail, `implemented)` case
       (~lines 966-981): apply the identical edit, using the `[hard-orchestrate]` log prefix that
-      file already uses.
-- [ ] `commands/orchestrate.md`: **delete** the entire "Populate Completion Summary (if
+      file already uses. *(completed, same brace-matching fix applied)*
+- [x] `commands/orchestrate.md`: **delete** the entire "Populate Completion Summary (if
       implemented)" step at CHECKPOINT 2 (lines 488-495, heading and fenced block). Do not attempt
       to repair `$result_summary`; the skill now owns this responsibility and completes it earlier.
+      *(completed)*
 
 **Timing**: 60 minutes
 

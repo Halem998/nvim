@@ -485,15 +485,6 @@ bash .claude/scripts/command-gate-out.sh "$task_number" "orchestrate" "$SESSION_
 # Reads .return-meta.json; applies defensive status correction if needed
 ```
 
-**Populate Completion Summary (if implemented)**:
-
-```bash
-completion_summary="$result_summary"
-jq --arg summary "$completion_summary" \
-  '(.active_projects[] | select(.project_number == '"$task_number"')).completion_summary = $summary' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-```
-
 **On GATE OUT success**: IMMEDIATELY CONTINUE to CHECKPOINT 3.
 
 ### CHECKPOINT 3: COMMIT
