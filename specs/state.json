@@ -1124,7 +1124,7 @@
     {
       "project_number": 919,
       "project_name": "reference_normative_status_vocabulary_in_agents",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Reference the normative status vocabulary in the 15 agents that write .return-meta.json without it",
@@ -1139,7 +1139,7 @@
         "agent-system/extensions/z3/agents/"
       ],
       "created": "2026-07-27T09:42:14Z",
-      "last_updated": "2026-07-27T16:13:41Z",
+      "last_updated": "2026-07-27T16:22:09Z",
       "session_id": "sess_1785168250_e71e86",
       "artifacts": [
         {
@@ -1151,8 +1151,14 @@
           "path": "specs/919_reference_normative_status_vocabulary_in_agents/plans/01_reference-normative-status-vocab.md",
           "type": "plan",
           "summary": "5 phases, 3 waves; two structural shapes handled separately; pr-review nesting folded in; missing-examples deferred with reasoning"
+        },
+        {
+          "path": "specs/919_reference_normative_status_vocabulary_in_agents/summaries/01_reference-normative-status-vocab-summary.md",
+          "type": "summary",
+          "summary": "All 15 extension agents now reference the normative status vocabulary; pr-review completion_data un-nested"
         }
-      ]
+      ],
+      "completion_summary": "Added an @-reference to context/formats/return-metadata-file.md across all 15 named extension agent files (latex, python, typst, z3, cslib, lean, web -- research and implementation variants), using a new Context References section for 13 files and a new leading Load Always bullet inside the existing section for the 2 web files. Also corrected a nested completion_data-inside-metadata schema bug in pr-review-implementation-agent.md's worked example."
     },
     {
       "project_number": 920,

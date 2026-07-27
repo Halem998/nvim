@@ -11,10 +11,10 @@ next_project_number: 932
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 885,914,915,919,920,922,923,928,929,931 | -- | agent-system, extensions |
+| 1 | 885,914,915,920,922,923,928,929,931 | -- | agent-system, extensions |
 | 2 | 887,924,930 | 885,922,928 | agent-system, literature |
 | 3 | 925 | 924 | agent-system |
-| 4 | 926,927 | 919,925 | agent-system |
+| 4 | 926,927 | 925 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -24,14 +24,12 @@ next_project_number: 932
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-919 [IMPLEMENTING] — Fifteen agent definitions instruct writing .return-meta.json but 
-  └─ 927 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
 922 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
   └─ 924 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 925 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
       └─ 926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-      └─ 927 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
+      └─ 927 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 923 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 929 [NOT STARTED] — SOURCE-STORE RULE (binding, and the subject of this task): the ag
 
@@ -438,12 +436,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 919. Reference the normative status vocabulary in the 15 agents that write .return-meta.json without it
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [919_reference_normative_status_vocabulary_in_agents/reports/01_reference-normative-status-vocab.md]
 - **Plan**: [919_reference_normative_status_vocabulary_in_agents/plans/01_reference-normative-status-vocab.md]
+- **Summary**: [919_reference_normative_status_vocabulary_in_agents/summaries/01_reference-normative-status-vocab-summary.md]
 
 **Description**: Fifteen agent definitions instruct writing .return-meta.json but never reference the normative status vocabulary, so they improvise off-schema status values that fail downstream.
 
