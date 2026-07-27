@@ -1,7 +1,7 @@
 # Implementation Plan: Task #925
 
 - **Task**: 925 - Add a depth-first phase-closure contract and a per-item pre-edit verification gate to core implementers
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: 922, 924 (both shipped this session; their outputs are consumed by name here)
 - **Research Inputs**: `specs/925_depth_first_phase_closure_and_pre_edit_gate/reports/01_depth-first-closure-pre-edit-gate.md`
@@ -147,41 +147,41 @@ even where the table shows two phases in the same wave.
 
 ---
 
-### Phase 1: Author the depth-first phase-closure contract [NOT STARTED]
+### Phase 1: Author the depth-first phase-closure contract [COMPLETED]
 
 **Goal**: Create `agent-system/extensions/core/context/contracts/phase-closure.md` containing the
 depth-first closure rule with all three required clauses and the explicit single-dispatch scoping
 statement.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/context/contracts/phase-closure.md`.
-- [ ] Write a header note stating plainly that this contract is loaded via **explicit
+- [x] Create `agent-system/extensions/core/context/contracts/phase-closure.md`.
+- [x] Write a header note stating plainly that this contract is loaded via **explicit
       `@`-reference in BOTH standard and hard mode**, not by directory convention — and that
       placement in `context/contracts/` does not imply hard-mode-only applicability. This is the
       first non-hard-exclusive occupant of the directory and must say so.
-- [ ] Write the **Close-before-open** clause: a dispatch closes one phase entirely — all its
+- [x] Write the **Close-before-open** clause: a dispatch closes one phase entirely — all its
       steps done, its verification run, its heading marker advanced past `[IN PROGRESS]` — before
       opening any other phase. Cite `context/standards/status-markers.md` for the phase-heading
       marker vocabulary.
-- [ ] Write the **Cheapest-closure-first ordering** clause: among the phases eligible to open
+- [x] Write the **Cheapest-closure-first ordering** clause: among the phases eligible to open
       next, prefer the one that can be *closed* soonest, not the one that is numerically first
       or looks most important. Note that this reorders only within what dependencies allow —
       a phase whose `**Depends on**:` prerequisites are unmet is not eligible regardless of cost.
-- [ ] Write the **Stop-at-a-closed-phase-boundary** clause: when a dispatch judges it cannot
+- [x] Write the **Stop-at-a-closed-phase-boundary** clause: when a dispatch judges it cannot
       finish the next phase within its remaining budget, it STOPS at the current closed boundary
       and hands off, rather than opening the phase and leaving it `[PARTIAL]`. State explicitly
       that this clause is **not redundant with** "work depth-first": depth-first tells an agent
       what order to work in; only this clause tells it to *stop rather than start something it
       cannot finish*. It must not be summarized away or merged into the close-before-open clause.
-- [ ] Write the **Why `[PARTIAL]` is costly** rationale: a task cannot be marked `COMPLETED`
+- [x] Write the **Why `[PARTIAL]` is costly** rationale: a task cannot be marked `COMPLETED`
       while any phase heading is `[PARTIAL]`, so breadth-first work actively prevents completion.
       One closed phase plus a clean handoff strictly dominates four opened phases with one closed.
-- [ ] Write the **Scope limitation** section containing this sentence verbatim:
+- [x] Write the **Scope limitation** section containing this sentence verbatim:
       `This contract governs a single dispatch's own phase-opening sequencing only: it forbids ONE AGENT from opening several phases at once; it does NOT forbid the orchestrator from dispatching independent phases to different agents in the same wave.`
       Immediately follow it by naming both potentially-conflicting rules: `plan-format.md`'s
       Dependency Analysis wave table ("Phases within the same wave can execute in parallel") and
       `context/contracts/territory.md` (cross-agent file ownership during simultaneous dispatch).
-- [ ] Write a **Mode applicability** section covering both observed failure shapes: standard mode
+- [x] Write a **Mode applicability** section covering both observed failure shapes: standard mode
       (`agents/general-implementation-agent.md` Stage 4 "Execute File Operations Loop" — a single
       dispatch iterating all phases, no stop condition) and hard mode
       (`skills/skill-implementer-hard/SKILL.md` Stage 3b — a top-to-bottom heading scan that gives

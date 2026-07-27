@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Author the depth-first phase-closure contract",
+  "started_at": "2026-07-27T18:18:54Z",
+  "last_updated": "2026-07-27T18:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create phase-closure.md with header note, three required clauses, PARTIAL-cost rationale, scope limitation, and mode applicability sections",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/contracts/phase-closure.md"]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
