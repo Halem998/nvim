@@ -1006,34 +1006,46 @@ On clean exit:
 
 ```bash
 mkdir -p "${TASK_DIR}/summaries"
-jq -n \
+# Merge onto the existing file rather than overwrite wholesale: an earlier writer (the
+# implementation agent) already populated modified_files/completion_data/etc. on this same
+# path, and a later writer MUST NOT clobber fields it does not own.
+meta_file="${TASK_DIR}/.return-meta.json"
+existing_meta=$(cat "$meta_file" 2>/dev/null || echo '{}')
+tmp_meta=$(mktemp)
+echo "$existing_meta" | jq \
   --arg status "implemented" \
   --argjson cycles "$cycle_count" \
   --arg final_state "$current_status" \
-  '{
+  '. * {
     "status": $status,
     "metadata": {
       "cycles_used": $cycles,
       "final_state": $final_state
     }
-  }' > "${TASK_DIR}/.return-meta.json"
+  }' > "$tmp_meta" && mv "$tmp_meta" "$meta_file"
 ```
 
 On partial exit:
 
 ```bash
 mkdir -p "${TASK_DIR}/summaries"
-jq -n \
+# Merge onto the existing file rather than overwrite wholesale: an earlier writer (the
+# implementation agent) already populated modified_files/completion_data/etc. on this same
+# path, and a later writer MUST NOT clobber fields it does not own.
+meta_file="${TASK_DIR}/.return-meta.json"
+existing_meta=$(cat "$meta_file" 2>/dev/null || echo '{}')
+tmp_meta=$(mktemp)
+echo "$existing_meta" | jq \
   --arg status "partial" \
   --argjson cycles "$cycle_count" \
   --arg final_state "$current_status" \
-  '{
+  '. * {
     "status": $status,
     "metadata": {
       "cycles_used": $cycles,
       "final_state": $final_state
     }
-  }' > "${TASK_DIR}/.return-meta.json"
+  }' > "$tmp_meta" && mv "$tmp_meta" "$meta_file"
 ```
 
 ---

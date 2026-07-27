@@ -1728,7 +1728,7 @@
     {
       "project_number": 936,
       "project_name": "stage8_return_meta_clobbers_modified_files",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Stop Stage 8 postflight from clobbering .return-meta.json modified_files",
@@ -1741,9 +1741,26 @@
       ],
       "dependencies": [],
       "created": "2026-07-27T21:15:09Z",
-      "last_updated": "2026-07-27T21:15:09Z",
-      "session_id": "sess_1785186909_93bdd3",
-      "artifacts": []
+      "last_updated": "2026-07-27T21:57:30Z",
+      "session_id": "sess_1785188231_f8cd36",
+      "artifacts": [
+        {
+          "path": "specs/936_stage8_return_meta_clobbers_modified_files/reports/01_stage8-clobber-fix.md",
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/936_stage8_return_meta_clobbers_modified_files/plans/01_stage8-return-meta-merge.md",
+          "type": "plan",
+          "summary": ""
+        },
+        {
+          "path": "specs/936_stage8_return_meta_clobbers_modified_files/summaries/01_stage8-merge-summary.md",
+          "type": "summary",
+          "summary": ""
+        }
+      ],
+      "completion_summary": "Fixed Stage 8 postflight's truncating .return-meta.json write (both clean-exit and partial-exit paths) with a jq recursive-merge read-modify-write, added modified_count accounting plus the canonical fail-safe warning at CHECKPOINT 3 in orchestrate.md, documented the multiple-sequential-writers invariant in return-metadata-file.md with a cross-reference from git-staging-scope.md, and proved the fix end-to-end with a 19-assertion executable harness that produces real git commits asserted via git show --name-only, plus the zero-modified_files negative case."
     }
   ],
   "completed_projects": [],

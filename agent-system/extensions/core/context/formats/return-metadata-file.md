@@ -59,6 +59,17 @@ Example: `specs/1_setup_lsp_config/.return-meta.json`
 }
 ```
 
+### Multiple Sequential Writers
+
+`.return-meta.json` may be written by more than one process within a single `/orchestrate`
+invocation — e.g. an implementation agent writes the rich object first, then
+`skill-orchestrate`'s own postflight stage writes again at full-loop termination to update
+`status`/`metadata`. Any writer that runs after an earlier writer in the same invocation MUST
+merge onto the existing file (read-modify-write) rather than overwrite wholesale, touching only
+the fields it owns. `modified_files`, `completion_data`, `memory_candidates`, `reflection`, and
+`artifacts` are producer-owned by the implementation agent and MUST survive a later writer's
+update untouched.
+
 ## Field Specifications
 
 ### status (required)

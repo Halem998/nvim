@@ -277,7 +277,9 @@ the addendum and falls through to the plain commit message — it must never bre
 
 ## Related Documentation
 
-- `.claude/context/formats/return-metadata-file.md` — `modified_files` field schema
+- `.claude/context/formats/return-metadata-file.md` — `modified_files` field schema, and its
+  "Multiple Sequential Writers" subsection for the read-modify-write invariant a later writer to
+  `.return-meta.json` (e.g. the orchestrator postflight stage) MUST follow
 - `.claude/context/formats/progress-file.md` — `files_touched` per-objective field
 - `.claude/scripts/orchestrator-postflight.sh` — Stage 9 execution site
 - `.claude/scripts/git-commit-scoped.sh` — the single sanctioned implementation of commit-level

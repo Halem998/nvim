@@ -11,10 +11,9 @@ next_project_number: 937
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 885,936 | -- | agent-system |
-| 2 | 920,926,933 | 885,936 | agent-system |
-| 3 | 887,931,934 | 920,926,933 | agent-system |
-| 4 | 935 | 934 | agent-system |
+| 1 | 885,920,933 | -- | agent-system |
+| 2 | 926,934 | 885,933 | agent-system |
+| 3 | 887,931,935 | 920,926,934 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -24,20 +23,22 @@ next_project_number: 937
   └─ 926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 887 [RESEARCHED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
     └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co
-936 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-  └─ 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
-    └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co (see above)
-  └─ 933 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-    └─ 934 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-      └─ 935 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
+  └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co (see above)
+933 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+  └─ 934 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+    └─ 935 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ## Tasks
 
 ### 936. Stop Stage 8 postflight from clobbering .return-meta.json modified_files
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [936_stage8_return_meta_clobbers_modified_files/reports/01_stage8-clobber-fix.md]
+- **Plan**: [936_stage8_return_meta_clobbers_modified_files/plans/01_stage8-return-meta-merge.md]
+- **Summary**: [936_stage8_return_meta_clobbers_modified_files/summaries/01_stage8-merge-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 

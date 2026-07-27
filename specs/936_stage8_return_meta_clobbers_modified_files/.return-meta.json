@@ -1,0 +1,83 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/936_stage8_return_meta_clobbers_modified_files/summaries/01_stage8-merge-summary.md",
+      "summary": "Stage 8 merge fix, CHECKPOINT 3 canonical warning, multi-writer schema rule, and a passing 19-assertion executable verification harness with real git-show-asserted commits."
+    }
+  ],
+  "next_steps": "None -- task complete. Deployed .claude/ copy remains stale relative to the source-store fix until the next extension sync.",
+  "metadata": {
+    "session_id": "sess_1785188231_f8cd36",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "task_number": 936,
+    "phases_completed": 6,
+    "phases_total": 6,
+    "cycles_used": 3,
+    "final_state": "completed"
+  },
+  "modified_files": [
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "specs/936_stage8_return_meta_clobbers_modified_files/tests/test-return-meta-merge.sh",
+    "specs/936_stage8_return_meta_clobbers_modified_files/plans/01_stage8-return-meta-merge.md",
+    "specs/936_stage8_return_meta_clobbers_modified_files/summaries/01_stage8-merge-summary.md"
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed Stage 8 postflight's truncating .return-meta.json write (both clean-exit and partial-exit paths) with a jq recursive-merge read-modify-write, added modified_count accounting plus the canonical fail-safe warning at CHECKPOINT 3 in orchestrate.md, documented the multiple-sequential-writers invariant in return-metadata-file.md with a cross-reference from git-staging-scope.md, and proved the fix end-to-end with a 19-assertion executable harness that produces real git commits asserted via git show --name-only, plus the zero-modified_files negative case.",
+    "roadmap_items": []
+  },
+  "memory_candidates": [
+    {
+      "content": "Shared per-task state files written by more than one process in a single orchestration run (e.g. .return-meta.json, written first by an implementation agent and again by the orchestrator skill's own postflight) must use read-modify-write merges, not truncating `jq -n ... > file` redirects. jq's recursive-merge operator `. * {...}` piped through mktemp+mv gives field preservation (including nested sub-object fields like metadata.agent_type) for free, and is strictly better than a two-line `.status = ... | .metadata.x = ...` assignment chain, which still discards untouched sub-object fields. Defect signature to watch for: a later writer's snippet uses `jq -n` (null input) plus a `>` redirect onto a path an earlier writer already populated.",
+      "category": "PATTERN",
+      "source_artifact": "specs/936_stage8_return_meta_clobbers_modified_files/summaries/01_stage8-merge-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "return-meta",
+        "multi-writer",
+        "jq-merge",
+        "clobber",
+        "postflight",
+        "read-modify-write"
+      ]
+    },
+    {
+      "content": "When a bash test harness registers scratch directories for cleanup via `trap ... EXIT`, the registration function MUST NOT be invoked via command substitution (`x=$(register_and_build_scratch)`) if it appends to an in-memory array for the trap to consume later -- command substitution runs in a subshell, so an array append inside it is invisible to the parent shell's trap. Register scratch paths via a manifest FILE (appended with `>>`) instead, since file writes survive the subshell boundary. This silently leaked dozens of /tmp directories across repeated harness runs before being caught by an explicit post-run 'is /tmp clean' check.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/936_stage8_return_meta_clobbers_modified_files/summaries/01_stage8-merge-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "bash",
+        "trap",
+        "cleanup",
+        "subshell",
+        "command-substitution",
+        "mktemp",
+        "test-harness"
+      ]
+    },
+    {
+      "content": "A stderr redirect placed after the closing `)` of a `$(...)` command substitution used in a variable assignment (`out=$(cmd) 2>file`) does NOT capture the substitution's own stderr -- command substitution is expanded during word-expansion, before the assignment statement's own redirections are set up, so the subshell's fd 2 is still the parent's terminal/fd. To capture both stdout (via the assignment) and stderr (to a file) from the same subshell, wrap the body in an explicit compound command and attach the redirect there: `out=$({ cmd; } 2>file)`.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/936_stage8_return_meta_clobbers_modified_files/summaries/01_stage8-merge-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "bash",
+        "stderr-redirect",
+        "command-substitution",
+        "subshell",
+        "compound-command"
+      ]
+    }
+  ]
+}

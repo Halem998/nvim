@@ -1,0 +1,27 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Converted both Stage 8 .return-meta.json writes in skill-orchestrate/SKILL.md from truncating jq -n redirects to read-modify-write jq merges, preserving modified_files/completion_data/metadata sub-fields. Added modified_count accounting plus the canonical un-suffixed fail-safe warning to CHECKPOINT 3 in orchestrate.md. Documented the multi-writer invariant in return-metadata-file.md. All 6 plan phases complete; 19/19 harness assertions pass, including two real commits verified via git show --name-only.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/936_stage8_return_meta_clobbers_modified_files/summaries/01_stage8-merge-summary.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "specs/936_stage8_return_meta_clobbers_modified_files/tests/test-return-meta-merge.sh"
+  ],
+  "decisions_made": [
+    "Scope A: merge onto existing .return-meta.json (jq '. * {...}'), not a distinct file path",
+    "Scope B: un-suffixed canonical warning at the single-task CHECKPOINT 3 site",
+    "Scope C: added Multiple Sequential Writers subsection to return-metadata-file.md"
+  ],
+  "dead_ends": [],
+  "phases_completed": 6,
+  "phases_total": 6,
+  "plan_markers_verified": true
+}

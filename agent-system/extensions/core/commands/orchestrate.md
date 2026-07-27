@@ -501,13 +501,22 @@ orchestrator-runtime-files.md` documents: this checkpoint runs every cycle of a 
 through the commit mutex also matters here because this per-cycle checkpoint can run concurrently
 with another in-flight task's own commit sharing the same index.
 
+The zero-`modified_files` warning below is the canonical, un-suffixed wording from
+`.claude/context/standards/git-staging-scope.md`'s "Fail-Safe Direction" section — this is the
+single-task site, so it never carries the task-number suffix reserved for the multi-task per-task
+site. Do not invent a second wording here.
+
 ```bash
 task_dir="specs/${PADDED_NUM}_${PROJECT_NAME}"
 stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
 metadata_file="${task_dir}/.return-meta.json"
+modified_count=0
 while IFS= read -r f; do
-  [ -n "$f" ] && stage_paths+=("$f")
+  [ -n "$f" ] && stage_paths+=("$f") && modified_count=$((modified_count + 1))
 done < <(jq -r '.modified_files[]? // empty' "$metadata_file" 2>/dev/null)
+if [ "$modified_count" -eq 0 ]; then
+  echo "[postflight] WARNING: no modified_files reported; source-file changes NOT committed automatically. Review and commit manually." >&2
+fi
 ```
 
 **On completion:**
