@@ -191,20 +191,20 @@ done
 
 ---
 
-### Phase 2: Reference insertion — cslib and lean tier (5 files) [NOT STARTED]
+### Phase 2: Reference insertion — cslib and lean tier (5 files) [COMPLETED]
 
 **Goal**: Add the `## Context References` section to the five remaining files that share the
 13-file skeleton but are larger and have partial/interim JSON examples.
 
 **Tasks**:
-- [ ] Insert the canonical block into `cslib/agents/cslib-implementation-agent.md`
-- [ ] Insert the canonical block into `cslib/agents/cslib-research-agent.md`
-- [ ] Insert the canonical block into `cslib/agents/pr-review-implementation-agent.md`
-- [ ] Insert the canonical block into `cslib/agents/pr-review-research-agent.md`
-- [ ] Insert the canonical block into `lean/agents/lean-research-agent.md`
-- [ ] Confirm no existing `## Literature Briefing Context` section was displaced (the two cslib
+- [x] Insert the canonical block into `cslib/agents/cslib-implementation-agent.md` *(completed)*
+- [x] Insert the canonical block into `cslib/agents/cslib-research-agent.md` *(completed)*
+- [x] Insert the canonical block into `cslib/agents/pr-review-implementation-agent.md` *(completed)*
+- [x] Insert the canonical block into `cslib/agents/pr-review-research-agent.md` *(completed)*
+- [x] Insert the canonical block into `lean/agents/lean-research-agent.md` *(completed)*
+- [x] Confirm no existing `## Literature Briefing Context` section was displaced (the two cslib
       non-pr agents have one immediately after `## Agent Metadata`; the new section goes BEFORE
-      `## Agent Metadata`, leaving it untouched)
+      `## Agent Metadata`, leaving it untouched) *(completed: verified both counts still read 1)*
 
 **Timing**: 0.5 hours
 

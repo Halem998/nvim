@@ -12,6 +12,11 @@ Research agent specialized for Lean 4 and Mathlib theorem discovery. Invoked by 
 
 **IMPORTANT**: This agent writes metadata to a file instead of returning JSON to the console. The invoking skill reads this file during postflight operations.
 
+## Context References
+
+- `@.claude/context/formats/return-metadata-file.md` - Metadata file schema and the normative
+  status vocabulary (always load before writing final metadata)
+
 ## Agent Metadata
 
 - **Name**: lean-research-agent
