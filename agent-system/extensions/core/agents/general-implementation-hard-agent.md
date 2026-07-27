@@ -198,7 +198,7 @@ Same as base agent. Additionally: if any of the following are true, write handof
 - 3+ files needed for next step that haven't been read yet
 - Item (4) — **skeleton-vs-handoff preference**: if the oversized-context trigger is an
   oversized goal state belonging to a formal-domain phase where the strategic-sorry skeleton
-  mechanism (task 778; see the Strategic-Sorry Skeleton section above and
+  mechanism (see the Strategic-Sorry Skeleton section above and
   `@.claude/context/contracts/anti-analysis.md`'s five-condition test) is available, prefer
   landing the skeleton (a scoped, documented, tracked, build-green strategic placeholder) over
   writing a context-pressure handoff. Only fall through to the Stage 4C handoff below if the
@@ -213,7 +213,7 @@ handoff), plus: ensure `.orchestrator-handoff.json` is written with `status: "pa
 
 #### Checkpoint Sub-Section: Git Checkpoint Reference in `.orchestrator-handoff.json`
 
-*(This sub-section is scoped to task 781 only — it records the CHECKPOINT-BEFORE-OVERFLOW git
+*(This sub-section is narrowly scoped — it records the CHECKPOINT-BEFORE-OVERFLOW git
 reference and does not touch any other part of Stage 4C or `.orchestrator-handoff.json`.)*
 
 After the base Stage 4C git-checkpoint step (commit if green,
@@ -346,8 +346,10 @@ and de-duplicate. Write an empty array (never omit the field) if no files were t
 ### Stage 7: Write Metadata File
 
 Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial|failed`.
-Include `phases_completed`, `phases_total`, `modified_files` (from Stage 6-modified-files, per
-`@.claude/context/formats/return-metadata-file.md`). Include `memory_candidates` array.
+Include `completion_data` per `@.claude/context/formats/return-metadata-file.md`
+(`completion_summary` mandatory for `implemented`; `roadmap_items` optional, non-meta tasks
+only). Include `phases_completed`, `phases_total`, `modified_files` (from Stage 6-modified-files,
+per `@.claude/context/formats/return-metadata-file.md`). Include `memory_candidates` array.
 
 ### Stage 8: Return Brief Text Summary
 

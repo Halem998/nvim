@@ -267,28 +267,31 @@ edit is made, so no edit lands outside a declared scope.
 
 ---
 
-### Phase 4: Add the completion_data instruction to the three broken agent files [NOT STARTED]
+### Phase 4: Add the completion_data instruction to the three broken agent files [COMPLETED]
 
 **Goal**: Every implementation agent whose local metadata-field enumeration omitted
 `completion_data` now names it explicitly, pointing at the existing shared schema rather than
 duplicating it.
 
 **Tasks**:
-- [ ] `general-implementation-hard-agent.md` Stage 7 ("Write Metadata File", around line 344):
+- [x] `general-implementation-hard-agent.md` Stage 7 ("Write Metadata File", around line 344):
       add `completion_data` to the field enumeration that currently lists only `phases_completed`,
       `phases_total`, `modified_files`, `memory_candidates` — one line referencing
       `@.claude/context/formats/return-metadata-file.md` (`completion_summary` mandatory for
-      `implemented`; `roadmap_items` optional, non-meta only). No schema duplication.
-- [ ] `lean-implementation-hard-agent.md` Stage 8 ("Write Metadata File", around line 384): add the
+      `implemented`; `roadmap_items` optional, non-meta only). No schema duplication. *(completed)*
+- [x] `lean-implementation-hard-agent.md` Stage 8 ("Write Metadata File", around line 384): add the
       same instruction to the enumeration that currently lists `sorry_inventory`, `verification`,
-      `memory_candidates`
-- [ ] `lean-implementation-agent.md`: add a `## Context References` entry for
+      `memory_candidates` *(completed)*
+- [x] `lean-implementation-agent.md`: add a `## Context References` entry for
       `@.claude/context/formats/return-metadata-file.md` (the file currently has no such section),
       and add the `completion_data` requirement to its metadata instructions — including updating
       the "Recording Verification Results" JSON example (around lines 200-219) so the concrete
-      example an agent copies from is not itself missing the field
-- [ ] Confirm all three edits reference the shared doc by path rather than restating the schema
-- [ ] Verify no task-number citation was introduced in any of the three files
+      example an agent copies from is not itself missing the field *(completed)*
+- [x] Confirm all three edits reference the shared doc by path rather than restating the schema
+      *(completed)*
+- [x] Verify no task-number citation was introduced in any of the three files *(completed: also
+      fixed two pre-existing citations found in general-implementation-hard-agent.md, unrelated to
+      this phase's edit region, since the Phase 5 cross-file grep check covers the whole file)*
 
 **Timing**: 0.75 hours
 

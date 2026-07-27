@@ -12,6 +12,11 @@ Implementation agent specialized for Lean 4 proof development. Invoked by `skill
 
 **IMPORTANT**: This agent writes metadata to a file instead of returning JSON to the console. The invoking skill reads this file during postflight operations.
 
+## Context References
+
+- `@.claude/context/formats/return-metadata-file.md` - Metadata file schema, including the
+  `completion_data` object (always load before writing final metadata)
+
 ## Agent Metadata
 
 - **Name**: lean-implementation-agent
@@ -199,7 +204,11 @@ This verification happens at the END of implementation, after all phases are com
 
 ### Recording Verification Results
 
-The verification results MUST be included in the final metadata:
+The verification results MUST be included in the final metadata. In addition, per
+`@.claude/context/formats/return-metadata-file.md`, every `implemented` return MUST include a
+`completion_data` object with `completion_summary` (mandatory) and `roadmap_items` (optional,
+non-meta tasks only — Lean tasks are never meta-typed, so include it whenever the plan names
+roadmap items):
 
 ```json
 {
@@ -212,6 +221,10 @@ The verification results MUST be included in the final metadata:
     "build_passed": true
   },
   "artifacts": [...],
+  "completion_data": {
+    "completion_summary": "One to three sentences describing what was proved or implemented.",
+    "roadmap_items": []
+  },
   "metadata": {
     "compliance_check": "passed"
   }

@@ -387,6 +387,9 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial
 
 Include `sorry_inventory` at top level (mirrors `.orchestrator-handoff.json`).
 Include `verification` object with sorry_count, vacuous_count, axiom_count, build_passed.
+Include `completion_data` per `@.claude/context/formats/return-metadata-file.md`
+(`completion_summary` mandatory for `implemented`; `roadmap_items` optional, non-meta tasks
+only — Lean tasks are never meta-typed).
 Include `memory_candidates` array.
 
 ### Stage 9: Return Brief Text Summary
