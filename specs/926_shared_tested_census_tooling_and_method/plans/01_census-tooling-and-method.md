@@ -274,37 +274,44 @@ freely; do not drop a named form to hit a count.
 
 ---
 
-### Phase 4: Implement the shared `census-count.sh` tool [NOT STARTED]
+### Phase 4: Implement the shared `census-count.sh` tool [COMPLETED]
 
 **Goal**: Ship one shared script whose subcommands correspond one-to-one to the three bug classes
 and to the cross-check discipline, and which always emits the exact command that produced its
 count.
 
 **Tasks**:
-- [ ] Write `agent-system/extensions/core/scripts/census-count.sh` with `set -uo pipefail`, a
-      usage header describing the contract, and three subcommands.
-- [ ] `occurrences` (bug class 1 and 3): count real occurrences of a caller-supplied ERE within a
+- [x] Write `agent-system/extensions/core/scripts/census-count.sh` with `set -uo pipefail`, a
+      usage header describing the contract, and three subcommands. *(completed)*
+- [x] `occurrences` (bug class 1 and 3): count real occurrences of a caller-supplied ERE within a
       path, excluding matches that fall inside comments or string literals.
   - `--comment-style` accepting at minimum `hash`, `slash` (`//` and `/* */`), `dash` (`--`), and
     `none`; `none` is the pre-stripped-input escape hatch for languages needing
     `lean-sorry-census.sh`-grade nesting-aware handling.
   - Emit both the real count and the naive (unstripped) count so the gap between them is visible
-    rather than silently absorbed.
-- [ ] `membership` (bug class 2): report the set difference between files present in the tree and
+    rather than silently absorbed. *(completed: python3 depth-free stripper masks line comments
+    per style, non-nested `/* */` blocks for slash, and double-quoted string interiors; smoke
+    test showed naive_count=5 vs real_count=2 on a hand-built fixture.)*
+- [x] `membership` (bug class 2): report the set difference between files present in the tree and
       files declared by a caller-supplied declared-set command.
   - Inputs: a tree glob or find expression, and a command emitting one declared path per line.
   - Output: tree count, declared count, `ONLY_IN_TREE` list, `ONLY_IN_DECLARED` list.
   - The usage header must state plainly that this checks **declared** membership only, never
-    transitive reachability.
-- [ ] `cross-check` (scope E mechanism): run two independent caller-supplied count commands,
+    transitive reachability. *(completed: `comm -23`/`comm -13` on sorted unique lists; usage
+    header and record block both state the declared-only scope.)*
+- [x] `cross-check` (scope E mechanism): run two independent caller-supplied count commands,
       print both counts and both command strings, and report `MATCH` or `MISMATCH`. Exit non-zero
-      on `MISMATCH` so a caller cannot ignore it by accident.
-- [ ] Every subcommand emits a fixed, greppable record block containing at minimum the count, the
+      on `MISMATCH` so a caller cannot ignore it by accident. *(completed: smoke-tested both
+      MATCH (exit 0) and MISMATCH (exit 1).)*
+- [x] Every subcommand emits a fixed, greppable record block containing at minimum the count, the
       method name, and the verbatim command string that produced it — this is the machine-side
-      half of the derive-once/record-the-command rule Phase 6 writes down.
-- [ ] Reuse the vetted separator-alternation shape from Phase 2 as the documented reference
-      example in the usage header for "do not assume whitespace separators".
-- [ ] Register `census-count.sh` in core `manifest.json` `provides.scripts`.
+      half of the derive-once/record-the-command rule Phase 6 writes down. *(completed: all three
+      subcommands emit `=== census-count <method> record ===` ... `=== end record ===` blocks.)*
+- [x] Reuse the vetted separator-alternation shape from Phase 2 as the documented reference
+      example in the usage header for "do not assume whitespace separators". *(completed: usage
+      header cites the `TASK_SEP='([[:space:]]+#?|[-_#])'` shape without a task-number
+      citation.)*
+- [x] Register `census-count.sh` in core `manifest.json` `provides.scripts`. *(completed.)*
 
 **Timing**: 1.5 hours
 
@@ -318,8 +325,10 @@ count.
 
 **Verification**:
 - `bash -n` passes and `census-count.sh` with no arguments prints usage and exits non-zero.
+  *(confirmed: exit 64, usage printed.)*
 - Each subcommand runs end-to-end against a throwaway temp directory built by hand and emits the
-  record block. Systematic coverage is Phase 5's job.
+  record block. Systematic coverage is Phase 5's job. *(confirmed: occurrences, membership,
+  cross-check all smoke-tested against hand-built fixtures; each printed its record block.)*
 
 ---
 

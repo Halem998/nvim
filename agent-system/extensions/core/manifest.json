@@ -93,6 +93,7 @@
     ],
     "scripts": [
       "archive-task.sh",
+      "census-count.sh",
       "check-extension-docs.sh",
       "check-runtime-file-tracking.sh",
       "check-vault-threshold.sh",

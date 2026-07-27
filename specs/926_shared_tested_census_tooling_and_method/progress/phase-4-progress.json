@@ -1,0 +1,20 @@
+{
+  "phase": 4,
+  "phase_name": "Implement the shared census-count.sh tool",
+  "started_at": "2026-07-27T01:00:00Z",
+  "last_updated": "2026-07-27T01:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write census-count.sh skeleton with usage header and dispatch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/census-count.sh"]},
+    {"id": 2, "description": "occurrences subcommand: comment/string-aware stripper, naive vs real counts", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/census-count.sh"]},
+    {"id": 3, "description": "membership subcommand: declared-set diff via comm", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/census-count.sh"]},
+    {"id": 4, "description": "cross-check subcommand: MATCH/MISMATCH with non-zero exit on mismatch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/census-count.sh"]},
+    {"id": 5, "description": "Register census-count.sh in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Embedded a task-number citation in the usage header referencing the hook fix's origin", "result": "failed", "reason": "Violated no-task-references-in-deliverables.md; caught by self-dogfooding the fixed hook against the new file before committing. Rewritten to describe the pattern without citing a task/phase number."}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "bash -n passes. No-args prints usage, exit 64. Dogfooded the Phase 2 hook against census-count.sh's own content: {} (no violations). Smoke test: occurrences on a hand-built Python fixture with hash-style comments/directive/string showed naive_count=5, real_count=2 (correctly excluding comment/directive/string occurrences). membership on a 3-file tree vs a 3-entry declared list showed ONLY_IN_TREE=c.txt, ONLY_IN_DECLARED=d.txt. cross-check MATCH exited 0; MISMATCH exited 1. All three subcommands emit the documented record block."
+}
