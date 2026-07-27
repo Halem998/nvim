@@ -320,10 +320,12 @@ Track:
 - `high_confidence_matches` / `silent_noop` - From `annotation_summary`, always defined even
   though no annotation has run yet (parse-only mode reports 0/false, never an unbound variable)
 
-**Match Types** (the shared script's vocabulary -- both checkbox and table-row matches are live
-against this repository's actual `ROADMAP.md`, which is table-based with zero checkboxes: a
-parse-only run reports `checkboxes` and `table_rows` in `roadmap_structure`, and either source
-can populate `roadmap_eligible_matches[]`):
+**Match Types** (the shared script's vocabulary -- both checkbox and table-row matching are live
+paths in the script, regardless of which shape the file currently has. This repository's actual
+`ROADMAP.md` is currently checkbox-based with zero table rows (a parse-only run reports
+`checkboxes: 12, table_rows: 0`), but a future table-based roadmap would populate
+`roadmap_eligible_matches[]` from the table-row path exactly the same way -- neither format is
+dead code):
 - `confidence`: `high` (auto-annotate candidate), `medium`, or `low` (report only)
 - `match_type`: `explicit_task_ref`, `explicit_roadmap_item`, `exact_title_match`,
   `title_match`, or `keyword_match` -- see the script's `find_match` heuristic

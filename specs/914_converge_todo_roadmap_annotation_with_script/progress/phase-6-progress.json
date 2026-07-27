@@ -1,0 +1,19 @@
+{
+  "phase": 6,
+  "phase_name": "Consistency sweep and acceptance verification",
+  "started_at": "2026-07-27T00:00:00Z",
+  "last_updated": "2026-07-27T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Acceptance test: unparseable fixture yields parseable=false + unparseable_roadmap warning", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Non-regression test: real ROADMAP.md still parses true with non-zero checkboxes", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Cross-spec consistency diff between todo.md and SKILL.md", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 4, "description": "Source-store check: git status shows no .claude/ modifications", "status": "done", "files_touched": []},
+    {"id": 5, "description": "No-task-references check across three edited files", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Structural checks: bash -n, markdown well-formedness", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Wrote Match Types note in todo.md Step 3.5 claiming ROADMAP.md is table-based with zero checkboxes (copying the research report's known-inaccurate premise)", "result": "failed", "reason": "Cross-spec consistency sweep (objective 3) caught this: live ROADMAP.md is checkbox-based with zero table rows (checkboxes=12, table_rows=0), the opposite claim. Fixed by rewriting the note to state the correct live structure while still presenting both match paths as live code."}
+  ],
+  "handoff_count": 0
+}

@@ -380,33 +380,45 @@ alone unless they contradict the new design.
 
 ---
 
-### Phase 6: Consistency sweep and acceptance verification [NOT STARTED]
+### Phase 6: Consistency sweep and acceptance verification [COMPLETED]
 
 **Goal**: Prove the binding acceptance criterion holds, prove the two specs agree, and prove the
 source-store and no-task-reference rules were honored.
 
 **Tasks**:
-- [ ] **Acceptance test**: in a scratch directory, create a `ROADMAP.md` fixture containing no
+- [x] **Acceptance test**: in a scratch directory, create a `ROADMAP.md` fixture containing no
   `## Phase` headings, no checkboxes, and no pipe-delimited status table, plus a minimal
   `state.json`. Run the parse-only command exactly as `commands/todo.md` Step 3.5 now specifies.
   Confirm the payload reports `roadmap_structure.parseable == false` and
   `warnings` contains `unparseable_roadmap`, and that the stderr banner appears. Then read both
   specs' output sections and confirm each one, on that input, mandates a printed warning rather
-  than an omitted section. Record the observed values.
-- [ ] **Non-regression test**: run the same parse-only command against the real
+  than an omitted section. Record the observed values. *(completed: parseable=false,
+  warnings=["unparseable_roadmap"], stderr banner confirmed; both specs' Step 4/Output (todo.md)
+  and Stage 8/16 (SKILL.md) mandate the warning on this branch)*
+- [x] **Non-regression test**: run the same parse-only command against the real
   `specs/ROADMAP.md`; confirm `parseable == true` with non-zero `checkboxes`, and that both specs
-  permit omission only on this branch.
-- [ ] **Cross-spec consistency**: diff the two specs' descriptions of the parser call, the
+  permit omission only on this branch. *(completed: phases=2, checkboxes=12, table_rows=0,
+  parseable=true)*
+- [x] **Cross-spec consistency**: diff the two specs' descriptions of the parser call, the
   eligibility filter, the snapshot construction, the abandoned-path ownership, and the output
   gate. Any disagreement is a defect to fix here, not to leave for a reader to reconcile.
-- [ ] **Source-store check**: `git status --short` shows modifications only under
-  `agent-system/extensions/core/` and `specs/`; zero modified paths under `.claude/`.
-- [ ] **No-task-references check**: grep all three edited files for task-number citation patterns
+  *(completed: found and fixed one defect -- todo.md's Step 3.5 Match Types note had copied the
+  research report's inaccurate "table-based, zero checkboxes" premise; corrected to state the
+  live structure (checkboxes=12, table_rows=0) while keeping both match paths documented as live
+  code. No other disagreements found on the five compared points.)*
+- [x] **Source-store check**: `git status --short` shows modifications only under
+  `agent-system/extensions/core/` and `specs/`; zero modified paths under `.claude/`. *(completed:
+  verified, zero .claude/ hits)*
+- [x] **No-task-references check**: grep all three edited files for task-number citation patterns
   (`task [0-9]`, `tasks [0-9]`, `(Task [0-9]`) and confirm every surviving hit is a literal
   annotation-format template (for example `*(Completed: Task {N}, {DATE})*`) rather than a
-  citation of this repository's task numbers.
-- [ ] **Structural checks**: `bash -n` on the script; confirm no `.claude/` path was edited; confirm
+  citation of this repository's task numbers. *(completed: zero hits in todo.md and the script;
+  one pre-existing hit in SKILL.md's vault-transition comment template, a runtime string built
+  from shell variables, not a literal task-number citation)*
+- [x] **Structural checks**: `bash -n` on the script; confirm no `.claude/` path was edited; confirm
   both markdown specs still parse as well-formed documents (headings and code fences balanced).
+  *(completed: bash -n exits 0; todo.md has 86 code-fence lines (even/balanced); SKILL.md's
+  stage/action/process/execution XML tags balance 18/18/18/1 open/close)*
 
 **Timing**: 0.75 hours
 
@@ -429,18 +441,18 @@ source-store and no-task-reference rules were honored.
 
 ## Testing & Validation
 
-- [ ] Parse-only invocation from `commands/todo.md` Step 3.5 runs verbatim, exits 0, and yields
+- [x] Parse-only invocation from `commands/todo.md` Step 3.5 runs verbatim, exits 0, and yields
   every field the spec goes on to read.
-- [ ] Filtered-snapshot `--annotate` invocation from Step 5.5 runs against a scratch roadmap copy
+- [x] Filtered-snapshot `--annotate` invocation from Step 5.5 runs against a scratch roadmap copy
   and returns a well-formed `annotation_summary`, leaving `specs/ROADMAP.md` and
   `specs/state.json` unmodified.
-- [ ] Zero-phase/zero-checkbox/zero-table-row roadmap yields `parseable: false` and
+- [x] Zero-phase/zero-checkbox/zero-table-row roadmap yields `parseable: false` and
   `warnings: ["unparseable_roadmap"]`, and both specs mandate a printed warning on that branch.
-- [ ] Real `specs/ROADMAP.md` still yields `parseable: true` with non-zero checkbox count
+- [x] Real `specs/ROADMAP.md` still yields `parseable: true` with non-zero checkbox count
   (non-regression against the report's inaccurate table-only premise).
-- [ ] `bash -n agent-system/extensions/core/scripts/roadmap-integration.sh` exits 0.
-- [ ] Both specs retain the meta/expanded exclusion partition and the abandoned annotation format.
-- [ ] No modified files under `.claude/`; no task-number citations in the three edited files.
+- [x] `bash -n agent-system/extensions/core/scripts/roadmap-integration.sh` exits 0.
+- [x] Both specs retain the meta/expanded exclusion partition and the abandoned annotation format.
+- [x] No modified files under `.claude/`; no task-number citations in the three edited files.
 
 ## Artifacts & Outputs
 
