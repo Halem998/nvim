@@ -436,7 +436,7 @@ naming style is introduced.
 
 ---
 
-### Phase 5: Per-phase-block enforcement in validate-artifact.sh [NOT STARTED]
+### Phase 5: Per-phase-block enforcement in validate-artifact.sh [COMPLETED]
 
 **Goal**: Add genuinely new loop-over-phase-blocks logic to `scripts/validate-artifact.sh` so
 "every phase declares a tier" is actually checked per phase, and sync the checklist in
@@ -444,29 +444,33 @@ naming style is introduced.
 exercised across all six generator sites.
 
 **Tasks**:
-- [ ] In the `# --- Plan-specific checks ---` block, add a per-phase iteration: locate every
+- [x] In the `# --- Plan-specific checks ---` block, add a per-phase iteration: locate every
       `^### Phase [0-9]+` heading's line number, treat each heading's block as spanning from that
       line to the line before the next `### Phase` heading (or EOF for the last), and search only
       within that range.
-- [ ] Implement the search with a pattern accepting BOTH punctuation conventions (D7):
+- [x] Implement the search with a pattern accepting BOTH punctuation conventions (D7):
       `\*\*Verification Tier\*\*:` and `\*\*Verification Tier:\*\*`.
-- [ ] Accumulate a per-phase pass/fail and emit one `log_warn` per untiered phase, naming the phase
+- [x] Accumulate a per-phase pass/fail and emit one `log_warn` per untiered phase, naming the phase
       number, e.g. "Phase 3 missing **Verification Tier** field". Do NOT emit a single
       document-wide pass/fail.
-- [ ] Use `log_warn`, not `log_error` (D3). Default mode continues to exit 0 for legacy plans;
+- [x] Use `log_warn`, not `log_error` (D3). Default mode continues to exit 0 for legacy plans;
       `--strict` callers get enforcement immediately via the existing
       `total_issues=$((errors + warnings))` branch. Add a source comment recording the promotion
       criterion so the deliberate warn level is not mistaken for an oversight.
-- [ ] Optionally validate the tier VALUE against the allowed set (`prose|local|interface|full`) and
+- [x] Optionally validate the tier VALUE against the allowed set (`prose|local|interface|full`) and
       warn on an unrecognized value; keep this in the same loop.
-- [ ] Do NOT add "Verification Tier" to the `PLAN_METADATA` array — that array drives the
+- [x] Do NOT add "Verification Tier" to the `PLAN_METADATA` array — that array drives the
       whole-document existence loop and would produce exactly the silent under-enforcement this
       phase exists to prevent. Add a source comment at the array saying so.
-- [ ] Verify `set -euo pipefail` compatibility: the `log_warn` function uses `((warnings++))`,
+- [x] Verify `set -euo pipefail` compatibility: the `log_warn` function uses `((warnings++))`,
       which returns non-zero when incrementing from 0. Confirm the existing call sites' behavior
       and match whatever guard pattern they already rely on; do not introduce a new bare
-      `((var++))` at a position where a non-zero return would abort the script.
-- [ ] Update `rules/plan-format-enforcement.md`: add the per-phase required-field line naming
+      `((var++))` at a position where a non-zero return would abort the script. *(deviation:
+      altered — no existing guard was found; log_error/log_warn/log_fix were all bare
+      `((var++))` and equally landmined, silently truncating output and breaking the
+      warnings-only exit-0 contract. Fixed all three, not just log_warn, to the safe
+      `var=$((var+1))` form; see phase-5 progress file for detail)*
+- [x] Update `rules/plan-format-enforcement.md`: add the per-phase required-field line naming
       `**Verification Tier**` (with its four allowed values), plus the optional `**Commit Mode**`
       and conditional `**Scope Hypothesis**` fields, and note the current advisory/warn level.
 

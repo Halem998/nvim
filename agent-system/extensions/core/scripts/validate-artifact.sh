@@ -15,6 +15,12 @@ set -euo pipefail
 REPORT_METADATA=("Task" "Started" "Completed" "Effort" "Dependencies" "Sources/Inputs" "Artifacts" "Standards")
 REPORT_SECTIONS=("Executive Summary" "Context & Scope" "Findings" "Decisions" "Recommendations")
 
+# NOTE: "Verification Tier" is deliberately NOT a member of PLAN_METADATA. PLAN_METADATA drives
+# a whole-document `grep -qF` existence check (see "Check metadata fields" below) that passes as
+# soon as the field text appears ANYWHERE in the file -- e.g. once, in phase 1 only. Verification
+# Tier is a PER-PHASE field; whole-document existence would silently under-enforce it (pass a
+# plan where only one of several phases is tiered). It is checked instead by the dedicated
+# per-phase-block loop in the "Plan-specific checks" section below.
 PLAN_METADATA=("Task" "Status" "Effort" "Dependencies" "Research Inputs" "Artifacts" "Standards" "Type")
 PLAN_SECTIONS=("Overview" "Goals & Non-Goals" "Risks & Mitigations" "Implementation Phases" "Testing & Validation" "Artifacts & Outputs" "Rollback/Contingency")
 
@@ -40,9 +46,14 @@ errors=0
 warnings=0
 fixes=0
 
-log_error() { echo "  [ERROR] $1"; ((errors++)); }
-log_warn()  { echo "  [WARN]  $1"; ((warnings++)); }
-log_fix()   { echo "  [FIXED] $1"; ((fixes++)); }
+# NOTE: use `var=$((var + 1))` assignment form, not bare `((var++))`. Under `set -euo pipefail`,
+# a bare post-increment `((var++))` evaluates to the PRE-increment value, so the 0->1 transition
+# (the very first call) evaluates to arithmetic 0/false and triggers `set -e` to abort the whole
+# script immediately -- silently truncating validation to a single reported issue with no
+# [PASS]/[FAIL] summary. The assignment form has no such landmine.
+log_error() { echo "  [ERROR] $1"; errors=$((errors + 1)); }
+log_warn()  { echo "  [WARN]  $1"; warnings=$((warnings + 1)); }
+log_fix()   { echo "  [FIXED] $1"; fixes=$((fixes + 1)); }
 log_info()  { echo "  [INFO]  $1"; }
 
 if [ -z "$artifact_path" ] || [ -z "$artifact_type" ]; then
@@ -141,6 +152,35 @@ if [ "$artifact_type" = "plan" ]; then
   # Check for Dependency Analysis table
   if ! grep -qF "Dependency Analysis" "$artifact_path"; then
     log_warn "Missing Dependency Analysis table under Implementation Phases"
+  fi
+
+  # --- Per-phase Verification Tier check (advisory-first, D3: warn not error) ---
+  # Promotion criterion (per context/formats/plan-format.md's "Enforcement level" subsection):
+  # promote this from log_warn to log_error once no non-terminal plan under specs/ lacks the
+  # field. Until then, default mode stays advisory (exits 0 on tier warnings alone) so legacy
+  # plans authored before this vocabulary existed keep passing; --strict enforces it today via
+  # the existing total_issues=$((errors + warnings)) branch below.
+  mapfile -t phase_line_nums < <(grep -n '^### Phase [0-9]\+' "$artifact_path" | cut -d: -f1)
+  if [ "${#phase_line_nums[@]}" -gt 0 ]; then
+    total_lines=$(wc -l < "$artifact_path")
+    for i in "${!phase_line_nums[@]}"; do
+      start_line="${phase_line_nums[$i]}"
+      phase_heading=$(sed -n "${start_line}p" "$artifact_path")
+      phase_num=$(echo "$phase_heading" | grep -oE '^### Phase [0-9]+' | grep -oE '[0-9]+' || true)
+      if [ $((i + 1)) -lt "${#phase_line_nums[@]}" ]; then
+        end_line=$(( phase_line_nums[$((i + 1))] - 1 ))
+      else
+        end_line="$total_lines"
+      fi
+      phase_block=$(sed -n "${start_line},${end_line}p" "$artifact_path")
+      # Accept both punctuation conventions (D7): **Verification Tier**: and **Verification Tier:**
+      tier_value=$(echo "$phase_block" | grep -oE '\*\*Verification Tier\*\*:[[:space:]]*[A-Za-z]+|\*\*Verification Tier:\*\*[[:space:]]*[A-Za-z]+' | head -1 | grep -oE '[A-Za-z]+$' || true)
+      if [ -z "$tier_value" ]; then
+        log_warn "Phase ${phase_num} missing **Verification Tier** field"
+      elif ! echo "$tier_value" | grep -qE '^(prose|local|interface|full)$'; then
+        log_warn "Phase ${phase_num} has unrecognized **Verification Tier** value: ${tier_value}"
+      fi
+    done
   fi
 fi
 

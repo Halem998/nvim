@@ -1,0 +1,38 @@
+{
+  "phase": 5,
+  "phase_name": "Per-phase-block enforcement in validate-artifact.sh",
+  "started_at": "2026-07-27T01:20:00Z",
+  "last_updated": "2026-07-27T02:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add per-phase-block iteration checking Verification Tier field with both punctuation conventions, log_warn per untiered phase, value validation, PLAN_METADATA exclusion comment",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Update rules/plan-format-enforcement.md with per-phase field checklist and advisory enforcement note",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/rules/plan-format-enforcement.md"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Used bare ((var++)) as originally in log_warn per the plan's literal wording",
+      "result": "failed",
+      "reason": "Discovered via live testing that set -euo pipefail aborts the whole script on the very first 0->1 increment transition of any log_error/log_warn call, truncating validation to a single reported issue with no [PASS]/[FAIL] summary and wrong exit codes for warnings-only runs. Fixed by switching all three counters (errors, warnings, fixes) to the safe var=$((var+1)) assignment form."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.7",
+      "description": "Verify set -euo pipefail compatibility for log_warn's ((warnings++))",
+      "type": "altered",
+      "reason": "The plan anticipated confirming an existing safe guard pattern already in use. Live testing showed no such guard existed anywhere in the script (log_error, log_warn, and log_fix were all bare ((var++)), all equally landmined) -- this was a pre-existing latent bug that silently truncated validation output for ANY plan with even one issue and produced wrong exit codes for warnings-only runs (exit 1 instead of the required exit 0). Fixed all three counter functions (not just log_warn) to the safe assignment form, since a partial fix limited to log_warn would still leave log_error and log_fix landmined and able to abort the script before the new per-phase loop is ever reached.",
+      "annotation": "*(deviation: altered — fixed all three counter functions, not just log_warn, after live testing revealed the bug was pre-existing and would otherwise abort validation before the new per-phase loop runs)*"
+    }
+  ]
+}
