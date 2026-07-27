@@ -490,7 +490,7 @@ into a durable artifact.
 
 ---
 
-### Phase 7: Demonstrate the fix under real concurrency [NOT STARTED]
+### Phase 7: Demonstrate the fix under real concurrency [COMPLETED]
 
 **Goal**: Empirically show both that misattribution is gone **and** that the `index.lock`
 failure-rate regression the research measured does not land.

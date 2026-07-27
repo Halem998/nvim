@@ -1,0 +1,22 @@
+{
+  "phase": 7,
+  "phase_name": "Demonstrate the fix under real concurrency",
+  "started_at": "2026-07-27T11:50:00Z",
+  "last_updated": "2026-07-27T12:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Build disposable scratch repo with shipped task-lock.sh and git-commit-scoped.sh", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Baseline (control): 30 iterations bare add+commit, record misattribution", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Path-scoping only: 30 iterations, record misattribution and index.lock failure rate", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Full fix: 30 iterations git-commit-scoped.sh, record misattribution and failure rate", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Scale to 8 concurrent committers, record failure rate and worst-case wait", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Assert V3 and V2 safety gates under concurrency", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Assert honest-index-rows addendum renders under concurrency", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Confirm no mutex directory leaked after all runs", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Record three-arm comparison in implementation summary", "status": "done", "files_touched": ["specs/908_prevent_git_index_contention_in_parallel_dispatch/summaries/01_git-index-contention-summary.md"]},
+    {"id": 10, "description": "Destroy scratch repo", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 10,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification": "Three-arm comparison (30 iterations each, two concurrent committers on disjoint paths): baseline (bare git add + bare git commit) reproduced misattribution 1/30 (contention on git's own index.lock suppresses much of the rest into lock failures rather than clean sweeps, an honest nuance recorded in the summary); path-scoping-only 0/30 misattribution but 10/30 (~33%) index.lock commit-failure rate, confirming the research's predicted regression; full fix (git-commit-scoped.sh) 0/30 misattribution AND 0/30 failure rate. 8-concurrent-committer scale run completed in 0.48s wall-clock with 0/8 warnings/errors and 8 distinct successful commits. Both safety gates (V3 exclude-only refusal, V2 unmatched-path drop) fired correctly under concurrent load without disrupting the concurrent sibling commit. honest-index-rows addendum rendered correctly. No .commit-lock or .scope-lock directory leaked after any run. Scratch repo and test scripts destroyed after the run; stop condition (full-fix arm not materially better than path-scoping-only) did not trigger."
+}

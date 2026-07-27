@@ -246,9 +246,9 @@ find_held_locks() {
     done
 }
 
-# --- Named-mutex primitives (task 809's original specs/.scope-lock/-only implementation,
-# generalized so a second, independent mutex directory -- specs/.commit-lock/, added below for
-# scoped-commit serialization -- can reuse the exact same mkdir/staleness/wait-budget logic
+# --- Named-mutex primitives (generalized from this file's original specs/.scope-lock/-only
+# implementation, so a second, independent mutex directory -- specs/.commit-lock/, added below
+# for scoped-commit serialization -- can reuse the exact same mkdir/staleness/wait-budget logic
 # without a second hand-copied implementation to drift out of sync). ---
 
 # acquire_named_mutex <mutex_dirname> <requested_stale> <default_stale_sec> <wait_budget_ms>
