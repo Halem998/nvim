@@ -212,35 +212,35 @@ statement.
 
 ---
 
-### Phase 2: Author the per-item pre-edit verification gate contract [NOT STARTED]
+### Phase 2: Author the per-item pre-edit verification gate contract [COMPLETED]
 
 **Goal**: Create `agent-system/extensions/core/context/contracts/pre-edit-gate.md` requiring
 cheap, proportionate per-item evidence before any item from a mechanically-generated list is
 applied, wired by name to the two shipped composition partners.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/context/contracts/pre-edit-gate.md`.
-- [ ] Write the same header note as Phase 1: loaded via explicit `@`-reference in BOTH modes; the
+- [x] Create `agent-system/extensions/core/context/contracts/pre-edit-gate.md`.
+- [x] Write the same header note as Phase 1: loaded via explicit `@`-reference in BOTH modes; the
       `context/contracts/` directory placement does not imply hard-mode-only.
-- [ ] Write the **A planning-time list is a hypothesis** premise: any enumerated file list,
+- [x] Write the **A planning-time list is a hypothesis** premise: any enumerated file list,
       candidate set, or count that reaches the implementer from a plan, a grep, or any other
       mechanical scan is a hypothesis about the codebase, never a fact about it. Name
       `plan-format.md`'s `**Scope Hypothesis:**` field explicitly and state that this contract is
       the implementation-side consumer that `plan-format.md` declares "out-of-scope for this
       document" — a phase carrying a `**Scope Hypothesis:**` line implies its items require
       per-item confirmation before any edit lands.
-- [ ] Write the **Probe before edit** rule: before applying any item from such a list, gather
+- [x] Write the **Probe before edit** rule: before applying any item from such a list, gather
       cheap evidence that the item is real. Give concrete probe examples with the shape they
       take: a **reference count** (does anything still call this?), a **build probe** (does
       removing/renaming it still compile?), a **definition lookup** (is there a real
       implementation behind this name, or only the declaration the scan matched?).
-- [ ] Write the **Proportionality** rule: probe cost scales with the edit's blast radius. A
+- [x] Write the **Proportionality** rule: probe cost scales with the edit's blast radius. A
       single-file comment tweak warrants a glance; deleting a symbol or renaming across a
       namespace warrants a reference count over the whole tree. Include an explicit cheapness
       ceiling so this cannot be deflected into open-ended investigation: the probe is a bounded
       check with a yes/no answer, not a research sub-task. If a probe cannot be made cheap, that
       itself is the signal to escalate to the plan, not to investigate further inline.
-- [ ] Write the **Failed probe becomes a documented reasoned exclusion** rule: an item whose
+- [x] Write the **Failed probe becomes a documented reasoned exclusion** rule: an item whose
       probe contradicts the hypothesis is neither silently skipped nor force-applied. It is
       recorded in the phase's `#### Reasoned Exclusions` table using the existing
       `Item | Reason | Evidence` columns from `plan-format.md` verbatim — the probe output goes
@@ -248,13 +248,13 @@ applied, wired by name to the two shipped composition partners.
       `context/standards/status-markers.md` hold, the phase closes as
       `[COMPLETED WITH EXCLUSIONS]`. State that no parallel or competing record schema may be
       invented for this purpose.
-- [ ] Write the **Orthogonality** section: this gate is a third, separate axis from
+- [x] Write the **Orthogonality** section: this gate is a third, separate axis from
       `plan-format.md`'s **Verification Tier** (`prose < local < interface < full`, which governs
       how thoroughly a *phase* is checked when it closes) and **Commit Mode**
       (`per-substep`/`atomic-batch`, which governs commit granularity). The pre-edit gate governs
       per-*item* evidence *before* an edit lands. Say explicitly that these must not be folded
       into one another, so a future reader does not treat them as the same knob.
-- [ ] Write a short **Observed failure modes** section giving the concrete shapes a naive
+- [x] Write a short **Observed failure modes** section giving the concrete shapes a naive
       mechanical list produces: a dead-code scan matching a declaration whose real implementation
       exists elsewhere; a namespace-cleanup list whose edit breaks the build because live call
       sites depend on the prefix; a rename list containing a known false positive. Describe these

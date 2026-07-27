@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Author the per-item pre-edit verification gate contract",
+  "started_at": "2026-07-27T18:30:00Z",
+  "last_updated": "2026-07-27T18:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create pre-edit-gate.md with header note, hypothesis premise, probe-before-edit rule, proportionality ceiling, reasoned-exclusion routing, orthogonality section, and observed failure modes",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/contracts/pre-edit-gate.md"]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
