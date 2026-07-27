@@ -1,0 +1,24 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Added Rule Q (check_undeclared_scripts) to check-extension-docs.sh and declared the 3 previously-undeployable nix/nvim lifecycle-hook scripts in provides.scripts, resolving all 3 baseline findings. Full-tree doc-lint exit is 1 (not 0): core FAILs on 2 unrelated Rule F content-drift hits (this task's own unavoidable self-drift plus a concurrent sibling task's drift), both disclosed in the summary, not hidden or silenced.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/928_undeclared_scripts_doc_lint_check/summaries/01_undeclared-scripts-doc-lint-summary.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    "agent-system/extensions/nix/manifest.json",
+    "agent-system/extensions/nvim/manifest.json"
+  ],
+  "decisions_made": [
+    "Resolved the 3 baseline findings by declaring the files in provides.scripts, not by adding a hooks-object exclusion",
+    "Normalized ext_path's trailing slash before the prefix-strip to avoid the false-positive-on-everything failure mode"
+  ],
+  "dead_ends": [],
+  "phases_completed": 3,
+  "phases_total": 3,
+  "plan_markers_verified": true
+}
