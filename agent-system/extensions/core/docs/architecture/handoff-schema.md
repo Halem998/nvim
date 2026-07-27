@@ -2,11 +2,19 @@
 
 **Status**: Current architecture.
 
-**File location**: `specs/{NNN}_{SLUG}/.orchestrator-handoff.json` (runtime; not checked in)
+**File location**: `specs/{NNN}_{SLUG}/.orchestrator-handoff.json` (per-dispatch runtime state,
+tracked as durable provenance)
 **Written by**: Skills when `orchestrator_mode: true` in delegation context
 **Read by**: `skill-orchestrate` state machine loop
 
-**See Also**: `architecture-spec.md` (Component 5), `orchestrate-state-machine.md`
+This file **is** git-tracked, unlike the loop guard and churn-state files `skill-orchestrate`
+also writes. The reader-side freshness gate documented below ("Readers MUST check freshness")
+neutralizes the "restored from an old commit" scenario a tracked file would otherwise risk —
+exactly the gate the loop guard lacks, which is why that file stays gitignored instead. See
+`context/standards/orchestrator-runtime-files.md` for the full two-class policy and rationale.
+
+**See Also**: `architecture-spec.md` (Component 5), `orchestrate-state-machine.md`,
+`context/standards/orchestrator-runtime-files.md`
 
 ## Path Resolution Contract
 

@@ -347,32 +347,32 @@ sites that create, resume from, and clean up those files.
 
 ---
 
-### Phase 4: Reconcile handoff-schema.md and record the loader limitation [NOT STARTED]
+### Phase 4: Reconcile handoff-schema.md and record the loader limitation [COMPLETED]
 
 **Goal**: Remove the contradiction the decision named explicitly, and prevent the
 `root-files/`-can-deliver-this mistake from recurring.
 
 **Tasks**:
-- [ ] `agent-system/extensions/core/docs/architecture/handoff-schema.md`:
-  - [ ] Rewrite line 5's `(runtime; not checked in)` to state the decided disposition: the handoff
+- [x] `agent-system/extensions/core/docs/architecture/handoff-schema.md`:
+  - [x] Rewrite line 5's `(runtime; not checked in)` to state the decided disposition: the handoff
         is per-dispatch runtime state that **is** tracked as durable provenance.
-  - [ ] Add one or two sentences immediately after, giving the reason: the reader-side
+  - [x] Add one or two sentences immediately after, giving the reason: the reader-side
         mtime-vs-`dispatch_start_ts` freshness gate documented later in this same file neutralizes
         the "restored from an old commit" scenario, which is exactly what the ungated loop guard
         lacks. Point to `orchestrator-runtime-files.md` for the full two-class policy.
-  - [ ] Scan the rest of the file for consistency and confirm the "The filename is static (not
+  - [x] Scan the rest of the file for consistency and confirm the "The filename is static (not
         timestamped). Each dispatch cycle overwrites the previous handoff" statement (~lines
         351-352) still holds — it does; overwriting a tracked file is unchanged behavior, only the
         per-cycle diff becomes part of history. Leave it as-is unless the surrounding framing
-        implies untracked-ness.
-  - [ ] Check the "Outcome Channels" section's `.return-meta.json` description for any equivalent
-        "not checked in" framing and correct it if present.
-- [ ] `agent-system/extensions/core/context/guides/loader-reference.md`:
-  - [ ] Add a short note near the `copy_root_files()` row (~line 29) recording that `root_files`
+        implies untracked-ness. *(completed: left as-is, confirmed still accurate)*
+  - [x] Check the "Outcome Channels" section's `.return-meta.json` description for any equivalent
+        "not checked in" framing and correct it if present. *(completed: none found)*
+- [x] `agent-system/extensions/core/context/guides/loader-reference.md`:
+  - [x] Add a short note near the `copy_root_files()` row (~line 29) recording that `root_files`
         deploy into the target `.claude/` root, so repo-root contributions (a `specs/*/` gitignore
         block being the motivating case) cannot be delivered this way and are applied by hand per
         `orchestrator-runtime-files.md`.
-- [ ] Verify no task-number citations were introduced.
+- [x] Verify no task-number citations were introduced. *(completed: grep clean)*
 
 **Timing**: 45 minutes
 

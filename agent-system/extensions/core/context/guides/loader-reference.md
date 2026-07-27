@@ -31,6 +31,14 @@ function M.{name}(manifest, source_dir, target_dir) -> copied_files, created_dir
 | `check_conflicts()` | all categories | Read-only scan; returns conflict list | n/a | `{target_dir}/{category}/` |
 | `remove_installed_files()` | n/a (takes file list) | Delete files; remove empty dirs deepest-first | n/a | n/a |
 
+**`copy_root_files()` cannot deliver a consumer repo-root contribution.** Its target is
+`{target_dir}/` root — for the core extension, `{target_dir}` is the consumer's `.claude/`
+directory, not the repository root. A pattern intended for the repo's own root `/.gitignore`
+(e.g. a `specs/*/` runtime-file ignore block) placed in `root-files/.gitignore` would deploy to
+`.claude/.gitignore` and resolve relative to `.claude/`, matching nothing. There is currently no
+loader function that writes to a consumer repo's root; such a contribution is applied by hand,
+once, per `context/standards/orchestrator-runtime-files.md`'s "Consumer Repo Setup" section.
+
 ### Copy Semantics Detail
 
 **Simple copy**: Read source file, write to target path. Parent directories created automatically.
