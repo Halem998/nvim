@@ -472,23 +472,14 @@ elif [ "$postflight_rc" -ne 0 ]; then
 fi
 ```
 
-**Step 2**: Add completion_summary to state.json (implementer-specific, not covered by centralized script):
+**Steps 2-3**: Propagate `completion_summary` and `roadmap_items` to state.json via the shared
+writer (`skill_propagate_completion_summary` in `scripts/skill-base.sh`), which implements the
+same guarded write both steps used to duplicate inline (non-empty-guarded `completion_summary`;
+`task_type != "meta"` AND non-empty/non-`"[]"`-guarded `roadmap_items`) — this is one of six
+call sites that converge on that single function:
 ```bash
-if [ -n "$completion_summary" ]; then
-    jq --arg summary "$completion_summary" \
-      '(.active_projects[] | select(.project_number == '$task_number')).completion_summary = $summary' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-fi
-```
-
-**Step 3**: Add roadmap_items for non-meta tasks (implementer-specific):
-```bash
-# For non-meta tasks: add roadmap_items (if present and non-empty)
-if [ "$task_type" != "meta" ] && [ "$roadmap_items" != "[]" ] && [ -n "$roadmap_items" ]; then
-    jq --argjson items "$roadmap_items" \
-      '(.active_projects[] | select(.project_number == '$task_number')).roadmap_items = $items' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-fi
+source .claude/scripts/skill-base.sh
+skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type"
 ```
 
 **Step 4**: Propagate memory candidates (if any) with append semantics:

@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Converge the three producer-side copies",
+  "started_at": "2026-07-27T08:11:00Z",
+  "last_updated": "2026-07-27T08:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "skill-implementer Stage 7 Steps 2-3 replaced with shared writer call", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-implementer/SKILL.md"]},
+    {"id": 2, "description": "skill-implementer-hard Stage 7a Steps 2-3 replaced, precondition preserved", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md"]},
+    {"id": 3, "description": "orchestrator-postflight.sh Stage 7b converged, SKIP_COMPLETION_DATA and outer guards preserved, skill-base.sh sourced at top", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrator-postflight.sh"]},
+    {"id": 4, "description": "Confirm orchestrator-postflight.sh remains unwired (Non-Goal)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Discovered out-of-scope sibling defect: commands/implement.md:173-180 has the identical broken $result_summary clobber, affecting the plain (non-orchestrated) /implement path. Not fixed here (out of the plan's file scope); flagged in the final summary for a follow-up task."
+}

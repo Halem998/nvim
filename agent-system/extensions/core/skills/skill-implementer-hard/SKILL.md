@@ -360,19 +360,10 @@ completion (see Step 1a there — on refusal, completion_summary/roadmap_items a
 the task is not yet complete):
 
 ```bash
-# Step 2: completion_summary
-if [ -n "$completion_summary" ]; then
-    jq --arg summary "$completion_summary" \
-      '(.active_projects[] | select(.project_number == '$task_number')).completion_summary = $summary' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-fi
-
-# Step 3: roadmap_items (non-meta tasks only)
-if [ "$task_type" != "meta" ] && [ "$roadmap_items" != "[]" ] && [ -n "$roadmap_items" ]; then
-    jq --argjson items "$roadmap_items" \
-      '(.active_projects[] | select(.project_number == '$task_number')).roadmap_items = $items' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-fi
+# Steps 2-3: completion_summary + roadmap_items, via the shared writer (one of six converged
+# call sites — see skill_propagate_completion_summary's header comment in skill-base.sh)
+source .claude/scripts/skill-base.sh
+skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type"
 
 # Step 4: memory_candidates (append semantics)
 if [ "$memory_candidates" != "[]" ] && [ -n "$memory_candidates" ]; then

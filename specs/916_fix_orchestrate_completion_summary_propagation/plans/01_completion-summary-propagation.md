@@ -221,25 +221,27 @@ independently-maintained copies.
 
 ---
 
-### Phase 3: Converge the three producer-side copies [NOT STARTED]
+### Phase 3: Converge the three producer-side copies [COMPLETED]
 
 **Goal**: The pre-existing implementer-side write logic stops being three independently-maintained
 copies.
 
 **Tasks**:
 
-- [ ] `skills/skill-implementer/SKILL.md` Stage 7: replace Steps 2 and 3 (lines ~475-492) with a
+- [x] `skills/skill-implementer/SKILL.md` Stage 7: replace Steps 2 and 3 (lines ~475-492) with a
       single `skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type"`
       call. Renumber or retitle the remaining steps so Step 4 (memory candidates) still reads
-      coherently, and keep the surrounding prose accurate.
-- [ ] `skills/skill-implementer-hard/SKILL.md` Stage 7a: same replacement for its Steps 2-3
+      coherently, and keep the surrounding prose accurate. *(completed)*
+- [x] `skills/skill-implementer-hard/SKILL.md` Stage 7a: same replacement for its Steps 2-3
       (lines ~363-375). Preserve the existing "only runs when Stage 7 did not refuse completion"
-      precondition verbatim — the shared function does not re-check the gate.
-- [ ] `scripts/orchestrator-postflight.sh` Stage 7b (lines 334-371): replace the two inline Python
+      precondition verbatim — the shared function does not re-check the gate. *(completed)*
+- [x] `scripts/orchestrator-postflight.sh` Stage 7b (lines 334-371): replace the two inline Python
       blocks with a call to the shared function, sourcing `skill-base.sh` at the top of the script
       if it is not already sourced. Preserve the `SKIP_COMPLETION_DATA` escape hatch and the
       `operation_type = "implement"` / `status = "implemented"` outer guards exactly as they are.
-- [ ] Do not wire `orchestrator-postflight.sh` into any caller (Non-Goal).
+      *(completed)*
+- [x] Do not wire `orchestrator-postflight.sh` into any caller (Non-Goal). *(completed: verified
+      no caller was added)*
 
 **Timing**: 45 minutes
 

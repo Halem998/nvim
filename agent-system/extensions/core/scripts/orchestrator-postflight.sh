@@ -66,6 +66,10 @@
 
 set -euo pipefail
 
+# Source the shared skill-lifecycle library for skill_propagate_completion_summary (Stage 7b
+# below). Not sourced elsewhere in this script, so it is sourced once here at the top.
+source .claude/scripts/skill-base.sh
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Observable-but-non-fatal wrapper around events-append.sh.
 #
@@ -336,39 +340,13 @@ fi
 # This block is here as a safety net when the shared script is called for implement
 # and the inline stage did NOT already write these fields.
 # The skill controls whether this runs by setting SKIP_COMPLETION_DATA=true before calling.
+# Delegates to skill_propagate_completion_summary (skill-base.sh, sourced at the top of this
+# script) — one of six call sites converged on that single guarded-write implementation.
 # ─────────────────────────────────────────────────────────────────────────────
 if [ "$operation_type" = "implement" ] && [ "${SKIP_COMPLETION_DATA:-false}" != "true" ]; then
-  if [ "$status" = "implemented" ] && [ -n "$completion_summary" ]; then
-    echo "[postflight] Writing completion_summary to state.json..."
-    python3 -c "
-import json
-with open('specs/state.json', 'r') as f:
-    state = json.load(f)
-for p in state['active_projects']:
-    if p['project_number'] == ${task_number}:
-        p['completion_summary'] = '''${completion_summary}'''
-        break
-with open('specs/state.json', 'w') as f:
-    json.dump(state, f, indent=2)
-    f.write('\n')
-" || echo "[postflight] WARNING: Failed to write completion_summary (non-blocking)" >&2
-  fi
-
-  if [ "$status" = "implemented" ] && [ "$task_type" != "meta" ] && [ "$roadmap_items" != "[]" ] && [ -n "$roadmap_items" ]; then
-    echo "[postflight] Writing roadmap_items to state.json..."
-    python3 -c "
-import json
-with open('specs/state.json', 'r') as f:
-    state = json.load(f)
-new_items = json.loads('''${roadmap_items}''')
-for p in state['active_projects']:
-    if p['project_number'] == ${task_number}:
-        p['roadmap_items'] = new_items
-        break
-with open('specs/state.json', 'w') as f:
-    json.dump(state, f, indent=2)
-    f.write('\n')
-" || echo "[postflight] WARNING: Failed to write roadmap_items (non-blocking)" >&2
+  if [ "$status" = "implemented" ]; then
+    skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type" \
+      || echo "[postflight] WARNING: Failed to write completion_summary/roadmap_items (non-blocking)" >&2
   fi
 fi
 
