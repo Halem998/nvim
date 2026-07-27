@@ -2,6 +2,9 @@
   "$schema": "orchestrator-handoff-v1",
   "phase": "implement",
   "status": "implemented",
+  "phases_completed": 7,
+  "phases_total": 7,
+  "plan_markers_verified": true,
   "summary": "All 7 phases COMPLETED. Shipped scripts/census-count.sh (occurrences/membership/cross-check subcommands, each mapping to one of the three named bug classes plus the cross-check discipline, each emitting a greppable record block with the verbatim producing command), scripts/tests/test-census-count.sh (8 cases, all three bug classes with naive-vs-correct assertions), scripts/tests/test-validate-no-task-references.sh (21 cases), context/standards/shell-script-testing.md, context/standards/census-methodology.md. Fixed hooks/validate-no-task-references.sh's separator-only regex gap (task-N/task_N/Task #N were invisible) plus a task-qualified compound Phase branch, with a confirmed mutation check (revert-then-restore). Registered 3 new provides.scripts entries and 2 new index-entries.json entries in agent-system/extensions/core/manifest.json and index-entries.json. Every edit targets agent-system/extensions/core/**; git status --short confirms zero .claude/** paths. Both test suites exit 0 (21/21, 8/8) from a clean shell. Three registration validators (validate-extension-index.sh, validate-context-index.sh, check-extension-docs.sh) all PASSED; validate-context-index.sh inspects the deployed .claude/context/index.json only and does not see this task's new entries -- reported as an expected stale-deploy discrepancy, not fixed (redeploy out of scope).",
   "artifacts": [
     {
