@@ -1,0 +1,21 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "research",
+  "status": "researched",
+  "summary": "Verified the validate-no-task-references.sh whitespace-only regex gap (task-788/task_788/Task #788 all invisible; no Phase support), surveyed the literature extension's scripts/tests/ harness shape and its flat test-lit-pipeline.sh counterpart, and found an existing but differently-shaped core-scripts test precedent (test-task-lock-reap.sh). Confirmed lean-sorry-census.sh has a sound stripper+compiler-cross-check design but zero tests. Recommends shipping both tooling and a documented method, a scope-based (narrow vs. pipeline) test-harness-location rule, and including Phase references in the hook regex fix.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/926_shared_tested_census_tooling_and_method/reports/01_shared-tested-census-tooling.md"
+    }
+  ],
+  "next_action_hint": "plan",
+  "files_modified": [],
+  "decisions_made": [
+    "Deliverable shape: both shared executable tooling and a documented standard method (not either/or), per the binding testedness constraint.",
+    "Recommend agent-system/extensions/core/scripts/tests/ for the new narrow, fixture-driven census test(s), following a scope-based split (narrow->tests/ subdir, broad/pipeline->flat) rather than blanket-copying either existing convention; treat as open to the planner's confirmation.",
+    "Recommend Phase references be brought in scope for the validate-no-task-references.sh regex fix alongside the separator/suffix fix.",
+    "Recommend the standard-method document live under context/standards/ (indexed, selectively loadable) rather than rules/ (auto-applied everywhere); flagged as a recommendation for planner confirmation, not a final decision."
+  ],
+  "dead_ends": []
+}

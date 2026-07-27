@@ -21,7 +21,7 @@ next_project_number: 937
 
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
   └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co
-926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+926 [PLANNING] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
   └─ 887 [RESEARCHED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
   └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co (see above)
 933 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
@@ -398,10 +398,11 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 926. Provide shared tested census tooling and a documented census method so repo-wide counts stop being re-invented wrong
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 885, Task 922, Task 925
+- **Research**: [926_shared_tested_census_tooling_and_method/reports/01_shared-tested-census-tooling.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 

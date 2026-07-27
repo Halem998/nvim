@@ -1,0 +1,44 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/926_shared_tested_census_tooling_and_method/reports/01_shared-tested-census-tooling.md",
+      "summary": "Verifies the validate-no-task-references.sh regex gap, surveys the literature test harness shape and the lean sorry census tool's cross-check design, flags an existing but divergent core-scripts test precedent (test-task-lock-reap.sh), and recommends a tooling+method deliverable shape with a scope-based test-harness-location rule."
+    }
+  ],
+  "next_steps": "Run /plan 926 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1785192054_7d9661",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 6
+  },
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/core/scripts/, an isolated shell-test pattern already exists (test-task-lock-reap.sh): build a throwaway mktemp -d root mimicking the real specs/ tree, copy the actual production script byte-for-byte into it (never mock/stub), and run PASSED/FAILED counter assertions against it. This zero-instrumentation approach avoids adding testability hooks to production scripts and is directly reusable for testing other core scripts (e.g. census tooling).",
+      "category": "PATTERN",
+      "source_artifact": "specs/926_shared_tested_census_tooling_and_method/reports/01_shared-tested-census-tooling.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["shell-test-harness", "mktemp", "test-task-lock-reap", "core-scripts", "isolated-testing"]
+    },
+    {
+      "content": "The literature extension mixes two test-shape conventions by scope, not arbitrarily: narrow single-script fixture-driven regression suites live under scripts/tests/ (test-literature-convert.sh + generate-test-fixtures.py), while a broad end-to-end pipeline suite (test-lit-pipeline.sh) stays flat in scripts/. When choosing a test harness location for a new core script, prefer this scope-based split (narrow->tests/ subdir, broad/pipeline->flat) over blanket copying either shape.",
+      "category": "PATTERN",
+      "source_artifact": "specs/926_shared_tested_census_tooling_and_method/reports/01_shared-tested-census-tooling.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["literature-extension", "test-harness-shape", "scripts/tests", "pipeline-test", "convention"]
+    },
+    {
+      "content": "hooks/validate-no-task-references.sh's task-number regex \\b[Tt]asks?[[:space:]]+[0-9]+(-[0-9]+)?\\b requires literal whitespace as the separator, so task-788, task_788, and Task #788 are all invisible to it despite hyphenated task-N forms being a documented, sanctioned convention elsewhere (git branch names in rules/git-workflow.md and rules/no-task-references-in-deliverables.md's own stated exception). Any future regex meant to catch 'task N' style references anywhere in this repo should use a separator class like [[:space:]_#-]+ (or an explicit alternation) rather than assuming whitespace-only separators, and should consider a parallel Phase N alternative since no existing hook covers Phase references at all.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/926_shared_tested_census_tooling_and_method/reports/01_shared-tested-census-tooling.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["regex-gap", "validate-no-task-references", "separator-class", "task-number-citation", "phase-reference"]
+    }
+  ],
+  "modified_files": [
+    "specs/926_shared_tested_census_tooling_and_method/reports/01_shared-tested-census-tooling.md"
+  ]
+}
