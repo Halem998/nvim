@@ -80,6 +80,14 @@ The agent selects the applicable tier(s) based on the task description and avail
 
 When uncertain, apply the highest applicable tier (Tier 1 > Tier 2 > Tier 3).
 
+**Relationship to plan verification tiers**: `context/formats/plan-format.md`'s
+`## Verification Tiers` section defines a separate, named (not numeric) tier system
+(`prose < local < interface < full`) that shares this contract's tie-break-upward design but
+answers a different question — reference grounding asks what source authority a task's research
+draws on; verification tiers ask how broadly in-phase verification must run during
+implementation. The two are deliberately independent and their tiers are not comparable
+1-for-1.
+
 ## Graceful Degradation
 
 When no reference materials are available (purely original work), this contract does not apply.

@@ -1,0 +1,38 @@
+{
+  "phase": 6,
+  "phase_name": "Index sync, cross-reference note, and whole-task sweep",
+  "started_at": "2026-07-27T02:05:00Z",
+  "last_updated": "2026-07-27T02:25:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add cross-reference note to reference-grounding.md near Tier Selection section",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/contracts/reference-grounding.md"]
+    },
+    {
+      "id": 2,
+      "description": "Recompute wc -l and update line_count for plan-format.md, task-breakdown.md, reference-grounding.md in index-entries.json",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/index-entries.json"]
+    },
+    {
+      "id": 3,
+      "description": "Confirm no-index-coverage files have zero rows; run whole-task verification sweep",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.5",
+      "description": "Run bash scripts/validate-context-index.sh and confirm no line-count mismatches for touched entries",
+      "type": "altered",
+      "reason": "The script is hardcoded to validate the DEPLOYED .claude/context/index.json and is guarded (deploy-root-guard.sh) to refuse running from the agent-system source tree. The deployed .claude/ copy is broadly stale (roughly 40 pre-existing mismatched entries unrelated to this task), and redeploying .claude/ is out of scope for this source-store-only task per the binding source-store rule. Correctness of the three touched entries was instead verified directly against the source of truth (agent-system/extensions/core/index-entries.json) via wc -l + jq cross-check: plan-format.md=299, task-breakdown.md=281, reference-grounding.md=102, all matching exactly.",
+      "annotation": "*(deviation: altered — script only validates the deployed .claude/ tree, which is stale pending an out-of-scope redeploy; verified directly against index-entries.json instead)*"
+    }
+  ]
+}

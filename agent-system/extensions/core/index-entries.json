@@ -315,7 +315,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation plan file format specification",
-      "line_count": 136,
+      "line_count": 299,
       "keywords": [
         "format",
         "plan",
@@ -2344,7 +2344,7 @@
       "domain": "core",
       "subdomain": "workflows",
       "summary": "Task breakdown and decomposition workflow",
-      "line_count": 270,
+      "line_count": 281,
       "keywords": [
         "workflows",
         "task",
@@ -2534,7 +2534,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H3 reference grounding contract: three tiers (literature, documentation, implementation) with source-to-implementation mapping and per-tier Source-Coverage Minimums (no single-source conclusions)",
-      "line_count": 94,
+      "line_count": 102,
       "keywords": [
         "reference-grounding",
         "transcription",

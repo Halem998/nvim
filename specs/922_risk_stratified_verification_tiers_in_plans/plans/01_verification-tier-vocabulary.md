@@ -510,34 +510,43 @@ list itself is a hypothesis derived from a grep, not a verified exhaustive set.
 
 ---
 
-### Phase 6: Index sync, cross-reference note, and whole-task sweep [NOT STARTED]
+### Phase 6: Index sync, cross-reference note, and whole-task sweep [COMPLETED]
 
 **Goal**: Correct `index-entries.json` line counts for every touched indexed file, add the
 reference-grounding cross-reference note, and run the final whole-task verification sweep.
 
 **Tasks**:
-- [ ] Add a short cross-reference note to `context/contracts/reference-grounding.md` (near its
+- [x] Add a short cross-reference note to `context/contracts/reference-grounding.md` (near its
       "Tier Selection" section) acknowledging the sibling verification-tier system in
       `plan-format.md`, noting that both share the tie-break-upward design and that the two tier
       systems answer different questions (reference grounding = what source authority applies;
       verification tiers = how broadly to verify during a phase). Keep it to two or three
       sentences; do not restate either vocabulary.
-- [ ] Recompute `wc -l` for every touched file that has an `index-entries.json` row and update its
+- [x] Recompute `wc -l` for every touched file that has an `index-entries.json` row and update its
       `line_count`: `formats/plan-format.md` (currently records 136 against an actual 222 before
       this task's edits — stale regardless), `workflows/task-breakdown.md` (currently 270 and
       accurate before edits), `contracts/reference-grounding.md` (currently 94).
-- [ ] Confirm no new context file was created, so no new `index-entries.json` row is needed (D6).
+- [x] Confirm no new context file was created, so no new `index-entries.json` row is needed (D6).
       If the implementer's judgment during Phase 1 produced a separate context file after all, add
       its row here with an accurate `line_count`, `domain`, `subdomain`, and `load_when` block
       matching sibling entries.
-- [ ] Confirm the files with no index coverage (`rules/git-workflow.md`,
+- [x] Confirm the files with no index coverage (`rules/git-workflow.md`,
       `rules/plan-format-enforcement.md`, `agents/planner-agent.md`,
       `agents/planner-hard-agent.md`, `skills/skill-team-plan/SKILL.md`,
       `scripts/validate-artifact.sh`, `docs/guides/user-guide.md`) genuinely have no rows — the
       index only covers the `context/` subtree — and record that as a checked-and-correct
       no-op rather than a silent omission.
-- [ ] Run `bash scripts/validate-context-index.sh` (or `--fix` if it supports the drift it finds)
-      and confirm it reports no line-count mismatches for the touched entries.
+- [x] Run `bash scripts/validate-context-index.sh` (or `--fix` if it supports the drift it finds)
+      and confirm it reports no line-count mismatches for the touched entries. *(deviation:
+      altered — the script is hardcoded to `.claude/context/index.json` and guarded
+      (`deploy-root-guard.sh`) to refuse running from the source tree; the deployed `.claude/`
+      copy is stale pre-redeploy for ~40 pre-existing entries unrelated to this task, not just
+      the 3 touched here, and redeploying `.claude/` is out of scope per the source-store rule.
+      Correctness verified directly against the source of truth,
+      `agent-system/extensions/core/index-entries.json`, via `wc -l` + `jq`: all three touched
+      entries now match exactly (plan-format.md 299, task-breakdown.md 281,
+      reference-grounding.md 102). Running the deployed script confirms it would report these
+      three among its stale set until the next redeploy.)*
 
 **Timing**: 0.75 hours
 
@@ -578,18 +587,21 @@ index work expands accordingly.
 
 ## Testing & Validation
 
-- [ ] `bash -n agent-system/extensions/core/scripts/validate-artifact.sh` passes.
-- [ ] Negative fixture (partially tiered two-phase plan) produces exactly one tier warning.
-- [ ] Both field-punctuation conventions are accepted by the new check.
-- [ ] A pre-existing plan under `specs/` still exits 0 in default mode and exits 1 under `--strict`.
-- [ ] All six phase-template restatement sites carry `Verification Tier`.
-- [ ] `atomic-batch` appears inside `git-workflow.md`'s Commit-Per-Green-Substep Mandate section,
+- [x] `bash -n agent-system/extensions/core/scripts/validate-artifact.sh` passes.
+- [x] Negative fixture (partially tiered two-phase plan) produces exactly one tier warning.
+- [x] Both field-punctuation conventions are accepted by the new check.
+- [x] A pre-existing plan under `specs/` still exits 0 in default mode and exits 1 under `--strict`.
+- [x] All six phase-template restatement sites carry `Verification Tier`.
+- [x] `atomic-batch` appears inside `git-workflow.md`'s Commit-Per-Green-Substep Mandate section,
       not merely somewhere in the file.
-- [ ] Every sub-top tier row in `plan-format.md` has a populated blind-spot cell.
-- [ ] The final-gate invariant sentence is present and no tier text weakens it.
-- [ ] `bash agent-system/extensions/core/scripts/validate-context-index.sh` reports no line-count
-      mismatch for touched entries.
-- [ ] No file under `.claude/` was modified.
+- [x] Every sub-top tier row in `plan-format.md` has a populated blind-spot cell.
+- [x] The final-gate invariant sentence is present and no tier text weakens it.
+- [x] `bash agent-system/extensions/core/scripts/validate-context-index.sh` reports no line-count
+      mismatch for touched entries. *(deviation: altered — see Phase 6 task-list note; the
+      script only validates the deployed `.claude/` tree, which is stale pending a redeploy that
+      is out of scope for this source-store-only task. Verified directly against
+      `index-entries.json`, the source of truth, instead.)*
+- [x] No file under `.claude/` was modified.
 
 ## Artifacts & Outputs
 
