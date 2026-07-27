@@ -325,33 +325,33 @@ green commit at each intra-batch file edit.
 
 ---
 
-### Phase 3: Propagate to the two planner agent contracts [NOT STARTED]
+### Phase 3: Propagate to the two planner agent contracts [COMPLETED]
 
 **Goal**: Add the new fields to `planner-agent.md` and `planner-hard-agent.md`, and state the
 tie-break-upward rule and the counts-are-hypotheses obligation in the planner contracts (scope item
 C requires the tie-break in the contracts as well as the format doc, not just one).
 
 **Tasks**:
-- [ ] In `agents/planner-agent.md`'s Stage 5 plan template, add `**Verification Tier**:`
+- [x] In `agents/planner-agent.md`'s Stage 5 plan template, add `**Verification Tier**:`
       immediately before the existing `**Verification**:` field in the Phase 1 block, plus
       `**Commit Mode**:` and `**Scope Hypothesis**:` as noted-optional/conditional lines.
-- [ ] In `planner-agent.md`, add a Stage 4 (decompose) sub-step instructing the planner to assign a
+- [x] In `planner-agent.md`, add a Stage 4 (decompose) sub-step instructing the planner to assign a
       tier per phase, including the tie-break-upward sentence "When uncertain, apply the strictest
       applicable tier (full > interface > local > prose)."
-- [ ] In `planner-agent.md`, add the counts-are-hypotheses obligation to the planning guidance:
+- [x] In `planner-agent.md`, add the counts-are-hypotheses obligation to the planning guidance:
       any count, file list, or scope estimate asserted in a plan is a hypothesis requiring
       implementation-time confirmation, never a fact; when a phase asserts one, it carries a
       `**Scope Hypothesis**:` line.
-- [ ] In `planner-agent.md` Stage 6a (the pre-metadata self-verification checklist), add "each
+- [x] In `planner-agent.md` Stage 6a (the pre-metadata self-verification checklist), add "each
       phase has a `**Verification Tier**:` field" alongside the existing `**Depends on**:` check.
       This is where authoring-time enforcement actually lives (D3).
-- [ ] In `agents/planner-hard-agent.md`'s "Required hard-mode additions to plan format" delta list,
+- [x] In `agents/planner-hard-agent.md`'s "Required hard-mode additions to plan format" delta list,
       add a numbered item requiring the per-phase `**Verification Tier**:` field, with the same
       tie-break-upward sentence and a note that hard mode's existing "Estimated output: ~N lines"
       figure is itself a scope hypothesis subject to implementation-time confirmation.
-- [ ] Add the counts-are-hypotheses obligation to `planner-hard-agent.md` as well; do not rely on
+- [x] Add the counts-are-hypotheses obligation to `planner-hard-agent.md` as well; do not rely on
       it inheriting from `plan-format.md`.
-- [ ] In both agent files, add a MUST NOT line: do not weaken the final gate — tiering governs
+- [x] In both agent files, add a MUST NOT line: do not weaken the final gate — tiering governs
       in-phase granularity only.
 
 **Timing**: 1.25 hours

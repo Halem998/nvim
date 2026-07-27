@@ -260,6 +260,14 @@ Create directory and write plan file following plan-format.md plus hard-mode add
    true` (Stage 4a fired); reuses the 778 `sorry_inventory` field names verbatim and cites
    `{{FOLLOWUP:i}}` placeholder tokens in its `Follow-Up Task` column until skill postflight
    substitution resolves them
+7. Per-phase `**Verification Tier**:` field (one of `prose`, `local`, `interface`, `full` — see
+   plan-format.md's `## Verification Tiers` section). When uncertain, apply the strictest
+   applicable tier (full > interface > local > prose). Note that hard mode's own existing
+   "Estimated output: ~N lines" figure (item 2 above) is itself a scope hypothesis subject to
+   implementation-time confirmation — the same counts-are-hypotheses obligation applies to it,
+   not only to a phase's own `**Scope Hypothesis**:` line. Any count, file list, or scope
+   estimate a phase asserts is a hypothesis requiring implementation-time confirmation, never a
+   fact; when a phase asserts one, give it a `**Scope Hypothesis**:` line.
 
 **Standard plan format**: Follow plan-format.md for all other structure.
 
@@ -302,3 +310,6 @@ Same as base planner-agent. On timeout: save partial plan with [PARTIAL] status.
 2. Create phases estimated to require >4 hours without splitting
 3. Omit preserved-assets accounting when prior work exists
 4. Use status value "completed" (triggers Claude stop behavior)
+5. Weaken the final gate via the verification-tier field. Tiering governs in-phase granularity
+   only — the full gate set still runs before a phase closes and before the task completes,
+   unchanged.

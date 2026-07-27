@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "Propagate to the two planner agent contracts",
+  "started_at": "2026-07-27T00:30:00Z",
+  "last_updated": "2026-07-27T00:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add Verification Tier / Commit Mode / Scope Hypothesis fields to planner-agent.md Stage 5 template, Stage 4 tier-assignment sub-step, Stage 6a checklist entry, counts-are-hypotheses guidance",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/planner-agent.md"]
+    },
+    {
+      "id": 2,
+      "description": "Add per-phase Verification Tier requirement, counts-are-hypotheses obligation, and MUST NOT line to planner-hard-agent.md",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/planner-hard-agent.md"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

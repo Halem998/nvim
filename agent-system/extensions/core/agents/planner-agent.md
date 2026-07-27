@@ -146,6 +146,21 @@ Apply task-breakdown.md guidelines:
    - Consider roadmap ordering when sequencing phases
    - Identify opportunities to advance adjacent roadmap items
 
+8. **Assign a Verification Tier per Phase**
+   - Every phase MUST carry a `**Verification Tier**:` value: one of `prose`, `local`,
+     `interface`, `full` — see `context/formats/plan-format.md`'s `## Verification Tiers`
+     section for the full vocabulary and per-tier blind spots.
+   - When uncertain, apply the strictest applicable tier (full > interface > local > prose).
+   - Set `**Commit Mode**:` only when the phase is a genuine pre-declared atomic multi-file
+     batch (`atomic-batch`); otherwise omit it (default `per-substep`).
+   - Any count, file list, or scope estimate asserted for a phase is a hypothesis requiring
+     implementation-time confirmation, never a fact. When a phase asserts one, give it a
+     `**Scope Hypothesis**:` line stating the hypothesis and how the implementer should confirm
+     it.
+   - **MUST NOT**: do not weaken the final gate. Tiering governs in-phase granularity only —
+     the full gate set still runs before a phase closes and before the task completes,
+     unchanged.
+
 ### Stage 5: Create Plan File
 
 Create directory if needed:
@@ -226,6 +241,15 @@ Phases within the same wave can execute in parallel.
 
 **Depends on**: none
 
+**Verification Tier**: {one of `prose`, `local`, `interface`, `full` -- see plan-format.md's
+`## Verification Tiers` section}
+
+**Commit Mode**: {optional, default `per-substep`; use `atomic-batch` only for a pre-declared
+multi-file batch -- see plan-format.md}
+
+**Scope Hypothesis**: {conditional -- required only when this phase asserts a count, an
+enumerated file list, or a scope estimate}
+
 **Files to modify**:
 - `path/to/file` - {what changes}
 
@@ -291,6 +315,9 @@ Also verify dependency consistency:
 - Each phase has a `**Depends on**:` field
 - The Dependency Analysis wave table matches the per-phase `Depends on` fields
 - All referenced phase numbers exist in the plan
+- Each phase has a `**Verification Tier**:` field (one of `prose`, `local`, `interface`, `full`)
+  — this is where authoring-time enforcement of the tier vocabulary actually lives; the
+  validator's own check is advisory-only
 
 **If any required field is missing**:
 1. Edit the plan file to add the missing field
