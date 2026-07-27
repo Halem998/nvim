@@ -305,14 +305,14 @@ the summary if it differs.
 
 ---
 
-### Phase 3: Protect the record from the Stage 5a blind rewrite in both implementation agents [NOT STARTED]
+### Phase 3: Protect the record from the Stage 5a blind rewrite in both implementation agents [COMPLETED]
 
 **Goal**: An exclusion-closed phase survives Stage 5a's automated marker repair with its marker —
 and therefore its record — intact, and a phase left stale-but-documented is repaired *to the
 exclusion marker*, never blind-promoted to `[COMPLETED]`.
 
 **Tasks**:
-- [ ] In `agents/general-implementation-agent.md` Stage 5a, replace the blind repair loop with an
+- [x] In `agents/general-implementation-agent.md` Stage 5a, replace the blind repair loop with an
       exclusion-aware one. Requirements: (a) the `^### Phase ...\[(NOT STARTED|IN PROGRESS|PARTIAL)\]`
       detection alternation is unchanged, so a heading already at `[COMPLETED WITH EXCLUSIONS]`
       remains outside it and is never rewritten; (b) before repairing a stale heading, inspect that
@@ -321,17 +321,17 @@ exclusion marker*, never blind-promoted to `[COMPLETED]`.
       companion phase-number extraction to the canonical decimal-admitting form
       (`grep -oE 'Phase [0-9]+(\.[0-9]+)?' | grep -oE '[0-9]+(\.[0-9]+)?'`), which today truncates
       `Phase 3.1` to `3` and makes `update-phase-status.sh` fail with "Phase 3 not found".
-- [ ] Apply the byte-identical change to `agents/general-implementation-hard-agent.md` Stage 5a.
+- [x] Apply the byte-identical change to `agents/general-implementation-hard-agent.md` Stage 5a.
       Research confirmed the two blocks are byte-identical today; they must remain so afterward.
       The hard variant's additional `plan_markers_verified: true` write and its single-phase
       `phase_number` scoping are untouched.
-- [ ] In both agents, add an explicit instruction near the phase-close guidance: closing a phase by
+- [x] In both agents, add an explicit instruction near the phase-close guidance: closing a phase by
       reasoned exclusion is a **direct** transition performed by the agent via
       `update-phase-status.sh ... COMPLETED_WITH_EXCLUSIONS` at close time. Never park the phase at
       `[PARTIAL]` expecting Stage 5a or a later dispatch to finish it — Stage 5a is a backstop, not
       the intended path, and a phase parked at `[PARTIAL]` without a record stays a fake completion
       risk. Point at the admission test from Phase 1 rather than restating it.
-- [ ] In both agents, add the self-report instruction: a phase closed via
+- [x] In both agents, add the self-report instruction: a phase closed via
       `[COMPLETED WITH EXCLUSIONS]` counts toward the `phases_completed` integer written to the
       handoff, exactly as a `[COMPLETED]` phase does. State why — the completion-claim gate reads
       only that self-report and never reads the plan file, so an under-count here permanently

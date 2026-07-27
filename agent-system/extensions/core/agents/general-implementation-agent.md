@@ -363,18 +363,51 @@ After all phases complete:
 ### Stage 5a: Verify and Repair Plan Markers
 
 **Backstop**: after all phases complete, perform a fresh read of the plan file to confirm every
-completed phase heading carries `[COMPLETED]`. This guarantees phases 2..N converge even if a
-per-phase `update-phase-status.sh` call in Stage 4A/4D above was missed for any reason.
+completed phase heading carries `[COMPLETED]` or `[COMPLETED WITH EXCLUSIONS]`. This guarantees
+phases 2..N converge even if a per-phase `update-phase-status.sh` call in Stage 4A/4D above was
+missed for any reason.
+
+**Closing a phase by reasoned exclusion is a direct transition, not a Stage 5a repair.** When a
+phase's admission test passes (see `context/standards/status-markers.md`'s
+`[COMPLETED WITH EXCLUSIONS]` subsection), the agent closes it directly with
+`update-phase-status.sh ... COMPLETED_WITH_EXCLUSIONS` at close time in Stage 4D — never by
+parking the phase at `[PARTIAL]` and expecting Stage 5a or a later dispatch to finish it. Stage
+5a below is a backstop for missed direct transitions, not the intended path; a phase parked at
+`[PARTIAL]` "to be safe" is a fake-completion risk, not a safe default.
+
+**Self-report**: a phase closed via `[COMPLETED WITH EXCLUSIONS]` counts toward the
+`phases_completed` integer written to the handoff and to `.return-meta.json`, identically to a
+`[COMPLETED]` phase. This matters because the completion-claim gate (`skill_gate_completion_claim`
+in `scripts/skill-base.sh`) reads only that self-reported integer and never reads the plan file —
+under-counting an exclusion-closed phase here permanently refuses task completion.
 
 ```bash
 # Count stale phase headings (NOT STARTED, IN PROGRESS, PARTIAL)
 stale_total=$(grep -cE '^### Phase [0-9]+.*\[(NOT STARTED|IN PROGRESS|PARTIAL)\]' "$plan_file" 2>/dev/null || echo 0)
 
-# Repair each stale heading via update-phase-status.sh
+# Repair each stale heading via update-phase-status.sh -- exclusion-aware: a stale heading whose
+# phase body carries a `#### Reasoned Exclusions` subsection repairs to the exclusion marker,
+# never to plain COMPLETED (see context/standards/status-markers.md's
+# `[COMPLETED WITH EXCLUSIONS]` subsection and context/formats/plan-format.md's
+# `## Reasoned Exclusions` record format).
 if [ "$stale_total" -gt 0 ]; then
+  total_lines=$(wc -l < "$plan_file")
   grep -nE '^### Phase [0-9]+.*\[(NOT STARTED|IN PROGRESS|PARTIAL)\]' "$plan_file" | while IFS=: read -r linenum content; do
-    phase_num=$(echo "$content" | grep -oE "Phase [0-9]+" | grep -oE "[0-9]+")
-    bash .claude/scripts/update-phase-status.sh "$task_number" "$project_name" "$phase_num" COMPLETED
+    # Decimal-admitting phase-number extraction: `Phase 3.1` extracts as `3.1`, not `3`.
+    phase_num=$(echo "$content" | grep -oE 'Phase [0-9]+(\.[0-9]+)?' | grep -oE '[0-9]+(\.[0-9]+)?')
+    # Scope the body-search window to this phase only: from just after this heading to just
+    # before the next `### Phase` heading (or end of file).
+    next_heading_line=$(awk -v start="$linenum" 'NR > start && /^### Phase [0-9]+/ {print NR; exit}' "$plan_file")
+    if [ -z "$next_heading_line" ]; then
+      body_end="$total_lines"
+    else
+      body_end=$((next_heading_line - 1))
+    fi
+    if [ "$body_end" -gt "$linenum" ] && sed -n "$((linenum + 1)),${body_end}p" "$plan_file" | grep -q '^#### Reasoned Exclusions'; then
+      bash .claude/scripts/update-phase-status.sh "$task_number" "$project_name" "$phase_num" COMPLETED_WITH_EXCLUSIONS
+    else
+      bash .claude/scripts/update-phase-status.sh "$task_number" "$project_name" "$phase_num" COMPLETED
+    fi
   done
 fi
 ```
