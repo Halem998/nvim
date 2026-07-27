@@ -311,8 +311,74 @@ check_settings_hook_registration_completeness() {
     dup=$(jq -r --arg e "$ev" '.hooks[$e][]?.hooks[]?.command // empty' "$deployed_settings" 2>/dev/null \
       | grep -oE '[A-Za-z0-9_.-]+\.sh' | sort | uniq -d)
     for s in $dup; do
-      advisory "settings.json duplicate hook registration for event '$ev': $s appears more than once in the deployed .claude/settings.json Stop-matcher (or equivalent) array"
+      advisory "settings.json duplicate hook registration for event '$ev': $s appears more than once in the deployed .claude/settings.json Stop-matcher (or equivalent) array (add-only merge cannot remove this -- manual cleanup required)"
     done
+  done
+
+  check_settings_merge_source_coverage "$ext_path"
+}
+
+# Sub-check of Rule O. Catches the specific, previously-unnoticed failure mode that let hook
+# registrations sit undeployed indefinitely while every other signal looked healthy.
+#
+# root-files/settings.json is INSTALL-ONCE: copy_root_files skips it whenever the target already
+# exists, so anything added only there can never reach an already-initialized repo, no matter how
+# many regenerations run. The file that DOES reach existing repos is the merge target declared in
+# manifest.json (merge_targets.settings.source, i.e. merge-sources/settings-hooks.json).
+#
+# The sibling check above compares source-vs-deployed and would report such a hook as "missing
+# from the deployed settings.json" with a remediation of "regenerate" -- advice that cannot work
+# for an install-once addition. This check names the real remedy instead.
+#
+# THREE conditions must ALL hold before reporting. The third is what keeps this check useful
+# rather than noisy: a hook may legitimately live only in root-files/settings.json if it predates
+# the repos that consume it and is therefore already present in their deployed trees. Reporting
+# those would emit ~9 permanent, unfixable advisories on a healthy repo and train readers to
+# ignore the whole lane. Only a hook that is absent from the deployed tree AND has no merge-source
+# route is genuinely stuck -- that is the defect class worth surfacing.
+check_settings_merge_source_coverage() {
+  local ext_path="$1"
+  local source_settings="$ext_path/root-files/settings.json"
+  local manifest="$ext_path/manifest.json"
+  local deployed_settings="$REPO_ROOT/.claude/settings.json"
+
+  [[ -f "$source_settings" ]] || return 0
+  [[ -f "$manifest" ]] || return 0
+  jq empty "$source_settings" 2>/dev/null || return 0
+
+  local merge_rel merge_source
+  merge_rel=$(jq -r '.merge_targets.settings.source // empty' "$manifest" 2>/dev/null)
+  [[ -n "$merge_rel" ]] || return 0
+  merge_source="$ext_path/$merge_rel"
+
+  if [[ ! -f "$merge_source" ]]; then
+    advisory "manifest declares merge_targets.settings.source=$merge_rel but that file does not exist -- no settings addition can reach an already-initialized repo"
+    return 0
+  fi
+  jq empty "$merge_source" 2>/dev/null || return 0
+
+  local root_scripts merge_scripts deployed_scripts s
+  root_scripts=$(jq -r '.hooks // {} | to_entries[] | .value[]?.hooks[]?.command // empty' "$source_settings" 2>/dev/null \
+    | grep -oE '[A-Za-z0-9_.-]+\.sh' | sort -u)
+  merge_scripts=$(jq -r '.hooks // {} | to_entries[] | .value[]?.hooks[]?.command // empty' "$merge_source" 2>/dev/null \
+    | grep -oE '[A-Za-z0-9_.-]+\.sh' | sort -u)
+
+  # Absent deployed settings.json => treat nothing as already-live, so every uncovered hook is
+  # genuinely stuck and gets reported. Fail-loud, not fail-silent.
+  if [[ -f "$deployed_settings" ]] && jq empty "$deployed_settings" 2>/dev/null; then
+    deployed_scripts=$(jq -r '.hooks // {} | to_entries[] | .value[]?.hooks[]?.command // empty' "$deployed_settings" 2>/dev/null \
+      | grep -oE '[A-Za-z0-9_.-]+\.sh' | sort -u)
+  else
+    deployed_scripts=""
+  fi
+
+  for s in $root_scripts; do
+    # Condition 2: no merge-source route.
+    grep -qxF "$s" <<< "$merge_scripts" && continue
+    # Condition 3: not already live in the deployed tree. A hook that predates the consuming
+    # repos is already registered there and needs no merge route -- skip it.
+    grep -qxF "$s" <<< "$deployed_scripts" && continue
+    advisory "hook '$s' is registered ONLY in root-files/settings.json (install-once), has no entry in $merge_rel, and is NOT present in the deployed .claude/settings.json -- it can never arrive; add it to $merge_rel as its own single-command matcher object"
   done
 }
 
@@ -324,11 +390,14 @@ check_settings_hook_registration_completeness() {
 # condition than "deployed but drifted" -- yet the prior info-skip line was easy to lose (and
 # fully suppressed under --quiet), silently inverting that severity ordering.
 #
-# GUARDRAIL (binding, do not remove without re-reading the originating plan): the pre-existing
-# core deploy drift this check surfaces (skill-base.sh/orchestrator-postflight.sh stale-deployed;
-# events-append.sh/events-query.sh/the two events hooks never deployed) is REAL RIGHT NOW and can
-# ONLY be resolved by a user-driven <leader>al "Sync all (replace existing)" regeneration -- there
-# is no headless/CI path. This check therefore NEVER calls fail() by default for a core
+# GUARDRAIL (binding, do not remove without re-reading the originating plan): core deploy drift
+# is resolved by regenerating the deploy tree -- either interactively via <leader>al "Sync all
+# (replace existing)" or headlessly via scripts/deploy-headless.sh. (An earlier revision of this
+# comment asserted there was no headless path; that was wrong. See
+# context/patterns/regeneration-is-manual-only.md.) Regeneration is still an ACTION SOMEONE MUST
+# TAKE rather than something this gate can assume has happened, and one advisory class -- a hook
+# registered only in the install-once root-files/settings.json -- is not fixed by regenerating at
+# all. This check therefore NEVER calls fail() by default for a core
 # "not deployed" condition: doing so would hard-fail this doc-lint gate for EVERY caller until
 # the user regenerates, including concurrent sibling sessions validating unrelated manifest
 # changes via this same script, and every commit thereafter. It reports via advisory() instead --
@@ -947,8 +1016,12 @@ if [[ "$DEPLOY_DRIFT_ADVISORIES" -gt 0 ]]; then
     echo "  - $line"
   done
   echo
-  echo "$DEPLOY_DRIFT_ADVISORIES advisory item(s) found. Resolve via a user-run <leader>al"
-  echo "'Sync all (replace existing)' regeneration -- there is no headless/CI path."
+  echo "$DEPLOY_DRIFT_ADVISORIES advisory item(s) found. Resolve by regenerating the deploy tree,"
+  echo "either interactively (<leader>al -> 'Sync all (replace existing)') or headlessly:"
+  echo "    bash .claude/scripts/deploy-headless.sh"
+  echo "Then confirm with: bash .claude/scripts/verify-deploy.sh"
+  echo "Note: advisories naming an install-once file (root-files/settings.json) are NOT fixed by"
+  echo "regenerating -- follow their instruction to add the entry to the merge source instead."
   echo "Set STRICT_CORE_DEPLOY=1 to treat these as hard failures (e.g. post-regeneration verification)."
   echo
 fi

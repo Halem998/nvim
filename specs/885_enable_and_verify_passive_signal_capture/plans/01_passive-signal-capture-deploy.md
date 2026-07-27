@@ -17,7 +17,16 @@ nvim's gitignored `.claude/` tree, and every call site failed silently via `|| t
 gap for a full day. Research settled the central feasibility question: there is **no headless/CI
 path** to trigger the `<leader>al` regeneration that would deploy it (`execute_sync` is a
 module-local closure with no exported entry point; `vim.fn.confirm()` is unconditional). Therefore
-this task **cannot complete end-to-end today and will finish [PARTIAL]**. This plan lands every
+this task **cannot complete end-to-end today and will finish [PARTIAL]**.
+
+> **CORRECTION (post-implementation).** The feasibility premise above is **false**, and it shaped
+> this entire plan's structure — Phases 5 and 6 were written as permanently user-owned because of
+> it. `M.load_all_globally` **is** exported, and `vim.fn.confirm()` is an ordinary function
+> reference that can be stubbed in-process. `execute_sync` being module-local is true but
+> irrelevant: the exported entry point calls it. A headless deploy is now implemented as
+> `agent-system/extensions/core/scripts/deploy-headless.sh` and verified end to end.
+
+This plan lands every
 deliverable that does NOT depend on regeneration — the observable-failure fix (scope 2), the
 nullable `cwd` schema field (scope 5, `cwd` only), and the deploy-drift/completeness gate in
 `check-extension-docs.sh` (scope 6) — each verified today by something actually run and observed
@@ -36,6 +45,9 @@ claims event flow is verified today.
 The research report is integrated wholesale:
 - **Feasibility (settled)**: no headless bypass; the confirm dialog is mandatory for every repo.
   This plan does NOT plan a bypass, monkeypatch, or synthetic re-implementation of `execute_sync`.
+  **CORRECTED**: this was wrong — see the correction block in Overview above. Stubbing
+  `vim.fn.confirm` before calling the exported `M.load_all_globally` is neither a
+  re-implementation nor a synthetic bypass; it drives the same code path the picker does.
 - **Scope 2 call sites (verified)**: 4 in `skill-base.sh`, 2 in `orchestrator-postflight.sh`
   (already partially observable — the pattern to generalize), 2 in `events-log-lifecycle.sh`, 2 in
   `events-log-artifact.sh`.

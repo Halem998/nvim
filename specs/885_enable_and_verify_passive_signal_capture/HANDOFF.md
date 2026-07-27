@@ -112,11 +112,25 @@ have ever fired, in either repo, because of the `settings.json` gap above. Phase
 
 ## Part A: Manual `<leader>al` Regeneration (Phase 5) — original procedure, for reference
 
-**Why this cannot be automated**: see
+**CORRECTION — this CAN be automated.** The paragraph below was wrong and is retained only to
+show what was believed. `M.load_all_globally` is exported, and `vim.fn.confirm()` is an ordinary
+function reference that can be stubbed in-process; `execute_sync` being module-local never
+mattered because the exported entry point calls it. Use:
+
+```bash
+bash .claude/scripts/deploy-headless.sh          # this repo
+bash .claude/scripts/deploy-headless.sh ~/.dotfiles
+bash .claude/scripts/verify-deploy.sh            # confirm the result
+```
+
+The interactive procedure below remains valid and is still the better choice for a human at a
+terminal — the confirm dialog shows the replacement count before you agree.
+
+~~**Why this cannot be automated**: see
 `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md` for the full
 technical explanation. In short: `execute_sync` (the actual sync worker) is a module-local
 closure with no exported entry point, and it is gated behind an unconditional `vim.fn.confirm()`
-call. There is no headless/CI path -- a human must drive the interactive picker.
+call. There is no headless/CI path -- a human must drive the interactive picker.~~
 
 ### Exact Procedure (repeat per repo)
 

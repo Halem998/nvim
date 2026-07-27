@@ -410,6 +410,15 @@ regeneration to edit or to reason about):
   itself perform or verify. **Mitigation**: this report establishes, with code-level citations, that
   it cannot (no headless-safe path exists) — the plan must mark this step user-owned and the
   corresponding verification `[PARTIAL]` until the user confirms it happened.
+
+  > **CORRECTION (post-implementation).** The parenthetical above is **wrong**, and it was the
+  > most consequential error in this report. A headless path does exist:
+  > `M.load_all_globally` is exported, and the `vim.fn.confirm()` gate is an ordinary function
+  > reference that can be stubbed in-process. Verified by deploying 263 artifacts into a
+  > throwaway directory. The finding that `execute_sync` is module-local was correct but
+  > irrelevant — it is called internally by the exported entry point. See
+  > `agent-system/extensions/core/scripts/deploy-headless.sh` and
+  > `context/patterns/regeneration-is-manual-only.md`.
   - **Risk**: scope item 3/4 edits land in `root-files/settings.json` instead of dotfiles, either by
   habit (matching this repo's `file_scope`) or convenience. **Mitigation**: this report's evidence
   (settings-precedence docs + the live `~/.claude/settings.json` env-block precedent) should be
@@ -428,8 +437,11 @@ regeneration to edit or to reason about):
 ## Context Extension Recommendations
 
 - **Topic**: `<leader>al` regeneration is fundamentally interactive (no headless path exists).
+  **CORRECTED**: a headless path does exist — see the correction block above. The context file
+  this section recommended was created, initially encoded this same wrong claim, and has since
+  been rewritten to document the working headless invocation instead.
 - **Gap**: no context file documents this constraint; a future task could waste effort trying to
-  automate it without reading this report or 874's summary first.
+  automate it without reading this report or the self-sync-guard work's summary first.
 - **Recommendation**: once this task lands, add a short note to
   `agent-system/extensions/core/docs/guides/creating-extensions.md` (or a new
   `context/patterns/` file) stating plainly that `<leader>al`'s "Load Core"/"Load All" sync has no
