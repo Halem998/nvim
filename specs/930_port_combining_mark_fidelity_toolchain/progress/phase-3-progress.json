@@ -1,0 +1,32 @@
+{
+  "phase": 3,
+  "phase_name": "Doc-Lint Verification",
+  "started_at": "2026-07-27T11:40:00Z",
+  "last_updated": "2026-07-27T11:42:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run check-extension-docs.sh (deployed copy) and confirm literature extension is clean across undeclared-script, flat-orphan, and manifest-entry categories",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Run agent-system/extensions/core/scripts/check-extension-docs.sh directly from source tree",
+      "result": "failed",
+      "reason": "Script self-detects source-tree invocation and errors, requiring a deployed .claude/scripts/ or .opencode/scripts/ tree for its ../.. path resolution; redirected to the pre-existing deployed copy at .claude/scripts/check-extension-docs.sh (read-only run, no writes)"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.6",
+      "description": "If the doc-lint script is unavailable or its checks are not yet present, mark this phase [PARTIAL]",
+      "type": "skipped",
+      "reason": "Condition not met -- the doc-lint script (deployed copy) was available and ran clean with zero literature-extension failures",
+      "annotation": "*(deviation: skipped -- condition not met, the doc-lint script was available and ran clean)*"
+    }
+  ]
+}
