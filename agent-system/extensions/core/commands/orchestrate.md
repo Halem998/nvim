@@ -332,9 +332,9 @@ The delegation context passed to the skill must include:
 
 The skill manages wave-by-wave dispatch, per-task postflight (status sync + artifact linking), and writes results to `specs/.orchestrator-multi-state.json`.
 
-#### Step 5: Batch Git Commit and Consolidated Output
+#### Step 5: Commit Reconciliation and Consolidated Output
 
-After the single `skill-orchestrate` invocation completes, read results from `specs/.orchestrator-multi-state.json` and produce a batch git commit (non-blocking) and consolidated output.
+After the single `skill-orchestrate` invocation completes, read results from `specs/.orchestrator-multi-state.json` and produce a residue check (non-blocking) and consolidated output.
 
 ```bash
 mt_state_file="specs/.orchestrator-multi-state.json"
@@ -356,50 +356,39 @@ fi
 skipped_count=${#skipped_tasks[@]}
 ```
 
-**Batch Git Commit**:
+**Commit Reconciliation (no batch commit)**:
 
-Apply targeted staging per `.claude/context/standards/git-staging-scope.md` — iterate the scope
-over each task directory in the requested range, never a repo-wide add — and commit via
-`.claude/scripts/git-commit-scoped.sh`, the single sanctioned implementation of path-scoped,
-mutex-serialized committing. The helper injects the canonical ephemeral-runtime-file exclusion
-set (`.claude/context/standards/orchestrator-runtime-files.md` documents the underlying two-class
-policy) automatically for every task-directory pathspec it sees, so an in-flight loop guard,
-churn state, drift-inspection scratch file, or `.lock/` directory is never swept into a mid-batch
-commit — callers no longer need to spell the exclusion set out by hand. This site's own two
-sequential sub-steps within one orchestrator thread (BATCHING RULE / COMPLETION SEQUENCING) are
-not where the observed misattribution happened; converting it to the shared helper is
-defense-in-depth and consistency with the rest of the pipeline, not a fix for an observed
-collision here specifically. The commit mutex still matters for THIS site because it can run
-concurrently with per-task commits from other in-flight `/orchestrate`/`/implement` dispatches
-sharing the same index:
+MT mode no longer produces one combined end-of-batch commit here. Per-task commits are issued
+inside `skill-orchestrate`'s own per-task postflight loop (Stage MT-4 step 5.5), one commit per
+task per phase transition, using that task's own `task_dir` and self-reported `modified_files` —
+see `.claude/context/standards/git-staging-scope.md`'s "Multi-Task Application" subsection for the
+authoritative per-task scope contract. The combined commit that used to run here was retired
+because it entangled every task in the requested range into a single unrevertable commit,
+mixing N tasks' diffs and index rows and defeating per-task revert (see
+`.claude/context/patterns/batch-orchestration-guardrails.md`'s hazard 2 for the retired hazard this
+closes).
+
+This step now runs only a defensive, non-blocking residue check — it WARNS ONLY and never
+commits, because a blanket commit here would recreate exactly the entanglement being removed:
 
 ```bash
-stage_paths=("specs/TODO.md" "specs/state.json")
-for tnum in "${validated_tasks[@]}"; do
-  tpadded=$(printf "%03d" "$tnum")
-  tname=$(jq -r --argjson num "$tnum" \
-    '.active_projects[] | select(.project_number == $num) | .project_name' \
-    specs/state.json)
-  [ -n "$tname" ] && stage_paths+=("specs/${tpadded}_${tname}/")
-done
-
-if [ "$failed_count" -eq 0 ] && [ "$skipped_count" -eq 0 ]; then
-  commit_message="orchestrate tasks {range_summary}: complete orchestration
-
-Tasks: ${completed_tasks}"
-else
-  commit_message="orchestrate tasks {range_summary}: complete orchestration (${succeeded_count}/{total} succeeded)
-
-Tasks completed: ${completed_tasks}
-Tasks failed: ${failed_count} (see multi-state log)
-Tasks skipped: ${skipped_count}"
+residue=$(git status --porcelain -- specs/ 2>/dev/null)
+if [ -n "$residue" ]; then
+  echo "[orchestrate] WARNING: uncommitted residue under specs/ after batch completion:" >&2
+  echo "$residue" >&2
+  echo "[orchestrate] Per-task commits are issued inside the skill's per-task postflight; review and commit manually." >&2
 fi
-
-bash .claude/scripts/git-commit-scoped.sh \
-  --message "$commit_message" \
-  --session "{batch_session_id}" \
-  -- "${stage_paths[@]}"
 ```
+
+**Exit-path coverage** — every MT terminal outcome and where its commit is issued:
+
+| Outcome | Commit issued where |
+|---------|---------------------|
+| `completed` | Stage MT-4 step 5.5, at the task's own postflight iteration (message: complete research/plan/implementation, per that task's `dispatch_status`) |
+| `failed` | Stage MT-4 step 5.5 still runs for a failed dispatch; artifacts and status changes it produced are real and committed |
+| `blocked` | Stage MT-4 step 5.5 still runs; same reasoning as `failed` |
+| Partial (gate-refused, or `MAX_CYCLES_MT` reached mid-loop) | Stage MT-4 step 5.5 runs at the partial-form message on every cycle that reaches it, including the cycle where `MAX_CYCLES_MT` is hit |
+| Deferred self-modifying (a task whose own dispatch is deferred rather than run this cycle) | Never dispatched and never status-mutated this cycle, so it correctly produces no commit this cycle — it becomes eligible, and committable, on a later cycle |
 
 **Consolidated Output**:
 

@@ -209,16 +209,16 @@ one means a second commit site was introduced, which this plan forbids.
 
 ---
 
-### Phase 2: Retire the batch commit in commands/orchestrate.md Step 5 [NOT STARTED]
+### Phase 2: Retire the batch commit in commands/orchestrate.md Step 5 [COMPLETED]
 
 **Goal**: Step 5 no longer performs a combined batch commit. Consolidated output is preserved; a
 defensive residue check replaces the commit.
 
 **Tasks**:
-- [ ] Delete the `stage_paths` construction loop and the `git-commit-scoped.sh` invocation from the
+- [x] Delete the `stage_paths` construction loop and the `git-commit-scoped.sh` invocation from the
       "Batch Git Commit" sub-section, along with the `commit_message` branch that built the
       combined message.
-- [ ] Replace the sub-section with a "Commit Reconciliation (no batch commit)" sub-section that:
+- [x] Replace the sub-section with a "Commit Reconciliation (no batch commit)" sub-section that:
       (a) states plainly that MT mode no longer produces one combined end-of-batch commit and that
       per-task commits are issued inside the skill's per-task postflight loop; (b) explains WHY —
       the combined commit entangles N tasks' diffs and index rows, defeating per-task revert; and
@@ -233,16 +233,16 @@ defensive residue check replaces the commit.
       ```
       The check WARNS ONLY — it must never commit, because a blanket commit here would recreate
       exactly the entanglement being removed.
-- [ ] Retitle the Step 5 heading from "Batch Git Commit and Consolidated Output" to reflect the new
+- [x] Retitle the Step 5 heading from "Batch Git Commit and Consolidated Output" to reflect the new
       content (e.g. "Commit Reconciliation and Consolidated Output"). Update any in-file
       cross-reference to the old heading text.
-- [ ] Preserve verbatim: the `mt_state_file` result-reading block that precedes it, the entire
+- [x] Preserve verbatim: the `mt_state_file` result-reading block that precedes it, the entire
       **Consolidated Output** block, and the closing "After consolidated output, STOP" instruction.
-- [ ] Add a short exit-path coverage note listing every MT terminal outcome and where its commit is
+- [x] Add a short exit-path coverage note listing every MT terminal outcome and where its commit is
       issued (completed / failed / blocked / partial-from-MAX_CYCLES / deferred-self-modifying).
       Deferred-self-modifying tasks are never dispatched and never status-mutated, so they
       correctly produce no commit — say so, rather than leaving it inferred.
-- [ ] Confirm `CHECKPOINT 3` (the single-task commit) is untouched.
+- [x] Confirm `CHECKPOINT 3` (the single-task commit) is untouched.
 
 **Timing**: 1 hour
 
@@ -264,7 +264,7 @@ heading.
 
 **Verification**:
 - `grep -n "git-commit-scoped.sh" agent-system/extensions/core/commands/orchestrate.md` returns
-  exactly two hits, both below the `### CHECKPOINT 3` heading line.
+  exactly two hits, both below the `### CHECKPOINT 3` heading line. *(deviation: altered — the file has a pre-existing THIRD hit, a prose mention inside CHECKPOINT 3's own explanatory paragraph (unrelated to this phase's edit, not a second commit call site). All three hits fall below the `### CHECKPOINT 3` heading and zero fall in the MULTI-TASK DISPATCH section, satisfying the substantive intent — no MT batch commit, single-task CHECKPOINT 3 untouched — of this bullet.)*
 - No `stage_paths` array remains in the MULTI-TASK DISPATCH section:
   `awk '/MULTI-TASK/,/### CHECKPOINT 1/' commands/orchestrate.md | grep -c stage_paths` is `0`.
 - The Consolidated Output markdown block and the "After consolidated output, STOP" line are
