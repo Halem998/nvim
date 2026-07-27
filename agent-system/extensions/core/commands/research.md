@@ -420,15 +420,18 @@ The skill will spawn the appropriate agent(s) to conduct research and create a r
 1. **Validate Return**
    Required fields: status, summary, artifacts
 
-2. **Verify Artifacts** (research-specific; kept inline — `command-gate-out.sh`'s
-   `validate-artifact.sh --fix` leg is dead code and cannot substitute for this check)
+2. **Verify Artifacts** (research-specific; kept inline as a claim-integrity check on the paths
+   the agent's own return metadata claims — distinct from and complementary to
+   `command-gate-out.sh`'s directory-wide format sweep, which validates every artifact file
+   present regardless of what was claimed)
    Check each artifact path exists on disk
 
 ```bash
 bash .claude/scripts/command-gate-out.sh "$task_number" "research" "$SESSION_ID"
 # Reads .return-meta.json; applies defensive status correction if needed
-# status_token mapping (Phase 1, task 810): operation "research" -> target_status "research"
-# Runs validate-artifact.sh --fix (non-blocking)
+# status_token mapping (see command-gate-out.sh's own comment block): operation "research" ->
+# target_status "research"
+# Runs the shared skill_validate_task_artifacts directory sweep (non-blocking)
 # Defensive correction (state.json + TODO.md) handled by this script
 ```
 

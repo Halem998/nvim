@@ -436,58 +436,61 @@ the behavior that has never once fired in production.
 
 ---
 
-### Phase 6: Documentation coherence and the single normative vocabulary [NOT STARTED]
+### Phase 6: Documentation coherence and the single normative vocabulary [COMPLETED]
 
 **Goal**: Every doc that described the now-removed bug describes post-fix reality, and
 `return-metadata-file.md` is the explicit single normative source for the status vocabulary,
 referenced rather than restated elsewhere.
 
 **Tasks**:
-- [ ] `commands/research.md` (anchor: ``**Verify Artifacts** (research-specific; kept inline —
+- [x] `commands/research.md` (anchor: ``**Verify Artifacts** (research-specific; kept inline —
       `command-gate-out.sh`'s `validate-artifact.sh --fix` leg is dead code and cannot substitute
       for this check)``, line 424 as of planning): reword to describe the two checks as
       complementary, not dead/redundant — the inline step is a **claim-integrity** check on the
       paths the agent itself returned; gate-out's sweep is a **directory-wide format** check over
-      every artifact present, regardless of what was claimed. Both are wanted.
-- [ ] While rewording that block, remove the task-number citation in the adjacent comment line
+      every artifact present, regardless of what was claimed. Both are wanted. *(completed)*
+- [x] While rewording that block, remove the task-number citation in the adjacent comment line
       (anchor: `status_token mapping (Phase 1, task 810)`), replacing it with a durable anchor
       (e.g. naming `command-gate-out.sh`'s `status_token` mapping). This is inside the region
-      already being edited; do not expand beyond it.
-- [ ] `scripts/command-gate-out.sh` comment block (anchor: `would have failed
+      already being edited; do not expand beyond it. *(completed)*
+- [x] `scripts/command-gate-out.sh` comment block (anchor: `would have failed
       update-task-status.sh's validation had this branch ever been exercised`, ~69-73): rewrite
       to describe the branch as **live**, and keep the still-valuable distinction it draws
       between `operation`, `status_token`, and `expected_status`. Remove the now-false
-      never-exercised framing.
-- [ ] `scripts/command-gate-out.sh` accept-list (anchor: the `[ "$skill_status" = "implemented" ]`
+      never-exercised framing. *(completed)*
+- [x] `scripts/command-gate-out.sh` accept-list (anchor: the `[ "$skill_status" = "implemented" ]`
       conditional): add a comment above it cross-referencing
       `.claude/context/formats/return-metadata-file.md` as the normative source of these values,
       so the list and the spec cannot drift silently. Do NOT change the list's contents.
-- [ ] `context/formats/return-metadata-file.md` (anchor: the `### status (required)` value table
+      *(completed; list contents confirmed unchanged)*
+- [x] `context/formats/return-metadata-file.md` (anchor: the `### status (required)` value table
       and the ``**Note**: Never use `"completed"``` line): add a short statement declaring this
       table the **normative** status vocabulary for `.return-meta.json`,
       `specs/.return-meta-multi.json`, and — by reference — `.orchestrator-handoff.json`. Leave
-      the existing table and Note intact.
-- [ ] `context/formats/return-metadata-file.md`: add a compact disambiguation table naming the
+      the existing table and Note intact. *(completed; git diff confirms insertion-only, table
+      and Note byte-identical)*
+- [x] `context/formats/return-metadata-file.md`: add a compact disambiguation table naming the
       three distinct vocabularies that share the words "completed"/"implemented", and which
       file/field each governs: (1) this skill-status vocabulary
       (`.return-meta.json` / `.return-meta-multi.json`); (2) state.json task status, where
       `"completed"` is CORRECT; (3) the lifecycle/wezterm notification status in
       `orchestrator-postflight.sh`, unrelated to either. Explicitly warn against cross-wiring
-      them. No task-number citations.
-- [ ] `docs/architecture/handoff-schema.md` (anchor: `"status": "researched | planned |
+      them. No task-number citations. *(completed)*
+- [x] `docs/architecture/handoff-schema.md` (anchor: `"status": "researched | planned |
       implemented | partial | failed | blocked"`, line 74 as of planning): add one sentence
       pointing to `context/formats/return-metadata-file.md` as the shared normative enumeration
       that this field's values are drawn from, noting the identity is intentional even though the
-      two files govern different artifacts.
-- [ ] `docs/architecture/handoff-schema.md` (anchor: the prose restating `orchestrate-recover-
+      two files govern different artifacts. *(completed, placed at the `### \`status\` (required)`
+      field-definition heading rather than inside the illustrative JSON block)*
+- [x] `docs/architecture/handoff-schema.md` (anchor: the prose restating `orchestrate-recover-
       outcome.sh`'s accept-list, ``whose `status` is `researched`, `planned`, or `implemented``,
       ~line 268): add the same cross-reference so this second restatement also points at the
-      normative source instead of standing alone.
-- [ ] Add a short note (in `handoff-schema.md` near the recover-outcome passage, or in the
+      normative source instead of standing alone. *(completed)*
+- [x] Add a short note (in `handoff-schema.md` near the recover-outcome passage, or in the
       recover-outcome discussion already there) recording that its accept-list needs no change
       under this vocabulary and that its freshness gate is mtime-based, not vocabulary-based — so
       a future reviewer does not reintroduce coupling between the two mechanisms. Express it as a
-      design fact, not as task history; no task-number citations.
+      design fact, not as task history; no task-number citations. *(completed)*
 
 **Timing**: 1 hour
 

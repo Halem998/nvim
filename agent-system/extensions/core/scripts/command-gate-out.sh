@@ -77,9 +77,8 @@ skill_status=$(jq -r '.status' "$meta_file")
 # which only accepts research|plan|implement|pr_ready. It is deliberately distinct from
 # "operation": "revise" produces a "planned" state.json status (expected_status) but must pass
 # "plan" (not "revise") as target_status; "orchestrate" produces a "completed" state.json status
-# but must pass "implement" (not "orchestrate") — this repairs a latent bug where "orchestrate"
-# was previously passed verbatim and would have failed update-task-status.sh's validation had
-# this branch ever been exercised on a desynced orchestrate run.
+# but must pass "implement" (not "orchestrate") — this maps "orchestrate" to a valid
+# update-task-status.sh target_status instead of passing it through verbatim.
 case "$operation" in
   research)    expected_status="researched"; status_token="research" ;;
   plan)        expected_status="planned";    status_token="plan" ;;
@@ -89,6 +88,12 @@ case "$operation" in
   *)           expected_status="";           status_token="" ;;
 esac
 
+# skill_status accept-list: the normative enumeration of these three success values is
+# context/formats/return-metadata-file.md's status vocabulary for .return-meta.json — keep this
+# list and that table in sync rather than letting them drift independently. This branch is live
+# for operation=orchestrate (not dead code): once the skill-orchestrate writer emits
+# "implemented" instead of the format's forbidden "completed", a desynced state.json correctly
+# falls through this accept-list and reaches the correction below.
 if [ -n "$expected_status" ] && { [ "$skill_status" = "implemented" ] || \
    [ "$skill_status" = "researched" ] || [ "$skill_status" = "planned" ]; }; then
 

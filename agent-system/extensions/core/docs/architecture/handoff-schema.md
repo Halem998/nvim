@@ -141,6 +141,10 @@ Outcome of this dispatch cycle.
 - `"failed"`: Non-recoverable failure — implementation cannot continue
 - `"blocked"`: Hard blockers prevent progress — escalation required
 
+This six-value enumeration is intentionally identical to `.return-meta.json`'s `status` field.
+`context/formats/return-metadata-file.md` is the shared, normative source for both — this field
+draws from that table rather than defining a second, independently-maintained enumeration.
+
 ### `summary` (required)
 2-4 sentences describing what was accomplished. **Token budget: ~100 tokens**. Be concise.
 The orchestrator reads this to understand cycle outcome without reading full artifacts.
@@ -268,7 +272,18 @@ A recovered outcome is fail-closed: only a present, fresh (within the current di
 parseable `.return-meta.json` whose `status` is `researched`, `planned`, or `implemented` is ever
 treated as a success. A missing, stale, unparseable, `in_progress`, or otherwise non-success
 `.return-meta.json` preserves the pre-existing missing-handoff error path exactly, unchanged by
-this fallback.
+this fallback. This three-value accept-list is drawn from the same normative vocabulary in
+`context/formats/return-metadata-file.md` as the schema field above — it is restated here only
+because it is a strict subset (the success values), not a competing enumeration.
+
+**Freshness is orthogonal to vocabulary, by design.** The accept-list above needed no change when
+the skill-status vocabulary's forbidden `"completed"` writer was fixed elsewhere (Stage 8 of
+`skill-orchestrate/SKILL.md` now emits `"implemented"`): this script's gate is `meta_mtime` versus
+the current dispatch's `window_start_ts`, not the status string. A `.return-meta.json` left over
+from a *previous* invocation's Stage 8 always has an mtime before the current invocation's
+`window_start_ts` and is therefore classified stale regardless of what status value it contains.
+Do not couple these two mechanisms — a future change to the status vocabulary should never need a
+corresponding change here, and vice versa.
 
 **`completion_summary` / `roadmap_items` live exclusively in `.return-meta.json`, never in this
 handoff.** The JSON Schema above has no `completion_summary` or `roadmap_items` field, and none

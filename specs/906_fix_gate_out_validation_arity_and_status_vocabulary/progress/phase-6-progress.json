@@ -1,0 +1,15 @@
+{
+  "phase": 6,
+  "phase_name": "Documentation coherence and the single normative vocabulary",
+  "started_at": "2026-07-27T01:15:00Z",
+  "last_updated": "2026-07-27T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Reword research.md dead-code parenthetical, drop task-number citation", "status": "done", "files_touched": ["agent-system/extensions/core/commands/research.md"]},
+    {"id": 2, "description": "Rewrite command-gate-out.sh never-exercised comment, add accept-list cross-reference", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/command-gate-out.sh"]},
+    {"id": 3, "description": "Add normative declaration + disambiguation table to return-metadata-file.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/return-metadata-file.md"]},
+    {"id": 4, "description": "Add two cross-references + orthogonality note to handoff-schema.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
