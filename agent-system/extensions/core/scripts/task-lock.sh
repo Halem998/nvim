@@ -20,19 +20,28 @@
 #   task-lock.sh init-marker <file_path>    (stdin = JSON content; task 808)
 #   task-lock.sh scope-acquire <session_id> [stale_sec]
 #   task-lock.sh scope-release <token>
+#   task-lock.sh commit-acquire <session_id> [stale_sec]
+#   task-lock.sh commit-release <token>
 #
 # scope-acquire/scope-release expose the specs/.scope-lock/ global mutex (defined below as
 # acquire_scope_mutex/release_scope_mutex, originally introduced for cmd_acquire's cross-task
 # overlap scan) as a standalone CLI primitive for callers that need to bracket a critical section
 # spanning MULTIPLE process invocations (e.g. a shell script wrapping several other scripts' state
-# writes) rather than a single function's lifetime. See
-# .claude/context/patterns/task-lock.md for the full contract: the mutex is NOT reentrant
-# (SCOPE_MUTEX_HELD is the sanctioned way for a callee to detect an outer holder and skip nested
-# acquire/release), staleness is holder-declared (the acquiring process's chosen stale_sec is
-# written into the mutex directory so every waiter honors the SAME window, not its own default),
-# and release is owner-token-verified (an unconditional rm -rf on release would be unsafe once
-# acquire and release are separate processes -- a stale-reclaimed holder's release must never
-# delete a successor's mutex).
+# writes) rather than a single function's lifetime. commit-acquire/commit-release expose a SIBLING
+# mutex, specs/.commit-lock/, serializing the git add + git commit pair around scoped commits (see
+# scripts/git-commit-scoped.sh) -- a DISTINCT directory from .scope-lock, guarded by a DISTINCT
+# reentrancy flag (COMMIT_MUTEX_HELD, never SCOPE_MUTEX_HELD). Two independent critical sections
+# need two independent held-flags: reusing .scope-lock for commits would either silently defeat
+# serialization (a commit running inside a window where SCOPE_MUTEX_HELD is already exported would
+# wrongly treat an outer holder's scope-mutex ownership as covering the unrelated commit mutex too)
+# or attempt a nested acquire on a documented non-reentrant primitive. See
+# .claude/context/patterns/task-lock.md for the full contract: neither mutex is reentrant
+# (SCOPE_MUTEX_HELD / COMMIT_MUTEX_HELD is the sanctioned way for a callee to detect its OWN outer
+# holder and skip nested acquire/release), staleness is holder-declared (the acquiring process's
+# chosen stale_sec is written into the mutex directory so every waiter honors the SAME window, not
+# its own default), and release is owner-token-verified (an unconditional rm -rf on release would
+# be unsafe once acquire and release are separate processes -- a stale-reclaimed holder's release
+# must never delete a successor's mutex).
 #
 # Lockfile layout (per task):
 #   specs/{NNN}_{SLUG}/.lock/            <- directory, created via `mkdir` (POSIX-atomic
@@ -74,6 +83,15 @@
 #     0 - acquired; owner token printed on stdout
 #     2 - timed out waiting for the mutex (fail closed; current holder named on stderr)
 #   scope-release:
+#     0 - always (best-effort; a token mismatch or absent mutex is a loud WARNING on stderr,
+#         never a failure — release must never fail a caller's cleanup path)
+#   commit-acquire (specs/.commit-lock/ sibling mutex serializing scoped git commits; see the
+#   top-of-file usage comment and scripts/git-commit-scoped.sh, the sole intended caller):
+#     0 - acquired; owner token printed on stdout
+#     2 - timed out waiting for the mutex (15s acquire budget, sized for MAX_TASKS=8 concurrent
+#         holders; callers are expected to fail OPEN with a loud warning on this timeout rather
+#         than abort, since a fail-open commit is still path-scoped -- see git-commit-scoped.sh)
+#   commit-release:
 #     0 - always (best-effort; a token mismatch or absent mutex is a loud WARNING on stderr,
 #         never a failure — release must never fail a caller's cleanup path)
 #
@@ -228,32 +246,33 @@ find_held_locks() {
     done
 }
 
-# --- specs/.scope-lock/ global mutex (task 809) ---
-# Closes the scan-then-mkdir TOCTOU race around cmd_acquire's cross-task overlap
-# scan. Distinct staleness window from TASK_LOCK_STALE_MIN: a stuck mutex is a bug,
-# not ordinary contention, so this window is short and acquire_scope_mutex fails
-# CLOSED (non-zero) on timeout rather than ever failing open.
-SCOPE_MUTEX_STALE_SEC=10
+# --- Named-mutex primitives (task 809's original specs/.scope-lock/-only implementation,
+# generalized so a second, independent mutex directory -- specs/.commit-lock/, added below for
+# scoped-commit serialization -- can reuse the exact same mkdir/staleness/wait-budget logic
+# without a second hand-copied implementation to drift out of sync). ---
 
-# acquire_scope_mutex [stale_sec]
+# acquire_named_mutex <mutex_dirname> <requested_stale> <default_stale_sec> <wait_budget_ms>
+#
+# <mutex_dirname> is a bare directory name resolved under specs/ (e.g. ".scope-lock",
+# ".commit-lock") -- each caller's wrapper below fixes its own directory, default staleness, and
+# wait budget, so this function itself has no knowledge of which mutex it is serving.
 #
 # Staleness is holder-declared, not waiter-declared: the successful acquirer writes its own
 # tolerated window into $mutex_dir/stale_sec alongside claimed_at, and every waiter (including
 # waiters with a different default) reads THAT file when deciding whether to reclaim. This lets a
 # long-running critical section (e.g. scope-acquire called with a generous stale_sec) declare a
 # window all concurrent waiters honor, instead of a short-window waiter reclaiming the mutex out
-# from under a still-live, longer-running holder. When called with no argument (the pre-existing
-# cmd_acquire call site), stale_sec defaults to SCOPE_MUTEX_STALE_SEC (10) -- behavior identical
-# to before this file's stale_sec file existed.
-acquire_scope_mutex() {
-  local requested_stale="${1:-}" stale_sec
+# from under a still-live, longer-running holder.
+acquire_named_mutex() {
+  local mutex_dirname="$1" requested_stale="${2:-}" default_stale_sec="$3" wait_budget_ms="$4"
+  local stale_sec
   if [[ "$requested_stale" =~ ^[0-9]+$ ]]; then
     stale_sec="$requested_stale"
   else
-    stale_sec="$SCOPE_MUTEX_STALE_SEC"
+    stale_sec="$default_stale_sec"
   fi
 
-  local mutex_dir="$PROJECT_ROOT/specs/.scope-lock"
+  local mutex_dir="$PROJECT_ROOT/specs/${mutex_dirname}"
   local waited_ms=0 claimed_at now age holder_stale_sec
   while true; do
     if mkdir "$mutex_dir" 2>/dev/null; then
@@ -266,18 +285,18 @@ acquire_scope_mutex() {
     now=$(now_epoch)
     holder_stale_sec=$(cat "$mutex_dir/stale_sec" 2>/dev/null)
     if ! [[ "$holder_stale_sec" =~ ^[0-9]+$ ]]; then
-      holder_stale_sec="$SCOPE_MUTEX_STALE_SEC"
+      holder_stale_sec="$default_stale_sec"
     fi
     if [ -n "$claimed_at" ]; then
       age=$(( now - claimed_at ))
       if [ "$age" -gt "$holder_stale_sec" ]; then
-        echo "WARN: reclaiming stale specs/.scope-lock mutex (age ${age}s > holder-declared ${holder_stale_sec}s)." >&2
+        echo "WARN: reclaiming stale specs/${mutex_dirname} mutex (age ${age}s > holder-declared ${holder_stale_sec}s)." >&2
         rm -rf "$mutex_dir" 2>/dev/null || true
         continue
       fi
     fi
 
-    if [ "$waited_ms" -ge 5000 ]; then
+    if [ "$waited_ms" -ge "$wait_budget_ms" ]; then
       return 1
     fi
     sleep 0.05
@@ -285,8 +304,52 @@ acquire_scope_mutex() {
   done
 }
 
+release_named_mutex() {
+  local mutex_dirname="$1"
+  rm -rf "$PROJECT_ROOT/specs/${mutex_dirname}" 2>/dev/null || true
+}
+
+# --- specs/.scope-lock/ global mutex (task 809) ---
+# Closes the scan-then-mkdir TOCTOU race around cmd_acquire's cross-task overlap
+# scan. Distinct staleness window from TASK_LOCK_STALE_MIN: a stuck mutex is a bug,
+# not ordinary contention, so this window is short and acquire_scope_mutex fails
+# CLOSED (non-zero) on timeout rather than ever failing open.
+SCOPE_MUTEX_STALE_SEC=10
+SCOPE_MUTEX_ACQUIRE_BUDGET_MS=5000
+
+# acquire_scope_mutex [stale_sec]
+#
+# Thin wrapper over acquire_named_mutex, preserving this function's original signature and
+# behavior byte-for-byte (same directory, same 10s default staleness, same 5000ms wait budget)
+# for cmd_acquire's pre-existing no-argument call site and every other existing caller.
+acquire_scope_mutex() {
+  local requested_stale="${1:-}"
+  acquire_named_mutex ".scope-lock" "$requested_stale" "$SCOPE_MUTEX_STALE_SEC" "$SCOPE_MUTEX_ACQUIRE_BUDGET_MS"
+}
+
 release_scope_mutex() {
-  rm -rf "$PROJECT_ROOT/specs/.scope-lock" 2>/dev/null || true
+  release_named_mutex ".scope-lock"
+}
+
+# --- specs/.commit-lock/ sibling mutex (serializes the git add + git commit pair around scoped
+# commits; see scripts/git-commit-scoped.sh, the sole intended caller) ---
+# A DISTINCT mutex directory and a DISTINCT reentrancy flag (COMMIT_MUTEX_HELD, never
+# SCOPE_MUTEX_HELD) from .scope-lock above -- see the top-of-file usage comment for why reusing
+# .scope-lock here would be unsafe. Larger acquire budget than .scope-lock (15s vs 5s) because it
+# is sized for MAX_TASKS=8 concurrent committers rather than a single fast scan-then-mkdir
+# sequence; correspondingly longer holder-declared staleness (30s vs 10s), generous against
+# measured sub-second commits but short enough to reclaim a genuinely stuck holder.
+COMMIT_MUTEX_STALE_SEC=30
+COMMIT_MUTEX_ACQUIRE_BUDGET_MS=15000
+
+# acquire_commit_mutex [stale_sec]
+acquire_commit_mutex() {
+  local requested_stale="${1:-}"
+  acquire_named_mutex ".commit-lock" "$requested_stale" "$COMMIT_MUTEX_STALE_SEC" "$COMMIT_MUTEX_ACQUIRE_BUDGET_MS"
+}
+
+release_commit_mutex() {
+  release_named_mutex ".commit-lock"
 }
 
 # =====================================================================
@@ -542,6 +605,69 @@ cmd_scope_release() {
 }
 
 # =====================================================================
+# commit-acquire <session_id> [stale_sec]
+# =====================================================================
+# Standalone CLI exposure of acquire_commit_mutex, mirroring cmd_scope_acquire exactly (same
+# owner-token format, same owner-file write, same no-trap-of-its-own contract -- the caller is
+# responsible for release on every exit path, per .claude/context/patterns/task-lock.md). Serves
+# a DISTINCT mutex (specs/.commit-lock/) from cmd_scope_acquire's specs/.scope-lock/.
+cmd_commit_acquire() {
+  local session_id="$1" stale_sec="${2:-}"
+  local mutex_dir="$PROJECT_ROOT/specs/.commit-lock"
+
+  if ! acquire_commit_mutex "$stale_sec"; then
+    local holder_session holder_pid
+    holder_session=$(jq -r '.session_id // empty' "$mutex_dir/owner" 2>/dev/null)
+    holder_pid=$(jq -r '.pid // empty' "$mutex_dir/owner" 2>/dev/null)
+    echo "ERROR: timed out waiting for specs/.commit-lock mutex (session=$session_id); current holder: session=${holder_session:-unknown} pid=${holder_pid:-unknown}." >&2
+    return 2
+  fi
+
+  local pid claimed_epoch token
+  pid=$$
+  claimed_epoch=$(now_epoch)
+  token="${session_id}:${pid}:${claimed_epoch}"
+
+  jq -n \
+    --arg session_id "$session_id" \
+    --argjson pid "$pid" \
+    --argjson claimed_epoch "$claimed_epoch" \
+    --arg token "$token" \
+    '{session_id: $session_id, pid: $pid, claimed_epoch: $claimed_epoch, token: $token}' \
+    > "$mutex_dir/owner" 2>/dev/null
+
+  echo "$token"
+  return 0
+}
+
+# =====================================================================
+# commit-release <token>
+# =====================================================================
+# Owner-token-verified release, mirroring cmd_scope_release exactly. See that function's comment
+# for the full rationale (a stale-reclaimed holder's release must never delete a successor's
+# mutex). Always exits 0 -- release is best-effort and must never fail a caller's cleanup path.
+cmd_commit_release() {
+  local token="$1"
+  local mutex_dir="$PROJECT_ROOT/specs/.commit-lock"
+
+  if [ ! -d "$mutex_dir" ]; then
+    echo "WARN: commit-release (token=$token) found no specs/.commit-lock mutex -- already released or never held." >&2
+    return 0
+  fi
+
+  local owner_token
+  owner_token=$(jq -r '.token // empty' "$mutex_dir/owner" 2>/dev/null)
+
+  if [ "$owner_token" != "$token" ]; then
+    echo "WARN: commit-release token mismatch (given=$token current-holder=${owner_token:-unknown}); NOT releasing. This means the critical section overran its declared staleness window and a concurrent writer may have reclaimed the mutex -- investigate rather than ignore." >&2
+    return 0
+  fi
+
+  release_commit_mutex
+  return 0
+}
+
+# =====================================================================
 # init-marker <file_path>   (task 808)
 # =====================================================================
 # Generic atomic-on-creation primitive for marker/state files that were using a
@@ -669,8 +795,24 @@ case "$SUBCMD" in
     cmd_scope_release "$@"
     exit $?
     ;;
+  commit-acquire)
+    if [ "$#" -lt 1 ]; then
+      echo "Usage: $0 commit-acquire <session_id> [stale_sec]" >&2
+      exit 2
+    fi
+    cmd_commit_acquire "$@"
+    exit $?
+    ;;
+  commit-release)
+    if [ "$#" -lt 1 ]; then
+      echo "Usage: $0 commit-release <token>" >&2
+      exit 2
+    fi
+    cmd_commit_release "$@"
+    exit $?
+    ;;
   *)
-    echo "Usage: $0 {acquire|heartbeat|release|check|init-marker|scope-acquire|scope-release} ..." >&2
+    echo "Usage: $0 {acquire|heartbeat|release|check|init-marker|scope-acquire|scope-release|commit-acquire|commit-release} ..." >&2
     exit 2
     ;;
 esac

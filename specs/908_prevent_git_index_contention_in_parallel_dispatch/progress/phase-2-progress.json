@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Add the specs/.commit-lock/ mutex to task-lock.sh",
+  "started_at": "2026-07-27T09:45:00Z",
+  "last_updated": "2026-07-27T10:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Refactor acquire_scope_mutex into acquire_named_mutex + thin wrapper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 2, "description": "Refactor release_scope_mutex into release_named_mutex + thin wrapper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 3, "description": "Parameterize acquire wait budget (5000ms scope, 15000ms commit)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 4, "description": "Add COMMIT_MUTEX_STALE_SEC=30", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 5, "description": "Add cmd_commit_acquire/cmd_commit_release", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 6, "description": "Register commit-acquire/commit-release in CLI dispatch + usage string", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 7, "description": "Use distinct COMMIT_MUTEX_HELD reentrancy flag, document two-flag invariant", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification": "bash -n passed; functional test in a disposable deployed-shaped scratch tree confirmed byte-identical scope-acquire/scope-release behavior, independent .commit-lock creation/removal, non-blocking cross-mutex independence, 15s timeout on contended commit-acquire (exit 2), and token-mismatch commit-release warning without removal."
+}

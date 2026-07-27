@@ -248,7 +248,7 @@ into a durable artifact.
 
 ---
 
-### Phase 2: Add the `specs/.commit-lock/` mutex to `task-lock.sh` [NOT STARTED]
+### Phase 2: Add the `specs/.commit-lock/` mutex to `task-lock.sh` [COMPLETED]
 
 **Goal**: Parameterize the existing mutex primitive by mutex name and expose
 `commit-acquire`/`commit-release`, with byte-identical behavior for every existing
