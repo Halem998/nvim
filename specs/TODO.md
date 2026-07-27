@@ -1,5 +1,5 @@
 ---
-next_project_number: 917
+next_project_number: 918
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 917
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,914,915 | -- | agent-system |
+| 1 | 873,885,914,915,917 | -- | agent-system |
 | 2 | 887,906 | 873,885 | agent-system |
 | 3 | 907 | 906 | agent-system |
 | 4 | 908 | 907 | agent-system |
@@ -24,13 +24,73 @@ next_project_number: 917
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use (see above)
-  └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+  └─ 906 [IMPLEMENTING] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
       └─ 908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+917 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ## Tasks
+
+### 917. Converge single-task /orchestrate partial triage onto the mt engine
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+DIAGNOSED LIVE, NOT INFERRED. Running /orchestrate on a single task left [PARTIAL] by a base-mode run dispatched nothing, consumed 0 cycles, and exited immediately, telling the user to run /implement instead -- despite /orchestrate's entire stated purpose being autonomous lifecycle advancement from wherever the task currently sits. Every fact below was confirmed by reading the deployed files; the deployed copy of the classifier is byte-identical to the source copy.
+
+ROOT CAUSE.
+
+1. scripts/orchestrate-triage-classify.sh carries a two-engine verdict table. For the row `partial` with neither a continuation nor blockers it emits group="implement" when engine is `mt`, but group="exit_partial" when engine is `single`. The fork is a single jq expression:
+     ((if $engine == "mt" then "implement" else "exit_partial" end)) as $grp |
+
+2. Per docs/architecture/handoff-schema.md's "Handoff Writers" table, the ONLY active writer of .orchestrator-handoff.json is the hard-mode implementation agent's H9 wrap-up. The row for base-mode skill-researcher, skill-planner, skill-implementer reads verbatim: "Never writes a handoff, by design".
+
+3. Combining (1) and (2): any task left [PARTIAL] by a base-mode run has NO handoff, always and necessarily. The exit_partial branch therefore fires on the NORMAL case, not an edge case. Single-task /orchestrate is structurally incapable of resuming base-mode partial tasks -- the single most common resume scenario in the system.
+
+4. This contradicts two published contracts. commands/orchestrate.md CHECKPOINT 1: "All non-terminal states (not_started, researched, planned, implementing, partial, blocked) are valid entry points for the orchestrator" and "Permissive gate ... The state machine handles all lifecycle phases starting from wherever the task currently is." CLAUDE.md Status Markers: "[BLOCKED], [PARTIAL] - Exception states (non-terminal; any command can resume from these)."
+
+5. The behavior is incoherent across batch size. A solo invocation strands the task; adding any second task number routes the same task to implement via the mt engine. Identical task, opposite behavior, determined solely by how many task numbers were typed -- commands/orchestrate.md STAGE 0 selects the engine purely by len(TASK_NUMBERS).
+
+6. THE STRONGEST EVIDENCE, AND THE FRAMING FOR THIS WHOLE TASK: docs/architecture/orchestrate-state-machine.md line 29 already specifies the correct behavior. Its exit row is "partial (no handoff, cycle limit)" with the condition "cycle_count >= MAX_CYCLES" -- i.e. the documented contract is that a no-handoff partial task exits ONLY once the cycle budget is exhausted. But SKILL.md Stage 4's "Sub-state: no handoff, no blockers" branch and the classifier both fire exit_partial UNCONDITIONALLY, with no cycle-count test anywhere. The architecture doc is RIGHT and the implementation diverged from its own spec. This work is therefore convergence onto an already-documented contract, NOT a new design decision. Do not treat the doc and the code as two equal claims to be reconciled -- correct the code to the doc.
+
+7. The recovery machinery to support this ALREADY EXISTS but is not wired into the entry triage. scripts/orchestrate-recover-outcome.sh normalizes .return-meta.json into an outcome shape precisely BECAUSE missing handoffs are the expected case. It is called from single-task Stage 5, hard-mode Stage 5, and multi-task Stage MT-4 step 1 -- i.e. only POST-dispatch. Stage 4's partial handler, the PRE-dispatch entry triage, never consults it. The entry gate thus rejects exactly the condition the post-dispatch path was purpose-built to tolerate.
+
+8. The divergence was never actually decided. The classifier's own header comment says it "transcribes both engines verbatim rather than picking a winner", and Decision D1 in the originating plan deferred the choice. This task resolves it.
+
+SCOPE OF WORK.
+
+A. Remove the engine fork at scripts/orchestrate-triage-classify.sh so the `partial`-with-neither row routes to implement for BOTH engines, converging `single` onto `mt`.
+
+B. Rewrite skills/skill-orchestrate/SKILL.md Stage 4's "Sub-state: no handoff, no blockers" branch to dispatch implement rather than exit, sourcing resume context from scripts/orchestrate-recover-outcome.sh against the prior dispatch's .return-meta.json in place of the handoff a base-mode run never writes. Delete the now-false cross-reference immediately above the sub-state block that asserts the two engines are "intentionally different" and "diverge by design".
+
+C. Update the classifier's own header verdict table in the SAME commit as the code change. The header explicitly states the table and the script MUST be changed together, never independently -- that co-change rule is itself part of what is being enforced here.
+
+D. Update the Stage MT-4 phase-grouping table in skills/skill-orchestrate/SKILL.md so the script header table, Stage 4, and Stage MT-4 all state the same routing. All three must agree at the end of this task.
+
+E. LOCKSTEP EDIT, IN SCOPE: scripts/orchestrate-dry-run-report.sh hard-codes its own exit_partial exclusion arm with a bespoke explanatory string, plus a step-7 comment naming exit_partial. A dry-run's whole value is predicting what the live path does, so leaving that arm behind would reintroduce exactly the class of drift this task exists to eliminate. It must be edited alongside the classifier, not merely re-run against it.
+
+F. Correct docs/architecture/orchestrate-state-machine.md so its state table reflects the new routing. Per finding 6 this is bringing the code up to the doc, so the doc's exit-on-cycle-limit semantics are the target; adjust only the wording needed to describe the now-reachable resume path.
+
+G. Confirm the MAX_CYCLES loop guard still bounds the newly-reachable resume path. Resumption must not become unbounded -- MAX_CYCLES remains the mechanism that prevents a genuinely stuck task from looping forever, and after this change it becomes the ONLY such bound on this path, where previously the unconditional exit masked it.
+
+H. Update commands/orchestrate.md entry-point contract language if the permissive-gate claim in CHECKPOINT 1 needs tightening to match actual behavior.
+
+TWO DECISIONS THE TASK MUST MAKE EXPLICITLY (neither is pre-committed).
+
+DECISION 1 -- the `blocked` row. One row below the `partial` row in the same verdict table, `blocked` routes to `skip` for mt but `needs_human` for single. This is the second instance of the same shape of defect and must not be left inconsistent while row one is fixed. LEADING HYPOTHESIS, worth recording but NOT pre-committed: this may be a JUSTIFIED divergence rather than a defect -- in a batch, skipping a blocked task lets siblings proceed, whereas solo there is no sibling, so escalation to a human is the only meaningful action. Scope this as: decide explicitly, then make the script header table, SKILL.md Stage 4's `blocked` handler, and the MT-4 table all state the same conclusion WITH the justification written down. An intentional divergence documented as intentional is a fine outcome. An undocumented one is not.
+
+DECISION 2 -- the fate of the exit_partial schema value. exit_partial is part of the PUBLISHED orchestrate-triage-v1 output contract, enumerated in the classifier's documented `group` field values. If change (A) renders it unreachable, the task must choose between retaining it as an explicitly-reserved value and versioning the schema. Silently leaving a dead value in a pinned contract is not acceptable.
+
+ACCEPTANCE CRITERION: /orchestrate N on a single task in `partial` state with no handoff and no blockers dispatches implement and makes forward progress, instead of exiting with a referral to /implement -- while MAX_CYCLES still terminates a task that cannot progress.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
 
 ### 916. Populate completion_summary from return metadata on every /orchestrate path
 - **Status**: [COMPLETED]
@@ -369,10 +429,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 906. Fix gate-out artifact-validation call arity and unify the .return-meta.json status vocabulary
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 885, Task 896, Task 901, Task 909
+- **Research**: [906_fix_gate_out_validation_arity_and_status_vocabulary/reports/01_gate-out-arity-and-status-vocabulary.md]
+- **Plan**: [906_fix_gate_out_validation_arity_and_status_vocabulary/plans/01_gate-out-arity-and-status-vocabulary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/core/** and NEVER .claude/**.
 

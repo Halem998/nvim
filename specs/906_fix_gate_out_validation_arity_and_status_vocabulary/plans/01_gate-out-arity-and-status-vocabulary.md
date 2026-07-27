@@ -518,46 +518,52 @@ referenced rather than restated elsewhere.
 
 ---
 
-### Phase 7: Final sweep, rule compliance, and cleanup [NOT STARTED]
+### Phase 7: Final sweep, rule compliance, and cleanup [COMPLETED]
 
 **Goal**: No residual offenders, no rule violations, no stray fixture, and a complete diff
 confined to the declared file scope.
 
 **Tasks**:
-- [ ] Confirm **zero** edits under `.claude/`: `git status --short` and `git diff --stat` show no
+- [x] Confirm **zero** edits under `.claude/`: `git status --short` and `git diff --stat` show no
       path beginning `.claude/`. (`.claude/` is gitignored, so additionally spot-check that no
-      Write/Edit targeted it during this task.) Do NOT run a `.claude/` sync.
-- [ ] Confirm every changed path is inside the declared `file_scope`
+      Write/Edit targeted it during this task.) Do NOT run a `.claude/` sync. *(completed: both
+      empty)*
+- [x] Confirm every changed path is inside the declared `file_scope`
       (`agent-system/extensions/core/{scripts/command-gate-out.sh, scripts/skill-base.sh,
       skills/skill-orchestrate/SKILL.md, docs/architecture/handoff-schema.md,
       context/formats/return-metadata-file.md, commands/research.md}`) plus this task's own
       `specs/906_.../` artifacts. `validate-artifact.sh` was in scope but is expected UNCHANGED —
-      flag it if it shows in the diff.
-- [ ] Re-grep for residual arity offenders across the whole source store:
+      flag it if it shows in the diff. *(completed: full-task diff lists exactly the six
+      declared source files plus specs/906_.../ artifacts; validate-artifact.sh does not appear
+      in the diff)*
+- [x] Re-grep for residual arity offenders across the whole source store:
       `grep -rn 'validate-artifact.sh' agent-system/extensions/core/` — every call must be
-      `"$path" "$kind" --fix` form or the new helper.
-- [ ] Re-grep for residual vocabulary offenders: any `--arg status "completed"` or
+      `"$path" "$kind" --fix` form or the new helper. *(completed: confirmed)*
+- [x] Re-grep for residual vocabulary offenders: any `--arg status "completed"` or
       `"status": "completed"` writing a `.return-meta*.json`. Confirm the known non-offenders
       (`skill-team-implement/SKILL.md`, the two `context/patterns/*.md` examples,
-      `orchestrator-postflight.sh`'s notification mapping) are all still untouched.
-- [ ] Confirm `scripts/orchestrate-recover-outcome.sh` and `skills/skill-orchestrate-hard/SKILL.md`
-      are unmodified.
-- [ ] Rule check — no task-number citations outside `specs/**`: for each touched file, run
+      `orchestrator-postflight.sh`'s notification mapping) are all still untouched. *(completed:
+      zero `--arg status "completed"` hits target `.return-meta*.json`; the three known
+      non-offenders are all still state.json writers, unchanged)*
+- [x] Confirm `scripts/orchestrate-recover-outcome.sh` and `skills/skill-orchestrate-hard/SKILL.md`
+      are unmodified. *(completed: `git diff --stat` on both is empty)*
+- [x] Rule check — no task-number citations outside `specs/**`: for each touched file, run
       `git diff -U0 <file> | grep '^+' | grep -iE 'task[s]? +[0-9]'` and confirm no ADDED line
       cites a task number. Pre-existing citations in untouched regions are out of scope (noted
-      as a follow-up, not fixed here).
-- [ ] Remove the verification fixture root and confirm nothing outside the repo's normal
-      working tree remains.
-- [ ] Write the execution summary to
+      as a follow-up, not fixed here). *(completed: zero hits across all six touched source
+      files)*
+- [x] Remove the verification fixture root and confirm nothing outside the repo's normal
+      working tree remains. *(completed)*
+- [x] Write the execution summary to
       `specs/906_fix_gate_out_validation_arity_and_status_vocabulary/summaries/01_gate-out-arity-and-status-vocabulary-summary.md`,
       including: the captured before/after output for verification (a); the captured
       correction-line output plus negative control for verification (b); the recorded answer to
       "is the helper reachable from `command-gate-out.sh`'s execution context" and where it was
       placed; and an explicit statement that the stop-behavior rationale was re-verified as
-      current (no escalation needed).
-- [ ] Note in the summary's follow-ups: pre-existing task-number citations remain in
+      current (no escalation needed). *(completed)*
+- [x] Note in the summary's follow-ups: pre-existing task-number citations remain in
       `skill-base.sh`'s header note and `command-gate-out.sh`'s downstream-dependencies note,
-      outside the regions this task edited.
+      outside the regions this task edited. *(completed)*
 
 **Timing**: 0.5 hours
 
