@@ -11,19 +11,22 @@ next_project_number: 932
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 885,914,920,926,928,929,931 | -- | agent-system, extensions |
-| 2 | 887 | 885 | agent-system |
+| 1 | 885,920 | -- | agent-system |
+| 2 | 926 | 885 | agent-system |
+| 3 | 887,914,928,929,931 | 920,926 | agent-system, extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
-  └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
-914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+  └─ 926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+    └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
+    └─ 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+    └─ 929 [NOT STARTED] — SOURCE-STORE RULE (binding, and the subject of this task): the ag
+    └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
-926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-929 [NOT STARTED] — SOURCE-STORE RULE (binding, and the subject of this task): the ag
+  └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co (see above)
 
 ### Extensions
 
@@ -31,14 +34,12 @@ next_project_number: 932
 
 ### Uncategorized
 
-931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co
-
 ## Tasks
 
 ### 931. Handoff continuation path writer predicate contract
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Dependencies**: Task 917
+- **Dependencies**: Task 885, Task 917, Task 920, Task 926
 
 **Description**: Resolve the writer/predicate contract mismatch on continuation_context.handoff_path, which causes a populated, actionable orchestrator continuation to be classified as absent. VERIFIED PROBLEM: scripts/orchestrate-triage-classify.sh line 182 recognizes a continuation only when continuation_context is non-null AND its handoff_path sub-field is non-null. The handoff WRITERS, however, routinely emit handoff_path: null while putting the substantive resume content in continuation_context.note. OBSERVED INSTANCE (cslib task 575): a handoff carried status partial, phases_completed 7 of 8, next_action_hint "implement", blockers [], and a detailed continuation note naming the exact resume file and method -- yet classified as handoff_state "empty", group exit_partial, stranding the task. The orchestrator had to override the classifier by hand to make any progress. RELATIONSHIP TO TASK 917 (in flight, IMPLEMENTING): 917 converges the single engine onto mt for the `partial`-with-neither row, so after it lands this task would route to implement instead of exit_partial and the STRANDING SYMPTOM disappears. This task covers the residue 917 explicitly leaves intact, confirmed against 917 own research report: (a) 917 file_scope does not include scripts/skill-base.sh, the H9 wrap-up instructions that populate ORCHESTRATOR_HANDOFF_CONTINUATION_JSON, or docs/architecture/handoff-schema.md, so the writer keeps emitting handoff_path: null; (b) 917 report states verbatim that the handoff_state computation "is untouched by this change", so a rich continuation still reports as "empty"; (c) 917 routes resume context through orchestrate-recover-outcome.sh reading the prior dispatch .return-meta.json RATHER than from a handoff continuation_context, so the note, next_action_hint, and phase counts remain unread by the "Sub-state: continuation available" branch. REQUIRED WORK: decide which side of the contract is authoritative and make writer, schema, and predicate agree. Either (A) require writers to populate handoff_path with the absolute handoff path whenever a continuation is emitted, and enforce it in skill-base.sh handoff writer plus the H9 wrap-up instructions; or (B) relax the classifier predicate to accept a continuation carrying any substantive payload (note alone should qualify), and correct docs/architecture/handoff-schema.md, which currently documents the handoff_path-required form as intended. Option B is likely correct given the note already carries the actionable content and handoff_path is redundant with the dispatch-context anchor, but the choice belongs to the implementer. Whichever is chosen, handoff-schema.md must end up describing what the writers actually emit and what the classifier actually accepts. NOTE ON ADJACENT WORK, none of which covers this: task 892 and task 909 concern a DIFFERENT field also called handoff_path -- the absolute dispatch-context anchor naming where the handoff file itself is written -- not continuation_context.handoff_path. Task 913 handles a MISSING handoff after research, not a PRESENT handoff whose continuation predicate fails. Task 901 reproduces the current predicate as intended behaviour and ships a fixture with handoff_path populated, so it would never surface the null case. DEFINITION OF DONE: a handoff emitted by the standard writer path with a populated continuation note classifies as a continuation, not as handoff_state "empty"; handoff-schema.md matches writer and classifier behaviour; a regression test covers the null-handoff_path-with-populated-note case.
 
@@ -91,7 +92,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 926
 
 **Description**: SOURCE-STORE RULE (binding, and the subject of this task): the agent-system SOURCE of truth is agent-system/extensions/core/ and the per-extension source directories under agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store; edits to .claude/** are silently wiped on the next reload. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
@@ -123,7 +124,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: None
+- **Dependencies**: Task 885, Task 926
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/ and the per-extension source directories under agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
@@ -190,7 +191,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 922, Task 925
+- **Dependencies**: Task 885, Task 922, Task 925
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
@@ -647,7 +648,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 926
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
@@ -1481,7 +1482,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 - **Status**: [BLOCKED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 873, Task 885
+- **Dependencies**: Task 873, Task 885, Task 926
 - **Research**: [887_research_telemetry_source_architecture_and_distill_redesign/reports/01_telemetry-source-architecture.md]
 
 **Description**: RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The user will /revise this and then /expand it into implementation tasks. Do NOT jump to implementation.
