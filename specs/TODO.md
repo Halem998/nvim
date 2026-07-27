@@ -1,5 +1,5 @@
 ---
-next_project_number: 931
+next_project_number: 932
 ---
 
 # TODO
@@ -12,7 +12,7 @@ next_project_number: 931
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 885,914,915,917,918,919,920,922,928,929 | -- | agent-system, extensions |
-| 2 | 887,923,924,930 | 885,918,922,928 | agent-system, literature |
+| 2 | 887,923,924,930,931 | 885,917,918,922,928 | agent-system, literature |
 | 3 | 925 | 924 | agent-system |
 | 4 | 926,927 | 919,925 | agent-system |
 
@@ -25,6 +25,7 @@ next_project_number: 931
 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 917 [IMPLEMENTING] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+  └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co
 918 [NOT STARTED] — resolve_task_dir() in task-lock.sh hard-fails for a task whose di
   └─ 923 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 919 [NOT STARTED] — Fifteen agent definitions instruct writing .return-meta.json but 
@@ -45,7 +46,18 @@ next_project_number: 931
 
 930 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
+### Uncategorized
+
 ## Tasks
+
+### 931. Handoff continuation path writer predicate contract
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: Task 917
+
+**Description**: Resolve the writer/predicate contract mismatch on continuation_context.handoff_path, which causes a populated, actionable orchestrator continuation to be classified as absent. VERIFIED PROBLEM: scripts/orchestrate-triage-classify.sh line 182 recognizes a continuation only when continuation_context is non-null AND its handoff_path sub-field is non-null. The handoff WRITERS, however, routinely emit handoff_path: null while putting the substantive resume content in continuation_context.note. OBSERVED INSTANCE (cslib task 575): a handoff carried status partial, phases_completed 7 of 8, next_action_hint "implement", blockers [], and a detailed continuation note naming the exact resume file and method -- yet classified as handoff_state "empty", group exit_partial, stranding the task. The orchestrator had to override the classifier by hand to make any progress. RELATIONSHIP TO TASK 917 (in flight, IMPLEMENTING): 917 converges the single engine onto mt for the `partial`-with-neither row, so after it lands this task would route to implement instead of exit_partial and the STRANDING SYMPTOM disappears. This task covers the residue 917 explicitly leaves intact, confirmed against 917 own research report: (a) 917 file_scope does not include scripts/skill-base.sh, the H9 wrap-up instructions that populate ORCHESTRATOR_HANDOFF_CONTINUATION_JSON, or docs/architecture/handoff-schema.md, so the writer keeps emitting handoff_path: null; (b) 917 report states verbatim that the handoff_state computation "is untouched by this change", so a rich continuation still reports as "empty"; (c) 917 routes resume context through orchestrate-recover-outcome.sh reading the prior dispatch .return-meta.json RATHER than from a handoff continuation_context, so the note, next_action_hint, and phase counts remain unread by the "Sub-state: continuation available" branch. REQUIRED WORK: decide which side of the contract is authoritative and make writer, schema, and predicate agree. Either (A) require writers to populate handoff_path with the absolute handoff path whenever a continuation is emitted, and enforce it in skill-base.sh handoff writer plus the H9 wrap-up instructions; or (B) relax the classifier predicate to accept a continuation carrying any substantive payload (note alone should qualify), and correct docs/architecture/handoff-schema.md, which currently documents the handoff_path-required form as intended. Option B is likely correct given the note already carries the actionable content and handoff_path is redundant with the dispatch-context anchor, but the choice belongs to the implementer. Whichever is chosen, handoff-schema.md must end up describing what the writers actually emit and what the classifier actually accepts. NOTE ON ADJACENT WORK, none of which covers this: task 892 and task 909 concern a DIFFERENT field also called handoff_path -- the absolute dispatch-context anchor naming where the handoff file itself is written -- not continuation_context.handoff_path. Task 913 handles a MISSING handoff after research, not a PRESENT handoff whose continuation predicate fails. Task 901 reproduces the current predicate as intended behaviour and ships a fixture with handoff_path populated, so it would never surface the null case. DEFINITION OF DONE: a handoff emitted by the standard writer path with a populated continuation note classifies as a continuation, not as handoff_state "empty"; handoff-schema.md matches writer and classifier behaviour; a regression test covers the null-handoff_path-with-populated-note case.
+
+---
 
 ### 930. Port the combining-mark fidelity toolchain into the literature extension source
 - **Status**: [NOT STARTED]
