@@ -1,0 +1,18 @@
+{
+  "phase": 5,
+  "phase_name": "Convert the in-agent, highest-frequency commit sites",
+  "started_at": "2026-07-27T11:00:00Z",
+  "last_updated": "2026-07-27T11:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "general-implementation-agent.md Stage 4B-iii conversion", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 2, "description": "general-implementation-agent.md Phase Checkpoint Protocol step 5 conversion", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 3, "description": "general-implementation-hard-agent.md Stage 5 Step 2 conversion", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-hard-agent.md"]},
+    {"id": 4, "description": "skill-implementer/SKILL.md Stage 6b conversion", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-implementer/SKILL.md"]},
+    {"id": 5, "description": "skill-implementer/SKILL.md Stage 9 conversion", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-implementer/SKILL.md"]},
+    {"id": 6, "description": "Update prose at each site to describe serialized, path-scoped committing", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md", "agent-system/extensions/core/agents/general-implementation-hard-agent.md", "agent-system/extensions/core/skills/skill-implementer/SKILL.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification": "grep confirms no bare 'git commit -m' remains in any code block across the three files (remaining matches are unrelated prose: git-workflow references and the distinct CHECKPOINT-BEFORE-OVERFLOW git-snapshot.sh mechanism, not one of the 11 inventoried sites). Commit messages preserved byte-identical to before at every converted site. skill-implementer Stage 9 additionally gained --honest-index-rows, consistent with Phase 3's stated intent to make that addendum available to sites beyond orchestrator-postflight.sh."
+}

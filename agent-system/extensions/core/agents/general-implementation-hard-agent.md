@@ -317,7 +317,9 @@ qualifies as strategic, and `@.claude/context/contracts/wrap-up.md` for the cano
 **Step 2: Final incremental commit**
 
 Targeted, work-scoped staging per `@.claude/context/standards/git-staging-scope.md` — never stage
-the entire working tree:
+the entire working tree. The commit itself goes through `.claude/scripts/git-commit-scoped.sh`,
+the single sanctioned implementation of path-scoped, mutex-serialized committing, so a
+concurrently-dispatched agent's own staged-but-uncommitted work is never swept into this commit:
 
 ```bash
 task_dir="specs/{NNN}_{SLUG}"
@@ -326,10 +328,10 @@ stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
 while IFS= read -r f; do
   [ -n "$f" ] && stage_paths+=("$f")
 done < <(jq -r '.objectives[]?.files_touched[]? // empty' "specs/{NNN}_{SLUG}/progress/phase-{P}-progress.json" 2>/dev/null)
-git add "${stage_paths[@]}"
-git commit -m "task {N} phase {P}: complete
-
-Session: {session_id}"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {N} phase {P}: complete" \
+  --session "{session_id}" \
+  -- "${stage_paths[@]}"
 ```
 
 ### Stage 6: Create Implementation Summary

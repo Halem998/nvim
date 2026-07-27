@@ -204,7 +204,12 @@ Per `@.claude/rules/git-workflow.md`'s Commit-Per-Green-Substep Mandate, commit 
 an objective reaches `status: "done"` (step 4 above) AND its own verification passed (step 3
 above) — do NOT wait for the whole phase to complete. This is the SAME green-commit mechanism
 `@.claude/context/patterns/checkpoint-before-overflow.md` uses at context-pressure time, reused
-here (not duplicated) for the routine per-objective cadence:
+here (not duplicated) for the routine per-objective cadence. The commit itself goes through
+`.claude/scripts/git-commit-scoped.sh` — the single sanctioned implementation of path-scoped,
+mutex-serialized committing (see `@.claude/context/standards/git-staging-scope.md`'s
+"Commit-Level Path Scoping and Cross-Process Serialization" section) — rather than a bare
+`git add` + `git commit` pair, so a concurrently-dispatched agent's own staged-but-uncommitted
+work is never swept into this commit:
 
 ```bash
 task_dir="specs/{NNN}_{SLUG}"
@@ -213,11 +218,10 @@ stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json" "{plan_path}")
 while IFS= read -r f; do
   [ -n "$f" ] && stage_paths+=("$f")
 done < <(jq -r '.objectives[] | select(.id == {objective_id}) | .files_touched[]? // empty' "$progress_file" 2>/dev/null)
-git add "${stage_paths[@]}"
-git commit -m "task {N} phase {P}.{O}: {objective_description}
-
-Session: {session_id}
-"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task {N} phase {P}.{O}: {objective_description}" \
+  --session "{session_id}" \
+  -- "${stage_paths[@]}"
 ```
 
 If nothing is staged (e.g. a verification-only objective that touched no files), the commit is a
@@ -530,18 +534,18 @@ For each phase in the implementation plan:
    the same point — then perform post-phase self-review (Stage 4D-ii) and write a progressive
    handoff (Stage 4D-iii)
 5. **Git commit** with message: `task {N} phase {P}: {phase_name}`, using targeted, work-scoped
-   staging — never stage the entire working tree. See
+   staging — never stage the entire working tree — via `.claude/scripts/git-commit-scoped.sh`,
+   the single sanctioned implementation of path-scoped, mutex-serialized committing. See
    `@.claude/context/standards/git-staging-scope.md` for the full commit-scope contract:
    ```bash
    task_dir="specs/{NNN}_{SLUG}"
    stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
    # Append every path accumulated in this phase's progress-file files_touched arrays
    # (the same paths summed into modified_files at Stage 6-modified-files)
-   git add "${stage_paths[@]}"
-   git commit -m "task {N} phase {P}: {phase_name}
-
-   Session: {session_id}
-   "
+   bash .claude/scripts/git-commit-scoped.sh \
+     --message "task {N} phase {P}: {phase_name}" \
+     --session "{session_id}" \
+     -- "${stage_paths[@]}"
    ```
 6. **Proceed to next phase** or return if blocked
 

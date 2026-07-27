@@ -396,7 +396,7 @@ into a durable artifact.
 
 ---
 
-### Phase 5: Convert the in-agent, highest-frequency commit sites [NOT STARTED]
+### Phase 5: Convert the in-agent, highest-frequency commit sites [COMPLETED]
 
 **Goal**: Fix the sites where the reported misattribution actually happened.
 

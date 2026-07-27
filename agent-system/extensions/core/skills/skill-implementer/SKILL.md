@@ -398,8 +398,13 @@ targeted, work-scoped staging — never stage the entire working tree. See
 already commits at every verified-green objective during its own execution (see that agent's
 Stage 4B-iii and `.claude/rules/git-workflow.md`'s Commit-Per-Green-Substep Mandate). This
 subagent-return-level commit is coarser-grained (fires once per iteration, not per objective) and
-is expected to often find nothing new to stage — `git commit` failing with "nothing to commit" is
-non-blocking and normal here, not a sign the mandate was skipped.
+is expected to often find nothing new to stage — the commit failing with "nothing to commit" is
+non-blocking and normal here, not a sign the mandate was skipped. The commit itself goes through
+`.claude/scripts/git-commit-scoped.sh`, the single sanctioned implementation of path-scoped,
+mutex-serialized committing (see `.claude/context/standards/git-staging-scope.md`'s "Commit-Level
+Path Scoping and Cross-Process Serialization" section), so a concurrently-dispatched agent's own
+staged-but-uncommitted work is never swept into this commit and this coarser-grained commit never
+races another task's simultaneous commit on `index.lock`:
 
 ```bash
 task_dir="specs/${padded_num}_${project_name}"
@@ -423,11 +428,10 @@ if [ "$modified_files_count" -eq 0 ]; then
   echo "WARNING: no modified_files reported; source-file changes NOT committed automatically. Review and commit manually."
 fi
 
-git add "${stage_paths[@]}"
-git commit -m "task ${task_number} phase ${phases_completed}: implementation progress
-
-Session: ${session_id}
-" || echo "Note: Nothing to commit or commit failed (non-blocking)"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task ${task_number} phase ${phases_completed}: implementation progress" \
+  --session "${session_id}" \
+  -- "${stage_paths[@]}" || echo "Note: Nothing to commit or commit failed (non-blocking)"
 ```
 
 This ensures each subagent's progress is checkpointed in git before proceeding, without staging
@@ -624,7 +628,8 @@ Non-blocking: called in background after artifacts are linked. Speaks "Tab N STA
 ### Stage 9: Git Commit
 
 Commit changes with session ID, using targeted staging (never stage the entire working tree)
-per `.claude/context/standards/git-staging-scope.md`:
+via `.claude/scripts/git-commit-scoped.sh`, the single sanctioned implementation of path-scoped,
+mutex-serialized committing, per `.claude/context/standards/git-staging-scope.md`:
 
 ```bash
 task_dir="specs/${padded_num}_${project_name}"
@@ -647,17 +652,18 @@ if [ "$modified_files_count" -eq 0 ]; then
   echo "WARNING: no modified_files reported; source-file changes NOT committed automatically. Review and commit manually."
 fi
 
-git add "${stage_paths[@]}"
-git commit -m "task ${task_number}: complete implementation
-
-Session: ${session_id}
-"
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task ${task_number}: complete implementation" \
+  --session "${session_id}" \
+  --honest-index-rows "${task_number}" \
+  -- "${stage_paths[@]}"
 ```
 
 **Note**: This inline commit and `orchestrator-postflight.sh` Stage 9 both exist in the
 pipeline (this skill runs its own postflight inline rather than delegating to the shared
-script); both now follow the same targeted-staging contract in
-`.claude/context/standards/git-staging-scope.md`, so their descriptions no longer diverge.
+script); both now invoke the identical `git-commit-scoped.sh` helper documented in
+`.claude/context/standards/git-staging-scope.md`, so their behavior — not just their staging
+description — no longer diverges.
 
 ---
 
