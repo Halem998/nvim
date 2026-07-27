@@ -422,16 +422,16 @@ Non-blocking: called in background after artifacts are linked. Speaks "Tab N STA
 ### Stage 9: Git Commit
 
 Apply the `plan` scope from `.claude/context/standards/git-staging-scope.md` — targeted staging,
-never a repo-wide add — then commit with session ID:
+never a repo-wide add — then commit via `.claude/scripts/git-commit-scoped.sh`, the single
+sanctioned implementation of path-scoped, mutex-serialized committing. This matters here
+specifically because multi-task `/plan N,N,N` dispatches planner agents in one batch — a
+genuinely concurrent site, not merely a defensive one:
 
 ```bash
-git add \
-  "specs/${padded_num}_${project_name}/" \
-  "specs/TODO.md" \
-  "specs/state.json"
-git commit -m "task ${task_number}: create implementation plan
-
-Session: ${session_id}
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task ${task_number}: create implementation plan" \
+  --session "${session_id}" \
+  -- "specs/${padded_num}_${project_name}/" "specs/TODO.md" "specs/state.json"
 ```
 
 ---

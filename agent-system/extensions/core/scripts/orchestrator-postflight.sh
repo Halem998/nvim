@@ -281,12 +281,18 @@ fi
 # specs/.scope-lock mutex: brackets Stages 7 through 8a (the state.json read-modify-write +
 # TODO.md-regen window) — see .claude/context/patterns/task-lock.md's scope-acquire/scope-release
 # section and .claude/context/standards/git-staging-scope.md's state-write hazard note. Stage 8b
-# (TTS) and Stage 9 (git commit) stay explicitly OUTSIDE the mutex — serializing them was
-# rejected: they are comparatively slow and carry no data-integrity risk. `POSTFLIGHT_SCOPE_STALE_SEC`
-# is holder-declared (see task-lock.sh's acquire_scope_mutex), well above the measured worst-case
-# wall-clock time for this span. Fail-closed as a *lock* (never silently double-held), but
-# non-blocking as a *stage*: an acquire timeout logs a loud WARNING and Stages 7-8a proceed
-# unserialized, matching this script's pre-existing non-blocking-on-failure character elsewhere.
+# (TTS) stays explicitly OUTSIDE this mutex — it is comparatively slow and carries no
+# data-integrity risk. Stage 9 (git commit) ALSO stays outside THIS mutex (the state-write
+# concern is unrelated to committing), but is no longer unserialized: it now runs inside a
+# second, distinct specs/.commit-lock mutex via git-commit-scoped.sh (see that script and
+# task-lock.md's "Commit-Mutex CLI" section) — concurrent multi-task dispatch invalidated the
+# "no data-integrity risk worth serializing" reasoning this comment used to make about commits
+# specifically; see git-staging-scope.md's corrected "State-Write Serialization" section.
+# `POSTFLIGHT_SCOPE_STALE_SEC` is holder-declared (see task-lock.sh's acquire_scope_mutex), well
+# above the measured worst-case wall-clock time for this span. Fail-closed as a *lock* (never
+# silently double-held), but non-blocking as a *stage*: an acquire timeout logs a loud WARNING
+# and Stages 7-8a proceed unserialized, matching this script's pre-existing
+# non-blocking-on-failure character elsewhere.
 # ─────────────────────────────────────────────────────────────────────────────
 POSTFLIGHT_SCOPE_STALE_SEC=30
 _scope_mutex_held_here="false"
@@ -420,10 +426,14 @@ bash .claude/scripts/generate-todo.sh || echo "[postflight] WARNING: generate-to
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Release the specs/.scope-lock mutex: the Stages 7-8a critical section (state.json
-# read-modify-write + TODO.md regen) ends here. Stage 8b (TTS), Stage 9 (git commit), and
-# Stage 10 (cleanup) run OUTSIDE the mutex — this boundary is the research verdict and must not
-# drift. Explicit release + trap clear (rather than leaving the EXIT trap to fire at script end)
-# so the mutex is not held for the remainder of postflight's non-serialized tail.
+# read-modify-write + TODO.md regen) ends here. Stage 8b (TTS) and Stage 10 (cleanup) run
+# OUTSIDE any mutex — this boundary is the research verdict and must not drift. Stage 9 (git
+# commit) runs outside THIS mutex too, but is no longer unserialized: git-commit-scoped.sh
+# brackets Stage 9's own git add + git commit pair in the DISTINCT specs/.commit-lock mutex (see
+# that script and task-lock.md's "Commit-Mutex CLI" section) — a two-mutex arrangement, not a
+# single mutex spanning both windows. Explicit release + trap clear (rather than leaving the
+# EXIT trap to fire at script end) so THIS mutex is not held for the remainder of postflight's
+# tail.
 # ─────────────────────────────────────────────────────────────────────────────
 if [ "$_scope_mutex_held_here" = "true" ]; then
   bash .claude/scripts/task-lock.sh scope-release "$scope_token" >&2 || true
@@ -449,11 +459,16 @@ fi
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 9: Git commit (plan and implement only; non-blocking)
 # Targeted, work-scoped staging per .claude/context/standards/git-staging-scope.md —
-# never stage the entire working tree. Fail-safe direction is to under-stage with a loud
-# warning rather than over-stage and pull in a concurrent session's stray edits.
+# never stage the entire working tree — via .claude/scripts/git-commit-scoped.sh, the single
+# sanctioned implementation of path-scoped, mutex-serialized committing (see that script and
+# git-staging-scope.md's "Commit-Level Path Scoping and Cross-Process Serialization" section).
+# Fail-safe direction is to under-stage with a loud warning rather than over-stage and pull in a
+# concurrent session's stray edits. The helper folds in the former Stage 9b honest-commit-message
+# scan (via --honest-index-rows) and the canonical ephemeral-runtime-file exclusion set
+# automatically — neither needs to be re-derived here.
 # ─────────────────────────────────────────────────────────────────────────────
 if [ "$do_git_commit" = "true" ]; then
-  echo "[postflight] Creating git commit (targeted staging): ${commit_message}"
+  echo "[postflight] Creating git commit (targeted staging via git-commit-scoped.sh): ${commit_message}"
 
   # Base scope for both plan and implement: the task directory + shared index files.
   stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
@@ -480,55 +495,12 @@ if [ "$do_git_commit" = "true" ]; then
     fi
   fi
 
-  if git add "${stage_paths[@]}"; then
-    # Stage 9b: honest-commit-message scan. Compares the just-staged specs/state.json against
-    # HEAD's, block-by-block on PARSED active_projects entries (never raw +/- line grep, which
-    # would miss a changed field sitting inside an unchanged project_number context line), and
-    # names every OTHER task whose index rows this commit also carries. Runs OUTSIDE the
-    # specs/.scope-lock mutex — Stage 9 is explicitly unserialized (see
-    # .claude/context/standards/git-staging-scope.md's state-write hazard note) — and is entirely
-    # failure-tolerant: any error here (missing HEAD file on a first commit, unparseable JSON, no
-    # staged state.json) falls through to the plain commit message below. This scan must never
-    # break a commit.
-    also_carries=$(python3 -c "
-import json, subprocess, sys
-
-def load_ref(ref):
-    try:
-        out = subprocess.run(['git', 'show', ref], capture_output=True, text=True, check=True).stdout
-        return json.loads(out)
-    except Exception:
-        return None
-
-head = load_ref('HEAD:specs/state.json')
-staged = load_ref(':specs/state.json')
-if head is None or staged is None:
-    sys.exit(0)
-
-head_map = {p.get('project_number'): p for p in head.get('active_projects', []) if 'project_number' in p}
-staged_map = {p.get('project_number'): p for p in staged.get('active_projects', []) if 'project_number' in p}
-
-changed = sorted(
-    num for num, entry in staged_map.items()
-    if num != ${task_number} and head_map.get(num) != entry
-)
-print(', '.join(str(n) for n in changed))
-" 2>/dev/null) || also_carries=""
-
-    commit_msg="${commit_message}"
-    if [ -n "$also_carries" ]; then
-      commit_msg="${commit_message}
-
-Also carries current index rows for tasks: ${also_carries}"
-    fi
-
-    git commit -m "${commit_msg}
-
-Session: ${session_id}
-" || echo "[postflight] NOTE: Nothing to commit or git commit failed (non-blocking)" >&2
-  else
-    echo "[postflight] WARNING: git add failed for one or more staged paths (non-blocking)" >&2
-  fi
+  bash .claude/scripts/git-commit-scoped.sh \
+    --message "$commit_message" \
+    --session "$session_id" \
+    --honest-index-rows "$task_number" \
+    -- "${stage_paths[@]}" \
+    || echo "[postflight] NOTE: Nothing to commit or git commit failed (non-blocking)" >&2
 
   # Surface any residual uncommitted changes rather than silently ignoring them.
   residual="$(git status --porcelain 2>/dev/null)"

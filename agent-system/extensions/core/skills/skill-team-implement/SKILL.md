@@ -408,17 +408,17 @@ Output diagnosis to: specs/{NNN}_{SLUG}/debug/{RR}_phase-{P}-debug.md
 
 ### Stage 10: Per-Wave Commits
 
-After each wave completes, commit progress:
+After each wave completes, commit progress via `.claude/scripts/git-commit-scoped.sh`, the single
+sanctioned implementation of path-scoped, mutex-serialized committing — this also closes this
+site's ephemeral-runtime-file staleness gap, since the helper applies the canonical exclusion set
+automatically:
 
 ```bash
 padded_num=$(printf "%03d" "$task_number")
-git add \
-  "specs/${padded_num}_${project_name}/" \
-  "specs/TODO.md" \
-  "$plan_path"
-git commit -m "task ${task_number}: complete wave ${wave_num} (phases ${phase_list})
-
-Session: ${session_id}
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task ${task_number}: complete wave ${wave_num} (phases ${phase_list})" \
+  --session "${session_id}" \
+  -- "specs/${padded_num}_${project_name}/" "specs/TODO.md" "$plan_path"
 ```
 
 ---
@@ -557,19 +557,21 @@ Write team execution metadata:
 
 ### Stage 14: Final Git Commit
 
-Final commit with summary:
+Final commit with summary, via `.claude/scripts/git-commit-scoped.sh`, the single sanctioned
+implementation of path-scoped, mutex-serialized committing:
 
 ```bash
 padded_num=$(printf "%03d" "$task_number")
-git add \
+bash .claude/scripts/git-commit-scoped.sh \
+  --message "task ${task_number}: complete team implementation" \
+  --session "${session_id}" \
+  --honest-index-rows "${task_number}" \
+  -- \
   "specs/${padded_num}_${project_name}/summaries/" \
   "specs/${padded_num}_${project_name}/.return-meta.json" \
   "specs/TODO.md" \
   "specs/state.json" \
   "$plan_path"
-git commit -m "task ${task_number}: complete team implementation
-
-Session: ${session_id}
 ```
 
 ---

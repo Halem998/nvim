@@ -441,7 +441,7 @@ into a durable artifact.
 
 ---
 
-### Phase 6: Convert the coordinator, planner, and postflight commit sites [NOT STARTED]
+### Phase 6: Convert the coordinator, planner, and postflight commit sites [COMPLETED]
 
 **Goal**: Close the remaining sites, including the most-shared one.
 
