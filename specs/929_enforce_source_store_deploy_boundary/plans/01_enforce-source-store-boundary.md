@@ -443,19 +443,19 @@ advisory, no `.claude/**` file was touched, and exactly one prose statement of t
 
 ## Testing & Validation
 
-- [ ] `jq .` parses `manifest.json` and `settings-hooks.json` after edits.
-- [ ] `bash -n` passes on `validate-meta-write.sh`.
-- [ ] Synthetic-stdin matrix: `.claude/scripts/*`, `.claude/hooks/*`, `.claude/agents/*` all emit
+- [x] `jq .` parses `manifest.json` and `settings-hooks.json` after edits.
+- [x] `bash -n` passes on `validate-meta-write.sh`.
+- [x] Synthetic-stdin matrix: `.claude/scripts/*`, `.claude/hooks/*`, `.claude/agents/*` all emit
       advisory; `specs/**` and a plain source path emit `{}`; all five exit 0.
-- [ ] The advisory message names `agent-system/extensions/` and does NOT contain
+- [x] The advisory message names `agent-system/extensions/` and does NOT contain
       `general-implementation-agent` as an exemption.
-- [ ] The new rule file exists, is registered in `provides.rules`, and appears in the Rules
+- [x] The new rule file exists, is registered in `provides.rules`, and appears in the Rules
       References list.
-- [ ] Every implementer-agent contract in the live confirmed set contains
+- [x] Every implementer-agent contract in the live confirmed set contains
       `source-store-deploy-boundary`.
-- [ ] Exactly one multi-paragraph prose statement of the rule exists in the tree.
-- [ ] No file under `.claude/` was created or modified by this task.
-- [ ] No task-number citations in any file outside `specs/**`.
+- [x] Exactly one multi-paragraph prose statement of the rule exists in the tree.
+- [x] No file under `.claude/` was created or modified by this task.
+- [x] No task-number citations in any file outside `specs/**`.
 
 ## Artifacts & Outputs
 
