@@ -961,7 +961,7 @@
     {
       "project_number": 916,
       "project_name": "fix_orchestrate_completion_summary_propagation",
-      "status": "not_started",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Populate completion_summary from return metadata on every /orchestrate path",
@@ -975,7 +975,20 @@
         "agent-system/extensions/core/commands/orchestrate.md"
       ],
       "created": "2026-07-27T06:31:44Z",
-      "last_updated": "2026-07-27T06:47:00Z"
+      "last_updated": "2026-07-27T07:37:27Z",
+      "session_id": "sess_1785137007_a53849",
+      "artifacts": [
+        {
+          "path": "specs/916_fix_orchestrate_completion_summary_propagation/reports/01_completion-summary-propagation.md",
+          "type": "report",
+          "summary": "Confirmed the completion_summary/roadmap_items propagation gap exists on all four /orchestrate paths (base single-task, base multi-task Stage MT-4, hard-mode single-task, hard-mode multi-task via inherited MT-4). Traced root cause to a missing read (orchestrate-recover-outcome.sh never exposes completion_data) and a missing write (no orchestrate call site ever writes completion_summary/roadmap_items to state.json). Found commands/orchestrate.md's CHECKPOINT 2 'Populate Completion Summary' step is dead/broken (result_summary is never assigned anywhere in the source store) and unconditionally clobbers completion_summary with an empty string, meaning it must be removed as part of the fix or it will silently undo any Stage-5 fix. Found a third, currently orphaned copy of the write logic in scripts/orchestrator-postflight.sh Stage 7b that is wired to nothing. Recommended design: one new skill-base.sh function skill_propagate_completion_summary, fed by two new fields on orchestrate-recover-outcome.sh, with six call sites converging on it (skill-implementer, skill-implementer-hard, orchestrator-postflight.sh, skill-orchestrate single-task Stage 5, skill-orchestrate Stage MT-4, skill-orchestrate-hard single-task Stage 5), plus removal of the dead commands/orchestrate.md CHECKPOINT 2 step."
+        },
+        {
+          "path": "specs/916_fix_orchestrate_completion_summary_propagation/plans/01_completion-summary-propagation.md",
+          "type": "plan",
+          "summary": "Six-phase plan converging all four /orchestrate paths and the three producer-side copies onto one shared reader extension (orchestrate-recover-outcome.sh) and one shared writer (skill_propagate_completion_summary in skill-base.sh), and deleting the broken commands/orchestrate.md CHECKPOINT 2 clobber."
+        }
+      ]
     }
   ],
   "completed_projects": [],

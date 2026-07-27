@@ -25,7 +25,7 @@ next_project_number: 917
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-916 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+916 [IMPLEMENTING] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
   └─ 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
     └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use (see above)
     └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
@@ -35,10 +35,12 @@ next_project_number: 917
 ## Tasks
 
 ### 916. Populate completion_summary from return metadata on every /orchestrate path
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 913
+- **Research**: [916_fix_orchestrate_completion_summary_propagation/reports/01_completion-summary-propagation.md]
+- **Plan**: [916_fix_orchestrate_completion_summary_propagation/plans/01_completion-summary-propagation.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 

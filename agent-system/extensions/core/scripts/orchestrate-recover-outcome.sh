@@ -63,6 +63,8 @@
 #   phases_total        int     .metadata.phases_total // .partial_progress.phases_total // 0
 #   meta_mtime          int     the file's mtime (0 if missing/unstattable).
 #   window_start        int     the window_start_ts actually used (post fail-closed default).
+#   completion_summary string  .completion_data.completion_summary // "", regardless of branch.
+#   roadmap_items      array   .completion_data.roadmap_items // [], regardless of branch.
 #
 # Exit codes:
 #   0 — recovered=true; the JSON object above is on stdout.
@@ -96,7 +98,8 @@ meta_file="${task_dir}/.return-meta.json"
 
 emit() {
   # $1=recovered $2=status $3=reason $4=artifact_path $5=artifact_type $6=artifact_summary
-  # $7=phases_completed $8=phases_total $9=meta_mtime
+  # $7=phases_completed $8=phases_total $9=meta_mtime ${10}=completion_summary ${11}=roadmap_items
+  # Braces are mandatory on ${10}/${11} — bare $10 parses as $1 followed by a literal "0".
   jq -n -c \
     --argjson recovered "$1" \
     --arg status "$2" \
@@ -108,26 +111,29 @@ emit() {
     --argjson phases_total "$8" \
     --argjson meta_mtime "$9" \
     --argjson window_start "$window_start" \
+    --arg completion_summary "${10}" \
+    --argjson roadmap_items "${11}" \
     '{recovered: $recovered, status: $status, reason: $reason,
       artifact_path: $artifact_path, artifact_type: $artifact_type,
       artifact_summary: $artifact_summary, phases_completed: $phases_completed,
-      phases_total: $phases_total, meta_mtime: $meta_mtime, window_start: $window_start}'
+      phases_total: $phases_total, meta_mtime: $meta_mtime, window_start: $window_start,
+      completion_summary: $completion_summary, roadmap_items: $roadmap_items}'
 }
 
 if [ ! -f "$meta_file" ]; then
-  emit false "unknown" "META_MISSING" "" "" "" 0 0 0
+  emit false "unknown" "META_MISSING" "" "" "" 0 0 0 "" "[]"
   exit 1
 fi
 
 meta_mtime=$(stat -c %Y "$meta_file" 2>/dev/null || stat -f %m "$meta_file" 2>/dev/null || echo 0)
 
 if [ "$meta_mtime" -lt "$window_start" ]; then
-  emit false "unknown" "META_STALE" "" "" "" 0 0 "$meta_mtime"
+  emit false "unknown" "META_STALE" "" "" "" 0 0 "$meta_mtime" "" "[]"
   exit 1
 fi
 
 if ! meta_json=$(jq -c '.' "$meta_file" 2>/dev/null); then
-  emit false "unknown" "META_UNPARSEABLE" "" "" "" 0 0 "$meta_mtime"
+  emit false "unknown" "META_UNPARSEABLE" "" "" "" 0 0 "$meta_mtime" "" "[]"
   exit 1
 fi
 
@@ -137,19 +143,21 @@ phases_total=$(echo "$meta_json" | jq -r '.metadata.phases_total // .partial_pro
 artifact_path=$(echo "$meta_json" | jq -r '.artifacts[0].path // ""')
 artifact_type=$(echo "$meta_json" | jq -r '.artifacts[0].type // ""')
 artifact_summary=$(echo "$meta_json" | jq -r '.artifacts[0].summary // ""')
+completion_summary=$(echo "$meta_json" | jq -r '.completion_data.completion_summary // ""')
+roadmap_items=$(echo "$meta_json" | jq -c '.completion_data.roadmap_items // []')
 
 case "$status" in
   researched|planned|implemented)
     emit true "$status" "NONE" "$artifact_path" "$artifact_type" "$artifact_summary" \
-      "$phases_completed" "$phases_total" "$meta_mtime"
+      "$phases_completed" "$phases_total" "$meta_mtime" "$completion_summary" "$roadmap_items"
     exit 0
     ;;
   in_progress)
-    emit false "$status" "STATUS_IN_PROGRESS" "" "" "" 0 0 "$meta_mtime"
+    emit false "$status" "STATUS_IN_PROGRESS" "" "" "" 0 0 "$meta_mtime" "" "[]"
     exit 1
     ;;
   *)
-    emit false "$status" "STATUS_NOT_SUCCESS" "" "" "" 0 0 "$meta_mtime"
+    emit false "$status" "STATUS_NOT_SUCCESS" "" "" "" 0 0 "$meta_mtime" "" "[]"
     exit 1
     ;;
 esac
