@@ -246,7 +246,7 @@ widening.
 
 ---
 
-### Phase 2: Hard-mode Stage 5 mirror [IN PROGRESS]
+### Phase 2: Hard-mode Stage 5 mirror [COMPLETED]
 
 **Goal**: Apply the identical three-tier structure to `skill-orchestrate-hard/SKILL.md`'s
 mirrored Stage 5, so base and hard modes cannot drift apart.
@@ -293,7 +293,7 @@ blocks after editing; any additional difference must be recorded, not silently a
 
 ---
 
-### Phase 3: Multi-task Stage MT-4 clause [NOT STARTED]
+### Phase 3: Multi-task Stage MT-4 clause [IN PROGRESS]
 
 **Goal**: Close the same defect in the multi-task engine, where the analogous clause is prose
 rather than bash and where the correct off-schema response is a per-task `failed_tasks` charge
