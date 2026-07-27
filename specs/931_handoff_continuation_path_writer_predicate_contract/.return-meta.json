@@ -1,0 +1,31 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 931,
+  "session_id": "sess_1785196200_e29d15",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/931_handoff_continuation_path_writer_predicate_contract/reports/01_handoff-continuation-predicate-contract.md"
+    }
+  ],
+  "findings_count": 6,
+  "next_steps": "Run /plan 931 to create implementation plan",
+  "memory_candidates": [
+    {
+      "content": "In this repo's orchestrator handoff schema, two continuation-pointer forms coexist and are already both accepted by validate-handoff.sh: a flat top-level `continuation_path` string (documented in context/contracts/wrap-up.md, the H9 canonical schema, and the ONLY form the sole active writer -- general-implementation-hard-agent.md's H9 Stage 5 -- actually emits) and a nested `continuation_context: {handoff_path, orchestrator_mode}` object (documented in docs/architecture/handoff-schema.md, but written only by skill-base.sh's skill_write_orchestrator_handoff, which has zero callers). Any code that decides 'is a continuation available' from .orchestrator-handoff.json (orchestrate-triage-classify.sh, skill-orchestrate/SKILL.md Stage 4) must check BOTH forms or it will silently miss every hard-mode-written partial handoff.",
+      "category": "PATTERN",
+      "source_artifact": "specs/931_handoff_continuation_path_writer_predicate_contract/reports/01_handoff-continuation-predicate-contract.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["orchestrator-handoff", "continuation_context", "continuation_path", "handoff-schema", "skill-orchestrate"]
+    },
+    {
+      "content": "cslib-implementation-hard-agent.md's H9 Stage 5 wrap-up template hardcodes `\"continuation_context\": null` with no instruction anywhere in the file for populating it on partial/blocked status (unlike core and lean's explicit population instructions for continuation_path). cslib hard-mode partial handoffs therefore never carry any continuation pointer regardless of the classifier fix chosen -- a separate, narrower defect from the writer/predicate mismatch.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/931_handoff_continuation_path_writer_predicate_contract/reports/01_handoff-continuation-predicate-contract.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["cslib", "hard-mode", "continuation_context", "orchestrator-handoff", "wrap-up"]
+    }
+  ]
+}
