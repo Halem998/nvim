@@ -1,0 +1,16 @@
+{
+  "phase": 6,
+  "phase_name": "Documentation note and whole-path verification sweep",
+  "started_at": "2026-07-27T09:21:00Z",
+  "last_updated": "2026-07-27T09:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add invariant note to handoff-schema.md and return-metadata-file.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md", "agent-system/extensions/core/context/formats/return-metadata-file.md"]},
+    {"id": 2, "description": "Full-path sweep: one definition, six callers", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm no task-number citations outside specs/**", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Record post-deployment live-test caveat in summary", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "check-extension-docs.sh (doc-lint) reports non-zero exit due to deploy drift between .claude/ (stale deploy artifact) and agent-system/extensions/core/ (source store) for skill-base.sh, orchestrator-postflight.sh, and one pre-existing unrelated drift (roadmap-integration.sh, not touched by this task). This is the EXPECTED consequence of the binding no-sync constraint (Rollback/Contingency section) -- not a defect in this task's edits. Resolves automatically after a future <leader>al 'Sync all' by the user."
+}

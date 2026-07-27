@@ -369,25 +369,30 @@ downstream overwrites it.
 
 ---
 
-### Phase 6: Documentation note and whole-path verification sweep [NOT STARTED]
+### Phase 6: Documentation note and whole-path verification sweep [COMPLETED]
 
 **Goal**: The single-reader/single-writer invariant is documented where a future editor would
 otherwise recreate the defect, and all six call sites are confirmed converged.
 
 **Tasks**:
 
-- [ ] Add a short note to `docs/architecture/handoff-schema.md` (and/or
+- [x] Add a short note to `docs/architecture/handoff-schema.md` (and/or
       `context/formats/return-metadata-file.md`) stating that `completion_summary` and
       `roadmap_items` live exclusively in `.return-meta.json`'s `completion_data`, are never
       carried in `.orchestrator-handoff.json`, and are read exclusively via
-      `orchestrate-recover-outcome.sh` regardless of handoff presence.
-- [ ] Full-path sweep: confirm exactly one definition of the write logic and exactly six callers.
-- [ ] Confirm the no-task-references rule: no task-number citations were introduced in any file
-      outside `specs/**`.
-- [ ] Record in the implementation summary that the acceptance criterion's live test
+      `orchestrate-recover-outcome.sh` regardless of handoff presence. *(completed: notes added
+      to both files)*
+- [x] Full-path sweep: confirm exactly one definition of the write logic and exactly six callers.
+      *(completed: confirmed exactly one definition in skill-base.sh and exactly six call sites —
+      orchestrator-postflight.sh, skill-implementer, skill-implementer-hard, skill-orchestrate
+      Stage 5, skill-orchestrate Stage MT-4, skill-orchestrate-hard Stage 5)*
+- [x] Confirm the no-task-references rule: no task-number citations were introduced in any file
+      outside `specs/**`. *(completed: grepped all ten touched non-specs files, zero hits)*
+- [x] Record in the implementation summary that the acceptance criterion's live test
       (a multi-task `/orchestrate` run driving 2+ tasks to `completed`) is a **post-deployment**
       validation, executable only after `.claude/` is re-synced from the source store, and
-      deliberately **not** run during this task's own implementation.
+      deliberately **not** run during this task's own implementation. *(completed: recorded in
+      the summary)*
 
 **Timing**: 40 minutes
 

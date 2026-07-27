@@ -158,6 +158,11 @@ Contains fields needed for task completion processing. Skills extract this data 
 - `completion_summary` is mandatory for all `implemented` status returns
 - `roadmap_items` is optional and only relevant for non-meta tasks
 - Skills propagate these fields to state.json for use by `/todo` command
+- These two fields live exclusively here — never in `.orchestrator-handoff.json` — and are
+  written to state.json by exactly one shared function, `skill_propagate_completion_summary`
+  in `scripts/skill-base.sh`. On the `/orchestrate` path they are read exclusively via
+  `orchestrate-recover-outcome.sh`, regardless of whether a handoff is present for that dispatch.
+  See `docs/architecture/handoff-schema.md`'s "Outcome Channels" section for the full rationale.
 
 ### memory_candidates (optional)
 

@@ -270,6 +270,21 @@ treated as a success. A missing, stale, unparseable, `in_progress`, or otherwise
 `.return-meta.json` preserves the pre-existing missing-handoff error path exactly, unchanged by
 this fallback.
 
+**`completion_summary` / `roadmap_items` live exclusively in `.return-meta.json`, never in this
+handoff.** The JSON Schema above has no `completion_summary` or `roadmap_items` field, and none
+should ever be added to it: these two values are completion metadata (see
+`context/formats/return-metadata-file.md`'s `completion_data` object), not dispatch-outcome
+metadata, and they are read exclusively through `orchestrate-recover-outcome.sh`'s
+`completion_summary`/`roadmap_items` output fields — regardless of whether a handoff is present or
+missing for that dispatch. This matters most for hard mode: its implement dispatch ALWAYS writes
+a handoff (H9 wrap-up), so its `implemented` outcome is read from the handoff-present branch, not
+the recovery branch above — if a future editor assumed the handoff carried completion data (by
+analogy with `status`/`phases_completed`/artifact fields, which it does carry), the propagation
+would silently break again. Every `implemented)` postflight site (base Stage 5, hard Stage 5,
+Stage MT-4 step 3) therefore issues its own `orchestrate-recover-outcome.sh` read for this purpose
+independently of which branch supplied `dispatch_status`, reusing that cycle's already-recovered
+JSON when the recovery branch already ran rather than reading the file twice.
+
 ---
 
 ## Token Budget Constraints
