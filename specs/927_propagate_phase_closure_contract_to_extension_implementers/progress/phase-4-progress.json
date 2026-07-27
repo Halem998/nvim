@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Skill-file discoverability bullets",
+  "started_at": "2026-07-27T19:11:00Z",
+  "last_updated": "2026-07-27T19:12:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-grep target's existing contracts/ bullet lines", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Apply the two Path: bullets at the end of the contracts run", "status": "done", "files_touched": [
+      "agent-system/extensions/cslib/skills/skill-cslib-implementation-hard/SKILL.md"
+    ]},
+    {"id": 3, "description": "Confirm no other extension skill file carries a contract-bullet list", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

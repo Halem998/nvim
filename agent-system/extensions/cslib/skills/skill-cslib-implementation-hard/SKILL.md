@@ -26,6 +26,8 @@ Reference (do not load eagerly):
 - Path: `.claude/context/contracts/anti-analysis.md` - H2 contract (loaded by agent)
 - Path: `.claude/context/contracts/wrap-up.md` - H9 contract (loaded by agent)
 - Path: `.claude/context/contracts/territory.md` - H7 contract (when territory params present)
+- Path: `.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (loaded by agent)
+- Path: `.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (loaded by agent)
 - Path: `.claude/context/patterns/postflight-control.md` - Marker file protocol
 - Path: `.claude/context/patterns/subagent-continuation-loop.md` - Continuation loop pattern
 
