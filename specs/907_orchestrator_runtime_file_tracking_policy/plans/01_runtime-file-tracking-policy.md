@@ -392,31 +392,32 @@ sites that create, resume from, and clean up those files.
 
 ---
 
-### Phase 5: Ship and register the verification check script [NOT STARTED]
+### Phase 5: Ship and register the verification check script [COMPLETED]
 
 **Goal**: Deliver the runnable check the task requires alongside documented guidance, so a consumer
 repo can prove its coverage instead of assuming it.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/check-runtime-file-tracking.sh`:
-  - [ ] **Check A — ignore coverage**: for each ephemeral pattern from the Phase 1 class list,
+- [x] Create `agent-system/extensions/core/scripts/check-runtime-file-tracking.sh`:
+  - [x] **Check A — ignore coverage**: for each ephemeral pattern from the Phase 1 class list,
         confirm the repo actually ignores a representative path. Use `git check-ignore -q` against a
         synthesized path (e.g. `specs/000_probe/.orchestrator-loop-guard`) rather than grepping
         `.gitignore` text — this tests the real behavior, including patterns inherited from any
-        source, and is exactly the "demonstrate it matches" bar the task sets.
-  - [ ] **Check B — tracked ephemeral files**: scan `git ls-files` for each ephemeral class; for any
+        source, and is exactly the "demonstrate it matches" bar the task sets. *(completed: 9
+        ephemeral probes, including `.drift-inspection.json` per the Phase 1 audit finding)*
+  - [x] **Check B — tracked ephemeral files**: scan `git ls-files` for each ephemeral class; for any
         hit, print the exact `git rm --cached` (or `git rm -r --cached`) remediation command and
         note that the file stays on disk.
-  - [ ] **Check C — provenance not over-ignored**: confirm `.orchestrator-handoff.json` and
+  - [x] **Check C — provenance not over-ignored**: confirm `.orchestrator-handoff.json` and
         `.return-meta.json` are NOT ignored (`git check-ignore` must fail for them), and never
         suggest untracking them. A repo that ignores them fails this check with a clear message
         naming the offending `.gitignore` line (`git check-ignore -v` reports it).
-  - [ ] Exit non-zero when any check fails; print a compact pass/fail summary. Run correctly from
+  - [x] Exit non-zero when any check fails; print a compact pass/fail summary. Run correctly from
         the repo root of any consumer repo.
-  - [ ] `chmod +x` the script.
-- [ ] Register the script in `agent-system/extensions/core/manifest.json` under `provides.scripts`
+  - [x] `chmod +x` the script.
+- [x] Register the script in `agent-system/extensions/core/manifest.json` under `provides.scripts`
       (that array enumerates individual filenames; an unregistered script is never deployed).
-- [ ] Verify no task-number citations were introduced.
+- [x] Verify no task-number citations were introduced. *(completed: grep clean)*
 
 **Timing**: 1 hour
 
@@ -430,12 +431,15 @@ repo can prove its coverage instead of assuming it.
 - `bash agent-system/extensions/core/scripts/check-runtime-file-tracking.sh` runs from this repo
   root. Before Phase 6 it is expected to FAIL Check C (this repo still ignores handoff and
   return-meta); that expected failure is itself evidence the check detects the condition. Record
-  the output.
+  the output. *(completed: ran pre-Phase-6; Check A also failed on `.drift-inspection.json`
+  specifically, since this repo does not yet ignore that newly-adopted class — expected, and
+  resolved in Phase 6. Check B passed (0 tracked ephemeral files). Full output recorded in the
+  Phase 7 summary.)*
 - `jq -r '.provides.scripts[]' agent-system/extensions/core/manifest.json | grep -c check-runtime-file-tracking.sh`
-  returns 1.
-- `test -x agent-system/extensions/core/scripts/check-runtime-file-tracking.sh`.
-- `bash -n` on the script passes.
-- Task-number citation grep is clean on the script.
+  returns 1. *(completed: confirmed)*
+- `test -x agent-system/extensions/core/scripts/check-runtime-file-tracking.sh`. *(completed: confirmed)*
+- `bash -n` on the script passes. *(completed: confirmed)*
+- Task-number citation grep is clean on the script. *(completed: confirmed)*
 
 ---
 
