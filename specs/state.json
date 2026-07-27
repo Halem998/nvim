@@ -793,7 +793,7 @@
     {
       "project_number": 908,
       "project_name": "prevent_git_index_contention_in_parallel_dispatch",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Prevent git index contention between concurrently dispatched orchestrate agents",
@@ -808,7 +808,7 @@
         "agent-system/extensions/core/skills/skill-team-implement/SKILL.md"
       ],
       "created": "2026-07-25T16:48:33Z",
-      "last_updated": "2026-07-27T09:21:58Z",
+      "last_updated": "2026-07-27T09:45:52Z",
       "artifacts": [
         {
           "path": "specs/908_prevent_git_index_contention_in_parallel_dispatch/reports/01_git-index-contention.md",
@@ -819,9 +819,15 @@
           "path": "specs/908_prevent_git_index_contention_in_parallel_dispatch/plans/01_git-index-contention.md",
           "type": "plan",
           "summary": "Seven-phase plan fixing git index contention via path-scoped commits plus a new specs/.commit-lock/ mutex, consolidated into one shipped git-commit-scoped.sh helper; declares a nine-path file_scope expansion and ends in a three-arm empirical concurrency comparison."
+        },
+        {
+          "path": "specs/908_prevent_git_index_contention_in_parallel_dispatch/reports/02_commit-site-inventory.md",
+          "type": "summary",
+          "summary": "Phase 1 re-verification of Verified Findings V1-V9 in a disposable scratch repo, plus the authoritative 11-site commit-site inventory across 7 files (a minor correction to the plan's stated 8-file expectation)."
         }
       ],
-      "session_id": "sess_1785143135_b5536f"
+      "session_id": "sess_1785143135_b5536f",
+      "completion_summary": "Fixed git index contention between concurrently dispatched agents by path-scoping every git commit in the dispatch pipeline and serializing the git add + git commit pair through a new specs/.commit-lock/ mutex (task-lock.sh's commit-acquire/commit-release verbs), both consolidated into one shipped helper (git-commit-scoped.sh) invoked by all 11 commit sites across 7 files. Empirically demonstrated under real concurrency: baseline reproduces the reported misattribution, path-scoping-only trades it for a 10/30 (~33%) index.lock failure rate, and the full fix achieves 0/30 misattribution and 0/30 failures, plus a clean 8-concurrent-committer run in 0.48s."
     },
     {
       "project_number": 909,

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #908
 
 - **Task**: 908 - Prevent git index contention between concurrently dispatched orchestrate agents
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: 907 (landed; staging narrowing is a prerequisite context, not a fix for this defect)
 - **Research Inputs**: specs/908_prevent_git_index_contention_in_parallel_dispatch/reports/01_git-index-contention.md

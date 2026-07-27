@@ -11,7 +11,7 @@ next_project_number: 921
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,908,914,915,917,918,919,920 | -- | agent-system |
+| 1 | 873,885,914,915,917,918,919,920 | -- | agent-system |
 | 2 | 887 | 873,885 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -22,7 +22,6 @@ next_project_number: 921
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use (see above)
-908 [IMPLEMENTING] — Observed directly during a 4-task concurrent /orchestrate batch (
 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 917 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
@@ -431,12 +430,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 908. Prevent git index contention between concurrently dispatched orchestrate agents
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 907
 - **Research**: [908_prevent_git_index_contention_in_parallel_dispatch/reports/01_git-index-contention.md]
 - **Plan**: [908_prevent_git_index_contention_in_parallel_dispatch/plans/01_git-index-contention.md]
+- **Summary**: [908_prevent_git_index_contention_in_parallel_dispatch/reports/02_commit-site-inventory.md]
 
 **Description**: Observed directly during a 4-task concurrent /orchestrate batch (tasks 892, 893, 894, 903 dispatched in one wave). Two separate implementation agents independently reported that their commits were swept into other agents' commits: one reported two of its own phase commits bundled under other agents' commit messages, another reported its phase-7 commit swept into a concurrent session's commit. Content survived intact in every observed case (independently re-verified), but commit attribution is now wrong in the history.
 
