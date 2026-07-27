@@ -178,6 +178,32 @@ echo "[hard-orchestrate] Routing: research=$RESEARCH_AGENT, implement=$IMPLEMENT
 
 ---
 
+### Dispatch Context Anchor Invariant
+
+Every `delegation_context` in this file states `orchestrator_mode` explicitly, giving two
+checkable properties: (I1) no site relies on the reader's `// "false"` default — the key is
+always present, `true` or `false`; (I2) `task_dir` / `handoff_path` are present on a context if
+and only if it declares `orchestrator_mode: true`. The one indirection: `delegation_context:
+$dispatch_context` (Stage 4, per-phase implement dispatch) refers to the JSON literal built
+immediately above it — that literal, not the reference line, carries `orchestrator_mode` and the
+anchors. `orchestrator_mode` is dual-consumer (handoff-write gate plus the literature Stage 4a
+autonomy gate — see the Dual-Consumer Note in `docs/architecture/handoff-schema.md`), so a future
+edit here weighs both; the `false` sub-dispatches (H4 verification, H5 divergence audit, Stage 6
+blocker research) pass no `lit_flag` at all, leaving the literature path disabled there regardless.
+
+```bash
+F=agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md
+# Anchored at line-start (after leading whitespace) so this check does not self-match its own
+# quoted grep patterns below — an unanchored 'delegation_context: {' pattern matches its own
+# source line once embedded in this same file.
+PAT='^[[:space:]]*delegation_context: \{'
+[ "$(grep -cE "$PAT" "$F")" = "$(grep -cE "$PAT.*orchestrator_mode" "$F")" ] && echo "I1 holds"
+grep -E "$PAT.*orchestrator_mode: true" "$F" | grep -qv 'task_dir' && echo "I2 VIOLATED (true without task_dir)" || echo "I2 holds (true sites)"
+grep -E "$PAT.*orchestrator_mode: false" "$F" | grep -q 'task_dir\|handoff_path' && echo "I2 VIOLATED (false with anchor)" || echo "I2 holds (false sites)"
+```
+
+---
+
 ### Stage 1c: Orchestrator Discipline Preamble
 
 Runs ONCE per invocation, immediately after Stage 1b and before the loop begins.

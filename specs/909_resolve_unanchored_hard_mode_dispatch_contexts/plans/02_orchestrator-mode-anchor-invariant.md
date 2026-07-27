@@ -216,31 +216,39 @@ gate flag explicit, no anchor.
 
 ---
 
-### Phase 3: Record the Invariant and Run the Full-File Check [NOT STARTED]
+### Phase 3: Record the Invariant and Run the Full-File Check [COMPLETED]
 
 **Goal**: The invariant is stated once in the file with a mechanical check, and the whole file
 satisfies it.
 
 **Tasks**:
-- [ ] Add a compact subsection (target: 8-14 lines) titled "Dispatch Context Anchor Invariant",
+- [x] Add a compact subsection (target: 8-14 lines) titled "Dispatch Context Anchor Invariant",
       placed after Stage 1b (`Resolve Hard-Mode Agent Routing`, ends ~line 179) and before
-      Stage 1c, so it precedes every dispatch site in reading order.
-- [ ] State the two-part invariant: (I1) every `delegation_context` in this file declares
+      Stage 1c, so it precedes every dispatch site in reading order. *(completed)*
+- [x] State the two-part invariant: (I1) every `delegation_context` in this file declares
       `orchestrator_mode` explicitly — never relying on the `// "false"` reader default; (I2)
       `task_dir` / `handoff_path` are present if and only if that context declares
-      `orchestrator_mode: true`.
-- [ ] Note the one indirection a checker must follow: `delegation_context: $dispatch_context` in the
+      `orchestrator_mode: true`. *(completed)*
+- [x] Note the one indirection a checker must follow: `delegation_context: $dispatch_context` in the
       per-phase implement dispatch refers to the JSON literal built immediately above it, which is
-      where its `orchestrator_mode` and anchors live.
-- [ ] Note that `orchestrator_mode` is dual-consumer (handoff-write gate + literature Stage 4a
+      where its `orchestrator_mode` and anchors live. *(completed)*
+- [x] Note that `orchestrator_mode` is dual-consumer (handoff-write gate + literature Stage 4a
       autonomy gate, per `docs/architecture/handoff-schema.md`) so a future edit weighs both, and
       that the `false` sub-dispatches pass no `lit_flag`, leaving the literature path disabled there.
-- [ ] Embed the mechanical check as a fenced block:
+      *(completed)*
+- [x] Embed the mechanical check as a fenced block:
       `grep -c 'delegation_context: {' FILE` equals
       `grep -c 'delegation_context: {.*orchestrator_mode' FILE`;
       every `orchestrator_mode: true` context line also matches `task_dir` and `handoff_path`;
       every `orchestrator_mode: false` context line matches neither.
-- [ ] Cite durable anchors only — section headings and document filenames, never task numbers.
+      *(completed: altered — anchored the check patterns at line-start
+      (`^[[:space:]]*delegation_context: \{`) rather than the plan's unanchored literal, because
+      the unanchored form self-matches the check's own quoted grep-pattern text once embedded in
+      the same file it inspects, producing a false "I2 VIOLATED" reading. Verified the anchored
+      check runs clean against the real file: I1 holds, I2 holds for both true and false sites,
+      5 inline sites (2 true, 3 false) as expected.)*
+- [x] Cite durable anchors only — section headings and document filenames, never task numbers.
+      *(completed)*
 
 **Timing**: 0.5 hours
 
