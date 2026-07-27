@@ -294,6 +294,13 @@ if [ -n "$completion_summary" ]; then
       '(.active_projects[] | select(.project_number == '$task_number')).completion_summary = $summary' \
       specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
 fi
+
+# Add roadmap_items if present (for non-meta tasks only)
+if [ "$task_type" != "meta" ] && [ "$roadmap_items" != "[]" ] && [ -n "$roadmap_items" ]; then
+    jq --argjson items "$roadmap_items" \
+      '(.active_projects[] | select(.project_number == '$task_number')).roadmap_items = $items' \
+      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+fi
 ```
 
 **If status is "partial"**:
