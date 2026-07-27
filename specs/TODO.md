@@ -1,5 +1,5 @@
 ---
-next_project_number: 936
+next_project_number: 937
 ---
 
 # TODO
@@ -14,6 +14,7 @@ next_project_number: 936
 | 1 | 885,920,933 | -- | agent-system |
 | 2 | 926,934 | 885,933 | agent-system |
 | 3 | 887,931,935 | 920,926,934 | agent-system |
+| 4 | 936 | 931,935 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -23,13 +24,72 @@ next_project_number: 936
   └─ 926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 887 [RESEARCHED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
     └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co
+      └─ 936 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
   └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co (see above)
 933 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
   └─ 934 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 935 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+      └─ 936 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
 
 ## Tasks
+
+### 936. Stop Stage 8 postflight from clobbering .return-meta.json modified_files
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 920, Task 931, Task 933, Task 934, Task 935
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.
+
+VERIFIED DEFECT (read live from the source store). skills/skill-orchestrate/SKILL.md "Stage 8: Postflight" writes the task's .return-meta.json with a TRUNCATING redirect and a jq -n object containing ONLY status and metadata. Both the clean-exit and partial-exit variants have this shape:
+
+  jq -n \
+    --arg status "implemented" \
+    --argjson cycles "$cycle_count" \
+    --arg final_state "$current_status" \
+    '{
+      "status": $status,
+      "metadata": {
+        "cycles_used": $cycles,
+        "final_state": $final_state
+      }
+    }' > "${TASK_DIR}/.return-meta.json"
+
+The implementation agent dispatched earlier in the same run already wrote that SAME path with a rich object whose fields include modified_files (the list of source files it edited) and completion_data (completion_summary / roadmap_items). Stage 8 overwrites the file wholesale, so every field other than status and metadata is destroyed.
+
+CONSEQUENCE, STATED PLAINLY. commands/orchestrate.md "CHECKPOINT 3: COMMIT" runs AFTER the skill returns and builds its staging set by reading exactly that clobbered file:
+
+  metadata_file="${task_dir}/.return-meta.json"
+  while IFS= read -r f; do
+    [ -n "$f" ] && stage_paths+=("$f")
+  done < <(jq -r '.modified_files[]? // empty' "$metadata_file" 2>/dev/null)
+
+Because Stage 8 has already removed modified_files, this loop is guaranteed to read zero entries on every single-task /orchestrate run that reaches Stage 8. CHECKPOINT 3 therefore stages only the task directory, TODO.md, and state.json — never any source file the implementation agent actually edited. This is the same class of defect as the multi-task staging gap already retired in commands/orchestrate.md Step 5, one layer up in the single-task path.
+
+The failure is SILENT. context/standards/git-staging-scope.md's "Fail-Safe Direction" section specifies a canonical warning for exactly this condition:
+
+  [postflight] WARNING: no modified_files reported; source-file changes NOT committed automatically. Review and commit manually.
+
+Stage MT-4 step 5.5 emits the task-scoped variant of that warning. The single-task CHECKPOINT 3 site does NOT emit it at all — there is no modified_count accounting there — so an operator gets no signal that source files went unstaged.
+
+SCOPE BOUNDARY (verified, do not widen without re-verifying). Multi-task mode is NOT affected: Stage MT-5 writes specs/.return-meta-multi.json, a DIFFERENT file, and Stage MT-4 step 5.5 commits inside the per-task loop before MT-5 runs at all. skills/skill-orchestrate-hard/SKILL.md has no Stage 8 return-meta write and appears unaffected — confirm this rather than assuming it.
+
+SCOPE OF WORK.
+
+A. Stop Stage 8 from destroying fields it does not own. Decide and record which of these is correct: (i) merge — read the existing file and add/overwrite only status and metadata, preserving modified_files, completion_data, memory_candidates, and any other field; or (ii) write to a distinct path so the two writers never share a file. Option (i) preserves the existing single-reader contract that commands/orchestrate.md and scripts/orchestrate-recover-outcome.sh both depend on; option (ii) requires updating every reader and is likely the wrong trade. Whichever is chosen, the Stage 8 status value must stay in the .return-meta.json skill-status vocabulary defined in context/formats/return-metadata-file.md — the existing "do not correct this value back to completed" note must survive the edit.
+
+B. Emit the canonical fail-safe warning at the single-task CHECKPOINT 3 staging site in commands/orchestrate.md, reusing the exact wording already specified in context/standards/git-staging-scope.md's "Fail-Safe Direction" section. Do not invent a second convention and do not introduce a task-scoped variant here — the un-suffixed wording is the sanctioned one for the single-task site.
+
+C. Consider whether context/formats/return-metadata-file.md should state explicitly that .return-meta.json has multiple sequential writers within one orchestrate run and that later writers MUST NOT clobber earlier writers' fields. The absence of that rule is what allowed this defect. Record the decision either way.
+
+VERIFICATION BAR: a single-task /orchestrate run over a task whose implementation agent edits at least one source file outside specs/ must produce a CHECKPOINT 3 commit that ACTUALLY CONTAINS that source file. Assert on git show --name-only of a real commit. Verifying only that Stage 8 no longer truncates the file, or only that the code reads modified_files, is insufficient. Also assert the negative case: a task whose agent reports no modified_files must emit the canonical warning.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
 
 ### 935. Narrow the self_modifying defer scope and add an explicit override flag
 - **Status**: [NOT STARTED]
