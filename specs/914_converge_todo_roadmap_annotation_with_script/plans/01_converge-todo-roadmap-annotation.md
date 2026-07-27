@@ -1,7 +1,7 @@
 # Implementation Plan: Task #914
 
 - **Task**: 914 - converge_todo_roadmap_annotation_with_script
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/914_converge_todo_roadmap_annotation_with_script/reports/01_todo-roadmap-annotation-convergence.md

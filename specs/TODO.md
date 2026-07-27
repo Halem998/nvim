@@ -13,7 +13,7 @@ next_project_number: 932
 |------|-------|------------|--------|
 | 1 | 885,920 | -- | agent-system |
 | 2 | 926 | 885 | agent-system |
-| 3 | 887,914,928,929,931 | 920,926 | agent-system, extensions |
+| 3 | 887,931 | 920,926 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -22,15 +22,9 @@ next_project_number: 932
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
   └─ 926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
-    └─ 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-    └─ 929 [NOT STARTED] — SOURCE-STORE RULE (binding, and the subject of this task): the ag
     └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
   └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co (see above)
-
-### Extensions
-
-928 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ### Uncategorized
 
@@ -89,10 +83,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 929. Make the source-store / disposable-deploy boundary enforceable rather than prose
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 926
+- **Research**: [929_enforce_source_store_deploy_boundary/reports/01_source-store-boundary-enforcement.md]
+- **Plan**: [929_enforce_source_store_deploy_boundary/plans/01_enforce-source-store-boundary.md]
+- **Summary**: [929_enforce_source_store_deploy_boundary/summaries/01_enforce-source-store-boundary-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding, and the subject of this task): the agent-system SOURCE of truth is agent-system/extensions/core/ and the per-extension source directories under agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store; edits to .claude/** are silently wiped on the next reload. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
@@ -121,10 +118,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 928. Add a disk-driven check_undeclared_scripts check to the extension doc-lint
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 885, Task 926
+- **Research**: [928_undeclared_scripts_doc_lint_check/reports/01_undeclared-scripts-check.md]
+- **Plan**: [928_undeclared_scripts_doc_lint_check/plans/01_undeclared-scripts-doc-lint.md]
+- **Summary**: [928_undeclared_scripts_doc_lint_check/summaries/01_undeclared-scripts-doc-lint-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/ and the per-extension source directories under agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
@@ -645,10 +645,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 914. Reconcile /todo's independent roadmap-annotation logic with roadmap-integration.sh
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 926
+- **Research**: [914_converge_todo_roadmap_annotation_with_script/reports/01_todo-roadmap-annotation-convergence.md]
+- **Plan**: [914_converge_todo_roadmap_annotation_with_script/plans/01_converge-todo-roadmap-annotation.md]
+- **Summary**: [914_converge_todo_roadmap_annotation_with_script/summaries/01_converge-todo-roadmap-annotation-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 

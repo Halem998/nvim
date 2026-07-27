@@ -1,7 +1,7 @@
 # Implementation Plan: Task #929
 
 - **Task**: 929 - enforce_source_store_deploy_boundary
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/929_enforce_source_store_deploy_boundary/reports/01_source-store-boundary-enforcement.md

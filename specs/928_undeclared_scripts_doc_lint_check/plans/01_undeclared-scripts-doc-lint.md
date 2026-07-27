@@ -1,7 +1,7 @@
 # Implementation Plan: Task #928
 
 - **Task**: 928 - Add a disk-driven check_undeclared_scripts check to the extension doc-lint
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: 885, 926
 - **Research Inputs**: specs/928_undeclared_scripts_doc_lint_check/reports/01_undeclared-scripts-check.md

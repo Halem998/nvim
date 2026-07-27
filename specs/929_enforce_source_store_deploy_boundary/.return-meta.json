@@ -1,0 +1,68 @@
+{
+  "status": "implemented",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1785180513_6ef9d7_929",
+  "task_number": 929,
+  "phases_completed": 6,
+  "phases_total": 6,
+  "completion_data": {
+    "completion_summary": "Registered validate-meta-write.sh in the PostToolUse hook matcher, widened its path coverage to .claude/scripts/** and .claude/hooks/** and rewrote its advisory message to name the source store as the correct edit target (removing the backwards /implement exemption), and created one canonical source-store-deploy-boundary.md rule file referenced by a one-line MUST NOT bullet in all 15 implementer-agent contracts, collapsing two pre-existing duplicate prose copies of the rule (meta-builder-agent.md and commands/meta.md) into pointers."
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/929_enforce_source_store_deploy_boundary/summaries/01_enforce-source-store-boundary-summary.md",
+      "summary": "Implementation summary for the source-store/deploy-boundary enforcement task"
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/core/agents/meta-builder-agent.md",
+    "agent-system/extensions/core/commands/meta.md",
+    "agent-system/extensions/core/hooks/validate-meta-write.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/merge-sources/settings-hooks.json",
+    "agent-system/extensions/core/rules/source-store-deploy-boundary.md",
+    "agent-system/extensions/cslib/agents/cslib-implementation-agent.md",
+    "agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md",
+    "agent-system/extensions/cslib/agents/pr-review-implementation-agent.md",
+    "agent-system/extensions/email/agents/email-implementation-agent.md",
+    "agent-system/extensions/latex/agents/latex-implementation-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+    "agent-system/extensions/nix/agents/nix-implementation-agent.md",
+    "agent-system/extensions/nvim/agents/neovim-implementation-agent.md",
+    "agent-system/extensions/python/agents/python-implementation-agent.md",
+    "agent-system/extensions/typst/agents/typst-implementation-agent.md",
+    "agent-system/extensions/web/agents/web-implementation-agent.md",
+    "agent-system/extensions/z3/agents/z3-implementation-agent.md",
+    "specs/929_enforce_source_store_deploy_boundary/plans/01_enforce-source-store-boundary.md",
+    "specs/929_enforce_source_store_deploy_boundary/summaries/01_enforce-source-store-boundary-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In-repo pattern for durably encoding a cross-cutting rule across many agent contracts without duplicating prose: author ONE core rule file under agent-system/extensions/core/rules/ (register in manifest.json's provides.rules AND merge-sources/claudemd.md's Rules References list), then append a single one-line MUST NOT bullet in each affected agent contract pointing at it (e.g. 'see .claude/rules/<file>.md; do X instead'). When collapsing a pre-existing duplicate prose statement of the same rule, preserve any genuinely agent-specific clause inline rather than deleting it outright -- only the general explanation moves to the pointer.",
+      "category": "PATTERN",
+      "source_artifact": "specs/929_enforce_source_store_deploy_boundary/summaries/01_enforce-source-store-boundary-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["rule-file", "agent-contract", "MUST-NOT-pointer", "source-store", "duplicate-prose-collapse"]
+    },
+    {
+      "content": "A PostToolUse hook (e.g. validate-meta-write.sh) only receives a file_path argument and can never know task type, lifecycle stage, or repository identity. It is structurally an advisory nudge on path SHAPE only, never a backstop for target-root correctness. When writing or reviewing such hooks, never let their advisory message overclaim enforcement -- state the limitation explicitly in both the hook's own comments and any rule file that references it.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/929_enforce_source_store_deploy_boundary/summaries/01_enforce-source-store-boundary-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["posttooluse-hook", "advisory-limitation", "hook-enforcement", "file_path-only"]
+    },
+    {
+      "content": "This repo's .claude/ tree is regenerated from agent-system/extensions/** by a Lua file-copy engine (lua/neotex/plugins/ai/shared/extensions/loader.lua), not through the Claude Code Write/Edit tool call path. Any PostToolUse hook gated on Write|Edit therefore structurally cannot fire during a deploy/reload, so widening such a hook's path coverage carries no risk of interfering with deploy -- no carve-out is ever needed for the loader itself.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/929_enforce_source_store_deploy_boundary/summaries/01_enforce-source-store-boundary-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["deploy-loader", "file-copy-engine", "posttooluse-scope", "extension-loader"]
+    }
+  ]
+}

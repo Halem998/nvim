@@ -1,0 +1,14 @@
+{
+  "task_number": 929,
+  "session_id": "sess_1785180513_6ef9d7_929",
+  "stage": "implement",
+  "status": "implemented",
+  "phases_completed": 6,
+  "phases_total": 6,
+  "plan_path": "specs/929_enforce_source_store_deploy_boundary/plans/01_enforce-source-store-boundary.md",
+  "summary_path": "specs/929_enforce_source_store_deploy_boundary/summaries/01_enforce-source-store-boundary-summary.md",
+  "completion_summary": "Registered validate-meta-write.sh in the PostToolUse hook matcher, widened its path coverage to .claude/scripts/** and .claude/hooks/** and rewrote its advisory message to name the source store as the correct edit target (removing the backwards /implement exemption), and created one canonical source-store-deploy-boundary.md rule file referenced by a one-line MUST NOT bullet in all 15 implementer-agent contracts, collapsing two pre-existing duplicate prose copies of the rule (meta-builder-agent.md and commands/meta.md) into pointers.",
+  "all_edits_in_source_store": true,
+  "claude_dir_modifications": 0,
+  "notes": "All 6 phases completed and committed. Zero .claude/** modifications across the entire task -- every changed path is under agent-system/extensions/** or specs/**. The hook remains advisory/non-blocking (additionalContext, exit 0 on all paths). A second full duplicate-prose copy of the rule was found in commands/meta.md during the Phase 6 anti-copy-paste audit (pre-existing, unrelated to this task's authorship) and collapsed to a pointer per the plan's explicit Phase 6 instruction. Pre-existing, unrelated 'deployed script content drift' FAIL findings from check-extension-docs.sh (on scripts/check-extension-docs.sh and scripts/roadmap-integration.sh) were observed but are out of this task's scope -- last touched by a different, concurrently in-flight task per git log."
+}

@@ -980,7 +980,7 @@
     {
       "project_number": 914,
       "project_name": "converge_todo_roadmap_annotation_with_script",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Reconcile /todo's independent roadmap-annotation logic with roadmap-integration.sh",
@@ -994,7 +994,26 @@
         "agent-system/extensions/core/scripts/roadmap-integration.sh"
       ],
       "created": "2026-07-27T06:31:44Z",
-      "last_updated": "2026-07-27T06:31:44Z"
+      "last_updated": "2026-07-27T19:56:35Z",
+      "session_id": "sess_1785180513_6ef9d7_914",
+      "artifacts": [
+        {
+          "path": "specs/914_converge_todo_roadmap_annotation_with_script/reports/01_todo-roadmap-annotation-convergence.md",
+          "type": "report",
+          "summary": "Characterizes /todo's two independent roadmap-annotation specs; recommends reusing roadmap-integration.sh in parse-only mode as /todo's parser/signal source"
+        },
+        {
+          "path": "specs/914_converge_todo_roadmap_annotation_with_script/plans/01_converge-todo-roadmap-annotation.md",
+          "type": "plan",
+          "summary": "Implementation plan: converge /todo roadmap annotation with roadmap-integration.sh parse-only mode"
+        },
+        {
+          "path": "specs/914_converge_todo_roadmap_annotation_with_script/summaries/01_converge-todo-roadmap-annotation-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary"
+        }
+      ],
+      "completion_summary": "Made roadmap-integration.sh /todo's single parser and structure-signal source (parse-only scan + --annotate against a pre-archival filtered snapshot), preserving /todo's meta/expanded exclusion and abandoned-task annotation as its own logic, and wired a three-way output gate into both commands/todo.md and skill-todo/SKILL.md so an unparseable or silently-failed roadmap can never be reported as a successful annotation pass."
     },
     {
       "project_number": 915,
@@ -1449,7 +1468,7 @@
     {
       "project_number": 928,
       "project_name": "undeclared_scripts_doc_lint_check",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Add a disk-driven check_undeclared_scripts check to the extension doc-lint",
@@ -1464,14 +1483,31 @@
         926
       ],
       "created": "2026-07-27T10:59:04Z",
-      "last_updated": "2026-07-27T10:59:04Z",
-      "session_id": "sess_1785149778_13e53c",
-      "artifacts": []
+      "last_updated": "2026-07-27T19:56:40Z",
+      "session_id": "sess_1785180513_6ef9d7_928",
+      "artifacts": [
+        {
+          "path": "specs/928_undeclared_scripts_doc_lint_check/reports/01_undeclared-scripts-check.md",
+          "type": "report",
+          "summary": "Designed check_undeclared_scripts (Rule Q) for check-extension-docs.sh; confirmed the 3 baseline findings"
+        },
+        {
+          "path": "specs/928_undeclared_scripts_doc_lint_check/plans/01_undeclared-scripts-doc-lint.md",
+          "type": "plan",
+          "summary": "3-phase plan adding check_undeclared_scripts (Rule Q) and resolving the 3 baseline findings"
+        },
+        {
+          "path": "specs/928_undeclared_scripts_doc_lint_check/summaries/01_undeclared-scripts-doc-lint-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary"
+        }
+      ],
+      "completion_summary": "Added Rule Q (check_undeclared_scripts) to check-extension-docs.sh and declared the 3 previously-undeployable nix/nvim lifecycle-hook scripts in provides.scripts, resolving all 3 baseline findings; the doc-lint's full-tree exit remains 1 due to 2 unrelated Rule F content-drift hits (this task's own unavoidable check-extension-docs.sh self-drift, plus a concurrent sibling task's roadmap-integration.sh drift), both disclosed rather than silently fixed or hidden."
     },
     {
       "project_number": 929,
       "project_name": "enforce_source_store_deploy_boundary",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Make the source-store / disposable-deploy boundary enforceable rather than prose",
@@ -1487,9 +1523,26 @@
         926
       ],
       "created": "2026-07-27T10:59:04Z",
-      "last_updated": "2026-07-27T10:59:04Z",
-      "session_id": "sess_1785149778_13e53c",
-      "artifacts": []
+      "last_updated": "2026-07-27T19:56:45Z",
+      "session_id": "sess_1785180513_6ef9d7_929",
+      "artifacts": [
+        {
+          "path": "specs/929_enforce_source_store_deploy_boundary/reports/01_source-store-boundary-enforcement.md",
+          "type": "report",
+          "summary": "Confirmed both root causes: hook absent from settings-hooks.json PostToolUse array, and is_meta_path omits .claude/scripts|hooks"
+        },
+        {
+          "path": "specs/929_enforce_source_store_deploy_boundary/plans/01_enforce-source-store-boundary.md",
+          "type": "plan",
+          "summary": "6-phase plan: register+widen validate-meta-write.sh, add durable rule file and implementer contract clause"
+        },
+        {
+          "path": "specs/929_enforce_source_store_deploy_boundary/summaries/01_enforce-source-store-boundary-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary"
+        }
+      ],
+      "completion_summary": "Registered validate-meta-write.sh in the PostToolUse hook matcher, widened its path coverage to .claude/scripts/** and .claude/hooks/** and rewrote its advisory message to name the source store as the correct edit target (removing the backwards /implement exemption), and created one canonical source-store-deploy-boundary.md rule file referenced by a one-line MUST NOT bullet in all 15 implementer-agent contracts, collapsing two pre-existing duplicate prose copies of the rule (meta-builder-agent.md and commands/meta.md) into pointers."
     },
     {
       "project_number": 930,
