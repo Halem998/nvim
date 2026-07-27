@@ -1,12 +1,7 @@
 {
   "status": "implemented",
-  "agent_type": "general-implementation-agent",
   "task_number": 918,
-  "session_id": "sess_1785166809_2598b7",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "plan_path": "specs/918_task_lock_create_task_dir_before_acquire/plans/01_task-lock-create-task-dir.md",
-  "phases_completed": 4,
-  "phases_total": 4,
   "artifacts": [
     {
       "type": "summary",
@@ -42,5 +37,13 @@
       "confidence": 0.8,
       "suggested_keywords": ["resolver-fallback", "create-if-missing", "drift", "idempotent-resolution", "slug-drift"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1785166809_2598b7",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
 }

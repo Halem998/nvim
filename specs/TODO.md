@@ -11,8 +11,8 @@ next_project_number: 932
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 885,914,915,918,919,920,922,928,929,931 | -- | agent-system, extensions |
-| 2 | 887,923,924,930 | 885,918,922,928 | agent-system, literature |
+| 1 | 885,914,915,919,920,922,923,928,929,931 | -- | agent-system, extensions |
+| 2 | 887,924,930 | 885,922,928 | agent-system, literature |
 | 3 | 925 | 924 | agent-system |
 | 4 | 926,927 | 919,925 | agent-system |
 
@@ -24,8 +24,6 @@ next_project_number: 932
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-918 [NOT STARTED] — resolve_task_dir() in task-lock.sh hard-fails for a task whose di
-  └─ 923 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 919 [NOT STARTED] — Fifteen agent definitions instruct writing .return-meta.json but 
   └─ 927 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
@@ -34,6 +32,7 @@ next_project_number: 932
     └─ 925 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
       └─ 926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
       └─ 927 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
+923 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 929 [NOT STARTED] — SOURCE-STORE RULE (binding, and the subject of this task): the ag
 
 ### Extensions
@@ -199,7 +198,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 925
+- **Dependencies**: Task 922, Task 925
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
@@ -482,10 +481,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 918. Create the task directory before lock acquire so GATE IN stops aborting on tasks whose directory does not exist
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [918_task_lock_create_task_dir_before_acquire/reports/01_task_lock_create_task_dir.md]
+- **Plan**: [918_task_lock_create_task_dir_before_acquire/plans/01_task-lock-create-task-dir.md]
+- **Summary**: [918_task_lock_create_task_dir_before_acquire/summaries/01_task-lock-create-task-dir-summary.md]
 
 **Description**: resolve_task_dir() in task-lock.sh hard-fails for a task whose directory does not exist yet, which aborts GATE IN entirely and blocks /orchestrate and every other command routing through command-gate-in.sh.
 

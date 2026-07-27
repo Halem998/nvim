@@ -1090,7 +1090,7 @@
     {
       "project_number": 918,
       "project_name": "task_lock_create_task_dir_before_acquire",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Create the task directory before lock acquire so GATE IN stops aborting on tasks whose directory does not exist",
@@ -1100,9 +1100,26 @@
         "agent-system/extensions/core/scripts/command-gate-in.sh"
       ],
       "created": "2026-07-27T09:42:14Z",
-      "last_updated": "2026-07-27T09:42:14Z",
-      "session_id": "sess_1785144360_c0ea5a",
-      "artifacts": []
+      "last_updated": "2026-07-27T16:03:13Z",
+      "session_id": "sess_1785166809_2598b7",
+      "artifacts": [
+        {
+          "path": "specs/918_task_lock_create_task_dir_before_acquire/reports/01_task_lock_create_task_dir.md",
+          "type": "report",
+          "summary": "Verified resolve_task_dir hard-fail; enumerated 4 call sites; found acquire has 3 system-wide call sites, two bypassing the gate"
+        },
+        {
+          "path": "specs/918_task_lock_create_task_dir_before_acquire/plans/01_task-lock-create-task-dir.md",
+          "type": "plan",
+          "summary": "4-phase plan: opt-in create_mode param on resolve_task_dir, passed only by cmd_acquire; 7-scenario test harness"
+        },
+        {
+          "path": "specs/918_task_lock_create_task_dir_before_acquire/summaries/01_task-lock-create-task-dir-summary.md",
+          "type": "summary",
+          "summary": "Opt-in create-if-missing on resolve_task_dir; check/heartbeat/release provably side-effect-free; 7/7 tests"
+        }
+      ],
+      "completion_summary": "Added an opt-in create-if-missing mode to resolve_task_dir, passed only by cmd_acquire and reachable only from a state.json-derived path attempted after the existing glob fallback, so acquire against a not_started task with no directory yet succeeds and creates reports/plans/summaries while check/heartbeat/release remain provably side-effect-free. Updated the canonical contract doc, deployed the source store, and proved the behavior with a 7-scenario isolated-fixture test plus a live probe against a real task."
     },
     {
       "project_number": 919,
@@ -1261,6 +1278,7 @@
         "agent-system/extensions/core/index-entries.json"
       ],
       "dependencies": [
+        922,
         925
       ],
       "created": "2026-07-27T10:27:21Z",
