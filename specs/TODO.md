@@ -1,5 +1,5 @@
 ---
-next_project_number: 921
+next_project_number: 922
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 921
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,914,915,917,918,919,920 | -- | agent-system |
+| 1 | 873,885,914,915,917,918,919,920,921 | -- | agent-system |
 | 2 | 887 | 873,885 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -28,8 +28,30 @@ next_project_number: 921
 918 [NOT STARTED] — resolve_task_dir() in task-lock.sh hard-fails for a task whose di
 919 [NOT STARTED] — Fifteen agent definitions instruct writing .return-meta.json but 
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
+921 [NOT STARTED] — Disposable task created solely to verify that the /meta prompt-mo
 
 ## Tasks
+
+### 921. THROWAWAY VERIFICATION TASK — confirm /meta creates a task end-to-end; abandon after checking
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Disposable task created solely to verify that the /meta prompt-mode pipeline correctly writes a state.json entry, increments next_project_number, regenerates TODO.md, and creates the task directory at the resolved global target_root.
+
+No system change is intended. file_scope is deliberately EMPTY: no file outside specs/ should ever be edited under this task.
+
+VERIFICATION IS COMPLETE when all three of the following hold:
+  1. This entry appears in specs/state.json with project_number 921
+  2. A matching entry appears in specs/TODO.md
+  3. The directory specs/921_throwaway_verify_meta_task_creation_pipeline/ exists on disk
+
+DISPOSAL: once the three checks above pass, run /task --abandon 921 (or let /todo archive it). This task must NEVER be researched, planned, or implemented -- there is nothing to build. Its entire purpose was served the moment it appeared in state.json and TODO.md.
+
+SOURCE-STORE RULE (stated for consistency with sibling meta tasks, though no edit is authorized here): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. This task edits neither.
+
+---
 
 ### 920. Validate dispatch_status against the schema enum so an off-schema value fails loudly instead of silently no-opping
 - **Status**: [NOT STARTED]
