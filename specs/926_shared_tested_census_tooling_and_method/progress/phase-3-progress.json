@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Fixture-tested regression suite for the hook",
+  "started_at": "2026-07-27T00:35:00Z",
+  "last_updated": "2026-07-27T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write test-validate-no-task-references.sh following Phase 1 convention", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh"]},
+    {"id": 2, "description": "Drive hook as real subprocess via copied binary + jq-built payloads", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh"]},
+    {"id": 3, "description": "Positive/negative/exemption/degenerate fixtures (21 total)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh"]},
+    {"id": 4, "description": "Register tests/test-validate-no-task-references.sh in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 5, "description": "Mutation check: revert TASK_SEP to whitespace-only, confirm suite fails, restore", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "Suite: 21 passed, 0 failed, exit 0. Mutation check: reverted TASK_SEP to '[[:space:]]+' -> 17 passed / 4 failed / exit 1 (task-788, task_788, Task #788, task#788 went silent as expected). Restored fix; git diff on hook confirmed clean (byte-identical to Phase 2 commit). bash -n passes on both hook and suite."
+}

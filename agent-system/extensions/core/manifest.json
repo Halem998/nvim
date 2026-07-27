@@ -139,6 +139,7 @@
       "skill-base.sh",
       "task-lock.sh",
       "test-task-lock-reap.sh",
+      "tests/test-validate-no-task-references.sh",
       "tier-selection.sh",
       "uninstall-extension.sh",
       "update-phase-status.sh",

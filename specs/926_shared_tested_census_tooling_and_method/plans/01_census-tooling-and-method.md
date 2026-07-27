@@ -217,30 +217,34 @@ add the task-qualified Phase form per D5.
 
 ---
 
-### Phase 3: Fixture-tested regression suite for the hook [NOT STARTED]
+### Phase 3: Fixture-tested regression suite for the hook [COMPLETED]
 
 **Goal**: Prove the regex fix against every named form, and prove the deliberate non-matches stay
 non-matching, so the separator gap cannot silently reopen.
 
 **Tasks**:
-- [ ] Write `agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh`
+- [x] Write `agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh`
       following the Phase 1 convention: `pass`/`fail`/`info`, `mktemp -d` + `trap`, exit 0/1.
-- [ ] Drive the hook as a real subprocess by piping a synthetic PostToolUse JSON payload
+      *(completed)*
+- [x] Drive the hook as a real subprocess by piping a synthetic PostToolUse JSON payload
       (`{"tool_input":{"file_path":...,"content":...}}`) on stdin and asserting on whether the
       emitted JSON contains an `additionalContext` key. Copy the hook into the temp root rather
-      than adding any testability hook to the production script.
-- [ ] Positive fixtures (must trigger the advisory): `task 788`, `tasks 788-790`, `task-788`,
+      than adding any testability hook to the production script. *(completed: payloads built via
+      `jq -n` for safe escaping; hook copied byte-for-byte into `mktemp -d`.)*
+- [x] Positive fixtures (must trigger the advisory): `task 788`, `tasks 788-790`, `task-788`,
       `task_788`, `Task #788`, `task#788`, uppercase `TASK 788`, `(task 788)` in parentheses,
-      `task 926 phase 3`, `phase 3 of task 926`.
-- [ ] Negative fixtures (must **not** trigger): a bare `Phase 3` heading, `### Phase 12: name`,
+      `task 926 phase 3`, `phase 3 of task 926`. *(completed: all 10 present and passing.)*
+- [x] Negative fixtures (must **not** trigger): a bare `Phase 3` heading, `### Phase 12: name`,
       the prose words `task list` / `task force` / `the tasks are` with no adjacent number,
-      `taskbar788` (no word boundary), and an ordinary sentence containing neither.
-- [ ] Exemption fixtures: a `file_path` under `specs/` and one under `/abs/prefix/specs/` must
-      both exit with `{}` even when the content is a positive fixture.
-- [ ] Degenerate-input fixtures: empty `file_path` and empty `content` both exit `{}` and 0.
-- [ ] Register `tests/test-validate-no-task-references.sh` in core `manifest.json`
+      `taskbar788` (no word boundary), and an ordinary sentence containing neither. *(completed:
+      all 7 present and passing.)*
+- [x] Exemption fixtures: a `file_path` under `specs/` and one under `/abs/prefix/specs/` must
+      both exit with `{}` even when the content is a positive fixture. *(completed.)*
+- [x] Degenerate-input fixtures: empty `file_path` and empty `content` both exit `{}` and 0.
+      *(completed.)*
+- [x] Register `tests/test-validate-no-task-references.sh` in core `manifest.json`
       `provides.scripts`, using a subdirectory-qualified path exactly as `lint/lint-*.sh` entries
-      already do.
+      already do. *(completed.)*
 
 **Timing**: 1.5 hours
 
@@ -260,10 +264,13 @@ freely; do not drop a named form to hit a count.
 
 **Verification**:
 - `bash agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh` exits 0
-  with every case reported PASS.
+  with every case reported PASS. *(confirmed: 21 passed, 0 failed, exit 0.)*
 - Deliberately reverting the Phase 2 separator group to `[[:space:]]+` makes the suite exit 1 —
   confirm this once, then restore. A suite that passes against the old regex is not testing
-  anything.
+  anything. *(confirmed: mutation check performed — reverted `TASK_SEP` to `'[[:space:]]+'`,
+  re-ran the suite, got 17 passed / 4 failed / exit 1 (the 4 separator-form positives went
+  silent). Restored the fix; `git diff` on the hook confirmed byte-identical to the pre-mutation
+  version.)*
 
 ---
 
