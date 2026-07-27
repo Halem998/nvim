@@ -208,15 +208,27 @@ for i, line in enumerate(lines):
             # no column matches (informational only -- the matcher only treats an allowlist
             # match as a candidate).
             status_value = ""
-            for c in cols[1:]:
+            status_index = None
+            for idx, c in enumerate(cols[1:], start=1):
                 if re.search(r'\b(complete|resolved|done)\b', c, re.IGNORECASE):
                     status_value = c
+                    status_index = idx
                     break
+            if status_index is None and len(cols) > 1:
+                status_index = 1
+            # The annotator (Step 2.5.3) cannot locate or safely rewrite a table row from derived
+            # cell values (component/status/location) alone -- those are copies, not a pointer
+            # back into the source file. line_index/raw_line/status_index give it exactly enough
+            # to find the originating line, verify it hasn't changed, and rewrite only the
+            # matched status cell in place.
             status_tables.append({
                 "component": component,
                 "status": status_value if status_value else (cols[1] if len(cols) > 1 else ""),
                 "location": cols[-1] if len(cols) > 1 else "",
-                "columns": cols
+                "columns": cols,
+                "line_index": i,
+                "raw_line": line,
+                "status_index": status_index
             })
     else:
         in_table = False
