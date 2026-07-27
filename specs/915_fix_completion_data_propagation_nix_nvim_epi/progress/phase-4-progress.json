@@ -1,0 +1,44 @@
+{
+  "phase": 4,
+  "phase_name": "Verify the caller/callee contract across all three and record follow-ups",
+  "started_at": "2026-07-27T00:30:00Z",
+  "last_updated": "2026-07-27T00:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Confirm call-site argument order/count against skill_propagate_completion_summary signature",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Confirm all call sites are status-gated",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Cross-check gates against each agent file's terminal status value",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Confirm no guard-logic duplication or schema restatement; bash -n on all blocks; git status scope check; task-number citation grep",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Write implementation summary recording the three follow-up items",
+      "status": "done",
+      "files_touched": [
+        "specs/915_fix_completion_data_propagation_nix_nvim_epi/summaries/01_completion-data-propagation-fix-summary.md"
+      ]
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

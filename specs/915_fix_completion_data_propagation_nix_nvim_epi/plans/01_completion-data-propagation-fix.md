@@ -1,7 +1,7 @@
 # Implementation Plan: Task #915
 
 - **Task**: 915 - Close the mirror-image completion_data propagation gap in nix, nvim, and epidemiology implementers
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/915_fix_completion_data_propagation_nix_nvim_epi/reports/01_completion-data-propagation-audit.md
@@ -279,33 +279,42 @@ this skill's own Trigger Conditions text before hardcoding `"neovim"`.
 
 ---
 
-### Phase 4: Verify the caller/callee contract across all three and record follow-ups [NOT STARTED]
+### Phase 4: Verify the caller/callee contract across all three and record follow-ups [COMPLETED]
 
 **Goal**: Confirm all three call sites are correct, guarded, consistent with the shared writer's
 signature, and confined to the source store — and record the two deliberately deferred items.
 
 **Tasks**:
-- [ ] For each of the three edited SKILL.md files, confirm the call site's argument order and
+- [x] For each of the three edited SKILL.md files, confirm the call site's argument order and
       count match `skill_propagate_completion_summary`'s signature in
       `agent-system/extensions/core/scripts/skill-base.sh`
       (`task_number`, `completion_summary`, `roadmap_items`, `task_type` — four positional args).
-- [ ] Confirm each of the three call sites is inside a status gate; no unguarded call exists.
-- [ ] Cross-check each gate against the terminal `status` value in the corresponding agent file
+      *(completed: all three call sites match the four-arg signature and order)*
+- [x] Confirm each of the three call sites is inside a status gate; no unguarded call exists.
+      *(completed)*
+- [x] Cross-check each gate against the terminal `status` value in the corresponding agent file
       (`nix/agents/nix-implementation-agent.md`,
       `nvim/agents/neovim-implementation-agent.md`,
       `epidemiology/agents/epi-implement-agent.md`) — the gate must accept what the agent emits.
-- [ ] Confirm no file duplicates the writer's guard logic or restates the metadata schema; each
-      references `context/formats/return-metadata-file.md` by path instead.
-- [ ] Run `bash -n` over every bash block added or modified across the three files.
-- [ ] Confirm `git status --short` shows modifications only under `agent-system/extensions/**`
-      and the task's own `specs/915_*/` directory — zero `.claude/` modifications.
-- [ ] Grep the three diffs for task-number citation patterns; confirm none.
-- [ ] Record in the implementation summary: (a) the deferred shared-script/postflight-hook
+      *(completed: all three agent files emit `"status": "implemented"` at their terminal
+      metadata write; all three gates accept `implemented` (and `completed`))*
+- [x] Confirm no file duplicates the writer's guard logic or restates the metadata schema; each
+      references `context/formats/return-metadata-file.md` by path instead. *(completed)*
+- [x] Run `bash -n` over every bash block added or modified across the three files. *(completed:
+      2 blocks in nix, 2 in nvim, 7 in epi (2 modified, 1 new) — all pass)*
+- [x] Confirm `git status --short` shows modifications only under `agent-system/extensions/**`
+      and the task's own `specs/915_*/` directory — zero `.claude/` modifications. *(completed:
+      the three phase commits touch only the three SKILL.md files plus this task's own
+      `specs/915_.../` artifacts; `git status --short` shows zero `.claude/` paths)*
+- [x] Grep the three diffs for task-number citation patterns; confirm none. *(completed: none
+      found in any of the three files)*
+- [x] Record in the implementation summary: (a) the deferred shared-script/postflight-hook
       extraction, with the audit's rationale (it would need to touch `core`, `core-hard`, `lean`,
       `lean-hard`, and `web`, and warrants its own design pass on whether it should be a
       manifest-declared `postflight` lifecycle hook); (b) the epidemiology Stage 7 table row that
       maps a `completed` meta status the agent never emits, left unrepaired here; (c) the
       `return-metadata-file.md` "Known callers" documentation gap flagged by the audit.
+      *(completed: recorded in the implementation summary's Notes section)*
 
 **Timing**: 0.5 hours
 
@@ -334,17 +343,17 @@ reconcile it against the plan's declared scope before proceeding.
 
 ## Testing & Validation
 
-- [ ] Every added or modified fenced bash block in the three SKILL.md files passes `bash -n`.
-- [ ] Each of the three files contains exactly one `skill_propagate_completion_summary` call,
+- [x] Every added or modified fenced bash block in the three SKILL.md files passes `bash -n`.
+- [x] Each of the three files contains exactly one `skill_propagate_completion_summary` call,
       inside a status gate, with four positional arguments in the documented order.
-- [ ] Each of the three files reads both `.completion_data.completion_summary` (via `jq -r`, with
+- [x] Each of the three files reads both `.completion_data.completion_summary` (via `jq -r`, with
       `// ""`) and `.completion_data.roadmap_items` (via `jq -c`, with `// []`).
-- [ ] No file duplicates the guard logic that lives in `skill_propagate_completion_summary`, and
+- [x] No file duplicates the guard logic that lives in `skill_propagate_completion_summary`, and
       no file restates the `.return-meta.json` schema.
-- [ ] `git diff` across the three files is insertion-only: no existing prose line, stage heading,
+- [x] `git diff` across the three files is insertion-only: no existing prose line, stage heading,
       stage number, table, or trigger condition is altered or removed.
-- [ ] No modifications anywhere under `.claude/`.
-- [ ] No task-number citations in any changed file outside `specs/**`.
+- [x] No modifications anywhere under `.claude/`.
+- [x] No task-number citations in any changed file outside `specs/**`.
 
 ## Artifacts & Outputs
 

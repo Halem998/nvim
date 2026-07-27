@@ -1,0 +1,26 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Implemented all 4 phases: nix, nvim, and epidemiology implementer SKILL.md files each now read completion_data (completion_summary/roadmap_items) out of .return-meta.json and call the shared skill_propagate_completion_summary writer, gated on the 'implemented' status the agents actually emit (not the dead 'completed' value). Phase 4 verified the caller/callee contract, confirmed zero .claude/ modifications, and recorded three deferred follow-ups in the implementation summary.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/915_fix_completion_data_propagation_nix_nvim_epi/summaries/01_completion-data-propagation-fix-summary.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/nix/skills/skill-nix-implementation/SKILL.md",
+    "agent-system/extensions/nvim/skills/skill-neovim-implementation/SKILL.md",
+    "agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md"
+  ],
+  "decisions_made": [
+    "Gated all three call sites on 'implemented' (accepting 'completed') since all three agent files emit 'implemented', not 'completed', as their terminal status.",
+    "Made nix/nvim insertions self-contained, binding padded_num/project_name themselves since those files bind no bash variables anywhere.",
+    "Used literal task_type 'nix'/'neovim' verified against each skill's Trigger Conditions; epidemiology used its in-scope $task_type variable.",
+    "Left epidemiology's Stage 7 table row (mapping 'completed') unrepaired as a recorded observation; deferred the shared-script extraction as a follow-up."
+  ],
+  "dead_ends": [],
+  "phases_completed": 4,
+  "phases_total": 4,
+  "plan_markers_verified": true
+}

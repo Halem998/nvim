@@ -1,7 +1,45 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "agent_type": "general-implementation-agent",
   "task_number": 915,
   "session_id": "sess_1785176230_b4221f_915",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/915_fix_completion_data_propagation_nix_nvim_epi/summaries/01_completion-data-propagation-fix-summary.md",
+      "summary": "Wired completion_data (completion_summary/roadmap_items) propagation into the nix, nvim, and epidemiology implementer SKILL.md postflight stages via the shared skill_propagate_completion_summary writer, additive-only, gated on the agents' actual 'implemented' terminal status."
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/nix/skills/skill-nix-implementation/SKILL.md",
+    "agent-system/extensions/nvim/skills/skill-neovim-implementation/SKILL.md",
+    "agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md",
+    "specs/915_fix_completion_data_propagation_nix_nvim_epi/plans/01_completion-data-propagation-fix.md",
+    "specs/915_fix_completion_data_propagation_nix_nvim_epi/summaries/01_completion-data-propagation-fix-summary.md"
+  ],
+  "metadata": {
+    "phases_completed": 4,
+    "phases_total": 4
+  },
+  "completion_data": {
+    "completion_summary": "Closed the completion_data propagation gap in the nix, nvim, and epidemiology implementer skills: each now reads completion_summary/roadmap_items out of .return-meta.json and calls the shared skill_propagate_completion_summary writer, gated on the agents' actual 'implemented' terminal status rather than the dead 'completed' value the research report initially suggested.",
+    "roadmap_items": []
+  },
+  "memory_candidates": [
+    {
+      "content": "In this agent-system, a per-extension postflight contract has two independently breakable links: the dispatched AGENT file must emit completion_data into .return-meta.json, and the implementer SKILL.md postflight must read it back and write it to state.json. When auditing or extending such a contract, verify BOTH the emitted value and the consuming gate literally match -- a common latent defect is a status gate written against a documentation table's vocabulary ('completed') while the producer agent emits a different value ('implemented'), which silently makes the consuming branch unreachable rather than failing loudly. Cross-check gate conditions against the producer's actual literal, never against the prose or table describing it.",
+      "category": "PATTERN",
+      "source_artifact": "specs/915_fix_completion_data_propagation_nix_nvim_epi/summaries/01_completion-data-propagation-fix-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["postflight", "completion_data", "producer-consumer", "status-gate", "return-meta", "skill-base"]
+    },
+    {
+      "content": "When a skill's postflight stage has no bash blocks at all (pure prose, no bound variables), an inserted bash block must be fully self-contained rather than assuming task_number/project_name/padded_num exist as caller-scoped variables. Bind padded_num via printf \"%03d\" and project_name via a jq lookup against specs/state.json inside the inserted block itself, mirroring the idiom other bash-containing skills use in their own early stages. skill-base.sh self-defaults SKILL_REPO_ROOT at source time, so sourcing it needs no caller-side setup beyond the source line.",
+      "category": "PATTERN",
+      "source_artifact": "specs/915_fix_completion_data_propagation_nix_nvim_epi/summaries/01_completion-data-propagation-fix-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["self-contained-bash", "skill-base.sh", "padded_num", "project_name", "prose-only-skill"]
+    }
+  ]
 }
