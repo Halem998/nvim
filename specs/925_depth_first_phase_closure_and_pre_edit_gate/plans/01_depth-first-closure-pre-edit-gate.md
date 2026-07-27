@@ -393,37 +393,37 @@ zero non-`-hard` names. If the probe contradicts this, record the discrepancy in
 
 ---
 
-### Phase 5: Record the placement and no-central-injection findings durably [NOT STARTED]
+### Phase 5: Record the placement and no-central-injection findings durably [COMPLETED]
 
 **Goal**: Write the two research findings that downstream propagation work depends on into a
 durable in-repo location, so that work inherits them rather than re-deriving them — and so it
 cannot be mistakenly closed as free.
 
 **Tasks**:
-- [ ] Add a short subsection to
+- [x] Add a short subsection to
       `agent-system/extensions/core/context/architecture/context-layers.md` (anchor: its existing
       "Where to store new content" decision tree) titled along the lines of
       "Contracts directory: convention vs. load path".
-- [ ] Record finding (i) — **where a contract must live to be loaded by both modes**: directory
+- [x] Record finding (i) — **where a contract must live to be loaded by both modes**: directory
       placement is not a load mechanism in this codebase. `context/contracts/` is a naming and
       genre convention whose occupants have historically been hard-mode-only. What actually causes
       a contract to load is an explicit `@`-reference bullet in the consuming agent's
       `## Context References` section. A contract intended for both standard and hard mode may
       live in `context/contracts/` provided it is explicitly referenced from both agents, and
       should say so in its own header.
-- [ ] Record finding (ii) — **no central injection point exists**, stated unambiguously and with
+- [x] Record finding (ii) — **no central injection point exists**, stated unambiguously and with
       its evidence: only core's standard implementation agent runs the adaptive
       `context-discovery.md` index query; no extension implementation agent and no hard-mode
       implementation agent does. `skill-base.sh`'s `context_injection` lifecycle stage runs the
       opposite direction — it lets extensions inject their domain content into a core skill's
       dispatch prompt, not core broadcast outward. No shared dispatch-prompt builder exists; each
       `SKILL.md` constructs its own dispatch prompt inline.
-- [ ] Record the **consequence**: propagating any core contract to extension implementation
+- [x] Record the **consequence**: propagating any core contract to extension implementation
       agents is manual, per-file work with no shortcut. Cite the durable in-repo precedent by
       filename — `extensions/cslib/agents/cslib-implementation-hard-agent.md` hand-lists core's
       `anti-analysis.md`, `wrap-up.md`, and `territory.md` as individually copied bullets — and
       name it as the template such propagation follows.
-- [ ] Cite durable anchors only. No task numbers anywhere in this file.
+- [x] Cite durable anchors only. No task numbers anywhere in this file.
 
 **Timing**: 30 minutes
 

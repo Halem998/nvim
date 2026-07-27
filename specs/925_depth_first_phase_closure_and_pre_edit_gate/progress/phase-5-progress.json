@@ -1,0 +1,24 @@
+{
+  "phase": 5,
+  "phase_name": "Record the placement and no-central-injection findings durably",
+  "started_at": "2026-07-27T18:58:00Z",
+  "last_updated": "2026-07-27T19:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Verify citations (skill-base.sh context_injection direction, cslib-implementation-hard-agent.md precedent) against live source before writing the subsection",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add 'Contracts directory: convention vs. load path' subsection to context-layers.md recording placement finding, no-central-injection finding, and the cslib propagation precedent",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/architecture/context-layers.md"],
+      "note": "The plan's stated anchor ('its existing Where to store new content decision tree') describes text that literally lives in merge-sources/claudemd.md, not in context-layers.md itself; context-layers.md is unambiguously the correct target because claudemd.md's decision tree points to it via 'Full details: .claude/context/architecture/context-layers.md'. No Reasoned Exclusion needed -- the target file identity was not in doubt, only the anchor's literal wording."
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
