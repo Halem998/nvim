@@ -328,21 +328,32 @@ grep -c '"completion_data"' cslib/agents/pr-review-research-agent.md   # expect 
 
 ---
 
-### Phase 5: Cross-cutting verification and scope-boundary audit [NOT STARTED]
+### Phase 5: Cross-cutting verification and scope-boundary audit [COMPLETED]
 
 **Goal**: Prove all 15 files carry the reference, that no forbidden edit was made, and that no
 scope boundary was crossed.
 
 **Tasks**:
-- [ ] Run the all-15 reference check (below); require 15/15
-- [ ] Run the source-store check: confirm no modified path under `.claude/`
-- [ ] Run the handoff-boundary check: confirm the diff introduced zero new
-      `orchestrator-handoff` mentions in any of the 15 files
-- [ ] Run the no-task-references check on the diff: no `task [0-9]` citation added outside
-      `specs/**`
-- [ ] Run the anti-copy-paste check: confirm no file gained an inline restatement of the status
+- [x] Run the all-15 reference check (below); require 15/15 *(completed: referenced: 15/15, no
+      MISSING lines)*
+- [x] Run the source-store check: confirm no modified path under `.claude/` *(completed:
+      `git diff ed4573caf..HEAD -- .claude/` is empty across the full 4-phase task diff)*
+- [x] Run the handoff-boundary check: confirm the diff introduced zero new
+      `orchestrator-handoff` mentions in any of the 15 files *(completed: handoff boundary OK)*
+- [x] Run the no-task-references check on the diff: no `task [0-9]` citation added outside
+      `specs/**` *(completed: no-task-refs OK)*
+- [x] Run the anti-copy-paste check: confirm no file gained an inline restatement of the status
       enum (no added line containing both `in_progress` and `researched` in a table row)
-- [ ] Record the results in the phase notes
+      *(completed: no enum copy OK)*
+- [x] Record the results in the phase notes *(completed: see phase-5-progress.json note field and
+      implementation summary)*
+
+**Phase notes**: The plan's Phase 5 verification script's boundary checks (steps 4-6) use a bare
+`git diff -- agent-system/extensions`, which is empty by the time Phase 5 runs because each prior
+phase was already committed per the Commit-Per-Green-Substep Mandate. Re-ran the same checks
+against `git diff ed4573caf..HEAD` (the pre-task-919 base commit) to cover the full task diff;
+all four boundary checks (source-store, handoff, task-refs, enum-copy) pass against that wider
+diff as well as the (trivially empty) working-tree diff.
 
 **Timing**: 0.4 hours
 
@@ -390,18 +401,18 @@ git diff -- agent-system/extensions | grep '^+' | grep 'in_progress' | grep 'res
 
 ## Testing & Validation
 
-- [ ] All 15 named files under `agent-system/extensions/**` contain the literal string
+- [x] All 15 named files under `agent-system/extensions/**` contain the literal string
       `return-metadata-file`
-- [ ] Every one of the 15 has exactly one `## Context References` heading
-- [ ] For the 13 non-web files, `## Context References` precedes `## Agent Metadata`
-- [ ] For the 2 web files, the new bullet sits inside the pre-existing section, ahead of the
+- [x] Every one of the 15 has exactly one `## Context References` heading
+- [x] For the 13 non-web files, `## Context References` precedes `## Agent Metadata`
+- [x] For the 2 web files, the new bullet sits inside the pre-existing section, ahead of the
       on-demand subgroups, and carries the `(always load ...)` qualifier
-- [ ] `pr-review-implementation-agent.md`'s final-metadata example has `completion_data` as a
+- [x] `pr-review-implementation-agent.md`'s final-metadata example has `completion_data` as a
       top-level sibling of `metadata`
-- [ ] `git status --porcelain` shows zero modifications under `.claude/`
-- [ ] The diff adds no `orchestrator-handoff` reference to any agent file
-- [ ] The diff adds no task-number citation to any file outside `specs/**`
-- [ ] The diff adds no inline restatement of the status enum table
+- [x] `git status --porcelain` shows zero modifications under `.claude/`
+- [x] The diff adds no `orchestrator-handoff` reference to any agent file
+- [x] The diff adds no task-number citation to any file outside `specs/**`
+- [x] The diff adds no inline restatement of the status enum table
 
 ## Artifacts & Outputs
 
