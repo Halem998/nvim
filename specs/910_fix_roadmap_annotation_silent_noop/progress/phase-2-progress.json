@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Propagate the Source Reference Through the Matcher",
+  "started_at": "2026-07-26T00:10:00Z",
+  "last_updated": "2026-07-26T00:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add line_index/raw_line/status_index to the table-row matches.append block; leave checkbox matches unchanged",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

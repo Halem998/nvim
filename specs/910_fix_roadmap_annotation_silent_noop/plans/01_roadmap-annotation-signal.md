@@ -187,18 +187,19 @@ its originating line later. Today it carries only derived cell values.
 
 ---
 
-### Phase 2: Propagate the Source Reference Through the Matcher [NOT STARTED]
+### Phase 2: Propagate the Source Reference Through the Matcher [COMPLETED]
 
 **Goal**: Carry the new reference from `status_tables` into each table-sourced match object so
 the annotator does not have to re-derive it.
 
 **Tasks**:
-- [ ] In the Step 2.5.2 python table-row loop, add `line_index`, `raw_line`, and `status_index`
-      to the appended match object, alongside the existing `"source": "status_table"`.
-- [ ] Leave the checkbox-path match objects entirely unchanged (they have no `source` key today;
+- [x] In the Step 2.5.2 python table-row loop, add `line_index`, `raw_line`, and `status_index`
+      to the appended match object, alongside the existing `"source": "status_table"`. *(completed)*
+- [x] Leave the checkbox-path match objects entirely unchanged (they have no `source` key today;
       keep it that way so `.source // ""` cleanly distinguishes the two paths downstream).
-- [ ] Add a comment noting that `"source"` was previously dead and is now load-bearing for the
-      Step 2.5.3 branch.
+      *(completed)*
+- [x] Add a comment noting that `"source"` was previously dead and is now load-bearing for the
+      Step 2.5.3 branch. *(completed)*
 
 **Timing**: 30 minutes
 

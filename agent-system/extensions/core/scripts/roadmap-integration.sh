@@ -430,6 +430,11 @@ for row in roadmap_state.get("status_tables", []):
     if best_match is not None:
         completion_date = best_match.get("completion_date", "")
 
+        # "source" was previously dead output (nothing downstream branched on it); it is now
+        # load-bearing for the Step 2.5.3 annotation loop, which uses it to pick the table-row
+        # rewrite path over the checkbox path. line_index/raw_line/status_index are carried
+        # through unchanged from the status_tables entry so the annotator never has to re-derive
+        # them from cell values.
         matches.append({
             "roadmap_item": row.get("component", ""),
             "phase": None,
@@ -438,7 +443,10 @@ for row in roadmap_state.get("status_tables", []):
             "matched_task": best_match["number"],
             "task_title": best_match["title"],
             "completion_date": completion_date,
-            "source": "status_table"
+            "source": "status_table",
+            "line_index": row.get("line_index"),
+            "raw_line": row.get("raw_line"),
+            "status_index": row.get("status_index")
         })
 
 print(json.dumps(matches))
