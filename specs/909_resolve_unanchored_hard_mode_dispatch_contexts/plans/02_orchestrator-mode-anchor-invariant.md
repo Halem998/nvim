@@ -172,27 +172,30 @@ flag explicitly and carry a one-line rationale for the absent anchor.
 
 ---
 
-### Phase 2: Resolve the Inverse Ambiguity at the H4 Verification Re-Dispatch [NOT STARTED]
+### Phase 2: Resolve the Inverse Ambiguity at the H4 Verification Re-Dispatch [COMPLETED]
 
 **Goal**: The H4 adversarial-verification re-dispatch matches the other two research sub-dispatches:
 gate flag explicit, no anchor.
 
 **Tasks**:
-- [ ] **Gating precondition** — re-run
+- [x] **Gating precondition** — re-run
       `for f in agent-system/extensions/*/agents/*research*.md; do grep -Hn 'task_dir\|handoff_path' "$f"; done`
       and confirm every hit is a locally-constructed variable or a returned `partial_progress`
       field, not a delegation-context read. If any research agent is found to consume the
       delegation-context anchor, STOP the removal: apply only `orchestrator_mode: false`, keep the
       anchor, and tell Phase 3 to state the weaker one-directional invariant instead.
-- [ ] Edit line ~410 (inside the `adversarial_verified = false` branch) to
+      *(completed: re-verified; all hits are either the returned `partial_progress.handoff_path`
+      in general-research-agent.md/general-research-hard-agent.md, or a locally-constructed
+      `task_dir` shell variable in deck-research-agent.md — no delegation-context read found)*
+- [x] Edit line ~410 (inside the `adversarial_verified = false` branch) to
       `delegation_context: {task_number, session_id, effort_flag: "hard", focus_prompt: "divergence audit", orchestrator_mode: false}`
-      — adding the flag and removing `task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS`.
-- [ ] Add the same style of rationale comment as Phase 1, additionally noting that the anchor was
+      — adding the flag and removing `task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS`. *(completed)*
+- [x] Add the same style of rationale comment as Phase 1, additionally noting that the anchor was
       removed because it was unread — and that `handoff_path` in a research agent's *return*
       metadata means its own `handoffs/research-handoff-*.md`, not this file, so passing the
-      orchestrator anchor here invited exactly that conflation.
-- [ ] Leave the plan dispatch at line ~439 and the primary research dispatch at line ~364 untouched
-      (both already `orchestrator_mode: true` with both anchors).
+      orchestrator anchor here invited exactly that conflation. *(completed)*
+- [x] Leave the plan dispatch at line ~439 and the primary research dispatch at line ~364 untouched
+      (both already `orchestrator_mode: true` with both anchors). *(completed: verified unchanged)*
 
 **Timing**: 0.25 hours
 

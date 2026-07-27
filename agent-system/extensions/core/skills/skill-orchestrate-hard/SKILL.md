@@ -404,10 +404,17 @@ if [ "$adversarial_verified" = "false" ]; then
       dispatch_start_ts=$(date -u +%s)
       dispatch_was_transport_error=false
 
+      # $RESEARCH_AGENT never writes .orchestrator-handoff.json, per the Stage 3.6 "Scoping
+      # Decision" in general-research-agent.md / general-research-hard-agent.md and the Handoff
+      # Writers table in docs/architecture/handoff-schema.md, so the anchor here was unread —
+      # removed rather than kept. Note: `handoff_path` in a research agent's own returned
+      # `partial_progress` names its research-shaped `handoffs/research-handoff-*.md`, not this
+      # orchestrator anchor; passing the orchestrator anchor here invited exactly that
+      # conflation.
       Agent tool:
         subagent_type: $RESEARCH_AGENT
         prompt: "Adversarial verification pass for task $task_number. Read the research report at $research_path and verify all load-bearing claims. Focus: divergence audit — check for analysis-paralysis signatures, verify source citations, flag uncertain claims."
-        delegation_context: {task_number, session_id, effort_flag: "hard", focus_prompt: "divergence audit", task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS}
+        delegation_context: {task_number, session_id, effort_flag: "hard", focus_prompt: "divergence audit", orchestrator_mode: false}
 
       # After the Agent tool returns, before Stage 5: judge the tool call's OWN outcome per
       # context/patterns/infra-failure-discrimination.md and set dispatch_was_transport_error=true
