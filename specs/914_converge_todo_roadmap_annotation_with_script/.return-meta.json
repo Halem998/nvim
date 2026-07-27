@@ -1,7 +1,40 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "task_number": 914,
   "agent_type": "general-implementation-agent",
   "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "session_id": "sess_1785180513_6ef9d7_914"
+  "session_id": "sess_1785180513_6ef9d7_914",
+  "phases_completed": 6,
+  "phases_total": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/914_converge_todo_roadmap_annotation_with_script/summaries/01_converge-todo-roadmap-annotation-summary.md",
+      "summary": "Implementation summary: converged /todo roadmap annotation with roadmap-integration.sh parse-only/filtered-annotate design across both /todo specs"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Made roadmap-integration.sh /todo's single parser and structure-signal source (parse-only scan + --annotate against a pre-archival filtered snapshot), preserving /todo's meta/expanded exclusion and abandoned-task annotation as its own logic, and wired a three-way output gate into both commands/todo.md and skill-todo/SKILL.md so an unparseable or silently-failed roadmap can never be reported as a successful annotation pass."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/roadmap-integration.sh",
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/skills/skill-todo/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a shared script (e.g. roadmap-integration.sh) is reused by a caller with narrower requirements than the script's original consumer, a filtered-snapshot pattern lets the caller enforce its own exclusion rules (task_type filtering, status filtering) without widening the shared script: build a scratch state.json containing only the caller-eligible subset, pass it via --state, and rely on the script's own sibling-path resolution (e.g. archive/state.json next to the snapshot) resolving to nothing to scope the run further. This avoids both re-implementing the script's matching logic and bloating the script with caller-specific filters.",
+      "category": "PATTERN",
+      "source_artifact": "specs/914_converge_todo_roadmap_annotation_with_script/summaries/01_converge-todo-roadmap-annotation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["filtered-snapshot", "shared-script-reuse", "roadmap-integration", "scratch-state-json", "caller-contract"]
+    },
+    {
+      "content": "When a plan's Overview flags a research report's premise as inaccurate (verified live against the actual repo), that correction must be re-verified during implementation, not just read once: it is easy to accidentally copy the ORIGINAL inaccurate premise into new spec prose while writing plausible-sounding illustrative text, even after having read the correction. A dedicated cross-spec/self-consistency sweep phase (this plan's Phase 6) is what actually caught the defect here, not the initial drafting care.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/914_converge_todo_roadmap_annotation_with_script/summaries/01_converge-todo-roadmap-annotation-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["consistency-sweep", "research-report-correction", "self-verification", "plan-overview"]
+    }
+  ]
 }
