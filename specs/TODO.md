@@ -1,5 +1,5 @@
 ---
-next_project_number: 922
+next_project_number: 928
 ---
 
 # TODO
@@ -11,8 +11,10 @@ next_project_number: 922
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 885,914,915,917,918,919,920 | -- | agent-system |
-| 2 | 887 | 885 | agent-system |
+| 1 | 885,914,915,917,918,919,920,922 | -- | agent-system |
+| 2 | 887,923,924 | 885,918,922 | agent-system |
+| 3 | 925 | 924 | agent-system |
+| 4 | 926,927 | 919,925 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -24,10 +26,255 @@ next_project_number: 922
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 917 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 918 [NOT STARTED] — resolve_task_dir() in task-lock.sh hard-fails for a task whose di
+  └─ 923 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 919 [NOT STARTED] — Fifteen agent definitions instruct writing .return-meta.json but 
+  └─ 927 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
+922 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+  └─ 924 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+    └─ 925 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+      └─ 926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+      └─ 927 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
 
 ## Tasks
+
+### 927. Propagate the depth-first phase-closure and pre-edit verification contract to extension implementers
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 925, Task 919
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/ and the per-extension source directories under agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+PURPOSE. Carry the depth-first phase-closure contract and the per-item pre-edit verification gate (delivered core-only by task 925) to the implementation agents that extension task types actually dispatch.
+
+WHY THIS TASK EXISTS. Task 925 is deliberately scoped core-only so that it stays unblocked. But the motivating failures were observed in a consuming repo whose implementers are cslib-implementation-agent and lean-implementation-agent, NOT general-implementation-agent. A contract that lands only in core does not reach them, and therefore would not have prevented the run that motivated the entire batch. That reach gap is the whole content of this task.
+
+THIS TASK MAY CORRECTLY CLOSE AS UNNECESSARY -- CHECK BEFORE EDITING ANYTHING. Task 925 carries a REQUIRED deliverable: determine whether a central injection point exists -- a core context file or dispatch-prompt hook that extension implementation agents ALREADY inherit, in the way context/contracts/ files are consumed by hard-mode agents. If such a mechanism exists, or if 925 creates one, propagation is free and this task closes as already-handled.
+
+FIRST STEP (MANDATORY): read task 925's placement/injection finding from its artifacts BEFORE opening any extension file. Only if that finding establishes that per-extension wiring is genuinely required does the edit work below begin. Do NOT hand-edit thirteen extension implementers without reading it. A task that closes as 'already handled' is a fine outcome; an unexamined duplicate of work already done is not.
+
+IF PROPAGATION IS REQUIRED. The implementation surface spans roughly thirteen extensions: cslib, email, epidemiology, founder, latex, lean, nix, nvim, python, typst, web, z3 (plus core, already done by 925). PREFER A REFERENCING MECHANISM OVER COPIED PROSE: each extension implementer should point at the single core contract file, so that a later revision of the contract does not require thirteen further edits. Copy-paste propagation across thirteen files is itself the recurring maintenance defect this system keeps re-paying -- the same shape as the five divergent phase templates documented in task 922 and the three divergent phase-heading regexes documented in task 924. Do not add a fourth instance of it.
+
+DEPENDENCY NOTES:
+  - Depends on task 925 for the contract itself AND for the injection finding that determines whether this task has any content.
+  - Depends on task 919 for file serialization on the extension agents/ directories; 919 edits the same agent files to reference the normative .return-meta.json status vocabulary, for unrelated reasons.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 926. Provide shared tested census tooling and a documented census method so repo-wide counts stop being re-invented wrong
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 925
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+LINE-NUMBER CAVEAT: anchor on symbol names and quoted regex strings, never on line numbers.
+
+OBSERVED: AT LEAST THREE INDEPENDENT CENSUS BUGS IN ONE TASK, each rediscovered mid-implementation at real cost, and each found ONLY because an implementer happened to notice a contradiction rather than because any check caught it.
+
+  1. A naive word-boundary scan for a proof-hole keyword counted compiler-directive lines that merely MENTION the keyword as if they were proof holes, inflating one subsystem from 23 to 35 and the project's own published figure to 40/41 against a true census of 28.
+  2. Nine tracked scratch files at the repository root belonged to no build target -- invisible to the build, counted by every grep.
+  3. A task-reference census regex missed hyphenated and letter-suffixed forms, undercounting 376 against a true 399 and silently understating remaining work by roughly 6%.
+
+THE AGENT SYSTEM REPRODUCES BUG 3 IN ITS OWN CODE -- this is not a foreign-repo problem. hooks/validate-no-task-references.sh matches task references with a pattern requiring WHITESPACE as the separator between the word and the number. Consequently 'task-788', 'task_788' and 'Task #788' are all invisible to it, and it has no concept of a Phase reference at all. The rule that hook enforces (rules/no-task-references-in-deliverables.md) explicitly names hyphenated branch forms as legitimate ELSEWHERE, so the gap is reachable through entirely normal use. Task 924 independently fixes the sibling instance of this blind spot in the phase-heading regexes of update-task-status.sh.
+
+VERIFIED ABSENCE OF INFRASTRUCTURE. There is no census tooling and NO SHELL TEST HARNESS FOR CORE SCRIPTS AT ALL -- the only script test directory anywhere in the tree belongs to the literature extension. The one genuine census tool in the tree (a Lean proof-hole counter in the lean extension) has a sound cross-check design and zero tests. There is no documented standard method for deriving a repo-wide count.
+
+SCOPE OF WORK.
+
+A. Decide the deliverable shape: shared executable tooling, a documented standard method plus fixtures, or both. BINDING CONSTRAINT: whatever ships must be TESTED against fixtures encoding the three observed bug classes -- (1) keyword appearing inside a directive/comment rather than as a real occurrence, (2) file present in the tree but outside the build graph, (3) separator and suffix variants missed by a naive regex. Untested census tooling is the defect, not the fix.
+
+B. Establish a test harness location for core scripts. Follow the existing literature-extension harness shape rather than inventing a second convention, unless there is a stated reason not to.
+
+C. Fix the hooks/validate-no-task-references.sh regex to cover hyphenated, underscored, and hash-separated forms, and DECIDE whether Phase references are in its remit. Add fixtures for each form.
+
+D. Register any new script in manifest.json and any new context file in index-entries.json.
+
+E. Document the standard method. At minimum it must state that a repo-wide count is derived ONCE, recorded together with the exact command that produced it, and CROSS-CHECKED by a second independent method before it is published or acted on. The cross-check requirement is the load-bearing part: it is what would have turned each of the three observed bugs from silent into visible at the moment it was introduced.
+
+EXPLICIT NON-GOAL: this task does not re-run or correct any consuming repository's censuses. It delivers the method and the tooling only.
+
+DEPENDENCY NOTE: depends on task 925 for file serialization on index-entries.json. The two tasks are unrelated in content.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 925. Add a depth-first phase-closure contract and a per-item pre-edit verification gate to core implementers
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 924
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.
+
+TWO OBSERVED DEFECTS ON THE SAME SURFACE.
+
+DEFECT 1 -- BREADTH-FIRST DISPATCH STRANDS PHASES AT PARTIAL. One implementation dispatch in a consuming repo touched FOUR phases and closed exactly ONE, leaving three at [PARTIAL]. Because a task cannot be marked COMPLETED while any phase is [PARTIAL], breadth-first work ACTIVELY PREVENTS task completion. Explicitly instructing the next dispatch to work depth-first -- close one phase entirely before opening another, order by cheapest closure first, and stop at a closed phase boundary rather than opening a phase it cannot finish -- closed a phase on the very next cycle.
+
+VERIFIED ABSENT FROM THE SYSTEM. A grep for depth-first / breadth-first / 'one phase at a time' across the whole source store returns nothing relevant. Standard mode says only 'Execute phases sequentially' in skills/skill-implementer/SKILL.md, which constrains ORDER but not CONCURRENCY OF OPENING, and it dispatches the whole plan in a single agent call. Hard mode has single-dispatch phase focus, but its phase selector takes the first heading matching NOT STARTED / PARTIAL / IN PROGRESS -- which explicitly PERMITS returning to a previously-opened PARTIAL phase later. Breadth-first drift is representable and unprohibited in both modes.
+
+DEFECT 2 -- MECHANICAL CLEANUP LISTS CARRY FALSE POSITIVES WITH NO PRE-EDIT GATE. Every mechanical list in the motivating task contained items that would have caused damage if applied blindly: a dead-code list included a REAL tactic implementation invisible to a naive declaration-keyword scan, plus a genuine documented stub; a namespace-cleanup list included three modules where the edit breaks the build outright because 81 dot-notation call sites depend on the prefix; a rename list included a known false-positive file that must not be touched. Nothing in the implementer contract requires cheap per-item evidence before an edit lands.
+
+SCOPE OF WORK.
+
+A. Author a phase-closure contract as a new context file and reference it from skills/skill-implementer/SKILL.md, skills/skill-implementer-hard/SKILL.md, agents/general-implementation-agent.md, and agents/general-implementation-hard-agent.md. Required content: close one phase ENTIRELY before opening the next; order remaining phases cheapest-closure-first; and STOP AT A CLOSED PHASE BOUNDARY rather than opening a phase that cannot be finished within the dispatch. That last clause is the one that produced the observed recovery and must not be dropped as redundant -- 'work depth-first' alone does not tell an agent to stop rather than start something it cannot finish.
+
+B. PER-ITEM PRE-EDIT VERIFICATION GATE. Before applying any item from a mechanical list, gather cheap evidence that the item is real -- a reference count, a build probe, a definition lookup -- proportionate to the edit's blast radius. A planning-time list is a HYPOTHESIS; the planner-side half of that rule is delivered by task 922. An item that FAILS its probe becomes a documented reasoned exclusion (the outcome delivered by task 924) rather than a silent skip or a forced edit. These three tasks are designed to compose: 922 marks the count unverified, this task probes it, 924 records the result honestly.
+
+C. MUST NOT CONTRADICT THE WAVE TABLE. context/formats/plan-format.md's Dependency Analysis wave table states verbatim 'Phases within the same wave can execute in parallel', and context/contracts/territory.md governs parallel dispatch across agents. The depth-first rule is scoped to A SINGLE DISPATCH'S OWN SEQUENCING: it forbids one agent from opening several phases at once; it does NOT forbid the orchestrator from dispatching independent phases to different agents in the same wave. State this scoping explicitly in the contract, or the two rules will be read as contradictory and one of them will be ignored.
+
+D. PLACEMENT AND INJECTION FINDING -- REQUIRED DELIVERABLE, AND THE INPUT TO TASK 927. context/contracts/ is currently a HARD-MODE-ONLY convention: every referrer of that directory across the entire source store is a *-hard agent or skill. A contract placed there will NOT be loaded by standard-mode dispatches, and this defect occurs in standard mode. Determine and RECORD IN THE TASK ARTIFACTS:
+   (i) where a contract must live to be loaded by BOTH standard and hard implementer paths; and
+   (ii) WHETHER A CENTRAL INJECTION POINT EXISTS -- a core context file or dispatch-prompt hook that extension implementation agents ALREADY inherit -- such that propagation to extension implementers is free. Investigate the hard-mode prompt-context builder and the skill-base.sh lifecycle stages as candidate hooks.
+This finding is a REQUIRED deliverable, not optional. Task 927 exists to propagate this contract to thirteen extension implementers by hand, and it should close as UNNECESSARY rather than as work if a central mechanism is found here.
+
+SCOPE BOUNDARY -- CORE ONLY, DELIBERATELY. This task does not touch extension implementation agents (owned by task 919 and propagated by task 927) or the orchestrator skills (skill-orchestrate is owned by task 917, skill-orchestrate-hard by task 920). Keeping this task core-only is what keeps it unblocked; the resulting reach gap is the entire content of task 927.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 924. Make closed-with-documented-reasoned-exclusions a first-class phase completion outcome
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 922
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+LINE-NUMBER CAVEAT: anchor on symbol names, function names, and quoted regex strings, never on line numbers.
+
+OBSERVED THREE TIMES IN ONE TASK. 'Closed with documented, reasoned exclusions' had to be invented ad hoc THREE separate times while orchestrating a single large task in a consuming repo: Phase 2 closed at 7 of 10 files because 3 of them were a misdiagnosis (a structure-projection namespace mistaken for a doubled namespace); Phase 8 closed at 9 of 10 rows because the 10th contained false positives; Phase 4 needed the same allowance pre-emptively. Each time the concept was re-derived from scratch and recorded in prose with no machine-visible representation.
+
+WHY IT MATTERS. Without a codified outcome, an agent facing a phase whose remaining items are provably not-applicable has exactly two options: fake completion (dishonest) or leave the phase [PARTIAL] forever. The second is NOT benign -- a task cannot be marked COMPLETED while any phase is [PARTIAL], so an unrepresentable exclusion blocks task completion permanently.
+
+GENERALIZE THE EXISTING PRECEDENT; DO NOT INVENT A PARALLEL CONCEPT (required). The system ALREADY has a working instance of 'documented incompleteness that still counts as success': the hard-mode strategic-sorry skeleton. context/contracts/wrap-up.md's sorry_inventory together with context/formats/plan-format.md's '## Planned Strategic Sorries' section let a phase ship with enumerated, justified, machine-listed holes and still be treated as done. That is the SAME SHAPE as a documented reasoned exclusion, restricted to hard mode and to Lean. This task must GENERALIZE that precedent to any task type and to standard mode. Building a second mechanism beside it -- two concepts for one idea -- is the exact class of failure this task exists to prevent.
+
+THE TRAP THAT MUST BE SOLVED, NOT MERELY NOTED (required). A naively-added phase marker is BOTH silently clobbered AND counted as incomplete:
+
+  (i) Stage 5a of BOTH agents/general-implementation-agent.md and agents/general-implementation-hard-agent.md performs an end-of-run BLIND REWRITE of every phase heading matching the alternation [NOT STARTED] | [IN PROGRESS] | [PARTIAL] to [COMPLETED]. A new marker left outside that alternation is untouched; a new marker added into it is rewritten away -- destroying the exclusion record it was created to carry.
+
+  (ii) The phase-accounting backstop in scripts/update-task-status.sh counts the TOTAL with a heading regex admitting any [A-Z][A-Z ]* status, but counts DONE with a regex matching the literal string [COMPLETED] only. A new marker therefore inflates the denominator and never the numerator, so the completion gate refuses forever -- reproducing the permanent-block failure from the opposite direction.
+
+A design that does not explicitly resolve BOTH (i) and (ii) is incomplete.
+
+RELATED REGEX DEFECT IN THE SAME LINES (in scope, because this task edits them anyway). The phase-heading regexes in scripts/update-task-status.sh match 'Phase [0-9][0-9]*' -- digits only. A letter-suffixed sub-phase heading such as 'Phase 3a' is not counted at all, in EITHER the total or the done count. skills/skill-implementer-hard/SKILL.md's own phase scan uses a different pattern that admits decimal sub-phases but likewise not letter suffixes. Reconcile the phase-numbering regex family while these lines are being edited; three divergent notions of what a phase heading looks like is how counts drift. (This is the same root cause as the census defects addressed by task 926, surfacing inside the agent system's own code.)
+
+SCOPE OF WORK.
+
+A. Define the outcome in context/standards/status-markers.md's phase-heading vocabulary and in context/formats/plan-format.md's 'Plan-level vs. phase-level markers' subsection. It must be DISTINCT from both COMPLETED (nothing excluded) and PARTIAL (work remains and is resumable). The defining property: the excluded items are decided, justified, and will not be revisited.
+
+B. Define what the record must CONTAIN -- at minimum, per excluded item: the item, the reason, and the EVIDENCE that the reason holds. An exclusion without evidence is indistinguishable from a silently skipped item, which is the dishonest outcome this task exists to avoid.
+
+C. Decide where the record LIVES. Candidates: a per-phase subsection in the plan artifact mirroring '## Planned Strategic Sorries'; and/or the existing per-objective deviations mechanism in context/formats/progress-file.md, whose type vocabulary is skipped|altered|deferred -- note that vocabulary is objective-grained and has no 'excluded' type, so lifting it to phase grain is one viable design.
+
+D. Make the completion gate honor it: the phase accounting in scripts/update-task-status.sh must count an exclusion-closed phase as done, and scripts/update-phase-status.sh's accepted status set must admit it.
+
+E. Protect the record from the Stage 5a blind rewrite in both implementation agents.
+
+F. Update docs/architecture/handoff-schema.md if the handoff must carry the outcome.
+
+G. Wire into the checklist in rules/plan-format-enforcement.md.
+
+OPEN RESEARCH QUESTION, DELIBERATELY LEFT OPEN -- DO NOT PRE-EMPT IT. Does the completion-claim gate in scripts/skill-base.sh need to change at all? If an exclusion-closed phase simply increments the agent-reported phases_completed, that gate may need no edit; the INDEPENDENT plan-file-reading regex in update-task-status.sh definitely does. Determine this during research.
+
+WHY scripts/skill-base.sh IS DELIBERATELY ABSENT FROM THIS TASK'S file_scope -- recorded so a future reader does not 'restore' it as an oversight. Task 885 owns scripts/skill-base.sh and is currently [PARTIAL] with no completion signal. This task gates tasks 925, 926 and 927. Blocking a multi-task chain on a MAYBE-UNNECESSARY edit to one file trades a small coordination risk for a large stall risk. The trade is safe because the runtime file-scope admission check backstops it: if this task determines it does need skill-base.sh, the dispatch-time overlap gate will refuse to run it concurrently with 885 anyway. Declared dependencies exist to ORDER work; they are not the only defense against a file collision.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 923. Reap stale task locks instead of re-warning about them on every invocation forever
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 918
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.
+
+OBSERVED, not hypothetical. While orchestrating a large task in a consuming repo, GATE IN emitted warnings that two OTHER tasks held locks whose heartbeats were 920 and 582 minutes old (15.3 and 9.7 hours), and whose file_scope overlapped the running task's. The system correctly identified both as stale and correctly proceeded. It then never cleaned them, never flagged them for repair, and re-emitted the identical warnings on EVERY subsequent invocation for the remainder of the session.
+
+MECHANISM. scripts/task-lock.sh exposes nine subcommands -- acquire, heartbeat, release, check, init-marker, scope-acquire, scope-release, commit-acquire, commit-release -- and NO reap, gc, prune, or list. Foreign stale locks are warn-only by explicit design; the script's own comments state the rule as never touching the foreign lock. That design choice is CORRECT for the acquire/check paths (a lock query must not have destructive side effects on another session's state) but it leaves no path anywhere in the system that ever removes a stale lock. The result is a monotonically growing set of permanent warnings that train the reader to ignore lock warnings entirely -- which is the real cost, since a genuine conflict warning becomes indistinguishable from the accumulated noise.
+
+WHERE THE REAPING SHOULD LIVE -- A DECISION, NOT A PRESUMPTION. /refresh already sweeps orphaned marker files under specs/ with almost exactly the required shape (age threshold, glob over task directories, dry-run support). Two candidate designs:
+  (a) add a reap/prune subcommand to scripts/task-lock.sh that reuses its EXISTING holder-field reader and age computation and honors the holder-declared staleness window, with /refresh as the only caller;
+  (b) implement the sweep entirely in the refresh path.
+Design (a) is FAVORED on the grounds that staleness semantics are holder-declared and already implemented inside task-lock.sh, and duplicating that logic into a second file is precisely how two copies drift apart. But establish this during research rather than assuming it.
+
+BINDING CONSTRAINTS ON ANY FIX:
+
+1. Reaping MUST NOT happen implicitly on the acquire, check, heartbeat, or release paths. The existing never-touch-the-foreign-lock rule on those paths is correct and STAYS. Reaping is an explicit, separately-invoked operation.
+
+2. Reaping MUST honor the holder-declared staleness window written into the lock directory, not a fresh caller-chosen threshold. The whole point of holder-declared staleness is that every waiter honors the SAME window; a reaper that picks its own threshold breaks that invariant.
+
+3. Provide a dry-run / report mode, consistent with /refresh's existing dry-run.
+
+4. A reaped lock must be REPORTED, not silently removed. The goal is to replace a repeating warning with a one-time actionable event, not to make the condition invisible.
+
+5. Decide and DOCUMENT whether reaping is safe when the holding session may still be alive but merely slow. A 920-minute-old heartbeat is unambiguous; the threshold at which it stops being unambiguous must be stated rather than left to the reader.
+
+DEPENDENCY NOTE: depends on task 918 for file serialization only. Task 918 also edits scripts/task-lock.sh (create-task-directory-before-acquire); the two tasks are unrelated in content and share only the file.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 922. Add risk-stratified verification tiers and atomic multi-file batches to plan format and planner contracts
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+LINE-NUMBER CAVEAT: any line numbers below were read at task-creation time. Anchor on symbol names, function names, and quoted strings, never on line numbers.
+
+OBSERVED DEFECT, not speculation. Evidence from orchestrating a large Lean hygiene task to completion in a consuming repo.
+
+SYMPTOM 1 (cost). A plan's verification protocol read 'rebuild after EACH file, commit only when that file is green', and its Testing section required ALL FOUR gates after every single file: a 672-module full build with --wfail --iofail, a 9,253-test suite, an all-modules import check, and an init-imports check. That rule was calibrated for ONE phase's proof-affecting tactic rewrites, then applied unchanged to phases whose edits were COMMENT TEXT ONLY and could not affect elaboration at all. After replacing it with a five-tier risk-stratified protocol, build time fell from dominating the dispatch to roughly 10-15% of elapsed effort; targeted per-module builds completed in under 2 seconds against full-repo rebuilds.
+
+SYMPTOM 2 (expressiveness -- the more serious one). A per-file green-commit mandate structurally FORBIDS an atomic refactor. Renaming a bound type parameter across 24 files with 231 named-argument call sites cannot be decomposed into independently-green single-file commits; every intermediate state is red. Under the per-file rule that work was inexpressible. Under batch verification it is one batch, one build, one commit. A verification rule must not make legitimate work impossible to express.
+
+WHY THIS IS A SYSTEM DEFECT AND NOT ONE BAD PLAN -- three source-store findings, each verified by reading the source store:
+
+FINDING A -- THE CARVE-OUT MUST LAND IN git-workflow.md, NOT ONLY IN plan-format.md. rules/git-workflow.md carries a 'Commit-Per-Green-Substep Mandate' whose text reads verbatim: 'Every verified-green sub-step is committed as it happens -- this is a mandate, not an optional-when-convenient practice.' It defines sub-step granularity as 'a progress-file.md objective transitioning to status: done'. This is the SYSTEM-LEVEL analogue of the plan rule that made the atomic rename inexpressible. If the atomic-multi-file-batch carve-out lands only in plan-format.md, the same expressiveness bug reappears one layer up: a plan could declare a batch tier while the git rule still demands a green commit at each objective inside that batch. The carve-out MUST be written into rules/git-workflow.md itself -- an atomic multi-file batch is ONE sub-step, and green is NOT required at intra-batch boundaries.
+
+FINDING B -- FIVE DIVERGENT PHASE TEMPLATES; A FIELD ADDED TO ONE PROPAGATES TO NONE. The phase template is restated independently in at least five places: context/formats/plan-format.md (both its 'Implementation Phases (format)' section and its 'Example Skeleton'), agents/planner-agent.md, agents/planner-hard-agent.md (H8 phase sizing), skills/skill-team-plan/SKILL.md, and context/workflows/task-breakdown.md. Only planner-agent.md's template currently carries a per-phase '**Verification**:' field at all, and plan-format.md does not list that field. Adding a verification-tier field to one template therefore propagates to none of the others. All five must move together or the field will be absent from most generated plans.
+
+FINDING C -- THE REAL GATE IS A SCRIPT, NOT A RULE. rules/plan-format-enforcement.md is a 19-line pointer document. The enforcing code is the PLAN_SECTIONS check inside scripts/validate-artifact.sh. A new required field that is not represented there is advisory only.
+
+SCOPE OF WORK.
+
+A. Define a verification-tier vocabulary in context/formats/plan-format.md: a small ORDERED set of tiers matched to what an edit class can actually break (illustrative, not prescriptive: prose/comment-only, single-module, cross-module signature, whole-repo semantic). The exact tier set is a design decision for this task.
+
+B. Add a per-phase verification-tier field to the phase template and propagate it to all five templates named in Finding B.
+
+C. TIE-BREAK-UPWARD RULE (required): when the correct tier for an edit is uncertain, the planner selects the STRICTER tier. Uncertainty resolves upward, never downward. State this in the format doc AND in the planner contracts, not just one.
+
+D. ATOMIC MULTI-FILE BATCH support: a phase must be able to declare that a set of edits is verified and committed as ONE unit, with no requirement that any intermediate single-file state be green. Land the corresponding carve-out in rules/git-workflow.md per Finding A.
+
+E. COUNTS ARE HYPOTHESES (planner half). Add a planner rule that any count, file list, or scope estimate asserted in a plan is a HYPOTHESIS requiring implementation-time confirmation, never a fact. Evidence from the motivating run: '~484 reference sites' was wrong by roughly 80x (true count: 6), and '5 files' for a rename was truly 24 files plus 231 call sites. Wrong by orders of magnitude in BOTH directions. Plans must mark asserted counts as unverified and oblige the implementer to confirm before acting on them. The implementation-side gate that CONSUMES this obligation is task 925; this task delivers only the planner-side obligation and the plan-format field that carries it.
+
+F. Wire the new required field into scripts/validate-artifact.sh per Finding C, and update the checklist in rules/plan-format-enforcement.md.
+
+G. Update index-entries.json for changed line counts and any new context files. Note: the line_count recorded there for plan-format.md is ALREADY stale relative to the file, so it needs correcting regardless.
+
+NON-NEGOTIABLE CONSTRAINT -- FINAL-GATE STRICTNESS IS UNCHANGED. This task tiers GRANULARITY ONLY: how often and how broadly verification runs DURING a phase. The full gate set still runs before a phase is closed and before a task completes. A tiering scheme that weakens the final gate is a WRONG ANSWER to this task, not a trade-off.
+
+ADDITIONAL REQUIREMENT: each tier below the top must state what it does NOT cover, so a reader can see exactly what the final gate remains responsible for catching. A tier whose blind spots are unstated is indistinguishable from a weakened gate.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
 
 ### 920. Validate dispatch_status against the schema enum so an off-schema value fails loudly instead of silently no-opping
 - **Status**: [NOT STARTED]
