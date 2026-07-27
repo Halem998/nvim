@@ -1,7 +1,7 @@
 # Implementation Plan: Task #930
 
 - **Task**: 930 - Port the combining-mark fidelity toolchain into the literature extension source
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: 928 (verification-ordering edge only -- see Overview; does NOT gate Phases 1-2)
 - **Research Inputs**: specs/930_port_combining_mark_fidelity_toolchain/reports/01_combining-mark-toolchain-port.md
