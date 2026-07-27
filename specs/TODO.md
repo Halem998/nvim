@@ -6,7 +6,7 @@ next_project_number: 913
 
 ## Task Order
 
-*Updated 2026-07-26. Generated from state.json dependency graph.*
+*Updated 2026-07-27. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -27,7 +27,7 @@ next_project_number: 913
   └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
       └─ 908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
-909 [NOT STARTED] — Residual gap surfaced by the implementation agent for the complet
+909 [RESEARCHED] — Residual gap surfaced by the implementation agent for the complet
   └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is  (see above)
 910 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 911 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
@@ -121,10 +121,11 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 909. Resolve the two hard-mode dispatch contexts that carry neither an absolute handoff anchor nor orchestrator_mode
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 898
+- **Research**: [909_resolve_unanchored_hard_mode_dispatch_contexts/reports/01_handoff-gating-and-fix-branch.md]
 
 **Description**: Residual gap surfaced by the implementation agent for the completed handoff-location task (891-series work on .orchestrator-handoff.json placement), which correctly flagged it rather than silently editing outside its plan's scope.
 

@@ -745,7 +745,7 @@
     {
       "project_number": 909,
       "project_name": "resolve_unanchored_hard_mode_dispatch_contexts",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Resolve the two hard-mode dispatch contexts that carry neither an absolute handoff anchor nor orchestrator_mode",
@@ -757,8 +757,15 @@
         "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
       ],
       "created": "2026-07-25T16:48:33Z",
-      "last_updated": "2026-07-25T16:48:33Z",
-      "artifacts": []
+      "last_updated": "2026-07-27T00:24:01Z",
+      "artifacts": [
+        {
+          "path": "specs/909_resolve_unanchored_hard_mode_dispatch_contexts/reports/01_handoff-gating-and-fix-branch.md",
+          "type": "report",
+          "summary": "Establishes that research agents never write .orchestrator-handoff.json; recommends adding explicit orchestrator_mode: false to the two unanchored hard-mode dispatch sites."
+        }
+      ],
+      "session_id": "sess_1785111483_b25535"
     },
     {
       "project_number": 910,
