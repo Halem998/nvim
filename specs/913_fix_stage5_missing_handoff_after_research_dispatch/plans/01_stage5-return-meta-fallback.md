@@ -371,28 +371,28 @@ old "handoff is the only outcome channel" assumption.
 
 ---
 
-### Phase 6: End-to-end verification against the live reproduction [NOT STARTED]
+### Phase 6: End-to-end verification against the live reproduction [COMPLETED]
 
 **Goal**: Prove the exact failure observed during this task's own research dispatch now resolves
 automatically.
 
 **Tasks**:
 
-- [ ] Build a fixture task directory containing only a `.return-meta.json` with
+- [x] Build a fixture task directory containing only a `.return-meta.json` with
       `status: "researched"` and a well-formed `artifacts[0]` entry — no handoff — matching the
       shape this task's own research dispatch produced
-- [ ] Run `orchestrate-recover-outcome.sh` against it with a window start below the file mtime and
+- [x] Run `orchestrate-recover-outcome.sh` against it with a window start below the file mtime and
       confirm `recovered=true`, `status=researched`, and a populated `artifact_path`
-- [ ] Trace the Phase 2 Stage 5 branch by hand against that JSON and record which
+- [x] Trace the Phase 2 Stage 5 branch by hand against that JSON and record which
       `skill_postflight_update` call it reaches and with what arguments — it must be
       `skill_postflight_update <n> research <session> researched`
-- [ ] Repeat the trace for the Phase 3 hard-mode branch and the Phase 4 MT-4 branch
-- [ ] Confirm the negative cases still take the old path: missing meta, stale meta, `in_progress`
+- [x] Repeat the trace for the Phase 3 hard-mode branch and the Phase 4 MT-4 branch
+- [x] Confirm the negative cases still take the old path: missing meta, stale meta, `in_progress`
       meta, and `failed` meta each still reach the error diagnostics and the infra-discrimination
       block
-- [ ] Confirm no file under `.claude/` was modified by any phase
+- [x] Confirm no file under `.claude/` was modified by any phase
       (`git status --porcelain .claude/` and a check that `.claude/` is gitignored)
-- [ ] Record in the summary that `.claude/` must be re-synced from the source store for the fix to
+- [x] Record in the summary that `.claude/` must be re-synced from the source store for the fix to
       take effect at runtime, and that this plan deliberately does not perform that sync
 
 **Timing**: 0.75 hours
@@ -413,19 +413,19 @@ automatically.
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on `orchestrate-recover-outcome.sh` and on every edited fenced bash block in
+- [x] `bash -n` passes on `orchestrate-recover-outcome.sh` and on every edited fenced bash block in
       both orchestrate SKILL.md files
-- [ ] The helper returns the correct `recovered`/`reason` pair for all six fixture cases: fresh
+- [x] The helper returns the correct `recovered`/`reason` pair for all six fixture cases: fresh
       success, stale, missing, `in_progress`, non-success status, malformed JSON
-- [ ] A recovered `researched` outcome reaches `skill_postflight_update ... research ... researched`
+- [x] A recovered `researched` outcome reaches `skill_postflight_update ... research ... researched`
       in base mode, hard mode, and multi-task mode
-- [ ] A recovered `implemented` outcome reaches `skill_gate_completion_claim` with
+- [x] A recovered `implemented` outcome reaches `skill_gate_completion_claim` with
       `plan_markers_verified="absent"` and is refused when phase accounting is also absent
-- [ ] The handoff-present path is unchanged in all three call sites
-- [ ] `skill-orchestrate-hard`'s H4, H5, and Stage 6 dispatch sites are byte-identical to their
+- [x] The handoff-present path is unchanged in all three call sites
+- [x] `skill-orchestrate-hard`'s H4, H5, and Stage 6 dispatch sites are byte-identical to their
       pre-change state
-- [ ] No new task-number citations outside `specs/**`
-- [ ] No modifications under `.claude/**`
+- [x] No new task-number citations outside `specs/**`
+- [x] No modifications under `.claude/**`
 
 ## Artifacts & Outputs
 
