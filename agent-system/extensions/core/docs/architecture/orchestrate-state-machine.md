@@ -353,7 +353,8 @@ MT mode drives multiple tasks through their full lifecycle (research -> plan -> 
 │  ┌──────────────────▼──────────────────────┐     │
 │  │ 7. Per-task postflight                  │     │
 │  │    skill_postflight_update + artifact   │     │
-│  │    linking + multi-state update         │     │
+│  │    linking + per-task scoped commit +   │     │
+│  │    multi-state update                   │     │
 │  └──────────────────┬──────────────────────┘     │
 │                     │                            │
 │  ┌──────────────────▼──────────────────────┐     │
@@ -376,6 +377,18 @@ Tasks progress through lifecycle phases independently. A task becomes eligible w
 If a predecessor is `failed`, the dependent task is immediately moved to `failed_tasks` with status `blocked`.
 
 If a predecessor is still in-progress (e.g., `researched`, `planned`), the dependent task waits until the next cycle when the predecessor reaches terminal state.
+
+### Commit Granularity
+
+One commit per task per phase transition, issued inside Stage MT-4's per-task postflight loop
+(step 5.5) — never a combined end-of-batch commit. MT mode used to fire exactly one commit at the
+very end of `commands/orchestrate.md`'s Step 5, folding every task's diff and index rows into a
+single, unrevertable commit; that batch commit is retired, and each task's own change is committed
+the moment its own phase transition lands, at the same granularity a solo `/implement` run
+produces. All commits route through the shared `git-commit-scoped.sh` helper, preserving
+path-scoped staging, the `specs/.commit-lock/` commit mutex, and automatic ephemeral-runtime-file
+exclusion — see `context/standards/git-staging-scope.md`'s "Multi-Task Application" subsection for
+the full per-task scope contract.
 
 ### Exit Conditions
 
@@ -408,7 +421,7 @@ All-terminal: NO
 Eligible: [A, B]  (both not_started, no dependencies)
 Dispatch: research A + research B  (ONE message, 2 Agent calls)
 After agents complete: read handoffs for A and B
-Postflight: A -> researched, B -> researched
+Postflight: A -> researched (commit), B -> researched (commit)
 cycle_count: 1
 
 --- Cycle 2 ---
@@ -417,7 +430,7 @@ All-terminal: NO
 Eligible: [A, B]  (researched is not terminal, not in-flight)
 Dispatch: plan A + plan B  (ONE message, 2 Agent calls)
 After agents complete: read handoffs for A and B
-Postflight: A -> planned, B -> planned
+Postflight: A -> planned (commit), B -> planned (commit)
 cycle_count: 2
 
 --- Cycle 3 ---
@@ -426,7 +439,7 @@ All-terminal: NO
 Eligible: [A, B]  (planned -> implement)
 Dispatch: implement A + implement B  (ONE message, 2 Agent calls)
 After agents complete: read handoffs for A and B
-Postflight: A -> completed, B -> completed
+Postflight: A -> completed (commit), B -> completed (commit)
 cycle_count: 3
 
 --- Cycle 4 ---

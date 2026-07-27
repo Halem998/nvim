@@ -314,38 +314,38 @@ absent/empty `modified_files` in both modes.
 
 ---
 
-### Phase 4: Update the architecture doc and retire hazard 2 [NOT STARTED]
+### Phase 4: Update the architecture doc and retire hazard 2 [COMPLETED]
 
 **Goal**: `docs/architecture/orchestrate-state-machine.md`'s MT Mode section describes the new
 commit granularity, and `context/patterns/batch-orchestration-guardrails.md`'s hazard-2 paragraph
 plus its adjoining staging-gap note reflect reality.
 
 **Tasks**:
-- [ ] In `orchestrate-state-machine.md`, extend the Lifecycle-Cycling Loop ASCII box 7 ("Per-task
+- [x] In `orchestrate-state-machine.md`, extend the Lifecycle-Cycling Loop ASCII box 7 ("Per-task
       postflight") to name the commit — e.g. `skill_postflight_update + artifact linking +
       per-task scoped commit + multi-state update`. Keep the box borders aligned (this is a
       box-drawing diagram; column width must be preserved exactly).
-- [ ] Add a short prose subsection under MT Mode ("Commit Granularity") stating: one commit per task
+- [x] Add a short prose subsection under MT Mode ("Commit Granularity") stating: one commit per task
       per phase transition, issued inside Stage MT-4's per-task postflight; MT mode produces no
       combined end-of-batch commit; all commits route through the shared scoped-commit helper,
       preserving path-scoped staging, the commit mutex, and automatic ephemeral-file exclusion.
-- [ ] Update the "MT Example Flow: 2 Independent Tasks" narrative so each cycle's `Postflight:` line
+- [x] Update the "MT Example Flow: 2 Independent Tasks" narrative so each cycle's `Postflight:` line
       shows the per-task commits (e.g. `Postflight: A -> researched (commit), B -> researched
       (commit)`), and adjust the EXIT line if it implies a trailing batch commit.
-- [ ] In `batch-orchestration-guardrails.md`, rewrite hazard 2 ("Rollback/commit-granularity risk")
+- [x] In `batch-orchestration-guardrails.md`, rewrite hazard 2 ("Rollback/commit-granularity risk")
       to record that it is **retired**: a per-task commit means a self-modifying task's change is
       isolated in its own commit, never mixed with sibling tasks' diffs, at the same granularity a
       solo run produces. Do not silently delete the hazard — the section is explicitly framed as
       "the three surviving hazards" and a later maintainer must be able to see what changed and
       why. Adjust the section's framing sentence and any count language ("three hazards") so the
       prose stays internally consistent with a retired entry.
-- [ ] State the residual precisely rather than claiming total elimination: each per-task commit
+- [x] State the residual precisely rather than claiming total elimination: each per-task commit
       still stages `specs/state.json` and `specs/TODO.md`, which legitimately carry other tasks'
       current index rows; `--honest-index-rows` labels this in the commit message. This is a
       labeled, honest residual, not a defect. Verification-gap risk (hazard 1) and bootstrapping
       risk (hazard 3) are untouched and remain live — say so explicitly so the gate's rationale is
       not read as weakened.
-- [ ] Update or remove the "Separately, and out of scope for this gate" paragraph about the batch
+- [x] Update or remove the "Separately, and out of scope for this gate" paragraph about the batch
       commit staging gap, since that gap is now closed.
 
 **Timing**: 1.25 hours

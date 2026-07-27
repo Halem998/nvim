@@ -68,7 +68,7 @@ never demotes a check to advisory.
 | File-scope overlap (creation-time and runtime wave/cycle-split) | BLOCKING | On-disk `file_scope` comparison, no agent invoked; an unserialized overlap risks silent concurrent-write corruption discovered only later |
 | Held lock (lock-acquisition-time) | BLOCKING | On-disk lock state, no agent invoked; proceeding past a live lock risks the same silent corruption |
 | Unmet predecessor (dependency-graph eligibility) | BLOCKING | On-disk dependency edge and terminal-status check, no agent invoked; treating an unmet dependency as satisfied is silent and hard to detect after the fact |
-| Self-modification hazard (candidate `file_scope` names an orchestrator-critical path) | BLOCKING | Computable from the candidate's own on-disk `file_scope` against a fixed, declared critical-path list — no agent invoked; the harm (an unverifiable orchestrator-machinery fix bundled into a multi-task batch commit) is silent and hard to attribute later, satisfying both halves of the criterion |
+| Self-modification hazard (candidate `file_scope` names an orchestrator-critical path) | BLOCKING | Computable from the candidate's own on-disk `file_scope` against a fixed, declared critical-path list — no agent invoked; the harm (an unverifiable orchestrator-machinery fix committed automatically as part of a multi-task dispatch) is silent and hard to attribute later, satisfying both halves of the criterion |
 | Heuristic drift-percentage signal | ADVISORY | The signal is an estimate from a fork's plan inspection, not a hard fact — fails condition 1's structural-fact requirement in spirit even though it reads on-disk state, because the *derived* percentage is inherently approximate |
 | Absent completion-marker verification signal (`plan_markers_verified` missing or false) | ADVISORY | Per the handoff schema's own documented behavior, this warns but does not block the next lifecycle phase — the condition is logged, not gated, because it is deliberately designed as a non-blocking signal |
 
@@ -77,7 +77,7 @@ never demotes a check to advisory.
 A candidate task whose declared `file_scope` names a file that is itself part of the orchestrator
 machinery — the dispatch loop, the admission predicate, the lock, the status gatekeeper — poses a
 qualitatively different hazard than an ordinary file-scope collision: the running session that
-would admit, batch-commit, and grade that fix is the very machinery the fix changes. This section
+would admit, commit, and grade that fix is the very machinery the fix changes. This section
 records the two tests used to decide which files belong on that list, not merely today's answer,
 so a future reader can judge a *newly proposed* file rather than pattern-match on the names below.
 
@@ -130,30 +130,44 @@ MT path but a defect in them fails loudly or is merely cosmetic, not a silent wr
 | `scripts/validate-artifact.sh` | Validates artifact format/presence — a defect fails loudly (a validation error) rather than silently corrupting a scheduling decision |
 | `scripts/lifecycle-notify.sh` | A notification/logging hook — a defect at worst drops or garbles a notification; it does not feed back into any admission, wave, lock, or completion decision |
 
-### The Deploy-Manual Analysis and the Three Surviving Hazards
+### The Deploy-Manual Analysis and the Surviving Hazards
 
 The research behind this gate initially hypothesized that a source-store edit to orchestrator
 machinery could corrupt the *currently running* session. That hypothesis does not hold: this
 repository's core extension deploys manually (a human runs `<leader>al` / "Load Core" to
 regenerate `.claude/` from `agent-system/extensions/core/`), so a source-store edit cannot alter
 a session already in flight. That reversal does not cancel the gate — it redefines what the gate
-actually protects, to three hazards that survive the corrected model:
+actually protects. Of the three hazards this reasoning originally identified, hazard 2 below is
+now **RETIRED**; hazards 1 and 3 remain live and are the actual, surviving rationale for keeping
+this gate:
 
-1. **Verification-gap risk** — a fix to orchestrator machinery is necessarily verified only
+1. **Verification-gap risk** (live) — a fix to orchestrator machinery is necessarily verified only
    against a scratch deploy-tree copy (per this plan's own SOURCE-STORE RULE), never against the
    live, running system it will eventually become. That gap is real regardless of whether
    redeploy is immediate or manual.
-2. **Rollback/commit-granularity risk** — a multi-task batch commit mixes N tasks' index rows and
-   diffs into one commit. If the self-modifying task's change needs to be reverted, isolating it
-   from sibling tasks' unrelated changes in the same commit is harder than it would be for a
-   solo, single-task commit.
-3. **Bootstrapping risk** — admission for the task rewriting the admission predicate (or any of
-   the other eight files) is decided by the OLD, currently-deployed copy of that same machinery.
+2. **Rollback/commit-granularity risk — RETIRED.** This hazard previously read: "a multi-task
+   batch commit mixes N tasks' index rows and diffs into one commit. If the self-modifying task's
+   change needs to be reverted, isolating it from sibling tasks' unrelated changes in the same
+   commit is harder than it would be for a solo, single-task commit." That batch commit no longer
+   exists: MT mode now issues one scoped commit per task per phase transition, inside
+   `skill-orchestrate`'s own per-task postflight loop (Stage MT-4 step 5.5), at the same
+   granularity a solo run produces — see `docs/architecture/orchestrate-state-machine.md`'s
+   "Commit Granularity" subsection. A self-modifying task's change is therefore isolated in its
+   own commit, never mixed with a sibling task's diff. **Stated residual, not total elimination**:
+   each per-task commit still stages `specs/state.json` and `specs/TODO.md`, which legitimately
+   carry other tasks' current index rows (they are shared, wholesale-regenerated index files);
+   `--honest-index-rows` labels this in the commit message. This is a labeled, honest residual, not
+   a defect, and it does not revive this hazard — reverting a self-modifying task's commit still
+   isolates that task's own source-store diff from every sibling's.
+3. **Bootstrapping risk** (live) — admission for the task rewriting the admission predicate (or any
+   of the other eight files) is decided by the OLD, currently-deployed copy of that same machinery.
    A defect the new candidate is trying to fix cannot fix its own admission decision; only a solo
    run followed by a manual redeploy breaks that circularity.
 
 A later maintainer must not read the disproven live-corruption hypothesis as license to relax or
-remove this gate — the three hazards above are the actual, surviving rationale.
+remove this gate — hazards 1 and 3 above remain live and are, on their own, sufficient rationale
+to keep it. Hazard 2 is retained here in retired form, not deleted, so a later reader can see what
+changed and why.
 
 ### Scope Limitation and Residual Risk
 
@@ -163,10 +177,11 @@ those commands is invisible to this gate. This is a known, accepted scope limita
 silently-absorbed gap — a follow-up task would be required to extend equivalent protection to
 those commands, should that ever be judged necessary.
 
-Separately, and out of scope for this gate: a multi-task `/orchestrate` batch commit does not
-currently stage an implementation agent's self-reported `modified_files` per task (the batch
-commit staging gap). This is a distinct defect flagged by the originating research for a future
-task; this gate does not fix it.
+The batch-commit staging gap previously noted here — that the retired end-of-batch commit did not
+stage an implementation agent's self-reported `modified_files` per task — is now closed: the
+per-task commit described under hazard 2's retirement above stages each task's own `modified_files`
+via the same contract single-task `/implement` uses (`context/standards/git-staging-scope.md`'s
+"Multi-Task Application" subsection).
 
 ### Note on Reachability Durability
 
