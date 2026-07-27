@@ -584,22 +584,22 @@ confined to the declared file scope.
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on both modified shell scripts.
-- [ ] `git diff` on `skill-base.sh` is insertion-only; `skill_propagate_completion_summary` and
+- [x] `bash -n` passes on both modified shell scripts.
+- [x] `git diff` on `skill-base.sh` is insertion-only; `skill_propagate_completion_summary` and
       `skill_link_artifacts` are byte-intact.
-- [ ] **Verification (a)**: a `command-gate-out.sh` run in the fixture against a real task
+- [x] **Verification (a)**: a `command-gate-out.sh` run in the fixture against a real task
       directory emits zero `[FAIL] File not found: specs/` lines and one correctly-typed
       validation line per artifact file. Before/after outputs captured.
-- [ ] **Verification (b)**: the `[gate-out] Defensive correction:` line appears for
+- [x] **Verification (b)**: the `[gate-out] Defensive correction:` line appears for
       `operation=orchestrate` against a desynced fixture state.json with an `"implemented"`
       return-meta; the negative control with `"completed"` produces no such line.
-- [ ] Zero `validate-artifact.sh` call sites remain in the 2-token form anywhere in the source
+- [x] Zero `validate-artifact.sh` call sites remain in the 2-token form anywhere in the source
       store.
-- [ ] Zero `.return-meta*.json` writers emit `"completed"` anywhere in the source store.
-- [ ] Both `"partial"` branches in `skill-orchestrate/SKILL.md` are unchanged.
-- [ ] No file under `.claude/` was modified; no `.claude/` sync was run.
-- [ ] No added line outside `specs/**` cites a task number.
-- [ ] The live `specs/state.json` shows no status mutation caused by verification work.
+- [x] Zero `.return-meta*.json` writers emit `"completed"` anywhere in the source store.
+- [x] Both `"partial"` branches in `skill-orchestrate/SKILL.md` are unchanged.
+- [x] No file under `.claude/` was modified; no `.claude/` sync was run.
+- [x] No added line outside `specs/**` cites a task number.
+- [x] The live `specs/state.json` shows no status mutation caused by verification work.
 
 ## Artifacts & Outputs
 
