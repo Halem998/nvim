@@ -398,33 +398,33 @@ summary; do not force the count to 13.
 
 ---
 
-### Phase 6: End-to-End Verification and Anti-Duplication Sweep [NOT STARTED]
+### Phase 6: End-to-End Verification and Anti-Duplication Sweep [COMPLETED]
 
 **Goal**: Confirm the three required changes are complete and mutually consistent, the hook remains
 advisory, no `.claude/**` file was touched, and exactly one prose statement of the rule exists.
 
 **Tasks**:
-- [ ] Re-run the Phase 3 synthetic-stdin matrix end to end and confirm every invocation exits 0.
-- [ ] Confirm all three rule-file registration locations: `provides.rules` in `manifest.json`, the
+- [x] Re-run the Phase 3 synthetic-stdin matrix end to end and confirm every invocation exits 0.
+- [x] Confirm all three rule-file registration locations: `provides.rules` in `manifest.json`, the
       Rules References bullet in `claudemd.md`, and the file itself under `core/rules/`.
-- [ ] Run the exhaustive pointer sweep:
+- [x] Run the exhaustive pointer sweep:
       `grep -L 'source-store-deploy-boundary' agent-system/extensions/*/agents/*implementation*agent.md agent-system/extensions/core/agents/general-implementation*.md`
       and confirm it lists nothing (every implementer contract has the bullet).
-- [ ] Anti-copy-paste audit: `grep -rln 'disposable deploy artifact' agent-system/` should surface
+- [x] Anti-copy-paste audit: `grep -rln 'disposable deploy artifact' agent-system/` should surface
       the new rule file and, at most, short one-line pointers -- NOT a second multi-paragraph prose
       copy. If a second full copy exists, collapse it to a pointer.
-- [ ] Confirm the hook is still non-blocking: no `exit 2`, no `"decision"`/`"permissionDecision"`
+- [x] Confirm the hook is still non-blocking: no `exit 2`, no `"decision"`/`"permissionDecision"`
       key, single `additionalContext` object, `exit 0` on every path.
-- [ ] Confirm the `specs/*|*/specs/*` early skip is intact and unmodified.
-- [ ] Confirm the deploy/reload path is unaffected: it writes `.claude/` by filesystem copy, not
+- [x] Confirm the `specs/*|*/specs/*` early skip is intact and unmodified.
+- [x] Confirm the deploy/reload path is unaffected: it writes `.claude/` by filesystem copy, not
       through the Write/Edit tool, so the widened hook cannot observe it. Note the reasoning in the
       summary rather than adding a carve-out.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` if present and confirm it does not fail on
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` if present and confirm it does not fail on
       the new rule file or manifest entry.
-- [ ] Confirm zero `.claude/**` modifications across the whole task: review the full `git status`
+- [x] Confirm zero `.claude/**` modifications across the whole task: review the full `git status`
       and `git diff --stat` for the task's commits; every changed path must begin with
       `agent-system/extensions/` or `specs/`.
-- [ ] Grep every file authored or edited outside `specs/**` for task-number citations; expect zero.
+- [x] Grep every file authored or edited outside `specs/**` for task-number citations; expect zero.
 
 **Timing**: 30 minutes
 

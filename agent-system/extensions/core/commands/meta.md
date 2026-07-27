@@ -93,13 +93,11 @@ only opt-out. There is no interactive prompt asking which target to use.
 
 ### Canonical Source vs Deploy Tree
 
-The source of truth for the agent system is the source store at `agent-system/extensions/core/`
-(and any loaded extensions under `agent-system/extensions/`). Each repo's `.claude/` tree is a
-**gitignored, disposable deploy artifact** regenerated from that source store, with the specific
-extension selection pinned by the project-root `.claude-extensions.json`. A change hand-authored
-directly under `.claude/` is silently wiped by the next regeneration. Tasks created by `/meta` that
-target agent-system changes must edit files in the source store — never `.claude/` directly — and
-each repo regenerates its own `.claude/` independently via the `<leader>al` loader.
+See `.claude/rules/source-store-deploy-boundary.md` for the full source-store/deploy-tree rule
+(the source of truth is `agent-system/extensions/core/` plus loaded extensions; `.claude/` is a
+disposable deploy artifact). Tasks created by `/meta` that target agent-system changes must edit
+files in the source store — never `.claude/` directly — and each repo regenerates its own
+`.claude/` independently via the `<leader>al` loader.
 
 ### Parallel Defaults: Shell vs Lua
 
