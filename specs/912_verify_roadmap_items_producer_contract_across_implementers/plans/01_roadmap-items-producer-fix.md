@@ -195,22 +195,25 @@ matching the sibling non-hard lean skill.
 
 ---
 
-### Phase 2: Make skill-implementer-hard Stage 7a precise and auditable [NOT STARTED]
+### Phase 2: Make skill-implementer-hard Stage 7a precise and auditable [COMPLETED]
 
 **Goal**: Stage 7a no longer points at a stage name that does not exist, so a reader can verify
 what the hard-mode core path is contractually required to propagate.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md` Stage 7a
-      (around lines 352-356)
-- [ ] Replace the imprecise "Same as `skill-implementer` Stage 7a" cross-reference with either an
+- [x] Read `agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md` Stage 7a
+      (around lines 352-356) *(completed)*
+- [x] Replace the imprecise "Same as `skill-implementer` Stage 7a" cross-reference with either an
       accurate pointer (`skill-implementer` Stage 7, Steps 2-4) or an inline restatement of the
       three concrete steps (`completion_summary` write, guarded `roadmap_items` write, appending
       `memory_candidates`), matching the explicit style used by the other four SKILL.md files
-- [ ] Confirm the variables the referenced steps rely on (`completion_summary`, `roadmap_items`,
+      *(completed: inline restatement with the accurate Stage 7 Steps 2-4 pointer)*
+- [x] Confirm the variables the referenced steps rely on (`completion_summary`, `roadmap_items`,
       `memory_candidates`, `task_type`) are actually extracted earlier in this file; if any is
       missing, add the extraction rather than leaving a reference to an undefined variable
-- [ ] Verify no task-number citation was introduced
+      *(completed: roadmap_items was missing at Stage 6, added its extraction)*
+- [x] Verify no task-number citation was introduced *(completed: also fixed one pre-existing
+      citation found nearby at Stage-5c's skeleton-exhaustion comment)*
 
 **Timing**: 0.5 hours
 

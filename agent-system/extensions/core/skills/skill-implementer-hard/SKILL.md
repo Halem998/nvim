@@ -158,7 +158,7 @@ if [ "$orchestrator_mode" = "true" ]; then
     # Skeleton-exhaustion detection: no incomplete phase heading remains AND the prior dispatch
     # outcome declared skeleton=true. Make the condition legible rather than looping on a
     # nonexistent phase or silently no-op'ing. Routing to the follow-up tasks themselves remains
-    # skill-orchestrate-hard's job (task 772) -- out of scope here.
+    # skill-orchestrate-hard's job (see its skeleton-exhaustion routing stage) -- out of scope here.
     follow_up_tasks=$(jq -r '.follow_up_tasks // [] | join(", ")' "$handoff_file" 2>/dev/null)
     follow_up_count=$(jq -r '.follow_up_tasks // [] | length' "$handoff_file" 2>/dev/null)
     echo "[hard-mode] Skeleton plan exhausted -- ${follow_up_count} follow-up tasks pending: {${follow_up_tasks}}" >&2
@@ -306,6 +306,7 @@ if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
     artifact_summary=$(jq -r '.artifacts[0].summary // ""' "$metadata_file")
     memory_candidates=$(jq -c '.memory_candidates // []' "$metadata_file")
     completion_summary=$(jq -r '.completion_data.completion_summary // ""' "$metadata_file")
+    roadmap_items=$(jq -c '.completion_data.roadmap_items // []' "$metadata_file")
     phases_completed=$(jq -r '.phases_completed // 0' "$metadata_file")
     phases_total=$(jq -r '.phases_total // 0' "$metadata_file")
     # H9 strategic-sorry skeleton fields (see .claude/context/contracts/wrap-up.md):
@@ -351,9 +352,36 @@ fi
 
 ---
 
-### Stage 7a: Propagate Memory Candidates and Completion Summary
+### Stage 7a: Propagate Completion Summary, Roadmap Items, and Memory Candidates
 
-Same as `skill-implementer` Stage 7a + completion summary propagation.
+Equivalent to `skill-implementer` Stage 7, Steps 2-4 (completion_summary write, guarded
+roadmap_items write, memory_candidates append). Only runs when Stage 7 did not refuse
+completion (see Step 1a there — on refusal, completion_summary/roadmap_items are skipped since
+the task is not yet complete):
+
+```bash
+# Step 2: completion_summary
+if [ -n "$completion_summary" ]; then
+    jq --arg summary "$completion_summary" \
+      '(.active_projects[] | select(.project_number == '$task_number')).completion_summary = $summary' \
+      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+fi
+
+# Step 3: roadmap_items (non-meta tasks only)
+if [ "$task_type" != "meta" ] && [ "$roadmap_items" != "[]" ] && [ -n "$roadmap_items" ]; then
+    jq --argjson items "$roadmap_items" \
+      '(.active_projects[] | select(.project_number == '$task_number')).roadmap_items = $items' \
+      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+fi
+
+# Step 4: memory_candidates (append semantics)
+if [ "$memory_candidates" != "[]" ] && [ -n "$memory_candidates" ]; then
+    jq --argjson new_candidates "$memory_candidates" \
+      '(.active_projects[] | select(.project_number == '$task_number')).memory_candidates =
+        ((.active_projects[] | select(.project_number == '$task_number')).memory_candidates // []) + $new_candidates' \
+      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+fi
+```
 
 ---
 
