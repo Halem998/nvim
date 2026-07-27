@@ -17,21 +17,54 @@
 #   --dry-run         Show what annotations would be made without applying them
 #
 # Output:
-#   JSON object with roadmap_state and roadmap_matches to stdout
-#   If --annotate: also applies edits to ROADMAP.md and prints annotation summary to stderr
+#   JSON object with roadmap_state, roadmap_matches, annotation_summary, roadmap_structure, and
+#   warnings to stdout. If --annotate: also applies edits to ROADMAP.md and prints annotation
+#   summary to stderr.
 #
-# Output schema:
+#   Every invocation, in every mode (including parse-only), also prints an always-present
+#   machine-readable marker to stderr:
+#     <!-- roadmap-structure phases=N checkboxes=M table_rows=T parseable=true|false -->
+#   and, when warranted, one or both loud banners:
+#     [UNPARSEABLE ROADMAP - 0 phases, 0 checkboxes, 0 table rows] ...
+#     [ROADMAP ANNOTATION NO-OP - {K} high-confidence match(es), 0 applied] Skip reasons: ...
+#   These never affect the exit code -- they are diagnostics, not failures.
+#
+# status_tables[] / table-sourced roadmap_matches[] entries additionally carry line_index
+# (0-based), raw_line (unmodified source text), and status_index (the column the completion
+# allowlist matched), which the table-row annotation path uses to locate and safely rewrite a row
+# in place. Checkbox-sourced match objects never carry these keys.
+#
+# Output schema (all fields below annotation_summary.annotations_made/items_skipped/
+# skipped_reasons and roadmap_state/roadmap_matches are unchanged from the original schema;
+# roadmap_structure, warnings, and the two annotation_summary fields marked NEW are additive):
 #   {
 #     "roadmap_state": {
 #       "phases": [...],
-#       "status_tables": [...]
+#       "status_tables": [{ "component", "status", "location", "columns", "line_index",
+#                            "raw_line", "status_index" }, ...]
 #     },
 #     "roadmap_matches": [...],
 #     "annotation_summary": {
 #       "annotations_made": 0,
 #       "items_skipped": 0,
-#       "skipped_reasons": []
-#     }
+#       "skipped_reasons": [],
+#       "high_confidence_matches": 0,      # NEW: count of confidence=="high" matches; 0 when
+#                                           #      --annotate was not passed
+#       "silent_noop": false               # NEW: true iff high_confidence_matches > 0 and
+#                                           #      annotations_made == 0
+#     },
+#     "roadmap_structure": {               # NEW: always present, every mode
+#       "phases": 0,
+#       "checkboxes": 0,
+#       "table_rows": 0,
+#       "parseable": true
+#     },
+#     "warnings": []                       # NEW: stable string codes, [] when none apply.
+#                                           #      "unparseable_roadmap": phases == 0 &&
+#                                           #        checkboxes == 0 && table_rows == 0
+#                                           #      "annotation_noop": annotate mode ran,
+#                                           #        high_confidence_matches > 0, and
+#                                           #        annotations_made == 0
 #   }
 
 set -euo pipefail
@@ -244,6 +277,31 @@ result = {
 print(json.dumps(result))
 PYEOF
 )
+
+# ─── Roadmap-structure signal (always-on, every mode including parse-only) ───
+#
+# The script must never be able to report success while silently recognizing nothing and
+# annotating nothing. These three counts and the always-present marker below are the mechanism:
+# a consumer (human or /review) can see, unconditionally, exactly what structure was found,
+# without having to infer it from an empty-looking diff.
+PHASE_COUNT=$(echo "$ROADMAP_STATE" | jq '.phases | length')
+CHECKBOX_COUNT=$(echo "$ROADMAP_STATE" | jq '[.phases[].checkboxes.total] | add // 0')
+TABLE_ROW_COUNT=$(echo "$ROADMAP_STATE" | jq '.status_tables | length')
+
+if [[ "$PHASE_COUNT" -eq 0 && "$CHECKBOX_COUNT" -eq 0 && "$TABLE_ROW_COUNT" -eq 0 ]]; then
+  ROADMAP_PARSEABLE=false
+else
+  ROADMAP_PARSEABLE=true
+fi
+
+# Machine-readable marker, mirroring the literature-briefing.sh <!-- lit-coverage ... -->
+# convention: always emitted, in every mode, so a consumer can grep the transcript for this line
+# regardless of whether a banner also fired.
+echo "<!-- roadmap-structure phases=${PHASE_COUNT} checkboxes=${CHECKBOX_COUNT} table_rows=${TABLE_ROW_COUNT} parseable=${ROADMAP_PARSEABLE} -->" >&2
+
+if [[ "$ROADMAP_PARSEABLE" == "false" ]]; then
+  echo "[UNPARSEABLE ROADMAP - 0 phases, 0 checkboxes, 0 table rows] The parser recognizes ## Phase N: headings with - [ ]/- [x] checkboxes, and pipe-delimited status tables; this file matched neither." >&2
+fi
 
 # ─── Step 2.5.2: Cross-reference roadmap with project state ──────────────────
 #
@@ -473,11 +531,15 @@ PYEOF
 ANNOTATIONS_MADE=0
 ITEMS_SKIPPED=0
 SKIPPED_REASONS=()
+# Hoisted so it is always available for the JSON payload, not just when annotation runs. Stays 0
+# when --annotate was not passed -- a parse-only run has no annotation no-op to report.
+HIGH_CONFIDENCE_MATCHES=0
 
 if [[ "$DO_ANNOTATE" == "true" ]]; then
   # Process high-confidence matches
   HIGH_CONF_MATCHES=$(echo "$ROADMAP_MATCHES" | jq '[.[] | select(.confidence == "high")]')
   MATCH_COUNT=$(echo "$HIGH_CONF_MATCHES" | jq 'length')
+  HIGH_CONFIDENCE_MATCHES=$MATCH_COUNT
 
   for i in $(seq 0 $((MATCH_COUNT - 1))); do
     MATCH=$(echo "$HIGH_CONF_MATCHES" | jq ".[$i]")
@@ -652,6 +714,19 @@ PYEOF
     fi
   done
 
+  # Second loud banner: annotate mode ran, high-confidence matches existed, and yet nothing was
+  # applied -- this is exactly the silent no-op this task exists to eliminate. Computed from the
+  # skip reasons accumulated by the loop above, before the medium/low "low_confidence" reasons
+  # (irrelevant to this banner) are appended below.
+  if [[ "$HIGH_CONFIDENCE_MATCHES" -gt 0 && "$ANNOTATIONS_MADE" -eq 0 ]]; then
+    if [[ ${#SKIPPED_REASONS[@]} -eq 0 ]]; then
+      DISTINCT_SKIP_REASONS=""
+    else
+      DISTINCT_SKIP_REASONS=$(printf '%s\n' "${SKIPPED_REASONS[@]}" | sort -u | paste -sd, -)
+    fi
+    echo "[ROADMAP ANNOTATION NO-OP - ${HIGH_CONFIDENCE_MATCHES} high-confidence match(es), 0 applied] Skip reasons: ${DISTINCT_SKIP_REASONS}" >&2
+  fi
+
   # Report skipped medium/low confidence matches
   MEDIUM_LOW_COUNT=$(echo "$ROADMAP_MATCHES" | jq '[.[] | select(.confidence == "medium" or .confidence == "low")] | length')
   if [[ "$MEDIUM_LOW_COUNT" -gt 0 ]]; then
@@ -670,18 +745,55 @@ else
   SKIPPED_REASONS_JSON=$(printf '%s\n' "${SKIPPED_REASONS[@]}" | jq -R . | jq -s .)
 fi
 
+# Stable string-code warnings array (defect signal, additive-only): unparseable_roadmap fires when
+# no recognized structure of any kind was found; annotation_noop fires when annotate mode ran,
+# found high-confidence matches, and applied none of them. Neither fires spuriously on a working
+# table roadmap -- unparseable_roadmap explicitly requires table_rows == 0 as well, so a
+# table-only roadmap (phases == 0, checkboxes == 0, table_rows > 0) never trips it.
+SILENT_NOOP=false
+WARNINGS=()
+if [[ "$ROADMAP_PARSEABLE" == "false" ]]; then
+  WARNINGS+=("unparseable_roadmap")
+fi
+if [[ "$HIGH_CONFIDENCE_MATCHES" -gt 0 && "$ANNOTATIONS_MADE" -eq 0 ]]; then
+  SILENT_NOOP=true
+  WARNINGS+=("annotation_noop")
+fi
+
+if [[ ${#WARNINGS[@]} -eq 0 ]]; then
+  WARNINGS_JSON="[]"
+else
+  WARNINGS_JSON=$(printf '%s\n' "${WARNINGS[@]}" | jq -R . | jq -s .)
+fi
+
 jq -n \
   --argjson roadmap_state "$ROADMAP_STATE" \
   --argjson roadmap_matches "$ROADMAP_MATCHES" \
   --argjson annotations_made "$ANNOTATIONS_MADE" \
   --argjson items_skipped "$ITEMS_SKIPPED" \
   --argjson skipped_reasons "$SKIPPED_REASONS_JSON" \
+  --argjson high_confidence_matches "$HIGH_CONFIDENCE_MATCHES" \
+  --argjson silent_noop "$SILENT_NOOP" \
+  --argjson phases "$PHASE_COUNT" \
+  --argjson checkboxes "$CHECKBOX_COUNT" \
+  --argjson table_rows "$TABLE_ROW_COUNT" \
+  --argjson parseable "$ROADMAP_PARSEABLE" \
+  --argjson warnings "$WARNINGS_JSON" \
   '{
     "roadmap_state": $roadmap_state,
     "roadmap_matches": $roadmap_matches,
     "annotation_summary": {
       "annotations_made": $annotations_made,
       "items_skipped": $items_skipped,
-      "skipped_reasons": $skipped_reasons
-    }
+      "skipped_reasons": $skipped_reasons,
+      "high_confidence_matches": $high_confidence_matches,
+      "silent_noop": $silent_noop
+    },
+    "roadmap_structure": {
+      "phases": $phases,
+      "checkboxes": $checkboxes,
+      "table_rows": $table_rows,
+      "parseable": $parseable
+    },
+    "warnings": $warnings
   }'

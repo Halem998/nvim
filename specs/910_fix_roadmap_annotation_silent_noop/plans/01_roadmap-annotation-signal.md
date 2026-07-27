@@ -286,38 +286,41 @@ preserving its pipe structure, instead of searching for a checkbox line that can
 
 ---
 
-### Phase 4: Roadmap-Structure Marker, Banners, and Additive JSON Fields [NOT STARTED]
+### Phase 4: Roadmap-Structure Marker, Banners, and Additive JSON Fields [COMPLETED]
 
 **Goal**: Make the script incapable of reporting a silent no-op, via an always-on structured
 marker, conditional loud banners, and JSON fields the consumer can read.
 
 **Tasks**:
-- [ ] After `ROADMAP_STATE` is computed, derive three counts with `jq`: `phases | length`,
-      `[.phases[].checkboxes.total] | add // 0`, and `.status_tables | length`.
-- [ ] Emit an always-present machine-readable marker to stderr, mirroring the
+- [x] After `ROADMAP_STATE` is computed, derive three counts with `jq`: `phases | length`,
+      `[.phases[].checkboxes.total] | add // 0`, and `.status_tables | length`. *(completed)*
+- [x] Emit an always-present machine-readable marker to stderr, mirroring the
       `literature-briefing.sh` convention:
       `<!-- roadmap-structure phases=N checkboxes=M table_rows=T parseable=true|false -->`.
-      Emit it unconditionally, in every mode, including parse-only.
-- [ ] When `phases == 0 && checkboxes == 0 && table_rows == 0`, emit a loud banner in the
+      Emit it unconditionally, in every mode, including parse-only. *(completed)*
+- [x] When `phases == 0 && checkboxes == 0 && table_rows == 0`, emit a loud banner in the
       established family:
       `[UNPARSEABLE ROADMAP - 0 phases, 0 checkboxes, 0 table rows]` plus one actionable sentence
-      naming the two structures the parser recognizes.
-- [ ] Compute `high_confidence_matches` (the existing `MATCH_COUNT`) and hoist it so it is
+      naming the two structures the parser recognizes. *(completed)*
+- [x] Compute `high_confidence_matches` (the existing `MATCH_COUNT`) and hoist it so it is
       available for the JSON payload even when `--annotate` was not passed (0 in that case).
-- [ ] When annotate mode ran and `high_confidence_matches > 0` and `ANNOTATIONS_MADE == 0`, emit
+      *(completed)*
+- [x] When annotate mode ran and `high_confidence_matches > 0` and `ANNOTATIONS_MADE == 0`, emit
       a second loud banner:
       `[ROADMAP ANNOTATION NO-OP - {K} high-confidence match(es), 0 applied]` followed by the
-      distinct skip reasons.
-- [ ] Extend the output JSON, additively only:
-  - [ ] New top-level `roadmap_structure`: `{phases, checkboxes, table_rows, parseable}`.
-  - [ ] New top-level `warnings`: array of stable string codes, drawn from
-        `unparseable_roadmap` and `annotation_noop`; `[]` when neither applies.
-  - [ ] New `annotation_summary.high_confidence_matches` (int) and
-        `annotation_summary.silent_noop` (bool).
-  - [ ] Verify `roadmap_state`, `roadmap_matches`, `annotation_summary.annotations_made`,
+      distinct skip reasons. *(completed)*
+- [x] Extend the output JSON, additively only: *(completed)*
+  - [x] New top-level `roadmap_structure`: `{phases, checkboxes, table_rows, parseable}`.
+        *(completed)*
+  - [x] New top-level `warnings`: array of stable string codes, drawn from
+        `unparseable_roadmap` and `annotation_noop`; `[]` when neither applies. *(completed)*
+  - [x] New `annotation_summary.high_confidence_matches` (int) and
+        `annotation_summary.silent_noop` (bool). *(completed)*
+  - [x] Verify `roadmap_state`, `roadmap_matches`, `annotation_summary.annotations_made`,
         `.items_skipped`, and `.skipped_reasons` are untouched in name, type, and nesting.
-- [ ] Update the script's header comment block (the `Output schema:` section) to document the new
-      fields and the two warning codes.
+        *(completed: verified via jq type checks across 5 fixture scenarios)*
+- [x] Update the script's header comment block (the `Output schema:` section) to document the new
+      fields and the two warning codes. *(completed)*
 
 **Timing**: 1 hour
 

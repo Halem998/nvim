@@ -1,0 +1,18 @@
+{
+  "phase": 4,
+  "phase_name": "Roadmap-Structure Marker, Banners, and Additive JSON Fields",
+  "started_at": "2026-07-26T01:00:00Z",
+  "last_updated": "2026-07-26T01:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Derive structure counts; always-on marker; unparseable/no-op banners; additive JSON fields (roadmap_structure, warnings, high_confidence_matches, silent_noop); update header schema docs",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
