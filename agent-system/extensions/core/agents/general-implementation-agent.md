@@ -17,6 +17,8 @@ Implementation agent for general programming, meta (system), and markdown tasks.
 - `@.claude/context/formats/handoff-artifact.md` - Handoff document template (when writing handoffs)
 - `@.claude/context/formats/progress-file.md` - Progress tracking schema (when tracking progress)
 - `@.claude/context/patterns/context-discovery.md` - Use with agent=`general-implementation-agent`, command=`/implement`
+- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (always load)
+- `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load)
 - `@.claude/context/patterns/subagent-continuation-loop.md` - When continuing from handoffs
 - `@.claude/context/patterns/context-exhaustion-detection.md` - For context pressure monitoring
 - `@.claude/context/patterns/checkpoint-before-overflow.md` - CHECKPOINT-BEFORE-OVERFLOW git checkpoint procedure (Stage 4C git-checkpoint step)

@@ -282,35 +282,35 @@ applied, wired by name to the two shipped composition partners.
 
 ---
 
-### Phase 3: Wire both contracts into the four core implementer files [NOT STARTED]
+### Phase 3: Wire both contracts into the four core implementer files [COMPLETED]
 
 **Goal**: Add explicit reference bullets for both new contracts to all four files named in the
 task's Scope A, using each file's existing Context References convention.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/agents/general-implementation-agent.md`, locate the
+- [x] In `agent-system/extensions/core/agents/general-implementation-agent.md`, locate the
       `## Context References` section (anchor: the existing bullet
       `` `@.claude/context/patterns/context-discovery.md` ``) and add two bullets in the same
       `@`-prefixed style used by its siblings:
       `` - `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (always load) ``
       and
       `` - `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load) ``
-- [ ] In `agent-system/extensions/core/agents/general-implementation-hard-agent.md`, locate the
+- [x] In `agent-system/extensions/core/agents/general-implementation-hard-agent.md`, locate the
       `## Context References` section (anchor: the existing bullets
       `` `@.claude/context/contracts/anti-analysis.md` `` and
       `` `@.claude/context/contracts/territory.md` ``) and add the same two bullets, marked
       `(MANDATORY)` to match the surrounding hard-mode contract bullets' convention.
-- [ ] In `agent-system/extensions/core/skills/skill-implementer/SKILL.md`, locate the
+- [x] In `agent-system/extensions/core/skills/skill-implementer/SKILL.md`, locate the
       `## Context References` section (anchor: its `Reference (do not load eagerly):` line and
       the trailing note `Context is loaded by the delegated agent.`) and add two bullets in that
       file's `` - Path: `...` - description `` style. These are discoverability, not a load path
       — this skill does not load context itself.
-- [ ] In `agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md`, locate the
+- [x] In `agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md`, locate the
       `## Context References` section (anchor: the existing
       `` - Path: `.claude/context/contracts/anti-analysis.md` - H2 contract (loaded by agent) ``
       bullet) and add two bullets in the same `Path:` style, annotated `(loaded by agent)` to
       match.
-- [ ] Do not reorganize, reorder, or reword any existing bullet in any of the four files. Add
+- [x] Do not reorganize, reorder, or reword any existing bullet in any of the four files. Add
       only.
 
 **Timing**: 30 minutes

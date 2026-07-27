@@ -21,6 +21,8 @@ Reference (do not load eagerly):
 - Path: `.claude/context/patterns/context-exhaustion-detection.md` - Context exhaustion heuristics
 - Path: `.claude/context/patterns/file-metadata-exchange.md` - File I/O helpers
 - Path: `.claude/context/patterns/jq-escaping-workarounds.md` - jq escaping patterns (Issue #1132)
+- Path: `.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (loaded by agent)
+- Path: `.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (loaded by agent)
 
 Note: This skill is a thin wrapper with internal postflight. Context is loaded by the delegated agent.
 

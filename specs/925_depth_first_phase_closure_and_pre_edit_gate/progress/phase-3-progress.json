@@ -1,0 +1,28 @@
+{
+  "phase": 3,
+  "phase_name": "Wire both contracts into the four core implementer files",
+  "started_at": "2026-07-27T18:40:00Z",
+  "last_updated": "2026-07-27T18:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Confirm each of the four referrer files has exactly one ## Context References section (Scope Hypothesis probe)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add two reference bullets each to general-implementation-agent.md, general-implementation-hard-agent.md, skill-implementer/SKILL.md, skill-implementer-hard/SKILL.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/agents/general-implementation-agent.md",
+        "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+        "agent-system/extensions/core/skills/skill-implementer/SKILL.md",
+        "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md"
+      ]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

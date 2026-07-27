@@ -30,6 +30,8 @@ the orchestrator is using per-phase dispatch mode (H1).
 - `@.claude/context/contracts/wrap-up.md` - H9 wrap-up and handoff contract (MANDATORY)
 - `@.claude/context/contracts/territory.md` - H7 territory contract (when territory params present)
 - `@.claude/context/contracts/recovery.md` - recovery/fix-forward ladder (MANDATORY)
+- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (MANDATORY)
+- `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (MANDATORY)
 - `@.claude/context/formats/handoff-artifact.md` - Handoff document template
 - `@.claude/context/formats/progress-file.md` - Progress tracking schema
 - `@.claude/context/patterns/context-exhaustion-detection.md` - Context pressure monitoring
