@@ -52,9 +52,11 @@
 #      predecessors only affect wave placement (already handled by step 3).
 #   7. orchestrate-triage-classify.sh, called ONCE for the validated set with
 #      engine=single when exactly one task_number was given, engine=mt otherwise — the identical
-#      `len(task_numbers)` test orchestrate.md STAGE 0 uses. `needs_human` and `exit_partial`
-#      become exclusions; `skip` becomes a reported skip; `research`/`plan`/`implement` become
-#      admitted, carrying the phase that would be dispatched.
+#      `len(task_numbers)` test orchestrate.md STAGE 0 uses. `needs_human` becomes an exclusion;
+#      `skip` becomes a reported skip; `research`/`plan`/`implement` become admitted, carrying the
+#      phase that would be dispatched. `exit_partial` is a reserved verdict value not currently
+#      emitted by the classifier (see its header); this reporter still excludes it defensively if
+#      it is ever emitted, so an unexpected group value never falls through silently.
 #
 # Report sections, printed in this order, ALL of them UNCONDITIONALLY (never omitted, never
 # collapsed, even when a section's content is empty):
@@ -401,7 +403,7 @@ if [ "$triage_checked" = true ]; then
         t_exclude_reason[$t]="${t_exclude_reason[$t]:+${t_exclude_reason[$t]}; }handoff-triage needs_human (blocker_count=$bc, handoff_age_min=$age)"
         ;;
       exit_partial)
-        t_exclude_reason[$t]="${t_exclude_reason[$t]:+${t_exclude_reason[$t]}; }handoff-triage exit_partial (partial with neither continuation nor blockers; single-task engine exits partial rather than dispatching)"
+        t_exclude_reason[$t]="${t_exclude_reason[$t]:+${t_exclude_reason[$t]}; }handoff-triage exit_partial (reserved verdict value, not currently emitted by any classifier row; excluded defensively if it is ever emitted)"
         ;;
       skip)
         t_skip_reason[$t]="handoff-triage skip (status ${t_status[$t]:-unknown})"

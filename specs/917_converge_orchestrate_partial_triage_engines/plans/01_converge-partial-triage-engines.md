@@ -270,25 +270,27 @@ same commit; update the regression test that asserts the removed behavior so the
 
 ---
 
-### Phase 2: Lockstep-edit the dry-run reporter [NOT STARTED]
+### Phase 2: Lockstep-edit the dry-run reporter [COMPLETED]
 
 **Goal**: Bring `orchestrate-dry-run-report.sh`'s hard-coded `exit_partial` exclusion arm and its
 step-7 header comment into agreement with the converged classifier, per the task's explicit
 requirement that this file be edited alongside the classifier rather than merely re-run against it.
 
 **Tasks**:
-- [ ] Reword the `exit_partial)` `case` arm's explanatory string. It currently asserts
+- [x] Reword the `exit_partial)` `case` arm's explanatory string. It currently asserts
       "single-task engine exits partial rather than dispatching", which is now false. Replace with
       wording matching Decision 2 — a reserved verdict value not expected to be emitted, treated as
-      an exclusion defensively if it ever is.
-- [ ] Keep the `case` arm itself (Decision 2: defensive code retained; removing it would let an
-      unexpected group value fall through silently).
-- [ ] Reword the step-7 line in the header "Composition" block that reads "`needs_human` and
+      an exclusion defensively if it ever is. *(completed)*
+- [x] Keep the `case` arm itself (Decision 2: defensive code retained; removing it would let an
+      unexpected group value fall through silently). *(completed: unchanged)*
+- [x] Reword the step-7 line in the header "Composition" block that reads "`needs_human` and
       `exit_partial` become exclusions" so it no longer implies `exit_partial` is a live outcome of
-      the classifier — state that it is excluded if ever emitted.
-- [ ] Confirm by grep that no other occurrence of `exit_partial` exists in the file (the "Report
+      the classifier — state that it is excluded if ever emitted. *(completed)*
+- [x] Confirm by grep that no other occurrence of `exit_partial` exists in the file (the "Report
       sections" documentation block was verified clean during research; re-confirm rather than
-      assume).
+      assume). *(completed: 3 line-matches total across 2 locations — header comment and case arm,
+      the case arm containing both the `exit_partial)` label and the reworded message text; no
+      other locations found)*
 
 **Timing**: 30 minutes
 
