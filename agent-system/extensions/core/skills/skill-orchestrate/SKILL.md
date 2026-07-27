@@ -712,7 +712,9 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
   fi
 else
   handoff=$(cat "$handoff_file")
-  dispatch_status=$(echo "$handoff" | jq -r '.status')
+  # `// ""` (not bare `.status`) so a handoff with a missing `status` field yields an empty
+  # string rather than the literal string "null" — both route to Tier C below.
+  dispatch_status=$(echo "$handoff" | jq -r '.status // ""')
   dispatch_summary=$(echo "$handoff" | jq -r '.summary // ""')
   blockers=$(echo "$handoff" | jq -c '.blockers // []')
   continuation=$(echo "$handoff" | jq -c '.continuation_context // null')
@@ -748,6 +750,16 @@ fi
 # this fallback mechanism exists to prevent (see Phase 2 of the plan that introduced it).
 if [ "$have_outcome" = "true" ]; then
   # Postflight status update: trigger state.json + TODO.md Task Order regeneration
+  #
+  # dispatch_status accept-list: the normative enumeration of these six values is
+  # context/formats/return-metadata-file.md's status vocabulary, which declares itself normative
+  # for .orchestrator-handoff.json's `status` field too (not just .return-meta.json) — keep this
+  # list and that table in sync rather than letting them drift independently. That table has a
+  # SEVENTH row, `in_progress`, deliberately NOT accepted here: it is early-metadata-only (Stage 0
+  # of a writer's own execution) and never a legal terminal dispatch outcome, so a handoff
+  # carrying it means the writer never finished — correctly routed to the off-schema arm below,
+  # not treated as an unexplained gap in this six-value list.
+  offschema_dispatch_status=false
   case "$dispatch_status" in
     researched)
       skill_postflight_update "$task_number" "research" "$session_id" "$dispatch_status"
@@ -802,8 +814,37 @@ if [ "$have_outcome" = "true" ]; then
       # re-dispatches implement next cycle against the same plan. MAX_CYCLES bounds this, so a
       # misreporting agent exits `partial` rather than looping forever.
       ;;
+    partial|failed|blocked)
+      # Tier B — in-enum exception outcome, explicitly recognized (never the silent catch-all).
+      # Deliberately NO skill_postflight_update call: skill_postflight_update in
+      # scripts/skill-base.sh has its own internal `case "$status" in researched|planned|
+      # implemented) ... *) ... skip` accept-list, so a call from here would no-op one layer
+      # deeper regardless. That is a known, currently-NON-FUNCTIONAL gap (see this task's plan's
+      # "What remains NON-FUNCTIONAL" table and the named follow-up to admit partial/blocked into
+      # that accept-list) — not something this branch can silently paper over.
+      echo "[orchestrate] Dispatch status '$dispatch_status' — recognized exception outcome. No state.json transition is performed here; the task remains at its current in-flight status. This cycle's loop counter still advances." >&2
+      ;;
     *)
-      echo "[orchestrate] Dispatch status '$dispatch_status' — no postflight update needed"
+      # Tier C — off-schema. dispatch_status is neither a success value nor a recognized
+      # exception value: it may be empty (missing `status` field), the literal `in_progress`
+      # (early-metadata-only, never a legal terminal value — see the accept-list comment above),
+      # or any other unrecognized string. A silent no-op here is exactly the defect this
+      # three-tier structure exists to close — a dispatch that in fact succeeded could be
+      # stranded and indistinguishable from one that produced nothing.
+      offschema_dispatch_status=true
+      # Phase identification ONLY — artifacts[0].type (report|plan|summary) reliably names WHICH
+      # phase wrote the artifact but is NEVER a success-vs-partial signal: the schema's own
+      # examples pair `summary` with both `implemented` and `partial` outcomes. This inference
+      # must never be used to synthesize a success verdict for a missing/invalid dispatch_status.
+      case "$handoff_artifact_type" in
+        report)  inferred_phase="research" ;;
+        plan)    inferred_phase="plan" ;;
+        summary) inferred_phase="implement" ;;
+        *)       inferred_phase="unknown" ;;
+      esac
+      offschema_display="${dispatch_status:-<empty>}"
+      echo "[OFF-SCHEMA DISPATCH STATUS - '${offschema_display}' is not in the handoff status vocabulary (researched|planned|implemented|partial|failed|blocked); the dispatch may have SUCCEEDED but its outcome cannot be trusted or applied]" >&2
+      echo "[orchestrate] ERROR: handoff $handoff_file carries an off-schema dispatch_status. Inferred phase (from artifacts[0].type, naming only — not a success signal): $inferred_phase. Remedy: inspect the handoff and the dispatch's own .return-meta.json by hand, then re-run /orchestrate $task_number." >&2
       ;;
   esac
 
@@ -830,6 +871,15 @@ if [ "$have_outcome" = "true" ]; then
     esac
     skill_link_artifacts "$task_number" "$handoff_artifact_path" "$handoff_artifact_type" \
       "$handoff_artifact_summary" "$field_name" "$next_field"
+  fi
+
+  # Off-schema halt — consumed HERE, after artifact linking above has already run, not as an
+  # inline exit inside the case statement. This preserves the dispatch's evidence (the artifact,
+  # if any, is still linked into TODO.md/state.json) rather than discarding it. Mirrors Stage 4's
+  # "Unknown state" handler precedent.
+  if [ "${offschema_dispatch_status:-false}" = "true" ]; then
+    echo "[orchestrate] Halting: task $task_number left at its current status. Any artifact produced by this dispatch was still linked above, preserving the evidence." >&2
+    EXIT (partial)
   fi
 fi
 

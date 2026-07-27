@@ -1209,7 +1209,7 @@
     {
       "project_number": 920,
       "project_name": "validate_dispatch_status_against_schema_enum",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Validate dispatch_status against the schema enum so an off-schema value fails loudly instead of silently no-opping",
@@ -1219,7 +1219,7 @@
         "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
       ],
       "created": "2026-07-27T09:42:14Z",
-      "last_updated": "2026-07-27T23:38:22Z",
+      "last_updated": "2026-07-27T23:38:27Z",
       "session_id": "sess_1785194731_99e97e",
       "artifacts": [
         {

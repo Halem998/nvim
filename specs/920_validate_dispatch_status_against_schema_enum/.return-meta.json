@@ -1,32 +1,7 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/920_validate_dispatch_status_against_schema_enum/plans/01_validate-dispatch-status-schema-enum.md",
-      "summary": "Four-phase plan replacing the silent dispatch_status catch-all with a three-tier validator (success / in-enum exception / loud off-schema) at all three named SKILL.md sites"
-    }
-  ],
-  "next_steps": "Run /implement 920 to execute the plan",
-  "metadata": {
-    "session_id": "sess_1785194731_99e97e",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 2.75,
-    "dependency_waves": [[1], [2, 3], [4]]
-  },
-  "memory_candidates": [
-    {
-      "content": "In the agent-system tree, a normative enumeration defined in a markdown table (e.g. context/formats/return-metadata-file.md's status vocabulary) cannot be mechanically imported by bash case statements or SKILL.md instruction files -- neither language has an import mechanism, and building a markdown-table-to-bash-array parser is disproportionate for a rarely-changing fixed list. The established in-tree idiom instead is: restate the literal values at the consuming site, bound to the source by an explicit sync comment citing the normative file BY PATH, using the wording 'keep this list and that table in sync rather than letting them drift independently'. Live examples: scripts/command-gate-out.sh (bash) and docs/architecture/handoff-schema.md (prose). When a restatement is a deliberate strict subset of the normative table, the comment must say so explicitly and say why (e.g. in_progress is early-metadata-only and never a legal terminal dispatch outcome), so the subset reads as documented rather than as unexplained drift. Follow this idiom rather than inventing a fourth convention.",
-      "category": "PATTERN",
-      "source_artifact": "specs/920_validate_dispatch_status_against_schema_enum/plans/01_validate-dispatch-status-schema-enum.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["normative-enum", "sync-comment", "drift-prevention", "return-metadata-file", "command-gate-out", "status-vocabulary"]
-    }
-  ],
-  "modified_files": [
-    "specs/920_validate_dispatch_status_against_schema_enum/plans/01_validate-dispatch-status-schema-enum.md"
-  ]
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1785194731_99e97e",
+  "task_number": 920
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #920
 
 - **Task**: 920 - Validate dispatch_status against the schema enum so an off-schema value fails loudly instead of silently no-opping
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.75 hours
 - **Dependencies**: 936 (completed)
 - **Research Inputs**: specs/920_validate_dispatch_status_against_schema_enum/reports/01_validate-dispatch-status-schema-enum.md
@@ -157,7 +157,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Base-mode Stage 5 three-tier validation (reference implementation) [NOT STARTED]
+### Phase 1: Base-mode Stage 5 three-tier validation (reference implementation) [COMPLETED]
 
 **Goal**: Establish the canonical three-tier `dispatch_status` structure in
 `skill-orchestrate/SKILL.md`'s Stage 5. This phase defines the shape Phases 2 and 3 mirror.
@@ -246,7 +246,7 @@ widening.
 
 ---
 
-### Phase 2: Hard-mode Stage 5 mirror [NOT STARTED]
+### Phase 2: Hard-mode Stage 5 mirror [IN PROGRESS]
 
 **Goal**: Apply the identical three-tier structure to `skill-orchestrate-hard/SKILL.md`'s
 mirrored Stage 5, so base and hard modes cannot drift apart.
