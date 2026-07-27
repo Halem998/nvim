@@ -1,18 +1,18 @@
 {
-  "phase": "plan",
-  "status": "planned",
-  "summary": "Created a 4-phase plan (2.75h, 3 dependency waves) replacing the silent dispatch_status catch-all with a three-tier structure at all three named sites: success values unchanged, partial|failed|blocked explicitly recognized with honest logging, and off-schema values emitting a loud [OFF-SCHEMA DISPATCH STATUS - ...] stderr banner followed by EXIT (partial) in Stage 5 or a failed_tasks charge in MT-4. Enum drawn from context/formats/return-metadata-file.md via the command-gate-out.sh sync-comment precedent, with in_progress documented as a deliberate exclusion. artifacts[0].type inference scoped to phase identification only, never a success verdict. Scope decision: option (a) -- stayed within the declared two-SKILL.md file_scope; scripts/skill-base.sh recorded as an explicit named follow-up because task 931 already declares it (and skill-orchestrate/SKILL.md) in its own file_scope, and the plan states precisely what remains non-functional until that follow-up lands.",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Replaced the silent dispatch_status catch-all with a three-tier structure at all three named sites (skill-orchestrate/SKILL.md Stage 5, skill-orchestrate-hard/SKILL.md mirrored Stage 5, and skill-orchestrate/SKILL.md Stage MT-4). Success arms (researched|planned|implemented) left byte-for-byte unchanged. Added a Tier B partial|failed|blocked arm that logs honestly and performs no postflight update. Added a Tier C off-schema handler (empty/null/in_progress/anything unrecognized) that emits an [OFF-SCHEMA DISPATCH STATUS - ...] stderr banner, links any produced artifact, then halts (EXIT partial in Stage 5, failed_tasks charge in MT-4). Every accept-list carries a sync comment citing context/formats/return-metadata-file.md by path, reusing the command-gate-out.sh 'keep this list and that table in sync' wording, and documents in_progress as a deliberate exclusion. Did not edit scripts/skill-base.sh (named follow-up, out of scope per the plan's Scope Decision). All 4 plan phases completed; bash -n parse checks and a stubbed-function trace-test harness confirmed the success/partial/off-schema/empty/in_progress/recovered-path behaviors before landing.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/920_validate_dispatch_status_against_schema_enum/plans/01_validate-dispatch-status-schema-enum.md",
-      "summary": "Four-phase implementation plan with dependency waves, per-phase verification tiers and scope hypotheses, an explicit scope decision, and a non-functional-gaps record"
+      "type": "summary",
+      "path": "specs/920_validate_dispatch_status_against_schema_enum/summaries/01_validate-dispatch-status-schema-enum-summary.md",
+      "summary": "Implementation summary covering the three-site three-tier dispatch_status fix, verification evidence, and the reproduced non-functional-gaps table with the named skill-base.sh follow-up"
     }
   ],
   "blockers": [],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
   "plan_markers_verified": true,
-  "next_action_hint": "Run /implement 920. Phase 1 is the reference implementation (base-mode Stage 5); Phases 2 and 3 mirror it into hard mode and MT-4 and can run in parallel; Phase 4 runs the source-store, no-task-reference, and cross-site consistency gates. Do not edit scripts/skill-base.sh -- it is deliberately out of scope and belongs to a named follow-up sequenced after task 931.",
+  "next_action_hint": "Task complete. Named follow-up (not created by this task): admit partial and blocked into skill_postflight_update's accept-list in agent-system/extensions/core/scripts/skill-base.sh, and decide failed's disposition -- must be sequenced after task 931, which already holds skill-base.sh in its file_scope.",
   "continuation_context": null
 }

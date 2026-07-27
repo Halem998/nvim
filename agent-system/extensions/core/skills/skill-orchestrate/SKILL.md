@@ -1529,11 +1529,13 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
      `in_progress`, is deliberately excluded below: it is early-metadata-only and never a legal
      terminal dispatch outcome.
    - `dispatch_status = "partial"`, `"failed"`, or `"blocked"` → in-enum exception outcome, no
-     postflight update (`skill_postflight_update`'s own internal accept-list would skip it anyway
-     — see Stage 5's identical Tier B comment). Log an explicit recognition line naming the
-     status: `echo "[orchestrate] Task #${task_num}: dispatch status '${dispatch_status}' —
-     recognized exception outcome, no state.json transition performed." >&2`. Steps 4-6 still run
-     unchanged.
+     postflight update. `skill_postflight_update` in `scripts/skill-base.sh` has its own internal
+     `case "$status" in researched|planned|implemented) ... *) ... skip` accept-list, so a call
+     from here would no-op one layer deeper regardless (identical to Stage 5's Tier B comment;
+     see that comment for the same known, currently-NON-FUNCTIONAL gap and its named follow-up).
+     Log an explicit recognition line naming the status: `echo "[orchestrate] Task #${task_num}:
+     dispatch status '${dispatch_status}' — recognized exception outcome, no state.json
+     transition performed." >&2`. Steps 4-6 still run unchanged.
    - Any other value, **including `null`, empty, and `in_progress`** → OFF-SCHEMA. Emit the same
      `[OFF-SCHEMA DISPATCH STATUS - ...]` banner Stage 5 emits (character-identical, modulo the
      interpolated value) to stderr, with the same `artifacts[0].type`-derived phase inference

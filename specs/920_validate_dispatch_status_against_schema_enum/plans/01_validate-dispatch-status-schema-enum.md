@@ -351,7 +351,7 @@ at implementation time by re-reading Stage MT-4 end to end after editing and che
 
 ---
 
-### Phase 4: Cross-site consistency, limitation record, and boundary gates [IN PROGRESS]
+### Phase 4: Cross-site consistency, limitation record, and boundary gates [COMPLETED]
 
 **Goal**: Verify the three sites express one contract, record the non-functional gaps and the
 named follow-up durably, and run the binding-constraint gates.
