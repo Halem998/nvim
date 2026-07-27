@@ -17,6 +17,19 @@ or bash-observable artifact that captures the tool-call-level outcome directly.
 presence proves nothing about whether the dispatched subagent ever ran — it is not usable as a
 discriminating signal.
 
+## Ordering relative to return-meta outcome recovery
+
+This discrimination rule is **not** the first thing Stage 5 / Stage MT-4 step 1 try inside a
+missing/stale-handoff branch. Outcome recovery via `.return-meta.json`
+(`scripts/orchestrate-recover-outcome.sh`, documented in
+`docs/architecture/handoff-schema.md`'s "Outcome Channels" section) is attempted **first**: for
+the writers that never produce a handoff by design (base-mode research/plan/implement), a missing
+handoff is very often a genuine success, not a failure of any kind — infra or otherwise. Only when
+that recovery **also declines** (missing, stale, unparseable, `in_progress`, or non-success
+`.return-meta.json`) does control fall through to the two-signal discrimination below. This
+narrows *when* the discrimination fires — a corroborated success recovered above never reaches it
+— without changing the rule itself: once reached, the classification below is unchanged.
+
 ## The two required signals
 
 | Signal | Kind | Where set | Value meaning |

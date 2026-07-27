@@ -1380,29 +1380,54 @@ This skill MUST NOT:
 3. **Read implementation summaries** (`summaries/*.md`) during the state machine loop
 4. **Read continuation handoff files** (`handoffs/*.md`) — pass the path, not the content
 
-The ONLY file read after each dispatch is `.orchestrator-handoff.json` (≤400 tokens).
+The two files read after each dispatch are `.orchestrator-handoff.json` (≤400 tokens) and,
+inside the missing/stale-handoff branch only, `.return-meta.json` (see the return-meta fallback
+exception below — bounded to a handful of scalar fields, no report prose).
 This ensures context grows by only ~450 tokens per cycle regardless of artifact complexity.
 
-**Recovery exception (phase-marker grep)**: When — and only when — Stage 5 has already
+**Recovery exception (return-meta fallback)**: When — and only when — Stage 5 has already
 determined that this dispatch's `.orchestrator-handoff.json` is missing or stale, the
-orchestrator MAY run at most two count-only `grep -c` calls against the plan file's
-`### Phase N: {name} [STATUS]` heading lines to recover `phases_completed` / `phases_total`.
-All four bounds below are binding:
+orchestrator consults `scripts/orchestrate-recover-outcome.sh`, which reads
+`<task_dir>/.return-meta.json` and returns a single-line JSON object of scalar fields. The same
+four bounds this section already holds recovery exceptions to apply here too:
+
+- **Fields-only**: the script extracts `status`, `artifacts[0].path/type/summary`,
+  `phases_completed`, and `phases_total` — never a report, plan, summary, or handoff file's
+  content. No free-text prose ever enters context.
+- **Missing/stale-handoff-branch-only precondition**: it fires only where the handoff read has
+  already failed, and nowhere else. It is never a routine per-cycle read, and never a substitute
+  for reading a handoff that is present and fresh.
+- **Token ceiling**: one JSON object of ~10 scalar fields, a hard ceiling well under 100 tokens
+  per recovery event.
+- **Authoritative, unlike the phase-marker grep below**: a `recovered=true` outcome DOES
+  synthesize a `dispatch_status` and DOES drive the normal postflight status transition —
+  `.return-meta.json` is the file every research/plan/base-implement dispatch already writes as
+  its own contractual success signal, so a fresh, parseable `researched`/`planned`/`implemented`
+  status is exactly as trustworthy here as it is when `command-gate-out.sh` reads the same file
+  for the non-orchestrator path. This is the one place the two recovery exceptions in this
+  section diverge: the phase-marker grep below is diagnostic-only and never moves `state.json`,
+  while this exception is the ONLY thing standing between "no handoff" and "task stranded."
+
+**Recovery exception (phase-marker grep)**: When — and only when — Stage 5 has already
+determined that this dispatch's `.orchestrator-handoff.json` is missing or stale AND return-meta
+recovery above also declined, the orchestrator MAY run at most two count-only `grep -c` calls
+against the plan file's `### Phase N: {name} [STATUS]` heading lines to recover
+`phases_completed` / `phases_total`. All four bounds below are binding:
 
 - **Count-only**: `grep -c`, never `grep`. No matched line content ever enters context — the
   two calls return one integer each, a hard ceiling of **≤10 tokens per recovery event**.
 - **Heading lines only**: the patterns anchor on `^### Phase N: `. Checklist items, prose,
   deviation annotations, and every other part of the plan file remain out of scope.
-- **Recovery-only precondition**: it fires inside the missing/stale-handoff branch of Stage 5
-  and nowhere else. It is never a routine per-cycle read, and never a substitute for reading a
-  handoff that is present and fresh.
+- **Recovery-only precondition**: it fires inside the missing/stale-handoff branch of Stage 5,
+  after return-meta recovery has already declined, and nowhere else. It is never a routine
+  per-cycle read, and never a substitute for reading a handoff that is present and fresh.
 - **Diagnostic, not authoritative**: the recovered counts are logged and recorded in the loop
   guard. They never synthesize a `dispatch_status` and never drive a status transition — with
-  no handoff there is no dispatch outcome to trust.
+  no handoff AND no recoverable return-meta status there is no dispatch outcome to trust.
 
-This exception narrows item 2 inside one branch; it does not relax items 1, 3, or 4, and it
-does not relax item 2 anywhere else. The ~450-tokens-per-cycle flatness invariant is unaffected
-on the normal path, where no recovery grep runs at all.
+These two exceptions narrow item 2 inside one branch; they do not relax items 1, 3, or 4, and
+they do not relax item 2 anywhere else. The ~450-tokens-per-cycle flatness invariant is
+unaffected on the normal path, where neither recovery mechanism runs at all.
 
 ## Skill-to-Agent Mapping
 

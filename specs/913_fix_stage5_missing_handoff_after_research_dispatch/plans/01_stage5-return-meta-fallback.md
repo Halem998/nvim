@@ -321,34 +321,34 @@ hard-mode-specific difference around it.
 
 ---
 
-### Phase 5: Constraint and documentation updates [NOT STARTED]
+### Phase 5: Constraint and documentation updates [COMPLETED]
 
 **Goal**: The written contracts match the new behavior, so the next reader does not re-derive the
 old "handoff is the only outcome channel" assumption.
 
 **Tasks**:
 
-- [ ] In `skills/skill-orchestrate/SKILL.md`, amend the "MUST NOT (Context Flatness Constraint)"
+- [x] In `skills/skill-orchestrate/SKILL.md`, amend the "MUST NOT (Context Flatness Constraint)"
       section: the sentence "The ONLY file read after each dispatch is `.orchestrator-handoff.json`"
       must now name `.return-meta.json` as a second, bounded read
-- [ ] Add a "Recovery exception (return-meta fallback)" paragraph alongside the existing
+- [x] Add a "Recovery exception (return-meta fallback)" paragraph alongside the existing
       "Recovery exception (phase-marker grep)", with the same four binding bounds: fields-only (no
       report prose), missing/stale-handoff-branch-only precondition, a stated token ceiling, and the
       fact that it DOES drive a status transition (unlike the grep, which is diagnostic-only) — call
       that difference out explicitly, since it is the one place the two exceptions diverge
-- [ ] Mirror the same constraint amendment into `skills/skill-orchestrate-hard/SKILL.md` if that
+- [x] Mirror the same constraint amendment into `skills/skill-orchestrate-hard/SKILL.md` if that
       file carries its own copy of the constraint section; if it defers to the base file, leave it
-- [ ] In `docs/architecture/handoff-schema.md`, add an "Outcome Channels" section stating that
+- [x] In `docs/architecture/handoff-schema.md`, add an "Outcome Channels" section stating that
       `.orchestrator-handoff.json` is the primary channel and `.return-meta.json` is the fallback
       consulted by Stage 5 and Stage MT-4, and naming `orchestrate-recover-outcome.sh` as the single
       implementation
-- [ ] In the same file, rewrite the Handoff Writers table's "Not implemented" row so it no longer
+- [x] In the same file, rewrite the Handoff Writers table's "Not implemented" row so it no longer
       reads as an unaddressed gap: these dispatches are an expected, return-meta-recoverable case,
       not a fault
-- [ ] In `context/patterns/infra-failure-discrimination.md`, record the new ordering: outcome
+- [x] In `context/patterns/infra-failure-discrimination.md`, record the new ordering: outcome
       recovery is attempted first, and the two-signal infra discrimination applies only when recovery
       declined. Note that this narrows when the discrimination fires without changing its rule
-- [ ] Verify no task-number citations were introduced in any file outside `specs/**`
+- [x] Verify no task-number citations were introduced in any file outside `specs/**`
 
 **Timing**: 0.75 hours
 

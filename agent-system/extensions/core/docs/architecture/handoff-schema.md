@@ -231,7 +231,7 @@ ${log_prefix} COMPLETION-CLAIM GATE case 3/3 (phase accounting absent, plan_mark
 | `agent-system/extensions/core/agents/general-implementation-hard-agent.md` (H9 Stage 5) | Active | The only active writer of `.orchestrator-handoff.json` today |
 | cslib and lean hard-mode implementation agent counterparts | Active | Mirror the core H9 wrap-up |
 | `skill_write_orchestrator_handoff` in `agent-system/extensions/core/scripts/skill-base.sh` | Defined, unreferenced | No caller currently invokes it |
-| Base-mode `skill-researcher`, `skill-planner`, `skill-implementer` | Not implemented | These dispatches do not write `.orchestrator-handoff.json` at all — a pre-existing gap, out of scope here |
+| Base-mode `skill-researcher`, `skill-planner`, `skill-implementer` | Never writes a handoff, by design | Research is explicitly prohibited from writing one (Stage 3.6 "Scoping Decision" in the research agents); base-mode plan/implement simply never gained a writer. This is an expected, `.return-meta.json`-recoverable case — see "Outcome Channels" below — not an unaddressed defect. |
 
 `agent-system/extensions/core/scripts/validate-handoff.sh` independently requires
 `phases_completed` and `phases_total` as top-level fields (its `required_fields` array reads them
@@ -239,6 +239,36 @@ via `jq ".phases_completed"` / `jq ".phases_total"`, not `.continuation_context.
 / `.continuation_context.phases_total`) — corroborating that top level, not nested under
 `continuation_context`, is the canonical schema documented above. No change to that script was
 needed or made.
+
+---
+
+## Outcome Channels
+
+`.orchestrator-handoff.json` is the **primary** outcome channel Stage 5 (single-task, base and
+hard mode) and Stage MT-4 step 1 (multi-task) read after a dispatch. It is written by exactly one
+active writer today (the hard-mode implementation agent's H9 wrap-up) — see Handoff Writers above.
+
+`.return-meta.json` is the **fallback** outcome channel, consulted only inside the
+missing/stale-handoff branch, for the writers in the "Never writes a handoff, by design" row: a
+missing handoff from base-mode research, plan, or implement is the expected outcome for those
+writers, not a defect, since `.return-meta.json` is written by every research/plan/implement
+dispatch (base and hard mode alike) per each skill's own Stage 7 postflight contract.
+
+`agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh` is the single, shared
+implementation of this fallback — the ONE place that normalizes `.return-meta.json`'s `status`,
+`artifacts[0]`, and phase-accounting fields into the same outcome shape Stage 5 already reads from
+a handoff (`recovered`, `status`, `phases_completed`, `phases_total`, `artifact_path/type/summary`,
+plus a `reason` token for the non-recovered case). Base Stage 5, hard-mode Stage 5, and multi-task
+Stage MT-4 step 1 each call this one script rather than maintaining three separately-derived
+recovery rules. See that script's own header for its full field/exit-code contract, and see the
+"MUST NOT (Context Flatness Constraint) — Recovery exception (return-meta fallback)" section in
+`skills/skill-orchestrate/SKILL.md` for the token-budget and fail-closed bounds it operates under.
+
+A recovered outcome is fail-closed: only a present, fresh (within the current dispatch window),
+parseable `.return-meta.json` whose `status` is `researched`, `planned`, or `implemented` is ever
+treated as a success. A missing, stale, unparseable, `in_progress`, or otherwise non-success
+`.return-meta.json` preserves the pre-existing missing-handoff error path exactly, unchanged by
+this fallback.
 
 ---
 
