@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Add the reap subcommand to task-lock.sh",
+  "started_at": "2026-07-27T00:00:00Z",
+  "last_updated": "2026-07-27T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add TASK_LOCK_REAP_MIN constant, cmd_reap(), dispatch case, usage comments",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

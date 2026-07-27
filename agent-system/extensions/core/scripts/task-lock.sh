@@ -17,6 +17,7 @@
 #   task-lock.sh heartbeat <task_number> <session_id>
 #   task-lock.sh release <task_number> <session_id>
 #   task-lock.sh check <task_number>
+#   task-lock.sh reap [--dry-run]
 #   task-lock.sh init-marker <file_path>    (stdin = JSON content; task 808)
 #   task-lock.sh scope-acquire <session_id> [stale_sec]
 #   task-lock.sh scope-release <token>
@@ -75,6 +76,11 @@
 #     1 - held, fresh
 #     2 - held, stale (heartbeat older than the threshold)
 #     3 - usage/task-not-found error
+#   reap (explicit-invocation-only sweep; NEVER called from acquire/heartbeat/release/check —
+#   see context/patterns/task-lock.md's Reap Contract section for the full threshold reasoning):
+#     0 - always (whether or not anything qualified for reaping; reap reports, it never fails
+#         on "nothing to do")
+#     2 - usage error (unrecognized argument)
 #   init-marker (task 808 — generic atomic-on-creation marker-file primitive,
 #   file-granularity, independent of and unrelated to the acquire/heartbeat/
 #   release/check task-number `.lock/` mechanism above):
@@ -112,6 +118,14 @@ STATE_FILE="$PROJECT_ROOT/specs/state.json"
 
 # Stale threshold in minutes, overridable via env var. Default 30 (plan range: 30-60).
 TASK_LOCK_STALE_MIN="${TASK_LOCK_STALE_MIN:-30}"
+
+# Reap threshold in minutes, overridable via env var. Derived from TASK_LOCK_STALE_MIN
+# (4x, 120 min at defaults) when unset, so the two thresholds stay proportionate if a
+# caller raises the base -- this proportional movement is INTENTIONAL, not a bug. See
+# context/patterns/task-lock.md's Reap Contract section for the full derivation: reap
+# runs unattended and is meant to be the final word that a lock is dead, so it sits at a
+# firm multiple above the override-eligible threshold, not equal to it.
+TASK_LOCK_REAP_MIN="${TASK_LOCK_REAP_MIN:-$(( TASK_LOCK_STALE_MIN * 4 ))}"
 
 # --- resolve_task_dir: task_number [create_mode] -> specs/{NNN}_{SLUG} absolute path ---
 # Prefers state.json's project_name (authoritative); falls back to a filesystem glob
@@ -560,6 +574,94 @@ cmd_check() {
 }
 
 # =====================================================================
+# reap [--dry-run]
+# =====================================================================
+# Explicit-invocation-only sweep of every task-number `.lock` directory under specs/
+# (including specs/archive/, depth 3) whose staleness exceeds TASK_LOCK_REAP_MIN. See
+# context/patterns/task-lock.md's Reap Contract section for the full threshold reasoning
+# and the correction to this feature's originating premise (no holder-declared staleness
+# field exists on holder.json; the reaper reads the same TASK_LOCK_STALE_MIN-derived
+# constant every other caller reads).
+#
+# NEVER called from cmd_acquire/cmd_heartbeat/cmd_release/cmd_check -- reap is reachable
+# ONLY via this explicit `reap` subcommand. Deliberately does NOT call find_held_locks()
+# (its -mindepth 2 -maxdepth 2 cannot reach specs/archive/{NNN}_{slug}/.lock at depth 3);
+# find_held_locks() itself is left byte-identical, since an archived task has no active
+# file_scope to overlap with cmd_acquire's scan and widening it would add work and no
+# signal.
+cmd_reap() {
+  local dry_run=false
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --dry-run)
+        dry_run=true
+        shift
+        ;;
+      *)
+        echo "Usage: $0 reap [--dry-run]" >&2
+        return 2
+        ;;
+    esac
+  done
+
+  local lock_dir total_count=0 reaped_count=0
+
+  while IFS= read -r lock_dir; do
+    [ -n "$lock_dir" ] || continue
+    total_count=$(( total_count + 1 ))
+
+    local task_number session_id operation age reason_suffix=""
+    if [ -f "$lock_dir/holder.json" ] && jq -e . "$lock_dir/holder.json" >/dev/null 2>&1; then
+      task_number=$(read_holder_field "$lock_dir" "task_number")
+      session_id=$(read_holder_field "$lock_dir" "session_id")
+      operation=$(read_holder_field "$lock_dir" "operation")
+      age=$(age_minutes "$(read_holder_field "$lock_dir" "heartbeat_at")")
+    else
+      # Missing/unparseable holder.json (e.g. an interrupted acquire's mkdir-then-write
+      # race window): fall back to the .lock directory's own mtime. Reap only if that
+      # mtime age ALSO exceeds the threshold; otherwise this is reported via a SKIP:
+      # line below and left in place, never silently ignored.
+      task_number="unknown"
+      session_id="unknown"
+      operation="unknown"
+      local dir_mtime
+      dir_mtime=$(stat -c %Y "$lock_dir" 2>/dev/null || stat -f %m "$lock_dir" 2>/dev/null)
+      if [ -n "$dir_mtime" ]; then
+        age=$(( ( $(now_epoch) - dir_mtime ) / 60 ))
+      else
+        age=999999
+      fi
+      reason_suffix=" (missing/unparseable holder.json; age is the .lock directory's own mtime)"
+    fi
+
+    if [ "$age" -gt "$TASK_LOCK_REAP_MIN" ]; then
+      reaped_count=$(( reaped_count + 1 ))
+      if [ "$dry_run" = true ]; then
+        echo "would reap: $lock_dir task=$task_number session=$session_id operation=$operation age_min=$age${reason_suffix}"
+      else
+        rm -rf "$lock_dir" 2>/dev/null
+        echo "reaped: $lock_dir task=$task_number session=$session_id operation=$operation age_min=$age${reason_suffix}"
+      fi
+    elif [ -n "$reason_suffix" ]; then
+      # Corrupt/missing holder.json but not yet stale by directory mtime: report and
+      # leave in place. A normal fresh lock (valid holder.json, age within threshold)
+      # is silent here -- it is not reap-relevant and does not belong in the output.
+      echo "SKIP: $lock_dir age_min=$age (below ${TASK_LOCK_REAP_MIN}min reap threshold)${reason_suffix}"
+    fi
+  done < <(find "$PROJECT_ROOT/specs" -mindepth 2 -maxdepth 3 -type d -name ".lock" 2>/dev/null)
+
+  if [ "$reaped_count" -eq 0 ]; then
+    echo "no stale locks found (${total_count} lock(s) scanned, threshold ${TASK_LOCK_REAP_MIN}min)"
+  elif [ "$dry_run" = true ]; then
+    echo "would reap ${reaped_count} of ${total_count} lock(s) (threshold ${TASK_LOCK_REAP_MIN}min)"
+  else
+    echo "reaped ${reaped_count} of ${total_count} lock(s) (threshold ${TASK_LOCK_REAP_MIN}min)"
+  fi
+
+  return 0
+}
+
+# =====================================================================
 # scope-acquire <session_id> [stale_sec]
 # =====================================================================
 # Standalone CLI exposure of acquire_scope_mutex for cross-process critical sections (see the
@@ -795,6 +897,10 @@ case "$SUBCMD" in
     cmd_check "$@"
     exit $?
     ;;
+  reap)
+    cmd_reap "$@"
+    exit $?
+    ;;
   init-marker)
     if [ "$#" -lt 1 ]; then
       echo "Usage: $0 init-marker <file_path>" >&2
@@ -836,7 +942,7 @@ case "$SUBCMD" in
     exit $?
     ;;
   *)
-    echo "Usage: $0 {acquire|heartbeat|release|check|init-marker|scope-acquire|scope-release|commit-acquire|commit-release} ..." >&2
+    echo "Usage: $0 {acquire|heartbeat|release|check|reap|init-marker|scope-acquire|scope-release|commit-acquire|commit-release} ..." >&2
     exit 2
     ;;
 esac
