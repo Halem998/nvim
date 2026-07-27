@@ -793,7 +793,7 @@
     {
       "project_number": 908,
       "project_name": "prevent_git_index_contention_in_parallel_dispatch",
-      "status": "not_started",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Prevent git index contention between concurrently dispatched orchestrate agents",
@@ -808,8 +808,20 @@
         "agent-system/extensions/core/skills/skill-team-implement/SKILL.md"
       ],
       "created": "2026-07-25T16:48:33Z",
-      "last_updated": "2026-07-26T22:38:42Z",
-      "artifacts": []
+      "last_updated": "2026-07-27T09:21:58Z",
+      "artifacts": [
+        {
+          "path": "specs/908_prevent_git_index_contention_in_parallel_dispatch/reports/01_git-index-contention.md",
+          "type": "report",
+          "summary": "Compares four candidate fixes for git-index contention in parallel dispatch; empirically verifies path-scoped commits work but still race on index.lock under true concurrency, recommends pairing with the existing scope-acquire/scope-release mutex; flags skill-team-implement staleness and a file_scope gap versus the actual collision sites."
+        },
+        {
+          "path": "specs/908_prevent_git_index_contention_in_parallel_dispatch/plans/01_git-index-contention.md",
+          "type": "plan",
+          "summary": "Seven-phase plan fixing git index contention via path-scoped commits plus a new specs/.commit-lock/ mutex, consolidated into one shipped git-commit-scoped.sh helper; declares a nine-path file_scope expansion and ends in a three-arm empirical concurrency comparison."
+        }
+      ],
+      "session_id": "sess_1785143135_b5536f"
     },
     {
       "project_number": 909,

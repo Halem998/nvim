@@ -1,9 +1,7 @@
 {
   "status": "in_progress",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "task_number": 908,
-  "session_id": "sess_1785143135_b5536f",
-  "artifacts": [],
-  "next_steps": "Planning in progress"
+  "session_id": "sess_1785143135_b5536f"
 }

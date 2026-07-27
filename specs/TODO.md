@@ -22,7 +22,7 @@ next_project_number: 918
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use (see above)
-908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
+908 [IMPLEMENTING] — Observed directly during a 4-task concurrent /orchestrate batch (
 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 917 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
@@ -326,10 +326,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 908. Prevent git index contention between concurrently dispatched orchestrate agents
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 907
+- **Research**: [908_prevent_git_index_contention_in_parallel_dispatch/reports/01_git-index-contention.md]
+- **Plan**: [908_prevent_git_index_contention_in_parallel_dispatch/plans/01_git-index-contention.md]
 
 **Description**: Observed directly during a 4-task concurrent /orchestrate batch (tasks 892, 893, 894, 903 dispatched in one wave). Two separate implementation agents independently reported that their commits were swept into other agents' commits: one reported two of its own phase commits bundled under other agents' commit messages, another reported its phase-7 commit swept into a concurrent session's commit. Content survived intact in every observed case (independently re-verified), but commit attribution is now wrong in the history.
 
