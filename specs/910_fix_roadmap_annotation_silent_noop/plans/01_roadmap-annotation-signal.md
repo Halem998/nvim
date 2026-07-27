@@ -394,32 +394,38 @@ no-op banner) against real inputs, and record the evidence.
 
 ---
 
-### Phase 6: Surface the Signal in /review (DECLARED FILE_SCOPE EXPANSION) [NOT STARTED]
+### Phase 6: Surface the Signal in /review (DECLARED FILE_SCOPE EXPANSION) [COMPLETED]
 
 **Goal**: Make the new diagnostics reach the user. This is the single, explicitly declared
 expansion beyond the task's original `file_scope`; see "Scope Decision" above.
 
 **Tasks**:
-- [ ] In `review.md` Section 2.5, extend the extraction block to also capture
+- [x] In `review.md` Section 2.5, extend the extraction block to also capture
       `roadmap_structure`, `warnings`, `annotation_summary.items_skipped`,
       `annotation_summary.skipped_reasons`, `annotation_summary.high_confidence_matches`, and
-      `annotation_summary.silent_noop`.
-- [ ] Extend the existing empty-state fallback (both the script-missing and the non-zero-exit
+      `annotation_summary.silent_noop`. *(completed)*
+- [x] Extend the existing empty-state fallback (both the script-missing and the non-zero-exit
       branches) to also default the new variables, so the fallback path stays well-formed.
-- [ ] Add an explicit warning emission: when `warnings` is non-empty, echo each code with a
+      *(completed)*
+- [x] Add an explicit warning emission: when `warnings` is non-empty, echo each code with a
       human-readable expansion to stderr during the review run, so it is visible in the
-      transcript rather than only in the report.
-- [ ] In the review report template's `## Roadmap Progress` section, add a **Roadmap Signal**
+      transcript rather than only in the report. *(completed, verified end-to-end against both
+      the engineered no-op fixture and the unstructured fixture)*
+- [x] In the review report template's `## Roadmap Progress` section, add a **Roadmap Signal**
       subsection rendered when `warnings` is non-empty or `roadmap_structure.parseable` is false:
       state the counts, the warning codes, and the distinct `skipped_reasons`. Update the
       accompanying note (which currently directs population from `roadmap_state` and
-      `roadmap_matches`) to cover the new subsection.
-- [ ] Extend the commit-message template so `Roadmap: {annotations_made} items annotated` is
+      `roadmap_matches`) to cover the new subsection. *(completed)*
+- [x] Extend the commit-message template so `Roadmap: {annotations_made} items annotated` is
       disambiguated — append the skipped count and, when present, the warning codes, so
       "nothing to do", "N matches all failed to apply", and "structure unrecognized" are
-      distinguishable at a glance.
-- [ ] Do not introduce any task-number citation into `review.md` (it lives outside `specs/**`).
-      Reference behaviours and field names, never task numbers.
+      distinguishable at a glance. *(completed)*
+- [x] Do not introduce any task-number citation into `review.md` (it lives outside `specs/**`).
+      Reference behaviours and field names, never task numbers. *(completed for all content
+      added by this phase; a single pre-existing citation from prior, unrelated work remains at
+      one line outside every section this phase touched -- out of this phase's declared scope,
+      noted in the implementation summary rather than silently fixed or silently left
+      unmentioned)*
 
 **Timing**: 45 minutes
 

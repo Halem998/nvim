@@ -1,0 +1,26 @@
+{
+  "phase": 6,
+  "phase_name": "Surface the Signal in /review (DECLARED FILE_SCOPE EXPANSION)",
+  "started_at": "2026-07-26T02:15:00Z",
+  "last_updated": "2026-07-26T02:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Extend Section 2.5 extraction + fallback defaults; add stderr warning emission; add Roadmap Signal subsection to report template; disambiguate commit-message template; no task-number citations introduced",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/review.md"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.pre-existing-citation",
+      "description": "Grep confirms review.md contains no task N / tasks N-M citation",
+      "type": "altered",
+      "reason": "review.md already contained one pre-existing task-number citation (Section '4. Add task to state.json', referencing an unrelated prior task's mandatory-topic-assignment decision) before this phase touched the file. It falls outside every section (2.5 extraction/fallback, Roadmap Progress template, Section 7 commit template) this phase's declared file_scope expansion covers. Fixing it would be additional scope creep beyond the narrowly authorized roadmap-signal expansion, so it was left in place and is called out here rather than silently ignored or silently fixed.",
+      "annotation": "*(deviation: altered — one pre-existing, out-of-scope task-number citation remains outside the sections this phase touched; see implementation summary)*"
+    }
+  ]
+}
