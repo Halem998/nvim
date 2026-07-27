@@ -113,6 +113,13 @@ fi
 
 Create or read the loop guard file. This tracks cycle count across conversational turns.
 
+**Ephemeral, never committed.** `.orchestrator-loop-guard` is per-cycle runtime state with no
+freshness check on read (see the resume branch below: any syntactically valid guard file at this
+path is trusted, with no `session_id` or mtime comparison against the current dispatch). A
+git-restored copy of a stale guard would silently resume a wrong `cycle_count`/`infra_failures`
+pair — exactly the hazard this file's gitignore coverage exists to prevent. See
+`context/standards/orchestrator-runtime-files.md` for the full two-class policy and rationale.
+
 ```bash
 MAX_CYCLES=5
 # Infrastructure-failure counter, separate from the work-cycle budget. See
@@ -128,7 +135,8 @@ handoff_file="${HANDOFF_PATH_ABS}"
 mkdir -p "$TASK_DIR"
 
 if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
-  # Resume: read existing guard
+  # Resume: read existing guard. No session_id or mtime check — see the ephemerality note above;
+  # this is precisely why a git-restorable guard would corrupt the cycle budget.
   cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
   infra_failures=$(jq -r '.infra_failures // 0' "$loop_guard_file")
   echo "[orchestrate] Resuming — cycle $cycle_count of $MAX_CYCLES (infra failures: $infra_failures of $MAX_INFRA_FAILURES)"
@@ -440,7 +448,10 @@ Invoke blocker escalation (Stage 6) with blocker_desc.
 
 ```
 echo "[orchestrate] Task $task_number completed successfully."
-# Clean up loop guard
+# Clean up loop guard. This fires only at full-loop termination, never between cycles — so a
+# per-cycle commit (e.g. CHECKPOINT 3) runs before this cleanup on every cycle but the last, and
+# must exclude the guard itself rather than rely on this rm to keep it out of history. See
+# context/standards/orchestrator-runtime-files.md.
 rm -f "$loop_guard_file"
 EXIT (success)
 ```
@@ -906,6 +917,12 @@ EXIT (partial)
 ### Stage 8: Postflight
 
 On clean exit (task completed or terminal state):
+
+**Both files removed here — `.orchestrator-loop-guard` and `.drift-inspection.json` — are
+ephemeral and gitignored, and this is their only cleanup site.** Cleanup fires only at full-loop
+termination, never per-cycle, so any commit taken mid-loop (e.g. CHECKPOINT 3, which runs every
+cycle) must independently exclude both rather than rely on this `rm` alone. See
+`context/standards/orchestrator-runtime-files.md`.
 
 ```bash
 # Remove loop guard on success

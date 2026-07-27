@@ -306,27 +306,29 @@ classes and nothing else. Verified working at plan time (git 2.54.0): staging a 
 
 ---
 
-### Phase 3: Document ephemerality in both orchestrate skills [NOT STARTED]
+### Phase 3: Document ephemerality in both orchestrate skills [COMPLETED]
 
 **Goal**: Make the never-committed status of the loop guard and churn state legible at the exact
 sites that create, resume from, and clean up those files.
 
 **Tasks**:
-- [ ] `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`:
-  - [ ] At the Stage 2 loop-guard definition (~line 122) add a short note: the loop guard is
+- [x] `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`:
+  - [x] At the Stage 2 loop-guard definition (~line 122) add a short note: the loop guard is
         ephemeral runtime state, is never committed, and the resume branch below trusts any
         syntactically valid guard at this path with **no** session_id or mtime check — which is
         precisely why a git-restorable guard would corrupt the cycle budget.
-  - [ ] At the cleanup sites (~lines 444, 912) note that cleanup fires only at full-loop
+  - [x] At the cleanup sites (~lines 444, 912) note that cleanup fires only at full-loop
         termination, never between cycles, so per-cycle commits would otherwise capture a mid-run
         guard.
-  - [ ] Cross-reference the new runtime-files standard.
-- [ ] `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`:
-  - [ ] Mirror the same statements at the loop-guard definition (~line 234) and add the equivalent
+  - [x] Cross-reference the new runtime-files standard.
+- [x] `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`:
+  - [x] Mirror the same statements at the loop-guard definition (~line 234) and add the equivalent
         for `.orchestrator-churn-state.json` (~line 237) — same ephemeral class, same hazard.
-  - [ ] Note the cleanup sites (~lines 569, 648, 660, 1119) share the loop-termination-only timing.
-  - [ ] Cross-reference the new runtime-files standard.
-- [ ] Verify no task-number citations were introduced.
+  - [x] Note the cleanup sites (~lines 569, 648, 660, 1119) share the loop-termination-only timing.
+        *(completed: annotated all four `rm -f "$loop_guard_file"` sites plus the churn_file
+        cleanup at Stage 8)*
+  - [x] Cross-reference the new runtime-files standard.
+- [x] Verify no task-number citations were introduced. *(completed: grep clean)*
 
 **Timing**: 45 minutes
 

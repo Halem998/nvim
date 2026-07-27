@@ -224,6 +224,13 @@ iteration in Stage 3c below.
 
 Create or read the loop guard file with hard-mode churn counters.
 
+**Both `.orchestrator-loop-guard` and `.orchestrator-churn-state.json` are ephemeral, gitignored,
+and never committed.** Neither has a freshness check on read — the resume branch below trusts any
+syntactically valid file at these paths unconditionally, with no `session_id` or mtime comparison
+against the current dispatch. A git-restored copy of either would silently resume a wrong cycle
+count, burnout-signal count, or churn history. See
+`context/standards/orchestrator-runtime-files.md` for the full two-class policy and rationale.
+
 ```bash
 MAX_CYCLES=13
 # Infrastructure-failure counter, separate from the work-cycle budget. See
@@ -566,7 +573,7 @@ elif [ "$last_skeleton" = "true" ]; then
   # task_type == "pr"; this skeleton-exhaustion branch is the sanctioned task-type-agnostic
   # exception (it runs for general/lean4/cslib hard-mode tasks, not just type=pr).
   bash .claude/scripts/update-task-status.sh postflight "$task_number" pr_ready "$session_id" --allow-pr-ready
-  rm -f "$loop_guard_file"
+  rm -f "$loop_guard_file"  # loop-termination-only cleanup — see Stage 8 note below
   EXIT (success, pr_ready — skeleton exhausted, ${follow_up_count} follow-up task(s): ${follow_up_tasks})
 
 else
@@ -645,7 +652,7 @@ EXIT (partial)
 
 ```bash
 echo "[hard-orchestrate] Task $task_number is PR READY — use /merge to submit the pull request."
-rm -f "$loop_guard_file"
+rm -f "$loop_guard_file"  # loop-termination-only cleanup — see Stage 8 note below
 EXIT (success, pr_ready)
 ```
 
@@ -657,7 +664,7 @@ Read blockers from state.json. Invoke blocker escalation (Stage 6).
 
 ```bash
 echo "[hard-orchestrate] Task $task_number completed."
-rm -f "$loop_guard_file"
+rm -f "$loop_guard_file"  # loop-termination-only cleanup — see Stage 8 note below
 EXIT (success)
 ```
 
@@ -1114,6 +1121,13 @@ fi
 ---
 
 ### Stage 8: Cleanup
+
+**Both `.orchestrator-loop-guard` and `.orchestrator-churn-state.json` are ephemeral, gitignored,
+and removed only at full-loop termination — never between cycles.** Every `stage_paths`/`git add`
+in this loop (and in `commands/orchestrate.md`'s CHECKPOINT 3, which runs every cycle) must
+independently exclude both rather than rely on this cleanup, because a per-cycle commit happens
+before this stage ever runs on any cycle but the last. See
+`context/standards/orchestrator-runtime-files.md` for the full policy.
 
 ```bash
 rm -f "$loop_guard_file"
