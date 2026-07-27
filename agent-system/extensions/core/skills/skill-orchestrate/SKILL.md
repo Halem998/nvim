@@ -1247,8 +1247,9 @@ itself cannot run.
 
 **Phase grouping** (documentation of the rule the classifier script transcribes, retained here as
 a byte-identical reference table — `scripts/orchestrate-triage-classify.sh` is the executable
-source of truth, and the table and the script MUST be changed together, never independently) —
-classify each eligible task by its current status:
+source of truth, and THREE artifacts — this table, the classifier script's own header verdict
+table, and single-task Stage 4's `partial` sub-state prose above — MUST be changed together,
+never independently, and must always agree) — classify each eligible task by its current status:
 
 | Task status | Group | Agent |
 |-------------|-------|-------|
@@ -1259,6 +1260,14 @@ classify each eligible task by its current status:
 | `partial` with blockers | failed_tasks (mark blocked) | — |
 | `partial` with no handoff | implement_tasks | `implement_agents[task_num]` |
 | `blocked`, `researching`, `planning`, unknown | skip | — |
+
+`blocked` folding into `skip` here is the one row that still diverges from single-task Stage 4
+(which routes `blocked` to `needs_human`/escalation) — and it is intentional, documented, not an
+oversight (Decision 1): a batch invocation skips the blocked task so its siblings can proceed,
+whereas the single-task engine has no siblings and so escalates to a human instead. See the
+`#### State: blocked` handler above and `scripts/orchestrate-triage-classify.sh`'s header table
+for the full discriminator between this documented divergence and the now-removed `partial`
+divergence.
 
 **Task-lock acquire (per-task, before dispatch)**: Multi-task dispatch bypasses the single-task
 gate scripts entirely (`command-gate-in.sh`/`command-gate-out.sh` are never sourced here), so

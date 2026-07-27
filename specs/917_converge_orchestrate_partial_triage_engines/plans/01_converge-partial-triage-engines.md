@@ -378,23 +378,44 @@ asserting the engines diverge by design.
 
 ---
 
-### Phase 4: Reconcile the Stage MT-4 table and audit three-way agreement [NOT STARTED]
+### Phase 4: Reconcile the Stage MT-4 table and audit three-way agreement [COMPLETED]
 
 **Goal**: Make the Stage MT-4 phase-grouping table's lockstep note cover all three artifacts rather
 than only the script-plus-table pair, and verify that the classifier header table, Stage 4 prose,
 and the MT-4 table now state identical routing.
 
 **Tasks**:
-- [ ] Confirm the MT-4 table's `partial` with no handoff row already reads `implement_tasks` — it
-      does; `mt` was never the divergent side. No row value changes.
-- [ ] Extend the table's preamble (which currently says the table and the script "MUST be changed
+- [x] Confirm the MT-4 table's `partial` with no handoff row already reads `implement_tasks` — it
+      does; `mt` was never the divergent side. No row value changes. *(completed: confirmed
+      unchanged)*
+- [x] Extend the table's preamble (which currently says the table and the script "MUST be changed
       together, never independently") to name all three artifacts that must agree: the classifier's
       header engine table, Stage 4's single-task `partial` sub-state prose, and this table.
-- [ ] Add the Decision 1 justification to the MT-4 table's `blocked` row (which folds `blocked` into
+      *(completed)*
+- [x] Add the Decision 1 justification to the MT-4 table's `blocked` row (which folds `blocked` into
       the generic skip row): batch mode skips so sibling tasks proceed; the single-task engine
       escalates because it has no siblings. Keep the wording consistent with the phrasing used in
-      the classifier header and Stage 4.
-- [ ] Audit all three artifacts side by side and confirm every row agrees.
+      the classifier header and Stage 4. *(completed)*
+- [x] Audit all three artifacts side by side and confirm every row agrees. *(completed — three-way
+      comparison recorded below)*
+
+**Three-way agreement audit** (classifier header table / Stage 4 prose / MT-4 table):
+
+| Status | Classifier header | Stage 4 prose | MT-4 table |
+|--------|-------------------|---------------|------------|
+| `not_started` | research / research | — (research handler, unchanged) | research_tasks |
+| `researched` | plan / plan | — (plan handler, unchanged) | plan_tasks |
+| `planned`, `implementing` | implement / implement | — (implement handler, unchanged) | implement_tasks |
+| `partial` + continuation | implement / implement | dispatches implement (unchanged) | implement_tasks |
+| `partial` + blockers, no continuation | needs_human / needs_human | blocker escalation (unchanged) | failed_tasks (blocked) |
+| `partial`, neither | implement / implement | dispatches implement (converged) | implement_tasks |
+| `blocked` | skip / needs_human | escalates unconditionally (documented, Decision 1) | skip, with Decision 1 note (documented) |
+| `researching`, `planning`, unknown | skip / skip | — (skip, unchanged) | skip |
+| terminal | terminal / terminal | — (terminal handler, unchanged) | (not eligible; filtered before MT-4) |
+
+All rows agree across all three artifacts. `partial, neither` now reads `implement` uniformly.
+`blocked` is the sole documented divergence, carrying the same Decision 1 justification in the
+classifier header, the Stage 4 `blocked` handler, and the MT-4 table's blocked-row annotation.
 
 **Timing**: 30 minutes
 
