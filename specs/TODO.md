@@ -1,5 +1,5 @@
 ---
-next_project_number: 913
+next_project_number: 914
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 913
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,910,911,912 | -- | agent-system |
+| 1 | 873,885,910,911,912,913 | -- | agent-system |
 | 2 | 887,906 | 873,885 | agent-system |
 | 3 | 907 | 906 | agent-system |
 | 4 | 908 | 907 | agent-system |
@@ -30,8 +30,35 @@ next_project_number: 913
 910 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 911 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 912 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+913 [NOT STARTED] — Fix Stage 5 of skill-orchestrate treating a missing .orchestrator
 
 ## Tasks
+
+### 913. Fix Stage 5 treating a missing handoff after a research dispatch as an error
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Fix Stage 5 of skill-orchestrate treating a missing .orchestrator-handoff.json after a RESEARCH dispatch as an error condition, when for research dispatches a missing handoff is the contractually correct outcome.
+
+SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+OBSERVED LIVE, not hypothetical. During an autonomous orchestration run, the research dispatch completed successfully (report written, .return-meta.json written with status=researched) but wrote no handoff. Stage 5 took its missing-handoff branch, which performs NO postflight status update. Left unattended this strands the task at status=researching; the next cycle then reads researching, classifies it as an in-flight state owned by another session, and exits with a warning. The run was only rescued by manually applying the postflight from .return-meta.json.
+
+WHY THE HANDOFF IS LEGITIMATELY ABSENT: research agents are contractually forbidden from writing .orchestrator-handoff.json under ALL circumstances, independent of orchestrator_mode. This is an explicit standalone prohibition in the Stage 3.6 "Scoping Decision" of both general-research-agent.md and general-research-hard-agent.md, corroborated by the consumer allowlist in context/contracts/wrap-up.md (implementation-agent-only) and the Handoff Writers table in docs/architecture/handoff-schema.md (only general-implementation-hard-agent and its cslib/lean counterparts are active writers). So a research dispatch never producing a handoff is correct behavior, not a fault.
+
+THE STRUCTURAL MISMATCH: Stage 5 is written as if every dispatch produces a handoff, and its missing-handoff branch assumes something went wrong (its diagnostics say "orchestrator_mode was not propagated correctly, or the handoff was written outside the task directory"). Both explanations are wrong for a research dispatch. The branch also runs the phase-marker recovery grep, which is meaningless for a research phase that has no plan yet, and charges the cycle against MAX_CYCLES.
+
+SCOPE spans base and hard mode: skill-orchestrate/SKILL.md Stage 5, and skill-orchestrate-hard/SKILL.md, whose H4 adversarial-verification re-dispatch, H5 divergence-audit dispatch, and Stage 6 blocker-research dispatch are all $RESEARCH_AGENT dispatches followed by a Stage 5 handoff read — every one of them hits this branch on every invocation. Multi-task mode Stage MT-4 step 1 has the same shape and is worse: it marks the task into failed_tasks on a missing handoff.
+
+DO NOT PRESUME THE FIX. Candidate directions, to be chosen by research rather than assumed: (a) make Stage 5 phase-aware, so a research-phase dispatch consults .return-meta.json (the channel command-gate-out.sh already reads) instead of expecting a handoff; (b) have research agents write a handoff after all, which would require amending the Stage 3.6 prohibition and the Handoff Writers table — a much larger contract change; (c) narrow the handoff expectation to implement dispatches only and give research/plan dispatches their own outcome-reading path. Establish first which components actually write which outcome file before choosing.
+
+Also confirm whether the plan dispatch has the same problem or not: in the observed run the planner DID write a valid handoff, so planner-agent and research agents appear to differ here — verify rather than assume symmetry.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
 
 ### 912. Establish whether the roadmap_items producer contract actually runs outside the core implementer
 - **Status**: [NOT STARTED]
