@@ -1,7 +1,7 @@
 # Implementation Plan: Task #927
 
 - **Task**: 927 - Propagate the depth-first phase-closure and pre-edit verification contract to extension implementers
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.75 hours
 - **Dependencies**: 925 (contracts authored, core-only) — complete; 919 (`## Context References` sections added to overlapping agent files) — complete and merged
 - **Research Inputs**: `specs/927_propagate_phase_closure_contract_to_extension_implementers/reports/01_propagate-phase-closure-contract.md`

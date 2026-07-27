@@ -1,7 +1,7 @@
 # Implementation Plan: Task #925
 
 - **Task**: 925 - Add a depth-first phase-closure contract and a per-item pre-edit verification gate to core implementers
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: 922, 924 (both shipped this session; their outputs are consumed by name here)
 - **Research Inputs**: `specs/925_depth_first_phase_closure_and_pre_edit_gate/reports/01_depth-first-closure-pre-edit-gate.md`

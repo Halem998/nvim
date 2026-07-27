@@ -996,7 +996,7 @@
     {
       "project_number": 915,
       "project_name": "fix_completion_data_propagation_nix_nvim_epi",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Close the mirror-image completion_data propagation gap in nix, nvim, and epidemiology implementers",
@@ -1008,7 +1008,26 @@
         "agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md"
       ],
       "created": "2026-07-27T06:31:44Z",
-      "last_updated": "2026-07-27T06:31:44Z"
+      "last_updated": "2026-07-27T18:49:56Z",
+      "session_id": "sess_1785176230_b4221f_915",
+      "artifacts": [
+        {
+          "path": "specs/915_fix_completion_data_propagation_nix_nvim_epi/reports/01_completion-data-propagation-audit.md",
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/915_fix_completion_data_propagation_nix_nvim_epi/plans/01_completion-data-propagation-fix.md",
+          "type": "plan",
+          "summary": ""
+        },
+        {
+          "path": "specs/915_fix_completion_data_propagation_nix_nvim_epi/summaries/01_completion-data-propagation-fix-summary.md",
+          "type": "summary",
+          "summary": ""
+        }
+      ],
+      "completion_summary": "Closed the completion_data propagation gap in the nix, nvim, and epidemiology implementer skills: each now reads completion_summary/roadmap_items out of .return-meta.json and calls the shared skill_propagate_completion_summary writer, gated on the agents' actual 'implemented' terminal status rather than the dead 'completed' value the research report initially suggested."
     },
     {
       "project_number": 916,
@@ -1308,7 +1327,7 @@
     {
       "project_number": 925,
       "project_name": "depth_first_phase_closure_and_pre_edit_gate",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Add a depth-first phase-closure contract and a per-item pre-edit verification gate to core implementers",
@@ -1327,8 +1346,8 @@
         924
       ],
       "created": "2026-07-27T10:27:21Z",
-      "last_updated": "2026-07-27T18:04:27Z",
-      "session_id": "sess_1785174674_41ba53",
+      "last_updated": "2026-07-27T18:26:21Z",
+      "session_id": "sess_1785176230_b4221f_925",
       "artifacts": [
         {
           "path": "specs/925_depth_first_phase_closure_and_pre_edit_gate/reports/01_depth-first-closure-pre-edit-gate.md",
@@ -1339,8 +1358,14 @@
           "path": "specs/925_depth_first_phase_closure_and_pre_edit_gate/plans/01_depth-first-closure-pre-edit-gate.md",
           "type": "plan",
           "summary": "6 phases; two sibling contracts (phase-closure, pre-edit-gate); scope-C sentence gated verbatim; injection finding recorded in context-layers.md"
+        },
+        {
+          "path": "specs/925_depth_first_phase_closure_and_pre_edit_gate/summaries/01_depth-first-closure-pre-edit-gate-summary.md",
+          "type": "summary",
+          "summary": ""
         }
-      ]
+      ],
+      "completion_summary": "Authored context/contracts/phase-closure.md (depth-first closure with cheapest-first ordering and a stop-at-boundary clause) and context/contracts/pre-edit-gate.md (proportionate per-item probe before mechanical-list edits) in the core source store, wired both into all four core implementer files via explicit reference bullets, registered them in index-entries.json as the first non-hard-exclusive contracts/* entries, and recorded the placement / no-central-injection-point findings in context-layers.md."
     },
     {
       "project_number": 926,
@@ -1370,7 +1395,7 @@
     {
       "project_number": 927,
       "project_name": "propagate_phase_closure_contract_to_extension_implementers",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Propagate the depth-first phase-closure and pre-edit verification contract to extension implementers",
@@ -1396,9 +1421,26 @@
         919
       ],
       "created": "2026-07-27T10:27:21Z",
-      "last_updated": "2026-07-27T10:27:21Z",
-      "session_id": "sess_1785147256_d55ce4",
-      "artifacts": []
+      "last_updated": "2026-07-27T19:13:06Z",
+      "session_id": "sess_1785176230_b4221f_927",
+      "artifacts": [
+        {
+          "path": "specs/927_propagate_phase_closure_contract_to_extension_implementers/reports/01_propagate-phase-closure-contract.md",
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/927_propagate_phase_closure_contract_to_extension_implementers/plans/01_propagate-phase-closure-contract.md",
+          "type": "plan",
+          "summary": ""
+        },
+        {
+          "path": "specs/927_propagate_phase_closure_contract_to_extension_implementers/summaries/01_propagate-phase-closure-contract-summary.md",
+          "type": "summary",
+          "summary": ""
+        }
+      ],
+      "completion_summary": "Propagated the phase-closure and pre-edit-gate contracts from core's four implementer files to the non-core extension implementer surface (11 standard-mode agents, 2 hard-mode agents, 1 skill file) via the existing @-reference pointer-bullet convention, recorded two reasoned exclusions with grep evidence, generalized the three referrer-enumeration sentences in the contracts and context-layers.md, and passed a 7-assertion consistency/anti-copy-paste audit with zero .claude/ modifications and zero task-number citation leaks."
     },
     {
       "project_number": 928,
@@ -1443,7 +1485,7 @@
     {
       "project_number": 930,
       "project_name": "port_combining_mark_fidelity_toolchain",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "literature",
       "title": "Port the combining-mark fidelity toolchain into the literature extension source",
@@ -1456,9 +1498,26 @@
         928
       ],
       "created": "2026-07-27T10:59:04Z",
-      "last_updated": "2026-07-27T10:59:04Z",
-      "session_id": "sess_1785149778_13e53c",
-      "artifacts": []
+      "last_updated": "2026-07-27T18:42:56Z",
+      "session_id": "sess_1785176230_b4221f_930",
+      "artifacts": [
+        {
+          "path": "specs/930_port_combining_mark_fidelity_toolchain/reports/01_combining-mark-toolchain-port.md",
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/930_port_combining_mark_fidelity_toolchain/plans/01_port-combining-mark-toolchain.md",
+          "type": "plan",
+          "summary": ""
+        },
+        {
+          "path": "specs/930_port_combining_mark_fidelity_toolchain/summaries/01_port-combining-mark-toolchain-summary.md",
+          "type": "summary",
+          "summary": ""
+        }
+      ],
+      "completion_summary": "Ported the 6-file combining-mark (U+0338) fidelity toolchain from the disposable BimodalLogic deploy tree into agent-system/extensions/literature/ source, registered 4 new provides.scripts entries, verified doc-lint clean (literature extension PASS) and a passing 15/15-check literature-convert.sh --self-test from a scratch-directory deploy simulation, and documented the two new tools in the extension README."
     },
     {
       "project_number": 931,

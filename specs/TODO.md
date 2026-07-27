@@ -11,8 +11,8 @@ next_project_number: 932
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 885,914,915,920,925,928,929,931 | -- | agent-system, extensions |
-| 2 | 887,926,927,930 | 885,925,928 | agent-system, literature |
+| 1 | 885,914,920,926,928,929,931 | -- | agent-system, extensions |
+| 2 | 887 | 885 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -21,20 +21,13 @@ next_project_number: 932
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
-925 [PLANNED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-  └─ 926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-  └─ 927 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 929 [NOT STARTED] — SOURCE-STORE RULE (binding, and the subject of this task): the ag
 
 ### Extensions
 
 928 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-
-### Literature
-
-930 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ### Uncategorized
 
@@ -52,10 +45,13 @@ next_project_number: 932
 ---
 
 ### 930. Port the combining-mark fidelity toolchain into the literature extension source
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 928
+- **Research**: [930_port_combining_mark_fidelity_toolchain/reports/01_combining-mark-toolchain-port.md]
+- **Plan**: [930_port_combining_mark_fidelity_toolchain/plans/01_port-combining-mark-toolchain.md]
+- **Summary**: [930_port_combining_mark_fidelity_toolchain/summaries/01_port-combining-mark-toolchain-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/ and the per-extension source directories under agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
@@ -162,10 +158,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 927. Propagate the depth-first phase-closure and pre-edit verification contract to extension implementers
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 925, Task 919
+- **Research**: [927_propagate_phase_closure_contract_to_extension_implementers/reports/01_propagate-phase-closure-contract.md]
+- **Plan**: [927_propagate_phase_closure_contract_to_extension_implementers/plans/01_propagate-phase-closure-contract.md]
+- **Summary**: [927_propagate_phase_closure_contract_to_extension_implementers/summaries/01_propagate-phase-closure-contract-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/ and the per-extension source directories under agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
@@ -228,12 +227,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 925. Add a depth-first phase-closure contract and a per-item pre-edit verification gate to core implementers
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 922, Task 924
 - **Research**: [925_depth_first_phase_closure_and_pre_edit_gate/reports/01_depth-first-closure-pre-edit-gate.md]
 - **Plan**: [925_depth_first_phase_closure_and_pre_edit_gate/plans/01_depth-first-closure-pre-edit-gate.md]
+- **Summary**: [925_depth_first_phase_closure_and_pre_edit_gate/summaries/01_depth-first-closure-pre-edit-gate-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
@@ -611,10 +611,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 915. Close the mirror-image completion_data propagation gap in nix, nvim, and epidemiology implementers
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [915_fix_completion_data_propagation_nix_nvim_epi/reports/01_completion-data-propagation-audit.md]
+- **Plan**: [915_fix_completion_data_propagation_nix_nvim_epi/plans/01_completion-data-propagation-fix.md]
+- **Summary**: [915_fix_completion_data_propagation_nix_nvim_epi/summaries/01_completion-data-propagation-fix-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
