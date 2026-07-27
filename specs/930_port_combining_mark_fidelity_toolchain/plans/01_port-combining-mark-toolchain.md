@@ -281,29 +281,34 @@ pre-port checkout rather than assuming it.
 
 ---
 
-### Phase 4: Deploy-Shaped Content Match and Functional Self-Test [NOT STARTED]
+### Phase 4: Deploy-Shaped Content Match and Functional Self-Test [COMPLETED]
 
 **Goal**: Prove the ported files survive a deploy intact and actually run from a deployed
 location -- catching deploy-time path and import failures that a source-tree run would mask.
 
 **Tasks**:
-- [ ] Create a scratch deploy directory (e.g. under the session scratchpad). Do NOT write into
-      `.claude/` in this or any repo.
-- [ ] Simulate the deploy the way the loader does: for every entry in
+- [x] Create a scratch deploy directory (e.g. under the session scratchpad). Do NOT write into
+      `.claude/` in this or any repo. *(completed: created under the session scratchpad, outside
+      the repo entirely)*
+- [x] Simulate the deploy the way the loader does: for every entry in
       `agent-system/extensions/literature/manifest.json` -> `provides.scripts`, copy
       `agent-system/extensions/literature/scripts/<entry>` to `<scratch>/<entry>`, preserving
       relative path for prefixed entries. A missing source file at this step is a manifest defect,
-      not a copy error -- report it.
-- [ ] Confirm all 6 ported files landed in the scratch deploy with content matching the extension
-      source (`cmp` each) and with executable permissions on the `.sh` files.
-- [ ] Run `literature-convert.sh --self-test` FROM THE SCRATCH DEPLOY (not from the source tree),
+      not a copy error -- report it. *(completed: all 37 entries copied via shutil.copy2
+      (preserves mode), zero missing)*
+- [x] Confirm all 6 ported files landed in the scratch deploy with content matching the extension
+      source (`cmp` each) and with executable permissions on the `.sh` files. *(completed: all 6
+      cmp-identical, 755 perms on all 4 .sh files confirmed via ls -l)*
+- [x] Run `literature-convert.sh --self-test` FROM THE SCRATCH DEPLOY (not from the source tree),
       so that `SCRIPT_DIR`-relative `sys.path.insert` resolution of
-      `literature_combining_overlay.py` is exercised as deployed.
-- [ ] Confirm every fixture check the script reports prints `[self-test] PASS` with zero failures,
-      and that the script's exit code is 0.
+      `literature_combining_overlay.py` is exercised as deployed. *(completed)*
+- [x] Confirm every fixture check the script reports prints `[self-test] PASS` with zero failures,
+      and that the script's exit code is 0. *(completed: 15 fixture checks, all PASS, exit 0 --
+      more than the ~7 hypothesized in Scope Hypothesis due to corpus-derived base additions and
+      idempotence sub-checks, consistent with the plan's explicit non-contract framing)*
 - [ ] If a check fails, treat it as a real port defect (a missed file, a permissions problem, or a
       missing manifest entry) -- do not edit the ported script content to make the test pass. The
-      copied content is authoritative.
+      copied content is authoritative. *(not applicable -- no check failed)*
 
 **Timing**: 40 minutes
 

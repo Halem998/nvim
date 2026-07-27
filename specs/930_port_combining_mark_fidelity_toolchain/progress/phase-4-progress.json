@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "Deploy-Shaped Content Match and Functional Self-Test",
+  "started_at": "2026-07-27T11:46:00Z",
+  "last_updated": "2026-07-27T11:49:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create scratch deploy, simulate manifest-driven deploy, cmp all 6 ported files, run literature-convert.sh --self-test from the scratch deploy",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Scratch deploy lives entirely under the session scratchpad (outside the repo), never under .claude/**, per SOURCE-STORE rule. --self-test reported 15 fixture checks (more than the plan's ~7 hypothesis), all PASS, exit 0."
+}
