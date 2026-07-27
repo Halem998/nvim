@@ -1,0 +1,27 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Made roadmap-integration.sh /todo's single parser and structure-signal source: parse-only scan filtered to meta/expanded-eligible tasks, --annotate against a pre-archival filtered snapshot for completed tasks, and /todo-owned abandoned-task annotation gated on parseable. Both commands/todo.md and skill-todo/SKILL.md updated; a three-way output-gate branch replaces the silent-omission defect in both specs. Acceptance test (zero-structure fixture -> parseable=false, unparseable_roadmap) and non-regression test (real ROADMAP.md -> parseable=true, checkboxes=12) both passed live.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/914_converge_todo_roadmap_annotation_with_script/summaries/01_converge-todo-roadmap-annotation-summary.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/scripts/roadmap-integration.sh",
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/skills/skill-todo/SKILL.md"
+  ],
+  "decisions_made": [
+    "Adopted option (b): reuse the shared script as sole parser/writer for the completed-task path, keep meta/expanded exclusion and abandoned-task annotation as /todo-owned logic",
+    "Step 5.5 snapshot must be built from Step 3.5's pre-archival roadmap_eligible_tasks[] capture, since Step 5.5 runs after Step 5 archival",
+    "Snapshot lives in a scratch mktemp -d dir so the script's sibling-archive lookup resolves to nothing, deliberately excluding previously-archived tasks from this run's annotation"
+  ],
+  "dead_ends": [
+    "Initial Step 3.5 Match Types note copied the research report's inaccurate 'table-based, zero checkboxes' premise -- caught and corrected during Phase 6's own consistency sweep; live ROADMAP.md is actually checkboxes=12, table_rows=0"
+  ],
+  "phases_completed": 6,
+  "phases_total": 6,
+  "plan_markers_verified": true
+}
