@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1785194731_99e97e",
   "task_number": 920,
   "phases_completed": 4,
@@ -21,21 +25,40 @@
       "category": "PATTERN",
       "source_artifact": "specs/920_validate_dispatch_status_against_schema_enum/summaries/01_validate-dispatch-status-schema-enum-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["enum-sync", "sync-comment", "dispatch_status", "return-metadata-file", "command-gate-out"]
+      "suggested_keywords": [
+        "enum-sync",
+        "sync-comment",
+        "dispatch_status",
+        "return-metadata-file",
+        "command-gate-out"
+      ]
     },
     {
       "content": "Pseudo-instruction EXIT (partial)/EXIT (success)/EXIT (no-op) can appear inline inside an if/elif branch within a larger ```bash fenced block in SKILL.md files (see skill-orchestrate-hard/SKILL.md's skeleton-exhaustion branch) -- it is documentation-level control flow for the agent reading the file, not literal bash, so bash -n checks on such blocks must be scoped to a sub-region (e.g. just the case block) that excludes it.",
       "category": "PATTERN",
       "source_artifact": "specs/920_validate_dispatch_status_against_schema_enum/summaries/01_validate-dispatch-status-schema-enum-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["EXIT pseudocode", "SKILL.md bash blocks", "orchestrate control flow"]
+      "suggested_keywords": [
+        "EXIT pseudocode",
+        "SKILL.md bash blocks",
+        "orchestrate control flow"
+      ]
     },
     {
       "content": "git-commit-scoped.sh's directory-glob positive pathspec (e.g. specs/{NNN}_{slug}/) combined with its auto-injected :(exclude) entries for ephemeral runtime files (.lock/, .orchestrator-loop-guard, etc.) can still trigger git's \"paths ignored by .gitignore\" hard error on `git add`, aborting the whole scoped commit (exit 2) even though the excludes are textually correct. Workaround: stage the specific non-ignored files individually (git add <file1> <file2> ...) instead of the directory glob when this happens, rather than reaching for `git add -f` (which would force-add the ignored ephemeral files into history).",
       "category": "TECHNIQUE",
       "source_artifact": "specs/920_validate_dispatch_status_against_schema_enum/summaries/01_validate-dispatch-status-schema-enum-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["git-commit-scoped.sh", "gitignore add error", "task directory staging", "commit pipeline"]
+      "suggested_keywords": [
+        "git-commit-scoped.sh",
+        "gitignore add error",
+        "task directory staging",
+        "commit pipeline"
+      ]
     }
-  ]
+  ],
+  "metadata": {
+    "cycles_used": 3,
+    "final_state": "completed"
+  }
 }

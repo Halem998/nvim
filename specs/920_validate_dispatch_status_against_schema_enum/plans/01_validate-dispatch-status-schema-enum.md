@@ -1,7 +1,7 @@
 # Implementation Plan: Task #920
 
 - **Task**: 920 - Validate dispatch_status against the schema enum so an off-schema value fails loudly instead of silently no-opping
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.75 hours
 - **Dependencies**: 936 (completed)
 - **Research Inputs**: specs/920_validate_dispatch_status_against_schema_enum/reports/01_validate-dispatch-status-schema-enum.md
