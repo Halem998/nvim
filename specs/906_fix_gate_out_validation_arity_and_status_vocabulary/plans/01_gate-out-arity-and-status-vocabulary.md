@@ -373,40 +373,53 @@ spurious `[FAIL]`.
 
 ---
 
-### Phase 5: Demonstrate verification (b) — defensive branch reachability [NOT STARTED]
+### Phase 5: Demonstrate verification (b) — defensive branch reachability [COMPLETED]
 
 **Goal**: The `operation=orchestrate` defensive status-correction branch in
 `command-gate-out.sh` is demonstrated **reachable** against a deliberately desynced state.json —
 the behavior that has never once fired in production.
 
 **Tasks**:
-- [ ] Reuse the Phase 3 fixture (rebuild it if it was already torn down). Confirm the fixed
-      `command-gate-out.sh` is in place.
-- [ ] In the fixture ONLY, write a `.return-meta.json` into the chosen task directory whose
+- [x] Reuse the Phase 3 fixture (rebuild it if it was already torn down). Confirm the fixed
+      `command-gate-out.sh` is in place. *(completed: reused `$SCRATCHPAD/task906-fixture`,
+      already overwritten with the fixed scripts in Phase 3)*
+- [x] In the fixture ONLY, write a `.return-meta.json` into the chosen task directory whose
       `status` is `"implemented"`, produced by running the **fixed** Stage 8 `jq -n` snippet from
       `skill-orchestrate/SKILL.md` verbatim (not hand-authored) — this proves the end-to-end
-      chain: Stage 8's emitted value now passes gate-out's accept-list.
-- [ ] In the fixture's `specs/state.json` ONLY, deliberately desync the task's `status` to a
+      chain: Stage 8's emitted value now passes gate-out's accept-list. *(completed, on task
+      913's fixture directory)*
+- [x] In the fixture's `specs/state.json` ONLY, deliberately desync the task's `status` to a
       value other than `completed` (e.g. `implementing`), so
-      `current_status != expected_status` holds.
-- [ ] From `<fixture>` as cwd, run
+      `current_status != expected_status` holds. *(completed)*
+- [x] From `<fixture>` as cwd, run
       `bash .claude/scripts/command-gate-out.sh <task_number> orchestrate <fake_session_id>` and
-      capture full stdout+stderr.
-- [ ] Confirm the branch fired: the line
+      capture full stdout+stderr. *(completed)*
+- [x] Confirm the branch fired: the line
       `[gate-out] Defensive correction: status is '...', skill reports 'implemented'. Applying
       correction to 'completed'.` appears. **This echo is the reachability proof**, and it is
-      emitted before `update-task-status.sh` is invoked.
-- [ ] Record what happens downstream, accepting either outcome as valid: (i)
+      emitted before `update-task-status.sh` is invoked. *(completed: line appeared verbatim —
+      `[gate-out] Defensive correction: status is 'implementing', skill reports 'implemented'.
+      Applying correction to 'completed'.`)*
+- [x] Record what happens downstream, accepting either outcome as valid: (i)
       `update-task-status.sh` succeeds and the fixture's state.json is repaired to `completed`;
       or (ii) the `--phase-check=refuse` backstop returns 4 and gate-out prints the
       `Phase-accounting backstop refused the defensive correction` message. Outcome (ii) still
       proves reachability and is the correct, designed behavior when the plan file shows
-      incomplete phases — do NOT weaken the phase-check to force outcome (i).
-- [ ] Run the negative control: repeat with a `.return-meta.json` containing the OLD
+      incomplete phases — do NOT weaken the phase-check to force outcome (i). *(completed:
+      outcome (i) — the phase-check backstop found 6/6 phases [COMPLETED] in task 913's own plan
+      and allowed the correction; `update-task-status.sh` succeeded and the fixture's state.json
+      was repaired from `implementing` to `completed`)*
+- [x] Run the negative control: repeat with a `.return-meta.json` containing the OLD
       `"completed"` value and confirm the correction line does **not** appear — this isolates the
       vocabulary fix as the cause and confirms the pre-fix branch really was unreachable.
-- [ ] Confirm the live repo's `specs/state.json` is untouched (`git diff specs/state.json` shows
-      no status change attributable to this phase).
+      *(completed: re-desynced state.json to `implementing`, wrote the old forbidden
+      `"completed"` value via the same jq idiom, re-ran gate-out — no `[gate-out] Defensive
+      correction:` line appeared, and the fixture's state.json remained uncorrected at
+      `implementing`, confirming `"completed"` still fails the accept-list exactly as before)*
+- [x] Confirm the live repo's `specs/state.json` is untouched (`git diff specs/state.json` shows
+      no status change attributable to this phase). *(completed: the only diff in the live
+      specs/state.json is task 906's own `not_started` -> `implementing` preflight transition;
+      tasks 913 and 916 show no diff)*
 
 **Timing**: 1 hour
 
