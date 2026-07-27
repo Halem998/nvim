@@ -1,0 +1,24 @@
+{
+  "phase": 5,
+  "phase_name": "Fixture-Based End-to-End Verification",
+  "started_at": "2026-07-26T01:40:00Z",
+  "last_updated": "2026-07-26T02:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create checkbox/table/unstructured fixtures + fixture-state.json; run the 3x3 matrix; assert outcomes; confirm exit 0 and no set -u trips",
+      "status": "done",
+      "files_touched": [
+        "specs/910_fix_roadmap_annotation_silent_noop/fixtures/checkbox-roadmap.md",
+        "specs/910_fix_roadmap_annotation_silent_noop/fixtures/table-roadmap.md",
+        "specs/910_fix_roadmap_annotation_silent_noop/fixtures/unstructured-roadmap.md",
+        "specs/910_fix_roadmap_annotation_silent_noop/fixtures/fixture-state.json",
+        "specs/910_fix_roadmap_annotation_silent_noop/fixtures/matrix-output/"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

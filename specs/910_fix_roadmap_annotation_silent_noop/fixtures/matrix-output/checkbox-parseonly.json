@@ -1,0 +1,120 @@
+{
+  "roadmap_state": {
+    "phases": [
+      {
+        "number": 1,
+        "title": "Current Priorities",
+        "priority": "High",
+        "checkboxes": {
+          "total": 7,
+          "completed": 1,
+          "items": [
+            {
+              "text": "**Manifest-driven README generation**: Build a `generate-extension-readme.sh` script that reads `manifest.json` and `EXTENSION.md` and emits a starter README.md from `.claude/templates/extension-readme-template.md`, filling in commands, skills, agents, and MCP servers automatically",
+              "completed": false
+            },
+            {
+              "text": "**Marketplace metadata for extensions**: Add `marketplace.json` (category, tags, author, license, homepage) to each extension so extensions can be listed in a future extension marketplace",
+              "completed": false
+            },
+            {
+              "text": "**CI enforcement of doc-lint**: Add a GitHub Actions workflow that runs `.claude/scripts/check-extension-docs.sh` on every push and fails the build on doc drift",
+              "completed": false
+            },
+            {
+              "text": "**Integration with /review command**: Have `/review` surface extension-README drift (missing sections, outdated patterns) during codebase review runs, creating follow-up tasks automatically",
+              "completed": false
+            },
+            {
+              "text": "**Extension slim standard enforcement**: Write a lint script that validates extensions against `docs/reference/standards/extension-slim-standard.md` (manifest required fields, size limits, directory conventions)",
+              "completed": false
+            },
+            {
+              "text": "**Agent frontmatter validation**: Add a check that every file in `.claude/agents/` and `.claude/extensions/*/agents/` uses the minimal frontmatter standard (`name`, `description`, optional `model`) with no obsolete fields",
+              "completed": false
+            },
+            {
+              "text": "**Subagent-return reference cleanup**: Sweep remaining `subagent-return-format.md` references in `.claude/context/` (orchestration, processes, formats, schemas) and repoint to `subagent-return.md`. Task 396 fixed the user-facing templates and docs; the deeper context files still carry the old name. *(Completed: verified 2026-05-22, 0 stale references remain)*",
+              "completed": true
+            }
+          ]
+        }
+      },
+      {
+        "number": 2,
+        "title": "Medium-Term Improvements",
+        "priority": "Medium",
+        "checkboxes": {
+          "total": 5,
+          "completed": 1,
+          "items": [
+            {
+              "text": "**Preference-memory read-back for email-classify**: read the `email/preferences/{key}`",
+              "completed": false
+            },
+            {
+              "text": "**Generalize confirmed-decision harvest beyond email**: extend the post-Stage-6-Verify",
+              "completed": false
+            },
+            {
+              "text": "**Literature centralization**: Centralized `~/Projects/Literature/` repository shared across all projects via `LITERATURE_DIR` env var, with Zotero/Better BibTeX CSL-JSON integration, v2 index schema (`zotero_key`, `zotero_path`, `project_tags`), two-tier fallback preserving per-project `specs/literature/` directories, and migration of 183 BimodalLogic entries. *(Completed: 2026-06-14, task 710)*",
+              "completed": true
+            },
+            {
+              "text": "**Extension hot-reload**: Allow `<leader>ac` to reload an already-loaded extension without restarting Neovim",
+              "completed": false
+            },
+            {
+              "text": "**Context discovery caching**: Cache the output of the adaptive context query in `~/.claude/cache/` to speed up agent spawn time",
+              "completed": false
+            }
+          ]
+        }
+      }
+    ],
+    "status_tables": []
+  },
+  "roadmap_matches": [
+    {
+      "roadmap_item": "**CI enforcement of doc-lint**: Add a GitHub Actions workflow that runs `.claude/scripts/check-extension-docs.sh` on every push and fails the build on doc drift",
+      "phase": 1,
+      "match_type": "keyword_match",
+      "confidence": "low",
+      "matched_task": 841,
+      "task_title": "Reconcile the literature extension SOURCE OF TRUTH (`.claude/extensions/literature/`) against the DEPLOYED COPIES (`.claude/scripts/`), which have drifted ahead by at least two prior tasks. A \"Load Core\" / extension sync currently reverts recent correctness fixes silently. This is a live regression risk, not cosmetic.\n\nMEASURED DRIFT (verified 2026-07-09, re-verify before acting):\n- `.claude/scripts/literature-search.sh` and `.claude/extensions/literature/scripts/literature-search.sh` DIFFER. Deployed has 2 `unadjudicated` references (task #839) and task #835's entire provenance/fidelity flagging block (the `--include-unverified` flag, quarantine-from-ranked-output logic, warning-banner-on-read). Extension source has ZERO `unadjudicated` refs and is missing the #835 block.\n- `.claude/scripts/literature-briefing.sh` vs `.claude/extensions/literature/scripts/literature-briefing.sh` DIFFER. Deployed has 3 `unadjudicated` refs (task #839's `needs_fidelity_marker()` allowlist fix); extension source has 0.\n- `.claude/scripts/literature-fidelity-audit.sh` exists ONLY in `.claude/scripts/` -- it is NOT in the extension at all. Task #839 fully owns this script. Decision required: does it belong in the extension source (so it survives sync), or is it intentionally repo-local? If it belongs in the extension, add it; if repo-local, document WHY and protect it.\n\nCONSEQUENCE IF UNFIXED: next extension sync overwrites `.claude/scripts/` from the (stale) extension source. #839's fail-open fix downstream disappears -- `unadjudicated` docs stop getting warning banners in `literature-briefing.sh` and stop being quarantined from ranked search in `literature-search.sh`. #835's provenance flagging disappears entirely. The corpus index.json would still say `unadjudicated`, but no consumer would honor it. Silent re-introduction of the exact fail-open class #839 was created to eliminate.\n\nROOT CAUSE: tasks #835 and #839 (and possibly earlier literature tasks) edited the DEPLOYED `.claude/scripts/` copies directly instead of the extension source. `.syncprotect` at project root does NOT list any of these scripts (it currently lists only `context/repo/project-overview.md` and `output/implementation-001.md`), so they are unprotected.\n\nREQUIRED WORK:\n1. AUDIT the full drift surface. Do not assume it is only the two scripts above. Diff EVERY file that exists in both `.claude/scripts/` and `.claude/extensions/literature/scripts/`, and every `.claude/commands/literature.md` (+ cite.md) vs its extension-source counterpart. Produce a complete drift manifest before changing anything. Other literature scripts (build-index, chunk, ingest, discover, retrieve, normalize-authors, lit-flag-resolve, create-setup-task) may also have drifted.\n2. For each drifted file, determine DIRECTION of truth. The deployed copies carry the newer correctness fixes (#835, #839), so in these known cases the deployed copy is authoritative and must be backported INTO the extension source. But verify per-file -- do not blindly assume deployed is always newer; a file could have been correctly edited in the extension and be behind in deploy. Use git history if needed.\n3. BACKPORT the authoritative content into `.claude/extensions/literature/` source. After backport, deployed and extension-source copies of each reconciled file must be semantically equivalent (ignoring any legitimately deploy-local path substitutions the sync performs).\n4. DECIDE and document the fate of `literature-fidelity-audit.sh` (add to extension source vs. keep repo-local-and-protected).\n5. INSTALL A GUARD so this cannot silently recur. Options to evaluate (pick and justify): (a) a doc-lint / CI check in the spirit of `.claude/scripts/check-extension-docs.sh` that fails when a deployed `.claude/scripts/literature-*.sh` diverges from its extension source; (b) adding the fidelity-critical scripts to `.syncprotect` if they are legitimately repo-local; (c) a pre-sync verification step. A guard is REQUIRED, not optional -- without it the reconciliation decays again on the next hotfix.\n\nCONSTRAINTS:\n- Do NOT alter the RUNTIME BEHAVIOR of the deployed scripts. The deployed `.claude/scripts/` copies are the ones currently exercised by the live corpus and by tasks #832/#839's verified results. This task makes the EXTENSION SOURCE match them, plus a guard -- it must not regress what is deployed. After this task, re-running `literature-fidelity-audit.sh --dry-run` must produce byte-identical classification to before.\n- Quarantine-never-delete posture for any file moves.\n- If backporting reveals a genuine conflict (extension source has an intentional change the deployed copy lacks), STOP and report it rather than clobbering.\n\nVERIFICATION:\n- Drift manifest lists every literature file compared and its verdict.\n- After backport: for each reconciled script, `diff` between deployed and extension source shows only expected/no differences.\n- `grep -c unadjudicated` on the extension-source `literature-search.sh` and `literature-briefing.sh` matches the deployed copies (2 and 3 respectively, or whatever re-verification shows).\n- The installed guard actually fails when fed an artificial divergence (test it, do not just add it).\n- `literature-fidelity-audit.sh --dry-run` classification unchanged from pre-task baseline.",
+      "completion_date": ""
+    },
+    {
+      "roadmap_item": "**Extension slim standard enforcement**: Write a lint script that validates extensions against `docs/reference/standards/extension-slim-standard.md` (manifest required fields, size limits, directory conventions)",
+      "phase": 1,
+      "match_type": "title_match",
+      "confidence": "medium",
+      "matched_task": 283,
+      "task_title": "extension_slim_standard",
+      "completion_date": ""
+    },
+    {
+      "roadmap_item": "**Generalize confirmed-decision harvest beyond email**: extend the post-Stage-6-Verify",
+      "phase": 2,
+      "match_type": "keyword_match",
+      "confidence": "low",
+      "matched_task": 821,
+      "task_title": "Route confirmed email-cleanup decisions (junk vs keep) from the email extension into the memory vault so the system learns sender/domain preferences over time. RESEARCH PHASE FIRST: survey July-2026 best practices for email-triage to preference/memory-learning systems (sender reputation, preference capture, vault-bloat avoidance, aggregation strategies, dedup, feedback loops), plus the concrete integration surfaces already identified: capture point = skill-email-cleanup human review gate (Stage 3 per-message / Stage 2.5 bucket approval in --all mode) where the JSONL candidate manifest (Message-ID keyed, proposed_action delete|archive|keep|unsure + confidence) is confirmed; memory API = skill-memory CREATE/UPDATE/EXTEND with content-mapping + MCP dedup against .memory/memory-index.json; reusable pattern = skill-todo's harvest->dedup->user-gated-create flow (Stage ~181+); hook surface = memory extension manifest.json empty hooks object as an alternative capture path. DESIGN DECISION ALREADY MADE BY USER: memories are SENDER/DOMAIN-AGGREGATED (one evolving preference memory per sender or domain, UPDATE/EXTEND as more mail is seen -- NOT per-message), chosen to avoid vault bloat; the research should refine the aggregation/dedup/schema mechanics within that decision, not relitigate it. Output: chosen capture point, memory schema/tags, dedup + update strategy, and opt-in/gate behavior.",
+      "completion_date": ""
+    }
+  ],
+  "annotation_summary": {
+    "annotations_made": 0,
+    "items_skipped": 0,
+    "skipped_reasons": [],
+    "high_confidence_matches": 0,
+    "silent_noop": false
+  },
+  "roadmap_structure": {
+    "phases": 2,
+    "checkboxes": 12,
+    "table_rows": 0,
+    "parseable": true
+  },
+  "warnings": []
+}

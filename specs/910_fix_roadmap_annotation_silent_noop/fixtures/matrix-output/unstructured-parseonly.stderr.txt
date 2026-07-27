@@ -1,0 +1,2 @@
+<!-- roadmap-structure phases=0 checkboxes=0 table_rows=0 parseable=false -->
+[UNPARSEABLE ROADMAP - 0 phases, 0 checkboxes, 0 table rows] The parser recognizes ## Phase N: headings with - [ ]/- [x] checkboxes, and pipe-delimited status tables; this file matched neither.

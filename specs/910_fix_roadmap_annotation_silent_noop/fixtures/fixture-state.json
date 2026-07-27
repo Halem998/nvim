@@ -1,0 +1,21 @@
+{
+  "next_project_number": 600,
+  "active_projects": [
+    {
+      "project_number": 501,
+      "project_name": "widget_driver",
+      "status": "completed",
+      "description": "Widget Driver GPIO integration",
+      "completion_summary": "Implemented the widget driver GPIO integration.",
+      "roadmap_items": []
+    },
+    {
+      "project_number": 502,
+      "project_name": "sprocket_cache",
+      "status": "completed",
+      "description": "Sprocket Cache region rollout",
+      "completion_summary": "Rolled out the sprocket cache to us-east.",
+      "roadmap_items": []
+    }
+  ]
+}

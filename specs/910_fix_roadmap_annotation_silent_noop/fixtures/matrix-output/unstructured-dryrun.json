@@ -1,0 +1,23 @@
+{
+  "roadmap_state": {
+    "phases": [],
+    "status_tables": []
+  },
+  "roadmap_matches": [],
+  "annotation_summary": {
+    "annotations_made": 0,
+    "items_skipped": 0,
+    "skipped_reasons": [],
+    "high_confidence_matches": 0,
+    "silent_noop": false
+  },
+  "roadmap_structure": {
+    "phases": 0,
+    "checkboxes": 0,
+    "table_rows": 0,
+    "parseable": false
+  },
+  "warnings": [
+    "unparseable_roadmap"
+  ]
+}

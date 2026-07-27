@@ -1,0 +1,5 @@
+<!-- roadmap-structure phases=0 checkboxes=0 table_rows=4 parseable=true -->
+[dry-run] Would annotate (table row): | Widget Driver | GPIO4 | Complete (task 501) | src/widget.lua |
+[dry-run]                       with: | Widget Driver | GPIO4 | Complete (task 501) *(Completed: Task 501)* | src/widget.lua |
+[dry-run] Would annotate (table row): | Sprocket Cache | teamA | us-east | Resolved (task 502) | src/sprocket.lua |
+[dry-run]                       with: | Sprocket Cache | teamA | us-east | Resolved (task 502) *(Completed: Task 502)* | src/sprocket.lua |

@@ -1,0 +1,107 @@
+{
+  "roadmap_state": {
+    "phases": [],
+    "status_tables": [
+      {
+        "component": "Widget Driver",
+        "status": "Complete (task 501)",
+        "location": "src/widget.lua",
+        "columns": [
+          "Widget Driver",
+          "GPIO4",
+          "Complete (task 501)",
+          "src/widget.lua"
+        ],
+        "line_index": 9,
+        "raw_line": "| Widget Driver | GPIO4 | Complete (task 501) | src/widget.lua |",
+        "status_index": 2
+      },
+      {
+        "component": "Gadget Sensor",
+        "status": "GPIO7",
+        "location": "src/gadget.lua",
+        "columns": [
+          "Gadget Sensor",
+          "GPIO7",
+          "In Progress",
+          "src/gadget.lua"
+        ],
+        "line_index": 10,
+        "raw_line": "| Gadget Sensor | GPIO7 | In Progress | src/gadget.lua |",
+        "status_index": 1
+      },
+      {
+        "component": "Sprocket Cache",
+        "status": "Resolved (task 502)",
+        "location": "src/sprocket.lua",
+        "columns": [
+          "Sprocket Cache",
+          "teamA",
+          "us-east",
+          "Resolved (task 502)",
+          "src/sprocket.lua"
+        ],
+        "line_index": 16,
+        "raw_line": "| Sprocket Cache | teamA | us-east | Resolved (task 502) | src/sprocket.lua |",
+        "status_index": 3
+      },
+      {
+        "component": "Widget Driver",
+        "status": "teamB",
+        "location": "src/widget-b.lua",
+        "columns": [
+          "Widget Driver",
+          "teamB",
+          "us-west",
+          "Not started",
+          "src/widget-b.lua"
+        ],
+        "line_index": 17,
+        "raw_line": "| Widget Driver | teamB | us-west | Not started | src/widget-b.lua |",
+        "status_index": 1
+      }
+    ]
+  },
+  "roadmap_matches": [
+    {
+      "roadmap_item": "Widget Driver",
+      "phase": null,
+      "match_type": "explicit_task_ref",
+      "confidence": "high",
+      "matched_task": 501,
+      "task_title": "Widget Driver GPIO integration",
+      "completion_date": "",
+      "source": "status_table",
+      "line_index": 9,
+      "raw_line": "| Widget Driver | GPIO4 | Complete (task 501) | src/widget.lua |",
+      "status_index": 2
+    },
+    {
+      "roadmap_item": "Sprocket Cache",
+      "phase": null,
+      "match_type": "explicit_task_ref",
+      "confidence": "high",
+      "matched_task": 502,
+      "task_title": "Sprocket Cache region rollout",
+      "completion_date": "",
+      "source": "status_table",
+      "line_index": 16,
+      "raw_line": "| Sprocket Cache | teamA | us-east | Resolved (task 502) | src/sprocket.lua |",
+      "status_index": 3
+    }
+  ],
+  "annotation_summary": {
+    "annotations_made": 0,
+    "items_skipped": 0,
+    "skipped_reasons": [],
+    "high_confidence_matches": 0,
+    "silent_noop": false
+  },
+  "roadmap_structure": {
+    "phases": 0,
+    "checkboxes": 0,
+    "table_rows": 4,
+    "parseable": true
+  },
+  "warnings": []
+}

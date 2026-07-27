@@ -343,35 +343,41 @@ marker, conditional loud banners, and JSON fields the consumer can read.
 
 ---
 
-### Phase 5: Fixture-Based End-to-End Verification [NOT STARTED]
+### Phase 5: Fixture-Based End-to-End Verification [COMPLETED]
 
 **Goal**: Prove all four behaviours (table annotation, checkbox regression, unparseable banner,
 no-op banner) against real inputs, and record the evidence.
 
 **Tasks**:
-- [ ] Create throwaway fixtures under
+- [x] Create throwaway fixtures under
       `specs/910_fix_roadmap_annotation_silent_noop/fixtures/` (task-scoped artifacts, not
-      deliverables — nothing is added to the repository's permanent test surface):
-  - [ ] `checkbox-roadmap.md` — a copy of this repository's `specs/ROADMAP.md` (regression
-        baseline for the untouched checkbox path).
-  - [ ] `table-roadmap.md` — a checkbox-free roadmap with a status table containing at least one
+      deliverables — nothing is added to the repository's permanent test surface): *(completed)*
+  - [x] `checkbox-roadmap.md` — a copy of this repository's `specs/ROADMAP.md` (regression
+        baseline for the untouched checkbox path). *(completed)*
+  - [x] `table-roadmap.md` — a checkbox-free roadmap with a status table containing at least one
         row whose status cell reads `Complete (task N)` and at least one still-in-progress row,
         plus one 4-column and one 5-column table to exercise the column-agnostic parser.
-  - [ ] `unstructured-roadmap.md` — headings only, no `## Phase N:`, no checkboxes, no tables.
-  - [ ] `fixture-state.json` — a minimal `state.json` with completed tasks matching the fixture
-        rows by explicit `(task N)` reference.
-- [ ] Capture a pre-change baseline: run the current committed script against
-      `checkbox-roadmap.md` and save the payload for byte comparison.
-- [ ] Run the matrix: each fixture x {parse-only, `--dry-run`, `--annotate`}; save stdout payloads
-      and stderr transcripts.
-- [ ] Assert, per the per-phase verification criteria above: table row annotated in place with
+        *(completed: also includes a deliberate component-text collision -- two "Widget Driver"
+        rows across the two tables -- to exercise the by-(line_index, raw_line) location
+        guarantee)*
+  - [x] `unstructured-roadmap.md` — headings only, no `## Phase N:`, no checkboxes, no tables.
+        *(completed)*
+  - [x] `fixture-state.json` — a minimal `state.json` with completed tasks matching the fixture
+        rows by explicit `(task N)` reference. *(completed)*
+- [x] Capture a pre-change baseline: run the current committed script against
+      `checkbox-roadmap.md` and save the payload for byte comparison. *(completed: baseline taken
+      from the pre-task commit of `roadmap-integration.sh`)*
+- [x] Run the matrix: each fixture x {parse-only, `--dry-run`, `--annotate`}; save stdout payloads
+      and stderr transcripts. *(completed: 9 runs under fixtures/matrix-output/, all exit 0)*
+- [x] Assert, per the per-phase verification criteria above: table row annotated in place with
       identical column count and only the status cell changed; checkbox payload matches the
       baseline; unparseable banner fires only on the unstructured fixture; no-op banner fires only
-      on the engineered failure case; idempotence on a second `--annotate`.
-- [ ] Confirm the script still exits 0 in all cases (banners are diagnostics, not failures) and
+      on the engineered failure case; idempotence on a second `--annotate`. *(completed — see
+      implementation summary for the full matrix and assertions)*
+- [x] Confirm the script still exits 0 in all cases (banners are diagnostics, not failures) and
       that `set -euo pipefail` is not tripped by the new code, including on an empty
-      `status_tables`.
-- [ ] Record the matrix and its outcomes in the implementation summary.
+      `status_tables`. *(completed)*
+- [x] Record the matrix and its outcomes in the implementation summary. *(completed)*
 
 **Timing**: 1 hour
 
