@@ -1,0 +1,23 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Implemented all 5 phases of the plan. Relocated the MT-mode commit from commands/orchestrate.md Step 5 into skill-orchestrate/SKILL.md Stage MT-4's per-task postflight loop as new step 5.5 (staging task_dir + plan_path + self-reported modified_files, canonical task-scoped fail-safe warning, dispatch_status-keyed commit message, --honest-index-rows, explicit branch-coverage prose). Retired the combined batch commit in commands/orchestrate.md Step 5, replacing it with a warn-only residue check and an exit-path coverage table; CHECKPOINT 3 untouched. Documented the MT per-task scope in git-staging-scope.md's new Multi-Task Application subsection and amended the Fail-Safe Direction section. Updated orchestrate-state-machine.md's MT Mode section (ASCII box 7, new Commit Granularity subsection, MT Example Flow narrative) and retired hazard 2 in batch-orchestration-guardrails.md in place, with the residual stated precisely (hazards 1 and 3 remain live). Proved the fix with an executable two-task scratch git harness at the deployed-layout requirement (<scratch>/.claude/scripts/): isolation confirmed in both directions via git show --name-only of real commits, ephemeral .orchestrator-loop-guard exclusion verified under a genuinely dirty tracked file, --honest-index-rows addendum verified to fire when a sibling task's row legitimately changed in the same staged snapshot, and the fail-safe absent-modified_files path verified to warn loudly and still commit task-directory-only paths.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/932_commit_per_wave_and_stage_source_files_in_mt_batch/summaries/01_per-task-commit-stage-source-files-summary.md"
+    }
+  ],
+  "next_action_hint": "complete",
+  "decisions_made": [
+    "Followed the plan's Decision Record without re-litigating it: per-task-per-phase-transition commit granularity, not per-wave.",
+    "One deviation from the plan's stated verification bullet: commands/orchestrate.md contains three git-commit-scoped.sh hits, not exactly two, because of a pre-existing prose mention inside CHECKPOINT 3's own explanatory paragraph (not a second call site). All three hits fall below the CHECKPOINT 3 heading and zero fall in the MULTI-TASK DISPATCH section, so the substantive property (no MT batch commit, single-task CHECKPOINT 3 untouched) holds. Recorded as a deviation in Phase 2's and Testing & Validation's checklist annotations.",
+    "Two incidental 'batch commit'/'batch-commit' prose references in batch-orchestration-guardrails.md's self-modification-hazard rationale (outside the declared hazard-2 paragraph) were also lightly reworded for consistency with the new per-task architecture, since the whole file was already in file_scope.",
+    "Harness built at <scratch>/.claude/scripts/ per the guard's grandparent-directory requirement; verified the exact 3-script dependency set (git-commit-scoped.sh, deploy-root-guard.sh, task-lock.sh) by grepping git-commit-scoped.sh's own SCRIPT_DIR sourcing/invocation lines before copying, per the phase's Scope Hypothesis.",
+    "A live end-to-end /orchestrate N,M run additionally requires a human redeploy (<leader>al / Load Core) before these source-store changes take effect in .claude/ — this is a follow-up human confirmation, not a completion blocker, and was not performed by this agent."
+  ],
+  "phases_completed": 5,
+  "phases_total": 5,
+  "plan_markers_verified": "verified"
+}

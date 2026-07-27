@@ -1,8 +1,41 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "agent_type": "general-implementation-agent",
   "task_number": 932,
   "session_id": "sess_1785184824_429d4d",
   "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "plan_path": "specs/932_commit_per_wave_and_stage_source_files_in_mt_batch/plans/01_per-task-commit-stage-source-files.md"
+  "plan_path": "specs/932_commit_per_wave_and_stage_source_files_in_mt_batch/plans/01_per-task-commit-stage-source-files.md",
+  "artifact_path": "specs/932_commit_per_wave_and_stage_source_files_in_mt_batch/summaries/01_per-task-commit-stage-source-files-summary.md",
+  "artifact_type": "summary",
+  "artifact_summary": "Relocated the MT-mode commit from commands/orchestrate.md Step 5 into skill-orchestrate's Stage MT-4 per-task postflight loop (step 5.5), staging each task's self-reported modified_files with --honest-index-rows, retiring hazard 2 in batch-orchestration-guardrails.md, and proving the fix with an executable two-task commit-content harness.",
+  "phases_completed": 5,
+  "phases_total": 5,
+  "plan_markers_verified": "verified",
+  "modified_files": [
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"
+  ],
+  "completion_data": {
+    "completion_summary": "Relocated the multi-task /orchestrate batch commit into skill-orchestrate's per-task postflight loop (one scoped, --honest-index-rows commit per task per phase transition), retired the combined end-of-batch commit and hazard 2 in batch-orchestration-guardrails.md, and proved the fix with an executable two-task git harness asserting on real commit contents (isolation both directions, ephemeral-file exclusion under a dirty tracked guard, honest-index-rows addendum firing, and the fail-safe absent-modified_files path)."
+  },
+  "memory_candidates": [
+    {
+      "content": "When verifying a git-staging/commit fix, a script that merely lists staged paths does not prove isolation. Build a scratch harness that actually runs the real commit script (e.g. git-commit-scoped.sh) sequentially for two synthetic tasks and assert on `git show --name-only --format= <ref>` of the resulting real commits in both directions (each contains its own file, neither contains the sibling's). To exercise an ephemeral-file exclusion pathspec meaningfully, the excluded file must already be tracked AND dirtied before the commit under test -- an untouched tracked file or a never-tracked file doesn't exercise the exclusion logic at all.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/932_commit_per_wave_and_stage_source_files_in_mt_batch/summaries/01_per-task-commit-stage-source-files-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-commit-scoped", "harness", "commit isolation", "verification", "ephemeral-exclusion"]
+    },
+    {
+      "content": "scripts/deploy-root-guard.sh requires any script sourcing it to live two directories under a `.claude` or `.opencode` parent (i.e. at `<root>/.claude/scripts/foo.sh`), because those scripts resolve their own repo root as `${SCRIPT_DIR}/../..`. A scratch test harness for such a script must mirror this exact deployed layout (`<scratch>/.claude/scripts/`), not just copy the script to an arbitrary directory.",
+      "category": "PATTERN",
+      "source_artifact": "specs/932_commit_per_wave_and_stage_source_files_in_mt_batch/summaries/01_per-task-commit-stage-source-files-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["deploy-root-guard", "scratch harness", "deployed layout", "SCRIPT_DIR"]
+    }
+  ],
+  "next_steps": "A live end-to-end /orchestrate N,M run requires a human redeploy (<leader>al / Load Core) before these source-store changes take effect in .claude/."
 }
