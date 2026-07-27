@@ -1,0 +1,16 @@
+{
+  "phase": 4,
+  "phase_name": "Wire the acceptance criterion into /todo's output surfaces",
+  "started_at": "2026-07-27T00:00:00Z",
+  "last_updated": "2026-07-27T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Step 4 dry-run: three-way branch (omit/unparseable warning/no-op warning)", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 2, "description": "Apply same branch to final Output section and Section Inclusion Rules table", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 3, "description": "Add invariant statement at both sites", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 4, "description": "Rewrite Notes/Roadmap Updates Matching Strategy subsection", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 5, "description": "Preserve remaining Notes subsections, adjust contradicting statements only", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

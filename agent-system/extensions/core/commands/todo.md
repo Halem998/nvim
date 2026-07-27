@@ -366,22 +366,20 @@ Roadmap updates (from completion summaries):
 Task #{N1} ({project_name}):
   Summary: "{completion_summary}"
   Matches:
-    - [ ] {item text} (line {N}) [explicit]
-    - [ ] {item text 2} (line {N}) [exact]
+    - {roadmap_item text} (confidence: high, match_type: explicit_roadmap_item)
+    - {roadmap_item text 2} (confidence: high, match_type: explicit_task_ref)
 
 Task #{N2} ({project_name}):
   Summary: "{completion_summary}"
   Matches:
-    - [ ] {item text} (line {N}) [exact]
+    - {roadmap_item text} (confidence: high, match_type: exact_title_match)
 
 Task #{N3} ({project_name}) [abandoned]:
   Matches:
-    - [ ] {item text} (line {N}) [exact] -> *(Task {N} abandoned)*
+    - {roadmap_item text} -> *(Task {N} abandoned)*
 
 Total roadmap items to update: {N}
-- Completed: {N}
-  - Explicit matches: {N}
-  - Exact matches: {N}
+- Completed: {N} (from roadmap_high_confidence_matches / roadmap_completed_annotated)
 - Abandoned: {N}
 
 Total tasks: {N}
@@ -391,8 +389,21 @@ Total misplaced: {N}
 Run without --dry-run to archive.
 ```
 
-If no roadmap matches were found (from Step 3.5), omit the "Roadmap updates" section. If no
-expanded parents were deferred (`deferred_expanded[]` is empty), omit the "Deferred" section.
+**Roadmap section inclusion is a three-way branch, never a bare "found nothing" omission**:
+- `roadmap_structure.parseable == true` and `roadmap_eligible_matches[]` is empty: omit the
+  "Roadmap updates" section entirely -- legitimately nothing to do.
+- `roadmap_structure.parseable == false`: **always** print, regardless of match count:
+  `Warning: roadmap structure unrecognized (0 phases, 0 checkboxes, 0 table rows) -- see roadmap_structure in the payload`
+  (matching `commands/review.md`'s wording verbatim).
+- `roadmap_silent_noop == true` (from Step 3.5's `annotation_summary.silent_noop` -- i.e. high
+  confidence matches exist but none would apply): print
+  `Warning: roadmap annotation no-op ({roadmap_high_confidence_matches} high-confidence match(es), 0 applied) -- see skipped_reasons in the payload`.
+
+**Invariant**: omission of the "Roadmap updates" section is permitted only when the roadmap
+parsed successfully (`parseable == true`) and there were genuinely no eligible matches. An
+unparseable roadmap is never reportable as a successful (or silent) annotation pass.
+
+If no expanded parents were deferred (`deferred_expanded[]` is empty), omit the "Deferred" section.
 
 Exit here if dry run.
 
@@ -945,7 +956,13 @@ Deferred: {F} expanded parent(s) held back (subtasks still active)
 Cleanup: {O} orphans tracked, {P} misplaced moved
 
 {If roadmap updated:}
-Roadmap: {R} items updated
+Roadmap: {R} items updated ({roadmap_completed_annotated} completed, {roadmap_abandoned_annotated} abandoned)
+
+{If roadmap_structure.parseable == false:}
+Warning: roadmap structure unrecognized (0 phases, 0 checkboxes, 0 table rows) -- see roadmap_structure in the payload
+
+{If roadmap_silent_noop == true:}
+Warning: roadmap annotation no-op ({roadmap_high_confidence_matches} high-confidence match(es), 0 applied) -- see skipped_reasons in the payload
 
 {If CLAUDE.md suggestions:}
 CLAUDE.md: {applied}/{total} suggestions applied
@@ -965,10 +982,17 @@ Next Steps:
 | Directories | directories_moved > 0 |
 | Deferred | deferred_expanded[] is non-empty |
 | Cleanup | orphans_tracked > 0 OR misplaced_moved > 0 |
-| Roadmap | roadmap items updated |
+| Roadmap | roadmap_completed_annotated + roadmap_abandoned_annotated > 0, OR `parseable == false`, OR `roadmap_silent_noop == true` |
 
-If no roadmap items were updated (no matches found in Step 3.5):
-- Omit the "Roadmap updated" section
+Same three-way branch as Step 4's dry-run output:
+- `roadmap_structure.parseable == true` and zero items were annotated: omit the "Roadmap"
+  section -- legitimately nothing to do.
+- `roadmap_structure.parseable == false`: **always** print the unparseable warning line above,
+  regardless of annotation counts.
+- `roadmap_silent_noop == true`: print the annotation-no-op warning line above.
+
+**Invariant**: omission is permitted only when the roadmap parsed successfully. An unparseable
+roadmap is never reportable by `/todo` as a successful annotation pass.
 
 ## Notes
 
@@ -1044,49 +1068,55 @@ This indicates the directory was archived in state but never physically moved.
 
 ### Roadmap Updates
 
-**Matching Strategy** (Structured Synchronization):
+**Matching Strategy** (delegated to `roadmap-integration.sh`):
 
-Roadmap matching uses structured data from completed tasks, not keyword heuristics:
+`/todo` performs no matching of its own. Step 3.5 calls `roadmap-integration.sh` parse-only to
+scan `ROADMAP.md` (both checkbox items and pipe-delimited status table rows); Step 5.5 calls it
+again with `--annotate` against a snapshot filtered to this run's roadmap-eligible completed
+tasks. The script's `find_match` heuristic ranks matches by confidence:
 
-1. **Explicit roadmap_items** (Priority 1, highest confidence):
+1. **Explicit roadmap_items** (highest confidence, `explicit_roadmap_item`):
    - Tasks can include a `roadmap_items` array in state.json
    - Contains exact item text to match against ROADMAP.md
    - Example: `"roadmap_items": ["Improve /todo command roadmap updates"]`
 
-2. **Exact (Task N) references** (Priority 2):
-   - Searches ROADMAP.md for `(Task {N})` patterns
-   - Works with existing roadmap items that reference task numbers
+2. **Explicit `(Task N)` reference** (highest confidence, `explicit_task_ref`):
+   - The roadmap item text itself contains `(Task {N})` (case-insensitive)
 
-3. **Summary-based search** (Future enhancement):
-   - Uses `completion_summary` field to find semantically related items
-   - Not currently implemented (placeholder for future)
+3. **Title match, keyword match** (medium/low confidence, report-only): see the script's header
+   for the full `find_match` heuristic; only `high`-confidence matches are auto-annotated.
 
 **Producer/Consumer Workflow**:
 - `/implement` is the **producer**: populates `completion_summary` and optional `roadmap_items`
-- `/todo` is the **consumer**: extracts these fields via jq and matches against ROADMAP.md
+- `/todo` is the **consumer**: passes a filtered snapshot to `roadmap-integration.sh` and reads
+  its `roadmap_matches`/`annotation_summary` payload; it never matches or rewrites the roadmap
+  file directly
 
-**Annotation Formats**:
+**Annotation Formats** (applied by the script for the completed-task path; identical suffix
+regardless of which confidence tier produced the match):
 
-Completed tasks with explicit match:
+Item without an existing `(Task N)` reference in its text:
 ```markdown
 - [x] {item text} *(Completed: Task {N}, {DATE})*
 ```
 
-Completed tasks with exact (Task N) match:
+Item that already contains a `(Task N)` reference in its text:
 ```markdown
 - [x] {item text} (Task {N}) *(Completed: Task {N}, {DATE})*
 ```
 
-Abandoned tasks (checkbox stays unchecked):
+Abandoned tasks (checkbox stays unchecked -- applied by `/todo` itself, not the script):
 ```markdown
 - [ ] {item text} (Task {N}) *(Task {N} abandoned: {short_reason})*
 ```
 
 **Safety Rules**:
-- Skip items already annotated (contain `*(Completed:` or `*(Task` patterns)
-- Preserve existing formatting and indentation
-- One edit per item
-- Never remove existing content
+- Completed-task path (enforced by `roadmap-integration.sh`): skip items already annotated
+  (contain `*(Completed:`); one edit per item; table-row matches additionally guard against a
+  stale `line_index`/`raw_line` before writing
+- Abandoned-task path (enforced by `/todo`): skip items already containing `*(Task` or
+  `*(Completed:` patterns; preserve existing formatting and indentation; one edit per item; never
+  remove existing content
 
 **Date Format**: ISO date (YYYY-MM-DD) from task completion/abandonment timestamp
 

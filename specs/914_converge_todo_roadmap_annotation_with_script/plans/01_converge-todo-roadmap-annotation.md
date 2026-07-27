@@ -272,35 +272,36 @@ its own abandoned-task annotation gated on the parseable signal.
 
 ---
 
-### Phase 4: Wire the acceptance criterion into `/todo`'s output surfaces [NOT STARTED]
+### Phase 4: Wire the acceptance criterion into `/todo`'s output surfaces [COMPLETED]
 
 **Goal**: Eliminate the silent-omission behavior in `commands/todo.md` — an unparseable roadmap
 must always produce a visible warning in both dry-run and final output — and bring the Notes
 section in line with the new design.
 
 **Tasks**:
-- [ ] In the Step 4 dry-run output section, replace "If no roadmap matches were found (from Step
+- [x] In the Step 4 dry-run output section, replace "If no roadmap matches were found (from Step
   3.5), omit the 'Roadmap updates' section" with a three-way branch: `parseable == true` and zero
   eligible matches -> omit the section as before (legitimately nothing to do); `parseable ==
   false` -> **always** print the warning line
   `Warning: roadmap structure unrecognized (0 phases, 0 checkboxes, 0 table rows) -- see roadmap_structure in the payload`,
   matching `commands/review.md`'s wording; `silent_noop == true` -> print the
   `Warning: roadmap annotation no-op (...)` line naming `high_confidence_matches` and pointing at
-  `skipped_reasons`.
-- [ ] Apply the identical three-way branch to the final Output section's roadmap rule and to the
+  `skipped_reasons`. *(completed)*
+- [x] Apply the identical three-way branch to the final Output section's roadmap rule and to the
   "Section Inclusion Rules" table row for Roadmap, replacing "If no roadmap items were updated ...
-  omit the 'Roadmap updated' section".
-- [ ] Add a one-line statement of the invariant at both sites: omission is permitted only when the
+  omit the 'Roadmap updated' section". *(completed)*
+- [x] Add a one-line statement of the invariant at both sites: omission is permitted only when the
   roadmap parsed successfully; an unparseable roadmap is never reportable as a successful
-  annotation pass.
-- [ ] Rewrite the Notes section's "Roadmap Updates -> Matching Strategy" subsection: matching is
+  annotation pass. *(completed)*
+- [x] Rewrite the Notes section's "Roadmap Updates -> Matching Strategy" subsection: matching is
   performed by `roadmap-integration.sh` (parse-only for the scan, `--annotate` against a filtered
   snapshot for application); `roadmap_items` remains the highest-confidence producer input;
   `(Task N)` references remain a recognized high-confidence signal; drop the "Summary-based search
   (Future enhancement)" placeholder, which described a matcher that no longer exists here.
-- [ ] Preserve the Producer/Consumer Workflow, Annotation Formats, Date Format, Abandoned Reason,
+  *(completed)*
+- [x] Preserve the Producer/Consumer Workflow, Annotation Formats, Date Format, Abandoned Reason,
   and Well-Formed Completion Summaries subsections, adjusting only statements that contradict the
-  new mechanism.
+  new mechanism. *(completed)*
 
 **Timing**: 1 hour
 
