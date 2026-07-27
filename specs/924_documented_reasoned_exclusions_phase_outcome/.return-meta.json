@@ -1,15 +1,105 @@
 {
-  "status": "in_progress",
-  "started_at": "2026-07-27T00:00:00Z",
-  "artifacts": [],
-  "partial_progress": {
-    "stage": "initializing",
-    "details": "Agent started, parsing plan and delegation context"
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/924_documented_reasoned_exclusions_phase_outcome/summaries/01_reasoned-exclusions-phase-outcome-summary.md",
+      "summary": "Implementation summary for all 5 phases with fixture transcripts for the negative controls and the three-way Stage 5a outcome test."
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/context/standards/status-markers.md",
+      "summary": "Defines [COMPLETED WITH EXCLUSIONS] outcome, three-way distinction, character-class constraint, and five-condition admission test."
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/context/formats/plan-format.md",
+      "summary": "Adds the marker to Implementation Phases format, the Reasoned Exclusions record format, and the canonical phase-heading shape documentation."
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/scripts/update-phase-status.sh",
+      "summary": "Adds the COMPLETED_WITH_EXCLUSIONS write path (case branch and enumeration sites)."
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/scripts/update-task-status.sh",
+      "summary": "count_plan_phases() TOTAL/DONE regexes admit decimal sub-phases and the exclusion marker; phase-check messages updated."
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/agents/general-implementation-agent.md",
+      "summary": "Stage 5a repair loop is exclusion-aware and fixes decimal phase-number extraction; adds direct-transition and self-report guidance."
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+      "summary": "Byte-identical Stage 5a change mirrored from the base agent."
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/scripts/validate-artifact.sh",
+      "summary": "Three phase-heading regexes now admit decimal sub-phases."
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+      "summary": "phases_completed/phases_total accounting rule extended for the exclusion marker; documents no new handoff field."
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/rules/plan-format-enforcement.md",
+      "summary": "Valid-marker list and record requirement updated with advisory-first enforcement statement."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Introduced [COMPLETED WITH EXCLUSIONS] as a documented phase-heading outcome generalizing the strategic-sorry family, closed the write/count trap across update-phase-status.sh and update-task-status.sh, protected the Reasoned Exclusions record from Stage 5a's blind rewrite in both implementation agents (also fixing a pre-existing decimal-sub-phase extraction defect), reconciled the remaining phase-heading regex sites, and wired the outcome into the handoff schema and plan-format enforcement checklist."
   },
+  "memory_candidates": [
+    {
+      "content": "When a plan declares Commit Mode: atomic-batch for a phase whose two edits are interdependent (a write-path change and a count-path change to the same marker), verify both halves together with a single fixture before committing: a positive round-trip AND a negative-fixture end-to-end run of the real gate (not just the regex in isolation). Reverting only one half of an atomic-batch phase should be structurally impossible to reach in a green state, and the negative fixture is what proves the permissive regex change did not also weaken the gate for genuinely incomplete work.",
+      "category": "PATTERN",
+      "source_artifact": "specs/924_documented_reasoned_exclusions_phase_outcome/summaries/01_reasoned-exclusions-phase-outcome-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["atomic-batch", "commit-mode", "negative-fixture", "phase-accounting", "status-marker"]
+    },
+    {
+      "content": "Before executing a plan's fixture verification for a shell-block change embedded in an agent .md file (e.g. Stage 5a's marker-repair loop), extract the code fence verbatim from the deployed file and execute it against a throwaway fixture rather than retyping the logic. This tests the shipped text, not the author's mental model of it, and catches transcription drift immediately (e.g. a byte-identity check across two agent files' embedded blocks is only meaningful if both extractions are exact).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/924_documented_reasoned_exclusions_phase_outcome/summaries/01_reasoned-exclusions-phase-outcome-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["fixture-testing", "verbatim-extraction", "stage-5a", "byte-identity", "agent-markdown"]
+    },
+    {
+      "content": "A plan's Scope Hypothesis census can find MORE than what it declared; the plan's own escalate-vs-absorb rule (fix a discovered same-pattern one-line site inline, escalate substantive rewrites to a follow-up note) is the right default for implementers rather than silently ignoring the discovery or silently expanding scope without a rationale. Recording the correction explicitly in the summary keeps the plan's declared scope auditable against what was actually touched.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/924_documented_reasoned_exclusions_phase_outcome/summaries/01_reasoned-exclusions-phase-outcome-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["scope-hypothesis", "census", "escalate-vs-absorb", "plan-deviation"]
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/status-markers.md",
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/context/contracts/anti-analysis.md",
+    "agent-system/extensions/core/scripts/update-phase-status.sh",
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/core/scripts/validate-artifact.sh",
+    "agent-system/extensions/core/commands/task.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/rules/plan-format-enforcement.md",
+    "specs/924_documented_reasoned_exclusions_phase_outcome/plans/01_reasoned-exclusions-phase-outcome.md",
+    "specs/924_documented_reasoned_exclusions_phase_outcome/summaries/01_reasoned-exclusions-phase-outcome-summary.md"
+  ],
+  "next_steps": "Review implementation and run /todo to archive; consider a follow-up task for skill-orchestrate's recovered_completed stagnation-detection count noted in the summary's Notes section.",
   "metadata": {
     "session_id": "sess_1785171084_0f7c36",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }
