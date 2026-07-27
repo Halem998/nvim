@@ -5,7 +5,7 @@
     {
       "project_number": 913,
       "project_name": "fix_stage5_missing_handoff_after_research_dispatch",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Fix Stage 5 treating a missing handoff after a research dispatch as an error",
@@ -15,7 +15,26 @@
         "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
       ],
       "created": "2026-07-27T00:56:42Z",
-      "last_updated": "2026-07-27T00:56:42Z"
+      "last_updated": "2026-07-27T07:22:38Z",
+      "session_id": "sess_1785135087_82982c",
+      "artifacts": [
+        {
+          "path": "specs/913_fix_stage5_missing_handoff_after_research_dispatch/reports/01_stage5-research-handoff-mismatch.md",
+          "type": "report",
+          "summary": "Confirms Stage 5's missing-handoff branch mishandles all base-mode dispatches (research, plan, and base-mode implement all never write a handoff per handoff-schema.md's own documented table); refutes the task's plan/research asymmetry premise; identifies command-gate-out.sh's .return-meta.json read as the precedented fix mechanism; confirms skill-orchestrate-hard's H4/H5/Stage 6 sub-dispatches were already fixed by a prior task."
+        },
+        {
+          "path": "specs/913_fix_stage5_missing_handoff_after_research_dispatch/plans/01_stage5-return-meta-fallback.md",
+          "type": "plan",
+          "summary": "Six-phase plan adding a shared .return-meta.json outcome-recovery helper consumed by base Stage 5, hard Stage 5, and multi-task Stage MT-4"
+        },
+        {
+          "path": "specs/913_fix_stage5_missing_handoff_after_research_dispatch/summaries/01_stage5-return-meta-fallback-summary.md",
+          "type": "summary",
+          "summary": "Six-phase implementation adding a shared .return-meta.json outcome-recovery helper consulted by base Stage 5, hard Stage 5, and multi-task Stage MT-4 step 1"
+        }
+      ],
+      "completion_summary": "Added shared orchestrate-recover-outcome.sh helper that recovers a dispatch outcome from .return-meta.json (with mtime staleness gate) when .orchestrator-handoff.json is absent. Wired into base Stage 5, hard-mode Stage 5, and multi-task Stage MT-4 step 1, routing recovered status through the existing postflight/completion-gate/artifact-linking path. Base-mode research, plan, and implement dispatches never write a handoff by contract, so the missing-handoff branch previously stranded tasks at researching (single-task) or marked them failed (multi-task). Documented outcome channels in handoff-schema.md. Requires a .claude/ re-sync to take effect at runtime."
     },
     {
       "project_number": 891,
@@ -319,7 +338,8 @@
       "title": "Enable and verify passive signal capture",
       "description": "URGENT / HIGH PRIORITY. The 30-day transcript window is reaped daily, so every day without capture is permanently lost data.\n\nSOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/ (and agent-system/extensions/memory/ for /distill and /learn). The .claude/ tree is a GITIGNORED, UNTRACKED, DISPOSABLE deploy artifact regenerated from the source store by the <leader>al picker/loader, which invokes agent-system/extensions/core/scripts/install-extension.sh from lua/neotex/plugins/ai/shared/extensions/loader.lua. Nothing under .claude/ is hand-authored; every deployed file has a source, enforced by the check-extension-docs.sh hard gate. ALL file edits MUST target agent-system/extensions/** and NEVER .claude/** -- a change written to .claude/ is silently wiped by the next regeneration.\n\nTHE GAP AND ITS ACTUAL ROOT CAUSE (verified; do not re-derive): tasks 869/870/871/872 wrote a complete event/reflection store into agent-system/extensions/core/ but it was NEVER deployed. nvim's .claude/ last synced Jul 14 18:13, before the events work landed (Jul 15 01:19-08:10). The root cause is NOT a forgotten command -- it is the stale self-sync guard (the subject of task 874): nvim cannot regenerate its OWN deploy tree because load_all_globally() early-returns when project_dir == global_dir. Hence the dependency on 874; until that guard is removed nvim's .claude/ cannot be regenerated at all.\n\nVERIFIED ABSENT from nvim's deployed .claude/: events-append.sh, events-query.sh, hooks/events-log-artifact.sh, hooks/events-log-lifecycle.sh, context/formats/events-format.md, context/schemas/events-schema.json. Live .claude/settings.json has 0 hook registrations (3 exist in source root-files/settings.json). Deployed skill-base.sh and orchestrator-postflight.sh have 0 event call sites.\n\nWHY IT FAILS INVISIBLY: every call site is `bash .claude/scripts/events-append.sh ... || true` against a nonexistent path, so it fails SILENTLY. Consequences: specs/events.jsonl exists in NO repo; zero events ever recorded; zero tasks have a `reflection` or `memory_candidates` field; .memory/distill-log.json has operations: []; /distill has never completed a run; task 872's --dream is spec-only (deployed skill-memory/SKILL.md has zero `dream` matches).\n\nSCOPE:\n1. Get the events stack actually deployed and flowing; verify end-to-end AFTER regeneration, in nvim AND in at least one other repo.\n2. Replace the `|| true` silent-fail idiom with something observable, so a missing helper can never again fail invisibly. This is the defect that hid the gap for a full day.\n3. Enable CLAUDE_CODE_ENABLE_TELEMETRY=1 and wire an OTel exporter. NOTE: the env block in ~/.claude/settings.json is Home-Manager-managed from ~/.dotfiles/config/claude/settings.json, so that change likely belongs in the dotfiles repo, not here -- research must confirm the correct home before editing.\n4. Raise cleanupPeriodDays to widen the 30-day transcript window. NEVER set 0: per anthropics/claude-code issue #23710, cleanupPeriodDays:0 silently DISABLES persistence entirely, contradicting the docs. Setting 0 would destroy the very data this task exists to preserve.\n5. Add a `repo` field to the event schema, events-append.sh, and events-schema.json for cross-repo federation, or resolve it from cwd.\n6. Add a deploy-drift check (source vs deployed) so this silent divergence cannot recur; consider extending the existing check-extension-docs.sh doc-lint hard gate rather than adding a new script.\n\nDEPENDS ON 874 (self-sync guard removal). Reference: Claude Code OTel docs at code.claude.com/docs/en/monitoring-usage.\n\nDELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside specs/**.",
       "dependencies": [
-        874
+        874,
+        916
       ],
       "file_scope": [
         "agent-system/extensions/core/scripts/events-append.sh",
@@ -332,7 +352,7 @@
         "agent-system/extensions/core/scripts/check-extension-docs.sh"
       ],
       "created": "2026-07-15",
-      "last_updated": "2026-07-15T19:36:36Z",
+      "last_updated": "2026-07-27T06:47:00Z",
       "session_id": "sess_1784135810_7e6755_885",
       "artifacts": [
         {
@@ -946,14 +966,16 @@
       "topic": "agent-system",
       "title": "Populate completion_summary from return metadata on every /orchestrate path",
       "description": "SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.\n\nOBSERVED DIRECTLY, IN A LIVE RUN (not inferred). A multi-task /orchestrate invocation drove three tasks through research -> plan -> implement to a [COMPLETED] terminal status. All three implementation agents correctly wrote completion_data.completion_summary into their .return-meta.json files. All three state.json entries were nevertheless left with an EMPTY completion_summary, and the orchestrator reported full success. The summaries had to be copied into state.json by hand afterward.\n\nWHY THIS MATTERS. state.json's own documented schema marks completion_summary as \"Required when status=completed\", and /todo consumes completion_summary (and roadmap_items) to annotate ROADMAP.md at archival time. So this silently produces schema-invalid completed records AND starves the downstream roadmap consumer -- the same end-user symptom as the implementer-side producer-contract gap repaired previously, but arising in the orchestrator's own postflight rather than in any implementer.\n\nSITE. skill-orchestrate/SKILL.md Stage MT-4 (multi-task per-task postflight) reads dispatch_status, artifacts, and phase accounting from the handoff, and calls skill_postflight_update and skill_link_artifacts -- but never reads completion_data out of .return-meta.json and never writes completion_summary/roadmap_items to state.json. Note that commands/orchestrate.md DOES document a \"Populate Completion Summary (if implemented)\" step at its CHECKPOINT 2, but that checkpoint is on the SINGLE-task path only; multi-task mode returns via Stage MT-5 and consolidated output, bypassing it entirely.\n\nESTABLISH, THEN FIX:\n1. Confirm the single-task path actually populates completion_summary in practice, or whether it has the same hole (commands/orchestrate.md documents the step, but verify the executed path -- do not infer from the presence of the text).\n2. Check skill-orchestrate-hard/SKILL.md for the same gap in both its single-task and any multi-task path.\n3. Fix so that a task reaching completed via ANY /orchestrate path carries a populated completion_summary, and roadmap_items when the implementer produced them.\n\nDESIGN CONSTRAINT. Prefer ONE shared step that both the single-task and multi-task paths call, over adding a second independently-maintained copy to Stage MT-4 -- the divergence between an orchestrate.md-documented checkpoint and an MT-stage that silently lacks it is precisely the defect being repaired here. There is related prior art: an equivalent producer-side step exists in the implementer skills, and a standing recommendation to factor that one into a shared script. Consider whether both should converge on the same helper.\n\nACCEPTANCE CRITERION: a multi-task /orchestrate run that drives 2+ tasks to completed must leave every one of them with a non-empty completion_summary in state.json, with no manual intervention.\n\nHonor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.",
-      "dependencies": [],
+      "dependencies": [
+        913
+      ],
       "file_scope": [
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
         "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
         "agent-system/extensions/core/commands/orchestrate.md"
       ],
       "created": "2026-07-27T06:31:44Z",
-      "last_updated": "2026-07-27T06:31:44Z"
+      "last_updated": "2026-07-27T06:47:00Z"
     }
   ],
   "completed_projects": [],

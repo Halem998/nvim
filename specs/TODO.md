@@ -11,10 +11,11 @@ next_project_number: 917
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,913,914,915,916 | -- | agent-system |
-| 2 | 887,906 | 873,885 | agent-system |
-| 3 | 907 | 906 | agent-system |
-| 4 | 908 | 907 | agent-system |
+| 1 | 873,914,915,916 | -- | agent-system |
+| 2 | 885 | 916 | agent-system |
+| 3 | 887,906 | 873,885 | agent-system |
+| 4 | 907 | 906 | agent-system |
+| 5 | 908 | 907 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -22,15 +23,14 @@ next_project_number: 917
 
 873 [BLOCKED] — Make /meta create tasks in the GLOBAL agent-system root by defaul
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
-885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
-  └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use (see above)
-  └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-    └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-      └─ 908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
-913 [NOT STARTED] — Fix Stage 5 of skill-orchestrate treating a missing .orchestrator
 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 916 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+  └─ 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
+    └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use (see above)
+    └─ 906 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+      └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+        └─ 908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
 
 ## Tasks
 
@@ -38,7 +38,7 @@ next_project_number: 917
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 913
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
@@ -115,10 +115,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 913. Fix Stage 5 treating a missing handoff after a research dispatch as an error
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [913_fix_stage5_missing_handoff_after_research_dispatch/reports/01_stage5-research-handoff-mismatch.md]
+- **Plan**: [913_fix_stage5_missing_handoff_after_research_dispatch/plans/01_stage5-return-meta-fallback.md]
+- **Summary**: [913_fix_stage5_missing_handoff_after_research_dispatch/summaries/01_stage5-return-meta-fallback-summary.md]
 
 **Description**: Fix Stage 5 of skill-orchestrate treating a missing .orchestrator-handoff.json after a RESEARCH dispatch as an error condition, when for research dispatches a missing handoff is the contractually correct outcome.
 
@@ -964,7 +967,7 @@ DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside s
 - **Status**: [PARTIAL]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 874
+- **Dependencies**: Task 874, Task 916
 - **Research**: [885_enable_and_verify_passive_signal_capture/reports/01_enable-verify-passive-signal-capture.md]
 - **Plan**: [885_enable_and_verify_passive_signal_capture/plans/01_passive-signal-capture-deploy.md]
 - **Summary**: [885_enable_and_verify_passive_signal_capture/summaries/01_passive-signal-capture-deploy-summary.md]
