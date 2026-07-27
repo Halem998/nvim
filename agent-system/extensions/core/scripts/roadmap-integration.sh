@@ -34,6 +34,25 @@
 # allowlist matched), which the table-row annotation path uses to locate and safely rewrite a row
 # in place. Checkbox-sourced match objects never carry these keys.
 #
+# Caller contract:
+#   (a) Parse-only mode (omitting --annotate) is a supported, first-class call shape. Its purpose
+#       is to obtain roadmap_structure/warnings/roadmap_matches without mutating ROADMAP.md at
+#       all -- a caller that only needs the structure signal or the match list, not an applied
+#       edit, should call the script this way rather than treating --annotate as the only mode.
+#   (b) The archive input is resolved as the sibling ${STATE_PATH%state.json}archive/state.json.
+#       A caller that passes a synthesized or filtered --state snapshot living outside specs/
+#       therefore gets an empty archive set (the sibling path will not exist) -- this is the
+#       supported way to scope a run to a caller-chosen task subset, not an accident to work
+#       around. A caller relying on this must place its snapshot outside specs/ deliberately.
+#   (c) The script applies no task_type filter and has no abandoned-status branch: its
+#       COMPLETED_TASKS/ARCHIVED_TASKS queries only ever select status == "completed", and its
+#       only annotation-suffix construction is the "*(Completed: Task N ...)*" format. A caller
+#       needing to exclude a task type (e.g. meta tasks) or to annotate an abandoned-task branch
+#       must filter its own --state input, or implement that annotation path itself -- neither is
+#       something a future change to this script should add, since doing so would widen an
+#       already-fixed, already-verified call site for the benefit of a caller that can filter its
+#       own input instead.
+#
 # Output schema (all fields below annotation_summary.annotations_made/items_skipped/
 # skipped_reasons and roadmap_state/roadmap_matches are unchanged from the original schema;
 # roadmap_structure, warnings, and the two annotation_summary fields marked NEW are additive):

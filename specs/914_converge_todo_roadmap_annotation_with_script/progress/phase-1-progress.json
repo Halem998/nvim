@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Document the script's caller contract",
+  "started_at": "2026-07-27T00:00:00Z",
+  "last_updated": "2026-07-27T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Caller contract subsection to roadmap-integration.sh header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 2, "description": "State script applies no task_type filter and has no abandoned-status branch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 3, "description": "Verify comment-only change, bash -n passes, behavior unchanged", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
