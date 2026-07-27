@@ -364,6 +364,31 @@ skill_validate_artifact() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Validate every artifact in a task directory against its correct per-file type
+# Usage: skill_validate_task_artifacts "$task_dir"
+# Non-blocking directory-wide sweep, distinct from skill_validate_artifact above (which
+# validates exactly one known (path, kind) pair). validate-artifact.sh takes exactly one file
+# and one type per invocation, so a whole-directory sweep needs its own abstraction — centralizing
+# it here is what keeps the per-file-type convention (reports/*.md -> report, plans/*.md -> plan,
+# summaries/*.md -> summary) from drifting again at future call sites.
+skill_validate_task_artifacts() {
+  local task_dir="$1"
+  local subdir type f
+  for pair in "reports:report" "plans:plan" "summaries:summary"; do
+    subdir="${pair%%:*}"
+    type="${pair##*:}"
+    for f in "$task_dir"/"$subdir"/*.md; do
+      [ -e "$f" ] || continue
+      echo "Validating ${type} artifact: ${f}"
+      if ! bash .claude/scripts/validate-artifact.sh "$f" "$type" --fix 2>/dev/null; then
+        echo "WARNING: ${type} artifact ${f} has format issues (non-blocking). Review output above." >&2
+      fi
+    done
+  done
+  return 0
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Stage 7: Update status to completed variant
 # Usage: skill_postflight_update "$task_number" "$operation" "$session_id" "$status"
 # Only updates state when status is a success value (researched/planned/implemented)
