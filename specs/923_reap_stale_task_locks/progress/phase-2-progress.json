@@ -1,0 +1,22 @@
+{
+  "phase": 2,
+  "phase_name": "Test fixture proving the four required behaviors",
+  "started_at": "2026-07-27T00:30:00Z",
+  "last_updated": "2026-07-27T01:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create test-task-lock-reap.sh with 6 fixture cases (A-F) in an isolated temp root and register in manifest.json",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/test-task-lock-reap.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Negative teeth-check performed manually: temporarily reverted find's -maxdepth 3 to -maxdepth 2 in task-lock.sh, re-ran suite (5 passed, 1 failed - case F failed as expected), then reverted task-lock.sh back to byte-identical state (confirmed via empty git diff) and re-ran suite (6 passed, 0 failed)."
+}

@@ -215,40 +215,40 @@ reference `context/patterns/task-lock.md` and its section names instead).
 
 ---
 
-### Phase 2: Test fixture proving the four required behaviors [NOT STARTED]
+### Phase 2: Test fixture proving the four required behaviors [COMPLETED]
 
 **Goal**: An executable, self-contained test script proves the reaper's contract against an
 isolated temp root, never the real `specs/` tree.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/test-task-lock-reap.sh`, following the naming
+- [x] Create `agent-system/extensions/core/scripts/test-task-lock-reap.sh`, following the naming
       convention of the existing `check-*.sh` / `verify-*.sh` scripts in that directory.
-- [ ] Build the temp root so it satisfies `deploy-root-guard.sh`. That guard requires the script's
+- [x] Build the temp root so it satisfies `deploy-root-guard.sh`. That guard requires the script's
       parent directory to be named `.claude` or `.opencode` — so the fixture must lay out
       `$TMPROOT/.claude/scripts/` (copying in `task-lock.sh` and `deploy-root-guard.sh`) and
       `$TMPROOT/specs/`. This is what makes an isolated temp root work with zero testability hooks
       added to production code; do not add a `PROJECT_ROOT` override to `task-lock.sh` to work
       around it.
-- [ ] Seed `$TMPROOT/specs/state.json` with the `active_projects` entries the fixture's task
+- [x] Seed `$TMPROOT/specs/state.json` with the `active_projects` entries the fixture's task
       directories need, so `resolve_task_dir` and `get_file_scope` resolve normally.
-- [ ] Create fixture locks by writing `holder.json` directly with controlled `heartbeat_at` /
+- [x] Create fixture locks by writing `holder.json` directly with controlled `heartbeat_at` /
       `acquired_at` timestamps (fresh = now; stale = well past the threshold), rather than by
       sleeping.
-- [ ] Place at least one stale fixture lock at **depth 3** under `$TMPROOT/specs/archive/`, so a
+- [x] Place at least one stale fixture lock at **depth 3** under `$TMPROOT/specs/archive/`, so a
       reinherited `-maxdepth 2` fails the suite rather than passing silently.
-- [ ] Test case (a): a fresh lock (heartbeat_at = now) is NOT reaped — assert the directory still
+- [x] Test case (a): a fresh lock (heartbeat_at = now) is NOT reaped — assert the directory still
       exists after a live `reap` and that its path does not appear in the output.
-- [ ] Test case (b): a stale lock IS reaped AND reported — assert the directory is gone AND that
+- [x] Test case (b): a stale lock IS reaped AND reported — assert the directory is gone AND that
       live-mode stdout contains that lock's task number and an age figure.
-- [ ] Test case (c): `reap --dry-run` removes nothing — assert every fixture lock directory still
+- [x] Test case (c): `reap --dry-run` removes nothing — assert every fixture lock directory still
       exists after the dry run, and that the output names the stale ones as `would reap`.
-- [ ] Test case (d): `acquire`, `check`, `heartbeat`, and `release` never reap implicitly — run
+- [x] Test case (d): `acquire`, `check`, `heartbeat`, and `release` never reap implicitly — run
       each of the four against the fixture root while a stale foreign lock is present, then assert
       the stale foreign lock directory is still present after all four.
-- [ ] Add a case covering the missing/corrupt-`holder.json` skip-vs-reap branch from Phase 1.
-- [ ] `trap`-based cleanup of the temp root on exit, including on failure.
-- [ ] Print a per-case PASS/FAIL line and exit non-zero if any case fails.
-- [ ] Register the new script in `agent-system/extensions/core/manifest.json` under
+- [x] Add a case covering the missing/corrupt-`holder.json` skip-vs-reap branch from Phase 1.
+- [x] `trap`-based cleanup of the temp root on exit, including on failure.
+- [x] Print a per-case PASS/FAIL line and exit non-zero if any case fails.
+- [x] Register the new script in `agent-system/extensions/core/manifest.json` under
       `provides.scripts` so it actually deploys.
 
 **Timing**: 1.5 hours

@@ -137,6 +137,7 @@
       "setup-lean-mcp.sh",
       "skill-base.sh",
       "task-lock.sh",
+      "test-task-lock-reap.sh",
       "tier-selection.sh",
       "uninstall-extension.sh",
       "update-phase-status.sh",
