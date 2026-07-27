@@ -316,6 +316,9 @@ Update `specs/{NNN}_{SLUG}/.return-meta.json` with completed status:
       "summary": "Zulip thread message for stream '{stream}', topic '{topic}'"
     }
   ],
+  "completion_data": {
+    "completion_summary": "Composed PR review response files addressing {N} reviewer comments. {N} minor code changes applied."
+  },
   "metadata": {
     "session_id": "{session_id}",
     "agent_type": "pr-review-implementation-agent",
@@ -323,10 +326,7 @@ Update `specs/{NNN}_{SLUG}/.return-meta.json` with completed status:
     "delegation_path": ["orchestrator", "implement", "skill-pr-review-implementation", "pr-review-implementation-agent"],
     "pr_response_created": true,
     "zulip_response_created": true,
-    "code_changes_applied": N,
-    "completion_data": {
-      "completion_summary": "Composed PR review response files addressing {N} reviewer comments. {N} minor code changes applied."
-    }
+    "code_changes_applied": N
   },
   "memory_candidates": []
 }

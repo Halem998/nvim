@@ -280,22 +280,26 @@ done
 
 ---
 
-### Phase 4: Correct nested `completion_data` in pr-review-implementation-agent [NOT STARTED]
+### Phase 4: Correct nested `completion_data` in pr-review-implementation-agent [COMPLETED]
 
 **Goal**: Move `completion_data` out of `metadata` and up to top level in the worked final-metadata
 example, matching the normative schema, so the newly-added reference does not contradict the
 example sitting next to it.
 
 **Tasks**:
-- [ ] In `cslib/agents/pr-review-implementation-agent.md`, locate the final-metadata JSON example
+- [x] In `cslib/agents/pr-review-implementation-agent.md`, locate the final-metadata JSON example
       (`"completion_data"` currently nested inside `"metadata"`, around line 322 pre-edit; the
-      line number shifts by the Phase 2 insertion)
-- [ ] Close the `metadata` object after `code_changes_applied`, then emit `completion_data` as a
+      line number shifts by the Phase 2 insertion) *(completed: found at line 319/327 pre-edit
+      after Phase 2's insertion shift)*
+- [x] Close the `metadata` object after `code_changes_applied`, then emit `completion_data` as a
       top-level sibling of `metadata`, preserving the existing `completion_summary` text verbatim
-- [ ] Confirm the resulting block is valid JSON in shape (balanced braces, comma placement) and
-      that `memory_candidates` remains a top-level key
-- [ ] Verify `cslib/agents/pr-review-research-agent.md` requires no change — it has no
-      `completion_data` key, correctly, because it terminates at `researched` status
+      *(completed)*
+- [x] Confirm the resulting block is valid JSON in shape (balanced braces, comma placement) and
+      that `memory_candidates` remains a top-level key *(completed: memory_candidates confirmed
+      top-level; JSON-SHAPE OK on the isolated Stage 7 block)*
+- [x] Verify `cslib/agents/pr-review-research-agent.md` requires no change — it has no
+      `completion_data` key, correctly, because it terminates at `researched` status *(completed:
+      grep -c confirms 0)*
 
 **Timing**: 0.3 hours
 

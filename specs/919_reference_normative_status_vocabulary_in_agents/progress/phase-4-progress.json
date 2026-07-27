@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "phase_name": "Correct nested completion_data in pr-review-implementation-agent",
+  "started_at": "2026-07-27T00:30:00Z",
+  "last_updated": "2026-07-27T00:33:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Un-nest completion_data from metadata in Stage 7 example; confirm pr-review-research-agent.md needs no change",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/cslib/agents/pr-review-implementation-agent.md"
+      ],
+      "note": "The plan's literal Phase 4 verification awk one-liner concatenates this file's two pre-existing ```json blocks (unchanged count before/after this edit, confirmed via git show HEAD), producing a jq parse error unrelated to the completion_data fix. Per the plan's own caveat ('if the awk range picks up more than one block, check each block individually'), the Stage 7 metadata block (lines 304-333) was extracted and jq-validated individually: JSON-SHAPE OK."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
