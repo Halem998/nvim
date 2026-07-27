@@ -149,10 +149,57 @@ task-scoped commit:
 - `git add -A`
 - `git add .`
 - `git commit -am` (implicitly stages all tracked-file modifications)
+- A **bare, unscoped `git commit`** (no trailing `-- <pathspec>...`) — see "Commit-Level Path
+  Scoping and Cross-Process Serialization" below. Even when staging was correctly narrowed by
+  this contract, a bare commit still commits the ENTIRE shared index, not just what was just
+  staged, so a concurrently-dispatched agent's staged-but-uncommitted work gets swept into
+  whichever agent commits next.
 
-These commands stage the entire working tree (or all tracked changes), which can silently
+These commands stage (or commit) more than the operation actually produced, which can silently
 include a concurrent session's stray edits, unrelated in-progress work, or accidental file
 changes that have nothing to do with the current operation.
+
+## Commit-Level Path Scoping and Cross-Process Serialization
+
+Staging narrowly is necessary but not sufficient: a narrowed `git add` followed by a **bare**
+`git commit` still commits the entire shared index, because `git commit` with no pathspec commits
+everything currently staged — including anything a concurrently-dispatched agent staged into the
+same shared index but has not yet committed. This was a real, observed defect (two implementation
+agents each reported their own phase commits swept into a concurrent session's commit message).
+
+The fix has two parts, both mandatory for every commit site in the dispatch pipeline:
+
+1. **Every `git commit` MUST name its pathspec**: `git commit -m "..." -- <pathspec>...`, using
+   the same paths (plus the canonical exclusion set) that were just staged. A bare `git commit`
+   is now a Forbidden Operation (see above), on the same footing as `git add -A`.
+2. **The `git add` + `git commit` pair MUST be serialized** through the `specs/.commit-lock/`
+   mutex (`task-lock.sh`'s `commit-acquire`/`commit-release` verbs — see
+   `context/patterns/task-lock.md`'s Scope-Mutex CLI section for the full contract). Path-scoping
+   alone converts misattribution into a DIFFERENT failure: two simultaneous scoped commits race on
+   git's own `index.lock`, and one fails outright. Serializing the add+commit pair removes that
+   race without reintroducing misattribution.
+
+`agent-system/extensions/core/scripts/git-commit-scoped.sh` is the single sanctioned
+implementation of both parts. Every commit site in the dispatch pipeline invokes it rather than
+re-deriving this pattern inline — the pattern drifted once already when it was left to eleven
+near-duplicate call sites (nine of eleven never received the canonical exclusion set after it was
+added to this document), and a single shipped helper is what stops that recurring.
+
+Two non-obvious safety rules, discovered empirically and enforced inside the helper rather than
+left for each caller to rediscover:
+
+- **An exclude-only pathspec list commits WIDER than a bare commit, not narrower.** `git commit --
+  ":(exclude)some/path"` with no positive pathspec entry commits everything except the excluded
+  path — the opposite of the intended narrowing. A degenerate `stage_paths` (e.g. an empty task
+  directory variable) would silently turn the fix into a worse bug. `git-commit-scoped.sh` refuses
+  to run (no `git add`, no commit) if the pathspec list contains zero positive entries, both
+  before and after path validation.
+- **An unmatched path in the commit pathspec aborts the WHOLE commit.** `git commit -- <paths
+  including one git cannot match>` fails with `error: pathspec '...' did not match any file(s)
+  known to git` and commits nothing at all — worse than `git add`'s equivalent failure, which
+  today is already guarded by the postflight pipeline. `git-commit-scoped.sh` validates each
+  positive pathspec and drops unmatched entries with a loud warning rather than aborting the
+  entire commit.
 
 ## Required Review Flow
 
@@ -178,11 +225,23 @@ that is only ever safe against a SINGLE writer at a time. `orchestrator-postflig
 brackets that entire read-modify-write-plus-`TODO.md`-regen window (its Stages 7 through 8a) in
 the `specs/.scope-lock/` mutex documented in `task-lock.md`'s "Scope-Mutex CLI" section, so two
 concurrent postflight runs on DIFFERENT tasks can no longer interleave their state.json writes
-and silently lose one session's update. This serialization is deliberately narrow: it protects
-only the write window above, never `git add`/`git commit` themselves (Stage 9 and later remain
-explicitly outside the mutex, matching the "targeted, work-scoped staging" contract this document
-already describes — a slower git/TTS/cleanup tail carries no data-integrity risk worth
-serializing).
+and silently lose one session's update.
+
+**Correction to an earlier version of this section**: this serialization was previously described
+as stopping at the state-write window, with `git add`/`git commit` (Stage 9 and later) deliberately
+left "explicitly outside the mutex... a slower git/TTS/cleanup tail carries no data-integrity risk
+worth serializing." That reasoning was sound when the only committer was a single sequential
+postflight process, but concurrent multi-task dispatch invalidated it: two simultaneously
+dispatched agents' `git add` + bare `git commit` pairs on the shared index is exactly the
+misattribution defect "Commit-Level Path Scoping and Cross-Process Serialization" above describes.
+Stage 9 still stays outside the **state-write** mutex (`specs/.scope-lock/`, released before
+Stage 8b) — that boundary is unchanged and still correct, since state.json's read-modify-write
+concern is unrelated to committing. But Stage 9 now runs INSIDE a second, distinct **commit**
+mutex (`specs/.commit-lock/`, via `git-commit-scoped.sh`) for the whole duration of its `git add` +
+`git commit` pair. Both statements are true simultaneously: "outside the state-write mutex" and
+"inside the commit mutex" describe two different, non-overlapping critical sections guarded by two
+different mutexes — see `task-lock.md`'s two-mutex documentation for why one mutex could not serve
+both.
 
 Because the staging rule above still allows `specs/state.json` and `specs/TODO.md` to legitimately
 carry OTHER tasks' current rows in a given commit (they are shared, wholesale-regenerated index
@@ -203,10 +262,14 @@ the addendum and falls through to the plain commit message — it must never bre
 - `.claude/context/formats/return-metadata-file.md` — `modified_files` field schema
 - `.claude/context/formats/progress-file.md` — `files_touched` per-objective field
 - `.claude/scripts/orchestrator-postflight.sh` — Stage 9 execution site
+- `.claude/scripts/git-commit-scoped.sh` — the single sanctioned implementation of commit-level
+  path scoping plus commit-mutex serialization (see "Commit-Level Path Scoping and Cross-Process
+  Serialization" above)
 - `.claude/rules/git-workflow.md` — Never Run list and Commit Scope section
 - `.claude/skills/skill-git-workflow/SKILL.md` — canonical documentation front
 - `.claude/context/patterns/task-lock.md` — the `specs/.scope-lock/` scope-mutex CLI
-  (`scope-acquire`/`scope-release`) that now brackets the state.json read-modify-write window
-  referenced above
+  (`scope-acquire`/`scope-release`) that brackets the state.json read-modify-write window
+  referenced above, AND the sibling `specs/.commit-lock/` commit-mutex CLI
+  (`commit-acquire`/`commit-release`) that `git-commit-scoped.sh` uses to serialize commits
 - `.claude/context/standards/orchestrator-runtime-files.md` — the two-class ephemeral/durable
   policy the canonical exclusion set above implements, with the full freshness-gate rationale

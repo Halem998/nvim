@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Document the contract in the canonical standards",
+  "started_at": "2026-07-27T10:40:00Z",
+  "last_updated": "2026-07-27T10:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Commit-Level Path Scoping and Cross-Process Serialization section to git-staging-scope.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 2, "description": "Record V2/V3 safety rules", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 3, "description": "Correct stale State-Write Serialization claim", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 4, "description": "Extend task-lock.md with Commit-Mutex CLI section", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 5, "description": "Update Related Documentation lists in both files", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md", "agent-system/extensions/core/context/patterns/task-lock.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification": "grep confirmed no newly-added task-number citations in either file (only pre-existing legacy task 788/808/809 references remain). git-staging-scope.md's corrected State-Write Serialization section no longer asserts commits are unserialized outside of a quoted historical claim explicitly marked as superseded."
+}

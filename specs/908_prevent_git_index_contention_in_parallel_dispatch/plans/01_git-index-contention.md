@@ -350,7 +350,7 @@ into a durable artifact.
 
 ---
 
-### Phase 4: Document the contract in the canonical standards [NOT STARTED]
+### Phase 4: Document the contract in the canonical standards [COMPLETED]
 
 **Goal**: A future audit reads the full picture from canonical documents.
 

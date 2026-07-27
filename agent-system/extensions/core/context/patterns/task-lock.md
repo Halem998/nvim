@@ -192,6 +192,13 @@ state.json read-modify-write calls). It reuses `specs/.scope-lock/`, the same gl
 internal primitive (`acquire_scope_mutex`/`release_scope_mutex`) as a standalone CLI surface,
 rather than introducing a new script or a new lock directory.
 
+A sibling primitive, `commit-acquire`/`commit-release`, serializes a DIFFERENT critical section
+(the git add + git commit pair around scoped commits) through a DIFFERENT mutex directory,
+`specs/.commit-lock/` — see "Commit-Mutex CLI: `commit-acquire` / `commit-release`" below for the
+full contract. Both CLIs share the same underlying `acquire_named_mutex`/`release_named_mutex`
+implementation (parameterized by mutex directory name) but are otherwise fully independent:
+holding one never blocks or interacts with the other.
+
 ### `scope-acquire <session_id> [stale_sec]`
 
 Acquires `specs/.scope-lock/`, writes an owner token (`session_id:pid:epoch`) to
@@ -291,6 +298,83 @@ task-number lock — if any — is held at the time. A session can hold its own 
 while contending with another session for the scope mutex, and vice versa: the two mechanisms
 compose independently, and neither substitutes for the other.
 
+## Commit-Mutex CLI: `commit-acquire` / `commit-release`
+
+A sibling standalone CLI to the Scope-Mutex CLI above, serializing a DIFFERENT critical section
+through a DIFFERENT mutex directory: the `git add` + `git commit` pair around a scoped commit
+(`specs/.commit-lock/`, versus the scope mutex's `specs/.scope-lock/` and the state.json
+read-modify-write window it protects). `scripts/git-commit-scoped.sh` is the sole intended caller
+— it is the single sanctioned implementation of scoped, serialized commits described in
+`context/standards/git-staging-scope.md`'s "Commit-Level Path Scoping and Cross-Process
+Serialization" section, and every commit site in the dispatch pipeline invokes it rather than
+acquiring this mutex directly.
+
+### Why a Distinct Mutex Directory, Not a Reuse of `.scope-lock`
+
+The decisive reason is a reentrancy-flag collision, not merely call-frequency (though frequency
+differs by an order of magnitude too: per-objective commits vs. per-postflight state writes,
+which would make every state write queue behind unrelated commits under `MAX_TASKS=8` if the two
+were coupled). `SCOPE_MUTEX_HELD=1` is a single global env flag meaning "an outer holder already
+owns *the* scope mutex," and `update-task-status.sh`'s `acquire_state_mutex` skips its own
+acquire when it sees that flag. If commit serialization shared `specs/.scope-lock/`, a commit
+executed inside any window where `SCOPE_MUTEX_HELD` is already exported would either (a) honor
+the flag and run **unserialized** — silently defeating the fix — or (b) ignore it and attempt a
+nested acquire on a documented **non-reentrant** mutex. Two independent critical sections need two
+independent held-flags, and two held-flags require two mutex directories regardless of frequency.
+
+Reusing `.scope-lock` for commits would also **invert a deliberate, documented invariant**:
+`orchestrator-postflight.sh` explicitly releases the scope mutex *before* Stage 9 (git commit),
+and `git-staging-scope.md`'s "State-Write Serialization and Honest Commit Messages" section states
+that Stage 9 stays outside the state-write mutex. Reusing `.scope-lock` for commits would make
+Stage 9 acquire the exact mutex those documents say it must not — silently replacing a stated
+invariant with its negation. A distinct mutex (`.commit-lock`) lets both statements stay true
+simultaneously: Stage 9 is outside the **state-write** mutex and inside the **commit** mutex.
+
+### `commit-acquire <session_id> [stale_sec]`
+
+Acquires `specs/.commit-lock/`, writes an owner token (`session_id:pid:epoch`) to
+`specs/.commit-lock/owner`, and prints that token on stdout. Exit `0` on success. On contention,
+waits out a **15-second** acquire budget — three times the scope mutex's 5 seconds, sized for
+`MAX_TASKS=8` concurrent committers rather than a single fast scan-then-mkdir sequence — then
+exits `2` with a diagnostic naming the current holder (read from `owner`).
+
+Unlike the scope mutex's fail-CLOSED contract, `git-commit-scoped.sh` (the sole intended caller)
+treats a `commit-acquire` timeout as **fail-OPEN**: it logs a loud warning and proceeds with the
+commit unserialized rather than aborting. This is safe specifically because the commit is still
+path-scoped — the worst case on fail-open is the safe `index.lock` race (one commit fails, retried
+once, or simply fails non-blockingly), never commit misattribution. Mirrors
+`update-task-status.sh`'s `acquire_state_mutex` fail-open pattern for the scope mutex exactly.
+
+### `commit-release <token>`
+
+Releases `specs/.commit-lock/` if, and only if, `<token>` matches the current
+`specs/.commit-lock/owner` token — identical owner-token-verified contract to `scope-release`
+(see above). Always exits `0`; a mismatch is a loud, non-fatal `WARN:` on stderr, never a silent
+no-op and never a forced removal.
+
+### `COMMIT_MUTEX_HELD`: the Distinct Reentrancy Flag
+
+Exported by `git-commit-scoped.sh` immediately after a successful `commit-acquire`, and checked
+before attempting one — a script that already holds `.commit-lock` (or is running as a guest
+inside an outer holder's critical section) skips its own acquire/release when it sees
+`COMMIT_MUTEX_HELD=1` already set. This is the commit-mutex mirror of `SCOPE_MUTEX_HELD`
+documented above, and the two flags are never interchangeable — see "Why a Distinct Mutex
+Directory" above for the collision this independence prevents.
+
+### Holder-Declared Staleness
+
+`COMMIT_MUTEX_STALE_SEC=30`, declared by the acquiring process into
+`specs/.commit-lock/stale_sec` exactly as the scope mutex declares its own staleness window (see
+"Holder-Declared Staleness" above) — every waiter, regardless of its own default, honors the
+holder's declared window. 30 seconds is generous against measured sub-second commits but short
+enough to reclaim a genuinely stuck holder.
+
+### Consumers
+
+- `scripts/git-commit-scoped.sh` — the sole intended caller. Acquires immediately before its
+  `git add` + optional honest-index-rows scan + `git commit` sequence, releases via an `EXIT`
+  trap so no code path leaks the mutex.
+
 ## The ABORT Refusal Message
 
 Modeled on the established two-line `ABORT:` + remedy shape already used by
@@ -360,7 +444,12 @@ so the two wiring paths cannot drift from each other's semantics.
 
 ## Related Documentation
 
-- `.claude/scripts/task-lock.sh` — the implementation (acquire/heartbeat/release/check/init-marker)
+- `.claude/scripts/task-lock.sh` — the implementation (acquire/heartbeat/release/check/init-marker,
+  plus the scope-mutex and commit-mutex CLIs documented above)
+- `.claude/scripts/git-commit-scoped.sh` — the sole intended caller of `commit-acquire`/
+  `commit-release`; the single sanctioned implementation of scoped, serialized commits
+- `.claude/context/standards/git-staging-scope.md` — "Commit-Level Path Scoping and Cross-Process
+  Serialization" section documents the same contract from the caller's perspective
 - `.claude/scripts/command-gate-in.sh` / `command-gate-out.sh` — single-task wiring
 - `.claude/skills/skill-orchestrate/SKILL.md` — multi-task/wave wiring + heartbeat +
   `.orchestrator-loop-guard` `init-marker` call site
