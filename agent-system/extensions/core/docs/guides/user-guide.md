@@ -212,6 +212,10 @@ Create an implementation plan for a task.
 **Plan Structure**:
 - **Phases**: Logical groupings of related work
 - **Steps**: Individual actions within each phase
+- **Verification Tier**: How broadly verification must run *during* the phase -- one of `prose`,
+  `local`, `interface`, `full` (strictest); see `context/formats/plan-format.md`'s
+  `## Verification Tiers` section for the full vocabulary. This does not replace or weaken the
+  final gate, which still runs before a phase closes and before the task completes.
 - **Verification**: How to confirm each phase succeeded
 
 **Example Plan Phases**:
@@ -221,6 +225,7 @@ Create an implementation plan for a task.
 **Steps**:
 1. Create src/modules/new_feature.py
 2. Add required imports
+**Verification Tier**: local
 **Verification**: Module loads without errors
 
 ### Phase 2: Define Helper Lemmas [NOT STARTED]

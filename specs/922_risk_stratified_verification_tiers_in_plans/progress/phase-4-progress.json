@@ -1,0 +1,30 @@
+{
+  "phase": 4,
+  "phase_name": "Propagate to the three remaining restatement sites",
+  "started_at": "2026-07-27T00:55:00Z",
+  "last_updated": "2026-07-27T01:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add Verification Tier field and tie-break sentence to skill-team-plan/SKILL.md phase template and teammate instructions",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-team-plan/SKILL.md"]
+    },
+    {
+      "id": 2,
+      "description": "Add phase-level Verification Tier field to task-breakdown.md template and worked example, plus closing checklist item",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/workflows/task-breakdown.md"]
+    },
+    {
+      "id": 3,
+      "description": "Add Verification Tier field to user-guide.md phase template and field explanation list",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/docs/guides/user-guide.md"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

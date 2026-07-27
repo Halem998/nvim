@@ -379,31 +379,31 @@ C requires the tie-break in the contracts as well as the format doc, not just on
 
 ---
 
-### Phase 4: Propagate to the three remaining restatement sites [NOT STARTED]
+### Phase 4: Propagate to the three remaining restatement sites [COMPLETED]
 
 **Goal**: Add the field to `skill-team-plan/SKILL.md`, `context/workflows/task-breakdown.md`, and
 `docs/guides/user-guide.md`, respecting each site's distinct field-naming convention so no fourth
 naming style is introduced.
 
 **Tasks**:
-- [ ] In `skills/skill-team-plan/SKILL.md`'s phase template (the block containing `**Objectives**:`
+- [x] In `skills/skill-team-plan/SKILL.md`'s phase template (the block containing `**Objectives**:`
       / `**Steps**:` / `**Verification**:`), add `**Verification Tier**:` immediately before
       `**Verification**:`, matching that site's colon-outside-bold convention.
-- [ ] In `skill-team-plan/SKILL.md`, add the tie-break-upward sentence to the teammate planning
+- [x] In `skill-team-plan/SKILL.md`, add the tie-break-upward sentence to the teammate planning
       instructions so parallel candidate plans converge on the same tier discipline.
-- [ ] In `context/workflows/task-breakdown.md`, add a phase-level `**Verification Tier:**` line
+- [x] In `context/workflows/task-breakdown.md`, add a phase-level `**Verification Tier:**` line
       immediately after each `**Goal:**` in the template block, matching that site's
       colon-inside-bold convention. Leave the existing per-checklist-item `**Verification:**` lines
       untouched — the tier is phase-level, the item verification is item-level, and they are
       different grains.
-- [ ] In `task-breakdown.md`, update the worked example phases (Core Authentication, Registration,
+- [x] In `task-breakdown.md`, update the worked example phases (Core Authentication, Registration,
       Password Reset) to carry a plausible tier each, so the example demonstrates variation rather
       than a single value everywhere.
-- [ ] In `task-breakdown.md`'s closing checklist, add a "Verification tier assigned per phase" item.
-- [ ] In `docs/guides/user-guide.md`, add `**Verification Tier**:` to the phase template block and
+- [x] In `task-breakdown.md`'s closing checklist, add a "Verification tier assigned per phase" item.
+- [x] In `docs/guides/user-guide.md`, add `**Verification Tier**:` to the phase template block and
       to the bulleted field explanation list (which currently explains `**Steps**` and
       `**Verification**`), with a one-line reader-facing gloss and a pointer to `plan-format.md`.
-- [ ] Do not propagate the field into heading-format-only consumers (`rules/artifact-formats.md`,
+- [x] Do not propagate the field into heading-format-only consumers (`rules/artifact-formats.md`,
       `context/standards/status-markers.md`, `docs/architecture/handoff-schema.md`,
       `commands/task.md`, the implementer/orchestrate skills, `context/patterns/team-orchestration.md`).
       They consume the `### Phase N: {name} [STATUS]` heading contract only and are out of scope.

@@ -73,6 +73,9 @@ Reference this when:
 
 ### Phase 1: {Phase Name}
 **Goal:** {What this phase accomplishes}
+**Verification Tier:** {one of `prose`, `local`, `interface`, `full` -- see plan-format.md's
+`## Verification Tiers` section; this is the phase-level tier, distinct from each task's own
+item-level `**Verification:**` line below}
 
 - [ ] **Task 1.1:** {Description}
   - **Files:** {files to create/modify}
@@ -88,6 +91,7 @@ Reference this when:
 
 ### Phase 2: {Phase Name}
 **Goal:** {What this phase accomplishes}
+**Verification Tier:** {one of `prose`, `local`, `interface`, `full`}
 
 - [ ] **Task 2.1:** {Description}
   - **Files:** {files to create/modify}
@@ -124,6 +128,8 @@ Build authentication system with login, registration, and password reset.
 
 ### Phase 1: Core Authentication
 **Goal:** Basic login/logout functionality
+**Verification Tier:** interface (new user model and login endpoint are called from multiple
+route handlers, so verification spans the changed module plus its direct dependents)
 
 - [ ] **Task 1.1:** Create user model and database schema
   - **Files:** `models/user.js`, `migrations/001_users.sql`
@@ -145,6 +151,8 @@ Build authentication system with login, registration, and password reset.
 
 ### Phase 2: Registration
 **Goal:** New user registration
+**Verification Tier:** local (registration endpoint and validation are confined to the auth
+module; no externally visible signature changes)
 
 - [ ] **Task 2.1:** Create registration endpoint
   - **Files:** `routes/auth.js`, `controllers/auth.js`
@@ -160,6 +168,8 @@ Build authentication system with login, registration, and password reset.
 
 ### Phase 3: Password Reset
 **Goal:** Users can reset forgotten passwords
+**Verification Tier:** full (touches shared token generation, email delivery, and auth state
+that other flows depend on -- the complete gate set runs for this phase)
 
 - [ ] **Task 3.1:** Generate reset tokens
   - **Files:** `utils/tokens.js`
@@ -268,3 +278,4 @@ Build authentication system with login, registration, and password reset.
 - [ ] Estimates are realistic
 - [ ] Testing included
 - [ ] Verification criteria clear
+- [ ] Verification tier assigned per phase

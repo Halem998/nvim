@@ -233,6 +233,9 @@ Format: Standard implementation plan format with:
 - Overview
 - Phases with status markers [NOT STARTED]
 - Tasks with file modifications
+- A **Verification Tier** per phase (one of `prose`, `local`, `interface`, `full` -- see
+  plan-format.md's `## Verification Tiers` section). When uncertain, apply the strictest
+  applicable tier (full > interface > local > prose).
 - Verification steps per phase
 - Estimated effort
 ```
@@ -408,6 +411,9 @@ Write synthesized plan:
 
 **Steps**:
 1. {Step}
+
+**Verification Tier**: {one of `prose`, `local`, `interface`, `full` -- see plan-format.md's
+`## Verification Tiers` section}
 
 **Verification**:
 - {How to verify}
