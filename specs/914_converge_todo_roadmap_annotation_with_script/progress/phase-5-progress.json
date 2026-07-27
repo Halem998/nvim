@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Mirror the design into skill-todo/SKILL.md",
+  "started_at": "2026-07-27T00:00:00Z",
+  "last_updated": "2026-07-27T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Stage 5 (ScanRoadmap): parse-only invocation, eligibility filter, no matching of its own", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]},
+    {"id": 2, "description": "Stage 5: error-handling contract sentence", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]},
+    {"id": 3, "description": "Stage 11 (UpdateRoadmap): split design (--annotate + /todo-owned abandoned path)", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]},
+    {"id": 4, "description": "Stage 11: snapshot safety rules", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]},
+    {"id": 5, "description": "Stage 8 (DryRunOutput): three-way branch", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]},
+    {"id": 6, "description": "Stage 16 (OutputResults): three-way branch, invariant statement", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

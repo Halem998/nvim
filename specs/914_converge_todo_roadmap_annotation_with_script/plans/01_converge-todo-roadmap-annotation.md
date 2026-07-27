@@ -326,35 +326,35 @@ editing; every hit must be either addressed here or explicitly recorded as out o
 
 ---
 
-### Phase 5: Mirror the design into skill-todo/SKILL.md [NOT STARTED]
+### Phase 5: Mirror the design into skill-todo/SKILL.md [COMPLETED]
 
 **Goal**: `skills/skill-todo/SKILL.md` describes the same parser, the same eligibility filter, the
 same annotate mechanism, and the same output gate, at its own (prose, stage-based) level of
 detail.
 
 **Tasks**:
-- [ ] Stage 5 (`ScanRoadmap`): keep the ROADMAP.md-existence preamble and the meta/expanded
+- [x] Stage 5 (`ScanRoadmap`): keep the ROADMAP.md-existence preamble and the meta/expanded
   exclusion wording. Replace steps 3-4 ("Match against ROADMAP.md items" / "Track roadmap_matches
   array with confidence levels") with: invoke `roadmap-integration.sh` parse-only; capture
   `roadmap_structure`, `warnings`, and `roadmap_matches`; filter matches to roadmap-eligible tasks
   before treating any as an annotation candidate. State that this stage performs no matching of
-  its own.
-- [ ] Stage 5: record the same error-handling contract in one sentence — script missing, non-zero
+  its own. *(completed)*
+- [x] Stage 5: record the same error-handling contract in one sentence — script missing, non-zero
   exit, or empty output all produce a visible warning and the `parseable: false` fallback, never
-  silence.
-- [ ] Stage 11 (`UpdateRoadmap`): replace the two-line annotation recipe with the split design —
+  silence. *(completed)*
+- [x] Stage 11 (`UpdateRoadmap`): replace the two-line annotation recipe with the split design —
   completed matches are applied by invoking the script with `--annotate` against a filtered
   snapshot synthesized from the Stage 5 eligible-task capture (taken before Stage 10 archival);
   abandoned matches are annotated by the skill itself, since the script has no abandoned path,
-  gated on `parseable`. Keep the `- [ ] item *(Task {N} abandoned: reason)*` format.
-- [ ] Stage 11: carry the snapshot safety rules — input-only, scratch directory, `trap` cleanup,
-  no sibling archive lookup so only this run's tasks are annotated.
-- [ ] Stage 8 (`DryRunOutput`): change the bare `Roadmap updates needed` bullet to specify the
+  gated on `parseable`. Keep the `- [ ] item *(Task {N} abandoned: reason)*` format. *(completed)*
+- [x] Stage 11: carry the snapshot safety rules — input-only, scratch directory, `trap` cleanup,
+  no sibling archive lookup so only this run's tasks are annotated. *(completed)*
+- [x] Stage 8 (`DryRunOutput`): change the bare `Roadmap updates needed` bullet to specify the
   same three-way branch as `commands/todo.md`'s dry-run — omit only when `parseable` is true and
   there are no eligible matches; always print the unparseable warning otherwise; print the
-  annotation-no-op warning when `silent_noop` is true.
-- [ ] Stage 16 (`OutputResults`): apply the same branch to the `Updates applied (roadmap
-  annotations/...)` line, with the same never-silent invariant stated once.
+  annotation-no-op warning when `silent_noop` is true. *(completed)*
+- [x] Stage 16 (`OutputResults`): apply the same branch to the `Updates applied (roadmap
+  annotations/...)` line, with the same never-silent invariant stated once. *(completed)*
 
 **Timing**: 1.25 hours
 
