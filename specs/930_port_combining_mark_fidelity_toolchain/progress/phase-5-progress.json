@@ -1,0 +1,20 @@
+{
+  "phase": 5,
+  "phase_name": "Document the New Tools in the Extension README",
+  "started_at": "2026-07-27T11:43:00Z",
+  "last_updated": "2026-07-27T11:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add two Provided Artifacts table rows plus a short explanatory paragraph, honoring no-task-references rule",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/README.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

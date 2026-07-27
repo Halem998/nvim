@@ -269,3 +269,11 @@ Install via Nix: `nix-env -iA nixpkgs.poppler_utils nixpkgs.djvulibre`
 | Script | scripts/literature-briefing.sh | Generates `<literature-briefing>` blocks for agents |
 | Script | scripts/literature-discover.sh | Three-tier source discovery pipeline |
 | Script | scripts/literature-ingest-online.sh | Online-discovery -> Zotero+PDF -> ingest bridge (classify/download-verify/create-or-attach/delegate/patch) |
+| Script | scripts/literature-combining-audit.sh | Read-only corpus-wide detector for silently dropped combining marks (a bare U+0338 grep cannot find the silent-drop class) |
+| Script | scripts/literature-repair-combining.sh | Backup-guarded, anchored, dry-run-default in-place repair engine for detected combining-mark occurrences |
+
+Both `literature-combining-audit.sh` and `literature-repair-combining.sh` import the shared
+`literature_combining_detect.py` module, so detection and repair locate and classify occurrences
+identically. `literature-convert.sh` composes overlays inline via
+`literature_combining_overlay.py`, which also exposes a `--self-test` fixture mode used to verify
+the composition logic from a deployed copy.

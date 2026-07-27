@@ -332,29 +332,32 @@ worth noting in the summary but is not by itself a failure.
 
 ---
 
-### Phase 5: Document the New Tools in the Extension README [NOT STARTED]
+### Phase 5: Document the New Tools in the Extension README [COMPLETED]
 
 **Goal**: Make the two new user-facing tools discoverable. Two shell tools landing with no mention
 in any extension documentation would be undiscoverable to anyone who did not write them.
 
 **Tasks**:
-- [ ] Add rows to the `## Provided Artifacts` table in
+- [x] Add rows to the `## Provided Artifacts` table in
       `agent-system/extensions/literature/README.md`:
       - `scripts/literature-combining-audit.sh` - read-only corpus-wide detector for silently
         dropped combining marks (a bare U+0338 grep cannot find the silent-drop class)
       - `scripts/literature-repair-combining.sh` - backup-guarded, anchored, dry-run-default
-        in-place repair engine for detected occurrences
-- [ ] Briefly note that both import the shared `literature_combining_detect.py` module so
+        in-place repair engine for detected occurrences *(completed)*
+- [x] Briefly note that both import the shared `literature_combining_detect.py` module so
       detection and repair locate and classify occurrences identically, and that
       `literature-convert.sh` composes overlays inline via `literature_combining_overlay.py` with
-      a `--self-test` fixture mode.
-- [ ] Keep the addition compact -- a table row plus at most a short paragraph. Do not restructure
-      the README.
-- [ ] Honor the no-task-references-in-deliverables rule: no task-number citations anywhere in
+      a `--self-test` fixture mode. *(completed)*
+- [x] Keep the addition compact -- a table row plus at most a short paragraph. Do not restructure
+      the README. *(completed: two table rows + one short paragraph, no restructuring)*
+- [x] Honor the no-task-references-in-deliverables rule: no task-number citations anywhere in
       `agent-system/extensions/literature/README.md`. Cite durable anchors (script filenames,
-      section headings) instead.
-- [ ] Editing the README also clears the `check_readme_vs_manifest` "README.md older than
-      manifest.json" drift WARN introduced by Phase 2.
+      section headings) instead. *(completed: new hunk contains zero task-number citations;
+      confirmed via diff read-through -- pre-existing task references elsewhere in the file predate
+      this change and are out of scope)*
+- [x] Editing the README also clears the `check_readme_vs_manifest` "README.md older than
+      manifest.json" drift WARN introduced by Phase 2. *(completed: README.md mtime now newer than
+      manifest.json)*
 
 **Timing**: 30 minutes
 
