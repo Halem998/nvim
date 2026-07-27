@@ -1,7 +1,7 @@
 # Implementation Plan: Task #926
 
 - **Task**: 926 - shared_tested_census_tooling_and_method
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/926_shared_tested_census_tooling_and_method/reports/01_shared-tested-census-tooling.md
@@ -117,15 +117,15 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Establish and record the core shell-test harness convention [NOT STARTED]
+### Phase 1: Establish and record the core shell-test harness convention [COMPLETED]
 
 **Goal**: Settle where core shell tests live and what shape they take, in a file, so the next
 core-script author does not re-derive it by reading two divergent existing tests.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/` (directory only; its first occupants
-      arrive in Phases 3 and 5).
-- [ ] Write `agent-system/extensions/core/context/standards/shell-script-testing.md` recording:
+- [x] Create `agent-system/extensions/core/scripts/tests/` (directory only; its first occupants
+      arrive in Phases 3 and 5). *(completed)*
+- [x] Write `agent-system/extensions/core/context/standards/shell-script-testing.md` recording:
   - The scope-based location rule (D2): a narrow, fixture-driven suite for a single script lives
     in `scripts/tests/`; a broad end-to-end/pipeline suite stays flat in `scripts/`.
   - The helper-naming convention (D3): `pass()`/`fail()`/`info()`, `PASSED`/`FAILED` integer
@@ -137,13 +137,14 @@ core-script author does not re-derive it by reading two divergent existing tests
   - The known exception: `scripts/test-task-lock-reap.sh` predates this rule, sits flat in
     `scripts/`, and is intentionally not moved.
   - Loud-skip discipline: a prerequisite that is unavailable must exit non-zero or emit a visible
-    skip warning; a silently-skipped check is treated as a failure of the harness.
-- [ ] Add a matching `index-entries.json` entry with `subdomain: "standards"`, keywords covering
+    skip warning; a silently-skipped check is treated as a failure of the harness. *(completed)*
+- [x] Add a matching `index-entries.json` entry with `subdomain: "standards"`, keywords covering
       shell/testing/harness, and `load_when` scoped to the implementation agents and `task_types:
-      ["meta"]`.
-- [ ] Confirm whether `provides.context` needs a change (expected: no, because it lists the
+      ["meta"]`. *(completed)*
+- [x] Confirm whether `provides.context` needs a change (expected: no, because it lists the
       directory `"standards"`, not individual files). Record the confirmed answer in the phase
-      notes.
+      notes. *(completed: CONFIRMED — provides.context lists directory names only; "standards" is
+      already present; no manifest.json edit needed. Scope Hypothesis holds.)*
 
 **Timing**: 1 hour
 

@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Establish and record the core shell-test harness convention",
+  "started_at": "2026-07-27T00:00:00Z",
+  "last_updated": "2026-07-27T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create agent-system/extensions/core/scripts/tests/ directory", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Write context/standards/shell-script-testing.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 3, "description": "Add matching index-entries.json entry", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 4, "description": "Confirm provides.context needs no change (directory-name hypothesis)", "status": "done", "files_touched": [], "note": "CONFIRMED: agent-system/extensions/core/manifest.json's provides.context array lists directory names only (e.g. \"standards\", \"formats\", \"patterns\") and zero individual .md paths beneath standards/. No manifest.json edit needed for the new context/standards/*.md file. Scope Hypothesis holds; no correction required."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -1,32 +1,7 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/926_shared_tested_census_tooling_and_method/plans/01_census-tooling-and-method.md",
-      "summary": "7-phase plan shipping both a shared fixture-tested census tool (census-count.sh with occurrences/membership/cross-check subcommands) and two standards docs (shell-script-testing.md, census-methodology.md), plus the validate-no-task-references.sh separator-regex fix with its own regression suite. Settles six decisions up front (D1-D6) including harness location, helper naming, fixture strategy, and the task-qualified-only Phase remit."
-    }
-  ],
-  "next_steps": "Run /implement 926 to execute the plan",
-  "metadata": {
-    "session_id": "sess_1785192054_7d9661",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 7,
-    "dependency_waves": [[1, 2], [3, 4], [5, 6], [7]]
-  },
-  "memory_candidates": [
-    {
-      "content": "Registration asymmetry in agent-system extension manifest.json: provides.scripts is a list of individual relative FILE paths that may be subdirectory-qualified (core itself already registers lint/lint-contract-compliance.sh and lint/lint-postflight-boundary.sh), so any new script -- including one in a scripts/tests/ subdirectory -- must be added there explicitly. By contrast provides.context lists DIRECTORY names ('standards', 'formats', 'patterns', ...), not files, so a new context/standards/*.md file needs NO manifest.json change -- only an index-entries.json entry (path relative to context/, plus domain/subdomain/summary/line_count/keywords/topics/load_when). Check which shape an array uses before assuming a new artifact needs a manifest edit.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/926_shared_tested_census_tooling_and_method/plans/01_census-tooling-and-method.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["manifest-json", "provides-scripts", "provides-context", "index-entries", "extension-registration"]
-    }
-  ],
-  "modified_files": [
-    "specs/926_shared_tested_census_tooling_and_method/plans/01_census-tooling-and-method.md"
-  ]
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "task_number": 926,
+  "session_id": "sess_1785192054_7d9661"
 }

@@ -1945,6 +1945,34 @@
       }
     },
     {
+      "path": "standards/shell-script-testing.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "Core shell-test harness convention: location rule, helper naming, fixture and mutation-check discipline",
+      "line_count": 102,
+      "keywords": [
+        "standards",
+        "shell",
+        "testing",
+        "harness",
+        "fixtures",
+        "bash"
+      ],
+      "topics": [
+        "quality"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-agent",
+          "general-implementation-hard-agent"
+        ],
+        "task_types": [
+          "meta"
+        ],
+        "commands": []
+      }
+    },
+    {
       "path": "standards/status-markers.md",
       "domain": "core",
       "subdomain": "standards",
