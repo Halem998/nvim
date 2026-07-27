@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "Wire reap into /refresh as its sole caller",
+  "started_at": "2026-07-27T01:15:00Z",
+  "last_updated": "2026-07-27T01:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add Step 4 (Reap Stale Task Locks) to skill-refresh/SKILL.md, renumber Steps 5-7, and document in refresh.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
+        "agent-system/extensions/core/commands/refresh.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Verified end-to-end by manually executing skill-refresh/SKILL.md Steps 1-4 with dry_run=true (process cleanup step is non-destructive without --force -- confirmed by reading claude-refresh.sh, which only shows status when --force is absent). Reap section appeared with 3 would-reap lines for the real archive orphans; lock count unchanged (4 before, 4 after)."
+}

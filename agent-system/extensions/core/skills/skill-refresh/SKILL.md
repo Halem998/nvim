@@ -88,7 +88,30 @@ else
 fi
 ```
 
-### Step 4: Clean Stale Backup Files
+### Step 4: Reap Stale Task Locks
+
+Sweep `specs/` for stale task-number `.lock` directories (see `context/patterns/task-lock.md`'s
+Reap Contract section for the full threshold reasoning) and report every one found. This is a
+distinct cleanup target from Step 3's postflight markers, added alongside it rather than merged
+into it. Reuses the `dry_run` boolean already parsed in Step 1 -- no new argument parsing.
+
+```bash
+echo ""
+echo "=== Reaping Stale Task Locks ==="
+echo ""
+
+if [ "$dry_run" = true ]; then
+    .claude/scripts/task-lock.sh reap --dry-run
+else
+    .claude/scripts/task-lock.sh reap
+fi
+```
+
+The per-lock detail (task number, session id, operation, age) is produced by `task-lock.sh`
+itself; echo its output verbatim rather than summarizing it away, matching the reap subcommand's
+own per-item reporting contract.
+
+### Step 5: Clean Stale Backup Files
 
 Scan for and remove any `.backup` files left over from the deprecated backup mechanism in `.claude/`:
 
@@ -114,7 +137,7 @@ else
 fi
 ```
 
-### Step 5: Run Directory Survey
+### Step 6: Run Directory Survey
 
 Show current directory status without cleaning yet:
 
@@ -127,7 +150,7 @@ This displays:
 - Breakdown by directory
 - Space that can be reclaimed
 
-### Step 6: Execute Based on Mode
+### Step 7: Execute Based on Mode
 
 #### Dry-Run Mode
 

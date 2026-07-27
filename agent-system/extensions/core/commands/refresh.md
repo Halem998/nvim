@@ -44,6 +44,22 @@ Cleans accumulated files in ~/.claude/:
 | plugins/cache/ | Old plugin versions |
 | cache/ | General cache |
 
+### Stale Task Locks
+
+`/refresh` also sweeps `specs/` (including `specs/archive/`) for stale task-number `.lock`
+directories via `task-lock.sh reap`, reporting each one found (task number, session id,
+operation, age in minutes) on both the dry-run and live paths. See
+`.claude/context/patterns/task-lock.md`'s Reap Contract section for the full threshold
+derivation.
+
+This cleanup runs **only on explicit `/refresh` invocation** -- it is **not** on the hourly
+systemd cadence. `claude-refresh.timer` invokes `claude-refresh.sh` (the process cleanup above)
+only, not this skill's `specs/` sweep. An operator who assumes hourly reaping will misread a
+surviving orphaned lock as a reaper bug rather than as this deliberate scoping choice: reap is a
+lower-frequency, higher-consequence operation than process cleanup, and explicit invocation plus
+a conservative threshold is the intended posture. Moving it onto the timer is a separable,
+out-of-scope change.
+
 ## Interactive Mode
 
 When run without flags, `/refresh` operates in interactive mode:

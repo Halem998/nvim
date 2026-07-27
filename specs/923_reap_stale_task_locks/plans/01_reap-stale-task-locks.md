@@ -286,30 +286,30 @@ the Phase 1 dry-run check only — the automated suite must never touch them.
 
 ---
 
-### Phase 3: Wire `reap` into `/refresh` as its sole caller [NOT STARTED]
+### Phase 3: Wire `reap` into `/refresh` as its sole caller [COMPLETED]
 
 **Goal**: `/refresh` invokes `task-lock.sh reap`, honoring its existing `dry_run` flag, and the
 command doc advertises the new cleanup.
 
 **Tasks**:
-- [ ] Edit `agent-system/extensions/core/skills/skill-refresh/SKILL.md`: add a new step for the
+- [x] Edit `agent-system/extensions/core/skills/skill-refresh/SKILL.md`: add a new step for the
       lock reap, placed **alongside** (not merged into) the existing
       `### Step 3: Clean Orphaned Postflight Markers`. Renumber the following steps accordingly.
-- [ ] Reuse the `dry_run` boolean already threaded from `### Step 1: Parse Arguments`. Add no new
+- [x] Reuse the `dry_run` boolean already threaded from `### Step 1: Parse Arguments`. Add no new
       argument parsing.
-- [ ] The step's bash block calls `.claude/scripts/task-lock.sh reap` with `--dry-run` appended
+- [x] The step's bash block calls `.claude/scripts/task-lock.sh reap` with `--dry-run` appended
       when `dry_run` is true, and echoes the subcommand's output verbatim — the per-lock detail is
       produced by the script, so the skill must not summarize it away.
-- [ ] Edit `agent-system/extensions/core/commands/refresh.md`: add a row or subsection under
+- [x] Edit `agent-system/extensions/core/commands/refresh.md`: add a row or subsection under
       `## What It Cleans` covering stale task locks under `specs/`, since that section currently
       documents only the `~/.claude/` process/directory cleanup and omits the `specs/` sweep
       entirely.
-- [ ] In the same `refresh.md` addition, state plainly that this cleanup runs only on explicit
+- [x] In the same `refresh.md` addition, state plainly that this cleanup runs only on explicit
       `/refresh` invocation and is **not** on the hourly systemd cadence, because
       `claude-refresh.timer` invokes `claude-refresh.sh` (process cleanup) and not the skill's
       `specs/` sweep. Recording this is required, not optional — an operator who assumes hourly
       reaping will misread a surviving orphan as a reaper bug.
-- [ ] **Decision to record**: this scoping limitation is accepted for now. Reap is a
+- [x] **Decision to record**: this scoping limitation is accepted for now. Reap is a
       lower-frequency, higher-consequence operation than process cleanup, and the 120-minute
       threshold plus explicit invocation is the intended conservative posture. Moving it onto the
       timer is a separable change and is out of scope here.
