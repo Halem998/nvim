@@ -1219,7 +1219,7 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
 
 > **BATCHING RULE**: ALL Agent tool calls for the current cycle's dispatch batch MUST be issued in a SINGLE orchestrator message with multiple tool-use content blocks. Do NOT issue calls across multiple messages — Claude Code processes all calls in a single message concurrently; multiple messages force sequential execution.
 
-> **COMPLETION SEQUENCING**: After ALL Agent tool calls complete (Claude Code returns control after all calls in the single message finish), read handoffs for every dispatched task. Do NOT read handoffs interleaved with dispatches.
+> **COMPLETION SEQUENCING**: After ALL Agent tool calls complete (Claude Code returns control after all calls in the single message finish), read handoffs for every dispatched task. Do NOT read handoffs interleaved with dispatches. Per-task postflight (below) now includes a scoped git commit (step 5.5); these commits serialize naturally in program order because postflight is a sequential loop within this same orchestrator turn, so the `specs/.commit-lock/` mutex is needed only against a concurrently-running separate dispatch, never against this loop's own iterations.
 
 **Classifier call** — before grouping, call the shared handoff-triage classifier so this stage's
 routing reads the SAME rule the read-only dry-run report reads, rather than a second,
@@ -1465,6 +1465,79 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
    - If `fresh_status = "completed"`: also add to `completed_tasks`.
    - If `dispatch_status` is `"failed"` or `"blocked"`: add to `failed_tasks`.
    - Otherwise: set `current_statuses[task_num] = fresh_status`.
+5.5. **Per-task scoped commit.** MT mode issues one commit per task per phase transition here,
+     inside this same per-task loop iteration — never a single combined end-of-batch commit (see
+     `commands/orchestrate.md` Step 5's "Commit Reconciliation" note for why the batch commit was
+     retired). This step reuses the exact single-task `CHECKPOINT 3` staging template — `task_dir`,
+     that task's own `.return-meta.json`, and `dispatch_status` are all already in scope from steps
+     1-2 above, so no new state is introduced:
+
+     ```bash
+     stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
+     [ -n "${plan_path:-}" ] && stage_paths+=("$plan_path")   # implement dispatches only
+     metadata_file="${task_dir}/.return-meta.json"
+     modified_count=0
+     while IFS= read -r f; do
+       [ -n "$f" ] && stage_paths+=("$f") && modified_count=$((modified_count + 1))
+     done < <(jq -r '.modified_files[]? // empty' "$metadata_file" 2>/dev/null)
+     ```
+
+     **Fail-safe** — the SAME canonical warning `context/standards/git-staging-scope.md`'s
+     "Fail-Safe Direction" section specifies, task-scoped by appending the task number (this is
+     the only sanctioned wording; do not introduce a second convention):
+
+     ```bash
+     if [ "$modified_count" -eq 0 ]; then
+       echo "[postflight] WARNING: no modified_files reported for task #${task_num}; source-file changes NOT committed automatically. Review and commit manually." >&2
+     fi
+     ```
+
+     **Commit message selection**, keyed off this task's own `dispatch_status` (and, for
+     `implemented`, whether the completion-claim gate in step 3 allowed or refused the transition —
+     read back via `fresh_status` re-read in step 5 above, since a refuse leaves `fresh_status`
+     at `implementing` rather than `completed`), per the Standard Actions table in
+     `rules/git-workflow.md`:
+     - `dispatch_status = "researched"` → `"task ${task_num}: complete research"`
+     - `dispatch_status = "planned"` → `"task ${task_num}: create implementation plan"`
+     - `dispatch_status = "implemented"` AND `fresh_status = "completed"` (gate allowed) →
+       `"task ${task_num}: complete implementation"`
+     - `dispatch_status = "implemented"` AND `fresh_status != "completed"` (gate refused), OR
+       `dispatch_status = "partial"` → the `CHECKPOINT 3` "on partial" form:
+       `"task ${task_num}: orchestration paused (cycles ${cycle_count}/${MAX_CYCLES_MT})"`
+     - `dispatch_status = "failed"` or `"blocked"` → `"task ${task_num}: orchestration dispatch
+       ${dispatch_status}"`
+
+     ```bash
+     bash .claude/scripts/git-commit-scoped.sh \
+       --message "$commit_message" \
+       --session "${session_id}_${task_num}" \
+       --honest-index-rows "$task_num" \
+       -- "${stage_paths[@]}"
+     ```
+
+     **Non-blocking**: commit failure is logged and execution continues to step 6 — a failed
+     commit must never withhold the per-task lock release, which would strand the task.
+
+     **Branch coverage** (every `dispatch_status` / recovery path this loop can reach):
+     - **Steps 2-5 skipped** (infra-deferral, `MAX_INFRA_FAILURES` cap reached, genuine-missing-
+       handoff charged to `failed_tasks`): step 5.5 is ALSO skipped. Nothing this dispatch produced
+       is committable — `dispatch_status` was never resolved for this task this cycle. This is
+       deliberate, not an oversight: a later reader should not read the absence of a commit here as
+       a bug.
+     - **Completion-claim gate refused** (step 3's `implemented` branch, `skill_gate_completion_claim`
+       returns non-allow): steps 4-6 already run unchanged on a refuse (per step 3's own prose), so
+       step 5.5 DOES run and commits at the partial-form message above, with the task still at
+       `implementing`.
+     - `dispatch_status = "failed"` or `"blocked"`: step 5.5 runs. Artifacts and status changes the
+       dispatch actually produced (e.g. a partial report or a handoff recording the blocker) are
+       still real and belong in a commit.
+
+     **Serialization note**: these per-task commits serialize naturally in program order, because
+     per-task postflight is a sequential loop within the orchestrator's own turn — no two
+     iterations of this loop ever run concurrently with each other. The `specs/.commit-lock/`
+     mutex the scoped-commit helper above acquires internally remains required only for
+     cross-process safety against a concurrently-running SEPARATE `/orchestrate` or `/implement`
+     dispatch sharing the same index, not against this loop's own iterations.
 6. **Task-lock release (per-task, unconditional)**: regardless of the outcome above (success,
    failed, or blocked):
    ```bash

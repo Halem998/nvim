@@ -1,0 +1,8 @@
+{
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "task_number": 932,
+  "session_id": "sess_1785184824_429d4d",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "plan_path": "specs/932_commit_per_wave_and_stage_source_files_in_mt_batch/plans/01_per-task-commit-stage-source-files.md"
+}
