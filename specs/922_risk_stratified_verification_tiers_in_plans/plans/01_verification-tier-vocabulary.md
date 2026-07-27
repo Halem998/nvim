@@ -1,7 +1,7 @@
 # Implementation Plan: Task #922
 
 - **Task**: 922 - risk_stratified_verification_tiers_in_plans
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/922_risk_stratified_verification_tiers_in_plans/reports/01_verification-tier-source-store-findings.md

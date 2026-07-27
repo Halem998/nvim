@@ -11,10 +11,9 @@ next_project_number: 932
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 885,914,915,920,922,923,928,929,931 | -- | agent-system, extensions |
-| 2 | 887,924,930 | 885,922,928 | agent-system, literature |
-| 3 | 925 | 924 | agent-system |
-| 4 | 926,927 | 925 | agent-system |
+| 1 | 885,914,915,920,923,924,928,929,931 | -- | agent-system, extensions |
+| 2 | 887,925,930 | 885,924,928 | agent-system, literature |
+| 3 | 926,927 | 925 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -25,12 +24,11 @@ next_project_number: 932
 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
-922 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-  └─ 924 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-    └─ 925 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-      └─ 926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-      └─ 927 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 923 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+924 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+  └─ 925 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+    └─ 926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+    └─ 927 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 929 [NOT STARTED] — SOURCE-STORE RULE (binding, and the subject of this task): the ag
 
 ### Extensions
@@ -357,10 +355,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 922. Add risk-stratified verification tiers and atomic multi-file batches to plan format and planner contracts
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [922_risk_stratified_verification_tiers_in_plans/reports/01_verification-tier-source-store-findings.md]
+- **Plan**: [922_risk_stratified_verification_tiers_in_plans/plans/01_verification-tier-vocabulary.md]
+- **Summary**: [922_risk_stratified_verification_tiers_in_plans/summaries/01_verification-tier-vocabulary-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 

@@ -1180,7 +1180,7 @@
     {
       "project_number": 922,
       "project_name": "risk_stratified_verification_tiers_in_plans",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Add risk-stratified verification tiers and atomic multi-file batches to plan format and planner contracts",
@@ -1198,9 +1198,26 @@
       ],
       "dependencies": [],
       "created": "2026-07-27T10:27:21Z",
-      "last_updated": "2026-07-27T10:27:21Z",
-      "session_id": "sess_1785147256_d55ce4",
-      "artifacts": []
+      "last_updated": "2026-07-27T16:50:54Z",
+      "session_id": "sess_1785169346_da28e9",
+      "artifacts": [
+        {
+          "path": "specs/922_risk_stratified_verification_tiers_in_plans/reports/01_verification-tier-source-store-findings.md",
+          "type": "report",
+          "summary": "Findings A/C confirmed; a SIXTH template site found (user-guide.md); validate-artifact.sh has no per-phase iteration; index line_count drift 136 vs 222"
+        },
+        {
+          "path": "specs/922_risk_stratified_verification_tiers_in_plans/plans/01_verification-tier-vocabulary.md",
+          "type": "plan",
+          "summary": "6 phases, 4 waves; named tiers prose<local<interface<full; commit-mode orthogonal flag; advisory-first enforcement"
+        },
+        {
+          "path": "specs/922_risk_stratified_verification_tiers_in_plans/summaries/01_verification-tier-vocabulary-summary.md",
+          "type": "summary",
+          "summary": "Named verification tiers, orthogonal commit mode, advisory-first per-phase validator enforcement across 6 template sites"
+        }
+      ],
+      "completion_summary": "Introduced a named, ordered risk-stratified verification-tier vocabulary (prose < local < interface < full) plus an orthogonal atomic-batch commit mode into the plan format, propagated it to all six phase-template generator sites, landed the commit-mode carve-out in git-workflow.md, and added genuine per-phase-block advisory enforcement in validate-artifact.sh (fixing a pre-existing set -e counter bug discovered along the way). All 6 plan phases completed with every specified verification fixture run and passing at the exact required counts."
     },
     {
       "project_number": 923,
