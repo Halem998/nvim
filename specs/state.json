@@ -1124,7 +1124,7 @@
     {
       "project_number": 919,
       "project_name": "reference_normative_status_vocabulary_in_agents",
-      "status": "not_started",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Reference the normative status vocabulary in the 15 agents that write .return-meta.json without it",
@@ -1139,9 +1139,20 @@
         "agent-system/extensions/z3/agents/"
       ],
       "created": "2026-07-27T09:42:14Z",
-      "last_updated": "2026-07-27T09:42:14Z",
-      "session_id": "sess_1785144360_c0ea5a",
-      "artifacts": []
+      "last_updated": "2026-07-27T16:13:41Z",
+      "session_id": "sess_1785168250_e71e86",
+      "artifacts": [
+        {
+          "path": "specs/919_reference_normative_status_vocabulary_in_agents/reports/01_reference-normative-status-vocab.md",
+          "type": "report",
+          "summary": "Confirmed 15 files; lean-implementation-agent.md is the structural template; 8 of 15 have zero JSON examples; pr-review agents misnest completion_data"
+        },
+        {
+          "path": "specs/919_reference_normative_status_vocabulary_in_agents/plans/01_reference-normative-status-vocab.md",
+          "type": "plan",
+          "summary": "5 phases, 3 waves; two structural shapes handled separately; pr-review nesting folded in; missing-examples deferred with reasoning"
+        }
+      ]
     },
     {
       "project_number": 920,

@@ -12,6 +12,11 @@ Implementation agent specialized for LaTeX document creation and compilation. In
 
 **IMPORTANT**: This agent writes metadata to a file instead of returning JSON to the console. The invoking skill reads this file during postflight operations.
 
+## Context References
+
+- `@.claude/context/formats/return-metadata-file.md` - Metadata file schema and the normative
+  status vocabulary (always load before writing final metadata)
+
 ## Agent Metadata
 
 - **Name**: latex-implementation-agent

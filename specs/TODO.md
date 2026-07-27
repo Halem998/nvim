@@ -24,7 +24,7 @@ next_project_number: 932
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-919 [NOT STARTED] — Fifteen agent definitions instruct writing .return-meta.json but 
+919 [IMPLEMENTING] — Fifteen agent definitions instruct writing .return-meta.json but 
   └─ 927 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
 922 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
@@ -438,10 +438,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 919. Reference the normative status vocabulary in the 15 agents that write .return-meta.json without it
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [919_reference_normative_status_vocabulary_in_agents/reports/01_reference-normative-status-vocab.md]
+- **Plan**: [919_reference_normative_status_vocabulary_in_agents/plans/01_reference-normative-status-vocab.md]
 
 **Description**: Fifteen agent definitions instruct writing .return-meta.json but never reference the normative status vocabulary, so they improvise off-schema status values that fail downstream.
 
