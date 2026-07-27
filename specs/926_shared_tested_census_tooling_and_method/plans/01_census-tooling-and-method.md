@@ -332,35 +332,45 @@ count.
 
 ---
 
-### Phase 5: Fixture-tested regression suite for `census-count.sh` [NOT STARTED]
+### Phase 5: Fixture-tested regression suite for `census-count.sh` [COMPLETED]
 
 **Goal**: Satisfy the binding constraint — the shipped tooling is tested against fixtures that
 actually encode all three bug classes, not merely against happy-path inputs.
 
 **Tasks**:
-- [ ] Write `agent-system/extensions/core/scripts/tests/test-census-count.sh` following the
+- [x] Write `agent-system/extensions/core/scripts/tests/test-census-count.sh` following the
       Phase 1 convention, building all fixtures inline via heredocs into a `mktemp -d` root and
-      copying `census-count.sh` in byte-for-byte.
-- [ ] **Bug class 1 fixture** (keyword inside a comment or directive rather than a real
+      copying `census-count.sh` in byte-for-byte. *(completed)*
+- [x] **Bug class 1 fixture** (keyword inside a comment or directive rather than a real
       occurrence): a fixture file containing the target keyword N times as live code and M times
       inside line comments, block comments, a directive line, and a string literal. Assert the
       real count is N, assert the naive count is N+M, and assert the two are reported separately.
-      Include at least one case per supported `--comment-style`.
-- [ ] **Bug class 2 fixture** (file present in the tree but outside the build graph): a temp tree
+      Include at least one case per supported `--comment-style`. *(completed: one fixture each
+      for hash/slash/dash; naive=5/7/5, real=2/2/2 respectively — each verified to differ.)*
+- [x] **Bug class 2 fixture** (file present in the tree but outside the build graph): a temp tree
       with files A, B, C and a synthetic declared-set command naming only A and B plus a
       nonexistent D. Assert `ONLY_IN_TREE` is exactly `C`, `ONLY_IN_DECLARED` is exactly `D`, and
       both counts are reported. All fixtures synthetic — never assert against the real repo.
-- [ ] **Bug class 3 fixture** (separator and suffix variants missed by a naive regex): its own
+      *(completed.)*
+- [x] **Bug class 3 fixture** (separator and suffix variants missed by a naive regex): its own
       copy of the separator fixture set, not a cross-reference to Phase 3's. Assert the tool's
       documented separator-aware pattern matches `task 788`, `task-788`, `task_788`, `Task #788`,
       and `tasks 788-790`, and that a naive whitespace-only pattern run through the same tool
       misses four of the five — proving the tool distinguishes them rather than passing both.
-- [ ] **Cross-check fixtures**: one pair of commands that agree (expect `MATCH`, exit 0) and one
-      pair that disagree (expect `MISMATCH`, exit non-zero).
-- [ ] **Record-block fixture**: assert the emitted record block contains the verbatim command
+      *(completed: all 5 forms verified against the correct pattern (count=5). Correction to this
+      task's estimate, verified directly rather than assumed: only 2 of the 5 named forms contain
+      a literal whitespace separator (`task 788`, `tasks 788-790`), so the naive whitespace-only
+      pattern run through the same tool matches those 2 and misses the other 3
+      (`task-788`/`task_788`/`Task #788`), not 4 — the test asserts the verified 5-vs-2 result.
+      The underlying proof point (naive produces a demonstrably wrong, smaller number; the tool
+      produces the right one) holds regardless of the exact miss-count.)*
+- [x] **Cross-check fixtures**: one pair of commands that agree (expect `MATCH`, exit 0) and one
+      pair that disagree (expect `MISMATCH`, exit non-zero). *(completed.)*
+- [x] **Record-block fixture**: assert the emitted record block contains the verbatim command
       string, so the derive-once/record-the-command guarantee is mechanically enforced rather
-      than merely documented.
-- [ ] Register `tests/test-census-count.sh` in core `manifest.json` `provides.scripts`.
+      than merely documented. *(completed.)*
+- [x] Register `tests/test-census-count.sh` in core `manifest.json` `provides.scripts`.
+      *(completed.)*
 
 **Timing**: 1.5 hours
 
@@ -380,9 +390,10 @@ coverage.
 
 **Verification**:
 - `bash agent-system/extensions/core/scripts/tests/test-census-count.sh` exits 0 with every case
-  reported PASS.
+  reported PASS. *(confirmed: 8 passed, 0 failed, exit 0.)*
 - The suite leaves no residue outside its temp root (`trap` cleanup confirmed by checking the
-  temp root is gone after exit).
+  temp root is gone after exit). *(confirmed: `/tmp/tmp.*` directory count identical before and
+  after a run.)*
 
 ---
 

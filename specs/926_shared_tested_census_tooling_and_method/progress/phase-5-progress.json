@@ -1,0 +1,28 @@
+{
+  "phase": 5,
+  "phase_name": "Fixture-tested regression suite for census-count.sh",
+  "started_at": "2026-07-27T01:30:00Z",
+  "last_updated": "2026-07-27T02:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write test-census-count.sh scaffold (pass/fail/info, mktemp -d + trap, byte-for-byte copy)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-census-count.sh"]},
+    {"id": 2, "description": "Bug class 1 fixtures: hash/slash/dash comment-style naive-vs-real", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-census-count.sh"]},
+    {"id": 3, "description": "Bug class 2 fixture: declared-set membership diff", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-census-count.sh"]},
+    {"id": 4, "description": "Bug class 3 fixture: separator/suffix variants, own copy", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-census-count.sh"]},
+    {"id": 5, "description": "Cross-check MATCH/MISMATCH fixtures", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-census-count.sh"]},
+    {"id": 6, "description": "Record-block fixture: verbatim command string assertion", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-census-count.sh"]},
+    {"id": 7, "description": "Register tests/test-census-count.sh in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.4",
+      "description": "Bug class 3 fixture: naive whitespace-only pattern run through the same tool misses four of the five named separator forms",
+      "type": "altered",
+      "reason": "Verified directly (bash census-count.sh occurrences with both the correct and naive patterns over the same 5-line fixture) that only 2 of the 5 named forms (task 788, tasks 788-790) contain a literal whitespace separator; the naive pattern therefore matches 2 and misses 3 (task-788, task_788, Task #788), not 4. The test asserts the verified 5-vs-2 result rather than the plan's estimated 4-of-5 miss count. The underlying proof point (naive produces a demonstrably wrong, smaller count; the tool's separator-aware pattern produces the correct, larger count) holds unchanged.",
+      "annotation": "*(deviation: altered — corrected 'misses four of the five' to the verified 3-of-5 miss count; underlying naive-vs-correct distinguishing behavior unchanged.)*"
+    }
+  ],
+  "verification_notes": "Suite: 8 passed, 0 failed, exit 0. Residue check: /tmp/tmp.* directory count identical before and after a full run. Dogfood check: piped the new file's content through the fixed hook -- flagged (expected false positive, since the file's own fixture data literally contains strings like 'task 788'; not a real citation of any task in this repo's tracker, to be addressed narratively in Phase 7's audit)."
+}
