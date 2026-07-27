@@ -1,8 +1,8 @@
 # Implementation Plan: Task #885
 
 - **Task**: 885 - Enable and verify passive signal capture
-- **Status**: [NOT STARTED]
-- **Effort**: 4.5 hours (agent) + user-owned manual regeneration (out of agent effort)
+- **Status**: [PARTIAL]
+- **Effort**: 5 hours (agent) + user-owned manual regeneration (out of agent effort)
 - **Dependencies**: 874 (self-sync guard removal — CONFIRMED COMPLETE, commit dc6d5e450)
 - **Research Inputs**: reports/01_enable-verify-passive-signal-capture.md
 - **Artifacts**: plans/01_passive-signal-capture-deploy.md (this file)
@@ -110,10 +110,14 @@ signal capture / telemetry infrastructure for the agent system.
 | 2 | 2 | 1 |
 | 3 | 5 | 1, 2, 3, 4 |
 | 4 | 6 | 5 |
+| 5 | 7 | -- (independent of 1-6; corrects a gap Phase 5/6 exposed) |
 
 Phases within the same wave can execute in parallel. Phases 1, 3, and 4 touch disjoint files.
 Phase 2 shares the two events hooks with Phase 1, so it follows Phase 1 to avoid edit conflicts.
-Phases 5-6 are user-owned/[BLOCKED] and gated behind the landable source-store edits.
+Phases 5-6 are user-owned/[BLOCKED] and gated behind the landable source-store edits. Phase 7 is a
+later-session source-store fix for the exact gap Phase 5's re-verification exposed; it has no
+plan-declared dependency on 1-6 but a subsequent re-run of Phase 5 (regeneration) is required for
+its edit to take deployment effect.
 
 ---
 
@@ -342,13 +346,66 @@ retention). Landable today; no regeneration dependency.
 
 ---
 
-### Phase 5: Manual `<leader>al` regeneration handoff (scope 1) [BLOCKED]
+### Phase 5: Manual `<leader>al` regeneration handoff (scope 1) [PARTIAL]
 
 **Goal**: Deploy the finished source-store edits into each repo's `.claude/` tree. USER-OWNED —
 no agent/headless path exists.
 
-**Blocked on**: a human performing the interactive `<leader>al` regeneration after Phases 1-4 land.
-This phase is [BLOCKED], not skipped, and the task terminus is [PARTIAL].
+**Independently re-verified (this session, not self-reported)**: the original blocker (a human
+performing the interactive `<leader>al` regeneration) has cleared — a "Sync all" regeneration ran
+in both nvim and `~/.dotfiles` (all six new event files present in both trees, `.claude/settings.json`
+mtime advanced to the same moment as the new files). However, running the plan's own stated
+success checks against the live, regenerated trees shows the regeneration is **incomplete**, not
+fully successful:
+
+- `ls` checks for the six deployed files (`events-append.sh`, `events-query.sh`,
+  `events-log-artifact.sh`, `events-log-lifecycle.sh`, `events-schema.json`, `events-format.md`) —
+  **PASS** in both nvim and `~/.dotfiles`.
+- `jq '.hooks.Stop, .hooks.SubagentStop, .hooks.PostToolUse' .claude/settings.json` — **FAIL**.
+  Neither repo's deployed `settings.json` contains the `events-log-artifact.sh` (PostToolUse) or
+  `events-log-lifecycle.sh` (Stop, SubagentStop) hook command entries that the source-store
+  `agent-system/extensions/core/root-files/settings.json` declares. The pre-existing duplicate
+  `claude-stop-notify.sh` Stop-matcher entry is also **not** resolved (still 2 occurrences in both
+  repos' deployed `settings.json`).
+- `bash .claude/scripts/check-extension-docs.sh --quiet` — **PARTIAL**. `core`'s 5 pre-existing
+  hard FAILs did resolve to 0 (`core: PASS` in the Summary table) — but the "events-related lines
+  should disappear from the ADVISORY section" criterion **FAILS**: 4 events-specific advisory
+  lines are still emitted (2 missing-hook-registration lines for `PostToolUse`/`Stop`, 1 for
+  `SubagentStop`, 1 duplicate-registration line for `claude-stop-notify.sh`). The remaining
+  zotero/literature "never deployed" advisory lines are expected per the plan and are correct, not
+  a bug.
+- `STRICT_CORE_DEPLOY=1 bash .claude/scripts/check-extension-docs.sh --quiet 2>&1 | grep -c 'events-'`
+  — **FAIL**: returns `9`, not `0`.
+
+**Root cause (identified, not fixed — out of this task's edit scope)**: unlike the plain-copy
+scripts/hooks/schema files, `.claude/settings.json` is deployed via a merge routine
+(`merge_settings` in the nvim-config sync plugin, delegating to a shared merge helper) rather than
+overwritten wholesale. That merge step is what advanced `settings.json`'s mtime without actually
+injecting the new hook command entries or deduplicating the existing `claude-stop-notify.sh`
+Stop-matcher entry. This is a plugin-code defect in the sync mechanism itself, living outside
+`agent-system/extensions/**` (this task's only permitted edit target) — fixing it is new,
+unscoped work and is called out below as a follow-up rather than attempted here.
+
+**CORRECTION (later session, Phase 7)**: the diagnosis above ("plugin-code defect in the sync
+mechanism itself") is superseded by a more precise, independently-verified three-cause account —
+see Phase 7. In short, the merge step was not defective: its declared source
+(`merge-sources/settings-hooks.json`, per `manifest.json`'s `merge_targets.settings.source`) never
+contained the events hook entries in the first place. They had been added only to the install-once
+`root-files/settings.json`, and `copy_root_files` in `loader.lua` skips (`goto continue`) copying
+any `INSTALL_ONCE_ROOT_FILES` entry — including `settings.json` — when the target already exists,
+so that addition could never reach an already-initialized repo through either mechanism. The
+mtime-advanced-without-new-content observation is fully explained by the merge running correctly
+against an empty-of-events-hooks source; it was not evidence of a merge bug. The dedup-is-add-only
+observation about the duplicate `claude-stop-notify.sh` entry remains accurate and unresolved —
+`merge.lua`'s `deep_merge` (`vim.deep_equal` at whole-matcher-object granularity) only declines to
+re-add an equal object, it never removes one. Phase 7 fixes the actual gap (the merge source) but
+does not and cannot fix the duplicate or the install-once self-heal defect — see Phase 7's own
+scope boundaries.
+
+**"Repeat in at least one other repo"**: satisfied in the sense that `~/.dotfiles` also received a
+regeneration (same six files present, same mtime-advanced-without-content-change pattern on
+`settings.json`), but with the identical partial outcome — so the cross-repo repeat does not
+change the verdict.
 
 **Exact procedure (per repo)**:
 1. Open Neovim with cwd at the target repo root (nvim itself; then at least one other, e.g.
@@ -379,25 +436,149 @@ carries the finished edits)
 
 ---
 
-### Phase 6: End-to-end verification of event flow (scope 1) [BLOCKED]
+### Phase 6: End-to-end verification of event flow (scope 1) [PARTIAL]
 
 **Goal**: Confirm events actually FLOW (not merely that files exist). DOUBLY GATED — first on the
 manual regeneration (Phase 5), then on accumulated REAL USAGE OVER TIME.
 
-**Blocked on**: Phase 5 completion AND real `/research`/`/plan`/`/implement` invocations occurring
-post-regeneration so lifecycle/artifact hooks actually fire. This CANNOT be verified today. No
-phase in this plan claims otherwise.
+**Independently re-verified (this session, not self-reported)**, against `specs/events.jsonl`
+(181 lines, 60797 bytes as observed) and a live `check-extension-docs.sh` run:
 
-**What "end-to-end verified" will mean (once unblocked)**:
-- `specs/events.jsonl` has grown with real lines (not just that the file exists).
-- `check-extension-docs.sh` reports 0 FAILs for `core`.
-- At least one lifecycle event (preflight/postflight/Stop) has actually fired from a real command
-  invocation post-regeneration.
-- Do NOT infer success from the code changes alone; do NOT fabricate this verification.
+- `specs/events.jsonl` has grown with real lines from real command invocations **after** the
+  Phase 5 regeneration timestamp — **PASS**, but only partially in scope. Timestamps span
+  2026-07-15 through 2026-07-27, and include genuine `lifecycle_stage` preflight/postflight events
+  for real, verifiable task numbers that match `git log` (e.g. task 908's plan and implement
+  lifecycle, and this task's own `sess_1785147452_169888` preflight event at
+  `2026-07-27T10:18:47Z`, all timestamped after the regeneration).
+- `check-extension-docs.sh` reports 0 FAILs for `core` — **PASS** (non-strict mode; `core: PASS`
+  in the Summary table).
+- At least one lifecycle event fired from a real command invocation post-regeneration — **PASS**
+  (see above).
 
-**Timing**: gated (not today)
+**However, this is not the full picture the plan intended to verify.** All 181 events in
+`specs/events.jsonl` are exclusively `lifecycle_stage` (`checkpoint: preflight|postflight`) or
+`orchestrator_status` — the direct-call channel from `skill-base.sh`/`orchestrator-postflight.sh`
+that Phase 1 hardened. Critically:
+- **Zero** `artifact`-category events exist anywhere in the file — `events-log-artifact.sh` (the
+  `PostToolUse` hook this task deploys) has never fired, in either repo, because its hook
+  registration is the Phase 5 gap identified above.
+- **Zero** `session_stop`/`subagent_stop` event types exist anywhere in the file —
+  `events-log-lifecycle.sh`'s `Stop`/`SubagentStop` hook path (as opposed to the pre-existing
+  direct-call path) has never fired, for the same reason.
+- The preflight/postflight events that ARE flowing predate this task entirely (earliest observed:
+  2026-07-15, before Phases 1-4 landed and well before today's regeneration) — they come from a
+  channel that was already partially working, not a channel this task newly enabled.
 
-**Depends on**: 5
+So Phase 6's literal checklist (jsonl growing, 0 core FAILs, at least one lifecycle event firing)
+passes, but the NEW event types/hooks this task's Phase 5 deploy was meant to activate
+(PostToolUse artifact events; genuine Stop/SubagentStop session events) have zero observed
+firings in either repo, as a direct consequence of the Phase 5 `settings.json` gap. This phase is
+marked `[PARTIAL]`, not `[COMPLETED]`, because the specific new capability is unverified — do not
+infer full success from the pre-existing channel alone.
+
+**Timing**: gated (was not verifiable at plan-authoring time; re-verified this session)
+
+**Depends on**: 5 (Phase 5 is itself `[PARTIAL]`, so Phase 6's dependency is only partially met)
+
+---
+
+### Phase 7: Fix the merge-source gap for the events hook registrations [COMPLETED]
+
+**Goal**: Fix the actual root cause of the Phase 5 `settings.json` gap at the correct source-store
+location, once independent re-verification (a later session, not self-reported) established that
+the "merge routine is broken" framing in Phase 5's Root Cause paragraph was wrong.
+
+**Independently verified root cause (three causes, not one)**:
+1. **PRIMARY**: `.claude/settings.json` is registered install-once.
+   `lua/neotex/plugins/ai/shared/extensions/loader.lua`'s `INSTALL_ONCE_ROOT_FILES` table includes
+   `settings.json`, and `M.copy_root_files` skips (`goto continue`) copying any such file when the
+   target already exists. Anything added only to `root-files/settings.json` can therefore never
+   reach an already-initialized repo — the events hook registrations had been added there and
+   nowhere else.
+2. **Why the merge didn't save it**: the merge step reads a *different* file entirely.
+   `manifest.json`'s `merge_targets.settings.source` points at
+   `merge-sources/settings-hooks.json` (target `.claude/settings.json`). Verified before this
+   phase's edit: that file's `.hooks` keys were exactly `["PostToolUse","SessionStart","Stop",
+   "UserPromptSubmit"]` and `grep -c 'events-log'` on it returned `0`. The merge step ran
+   correctly against an input that never declared the events hooks — it was not defective; it had
+   nothing to inject. This supersedes Phase 5's "plugin-code defect in the sync mechanism itself"
+   framing (see the CORRECTION note inserted into Phase 5 above).
+3. **The duplicate (real, still unresolved)**: `lua/neotex/plugins/ai/shared/extensions/merge.lua`'s
+   `deep_merge` compares whole matcher objects via `vim.deep_equal` (not individual
+   `hooks[].command` strings) and is add-only — it declines to re-add an equal object but never
+   removes one. This is confirmed by `manifest.json`'s own `merge_targets.settings._comment`, which
+   already documented this behavior. It explains why the pre-existing duplicate
+   `claude-stop-notify.sh` Stop-matcher entry survives every regeneration.
+
+**What changed**: added the three missing hook registrations to
+`agent-system/extensions/core/merge-sources/settings-hooks.json` — the file the merge step
+actually reads — each as its **own dedicated, single-command matcher object** rather than appended
+into an existing shared matcher:
+- `PostToolUse` → new `"Write|Edit"` matcher object running `events-log-artifact.sh` (matcher
+  confirmed against the deployed root-files copy's existing `PostToolUse`/`"Write|Edit"` usage for
+  the same command, and against the hook script's own header comment).
+- `Stop` → new `"*"` matcher object running `events-log-lifecycle.sh` (second array entry
+  alongside the existing `claude-stop-notify.sh` matcher object).
+- `SubagentStop` → new top-level key (did not exist in this file before) with a `"*"` matcher
+  object running `events-log-lifecycle.sh`.
+
+Each is dedicated and single-command specifically because `deep_merge`'s dedup is object-level: a
+dedicated object is idempotent across repeated merges (an identical object is skipped, not
+duplicated), whereas appending a command into an existing shared matcher object would make that
+object non-equal to its previously-merged self and cause its sibling commands to be re-registered
+on every future merge.
+
+**Tasks**:
+- [x] Added the `PostToolUse`/`"Write|Edit"` dedicated matcher object (single command:
+      `events-log-artifact.sh`) to `settings-hooks.json`. *(completed)*
+- [x] Added the `Stop`/`"*"` dedicated matcher object (single command:
+      `events-log-lifecycle.sh`) to `settings-hooks.json`. *(completed)*
+- [x] Added the new `SubagentStop` key with a `"*"` matcher object (single command:
+      `events-log-lifecycle.sh`) to `settings-hooks.json`. *(completed)*
+- [x] Verified valid JSON, correct `.hooks` key set, and `events-log` occurrence count.
+      *(completed)*
+- [x] Ran `check-extension-docs.sh --quiet` against the still-undeployed source and confirmed the
+      advisory output now names all three new registrations as source-declared/not-yet-deployed
+      (rather than never having been declared at all), and independently corroborates the
+      still-live `claude-stop-notify.sh` duplicate. *(completed)*
+- [x] Updated this plan (Phase 7, the CORRECTION note in Phase 5, and this Testing & Validation
+      entry) and `HANDOFF.md` to reflect the corrected three-cause root cause. *(completed)*
+
+**Timing**: 0.5 hour
+
+**Depends on**: none (an independent source-store edit to the correct file; not blocked by
+Phases 1-6). Phase 5 (regeneration) must be **re-run** after this edit is committed for the fix to
+reach any deployed `.claude/settings.json` — this phase does not itself deploy anything.
+
+**Files to modify** (source store only):
+- `agent-system/extensions/core/merge-sources/settings-hooks.json`
+
+**Verification** (run and observed today; real output, not inferred):
+- `jq empty agent-system/extensions/core/merge-sources/settings-hooks.json` → valid JSON.
+- `jq -c '.hooks | keys' agent-system/extensions/core/merge-sources/settings-hooks.json` →
+  `["PostToolUse","SessionStart","Stop","SubagentStop","UserPromptSubmit"]` (includes the new
+  `SubagentStop` key).
+- `grep -c 'events-log' agent-system/extensions/core/merge-sources/settings-hooks.json` → `3`
+  (was `0` before this phase).
+- `jq -c '.hooks.PostToolUse[] | {matcher, count: (.hooks|length)}'` /
+  `.hooks.Stop[]` / `.hooks.SubagentStop[]` on the same file → each of the three new objects has
+  `count: 1` (single command), confirming the dedicated-object shape.
+- `bash .claude/scripts/check-extension-docs.sh --quiet` → exit 0 (`core: PASS`, advisory-only);
+  the Core Deploy-Drift Advisory section names all three new registrations as
+  source-declares-but-deployed-does-not, plus the pre-existing duplicate
+  `claude-stop-notify.sh` line — both expected until Phase 5 is re-run.
+
+**What this phase does NOT claim** (see the plan-level HARD CONSTRAINT re-stated here):
+- Does NOT update any deployed `.claude/settings.json` — that requires another `<leader>al`
+  "Sync all" regeneration (Phase 5, remains `[PARTIAL]`), which has no headless path and is
+  user-owned.
+- Does NOT verify `PostToolUse`-artifact or `Stop`/`SubagentStop` event flow — that remains gated
+  on Phase 5 (regeneration) and Phase 6 (real usage over time), both of which remain `[PARTIAL]`.
+- Does NOT remove the already-deployed duplicate `claude-stop-notify.sh` Stop-matcher entry — the
+  merge is add-only; this needs manual removal or a loader-side fix (out of scope, recorded as a
+  blocker below).
+- Does NOT fix the underlying install-once self-heal defect in `loader.lua`/`merge.lua` — those
+  live under `lua/**`, outside this task's binding edit scope (recommend a follow-up task).
 
 ---
 
@@ -433,9 +614,28 @@ its `env` block is project-scoped only and would miss cross-repo/ad-hoc invocati
       never-deployed core scripts/hooks now FAIL; additive w.r.t. memory-extension entries.
 - [ ] Phase 4: source-store note free of task-number references; HANDOFF.md contains exact
       keystrokes + dotfiles snippet.
-- [ ] No `.claude/**` file modified; no `specs/state.json` / `specs/TODO.md` modified; the two
-      pre-existing uncommitted lua edits untouched.
-- [ ] Phases 5-6 remain [BLOCKED]; task terminus [PARTIAL]; no event-flow claim made today.
+- [x] No `.claude/**` file modified; no `specs/state.json` / `specs/TODO.md` modified outside the
+      normal preflight/postflight status transition; the two pre-existing uncommitted lua edits
+      untouched. *(completed: this session's own edits are confined to the plan file, HANDOFF.md,
+      the summary, and the two orchestrator artifacts; `.claude/**` was only read and executed
+      against, never edited)*
+- [x] Phases 5-6 re-verified this session (independently, not via self-report): Phase 5
+      `[PARTIAL]` — regeneration ran in both nvim and `~/.dotfiles`, deploying the six new files,
+      but `settings.json` hook registration for the new events hooks did not take effect and the
+      pre-existing `claude-stop-notify.sh` duplicate was not resolved, in either repo. Phase 6
+      `[PARTIAL]` — real preflight/postflight lifecycle events are flowing post-regeneration
+      (jsonl growing, `core: PASS` in non-strict `check-extension-docs.sh`), but zero
+      `PostToolUse`-artifact or `Stop`/`SubagentStop`-hook-driven events have ever fired, a direct
+      consequence of the Phase 5 gap. Task terminus remains `[PARTIAL]`; no full end-to-end
+      event-flow claim is made. *(completed: see Phase 5/6 sections above for the full
+      criterion-by-criterion evidence)*
+- [x] Phase 7: three missing hook registrations added to the correct source-store file
+      (`merge-sources/settings-hooks.json`, not `root-files/settings.json`), each as its own
+      dedicated single-command matcher object; `jq empty` valid, `.hooks` keys include
+      `SubagentStop`, `events-log` occurrence count `0` → `3`, each new object has exactly one
+      command, `check-extension-docs.sh --quiet` exits 0 with the advisory now naming all three as
+      source-declared. Phase 5/6 status is unchanged by this phase — no deployment or event-flow
+      claim is made; regeneration must still be re-run for this fix to take effect. *(completed)*
 
 ## Artifacts & Outputs
 
@@ -444,7 +644,8 @@ its `env` block is project-scoped only and would miss cross-repo/ad-hoc invocati
 - `specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md` (Phase 4)
 - `specs/885_enable_and_verify_passive_signal_capture/summaries/01_passive-signal-capture-deploy-summary.md`
   (on implementation)
-- Modified source-store files under `agent-system/extensions/core/**` (Phases 1-4)
+- Modified source-store files under `agent-system/extensions/core/**` (Phases 1-4, and Phase 7's
+  `merge-sources/settings-hooks.json` fix)
 
 ## Rollback/Contingency
 

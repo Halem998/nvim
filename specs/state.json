@@ -352,8 +352,8 @@
         "agent-system/extensions/core/scripts/check-extension-docs.sh"
       ],
       "created": "2026-07-15",
-      "last_updated": "2026-07-27T06:47:00Z",
-      "session_id": "sess_1784135810_7e6755_885",
+      "last_updated": "2026-07-27T10:43:08Z",
+      "session_id": "sess_1785147452_169888",
       "artifacts": [
         {
           "path": "specs/885_enable_and_verify_passive_signal_capture/reports/01_enable-verify-passive-signal-capture.md",
@@ -361,18 +361,18 @@
           "summary": "Full research report: regeneration-feasibility findings, exact manual <leader>al procedure with success criteria, live check-extension-docs.sh evidence for scope item 6, dotfiles-vs-repo settlement for scope items 3/4, verified cleanupPeriodDays:0 claim, and cwd-vs-cc_session_id schema recommendation aligned with but not over-committing to sibling report 887."
         },
         {
-          "path": "specs/885_enable_and_verify_passive_signal_capture/plans/01_passive-signal-capture-deploy.md",
-          "type": "plan",
-          "summary": "6-phase plan. Waves: [1,3,4] parallel (landable, disjoint files), [2] after 1 (shares the two hooks), [5] after 1-4 ([BLOCKED] manual regeneration), [6] after 5 ([BLOCKED] event-flow verification). Terminus [PARTIAL]."
-        },
-        {
           "path": "specs/885_enable_and_verify_passive_signal_capture/summaries/01_passive-signal-capture-deploy-summary.md",
           "type": "summary",
-          "summary": "passive signal capture deploy summary (backfilled by --sync)"
+          "summary": "Updated with a new 'Phases 5-6 Re-Verification' section documenting the independent, criterion-by-criterion re-check of Phase 5/6 against the live regenerated trees in this repo and ~/.dotfiles."
+        },
+        {
+          "path": "specs/885_enable_and_verify_passive_signal_capture/plans/01_passive-signal-capture-deploy.md",
+          "type": "plan",
+          "summary": "7-phase plan; Phase 7 lands the merge-source hook registrations. Phases 5-6 [PARTIAL] pending regeneration."
         }
       ],
       "updated": "2026-07-15T20:16:11Z",
-      "completion_summary": "Phases 1-4 complete and committed: replaced the || true silent-fail idiom at all 10 events-append.sh call sites with an observable non-fatal wrapper (fixed a real set -e abort bug in the process); added nullable cwd field to events-schema.json + threading, with repo derived at query time in events-query.sh; extended check-extension-docs.sh with an ADVISORY (non-blocking) core deploy-drift lane; added a source-store no-headless-regeneration note and a HANDOFF.md. Phases 5-6 BLOCKED: end-to-end verification needs a manual <leader>al Sync-all regeneration (no headless path exists — load_all_globally calls vim.fn.confirm, execute_sync is a module-local closure) in nvim plus one other repo, THEN accumulated real usage before event flow can be observed. OTel/cleanupPeriodDays (scope 3/4) handed off to ~/.dotfiles as a copy-pasteable snippet (cleanupPeriodDays: 365, never 0). See specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md."
+      "completion_summary": "Phases 1-4 complete and committed: replaced the || true silent-fail idiom at all 10 events-append.sh call sites with an observable non-fatal wrapper (fixed a real set -e abort bug in the process); added nullable cwd field to events-schema.json + threading, with repo derived at query time in events-query.sh; extended check-extension-docs.sh with an ADVISORY (non-blocking) core deploy-drift lane; added a source-store no-headless-regeneration note and a HANDOFF.md. Phases 5-6 BLOCKED: end-to-end verification needs a manual <leader>al Sync-all regeneration (no headless path exists — load_all_globally calls vim.fn.confirm, execute_sync is a module-local closure) in nvim plus one other repo, THEN accumulated real usage before event flow can be observed. OTel/cleanupPeriodDays (scope 3/4) handed off to ~/.dotfiles as a copy-pasteable snippet (cleanupPeriodDays: 365, never 0). See specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md.\n\nUPDATE (later orchestration run): Corrected the prior session's wrong 'settings.json merge routine is broken' diagnosis and fixed the actual root cause at the source-store level: the events hook registrations had only ever been added to the install-once root-files/settings.json (which can never re-copy into an already-initialized repo), never to merge-sources/settings-hooks.json (the file the merge step actually reads). Added the three missing registrations (PostToolUse/events-log-artifact.sh, Stop/events-log-lifecycle.sh, new SubagentStop key/events-log-lifecycle.sh) as dedicated single-command matcher objects, verified by valid-JSON, key-set, occurrence-count, and doc-lint-gate checks. Updated the plan (new Phase 7), HANDOFF.md, and the implementation summary to reflect the corrected root cause. No deployment occurred and no event-flow claim is made -- Phases 5-6 remain [PARTIAL]; task terminus remains [PARTIAL] this run."
     },
     {
       "project_number": 887,

@@ -14,6 +14,20 @@
         "hooks": [
           { "type": "command", "command": "bash .claude/hooks/claude-stop-notify.sh 2>/dev/null || echo '{}'" }
         ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'" }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'" }
+        ]
       }
     ],
     "UserPromptSubmit": [
@@ -31,6 +45,12 @@
         "hooks": [
           { "type": "command", "command": "bash .claude/hooks/validate-no-task-references.sh 2>/dev/null || echo '{}'" },
           { "type": "command", "command": "bash .claude/hooks/validate-handoff-location.sh" }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/events-log-artifact.sh 2>/dev/null || echo '{}'" }
         ]
       }
     ]

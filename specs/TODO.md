@@ -1384,8 +1384,8 @@ DELIVERABLE RULE: honor no-task-references-in-deliverables in any file outside s
 - **Topic**: agent-system
 - **Dependencies**: Task 874, Task 916
 - **Research**: [885_enable_and_verify_passive_signal_capture/reports/01_enable-verify-passive-signal-capture.md]
-- **Plan**: [885_enable_and_verify_passive_signal_capture/plans/01_passive-signal-capture-deploy.md]
 - **Summary**: [885_enable_and_verify_passive_signal_capture/summaries/01_passive-signal-capture-deploy-summary.md]
+- **Plan**: [885_enable_and_verify_passive_signal_capture/plans/01_passive-signal-capture-deploy.md]
 
 **Description**: URGENT / HIGH PRIORITY. The 30-day transcript window is reaped daily, so every day without capture is permanently lost data.
 

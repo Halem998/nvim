@@ -1,50 +1,65 @@
 {
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
   "status": "partial",
   "task_number": 885,
-  "session_id": "sess_1784135810_7e6755_885",
-  "summary": "Implementation landed Phases 1-4 of the plan (all regeneration-independent source-store edits under agent-system/extensions/core/**, each verified by actually running the modified script and observing the result). Phase 1 replaced the `|| true` silent-fail idiom at all 10 events-append.sh call sites with a duplicated observable-but-non-fatal wrapper, catching and fixing a real set -e correctness bug along the way (a present-but-failing helper previously aborted the enclosing script before the wrapper could return 0). Phase 2 added a nullable `cwd` field ONLY to events-schema.json (not cc_session_id) and threaded --cwd through events-append.sh and both hooks; events-query.sh derives `repo` at query time as basename(cwd), never stored. Phase 3 extended check-extension-docs.sh with a new ADVISORY (not hard-FAIL) lane for core-extension never-deployed scripts/hooks and settings.json registration gaps -- deliberately ADVISORY rather than the plan's original FAIL design, per a binding orchestrator concurrency guardrail: a hard FAIL would have bricked the doc-lint gate for every caller (including a concurrently running sibling session validating an unrelated memory-extension manifest change) until the user's manual regeneration happens. An opt-in STRICT_CORE_DEPLOY=1 env var preserves the original hard-FAIL option. Phase 4 documented the no-headless-regeneration constraint in a new source-store pattern file and wrote a durable, user-executable HANDOFF.md. Phases 5-6 (manual <leader>al regeneration; doubly-gated event-flow verification) remain [BLOCKED] -- genuinely gated on human action and accumulated real usage, not fakeable. Task terminus is [PARTIAL] as designed; no phase claims event flow is verified today.",
+  "session_id": "sess_1785147452_169888",
+  "summary": "Corrected the prior session's wrong 'settings.json merge routine is broken' diagnosis. Real root cause (independently verified): the events hook registrations were added only to the install-once root-files/settings.json, never to merge-sources/settings-hooks.json (the file the merge step actually reads) -- the merge itself was never defective. Fixed at source: added PostToolUse/events-log-artifact.sh, Stop/events-log-lifecycle.sh, and a new SubagentStop key/events-log-lifecycle.sh to merge-sources/settings-hooks.json, each a dedicated single-command matcher object. Verified via jq/grep/check-extension-docs.sh. No deployment occurred; Phases 5-6 remain [PARTIAL]; task terminus remains [PARTIAL].",
   "artifacts": [
     {
-      "type": "summary",
-      "path": "specs/885_enable_and_verify_passive_signal_capture/summaries/01_passive-signal-capture-deploy-summary.md",
-      "summary": "Implementation summary for Phases 1-4 (landed, verified) and the handoff for Phases 5-6 ([BLOCKED])."
-    },
-    {
-      "type": "handoff",
-      "path": "specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md",
-      "summary": "Durable, user-executable handoff: exact <leader>al regeneration procedure with independently verifiable success criteria, and the dotfiles telemetry/retention snippet (not applied to this repo)."
-    },
-    {
       "type": "plan",
-      "path": "specs/885_enable_and_verify_passive_signal_capture/plans/01_passive-signal-capture-deploy.md",
-      "summary": "6-phase plan, updated in place: Phases 1-4 marked [COMPLETED] with per-task completion/deviation annotations; Phases 5-6 remain [BLOCKED]."
+      "path": "specs/885_enable_and_verify_passive_signal_capture/plans/01_passive-signal-capture-deploy.md"
     },
     {
-      "type": "report",
-      "path": "specs/885_enable_and_verify_passive_signal_capture/reports/01_enable-verify-passive-signal-capture.md",
-      "summary": "Research report the plan integrated: settled no-headless-regeneration feasibility, exact manual keystroke procedure with success criteria, live check-extension-docs.sh drift evidence, dotfiles-vs-repo settlement for scope 3/4, verified cleanupPeriodDays:0 claim, and cwd-only schema recommendation."
+      "type": "summary",
+      "path": "specs/885_enable_and_verify_passive_signal_capture/summaries/01_passive-signal-capture-deploy-summary.md"
     }
   ],
-  "modified_files": [
-    "agent-system/extensions/core/scripts/skill-base.sh",
-    "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
-    "agent-system/extensions/core/hooks/events-log-lifecycle.sh",
-    "agent-system/extensions/core/hooks/events-log-artifact.sh",
-    "agent-system/extensions/core/context/schemas/events-schema.json",
-    "agent-system/extensions/core/scripts/events-append.sh",
-    "agent-system/extensions/core/scripts/events-query.sh",
-    "agent-system/extensions/core/context/formats/events-format.md",
-    "agent-system/extensions/core/scripts/check-extension-docs.sh",
-    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
-    "agent-system/extensions/core/index-entries.json",
-    "specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md",
-    "specs/885_enable_and_verify_passive_signal_capture/plans/01_passive-signal-capture-deploy.md"
+  "blockers": [
+    {
+      "description": "merge-sources/settings-hooks.json now correctly declares the three events hook registrations, but this is a source-store-only fix. No deployed .claude/settings.json (nvim or ~/.dotfiles) has been updated -- a fresh <leader>al 'Sync all (replace existing)' regeneration is still required, and there is no headless/CI path to trigger it (execute_sync is a module-local closure gated behind an unconditional vim.fn.confirm()).",
+      "phase": "phase-5",
+      "target": ".claude/settings.json",
+      "severity": "hard"
+    },
+    {
+      "description": "The pre-existing duplicate claude-stop-notify.sh Stop-matcher entry in the already-deployed .claude/settings.json (both repos) cannot be resolved by any future merge -- merge.lua's deep_merge dedups at whole-matcher-object granularity via vim.deep_equal and is add-only, never removing an existing entry.",
+      "phase": "phase-5",
+      "target": ".claude/settings.json",
+      "severity": "soft"
+    },
+    {
+      "description": "Zero PostToolUse-artifact events and zero genuine Stop/SubagentStop-hook-driven session events exist anywhere in specs/events.jsonl in either repo, a direct consequence of the still-undeployed Phase 5 fix. Only the pre-existing preflight/postflight lifecycle channel is confirmed flowing.",
+      "phase": "phase-6",
+      "target": "specs/events.jsonl",
+      "severity": "hard"
+    },
+    {
+      "description": "The underlying defect -- install-once root-files (settings.json/settings.local.json) can never self-heal a missed addition once a target repo already exists, and merge.lua's dedup is add-only at object granularity -- lives in lua/neotex/plugins/ai/shared/extensions/loader.lua and merge.lua, under lua/**, outside this task family's agent-system/extensions/**-only edit scope.",
+      "phase": "follow-up",
+      "target": "lua/neotex/plugins/ai/shared/extensions/loader.lua,merge.lua",
+      "severity": "soft"
+    }
   ],
-  "next_steps": "Task is [PARTIAL] by design; do not re-run /implement 885 expecting Phases 5-6 to complete automatically -- they are user-owned. Follow specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md: run <leader>al in nvim and at least one other repo (e.g. ~/.dotfiles), choosing 'Sync all (replace existing)' at the confirm dialog, then verify via the independently-checkable criteria in HANDOFF.md Part A. After regeneration, event-flow verification (Phase 6) still requires accumulated real command usage before it can be confirmed -- do not claim it verified from code inspection alone.",
-  "blocking_manual_steps": [
-    "User must run <leader>al in nvim and choose 'Sync all (replace existing)' (NOT the default Cancel, NOT 'Add new only') at the vim.fn.confirm() dialog to deploy the finished source-store edits -- no headless/CI path exists.",
-    "User must repeat the same <leader>al 'Sync all' step in at least one other repo (e.g. ~/.dotfiles, confirmed to have the identical undeployed gap) for cross-repo verification.",
-    "User (or a separate ~/.dotfiles-repo task) must add cleanupPeriodDays: 365 (never 0) and CLAUDE_CODE_ENABLE_TELEMETRY=1 + OTEL_METRICS_EXPORTER=console + OTEL_LOGS_EXPORTER=console to ~/.dotfiles/config/claude/settings.json, then run home-manager switch. This task does not edit that file.",
-    "End-to-end event-flow verification (specs/events.jsonl growing, check-extension-docs.sh green, a real lifecycle event fired) is doubly gated: first on the manual regeneration, then on accumulated real command usage over time. It cannot be observed today."
-  ]
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/merge-sources/settings-hooks.json",
+    "specs/885_enable_and_verify_passive_signal_capture/plans/01_passive-signal-capture-deploy.md",
+    "specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md",
+    "specs/885_enable_and_verify_passive_signal_capture/summaries/01_passive-signal-capture-deploy-summary.md"
+  ],
+  "decisions_made": [
+    "Diagnosed and corrected the prior session's wrong root-cause framing ('settings.json merge routine is broken'): the merge step was never defective, it merged an input (merge-sources/settings-hooks.json) that never declared the events hooks.",
+    "Added the three missing hook registrations as their own dedicated single-command matcher objects rather than appending into existing shared matchers, to remain idempotent under merge.lua's whole-object vim.deep_equal dedup across repeated future merges.",
+    "Left the pre-existing duplicate claude-stop-notify.sh Stop-matcher entry untouched in merge-sources/settings-hooks.json -- removing it was outside this dispatch's explicit scope (recorded as a separate blocker/follow-up, not attempted).",
+    "Did not run the Stage 5a blanket 'repair stale phase headings to [COMPLETED]' backstop, because Phase 5 and Phase 6 are deliberately [PARTIAL] (gated on a manual regeneration and on real usage over time, respectively) -- mechanically flipping them to [COMPLETED] would have violated the explicit no-overclaiming constraint for this dispatch."
+  ],
+  "dead_ends": [],
+  "phases_completed": 5,
+  "phases_total": 7,
+  "continuation_context": {
+    "handoff_path": "specs/885_enable_and_verify_passive_signal_capture/HANDOFF.md",
+    "orchestrator_mode": true
+  },
+  "plan_markers_verified": false
 }
