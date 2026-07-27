@@ -305,7 +305,7 @@ parallel-defaults note, and the settings dependency.
 
 ---
 
-### Phase 5: Live cross-repo `/meta` verification [BLOCKED]
+### Phase 5: Live cross-repo `/meta` verification [COMPLETED]
 
 **Goal**: Empirically confirm, via an actual cross-repo `/meta` invocation, that the commit lands in the
 global repo. The research explicitly did NOT verify this live and flagged it as required. **This phase may
@@ -357,7 +357,11 @@ scratch foreign repo** instead — testing the identical mechanism with zero bla
       cross-task coupling with `meta-builder-agent` (out of this task's scope) remains **fully unverified**,
       to be exercised once that dependent work lands and once a properly-trusted headless or interactive
       test environment is available.
-- [ ] **Verify `--local`**: not reached — blocked at the same workspace-trust gate before mode detection.
+      **SUPERSEDED** by the live interactive verification recorded below: the imperative *was* subsequently
+      exercised end-to-end from a real foreign repo, and `meta-builder-agent` was observed to honor the
+      threaded `target_root`. The paragraph above is retained as the accurate record of the scratch attempt.
+- [x] **Verify `--local`**: observed correct in the live interactive run below — `--local` placed the task
+      in the local repo and left the global root untouched.
 - [x] **Cleanup**: no cleanup was required — the workspace-trust block occurred before any write, so
       `$SCRATCH/fake-global-root/specs/state.json` was never mutated, no commit was made in either scratch
       repo beyond the harness-setup commit, and the real `~/.config/nvim` and `~/Projects/cslib` repos were
@@ -366,6 +370,34 @@ scratch foreign repo** instead — testing the identical mechanism with zero bla
       confirming the real `.claude/` deploy tree was untouched by this test).
 - [x] Write the observed results into the task summary. State plainly which claims are observed and which
       remain unverified. *(completed — see summary.)*
+
+**LIVE INTERACTIVE VERIFICATION — COMPLETED (supersedes the BLOCKED scratch attempt above)**
+
+The workspace-trust gate that blocked the scratch run does **not** apply to an already-trusted real repo
+(`hasTrustDialogAccepted: true`). The manual procedure below was executed by the user interactively from
+`~/Projects/cslib` against the global root `~/.config/nvim`, with both repos' deploy trees confirmed in
+sync with the source store beforehand. Observed results:
+
+| Claim | Observation |
+|-------|-------------|
+| Global default places task in global root | Task created in `~/.config/nvim/specs/`, **not** in cslib |
+| Global run commits in the global repo | Commit observed in `~/.config/nvim` |
+| Global run leaves the foreign repo untouched | No task entry, no dir, no commit in cslib |
+| `--local` inverts placement | Task created in `~/Projects/cslib/specs/`, numbered from cslib's own counter |
+| `--local` leaves the global root untouched | Global `next_project_number` unchanged; no dir; global HEAD unmoved |
+| Both repos clean of test residue | Both throwaway tasks abandoned and archived; no residue in either repo |
+
+**Consequence**: the Phase 2 Agent-prompt path-qualification imperative is now **observed to work** —
+`meta-builder-agent` honors the threaded `target_root` in both directions. This was the single claim the
+scratch attempt could produce no evidence for.
+
+**Recorded deviation (not a blocker, not part of Phase 5's verification criteria)**: the global-default run
+produced a creation commit in the global repo, but the `--local` run wrote its `state.json` / `TODO.md`
+entries **without committing** in the local repo. The local repo's working tree was already dirty with
+unrelated in-flight work at the time, so this may be correct under-staging behavior rather than a defect in
+the chained-`cd` postflight commit path. Phase 5's stated criteria concern *placement* (and the global
+run's commit), all of which were met; the local-mode commit behavior was never one of them. Flagged here
+so the asymmetry is on the record rather than discovered later.
 
 **Manual verification procedure** (for the user to run interactively, since headless cannot clear the
 workspace-trust gate):
@@ -416,11 +448,12 @@ workspace-trust gate):
       references (the pre-existing `parse-command-args.sh` header comment is a known, flagged exception —
       confirmed the only two matches are the pre-existing "Task 594"/"Task 595" lines).
 - [x] Chained-`cd` resolution observed correct from a foreign cwd (Phase 4).
-- [ ] Cross-repo `/meta` commit placement observed correct (Phase 5) — **honestly reported as unverified**:
-      headless invocation blocked at the workspace-trust-dialog gate before `/meta` execution began. See
-      Phase 5 and the manual verification procedure recorded there.
-- [ ] `--local` observed to place tasks in the local repo (Phase 5) — **not reached**, blocked at the same
-      gate before mode detection.
+- [x] Cross-repo `/meta` commit placement observed correct (Phase 5) — observed in the live interactive run
+      from a real trusted foreign repo: task and commit landed in the global root, both absent from the
+      foreign repo. (The earlier headless attempt was blocked at the workspace-trust-dialog gate; that gate
+      does not apply to an already-trusted repo. See Phase 5's live-verification record.)
+- [x] `--local` observed to place tasks in the local repo (Phase 5) — observed: the task landed in the local
+      repo's `specs/` and the global root was left entirely untouched.
 - [x] Global mode observed to be a no-op from within `~/.config/nvim` (Phase 4, shell-level).
 
 ## Artifacts & Outputs
