@@ -1,26 +1,41 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "plan",
-  "status": "planned",
-  "summary": "7-phase, ~7h plan (4 waves) shipping BOTH shared tooling and a documented method. New: scripts/census-count.sh (subcommands occurrences/membership/cross-check, each emitting a record block with the verbatim producing command), scripts/tests/test-census-count.sh, scripts/tests/test-validate-no-task-references.sh, context/standards/shell-script-testing.md, context/standards/census-methodology.md. Modified: hooks/validate-no-task-references.sh separator regex + task-qualified Phase branch, manifest.json (3 provides.scripts entries), index-entries.json (2 entries). Every edit targets agent-system/extensions/core/**. Plan validator passes with 0 warnings.",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "All 7 phases COMPLETED. Shipped scripts/census-count.sh (occurrences/membership/cross-check subcommands, each mapping to one of the three named bug classes plus the cross-check discipline, each emitting a greppable record block with the verbatim producing command), scripts/tests/test-census-count.sh (8 cases, all three bug classes with naive-vs-correct assertions), scripts/tests/test-validate-no-task-references.sh (21 cases), context/standards/shell-script-testing.md, context/standards/census-methodology.md. Fixed hooks/validate-no-task-references.sh's separator-only regex gap (task-N/task_N/Task #N were invisible) plus a task-qualified compound Phase branch, with a confirmed mutation check (revert-then-restore). Registered 3 new provides.scripts entries and 2 new index-entries.json entries in agent-system/extensions/core/manifest.json and index-entries.json. Every edit targets agent-system/extensions/core/**; git status --short confirms zero .claude/** paths. Both test suites exit 0 (21/21, 8/8) from a clean shell. Three registration validators (validate-extension-index.sh, validate-context-index.sh, check-extension-docs.sh) all PASSED; validate-context-index.sh inspects the deployed .claude/context/index.json only and does not see this task's new entries -- reported as an expected stale-deploy discrepancy, not fixed (redeploy out of scope).",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/926_shared_tested_census_tooling_and_method/plans/01_census-tooling-and-method.md"
+    },
+    {
+      "type": "summary",
+      "path": "specs/926_shared_tested_census_tooling_and_method/summaries/01_census-tooling-and-method-summary.md"
     }
   ],
-  "next_action_hint": "implement",
-  "files_modified": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/context/standards/census-methodology.md",
+    "agent-system/extensions/core/context/standards/shell-script-testing.md",
+    "agent-system/extensions/core/hooks/validate-no-task-references.sh",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/census-count.sh",
+    "agent-system/extensions/core/scripts/tests/test-census-count.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh"
+  ],
   "decisions_made": [
     "D1: Ship both tooling and a documented method -- a prose-only deliverable cannot satisfy the binding testedness constraint.",
-    "D2: Harness location is agent-system/extensions/core/scripts/tests/. Resolved the researcher-flagged tension with a NEW on-disk fact: core's provides.scripts ALREADY carries subdirectory-qualified paths (lint/lint-contract-compliance.sh, lint/lint-postflight-boundary.sh), so tests/ is a core-local convention, not a borrowed literature shape. Also matches literature's own scope-based split (narrow suites in tests/, broad pipeline suites flat).",
-    "D3: Helper naming inside core tests is pass()/fail()/info() with PASSED/FAILED counters, following core's existing test-task-lock-reap.sh precedent; literature's t_pass/t_fail stays valid within literature. Location is the shared rule, helper naming is extension-local. test-task-lock-reap.sh is NOT migrated (recorded as a tolerated exception in the convention doc).",
-    "D4: Fixtures are built inline via heredocs into a mktemp -d root; no committed fixture tree. Matches core's zero-committed-fixture approach and avoids registering non-script files in a provides array with no fixtures slot.",
-    "D5: Phase references are in the hook's remit ONLY in the task-qualified compound form (task N phase P / phase P of task N). A bare 'Phase 3' is explicitly OUT of remit -- it is indistinguishable from a document's own internal structure (plan-format.md, skill pipeline stages), and flagging it would cause alert fatigue on an advisory hook. This DIVERGES from the research report's recommendation to include bare Phase; the reason is stated in the plan and the decision is marked revisitable.",
-    "D6: Method doc lives at context/standards/census-methodology.md (indexed, load_when-scoped), not rules/ (auto-applied everywhere).",
-    "Candidate regex recorded for validation (not paste-blindly): '\\b[Tt]asks?([[:space:]]+#?|[-_#])[0-9]+(-[0-9]+)?\\b' -- explicit alternation deliberately chosen over a bracket class containing '-' to avoid the mid-class range trap.",
-    "Phase 3 includes a mutation check: reverting the separator group to [[:space:]]+ must make the suite fail. A suite that passes against the old regex is not testing anything.",
-    "Real-repo dogfooding (membership: manifest provides.scripts vs scripts/*.sh on disk) appears ONLY as a worked example in the method doc, never as a test assertion, to keep suites repo-state-independent."
+    "D2: Harness location is agent-system/extensions/core/scripts/tests/, a core-local convention (provides.scripts already carries subdirectory-qualified lint/ paths), matching literature's own scope-based split.",
+    "D3: Helper naming inside core tests is pass()/fail()/info() with PASSED/FAILED counters, following test-task-lock-reap.sh's precedent. test-task-lock-reap.sh is NOT migrated (recorded as a tolerated exception).",
+    "D4: Fixtures built inline via heredocs into a mktemp -d root; no committed fixture tree.",
+    "D5: Phase references in the hook's remit ONLY in the task-qualified compound form (task N phase P / phase P of task N). A bare 'Phase N' stays out of remit to avoid alert fatigue.",
+    "D6: Method doc lives at context/standards/census-methodology.md (indexed, load_when-scoped), not rules/.",
+    "Phase 1 confirmed (not assumed): manifest.json's provides.context lists directory names only ('standards' already present); no manifest edit needed for the two new context/standards/*.md files, only index-entries.json entries.",
+    "Shipped separator group: TASK_SEP='([[:space:]]+#?|[-_#])' -- explicit alternation, never a bracket class containing '-'. Validated via the Phase 3 fixture suite plus a one-time mutation check (reverted to '[[:space:]]+', suite dropped to 17/21, restored to 21/21).",
+    "Phase 7 correction to Phase 2's file: the fixed hook was flagging its own explanatory comments (which used a concrete example digit '788'). Rewrote those comments to use letter placeholders (N, P, M); no behavior change, re-verified clean.",
+    "Deviation: the plan estimated a naive whitespace-only pattern would miss 'four of the five' named separator forms in the census-count.sh bug-class-3 fixture; verified directly it misses 3 of 5 (only 2 forms contain literal whitespace). Test asserts the verified 5-vs-2 result; the underlying naive-vs-correct proof point is unchanged.",
+    "Real-repo dogfooding (membership: manifest provides.scripts vs scripts/*.sh on disk) appears ONLY as a worked example in the method doc, never as a test assertion."
   ],
   "dead_ends": []
 }
