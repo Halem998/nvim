@@ -1,7 +1,7 @@
 # Implementation Plan: Task #909
 
 - **Task**: 909 - Resolve the two hard-mode dispatch contexts that carry neither an absolute handoff anchor nor orchestrator_mode
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.25 hours
 - **Dependencies**: 898
 - **Research Inputs**: specs/909_resolve_unanchored_hard_mode_dispatch_contexts/reports/01_handoff-gating-and-fix-branch.md
