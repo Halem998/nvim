@@ -216,12 +216,13 @@ iterate `archivable_tasks[]` — the guard-filtered list — never a freshly-rec
 - (Define success metrics here)
 ```
 
-Use structured extraction from completion_summary fields, falling back to exact `(Task {N})` matching.
-
 **IMPORTANT**: Meta tasks (task_type: "meta") are excluded from ROADMAP.md matching since they
 modify system infrastructure rather than project deliverables. Expanded tasks are excluded for a
 structural reason: an expanded task has no `completion_summary` of its own by construction (its
 subtasks carry the deliverables), so a future reader must not "fix" this by requiring one.
+`roadmap-integration.sh` has no `task_type` filter and no abandoned-status branch of its own (see
+its header's "Caller contract" section), so this exclusion partition is entirely `/todo`'s
+responsibility -- the script cannot do it for us.
 
 **Step 3.5.1: Separate roadmap-excluded and roadmap-eligible tasks**:
 ```bash
@@ -240,98 +241,95 @@ for task in "${archivable_tasks[@]}"; do
 done
 ```
 
-**Step 3.5.2: Extract non-meta completed tasks with summaries**:
+**Step 3.5.2: Parse-only invocation of `roadmap-integration.sh`**:
+
+This step replaces `/todo`'s own checkbox-only, table-blind grep matcher entirely. Calling the
+shared script in parse-only mode (no `--annotate`) gives `/todo` full table-row-aware parsing,
+the complete `roadmap_matches[]` list (with `confidence`, `match_type`, and for table rows
+`line_index`/`raw_line`/`status_index`), and the always-on `roadmap_structure`/`parseable`/
+`warnings` diagnostics -- with zero duplicate parsing code. `/todo` never implements matching
+itself from this point forward; it only ever constructs an input and reads a payload.
+
 ```bash
-# Only process non-meta tasks for ROADMAP.md matching
-# Use file-based jq filter to avoid Issue #1132 with != operator
-cat > specs/tmp/todo_nonmeta_$$.jq << 'EOF'
-.active_projects[] |
-select(.status == "completed") |
-select(.task_type != "meta") |
-select(.completion_summary != null) |
-{
-  number: .project_number,
-  name: .project_name,
-  summary: .completion_summary,
-  roadmap_items: (.roadmap_items // [])
-}
-EOF
-completed_with_summaries=$(jq -rf specs/tmp/todo_nonmeta_$$.jq specs/state.json)
-rm -f specs/tmp/todo_nonmeta_$$.jq
+# Parse-only call: no --annotate. Capture the invocation's own exit status immediately -- do not
+# rely solely on the file-existence guard below, mirroring commands/review.md's Step 2.5 pattern.
+roadmap_exit=0
+roadmap_output=$(bash .claude/scripts/roadmap-integration.sh \
+  --roadmap specs/ROADMAP.md \
+  --state specs/state.json) || roadmap_exit=$?
 ```
 
-**Step 3.5.3: Match roadmap-eligible tasks against ROADMAP.md**:
+**Step 3.5.3: Extract structured fields for downstream use**:
 ```bash
-# Initialize roadmap tracking
-roadmap_matches=()
-roadmap_completed_count=0
-roadmap_abandoned_count=0
+roadmap_state=$(echo "$roadmap_output" | jq '.roadmap_state')
+roadmap_matches_raw=$(echo "$roadmap_output" | jq '.roadmap_matches')
+roadmap_structure=$(echo "$roadmap_output" | jq '.roadmap_structure')
+roadmap_warnings=$(echo "$roadmap_output" | jq '.warnings')
+annotation_summary=$(echo "$roadmap_output" | jq '.annotation_summary')
+high_confidence_matches=$(echo "$annotation_summary" | jq '.high_confidence_matches')
+silent_noop=$(echo "$annotation_summary" | jq '.silent_noop')
+```
 
-# Only iterate roadmap-eligible tasks for roadmap matching (excludes meta and expanded)
-for task in "${roadmap_eligible_tasks[@]}"; do
-  project_num=$(echo "$task" | jq -r '.project_number')
-  status=$(echo "$task" | jq -r '.status')
-  completion_summary=$(echo "$task" | jq -r '.completion_summary // empty')
-  explicit_items=$(echo "$task" | jq -r '.roadmap_items[]?' 2>/dev/null)
+**Error handling** (identical contract to `commands/review.md`'s Step 2.5): if
+`roadmap-integration.sh` is missing, exits non-zero, or produces empty output, log a visible
+warning and fall back to the same fully-defined defaults. Both "script missing" and "script
+present but failed" must surface the same warning and fallback -- neither is allowed to fail
+silently, and no downstream branch is left reading an unbound variable:
 
-  # Priority 1: Explicit roadmap_items (highest confidence)
-  if [ -n "$explicit_items" ]; then
-    while IFS= read -r item_text; do
-      [ -z "$item_text" ] && continue
-      # Escape special regex characters for grep
-      escaped_item=$(printf '%s\n' "$item_text" | sed 's/[[\.*^$()+?{|]/\\&/g')
-      line_info=$(grep -n "^\s*- \[ \].*${escaped_item}" specs/ROADMAP.md 2>/dev/null | head -1 || true)
-      if [ -n "$line_info" ]; then
-        line_num=$(echo "$line_info" | cut -d: -f1)
-        roadmap_matches+=("${project_num}:${status}:explicit:${line_num}:${item_text}")
-        if [ "$status" = "completed" ]; then
-          ((roadmap_completed_count++))
-        fi
-      fi
-    done <<< "$explicit_items"
-    continue  # Skip other matching methods if explicit items found
-  fi
+```bash
+if [ ! -f .claude/scripts/roadmap-integration.sh ]; then
+  echo "Warning: roadmap-integration.sh not found -- skipping roadmap integration" >&2
+  roadmap_state='{"phases":[],"status_tables":[]}'
+  roadmap_matches_raw='[]'
+  roadmap_structure='{"phases":0,"checkboxes":0,"table_rows":0,"parseable":false}'
+  roadmap_warnings='[]'
+  high_confidence_matches=0
+  silent_noop=false
+elif [[ "$roadmap_exit" -ne 0 ]] || [[ -z "$roadmap_output" ]]; then
+  echo "Warning: roadmap-integration.sh exited $roadmap_exit or produced empty output -- skipping roadmap integration" >&2
+  roadmap_state='{"phases":[],"status_tables":[]}'
+  roadmap_matches_raw='[]'
+  roadmap_structure='{"phases":0,"checkboxes":0,"table_rows":0,"parseable":false}'
+  roadmap_warnings='[]'
+  high_confidence_matches=0
+  silent_noop=false
+fi
+```
 
-  # Priority 2: Exact (Task N) reference matching
-  matches=$(grep -n "(Task ${project_num})" specs/ROADMAP.md 2>/dev/null || true)
-  if [ -n "$matches" ]; then
-    while IFS= read -r match_line; do
-      line_num=$(echo "$match_line" | cut -d: -f1)
-      item_text=$(echo "$match_line" | cut -d: -f2-)
-      roadmap_matches+=("${project_num}:${status}:exact:${line_num}:${item_text}")
-      if [ "$status" = "completed" ]; then
-        ((roadmap_completed_count++))
-      elif [ "$status" = "abandoned" ]; then
-        ((roadmap_abandoned_count++))
-      fi
-    done <<< "$matches"
-    continue
-  fi
+**Step 3.5.4: Eligibility filter -- where meta/expanded exclusion is enforced**:
 
-  # Priority 3: Summary-based search (for tasks with completion_summary but no explicit items)
-  # Only search unchecked items for key phrases from completion_summary
-  if [ -n "$completion_summary" ] && [ "$status" = "completed" ]; then
-    # Extract distinctive phrases (first 3 words of summary, excluding common words)
-    # This is semantic matching, not keyword heuristic - uses actual completion context
-    # Implementation note: Summary-based matching is optional enhancement
-    # The explicit roadmap_items field is the primary mechanism
-    :
-  fi
-done
+`roadmap-integration.sh` has no `task_type` filter of its own (see its header's "Caller
+contract"), so `/todo` reduces the raw match list to only the tasks Step 3.5.1 classified as
+eligible. Everything downstream of this step consumes `roadmap_eligible_matches[]`, never
+`roadmap_matches_raw`:
+
+```bash
+roadmap_eligible_nums=$(printf '%s\n' "${roadmap_eligible_tasks[@]}" | jq -s '[.[] | .project_number]')
+roadmap_eligible_matches=$(echo "$roadmap_matches_raw" | jq --argjson eligible "$roadmap_eligible_nums" \
+  '[.[] | select(.matched_task as $t | $eligible | index($t) != null)]')
 ```
 
 Track:
 - `roadmap_excluded_tasks[]` - Array of tasks excluded from ROADMAP.md matching (meta tasks, and
   expanded tasks since they have no `completion_summary` of their own by construction)
-- `roadmap_eligible_tasks[]` - Array of tasks matched against ROADMAP.md
-- `roadmap_matches[]` - Array of task:status:match_type:line_num:item_text tuples
-- `roadmap_completed_count` - Count of completed task matches
-- `roadmap_abandoned_count` - Count of abandoned task matches
+- `roadmap_eligible_tasks[]` - Array of tasks eligible for ROADMAP.md matching
+- `roadmap_structure` / `roadmap_warnings` - The always-on structure signal and warning codes
+  from `roadmap-integration.sh`, present in every mode
+- `roadmap_eligible_matches[]` - The script's `roadmap_matches[]`, filtered to eligible tasks --
+  the sole input to Step 4's dry-run output and Step 5.5's annotation
+- `high_confidence_matches` / `silent_noop` - From `annotation_summary`, always defined even
+  though no annotation has run yet (parse-only mode reports 0/false, never an unbound variable)
 
-**Match Types**:
-- `explicit` - Matched via `roadmap_items` field (highest confidence)
-- `exact` - Matched via `(Task {N})` reference in ROADMAP.md
-- `summary` - Matched via completion_summary content search (optional, future enhancement)
+**Match Types** (the shared script's vocabulary -- both checkbox and table-row matches are live
+against this repository's actual `ROADMAP.md`, which is table-based with zero checkboxes: a
+parse-only run reports `checkboxes` and `table_rows` in `roadmap_structure`, and either source
+can populate `roadmap_eligible_matches[]`):
+- `confidence`: `high` (auto-annotate candidate), `medium`, or `low` (report only)
+- `match_type`: `explicit_task_ref`, `explicit_roadmap_item`, `exact_title_match`,
+  `title_match`, or `keyword_match` -- see the script's `find_match` heuristic
+- Checkbox-sourced matches carry no `source` key; table-row-sourced matches carry
+  `source: "status_table"` plus `line_index`/`raw_line`/`status_index`, which the annotation
+  step (Step 5.5) uses to locate and safely rewrite the matched row in place
 
 ### 4. Dry Run Output (if --dry-run)
 

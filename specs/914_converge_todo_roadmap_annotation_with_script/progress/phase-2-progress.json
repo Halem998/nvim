@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Replace /todo Step 3.5 with a parse-only script call",
+  "started_at": "2026-07-27T00:00:00Z",
+  "last_updated": "2026-07-27T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Keep Step 3.5's ROADMAP.md preamble and 3.5.1 eligibility partition unchanged", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 2, "description": "Replace Step 3.5.2/3.5.3 with parse-only roadmap-integration.sh invocation", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 3, "description": "Extract roadmap_state/matches/structure/warnings + annotation_summary fields", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 4, "description": "Reproduce review.md's error-handling contract (missing/failed script fallback)", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 5, "description": "Add eligibility filter producing roadmap_eligible_matches[]", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 6, "description": "Update Track/Match Types vocabulary to script's schema", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -155,37 +155,37 @@ debugging.
 
 ---
 
-### Phase 2: Replace `/todo` Step 3.5 with a parse-only script call [NOT STARTED]
+### Phase 2: Replace `/todo` Step 3.5 with a parse-only script call [COMPLETED]
 
 **Goal**: `commands/todo.md`'s roadmap scan stops reimplementing matching and instead calls
 `roadmap-integration.sh` parse-only, capturing the structure signal, while keeping the
 meta/expanded eligibility partition.
 
 **Tasks**:
-- [ ] Keep Step 3.5's existing "ensure `specs/ROADMAP.md` exists" preamble and Step 3.5.1's
+- [x] Keep Step 3.5's existing "ensure `specs/ROADMAP.md` exists" preamble and Step 3.5.1's
   `roadmap_excluded_tasks[]` / `roadmap_eligible_tasks[]` partition unchanged — the partition is
-  the meta/expanded exclusion guarantee and is still needed.
-- [ ] Replace Step 3.5.2 and Step 3.5.3 (the `todo_nonmeta_$$.jq` extraction and the
+  the meta/expanded exclusion guarantee and is still needed. *(completed)*
+- [x] Replace Step 3.5.2 and Step 3.5.3 (the `todo_nonmeta_$$.jq` extraction and the
   grep-over-checkbox-lines matcher) with a parse-only invocation:
   `bash .claude/scripts/roadmap-integration.sh --roadmap specs/ROADMAP.md --state specs/state.json`
   (no `--annotate`), capturing the invocation's own exit status into a variable on the same line,
-  mirroring `commands/review.md`'s Step 2.5 pattern.
-- [ ] Extract `roadmap_state`, `roadmap_matches`, `roadmap_structure`, and `warnings` from the
-  payload, plus `annotation_summary.high_confidence_matches` and `.silent_noop`.
-- [ ] Reproduce `review.md`'s error-handling contract: script-missing and
+  mirroring `commands/review.md`'s Step 2.5 pattern. *(completed)*
+- [x] Extract `roadmap_state`, `roadmap_matches`, `roadmap_structure`, and `warnings` from the
+  payload, plus `annotation_summary.high_confidence_matches` and `.silent_noop`. *(completed)*
+- [x] Reproduce `review.md`'s error-handling contract: script-missing and
   script-present-but-failed (non-zero exit or empty output) must both emit the same visible
   warning and fall back to the same fully-defined defaults, including
   `roadmap_structure='{"phases":0,"checkboxes":0,"table_rows":0,"parseable":false}'` so no
-  downstream branch reads an unbound variable.
-- [ ] Add the eligibility filter: reduce `roadmap_matches[]` to those whose `matched_task` appears
+  downstream branch reads an unbound variable. *(completed)*
+- [x] Add the eligibility filter: reduce `roadmap_matches[]` to those whose `matched_task` appears
   in `roadmap_eligible_tasks[]`, producing `roadmap_eligible_matches[]`. Everything downstream
   consumes the filtered array. State plainly that this is where meta-task exclusion is enforced,
-  and that the shared script has no `task_type` filter of its own.
-- [ ] Update the "Track:" list and "Match Types" table at the end of Step 3.5 to describe the
+  and that the shared script has no `task_type` filter of its own. *(completed)*
+- [x] Update the "Track:" list and "Match Types" table at the end of Step 3.5 to describe the
   script's vocabulary (`confidence` high/medium/low; checkbox-sourced vs `source: "status_table"`
   matches carrying `line_index`/`raw_line`/`status_index`) instead of the removed
   `project_num:status:match_type:line_num:item_text` tuple format. Present both checkbox and
-  table-row matching as live paths.
+  table-row matching as live paths. *(completed)*
 
 **Timing**: 1.25 hours
 
