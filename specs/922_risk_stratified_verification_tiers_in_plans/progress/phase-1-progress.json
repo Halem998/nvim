@@ -1,0 +1,30 @@
+{
+  "phase": 1,
+  "phase_name": "Define the tier vocabulary in plan-format.md",
+  "started_at": "2026-07-27T00:00:00Z",
+  "last_updated": "2026-07-27T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add ## Verification Tiers section with tier table, tie-break rule, final-gate invariant, commit modes, counts-are-hypotheses obligation, and enforcement level",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]
+    },
+    {
+      "id": 2,
+      "description": "Add three new per-phase fields to Implementation Phases (format) field list, with punctuation tolerance note",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]
+    },
+    {
+      "id": 3,
+      "description": "Update Example Skeleton block: Phase 1 carries Verification Tier, Phase 2 demonstrates Commit Mode atomic-batch",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

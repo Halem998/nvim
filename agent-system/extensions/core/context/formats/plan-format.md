@@ -74,8 +74,20 @@ follow-up tasks created to discharge those division points. Both fields are popu
   - **Tasks:** bullet checklist
   - **Timing:** expected duration or window
   - **Depends on:** phase numbers this phase requires (e.g., `none`, `1`, `1, 3`). Absence means sequential (depends on all prior phases).
+  - **Verification Tier:** (required) one of `prose`, `local`, `interface`, `full` — see
+    `## Verification Tiers` below for the full vocabulary and blind-spot definitions.
+  - **Commit Mode:** (optional, default `per-substep`) `per-substep` or `atomic-batch` — see
+    `## Verification Tiers` below.
+  - **Scope Hypothesis:** (conditional — required whenever the phase asserts a count, an
+    enumerated file list, or a scope estimate) — see `## Verification Tiers` below.
   - **Owner:** (optional)
   - **Started/Completed/Blocked/Abandoned:** timestamp lines when status changes (ISO8601). Do not leave null placeholders.
+
+**Field-punctuation tolerance**: generator sites in this codebase use two conventions for phase
+field labels — `**Field:**` (colon inside the bold) and `**Field**:` (colon outside the bold).
+Both forms are accepted for every per-phase field above, including `**Verification Tier**:` /
+`**Verification Tier:**`; do not treat one form as invalid because a generator site used the
+other.
 
 **Consumers of this heading contract**: the exact `### Phase N: {name} [STATUS]` shape above is
 parsed by three independent mechanisms, so a future change to the format must account for all
@@ -99,6 +111,68 @@ Place a **Dependency Analysis** wave table immediately after `## Implementation 
 
 Phases within the same wave can execute in parallel.
 ```
+
+## Verification Tiers
+
+Every phase declares how broadly verification must run *during* the phase, matched to what its
+edit class can actually break. This replaces an implicit "one strictness for everything" default
+that made a comment-only phase pay a full-build-per-file toll. The tier set is **named and
+ordered** — not numeric — so it cannot collide in polarity with the numeric Tier 1/2/3 system in
+`context/contracts/reference-grounding.md` (where Tier 1 is strictest; see that file's
+cross-reference note for how the two systems relate):
+
+    prose  <  local  <  interface  <  full
+
+Every tier below the top states what it does NOT cover, so a reader can see exactly what the
+final gate remains responsible for catching.
+
+| Tier | Applies to | In-phase verification | Does NOT cover (blind spot) |
+|------|------------|------------------------|------------------------------|
+| `prose` | Edits confined to comments, docstrings, markdown/prose, and other non-code text with zero compile or elaboration surface | Diff read-through confirming every changed hunk lies inside a comment/string/prose region | An edit that crosses out of the comment or string boundary; a doc-comment that is actually load-bearing (doctest, attribute, annotation, pragma) and does compile; broken cross-references or links |
+| `local` | Edits confined to one module/file with no change to any externally visible signature | Build or lint of that single module only | Dynamic, untyped, or reflective call sites; behavior changes visible to other modules through unchanged signatures; downstream test failures; anything requiring the full test suite |
+| `interface` | Changes a symbol's name, type, arity, or argument order where call sites span multiple files | Build of the changed module plus its enumerated direct dependents | Transitive breakage beyond the enumerated one-hop dependent set; semantic (non-type-level) downstream behavior change; the full test suite; import-graph and init-level checks |
+| `full` | Edits that can change runtime, proof, or elaboration behavior anywhere: shared tactics, core types, global config | The complete gate set for the repository | Nothing is deferred past this tier. This is the ceiling |
+
+**Tie-break rule**: When uncertain, apply the strictest applicable tier (full > interface > local > prose).
+
+**Non-negotiable invariant**: tiering governs GRANULARITY ONLY — how often and how broadly
+verification runs *during* a phase. The full gate set still runs before a phase closes and before
+a task completes, unchanged. `full` is textually identical in strictness to today's existing
+requirement; tiers `prose`, `local`, and `interface` are added *below* it and redefine nothing
+about it. A tiering scheme that weakens the final gate is wrong, not a trade-off.
+
+### Commit modes
+
+An orthogonal axis: a tier answers *how broad* verification must be; commit mode answers *at
+what commit boundary* it is taken. The two fields are independent — `prose` + `atomic-batch` and
+`interface` + `atomic-batch` are both legitimate combinations.
+
+- `per-substep` (default): the existing Commit-Per-Green-Substep Mandate applies unchanged. See
+  `rules/git-workflow.md`'s `### Commit-Per-Green-Substep Mandate` section, the authoritative
+  home of this mode's rules.
+- `atomic-batch`: the phase's declared file set is one `progress-file.md` objective; intermediate
+  per-file states are expected red and MUST NOT be committed. See `rules/git-workflow.md`'s
+  `### Commit-Per-Green-Substep Mandate` section for the full carve-out, including the
+  anti-abuse guard against retroactively widening a batch — this document does not restate that
+  language, so the two cannot drift into conflict.
+
+### Counts-are-hypotheses obligation
+
+Any count, file list, or scope estimate asserted in a plan is a hypothesis requiring
+implementation-time confirmation, never a fact. When a phase asserts one, it carries a
+**Scope Hypothesis:** line stating the hypothesis and how to confirm it at implementation time.
+The implementation-side gate that consumes this obligation (i.e., that mechanically checks a
+confirmation happened) is a separate, out-of-scope concern for this document — this section
+defines the planner-side carrier field only.
+
+### Enforcement level
+
+Per-phase tier enforcement in `scripts/validate-artifact.sh` is **advisory-first**: a missing
+`**Verification Tier**:` field emits a warning, not an error, so default-mode validation of
+plans authored before this vocabulary existed continues to pass. `--strict` mode enforces it
+today. **Promotion criterion**: promote the warning to an error once no non-terminal plan under
+`specs/` lacks the field. This is recorded here for a future task to execute; it is not done by
+the task that introduced this vocabulary.
 
 ## Planned Strategic Sorries (format, hard-mode skeleton plans only)
 
@@ -205,9 +279,12 @@ Phases within the same wave can execute in parallel.
   - [ ] ...
 - **Timing:** ...
 - **Depends on:** none
+- **Verification Tier:** local
 
 ### Phase 2: ... [NOT STARTED]
 - **Depends on:** 1
+- **Verification Tier:** interface
+- **Commit Mode:** atomic-batch
 ...
 
 ## Testing & Validation
