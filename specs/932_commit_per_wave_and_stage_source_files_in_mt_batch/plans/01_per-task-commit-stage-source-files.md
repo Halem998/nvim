@@ -379,19 +379,19 @@ closing "A later maintainer must not read..." sentence), all must be updated tog
 
 ---
 
-### Phase 5: Executable two-task commit-content verification [NOT STARTED]
+### Phase 5: Executable two-task commit-content verification [COMPLETED]
 
 **Goal**: Prove, by inspecting real commit contents, that two tasks that both modify source-store
 files produce commits that actually contain those files, and that neither commit contains the
 other's. This is the task's stated verification bar; reading the code is explicitly insufficient.
 
 **Tasks**:
-- [ ] Create a scratch harness repo under the session scratchpad (never inside the user's repo):
+- [x] Create a scratch harness repo under the session scratchpad (never inside the user's repo):
       `git init`, an initial commit, and the **deployed layout** required by
       `scripts/deploy-root-guard.sh` — the guard's `case "${__guard_dir%/*}"` accepts only
       `*/.claude` or `*/.opencode`, so copy `git-commit-scoped.sh`, `deploy-root-guard.sh`, and
       `task-lock.sh` (plus any helper they source) to `<scratch>/.claude/scripts/`.
-- [ ] Build the two-task fixture inside the harness repo:
+- [x] Build the two-task fixture inside the harness repo:
       - `specs/state.json` and `specs/TODO.md` with rows for two tasks (use fixture numbers that
         do not collide with real tasks).
       - `specs/901_alpha/.return-meta.json` with
@@ -403,12 +403,12 @@ other's. This is the task's stated verification bar; reading the code is explici
         `agent-system/extensions/core/`, mirroring the real source-store path shape.
       - An ephemeral file in each task dir (`.orchestrator-loop-guard`) to confirm the automatic
         exclusion still fires.
-- [ ] Transcribe the step 5.5 block authored in Phase 1 into a runnable harness script **verbatim**
+- [x] Transcribe the step 5.5 block authored in Phase 1 into a runnable harness script **verbatim**
       (substituting only the fixture task numbers/paths). If transcription requires changing the
       logic to make it run, that is a defect in Phase 1's block — fix Phase 1, not the harness.
-- [ ] Run the harness: two sequential invocations, one per task, exactly as the sequential
+- [x] Run the harness: two sequential invocations, one per task, exactly as the sequential
       per-task postflight loop would.
-- [ ] Assert on actual commit contents, not on script exit codes alone:
+- [x] Assert on actual commit contents, not on script exit codes alone:
       - `git show --name-only --format= HEAD~1` contains `agent-system/extensions/core/fixture_alpha.md`
         and does NOT contain `fixture_beta.md`.
       - `git show --name-only --format= HEAD` contains `fixture_beta.md` and does NOT contain
@@ -418,15 +418,15 @@ other's. This is the task's stated verification bar; reading the code is explici
         message carries the `--honest-index-rows` addendum when the staged `state.json` legitimately
         carries the other task's row.
       - Exactly two commits were created beyond the initial commit (no combined third commit).
-- [ ] Run the fail-safe path as a second harness case: a task whose `.return-meta.json` has an
+- [x] Run the fail-safe path as a second harness case: a task whose `.return-meta.json` has an
       absent/empty `modified_files`. Assert the warning is emitted on stderr with the canonical
       wording and that the commit still succeeds containing only the task-directory paths.
-- [ ] Record the harness script path and the assertion output in the phase completion notes so the
+- [x] Record the harness script path and the assertion output in the phase completion notes so the
       run is reproducible. Do not leave harness artifacts inside the user's repository.
-- [ ] Confirm no `.claude/**` file in the user's repo was modified by any phase of this task:
+- [x] Confirm no `.claude/**` file in the user's repo was modified by any phase of this task:
       `git status --porcelain -- .claude/` is empty (it is gitignored, but check the working tree
       too), and every changed file is under `agent-system/extensions/core/` or `specs/`.
-- [ ] Record explicitly that a live end-to-end `/orchestrate N,M` run additionally requires a human
+- [x] Record explicitly that a live end-to-end `/orchestrate N,M` run additionally requires a human
       redeploy (`<leader>al` / "Load Core"), which an agent must not perform. The harness is the
       executable bar this plan meets; the live run is a follow-up human confirmation, not a blocker
       on this task's completion.
@@ -458,18 +458,20 @@ building the harness, and copy whatever that grep actually reports rather than a
 
 ## Testing & Validation
 
-- [ ] `skills/skill-orchestrate/SKILL.md` contains exactly one `git-commit-scoped.sh` call site.
-- [ ] `commands/orchestrate.md` contains exactly two, both inside `CHECKPOINT 3`.
-- [ ] The relocated call passes `--honest-index-rows` and a per-task `--session`.
-- [ ] The absent/empty `modified_files` warning uses the wording already in
+- [x] `skills/skill-orchestrate/SKILL.md` contains exactly one `git-commit-scoped.sh` call site.
+- [x] `commands/orchestrate.md` contains exactly two, both inside `CHECKPOINT 3`. *(deviation:
+      altered — a pre-existing third hit is a prose mention inside CHECKPOINT 3's own paragraph,
+      not a second call site; see Phase 2's recorded deviation)*
+- [x] The relocated call passes `--honest-index-rows` and a per-task `--session`.
+- [x] The absent/empty `modified_files` warning uses the wording already in
       `context/standards/git-staging-scope.md`, task-scoped — no second convention.
-- [ ] Harness run: two tasks, two commits, each containing its own source-store fixture file and
+- [x] Harness run: two tasks, two commits, each containing its own source-store fixture file and
       not the sibling's.
-- [ ] Harness run: ephemeral runtime files excluded from both commits.
-- [ ] Harness run: fail-safe case warns loudly and still commits task-directory paths.
-- [ ] No file under `.claude/**` modified; all edits under `agent-system/extensions/core/**`.
-- [ ] No literal task-number citations in any of the five changed deliverable files.
-- [ ] The guardrails file's hazard enumeration reads consistently after hazard 2's retirement, with
+- [x] Harness run: ephemeral runtime files excluded from both commits.
+- [x] Harness run: fail-safe case warns loudly and still commits task-directory paths.
+- [x] No file under `.claude/**` modified; all edits under `agent-system/extensions/core/**`.
+- [x] No literal task-number citations in any of the five changed deliverable files.
+- [x] The guardrails file's hazard enumeration reads consistently after hazard 2's retirement, with
       hazards 1 and 3 explicitly still live.
 
 ## Artifacts & Outputs

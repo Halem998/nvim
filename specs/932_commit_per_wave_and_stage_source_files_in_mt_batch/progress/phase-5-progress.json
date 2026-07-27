@@ -1,0 +1,43 @@
+{
+  "phase": 5,
+  "phase_name": "Executable two-task commit-content verification",
+  "started_at": "2026-07-27T01:00:00Z",
+  "last_updated": "2026-07-27T01:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Build scratch harness (deployed layout at <scratch>/.claude/scripts/ with git-commit-scoped.sh, deploy-root-guard.sh, task-lock.sh), two-task fixture (901_alpha/902_beta), transcribe step 5.5 verbatim into run-step-5-5.sh, run two-task and fail-safe scenarios, assert on git show --name-only of real commits",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": {
+    "harness_path": "/tmp/claude-1000/-home-benjamin--config-nvim/c3e5648e-69ab-440a-b036-94b87086fe24/scratchpad/task932_harness",
+    "harness_driver_script": "run-step-5-5.sh (verbatim transcription of Stage MT-4 step 5.5)",
+    "commit_history": [
+      "e318328 initial harness fixture",
+      "bd01a97 task 901: create implementation plan (contains fixture_alpha.md, specs/TODO.md, specs/state.json, plan_path)",
+      "badb8ec task 902: create implementation plan (contains fixture_beta.md, specs/TODO.md, specs/state.json, plan_path)",
+      "6ff6a58 task 901: orchestration paused (cycles 2/10) -- honest-index-rows addendum fired: 'Also carries current index rows for tasks: 902'",
+      "6f8dda1 task 902: orchestration paused (cycles 2/10)",
+      "4727519 task 903: complete implementation -- fail-safe case, modified_files absent, warning emitted, commit contains only task-dir + index paths",
+      "f46f0cd task 901: complete implementation -- loop-guard-dirty test: .orchestrator-loop-guard was tracked+modified but excluded from this commit and remained as an uncommitted working-tree change afterward"
+    ],
+    "key_assertions_passed": [
+      "HEAD~1 (bd01a97) contains fixture_alpha.md, excludes fixture_beta.md",
+      "HEAD (badb8ec) contains fixture_beta.md, excludes fixture_alpha.md",
+      "Neither commit contains .orchestrator-loop-guard",
+      "Both commits contain specs/state.json and specs/TODO.md",
+      "Exactly two commits beyond initial (isolation pair)",
+      "--honest-index-rows addendum correctly names the sibling task when its row genuinely changed in the same staged snapshot (6ff6a58)",
+      "Fail-safe case (4727519): canonical warning '[postflight] WARNING: no modified_files reported for task #903; source-file changes NOT committed automatically. Review and commit manually.' printed to stderr; commit succeeded containing only task-directory + index paths",
+      "Ephemeral-exclusion mechanism verified under a genuinely dirty tracked guard file (f46f0cd): git-commit-scoped.sh's automatic exclusion kept the loop-guard's own change out of the commit even though the task directory pathspec was staged; the guard's edit remained as an uncommitted working-tree modification afterward",
+      "Real repo: git status --porcelain -- .claude/ empty; no .claude/** file modified by any phase"
+    ],
+    "human_followup_required": "A live end-to-end /orchestrate N,M run additionally requires a human redeploy (<leader>al / 'Load Core') before the source-store edits take effect in .claude/. This is a follow-up human confirmation, not a blocker on this task's completion."
+  }
+}
