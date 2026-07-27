@@ -1,21 +1,28 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/917_converge_orchestrate_partial_triage_engines/plans/01_converge-partial-triage-engines.md",
       "summary": "Six-phase plan converging the single-task /orchestrate partial triage onto the mt engine, with both required decisions resolved and the out-of-scope regression test folded in"
+    },
+    {
+      "type": "summary",
+      "path": "specs/917_converge_orchestrate_partial_triage_engines/summaries/01_converge-partial-triage-engines-summary.md",
+      "summary": "Implementation summary for all 6 phases: engine convergence, dry-run reporter lockstep edit, Stage 4 dispatch rewrite, Stage MT-4 reconciliation, doc/entry-point alignment, and MAX_CYCLES trace + redeploy verification"
     }
   ],
-  "next_steps": "Run /implement 917 to execute the plan",
+  "next_steps": "Task implementation complete. Ready for /todo archival or further review.",
   "metadata": {
     "session_id": "sess_1785164569_185813",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 4.5,
-    "dependency_waves": [[1], [2, 3], [4], [5], [6]]
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  },
+  "completion_data": {
+    "completion_summary": "Removed the engine fork so both single-task and multi-task /orchestrate engines route a partial-with-neither-continuation-nor-blockers task to implement instead of the single-task engine exiting with a referral to /implement; converged 6 source-store files plus 1 regression test into three-way agreement (classifier header table, Stage 4 prose, Stage MT-4 table), with both required decisions (keep the blocked-row divergence; retain exit_partial as a reserved schema value) resolved and documented. Verified via a green regression suite and a redeploy-parity check."
   },
   "memory_candidates": [
     {
@@ -24,9 +31,25 @@
       "source_artifact": "specs/917_converge_orchestrate_partial_triage_engines/plans/01_converge-partial-triage-engines.md",
       "confidence": 0.82,
       "suggested_keywords": ["divergence-audit", "routing-table", "independent-corroboration", "convergence", "design-vs-defect"]
+    },
+    {
+      "content": "When adding a new pre-dispatch probe call that reuses a helper script originally built for post-dispatch staleness gating (e.g. orchestrate-recover-outcome.sh's window_start_ts), pass a distinct, explicitly-named zero/disabled value (e.g. prior_meta_probe_window=0) rather than reusing the existing post-dispatch variable name. Reusing the name silently binds the new call to semantics ('current dispatch's window') that do not apply to the new pre-dispatch call shape ('prior cycle's leftover state, regardless of age'). Name the variable for what IT represents, not what the shared helper's other callers call their argument.",
+      "category": "PATTERN",
+      "source_artifact": "specs/917_converge_orchestrate_partial_triage_engines/plans/01_converge-partial-triage-engines.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["staleness-gate", "variable-naming", "shared-helper", "pre-dispatch-probe", "orchestrate"]
     }
   ],
   "modified_files": [
-    "specs/917_converge_orchestrate_partial_triage_engines/plans/01_converge-partial-triage-engines.md"
+    "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "specs/901_orchestrate_dry_run_admission_report/tests/test-triage-classify.sh",
+    "specs/state.json",
+    "specs/TODO.md",
+    "specs/917_converge_orchestrate_partial_triage_engines/plans/01_converge-partial-triage-engines.md",
+    "specs/917_converge_orchestrate_partial_triage_engines/summaries/01_converge-partial-triage-engines-summary.md"
   ]
 }

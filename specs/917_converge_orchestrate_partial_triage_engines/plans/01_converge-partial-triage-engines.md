@@ -480,32 +480,67 @@ disturbing its exit-on-cycle-limit semantics (which are the target), and close t
 
 ---
 
-### Phase 6: Confirm the MAX_CYCLES bound, trace the acceptance criterion, redeploy [NOT STARTED]
+### Phase 6: Confirm the MAX_CYCLES bound, trace the acceptance criterion, redeploy [COMPLETED]
 
 **Goal**: Verify — without adding code — that the newly-reachable resume path is still bounded, walk
 the acceptance criterion end to end, and confirm the deploy tree reflects the source store.
 
 **Tasks**:
-- [ ] Trace the loop for a task that starts `partial` with no handoff and no blockers and never
+- [x] Trace the loop for a task that starts `partial` with no handoff and no blockers and never
       produces a new handoff or a successful `.return-meta.json`: the outer
       `while [ "$cycle_count" -lt "$MAX_CYCLES" ]` admits the cycle, Stage 4 dispatches implement,
       Stage 5 reads no handoff and charges the cycle, and the loop repeats until the Stage 7
-      `MAX_CYCLES reached` exit fires. Record the trace.
-- [ ] Confirm explicitly that no new counter, guard, or gate was added anywhere in Phases 1-5 — the
-      bound is the pre-existing loop condition plus the pre-existing Stage 7 exit.
-- [ ] Confirm the infra-failure exemption path is unaffected: an infra-exempt cycle still does not
+      `MAX_CYCLES reached` exit fires. Record the trace. *(completed — trace recorded below)*
+- [x] Confirm explicitly that no new counter, guard, or gate was added anywhere in Phases 1-5 — the
+      bound is the pre-existing loop condition plus the pre-existing Stage 7 exit. *(completed:
+      `git diff` across all five phase commits shows zero new `MAX_CYCLES`/`cycle_count`
+      assignments; the only new occurrence is a prose reference to the pre-existing `MAX_CYCLES`)*
+- [x] Confirm the infra-failure exemption path is unaffected: an infra-exempt cycle still does not
       increment `cycle_count`, and the `MAX_INFRA_FAILURES` cap still terminates it, leaving the
-      documented worst case of `MAX_CYCLES + MAX_INFRA_FAILURES` iterations unchanged.
-- [ ] Walk the acceptance criterion: with the converged classifier,
+      documented worst case of `MAX_CYCLES + MAX_INFRA_FAILURES` iterations unchanged. *(completed:
+      Stage 5's infra-failure discrimination logic was not touched by any phase — confirmed by
+      diff — and is shared unchanged by the new dispatch branch, which falls through to the same
+      Stage 5 code as every other branch)*
+- [x] Walk the acceptance criterion: with the converged classifier,
       `orchestrate-triage-classify.sh single <task>` for a `partial`/no-handoff/no-blockers task
       emits `group: "implement"`, and Stage 4's corresponding branch dispatches rather than exits.
-- [ ] Regenerate the deploy tree from the source store: `bash .claude/scripts/deploy-headless.sh`
-      (deliberate, explicit invocation).
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` and confirm source-to-deploy parity.
-- [ ] Re-run `bash specs/901_orchestrate_dry_run_admission_report/tests/test-triage-classify.sh`
-      against the final tree.
-- [ ] Confirm no edit in any phase landed under `.claude/` by inspecting the change set: every
-      modified path is under `agent-system/extensions/core/` or `specs/`.
+      *(completed: regression test cases 1 and 3 exercise exactly this — task 955's `single`-engine
+      verdict is `implement`, confirmed passing)*
+- [x] Regenerate the deploy tree from the source store: `bash .claude/scripts/deploy-headless.sh`
+      (deliberate, explicit invocation). *(completed: 264 artifacts deployed)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` and confirm source-to-deploy parity. *(completed:
+      PASS — 11 checks, 0 failures)*
+- [x] Re-run `bash specs/901_orchestrate_dry_run_admission_report/tests/test-triage-classify.sh`
+      against the final tree. *(completed: 6 passed, 0 failed)*
+- [x] Confirm no edit in any phase landed under `.claude/` by inspecting the change set: every
+      modified path is under `agent-system/extensions/core/` or `specs/`. *(completed: `.claude/`
+      is git-ignored at the repo root — `git check-ignore .claude` confirms — and `git status
+      --short` outside `.claude/` shows only task-917 artifacts plus pre-existing, unrelated
+      working-tree modifications that predate this implementation)*
+
+**Recorded trace** (never-progressing `partial`/no-handoff/no-blockers task, single-task engine):
+
+1. `while [ "$cycle_count" -lt "$MAX_CYCLES" ]` admits cycle 1 (`cycle_count=0 < MAX_CYCLES=5`).
+2. Stage 4 reads state, finds `status=partial`, handoff absent, `blocker_count=0` -> the "no
+   handoff, no blockers" sub-state. Probes `orchestrate-recover-outcome.sh` with
+   `prior_meta_probe_window=0` (`recovered=false` expected, status likely `partial`/`in_progress`).
+   Runs `skill_preflight_update`, resets `dispatch_start_ts`, resolves `plan_path`, dispatches
+   `implement`.
+2b. Because the task never makes progress, the implement dispatch produces no handoff and a
+    `.return-meta.json` whose `.status` is not `researched`/`planned`/`implemented` (e.g. stays
+    `partial`).
+3. Stage 5 reads no fresh handoff, calls `orchestrate-recover-outcome.sh` again (this time with the
+   real `dispatch_start_ts` window) — `recovered=false` — charges one work cycle
+   (`cycle_count` -> 1), does not touch `infra_failures`.
+4. Loop repeats: cycles 2, 3, 4, 5 follow the identical path, incrementing `cycle_count` to 5.
+5. `while [ "$cycle_count" -lt "$MAX_CYCLES" ]` now evaluates `5 < 5` = false; the loop exits.
+   Stage 7's `MAX_CYCLES reached` branch fires: reports state, exits `(partial, cycle_count)`.
+
+Result: exactly `MAX_CYCLES` (5) dispatches, then the pre-existing Stage 7 exit — no new counter,
+guard, or gate anywhere in this path. The infra-failure exemption path (Stage 5's
+`dispatch_was_transport_error` + `meta_touched` corroboration, `MAX_INFRA_FAILURES=3`) is
+untouched by any phase and remains the only other budget dimension, preserving the documented
+worst case of `MAX_CYCLES + MAX_INFRA_FAILURES` = 8 iterations.
 
 **Timing**: 1 hour
 

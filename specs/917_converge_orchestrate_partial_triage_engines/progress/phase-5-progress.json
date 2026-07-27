@@ -1,0 +1,12 @@
+{
+  "phase": 5,
+  "phase_name": "Bring the state-machine doc and the entry-point contract into line",
+  "started_at": "2026-07-27T01:00:00Z",
+  "last_updated": "2026-07-27T01:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add clarifying sentence to state-machine doc; strengthen orchestrate.md CHECKPOINT 1", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md", "agent-system/extensions/core/commands/orchestrate.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
