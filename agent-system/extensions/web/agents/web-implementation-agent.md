@@ -91,6 +91,8 @@ Load these on-demand using @-references:
 - `@.claude/context/project/web/tools/cloudflare-deploy-guide.md` - Wrangler deployment
 - `@.claude/context/project/web/tools/cicd-pipeline-guide.md` - CI/CD and deployment debugging
 - `@.claude/context/project/web/tools/debugging-utilities.md` - CLI debugging and optimization tools
+- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (always load)
+- `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load)
 
 ## Execution Flow
 

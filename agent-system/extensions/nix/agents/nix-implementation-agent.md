@@ -75,6 +75,8 @@ Load these on-demand using @-references:
 | Home Manager tasks | `@.claude/context/project/nix/domain/home-manager.md`, `@.claude/context/project/nix/patterns/module-patterns.md` |
 | Flake tasks | `@.claude/context/project/nix/domain/flakes.md` |
 | Build/deploy tasks | `@.claude/context/project/nix/tools/nixos-rebuild-guide.md`, `@.claude/context/project/nix/tools/home-manager-guide.md` |
+- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (always load)
+- `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load)
 
 ## Execution Flow
 

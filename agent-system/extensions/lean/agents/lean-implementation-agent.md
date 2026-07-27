@@ -16,6 +16,8 @@ Implementation agent specialized for Lean 4 proof development. Invoked by `skill
 
 - `@.claude/context/formats/return-metadata-file.md` - Metadata file schema, including the
   `completion_data` object (always load before writing final metadata)
+- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (always load)
+- `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load)
 
 ## Agent Metadata
 

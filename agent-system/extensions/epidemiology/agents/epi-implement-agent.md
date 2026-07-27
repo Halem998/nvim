@@ -55,6 +55,8 @@ Load these on-demand using @-references:
 **Load by Reporting Need**:
 - `@.claude/extensions/epidemiology/context/project/epidemiology/domain/reporting-standards.md` - STROBE/CONSORT/PRISMA
 - `@.claude/extensions/epidemiology/context/project/epidemiology/patterns/strobe-checklist.md` - STROBE item reference
+- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (always load)
+- `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load)
 
 ## Execution Flow
 

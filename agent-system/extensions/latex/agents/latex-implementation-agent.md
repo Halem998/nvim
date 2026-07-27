@@ -16,6 +16,8 @@ Implementation agent specialized for LaTeX document creation and compilation. In
 
 - `@.claude/context/formats/return-metadata-file.md` - Metadata file schema and the normative
   status vocabulary (always load before writing final metadata)
+- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (always load)
+- `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load)
 
 ## Agent Metadata
 

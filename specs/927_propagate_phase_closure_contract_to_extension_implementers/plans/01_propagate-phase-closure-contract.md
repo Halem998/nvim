@@ -179,7 +179,7 @@ proceed to Phase 2 on this plan's numbers alone.
 
 ---
 
-### Phase 2: Propagate to standard-mode extension implementer agents [NOT STARTED]
+### Phase 2: Propagate to standard-mode extension implementer agents [COMPLETED]
 
 **Goal**: Add both pointer bullets to every standard-mode (non-hard) extension implementer agent that
 has a plan-phase loop.
@@ -208,12 +208,14 @@ immediately before the first such catch-all line. Never create a second `## Cont
 heading. Never reorder or reword any pre-existing bullet.
 
 **Tasks**:
-- [ ] For each target file: re-grep its `## Context References` heading count and its current
+- [x] For each target file: re-grep its `## Context References` heading count and its current
       `contracts/phase-closure.md` / `contracts/pre-edit-gate.md` counts immediately before editing
       (per-item evidence, per the very contract being propagated). Skip-and-report any file already
-      carrying either bullet rather than adding a duplicate.
-- [ ] Apply the two bullets per the placement rule above.
-- [ ] Confirm the edit landed in `agent-system/extensions/**` and not in `.claude/**`.
+      carrying either bullet rather than adding a duplicate. *(completed: all 11 files confirmed
+      one `## Context References` heading, zero pre-existing contract bullets, per Phase 1's table)*
+- [x] Apply the two bullets per the placement rule above. *(completed: all 11 files)*
+- [x] Confirm the edit landed in `agent-system/extensions/**` and not in `.claude/**`. *(completed:
+      all edits via Edit tool targeted `agent-system/extensions/**` paths only)*
 
 **Timing**: 1 hour
 
@@ -240,7 +242,7 @@ loop using Phase 1's recorded classification before editing; add or drop files t
 
 ---
 
-### Phase 3: Propagate to hard-mode extension implementer agents [NOT STARTED]
+### Phase 3: Propagate to hard-mode extension implementer agents [COMPLETED]
 
 **Goal**: Add both pointer bullets to the hard-mode extension implementer agents, using the
 hard-mode annotation convention already established by core's hard agent.
@@ -267,10 +269,12 @@ contracts run, so all contract bullets stay grouped. For `lean-implementation-ha
 Phase 2's general placement rule (end of list, before any `- For {something} tasks:` catch-all).
 
 **Tasks**:
-- [ ] Re-grep each target's `## Context References` heading count and existing contract-bullet counts
-      immediately before editing.
-- [ ] Apply the two bullets per the placement rules above.
-- [ ] Confirm the edits landed in `agent-system/extensions/**`.
+- [x] Re-grep each target's `## Context References` heading count and existing contract-bullet counts
+      immediately before editing. *(completed: both files at 1 heading, 0 pre-existing bullets)*
+- [x] Apply the two bullets per the placement rules above. *(completed: cslib inserted at end of
+      contiguous contracts run after `territory.md`; lean inserted at end of list before the next
+      heading)*
+- [x] Confirm the edits landed in `agent-system/extensions/**`. *(completed)*
 
 **Timing**: 0.25 hours
 
@@ -300,7 +304,7 @@ phase rather than being skipped.
 
 ---
 
-### Phase 4: Skill-file discoverability bullets [NOT STARTED]
+### Phase 4: Skill-file discoverability bullets [COMPLETED]
 
 **Goal**: Add matching discoverability bullets to the one extension skill file that already maintains
 its own contract-bullet list, mirroring what core's `skill-implementer{,-hard}/SKILL.md` do.
@@ -323,10 +327,12 @@ pointers, and the actual loading is the agent's job — matching what both contr
 bullet run, keeping contract entries grouped.
 
 **Tasks**:
-- [ ] Re-grep the target's existing `contracts/` bullet lines immediately before editing.
-- [ ] Apply the two `Path:` bullets at the end of the contracts run.
-- [ ] Confirm no other extension skill file carries a contract-bullet list (per Phase 1's enumeration);
-      thin dispatcher skills stay untouched.
+- [x] Re-grep the target's existing `contracts/` bullet lines immediately before editing.
+      *(completed: existing contiguous run was `anti-analysis.md`/`wrap-up.md`/`territory.md`)*
+- [x] Apply the two `Path:` bullets at the end of the contracts run. *(completed)*
+- [x] Confirm no other extension skill file carries a contract-bullet list (per Phase 1's enumeration);
+      thin dispatcher skills stay untouched. *(completed: `grep -l 'contracts/'` over all non-core
+      extension implement skill files returns only this one file)*
 
 **Timing**: 0.25 hours
 

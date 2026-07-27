@@ -54,6 +54,8 @@ Load these on-demand using @-references:
 - `@.claude/context/project/neovim/standards/lua-style-guide.md` - Lua conventions
 - `@.claude/context/project/neovim/patterns/plugin-spec.md` - lazy.nvim patterns
 - `@.claude/context/project/neovim/patterns/keymap-patterns.md` - Keymap patterns
+- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (always load)
+- `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load)
 
 ## Execution Flow
 

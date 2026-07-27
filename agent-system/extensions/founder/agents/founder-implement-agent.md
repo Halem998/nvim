@@ -54,6 +54,8 @@ Load these on-demand using @-references:
 
 **Load for Output**:
 - `@.claude/context/formats/return-metadata-file.md` - Metadata file schema
+- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (always load)
+- `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load)
 
 ---
 
