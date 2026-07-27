@@ -273,16 +273,16 @@ satisfies it.
 
 ## Testing & Validation
 
-- [ ] Only `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md` is modified.
-- [ ] `skill-orchestrate/SKILL.md` is byte-identical to its pre-task state.
-- [ ] No file under `.claude/` was edited.
-- [ ] All 6 `delegation_context` sites declare `orchestrator_mode` (5 inline + 1 via the
+- [x] Only `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md` is modified.
+- [x] `skill-orchestrate/SKILL.md` is byte-identical to its pre-task state.
+- [x] No file under `.claude/` was edited.
+- [x] All 6 `delegation_context` sites declare `orchestrator_mode` (5 inline + 1 via the
       construction block above `$dispatch_context`).
-- [ ] The anchor-iff-`true` property holds at every site.
-- [ ] No executable logic changed: the diff touches only comment lines, one new documentation
+- [x] The anchor-iff-`true` property holds at every site.
+- [x] No executable logic changed: the diff touches only comment lines, one new documentation
       subsection, and the field lists inside three `delegation_context:` pseudo-code lines. No
       `if`, `jq`, `grep`, or variable assignment in the surrounding Bash blocks is altered.
-- [ ] No task-number citation appears in any added line.
+- [x] No task-number citation appears in any added line.
 
 ## Artifacts & Outputs
 
