@@ -174,25 +174,25 @@ exclusion criteria (older downstream mtime + upstream containing an unrelated ne
 
 ---
 
-### Phase 2: Manifest Registration [NOT STARTED]
+### Phase 2: Manifest Registration [COMPLETED]
 
 **Goal**: Register the 4 new files in `provides.scripts` so the port actually deploys. An
 unregistered script never deploys, making an unregistered port indistinguishable from no port.
 
 **Tasks**:
-- [ ] Add 4 flat, unprefixed entries to
+- [x] Add 4 flat, unprefixed entries to
       `agent-system/extensions/literature/manifest.json` -> `provides.scripts`:
       `literature_combining_overlay.py`, `literature_combining_detect.py`,
-      `literature-combining-audit.sh`, `literature-repair-combining.sh`.
-- [ ] Insert them adjacent to the existing fidelity/convert cluster
+      `literature-combining-audit.sh`, `literature-repair-combining.sh`. *(completed)*
+- [x] Insert them adjacent to the existing fidelity/convert cluster
       (`literature-fidelity-audit.sh` / `literature-build-index.sh` / `literature-convert.sh` /
       `literature-normalize-authors.sh`) -- the array is grouped by feature cluster, not
-      alphabetized, and all four belong to that conversion/fidelity pipeline.
-- [ ] Do NOT add entries for `literature-convert.sh` or `literature-fidelity-audit.sh` -- both are
-      already registered; only their content changed.
-- [ ] Do NOT use a path prefix. All four live directly in `scripts/`. The `tests/` prefix
-      convention applies only to files under `scripts/tests/`.
-- [ ] Validate the file is still well-formed JSON.
+      alphabetized, and all four belong to that conversion/fidelity pipeline. *(completed: inserted immediately after literature-convert.sh, before literature-chunk.sh)*
+- [x] Do NOT add entries for `literature-convert.sh` or `literature-fidelity-audit.sh` -- both are
+      already registered; only their content changed. *(completed: confirmed no duplicate entries added)*
+- [x] Do NOT use a path prefix. All four live directly in `scripts/`. The `tests/` prefix
+      convention applies only to files under `scripts/tests/`. *(completed: no prefix used)*
+- [x] Validate the file is still well-formed JSON. *(completed: json.load succeeds)*
 
 **Timing**: 20 minutes
 
