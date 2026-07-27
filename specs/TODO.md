@@ -11,19 +11,17 @@ next_project_number: 937
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 920,926,933 | -- | agent-system |
-| 2 | 887,931,934 | 920,926,933 | agent-system |
+| 1 | 887,920,933 | -- | agent-system |
+| 2 | 931,934 | 920,933 | agent-system |
 | 3 | 935 | 934 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
+887 [RESEARCHED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
   └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co
-926 [IMPLEMENTING] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-  └─ 887 [RESEARCHED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
-  └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co (see above)
 933 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
   └─ 934 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 935 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
@@ -398,7 +396,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 926. Provide shared tested census tooling and a documented census method so repo-wide counts stop being re-invented wrong
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 885, Task 922, Task 925

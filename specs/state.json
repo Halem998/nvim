@@ -1395,7 +1395,7 @@
     {
       "project_number": 926,
       "project_name": "shared_tested_census_tooling_and_method",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Provide shared tested census tooling and a documented census method so repo-wide counts stop being re-invented wrong",
@@ -1414,7 +1414,7 @@
         925
       ],
       "created": "2026-07-27T10:27:21Z",
-      "last_updated": "2026-07-27T22:53:10Z",
+      "last_updated": "2026-07-27T23:16:47Z",
       "session_id": "sess_1785192054_7d9661",
       "artifacts": [
         {
@@ -1427,7 +1427,8 @@
           "type": "plan",
           "summary": ""
         }
-      ]
+      ],
+      "completion_summary": "Shipped census-count.sh (occurrences/membership/cross-check subcommands mapping to the three named repo-wide-count bug classes), two fixture-driven regression suites (21 and 8 cases, both passing with a confirmed mutation check), a fixed separator-aware regex in validate-no-task-references.sh (with a task-qualified compound Phase branch), and two new standards docs (shell-script-testing.md, census-methodology.md), all registered in manifest.json and index-entries.json."
     },
     {
       "project_number": 927,
