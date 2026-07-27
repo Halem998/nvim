@@ -1521,11 +1521,32 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
      `$task_type` here is the SAME per-task value already threaded into this task's own dispatch
      context object above (Stage MT-2's routing table) — no new lookup is introduced, so a batch
      mixing meta and non-meta tasks cannot leak one task's exclusion onto another's.
-   - Other → no postflight update
+   - `dispatch_status` accept-list note (prose form of Stage 5's comment): the normative
+     enumeration of the six values used throughout this step is
+     `context/formats/return-metadata-file.md`'s status vocabulary, which declares itself
+     normative for `.orchestrator-handoff.json`'s `status` field too — keep this list and that
+     table in sync rather than letting them drift independently. That table's SEVENTH row,
+     `in_progress`, is deliberately excluded below: it is early-metadata-only and never a legal
+     terminal dispatch outcome.
+   - `dispatch_status = "partial"`, `"failed"`, or `"blocked"` → in-enum exception outcome, no
+     postflight update (`skill_postflight_update`'s own internal accept-list would skip it anyway
+     — see Stage 5's identical Tier B comment). Log an explicit recognition line naming the
+     status: `echo "[orchestrate] Task #${task_num}: dispatch status '${dispatch_status}' —
+     recognized exception outcome, no state.json transition performed." >&2`. Steps 4-6 still run
+     unchanged.
+   - Any other value, **including `null`, empty, and `in_progress`** → OFF-SCHEMA. Emit the same
+     `[OFF-SCHEMA DISPATCH STATUS - ...]` banner Stage 5 emits (character-identical, modulo the
+     interpolated value) to stderr, with the same `artifacts[0].type`-derived phase inference
+     scoped to phase identification only (never a success-vs-partial signal — see Stage 5's own
+     MUST-NOT comment on this same inference). Perform no postflight update. This task is charged
+     to `failed_tasks` in step 5 below rather than halting the whole wave.
 4. Call `skill_link_artifacts` if artifact path is present (same field mapping as Stage 5).
 5. Re-read fresh status from `state.json` (postflight may have updated it). Update `mt_state_file.current_statuses[task_num]`:
    - If `fresh_status = "completed"`: also add to `completed_tasks`.
    - If `dispatch_status` is `"failed"` or `"blocked"`: add to `failed_tasks`.
+   - If `dispatch_status` is OFF-SCHEMA (step 3's third bullet): add to `failed_tasks` — the
+     multi-task analogue of Stage 5's halt. Loud and per-task; deliberately does NOT kill sibling
+     tasks in the wave.
    - Otherwise: set `current_statuses[task_num] = fresh_status`.
 5.5. **Per-task scoped commit.** MT mode issues one commit per task per phase transition here,
      inside this same per-task loop iteration — never a single combined end-of-batch commit (see
@@ -1568,6 +1589,9 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
        `"task ${task_num}: orchestration paused (cycles ${cycle_count}/${MAX_CYCLES_MT})"`
      - `dispatch_status = "failed"` or `"blocked"` → `"task ${task_num}: orchestration dispatch
        ${dispatch_status}"`
+     - `dispatch_status` OFF-SCHEMA → `"task ${task_num}: orchestration dispatch off-schema"`
+       (follows the same `failed`/`blocked` form above, so an off-schema outcome never falls
+       through step 5.5 with no `commit_message` assigned)
 
      ```bash
      bash .claude/scripts/git-commit-scoped.sh \
@@ -1593,6 +1617,9 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
      - `dispatch_status = "failed"` or `"blocked"`: step 5.5 runs. Artifacts and status changes the
        dispatch actually produced (e.g. a partial report or a handoff recording the blocker) are
        still real and belong in a commit.
+     - `dispatch_status` OFF-SCHEMA: step 5.5 DOES run — artifacts the dispatch actually produced
+       are still real and belong in a commit, per the artifact-linking rationale Stage 5's halt
+       already relies on. The task is charged to `failed_tasks` (step 5 above).
 
      **Serialization note**: these per-task commits serialize naturally in program order, because
      per-task postflight is a sequential loop within the orchestrator's own turn — no two

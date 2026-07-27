@@ -293,7 +293,7 @@ blocks after editing; any additional difference must be recorded, not silently a
 
 ---
 
-### Phase 3: Multi-task Stage MT-4 clause [IN PROGRESS]
+### Phase 3: Multi-task Stage MT-4 clause [COMPLETED]
 
 **Goal**: Close the same defect in the multi-task engine, where the analogous clause is prose
 rather than bash and where the correct off-schema response is a per-task `failed_tasks` charge
@@ -351,7 +351,7 @@ at implementation time by re-reading Stage MT-4 end to end after editing and che
 
 ---
 
-### Phase 4: Cross-site consistency, limitation record, and boundary gates [NOT STARTED]
+### Phase 4: Cross-site consistency, limitation record, and boundary gates [IN PROGRESS]
 
 **Goal**: Verify the three sites express one contract, record the non-functional gaps and the
 named follow-up durably, and run the binding-constraint gates.
