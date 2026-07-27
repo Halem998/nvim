@@ -172,11 +172,10 @@ Full per-phase deviation entries with reasons: see `progress/phase-{1,2,3,4}-pro
    Verified live in both repos: all six event files present, all three hook registrations
    (`PostToolUse`/`Stop`/`SubagentStop`) in `.claude/settings.json`, doc-lint `PASS` with zero
    FAILs, and `STRICT_CORE_DEPLOY=1 ... | grep -c 'events-'` returning 0 (was 9).
-1a. **User-owned, remaining**: start a NEW session and exercise a real
-   `/research`/`/plan`/`/implement`. Hook registrations load at session start, so nothing has
-   fired yet — the newest event (`10:18:47Z`) predates the regeneration (`10:46:01Z`). Both hooks
-   were sandbox-tested and emit `artifact_write`, `subagent_stop`, and `session_stop` correctly,
-   so this is a session-lifecycle gate, not a wiring gap.
+1a. **Remaining, no restart needed**: a real `session_stop` fired at `10:50:39Z` in the live
+   store, after the `10:46:01Z` regeneration and inside the same running session — an earlier
+   claim here that a restart was required was wrong. Only `artifact_write` and `subagent_stop`
+   remain unobserved in production; both occur naturally during a normal task dispatch.
 2. **New task recommended**: fix the install-once self-heal gap and the add-only, object-level
    dedup in `lua/neotex/plugins/ai/shared/extensions/loader.lua` and
    `lua/neotex/plugins/ai/claude/extensions/merge.lua`. Outside this task's

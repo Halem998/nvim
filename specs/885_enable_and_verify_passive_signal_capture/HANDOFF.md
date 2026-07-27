@@ -24,13 +24,15 @@ event files present, and `.claude/settings.json` now registers all three hooks �
 **0** (was 9). **Part A below is satisfied except for the duplicate**, which no regeneration can
 ever fix — see follow-up 1.
 
-Live event flow is still not observed: hook registrations load at session start, and
-`.claude/settings.json` was rewritten at `2026-07-27T10:46:01Z` while the newest line in
-`specs/events.jsonl` is `2026-07-27T10:18:47Z`. **A new session is required.** Both hooks were
-nevertheless executed directly against a sandboxed deploy-shaped tree (never the real store) and
-emit correctly: `artifact_write`, `subagent_stop`, and `session_stop`, each with `task`
-correlation and the `cwd` field populated. So the wiring is proven; only real post-restart usage
-remains.
+**Live event flow is confirmed, and no session restart is needed.** (An earlier revision of this
+document claimed a restart was required — that was wrong.) A genuine `session_stop` event fired
+at `2026-07-27T10:50:39.703Z`, after the `10:46:01Z` regeneration and inside the same
+already-running session, correlated to this task with the observing session's own id and `cwd`
+populated. Additionally, both hooks were executed directly against a sandboxed deploy-shaped tree
+(never the real store) and emit `artifact_write`, `subagent_stop`, and `session_stop` correctly.
+Still unobserved in the real store: `artifact_write` (needs a Write/Edit to a task's
+`.return-meta.json`) and `subagent_stop` (needs a `.postflight-pending` marker live when a
+subagent stops) — both occur naturally in a normal dispatch.
 
 **CORRECTION (earlier session): the original "merge routine is broken" diagnosis above was WRONG.**
 A closer, independently-verified read of the loader/merge code establishes a different, more

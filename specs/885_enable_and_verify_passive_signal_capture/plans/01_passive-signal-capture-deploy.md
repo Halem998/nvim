@@ -464,11 +464,19 @@ manual regeneration (Phase 5), then on accumulated REAL USAGE OVER TIME.
 
 **UPDATE — post-deployment status: hooks proven functional, live flow not yet observed.**
 
-Gate 1 (deployment) is now satisfied — see Phase 5. Gate 2 (real usage) is NOT, for a specific
-and expected reason: hook registrations are read at session start, and `.claude/settings.json`
-was rewritten at `2026-07-27T10:46:01Z` while the newest event in `specs/events.jsonl` is
-`2026-07-27T10:18:47Z`. Zero events postdate the regeneration, because the session observing it
-had already loaded the pre-regeneration settings. **A new session is required.**
+Gate 1 (deployment) is now satisfied — see Phase 5.
+
+**CORRECTION**: an earlier revision of this section claimed hook registrations load only at
+session start and that a new session was therefore required. **That was wrong.** A genuine
+`session_stop` event fired live at `2026-07-27T10:50:39.703Z` — after the `10:46:01Z`
+regeneration, inside the same already-running session — correlated to this task with the
+observing session's own id and the `cwd` field populated. The Stop hook is active without any
+restart.
+
+Gate 2 (real usage) is therefore **partially** satisfied: `session_stop` is confirmed flowing in
+the real store. Still unobserved in production are `artifact_write` (requires a Write/Edit to a
+task's `.return-meta.json`) and `subagent_stop` (requires a `.postflight-pending` marker present
+when a subagent stops). Both occur naturally during a normal task dispatch.
 
 To distinguish "not yet fired" from "wired wrong", both hooks were executed directly against a
 sandboxed deploy-shaped tree (never the real store, so no synthetic lines were written to
@@ -489,9 +497,9 @@ Two correlation characteristics worth recording, both by design rather than defe
   and nothing when that task has no `session_id` in `state.json`. Purely conversational sessions
   therefore produce no `session_stop` event.
 
-**Remaining to close this phase**: start a new session, exercise a real
-`/research`/`/plan`/`/implement`, and confirm `artifact_write` / `subagent_stop` / `session_stop`
-lines with timestamps after `2026-07-27T10:46:01Z` appear in `specs/events.jsonl`.
+**Remaining to close this phase**: exercise a real `/research`/`/plan`/`/implement` dispatch (no
+restart needed) and confirm `artifact_write` and `subagent_stop` lines appear in
+`specs/events.jsonl` alongside the already-confirmed `session_stop`.
 
 **Independently re-verified (this session, not self-reported)**, against `specs/events.jsonl`
 (181 lines, 60797 bytes as observed) and a live `check-extension-docs.sh` run:
