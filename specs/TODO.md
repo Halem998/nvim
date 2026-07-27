@@ -1,5 +1,5 @@
 ---
-next_project_number: 932
+next_project_number: 936
 ---
 
 # TODO
@@ -11,9 +11,10 @@ next_project_number: 932
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 885,920 | -- | agent-system |
-| 2 | 926 | 885 | agent-system |
-| 3 | 887,931 | 920,926 | agent-system |
+| 1 | 885,920,932 | -- | agent-system |
+| 2 | 926,933 | 885,932 | agent-system |
+| 3 | 887,931,934 | 920,926,933 | agent-system |
+| 4 | 935 | 934 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -25,14 +26,163 @@ next_project_number: 932
     └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
   └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co (see above)
-
-### Uncategorized
+932 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+  └─ 933 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+    └─ 934 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+      └─ 935 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ## Tasks
+
+### 935. Narrow the self_modifying defer scope and add an explicit override flag
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 932, Task 933, Task 934
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.
+
+MOTIVATING INCIDENT (verified live). /orchestrate 885,926,887,931,920 dispatched ZERO tasks. Kahn wave assignment over intra-batch dependencies was computed correctly (W0: 885, 920; W1: 926; W2: 887, 931). scripts/orchestrate-batch-admit.sh --invocation-count 5 then returned decision defer with defer_reason self_modifying for 885, 920, 926, and 931. The one remaining admit, 887, declares dependencies on two of the four just excluded, so it was undispatchable without violating its own declared order. Five tasks requested, zero dispatched, no state mutated.
+
+DO NOT NAIVELY DELETE OR WEAKEN THIS GATE. context/patterns/batch-orchestration-guardrails.md records that the obvious rationale -- an in-flight session corrupting itself -- was investigated and DISPROVEN, and warns in terms that a future maintainer must not read the disproven hypothesis as license to relax or remove the gate. The gate survives on three OTHER hazards. Hazards 2 (commit granularity) and 3 (bootstrapping/redeploy) are the subject of this task's two dependencies. Hazard 1 (VERIFICATION GAP -- a fix to orchestrator machinery is verified only against a scratch deploy-tree copy, never the live system it will become) is retired by NOTHING in this chain and is explicitly "unaffected by sequencing." Hazard 1 is therefore the standing reason a safe default must survive: this task narrows and gates the defer, it does not remove it.
+
+SCOPE OF WORK.
+
+A. Narrow the defer scope from whole-invocation to same-wave, where and only where the retirement of hazards 2 and 3 supports it. Today a self_modifying verdict excludes the candidate from the ENTIRE invocation whenever invocation-count exceeds 1, and skills/skill-orchestrate/SKILL.md records it in an invocation-scoped deferred_self_modifying set that persists across every cycle. Establish explicitly which hazard each remaining unit of strictness is paying for; strictness with no surviving hazard behind it is the thing being removed.
+
+B. Add an explicit opt-in override (--allow-self-modifying or equivalent) requiring deliberate human intent, keeping the safe default. IMPLEMENTATION NOTE: flags are parsed in scripts/parse-command-args.sh, which both scans for known flags and strips them from the focus-prompt text. A flag added without updating both the scan and the strip chain will leak its own literal text into the focus prompt passed to agents.
+
+C. Re-apply the two conjunctive inclusion tests -- reachability on the multi-task batch-dispatch path, AND decision-relevance (a defect yields a silent wrong admission/wave/lock/completion decision, not a loud failure and not a cosmetic one) -- to the nine paths declared in context/reference/orchestrator-critical-paths.json. The guardrails doc requires applying the tests rather than pattern-matching names, and separately warns that the reachability verdict for the three explicitly-excluded files is a fact about the CURRENT dispatch implementation, not a permanent property.
+
+D. Close a verified gate gap. skills/skill-orchestrate-hard/SKILL.md contains ZERO references to orchestrate-batch-admit.sh (confirmed by grep this session), so a multi-task --hard run currently has no self-modification gate AND no cross-batch collision gate at all. Decide whether hard mode gets the gate; if not, document why, and make the schema doc's list of readers accurate.
+
+E. Fix or document a related inconsistency: commands/orchestrate.md describes its admission call as running "Before dispatching EVERY wave," but that file never loops waves -- it hands the whole wave schedule to skills/skill-orchestrate/SKILL.md in a single Skill call, and the real per-cycle gate is the skill's own eligibility step. The command-level call therefore executes once per invocation, not once per wave. Make the prose match the behavior or make the behavior match the prose.
+
+F. Record a decision on the documented scope limitation: plain multi-task /implement N,M, /research N,M, and /plan N,M never call the admission script at all, so a self-modifying task run through those commands is invisible to this gate. The guardrails doc flags this as known and accepted, not silently absorbed. Either extend protection or restate the acceptance with current reasoning.
+
+G. Update docs/architecture/batch-admit-schema.md for any verdict-schema change. The schema is pinned as orchestrate-batch-admit-v2 with a stable field order and a REQUIRED defer_reason discriminator; a semantic change to what self_modifying means is a version question, not an additive-field question. The schema doc's own Version History records why the v1-to-v2 bump was a version rather than an added field -- apply the same reasoning.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 934. Inter-wave redeploy checkpoint via the existing headless deploy path
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 932, Task 933
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.
+
+GOAL: retire hazard 3 of the three surviving self-modification hazards recorded in context/patterns/batch-orchestration-guardrails.md -- the BOOTSTRAPPING hazard: "admission for the task rewriting the admission predicate is decided by the OLD, currently-deployed copy of that same machinery... No wave boundary performs a redeploy, so a W1 task still runs against the same stale machinery a W0 task just fixed." That hazard is the direct answer to "won't dependencies sequence them anyway?" -- they would sequence, but sequencing alone buys nothing while nothing redeploys between waves.
+
+FEASIBILITY IS ESTABLISHED, NOT ASSUMED -- READ THIS BEFORE RE-INVESTIGATING. A headless, non-interactive redeploy path already exists and is verified:
+  - scripts/deploy-headless.sh drives the SAME code path as the interactive picker by calling the exported M.load_all_globally with vim.fn.confirm stubbed to return 1. It resolves the repo root, refuses to run outside a git repository, honors .syncprotect, and reports the artifact count.
+  - scripts/verify-deploy.sh is the first of two gates: it answers "is the deploy tree current and are its hooks registered?" and explicitly does NOT answer "have events actually flowed?".
+  - context/patterns/regeneration-is-manual-only.md carries an explicit CORRECTION block retracting an earlier claim that no headless equivalent existed, and records that the wrong claim was load-bearing and propagated into research findings, plans, and handoffs. Do not re-derive the retracted conclusion.
+
+A NEW HAZARD THIS TASK MUST WEIGH, WHICH THE GUARDRAILS DOC DOES NOT YET CONSIDER. The guardrails doc records that the original live-corruption hypothesis was DISPROVEN because deployment is manual, so a source-store edit cannot alter a session already in flight. That reasoning holds for markdown artifacts (skills, commands, context) which are read into agent context once. It does NOT obviously extend to SHELL SCRIPTS. scripts/skill-base.sh, scripts/task-lock.sh, scripts/update-task-status.sh, and scripts/orchestrate-batch-admit.sh are re-invoked FROM DISK for every dispatched task. A mid-invocation redeploy therefore genuinely swaps executing machinery mid-flight -- reintroducing, for scripts specifically, the very failure mode that was retired for documents. Deciding whether that is acceptable, and under what constraints, is the substantive work of this task. A redeploy checkpoint that silently makes this worse than the gate it replaces is a regression.
+
+SCOPE OF WORK.
+
+A. Decide the trigger. Options include: always between waves; only when a completed wave's tasks declared file_scope entries matching context/reference/orchestrator-critical-paths.json; or explicit opt-in via a flag. Weigh cost (a full deploy is not free) against the hazard actually being retired.
+
+B. Decide the failure contract. If deploy-headless.sh or verify-deploy.sh fails mid-batch, does the run abort, continue with a loud warning, or defer remaining waves? The defer-not-fail default recorded in the guardrails doc is the presumed answer; justify any departure.
+
+C. Sequence the checkpoint against the commit boundary. A wave's work should be committed before the tree it produced is redeployed over, so this interacts directly with the commit-granularity work this task depends on. State the ordering explicitly.
+
+D. Respect the deliberate-invocation constraint. Both scripts/deploy-headless.sh and context/patterns/regeneration-is-manual-only.md state that the headless path bypasses a genuine safeguard and "must be invoked explicitly and never as a silent side effect of an unrelated operation." An inter-wave checkpoint is arguably exactly such a side effect. Reconcile this in the documents rather than quietly contradicting them.
+
+E. Update context/patterns/batch-orchestration-guardrails.md to record whether hazard 3 is retired, partially retired, or replaced by the script-swap hazard above.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 933. Pre-dispatch dependency and file_scope review/repair stage for /orchestrate
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 932
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.
+
+GOAL: inspect and, where warranted, repair each candidate task's dependencies[] and file_scope so wave ordering is provably correct BEFORE any dispatch happens, instead of the operator discovering ordering problems by running the batch and reading defer verdicts.
+
+PRIOR ART THAT MUST BE EXTENDED, NOT FORKED. A pre-dispatch admission PREVIEW already exists: /orchestrate --dry-run drives scripts/orchestrate-dry-run-report.sh, which makes the same admission call and prints the verdicts without dispatching. What does not exist is REVIEW and REPAIR. This task must extend that existing report surface. Introducing a second, parallel preview path is an explicit non-goal -- docs/architecture/batch-admit-schema.md names the dry-run report as one of exactly three sanctioned readers of the verdict schema, and that list must stay accurate.
+
+VERIFIED DEFECT 1 -- SILENT DEPENDENCY DROP, A LIVE VIOLATION OF A DOCUMENTED NON-NEGOTIABLE. commands/orchestrate.md Step 2 (Dependency Graph Construction) filters each task's declared dependencies down to only those targets that are themselves members of validated_tasks, discarding the rest with no warning. A dependency naming a nonexistent task, a completed task, and a live task that simply was not included in this invocation are all discarded identically and silently. context/patterns/batch-orchestration-guardrails.md Non-Negotiable 3 states: "Never silently drop a dependency edge because its target is out of batch. At minimum, warn loudly and exclude the dependent task by default." The current filter satisfies neither clause. Note the guardrails doc's own Open Design Fork section flags exclude-the-dependent versus auto-expand-the-batch as UNRESOLVED; this task should resolve it or restate why it stays open, not silently pick one.
+
+VERIFIED DEFECT 2 -- METADATA DEFECTS THAT NOTHING CATCHES. Live examples read from specs/state.json this session: one active task carries dependencies: null rather than [], and another carries title: null and topic: null (which lands it under "Uncategorized" in the generated TODO.md Task Order). Neither is surfaced anywhere before dispatch.
+
+VERIFIED DEFECT 3 -- OVER-BROAD file_scope PRODUCES FALSE-POSITIVE DEFERS. A task declaring a coarse directory prefix such as agent-system/extensions/core/scripts/ overlaps, by the directory-prefix rule in context/patterns/file-footprint-overlap.md, every one of the orchestrator-critical script paths declared in context/reference/orchestrator-critical-paths.json -- even when the task modifies none of them and only creates new files. Such a task draws defer_reason self_modifying as a pure artifact of declaration coarseness, and collides with every script-touching task in the repository. This class is currently invisible until dispatch is attempted.
+
+VERIFIED DEFECT 4 -- MISSING SERIALIZING EDGES ACROSS CREATION BATCHES. Multi-Task Creation Standard Component 4a auto-adds a serializing dependencies[] edge for overlapping file_scope pairs, but only within a single creation batch. Tasks created in separate batches have no such edge, so Kahn wave assignment can place genuinely conflicting tasks in the same wave. commands/orchestrate.md documents this residual cross-batch gap explicitly.
+
+SCOPE OF WORK.
+
+A. Add a review stage that runs before the dependency graph is built -- Step 2 is the last point at which each task's RAW declared dependencies[] is still visible, so the stage must read state.json directly rather than the already-filtered graph. Report each defect class above with the specific task numbers and paths involved.
+
+B. Decide the repair contract, which is the hard design question. Admission today is strictly read-only and defer-not-fail: scripts/orchestrate-batch-admit.sh never writes to specs/state.json, and commands/orchestrate.md states that invariant explicitly. Repair mutates state.json. Resolve that tension deliberately -- report-only by default with opt-in repair is the presumed shape, but justify whatever is chosen. Do not make an autonomous /orchestrate run silently rewrite declared dependencies.
+
+C. Wire the stage into the existing --dry-run surface so the report and the live path share one implementation.
+
+D. Register any new script in manifest.json and any new context file in index-entries.json.
+
+E. Update context/patterns/batch-orchestration-guardrails.md to record the resolution of Non-Negotiable 3's violation and, if applicable, the Open Design Fork.
+
+EXPLICIT NON-GOAL: this task does not change the admission predicate's verdict schema or its collision algorithm.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 932. Commit per wave and stage source files in the multi-task /orchestrate batch commit
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.
+
+VERIFIED DEFECT (read live from the deployed tree this session). commands/orchestrate.md Step 5 (Batch Git Commit and Consolidated Output) builds its staging set as exactly:
+
+  stage_paths=("specs/TODO.md" "specs/state.json")
+  for tnum in "${validated_tasks[@]}"; do ... stage_paths+=("specs/${tpadded}_${tname}/") ; done
+
+It never reads any task's .return-meta.json and never references modified_files. The single-task path does: CHECKPOINT 3 in the same file applies the implement-equivalent scope from context/standards/git-staging-scope.md, reading modified_files out of "${task_dir}/.return-meta.json" and appending each entry to stage_paths.
+
+CONSEQUENCE, STATED PLAINLY: this is not merely the documented "batch commit does not stage modified_files" nicety. In multi-task mode NO file outside specs/ is ever staged, so every source-store file an implementation agent writes under agent-system/extensions/** during an /orchestrate N,M run is left uncommitted. The batch commit call also omits --honest-index-rows, which the single-task CHECKPOINT 3 passes.
+
+SECOND DEFECT, SAME SITE: the batch commit runs ONCE, after the single skill-orchestrate invocation has completed every wave. This is hazard 2 of the three surviving self-modification hazards recorded in context/patterns/batch-orchestration-guardrails.md ("Rollback/commit-granularity risk"): all N tasks' diffs and index rows fold into one commit, so reverting one task's change cannot be isolated from its siblings.
+
+SCOPE OF WORK.
+
+A. Stage source files. Extend the Step 5 staging loop to read each task's specs/{NNN}_{name}/.return-meta.json and append its modified_files entries, mirroring what CHECKPOINT 3 already does. Honor the absent/empty modified_files warning behavior that context/standards/git-staging-scope.md already specifies rather than inventing a second convention. Pass --honest-index-rows as the single-task path does.
+
+B. Move commit granularity from once-per-invocation to per-wave (or per-task). Decide which, and record the reasoning. Per-task is the finer grain and most directly retires hazard 2; per-wave is closer to the existing structure. Note that the commit site currently lives in commands/orchestrate.md AFTER the skill returns, but wave boundaries are internal to skills/skill-orchestrate/SKILL.md's Stage MT-3 loop, so a per-wave commit requires the commit to move into or be driven from the skill. That relocation is the substantive design question of this task, not an incidental detail.
+
+C. Preserve every existing safety property of the site: path-scoped staging through scripts/git-commit-scoped.sh (never a repo-wide add), the commit mutex, and the automatic ephemeral-runtime-file exclusion set. Do not hand-roll a second staging implementation.
+
+D. Update docs/architecture/orchestrate-state-machine.md's MT Mode section to describe the new commit granularity, and update the hazard-2 paragraph in context/patterns/batch-orchestration-guardrails.md to record that this hazard is retired (or to state precisely what residue remains).
+
+VERIFICATION BAR: a multi-task run over two tasks that both modify source-store files must produce commits that actually contain those source files. Verifying only that the code reads modified_files is insufficient.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
 
 ### 931. Handoff continuation path writer predicate contract
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
+- **Topic**: agent-system
 - **Dependencies**: Task 885, Task 917, Task 920, Task 926
 
 **Description**: Resolve the writer/predicate contract mismatch on continuation_context.handoff_path, which causes a populated, actionable orchestrator continuation to be classified as absent. VERIFIED PROBLEM: scripts/orchestrate-triage-classify.sh line 182 recognizes a continuation only when continuation_context is non-null AND its handoff_path sub-field is non-null. The handoff WRITERS, however, routinely emit handoff_path: null while putting the substantive resume content in continuation_context.note. OBSERVED INSTANCE (cslib task 575): a handoff carried status partial, phases_completed 7 of 8, next_action_hint "implement", blockers [], and a detailed continuation note naming the exact resume file and method -- yet classified as handoff_state "empty", group exit_partial, stranding the task. The orchestrator had to override the classifier by hand to make any progress. RELATIONSHIP TO TASK 917 (in flight, IMPLEMENTING): 917 converges the single engine onto mt for the `partial`-with-neither row, so after it lands this task would route to implement instead of exit_partial and the STRANDING SYMPTOM disappears. This task covers the residue 917 explicitly leaves intact, confirmed against 917 own research report: (a) 917 file_scope does not include scripts/skill-base.sh, the H9 wrap-up instructions that populate ORCHESTRATOR_HANDOFF_CONTINUATION_JSON, or docs/architecture/handoff-schema.md, so the writer keeps emitting handoff_path: null; (b) 917 report states verbatim that the handoff_state computation "is untouched by this change", so a rich continuation still reports as "empty"; (c) 917 routes resume context through orchestrate-recover-outcome.sh reading the prior dispatch .return-meta.json RATHER than from a handoff continuation_context, so the note, next_action_hint, and phase counts remain unread by the "Sub-state: continuation available" branch. REQUIRED WORK: decide which side of the contract is authoritative and make writer, schema, and predicate agree. Either (A) require writers to populate handoff_path with the absolute handoff path whenever a continuation is emitted, and enforce it in skill-base.sh handoff writer plus the H9 wrap-up instructions; or (B) relax the classifier predicate to accept a continuation carrying any substantive payload (note alone should qualify), and correct docs/architecture/handoff-schema.md, which currently documents the handoff_path-required form as intended. Option B is likely correct given the note already carries the actionable content and handoff_path is redundant with the dispatch-context anchor, but the choice belongs to the implementer. Whichever is chosen, handoff-schema.md must end up describing what the writers actually emit and what the classifier actually accepts. NOTE ON ADJACENT WORK, none of which covers this: task 892 and task 909 concern a DIFFERENT field also called handoff_path -- the absolute dispatch-context anchor naming where the handoff file itself is written -- not continuation_context.handoff_path. Task 913 handles a MISSING handoff after research, not a PRESENT handoff whose continuation predicate fails. Task 901 reproduces the current predicate as intended behaviour and ships a fixture with handoff_path populated, so it would never surface the null case. DEFINITION OF DONE: a handoff emitted by the standard writer path with a populated continuation note classifies as a continuation, not as handoff_state "empty"; handoff-schema.md matches writer and classifier behaviour; a regression test covers the null-handoff_path-with-populated-note case.
