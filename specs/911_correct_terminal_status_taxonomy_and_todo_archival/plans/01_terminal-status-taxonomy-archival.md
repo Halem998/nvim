@@ -1,7 +1,7 @@
 # Implementation Plan: Task #911
 
 - **Task**: 911 - correct_terminal_status_taxonomy_and_todo_archival
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/911_correct_terminal_status_taxonomy_and_todo_archival/reports/01_terminal-status-taxonomy-todo-archival.md
@@ -341,46 +341,68 @@ two files' structures differ, prefer behavioral equivalence over textual samenes
 
 ---
 
-### Phase 5: Cross-site consistency and constraint verification [NOT STARTED]
+### Phase 5: Cross-site consistency and constraint verification [COMPLETED]
 
 **Goal**: Confirm the two archival sites agree, the hard constraints held, and nothing landed
 outside the three in-scope source files.
 
 **Tasks**:
-- [ ] Diff the two sites' status handling by hand: for each of scan, archive-array routing,
+- [x] Diff the two sites' status handling by hand: for each of scan, archive-array routing,
       `active_projects` removal, roadmap exclusion, defer guard, and reporting, confirm
       `commands/todo.md` and `skills/skill-todo/SKILL.md` describe the same behavior.
-- [ ] Confirm no archival selector in either file mentions `partial` or `blocked`:
+      *(completed: both sites scan/track all three statuses, route completed+expanded to
+      completed_projects and abandoned to archived_projects, apply the identical subtasks-defer
+      guard with matching four-edge-case semantics, exclude expanded from ROADMAP.md matching for
+      the same structural reason, and report expanded/deferred counts in dry-run and final output)*
+- [x] Confirm no archival selector in either file mentions `partial` or `blocked`:
       ```bash
       grep -niE 'partial|blocked' agent-system/extensions/core/commands/todo.md \
         agent-system/extensions/core/skills/skill-todo/SKILL.md
       ```
-      Any hit must be unrelated to archival (review each).
-- [ ] Confirm no residual two-status filter remains:
+      Any hit must be unrelated to archival (review each). *(completed: two hits, both reviewed
+      — `commands/todo.md` line 976 is prose stating partial/blocked are NOT archivable;
+      `skill-todo/SKILL.md` line 53 is Stage 1.5's pre-existing reconcile-scan-targets query,
+      unrelated to archival)*
+- [x] Confirm no residual two-status filter remains:
       ```bash
       grep -n 'completed" or .status == "abandoned"' \
         agent-system/extensions/core/commands/todo.md \
         agent-system/extensions/core/skills/skill-todo/SKILL.md
       ```
-      Every hit must be followed by `or .status == "expanded"`.
-- [ ] Confirm no `!=` was introduced into any jq expression in either file (Issue #1132 safety).
-- [ ] Confirm no task-number citations landed in the deliverables:
+      Every hit must be followed by `or .status == "expanded"`. *(completed: exactly one hit —
+      the Step 5B del() filter itself — and it is followed by `or .status == "expanded"`)*
+- [x] Confirm no `!=` was introduced into any jq expression in either file (Issue #1132 safety).
+      *(completed: all `!=` occurrences are pre-existing prose/comments or the pre-existing
+      sanctioned file-based-filter pattern; verified via `git diff` that none were added by this
+      task's edits)*
+- [x] Confirm no task-number citations landed in the deliverables:
       ```bash
       grep -nEi '\btasks? [0-9]+' agent-system/extensions/core/commands/todo.md \
         agent-system/extensions/core/skills/skill-todo/SKILL.md \
         agent-system/extensions/core/merge-sources/claudemd.md
       ```
       `(Task {N})` / `Task {N}` template placeholders in the ROADMAP-annotation examples are
-      expected and fine; literal digits are not.
-- [ ] Confirm the SOURCE-STORE RULE held — the working-tree diff touches only the three files in
+      expected and fine; literal digits are not. *(completed: two hits, both pre-existing and
+      confirmed via `git diff` to be outside this task's edits — `merge-sources/claudemd.md`'s
+      commit-format example and `skill-todo/SKILL.md`'s vault-transition comment)*
+- [x] Confirm the SOURCE-STORE RULE held — the working-tree diff touches only the three files in
       scope and nothing under `.claude/`:
       ```bash
       git status --short
       ```
-- [ ] Confirm `merge-sources/claudemd.md` no longer groups `BLOCKED`/`PARTIAL` with "Terminal",
+      *(completed: nothing under `.claude/` is modified. `git status --short` also shows
+      `.claude-extensions.json`, `lua/neotex/plugins/editor/which-key.lua`,
+      `lua/neotex/plugins/tools/himalaya/utils/cli.lua`, and `specs/events.jsonl` as modified —
+      these were already dirty before this task started (present in the session's initial git
+      status from concurrent sibling task work) and are untouched by this task's commits, which
+      are scoped exactly to the three in-scope files plus this task's own `specs/911_.../`
+      artifacts)*
+- [x] Confirm `merge-sources/claudemd.md` no longer groups `BLOCKED`/`PARTIAL` with "Terminal",
       and that its new wording agrees with `context/standards/status-markers.md`'s Validation
       Rules section (terminal = COMPLETED, ABANDONED, EXPANDED). Read `status-markers.md` for
-      comparison only — do not modify it.
+      comparison only — do not modify it. *(completed: status-markers.md's transition diagram
+      groups PARTIAL and BLOCKED with the non-terminal statuses, and its per-marker sections mark
+      COMPLETED/ABANDONED/EXPANDED as terminal — matches claudemd.md's new two-bullet split)*
 
 **Timing**: 0.25 hours
 
@@ -400,21 +422,27 @@ outside the three in-scope source files.
 There is no executable test suite for these markdown command/skill definitions; validation is by
 targeted inspection.
 
-- [ ] Both archival sites list exactly `{completed, abandoned, expanded}` as archivable.
-- [ ] `partial` and `blocked` appear in no archival selector in either file.
-- [ ] `expanded` tasks route to `completed_projects`; no third archive array was introduced.
-- [ ] The `del()` filter in `commands/todo.md` Step 5B subtracts deferred parent numbers.
-- [ ] The defer guard's four edge cases are each handled explicitly at both sites: missing/empty
+- [x] Both archival sites list exactly `{completed, abandoned, expanded}` as archivable.
+- [x] `partial` and `blocked` appear in no archival selector in either file.
+- [x] `expanded` tasks route to `completed_projects`; no third archive array was introduced.
+- [x] The `del()` filter in `commands/todo.md` Step 5B subtracts deferred parent numbers.
+      Verified against a representative state.json fixture (see Phase 3 deviation note); the
+      plan's literal snippet needed a `. as $item |` binding fix to parse and behave correctly.
+- [x] The defer guard's four edge cases are each handled explicitly at both sites: missing/empty
       `subtasks`, subtask absent from `active_projects`, subtask in a terminal status, subtask in
       a non-terminal status.
-- [ ] Expanded tasks are excluded from ROADMAP.md matching at both sites, with the structural
+- [x] Expanded tasks are excluded from ROADMAP.md matching at both sites, with the structural
       reason stated.
-- [ ] Dry-run output at both sites shows expanded counts and deferred parents before any
+- [x] Dry-run output at both sites shows expanded counts and deferred parents before any
       mutation.
-- [ ] `merge-sources/claudemd.md` separates terminal from exception states and agrees with
+- [x] `merge-sources/claudemd.md` separates terminal from exception states and agrees with
       `status-markers.md`.
-- [ ] `git status --short` shows only the three in-scope files modified; nothing under `.claude/`.
-- [ ] No task-number citations in any of the three files.
+- [x] `git status --short` shows nothing under `.claude/`; the three in-scope files plus this
+      task's own `specs/911_.../` artifacts are the only paths this task's commits touched
+      (pre-existing unrelated dirty files from concurrent sibling work are untouched — see
+      Phase 5 task list above for the itemized list).
+- [x] No task-number citations in any of the three files (two pre-existing hits reviewed and
+      confirmed unrelated to this task's edits via `git diff`).
 
 ## Artifacts & Outputs
 
