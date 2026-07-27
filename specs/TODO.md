@@ -1,5 +1,5 @@
 ---
-next_project_number: 914
+next_project_number: 917
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 914
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 873,885,913 | -- | agent-system |
+| 1 | 873,885,913,914,915,916 | -- | agent-system |
 | 2 | 887,906 | 873,885 | agent-system |
 | 3 | 907 | 906 | agent-system |
 | 4 | 908 | 907 | agent-system |
@@ -28,8 +28,91 @@ next_project_number: 914
     └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
       └─ 908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
 913 [NOT STARTED] — Fix Stage 5 of skill-orchestrate treating a missing .orchestrator
+914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+916 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ## Tasks
+
+### 916. Populate completion_summary from return metadata on every /orchestrate path
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+OBSERVED DIRECTLY, IN A LIVE RUN (not inferred). A multi-task /orchestrate invocation drove three tasks through research -> plan -> implement to a [COMPLETED] terminal status. All three implementation agents correctly wrote completion_data.completion_summary into their .return-meta.json files. All three state.json entries were nevertheless left with an EMPTY completion_summary, and the orchestrator reported full success. The summaries had to be copied into state.json by hand afterward.
+
+WHY THIS MATTERS. state.json's own documented schema marks completion_summary as "Required when status=completed", and /todo consumes completion_summary (and roadmap_items) to annotate ROADMAP.md at archival time. So this silently produces schema-invalid completed records AND starves the downstream roadmap consumer -- the same end-user symptom as the implementer-side producer-contract gap repaired previously, but arising in the orchestrator's own postflight rather than in any implementer.
+
+SITE. skill-orchestrate/SKILL.md Stage MT-4 (multi-task per-task postflight) reads dispatch_status, artifacts, and phase accounting from the handoff, and calls skill_postflight_update and skill_link_artifacts -- but never reads completion_data out of .return-meta.json and never writes completion_summary/roadmap_items to state.json. Note that commands/orchestrate.md DOES document a "Populate Completion Summary (if implemented)" step at its CHECKPOINT 2, but that checkpoint is on the SINGLE-task path only; multi-task mode returns via Stage MT-5 and consolidated output, bypassing it entirely.
+
+ESTABLISH, THEN FIX:
+1. Confirm the single-task path actually populates completion_summary in practice, or whether it has the same hole (commands/orchestrate.md documents the step, but verify the executed path -- do not infer from the presence of the text).
+2. Check skill-orchestrate-hard/SKILL.md for the same gap in both its single-task and any multi-task path.
+3. Fix so that a task reaching completed via ANY /orchestrate path carries a populated completion_summary, and roadmap_items when the implementer produced them.
+
+DESIGN CONSTRAINT. Prefer ONE shared step that both the single-task and multi-task paths call, over adding a second independently-maintained copy to Stage MT-4 -- the divergence between an orchestrate.md-documented checkpoint and an MT-stage that silently lacks it is precisely the defect being repaired here. There is related prior art: an equivalent producer-side step exists in the implementer skills, and a standing recommendation to factor that one into a shared script. Consider whether both should converge on the same helper.
+
+ACCEPTANCE CRITERION: a multi-task /orchestrate run that drives 2+ tasks to completed must leave every one of them with a non-empty completion_summary in state.json, with no manual intervention.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 915. Close the mirror-image completion_data propagation gap in nix, nvim, and epidemiology implementers
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+ESTABLISHED CONTEXT (do not re-derive). A prior investigation mapped the roadmap_items producer/consumer contract across every implementer path and found it has TWO links per extension: (1) the dispatched AGENT file must generate completion_data.completion_summary/.roadmap_items into .return-meta.json, and (2) the implementer SKILL.md postflight must read that back out and write it to state.json. Both links must hold or the field is silently dropped.
+
+That work repaired core, core-hard, lean, lean-hard, and web. It also identified -- but deliberately left out of scope -- a MIRROR-IMAGE break in three other extensions: nix, nvim/neovim, and epidemiology. In those three the agent side is CORRECT (their agent files do generate completion_data) but the SKILL.md side never propagates it to state.json. This is the exact inverse of the lean defect, and its symptom is identical: completion_summary and roadmap_items silently absent from state.json for every task routed through those extensions.
+
+VERIFY BEFORE FIXING. The mirror-image characterization above came from a survey pass, not a line-by-line audit of the executed path. For each of the three extensions, confirm independently: does the agent file actually write completion_data, and does the SKILL.md postflight actually fail to read it? Report per-extension findings. A finding of "already correct" for any of the three is a valid outcome -- do not manufacture a fix.
+
+SUSPECTED SITES:
+  agent-system/extensions/nix/skills/skill-nix-implementation/SKILL.md
+  agent-system/extensions/nvim/skills/skill-neovim-implementation/SKILL.md
+  agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md
+Corresponding agent files (read-only reference, expected already correct):
+  agent-system/extensions/nix/agents/nix-implementation-agent.md
+  agent-system/extensions/nvim/agents/neovim-implementation-agent.md
+
+FIX SHAPE. The prior work established the preferred shape: the shared schema is already documented in context/formats/return-metadata-file.md, so the correct fix is a short postflight read-and-write step referencing that schema, matching how the already-correct core and web SKILL.md files do it -- NOT duplicating the schema into each file. Follow that precedent.
+
+The prior work also recorded a standing recommendation to extract this postflight step into a single shared script that all implementers call, rather than maintaining N copies. Evaluate whether to do that here or to record it as its own follow-up; state your choice and rationale.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 914. Reconcile /todo's independent roadmap-annotation logic with roadmap-integration.sh
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+ESTABLISHED CONTEXT (do not re-derive). A prior investigation into roadmap-integration.sh established, with the script's own consumers traced, that /review (commands/review.md) is the ONLY consumer that calls roadmap-integration.sh. /todo does NOT call it: skill-todo/SKILL.md reimplements roadmap matching and annotation independently, in prose, at its Stages 5 and 11. That prior work fixed roadmap-integration.sh (source-aware table-row annotation, plus an always-on roadmap-structure marker, unparseable/no-op banners, and additive JSON fields) and extended review.md to surface the new signal. None of that reaches /todo.
+
+THE PROBLEM. There are now two independent implementations of roadmap annotation with divergent behavior. The script version can locate and rewrite a matched table row in place and loudly reports an unparseable or no-op roadmap; /todo's prose version has neither capability and can still silently annotate nothing while reporting success. Any future fix to one will keep missing the other.
+
+INVESTIGATE FIRST, THEN DECIDE. Do not assume the answer is "make /todo call the script."
+1. Read skill-todo/SKILL.md Stages 5 and 11 and commands/todo.md, and characterize precisely what /todo's annotation logic does and how it differs from the script's current behavior.
+2. Determine whether /todo's matching requirements are actually the same as /review's. They may legitimately differ -- /todo annotates at archival time from completion_summary/roadmap_items, /review annotates from a codebase scan. If the requirements genuinely differ, converging them is wrong and the correct outcome may be to keep two implementations but give /todo the same silent-no-op detection.
+3. Decide and justify ONE of: (a) replace /todo's prose logic with a call to roadmap-integration.sh; (b) keep both but port the structure-marker/banner/silent-noop signal into /todo so it cannot report false success; (c) extract the shared matching logic into one place both consume.
+
+Whichever is chosen, the binding acceptance criterion is that a roadmap which parses to zero phases and contains zero checkboxes MUST NOT be reportable by /todo as a successful annotation pass.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
 
 ### 913. Fix Stage 5 treating a missing handoff after a research dispatch as an error
 - **Status**: [NOT STARTED]
