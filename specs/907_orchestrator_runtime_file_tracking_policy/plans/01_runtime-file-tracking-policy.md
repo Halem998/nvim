@@ -443,7 +443,7 @@ repo can prove its coverage instead of assuming it.
 
 ---
 
-### Phase 6: Apply the policy to this repository's root .gitignore (the reversal) [NOT STARTED]
+### Phase 6: Apply the policy to this repository's root .gitignore (the reversal) [COMPLETED]
 
 **Goal**: Perform the consumer-side application of the decided policy here, un-ignoring the two
 durable provenance classes while retaining every ephemeral ignore line.
@@ -452,26 +452,33 @@ durable provenance classes while retaining every ephemeral ignore line.
 section. Do not start it before Phases 2-5 are complete.
 
 **Tasks**:
-- [ ] Remove root `/.gitignore` line 1 `**/.return-meta.json`.
-- [ ] Remove root `/.gitignore` line 33 `**/.orchestrator-handoff.json`.
-- [ ] Leave **every** other line of the ephemeral block intact — currently lines 32, 34-40:
+- [x] Remove root `/.gitignore` line 1 `**/.return-meta.json`.
+- [x] Remove root `/.gitignore` line 33 `**/.orchestrator-handoff.json`.
+- [x] Leave **every** other line of the ephemeral block intact — currently lines 32, 34-40:
       `**/.lock/`, `**/.orchestrator-loop-guard`, `**/.continuation-loop-guard`,
       `**/.orchestrator-churn-state.json`, `**/.postflight-loop-guard`,
       `**/.orchestrator-multi-state.json`, `**/.return-meta-*.json`, `**/.events.lock`. Note that
       `**/.return-meta-*.json` (suffixed variants) stays even though the bare
       `**/.return-meta.json` is removed — this is the distinction recorded in Phase 1, not an
-      oversight.
-- [ ] Rewrite the comment block currently at lines 25-31. It presently quotes `handoff-schema.md`'s
+      oversight. *(completed: also added `**/.drift-inspection.json` as a new line, per the Phase
+      1 audit finding and to keep the check script's Check A passing — see deviation note)*
+- [x] Rewrite the comment block currently at lines 25-31. It presently quotes `handoff-schema.md`'s
       "runtime; not checked in" line, which Phase 4 removes. Replace it with the two-class split and
       the freshness-gate rationale, referencing `orchestrator-runtime-files.md` as the authority.
       No task-number citations.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-runtime-file-tracking.sh` and confirm it
-      now passes all three checks (contrast with the Phase 5 pre-change output).
-- [ ] Run `git status --short | head -50` and confirm the newly visible untracked files are only
+- [x] Run `bash agent-system/extensions/core/scripts/check-runtime-file-tracking.sh` and confirm it
+      now passes all three checks (contrast with the Phase 5 pre-change output). *(completed: PASS,
+      all three checks — output recorded)*
+- [x] Run `git status --short | head -50` and confirm the newly visible untracked files are only
       `.return-meta.json` / `.orchestrator-handoff.json` paths under `specs/` — no ephemeral class
-      appears. Record the observed count (expected on the order of 299 + 213 = 512).
-- [ ] Do **not** create a bulk backfill commit. The policy is forward-only; existing files are
-      picked up by whatever natural task-scoped commit next touches their directory.
+      appears. Record the observed count (expected on the order of 299 + 213 = 512). *(completed:
+      295 `.return-meta.json` + 213 `.orchestrator-handoff.json` = 508 newly-untracked files;
+      confirmed zero ephemeral-class paths via grep. The small difference from the plan-time
+      299 count reflects normal task-directory churn between planning and implementation.)*
+- [x] Do **not** create a bulk backfill commit. The policy is forward-only; existing files are
+      picked up by whatever natural task-scoped commit next touches their directory. *(completed:
+      Phase 6's own commit stages only `/.gitignore` and this task's own directory — none of the
+      508 newly-visible files in other task directories are staged)*
 
 **Timing**: 45 minutes
 

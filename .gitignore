@@ -1,4 +1,3 @@
-**/.return-meta.json
 # The .claude/ deploy tree is a disposable build artifact regenerated from the
 # source store in agent-system/extensions/ (selection pinned by the project-root
 # .claude-extensions.json). Nothing under it is hand-authored — every deployed
@@ -22,20 +21,21 @@
 # committing it, and keeps `git ls-files --others --exclude-standard` from nesting
 # backups of backups on repeat runs.
 **/untracked-backup-*/
-# Ephemeral orchestration session state: per-dispatch scratch, mutex directories,
-# and loop guards. All are runtime-only — each is overwritten or removed within a
-# single orchestrate run (see .claude/docs/architecture/handoff-schema.md, which
-# specifies .orchestrator-handoff.json as "runtime; not checked in" and overwritten
-# every dispatch cycle). They are ignored here because the postflight commit stage
-# runs before its own marker-cleanup stage, so anything left unignored is swept into
-# a commit mid-lifecycle.
+# Ephemeral orchestrator runtime state: per-dispatch scratch, mutex directories, and loop
+# guards. Ignored because none of these have a freshness gate on read — a git-restored copy
+# would silently corrupt in-flight cycle/churn state (see
+# .claude/context/standards/orchestrator-runtime-files.md for the full two-class policy and the
+# freshness-gate rationale). Deliberately does NOT include .orchestrator-handoff.json or the
+# bare .return-meta.json — those are durable, freshness-gated provenance and MUST stay tracked;
+# see that same standard's "Untracking Already-Committed Ephemeral Files" section before ever
+# adding either back here.
 **/.lock/
-**/.orchestrator-handoff.json
 **/.orchestrator-loop-guard
 **/.continuation-loop-guard
 **/.orchestrator-churn-state.json
 **/.postflight-loop-guard
 **/.orchestrator-multi-state.json
+**/.drift-inspection.json
 **/.return-meta-*.json
 **/.events.lock
 # Note: specs/events.jsonl is deliberately NOT ignored — it is an append-only durable

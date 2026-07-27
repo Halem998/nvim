@@ -1,0 +1,32 @@
+{
+  "phase": 6,
+  "phase_name": "Apply the policy to this repository's root .gitignore (the reversal)",
+  "started_at": "2026-07-27T01:00:00Z",
+  "last_updated": "2026-07-27T01:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Remove root .gitignore lines for bare .return-meta.json and .orchestrator-handoff.json; rewrite comment block; add .drift-inspection.json ephemeral line",
+      "status": "done",
+      "files_touched": [".gitignore"]
+    },
+    {
+      "id": 2,
+      "description": "Run check-runtime-file-tracking.sh and git status --short to verify the reversal is safe",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.3",
+      "description": "Leave every other ephemeral gitignore line intact (lines 32, 34-40)",
+      "type": "altered",
+      "reason": "The Phase 1 audit surfaced .drift-inspection.json as a genuinely ephemeral class (same no-freshness-gate rationale) not present in the plan's known list. Adding it keeps the standard, the staging exclusion set, and the gitignore block internally consistent, and check-runtime-file-tracking.sh's Check A would otherwise fail against this repo.",
+      "annotation": "*(deviation: altered — added **/.drift-inspection.json as a new ephemeral ignore line, beyond the plan's originally enumerated lines 32/34-40, per the Phase 1 audit finding)*"
+    }
+  ]
+}
