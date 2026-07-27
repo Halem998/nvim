@@ -455,34 +455,52 @@ provenance and its independent confirmation with it.
 
 ---
 
-### Phase 7: Registration and wiring verification [NOT STARTED]
+### Phase 7: Registration and wiring verification [COMPLETED]
 
 **Goal**: Confirm every new artifact is registered, every validator is satisfied, and no binding
 constraint was violated anywhere in the diff.
 
 **Tasks**:
-- [ ] Read the usage header of each of `scripts/validate-extension-index.sh`,
+- [x] Read the usage header of each of `scripts/validate-extension-index.sh`,
       `scripts/validate-context-index.sh`, and `scripts/check-extension-docs.sh` to determine the
       correct invocation, then run each. Record which tree each one actually inspects.
   - If a validator inspects the deployed `.claude/` tree rather than the source store, report the
     stale-deploy discrepancy in the summary. A redeploy is out of scope, and editing `.claude/**`
-    to satisfy a validator is forbidden.
-- [ ] Re-run both new suites (`tests/test-validate-no-task-references.sh`,
-      `tests/test-census-count.sh`) from a clean shell and confirm both exit 0.
-- [ ] Confirm `manifest.json` `provides.scripts` now contains exactly three new entries:
+    to satisfy a validator is forbidden. *(completed — see Verification below for the three
+    inspected-tree findings.)*
+- [x] Re-run both new suites (`tests/test-validate-no-task-references.sh`,
+      `tests/test-census-count.sh`) from a clean shell and confirm both exit 0. *(completed:
+      21/21 and 8/8, both exit 0.)*
+- [x] Confirm `manifest.json` `provides.scripts` now contains exactly three new entries:
       `census-count.sh`, `tests/test-validate-no-task-references.sh`,
       `tests/test-census-count.sh` — and that each is subdirectory-qualified where applicable.
-- [ ] Confirm `index-entries.json` contains exactly two new entries
+      *(completed: confirmed via `git diff` across all phase commits — exactly these three,
+      correctly subdirectory-qualified.)*
+- [x] Confirm `index-entries.json` contains exactly two new entries
       (`standards/shell-script-testing.md`, `standards/census-methodology.md`) and still parses.
-- [ ] **Source-store audit**: run `git status --short` and confirm no path under `.claude/`
+      *(completed: confirmed via `git diff` — exactly these two; parses, 113 entries.)*
+- [x] **Source-store audit**: run `git status --short` and confirm no path under `.claude/`
       appears in the diff. Any `.claude/**` modification is a constraint violation and must be
       reverted, with the equivalent edit made under `agent-system/extensions/core/**` instead.
-- [ ] **No-task-references audit**: grep every file this task created or modified outside
+      *(completed: zero `.claude/**` paths in this task's diff.)*
+- [x] **No-task-references audit**: grep every file this task created or modified outside
       `specs/**` for task-number citations, using the newly fixed separator-aware pattern from
       Phase 2 rather than the old whitespace-only one. Dogfooding the fix here is deliberate.
-- [ ] **Line-number-anchor audit**: confirm no new deliverable cites a line number as an anchor;
+      *(completed, with one correction: dogfooding this audit caught the fixed hook flagging
+      ITSELF — its own explanatory comments used a concrete example digit sequence ("788",
+      borrowed from the research report's example) that matched the pattern the comments were
+      describing. Corrected `hooks/validate-no-task-references.sh`'s comments to use letter
+      placeholders (N, P, M) instead of a concrete digit sequence, eliminating the self-reference;
+      re-verified `bash -n`, re-ran the Phase 3 suite (still 21/21), and re-confirmed the hook now
+      reports `{}` against its own content. This is a correction to Phase 2's file, made here per
+      this phase's own "any file touched here is a correction to an earlier phase" note, not a
+      reopening of Phase 2. Two of the six audited files (the two new test suites) are still
+      flagged — expected: their fixture data intentionally contains literal strings like
+      "task 788" as test input, not real citations of any task in this repo's tracker.)*
+- [x] **Line-number-anchor audit**: confirm no new deliverable cites a line number as an anchor;
       every reference must name a symbol, a filename, a section heading, or a quoted regex
-      string.
+      string. *(completed: grepped all six new/modified non-specs/** files for
+      line-number-anchor patterns; zero hits.)*
 
 **Timing**: 1 hour
 
@@ -497,32 +515,58 @@ entry count differs and that is a correction to record, not a failure.
 
 **Files to modify**:
 - None expected. Any file touched in this phase is a correction to an earlier phase and must be
-  reported as such.
+  reported as such. *(Correction made: `agent-system/extensions/core/hooks/validate-no-task-references.sh`
+  — see the No-task-references audit task above.)*
 
 **Verification**:
 - All three validators exit 0, or every non-zero exit is explained and attributed to a
-  pre-existing condition unrelated to this task's diff.
-- Both new suites exit 0.
-- `git status --short` shows zero `.claude/**` paths.
-- The no-task-references grep over new non-`specs/**` files returns no hits.
+  pre-existing condition unrelated to this task's diff. *(confirmed:
+  `scripts/validate-extension-index.sh` inspects the SOURCE STORE
+  (`agent-system/extensions/*/index-entries.json`) directly — PASSED, core shows 113 entries, all
+  valid, matching this task's edits.
+  `scripts/validate-context-index.sh` inspects the DEPLOYED `.claude/context/index.json` only —
+  PASSED (158 entries, 0 errors), but this is a stale-deploy discrepancy: neither new
+  `standards/*.md` entry appears in the deployed index, since this task never redeploys
+  (redeploy is explicitly out of scope). This is reported, not fixed.
+  `scripts/check-extension-docs.sh` inspects the source store primarily (`EXT_DIR` resolves to
+  `agent-system/extensions`) — PASSED (all 20 extensions, informational-only deploy-drift
+  advisories correctly list this task's three new scripts as "never deployed," the same
+  stale-deploy condition, non-blocking).)*
+- Both new suites exit 0. *(confirmed: 21/21 and 8/8 from a clean shell.)*
+- `git status --short` shows zero `.claude/**` paths. *(confirmed.)*
+- The no-task-references grep over new non-`specs/**` files returns no hits. *(4 of 6 files
+  clean; the 2 new test suites are expected exceptions — their fixture data intentionally
+  contains literal separator-form strings like "task 788" as test input, not real citations.)*
 
 ---
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh` exits 0.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-census-count.sh` exits 0.
-- [ ] Each of the three binding bug classes has at least one fixture where a naive approach
+- [x] `bash agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh` exits 0.
+      *(21 passed, 0 failed.)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-census-count.sh` exits 0. *(8 passed,
+      0 failed.)*
+- [x] Each of the three binding bug classes has at least one fixture where a naive approach
       demonstrably produces the wrong answer and the shipped tool produces the right one.
-- [ ] Reverting the Phase 2 separator group to `[[:space:]]+` makes the hook suite fail
-      (mutation check performed once, then restored).
-- [ ] `bash -n` passes on `census-count.sh`, both test suites, and the modified hook.
-- [ ] `census-count.sh cross-check` exits non-zero on a deliberate `MISMATCH`.
-- [ ] `manifest.json` and `index-entries.json` both parse as JSON after all edits.
-- [ ] `validate-extension-index.sh`, `validate-context-index.sh`, and `check-extension-docs.sh`
-      run, with results and inspected-tree recorded.
-- [ ] `git status --short` shows no `.claude/**` path.
-- [ ] No task-number citation in any new or modified file outside `specs/**`.
+      *(bug class 1: naive 5/7/5 vs real 2/2/2 across hash/slash/dash; bug class 2: ONLY_IN_TREE/
+      ONLY_IN_DECLARED correctly isolate the undeclared/nonexistent files; bug class 3: correct
+      pattern count 5 vs naive pattern count 2 on the same fixture.)*
+- [x] Reverting the Phase 2 separator group to `[[:space:]]+` makes the hook suite fail
+      (mutation check performed once, then restored). *(17/21 passed under the mutation, 21/21
+      after restore; `git diff` confirmed byte-identical restoration.)*
+- [x] `bash -n` passes on `census-count.sh`, both test suites, and the modified hook. *(all four
+      confirmed.)*
+- [x] `census-count.sh cross-check` exits non-zero on a deliberate `MISMATCH`. *(confirmed: exit
+      1.)*
+- [x] `manifest.json` and `index-entries.json` both parse as JSON after all edits. *(confirmed.)*
+- [x] `validate-extension-index.sh`, `validate-context-index.sh`, and `check-extension-docs.sh`
+      run, with results and inspected-tree recorded. *(all three PASSED; see Phase 7 Verification
+      for the inspected-tree findings, including the two stale-deploy discrepancies reported, not
+      fixed.)*
+- [x] `git status --short` shows no `.claude/**` path. *(confirmed.)*
+- [x] No task-number citation in any new or modified file outside `specs/**`. *(4 of 6 files
+      clean; the 2 new test suites intentionally contain fixture literals like "task 788" as test
+      data, not real citations — see Phase 7.)*
 
 ## Artifacts & Outputs
 

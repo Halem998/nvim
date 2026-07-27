@@ -53,13 +53,14 @@ fi
 # Separator group between "task(s)"/"phase" and its number: whitespace (optionally followed by
 # "#"), or a single "-", "_", "#". An explicit alternation, NOT a bracket class containing "-"
 # (a "-" inside a bracket class can be silently read as a range operator depending on position;
-# alternation avoids that trap entirely). Covers "task 788", "task-788", "task_788", "task#788",
-# and "Task #788" alike.
+# alternation avoids that trap entirely). Covers "task N", "task-N", "task_N", "task#N", and
+# "Task #N" alike (using letter placeholders here rather than a concrete digit sequence, so this
+# comment itself does not incidentally match the pattern it describes).
 TASK_SEP='([[:space:]]+#?|[-_#])'
 
 # Task-number citation pattern: "task N", "tasks N-M", "task-N", "task_N", "task#N", "Task #N",
 # case-insensitive on the "task(s)" token (grep -i handles case; [Tt] kept for readability).
-# Whole-word boundaries via \b to avoid matching inside larger identifiers (e.g. "taskbar788").
+# Whole-word boundaries via \b to avoid matching inside larger identifiers (e.g. "taskbarN").
 TASK_PATTERN="\\b[Tt]asks?${TASK_SEP}[0-9]+(-[0-9]+)?\\b"
 
 # Task-qualified compound Phase pattern: "task N phase P" or "phase P of task N" only. A bare
@@ -67,7 +68,7 @@ TASK_PATTERN="\\b[Tt]asks?${TASK_SEP}[0-9]+(-[0-9]+)?\\b"
 # indistinguishable from a document's own internal structure (plan headings, skill pipeline
 # stages) and would generate constant false positives. The compound form is unambiguously a
 # citation of a specs/-scoped plan's internals. Anchored on the same TASK_SEP separator group so
-# "task-788 phase-3" is caught too.
+# a hyphenated compound like "task-N phase-P" is caught too.
 PHASE_PATTERN="\\b([Tt]asks?${TASK_SEP}[0-9]+[[:space:]]+[Pp]hase${TASK_SEP}[0-9]+|[Pp]hase${TASK_SEP}[0-9]+[[:space:]]+of[[:space:]]+[Tt]asks?${TASK_SEP}[0-9]+)\\b"
 
 if echo "$CONTENT" | grep -qiE "$PHASE_PATTERN"; then
