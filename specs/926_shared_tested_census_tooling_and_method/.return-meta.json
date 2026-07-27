@@ -1,44 +1,32 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/926_shared_tested_census_tooling_and_method/reports/01_shared-tested-census-tooling.md",
-      "summary": "Verifies the validate-no-task-references.sh regex gap, surveys the literature test harness shape and the lean sorry census tool's cross-check design, flags an existing but divergent core-scripts test precedent (test-task-lock-reap.sh), and recommends a tooling+method deliverable shape with a scope-based test-harness-location rule."
+      "type": "plan",
+      "path": "specs/926_shared_tested_census_tooling_and_method/plans/01_census-tooling-and-method.md",
+      "summary": "7-phase plan shipping both a shared fixture-tested census tool (census-count.sh with occurrences/membership/cross-check subcommands) and two standards docs (shell-script-testing.md, census-methodology.md), plus the validate-no-task-references.sh separator-regex fix with its own regression suite. Settles six decisions up front (D1-D6) including harness location, helper naming, fixture strategy, and the task-qualified-only Phase remit."
     }
   ],
-  "next_steps": "Run /plan 926 to create implementation plan",
+  "next_steps": "Run /implement 926 to execute the plan",
   "metadata": {
     "session_id": "sess_1785192054_7d9661",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 6
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 7,
+    "dependency_waves": [[1, 2], [3, 4], [5, 6], [7]]
   },
   "memory_candidates": [
     {
-      "content": "In agent-system/extensions/core/scripts/, an isolated shell-test pattern already exists (test-task-lock-reap.sh): build a throwaway mktemp -d root mimicking the real specs/ tree, copy the actual production script byte-for-byte into it (never mock/stub), and run PASSED/FAILED counter assertions against it. This zero-instrumentation approach avoids adding testability hooks to production scripts and is directly reusable for testing other core scripts (e.g. census tooling).",
-      "category": "PATTERN",
-      "source_artifact": "specs/926_shared_tested_census_tooling_and_method/reports/01_shared-tested-census-tooling.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["shell-test-harness", "mktemp", "test-task-lock-reap", "core-scripts", "isolated-testing"]
-    },
-    {
-      "content": "The literature extension mixes two test-shape conventions by scope, not arbitrarily: narrow single-script fixture-driven regression suites live under scripts/tests/ (test-literature-convert.sh + generate-test-fixtures.py), while a broad end-to-end pipeline suite (test-lit-pipeline.sh) stays flat in scripts/. When choosing a test harness location for a new core script, prefer this scope-based split (narrow->tests/ subdir, broad/pipeline->flat) over blanket copying either shape.",
-      "category": "PATTERN",
-      "source_artifact": "specs/926_shared_tested_census_tooling_and_method/reports/01_shared-tested-census-tooling.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["literature-extension", "test-harness-shape", "scripts/tests", "pipeline-test", "convention"]
-    },
-    {
-      "content": "hooks/validate-no-task-references.sh's task-number regex \\b[Tt]asks?[[:space:]]+[0-9]+(-[0-9]+)?\\b requires literal whitespace as the separator, so task-788, task_788, and Task #788 are all invisible to it despite hyphenated task-N forms being a documented, sanctioned convention elsewhere (git branch names in rules/git-workflow.md and rules/no-task-references-in-deliverables.md's own stated exception). Any future regex meant to catch 'task N' style references anywhere in this repo should use a separator class like [[:space:]_#-]+ (or an explicit alternation) rather than assuming whitespace-only separators, and should consider a parallel Phase N alternative since no existing hook covers Phase references at all.",
+      "content": "Registration asymmetry in agent-system extension manifest.json: provides.scripts is a list of individual relative FILE paths that may be subdirectory-qualified (core itself already registers lint/lint-contract-compliance.sh and lint/lint-postflight-boundary.sh), so any new script -- including one in a scripts/tests/ subdirectory -- must be added there explicitly. By contrast provides.context lists DIRECTORY names ('standards', 'formats', 'patterns', ...), not files, so a new context/standards/*.md file needs NO manifest.json change -- only an index-entries.json entry (path relative to context/, plus domain/subdomain/summary/line_count/keywords/topics/load_when). Check which shape an array uses before assuming a new artifact needs a manifest edit.",
       "category": "INSIGHT",
-      "source_artifact": "specs/926_shared_tested_census_tooling_and_method/reports/01_shared-tested-census-tooling.md",
+      "source_artifact": "specs/926_shared_tested_census_tooling_and_method/plans/01_census-tooling-and-method.md",
       "confidence": 0.85,
-      "suggested_keywords": ["regex-gap", "validate-no-task-references", "separator-class", "task-number-citation", "phase-reference"]
+      "suggested_keywords": ["manifest-json", "provides-scripts", "provides-context", "index-entries", "extension-registration"]
     }
   ],
   "modified_files": [
-    "specs/926_shared_tested_census_tooling_and_method/reports/01_shared-tested-census-tooling.md"
+    "specs/926_shared_tested_census_tooling_and_method/plans/01_census-tooling-and-method.md"
   ]
 }
