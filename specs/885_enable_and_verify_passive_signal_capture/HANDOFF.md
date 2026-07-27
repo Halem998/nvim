@@ -15,7 +15,24 @@ updated with the new hook command entries for `events-log-artifact.sh` (PostTool
 `events-log-lifecycle.sh` (Stop, SubagentStop), and the pre-existing duplicate
 `claude-stop-notify.sh` Stop-matcher entry was NOT resolved — in either repo.
 
-**CORRECTION (this session): the original "merge routine is broken" diagnosis above was WRONG.**
+**RESOLVED (verified live after a SECOND regeneration).** Once the merge-source fix below landed,
+the user re-ran `<leader>al` "Sync all" in both repos. Verified directly in both trees: all six
+event files present, and `.claude/settings.json` now registers all three hooks — `PostToolUse`
+(`Write|Edit` -> `events-log-artifact.sh`), `Stop` (`*` -> `events-log-lifecycle.sh`), and the new
+`SubagentStop` key (`*` -> `events-log-lifecycle.sh`). `check-extension-docs.sh --quiet` returns
+`PASS: all extensions OK` (exit 0), and `STRICT_CORE_DEPLOY=1 ... | grep -c 'events-'` returns
+**0** (was 9). **Part A below is satisfied except for the duplicate**, which no regeneration can
+ever fix — see follow-up 1.
+
+Live event flow is still not observed: hook registrations load at session start, and
+`.claude/settings.json` was rewritten at `2026-07-27T10:46:01Z` while the newest line in
+`specs/events.jsonl` is `2026-07-27T10:18:47Z`. **A new session is required.** Both hooks were
+nevertheless executed directly against a sandboxed deploy-shaped tree (never the real store) and
+emit correctly: `artifact_write`, `subagent_stop`, and `session_stop`, each with `task`
+correlation and the `cwd` field populated. So the wiring is proven; only real post-restart usage
+remains.
+
+**CORRECTION (earlier session): the original "merge routine is broken" diagnosis above was WRONG.**
 A closer, independently-verified read of the loader/merge code establishes a different, more
 precise three-cause root cause — and this session fixed the part of it that is fixable at the
 source-store level:

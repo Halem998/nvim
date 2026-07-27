@@ -346,10 +346,31 @@ retention). Landable today; no regeneration dependency.
 
 ---
 
-### Phase 5: Manual `<leader>al` regeneration handoff (scope 1) [PARTIAL]
+### Phase 5: Manual `<leader>al` regeneration handoff (scope 1) [COMPLETED]
 
 **Goal**: Deploy the finished source-store edits into each repo's `.claude/` tree. USER-OWNED —
 no agent/headless path exists.
+
+**RESOLVED — second regeneration after the merge-source fix landed.** The user ran `<leader>al`
+"Sync all" in both repos again, this time with the corrected
+`merge-sources/settings-hooks.json` in place. Verified live in BOTH trees:
+
+- All six event files present (mtime `2026-07-27 03:46`).
+- `.claude/settings.json` now registers all three hooks — the events-log commands appear under
+  `PostToolUse` (matcher `Write|Edit` -> `events-log-artifact.sh`), `Stop` (matcher `*` ->
+  `events-log-lifecycle.sh`), and the new `SubagentStop` key (matcher `*` ->
+  `events-log-lifecycle.sh`). Each is its own single-command matcher object, as designed.
+- `check-extension-docs.sh --quiet` -> `PASS: all extensions OK`, exit 0, zero FAILs.
+- `STRICT_CORE_DEPLOY=1 ... | grep -c 'events-'` -> **0** in both repos (was 9).
+
+**One original criterion is NOT met, and is now known to be unachievable by regeneration**: the
+pre-existing duplicate `claude-stop-notify.sh` Stop-matcher entry is still present twice in both
+trees. That criterion was written on the assumption the merge could deduplicate; the merge is
+add-only and dedups at whole-matcher-object granularity, so no regeneration can ever remove it.
+This is carved out to the follow-ups, not counted against this phase.
+
+(The `~/.dotfiles` doc-lint run reports `agent-system/extensions does not exist` — expected, since
+that repo is a deploy consumer and not the source store. Not a failure.)
 
 **Independently re-verified (this session, not self-reported)**: the original blocker (a human
 performing the interactive `<leader>al` regeneration) has cleared — a "Sync all" regeneration ran
@@ -440,6 +461,37 @@ carries the finished edits)
 
 **Goal**: Confirm events actually FLOW (not merely that files exist). DOUBLY GATED — first on the
 manual regeneration (Phase 5), then on accumulated REAL USAGE OVER TIME.
+
+**UPDATE — post-deployment status: hooks proven functional, live flow not yet observed.**
+
+Gate 1 (deployment) is now satisfied — see Phase 5. Gate 2 (real usage) is NOT, for a specific
+and expected reason: hook registrations are read at session start, and `.claude/settings.json`
+was rewritten at `2026-07-27T10:46:01Z` while the newest event in `specs/events.jsonl` is
+`2026-07-27T10:18:47Z`. Zero events postdate the regeneration, because the session observing it
+had already loaded the pre-regeneration settings. **A new session is required.**
+
+To distinguish "not yet fired" from "wired wrong", both hooks were executed directly against a
+sandboxed deploy-shaped tree (never the real store, so no synthetic lines were written to
+`specs/events.jsonl`). All three target event types emit correctly, with `task` correlation and
+the `cwd` field populated:
+
+| Trigger | Precondition supplied | Event emitted |
+|---------|----------------------|---------------|
+| PostToolUse `Write\|Edit` on a `.return-meta.json` | synthetic return-meta | `artifact_write` |
+| SubagentStop (payload carries `agent_id`) | `.postflight-pending` marker under `specs/` | `subagent_stop` |
+| Stop (no `agent_id`) | task recoverable + `state.json` `session_id` | `session_stop` |
+
+Two correlation characteristics worth recording, both by design rather than defects:
+- The **artifact** hook is deliberately narrow — it early-exits unless the written path is a
+  task's `.return-meta.json` or `specs/errors.json`. It will not log ordinary file writes.
+- The **Stop** hook emits nothing when no task number can be recovered (from
+  `.claude/tmp/workflow-active` or a `[Tt]ask N` / `Task #N` match in `last_assistant_message`),
+  and nothing when that task has no `session_id` in `state.json`. Purely conversational sessions
+  therefore produce no `session_stop` event.
+
+**Remaining to close this phase**: start a new session, exercise a real
+`/research`/`/plan`/`/implement`, and confirm `artifact_write` / `subagent_stop` / `session_stop`
+lines with timestamps after `2026-07-27T10:46:01Z` appear in `specs/events.jsonl`.
 
 **Independently re-verified (this session, not self-reported)**, against `specs/events.jsonl`
 (181 lines, 60797 bytes as observed) and a live `check-extension-docs.sh` run:
