@@ -187,6 +187,9 @@ if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
     artifact_path=$(jq -r '.artifacts[0].path // ""' "$metadata_file")
     artifact_type=$(jq -r '.artifacts[0].type // ""' "$metadata_file")
     artifact_summary=$(jq -r '.artifacts[0].summary // ""' "$metadata_file")
+    # Schema: .claude/context/formats/return-metadata-file.md
+    completion_summary=$(jq -r '.completion_data.completion_summary // ""' "$metadata_file")
+    roadmap_items=$(jq -c '.completion_data.roadmap_items // []' "$metadata_file")
 else
     echo "Error: Invalid or missing metadata file"
     meta_status="failed"
@@ -205,6 +208,13 @@ Only this skill performs postflight status transitions.
 | completed | completed | [COMPLETED] |
 | partial | implementing | [IMPLEMENTING] |
 | failed | (keep preflight) | (keep preflight marker) |
+
+```bash
+if [ "$meta_status" = "implemented" ] || [ "$meta_status" = "completed" ]; then
+    source .claude/scripts/skill-base.sh
+    skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type"
+fi
+```
 
 ---
 

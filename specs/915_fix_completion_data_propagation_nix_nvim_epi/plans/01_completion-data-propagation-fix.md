@@ -222,37 +222,40 @@ this skill's own Trigger Conditions text before hardcoding `"neovim"`.
 
 ---
 
-### Phase 3: Propagate completion_data in the epidemiology implementer skill [NOT STARTED]
+### Phase 3: Propagate completion_data in the epidemiology implementer skill [COMPLETED]
 
 **Goal**: `skill-epi-implement` extends its existing metadata-read block to include
 `completion_data` and gains a Stage 7 call site for the shared writer, so epi-routed tasks land
 `completion_summary`/`roadmap_items` in `state.json`.
 
 **Tasks**:
-- [ ] Anchor inside the existing `### Stage 6: Read Metadata File` bash block, on the line
+- [x] Anchor inside the existing `### Stage 6: Read Metadata File` bash block, on the line
       `artifact_summary=$(jq -r '.artifacts[0].summary // ""' "$metadata_file")` and the `else`
       that follows it. Insert between them, at the same indentation as the surrounding
       assignments:
       `completion_summary=$(jq -r '.completion_data.completion_summary // ""' "$metadata_file")`
       and `roadmap_items=$(jq -c '.completion_data.roadmap_items // []' "$metadata_file")`.
-- [ ] Do not restructure the existing block, its `if`/`else` guard, or its `meta_status="failed"`
-      fallback.
-- [ ] Anchor on `### Stage 7: Update Task Status (Postflight)`. This stage is currently a
+      *(completed)*
+- [x] Do not restructure the existing block, its `if`/`else` guard, or its `meta_status="failed"`
+      fallback. *(completed)*
+- [x] Anchor on `### Stage 7: Update Task Status (Postflight)`. This stage is currently a
       markdown table with no bash. Keep the existing MUST NOT note and the table verbatim, and add
-      a bash block after the table.
-- [ ] The added block gates on `meta_status` and calls the shared writer with the in-scope
+      a bash block after the table. *(completed)*
+- [x] The added block gates on `meta_status` and calls the shared writer with the in-scope
       variable — this file binds `task_type` in Stage 1, so pass `"$task_type"` (no literal
       substitution here, unlike Phases 1-2):
       `source .claude/scripts/skill-base.sh` then
       `skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type"`.
-- [ ] **Gate on `implemented`, accepting `completed`.** The epi agent's final metadata emits
+      *(completed)*
+- [x] **Gate on `implemented`, accepting `completed`.** The epi agent's final metadata emits
       `"status": "implemented"`; this stage's existing table lists a `completed` row. Gating on
       `completed` alone would make the block unreachable. Do not edit the table to resolve the
-      mismatch — record it for Phase 4 instead.
-- [ ] Confirm the new block sits before Stage 8 (Link Artifacts) and does not disturb Stage 8's
-      artifact-linking or Stage 9's git staging logic.
-- [ ] Add the same single schema-pointer comment referencing
-      `context/formats/return-metadata-file.md`.
+      mismatch — record it for Phase 4 instead. *(completed: table left untouched, recorded as
+      observation for Phase 4)*
+- [x] Confirm the new block sits before Stage 8 (Link Artifacts) and does not disturb Stage 8's
+      artifact-linking or Stage 9's git staging logic. *(completed)*
+- [x] Add the same single schema-pointer comment referencing
+      `context/formats/return-metadata-file.md`. *(completed)*
 
 **Timing**: 0.5 hours
 

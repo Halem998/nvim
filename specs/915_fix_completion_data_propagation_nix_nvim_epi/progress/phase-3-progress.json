@@ -1,0 +1,32 @@
+{
+  "phase": 3,
+  "phase_name": "Propagate completion_data in the epidemiology implementer skill",
+  "started_at": "2026-07-27T00:20:00Z",
+  "last_updated": "2026-07-27T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Extend existing Stage 6 metadata-read block with completion_data fields",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md"]
+    },
+    {
+      "id": 2,
+      "description": "Add gated Stage 7 bash block calling skill_propagate_completion_summary with $task_type",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md"]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.5",
+      "description": "Stage 7 table row maps a 'completed' meta status; the epi agent emits 'implemented'",
+      "type": "skipped",
+      "reason": "Repairing the table alters status-mapping semantics beyond this fix's scope; recorded as an observation for Phase 4 / a follow-up instead",
+      "annotation": "*(deviation: skipped — table left as pre-existing latent mismatch, recorded as observation)*"
+    }
+  ]
+}
