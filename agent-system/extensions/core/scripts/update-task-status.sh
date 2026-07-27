@@ -509,8 +509,8 @@ update_plan_file() {
         fi
         if [[ -n "$plan_file" ]]; then
           local first_phase
-          first_phase=$(grep -m1 "^### Phase [0-9]*:.*\[NOT STARTED\]" "$plan_file" \
-            | sed 's/^### Phase \([0-9]*\):.*/\1/' || echo "")
+          first_phase=$(grep -m1 "^### Phase [0-9]*\(\.[0-9]*\)\{0,1\}:.*\[NOT STARTED\]" "$plan_file" \
+            | sed 's/^### Phase \([0-9]*\(\.[0-9]*\)\{0,1\}\):.*/\1/' || echo "")
           if [[ -n "$first_phase" ]]; then
             # Superseded by the base agent owning every per-phase transition directly; this
             # call is a redundant convenience, recoverable via the agent's own explicit calls.

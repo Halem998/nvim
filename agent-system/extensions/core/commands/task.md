@@ -608,7 +608,7 @@ fi
 ```bash
 # Parse phase headings with status markers
 # Format: ### Phase N: Name [STATUS]
-phases=$(grep -E "^### Phase [0-9]+:" "$plan_file" 2>/dev/null)
+phases=$(grep -E "^### Phase [0-9]+(\.[0-9]+)?:" "$plan_file" 2>/dev/null)
 
 # Build phase analysis:
 # - phase_number

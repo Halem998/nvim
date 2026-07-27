@@ -102,6 +102,35 @@ backstop (counts conforming headings across the whole plan to decide whether an 
 postflight transition may proceed). All three treat this heading — never the `- [ ]`/`- [x]`
 task checklist — as the authoritative phase-completion signal.
 
+### Canonical phase-heading shape
+
+The phase-number portion of `### Phase N: {name} [STATUS]` is `{N}`, an integer with **at most
+one optional decimal sub-level**: `3` or `3.1` are both valid; `3.1.2` is not. This is the one
+canonical shape every consumer below is written against — copy it verbatim rather than
+re-deriving a pattern at a new call site.
+
+**Letter-suffixed sub-phases (`3a`) are deliberately not supported by any consumer and must not
+be used.** This is a decision, not an unimplemented feature: no script or agent in this codebase
+recognizes a letter suffix on a phase number, and none is planned to. Decimal sub-phasing (`3.1`)
+is the only supported sub-phase form.
+
+**Canonical regex forms** (copy verbatim; do not re-derive):
+
+| Form | Pattern |
+|------|---------|
+| ERE (`grep -E`) heading match | `^### Phase [0-9]+(\.[0-9]+)?:` |
+| ERE phase-number extraction | `grep -oE '^### Phase [0-9]+(\.[0-9]+)?' \| grep -oE '[0-9]+(\.[0-9]+)?'` |
+| BRE (`grep`, no `-E`) heading match | `^### Phase [0-9][0-9]*\(\.[0-9][0-9]*\)\{0,1\}:` |
+
+**Consumer sites of this shape** (blast radius for any future change to it): `update-task-status.sh`'s
+`count_plan_phases()` (TOTAL/DONE phase-accounting regexes), `scripts/validate-artifact.sh`
+(phase-presence check, phase-line enumeration, and phase-number extraction for per-phase
+Verification Tier warnings), both implementation agents' Stage 5a marker-repair block
+(`general-implementation-agent.md`, `general-implementation-hard-agent.md`), `skill-implementer-hard`'s
+resume-point scan, and `skill-orchestrate`'s (and `skill-orchestrate-hard`'s) recovery-count grep.
+Reference sites by script/skill and function/stage name, never by line number — line numbers
+drift on every edit and are not a stable anchor.
+
 ## Dependency Analysis (format)
 
 Place a **Dependency Analysis** wave table immediately after `## Implementation Phases` and before the first `### Phase`. Columns: **Wave** (execution order), **Phases** (can run in parallel within wave), **Blocked by** (prerequisite phases, `--` for none). Generate from per-phase `Depends on` fields. For fully sequential plans, each wave contains one phase.

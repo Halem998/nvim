@@ -379,25 +379,25 @@ and a diff of the two extracted blocks; after editing, re-diff and assert they a
 
 ---
 
-### Phase 4: Reconcile the remaining phase-heading regex site and record the canonical form [NOT STARTED]
+### Phase 4: Reconcile the remaining phase-heading regex site and record the canonical form [COMPLETED]
 
 **Goal**: The last digits-only phase-heading site converges on the canonical form, and the canonical
 form plus the deliberate no-letter-suffix decision are written down once so future sites copy rather
 than re-invent.
 
 **Tasks**:
-- [ ] In `scripts/validate-artifact.sh`, bring the three phase-heading regexes to the canonical
+- [x] In `scripts/validate-artifact.sh`, bring the three phase-heading regexes to the canonical
       decimal-admitting form: the presence check (`grep -qE '^### Phase [0-9]+'`), the phase-line
       enumeration (`grep -n '^### Phase [0-9]\+'`, BRE), and the phase-number extraction
       (`grep -oE '^### Phase [0-9]+' | grep -oE '[0-9]+'`). Extraction must yield `3.1`, not `3`,
       so the per-phase Verification Tier warnings name the right phase.
-- [ ] In `context/formats/plan-format.md`'s Implementation Phases format, document the canonical
+- [x] In `context/formats/plan-format.md`'s Implementation Phases format, document the canonical
       phase-heading shape once: `### Phase {N}: {name} [STATUS]` where `{N}` is an integer with at
       most one optional decimal sub-level (`3`, `3.1`), and state explicitly that **letter-suffixed
       sub-phases (`3a`) are not supported by any consumer and must not be used** — this is a
       deliberate decision, not an unimplemented feature. Give the canonical ERE and BRE forms
       verbatim so a future site can copy them.
-- [ ] Note in the same place which sites are consumers of this shape (`update-task-status.sh`'s
+- [x] Note in the same place which sites are consumers of this shape (`update-task-status.sh`'s
       `count_plan_phases`, `validate-artifact.sh`, both implementation agents' Stage 5a,
       `skill-implementer-hard`'s resume scan, `skill-orchestrate`'s recovery grep) so a future
       change knows the blast radius. Reference them by script/skill and function/stage name — never

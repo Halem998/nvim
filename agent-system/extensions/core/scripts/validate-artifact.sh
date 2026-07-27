@@ -145,7 +145,7 @@ done
 # --- Plan-specific checks ---
 if [ "$artifact_type" = "plan" ]; then
   # Check for at least one Phase heading
-  if ! grep -qE '^### Phase [0-9]+' "$artifact_path"; then
+  if ! grep -qE '^### Phase [0-9]+(\.[0-9]+)?' "$artifact_path"; then
     log_error "Missing Phase headings (expected: ### Phase N: {name} [STATUS])"
   fi
 
@@ -160,13 +160,13 @@ if [ "$artifact_type" = "plan" ]; then
   # field. Until then, default mode stays advisory (exits 0 on tier warnings alone) so legacy
   # plans authored before this vocabulary existed keep passing; --strict enforces it today via
   # the existing total_issues=$((errors + warnings)) branch below.
-  mapfile -t phase_line_nums < <(grep -n '^### Phase [0-9]\+' "$artifact_path" | cut -d: -f1)
+  mapfile -t phase_line_nums < <(grep -n '^### Phase [0-9]\+\(\.[0-9]\+\)\?' "$artifact_path" | cut -d: -f1)
   if [ "${#phase_line_nums[@]}" -gt 0 ]; then
     total_lines=$(wc -l < "$artifact_path")
     for i in "${!phase_line_nums[@]}"; do
       start_line="${phase_line_nums[$i]}"
       phase_heading=$(sed -n "${start_line}p" "$artifact_path")
-      phase_num=$(echo "$phase_heading" | grep -oE '^### Phase [0-9]+' | grep -oE '[0-9]+' || true)
+      phase_num=$(echo "$phase_heading" | grep -oE '^### Phase [0-9]+(\.[0-9]+)?' | grep -oE '[0-9]+(\.[0-9]+)?' || true)
       if [ $((i + 1)) -lt "${#phase_line_nums[@]}" ]; then
         end_line=$(( phase_line_nums[$((i + 1))] - 1 ))
       else
