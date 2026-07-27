@@ -67,8 +67,36 @@ subagent or inline (Stage 4b). Do NOT skip these stages for any reason.
 ### Stage 5: Parse Subagent Return
 Read the metadata file from `specs/{N}_{SLUG}/.return-meta.json`.
 
+```bash
+padded_num=$(printf "%03d" "$task_number")
+project_name=$(jq -r --argjson num "$task_number" \
+  '.active_projects[] | select(.project_number == $num) | .project_name' specs/state.json)
+metadata_file="specs/${padded_num}_${project_name}/.return-meta.json"
+
+if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
+    status=$(jq -r '.status' "$metadata_file")
+    artifact_path=$(jq -r '.artifacts[0].path // ""' "$metadata_file")
+    artifact_type=$(jq -r '.artifacts[0].type // ""' "$metadata_file")
+    artifact_summary=$(jq -r '.artifacts[0].summary // ""' "$metadata_file")
+    # Schema: .claude/context/formats/return-metadata-file.md
+    completion_summary=$(jq -r '.completion_data.completion_summary // ""' "$metadata_file")
+    roadmap_items=$(jq -c '.completion_data.roadmap_items // []' "$metadata_file")
+else
+    echo "Error: Invalid or missing metadata file"
+    status="failed"
+fi
+```
+
 ### Stage 6: Update Task Status (Postflight)
 Update state.json and TODO.md based on result.
+
+```bash
+if [ "$status" = "implemented" ] || [ "$status" = "completed" ]; then
+    source .claude/scripts/skill-base.sh
+    # Literal "neovim" (deliberate): matches this skill's Trigger Conditions task_type string.
+    skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "neovim"
+fi
+```
 
 ### Stage 7: Link Artifacts
 Add artifact to state.json with summary. Update TODO.md per `@.claude/context/patterns/artifact-linking-todo.md` with `field_name=**Summary**`, `next_field=**Description**`.

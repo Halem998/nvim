@@ -166,32 +166,34 @@ it to the shared writer, so nix-routed tasks land `completion_summary`/`roadmap_
 
 ---
 
-### Phase 2: Propagate completion_data in the neovim implementer skill [NOT STARTED]
+### Phase 2: Propagate completion_data in the neovim implementer skill [COMPLETED]
 
 **Goal**: `skill-neovim-implementation` reads `completion_data` out of `.return-meta.json` and
 hands it to the shared writer, so neovim-routed tasks land
 `completion_summary`/`roadmap_items` in `state.json`.
 
 **Tasks**:
-- [ ] Apply the identical change described in Phase 1 to this file. The audit found the two files
+- [x] Apply the identical change described in Phase 1 to this file. The audit found the two files
       share the same postflight shape (Stage 5 and Stage 6 are the same two prose lines, no bash
       anywhere), so the same insertion applies — but re-read the anchors in this file rather than
-      assuming byte-identity, and adapt if the surrounding text differs.
-- [ ] Anchor on `### Stage 5: Parse Subagent Return` and its existing prose line; keep it verbatim
+      assuming byte-identity, and adapt if the surrounding text differs. *(completed: anchors
+      verified byte-identical to Phase 1's before applying)*
+- [x] Anchor on `### Stage 5: Parse Subagent Return` and its existing prose line; keep it verbatim
       and add the self-contained metadata-read bash block after it (binding `padded_num` /
       `project_name` / `metadata_file`, reading `status`, the three artifact fields, and the two
-      `completion_data` fields).
-- [ ] Anchor on `### Stage 6: Update Task Status (Postflight)` and its existing prose line; keep
+      `completion_data` fields). *(completed)*
+- [x] Anchor on `### Stage 6: Update Task Status (Postflight)` and its existing prose line; keep
       it verbatim and append the gated `source .claude/scripts/skill-base.sh` +
       `skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "neovim"`
-      block.
-- [ ] Use the literal `"neovim"` (not `"nvim"`) as the fourth argument — match this skill's
+      block. *(completed)*
+- [x] Use the literal `"neovim"` (not `"nvim"`) as the fourth argument — match this skill's
       declared task_type string in its Trigger Conditions section; verify that string before
-      writing it rather than assuming.
-- [ ] Gate on `implemented` (accepting `completed`), matching the value the neovim agent's final
-      metadata actually emits.
-- [ ] Add the same single schema-pointer comment referencing
-      `context/formats/return-metadata-file.md`; do not restate the schema.
+      writing it rather than assuming. *(completed: confirmed literal `"neovim"` in Trigger
+      Conditions and Stage 3 delegation JSON before writing)*
+- [x] Gate on `implemented` (accepting `completed`), matching the value the neovim agent's final
+      metadata actually emits. *(completed)*
+- [x] Add the same single schema-pointer comment referencing
+      `context/formats/return-metadata-file.md`; do not restate the schema. *(completed)*
 
 **Timing**: 0.35 hours
 

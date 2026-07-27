@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Propagate completion_data in the neovim implementer skill",
+  "started_at": "2026-07-27T00:10:00Z",
+  "last_updated": "2026-07-27T00:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Insert self-contained Stage 5 metadata-read block into skill-neovim-implementation/SKILL.md",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/nvim/skills/skill-neovim-implementation/SKILL.md"]
+    },
+    {
+      "id": 2,
+      "description": "Insert gated Stage 6 call to skill_propagate_completion_summary with literal task_type \"neovim\"",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/nvim/skills/skill-neovim-implementation/SKILL.md"]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
