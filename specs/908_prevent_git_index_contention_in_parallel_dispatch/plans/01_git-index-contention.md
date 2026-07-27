@@ -296,7 +296,7 @@ into a durable artifact.
 
 ---
 
-### Phase 3: Ship `git-commit-scoped.sh` and register it [NOT STARTED]
+### Phase 3: Ship `git-commit-scoped.sh` and register it [COMPLETED]
 
 **Goal**: One executable definition of the scoped-commit contract.
 

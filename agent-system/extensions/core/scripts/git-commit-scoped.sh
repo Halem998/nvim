@@ -1,0 +1,264 @@
+#!/usr/bin/env bash
+# git-commit-scoped.sh — the single sanctioned implementation of the scoped-commit contract.
+#
+# Every commit site in the dispatch pipeline previously staged narrowly (targeted `git add`) but
+# then committed with a BARE `git commit`, which commits the ENTIRE shared index rather than just
+# the paths staged — so a concurrently-dispatched agent's staged-but-uncommitted work got swept
+# into whichever agent committed next. This script closes that defect for every caller, and
+# additionally serializes the git add + git commit pair through the specs/.commit-lock/ mutex (see
+# scripts/task-lock.sh's commit-acquire/commit-release verbs and
+# context/patterns/task-lock.md's Scope-Mutex CLI section) so path-scoping alone does not simply
+# convert misattribution into an `index.lock` commit-failure race under true concurrency.
+#
+# Usage:
+#   git-commit-scoped.sh --message <msg> --session <session_id> \
+#       [--honest-index-rows <task_number>] -- <pathspec>...
+#
+# <msg> is the commit body WITHOUT the trailing "Session: ..." line — this script appends
+# "\n\nSession: <session_id>\n" itself, so every call site gets an identical session-line
+# convention without repeating it.
+#
+# <pathspec>... is one or more git pathspecs, exactly as would be passed to `git add`/`git commit
+# --`. At least one POSITIVE (non-`:(exclude)...`) entry is required — see the V3 safety gate
+# below. When any positive entry looks like a task directory (`specs/{NNN}_{slug}/`), the
+# canonical ephemeral-runtime-file exclusion set from context/standards/git-staging-scope.md is
+# injected automatically for that directory, so callers no longer need to spell out (or risk
+# forgetting) `ephemeral_excludes` by hand.
+#
+# --honest-index-rows <task_number>: when given, runs the same staged-vs-HEAD
+# `specs/state.json` comparison `orchestrator-postflight.sh`'s Stage 9b previously ran inline,
+# appending "Also carries current index rows for tasks: N, M" to the commit message when the
+# staged state.json also carries OTHER tasks' current rows. Entirely failure-tolerant: any error
+# (missing HEAD ref on a first commit, unparseable JSON, no staged state.json) omits the addendum
+# and falls through to the plain message — this must never break a commit.
+#
+# Exit codes:
+#   0 - commit created
+#   1 - "nothing to commit" (identical to a bare `git commit`'s own exit code — V4) or the git
+#       commit itself failed after the bounded index.lock retry; non-blocking, matches every call
+#       site's existing `|| echo "Note: Nothing to commit..."` fallback
+#   2 - usage error, the V3 degenerate-pathspec refusal (exclude-only list; refused before any
+#       git add/commit), or `git add` failed for one or more staged paths
+#
+# Safety gates (empirically discovered; see specs/908_.../reports/02_commit-site-inventory.md):
+#   V2 - an unmatched path in the commit pathspec aborts the WHOLE commit in bare git. This
+#        script instead validates each positive pathspec and DROPS unmatched entries with a loud
+#        warning, never passing them through to git add/git commit.
+#   V3 - an exclude-only pathspec list commits EVERYTHING except the excluded paths — wider than
+#        a bare commit, not narrower. This script refuses outright (no git add, no commit) if the
+#        pathspec list contains zero positive entries, both before and after V2 filtering (since
+#        filtering itself can produce a degenerate list).
+
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+. "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
+
+usage() {
+  echo "Usage: $0 --message <msg> --session <session_id> [--honest-index-rows <task_number>] -- <pathspec>..." >&2
+  exit 2
+}
+
+message=""
+session_id=""
+honest_task_number=""
+pathspecs=()
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --message)
+      [ "$#" -ge 2 ] || usage
+      message="$2"
+      shift 2
+      ;;
+    --session)
+      [ "$#" -ge 2 ] || usage
+      session_id="$2"
+      shift 2
+      ;;
+    --honest-index-rows)
+      [ "$#" -ge 2 ] || usage
+      honest_task_number="$2"
+      shift 2
+      ;;
+    --)
+      shift
+      pathspecs=("$@")
+      break
+      ;;
+    *)
+      usage
+      ;;
+  esac
+done
+
+[ -n "$message" ] || usage
+[ -n "$session_id" ] || usage
+[ "${#pathspecs[@]}" -gt 0 ] || usage
+
+cd "$PROJECT_ROOT" || exit 2
+
+# --- has_positive_pathspec: true if the given array has at least one non-exclude entry ---
+has_positive_pathspec() {
+  local p
+  for p in "$@"; do
+    case "$p" in
+      :\(exclude\)*) ;;
+      *) return 0 ;;
+    esac
+  done
+  return 1
+}
+
+# --- V3 safety gate (pre-filter): refuse a degenerate, exclude-only caller-supplied list ---
+if ! has_positive_pathspec "${pathspecs[@]}"; then
+  echo "ERROR: git-commit-scoped.sh refuses to commit — the pathspec list contains zero positive (non-exclude) entries. An exclude-only pathspec list commits EVERYTHING except the excluded paths, which is WIDER than a bare commit, not narrower (Verified Finding V3). No git add or git commit was attempted." >&2
+  exit 2
+fi
+
+# --- Inject the canonical ephemeral-runtime-file exclusion set for any task-directory entry ---
+# Mirrors context/standards/git-staging-scope.md's ephemeral_excludes array exactly. Applied here
+# (rather than left to each caller) so every call site is protected uniformly, closing the
+# staleness gap where the exclusion set had drifted out of sync at nine of eleven commit sites.
+expanded_pathspecs=()
+for p in "${pathspecs[@]}"; do
+  expanded_pathspecs+=("$p")
+  case "$p" in
+    specs/[0-9][0-9][0-9]_*/)
+      task_dir="${p%/}"
+      expanded_pathspecs+=(
+        ":(exclude)${task_dir}/.orchestrator-loop-guard"
+        ":(exclude)${task_dir}/.orchestrator-churn-state.json"
+        ":(exclude)${task_dir}/.drift-inspection.json"
+        ":(exclude)${task_dir}/.lock/"
+      )
+      ;;
+  esac
+done
+pathspecs=("${expanded_pathspecs[@]}")
+
+# --- V2 safety gate: validate each positive pathspec, drop unmatched entries with a warning ---
+# Exclude pathspecs pass through unvalidated (git itself never resolves them against the working
+# tree the way it does a positive entry, and validating them would require reimplementing git's
+# own pathspec-exclusion matching).
+filtered_pathspecs=()
+for p in "${pathspecs[@]}"; do
+  case "$p" in
+    :\(exclude\)*)
+      filtered_pathspecs+=("$p")
+      ;;
+    *)
+      if [ -e "$p" ] || git ls-files --error-unmatch -- "$p" >/dev/null 2>&1; then
+        filtered_pathspecs+=("$p")
+      else
+        echo "WARN: git-commit-scoped.sh dropping unmatched pathspec '${p}' (no such file/directory on disk and not tracked by git); this path will NOT be part of the commit." >&2
+      fi
+      ;;
+  esac
+done
+
+# --- V3 safety gate (post-filter): filtering itself can produce a degenerate list ---
+if ! has_positive_pathspec "${filtered_pathspecs[@]}"; then
+  echo "ERROR: git-commit-scoped.sh refuses to commit — after dropping unmatched paths, zero positive pathspec entries remain (would degenerate into an exclude-only commit, Verified Finding V3). No git add or git commit was attempted." >&2
+  exit 2
+fi
+
+pathspecs=("${filtered_pathspecs[@]}")
+
+# --- specs/.commit-lock/ mutex: fail-open with a loud warning, mirroring update-task-status.sh's
+# acquire_state_mutex pattern for specs/.scope-lock exactly (a distinct mutex, distinct
+# reentrancy flag — see task-lock.sh's top-of-file comment for why the two must never share a
+# flag). Released via an EXIT trap so no code path below can leak the mutex. ---
+COMMIT_MUTEX_TOKEN=""
+COMMIT_MUTEX_OWNED_HERE="false"
+
+release_commit_mutex_guarded() {
+  if [ "$COMMIT_MUTEX_OWNED_HERE" = "true" ]; then
+    bash "$SCRIPT_DIR/task-lock.sh" commit-release "$COMMIT_MUTEX_TOKEN" >&2 || true
+    COMMIT_MUTEX_OWNED_HERE="false"
+    unset COMMIT_MUTEX_HELD
+  fi
+}
+trap release_commit_mutex_guarded EXIT
+
+if [ -n "${COMMIT_MUTEX_HELD:-}" ]; then
+  echo "Note: an outer holder already owns the specs/.commit-lock mutex (COMMIT_MUTEX_HELD=1 inherited); running as guest, no nested acquire." >&2
+else
+  commit_token=""
+  if commit_token=$(bash "$SCRIPT_DIR/task-lock.sh" commit-acquire "$session_id"); then
+    COMMIT_MUTEX_TOKEN="$commit_token"
+    COMMIT_MUTEX_OWNED_HERE="true"
+    export COMMIT_MUTEX_HELD=1
+  else
+    echo "WARNING: failed to acquire specs/.commit-lock mutex (session=${session_id}); proceeding unserialized (non-blocking, fail-open). Worst case is the safe index.lock race, not commit misattribution, since this commit is still path-scoped." >&2
+  fi
+fi
+
+# --- git add (guarded; a failure here aborts before any commit is attempted) ---
+if ! git add "${pathspecs[@]}"; then
+  echo "WARNING: git add failed for one or more staged paths (non-blocking); no commit was attempted." >&2
+  exit 2
+fi
+
+# --- Optional honest-index-rows addendum (moved verbatim from
+# orchestrator-postflight.sh's former Stage 9b inline scan) ---
+final_message="$message"
+if [ -n "$honest_task_number" ]; then
+  also_carries=$(python3 -c "
+import json, subprocess, sys
+
+def load_ref(ref):
+    try:
+        out = subprocess.run(['git', 'show', ref], capture_output=True, text=True, check=True).stdout
+        return json.loads(out)
+    except Exception:
+        return None
+
+head = load_ref('HEAD:specs/state.json')
+staged = load_ref(':specs/state.json')
+if head is None or staged is None:
+    sys.exit(0)
+
+head_map = {p.get('project_number'): p for p in head.get('active_projects', []) if 'project_number' in p}
+staged_map = {p.get('project_number'): p for p in staged.get('active_projects', []) if 'project_number' in p}
+
+changed = sorted(
+    num for num, entry in staged_map.items()
+    if num != ${honest_task_number} and head_map.get(num) != entry
+)
+print(', '.join(str(n) for n in changed))
+" 2>/dev/null) || also_carries=""
+
+  if [ -n "$also_carries" ]; then
+    final_message="${message}
+
+Also carries current index rows for tasks: ${also_carries}"
+  fi
+fi
+
+full_message="${final_message}
+
+Session: ${session_id}
+"
+
+# --- git commit, with one bounded retry (short randomized backoff) specifically for an
+# index.lock failure — the residual race that remains when the mutex fails open above. ---
+commit_output=$(git commit -m "$full_message" -- "${pathspecs[@]}" 2>&1)
+commit_exit=$?
+
+if [ "$commit_exit" -ne 0 ] && echo "$commit_output" | grep -qi 'index\.lock'; then
+  echo "$commit_output" >&2
+  echo "NOTE: git commit hit index.lock contention; retrying once after a short backoff." >&2
+  sleep "0.$(( (RANDOM % 5) + 1 ))"
+  commit_output=$(git commit -m "$full_message" -- "${pathspecs[@]}" 2>&1)
+  commit_exit=$?
+fi
+
+echo "$commit_output"
+
+if [ "$commit_exit" -ne 0 ]; then
+  echo "NOTE: Nothing to commit or git commit failed (non-blocking)" >&2
+fi
+
+exit "$commit_exit"

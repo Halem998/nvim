@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "Ship git-commit-scoped.sh and register it",
+  "started_at": "2026-07-27T10:10:00Z",
+  "last_updated": "2026-07-27T10:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create git-commit-scoped.sh with the declared interface", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 2, "description": "V3 safety gate: refuse exclude-only pathspec lists", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 3, "description": "V2 pathspec filtering with loud-warning drop", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 4, "description": "commit-acquire fail-open mutex mirroring acquire_state_mutex, EXIT trap release", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 5, "description": "git add + honest-index-rows scan + git commit inside mutex", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 6, "description": "Move Stage 9b honest-commit-message python scan into helper verbatim", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 7, "description": "Apply canonical ephemeral exclusion set automatically for task-dir pathspecs", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 8, "description": "Preserve non-blocking nothing-to-commit exit 1 semantics", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 9, "description": "Bounded single retry on index.lock-specific commit failure", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 10, "description": "Register in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 10,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification": "bash -n passed, executable bit set. Functional tests in a disposable deployed-shaped scratch repo confirmed: normal scoped commit (only named paths, auto-injected excludes worked), exclude-only refusal (exit 2, no commit), nonexistent-path drop with warning (commit still succeeded for valid paths), mutex-pre-held fail-open (waited ~15-18s, warned, still committed path-scoped), honest-index-rows addendum rendered correctly, nothing-to-commit parity (exit 1, matching bare git commit), and no mutex directory leaked after the run. manifest.json provides.scripts includes git-commit-scoped.sh (jq-verified)."
+}
