@@ -21,7 +21,7 @@ next_project_number: 932
 
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
   └─ 926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-    └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
+    └─ 887 [RESEARCHED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
     └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
   └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co (see above)
@@ -1482,7 +1482,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 887. Research: telemetry source architecture and /distill redesign
-- **Status**: [BLOCKED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 873, Task 885, Task 926
