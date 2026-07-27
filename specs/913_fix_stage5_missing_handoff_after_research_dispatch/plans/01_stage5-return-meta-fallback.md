@@ -236,27 +236,27 @@ recovered values.
 
 ---
 
-### Phase 3: Hard-mode Stage 5 recovery branch [NOT STARTED]
+### Phase 3: Hard-mode Stage 5 recovery branch [COMPLETED]
 
 **Goal**: `skill-orchestrate-hard` Stage 5 gets the identical recovery branch, preserving every
 hard-mode-specific difference around it.
 
 **Tasks**:
 
-- [ ] Apply the Phase 2 change to `skills/skill-orchestrate-hard/SKILL.md` Stage 5, with the
+- [x] Apply the Phase 2 change to `skills/skill-orchestrate-hard/SKILL.md` Stage 5, with the
       `[hard-orchestrate]` log prefix throughout
-- [ ] Preserve the hard-mode-only reads and logs on the handoff-present path unchanged: `skeleton`,
+- [x] Preserve the hard-mode-only reads and logs on the handoff-present path unchanged: `skeleton`,
       `sorry_inventory`, the follow-up-task log line, and the hard-mode comment block on the
       `implemented` gate
-- [ ] On a recovered outcome, set `skeleton=false` and `sorry_inventory=[]` explicitly, and note in
+- [x] On a recovered outcome, set `skeleton=false` and `sorry_inventory=[]` explicitly, and note in
       a comment that `.return-meta.json` carries no hard-mode wrap-up fields — so hard-mode logging
       degrades visibly rather than reading uninitialized values from a previous cycle
-- [ ] Keep the hard-mode `else` arm of the `implemented` gate (the `skeleton=... at refusal` log)
+- [x] Keep the hard-mode `else` arm of the `implemented` gate (the `skeleton=... at refusal` log)
       working for both the handoff-present and recovered paths
-- [ ] Do NOT touch the H4 adversarial-verification re-dispatch, the H5 divergence audit, or the
+- [x] Do NOT touch the H4 adversarial-verification re-dispatch, the H5 divergence audit, or the
       Stage 6 blocker-research dispatch — they already pass `orchestrator_mode: false`, omit the
       anchor, and skip this stage. Confirm all three still do after the edit
-- [ ] Preserve the `<!-- BEGIN 772 Item 5B ... -->` / `<!-- END ... -->` comment markers around the
+- [x] Preserve the `<!-- BEGIN 772 Item 5B ... -->` / `<!-- END ... -->` comment markers around the
       stage
 
 **Timing**: 1.25 hours
