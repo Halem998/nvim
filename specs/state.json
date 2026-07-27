@@ -1605,7 +1605,7 @@
     {
       "project_number": 932,
       "project_name": "commit_per_wave_and_stage_source_files_in_mt_batch",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Commit per wave and stage source files in the multi-task /orchestrate batch commit",
@@ -1619,9 +1619,26 @@
       ],
       "dependencies": [],
       "created": "2026-07-27T20:34:52Z",
-      "last_updated": "2026-07-27T20:34:52Z",
-      "session_id": "sess_1785183950_f1bacb",
-      "artifacts": []
+      "last_updated": "2026-07-27T21:08:38Z",
+      "session_id": "sess_1785184824_429d4d",
+      "artifacts": [
+        {
+          "path": "specs/932_commit_per_wave_and_stage_source_files_in_mt_batch/reports/01_stage-source-files-per-task-commits.md",
+          "type": "report",
+          "summary": "Staging defect confirmed; per-task commit granularity recommended"
+        },
+        {
+          "path": "specs/932_commit_per_wave_and_stage_source_files_in_mt_batch/plans/01_per-task-commit-stage-source-files.md",
+          "type": "plan",
+          "summary": "Per-task commit relocation into Stage MT-4 postflight"
+        },
+        {
+          "path": "specs/932_commit_per_wave_and_stage_source_files_in_mt_batch/summaries/01_per-task-commit-stage-source-files-summary.md",
+          "type": "summary",
+          "summary": "Per-task MT commits staging modified_files"
+        }
+      ],
+      "completion_summary": "Relocated the multi-task /orchestrate batch commit into skill-orchestrate's per-task postflight loop (one scoped, --honest-index-rows commit per task per phase transition), retired the combined end-of-batch commit and hazard 2 in batch-orchestration-guardrails.md, and proved the fix with an executable two-task git harness asserting on real commit contents (isolation both directions, ephemeral-file exclusion under a dirty tracked guard, honest-index-rows addendum firing, and the fail-safe absent-modified_files path)."
     },
     {
       "project_number": 933,

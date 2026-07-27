@@ -1,7 +1,7 @@
 # Implementation Plan: Task #932
 
 - **Task**: 932 - Commit per wave and stage source files in the multi-task /orchestrate batch commit
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: None (foundational in the 932-935 chain; lands before 933-935)
 - **Research Inputs**: `specs/932_commit_per_wave_and_stage_source_files_in_mt_batch/reports/01_stage-source-files-per-task-commits.md`

@@ -11,10 +11,9 @@ next_project_number: 936
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 885,920,932 | -- | agent-system |
-| 2 | 926,933 | 885,932 | agent-system |
-| 3 | 887,931,934 | 920,926,933 | agent-system |
-| 4 | 935 | 934 | agent-system |
+| 1 | 885,920,933 | -- | agent-system |
+| 2 | 926,934 | 885,933 | agent-system |
+| 3 | 887,931,935 | 920,926,934 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -26,10 +25,9 @@ next_project_number: 936
     └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
   └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co (see above)
-932 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-  └─ 933 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-    └─ 934 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-      └─ 935 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+933 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+  └─ 934 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+    └─ 935 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ## Tasks
 
@@ -143,10 +141,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 932. Commit per wave and stage source files in the multi-task /orchestrate batch commit
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [932_commit_per_wave_and_stage_source_files_in_mt_batch/reports/01_stage-source-files-per-task-commits.md]
+- **Plan**: [932_commit_per_wave_and_stage_source_files_in_mt_batch/plans/01_per-task-commit-stage-source-files.md]
+- **Summary**: [932_commit_per_wave_and_stage_source_files_in_mt_batch/summaries/01_per-task-commit-stage-source-files-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
