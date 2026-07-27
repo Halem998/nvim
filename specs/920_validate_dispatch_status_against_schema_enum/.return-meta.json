@@ -1,0 +1,41 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/920_validate_dispatch_status_against_schema_enum/reports/01_validate-dispatch-status-schema-enum.md",
+      "summary": "Verifies the unvalidated dispatch_status read and *) benign no-op at all three sites, confirms the handoff and return-meta enums are identical, cites two precedents for citing a normative table without restating it as an import, and flags skill_postflight_update as a necessary fourth site for genuine partial/blocked state transitions."
+    }
+  ],
+  "next_steps": "Run /plan 920 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1785194731_99e97e",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 6
+  },
+  "memory_candidates": [
+    {
+      "content": "In this agent system, a markdown SKILL.md cannot mechanically import an enum from another markdown file's table. The established idiom for keeping a restated literal enum in sync with a normative source (e.g. context/formats/return-metadata-file.md's status table) is to restate the literal values inline but add an explicit comment naming the source file by path and saying 'keep this list and that table in sync rather than letting them drift independently' (see scripts/command-gate-out.sh and docs/architecture/handoff-schema.md for live examples). This is the pattern to follow rather than attempting a parser-based import.",
+      "category": "PATTERN",
+      "source_artifact": "specs/920_validate_dispatch_status_against_schema_enum/reports/01_validate-dispatch-status-schema-enum.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["normative-table", "enum-sync", "skill-md", "cross-reference", "drift-prevention"]
+    },
+    {
+      "content": "skill_postflight_update (scripts/skill-base.sh) gates on its 4th arg ($status) against researched|planned|implemented only, and always forwards its 2nd arg ($operation, i.e. research/plan/implement) as target_status to update-task-status.sh. It cannot currently drive a state.json transition to partial or blocked even though update-task-status.sh already supports postflight:partial and postflight:blocked (used successfully today by reconcile-task-status.sh's stranded-task self-heal). Any future work making dispatch_status=partial/blocked produce a real state transition must extend skill_postflight_update itself, not just the SKILL.md call sites.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/920_validate_dispatch_status_against_schema_enum/reports/01_validate-dispatch-status-schema-enum.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["skill_postflight_update", "postflight", "partial", "blocked", "state-transition"]
+    },
+    {
+      "content": "The orchestrator handoff schema's artifacts[0].type field (report|plan|summary) reliably identifies which lifecycle phase produced an artifact, but 'summary' is emitted for BOTH implemented and partial implementation outcomes (per return-metadata-file.md's own worked examples). Do not use artifact type to infer success vs partial outcome — only to infer which phase (research/plan/implement) an artifact belongs to.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/920_validate_dispatch_status_against_schema_enum/reports/01_validate-dispatch-status-schema-enum.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["artifact-type", "handoff-schema", "phase-inference", "partial-vs-implemented"]
+    }
+  ]
+}

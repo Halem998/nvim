@@ -1,0 +1,16 @@
+{
+  "phase": "research",
+  "status": "researched",
+  "summary": "Verified all three defect sites (skill-orchestrate Stage 5, skill-orchestrate-hard mirrored Stage 5, skill-orchestrate multi-task Stage MT-4 step 3) quote-for-quote as described. Confirmed the handoff enum and .return-meta.json enum are identical (six values), resolving the vocabulary-divergence question. Found two existing precedents for citing the normative table via a sync comment rather than a mechanical import. Flagged skill_postflight_update in scripts/skill-base.sh as a necessary fourth site to give partial/blocked genuine state.json transitions, and clarified artifacts[0].type is safe only for phase inference, not success inference.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/920_validate_dispatch_status_against_schema_enum/reports/01_validate-dispatch-status-schema-enum.md"
+    }
+  ],
+  "blockers": [],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "plan_markers_verified": "absent",
+  "next_action_hint": "Run /plan 920 to create the implementation plan. The plan should decide whether scripts/skill-base.sh's skill_postflight_update is in scope (needed for partial/blocked to produce a real state.json transition) and how dispatch_status=failed should be handled given update-task-status.sh has no postflight:failed mapping today."
+}
