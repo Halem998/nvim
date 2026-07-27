@@ -1,7 +1,83 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "session_id": "sess_1785173027_25410e",
-  "task_number": 923
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/scripts/task-lock.sh",
+      "summary": "New reap [--dry-run] subcommand and TASK_LOCK_REAP_MIN constant"
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/scripts/test-task-lock-reap.sh",
+      "summary": "Isolated-temp-root test suite with 6 PASS/FAIL cases proving the reap contract"
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/manifest.json",
+      "summary": "Registered test-task-lock-reap.sh in provides.scripts"
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
+      "summary": "New Step 4 (Reap Stale Task Locks) calling task-lock.sh reap; steps 5-7 renumbered"
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/commands/refresh.md",
+      "summary": "New Stale Task Locks subsection documenting reap and the not-hourly-timer scoping"
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/context/patterns/task-lock.md",
+      "summary": "New Reap Contract section: threshold derivation, two-band staleness model, archive-depth rationale, and the CONSTRAINT 2 correction"
+    },
+    {
+      "type": "summary",
+      "path": "specs/923_reap_stale_task_locks/summaries/01_reap-stale-task-locks-summary.md",
+      "summary": "Implementation summary with full verification transcript"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added an explicit-invocation-only reap subcommand to task-lock.sh (deriving its 120-minute default threshold as 4x TASK_LOCK_STALE_MIN), wired it into /refresh, proved the contract with a 6-case isolated-temp-root fixture including a manually-verified negative teeth-check, and documented the full threshold derivation and the correction to the task's own originating premise in task-lock.md."
+  },
+  "memory_candidates": [
+    {
+      "content": "For unattended cleanup of a resource whose staleness already gates a live, single-actor decision (e.g. a lock's override-eligible threshold), use a SEPARATE, larger threshold for the unattended/destructive operation rather than reusing the live-decision threshold. The live threshold answers 'should this one waiter be allowed to proceed now'; the unattended threshold answers 'should any process conclude this is permanently dead'. Deriving the unattended threshold proportionally from the live one (e.g. 4x) keeps them coupled if the base is tuned, without conflating the two questions.",
+      "category": "PATTERN",
+      "source_artifact": "specs/923_reap_stale_task_locks/summaries/01_reap-stale-task-locks-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["staleness-threshold", "cleanup", "reap", "override-vs-reap", "two-band"]
+    },
+    {
+      "content": "To test a script protected by deploy-root-guard.sh (requires its own directory's parent to be named .claude or .opencode) in an isolated temp root without adding any testability hook to production code: build $TMPROOT/.claude/scripts/ and copy the real script plus deploy-root-guard.sh into it by relative sibling path from the test script's own location. The copied script resolves PROJECT_ROOT fresh from its new location and passes the guard naturally; the test script itself never sources the guard or computes a PROJECT_ROOT of its own, so it needs no environment-variable override to be testable.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/923_reap_stale_task_locks/summaries/01_reap-stale-task-locks-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-root-guard", "test-fixture", "isolated-temp-root", "testability", "shell-testing"]
+    },
+    {
+      "content": "When a cleanup sweep's per-item output includes both 'removed' and 'skipped, still present' lines, keep the fully-routine case (valid, well within threshold) completely silent rather than emitting a line for it. Reserve explicit output for anything actionable: removed, would-be-removed, or skipped-with-a-reason (e.g. a corrupt state file that isn't yet stale by a fallback signal). This keeps a script runnable at any frequency without the output volume scaling with the number of healthy resources.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/923_reap_stale_task_locks/summaries/01_reap-stale-task-locks-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["cleanup-reporting", "signal-vs-noise", "cli-output", "sweep"]
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/scripts/task-lock.sh",
+    "agent-system/extensions/core/scripts/test-task-lock-reap.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
+    "agent-system/extensions/core/commands/refresh.md",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "specs/923_reap_stale_task_locks/summaries/01_reap-stale-task-locks-summary.md"
+  ],
+  "next_steps": "None -- all 4 phases COMPLETED, all verification criteria passed.",
+  "metadata": {
+    "session_id": "sess_1785173027_25410e",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
 }
