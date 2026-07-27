@@ -367,13 +367,9 @@ After Agent tool returns: read handoff. Increment cycle_count.
 #### State: `partial`
 
 **Cross-reference**: the identical triage rule applied by hand below is also available as an
-executable check, `scripts/orchestrate-triage-classify.sh single`. Its `single`-engine
-`partial`-with-neither outcome (`exit_partial`, matching the "Sub-state: no handoff, no blockers"
-branch below) is **intentionally different** from the `mt`-engine outcome for the identical
-condition (which dispatches to implement) — the two engines diverge by design because
-single-task and multi-task invocations select their dispatch engine differently; see the plan
-decision resolving that divergence (Decision D1 in this task's originating plan) for the full
-justification.
+executable check, `scripts/orchestrate-triage-classify.sh single`. That script is the executable
+form of this same rule, and both engines now agree on every row here except `blocked` (see the
+justification in the "State: `blocked`" handler below).
 
 Read `.orchestrator-handoff.json` to determine sub-state:
 
@@ -424,13 +420,66 @@ charged.
 
 Invoke blocker escalation (Stage 6). Increment cycle_count after escalation.
 
-**Sub-state: no handoff, no blockers** (cycle limit or stuck):
+**Sub-state: no handoff, no blockers**:
 
+A base-mode dispatch never writes `.orchestrator-handoff.json` (see docs/architecture/handoff-schema.md's
+Handoff Writers table), so this is the normal shape a base-mode `[PARTIAL]` task takes, not a
+dead end. Both engines route this sub-state to `implement` — see
+`scripts/orchestrate-triage-classify.sh`'s header table. Probe the prior dispatch's outcome for
+resume context before opening this cycle's dispatch window:
+
+```bash
+# Resume context for a base-mode partial: no handoff exists (base-mode dispatches never
+# write one), so read the PRIOR dispatch's .return-meta.json instead. The staleness gate is
+# intentionally disabled (window 0) — Stage 4 runs BEFORE this cycle's dispatch, so there is
+# no current-cycle window yet, and the leftover prior-cycle state is exactly what we want
+# regardless of age. This is deliberately NOT named dispatch_start_ts, which means "the
+# current dispatch's window start" everywhere else in this file.
+prior_meta_probe_window=0
+resume_probe=$(bash .claude/scripts/orchestrate-recover-outcome.sh "$TASK_DIR" "$prior_meta_probe_window" || true)
 ```
-echo "[orchestrate] Task $task_number in partial state with no continuation and no blockers."
-echo "Cycle $cycle_count/$MAX_CYCLES consumed. Run /orchestrate $task_number to retry or /implement $task_number for manual resume."
-EXIT (partial, cycle_count)
+
+`recovered=false` (exit 1) is the EXPECTED and non-fatal outcome here — the prior dispatch's own
+status was `partial`/`in_progress` (that is why the task is in this state at all), and
+`orchestrate-recover-outcome.sh` only reports `recovered=true` for `researched`/`planned`/
+`implemented`. The probe supplies resume *context* (`.status`, `.artifact_path`,
+`.phases_completed`, `.phases_total`), never a success claim, and it must NEVER gate the dispatch
+— proceed to dispatch regardless of `recovered`.
+
+```bash
+skill_preflight_update "$task_number" "implement" "$session_id"
 ```
+
+```bash
+# Dispatch window for infra-failure discrimination — reset both signals every dispatch so a
+# stale `true` can never carry over from a previous cycle.
+dispatch_start_ts=$(date -u +%s)
+dispatch_was_transport_error=false
+```
+
+Read plan path:
+```bash
+plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+```
+
+Invoke the Agent tool:
+
+| Field | Value |
+|-------|-------|
+| `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
+| `prompt` | "Resume implementation for task $task_number (no continuation handoff; resume context recovered from the prior dispatch's return metadata)" (append ". User focus: $focus_prompt" if non-empty) |
+| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, resume_context: { status: (resume_probe.status), artifact_path: (resume_probe.artifact_path), phases_completed: (resume_probe.phases_completed), phases_total: (resume_probe.phases_total) } }` (same as the continuation branch's `context` object, minus `continuation_context`, plus `resume_context`) |
+
+**After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
+`context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
+ONLY if the call itself returned a transport/API-layer error with no subagent-authored text of
+any kind. Any subagent-authored output — including text in which the subagent describes an
+error it hit — means `false`. Then read handoff (Stage 5), which decides whether this cycle is
+charged.
+
+No missing-plan-file guard is added here (deliberate — see Non-Goals in this task's plan): a
+`partial` task with no plan file dispatches implement and likely makes no progress, exactly as
+the `mt` engine already does today; `MAX_CYCLES` bounds it.
 
 #### State: `blocked`
 
@@ -443,6 +492,13 @@ blocker_desc=$(jq -r --argjson num "$task_number" \
 ```
 
 Invoke blocker escalation (Stage 6) with blocker_desc.
+
+**Why this handler stays engine-unconditional (Decision 1, intentional divergence from `mt`)**:
+this handler always escalates to a human, regardless of engine — a solo invocation has no sibling
+task to make progress on, so escalation is the only meaningful action, whereas a batch invocation
+(Stage MT-4) skips the blocked task so its siblings can proceed. This is the one row where the
+two engines still diverge; it is documented, not an oversight (see
+`scripts/orchestrate-triage-classify.sh`'s header table for the full discriminator).
 
 #### State: `completed`
 

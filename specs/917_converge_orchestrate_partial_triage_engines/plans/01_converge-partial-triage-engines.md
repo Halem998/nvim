@@ -312,57 +312,48 @@ requirement that this file be edited alongside the classifier rather than merely
 
 ---
 
-### Phase 3: Rewrite Stage 4's no-handoff/no-blockers sub-state as an implement dispatch [NOT STARTED]
+### Phase 3: Rewrite Stage 4's no-handoff/no-blockers sub-state as an implement dispatch [COMPLETED]
 
 **Goal**: Replace the unconditional exit with a real implement dispatch that sources resume context
 from the prior dispatch's `.return-meta.json`, and delete the now-false cross-reference paragraph
 asserting the engines diverge by design.
 
 **Tasks**:
-- [ ] Delete the "Cross-reference" paragraph immediately above the `partial` sub-state block in
+- [x] Delete the "Cross-reference" paragraph immediately above the `partial` sub-state block in
       `skills/skill-orchestrate/SKILL.md` — the one asserting the `single`-engine outcome is
       "intentionally different", that the engines "diverge by design", and citing "Decision D1 in
       this task's originating plan". Replace it with a short pointer stating that
       `scripts/orchestrate-triage-classify.sh single` is the executable form of the same rule and
-      that both engines now agree on this row.
-- [ ] Replace the "Sub-state: no handoff, no blockers" branch body (currently two `echo`s and
+      that both engines now agree on this row. *(completed)*
+- [x] Replace the "Sub-state: no handoff, no blockers" branch body (currently two `echo`s and
       `EXIT (partial, cycle_count)`) with a dispatch that structurally mirrors the "Sub-state:
-      continuation available" branch immediately above it.
-- [ ] Probe the prior dispatch's outcome for resume context, before the dispatch window is opened:
-      ```bash
-      # Resume context for a base-mode partial: no handoff exists (base-mode dispatches never
-      # write one), so read the PRIOR dispatch's .return-meta.json instead. The staleness gate is
-      # intentionally disabled (window 0) — Stage 4 runs BEFORE this cycle's dispatch, so there is
-      # no current-cycle window yet, and the leftover prior-cycle state is exactly what we want
-      # regardless of age. This is deliberately NOT named dispatch_start_ts, which means "the
-      # current dispatch's window start" everywhere else in this file.
-      prior_meta_probe_window=0
-      resume_probe=$(bash .claude/scripts/orchestrate-recover-outcome.sh "$TASK_DIR" "$prior_meta_probe_window" || true)
-      ```
-- [ ] Document inline that `recovered=false` (exit 1) is the EXPECTED and non-fatal outcome here —
+      continuation available" branch immediately above it. *(completed)*
+- [x] Probe the prior dispatch's outcome for resume context, before the dispatch window is opened.
+      *(completed)*
+- [x] Document inline that `recovered=false` (exit 1) is the EXPECTED and non-fatal outcome here —
       a prior `partial`/`in_progress` status yields `recovered=false` with the JSON still on stdout.
       The probe supplies context (`.status`, `.artifact_path`, `.phases_completed`,
-      `.phases_total`), never a success claim, and must never gate the dispatch.
-- [ ] Add the standard preflight and dispatch-window setup, in this order and after the probe:
+      `.phases_total`), never a success claim, and must never gate the dispatch. *(completed)*
+- [x] Add the standard preflight and dispatch-window setup, in this order and after the probe:
       `skill_preflight_update "$task_number" "implement" "$session_id"`, then
-      `dispatch_start_ts=$(date -u +%s)` and `dispatch_was_transport_error=false`.
-- [ ] Resolve `plan_path` with the same idiom the continuation branch uses
+      `dispatch_start_ts=$(date -u +%s)` and `dispatch_was_transport_error=false`. *(completed)*
+- [x] Resolve `plan_path` with the same idiom the continuation branch uses
       (`ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1`). Add no missing-plan guard
-      (see Non-Goals).
-- [ ] Specify the Agent tool invocation table: `subagent_type` = `$IMPLEMENT_AGENT`; `prompt` =
+      (see Non-Goals). *(completed)*
+- [x] Specify the Agent tool invocation table: `subagent_type` = `$IMPLEMENT_AGENT`; `prompt` =
       "Resume implementation for task $task_number (no continuation handoff; resume context
       recovered from the prior dispatch's return metadata)" with the `. User focus: $focus_prompt`
       append rule; `context` = the continuation branch's context object minus `continuation_context`,
-      plus a `resume_context` object carrying the probe's status/artifact/phase fields.
-- [ ] Carry over verbatim the "After the Agent tool returns" paragraph the sibling branches use
+      plus a `resume_context` object carrying the probe's status/artifact/phase fields. *(completed)*
+- [x] Carry over verbatim the "After the Agent tool returns" paragraph the sibling branches use
       (infra-failure discrimination, `dispatch_was_transport_error` rule, then fall through to the
-      shared Stage 5 handoff read).
-- [ ] Remove the `EXIT (partial, cycle_count)` line entirely — the branch must fall through to
-      Stage 5 and the outer loop. Add no replacement guard.
-- [ ] Add the Decision 1 justification as a short comment (one or two sentences, not a
+      shared Stage 5 handoff read). *(completed)*
+- [x] Remove the `EXIT (partial, cycle_count)` line entirely — the branch must fall through to
+      Stage 5 and the outer loop. Add no replacement guard. *(completed)*
+- [x] Add the Decision 1 justification as a short comment (one or two sentences, not a
       cross-reference paragraph) in the `#### State: blocked` handler: solo invocations have no
       sibling to make progress on, so escalation is the only meaningful action; batch invocations
-      skip so siblings proceed. Note the handler is deliberately engine-unconditional.
+      skip so siblings proceed. Note the handler is deliberately engine-unconditional. *(completed)*
 
 **Timing**: 1 hour
 
