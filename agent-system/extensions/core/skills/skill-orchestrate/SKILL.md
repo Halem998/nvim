@@ -1215,15 +1215,56 @@ subagent-authored text of any kind. Judge each task independently — never carr
 verdict over to another in the same batch.
 
 For each task in `research_tasks + plan_tasks + implement_tasks`:
-1. Read `task_dir/.orchestrator-handoff.json`. If present, continue to step 2. **If missing**,
-   apply the infra-failure discrimination rule
-   (`context/patterns/infra-failure-discrimination.md`) scoped to THIS task before deciding.
-   This branch is the worse of the two manifestations of the defect: unlike single-task Stage 5
-   it has historically had no retry at all.
+1. Read `task_dir/.orchestrator-handoff.json`. If present, continue to step 2, which extracts
+   fields directly from it as today. **If missing**, first attempt outcome recovery via
+   `.return-meta.json` using the SAME shared script single-task Stage 5 (and hard-mode Stage 5)
+   consult — `.return-meta.json` is written by every research, plan, and base-mode implement
+   dispatch even when that writer is never expected to produce a handoff, so a missing handoff
+   here is very often the expected, successful outcome, not a defect. Only if recovery ALSO
+   declines does this fall through to the infra-failure discrimination rule
+   (`context/patterns/infra-failure-discrimination.md`) scoped to THIS task, exactly as before.
+
+   ```bash
+   window_start=$(jq -r --arg t "$task_num" '.dispatch_start_ts[$t] // 9999999999' "$mt_state_file")
+   recover_json=$(bash .claude/scripts/orchestrate-recover-outcome.sh "$task_dir" "$window_start" 2>/dev/null)
+   recover_exit=$?
+   if [ "$recover_exit" -eq 0 ]; then
+     recovered=$(echo "$recover_json" | jq -r '.recovered // false' 2>/dev/null) || recovered=false
+   else
+     recovered=false
+   fi
+   ```
+
+   **If `recovered = true`**: log a neutral per-task note and populate this task's
+   `dispatch_status`, `phases_completed`, `phases_total`, `plan_markers_verified="absent"`, and
+   artifact path/type/summary directly from `$recover_json` — the same fields step 2 would
+   otherwise extract from a handoff:
+
+   ```bash
+   dispatch_status=$(echo "$recover_json" | jq -r '.status')
+   dispatch_summary=""
+   phases_completed=$(echo "$recover_json" | jq -r '.phases_completed // 0')
+   phases_total=$(echo "$recover_json" | jq -r '.phases_total // 0')
+   plan_markers_verified="absent"
+   artifact_path=$(echo "$recover_json" | jq -r '.artifact_path // ""')
+   artifact_type=$(echo "$recover_json" | jq -r '.artifact_type // ""')
+   artifact_summary=$(echo "$recover_json" | jq -r '.artifact_summary // ""')
+   echo "[orchestrate] Task #${task_num}: RECOVERY — no handoff written for this dispatch (expected outcome for this phase's writer); .return-meta.json reports status=$dispatch_status; recovering the outcome from it." >&2
+   ```
+
+   This task is NOT added to `failed_tasks` and is NOT infra-deferred; **continue into steps 3-6
+   below unchanged** — step 2's own handoff read is skipped for this task (there is no handoff to
+   read), but the same fields it would have populated are already set here, freshly per task, and
+   never carried over from a previous task in the same wave.
+
+   **If `recovered = false`** (including a `recover_exit` of 2): apply the infra-failure
+   discrimination rule exactly as before — unchanged from today's behavior. Return-meta recovery
+   above is a strictly additive first check; when it declines, a missing handoff still falls
+   through to this rule, which remains the sole determinant of `failed_tasks` vs. infra-deferral
+   for a genuinely inconclusive dispatch.
 
    ```bash
    meta_file="${task_dir}/.return-meta.json"
-   window_start=$(jq -r --arg t "$task_num" '.dispatch_start_ts[$t] // 9999999999' "$mt_state_file")
    meta_mtime=$(stat -c %Y "$meta_file" 2>/dev/null || stat -f %m "$meta_file" 2>/dev/null || echo 0)
    task_infra=$(jq -r --arg t "$task_num" '.infra_failures[$t] // 0' "$mt_state_file")
 
@@ -1242,7 +1283,8 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
      fi
    else
      # Genuine missing handoff (the subagent ran, or there is no corroborating transport
-     # error): preserve the historical behavior exactly.
+     # error), and return-meta recovery above also declined: preserve the historical behavior
+     # exactly.
      echo "[orchestrate] Task #${task_num}: missing handoff charged as genuine (transport_error=${task_transport_error:-false}). Marking failed_tasks." >&2
      # Add to failed_tasks, release the per-task lock (step 6), skip steps 2-5.
    fi
@@ -1255,8 +1297,11 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
 2. Extract `dispatch_status`, `dispatch_summary`, artifact path/type/summary, and — from *this*
    task's own handoff, freshly per task — `phases_completed` (`jq -r '.phases_completed // 0'`),
    `phases_total` (`jq -r '.phases_total // 0'`), and `plan_markers_verified`
-   (`jq -r '.plan_markers_verified // "absent"'`), mirroring the Stage 5 reads. Never carry these
-   values over from a previous task in the same wave; re-read them for every task in the loop.
+   (`jq -r '.plan_markers_verified // "absent"'`), mirroring the Stage 5 reads. **When step 1
+   recovered the outcome from `.return-meta.json` instead of a handoff, these fields are already
+   populated from that recovery — this step's own read applies only when a handoff was actually
+   present.** Never carry these values over from a previous task in the same wave; re-read (or,
+   on the recovered path, re-recover) them for every task in the loop.
 3. Call `skill_postflight_update`:
    - `dispatch_status = "researched"` → `skill_postflight_update task_num "research" "${session_id}_${task_num}" researched`
    - `dispatch_status = "planned"` → `skill_postflight_update task_num "plan" "${session_id}_${task_num}" planned`

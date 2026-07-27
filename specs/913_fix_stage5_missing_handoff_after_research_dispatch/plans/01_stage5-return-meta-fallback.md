@@ -277,29 +277,29 @@ hard-mode-specific difference around it.
 
 ---
 
-### Phase 4: Multi-task Stage MT-4 recovery [NOT STARTED]
+### Phase 4: Multi-task Stage MT-4 recovery [COMPLETED]
 
 **Goal**: Stage MT-4 step 1 stops marking successful tasks into `failed_tasks` on a missing handoff.
 
 **Tasks**:
 
-- [ ] In `skills/skill-orchestrate/SKILL.md` Stage MT-4 step 1, call the helper for this task
+- [x] In `skills/skill-orchestrate/SKILL.md` Stage MT-4 step 1, call the helper for this task
       before the existing infra-discrimination `if`, using `"$task_dir"` and the per-task window
       already read as `window_start` from `.dispatch_start_ts[$t]` in `mt_state_file`
-- [ ] On `recovered=true`: log a per-task neutral note, populate this task's `dispatch_status`,
+- [x] On `recovered=true`: log a per-task neutral note, populate this task's `dispatch_status`,
       artifact path/type/summary, `phases_completed`, `phases_total`, and `plan_markers_verified="absent"`
       from the recovered JSON, and **continue into steps 2-6 unchanged** — the task must NOT be added
       to `failed_tasks` and must NOT be infra-deferred
-- [ ] Make explicit in the surrounding prose that step 2's "Extract ... from *this* task's own
+- [x] Make explicit in the surrounding prose that step 2's "Extract ... from *this* task's own
       handoff" now reads "from this task's own handoff, or from its recovered `.return-meta.json`
       outcome when the handoff was absent", and that these values are still re-read per task and
       never carried over between tasks in a wave
-- [ ] On `recovered=false` (including exit 2): the existing infra-vs-`failed_tasks` logic runs
+- [x] On `recovered=false` (including exit 2): the existing infra-vs-`failed_tasks` logic runs
       exactly as it does now, unchanged
-- [ ] Update the inline comment that reads "This branch is the worse of the two manifestations of
+- [x] Update the inline comment that reads "This branch is the worse of the two manifestations of
       the defect ... it has historically had no retry at all" to describe the post-fix behavior
       accurately, without citing a task number
-- [ ] Confirm the recovered path still reaches step 6's unconditional per-task
+- [x] Confirm the recovered path still reaches step 6's unconditional per-task
       `task-lock.sh release`
 
 **Timing**: 1 hour
