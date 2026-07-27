@@ -78,7 +78,10 @@ of an entire `/research`/`/plan`/`/implement` invocation (which can run for many
 ## Contract: acquire / heartbeat / release / check / init-marker
 
 All five subcommands are implemented exactly once in `.claude/scripts/task-lock.sh`. Call sites
-NEVER reimplement lock logic inline (no ad hoc `mkdir .lock` elsewhere in the codebase).
+NEVER reimplement lock logic inline (no ad hoc `mkdir .lock` elsewhere in the codebase). A sixth
+task-number-lock-family subcommand, `reap`, is documented separately below in its own "Reap
+Contract" section rather than as a subsection here, since its contract (threshold derivation,
+two-band staleness model, archive-depth sweep) is substantial enough to warrant its own heading.
 
 ### `acquire <task_number> <operation> <session_id> [command]`
 
@@ -196,6 +199,154 @@ directory documented above** — it is not a second locking mechanism, does not 
 
 Exit codes: `0` = created (fresh), `1` = already exists (resume from it), `2` = usage/write-error
 or unresolved orphaned claim after one retry.
+
+## Reap Contract
+
+A SEVENTH task-number-lock-family subcommand (alongside `acquire`/`heartbeat`/`release`/`check`/
+`init-marker` above), added to convert the accumulating "foreign lock is stale" `WARN:` lines
+`acquire`'s cross-task overlap check already emits (see "Cross-Task `file_scope` Overlap Check"
+above) from a permanently-repeating, easy-to-ignore signal into a one-time, actionable, reported
+cleanup event.
+
+### `reap [--dry-run]`
+
+**Signature**: no required arguments; the sole optional flag is `--dry-run`. Any other argument
+is a usage error.
+
+**What it does**: sweeps every task-number `.lock` directory under `specs/` — including
+`specs/archive/` — for staleness against `TASK_LOCK_REAP_MIN` (see "Threshold Derivation"
+below), and either reports what it would remove (`--dry-run`) or removes it and reports what it
+removed (no flag). Every qualifying lock is reported per-item: task number, session id,
+operation, and age in minutes. This is deliberately richer than `/refresh`'s pre-existing
+postflight-marker sweep, which shows per-item paths in dry-run mode only and collapses to a
+generic one-line count after an actual delete — reap's dry-run and live paths both name every
+lock individually.
+
+**Dedicated sweep, not `find_held_locks()`**: reap walks
+`find "$PROJECT_ROOT/specs" -mindepth 2 -maxdepth 3 -type d -name ".lock"` directly. It
+deliberately does NOT call `find_held_locks()` (used internally by `acquire`'s cross-task scan),
+because that helper's `-mindepth 2 -maxdepth 2` structurally cannot see
+`specs/archive/{NNN}_{slug}/.lock`, which sits one level deeper. See "Two Depths, Deliberately
+Different" below for why `find_held_locks()` itself is left unmodified rather than widened to
+match.
+
+**Staleness determination, per lock**:
+- Valid `holder.json`: age is computed from `heartbeat_at` via the existing `age_minutes()`
+  helper (the same GNU/BSD-portable `date` parsing `check` and `acquire` already use — reap
+  reuses it rather than reimplementing).
+- Missing or unparseable `holder.json` (e.g. an interrupted acquire caught between its `mkdir`
+  and its `holder.json` write): age falls back to the `.lock` directory's own filesystem mtime.
+  This is reaped only if the mtime age ALSO exceeds the threshold; otherwise it is reported via a
+  `SKIP:` line (path, mtime age, and the reason) and left in place — never silently ignored, and
+  never removed on a bare "holder.json looked wrong" signal alone. A normal, valid-holder lock
+  whose age is within the threshold produces NO output line at all — it is not reap-relevant, and
+  reap's output would otherwise fill up with routine non-events on every invocation.
+
+**Output format**:
+```
+reaped: {lock_dir} task={task_number} session={session_id} operation={operation} age_min={age}
+would reap: {lock_dir} task={task_number} session={session_id} operation={operation} age_min={age}
+SKIP: {lock_dir} age_min={age} (below {threshold}min reap threshold) (missing/unparseable holder.json; age is the .lock directory's own mtime)
+```
+followed by a trailing summary line (`reaped N of M lock(s) (threshold Tmin)`,
+`would reap N of M lock(s) (threshold Tmin)`, or `no stale locks found (M lock(s) scanned,
+threshold Tmin)` when nothing qualified).
+
+**Exit codes**: `0` always, whether or not anything qualified for reaping — reap reports, it
+never fails on "nothing to do". `2` on a usage error (an unrecognized argument).
+
+**Never implicit (CONSTRAINT 1)**: `reap` is reachable ONLY via this explicit subcommand. It is
+never called from `cmd_acquire`, `cmd_heartbeat`, `cmd_release`, or `cmd_check` — those four
+functions are entirely unmodified by this feature except for the additive top-of-file usage
+comment. The "never touch the foreign lock" comment inside `cmd_acquire`'s cross-task overlap
+scan (see "Cross-Task `file_scope` Overlap Check" above) governs ONLY that scan's read-only
+inspection of a FOREIGN task's lock — it says nothing about, and does not conflict with, the
+pre-existing same-task stale-override branch inside `cmd_acquire` (documented in the `acquire`
+contract above), which legitimately overwrites the ACQUIRING task's own lock. Reap composes with
+neither: it is a wholly separate, explicitly-invoked code path from both.
+
+### Threshold Derivation
+
+`TASK_LOCK_REAP_MIN`, default 120 minutes, derived as `TASK_LOCK_STALE_MIN * 4` when not set
+directly (so it stays proportionate if a caller raises the base threshold — this proportional
+movement is INTENTIONAL, not a bug, and is called out in a code comment at the constant's
+declaration so it is not mistaken for one in review).
+
+**Why checkpoint-based reasoning, not a timer interval**: heartbeat refresh in this codebase is
+checkpoint-based, not timer-based. `skill-orchestrate` heartbeats once per state-machine cycle;
+the implementation agent (`general-implementation-agent`) heartbeats once per phase transition
+(see the Phase Checkpoint Protocol in that agent's own definition). A single dispatch — one
+long-running phase, or one orchestrate cycle waiting on a slow subagent — can therefore run
+unheartbeated for an extended stretch without that stretch indicating anything is actually wrong.
+`TASK_LOCK_STALE_MIN` (30-60 min) is already the point at which the system lets a COMPETING
+same-task `acquire` steal the lock — an optimistic, single-acquirer-facing threshold. Reap is a
+strictly more consequential operation: it runs unattended (no waiting acquirer to catch a false
+positive) and is meant to be the FINAL word that a lock is dead, not merely eligible for
+override. It therefore sits at a firm multiple above the override threshold, not equal to it.
+
+**CONSTRAINT 5, answered explicitly — the point at which a stale heartbeat stops being
+ambiguous**: there are two distinct bands, not one:
+- **Override-eligible band**: `heartbeat_at` age past `TASK_LOCK_STALE_MIN` (30-60 min). A
+  competing `acquire` for the SAME task number may steal the lock here (see the `acquire`
+  contract's "Different `session_id`, stale" branch above) — but this is a live, single-waiter
+  decision made at the moment a specific competing session actually wants the lock. It is NOT
+  reap-eligible: no unattended sweep should treat this band as "dead" on its own, since the
+  original holder may simply be mid-phase with no checkpoint due yet.
+- **Reap-eligible band**: `heartbeat_at` (or directory mtime, for a corrupt-holder lock) age past
+  `TASK_LOCK_REAP_MIN` (120 min at defaults). Only past this point does an unattended, no-waiter
+  process treat the lock as unambiguously dead. This asymmetry — two thresholds, not one — is
+  intentional: the override band answers "should THIS competing acquirer be allowed to proceed
+  right now", while the reap band answers "should ANY unattended process conclude this lock will
+  never be heartbeated again". Collapsing them to one threshold would either make override too
+  aggressive (stealing a lock from a session that is merely between checkpoints) or make reap too
+  timid (never actually converting the accumulating warning into cleanup).
+
+**Calibration evidence** (durable characteristics, not task numbers — see
+`no-task-references-in-deliverables.md`): the two heartbeat ages that originally produced the
+repeating `acquire` cross-task overlap `WARN:` lines this feature exists to resolve were on the
+order of several hundred minutes past `TASK_LOCK_STALE_MIN`. Separately, three genuinely orphaned
+locks under archived task directories — the durable signature being an archived task directory
+(no active `file_scope`, no plausible live dispatch) holding a `.lock` at all — were observed at
+roughly 430, 17,500, and 18,700 minutes of heartbeat age. Every one of these five data points
+clears the 120-minute default by more than 3.5x, which is the empirical basis for treating 120
+minutes as a safely conservative reap-eligible floor rather than an arbitrary round number.
+
+### Two Depths, Deliberately Different
+
+`reap`'s sweep uses `-maxdepth 3` (reaching `specs/{NNN}_{slug}/.lock` at depth 2 AND
+`specs/archive/{NNN}_{slug}/.lock` at depth 3); `find_held_locks()` (used internally by
+`acquire`'s cross-task overlap scan) stays at `-maxdepth 2` and is left byte-identical by this
+feature. This is intentional, not an oversight the reaper corrected: an archived task has no
+active `file_scope` to overlap with a live `acquire`'s cross-task scan, so widening
+`find_held_locks()` to reach the archive would add scan work on every `acquire` call for zero
+signal. Reap's own concern — finding every stale lock anywhere under `specs/`, regardless of
+whether the owning task is still active — is a genuinely different question from `acquire`'s
+concern — finding every OTHER currently-relevant lock a live acquire might conflict with — and
+the two functions' depths are allowed to diverge because the questions themselves diverge.
+
+### Correction to This Feature's Originating Constraint
+
+The feature that became `reap` was originally specified to honor "the holder-declared staleness
+window written into the lock directory." **No such field exists on the task-number lock.**
+Verified directly against `write_holder()` and the schema documented above: `holder.json`
+contains exactly `session_id`, `task_number`, `operation`, `acquired_at`, `heartbeat_at`,
+`command` — nothing else, and specifically no per-lock staleness value.
+
+The two NAMED mutexes documented above (`.scope-lock`, `.commit-lock`) ARE genuinely
+holder-declared in the literal sense — see their respective "Holder-Declared Staleness"
+subsections: the successful acquirer writes its own chosen `stale_sec` into the mutex directory,
+and every later waiter reads THAT file rather than applying its own default. This is the most
+plausible source of the original wording: the pattern is real in this codebase, just not on the
+mechanism the constraint named.
+
+**Resolution**: `reap` derives its threshold from `TASK_LOCK_REAP_MIN`, itself proportionally
+derived from `TASK_LOCK_STALE_MIN` — the SAME constant every other task-number-lock caller
+(`acquire`, `check`) already reads fresh at call time. This preserves the constraint's actual
+intent (one shared window every participant honors, not a threshold a fresh caller invents for
+itself) through the mechanism that genuinely exists, rather than inventing a `stale_sec` /
+`reap_after` field on `holder.json` that would fork the task-number lock's schema away from its
+canonical spec to satisfy wording that was mistaken about the code's current state. That
+invented field is explicitly out of scope — see the Non-Goals list this document's plan carried.
 
 ## Scope-Mutex CLI: `scope-acquire` / `scope-release`
 
@@ -424,7 +575,7 @@ The session-identity branch is checked FIRST, unconditionally, before any stalen
 the same conversation) always succeeds. This property has a dedicated functional test in Phase 5
 of the task 788 plan and should never be weakened by future edits.
 
-## Consumers (Two Distinct Wiring Paths)
+## Consumers (Four Distinct Wiring Paths)
 
 1. **Single-task gate scripts**: `command-gate-in.sh` (acquire after the terminal-status guard)
    and `command-gate-out.sh` (unconditional release) — covers `/research`, `/plan`,
@@ -443,8 +594,15 @@ of the task 788 plan and should never be weakened by future edits.
    `skill-orchestrate/SKILL.md` Stage 2 (`.orchestrator-loop-guard` creation) and
    `skill-orchestrate-hard/SKILL.md` Stage 2 (`.orchestrator-loop-guard` AND
    `.orchestrator-churn-state.json` creation).
+4. **`reap` call site** (see the "Reap Contract" section above): `skill-refresh/SKILL.md`'s
+   "Reap Stale Task Locks" step is the SOLE caller — reap is explicit-invocation-only, so it has
+   exactly one wiring path rather than the acquire/release-style multiple entry points above.
+   This consumer is NOT on the hourly systemd cadence: `claude-refresh.timer` invokes
+   `claude-refresh.sh` (process cleanup only), not this skill's `specs/` sweep, so reap only runs
+   when `/refresh` is invoked explicitly (see `commands/refresh.md`'s "Stale Task Locks" section
+   for the same scoping note from the caller's side).
 
-Both `.lock/`-based paths call the SAME `task-lock.sh` subcommands — never reimplemented inline —
+Every `.lock/`-based path calls the SAME `task-lock.sh` subcommands — never reimplemented inline —
 so the two wiring paths cannot drift from each other's semantics.
 
 ## Non-Goals (Deferred Follow-Ups)
@@ -463,8 +621,16 @@ so the two wiring paths cannot drift from each other's semantics.
 
 ## Related Documentation
 
-- `.claude/scripts/task-lock.sh` — the implementation (acquire/heartbeat/release/check/init-marker,
-  plus the scope-mutex and commit-mutex CLIs documented above)
+- `.claude/scripts/task-lock.sh` — the implementation (acquire/heartbeat/release/check/reap/
+  init-marker, plus the scope-mutex and commit-mutex CLIs documented above)
+- `.claude/scripts/test-task-lock-reap.sh` — isolated-temp-root test suite proving the "Reap
+  Contract" section's behavior (fresh-not-reaped, stale-reaped-and-reported, dry-run removes
+  nothing, acquire/check/heartbeat/release never implicitly reap, corrupt-holder skip-vs-reap,
+  and the depth-3 archive case)
+- `.claude/skills/skill-refresh/SKILL.md` — the sole `reap` call site ("Reap Stale Task Locks"
+  step)
+- `.claude/commands/refresh.md` — the "Stale Task Locks" section documenting `reap` from the
+  `/refresh` command's own perspective, including the not-on-the-hourly-timer scoping note
 - `.claude/scripts/git-commit-scoped.sh` — the sole intended caller of `commit-acquire`/
   `commit-release`; the single sanctioned implementation of scoped, serialized commits
 - `.claude/context/standards/git-staging-scope.md` — "Commit-Level Path Scoping and Cross-Process

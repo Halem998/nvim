@@ -348,16 +348,16 @@ resulting sequence is gapless and monotonic.
 
 ---
 
-### Phase 4: Document the Reap Contract in `task-lock.md` [NOT STARTED]
+### Phase 4: Document the Reap Contract in `task-lock.md` [COMPLETED]
 
 **Goal**: The canonical pattern doc carries the reap contract, the threshold derivation, and the
 constraint-2 correction — so a future maintainer re-derives rather than guesses.
 
 **Tasks**:
-- [ ] Edit `agent-system/extensions/core/context/patterns/task-lock.md`. Add a `## Reap Contract`
+- [x] Edit `agent-system/extensions/core/context/patterns/task-lock.md`. Add a `## Reap Contract`
       section mirroring the existing per-subcommand contract sections in structure (signature,
       arguments, exit codes, dry-run behavior, output format).
-- [ ] Document the threshold **with its reasoning written down**, not just its value. The
+- [x] Document the threshold **with its reasoning written down**, not just its value. The
       reasoning that must appear: heartbeat cadence is checkpoint-based, not timer-based —
       `skill-orchestrate` heartbeats once per state-machine cycle and the implementation agent
       once per phase transition, so a single dispatch can run unheartbeated for an extended
@@ -365,36 +365,36 @@ constraint-2 correction — so a future maintainer re-derives rather than guesse
       competing same-task `acquire` steal the lock. Reap is more consequential than an optimistic
       single-acquirer override — it runs unattended and is meant to be the final word that a lock
       is dead — so it sits at a firm multiple above, not equal to, the override threshold.
-- [ ] **Answer CONSTRAINT 5 explicitly in the doc**: name the point at which a stale heartbeat
+- [x] **Answer CONSTRAINT 5 explicitly in the doc**: name the point at which a stale heartbeat
       stops being ambiguous. State the override-eligible band (past `TASK_LOCK_STALE_MIN`, stealable
       by a competing same-task acquire, NOT reap-eligible) versus the reap-eligible band (past
       `TASK_LOCK_REAP_MIN`, unambiguously dead). Name this asymmetry as intentional and explain
       why the two thresholds must differ.
-- [ ] Record the observed evidence that calibrates the threshold: the two warning-generating locks
+- [x] Record the observed evidence that calibrates the threshold: the two warning-generating locks
       at 582 and 920 minutes and the three live archive orphans at roughly 433, 17,500, and 18,700
       minutes — every one clearing the 120-minute default by more than 3.5x. Describe them by
       their durable characteristics (archived task directories, foreign-lock overlap warnings),
       not by task number.
-- [ ] Record the CONSTRAINT 2 correction and its resolution (see this plan's "Correction to the
+- [x] Record the CONSTRAINT 2 correction and its resolution (see this plan's "Correction to the
       Task's Own Premise"): the task-number lock has no per-lock staleness field; the reaper reads
       the same `TASK_LOCK_STALE_MIN` every other caller reads; the `.scope-lock`/`.commit-lock`
       `stale_sec` field is the genuine holder-declared case and is the likely source of the
       confusion. Cross-reference the doc's existing `### Holder-Declared Staleness` sections so a
       reader can see the contrast directly.
-- [ ] Record the archive-depth decision and its reasoning: the reaper sweeps to depth 3 to reach
+- [x] Record the archive-depth decision and its reasoning: the reaper sweeps to depth 3 to reach
       `specs/archive/{NNN}_{slug}/.lock`; `find_held_locks()` deliberately stays at depth 2
       because an archived task has no active `file_scope` and therefore contributes no overlap
       signal to `cmd_acquire`'s scan. State that these two depths are intentionally different.
-- [ ] Record the never-implicit invariant (CONSTRAINT 1): reap is never reachable from
+- [x] Record the never-implicit invariant (CONSTRAINT 1): reap is never reachable from
       `acquire`/`heartbeat`/`release`/`check`. Note that the "never touch the foreign lock" rule
       governs only `cmd_acquire`'s cross-task `file_scope` overlap scan and is preserved unchanged
       — the separate same-task stale-override branch, which does mutate a lock, only ever touches
       the acquiring task's own lock and is likewise unchanged.
-- [ ] Record that `TASK_LOCK_REAP_MIN` moving proportionally when `TASK_LOCK_STALE_MIN` is
+- [x] Record that `TASK_LOCK_REAP_MIN` moving proportionally when `TASK_LOCK_STALE_MIN` is
       overridden is intentional, so it is not mistaken for a bug in review.
-- [ ] Add `reap` to the doc's subcommand enumeration and add `/refresh`'s reap step to its
+- [x] Add `reap` to the doc's subcommand enumeration and add `/refresh`'s reap step to its
       `### Consumers` section as the sole intended caller.
-- [ ] Note in the Consumers entry that this caller is not on the hourly systemd cadence
+- [x] Note in the Consumers entry that this caller is not on the hourly systemd cadence
       (consistent with Phase 3's `refresh.md` note).
 
 **Timing**: 1 hour
@@ -427,18 +427,18 @@ names `TASK_LOCK_STALE_MIN` / `TASK_LOCK_REAP_MIN`.
 
 ## Testing & Validation
 
-- [ ] `bash -n` clean on `task-lock.sh` and the new test script.
-- [ ] `shellcheck` introduces no new findings on either shell file.
-- [ ] All five fixture cases PASS, and the negative check (temporarily reverting to `-maxdepth 2`
+- [x] `bash -n` clean on `task-lock.sh` and the new test script.
+- [x] `shellcheck` introduces no new findings on either shell file.
+- [x] All five fixture cases PASS, and the negative check (temporarily reverting to `-maxdepth 2`
       makes the archive-depth case FAIL) was performed and recorded.
-- [ ] Fresh lock survives a live reap (case a).
-- [ ] Stale lock is removed AND its task number and age appear in live-mode output (case b).
-- [ ] `--dry-run` leaves every fixture lock in place (case c).
-- [ ] `acquire`/`check`/`heartbeat`/`release` leave a stale foreign lock untouched (case d).
-- [ ] `/refresh --dry-run` end-to-end shows the reap section and removes nothing.
-- [ ] `check-extension-docs.sh` exits 0.
-- [ ] `git status --short` shows zero modified paths under `.claude/` across all phases.
-- [ ] `validate-artifact.sh` on this plan reports no per-phase missing-tier warnings.
+- [x] Fresh lock survives a live reap (case a).
+- [x] Stale lock is removed AND its task number and age appear in live-mode output (case b).
+- [x] `--dry-run` leaves every fixture lock in place (case c).
+- [x] `acquire`/`check`/`heartbeat`/`release` leave a stale foreign lock untouched (case d).
+- [x] `/refresh --dry-run` end-to-end shows the reap section and removes nothing.
+- [x] `check-extension-docs.sh` exits 0.
+- [x] `git status --short` shows zero modified paths under `.claude/` across all phases.
+- [x] `validate-artifact.sh` on this plan reports no per-phase missing-tier warnings.
 
 ## Artifacts & Outputs
 

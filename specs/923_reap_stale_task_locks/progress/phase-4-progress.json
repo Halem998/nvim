@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "phase_name": "Document the Reap Contract in task-lock.md",
+  "started_at": "2026-07-27T01:45:00Z",
+  "last_updated": "2026-07-27T02:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add Reap Contract section (signature, staleness determination, output format, exit codes), threshold derivation with checkpoint-cadence reasoning and CONSTRAINT 5 two-band answer, calibration evidence, archive-depth decision, CONSTRAINT 2 correction, and update subcommand enumeration / Consumers section",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/task-lock.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Verified doc's stated signature/exit codes match cmd_reap()'s shipped implementation via side-by-side read. check-extension-docs.sh exits 0. No task-number citations in the diff additions."
+}
