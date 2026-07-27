@@ -314,28 +314,31 @@ duplicating it.
 
 ---
 
-### Phase 5: Verify the cross-matrix and record follow-ups [NOT STARTED]
+### Phase 5: Verify the cross-matrix and record follow-ups [COMPLETED]
 
 **Goal**: Both links of the contract are confirmed present for core, core-hard, lean, lean-hard,
 and web; the remaining known breaks and coordination items are written down as follow-ups rather
 than left implicit.
 
 **Tasks**:
-- [ ] Rebuild the agent-generates x skill-propagates matrix from the research report by re-running
+- [x] Rebuild the agent-generates x skill-propagates matrix from the research report by re-running
       `grep -rn 'completion_data\|roadmap_items\|completion_summary'` across
       `agent-system/extensions/*/agents/*implementation*-agent.md` and the five in-scope SKILL.md
       files; confirm core, core-hard, lean, lean-hard, and web now show both links present
-- [ ] Confirm `skill-implementer`, `skill-lean-implementation`, and `skill-web-implementation` were
-      not modified by this task (`git diff --stat` on those three paths is empty)
-- [ ] Confirm `agent-system/extensions/core/merge-sources/claudemd.md` is untouched
-- [ ] Record the mirror-image `nix` / `neovim` / `epidemiology` break as a follow-up item in the
+      *(completed — see summary's Cross-Matrix section)*
+- [x] Confirm `skill-implementer`, `skill-lean-implementation`, and `skill-web-implementation` were
+      not modified by this task (`git diff --stat` on those three paths is empty) *(completed)*
+- [x] Confirm `agent-system/extensions/core/merge-sources/claudemd.md` is untouched *(completed)*
+- [x] Record the mirror-image `nix` / `neovim` / `epidemiology` break as a follow-up item in the
       implementation summary (agent generates `completion_data`; SKILL.md never propagates it)
-- [ ] Record the shared-postflight-script extraction as a second, lower-priority follow-up
-- [ ] Record the coordination note: if the producer/consumer contract text in
+      *(completed)*
+- [x] Record the shared-postflight-script extraction as a second, lower-priority follow-up
+      *(completed)*
+- [x] Record the coordination note: if the producer/consumer contract text in
       `merge-sources/claudemd.md` needs updating to match, that belongs to a follow-up sequenced
-      behind the concurrent terminal-status-taxonomy work
-- [ ] Note that the fixes take effect only after the extension source store is redeployed to
-      `.claude/`, which this task does not perform
+      behind the concurrent terminal-status-taxonomy work *(completed)*
+- [x] Note that the fixes take effect only after the extension source store is redeployed to
+      `.claude/`, which this task does not perform *(completed)*
 
 **Timing**: 0.5 hours
 
