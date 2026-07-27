@@ -1,6 +1,6 @@
 ---
 name: skill-todo
-description: Archive completed and abandoned tasks with CHANGE_LOG.md updates and memory harvest suggestions
+description: Archive completed, abandoned, and expanded tasks with CHANGE_LOG.md updates and memory harvest suggestions
 allowed-tools: Bash, Edit, Read, Write, Grep, AskUserQuestion
 context: direct
 ---
@@ -11,12 +11,12 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
 
 <context>
   <system_context>OpenCode task archival with changelog tracking and memory suggestions.</system_context>
-  <task_context>Archive completed/abandoned tasks and track changes.</task_context>
+  <task_context>Archive completed/abandoned/expanded tasks and track changes.</task_context>
 </context>
 
 <role>Direct execution skill for task archival operations with automated CHANGE_LOG updates and memory harvest suggestions.</role>
 
-<task>Parse arguments, scan for archivable tasks, update states, generate CHANGE_LOG entries, suggest memory harvesting from completed task artifacts.</task>
+<task>Parse arguments, scan for archivable tasks (completed, abandoned, expanded), update states, generate CHANGE_LOG entries, suggest memory harvesting from completed task artifacts.</task>
 
 <execution>
   <stage id="1" name="ParseArguments">
@@ -81,8 +81,76 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
       1. Read specs/state.json
       2. Identify tasks with status = "completed"
       3. Identify tasks with status = "abandoned"
-      4. Read specs/TODO.md and cross-reference
-      5. Track counts: completed_count, abandoned_count
+      4. Identify tasks with status = "expanded"
+      5. Read specs/TODO.md and cross-reference (including entries marked [EXPANDED])
+      6. Track counts: completed_count, abandoned_count, expanded_count
+
+      **Subtasks-defer guard**: identical semantics to `commands/todo.md`'s Step 3 guard (see that
+      file's "Prepare Archive List" section, which is the reference implementation this mirrors).
+      Partition the tasks identified above into `archivable_tasks[]` (proceeds) and
+      `deferred_expanded[]` (held back for a later `/todo` run) — an expanded parent is deferred
+      while any task in its `subtasks[]` is still present in `active_projects` with a non-terminal
+      status. Use a `case` statement for status classification (never `!=`):
+
+      ```bash
+      archivable_tasks=()
+      deferred_expanded=()
+      deferred_expanded_nums=()
+
+      for task in "${candidate_tasks[@]}"; do
+        status=$(echo "$task" | jq -r '.status')
+        project_num=$(echo "$task" | jq -r '.project_number')
+
+        case "$status" in
+          expanded)
+            # A missing, null, or empty subtasks array means nothing is blocking - archive normally.
+            subtasks=$(echo "$task" | jq -c '.subtasks // []')
+            subtask_count=$(echo "$subtasks" | jq 'length')
+            if [ "$subtask_count" -eq 0 ]; then
+              archivable_tasks+=("$task")
+              continue
+            fi
+
+            blocking_count=0
+            for subtask_num in $(echo "$subtasks" | jq -r '.[]'); do
+              subtask_status=$(jq -r --argjson n "$subtask_num" \
+                '.active_projects[] | select(.project_number == $n) | .status' \
+                specs/state.json)
+
+              # An empty result means the subtask is already archived - not blocking.
+              if [ -z "$subtask_status" ]; then
+                continue
+              fi
+
+              case "$subtask_status" in
+                completed|abandoned|expanded)
+                  # Terminal - not blocking.
+                  ;;
+                *)
+                  # Any other status blocks.
+                  ((blocking_count++))
+                  ;;
+              esac
+            done
+
+            if [ "$blocking_count" -gt 0 ]; then
+              deferred_expanded+=("$task")
+              deferred_expanded_nums+=("$project_num")
+            else
+              archivable_tasks+=("$task")
+            fi
+            ;;
+          *)
+            # Non-expanded tasks pass through untouched.
+            archivable_tasks+=("$task")
+            ;;
+        esac
+      done
+      ```
+
+      Track `deferred_expanded[]` and `deferred_count` (`= ${#deferred_expanded[@]}`). Stage 10
+      (`ArchiveTasks`) consumes `archivable_tasks[]` — never a freshly-recomputed status match —
+      so a deferred parent's `active_projects` entry survives this run.
     </process>
   </stage>
   
@@ -202,7 +270,9 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          - (Define success metrics here)
          ```
       1. Read specs/ROADMAP.md
-      2. For each completed task, extract:
+      2. For each completed task (excluding meta tasks and expanded tasks — an expanded task has
+         no `completion_summary` of its own by construction, since its subtasks carry the
+         deliverables; do not "fix" this by requiring one), extract:
          - completion_summary from completion_data
          - roadmap_items if present
          - Task N references from summaries
@@ -227,6 +297,10 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
   <stage id="7" name="HarvestMemories">
     <action>Collect, deduplicate, and classify memory candidates from state.json</action>
     <process>
+      Note: this stage stays scoped to completed tasks and is not widened to expanded tasks —
+      an expanded task's work product and memory candidates belong to its subtasks, which are
+      harvested (or already were harvested) in their own right when they complete.
+
       1. Collect candidates from state.json:
          - For each completed task in the archival batch:
            - Read `memory_candidates // []` from the task's state.json entry
@@ -269,7 +343,11 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
     <process>
       If dry_run = true:
       1. Display comprehensive preview:
-         - Tasks to archive (completed/abandoned counts)
+         - Tasks to archive (completed/abandoned/expanded counts)
+         - Deferred: one summary line from `deferred_expanded[]` (Stage 2's subtasks-defer guard)
+           - Format: `Deferred: {N} expanded parent(s) held back (subtasks still active)`
+           - If `deferred_expanded[]` is empty: `Deferred: none` (mirrors the neighbouring
+             memory-candidate and status-reconciliation dry-run lines)
          - Orphaned directories count
          - Misplaced directories count
          - Roadmap updates needed
@@ -347,17 +425,27 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
   <stage id="10" name="ArchiveTasks" checkpoint="vault_check_complete">
     <action>Archive tasks to completed_projects (includes mandatory vault check)</action>
     <process>
-      For each task to archive:
+      For each task in `archivable_tasks[]` (the guard-filtered list from Stage 2 — never a
+      freshly-recomputed status match, so deferred expanded parents are excluded):
       1. Update specs/archive/state.json:
-         - Add to completed_projects array
+         - `completed` and `expanded` tasks add to completed_projects array (there is no third
+           array for `expanded`); `abandoned` tasks add to archived_projects array
          - Include all task fields
          - Add archived timestamp
 
       2. Update specs/state.json:
-         - Remove from active_projects array
+         - Remove from active_projects array. As in `commands/todo.md`'s Step 5B, this removal
+           must exclude any task listed in `deferred_expanded_nums[]` (Stage 2's guard) even
+           though its status matches — the blanket status match alone would delete a deferred
+           parent from state.json while its archive-list entry was held back, silently losing the
+           task. Since Stage 10 iterates `archivable_tasks[]` directly rather than re-deriving a
+           status match against the full `active_projects` array, deferred parents are naturally
+           excluded from this removal as long as the removal is driven by the same
+           `archivable_tasks[]` list — do not re-select by status here.
 
       3. Update specs/TODO.md:
-         - Remove archived entries (both regular and TODO.md orphans)
+         - Remove archived entries (both regular and TODO.md orphans) — the same
+           `archivable_tasks[]` guard-filtered list from Stage 2; a deferred parent's entry stays
          - Pattern to match task entry start:
            ```lua
            -- Match both "### OC_N. " and "### N. " formats
@@ -376,7 +464,8 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          - Note: next_project_number should NOT be decremented when removing orphans
            (numbering continues from highest used number)
 
-      4. Move project directories to specs/archive/
+      4. Move project directories to specs/archive/ — again driven by `archivable_tasks[]`; a
+         deferred parent's directory stays in place until a later `/todo` run archives it
 
       5. Track orphaned directories (if approved)
 
@@ -778,6 +867,9 @@ ${transition_comment}
     <process>
       1. Create specs/CHANGE_LOG.md if not exists (header + format description)
       2. For each archived task, append dated entry with: task number/name, status, type, completion_summary, artifact list
+         - `status` here already flows straight through from the task's state.json entry, so an
+           `expanded` entry is recorded exactly as `completed`/`abandoned` entries are — expanded
+           is a valid archived status in CHANGE_LOG entries, no separate handling needed
       3. Append memory harvest note if memories were suggested
     </process>
   </stage>
@@ -833,7 +925,7 @@ ${transition_comment}
          `specs/CHANGE_LOG.md` (Stage 12), `specs/ROADMAP.md` (Stage 11 annotations), any
          `README.md` files updated (Stage 13), and `.memory/` (Stage 14 memory harvest) — each
          only when that stage reports it made changes
-      3. Commit: `todo: archive {N} tasks` with counts for completed, abandoned, roadmap, orphans, misplaced, readme, memories
+      3. Commit: `todo: archive {N} tasks` with counts for completed, abandoned, expanded, roadmap, orphans, misplaced, readme, memories
     </process>
   </stage>
   
@@ -841,7 +933,9 @@ ${transition_comment}
     <action>Display final results</action>
     <process>
       Display summary with counts for:
-      - Archived tasks (completed/abandoned)
+      - Archived tasks (completed/abandoned/expanded)
+      - Deferred expanded parents: `{N} held back (subtasks still active)`, from
+        `deferred_expanded[]` (Stage 2); omit the line when `deferred_expanded[]` is empty
       - Directory operations (orphans tracked/misplaced moved)
       - Updates applied (roadmap annotations/readme changes/changelog entries)
       - Memory harvest with tier breakdown:

@@ -275,7 +275,7 @@ non-terminal, and the deferral is honored by every downstream step in the same r
 
 ---
 
-### Phase 4: Mirror the fix in `skills/skill-todo/SKILL.md` [NOT STARTED]
+### Phase 4: Mirror the fix in `skills/skill-todo/SKILL.md` [COMPLETED]
 
 **Goal**: The skill's archival path behaves identically to the command definition — same three
 statuses, same routing, same defer guard, same reporting.
@@ -284,38 +284,45 @@ statuses, same routing, same defer guard, same reporting.
 two files' structures differ, prefer behavioral equivalence over textual sameness.
 
 **Tasks**:
-- [ ] Frontmatter `description` (line 3), `<task_context>` (line 14), and `<task>` (line 19):
+- [x] Frontmatter `description` (line 3), `<task_context>` (line 14), and `<task>` (line 19):
       update the "completed and abandoned" phrasing to name all three archivable statuses.
-- [ ] Stage 2 `ScanTasks` (lines 78-87): add `4. Identify tasks with status = "expanded"` (and
+      *(completed)*
+- [x] Stage 2 `ScanTasks` (lines 78-87): add `4. Identify tasks with status = "expanded"` (and
       renumber the following steps), extend the TODO.md cross-reference, and track
       `expanded_count` alongside `completed_count` / `abandoned_count`. Reference Stage 2.5
       `TopicRevision`'s existing three-status exclusion (lines 94-99) as the in-file precedent.
-- [ ] Stage 2 `ScanTasks`: add the same subtasks-defer guard specified in Phase 3, with identical
+      *(completed)*
+- [x] Stage 2 `ScanTasks`: add the same subtasks-defer guard specified in Phase 3, with identical
       semantics (missing/empty `subtasks` = not blocking; subtask absent from `active_projects` =
       not blocking; subtask in `completed`/`abandoned`/`expanded` = not blocking; anything else
-      blocks). Track `deferred_expanded[]` and `deferred_count`.
-- [ ] Stage 2.5 `TopicRevision`: leave unchanged — already correct.
-- [ ] Stage 5 `ScanRoadmap` (lines 189-212): state explicitly that expanded tasks are excluded
+      blocks). Track `deferred_expanded[]` and `deferred_count`. *(completed: reused the
+      Phase-3-corrected guard shell logic verbatim, including the same `case` classification —
+      no separate bug to re-fix here since this stage does not duplicate the Step 5B `del()`
+      filter's `index()` expression)*
+- [x] Stage 2.5 `TopicRevision`: leave unchanged — already correct. *(completed: verified
+      byte-for-byte unchanged)*
+- [x] Stage 5 `ScanRoadmap` (lines 189-212): state explicitly that expanded tasks are excluded
       from ROADMAP.md matching, with the same structural reason as Phase 2 (no
       `completion_summary` by construction). The stage currently iterates "each completed task",
       so this is a clarity edit that prevents a future widening, not a behavior change.
-- [ ] Stage 7 `HarvestMemories` (lines 227-265): leave scoped to completed tasks. Add a
+      *(completed)*
+- [x] Stage 7 `HarvestMemories` (lines 227-265): leave scoped to completed tasks. Add a
       one-line note that expanded tasks are deliberately not harvested — their work product and
-      memory candidates belong to their subtasks. Do not widen this stage.
-- [ ] Stage 10 `ArchiveTasks` (lines 347-413): route `expanded` tasks to `completed_projects`
+      memory candidates belong to their subtasks. Do not widen this stage. *(completed)*
+- [x] Stage 10 `ArchiveTasks` (lines 347-413): route `expanded` tasks to `completed_projects`
       (sub-step 1), and ensure the `active_projects` removal (sub-step 2) excludes deferred
       parents exactly as Phase 3 specifies for the command. Sub-steps 3 (TODO.md removal) and 4
-      (directory move) must consume the guard-filtered list.
-- [ ] Stage 8 `DryRunOutput` (line 272): extend the archive-counts line to include expanded, and
+      (directory move) must consume the guard-filtered list. *(completed)*
+- [x] Stage 8 `DryRunOutput` (line 272): extend the archive-counts line to include expanded, and
       add a deferred line in the same one-line-summary style used by the memory-candidate and
-      reconciliation lines (omit or show `none` consistently with the neighbours).
-- [ ] Stage 13 `UpdateChangelog` (lines 776-783): the per-task entry already records `status`,
+      reconciliation lines (omit or show `none` consistently with the neighbours). *(completed)*
+- [x] Stage 13 `UpdateChangelog` (lines 776-783): the per-task entry already records `status`,
       so expanded entries flow through; add a short note confirming expanded is a valid archived
-      status in CHANGE_LOG entries.
-- [ ] Stage 15 `GitCommit` (line 836): add expanded to the enumerated counts in the commit
-      message. The message template itself (`todo: archive {N} tasks`) stays as-is.
-- [ ] Stage 16 `OutputResults` (line 844): extend "Archived tasks (completed/abandoned)" to
-      include expanded, and report the deferred count.
+      status in CHANGE_LOG entries. *(completed)*
+- [x] Stage 15 `GitCommit` (line 836): add expanded to the enumerated counts in the commit
+      message. The message template itself (`todo: archive {N} tasks`) stays as-is. *(completed)*
+- [x] Stage 16 `OutputResults` (line 844): extend "Archived tasks (completed/abandoned)" to
+      include expanded, and report the deferred count. *(completed)*
 
 **Timing**: 0.75 hours
 
