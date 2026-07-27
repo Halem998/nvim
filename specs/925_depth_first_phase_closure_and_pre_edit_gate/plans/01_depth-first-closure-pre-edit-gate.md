@@ -446,33 +446,33 @@ cannot be mistakenly closed as free.
 
 ---
 
-### Phase 6: Cross-cutting verification gate [NOT STARTED]
+### Phase 6: Cross-cutting verification gate [COMPLETED]
 
 **Goal**: Run the checks that no single earlier phase can run on its own — the four-referrer
 wiring sweep, the verbatim scoping-sentence check, and the source-store / task-reference hygiene
 sweep across everything this task touched.
 
 **Tasks**:
-- [ ] **Referrer sweep**: for each of the four files in Phase 3, confirm both
+- [x] **Referrer sweep**: for each of the four files in Phase 3, confirm both
       `contracts/phase-closure.md` and `contracts/pre-edit-gate.md` appear. All eight checks must
       pass; any miss is a Phase 3 defect to fix, not a finding to report.
-- [ ] **Verbatim scoping check**: confirm the wave-table scoping sentence appears in
+- [x] **Verbatim scoping check**: confirm the wave-table scoping sentence appears in
       `phase-closure.md` exactly as specified in Phase 1, with no paraphrase or truncation. This
       is the highest-risk single item in the task — a contract that contradicts an existing rule
       without explicit scoping will cause one of the two rules to be ignored.
-- [ ] **Non-contradiction read-through**: read `phase-closure.md`'s scope section alongside
+- [x] **Non-contradiction read-through**: read `phase-closure.md`'s scope section alongside
       `context/formats/plan-format.md`'s "Phases within the same wave can execute in parallel"
       and `context/contracts/territory.md`'s opening scope statement. Confirm a reader
       encountering all three would not conclude any pair conflicts.
-- [ ] **Three-clause presence check**: confirm `phase-closure.md` still contains all three
+- [x] **Three-clause presence check**: confirm `phase-closure.md` still contains all three
       required clauses as distinct sections, with the stop-at-boundary clause intact and not
       collapsed into the close-before-open clause.
-- [ ] **Source-store hygiene**: confirm `git status --short` lists no path under `.claude/`. All
+- [x] **Source-store hygiene**: confirm `git status --short` lists no path under `.claude/`. All
       changes must be under `agent-system/extensions/core/`.
-- [ ] **Task-reference hygiene**: grep every file this task created or modified for task-number
+- [x] **Task-reference hygiene**: grep every file this task created or modified for task-number
       citation patterns; all are outside `specs/**` so all must be clean.
-- [ ] **JSON validity**: re-confirm `index-entries.json` parses.
-- [ ] Record any item that fails a check and is deliberately not fixed in a
+- [x] **JSON validity**: re-confirm `index-entries.json` parses.
+- [x] Record any item that fails a check and is deliberately not fixed in a
       `#### Reasoned Exclusions` table with its probe output in the `Evidence` column — applying
       this task's own pre-edit gate to itself.
 

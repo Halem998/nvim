@@ -1,5 +1,5 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "agent_type": "general-implementation-agent",
   "task_number": 925,
   "session_id": "sess_1785176230_b4221f_925",
@@ -9,6 +9,21 @@
       "type": "plan",
       "path": "specs/925_depth_first_phase_closure_and_pre_edit_gate/plans/01_depth-first-closure-pre-edit-gate.md",
       "summary": "6-phase plan authoring context/contracts/phase-closure.md and pre-edit-gate.md in the core source store, wiring both into the four core implementer files via explicit @-reference bullets, registering them in index-entries.json, and recording the no-central-injection-point finding in context-layers.md"
+    },
+    {
+      "type": "summary",
+      "path": "specs/925_depth_first_phase_closure_and_pre_edit_gate/summaries/01_depth-first-closure-pre-edit-gate-summary.md",
+      "summary": "Implementation summary: both contracts authored, wired into all four core implementer files, registered in index-entries.json, and placement/no-central-injection findings recorded in context-layers.md"
+    },
+    {
+      "type": "contract",
+      "path": "agent-system/extensions/core/context/contracts/phase-closure.md",
+      "summary": "Depth-first phase-closure contract: close-before-open, cheapest-closure-first ordering, stop-at-a-closed-phase-boundary (distinct clause), and verbatim single-dispatch scope limitation reconciling with plan-format.md's wave table and territory.md"
+    },
+    {
+      "type": "contract",
+      "path": "agent-system/extensions/core/context/contracts/pre-edit-gate.md",
+      "summary": "Per-item pre-edit verification gate: hypothesis premise wired to plan-format.md's Scope Hypothesis field, probe-before-edit rule with three probe shapes, proportionality ceiling, failed-probe routing into Reasoned Exclusions, and orthogonality vs. Verification Tier / Commit Mode"
     }
   ],
   "metadata": {
@@ -31,22 +46,41 @@
     },
     "files_to_create": 2,
     "files_to_modify": 6,
-    "source_store_only": true
+    "source_store_only": true,
+    "phases_completed": 6,
+    "phases_total": 6
   },
   "completion_data": {
+    "completion_summary": "Authored context/contracts/phase-closure.md (depth-first closure with cheapest-first ordering and a stop-at-boundary clause) and context/contracts/pre-edit-gate.md (proportionate per-item probe before mechanical-list edits) in the core source store, wired both into all four core implementer files via explicit reference bullets, registered them in index-entries.json as the first non-hard-exclusive contracts/* entries, and recorded the placement / no-central-injection-point findings in context-layers.md.",
     "plan_path": "specs/925_depth_first_phase_closure_and_pre_edit_gate/plans/01_depth-first-closure-pre-edit-gate.md",
     "phase_count": 6,
-    "estimated_hours": 3.5,
-    "next_steps": "Run /implement 925 to execute the plan"
+    "estimated_hours": 3.5
   },
-  "next_steps": "Run /implement 925 to execute the plan",
+  "modified_files": [
+    "agent-system/extensions/core/context/contracts/phase-closure.md",
+    "agent-system/extensions/core/context/contracts/pre-edit-gate.md",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/core/skills/skill-implementer/SKILL.md",
+    "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/context/architecture/context-layers.md"
+  ],
+  "next_steps": "Task complete. Downstream: propagating these contracts to extension implementation agents is manual, per-file work (see context-layers.md's new 'Contracts directory: convention vs. load path' subsection) and remains a separate, out-of-scope concern.",
   "memory_candidates": [
     {
       "content": "In this agent-system codebase, directory placement is NOT a context-loading mechanism. A file placed in context/contracts/ is only loaded if an explicit @-reference bullet appears in the consuming agent's '## Context References' section. Only core's general-implementation-agent.md runs the adaptive context-discovery.md index query; no extension implementation agent and no hard-mode agent does. skill-base.sh's context_injection lifecycle hook runs the opposite direction (extensions injecting into core skills), and no shared dispatch-prompt builder exists -- each SKILL.md builds its dispatch prompt inline. Consequence: propagating any core context file to extension implementation agents is manual, per-file work; the in-repo precedent is cslib-implementation-hard-agent.md, which hand-copies core's anti-analysis.md/wrap-up.md/territory.md bullets. Any plan that assumes a central injection hook exists is wrong.",
       "category": "INSIGHT",
-      "source_artifact": "specs/925_depth_first_phase_closure_and_pre_edit_gate/plans/01_depth-first-closure-pre-edit-gate.md",
+      "source_artifact": "specs/925_depth_first_phase_closure_and_pre_edit_gate/summaries/01_depth-first-closure-pre-edit-gate-summary.md",
       "confidence": 0.9,
       "suggested_keywords": ["context-loading", "at-reference", "contracts-directory", "extension-propagation", "context-discovery", "injection-point"]
+    },
+    {
+      "content": "When implementing a plan whose own subject matter is 'work depth-first, close phases fully before opening the next' (or any other process contract), apply the contract to the implementation dispatch itself as it runs -- close each phase's checklist, advance its heading, and commit before opening the next phase, rather than opening several phases and closing them in a batch at the end. This is a useful self-application check for any meta-task authoring a behavioral contract for implementers.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/925_depth_first_phase_closure_and_pre_edit_gate/summaries/01_depth-first-closure-pre-edit-gate-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["depth-first", "self-application", "phase-closure", "dogfooding", "implementation-discipline"]
     }
   ]
 }

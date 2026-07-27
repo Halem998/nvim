@@ -1,0 +1,29 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Authored context/contracts/phase-closure.md and pre-edit-gate.md in the core source store, wired both into all four core implementer files, registered them in index-entries.json as the first non-hard-exclusive contracts/* entries, and recorded the placement / no-central-injection-point findings in context-layers.md. All 6 plan phases closed depth-first with a scoped commit each.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/925_depth_first_phase_closure_and_pre_edit_gate/summaries/01_depth-first-closure-pre-edit-gate-summary.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/context/contracts/phase-closure.md",
+    "agent-system/extensions/core/context/contracts/pre-edit-gate.md",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/core/skills/skill-implementer/SKILL.md",
+    "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/context/architecture/context-layers.md"
+  ],
+  "decisions_made": [
+    "Closed Phase 4 before Phase 5 within the shared wave (both blocked only by Phase 3) per the contract's own cheapest-closure-first clause",
+    "context-layers.md is the correct Phase 5 target despite the plan's anchor text living in merge-sources/claudemd.md, which links to it as 'Full details'"
+  ],
+  "dead_ends": [],
+  "phases_completed": 6,
+  "phases_total": 6,
+  "plan_markers_verified": true
+}
