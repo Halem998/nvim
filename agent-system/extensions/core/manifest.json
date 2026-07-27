@@ -63,7 +63,8 @@
       "state-management.md",
       "workflows.md",
       "project-overview-detection.md",
-      "no-task-references-in-deliverables.md"
+      "no-task-references-in-deliverables.md",
+      "source-store-deploy-boundary.md"
     ],
     "skills": [
       "skill-fix-it",
