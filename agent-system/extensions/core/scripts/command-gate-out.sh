@@ -5,6 +5,9 @@
 #
 # This script can be called as a subprocess (not sourced) since it only produces
 # side effects (state.json updates, artifact validation) and does not export variables.
+# (That describes how callers invoke THIS script — it does not restrict what this script may
+# itself source internally; it sources skill-base.sh below for skill_validate_task_artifacts,
+# following the same precedent orchestrator-postflight.sh already uses.)
 #
 # Arguments:
 #   $1  task_number — The numeric task ID
@@ -27,6 +30,11 @@
 #   Task 594 (skill-base.sh) may call this script.
 
 set -e
+
+# Source the shared skill-lifecycle library for skill_validate_task_artifacts (the non-blocking
+# artifact validation leg below). Not sourced elsewhere in this script, so it is sourced once
+# here at the top, matching orchestrator-postflight.sh's precedent.
+source .claude/scripts/skill-base.sh
 
 task_number="$1"
 operation="$2"
@@ -112,5 +120,5 @@ fi
 
 # Non-blocking artifact validation (link repair)
 if [ -d "$task_dir" ]; then
-  bash .claude/scripts/validate-artifact.sh "$task_dir" --fix 2>/dev/null || true
+  skill_validate_task_artifacts "$task_dir"
 fi

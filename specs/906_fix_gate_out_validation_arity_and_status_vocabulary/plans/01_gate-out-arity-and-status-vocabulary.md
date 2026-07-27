@@ -212,34 +212,36 @@ unit-verified, with no existing function clobbered. The source store remains in 
 
 ---
 
-### Phase 2: Rewire command-gate-out.sh to the shared helper [NOT STARTED]
+### Phase 2: Rewire command-gate-out.sh to the shared helper [COMPLETED]
 
 **Goal**: `command-gate-out.sh`'s artifact-validation leg calls the shared helper with correct
 arity, and gate-out still exits 0 with `set -e` in force after sourcing `skill-base.sh`.
 
 **Tasks**:
-- [ ] Re-verify sourcing safety before wiring: inspect `skill-base.sh`'s top level (outside any
+- [x] Re-verify sourcing safety before wiring: inspect `skill-base.sh`'s top level (outside any
       function body) and confirm it contains only variable assignments and function definitions —
       nothing that can return non-zero under `set -e`. Record the result; if any executable
       top-level statement is found, guard the source (`source ... || true` is NOT acceptable for
       a library whose functions must then exist — instead relocate the helper to a sourceable
-      location and record why, per the task's required approach).
-- [ ] Replace the buggy call (anchor: `bash .claude/scripts/validate-artifact.sh "$task_dir"
+      location and record why, per the task's required approach). *(completed: confirmed
+      top-level is only `SKILL_CONTEXT_BUDGET`/`SKILL_REPO_ROOT` assignments plus `export` and
+      function definitions — no executable statement that can fail under `set -e`)*
+- [x] Replace the buggy call (anchor: `bash .claude/scripts/validate-artifact.sh "$task_dir"
       --fix 2>/dev/null || true`, at line 115 as of planning) with a source + helper call:
       `source .claude/scripts/skill-base.sh` then
       `skill_validate_task_artifacts "$task_dir"`, keeping the existing `if [ -d "$task_dir" ]`
-      guard and the non-blocking posture.
-- [ ] Place the `source` following `orchestrator-postflight.sh`'s precedent. Prefer sourcing once
+      guard and the non-blocking posture. *(completed)*
+- [x] Place the `source` following `orchestrator-postflight.sh`'s precedent. Prefer sourcing once
       near the top of the script with a short comment naming the function it is sourced for,
       matching `orchestrator-postflight.sh:70-71`'s in-file comment style; keep the call itself
-      at the existing call site.
-- [ ] Update the script's header comment block (anchor: `This script can be called as a
+      at the existing call site. *(completed)*
+- [x] Update the script's header comment block (anchor: `This script can be called as a
       subprocess (not sourced) since it only produces side effects`) with one clarifying clause:
       the script may itself source `skill-base.sh` internally — that statement is about how
       callers invoke *this* script, not a restriction on what it may source. No task-number
-      citations.
-- [ ] Do NOT touch the accept-list at the `[ "$skill_status" = "implemented" ]` conditional in
-      this phase — its cross-reference comment lands in Phase 6.
+      citations. *(completed)*
+- [x] Do NOT touch the accept-list at the `[ "$skill_status" = "implemented" ]` conditional in
+      this phase — its cross-reference comment lands in Phase 6. *(confirmed untouched)*
 
 **Timing**: 0.5 hours
 
