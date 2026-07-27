@@ -1217,7 +1217,9 @@
       "last_updated": "2026-07-27T09:42:14Z",
       "session_id": "sess_1785144360_c0ea5a",
       "artifacts": [],
-      "dependencies": []
+      "dependencies": [
+        936
+      ]
     },
     {
       "project_number": 922,
@@ -1598,7 +1600,8 @@
         885,
         917,
         920,
-        926
+        926,
+        936
       ],
       "topic": "agent-system"
     },
@@ -1659,7 +1662,8 @@
         "agent-system/extensions/core/index-entries.json"
       ],
       "dependencies": [
-        932
+        932,
+        936
       ],
       "created": "2026-07-27T20:34:52Z",
       "last_updated": "2026-07-27T20:34:52Z",
@@ -1684,7 +1688,8 @@
       ],
       "dependencies": [
         932,
-        933
+        933,
+        936
       ],
       "created": "2026-07-27T20:34:52Z",
       "last_updated": "2026-07-27T20:34:52Z",
@@ -1712,7 +1717,8 @@
       "dependencies": [
         932,
         933,
-        934
+        934,
+        936
       ],
       "created": "2026-07-27T20:34:52Z",
       "last_updated": "2026-07-27T20:34:52Z",
@@ -1733,13 +1739,7 @@
         "agent-system/extensions/core/context/formats/return-metadata-file.md",
         "agent-system/extensions/core/context/standards/git-staging-scope.md"
       ],
-      "dependencies": [
-        920,
-        931,
-        933,
-        934,
-        935
-      ],
+      "dependencies": [],
       "created": "2026-07-27T21:15:09Z",
       "last_updated": "2026-07-27T21:15:09Z",
       "session_id": "sess_1785186909_93bdd3",
