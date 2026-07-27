@@ -212,23 +212,23 @@ contract and explicitly denies it to the read-only subcommands.
 
 ---
 
-### Phase 3: Deploy and prove the behavior in an isolated fixture [NOT STARTED]
+### Phase 3: Deploy and prove the behavior in an isolated fixture [COMPLETED]
 
 **Goal**: The change is live in the deployed tree, and a committed test demonstrates both the fix
 and the absence of side effects on the read-only subcommands.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` from the repo root to
-      regenerate `.claude/` from the source store.
-- [ ] Confirm the deployed copy carries the change:
-      `grep -n 'create_mode' .claude/scripts/task-lock.sh`.
-- [ ] Create `specs/918_task_lock_create_task_dir_before_acquire/tests/test-task-lock-create.sh`,
-      following the task-scoped test convention already used elsewhere under `specs/*/tests/`.
-- [ ] The harness builds a throwaway root under `mktemp -d` containing `.claude/scripts/` (copies
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` from the repo root to
+      regenerate `.claude/` from the source store. *(completed)*
+- [x] Confirm the deployed copy carries the change:
+      `grep -n 'create_mode' .claude/scripts/task-lock.sh`. *(completed)*
+- [x] Create `specs/918_task_lock_create_task_dir_before_acquire/tests/test-task-lock-create.sh`,
+      following the task-scoped test convention already used elsewhere under `specs/*/tests/`. *(completed)*
+- [x] The harness builds a throwaway root under `mktemp -d` containing `.claude/scripts/` (copies
       of the deployed `task-lock.sh` and `deploy-root-guard.sh` — the guard is a structural path
       check, so a plain temp directory satisfies it) and a synthetic `specs/state.json` with a
-      couple of `active_projects` entries. It must never touch the real `specs/` tree.
-- [ ] Implement these scenarios, each asserting both the exit code and the post-state of the
+      couple of `active_projects` entries. It must never touch the real `specs/` tree. *(completed)*
+- [x] Implement these scenarios, each asserting both the exit code and the post-state of the
       filesystem:
       1. `acquire` on a task present in `state.json` with no directory -> exit 0; the directory
          exists with `reports/`, `plans/`, `summaries/`, and `.lock/holder.json`.
@@ -242,8 +242,8 @@ and the absence of side effects on the read-only subcommands.
       6. Slug drift: `state.json` says `{NNN}_alpha` while `{NNN}_beta` exists on disk ->
          `acquire` resolves and locks `{NNN}_beta`; `{NNN}_alpha` is not created.
       7. Regression: `acquire` against a task whose directory already exists behaves exactly as
-         before (exit 0, `holder.json` written, subdirectories not required).
-- [ ] Have the harness print one PASS/FAIL line per scenario and exit non-zero if any fails.
+         before (exit 0, `holder.json` written, subdirectories not required). *(completed: all 7 PASS)*
+- [x] Have the harness print one PASS/FAIL line per scenario and exit non-zero if any fails. *(completed)*
 
 **Timing**: 1.5 hours
 

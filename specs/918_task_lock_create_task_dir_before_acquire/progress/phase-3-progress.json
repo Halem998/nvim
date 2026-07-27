@@ -1,0 +1,13 @@
+{
+  "phase": 3,
+  "phase_name": "Deploy and prove the behavior in an isolated fixture",
+  "started_at": "2026-07-27T00:15:00Z",
+  "last_updated": "2026-07-27T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Deploy source store into .claude/, confirm create_mode is present in deployed copy", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Build 7-scenario isolated fixture test harness and confirm all pass, twice, with no real specs/ side effects", "status": "done", "files_touched": ["specs/918_task_lock_create_task_dir_before_acquire/tests/test-task-lock-create.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
