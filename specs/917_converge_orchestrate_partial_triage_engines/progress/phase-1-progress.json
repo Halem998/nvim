@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Converge the classifier, its header table, and the regression test",
+  "started_at": "2026-07-27T00:00:00Z",
+  "last_updated": "2026-07-27T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Remove engine fork, flatten reason, header rationale/table/enum edits in orchestrate-triage-classify.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-triage-classify.sh"]},
+    {"id": 2, "description": "Converge test-triage-classify.sh assertions", "status": "done", "files_touched": ["specs/901_orchestrate_dry_run_admission_report/tests/test-triage-classify.sh"]},
+    {"id": 3, "description": "Expand file_scope in state.json and regenerate TODO.md", "status": "done", "files_touched": ["specs/state.json", "specs/TODO.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

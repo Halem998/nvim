@@ -1,0 +1,32 @@
+{
+  "status": "in_progress",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/917_converge_orchestrate_partial_triage_engines/plans/01_converge-partial-triage-engines.md",
+      "summary": "Six-phase plan converging the single-task /orchestrate partial triage onto the mt engine, with both required decisions resolved and the out-of-scope regression test folded in"
+    }
+  ],
+  "next_steps": "Run /implement 917 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1785164569_185813",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 4.5,
+    "dependency_waves": [[1], [2, 3], [4], [5], [6]]
+  },
+  "memory_candidates": [
+    {
+      "content": "When auditing whether a behavioral divergence between two code paths is intentional design or an unreviewed assertion, apply the independent-corroboration test: does the OTHER path's own handler implement the divergence in its own code, or does only a shared classifier/table assert it? A divergence implemented independently by both sides' handlers is a design (keep it, document the justification). A divergence asserted only in one shared table -- especially one citing an untraceable historical decision -- is an unreviewed assertion (converge it). This test cleanly separated two superficially identical rows in the same routing table, where one row was a real semantic difference and the other was a latent defect.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/917_converge_orchestrate_partial_triage_engines/plans/01_converge-partial-triage-engines.md",
+      "confidence": 0.82,
+      "suggested_keywords": ["divergence-audit", "routing-table", "independent-corroboration", "convergence", "design-vs-defect"]
+    }
+  ],
+  "modified_files": [
+    "specs/917_converge_orchestrate_partial_triage_engines/plans/01_converge-partial-triage-engines.md"
+  ]
+}

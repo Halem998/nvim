@@ -1051,7 +1051,7 @@
     {
       "project_number": 917,
       "project_name": "converge_orchestrate_partial_triage_engines",
-      "status": "not_started",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Converge single-task /orchestrate partial triage onto the mt engine",
@@ -1062,12 +1062,24 @@
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
         "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
         "agent-system/extensions/core/commands/orchestrate.md",
-        "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh"
+        "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh",
+        "specs/901_orchestrate_dry_run_admission_report/tests/test-triage-classify.sh"
       ],
       "created": "2026-07-27T08:24:53Z",
-      "last_updated": "2026-07-27T08:24:53Z",
-      "session_id": "sess_1785140486_c3196b",
-      "artifacts": []
+      "last_updated": "2026-07-27T15:17:05Z",
+      "session_id": "sess_1785164569_185813",
+      "artifacts": [
+        {
+          "path": "specs/917_converge_orchestrate_partial_triage_engines/reports/01_converge-partial-triage-engines.md",
+          "type": "report",
+          "summary": "Verified all facts against source-store; catalogued line-level edits; found extra required edit outside declared file_scope; recommended resolutions for both open decisions."
+        },
+        {
+          "path": "specs/917_converge_orchestrate_partial_triage_engines/plans/01_converge-partial-triage-engines.md",
+          "type": "plan",
+          "summary": "Six-phase plan converging single-task partial triage onto the mt engine, both decisions resolved, regression test folded in"
+        }
+      ]
     },
     {
       "project_number": 918,
@@ -1218,6 +1230,7 @@
         "agent-system/extensions/core/index-entries.json"
       ],
       "dependencies": [
+        922,
         924
       ],
       "created": "2026-07-27T10:27:21Z",

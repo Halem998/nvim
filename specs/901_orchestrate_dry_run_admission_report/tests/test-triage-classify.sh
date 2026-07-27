@@ -72,7 +72,7 @@ declare -A expect_mt=(
   [956]="implement"       # partial + continuation
   [954]="needs_human"     # partial + blockers, no continuation
   [955]="implement"       # partial, neither -> mt
-  [964]="skip"            # blocked -> mt
+  [964]="skip"            # blocked -> mt (intentional, documented divergence from single)
   [965]="skip"            # researching
   [966]="skip"            # unknown status
   [957]="terminal"        # completed
@@ -82,8 +82,8 @@ declare -A expect_single=(
   [951]="plan"
   [956]="implement"
   [954]="needs_human"
-  [955]="exit_partial"    # partial, neither -> single (THE DIVERGENCE)
-  [964]="needs_human"     # blocked -> single
+  [955]="implement"       # partial, neither -> single
+  [964]="needs_human"     # blocked -> single (intentional, documented divergence from mt)
   [965]="skip"
   [966]="skip"
   [957]="terminal"
@@ -128,14 +128,14 @@ else
 fi
 
 # ============================================================
-# 3. THE DIVERGENCE case: task 955 (partial, neither) classifies differently under the two engines
+# 3. CONVERGENCE case: task 955 (partial, neither) classifies identically under both engines
 # ============================================================
 div_mt=$(group_of "$mt_out" 955)
 div_single=$(group_of "$single_out" 955)
-if [ "$div_mt" = "implement" ] && [ "$div_single" = "exit_partial" ]; then
-  pass "3. engine divergence: task 955 (partial, neither) is 'implement' under mt and 'exit_partial' under single"
+if [ "$div_mt" = "implement" ] && [ "$div_single" = "implement" ]; then
+  pass "3. engine convergence: task 955 (partial, neither) is 'implement' under both mt and single"
 else
-  fail "3. engine divergence: got mt=$div_mt single=$div_single"
+  fail "3. engine convergence: got mt=$div_mt single=$div_single"
 fi
 
 # ============================================================

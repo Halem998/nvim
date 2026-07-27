@@ -10,17 +10,16 @@
 # (`orchestrate-dry-run-report.sh`) call, so the rule cannot drift into two silently-diverging
 # copies again.
 #
-# Two-engine rationale (Decision D1 in the originating plan): `/orchestrate` selects between the
-# single-task engine and the multi-task (Stage MT-4) engine purely by `len(TASK_NUMBERS)` — see
-# `commands/orchestrate.md` STAGE 0 (`== 1` falls through to single-task CHECKPOINT 1; `> 1` goes
-# to MULTI-TASK DISPATCH). A dry-run's entire value is being a *prediction of what the live path
-# will actually do*, so the classifier must branch on that SAME `len(task_numbers)` test — never
-# assume one engine's semantics for the other's invocation shape. The one row where the two
-# engines genuinely diverge is `partial` with neither a continuation nor blockers: Stage MT-4's
-# table dispatches it to `implement`, while single-task Stage 4's explicit handler exits the
-# invocation as `partial` (see its "Sub-state: no handoff, no blockers" branch). This script
-# transcribes both engines verbatim rather than picking a winner — callers select the engine that
-# matches their actual invocation shape.
+# Two-engine rationale: `/orchestrate` selects between the single-task engine and the multi-task
+# (Stage MT-4) engine purely by `len(TASK_NUMBERS)` — see `commands/orchestrate.md` STAGE 0
+# (`== 1` falls through to single-task CHECKPOINT 1; `> 1` goes to MULTI-TASK DISPATCH). A
+# dry-run's entire value is being a *prediction of what the live path will actually do*, so the
+# classifier must branch on that SAME `len(task_numbers)` test — never assume one engine's
+# semantics for the other's invocation shape. The engine tables below are unified on every row
+# except `blocked` (see the justification adjacent to that row): both engines now route `partial`
+# with neither a continuation nor blockers to `implement`, and the engine argument still exists
+# only because the two engines are selected by that same `len(task_numbers)` test the live path
+# uses — not because the two engines' verdicts still diverge on this row.
 #
 # Usage:
 #   orchestrate-triage-classify.sh <engine> <task_number> [<task_number> ...]
@@ -40,14 +39,15 @@
 # (Context Flatness Constraint).
 #
 # Precedence for `partial` status (transcribed from the single-task Stage 4 handler's explicit
-# reads, which both engines share before they diverge on the "neither" case):
+# reads, which both engines share):
 #   1. continuation_context is non-null AND carries a handoff_path -> route toward `implement`
 #   2. else blockers is non-empty                                  -> `needs_human`
-#   3. else (neither)                                               -> engine-specific (see table)
+#   3. else (neither)                                               -> `implement` (both engines)
 #
-# Engine tables (verbatim transcription; see Stage MT-4's "Phase grouping" table and the
-# single-task Stage 4 state handlers in skills/skill-orchestrate/SKILL.md — this script is the
-# executable source of truth those sections point back to):
+# Engine tables (verbatim transcription; this table, Stage 4's single-task state handlers, and
+# Stage MT-4's "Phase grouping" table in skills/skill-orchestrate/SKILL.md MUST be changed
+# together, never independently — this script is the executable source of truth those sections
+# point back to):
 #
 #   | status                                  | mt group    | single group  |
 #   |------------------------------------------|-------------|---------------|
@@ -56,10 +56,26 @@
 #   | planned, implementing                      | implement   | implement     |
 #   | partial + continuation                     | implement   | implement     |
 #   | partial + blockers, no continuation         | needs_human | needs_human   |
-#   | partial, neither                            | implement   | exit_partial  |
+#   | partial, neither                            | implement   | implement     |
 #   | blocked                                     | skip        | needs_human   |
 #   | researching, planning, unknown              | skip        | skip          |
 #   | terminal (completed/abandoned/expanded)      | terminal    | terminal      |
+#
+# `blocked` is the one row that still diverges, and it is intentional: this is a DESIGN, not an
+# undocumented assertion, because both engines independently corroborate it in their own handlers
+# rather than only in this shared table — Stage 4's `#### State: blocked` handler contains no
+# engine conditional at all (it always escalates to a human), and Stage MT-4's table independently
+# folds `blocked` into its generic `skip` group. Two handlers, written separately, already agree
+# with the classifier. Semantically: a solo invocation has no sibling task to make progress on, so
+# escalation is the only meaningful action; a batch invocation skips the blocked task so its
+# siblings can proceed. Converging `single` to `skip` here would introduce a new defect (a solo
+# `/orchestrate` on a blocked task would do nothing at all), not fix one. This is unlike the
+# now-removed `partial`-with-neither divergence, which was asserted only by this script and one
+# prose paragraph citing an untraceable historical decision — nothing else in the system
+# independently implemented it. The discriminator for any future audit of a table row: does the
+# OTHER engine's own handler implement the divergence in its own code, or does only this shared
+# table assert it? Independent implementation by both sides = design (keep it, documented, as
+# here); bare assertion by one shared table = defect (converge it, as was done for `partial`).
 #
 # Output: NDJSON on stdout, one compact JSON object per candidate, in input order (duplicates
 # preserved verbatim if given). Verdict schema (pinned as "orchestrate-triage-v1"; field order is
@@ -69,8 +85,13 @@
 #   task_number        int    The candidate task number, echoed back.
 #   engine             string "single" or "mt", echoed back from the invocation argument.
 #   status              string|null  The candidate's raw state.json status, or null if unknown.
-#   group               string  One of: research, plan, implement, needs_human, exit_partial,
-#                                 skip, terminal.
+#   group               string  One of: research, plan, implement, needs_human, skip, terminal, and
+#                                 exit_partial (RESERVED — defined but not currently emitted by any
+#                                 row as of this schema version; retained for schema stability and
+#                                 available to a future row or engine that wants a distinct
+#                                 exit-without-dispatch verdict; see orchestrate-dry-run-report.sh's
+#                                 defensive exclusion arm, which still treats it as an exclusion if
+#                                 it is ever emitted).
 #   handoff_state       string  "absent" (partial status, no readable handoff file), "continuation"
 #                                 (valid continuation_context), "blockers" (blockers present, no
 #                                 continuation), "empty" (partial, handoff present, neither), or
@@ -243,11 +264,9 @@ verdicts=$(jq -n -c \
        handoff_state:"blockers", blocker_count:$bc, handoff_age_min:$age,
        reason:("task #" + ($c|tostring) + " is partial with " + ($bc|tostring) + " unresolved blocker(s) and no continuation; needs human")}
     else
-      ((if $engine == "mt" then "implement" else "exit_partial" end)) as $grp |
-      {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:$grp,
+      {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:"implement",
        handoff_state:(if $hstate == "absent" then "absent" else "empty" end), blocker_count:$bc, handoff_age_min:$age,
-       reason:("task #" + ($c|tostring) + " is partial with neither continuation nor blockers; " +
-               (if $engine == "mt" then "mt routes to implement" else "single exits partial" end))}
+       reason:("task #" + ($c|tostring) + " is partial with neither continuation nor blockers; routes to implement")}
     end
   elif $status == "blocked" then
     ((if $engine == "mt" then "skip" else "needs_human" end)) as $grp |

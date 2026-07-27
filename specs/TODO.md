@@ -24,7 +24,7 @@ next_project_number: 931
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-917 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+917 [IMPLEMENTING] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 918 [NOT STARTED] — resolve_task_dir() in task-lock.sh hard-fails for a task whose di
   └─ 923 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 919 [NOT STARTED] — Fifteen agent definitions instruct writing .return-meta.json but 
@@ -227,7 +227,7 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 924
+- **Dependencies**: Task 922, Task 924
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
@@ -498,10 +498,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 917. Converge single-task /orchestrate partial triage onto the mt engine
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [917_converge_orchestrate_partial_triage_engines/reports/01_converge-partial-triage-engines.md]
+- **Plan**: [917_converge_orchestrate_partial_triage_engines/plans/01_converge-partial-triage-engines.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
