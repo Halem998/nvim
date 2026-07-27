@@ -19,7 +19,7 @@ next_project_number: 937
 
 ### Agent System
 
-887 [RESEARCHED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
+887 [PLANNED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
   └─ 931 [NOT STARTED] — Resolve the writer/predicate contract mismatch on continuation_co
 933 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
@@ -1692,11 +1692,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 887. Research: telemetry source architecture and /distill redesign
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 873, Task 885, Task 926
 - **Research**: [887_research_telemetry_source_architecture_and_distill_redesign/reports/01_telemetry-source-architecture.md]
+- **Plan**: [887_research_telemetry_source_architecture_and_distill_redesign/plans/01_distill-telemetry-redesign.md]
 
 **Description**: RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The user will /revise this and then /expand it into implementation tasks. Do NOT jump to implementation.
 

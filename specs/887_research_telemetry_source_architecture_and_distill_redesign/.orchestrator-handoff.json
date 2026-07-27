@@ -1,46 +1,45 @@
 {
-  "task_number": 887,
-  "phase": "research",
-  "status": "researched",
-  "session_id": "sess_1784135810_7e6755_887",
-  "timestamp": "2026-07-15T00:00:00Z",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "summary": "Settled the OTel/events.jsonl join precisely (new nullable cc_session_id + cwd fields, captured from already-parsed hook stdin, exact join on cc_session_id), mapped the four-tier source model onto all 12 /distill sub-modes, confirmed 873's cd mechanism fully covers the memory/event scripts given the existing relative-path invocation convention, and designed the skill-learn/skill-distill split with a contiguous, skeleton-factored skill-distill layout. Research only -- no files written outside specs/887_.../.",
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Created a 12-phase design plan settling the OTel/events.jsonl seam and the /distill redesign into 12 sub-modes plus the skill-learn/skill-distill split. Plan grounding found a material correction to the research report: the cwd/repo-tag half of the seam is ALREADY fully implemented (schema property, events-append.sh --cwd, both hooks capturing from stdin, events-query.sh --repo derivation), so cc_session_id is the only genuinely new field. Design round only: 0 of 12 phases are implemented by design, so the completion gate must refuse - the user will /revise then /expand this plan. All planned edits target agent-system/extensions/**, never .claude/**.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/887_research_telemetry_source_architecture_and_distill_redesign/reports/01_telemetry-source-architecture.md",
-      "summary": "Research report: telemetry source architecture and /distill redesign"
+      "type": "plan",
+      "path": "specs/887_research_telemetry_source_architecture_and_distill_redesign/plans/01_distill-telemetry-redesign.md"
     }
   ],
-  "metadata": {
-    "phase_count": null,
-    "file_scope": [
-      "agent-system/extensions/memory/commands/distill.md",
-      "agent-system/extensions/memory/skills/skill-memory/SKILL.md",
-      "agent-system/extensions/memory/manifest.json",
-      "agent-system/extensions/memory/EXTENSION.md",
-      "agent-system/extensions/memory/index-entries.json",
-      "agent-system/extensions/core/context/formats/events-format.md",
-      "agent-system/extensions/core/context/schemas/events-schema.json",
-      "agent-system/extensions/core/scripts/events-append.sh",
-      "agent-system/extensions/core/hooks/events-log-lifecycle.sh",
-      "agent-system/extensions/core/hooks/events-log-artifact.sh"
-    ]
+  "blockers": [],
+  "next_action_hint": "revise",
+  "files_modified": [
+    "specs/887_research_telemetry_source_architecture_and_distill_redesign/plans/01_distill-telemetry-redesign.md",
+    "specs/887_research_telemetry_source_architecture_and_distill_redesign/.return-meta.json",
+    "specs/887_research_telemetry_source_architecture_and_distill_redesign/.orchestrator-handoff.json"
+  ],
+  "decisions_made": [
+    "cc_session_id (flat snake_case, nullable, optional) is the only new events.jsonl field; it follows the identical code path cwd already travels at every call site.",
+    "cwd/repo-tag is a preserved asset, not new work - it is already implemented end to end, contradicting the research report's recommendation.",
+    "The OTel <-> events.jsonl join is exact via cc_session_id = OTel session.id; no time-window heuristic, and the sess_* join stays a recorded dead end.",
+    "gen_ai.* names are borrowed as a citation vocabulary inside the already-open detail object only, never as top-level field names; no span/trace or collector infrastructure.",
+    "skill-memory/SKILL.md splits mechanically at line 1063 (## Mode: distill) into skill-learn and skill-distill, with restructuring deliberately deferred to a later phase so a failed split is a clean revert.",
+    "The seven-step sub-mode skeleton is stated once in a shared section; each sub-mode is reduced to deltas, and behavior preservation beats fitting the template.",
+    "--revise and --meta take the current dream sub-mode's two existing halves; --dream is redefined to history.jsonl-sourced speculative direction-finding with no correlation machinery of its own.",
+    "--meta consumes the existing GLOBAL_ROOT/cd-chaining/--local mechanism verbatim and delegates task creation to meta-builder-agent; it invents neither.",
+    "The four memory/event scripts need NO code change for cross-repo access - only an invocation discipline (chained cd + relative path in one Bash call), with absolute-path invocation named as a prohibition.",
+    "Design constraints (evaluator outside the loop, never auto-apply, ~70% v1 miss rate, six failure modes, no-new-hygiene-below-100) are factored into one citable guardrails context file instead of restated per sub-mode.",
+    "The seven existing hygiene sub-modes are frozen; only their position in the file changes.",
+    "Cross-repo events.jsonl aggregation is an explicit out-of-scope residual limit, documented in the --meta flag description itself."
+  ],
+  "dead_ends": [
+    "Do not revive the sess_{ts}_{rand} join between the agent system and Claude Code - different id spaces, no structural link.",
+    "Do not add cwd to events-schema.json or a --cwd flag to events-append.sh - both already exist; re-adding them would be a no-op or a conflict.",
+    "Do not build a span/trace system, OTel collector, or new transcript parser."
+  ],
+  "phases_completed": 0,
+  "phases_total": 12,
+  "continuation_context": {
+    "handoff_path": "specs/887_research_telemetry_source_architecture_and_distill_redesign/.orchestrator-handoff.json",
+    "orchestrator_mode": true
   },
-  "research_decisions": [
-    "OTel/events.jsonl join: add nullable cc_session_id (Claude Code's native UUIDv4) and cwd fields to events-schema.json, captured from hook stdin already parsed by events-log-lifecycle.sh and events-log-artifact.sh (both currently discard these fields). Exact join on cc_session_id; cwd is the secondary correlator and repo-tag source. This is a deliberate, non-silent schema revision (top-level additionalProperties: false).",
-    "gen_ai.* names are borrowed only as literal keys inside the already-open `detail` object when citing OTel evidence -- never as new top-level snake_case-violating field names.",
-    "873's cd \"$GLOBAL_ROOT\" mechanism fully resolves cross-repo access for memory-retrieve.sh/memory-harvest.sh/events-query.sh/events-append.sh with NO script changes needed, because every existing call site already uses the relative-path form `bash .claude/scripts/{name}.sh` -- confirmed across all 13 call sites. New --meta/--revise/--review call sites must follow the same chained cd + relative-path discipline, never an absolute path or a distant cd.",
-    "--revise and --meta are the current dream sub-mode's two existing halves (lines 2102-2271 and 2273-2325 of skill-memory/SKILL.md), renamed and extended -- not new machinery. --dream is redefined to source from history.jsonl for speculative direction-finding only. --review is the one sub-mode spanning all four tiers live, read-only. --learn sources Tier 4 (30-day transcripts) falling back to Tier 3 (history.jsonl) for older archived tasks.",
-    "The six existing hygiene sub-modes (report/purge/merge/compress/refine/gc/auto) get zero source changes, per the binding no-new-hygiene-below-~100-entries constraint.",
-    "skill-memory/SKILL.md splits at its existing '## Mode: distill' boundary (line 1063) into skill-learn and skill-distill; skill-distill is additionally reordered to contiguous sub-mode sections (purge immediately followed by its logical pair gc) and factored around one shared 7-step skeleton section."
-  ],
-  "residual_risks": [
-    "--meta's events.jsonl signal is single-repo only (no cross-repo event aggregation exists) -- must be documented as a scope limit, not solved in this task.",
-    "The events-schema.json revision is breaking-adjacent for any strict external validator; both new fields are nullable/optional but this must be an explicit implementation-plan checklist item.",
-    "--revise's OTel evidence tier silently contributes nothing if CLAUDE_CODE_ENABLE_TELEMETRY is unset in the user's environment; must degrade via the same explicitly-announced degraded-path pattern the current dream section already uses for 'No Events Yet'."
-  ],
-  "next_command": "/revise 887 (per task description: design round -- user will revise then /expand into implementation tasks)"
+  "plan_markers_verified": true
 }

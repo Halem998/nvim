@@ -377,7 +377,7 @@
     {
       "project_number": 887,
       "project_name": "research_telemetry_source_architecture_and_distill_redesign",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Research: telemetry source architecture and /distill redesign",
@@ -397,13 +397,18 @@
         "agent-system/extensions/memory/skills/skill-memory/SKILL.md"
       ],
       "created": "2026-07-15",
-      "last_updated": "2026-07-27T20:02:48Z",
-      "session_id": "sess_1785182568_4f9e85",
+      "last_updated": "2026-07-27T23:25:19Z",
+      "session_id": "sess_1785194231_5f18f2",
       "artifacts": [
         {
           "path": "specs/887_research_telemetry_source_architecture_and_distill_redesign/reports/01_telemetry-source-architecture.md",
           "type": "report",
           "summary": "Research report: telemetry source architecture and /distill redesign"
+        },
+        {
+          "path": "specs/887_research_telemetry_source_architecture_and_distill_redesign/plans/01_distill-telemetry-redesign.md",
+          "type": "plan",
+          "summary": ""
         }
       ]
     },
