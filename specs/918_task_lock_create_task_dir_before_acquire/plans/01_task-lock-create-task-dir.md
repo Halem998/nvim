@@ -173,26 +173,26 @@ only, only for a `state.json`-derived path, and only when no directory resolves 
 
 ---
 
-### Phase 2: Bring the canonical contract doc into line [NOT STARTED]
+### Phase 2: Bring the canonical contract doc into line [COMPLETED]
 
 **Goal**: `context/patterns/task-lock.md` describes create-if-missing as part of `acquire`'s
 contract and explicitly denies it to the read-only subcommands.
 
 **Tasks**:
-- [ ] In the `### acquire <task_number> <operation> <session_id> [command]` section, rewrite step 1
+- [x] In the `### acquire <task_number> <operation> <session_id> [command]` section, rewrite step 1
       ("Resolve the task directory ... falling back to a filesystem glob") so it states the full
       order: prefer `state.json`'s `project_name`; fall back to a filesystem glob; and, only if
       neither resolves, create the `state.json`-derived path together with its `reports/`,
       `plans/`, and `summaries/` subdirectories. Note that the glob fallback never creates, so an
-      unknown task number still fails.
-- [ ] Add a short note in the same section that create-if-missing is opt-in and passed by `acquire`
+      unknown task number still fails. *(completed)*
+- [x] Add a short note in the same section that create-if-missing is opt-in and passed by `acquire`
       alone — `heartbeat`, `release`, and `check` resolve read-only and have no filesystem side
-      effects, including on a task whose directory does not exist.
-- [ ] Mirror the read-only guarantee in the `### heartbeat`, `### release`, and `### check`
-      sections with one clause each, so a reader landing on any of them sees it.
-- [ ] In the `## Consumers (Two Distinct Wiring Paths)` section, note that because creation lives
-      in `acquire` itself, gate-bypassing consumers get it without any change of their own.
-- [ ] Add no task-number citations in any text written here.
+      effects, including on a task whose directory does not exist. *(completed)*
+- [x] Mirror the read-only guarantee in the `### heartbeat`, `### release`, and `### check`
+      sections with one clause each, so a reader landing on any of them sees it. *(completed)*
+- [x] In the `## Consumers (Two Distinct Wiring Paths)` section, note that because creation lives
+      in `acquire` itself, gate-bypassing consumers get it without any change of their own. *(completed)*
+- [x] Add no task-number citations in any text written here. *(completed: verified via git diff grep)*
 
 **Timing**: 0.5 hours
 

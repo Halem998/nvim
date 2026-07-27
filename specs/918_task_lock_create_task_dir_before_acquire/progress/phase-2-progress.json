@@ -1,0 +1,12 @@
+{
+  "phase": 2,
+  "phase_name": "Bring the canonical contract doc into line",
+  "started_at": "2026-07-27T00:05:00Z",
+  "last_updated": "2026-07-27T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite acquire step 1, add opt-in note, mirror read-only clauses in heartbeat/release/check, update Consumers section", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

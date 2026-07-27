@@ -82,8 +82,18 @@ NEVER reimplement lock logic inline (no ad hoc `mkdir .lock` elsewhere in the co
 
 ### `acquire <task_number> <operation> <session_id> [command]`
 
-1. Resolve the task directory (`specs/{NNN}_{SLUG}/`, preferring `state.json`'s
-   `project_name`, falling back to a filesystem glob).
+1. Resolve the task directory (`specs/{NNN}_{SLUG}/`) in three steps, tried in order: prefer
+   `state.json`'s `project_name`; fall back to a filesystem glob if that path does not exist on
+   disk; and, only if neither resolves anything, create the `state.json`-derived path together
+   with its `reports/`, `plans/`, and `summaries/` subdirectories. The glob fallback itself never
+   creates a directory, so a task number that is unknown to `state.json` and absent from disk
+   still fails resolution cleanly rather than being conjured into existence.
+
+   Create-if-missing is **opt-in and exclusive to `acquire`** — it is passed as a second,
+   explicit argument that only `cmd_acquire` supplies. `heartbeat`, `release`, and `check` all
+   resolve the task directory read-only and have zero filesystem side effects, including when
+   invoked against a task that has no directory yet on disk (see the read-only clause repeated in
+   each of their own sections below).
 2. **(task 809)** Acquire the `specs/.scope-lock/` global mutex (see "Cross-Task `file_scope`
    Overlap Check" below). On mutex timeout, print an error and exit **2** (fail closed — never
    fail open). Inside the mutex: run the cross-task `file_scope` overlap scan; a fresh
@@ -140,20 +150,26 @@ inherits the behavior with zero call-site edits.
 Refresh `heartbeat_at` in place if the lock is held by the SAME session. If the lock is
 missing, or held by a different session, this is a **no-op with a stderr warning** — heartbeat
 never blocks or errors the caller; it is a best-effort refresh at existing checkpoints (the
-`/orchestrate` cycle loop, `/implement` phase transitions), not a gate.
+`/orchestrate` cycle loop, `/implement` phase transitions), not a gate. Task-directory resolution
+here is strictly read-only: `heartbeat` never creates a directory, even against a task that
+`state.json` names but that has no directory on disk yet.
 
 ### `release <task_number> <session_id>`
 
 Unconditionally removes `.lock/`. Idempotent: releasing an already-absent lock is success, not
 an error. Success, partial, and failed skill outcomes ALL release — release is not conditioned
-on the operation's own success, only on gate-out having run.
+on the operation's own success, only on gate-out having run. Task-directory resolution here is
+strictly read-only: `release` never creates a directory, even against a task that `state.json`
+names but that has no directory on disk yet.
 
 ### `check <task_number>`
 
 Diagnostic-only: prints the holder + staleness and exits with a code encoding
 free / held-fresh / held-stale (see the script's own header comment for the exact exit-code
 table; `check`'s exit codes are intentionally distinct from `acquire`/`heartbeat`/`release`'s,
-since `check` is a query, not a gate).
+since `check` is a query, not a gate). Task-directory resolution here is strictly read-only:
+`check` never creates a directory, even against a task that `state.json` names but that has no
+directory on disk yet.
 
 ### `init-marker <file_path>` (stdin = JSON content)
 
@@ -419,7 +435,10 @@ of the task 788 plan and should never be weakened by future edits.
    need their own acquire/release bracketing. Heartbeat refresh is wired at existing natural
    checkpoints: `skill-orchestrate/SKILL.md`'s Stage 3 cycle loop (alongside the existing
    `.orchestrator-loop-guard` refresh) and `skill-implementer/SKILL.md`'s phase-transition point
-   (alongside `update-phase-status.sh`).
+   (alongside `update-phase-status.sh`). Because create-if-missing lives inside `acquire` itself
+   (see the `acquire` contract above), both of these gate-bypassing consumers dispatch tasks whose
+   directory does not exist yet without any change of their own — the fix is entirely internal to
+   `cmd_acquire`/`resolve_task_dir`.
 3. **`init-marker` call sites** (task 808, file-granularity, independent of the two paths above):
    `skill-orchestrate/SKILL.md` Stage 2 (`.orchestrator-loop-guard` creation) and
    `skill-orchestrate-hard/SKILL.md` Stage 2 (`.orchestrator-loop-guard` AND
