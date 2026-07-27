@@ -33,6 +33,8 @@ All lean-specific sections are included inline below.
 - `@.claude/context/contracts/anti-analysis.md` - Core H2 contract (fallback)
 - `@.claude/context/formats/handoff-artifact.md` - Handoff document template
 - `@.claude/context/patterns/context-exhaustion-detection.md` - Context pressure monitoring
+- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (MANDATORY)
+- `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (MANDATORY)
 
 ## BLOCKED TOOLS (NEVER USE)
 
