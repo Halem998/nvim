@@ -274,24 +274,24 @@ heading.
 
 ---
 
-### Phase 3: Document the MT per-task commit scope in git-staging-scope.md [NOT STARTED]
+### Phase 3: Document the MT per-task commit scope in git-staging-scope.md [COMPLETED]
 
 **Goal**: The authoritative staging-scope contract records that MT mode applies the per-operation
 scopes **per task**, and that the existing Fail-Safe Direction warning is the single convention for
 absent/empty `modified_files` in both modes.
 
 **Tasks**:
-- [ ] Add a subsection (e.g. "Multi-Task Application") after the `## Per-Operation Scope` block,
+- [x] Add a subsection (e.g. "Multi-Task Application") after the `## Per-Operation Scope` block,
       stating that in multi-task `/orchestrate` the `research`/`plan`/`implement` scopes above apply
       once per task, keyed to that task's own directory and its own `.return-meta.json` — never
       unioned across tasks into a single commit.
-- [ ] Record the reason in one sentence: a union commit cannot be reverted per task.
-- [ ] Amend the `## Fail-Safe Direction` section with a single sentence stating that in multi-task
+- [x] Record the reason in one sentence: a union commit cannot be reverted per task.
+- [x] Amend the `## Fail-Safe Direction` section with a single sentence stating that in multi-task
       application the same warning is emitted per task with the task number appended, and that this
       is the only sanctioned wording — a second convention MUST NOT be introduced.
-- [ ] Note that `--honest-index-rows` is required at every site staging `specs/state.json` or
+- [x] Note that `--honest-index-rows` is required at every site staging `specs/state.json` or
       `specs/TODO.md`, because those files legitimately carry other tasks' current rows.
-- [ ] Check the `## Related Documentation` section and add cross-references if the new subsection
+- [x] Check the `## Related Documentation` section and add cross-references if the new subsection
       warrants them.
 
 **Timing**: 45 minutes

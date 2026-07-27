@@ -74,6 +74,20 @@ Stage the `plan` scope above (task directory with the same exclusions), PLUS:
 during execution — see `.claude/context/formats/progress-file.md`'s `files_touched` field for the
 per-objective accumulation mechanism that feeds it.
 
+## Multi-Task Application
+
+In multi-task `/orchestrate`, the `research`/`plan`/`implement` scopes above apply **once per
+task**, keyed to that task's own directory and its own `.return-meta.json` — never unioned across
+tasks into a single combined commit. A union commit cannot be reverted per task. Concretely: MT
+mode's per-task postflight loop (`skill-orchestrate`'s Stage MT-4 step 5.5) issues one scoped
+commit per task per phase transition, reusing this same contract with `task_dir` and
+`modified_files` resolved from that task's own state — never a sibling task's.
+
+`--honest-index-rows` is required at every site staging `specs/state.json` or `specs/TODO.md`,
+because those shared, wholesale-regenerated index files legitimately carry other tasks' current
+rows in the same commit — including at the MT per-task commit site, which stages both files on
+every task's commit.
+
 ## Fail-Safe Direction
 
 **Under-stage, never over-stage.**
@@ -86,6 +100,10 @@ non-silent warning**:
 ```
 [postflight] WARNING: no modified_files reported; source-file changes NOT committed automatically. Review and commit manually.
 ```
+
+In multi-task application (see "Multi-Task Application" above), the same warning is emitted per
+task with the task number appended (`no modified_files reported for task #{task_num}; ...`) — this
+is the only sanctioned wording; a second, differently-worded convention MUST NOT be introduced.
 
 It is always acceptable to leave source-file changes uncommitted for the user to review and
 stage manually. It is never acceptable to reach for `git add -A` to "catch everything" — that
@@ -273,3 +291,8 @@ the addendum and falls through to the plain commit message — it must never bre
   (`commit-acquire`/`commit-release`) that `git-commit-scoped.sh` uses to serialize commits
 - `.claude/context/standards/orchestrator-runtime-files.md` — the two-class ephemeral/durable
   policy the canonical exclusion set above implements, with the full freshness-gate rationale
+- `.claude/skills/skill-orchestrate/SKILL.md` — Stage MT-4 step 5.5, the MT per-task commit site
+  that applies the "Multi-Task Application" scope above once per task
+- `.claude/docs/architecture/orchestrate-state-machine.md` — MT Mode's Commit Granularity
+  subsection, and `.claude/context/patterns/batch-orchestration-guardrails.md` — hazard 2's
+  retirement record
