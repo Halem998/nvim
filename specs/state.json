@@ -704,7 +704,7 @@
     {
       "project_number": 906,
       "project_name": "fix_gate_out_validation_arity_and_status_vocabulary",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Fix gate-out artifact-validation call arity and unify the .return-meta.json status vocabulary",
@@ -725,7 +725,7 @@
         "agent-system/extensions/core/commands/research.md"
       ],
       "created": "2026-07-25T00:00:00Z",
-      "last_updated": "2026-07-27T08:12:50Z",
+      "last_updated": "2026-07-27T08:28:55Z",
       "session_id": "sess_1785139168_cefcd3",
       "artifacts": [
         {
@@ -737,8 +737,14 @@
           "path": "specs/906_fix_gate_out_validation_arity_and_status_vocabulary/plans/01_gate-out-arity-and-status-vocabulary.md",
           "type": "plan",
           "summary": "7-phase plan, 5.5h, 6 dependency waves; fixes call-arity via shared helper, fixes status vocabulary, verifies both defects live against a disposable fixture, then reconciles the prose that described the removed bugs."
+        },
+        {
+          "path": "specs/906_fix_gate_out_validation_arity_and_status_vocabulary/summaries/01_gate-out-arity-and-status-vocabulary-summary.md",
+          "type": "summary",
+          "summary": "Execution summary with captured before/after evidence for verification (a) and the positive/negative-control evidence for verification (b)."
         }
-      ]
+      ],
+      "completion_summary": "Fixed the validate-artifact.sh call-arity bug in command-gate-out.sh by extracting a shared skill_validate_task_artifacts helper into skill-base.sh, eliminating the spurious [FAIL] File not found line and making the artifact link-repair leg run for the first time. Fixed skill-orchestrate's two forbidden \"completed\" writes to .return-meta.json/.return-meta-multi.json (Stage 8 clean exit, Stage MT-5 exit_status), making gate-out's defensive status-correction branch for operation=orchestrate reachable for the first time. Both fixes demonstrated live against a disposable fixture (positive and negative control runs). Established return-metadata-file.md as the single normative status-vocabulary source, cross-referenced from handoff-schema.md and command-gate-out.sh instead of being independently restated."
     },
     {
       "project_number": 907,

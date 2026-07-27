@@ -12,9 +12,8 @@ next_project_number: 918
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 873,885,914,915,917 | -- | agent-system |
-| 2 | 887,906 | 873,885 | agent-system |
-| 3 | 907 | 906 | agent-system |
-| 4 | 908 | 907 | agent-system |
+| 2 | 887,907 | 873,885 | agent-system |
+| 3 | 908 | 907 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -24,9 +23,8 @@ next_project_number: 918
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 885 [PARTIAL] — URGENT / HIGH PRIORITY. The 30-day transcript window is reaped da
   └─ 887 [BLOCKED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use (see above)
-  └─ 906 [IMPLEMENTING] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-    └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-      └─ 908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
+  └─ 907 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+    └─ 908 [NOT STARTED] — Observed directly during a 4-task concurrent /orchestrate batch (
 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 917 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
@@ -429,12 +427,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 906. Fix gate-out artifact-validation call arity and unify the .return-meta.json status vocabulary
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 885, Task 896, Task 901, Task 909
 - **Research**: [906_fix_gate_out_validation_arity_and_status_vocabulary/reports/01_gate-out-arity-and-status-vocabulary.md]
 - **Plan**: [906_fix_gate_out_validation_arity_and_status_vocabulary/plans/01_gate-out-arity-and-status-vocabulary.md]
+- **Summary**: [906_fix_gate_out_validation_arity_and_status_vocabulary/summaries/01_gate-out-arity-and-status-vocabulary-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/core/** and NEVER .claude/**.
 

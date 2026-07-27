@@ -1,7 +1,7 @@
 # Implementation Plan: Task #906
 
 - **Task**: 906 - fix_gate_out_validation_arity_and_status_vocabulary
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: 885, 896, 901, 909 (file-overlap serialization edges only — no logical prerequisites)
 - **Research Inputs**: specs/906_fix_gate_out_validation_arity_and_status_vocabulary/reports/01_gate-out-arity-and-status-vocabulary.md
