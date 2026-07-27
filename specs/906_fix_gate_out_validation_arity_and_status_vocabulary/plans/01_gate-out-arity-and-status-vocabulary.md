@@ -261,40 +261,51 @@ arity, and gate-out still exits 0 with `set -e` in force after sourcing `skill-b
 
 ---
 
-### Phase 3: Build the verification fixture and demonstrate verification (a) [NOT STARTED]
+### Phase 3: Build the verification fixture and demonstrate verification (a) [COMPLETED]
 
 **Goal**: A disposable fixture repo root exists containing the FIXED scripts, and a real
 `command-gate-out.sh` run inside it validates each artifact with its correct type and emits zero
 spurious `[FAIL]`.
 
 **Tasks**:
-- [ ] Create a disposable fixture root (`mktemp -d`, or a directory under the agent's scratchpad).
+- [x] Create a disposable fixture root (`mktemp -d`, or a directory under the agent's scratchpad).
       Record the path; it is removed in Phase 7. Nothing in this phase writes outside it.
-- [ ] Populate the fixture: `cp -r .claude <fixture>/.claude` (the deployed tree — provides
+      *(completed: `$SCRATCHPAD/task906-fixture`)*
+- [x] Populate the fixture: `cp -r .claude <fixture>/.claude` (the deployed tree — provides
       `validate-artifact.sh`, `task-lock.sh`, `update-task-status.sh`, `generate-todo.sh`, and
       whatever else those transitively need), then `mkdir -p <fixture>/specs` and copy
       `specs/state.json`, `specs/TODO.md`, and the two real task directories
       `specs/913_fix_stage5_missing_handoff_after_research_dispatch/` and
-      `specs/916_fix_orchestrate_completion_summary_propagation/`.
-- [ ] **Overwrite with the fixed copies** (this is what makes the test meaningful — the deployed
+      `specs/916_fix_orchestrate_completion_summary_propagation/`. *(completed)*
+- [x] **Overwrite with the fixed copies** (this is what makes the test meaningful — the deployed
       tree is stale and is NOT being re-synced): copy
       `agent-system/extensions/core/scripts/skill-base.sh` and
       `agent-system/extensions/core/scripts/command-gate-out.sh` over their fixture counterparts.
-- [ ] Confirm the overwrite landed:
+      *(completed)*
+- [x] Confirm the overwrite landed:
       `grep -c skill_validate_task_artifacts <fixture>/.claude/scripts/skill-base.sh` is non-zero
       AND the same grep against `<fixture>/.claude/scripts/command-gate-out.sh` is non-zero.
-      Do NOT proceed on a failed check — a false pass is worse than no test.
-- [ ] Baseline (optional but recommended): before overwriting, run the STALE gate-out in a
+      Do NOT proceed on a failed check — a false pass is worse than no test. *(completed: counts
+      2 and 3 respectively)*
+- [x] Baseline (optional but recommended): before overwriting, run the STALE gate-out in a
       throwaway copy of the fixture and capture the spurious
       `[FAIL] File not found: specs/913_...` line as the before-state. This is the reproduction
       the research verified live twice; capturing it makes the after-state meaningful.
-- [ ] From `<fixture>` as cwd, run
+      *(completed: baseline run against the deployed .claude/ before overwrite reproduced
+      `[FAIL] File not found: specs/913_fix_stage5_missing_handoff_after_research_dispatch` and
+      `[FAIL] File not found: specs/916_fix_orchestrate_completion_summary_propagation`, both
+      exit 0)*
+- [x] From `<fixture>` as cwd, run
       `bash .claude/scripts/command-gate-out.sh 913 implement <fake_session_id>` and capture full
-      stdout+stderr. Repeat for task 916.
-- [ ] Assess against the pass criteria below. Note that genuine `[ERROR]`/`[FIXED]` lines from
+      stdout+stderr. Repeat for task 916. *(completed, see captured evidence in the execution
+      summary)*
+- [x] Assess against the pass criteria below. Note that genuine `[ERROR]`/`[FIXED]` lines from
       `validate-artifact.sh` about real format deviations in those artifacts are EXPECTED and are
       not failures — that is the repair leg working for the first time. Only a
-      `[FAIL] File not found` naming a *directory* is the defect.
+      `[FAIL] File not found` naming a *directory* is the defect. *(completed: 913's summary had
+      one genuine [ERROR] Missing metadata field: **Task**:; 916's report had one genuine [ERROR]
+      Missing required section: ## Recommendations, and its summary the same missing-Task-field
+      error — all expected, non-blocking, zero directory-level [FAIL] lines)*
 
 **Timing**: 1 hour
 
