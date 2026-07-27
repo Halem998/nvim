@@ -36,7 +36,8 @@ Task management and agent orchestration for project development. For comprehensi
 - `[IMPLEMENTING]` -> `[COMPLETED]` - Standard implementation terminus (general, meta, markdown, cslib, and all other non-pr task types)
 - `[IMPLEMENTING]` -> `[PR READY]` -> `[COMPLETED]` - type=pr only: implementation + PR submission phase
 - `[PR READY]` -> `[IMPLEMENTING]` - type=pr only: if PR review finds issues (re-dispatch)
-- `[BLOCKED]`, `[ABANDONED]`, `[PARTIAL]`, `[EXPANDED]` - Terminal/exception states
+- `[ABANDONED]`, `[EXPANDED]` - Terminal states (no further transitions)
+- `[BLOCKED]`, `[PARTIAL]` - Exception states (non-terminal; any command can resume from these)
 
 ### Artifact Paths
 ```
