@@ -436,25 +436,28 @@ classifier header, the Stage 4 `blocked` handler, and the MT-4 table's blocked-r
 
 ---
 
-### Phase 5: Bring the state-machine doc and the entry-point contract into line [NOT STARTED]
+### Phase 5: Bring the state-machine doc and the entry-point contract into line [COMPLETED]
 
 **Goal**: Make `orchestrate-state-machine.md` describe the now-reachable resume path without
 disturbing its exit-on-cycle-limit semantics (which are the target), and close the audit loop on
 `commands/orchestrate.md`'s permissive-gate claim.
 
 **Tasks**:
-- [ ] In `docs/architecture/orchestrate-state-machine.md`, leave the
+- [x] In `docs/architecture/orchestrate-state-machine.md`, leave the
       `partial` (no handoff, cycle limit) row's `cycle_count >= MAX_CYCLES` condition and
       "Report state, exit" action unchanged — this is the target semantics the code is being brought
-      up to, not something to edit.
-- [ ] Add one clarifying sentence in the annotation prose beneath the state table stating that the
+      up to, not something to edit. *(completed: table byte-identical, confirmed via git diff)*
+- [x] Add one clarifying sentence in the annotation prose beneath the state table stating that the
       `partial` no-handoff/no-blockers sub-state now dispatches `implement` on every cycle where
       budget remains, and that the cycle-limit row is reached through the same generic end-of-cycle
       check covering every other non-terminating row — not through a dedicated early exit.
-- [ ] Adjust only the wording strictly needed for that clarification. Do not restructure the table.
-- [ ] In `commands/orchestrate.md` CHECKPOINT 1, add a one-line strengthening to the permissive-gate
+      *(completed)*
+- [x] Adjust only the wording strictly needed for that clarification. Do not restructure the table.
+      *(completed)*
+- [x] In `commands/orchestrate.md` CHECKPOINT 1, add a one-line strengthening to the permissive-gate
       prose confirming that `partial` with no handoff is included in "all non-terminal states"
       without exception. Do not weaken or qualify the existing claim — the fix makes it true.
+      *(completed)*
 
 **Timing**: 30 minutes
 

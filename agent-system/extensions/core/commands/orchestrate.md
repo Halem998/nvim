@@ -453,7 +453,9 @@ The state machine handles all lifecycle phases starting from wherever the task c
 
 **Only blocks on terminal states**: `completed`, `abandoned`, `expanded`.
 All non-terminal states (not_started, researched, planned, implementing, partial, blocked) are
-valid entry points for the orchestrator.
+valid entry points for the orchestrator — without exception, this includes a `partial` task with
+no handoff and no blockers (the normal shape left by a base-mode dispatch), which the state
+machine dispatches implement for rather than treating as a dead end.
 
 **On GATE IN success**: Task validated. **IMMEDIATELY CONTINUE** to STAGE 2.
 

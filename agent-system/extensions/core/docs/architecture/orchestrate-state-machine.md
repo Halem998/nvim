@@ -43,6 +43,12 @@ equivalent handlers in `skill-orchestrate-hard/SKILL.md` — immediately before 
 corresponding Agent dispatch, mirroring the `skill_postflight_update()` call these same handlers
 already make after the dispatch returns.
 
+The `partial` no-handoff/no-blockers sub-state (a normal shape for a base-mode dispatch, which
+never writes a handoff) now dispatches `implement` on every cycle where budget remains, sourcing
+resume context from the prior dispatch's `.return-meta.json`; the `partial` (no handoff, cycle
+limit) row above is reached through the same generic end-of-cycle check that governs every other
+non-terminating row, not through a dedicated early exit.
+
 ---
 
 ## State Transition Diagram (ASCII)
