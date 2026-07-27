@@ -11,9 +11,8 @@ next_project_number: 932
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 885,914,915,920,923,924,928,929,931 | -- | agent-system, extensions |
-| 2 | 887,925,930 | 885,924,928 | agent-system, literature |
-| 3 | 926,927 | 925 | agent-system |
+| 1 | 885,914,915,920,923,925,928,929,931 | -- | agent-system, extensions |
+| 2 | 887,926,927,930 | 885,925,928 | agent-system, literature |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -25,10 +24,9 @@ next_project_number: 932
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
 923 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-924 [IMPLEMENTING] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-  └─ 925 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-    └─ 926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-    └─ 927 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+925 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+  └─ 926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+  └─ 927 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 929 [NOT STARTED] — SOURCE-STORE RULE (binding, and the subject of this task): the ag
 
 ### Extensions
@@ -268,12 +266,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 924. Make closed-with-documented-reasoned-exclusions a first-class phase completion outcome
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 922
 - **Research**: [924_documented_reasoned_exclusions_phase_outcome/reports/01_documented-reasoned-exclusions.md]
 - **Plan**: [924_documented_reasoned_exclusions_phase_outcome/plans/01_reasoned-exclusions-phase-outcome.md]
+- **Summary**: [924_documented_reasoned_exclusions_phase_outcome/summaries/01_reasoned-exclusions-phase-outcome-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 

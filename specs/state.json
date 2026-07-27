@@ -1244,7 +1244,7 @@
     {
       "project_number": 924,
       "project_name": "documented_reasoned_exclusions_phase_outcome",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Make closed-with-documented-reasoned-exclusions a first-class phase completion outcome",
@@ -1265,7 +1265,7 @@
         922
       ],
       "created": "2026-07-27T10:27:21Z",
-      "last_updated": "2026-07-27T17:05:04Z",
+      "last_updated": "2026-07-27T17:23:24Z",
       "session_id": "sess_1785171084_0f7c36",
       "artifacts": [
         {
@@ -1277,8 +1277,14 @@
           "path": "specs/924_documented_reasoned_exclusions_phase_outcome/plans/01_reasoned-exclusions-phase-outcome.md",
           "type": "plan",
           "summary": "5 phases; [COMPLETED WITH EXCLUSIONS] as second member of the strategic-sorry family; both trap sides resolved with mandatory negative fixtures"
+        },
+        {
+          "path": "specs/924_documented_reasoned_exclusions_phase_outcome/summaries/01_reasoned-exclusions-phase-outcome-summary.md",
+          "type": "summary",
+          "summary": "[COMPLETED WITH EXCLUSIONS] phase outcome generalizing the strategic-sorry precedent; both trap sides resolved; decimal sub-phase regexes reconciled"
         }
-      ]
+      ],
+      "completion_summary": "Introduced [COMPLETED WITH EXCLUSIONS] as a documented phase-heading outcome generalizing the strategic-sorry family, closed the write/count trap across update-phase-status.sh and update-task-status.sh, protected the Reasoned Exclusions record from Stage 5a's blind rewrite in both implementation agents (also fixing a pre-existing decimal-sub-phase extraction defect), reconciled the remaining phase-heading regex sites, and wired the outcome into the handoff schema and plan-format enforcement checklist."
     },
     {
       "project_number": 925,
