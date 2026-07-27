@@ -1,16 +1,32 @@
 {
-  "task_number": 930,
-  "session_id": "sess_1785176230_b4221f_930",
-  "phase": "plan",
-  "status": "planned",
-  "plan_path": "specs/930_port_combining_mark_fidelity_toolchain/plans/01_port-combining-mark-toolchain.md",
-  "research_path": "specs/930_port_combining_mark_fidelity_toolchain/reports/01_combining-mark-toolchain-port.md",
-  "phase_count": 5,
-  "estimated_hours": 2.5,
-  "complexity": "medium",
-  "dependency_waves": [[1], [2], [3, 4, 5]],
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Implemented all 5 plan phases. Ported the 6-file combining-mark (U+0338) fidelity toolchain byte-for-byte from the disposable BimodalLogic deploy tree into agent-system/extensions/literature/scripts/, registered 4 new provides.scripts entries (33 -> 37), verified doc-lint clean (literature extension PASS, zero failures), ran a scratch-directory deploy simulation with literature-convert.sh --self-test passing 15/15 checks, and documented the two new tools in the extension README.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/930_port_combining_mark_fidelity_toolchain/summaries/01_port-combining-mark-toolchain-summary.md"}
+  ],
   "blockers": [],
-  "notes": "Dependency on task 928 is a verification-ordering edge only; check-extension-docs.sh is already on disk with the required checks, so no phase is gated. Phases 1-2 are urgency-critical (source lives only in a disposable gitignored deploy tree). Phase 3 may land [PARTIAL] without blocking the port.",
-  "next_steps": "Run /implement 930 to execute the plan",
-  "completed_at": "2026-07-27T00:00:00Z"
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/literature/scripts/literature_combining_overlay.py",
+    "agent-system/extensions/literature/scripts/literature_combining_detect.py",
+    "agent-system/extensions/literature/scripts/literature-combining-audit.sh",
+    "agent-system/extensions/literature/scripts/literature-repair-combining.sh",
+    "agent-system/extensions/literature/scripts/literature-convert.sh",
+    "agent-system/extensions/literature/scripts/literature-fidelity-audit.sh",
+    "agent-system/extensions/literature/manifest.json",
+    "agent-system/extensions/literature/README.md"
+  ],
+  "decisions_made": [
+    "Re-cmp'd all 6 files immediately before writing; census matched exactly with no 7th differing file",
+    "check-extension-docs.sh must run from a deployed scripts/ tree, not agent-system source -- used the pre-existing .claude/scripts/ deployed copy (read-only)",
+    "Scratch deploy for self-test lived under the session scratchpad, never under .claude/**"
+  ],
+  "dead_ends": [
+    "Running check-extension-docs.sh directly from agent-system/extensions/core/scripts/ fails by design (requires a deployed tree)"
+  ],
+  "phases_completed": 5,
+  "phases_total": 5,
+  "plan_markers_verified": true
 }

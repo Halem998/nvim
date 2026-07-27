@@ -1,11 +1,46 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "agent_type": "general-implementation-agent",
   "task_number": 930,
   "session_id": "sess_1785176230_b4221f_930",
   "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "plan_path": "specs/930_port_combining_mark_fidelity_toolchain/plans/01_port-combining-mark-toolchain.md",
-  "artifacts": [],
-  "memory_candidates": [],
-  "modified_files": []
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/930_port_combining_mark_fidelity_toolchain/summaries/01_port-combining-mark-toolchain-summary.md",
+      "summary": "Rescued and ported the 6-file combining-mark fidelity toolchain into agent-system/extensions/literature/, registered 4 new manifest entries, verified doc-lint clean and a passing deploy-shaped self-test, documented in the README"
+    }
+  ],
+  "phases_completed": 5,
+  "phases_total": 5,
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/literature_combining_overlay.py",
+    "agent-system/extensions/literature/scripts/literature_combining_detect.py",
+    "agent-system/extensions/literature/scripts/literature-combining-audit.sh",
+    "agent-system/extensions/literature/scripts/literature-repair-combining.sh",
+    "agent-system/extensions/literature/scripts/literature-convert.sh",
+    "agent-system/extensions/literature/scripts/literature-fidelity-audit.sh",
+    "agent-system/extensions/literature/manifest.json",
+    "agent-system/extensions/literature/README.md"
+  ],
+  "completion_data": {
+    "completion_summary": "Ported the 6-file combining-mark (U+0338) fidelity toolchain from the disposable BimodalLogic deploy tree into agent-system/extensions/literature/ source, registered 4 new provides.scripts entries, verified doc-lint clean (literature extension PASS) and a passing 15/15-check literature-convert.sh --self-test from a scratch-directory deploy simulation, and documented the two new tools in the extension README."
+  },
+  "memory_candidates": [
+    {
+      "content": "When rescuing/porting files from a gitignored deploy tree into an agent-system extension source, always re-cmp every file against the census immediately before writing (not just trust the earlier research census) -- drift between research and implementation is real and caught this way. Also check-extension-docs.sh must be run from a DEPLOYED scripts/ tree, not the agent-system source tree -- it self-detects source-tree invocation and errors with a redirect instruction, since its ../.. relative path resolution assumes a deployed .claude/scripts/ or .opencode/scripts/ location.",
+      "category": "PATTERN",
+      "source_artifact": "specs/930_port_combining_mark_fidelity_toolchain/summaries/01_port-combining-mark-toolchain-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["check-extension-docs", "manifest registration", "provides.scripts", "deploy simulation", "source-store rule"]
+    },
+    {
+      "content": "To verify a manifest-driven deploy without writing into .claude/**, simulate it in a scratch directory: iterate provides.scripts entries, copy each with shutil.copy2 (preserves executable mode) from the extension scripts/ source to <scratch>/<entry>, then run any --self-test entrypoint from the scratch copy to exercise deployed-path sys.path.insert resolution. This catches import/path failures a source-tree run would mask, entirely outside .claude/**.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/930_port_combining_mark_fidelity_toolchain/summaries/01_port-combining-mark-toolchain-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["scratch deploy", "self-test", "sys.path.insert", "deploy simulation", "shutil.copy2"]
+    }
+  ]
 }
