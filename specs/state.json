@@ -796,7 +796,7 @@
     {
       "project_number": 910,
       "project_name": "fix_roadmap_annotation_silent_noop",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Fix roadmap-integration.sh reporting success while annotating nothing",
@@ -815,16 +815,21 @@
           "path": "specs/910_fix_roadmap_annotation_silent_noop/plans/01_roadmap-annotation-signal.md",
           "type": "plan",
           "summary": "Six-phase plan covering table-row annotation line-lookup repair, structure/no-op signalling, fixture verification, and the declared review.md consumer expansion."
+        },
+        {
+          "path": "specs/910_fix_roadmap_annotation_silent_noop/summaries/01_roadmap-annotation-signal-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: table-row source-line plumbing, always-on roadmap-structure marker with conditional loud banners and additive JSON fields, fixture-based end-to-end verification matrix, and the declared file_scope expansion surfacing the new signal in /review."
         }
       ],
       "created": "2026-07-26T23:43:25Z",
-      "last_updated": "2026-07-27T02:04:47Z",
+      "last_updated": "2026-07-27T02:22:13Z",
       "session_id": "sess_1785116996_862366_910"
     },
     {
       "project_number": 911,
       "project_name": "correct_terminal_status_taxonomy_and_todo_archival",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Correct the terminal-status taxonomy so /todo can archive expanded tasks",
@@ -845,16 +850,21 @@
           "path": "specs/911_correct_terminal_status_taxonomy_and_todo_archival/plans/01_terminal-status-taxonomy-archival.md",
           "type": "plan",
           "summary": "5 phases: (1) split the terminal/exception bullet in merge-sources/claudemd.md; (2) widen commands/todo.md scan, del() filter, completed_projects routing, ROADMAP exclusion, and reporting to include expanded; (3) add the subtasks-defer guard plus the load-bearing deferred-parent subtraction from the Step 5B del() filter; (4) mirror both changes across skill-todo/SKILL.md stages 2, 5, 7, 8, 10, 13, 15, 16; (5) cross-site consistency and constraint verification. Waves: [1,2] -> [3] -> [4] -> [5]."
+        },
+        {
+          "path": "specs/911_correct_terminal_status_taxonomy_and_todo_archival/summaries/01_terminal-status-taxonomy-archival-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 5 phases, the jq deviation fix, and verification results."
         }
       ],
       "created": "2026-07-26T23:43:25Z",
-      "last_updated": "2026-07-27T02:04:49Z",
+      "last_updated": "2026-07-27T02:22:16Z",
       "session_id": "sess_1785116996_862366_911"
     },
     {
       "project_number": 912,
       "project_name": "verify_roadmap_items_producer_contract_across_implementers",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Establish whether the roadmap_items producer contract actually runs outside the core implementer",
@@ -880,10 +890,15 @@
           "path": "specs/912_verify_roadmap_items_producer_contract_across_implementers/plans/01_roadmap-items-producer-fix.md",
           "type": "plan",
           "summary": "5 phases, 3 dependency waves, 2.5h. Waves: [1,2,3] -> [4] -> [5]. Modifies 5 source-store files plus specs/state.json; no edits to .claude/** and none to merge-sources/claudemd.md."
+        },
+        {
+          "path": "specs/912_verify_roadmap_items_producer_contract_across_implementers/summaries/01_roadmap-items-producer-fix-summary.md",
+          "type": "summary",
+          "summary": "Verified cross-matrix (core, core-hard, lean, lean-hard, web all now satisfy both links of the roadmap_items producer/consumer contract); recorded three follow-ups (nix/neovim/epi mirror-image gap, shared-postflight-script extraction, claudemd.md coordination note) plus the redeploy caveat."
         }
       ],
       "created": "2026-07-26T23:43:25Z",
-      "last_updated": "2026-07-27T02:04:51Z",
+      "last_updated": "2026-07-27T02:22:20Z",
       "session_id": "sess_1785116996_862366_912"
     }
   ],

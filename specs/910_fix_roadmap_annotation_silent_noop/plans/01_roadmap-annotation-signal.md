@@ -1,7 +1,7 @@
 # Implementation Plan: Task #910
 
 - **Task**: 910 - Fix roadmap-integration.sh reporting success while annotating nothing
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/910_fix_roadmap_annotation_silent_noop/reports/01_roadmap-annotation-silent-noop.md

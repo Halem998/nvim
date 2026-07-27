@@ -1,7 +1,7 @@
 # Implementation Plan: Task #912
 
 - **Task**: 912 - Establish whether the roadmap_items producer contract actually runs outside the core implementer
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/912_verify_roadmap_items_producer_contract_across_implementers/reports/01_roadmap-items-producer-gap.md
