@@ -1308,7 +1308,7 @@
     {
       "project_number": 925,
       "project_name": "depth_first_phase_closure_and_pre_edit_gate",
-      "status": "not_started",
+      "status": "planned",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Add a depth-first phase-closure contract and a per-item pre-edit verification gate to core implementers",
@@ -1327,9 +1327,20 @@
         924
       ],
       "created": "2026-07-27T10:27:21Z",
-      "last_updated": "2026-07-27T10:27:21Z",
-      "session_id": "sess_1785147256_d55ce4",
-      "artifacts": []
+      "last_updated": "2026-07-27T18:04:27Z",
+      "session_id": "sess_1785174674_41ba53",
+      "artifacts": [
+        {
+          "path": "specs/925_depth_first_phase_closure_and_pre_edit_gate/reports/01_depth-first-closure-pre-edit-gate.md",
+          "type": "report",
+          "summary": "Hard-mode-only claim confirmed 12/12; NO central injection point exists so downstream propagation is real work; @-reference is the load-bearing mechanism, not directory placement"
+        },
+        {
+          "path": "specs/925_depth_first_phase_closure_and_pre_edit_gate/plans/01_depth-first-closure-pre-edit-gate.md",
+          "type": "plan",
+          "summary": "6 phases; two sibling contracts (phase-closure, pre-edit-gate); scope-C sentence gated verbatim; injection finding recorded in context-layers.md"
+        }
+      ]
     },
     {
       "project_number": 926,

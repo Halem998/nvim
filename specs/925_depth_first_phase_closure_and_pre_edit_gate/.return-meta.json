@@ -1,0 +1,52 @@
+{
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "task_number": 925,
+  "session_id": "sess_1785174674_41ba53",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/925_depth_first_phase_closure_and_pre_edit_gate/plans/01_depth-first-closure-pre-edit-gate.md",
+      "summary": "6-phase plan authoring context/contracts/phase-closure.md and pre-edit-gate.md in the core source store, wiring both into the four core implementer files via explicit @-reference bullets, registering them in index-entries.json, and recording the no-central-injection-point finding in context-layers.md"
+    }
+  ],
+  "metadata": {
+    "phase_count": 6,
+    "estimated_hours": 3.5,
+    "dependency_waves": 4,
+    "wave_map": {
+      "1": [1, 2],
+      "2": [3],
+      "3": [4, 5],
+      "4": [6]
+    },
+    "verification_tiers": {
+      "1": "prose",
+      "2": "prose",
+      "3": "interface",
+      "4": "local",
+      "5": "prose",
+      "6": "full"
+    },
+    "files_to_create": 2,
+    "files_to_modify": 6,
+    "source_store_only": true
+  },
+  "completion_data": {
+    "plan_path": "specs/925_depth_first_phase_closure_and_pre_edit_gate/plans/01_depth-first-closure-pre-edit-gate.md",
+    "phase_count": 6,
+    "estimated_hours": 3.5,
+    "next_steps": "Run /implement 925 to execute the plan"
+  },
+  "next_steps": "Run /implement 925 to execute the plan",
+  "memory_candidates": [
+    {
+      "content": "In this agent-system codebase, directory placement is NOT a context-loading mechanism. A file placed in context/contracts/ is only loaded if an explicit @-reference bullet appears in the consuming agent's '## Context References' section. Only core's general-implementation-agent.md runs the adaptive context-discovery.md index query; no extension implementation agent and no hard-mode agent does. skill-base.sh's context_injection lifecycle hook runs the opposite direction (extensions injecting into core skills), and no shared dispatch-prompt builder exists -- each SKILL.md builds its dispatch prompt inline. Consequence: propagating any core context file to extension implementation agents is manual, per-file work; the in-repo precedent is cslib-implementation-hard-agent.md, which hand-copies core's anti-analysis.md/wrap-up.md/territory.md bullets. Any plan that assumes a central injection hook exists is wrong.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/925_depth_first_phase_closure_and_pre_edit_gate/plans/01_depth-first-closure-pre-edit-gate.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["context-loading", "at-reference", "contracts-directory", "extension-propagation", "context-discovery", "injection-point"]
+    }
+  ]
+}

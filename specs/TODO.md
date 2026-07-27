@@ -23,7 +23,7 @@ next_project_number: 932
 914 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 915 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 920 [NOT STARTED] — An off-schema dispatch_status read from .orchestrator-handoff.jso
-925 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+925 [PLANNED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
   └─ 926 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
   └─ 927 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 929 [NOT STARTED] — SOURCE-STORE RULE (binding, and the subject of this task): the ag
@@ -228,10 +228,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 925. Add a depth-first phase-closure contract and a per-item pre-edit verification gate to core implementers
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 922, Task 924
+- **Research**: [925_depth_first_phase_closure_and_pre_edit_gate/reports/01_depth-first-closure-pre-edit-gate.md]
+- **Plan**: [925_depth_first_phase_closure_and_pre_edit_gate/plans/01_depth-first-closure-pre-edit-gate.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
