@@ -286,30 +286,30 @@ states the source-store rule and names the correct target instead of exempting `
 
 ---
 
-### Phase 4: Core Agent Contracts and Duplicate-Prose Collapse [NOT STARTED]
+### Phase 4: Core Agent Contracts and Duplicate-Prose Collapse [COMPLETED]
 
 **Goal**: The two core implementer contracts carry the one-line rule pointer, and the pre-existing
 duplicate prose copy of this rule in `meta-builder-agent.md` is collapsed rather than left to
 diverge.
 
 **Tasks**:
-- [ ] Append one bullet to the existing `**MUST NOT**:` list in
+- [x] Append one bullet to the existing `**MUST NOT**:` list in
       `agent-system/extensions/core/agents/general-implementation-agent.md`, continuing that list's
       numbering, using the in-repo precedent shape:
       `Hand-author files under .claude/** -- see .claude/rules/source-store-deploy-boundary.md; edit the source store at agent-system/extensions/<ext>/** instead`
-- [ ] Append the identical bullet (renumbered to that file's list) to
+- [x] Append the identical bullet (renumbered to that file's list) to
       `agent-system/extensions/core/agents/general-implementation-hard-agent.md`.
-- [ ] In `agent-system/extensions/core/agents/meta-builder-agent.md`: replace the general
+- [x] In `agent-system/extensions/core/agents/meta-builder-agent.md`: replace the general
       explanation in the "Rule 2 (location-correctness)" bullet and the entire "Hook limitation"
       paragraph with a pointer to the new rule file. PRESERVE inline the agent-specific clause that
       has no home in an implementer-aimed rule: tasks this agent creates whose scope is an
       agent-system change must name `agent-system/extensions/core/**` (or the relevant extension's
       source directory) as their edit target, never `.claude/**`.
-- [ ] Leave "Rule 1 (actor/workflow)" untouched -- it is a distinct constraint about this agent
+- [x] Leave "Rule 1 (actor/workflow)" untouched -- it is a distinct constraint about this agent
       creating tasks rather than implementing, unrelated to the location rule.
-- [ ] Before collapsing, confirm the hook-limitation text was carried into the Phase 1 rule file;
+- [x] Before collapsing, confirm the hook-limitation text was carried into the Phase 1 rule file;
       if it was not, carry it there first rather than deleting it.
-- [ ] No task-number citations in any added or edited text.
+- [x] No task-number citations in any added or edited text.
 
 **Timing**: 30 minutes
 
