@@ -54,6 +54,12 @@ case "$FILE" in
   .claude/extensions/*|*/.claude/extensions/*)
     is_meta_path=true
     ;;
+  .claude/scripts/*|*/.claude/scripts/*)
+    is_meta_path=true
+    ;;
+  .claude/hooks/*|*/.claude/hooks/*)
+    is_meta_path=true
+    ;;
   */CLAUDE.md)
     is_meta_path=true
     ;;
@@ -67,7 +73,7 @@ fi
 # Path matches a .claude/ system file - inject corrective context
 # This is ADVISORY only (additionalContext), not blocking
 cat << 'EOF'
-{"additionalContext": "WARNING: You are writing directly to a .claude/ system file. If you are executing within the /meta command context, this is a VIOLATION of the Anti-Bypass Constraint. The /meta command MUST NOT create or modify .claude/ files directly. Instead: (1) Create tasks via TODO.md and state.json, (2) Let users run /research -> /plan -> /implement to execute changes through proper skill delegation. If you are executing within /implement (general-implementation-agent), this write is legitimate and you may proceed."}
+{"additionalContext": "WARNING: .claude/ under this repo is a gitignored, disposable deploy artifact regenerated from the source store at agent-system/extensions/**. This write will be silently wiped by the next regeneration. Edit the source store instead: agent-system/extensions/core/** for core system files, or agent-system/extensions/<ext>/** for extension-owned files. See .claude/rules/source-store-deploy-boundary.md for the full rule. This is advisory only and does not block the write."}
 EOF
 
 exit 0

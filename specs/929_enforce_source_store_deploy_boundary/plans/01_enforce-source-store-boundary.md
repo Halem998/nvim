@@ -236,29 +236,29 @@ runtime effect.
 
 ---
 
-### Phase 3: Widen and Re-Aim `validate-meta-write.sh` [NOT STARTED]
+### Phase 3: Widen and Re-Aim `validate-meta-write.sh` [COMPLETED]
 
 **Goal**: The hook covers the paths where the incident actually landed, and its advisory text
 states the source-store rule and names the correct target instead of exempting `/implement`.
 
 **Tasks**:
-- [ ] Add two cases to the `is_meta_path` case statement, in the existing style:
+- [x] Add two cases to the `is_meta_path` case statement, in the existing style:
       `.claude/scripts/*|*/.claude/scripts/*)` and `.claude/hooks/*|*/.claude/hooks/*)`.
-- [ ] Leave the existing seven cases and the `specs/*|*/specs/*` early-skip block untouched --
+- [x] Leave the existing seven cases and the `specs/*|*/specs/*` early-skip block untouched --
       the specs skip is a required non-goal-protected exemption.
-- [ ] Rewrite the `additionalContext` message. It must: (1) state that `.claude/` is a disposable
+- [x] Rewrite the `additionalContext` message. It must: (1) state that `.claude/` is a disposable
       deploy artifact regenerated from the source store and that edits there are silently wiped;
       (2) name `agent-system/extensions/<ext>/...` (or `agent-system/extensions/core/...`) as the
       correct edit target; (3) cite `.claude/rules/source-store-deploy-boundary.md` for the full
       rule; (4) close with an advisory-only sentence matching the sibling's tone.
-- [ ] DELETE the current trailing clause granting `/implement` (`general-implementation-agent`) a
+- [x] DELETE the current trailing clause granting `/implement` (`general-implementation-agent`) a
       blanket exemption. An `/implement`-lifecycle write into `.claude/**` is precisely the failure
       mode this hook exists to flag.
-- [ ] Keep the message to roughly the length of `validate-no-task-references.sh`'s advisory --
+- [x] Keep the message to roughly the length of `validate-no-task-references.sh`'s advisory --
       one compact paragraph, not multiple.
-- [ ] Preserve the hook's non-blocking contract exactly: single `additionalContext` JSON object on
+- [x] Preserve the hook's non-blocking contract exactly: single `additionalContext` JSON object on
       stdout, `exit 0` on every path. Do not introduce exit 2 or any blocking behavior.
-- [ ] Include no task-number citations in the message or comments.
+- [x] Include no task-number citations in the message or comments.
 
 **Timing**: 45 minutes
 
