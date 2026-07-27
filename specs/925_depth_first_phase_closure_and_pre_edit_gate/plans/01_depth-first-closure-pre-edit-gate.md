@@ -342,28 +342,28 @@ rather than guessing an insertion point.
 
 ---
 
-### Phase 4: Register both contracts in index-entries.json [NOT STARTED]
+### Phase 4: Register both contracts in index-entries.json [COMPLETED]
 
 **Goal**: Add `index-entries.json` entries for both new contracts with `load_when.agents` listing
 both the standard and hard implementation agents — the first non-hard-exclusive `contracts/`
 registrations in the system — keeping Context Gap Detection accurate.
 
 **Tasks**:
-- [ ] Read the existing `contracts/territory.md` entry in
+- [x] Read the existing `contracts/territory.md` entry in
       `agent-system/extensions/core/index-entries.json` as the structural template (fields:
       `path`, `domain`, `subdomain`, `summary`, `line_count`, `keywords`, `topics`,
       `load_when.{agents,commands,task_types}`).
-- [ ] Add an entry for `contracts/phase-closure.md` with `domain: "core"`,
+- [x] Add an entry for `contracts/phase-closure.md` with `domain: "core"`,
       `subdomain: "contracts"`, an accurate `line_count` measured from the file authored in
       Phase 1, keywords covering depth-first / phase-closure / partial / stop-at-boundary, and
       `load_when.agents: ["general-implementation-agent", "general-implementation-hard-agent"]`.
-- [ ] Add an entry for `contracts/pre-edit-gate.md` with the same `domain`/`subdomain`, an
+- [x] Add an entry for `contracts/pre-edit-gate.md` with the same `domain`/`subdomain`, an
       accurate `line_count` measured from the file authored in Phase 2, keywords covering
       pre-edit / verification-gate / scope-hypothesis / reasoned-exclusions, and the same
       two-agent `load_when.agents` list.
-- [ ] In each entry's `summary`, note that the contract applies in both standard and hard mode —
+- [x] In each entry's `summary`, note that the contract applies in both standard and hard mode —
       this is what documents the deliberate break from the directory's hard-only precedent.
-- [ ] Treat these registrations as **supplementary**: the Phase 3 `@`-reference bullets are the
+- [x] Treat these registrations as **supplementary**: the Phase 3 `@`-reference bullets are the
       load-bearing wiring. Do not remove or weaken any Phase 3 bullet on the grounds that the
       index entry now exists.
 

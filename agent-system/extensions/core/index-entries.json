@@ -2587,6 +2587,64 @@
       }
     },
     {
+      "path": "contracts/phase-closure.md",
+      "domain": "core",
+      "subdomain": "contracts",
+      "summary": "Depth-first phase-closure contract: close one phase entirely before opening the next, order remaining phases cheapest-closure-first, stop at a closed phase boundary rather than opening a phase that cannot finish; applies in BOTH standard and hard mode",
+      "line_count": 104,
+      "keywords": [
+        "depth-first",
+        "phase-closure",
+        "partial",
+        "stop-at-boundary",
+        "cheapest-first",
+        "sequencing"
+      ],
+      "topics": [
+        "contracts",
+        "phase-sequencing",
+        "standard-mode",
+        "hard-mode"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-agent",
+          "general-implementation-hard-agent"
+        ],
+        "commands": [],
+        "task_types": []
+      }
+    },
+    {
+      "path": "contracts/pre-edit-gate.md",
+      "domain": "core",
+      "subdomain": "contracts",
+      "summary": "Per-item pre-edit verification gate: cheap, blast-radius-proportionate evidence (reference count, build probe, definition lookup) required before applying any item from a mechanically-generated list; failed probes route to Reasoned Exclusions; applies in BOTH standard and hard mode",
+      "line_count": 104,
+      "keywords": [
+        "pre-edit",
+        "verification-gate",
+        "scope-hypothesis",
+        "reasoned-exclusions",
+        "probe",
+        "blast-radius"
+      ],
+      "topics": [
+        "contracts",
+        "verification",
+        "standard-mode",
+        "hard-mode"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-agent",
+          "general-implementation-hard-agent"
+        ],
+        "commands": [],
+        "task_types": []
+      }
+    },
+    {
       "path": "contracts/wrap-up.md",
       "domain": "core",
       "subdomain": "contracts",
