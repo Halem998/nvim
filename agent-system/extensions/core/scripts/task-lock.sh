@@ -57,7 +57,10 @@
 #
 # Exit codes:
 #   acquire:
-#     0 - lock acquired (fresh acquire, same-session re-entry, or stale override)
+#     0 - lock acquired (fresh acquire, same-session re-entry, or stale override).
+#         acquire creates the task directory (with reports/, plans/, summaries/) when
+#         state.json names the task but no directory exists yet on disk; heartbeat,
+#         release, and check remain strictly read-only and never create anything.
 #     1 - refused: a DIFFERENT session holds a fresh (non-stale) lock
 #     2 - usage/task-not-found error
 #   heartbeat:
@@ -110,12 +113,24 @@ STATE_FILE="$PROJECT_ROOT/specs/state.json"
 # Stale threshold in minutes, overridable via env var. Default 30 (plan range: 30-60).
 TASK_LOCK_STALE_MIN="${TASK_LOCK_STALE_MIN:-30}"
 
-# --- resolve_task_dir: task_number -> specs/{NNN}_{SLUG} absolute path ---
+# --- resolve_task_dir: task_number [create_mode] -> specs/{NNN}_{SLUG} absolute path ---
 # Prefers state.json's project_name (authoritative); falls back to a filesystem glob
 # so the lock still works if state.json lookup fails for any reason.
+#
+# The second parameter is opt-in and OMITTED by every caller except cmd_acquire, which
+# passes the literal string "create". With no second argument (or any value other than
+# "create"), this function's behavior is byte-identical to its original read-only form:
+# cmd_heartbeat, cmd_release, and cmd_check call it with a single argument and never
+# trigger creation. When "create" IS passed, creation is reachable ONLY from a path
+# resolved via state.json's project_name (recorded in state_dir below) -- never from the
+# find fallback below it. The find fallback preserves its original resolution precedence
+# unchanged and never creates a directory, so an unknown or typo'd task number still
+# fails closed via the final `return 1`. Creation is attempted only AFTER the find
+# fallback has already failed, so on project_name/on-disk slug drift the existing
+# on-disk directory is still resolved rather than a second, empty one being created.
 resolve_task_dir() {
-  local task_number="$1"
-  local padded project_name dir
+  local task_number="$1" create_mode="${2:-}"
+  local padded project_name dir state_dir=""
 
   padded=$(printf "%03d" "$task_number" 2>/dev/null) || return 1
 
@@ -129,6 +144,7 @@ resolve_task_dir() {
         echo "$dir"
         return 0
       fi
+      state_dir="$dir"
     fi
   fi
 
@@ -136,6 +152,14 @@ resolve_task_dir() {
   if [ -n "$dir" ]; then
     echo "$dir"
     return 0
+  fi
+
+  if [ "$create_mode" = "create" ] && [ -n "$state_dir" ]; then
+    mkdir -p "$state_dir/reports" "$state_dir/plans" "$state_dir/summaries" 2>/dev/null
+    if [ -d "$state_dir" ]; then
+      echo "$state_dir"
+      return 0
+    fi
   fi
 
   return 1
@@ -359,7 +383,7 @@ cmd_acquire() {
   local task_number="$1" operation="$2" session_id="$3" command="${4:-}"
   local task_dir lock_dir
 
-  task_dir=$(resolve_task_dir "$task_number") || {
+  task_dir=$(resolve_task_dir "$task_number" "create") || {
     echo "ERROR: could not resolve task directory for task $task_number" >&2
     return 2
   }

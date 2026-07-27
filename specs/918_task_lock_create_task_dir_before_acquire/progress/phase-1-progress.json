@@ -1,0 +1,12 @@
+{
+  "phase": 1,
+  "phase_name": "Add opt-in create-if-missing to resolve_task_dir and pass it from cmd_acquire",
+  "started_at": "2026-07-27T00:00:00Z",
+  "last_updated": "2026-07-27T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Change resolve_task_dir signature to bind create_mode, add state_dir, add creation block after find fallback, update cmd_acquire call site, update comments", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
