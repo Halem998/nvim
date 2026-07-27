@@ -664,10 +664,14 @@ if [ "$handoff_status" = "partial" ] && [ "$has_blockers" = "true" ] && [ "$phas
     echo "[hard-orchestrate] H5: Three-strikes — dispatching divergence audit for '$blocker_target'" >&2
     verbatim_goal=$(echo "$handoff" | jq -r '.blockers[0].verbatim_goal // ""')
 
+    # $RESEARCH_AGENT never writes .orchestrator-handoff.json, per the Stage 3.6 "Scoping
+    # Decision" in general-research-agent.md / general-research-hard-agent.md and the Handoff
+    # Writers table in docs/architecture/handoff-schema.md — so no absolute anchor is passed
+    # here. Revisit if that exclusion is ever lifted.
     Agent tool:
       subagent_type: $RESEARCH_AGENT
       prompt: "DIVERGENCE AUDIT for task $task_number. Target: '$blocker_target'. Verbatim goal: '$verbatim_goal'. This target has failed 3 times. Identify root cause of repeated failure. Write a divergence table, postmortem, and corrected target definition."
-      delegation_context: {task_number, session_id, effort_flag: "hard", focus_prompt: "divergence audit $blocker_target"}
+      delegation_context: {task_number, session_id, effort_flag: "hard", focus_prompt: "divergence audit $blocker_target", orchestrator_mode: false}
 
     # Reset churn counter for this target after audit
     jq --arg target "$blocker_target" \
@@ -947,10 +951,14 @@ if [ "$blocker_escalation_count" -lt "$MAX_BLOCKER_ESCALATIONS" ]; then
 
   # Escalate to blocker research
   blocker_desc=$(echo "$handoff" | jq -r '.blockers[0].verbatim_goal // "Unspecified blocker"')
+  # $RESEARCH_AGENT never writes .orchestrator-handoff.json, per the Stage 3.6 "Scoping
+  # Decision" in general-research-agent.md / general-research-hard-agent.md and the Handoff
+  # Writers table in docs/architecture/handoff-schema.md — so no absolute anchor is passed
+  # here. Revisit if that exclusion is ever lifted.
   Agent tool:
     subagent_type: $RESEARCH_AGENT
     prompt: "Research blocker for task $task_number: $blocker_desc. Find a concrete resolution path."
-    delegation_context: {task_number, session_id, effort_flag: "hard", focus_prompt: "blocker research"}
+    delegation_context: {task_number, session_id, effort_flag: "hard", focus_prompt: "blocker research", orchestrator_mode: false}
 
   Increment cycle_count.
 else

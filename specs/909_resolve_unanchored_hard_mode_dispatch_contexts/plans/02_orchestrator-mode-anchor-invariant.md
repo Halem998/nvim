@@ -1,7 +1,7 @@
 # Implementation Plan: Task #909
 
 - **Task**: 909 - Resolve the two hard-mode dispatch contexts that carry neither an absolute handoff anchor nor orchestrator_mode
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.25 hours
 - **Dependencies**: 898
 - **Research Inputs**: specs/909_resolve_unanchored_hard_mode_dispatch_contexts/reports/01_handoff-gating-and-fix-branch.md
@@ -135,24 +135,24 @@ Phases within the same wave can execute in parallel. All three phases edit the s
 are deliberately serialized: a single owner holds
 `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md` for the whole task.
 
-### Phase 1: Declare `orchestrator_mode: false` at the Two Unanchored Sites [NOT STARTED]
+### Phase 1: Declare `orchestrator_mode: false` at the Two Unanchored Sites [COMPLETED]
 
 **Goal**: The H5 divergence-audit dispatch and the Stage 6 blocker-research dispatch state the gate
 flag explicitly and carry a one-line rationale for the absent anchor.
 
 **Tasks**:
-- [ ] Edit line ~670 (Stage 4b, three-strikes divergence audit), appending `, orchestrator_mode: false`
+- [x] Edit line ~670 (Stage 4b, three-strikes divergence audit), appending `, orchestrator_mode: false`
       to the inline context so it reads
-      `delegation_context: {task_number, session_id, effort_flag: "hard", focus_prompt: "divergence audit $blocker_target", orchestrator_mode: false}`
-- [ ] Edit line ~953 (Stage 6, blocker escalation), appending `, orchestrator_mode: false` so it reads
-      `delegation_context: {task_number, session_id, effort_flag: "hard", focus_prompt: "blocker research", orchestrator_mode: false}`
-- [ ] Add a short comment immediately above each dispatch (or one comment per site, not a shared
+      `delegation_context: {task_number, session_id, effort_flag: "hard", focus_prompt: "divergence audit $blocker_target", orchestrator_mode: false}` *(completed)*
+- [x] Edit line ~953 (Stage 6, blocker escalation), appending `, orchestrator_mode: false` so it reads
+      `delegation_context: {task_number, session_id, effort_flag: "hard", focus_prompt: "blocker research", orchestrator_mode: false}` *(completed)*
+- [x] Add a short comment immediately above each dispatch (or one comment per site, not a shared
       one — the sites are ~280 lines apart) stating that `$RESEARCH_AGENT` never writes
       `.orchestrator-handoff.json`, per the Stage 3.6 "Scoping Decision" in
       `general-research-agent.md` / `general-research-hard-agent.md` and the Handoff Writers table
       in `docs/architecture/handoff-schema.md`, so no absolute anchor is passed; if that exclusion
-      is ever lifted, these sites must be revisited.
-- [ ] Confirm no task-number citation appears in either comment.
+      is ever lifted, these sites must be revisited. *(completed)*
+- [x] Confirm no task-number citation appears in either comment. *(completed: verified via git diff grep)*
 
 **Timing**: 0.25 hours
 
