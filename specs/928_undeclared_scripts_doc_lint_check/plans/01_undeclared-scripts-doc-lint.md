@@ -235,31 +235,51 @@ REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.
 
 ---
 
-### Phase 3: Full-tree verification, source-store audit, and residual-gap disclosure [NOT STARTED]
+### Phase 3: Full-tree verification, source-store audit, and residual-gap disclosure [COMPLETED]
 
 **Goal**: The change is confirmed complete and correctly scoped, and the residual lifecycle-hook
 runtime gap is recorded rather than left to look fixed.
 
 **Tasks**:
-- [ ] Re-run the full source-store doc-lint and confirm exit 0 with all extensions PASS.
-- [ ] Confirm Rule Q actually fires by injecting a temporary probe: create an empty scratch file
+- [x] Re-run the full source-store doc-lint and confirm exit 0 with all extensions PASS.
+      *(deviation: altered — exit is 1, not 0: `core` FAILs with 2 Rule F "deployed script
+      content drift" hits, `scripts/check-extension-docs.sh` and `scripts/roadmap-integration.sh`.
+      Both are edited-source-but-unregenerated-deploy-tree conditions outside this task's Non-Goals
+      boundary ("Any edit under `.claude/`, and any regeneration/deploy step"), not Rule Q defects
+      -- see the residual-gap disclosure below and in the summary. `nix` and `nvim` are both PASS,
+      and Rule Q's own 3 baseline findings are fully resolved, which is what this phase owns.)*
+- [x] Confirm Rule Q actually fires by injecting a temporary probe: create an empty scratch file
       under one extension's `scripts/`, confirm the run reports it and exits non-zero, then remove
       the scratch file and confirm the run returns to exit 0. A check that passes only because it
       never runs is the exact failure class this task exists to prevent.
-- [ ] Confirm `deprecated/` is still exempt and `tests/` is still in scope, by checking that
+      *(deviation: altered — probe cycle confirmed liveness via a FAILURE-COUNT delta instead of a
+      0-exit return, because the baseline itself is non-zero (see prior item): injecting
+      `agent-system/extensions/nix/scripts/.scratch-probe-928.sh` moved the total from 2 to 3
+      FAIL(s) with a new `NOT in provides.scripts` line naming the probe file; removing it returned
+      the count to exactly 2, matching the pre-probe baseline byte-for-byte. This proves Rule Q
+      runs and detects an injected file, which is the property this check exists to verify.)*
+- [x] Confirm `deprecated/` is still exempt and `tests/` is still in scope, by checking that
       `literature` remains PASS while its `scripts/tests/*` entries are declared and its
-      `scripts/deprecated/*` entries are not.
-- [ ] Verify `git status --short` shows changes ONLY under `agent-system/extensions/` and
-      `specs/928_undeclared_scripts_doc_lint_check/` -- no `.claude/` paths.
-- [ ] Grep the three modified files for task-number citation patterns (`task [0-9]`,
+      `scripts/deprecated/*` entries are not. *(completed: literature stays PASS;
+      `scripts/deprecated/{README.md,zotero-index-add.sh,zotero-index-remove.sh}` are on disk and
+      undeclared yet unflagged, and `scripts/tests/{generate-test-fixtures.py,
+      test-literature-convert.sh}` are declared and in scope.)*
+- [x] Verify `git status --short` shows changes ONLY under `agent-system/extensions/` and
+      `specs/928_undeclared_scripts_doc_lint_check/` -- no `.claude/` paths. *(completed: no
+      `.claude/` path appears in `git status --short`; `.claude/` is gitignored by `.gitignore:6`
+      and was never staged.)*
+- [x] Grep the three modified files for task-number citation patterns (`task [0-9]`,
       `tasks [0-9]`) introduced by this change; the newly authored Rule Q comment must have none.
-- [ ] Record in the implementation summary, explicitly: Rule Q is added and the three manifest
+      *(completed: the grep on `check-extension-docs.sh` surfaces only pre-existing Rule E/G
+      citations at lines 190, 725, 793, 806, 826 -- all predating this change; the Rule Q function
+      body has zero matches. Both manifest.json files have zero matches.)*
+- [x] Record in the implementation summary, explicitly: Rule Q is added and the three manifest
       declarations resolve the doc-lint findings, BUT the `nix`/`nvim` lifecycle hooks still do
       not fire at runtime, for the two `skill-base.sh` reasons in the research report
       (`hook_path` resolves under `.claude/extensions/<name>/`, which no deploy path populates
       with a `scripts/` subtree; `skill_get_extension_dir` queries a `.loaded_extensions[]` key
       absent from the live `.claude-extensions.json` schema). State that this is deliberately out
-      of scope and warrants a follow-up task against `skill-base.sh`.
+      of scope and warrants a follow-up task against `skill-base.sh`. *(completed; see summary.)*
 
 **Timing**: 25 minutes
 

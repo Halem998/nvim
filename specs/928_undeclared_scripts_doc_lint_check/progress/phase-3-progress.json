@@ -1,0 +1,33 @@
+{
+  "phase": 3,
+  "phase_name": "Full-tree verification, source-store audit, and residual-gap disclosure",
+  "started_at": "2026-07-27T00:25:00Z",
+  "last_updated": "2026-07-27T00:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Full-tree doc-lint re-run, probe-injection liveness proof, deprecated/tests scoping check, git-status audit, task-citation grep, residual-gap disclosure",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.1",
+      "description": "Re-run the full source-store doc-lint and confirm exit 0 with all extensions PASS",
+      "type": "altered",
+      "reason": "core FAILs with 2 pre-existing Rule F content-drift hits (check-extension-docs.sh self-drift from this task's own source edit, plus an unrelated roadmap-integration.sh drift from a concurrent sibling task), both outside this task's Non-Goals boundary (no .claude/ edits, no regeneration step). Rule Q's own 3 findings are fully resolved and nix/nvim are both PASS.",
+      "annotation": "*(deviation: altered — exit is 1, not 0 ... see summary)*"
+    },
+    {
+      "task_id": "3.2",
+      "description": "Probe-injection cycle returns to exit 0 after removal",
+      "type": "altered",
+      "reason": "Baseline itself is non-zero (see 3.1), so liveness was proven via a FAIL-count delta (2 -> 3 -> 2) instead of an exit-0 return.",
+      "annotation": "*(deviation: altered — probe cycle confirmed liveness via a FAILURE-COUNT delta ...)*"
+    }
+  ]
+}
