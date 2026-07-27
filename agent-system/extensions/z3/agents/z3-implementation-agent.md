@@ -152,3 +152,4 @@ Write to `specs/{N}_{SLUG}/.return-meta.json`
 2. Skip test verification
 3. Leave untested constraints
 4. Return completed without verification
+5. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead

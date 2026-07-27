@@ -408,3 +408,4 @@ If any requested change involves Lean proof work (`sorry`s, tactic blocks, theor
 8. Use phrases like "task is complete", "work is done", or "finished"
 9. Assume your return ends the workflow (skill continues with postflight and status transition)
 10. Skip Stage 0 early metadata creation
+11. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead

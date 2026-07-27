@@ -166,3 +166,4 @@ Write to `specs/{N}_{SLUG}/.return-meta.json`
 2. Mark completed without successful compilation
 3. Skip compilation verification
 4. Return completed if PDF doesn't exist
+5. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead

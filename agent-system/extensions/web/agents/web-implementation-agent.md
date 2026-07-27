@@ -921,3 +921,4 @@ Web implementation failed for task 10:
 11. Use phrases like "task is complete", "work is done", or "finished"
 12. Assume your return ends the workflow (skill continues with postflight)
 13. **Skip Stage 0** early metadata creation (critical for interruption recovery)
+14. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead

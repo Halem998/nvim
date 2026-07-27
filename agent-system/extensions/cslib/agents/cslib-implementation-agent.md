@@ -531,3 +531,4 @@ When approaching context limit:
 18. **Use `def` for Prop-valued declarations** -- use `lemma` or `theorem` per defLemma linter
 19. **Use underscores in declaration names** -- use lowerCamelCase per defsWithUnderscore linter
 20. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
+21. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead

@@ -344,13 +344,13 @@ record the correction in the summary rather than silently matching the asserted 
 
 ---
 
-### Phase 5: Extension Implementer Contracts [NOT STARTED]
+### Phase 5: Extension Implementer Contracts [COMPLETED]
 
 **Goal**: Every remaining implementer-agent contract carries the same one-line rule pointer, so the
 rule binds all implementers rather than only the two core ones.
 
 **Tasks**:
-- [ ] Append the identical one-line MUST NOT bullet (same wording as Phase 4, renumbered per file)
+- [x] Append the identical one-line MUST NOT bullet (same wording as Phase 4, renumbered per file)
       to each of the 13 extension implementer contracts identified by research:
       - `agent-system/extensions/cslib/agents/cslib-implementation-agent.md`
       - `agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md`
@@ -365,12 +365,12 @@ rule binds all implementers rather than only the two core ones.
       - `agent-system/extensions/email/agents/email-implementation-agent.md`
       - `agent-system/extensions/nvim/agents/neovim-implementation-agent.md`
       - `agent-system/extensions/nix/agents/nix-implementation-agent.md`
-- [ ] Append to each file's EXISTING MUST NOT list; do not create a new section, and do not add any
+- [x] Append to each file's EXISTING MUST NOT list; do not create a new section, and do not add any
       prose beyond the single bullet. The whole point of the pointer shape is that the explanation
       lives in one place.
-- [ ] For extensions whose source directory does not exist in this tree, record it as a reasoned
+- [x] For extensions whose source directory does not exist in this tree, record it as a reasoned
       exclusion with evidence rather than silently skipping.
-- [ ] No task-number citations in any added text.
+- [x] No task-number citations in any added text.
 
 **Timing**: 45 minutes
 

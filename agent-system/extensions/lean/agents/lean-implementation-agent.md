@@ -445,3 +445,4 @@ When approaching context limit:
     - `instance X := trivial` / `instance X := True`
     - Any definition whose body is solely a trivially-true placeholder with no connection to the actual goal
     If you cannot implement X, see the Escalation Protocol below — mark the phase [BLOCKED], not X := True.
+14. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead

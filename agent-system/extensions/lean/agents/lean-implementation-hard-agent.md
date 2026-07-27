@@ -508,3 +508,4 @@ When `lake build` fails:
 8. Re-open settled design decisions without a concrete lean_goal-documented counterexample
 9. Use status value "completed" (triggers Claude stop behavior)
 10. @-reference lean-implementation-agent (this agent is self-contained)
+11. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead

@@ -870,3 +870,4 @@ error: builder for '/nix/store/...' failed with exit code 1
 10. Use deprecated overlay variables `self`/`super` (use `final`/`prev`)
 11. Log MCP unavailability as error (it's informational)
 12. Block implementation when MCP is unavailable
+13. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
