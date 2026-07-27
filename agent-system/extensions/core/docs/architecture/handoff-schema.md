@@ -192,6 +192,28 @@ handoff writer (the hard-mode implementation agents' H9 wrap-up) and the orchest
 at all three call sites (base Stage 5, base Stage MT-4, hard Stage 5) agree on top level; do not
 move these fields into `continuation_context` in either a writer or a reader.
 
+**`[COMPLETED WITH EXCLUSIONS]` accounting**: a phase closed via `[COMPLETED WITH EXCLUSIONS]`
+(see `context/standards/status-markers.md`'s `[COMPLETED WITH EXCLUSIONS]` subsection) counts
+toward `phases_completed` identically to a `[COMPLETED]` phase. The reasoning is the same reason
+this whole section exists: `skill_gate_completion_claim` below consumes only these two
+self-reported integers and never reads the plan file, so the agent-side self-report at handoff
+time is the sole lever. Under-counting an exclusion-closed phase here drives the gate's Case 1
+(phase accounting present, incomplete) and refuses completion forever — the task can never reach
+`completed` no matter how many times implement re-dispatches, since the plan file (the only place
+that could show the phase is actually closed) is never consulted.
+
+**No new handoff field is introduced for this outcome, deliberately.** The `Item | Reason |
+Evidence` record itself lives in the plan artifact (`#### Reasoned Exclusions`,
+`context/formats/plan-format.md`), and the handoff carries only the already-existing
+`phases_completed` integer, incremented exactly as it would be for a plain `[COMPLETED]` phase.
+This is a deliberate contrast with the strategic-sorry family member: a strategic sorry DOES carry
+a dedicated handoff-side field, `sorry_inventory` (see `wrap-up.md`), because a sorry is
+*tracked* with a follow-up that a future dispatch must locate. A reasoned exclusion is *decided
+and will not be revisited*, so there is nothing to track and no follow-up-locating field is
+needed — the difference in handoff shape follows directly from the difference in the two family
+members' defining property (see `context/contracts/anti-analysis.md`'s "Family relationship" note
+for that property).
+
 ### `continuation_context` (optional, present when `status = "partial"`)
 Points to the continuation handoff file written by the agent. The orchestrator reads
 `handoff_path` and passes it in the next implement dispatch as `continuation_context`. It also

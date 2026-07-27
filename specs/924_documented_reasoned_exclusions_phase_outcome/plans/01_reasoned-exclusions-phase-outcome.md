@@ -434,33 +434,33 @@ correction in the summary.
 
 ---
 
-### Phase 5: Wire the outcome into the handoff schema and the enforcement checklist [NOT STARTED]
+### Phase 5: Wire the outcome into the handoff schema and the enforcement checklist [COMPLETED]
 
 **Goal**: The handoff documentation states how an exclusion-closed phase is accounted for, and the
 plan-format enforcement checklist knows the marker and the record requirement — so validation and
 orchestration both see the outcome.
 
 **Tasks**:
-- [ ] In `docs/architecture/handoff-schema.md`, extend the `phases_completed` / `phases_total` field
+- [x] In `docs/architecture/handoff-schema.md`, extend the `phases_completed` / `phases_total` field
       definition: a phase closed via `[COMPLETED WITH EXCLUSIONS]` counts toward `phases_completed`
       identically to a `[COMPLETED]` phase. State the reasoning explicitly — the completion-claim
       gate consumes only these self-reported integers and never reads the plan file, so the
       agent-side self-report is the sole lever; under-counting an exclusion-closed phase drives the
       gate's "phase accounting present, incomplete" case and refuses completion forever.
-- [ ] In the same file, confirm no new handoff field is introduced. State that deliberately: the
+- [x] In the same file, confirm no new handoff field is introduced. State that deliberately: the
       record lives in the plan artifact, and the handoff carries only the already-existing integer.
       Note the contrast with the strategic-sorry family member, which *does* carry a handoff-side
       `sorry_inventory` — the difference follows from exclusions having no follow-up to track.
-- [ ] In `rules/plan-format-enforcement.md`, add `[COMPLETED WITH EXCLUSIONS]` to the "Valid markers"
+- [x] In `rules/plan-format-enforcement.md`, add `[COMPLETED WITH EXCLUSIONS]` to the "Valid markers"
       list in the Phase heading format bullet, keeping the existing note that these are
       phase-heading markers distinct from the plan-level `- **Status**:` vocabulary.
-- [ ] In the same file, add the record requirement to the required-per-phase-fields guidance: a
+- [x] In the same file, add the record requirement to the required-per-phase-fields guidance: a
       `#### Reasoned Exclusions` subsection is REQUIRED whenever a phase heading carries the
       exclusion marker, with the `Item | Reason | Evidence` minimum columns. State the current
       enforcement level honestly — this checklist item is advisory prose unless and until
       `validate-artifact.sh` grows a corresponding check, matching how the existing
       `**Verification Tier**` item documents its own advisory-first status.
-- [ ] Run the final cross-file consistency census (see Scope Hypothesis) and fix any site still
+- [x] Run the final cross-file consistency census (see Scope Hypothesis) and fix any site still
       enumerating the pre-existing five-marker set as exhaustive.
 
 **Timing**: 1 hour
@@ -495,23 +495,23 @@ rewriting.
 
 ## Testing & Validation
 
-- [ ] Phase 2's negative fixture demonstrates that a plain `[PARTIAL]` phase still fails
+- [x] Phase 2's negative fixture demonstrates that a plain `[PARTIAL]` phase still fails
       `--phase-check=refuse` after the DONE-regex change (gate not weakened).
-- [ ] Phase 2's positive round-trip demonstrates `update-phase-status.sh` writes the marker,
+- [x] Phase 2's positive round-trip demonstrates `update-phase-status.sh` writes the marker,
       is idempotent on re-invocation, and still rejects unknown tokens.
-- [ ] Phase 3's negative fixture demonstrates all three Stage 5a outcomes: exclusion marker
+- [x] Phase 3's negative fixture demonstrates all three Stage 5a outcomes: exclusion marker
       survives untouched; documented `[PARTIAL]` repairs to the exclusion marker; undocumented
       `[PARTIAL]` still repairs to `[COMPLETED]`.
-- [ ] Phase 3's decimal assertion demonstrates `Phase N.M` headings repair successfully rather than
+- [x] Phase 3's decimal assertion demonstrates `Phase N.M` headings repair successfully rather than
       failing with "Phase N not found".
-- [ ] The Stage 5a blocks in the two implementation agents are byte-identical before and after.
-- [ ] `validate-artifact.sh` passes on this plan file and correctly names decimal sub-phases in its
+- [x] The Stage 5a blocks in the two implementation agents are byte-identical before and after.
+- [x] `validate-artifact.sh` passes on this plan file and correctly names decimal sub-phases in its
       warnings.
-- [ ] All fixture command transcripts (commands plus their actual output) are pasted into the
+- [x] All fixture command transcripts (commands plus their actual output) are pasted into the
       implementation summary. A prose claim that a fixture passed, without its transcript, does not
       satisfy the verification requirement.
-- [ ] No file outside `specs/**` written by this plan contains a task-number citation.
-- [ ] No authored edit landed under `.claude/**`; `git status` shows changes only under
+- [x] No file outside `specs/**` written by this plan contains a task-number citation.
+- [x] No authored edit landed under `.claude/**`; `git status` shows changes only under
       `agent-system/extensions/core/` and `specs/`.
 
 ## Artifacts & Outputs

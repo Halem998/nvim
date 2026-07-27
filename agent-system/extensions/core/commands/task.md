@@ -613,11 +613,12 @@ phases=$(grep -E "^### Phase [0-9]+(\.[0-9]+)?:" "$plan_file" 2>/dev/null)
 # Build phase analysis:
 # - phase_number
 # - phase_name
-# - status: [NOT STARTED], [IN PROGRESS], [COMPLETED], [PARTIAL], [BLOCKED]
+# - status: [NOT STARTED], [IN PROGRESS], [COMPLETED], [COMPLETED WITH EXCLUSIONS], [PARTIAL], [BLOCKED]
 ```
 
 **Categorize phases**:
 - **Completed**: Phases with `[COMPLETED]` status
+- **Completed with Exclusions**: Phases with `[COMPLETED WITH EXCLUSIONS]` status
 - **In Progress**: Phases with `[IN PROGRESS]` status
 - **Not Started**: Phases with `[NOT STARTED]` status
 - **Partial**: Phases with `[PARTIAL]` status

@@ -51,7 +51,7 @@ Extract standard delegation fields (see `return-metadata-file.md` for schema). A
 ### Stage 2: Load and Parse Implementation Plan
 
 Read the plan file and extract:
-- Phase list with status markers ([NOT STARTED], [IN PROGRESS], [COMPLETED], [PARTIAL])
+- Phase list with status markers ([NOT STARTED], [IN PROGRESS], [COMPLETED], [COMPLETED WITH EXCLUSIONS], [PARTIAL])
 - Files to modify/create per phase
 - Steps within each phase
 - Verification criteria
@@ -64,11 +64,14 @@ Read the plan file and extract:
 
 Scan phases for first incomplete:
 - `[COMPLETED]` → Skip
+- `[COMPLETED WITH EXCLUSIONS]` → Skip (closed, not resumable — see status-markers.md's
+  `[COMPLETED WITH EXCLUSIONS]` subsection)
 - `[IN PROGRESS]` → Resume here
 - `[PARTIAL]` → Resume here
 - `[NOT STARTED]` → Start here
 
-If all phases are `[COMPLETED]`: Task already done, return completed status.
+If all phases are `[COMPLETED]` or `[COMPLETED WITH EXCLUSIONS]`: Task already done, return
+completed status.
 
 ### Stage 3.5: Initialize Progress Tracking
 
