@@ -290,12 +290,21 @@ count_plan_phases() {
   # -- missing brackets, lowercase status, non-numeric N -- are excluded from BOTH totals rather
   # than raising an error, matching the graceful-degradation style used throughout these scripts.
   #
+  # Character-class constraint: any accepted done-state marker (COMPLETED, COMPLETED WITH
+  # EXCLUSIONS, or any future addition) must be uppercase letters and spaces only, matching the
+  # TOTAL bracket class `[A-Z][A-Z ]*` below -- a marker containing a dash, digit, or parenthesis
+  # silently falls out of the TOTAL denominator, independent of whether DONE recognizes it.
+  #
   # The `VAR=$(grep -c ...) || VAR=0` form is required, not cosmetic: `grep -c` exits 1 when it
   # matches nothing (which `set -e` would otherwise treat as fatal), and the tempting
   # `$(grep -c ... || echo 0)` form emits TWO lines ("0" from grep plus "0" from echo).
-  PHASE_CHECK_TOTAL=$(grep -c '^### Phase [0-9][0-9]*:.*\[[A-Z][A-Z ]*\][[:space:]]*$' \
+  #
+  # Decimal sub-phase form: `\(\.[0-9][0-9]*\)\{0,1\}` (BRE) admits an optional single decimal
+  # sub-level (`3`, `3.1`) in the phase number on BOTH regexes below, so the numerator and
+  # denominator cannot diverge on phase numbering.
+  PHASE_CHECK_TOTAL=$(grep -c '^### Phase [0-9][0-9]*\(\.[0-9][0-9]*\)\{0,1\}:.*\[[A-Z][A-Z ]*\][[:space:]]*$' \
     "$PHASE_CHECK_PLAN_FILE" 2>/dev/null) || PHASE_CHECK_TOTAL=0
-  PHASE_CHECK_DONE=$(grep -c '^### Phase [0-9][0-9]*:.*\[COMPLETED\][[:space:]]*$' \
+  PHASE_CHECK_DONE=$(grep -c '^### Phase [0-9][0-9]*\(\.[0-9][0-9]*\)\{0,1\}:.*\[\(COMPLETED\|COMPLETED WITH EXCLUSIONS\)\][[:space:]]*$' \
     "$PHASE_CHECK_PLAN_FILE" 2>/dev/null) || PHASE_CHECK_DONE=0
 }
 
@@ -319,7 +328,7 @@ if [[ -n "$PHASE_CHECK" && "$operation" == "postflight" && "$target_status" == "
   elif [[ "$PHASE_CHECK_TOTAL" -eq 0 ]]; then
     echo "[phase-check] Task $task_number: no conforming '### Phase N: ... [STATUS]' headings in $(basename "$PHASE_CHECK_PLAN_FILE") -- inconclusive, passing through." >&2
   elif [[ "$PHASE_CHECK_DONE" -ge "$PHASE_CHECK_TOTAL" ]]; then
-    echo "[phase-check] Task $task_number: ${PHASE_CHECK_DONE}/${PHASE_CHECK_TOTAL} phases [COMPLETED] in $(basename "$PHASE_CHECK_PLAN_FILE") -- proceeding." >&2
+    echo "[phase-check] Task $task_number: ${PHASE_CHECK_DONE}/${PHASE_CHECK_TOTAL} phases closed (COMPLETED or COMPLETED WITH EXCLUSIONS) in $(basename "$PHASE_CHECK_PLAN_FILE") -- proceeding." >&2
   else
     # Conclusive on-disk evidence of incompleteness.
     if [[ "$DRY_RUN" == "true" ]]; then
@@ -328,12 +337,12 @@ if [[ -n "$PHASE_CHECK" && "$operation" == "postflight" && "$target_status" == "
       # a caller preview a refusal without it looking like a script bug in a dry-run harness.
       echo "[dry-run] Phase-check (mode=${PHASE_CHECK}) would block this transition: ${PHASE_CHECK_DONE}/${PHASE_CHECK_TOTAL} phases complete in ${PHASE_CHECK_PLAN_FILE}"
     elif [[ "$PHASE_CHECK" == "refuse" ]]; then
-      echo "Error: [phase-check] refusing postflight implement for task $task_number: only ${PHASE_CHECK_DONE}/${PHASE_CHECK_TOTAL} phases are [COMPLETED] in ${PHASE_CHECK_PLAN_FILE}." >&2
+      echo "Error: [phase-check] refusing postflight implement for task $task_number: only ${PHASE_CHECK_DONE}/${PHASE_CHECK_TOTAL} phases are closed (COMPLETED or COMPLETED WITH EXCLUSIONS) in ${PHASE_CHECK_PLAN_FILE}." >&2
       echo "       No state.json write and no plan-file status stamp occurred." >&2
       echo "       Finish the remaining phases, or correct the plan file's phase headings, and re-run." >&2
       exit 4
     else
-      echo "WARNING: [phase-check] task $task_number is being marked completed with only ${PHASE_CHECK_DONE}/${PHASE_CHECK_TOTAL} phases [COMPLETED] in ${PHASE_CHECK_PLAN_FILE}." >&2
+      echo "WARNING: [phase-check] task $task_number is being marked completed with only ${PHASE_CHECK_DONE}/${PHASE_CHECK_TOTAL} phases closed (COMPLETED or COMPLETED WITH EXCLUSIONS) in ${PHASE_CHECK_PLAN_FILE}." >&2
     fi
   fi
 fi

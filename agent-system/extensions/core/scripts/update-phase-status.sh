@@ -2,7 +2,7 @@
 # update-phase-status.sh - Update a single phase heading status in a plan file
 # Usage: .claude/scripts/update-phase-status.sh TASK_NUMBER PROJECT_NAME PHASE_NUMBER NEW_STATUS
 #
-# NEW_STATUS values: IN_PROGRESS, NOT_STARTED, COMPLETED, PARTIAL, BLOCKED
+# NEW_STATUS values: IN_PROGRESS, NOT_STARTED, COMPLETED, COMPLETED_WITH_EXCLUSIONS, PARTIAL, BLOCKED
 # Outputs: Updated plan file path on success, empty on failure/no-op
 #
 # Phase heading format: ### Phase N: {name} [STATUS]
@@ -18,7 +18,7 @@ new_status="${4:-}"
 # Validate inputs
 if [[ -z "$task_number" || -z "$project_name" || -z "$phase_number" || -z "$new_status" ]]; then
     echo "Usage: $0 TASK_NUMBER PROJECT_NAME PHASE_NUMBER STATUS" >&2
-    echo "  STATUS values: IN_PROGRESS, NOT_STARTED, COMPLETED, PARTIAL, BLOCKED" >&2
+    echo "  STATUS values: IN_PROGRESS, NOT_STARTED, COMPLETED, COMPLETED_WITH_EXCLUSIONS, PARTIAL, BLOCKED" >&2
     exit 1
 fi
 
@@ -30,13 +30,15 @@ case "$new_status" in
         new_status_display="NOT STARTED" ;;
     COMPLETED|completed)
         new_status_display="COMPLETED" ;;
+    COMPLETED_WITH_EXCLUSIONS|completed_with_exclusions|COMPLETED\ WITH\ EXCLUSIONS|completed\ with\ exclusions)
+        new_status_display="COMPLETED WITH EXCLUSIONS" ;;
     PARTIAL|partial)
         new_status_display="PARTIAL" ;;
     BLOCKED|blocked)
         new_status_display="BLOCKED" ;;
     *)
         echo "Unknown status: $new_status" >&2
-        echo "Valid values: IN_PROGRESS, NOT_STARTED, COMPLETED, PARTIAL, BLOCKED" >&2
+        echo "Valid values: IN_PROGRESS, NOT_STARTED, COMPLETED, COMPLETED_WITH_EXCLUSIONS, PARTIAL, BLOCKED" >&2
         exit 1 ;;
 esac
 

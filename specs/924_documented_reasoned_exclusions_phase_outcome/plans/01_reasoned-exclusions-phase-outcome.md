@@ -233,31 +233,31 @@ rather than silently widening this phase.
 
 ---
 
-### Phase 2: Make the write path and the completion gate honor the marker [NOT STARTED]
+### Phase 2: Make the write path and the completion gate honor the marker [COMPLETED]
 
 **Goal**: `update-phase-status.sh` can legally *write* the marker, and `update-task-status.sh`'s
 `--phase-check` backstop *counts* an exclusion-closed phase as done — closing both halves of the
 two-sided trap on the script side.
 
 **Tasks**:
-- [ ] In `scripts/update-phase-status.sh`, add a `COMPLETED_WITH_EXCLUSIONS|completed_with_exclusions`
+- [x] In `scripts/update-phase-status.sh`, add a `COMPLETED_WITH_EXCLUSIONS|completed_with_exclusions`
       case branch (and the space-separated input form, matching how `IN_PROGRESS|IN PROGRESS` is
       already handled) normalizing to `new_status_display="COMPLETED WITH EXCLUSIONS"`. Update the
       header-comment `NEW_STATUS values:` line, the usage `STATUS values:` line, and the invalid-value
       error's `Valid values:` line — all three enumerate the accepted set and must stay in sync.
       The existing status extractor `sed -n "${line_number}s/.*\[\(.*\)\]$/\1/p"` and the idempotency
       check need no change (verified at plan time against the multi-word marker).
-- [ ] In `scripts/update-task-status.sh`'s `count_plan_phases()`, change the DONE regex from the
+- [x] In `scripts/update-task-status.sh`'s `count_plan_phases()`, change the DONE regex from the
       literal `\[COMPLETED\]` to a BRE alternation admitting both markers, and apply the canonical
       decimal-sub-phase form to BOTH the TOTAL and DONE regexes so the numerator and denominator
       cannot diverge on phase numbering. Verified-correct forms:
       - TOTAL: `^### Phase [0-9][0-9]*\(\.[0-9][0-9]*\)\{0,1\}:.*\[[A-Z][A-Z ]*\][[:space:]]*$`
       - DONE:  `^### Phase [0-9][0-9]*\(\.[0-9][0-9]*\)\{0,1\}:.*\[\(COMPLETED\|COMPLETED WITH EXCLUSIONS\)\][[:space:]]*$`
-- [ ] Update the phase-check log/error messages in `update-task-status.sh` that currently read
+- [x] Update the phase-check log/error messages in `update-task-status.sh` that currently read
       "phases [COMPLETED]" so they no longer imply the literal marker is the only accepted done
       state (e.g. "phases closed (COMPLETED or COMPLETED WITH EXCLUSIONS)"). There are three such
       messages: the proceeding message, the `refuse` error, and the `warn` warning.
-- [ ] Add a brief comment above `count_plan_phases()` recording the character-class constraint —
+- [x] Add a brief comment above `count_plan_phases()` recording the character-class constraint —
       any future done-state marker must be uppercase letters and spaces only, or it silently falls
       out of TOTAL.
 
