@@ -1,0 +1,19 @@
+{
+  "phase": 1,
+  "phase_name": "Add Rule Q (check_undeclared_scripts)",
+  "started_at": "2026-07-27T00:00:00Z",
+  "last_updated": "2026-07-27T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add check_undeclared_scripts (Rule Q) function, index entry, and loop registration",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/check-extension-docs.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

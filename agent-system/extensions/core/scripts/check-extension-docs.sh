@@ -51,6 +51,7 @@
 #   O - check_core_deploy_advisory         : core script/hook never deployed (ADVISORY, not FAIL)
 #   P - check_settings_hook_registration_completeness : settings.json hook registration gap/dup
 #       (ADVISORY, not FAIL; sub-check of O, core extension only)
+#   Q - check_undeclared_scripts            : script file on disk not in provides.scripts
 #
 # Exit codes:
 #   0 - all extensions pass (Core Deploy-Drift Advisories, if any, do NOT affect this)
@@ -499,6 +500,50 @@ check_undeclared_rules() {
       fail "rule file on disk NOT in provides.rules: rules/$rule_name"
     fi
   done
+}
+
+# Rule Q: Undeclared script files in extension source not in provides.scripts.
+#
+# Reverse direction of check_manifest_entries' scripts loop (declared-but-missing-on-disk) and
+# distinct from both Rule E (check_referenced_scripts_declared, reference-driven, .sh/.sql-only)
+# and Rule M (check_flat_category_orphans "scripts", deployed-file-driven -- structurally blind
+# to a file that was never deployed in the first place because it was never declared). This
+# check is disk-driven: it walks an extension's own scripts/ tree and flags any file present on
+# disk that provides.scripts does not name, independent of whether anything references it or
+# whether it has ever been deployed. A file that fails only this check never deploys at all.
+#
+# Matches by FULL RELATIVE PATH under scripts/, not basename, because provides.scripts entries
+# legitimately carry a path prefix (e.g. literature's "tests/generate-test-fixtures.py"). Covers
+# ALL regular file types -- provides.scripts already holds .sh, .py, .sql, and dotfile entries
+# (see literature's ".zotero-title-sim.py") -- so this uses `find -type f`, not a `*.sh` glob.
+# `deprecated/` is exempt (superseded scripts intentionally left undeclared and undeployed);
+# `tests/` is NOT exempt (literature declares its tests/*.py and tests/*.sh entries deliberately).
+check_undeclared_scripts() {
+  local ext_path="$1"
+  local manifest="$ext_path/manifest.json"
+
+  [[ -d "$ext_path/scripts" ]] || return 0
+
+  # Trailing-slash normalization: the caller's per-extension loop is `for ext_path in
+  # "$EXT_DIR"/*/`, so ext_path carries a trailing slash. Left unstripped, the prefix-strip
+  # below would build a double-slash prefix ("ext//scripts/") that never matches what `find`
+  # returns, degrading this check to reporting every script in every extension as undeclared.
+  local ext_path_norm="${ext_path%/}"
+
+  local script_file rel_path
+  while IFS= read -r script_file; do
+    [[ -f "$script_file" ]] || continue
+    rel_path="${script_file#"$ext_path_norm"/scripts/}"
+
+    case "$rel_path" in
+      deprecated/*) continue ;;
+    esac
+
+    if ! jq -e --arg s "$rel_path" '.provides.scripts[]? | select(. == $s)' \
+        "$manifest" > /dev/null 2>&1; then
+      fail "script file on disk NOT in provides.scripts: scripts/$rel_path"
+    fi
+  done < <(find "$ext_path_norm/scripts" -type f | sort)
 }
 
 # Rules B + C: Routing target consistency and deployment
@@ -971,6 +1016,7 @@ for ext_path in "$EXT_DIR"/*/; do
       check_routing_block "$ext_path"
       check_undeclared_skills "$ext_path"
       check_undeclared_rules "$ext_path"
+      check_undeclared_scripts "$ext_path"
       check_deployed_rule_drift "$ext_path"
       check_routing_consistency "$ext_path"
       check_deployed_skill_agents "$ext_path"
