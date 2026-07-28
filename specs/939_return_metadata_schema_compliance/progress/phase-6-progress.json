@@ -1,0 +1,59 @@
+{
+  "phase": 6,
+  "phase_name": "Detection Escalation — Widen the Trigger in Both Orchestrator Skills",
+  "started_at": "2026-07-28T09:36:00Z",
+  "last_updated": "2026-07-28T09:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add evidence-corroboration block to skill-orchestrate/SKILL.md Stage 5 recovered-success branch, gated on evidence_suspect/evidence_reason/dispatch_status; reuse the verbatim phase-marker grep idiom; escalate on corroboration (set plan_markers_verified=true and correct phase counts) with a loud [UNVERIFIED PHASES CORROBORATED] banner; non-corroboration leaves values untouched (false-positive guard)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]
+    },
+    {
+      "id": 2,
+      "description": "Apply identical treatment to skill-orchestrate/SKILL.md's Stage MT-4 multi-task recovery mirror (task_num/task_dir variable naming, scoped to this task's own plan_path only)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]
+    },
+    {
+      "id": 3,
+      "description": "Apply identical treatment to skill-orchestrate-hard/SKILL.md's mirrored Stage 5 recovered-success branch, preserving the [hard-orchestrate] log prefix",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]
+    },
+    {
+      "id": 4,
+      "description": "Update stale prose that assumed plan_markers_verified is ALWAYS 'absent' on the recovered path, in both skills' completion-claim-gate comments, and extend the Context Flatness Constraint's 'Recovery exception (phase-marker grep)' precondition bullet to name both reachable branches",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md", "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"],
+      "note": "Two stale comments found and corrected during this phase (not pre-declared in the plan's task list but necessary for internal consistency): skill-orchestrate/SKILL.md's completion-claim-gate comment near the 'implemented)' case arm, and skill-orchestrate-hard/SKILL.md's analogous comment. Both previously asserted plan_markers_verified is unconditionally absent on the recovered path, which the new corroboration block makes inaccurate; both now note the corroboration exception."
+    },
+    {
+      "id": 5,
+      "description": "Scope Hypothesis check: grep both skill files for plan_markers_verified=\"absent\" assignment sites and orchestrate-recover-outcome.sh call sites to confirm exactly three consumer sites needed the widened trigger",
+      "status": "done",
+      "files_touched": [],
+      "note": "Confirmed exactly three assignment sites: skill-orchestrate/SKILL.md base Stage 5, skill-orchestrate/SKILL.md Stage MT-4, skill-orchestrate-hard/SKILL.md Stage 5. No fourth site found. All three now have the corroboration block."
+    },
+    {
+      "id": 6,
+      "description": "Verify by construction: bash -n each of the three extracted new bash blocks; run a corroborating fixture (defect1_topmeta recover_json + a plan with all phase headings COMPLETED) and two non-corroborating fixtures (zero-heading plan; partial-completion plan) through the extracted Stage 5 corroboration block",
+      "status": "done",
+      "files_touched": [],
+      "note": "All three extracted blocks pass `bash -n`. Harness run against real orchestrate-recover-outcome.sh output for the defect1_topmeta fixture (evidence_suspect=true, evidence_reason=PHASES_ZERO_ON_SUCCESS, status=implemented): (1) corroborating fixture (3/3 phase headings COMPLETED) -> plan_markers_verified flips absent->true, phases_completed/phases_total corrected to 3/3, loud [UNVERIFIED PHASES CORROBORATED] banner emitted. (2) non-corroborating fixture (zero phase headings) -> plan_markers_verified stays absent, counts stay 0/0, non-corroboration logged. (3) additional false-positive guard check: a genuinely partial plan (1/3 headings COMPLETED) also correctly stays absent/0/0 rather than false-triggering. Confirmed no task-number citations introduced (pre-existing task-808/task-774 comment hits are unrelated to this diff, verified via git diff) and no .claude/ paths in git status."
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.stale-comments",
+      "description": "Two prose comments (one per skill file) asserting plan_markers_verified is unconditionally 'absent' on the recovered path were not on the plan's explicit task list",
+      "type": "altered",
+      "reason": "These comments became factually inaccurate the moment the corroboration block was added; leaving them unchanged would have left the contract prose contradicting the code, which the phase's own Context Flatness Constraint task already required fixing in spirit for the grep-exception bullet. Extended the same correction to these two adjacent comments as a minimal, necessary consistency fix.",
+      "annotation": "*(deviation: altered — corrected two adjacent stale comments beyond the explicit task list; see phase notes)*"
+    }
+  ]
+}

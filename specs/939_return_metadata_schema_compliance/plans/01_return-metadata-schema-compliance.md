@@ -508,7 +508,7 @@ the backward-compatibility claim and must be handled in Phase 6.
 
 ---
 
-### Phase 6: Detection Escalation — Widen the Trigger in Both Orchestrator Skills [NOT STARTED]
+### Phase 6: Detection Escalation — Widen the Trigger in Both Orchestrator Skills [COMPLETED]
 
 **Goal**: Close the structural gap the research proved: the existing phase-marker cross-check lives
 only in the `recovered=false` branch and cannot fire in Defect 1's own `recovered=true` scenario.
@@ -516,35 +516,38 @@ Make the recovered-success path consume `evidence_suspect` and escalate on evide
 
 **Tasks**:
 
-- [ ] In `skills/skill-orchestrate/SKILL.md` Stage 5, locate the recovered-success branch by its
+- [x] In `skills/skill-orchestrate/SKILL.md` Stage 5, locate the recovered-success branch by its
       literal `if [ "$recovered" = "true" ]; then` and the `plan_markers_verified="absent"`
       assignment inside it. Add a corroboration block that runs ONLY when
       `evidence_suspect == true` and `evidence_reason == "PHASES_ZERO_ON_SUCCESS"` and
-      `dispatch_status == "implemented"`.
-- [ ] In that block, reuse the existing phase-marker grep idiom verbatim from the `recovered=false`
+      `dispatch_status == "implemented"`. *(completed)*
+- [x] In that block, reuse the existing phase-marker grep idiom verbatim from the `recovered=false`
       branch — the same two `grep -cE '^### Phase [0-9]+(\.[0-9]+)?: '` forms, the same
       `x=$(grep -c ...) || x=0` pattern, the same plan-path re-derivation fallback. Do not
       re-derive a new regex; the canonical forms are fixed by the plan-format standard.
-- [ ] Escalate rather than merely log: when the grep corroborates (`recovered_total > 0` and
+      *(completed)*
+- [x] Escalate rather than merely log: when the grep corroborates (`recovered_total > 0` and
       `recovered_completed == recovered_total`), set `phases_completed`/`phases_total` from the grep
       AND set `plan_markers_verified="true"`, so the completion-claim gate's Case 3 fallback can
       allow completion on **evidence** rather than on schema permissiveness. Emit a loud
       `[UNVERIFIED ...]`-family stderr banner naming the contradiction and the source of the
-      corrected counts.
-- [ ] When the grep does NOT corroborate — `recovered_total == 0` (a plan with no phase headings) or
+      corrected counts. *(completed: `[UNVERIFIED PHASES CORROBORATED]` banner, in the same
+      bracketed-tag family as `[SPARSE COVERAGE ...]`)*
+- [x] When the grep does NOT corroborate — `recovered_total == 0` (a plan with no phase headings) or
       `recovered_completed < recovered_total` — treat it as "no contradiction to resolve": leave
       `plan_markers_verified="absent"` and the counts untouched, and log the non-corroboration.
-      This is the false-positive guard.
-- [ ] Keep the Context Flatness Constraint intact: the added block reads only the plan file via the
+      This is the false-positive guard. *(completed and verified — see progress/phase-6-progress.json)*
+- [x] Keep the Context Flatness Constraint intact: the added block reads only the plan file via the
       same two `grep -c` calls the sanctioned narrow exception already permits, returning integers
       and no matched line content. Extend that exception's precondition comment to name the new
-      reachable branch, so the contract text matches the code.
-- [ ] Apply the identical change to `skills/skill-orchestrate/SKILL.md`'s Stage MT-4 recovery path
+      reachable branch, so the contract text matches the code. *(completed: "Recovery exception
+      (phase-marker grep)" bullet rewritten to name both reachable branches)*
+- [x] Apply the identical change to `skills/skill-orchestrate/SKILL.md`'s Stage MT-4 recovery path
       (the multi-task mirror that reads `phases_completed`/`phases_total`/`plan_markers_verified`
-      from the recovery JSON).
-- [ ] Apply the identical change to `skills/skill-orchestrate-hard/SKILL.md`'s mirrored Stage 5
-      recovery branch, preserving its `[hard-orchestrate]` log prefix.
-- [ ] Confirm no task-number citation was introduced in either skill file.
+      from the recovery JSON). *(completed)*
+- [x] Apply the identical change to `skills/skill-orchestrate-hard/SKILL.md`'s mirrored Stage 5
+      recovery branch, preserving its `[hard-orchestrate]` log prefix. *(completed)*
+- [x] Confirm no task-number citation was introduced in either skill file. *(completed: zero hits)*
 
 **Timing**: 1.0 hours
 

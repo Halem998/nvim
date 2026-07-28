@@ -635,6 +635,46 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
     # false (its reset default at the top of this stage). This is NOT the infra-exempt case,
     # which exists because no work happened at all; exempting a recovered success would also
     # remove the only bound on a loop that keeps recovering.
+
+    # ── Evidence corroboration (widened detection trigger) ───────────────────────
+    # PRECONDITION: reachable ONLY here, on the recovered=true path, when the recovery script's
+    # general empty-value detection signal (see orchestrate-recover-outcome.sh's header) fired
+    # PHASES_ZERO_ON_SUCCESS. This is the ONE scenario the phase-marker grep further below
+    # structurally cannot see, because that grep requires recovered=false — a claimed-complete
+    # implementation with a corroborated 0/0 phase count (Defect 1's own scenario) always
+    # produces recovered=true and never reaches that branch. Reuses the identical two `grep -c`
+    # forms verbatim — do not re-derive the regex; see "MUST NOT (Context Flatness Constraint)"
+    # for why this reuse, not a new read mechanism, is what keeps this exception narrow.
+    evidence_suspect=$(echo "$recover_json" | jq -r '.evidence_suspect // false' 2>/dev/null) || evidence_suspect=false
+    evidence_reason=$(echo "$recover_json" | jq -r '.evidence_reason // "NONE"' 2>/dev/null) || evidence_reason="NONE"
+    if [ "$evidence_suspect" = "true" ] && [ "$evidence_reason" = "PHASES_ZERO_ON_SUCCESS" ] && [ "$dispatch_status" = "implemented" ]; then
+      corroboration_plan_path="${plan_path:-}"
+      if [ -z "$corroboration_plan_path" ]; then
+        corroboration_plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+      fi
+      if [ -n "$corroboration_plan_path" ] && [ -f "$corroboration_plan_path" ]; then
+        recovered_total=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: ' "$corroboration_plan_path" 2>/dev/null) || recovered_total=0
+        recovered_completed=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: .*\[COMPLETED\]' "$corroboration_plan_path" 2>/dev/null) || recovered_completed=0
+        if [ "$recovered_total" -gt 0 ] && [ "$recovered_completed" -eq "$recovered_total" ]; then
+          # Corroborated: allow the completion-claim gate to act on evidence rather than on
+          # schema permissiveness. This does NOT relax the Item C decision in the recovery
+          # script — the script's own emitted phases_completed/phases_total are still 0/0; only
+          # this orchestrator-side variable is corrected, from an independent artifact (the plan
+          # file), never from the off-schema value itself.
+          phases_completed="$recovered_completed"
+          phases_total="$recovered_total"
+          plan_markers_verified="true"
+          echo "[UNVERIFIED PHASES CORROBORATED] task ${task_number}: recovery reported status=${dispatch_status} with phases 0/0 (evidence_reason=PHASES_ZERO_ON_SUCCESS), but plan headings in ${corroboration_plan_path} show ${recovered_completed}/${recovered_total} phases [COMPLETED]. Corroborated by an independent source — correcting phase counts and setting plan_markers_verified=true." >&2
+        else
+          # False-positive guard: no contradiction to resolve (a plan with zero phase headings,
+          # or a genuine partial-completion plan). Leave plan_markers_verified=absent and the
+          # 0/0 counts untouched — do not treat this as a second trigger.
+          echo "[orchestrate] Evidence corroboration: non-corroborating (plan headings show ${recovered_completed}/${recovered_total} in ${corroboration_plan_path}) — leaving plan_markers_verified=absent and phase counts at ${phases_completed}/${phases_total}." >&2
+        fi
+      else
+        echo "[orchestrate] Evidence corroboration: evidence_suspect=true (PHASES_ZERO_ON_SUCCESS) but no plan file found to corroborate against — leaving plan_markers_verified=absent." >&2
+      fi
+    fi
   else
     if [ "$handoff_stale" = "true" ]; then
       echo "[orchestrate] ERROR: Skill did not write a handoff for THIS dispatch (a stale one from an earlier cycle is present)."
@@ -799,8 +839,10 @@ if [ "$have_outcome" = "true" ]; then
       # hard mode, and multi-task mode cannot drift apart again. See that function's header for
       # the full case table (phase accounting present-and-complete always allows,
       # present-and-incomplete always refuses, absent falls back to plan_markers_verified — the
-      # recovered path above always sets plan_markers_verified="absent", so an absent phase
-      # count on a recovered "implemented" claim is conservatively refused here, not allowed).
+      # recovered path above sets plan_markers_verified="absent" by default, so an absent phase
+      # count on a recovered "implemented" claim is conservatively refused here, not allowed,
+      # UNLESS the evidence-corroboration block above already flipped it to "true" from an
+      # independent, corroborating plan-heading grep — see "Evidence corroboration" above).
       if skill_gate_completion_claim "$task_number" "$phases_completed" "$phases_total" \
            "$plan_markers_verified" "[orchestrate]"; then
         # `warn`, deliberately NOT `refuse`: the script-side backstop reads the plan file's own
@@ -1641,6 +1683,38 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
    echo "[orchestrate] Task #${task_num}: RECOVERY — no handoff written for this dispatch (expected outcome for this phase's writer); .return-meta.json reports status=$dispatch_status; recovering the outcome from it." >&2
    ```
 
+   **Evidence corroboration (identical mirror of the single-task Stage 5 block above)**: same
+   precondition (`evidence_suspect=true`, `evidence_reason="PHASES_ZERO_ON_SUCCESS"`,
+   `dispatch_status="implemented"`), same two `grep -c` forms verbatim, same escalation
+   (corroborated → correct `phases_completed`/`phases_total` and set
+   `plan_markers_verified="true"`; non-corroborated → leave both untouched), scoped to this
+   task's own `plan_path`/`task_dir` — never another task's in the same wave:
+
+   ```bash
+   evidence_suspect=$(echo "$recover_json" | jq -r '.evidence_suspect // false' 2>/dev/null) || evidence_suspect=false
+   evidence_reason=$(echo "$recover_json" | jq -r '.evidence_reason // "NONE"' 2>/dev/null) || evidence_reason="NONE"
+   if [ "$evidence_suspect" = "true" ] && [ "$evidence_reason" = "PHASES_ZERO_ON_SUCCESS" ] && [ "$dispatch_status" = "implemented" ]; then
+     corroboration_plan_path="${plan_path:-}"
+     if [ -z "$corroboration_plan_path" ]; then
+       corroboration_plan_path=$(ls -1 "${task_dir}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+     fi
+     if [ -n "$corroboration_plan_path" ] && [ -f "$corroboration_plan_path" ]; then
+       recovered_total=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: ' "$corroboration_plan_path" 2>/dev/null) || recovered_total=0
+       recovered_completed=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: .*\[COMPLETED\]' "$corroboration_plan_path" 2>/dev/null) || recovered_completed=0
+       if [ "$recovered_total" -gt 0 ] && [ "$recovered_completed" -eq "$recovered_total" ]; then
+         phases_completed="$recovered_completed"
+         phases_total="$recovered_total"
+         plan_markers_verified="true"
+         echo "[UNVERIFIED PHASES CORROBORATED] Task #${task_num}: recovery reported status=${dispatch_status} with phases 0/0 (evidence_reason=PHASES_ZERO_ON_SUCCESS), but plan headings in ${corroboration_plan_path} show ${recovered_completed}/${recovered_total} phases [COMPLETED]. Corroborated — correcting phase counts and setting plan_markers_verified=true." >&2
+       else
+         echo "[orchestrate] Task #${task_num}: Evidence corroboration non-corroborating (${recovered_completed}/${recovered_total} in ${corroboration_plan_path}) — leaving plan_markers_verified=absent." >&2
+       fi
+     else
+       echo "[orchestrate] Task #${task_num}: Evidence corroboration: no plan file found to corroborate against — leaving plan_markers_verified=absent." >&2
+     fi
+   fi
+   ```
+
    This task is NOT added to `failed_tasks` and is NOT infra-deferred; **continue into steps 3-6
    below unchanged** — step 2's own handoff read is skipped for this task (there is no handoff to
    read), but the same fields it would have populated are already set here, freshly per task, and
@@ -2006,12 +2080,24 @@ against the plan file's `### Phase N: {name} [STATUS]` heading lines to recover
   two calls return one integer each, a hard ceiling of **≤10 tokens per recovery event**.
 - **Heading lines only**: the patterns anchor on `^### Phase N: `. Checklist items, prose,
   deviation annotations, and every other part of the plan file remain out of scope.
-- **Recovery-only precondition**: it fires inside the missing/stale-handoff branch of Stage 5,
-  after return-meta recovery has already declined, and nowhere else. It is never a routine
-  per-cycle read, and never a substitute for reading a handoff that is present and fresh.
-- **Diagnostic, not authoritative**: the recovered counts are logged and recorded in the loop
-  guard. They never synthesize a `dispatch_status` and never drive a status transition — with
-  no handoff AND no recoverable return-meta status there is no dispatch outcome to trust.
+- **Recovery-only precondition, TWO reachable branches**: this identical two-`grep -c` idiom
+  fires from exactly two places, never elsewhere. (1) The missing/stale-handoff branch of Stage
+  5, after return-meta recovery above has already declined — the original branch documented
+  here. (2) The recovered=true branch above, but ONLY when return-meta recovery's own
+  `evidence_suspect`/`evidence_reason` fields report `PHASES_ZERO_ON_SUCCESS` for a claimed
+  `implemented` status — the evidence-corroboration block that widens this exception's trigger
+  to the one scenario branch (1) structurally cannot see, since branch (1) requires
+  `recovered=false`. Neither branch is a routine per-cycle read, and neither is a substitute for
+  reading a handoff that is present and fresh.
+- **Diagnostic in branch (1), evidence-based escalation in branch (2)**: in branch (1) the
+  recovered counts are logged and recorded in the loop guard only — they never synthesize a
+  `dispatch_status` and never drive a status transition, since there is no recoverable outcome
+  to trust. In branch (2) a *corroborating* grep result (heading count matches the recovered
+  phase count exactly) DOES set `plan_markers_verified="true"` and corrects
+  `phases_completed`/`phases_total` for the completion-claim gate to act on — the recovery
+  script's own emitted 0/0 values are left untouched; only this orchestrator-side variable is
+  corrected, from an independent artifact. A non-corroborating result in branch (2) is treated
+  identically to branch (1): diagnostic-only, `plan_markers_verified` stays `absent`.
 
 These two exceptions narrow item 2 inside one branch; they do not relax items 1, 3, or 4, and
 they do not relax item 2 anywhere else. The ~450-tokens-per-cycle flatness invariant is

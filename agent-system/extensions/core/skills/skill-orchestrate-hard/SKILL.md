@@ -827,6 +827,35 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
     # Deliberate: charge exactly one work cycle, identical to the handoff-present success path
     # below — real work happened and produced a status transition, so infra_exempt_cycle stays
     # false (its reset default at the top of this stage).
+
+    # ── Evidence corroboration (widened detection trigger — mirrors base-mode Stage 5) ──────
+    # PRECONDITION: reachable ONLY here, on the recovered=true path, when the recovery script's
+    # general empty-value detection signal fired PHASES_ZERO_ON_SUCCESS. Same rationale as the
+    # base-mode mirror: this is the one scenario the phase-marker grep further below structurally
+    # cannot see, since that grep requires recovered=false. Reuses the identical two `grep -c`
+    # forms verbatim.
+    evidence_suspect=$(echo "$recover_json" | jq -r '.evidence_suspect // false' 2>/dev/null) || evidence_suspect=false
+    evidence_reason=$(echo "$recover_json" | jq -r '.evidence_reason // "NONE"' 2>/dev/null) || evidence_reason="NONE"
+    if [ "$evidence_suspect" = "true" ] && [ "$evidence_reason" = "PHASES_ZERO_ON_SUCCESS" ] && [ "$dispatch_status" = "implemented" ]; then
+      corroboration_plan_path="${plan_path:-}"
+      if [ -z "$corroboration_plan_path" ]; then
+        corroboration_plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+      fi
+      if [ -n "$corroboration_plan_path" ] && [ -f "$corroboration_plan_path" ]; then
+        recovered_total=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: ' "$corroboration_plan_path" 2>/dev/null) || recovered_total=0
+        recovered_completed=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: .*\[COMPLETED\]' "$corroboration_plan_path" 2>/dev/null) || recovered_completed=0
+        if [ "$recovered_total" -gt 0 ] && [ "$recovered_completed" -eq "$recovered_total" ]; then
+          phases_completed="$recovered_completed"
+          phases_total="$recovered_total"
+          plan_markers_verified="true"
+          echo "[UNVERIFIED PHASES CORROBORATED][hard-orchestrate] task ${task_number}: recovery reported status=${dispatch_status} with phases 0/0 (evidence_reason=PHASES_ZERO_ON_SUCCESS), but plan headings in ${corroboration_plan_path} show ${recovered_completed}/${recovered_total} phases [COMPLETED]. Corroborated — correcting phase counts and setting plan_markers_verified=true." >&2
+        else
+          echo "[hard-orchestrate] Evidence corroboration: non-corroborating (plan headings show ${recovered_completed}/${recovered_total} in ${corroboration_plan_path}) — leaving plan_markers_verified=absent and phase counts at ${phases_completed}/${phases_total}." >&2
+        fi
+      else
+        echo "[hard-orchestrate] Evidence corroboration: evidence_suspect=true (PHASES_ZERO_ON_SUCCESS) but no plan file found to corroborate against — leaving plan_markers_verified=absent." >&2
+      fi
+    fi
   else
     if [ "$handoff_stale" = "true" ]; then
       echo "[hard-orchestrate] ERROR: Skill did not write a handoff for THIS dispatch (a stale one from an earlier cycle is present)."
@@ -1000,8 +1029,10 @@ if [ "$have_outcome" = "true" ]; then
       # now the corroborated Case 3 fallback, which allows only on `plan_markers_verified == true`.
       # Hard mode's per-phase dispatch always populates accounting, so Case 3 should be
       # near-unreachable here; when it does fire it means the handoff writer is defective (or, on
-      # the recovered path, that .return-meta.json's absent phase accounting was conservatively
-      # refused, which is the correct fail-closed outcome for a base-mode "implemented" recovery).
+      # the recovered path, that .return-meta.json's phase accounting was conservatively refused
+      # as absent — the correct fail-closed outcome for a base-mode "implemented" recovery —
+      # UNLESS the evidence-corroboration block above already flipped plan_markers_verified to
+      # "true" from an independent, corroborating plan-heading grep).
       if skill_gate_completion_claim "$task_number" "$phases_completed" "$phases_total" \
            "$plan_markers_verified" "[hard-orchestrate]"; then
         skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn"
