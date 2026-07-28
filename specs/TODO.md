@@ -1,5 +1,5 @@
 ---
-next_project_number: 957
+next_project_number: 958
 ---
 
 # TODO
@@ -12,7 +12,7 @@ next_project_number: 957
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 942,943,947,950,951,955,956 | -- | agent-system, orchestration-concurrency |
-| 2 | 944,948,952 | 942,943,947,951 | agent-system, orchestration-concurrency |
+| 2 | 944,948,952,957 | 942,943,947,951 | agent-system, orchestration-concurrency |
 | 3 | 945,949,953,954 | 944,948,952 | agent-system, orchestration-concurrency |
 | 4 | 946 | 945 | orchestration-concurrency |
 
@@ -37,10 +37,33 @@ next_project_number: 957
   └─ 944 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
     └─ 945 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
       └─ 946 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+  └─ 957 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 943 [RESEARCHED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 944 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS (see above)
 
 ## Tasks
+
+### 957. Convert the residual specs/state.json inline write sites to state-write.sh
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestration-concurrency
+- **Dependencies**: Task 942
+
+**Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`. Runtime invocations still reference the deployed `.claude/scripts/state-write.sh`; that is the call path, not the edit target.
+
+MECHANISM (already built, do not re-invent): `agent-system/extensions/core/scripts/state-write.sh` is the single mutex-guarded `specs/state.json` writer -- acquire `.scope-lock` (bounded retry, FAIL CLOSED) -> private `mktemp` staging -> caller's jq filter (plus `--arg`/`--argjson` passthrough) -> `jq empty` validate -> `mv` into place -> optional in-mutex `--regen-todo` -> release. It honors `SCOPE_MUTEX_HELD` guest mode for nesting inside an outer holder. See `context/patterns/task-lock.md`'s "State-Write Convention" section for the full contract and its "Known residual surface" note, which names this exact task.
+
+BASELINE (re-measure at implementation time, do not trust this count as final -- it was itself a correction of an earlier undercount): a source-store-wide audit found 14 core `SKILL.md` files with their own inline hand-rolled `specs/state.json > tmp && mv` write blocks (48 write sites total): `skill-implementer`, `skill-implementer-hard`, `skill-planner`, `skill-planner-hard`, `skill-project-overview`, `skill-researcher`, `skill-researcher-hard`, `skill-reviser`, `skill-spawn`, `skill-status-sync`, `skill-team-implement`, `skill-team-plan`, `skill-team-research`, `skill-todo`. Two command files carry a further 8 sites: `commands/task.md` (5) and `commands/todo.md` (3). A prior pass at this audit undercounted by missing `skill-project-overview` entirely -- re-grep the whole source store rather than trusting this list verbatim.
+
+Several `context/**` and `docs/**` files still DOCUMENT the old hand-rolled `jq > tmp && mv` pattern as the recommended idiom and should be updated to reference `state-write.sh` instead: `context/patterns/inline-status-update.md`, `context/patterns/jq-escaping-workarounds.md`, `context/patterns/file-metadata-exchange.md`, `context/troubleshooting/workflow-interruptions.md`, `context/standards/postflight-tool-restrictions.md`, `docs/guides/creating-skills.md`.
+
+WORK: convert every inline write site above to a `state-write.sh` invocation, following the session_id-threading pattern already established for scripts with no prior session_id parameter (optional `--session-id` flag with a self-generating fallback, `sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')`, so existing callers keep working unchanged). Fold an immediately-following separate `generate-todo.sh` call into `--regen-todo` where doing so does not reorder a write that must land first (see `commands/review.md`'s task-creation-then-topic-assignment ordering in the prior conversion for the pattern of when NOT to fold). Then update the six stale-idiom documentation files to reference `state-write.sh`.
+
+VERIFICATION BAR (the same bar the prior conversion work used, do not weaken it): a repo-wide grep across the FULL source store (not just this task's file_scope) for any remaining `specs/state.json`-targeted `> tmp && mv` or `.tmp` staging sequence, or `python3 json.load`/`json.dump` in-place write, returns ZERO hits outside `state-write.sh` itself. `bash -n` clean on every edited script/skill's embedded bash. `bash agent-system/extensions/core/scripts/test-state-write-concurrency.sh` and `bash agent-system/extensions/core/scripts/test-task-lock-reap.sh` both exit 0 (unaffected regression checks). `bash .claude/scripts/check-task-references.sh` passes -- no deliverable outside `specs/**` cites a task number; use durable anchors (script names, function names, mechanism names) instead. `bash .claude/scripts/check-extension-docs.sh` passes.
+
+DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite task numbers.
+
+---
 
 ### 956. Unify phase-heading parsing across all sites and settle the [DESCOPED] outcome
 - **Status**: [NOT STARTED]

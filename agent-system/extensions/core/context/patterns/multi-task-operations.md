@@ -447,18 +447,20 @@ If the agent for one task in the batch fails:
 Multiple skills writing to state.json concurrently is safe for two independent reasons:
 - Each skill writes to a specific `project_number` entry in `active_projects`; jq operations are
   scoped (`select(.project_number == $num)`), so no skill modifies another task's fields.
-- Every `specs/state.json` write in this codebase routes through
-  `scripts/state-write.sh`, the single mutex-guarded writer: fail-closed
+- `scripts/state-write.sh` is the single sanctioned, mutex-guarded writer: fail-closed
   `specs/.scope-lock` acquisition, private per-process `mktemp` staging, `jq empty` validation
-  before `mv`. This closes the read-modify-write race that used to exist between concurrent
-  writers — see `context/patterns/task-lock.md`'s "State-Write Convention" section for the full
-  contract and `scripts/test-state-write-concurrency.sh` for the isolated-temp-root suite
-  proving no-lost-update under genuine concurrency.
+  before `mv`. Every writer converted to call it closes the read-modify-write race that used to
+  exist between concurrent writers — see `context/patterns/task-lock.md`'s "State-Write
+  Convention" section for the full contract and `scripts/test-state-write-concurrency.sh` for the
+  isolated-temp-root suite proving no-lost-update under genuine concurrency.
 
 The read-modify-write race this section used to record as a known, unfixed limitation is fixed
-for every writer that has been converted to `state-write.sh` (see "State-Write Convention" for
-the residual surface of not-yet-converted inline writers, mostly in extension `SKILL.md` files
-and a handful of core skills discovered during that conversion's audit).
+for every writer that has been converted to `state-write.sh` (the scripts and command files
+enumerated in `context/patterns/task-lock.md`'s "Consumers" list). It is NOT yet fixed for the
+residual surface named in that same file's "Known residual surface" note — 14 core `SKILL.md`
+files and two command files still write `specs/state.json` inline, tracked as a dedicated
+follow-up task in the orchestration-concurrency topic group of `specs/TODO.md` rather than
+silently assumed complete.
 
 ---
 

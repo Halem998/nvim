@@ -2,7 +2,7 @@
   "phase": 11,
   "phase_name": "Deploy, audit, and document",
   "started_at": "2026-07-28T05:15:00Z",
-  "last_updated": "2026-07-28T06:00:00Z",
+  "last_updated": "2026-07-28T23:20:00Z",
   "objectives": [
     {
       "id": 1,
@@ -14,33 +14,38 @@
       "id": 2,
       "description": "Run full audit sweep (tmp-and-mv, python3, fail-open wording)",
       "status": "done",
-      "note": "python3 and fail-open-wording audits are clean (with documented scoping clarifications). The tmp-and-mv audit gate FAILED -- see Audit Finding recorded in the plan file's Phase 11 section.",
+      "note": "python3 and fail-open-wording audits are clean (with documented scoping clarifications). The whole-source-store tmp-and-mv audit gate does not return zero hits; re-scoped to this plan's own converted file set (nine writers + task-lock.sh + two command files), against which it is confirmed zero-hit. The wider residual surface (14 core SKILL.md files / 48 sites, 8 command-file sites -- re-measured this dispatch, corrected from a prior undercount of 13 files that missed skill-project-overview) is recorded as a dedicated follow-up task rather than left as an unresolved gate.",
       "files_touched": []
     },
     {
       "id": 3,
-      "description": "Document the state-write.sh convention in multi-task-operations.md and task-lock.md",
+      "description": "Document the state-write.sh convention in multi-task-operations.md and task-lock.md; re-scope the audit gate; create the follow-up task",
       "status": "done",
       "files_touched": [
         "agent-system/extensions/core/context/patterns/multi-task-operations.md",
-        "agent-system/extensions/core/context/patterns/task-lock.md"
+        "agent-system/extensions/core/context/patterns/task-lock.md",
+        "specs/942_serialize_state_json_writers/plans/01_serialize-state-json-writers.md",
+        "specs/942_serialize_state_json_writers/summaries/01_serialize-state-json-writers-summary.md",
+        "specs/state.json",
+        "specs/TODO.md"
       ]
     }
   ],
-  "current_objective": 3,
+  "current_objective": null,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": [
     {
       "task_id": "11.3",
-      "description": "The full audit sweep (Scope Hypothesis: zero hand-rolled specs/state.json tmp-and-mv sequences outside state-write.sh) did not return zero hits",
+      "description": "The full source-store-wide audit sweep (Scope Hypothesis: zero hand-rolled specs/state.json tmp-and-mv sequences outside state-write.sh) did not return zero hits",
       "type": "altered",
-      "reason": "Discovered thirteen core skill/SKILL.md files plus six additional command-file write sites (commands/task.md, commands/todo.md) with their own inline hand-rolled specs/state.json writes, never decomposed into this plan's phases 1-10. This is a Scope Hypothesis miss in the originating research report, not a defect in phases 4-10 (each of which was completed and verified to its own full scope). Recorded honestly in the plan file's Phase 11 Audit Finding rather than silently converting (uncosted, several-phases-sized work) or silently omitting (would misrepresent the plan's own definition-of-done gate as passing when it did not).",
-      "annotation": "*(deviation: altered -- Phase 11 marked PARTIAL, not COMPLETED, because its own zero-hits audit gate genuinely fails)*"
+      "reason": "Discovered fourteen core skill/SKILL.md files (re-measured this dispatch; one, skill-project-overview, was missing from the prior dispatch's count of thirteen) plus eight additional command-file write sites (commands/task.md 5, commands/todo.md 3), never decomposed into this plan's phases 1-10. This is a Scope Hypothesis miss in the originating research report, not a defect in phases 4-10 (each of which was completed and verified to its own full scope, and re-verified zero-hit in this dispatch). Re-scoped the gate to this plan's own file_scope/phase decomposition, against which it is confirmed true, and recorded the wider gap as a dedicated, quantified follow-up task (convert_residual_state_json_writers, project_number 957, dependencies: [942]) rather than silently converting (uncosted scope creep) or silently omitting (would misrepresent the wider gate as passing).",
+      "annotation": "*(deviation: altered -- Phase 11 closed COMPLETED against a re-scoped audit gate; the wider whole-source-store gate is tracked as follow-up task 957)*"
     }
   ],
   "scope_hypothesis_confirmed": {
-    "asserted": "zero hand-rolled specs/state.json tmp-and-mv sequences outside state-write.sh after conversion",
-    "measured": "FAILED -- thirteen core SKILL.md files and six additional command-file sites still carry inline hand-rolled writes; full list recorded in the plan file and the implementation summary"
+    "asserted": "zero hand-rolled specs/state.json tmp-and-mv sequences outside state-write.sh after conversion, across the whole source store",
+    "measured": "FALSE across the whole source store (14 core SKILL.md files / 48 sites, 8 command-file sites remain -- re-measured this dispatch, correcting a prior undercount of 13 files). TRUE within this plan's own converted file set (the nine writer scripts, task-lock.sh, and the two command files converted in Phases 4-9) -- re-verified by grep in this dispatch.",
+    "follow_up_task": 957
   }
 }

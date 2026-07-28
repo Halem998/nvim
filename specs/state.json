@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 957,
+  "next_project_number": 958,
   "active_projects": [
     {
       "project_number": 913,
@@ -2529,6 +2529,47 @@
       "next_artifact_number": null,
       "artifacts": [],
       "topic": "agent-system"
+    },
+    {
+      "project_number": 957,
+      "project_name": "convert_residual_state_json_writers",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "orchestration-concurrency",
+      "title": "Convert the residual specs/state.json inline write sites to state-write.sh",
+      "description": "SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`. Runtime invocations still reference the deployed `.claude/scripts/state-write.sh`; that is the call path, not the edit target.\n\nMECHANISM (already built, do not re-invent): `agent-system/extensions/core/scripts/state-write.sh` is the single mutex-guarded `specs/state.json` writer -- acquire `.scope-lock` (bounded retry, FAIL CLOSED) -> private `mktemp` staging -> caller's jq filter (plus `--arg`/`--argjson` passthrough) -> `jq empty` validate -> `mv` into place -> optional in-mutex `--regen-todo` -> release. It honors `SCOPE_MUTEX_HELD` guest mode for nesting inside an outer holder. See `context/patterns/task-lock.md`'s \"State-Write Convention\" section for the full contract and its \"Known residual surface\" note, which names this exact task.\n\nBASELINE (re-measure at implementation time, do not trust this count as final -- it was itself a correction of an earlier undercount): a source-store-wide audit found 14 core `SKILL.md` files with their own inline hand-rolled `specs/state.json > tmp && mv` write blocks (48 write sites total): `skill-implementer`, `skill-implementer-hard`, `skill-planner`, `skill-planner-hard`, `skill-project-overview`, `skill-researcher`, `skill-researcher-hard`, `skill-reviser`, `skill-spawn`, `skill-status-sync`, `skill-team-implement`, `skill-team-plan`, `skill-team-research`, `skill-todo`. Two command files carry a further 8 sites: `commands/task.md` (5) and `commands/todo.md` (3). A prior pass at this audit undercounted by missing `skill-project-overview` entirely -- re-grep the whole source store rather than trusting this list verbatim.\n\nSeveral `context/**` and `docs/**` files still DOCUMENT the old hand-rolled `jq > tmp && mv` pattern as the recommended idiom and should be updated to reference `state-write.sh` instead: `context/patterns/inline-status-update.md`, `context/patterns/jq-escaping-workarounds.md`, `context/patterns/file-metadata-exchange.md`, `context/troubleshooting/workflow-interruptions.md`, `context/standards/postflight-tool-restrictions.md`, `docs/guides/creating-skills.md`.\n\nWORK: convert every inline write site above to a `state-write.sh` invocation, following the session_id-threading pattern already established for scripts with no prior session_id parameter (optional `--session-id` flag with a self-generating fallback, `sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')`, so existing callers keep working unchanged). Fold an immediately-following separate `generate-todo.sh` call into `--regen-todo` where doing so does not reorder a write that must land first (see `commands/review.md`'s task-creation-then-topic-assignment ordering in the prior conversion for the pattern of when NOT to fold). Then update the six stale-idiom documentation files to reference `state-write.sh`.\n\nVERIFICATION BAR (the same bar the prior conversion work used, do not weaken it): a repo-wide grep across the FULL source store (not just this task's file_scope) for any remaining `specs/state.json`-targeted `> tmp && mv` or `.tmp` staging sequence, or `python3 json.load`/`json.dump` in-place write, returns ZERO hits outside `state-write.sh` itself. `bash -n` clean on every edited script/skill's embedded bash. `bash agent-system/extensions/core/scripts/test-state-write-concurrency.sh` and `bash agent-system/extensions/core/scripts/test-task-lock-reap.sh` both exit 0 (unaffected regression checks). `bash .claude/scripts/check-task-references.sh` passes -- no deliverable outside `specs/**` cites a task number; use durable anchors (script names, function names, mechanism names) instead. `bash .claude/scripts/check-extension-docs.sh` passes.\n\nDELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite task numbers.",
+      "file_scope": [
+        "agent-system/extensions/core/skills/skill-implementer/SKILL.md",
+        "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
+        "agent-system/extensions/core/skills/skill-planner/SKILL.md",
+        "agent-system/extensions/core/skills/skill-planner-hard/SKILL.md",
+        "agent-system/extensions/core/skills/skill-project-overview/SKILL.md",
+        "agent-system/extensions/core/skills/skill-researcher/SKILL.md",
+        "agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md",
+        "agent-system/extensions/core/skills/skill-reviser/SKILL.md",
+        "agent-system/extensions/core/skills/skill-spawn/SKILL.md",
+        "agent-system/extensions/core/skills/skill-status-sync/SKILL.md",
+        "agent-system/extensions/core/skills/skill-team-implement/SKILL.md",
+        "agent-system/extensions/core/skills/skill-team-plan/SKILL.md",
+        "agent-system/extensions/core/skills/skill-team-research/SKILL.md",
+        "agent-system/extensions/core/skills/skill-todo/SKILL.md",
+        "agent-system/extensions/core/commands/task.md",
+        "agent-system/extensions/core/commands/todo.md",
+        "agent-system/extensions/core/context/patterns/inline-status-update.md",
+        "agent-system/extensions/core/context/patterns/jq-escaping-workarounds.md",
+        "agent-system/extensions/core/context/patterns/file-metadata-exchange.md",
+        "agent-system/extensions/core/context/troubleshooting/workflow-interruptions.md",
+        "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+        "agent-system/extensions/core/docs/guides/creating-skills.md"
+      ],
+      "dependencies": [
+        942
+      ],
+      "artifacts": [],
+      "created": "2026-07-28T23:14:04Z",
+      "last_updated": "2026-07-28T23:14:04Z",
+      "session_id": "sess_1785276838_86f66c",
+      "next_artifact_number": null
     }
   ],
   "completed_projects": [],

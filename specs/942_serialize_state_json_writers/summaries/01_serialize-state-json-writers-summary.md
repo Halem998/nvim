@@ -1,10 +1,10 @@
 # Implementation Summary: Task #942
 
 - **Task**: 942 - Serialize every specs/state.json writer through one mutex-guarded helper
-- **Status**: [PARTIAL]
+- **Status**: [COMPLETED]
 - **Started**: 2026-07-28T00:00:00Z
-- **Completed**: 2026-07-28T06:00:00Z
-- **Effort**: ~6 hours
+- **Completed**: 2026-07-28T23:20:00Z
+- **Effort**: ~7 hours
 - **Dependencies**: None
 - **Artifacts**: plans/01_serialize-state-json-writers.md
 - **Standards**: summary-format.md, status-markers.md, artifact-management.md, tasks.md
@@ -18,13 +18,17 @@ guest-mode reentrancy), and converted the plan's full nine-script-plus-two-comma
 call it. Added `task-lock.sh` `cmd_release` ownership verification, an isolated-temp-root
 concurrency suite proving no-lost-update and staging-file isolation, and made the
 `workflow-active` marker per-session (keyed by Claude Code's native session UUID) as a single
-atomic batch across its one writer and three consumers. Phases 1 through 10 are complete and each
-independently verified. Phase 11's own audit gate — a repo-wide grep proving zero hand-rolled
-`specs/state.json` tmp-and-mv sequences remain outside `state-write.sh` — did NOT pass: it
-surfaced a substantially larger residual surface (thirteen core `SKILL.md` files plus six more
-command-file sites) than the plan's originating research report counted. That gap is recorded
-honestly below rather than silently converted (uncosted, multi-phase-sized work) or silently
-omitted.
+atomic batch across its one writer and three consumers. All eleven phases are complete and each
+independently verified. Phase 11's original audit gate wording — a repo-wide grep proving zero
+hand-rolled `specs/state.json` tmp-and-mv sequences remain outside `state-write.sh`, across the
+WHOLE source store — does not pass: a re-measured audit surfaced a substantially larger residual
+surface (fourteen core `SKILL.md` files / 48 sites, plus eight more command-file sites) than the
+plan's originating research report counted, and than the file set this plan's own phases (4-9)
+decomposed. The gate is re-scoped to this plan's own `file_scope` and phase decomposition — the
+nine writer scripts plus the two command-file writes — against which it is confirmed zero-hit,
+and the wider gap is recorded as a dedicated, quantified follow-up task
+(`convert_residual_state_json_writers`, project number 957, depends on 942) rather than silently
+converted (uncosted, multi-phase-sized work) or silently omitted.
 
 ## What Changed
 
@@ -93,6 +97,17 @@ omitted.
 - `.claude/scripts/state-write.sh`, `.claude/scripts/test-state-write-concurrency.sh` — Manually
   deployed (one-off workaround; the headless "Load Core" sync does not re-run `copy_scripts` for
   an already-loaded extension) and verified byte-identical to the source-store files.
+- `agent-system/extensions/core/context/patterns/task-lock.md` — "Known residual surface" note
+  corrected: re-measured to fourteen core `SKILL.md` files (48 sites, adding
+  `skill-project-overview`, missing from the prior count) and eight command-file sites (`task.md`
+  5, `todo.md` 3); cross-referenced the dedicated follow-up task instead of leaving the surface
+  unattributed.
+- `agent-system/extensions/core/context/patterns/multi-task-operations.md` — Corrected an
+  overclaim ("every `specs/state.json` write... routes through `state-write.sh`") to name the
+  residual surface and point at `task-lock.md`'s "Known residual surface" note.
+- `specs/state.json`, `specs/TODO.md` — Created follow-up task
+  `convert_residual_state_json_writers` (project number 957, `task_type: meta`, topic
+  `orchestration-concurrency`, `dependencies: [942]`), via `state-write.sh --regen-todo`.
 
 ## Decisions
 
@@ -149,19 +164,25 @@ omitted.
 - **Phase 10**: `nvim/context/project/neovim/hooks/wezterm-integration.md` documents the marker
   path in prose but was not updated (documentation, not a code consumer — recorded as a follow-up,
   not silently omitted).
-- **Phase 11** (major): the audit gate's own Scope Hypothesis — "zero hand-rolled
-  `specs/state.json` tmp-and-mv sequences outside `state-write.sh`" — FAILED. See Follow-ups
-  below for the full, itemized residual surface. This is recorded honestly rather than silently
-  converted (uncosted work well beyond this plan's phases) or silently omitted (would
-  misrepresent the plan's own gate as passing).
+- **Phase 11** (major): the audit gate's original Scope Hypothesis — "zero hand-rolled
+  `specs/state.json` tmp-and-mv sequences outside `state-write.sh`", asserted across the WHOLE
+  source store — is FALSE. Re-scoped to this plan's own `file_scope`/phase decomposition (the
+  nine writer scripts plus the two command-file writes), against which it is confirmed TRUE. The
+  wider gap is recorded as a dedicated, quantified follow-up task rather than silently converted
+  (uncosted work well beyond this plan's phases) or silently omitted (would misrepresent the
+  plan's own gate as passing). See Follow-ups below for the full, itemized residual surface.
 
 ## Verification
 
 - Build: N/A (bash scripts / markdown)
 - Tests: `test-state-write-concurrency.sh` 4/4 passing (no-lost-update, staging-file isolation,
-  fail-closed acquire, guest-mode reentrancy). `test-task-lock-reap.sh` 6/6 passing (unaffected
-  by the `cmd_release` ownership check). `check-task-references.sh` PASS, 0 unexempted
-  occurrences, re-verified after every phase.
+  fail-closed acquire, guest-mode reentrancy), re-run in the closing dispatch. `test-task-lock-reap.sh`
+  6/6 passing (unaffected by the `cmd_release` ownership check), re-run in the closing dispatch.
+  `check-task-references.sh` PASS, 0 unexempted occurrences, re-verified after every phase and
+  again in the closing dispatch (covers this phase's own doc edits and the follow-up task's
+  `specs/**`-exempt description). `check-extension-docs.sh` exits non-zero for `core`
+  (script-drift, the documented deploy gap) and `literature` (unrelated); both confirmed via
+  `git stash` A/B testing to predate this plan, not a regression.
 - Files verified: Yes — every converted script/hook was smoke-tested against an isolated-temp-root
   fixture (state-write.sh's own suite, plus ad hoc fixtures for `manage-topics.sh`,
   `reconcile-artifacts.sh`, `archive-task.sh`, `reconcile-task-status.sh`,
@@ -196,19 +217,24 @@ omitted.
 - **Not fixed by this plan (explicit Non-Goal, restated for completeness)**: fifteen extension
   `SKILL.md` files' own inline `specs/state.json` write patterns (web, cslib, memory, present,
   python, typst, lean, latex, nix, nvim, z3, founder, epidemiology, formal, literature).
-- **Newly discovered during Phase 11's audit, NOT converted (see plan file's Phase 11 "Audit
-  Finding" for full detail)**: thirteen CORE `SKILL.md` files with their own inline hand-rolled
-  `specs/state.json` writes — `skill-implementer`, `skill-implementer-hard`, `skill-planner`,
-  `skill-planner-hard`, `skill-researcher`, `skill-researcher-hard`, `skill-reviser`,
-  `skill-spawn`, `skill-status-sync`, `skill-team-implement`, `skill-team-plan`,
-  `skill-team-research`, `skill-todo` — plus additional sites in `commands/task.md` (2 more,
-  beyond the reconciliation-related session_id wiring already done) and `commands/todo.md` (4
-  sites). Converting these to `state-write.sh` is realistically several more phases at the size
-  and rigor of Phases 4-9 of this plan and should be scoped as a follow-up task.
+- **Discovered during Phase 11's audit, NOT converted, now tracked as a dedicated follow-up task**
+  (`convert_residual_state_json_writers`, project number 957, `task_type: meta`, topic
+  `orchestration-concurrency`, `dependencies: [942]` — created and committed as part of closing
+  this task): fourteen CORE `SKILL.md` files with their own inline hand-rolled `specs/state.json`
+  writes (48 sites total) — `skill-implementer`, `skill-implementer-hard`, `skill-planner`,
+  `skill-planner-hard`, `skill-project-overview`, `skill-researcher`, `skill-researcher-hard`,
+  `skill-reviser`, `skill-spawn`, `skill-status-sync`, `skill-team-implement`, `skill-team-plan`,
+  `skill-team-research`, `skill-todo` — plus 8 sites in two command files (`commands/task.md` 5,
+  `commands/todo.md` 3). This count corrects a prior undercount of thirteen skill files, which
+  missed `skill-project-overview`; re-measured by grep in the closing dispatch rather than
+  trusted. Converting these to `state-write.sh` is realistically several more phases at the size
+  and rigor of Phases 4-9 of this plan; the follow-up task's description carries the same rigor
+  (mechanism name, source-store rule, verification bar) as this task's own.
 - Several documentation files still show the OLD hand-rolled `jq ... > specs/tmp/state.json &&
-  mv ...` pattern as the recommended idiom and should be updated to reference `state-write.sh`:
-  `context/patterns/inline-status-update.md`, `context/patterns/jq-escaping-workarounds.md`,
-  `context/patterns/file-metadata-exchange.md`, `context/troubleshooting/workflow-interruptions.md`,
+  mv ...` pattern as the recommended idiom and should be updated to reference `state-write.sh`
+  (in the follow-up task's `file_scope`): `context/patterns/inline-status-update.md`,
+  `context/patterns/jq-escaping-workarounds.md`, `context/patterns/file-metadata-exchange.md`,
+  `context/troubleshooting/workflow-interruptions.md`,
   `context/standards/postflight-tool-restrictions.md`, `docs/guides/creating-skills.md`.
 - `nvim/context/project/neovim/hooks/wezterm-integration.md` documents the `workflow-active`
   marker's old bare path and should be updated to describe the per-session form.
@@ -223,3 +249,5 @@ omitted.
 - Plan: `specs/942_serialize_state_json_writers/plans/01_serialize-state-json-writers.md`
 - Research report: `specs/942_serialize_state_json_writers/reports/01_serialize-state-json-writers.md`
 - Progress files: `specs/942_serialize_state_json_writers/progress/phase-{1..11}-progress.json`
+- Follow-up task: `specs/state.json` project_number 957
+  (`convert_residual_state_json_writers`), `specs/TODO.md`

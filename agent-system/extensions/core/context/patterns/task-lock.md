@@ -499,16 +499,17 @@ staging path with an EXIT trap scoped to that process's own file only. See
 properties (no-lost-update, staging-file isolation) plus fail-closed-acquire and
 guest-mode-reentrancy.
 
-**Known residual surface (not yet converted):** a number of `agent-system/extensions/core/`
-skill files (`skill-implementer`, `skill-implementer-hard`, `skill-planner`,
-`skill-planner-hard`, `skill-researcher`, `skill-researcher-hard`, `skill-reviser`,
-`skill-spawn`, `skill-status-sync`, `skill-team-implement`, `skill-team-plan`,
-`skill-team-research`, `skill-todo`) and two commands (`commands/task.md`, `commands/todo.md`)
-still carry their own inline hand-rolled `specs/state.json` write blocks, discovered during a
-source-store-wide audit after this convention was established -- these were outside the
-file_scope of the plan that introduced `state-write.sh` and remain open follow-up work, not a
-silently-accepted gap. Every extension `SKILL.md` file with its own inline `specs/state.json`
-write pattern is a further, separately out-of-scope surface.
+**Known residual surface (not yet converted):** a re-measured, source-store-wide grep found 14
+`agent-system/extensions/core/` skill files (48 inline write sites total) still carrying their
+own hand-rolled `specs/state.json` write blocks -- `skill-implementer`, `skill-implementer-hard`,
+`skill-planner`, `skill-planner-hard`, `skill-project-overview`, `skill-researcher`,
+`skill-researcher-hard`, `skill-reviser`, `skill-spawn`, `skill-status-sync`,
+`skill-team-implement`, `skill-team-plan`, `skill-team-research`, `skill-todo` -- plus two
+commands carrying 8 further sites (`commands/task.md` 5, `commands/todo.md` 3). These were
+outside the `file_scope` of the plan that introduced `state-write.sh` and remain open follow-up
+work, tracked as a dedicated task (see `specs/TODO.md`'s orchestration-concurrency topic group),
+not a silently-accepted gap. Every extension `SKILL.md` file with its own inline
+`specs/state.json` write pattern is a further, separately out-of-scope surface.
 
 ### Relationship to the Task-Number Lock
 
