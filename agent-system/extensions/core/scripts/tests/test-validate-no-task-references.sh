@@ -18,6 +18,18 @@
 # integer counters, mktemp -d workdir with a trap EXIT cleanup, exit 0 on all-pass and
 # exit 1 on any-fail.
 #
+# NOTE on this file's own task-ref-ok markers: the fixture blocks below deliberately embed
+# literal "task-ref-ok:begin"/"task-ref-ok:end" tokens as TEST DATA (verifying the hook
+# recognizes them in scanned content) as well as literal task-number digits as fixture input.
+# check-task-references.sh's shared strip_exempt_regions is a simple line-based TOGGLE, not a
+# nesting-aware parser -- an inner "task-ref-ok:end" closes ANY still-open region, including an
+# outer one. Marker regions in this file are therefore kept non-nested (each self-contained
+# begin/end pair stands alone, never inside another one), and any fixture line that must remain
+# LITERALLY UNMARKED as far as the hook's own content-scan is concerned (to test the blocking
+# path) is instead exempted at the FILE level via a trailing inline `# task-ref-ok` bash comment
+# on a variable-assignment line, which strip_exempt_regions strips as a whole raw line without
+# that comment ever becoming part of the shell string value the hook receives.
+#
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED.
 
 set -uo pipefail
@@ -140,8 +152,29 @@ assert_silent "exemption: relative specs/ path"    "specs/926_foo/plans/01_plan.
 assert_silent "exemption: absolute-prefixed specs/ path" "/abs/prefix/specs/926_foo/plans/01_plan.md" "See task 788 for context"
 
 # =====================================================================
+# Degenerate-input fixtures: empty file_path / empty content both exit 0
+# =====================================================================
+degenerate_fixture_content="See task 788 for context"  # task-ref-ok inline test fixture, category 6
+degenerate_code="$(hook_exit_code "" "$degenerate_fixture_content")"
+if [ "$degenerate_code" -eq 0 ]; then
+  pass "degenerate: empty file_path exits 0"
+else
+  fail "degenerate: empty file_path expected exit 0, got exit=$degenerate_code"
+fi
+
+degenerate_code="$(hook_exit_code "lua/foo.lua" "")"
+if [ "$degenerate_code" -eq 0 ]; then
+  pass "degenerate: empty content exits 0"
+else
+  fail "degenerate: empty content expected exit 0, got exit=$degenerate_code"
+fi
+# task-ref-ok:end
+
+# =====================================================================
 # Exemption fixtures: one per remaining Exemption Taxonomy category (rules/
-# no-task-references-in-deliverables.md's "## Exemption Taxonomy" section)
+# no-task-references-in-deliverables.md's "## Exemption Taxonomy" section). Kept OUTSIDE the
+# block above -- each begin/end pair below is self-contained (never nested inside another),
+# per this file's own header note on strip_exempt_regions' toggle semantics.
 # =====================================================================
 
 # Category 2: commit-message convention example, marked -> allowed.
@@ -152,21 +185,25 @@ task 259: create LaTeX documentation for Logos system
 
 # Category 2 / regression anchor: the git-workflow.md self-trip case. The exact line that
 # defines the sanctioned task+phase commit convention must NOT be indistinguishable from a
-# violation once marked, and MUST still be caught when the marker is absent.
+# violation once marked, and MUST still be caught when the marker is absent. The unmarked
+# variant's literal text is file-exempted via a trailing inline comment on its assignment line
+# (see this file's header note) so it reaches the hook as truly unmarked content.
 assert_silent "regression anchor: task+phase commit example, MARKED" "lua/foo.lua" \
 "<!-- task-ref-ok:begin canonical rendered commit-message example -->
 task 259 phase 2: implement modal semantics evaluator
 <!-- task-ref-ok:end -->"
+unmarked_phase_fixture="task 259 phase 2: implement modal semantics evaluator"  # task-ref-ok inline test fixture, category 6
 assert_triggers "regression anchor: task+phase commit example, UNMARKED" "lua/foo.lua" \
-"task 259 phase 2: implement modal semantics evaluator"
+"$unmarked_phase_fixture"
 
 # Category 3: command-usage example, marked -> allowed; unmarked -> blocked.
 assert_silent "category 3: marked command-usage example" "lua/foo.lua" \
 "<!-- task-ref-ok:begin command-usage example -->
 /learn --task 142
 <!-- task-ref-ok:end -->"
+unmarked_command_usage_fixture="/learn --task 142"  # task-ref-ok inline test fixture, category 6
 assert_triggers "category 3: unmarked command-usage example" "lua/foo.lua" \
-"/learn --task 142"
+"$unmarked_command_usage_fixture"
 
 # Category 4: quoted historical anti-pattern, marked -> allowed.
 assert_silent "category 4: marked quoted historical anti-pattern" "lua/foo.lua" \
@@ -190,24 +227,6 @@ assert_silent "category 7: marked memory frontmatter provenance" ".memory/10-Mem
 "topic: \"task-595\"  # task-ref-ok inline, category 7"
 
 # =====================================================================
-# Degenerate-input fixtures: empty file_path / empty content both exit 0
-# =====================================================================
-degenerate_code="$(hook_exit_code "" "See task 788 for context")"
-if [ "$degenerate_code" -eq 0 ]; then
-  pass "degenerate: empty file_path exits 0"
-else
-  fail "degenerate: empty file_path expected exit 0, got exit=$degenerate_code"
-fi
-
-degenerate_code="$(hook_exit_code "lua/foo.lua" "")"
-if [ "$degenerate_code" -eq 0 ]; then
-  pass "degenerate: empty content exits 0"
-else
-  fail "degenerate: empty content expected exit 0, got exit=$degenerate_code"
-fi
-# task-ref-ok:end
-
-# =====================================================================
 # Shared-library-missing fixture: hook must fail OPEN (exit 0), never block every write in
 # the repo just because its own dependency vanished.
 # =====================================================================
@@ -215,7 +234,8 @@ NOLIBDIR="$(mktemp -d)"
 mkdir -p "$NOLIBDIR/hooks"
 cp "$HOOK_SRC" "$NOLIBDIR/hooks/validate-no-task-references.sh"
 chmod +x "$NOLIBDIR/hooks/validate-no-task-references.sh"
-nolib_out="$(jq -n --arg fp "lua/foo.lua" --arg c "See task 788 for context" \
+nolib_fixture_content="See task 788 for context"  # task-ref-ok inline test fixture, category 6
+nolib_out="$(jq -n --arg fp "lua/foo.lua" --arg c "$nolib_fixture_content" \
   '{tool_input: {file_path: $fp, content: $c}}' \
   | bash "$NOLIBDIR/hooks/validate-no-task-references.sh" 2>&1 1>/dev/null)"
 nolib_code=$?
