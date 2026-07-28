@@ -2167,7 +2167,7 @@
     {
       "project_number": 943,
       "project_name": "session_scope_orchestration_metadata",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "title": "Session-scope batch-level orchestration metadata and verify session_id on read",
@@ -2189,11 +2189,16 @@
           "path": "specs/943_session_scope_orchestration_metadata/reports/01_session-scope-orchestration-metadata.md",
           "type": "research",
           "summary": "Confirms the two repo-level orchestration singletons are the only files needing session-scoping; recommends the {session_id}-suffix scheme over a directory scheme (verified via live git check-ignore probes); maps every writer/reader including the finding that .return-meta-multi.json is currently write-only with no reader; designs per-file (not uniform) read-time session_id verification, critically flagging that a hard-fail check on .orchestrator-loop-guard/.orchestrator-churn-state.json would break the designed multi-turn resume behavior; recommends deleting the dead session-suffixed handoff documentation; designs a mtime-based reap path modeled on task-lock.sh reap; confirms no ordering dependency against task 942."
+        },
+        {
+          "path": "specs/943_session_scope_orchestration_metadata/plans/01_session-scope-orchestration-metadata.md",
+          "type": "plan",
+          "summary": "session scope orchestration metadata (backfilled by --sync)"
         }
       ],
       "created": "2026-07-28T17:22:36Z",
-      "last_updated": "2026-07-28T22:06:23Z",
-      "session_id": "sess_1785275452_7b73c2_943",
+      "last_updated": "2026-07-28T23:27:14Z",
+      "session_id": "sess_1785280916_d6cc03",
       "next_artifact_number": 2,
       "memory_candidates": [
         {
