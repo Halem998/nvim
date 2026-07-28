@@ -25,6 +25,16 @@ Everything in this extension comes down to three operations:
 and `/implement` preflight stages call `memory-retrieve.sh` to inject relevant memories into
 agent context. Use the `--clean` flag to suppress auto-retrieval for a specific invocation.
 
+**`/distill` now spans 12 sub-modes**, not only vault-hygiene maintenance: the seven original
+sub-modes (`report`/`purge`/`merge`/`compress`/`refine`/`gc`/`auto`) are joined by five
+telemetry-sourced sub-modes -- `--revise` (event-and-OTel-correlated memory refactoring),
+`--meta` (cross-repo agent-system improvement proposals), `--review` (read-only inquiry over the
+vault and all four source tiers), `--learn` (retroactive batch harvest across already-completed
+tasks), and a redefined `--dream` (speculative direction-finding over `history.jsonl`). See
+`skills/skill-distill/SKILL.md`'s Shared Sub-Mode Skeleton for the common shape, and
+`context/project/memory/telemetry-guardrails.md` for the binding design constraints the five
+telemetry-sourced sub-modes share.
+
 ---
 
 ## Writing Memories
@@ -177,9 +187,8 @@ after a 7-day grace period.
 
 #### Reserved Topic Namespaces
 
-`email/preferences/{account}/{key}` is a reserved topic namespace (task 822, grounded in the
-task 821 design at
-`.claude/extensions/email/context/project/email/design/email-to-memory-preferences.md`):
+`email/preferences/{account}/{key}` is a reserved topic namespace, grounded in the design at
+`.claude/extensions/email/context/project/email/design/email-to-memory-preferences.md`:
 sender/domain-aggregated preference memories written by `skill-email-cleanup`'s opt-in Stage 7
 harvest, evolving via CREATE/EXTEND/UPDATE tally arithmetic instead of full-content
 replacement. Memories in this namespace carry `category: preference` and get special treatment
@@ -218,8 +227,9 @@ you manually add or delete files.
 
 `manifest.json` declares `"hooks": {}` — the extension lifecycle-hook slot (preflight,
 context_injection, verification, postflight scripts run via `skill-base.sh`) is schema-ready but
-intentionally unused. This was evaluated and explicitly rejected as a task 822 harvest
-dependency (design §1.3): neither this extension nor the email extension has ever exercised this
+intentionally unused. This was evaluated and explicitly rejected as an email-preference-harvest
+dependency (email-to-memory-preferences.md design §1.3): neither this extension nor the email
+extension has ever exercised this
 slot, so its failure-isolation contract is unproven; the harvest instead reads/writes the vault
 directly from `skill-email-cleanup`'s Stage 7 via Bash/jq. JSON cannot carry an inline comment,
 so this note documents the empty object's intent in prose. Revisit only if a second real hook

@@ -30,16 +30,20 @@ Memory vault distillation: scoring, health reporting, and maintenance operations
 
 | Sub-Mode | Description | Status |
 |----------|-------------|--------|
-| `report` | Generate health report with scoring | Available (task 449) |
-| `purge` | Tombstone stale/zero-retrieval memories | Available (task 450) |
-| `merge` | Combine memories with duplicate score > 0.6 | Available (task 451) |
-| `compress` | Summarize memories with size penalty > 0.5 | Available (task 452) |
-| `refine` | Improve memory quality (keywords, tags) | Available (task 452) |
-| `gc` | Hard-delete tombstoned memories past grace period | Available (task 450) |
-| `auto` | Automated distillation (Tier 1 refine only) | Available (task 452) |
-| `dream` | Event-store-informed memory review/revision plus improvement proposals | Available |
+| `report` | Generate health report with scoring | Available |
+| `purge` | Tombstone stale/zero-retrieval memories | Available |
+| `merge` | Combine memories with duplicate score > 0.6 | Available |
+| `compress` | Summarize memories with size penalty > 0.5 | Available |
+| `refine` | Improve memory quality (keywords, tags) | Available |
+| `gc` | Hard-delete tombstoned memories past grace period | Available |
+| `auto` | Automated distillation (Tier 1 refine only) | Available |
+| `revise` | Event-and-OTel-correlated memory refactoring proposals | Available |
+| `meta` | Cross-repo agent-system improvement proposals | Available |
+| `review` | Read-only ad hoc inquiry over the vault and all four source tiers | Available |
+| `learn` | Retroactive batch harvest across already-completed tasks | Available |
+| `dream` | Speculative direction-finding over `history.jsonl`'s recurring themes | Available |
 
-All sub-modes are now available. No placeholder responses needed.
+All 12 sub-modes are now available. No placeholder responses needed.
 
 ### Scoring Engine
 
@@ -78,11 +82,11 @@ Penalizes memories that have never been retrieved after a grace period.
 
 ```
 if topic starts_with "email/preferences/":
-  zero_retrieval = 0.0   # reserved-namespace exemption (task 822, design §5.1) -- these
-                          # memories are intentionally never read back by /research /plan
-                          # /implement auto-retrieval (see memory-retrieve.sh's topic-prefix
-                          # pre-filter), so a zero retrieval_count is expected, not a staleness
-                          # signal
+  zero_retrieval = 0.0   # reserved-namespace exemption (email-to-memory-preferences.md design
+                          # §5.1) -- these memories are intentionally never read back by
+                          # /research /plan /implement auto-retrieval (see memory-retrieve.sh's
+                          # topic-prefix pre-filter), so a zero retrieval_count is expected, not
+                          # a staleness signal
 elif retrieval_count == 0 AND days_since_created > 30:
   zero_retrieval = 1.0
 else:
@@ -324,11 +328,11 @@ for each memory in scored_memories:
   if memory.status == "tombstoned":
     skip  # Already tombstoned
   if memory.topic starts_with "email/preferences/":
-    skip  # reserved-namespace purge exemption (task 822, design §5.1) -- gates the WHOLE
-          # OR-condition below, not just the zero-retrieval leg (Component 2 above already
-          # zeroes zero_retrieval_penalty for this namespace; this second, independent gate is
-          # defense-in-depth so a high staleness_score alone can never purge one of these
-          # memories either)
+    skip  # reserved-namespace purge exemption (email-to-memory-preferences.md design §5.1) --
+          # gates the WHOLE OR-condition below, not just the zero-retrieval leg (Component 2
+          # above already zeroes zero_retrieval_penalty for this namespace; this second,
+          # independent gate is defense-in-depth so a high staleness_score alone can never purge
+          # one of these memories either)
   if memory.zero_retrieval_penalty == 1.0 OR memory.staleness_score > 0.8:
     purge_candidates.append(memory)
 ```
@@ -944,7 +948,7 @@ Do NOT delete the file.
 Do NOT remove from index (index regeneration will include tombstone status).
 ```
 
-The tombstone fields are identical to those used by the purge sub-mode (task 450):
+The tombstone fields are identical to those used by the Purge Sub-Mode above:
 - `status: tombstoned`
 - `tombstoned_at: {ISO8601 date}`
 - `tombstone_reason: "{reason}"` -- for merge, reason is `"merged_into:{primary_id}"`
@@ -1291,8 +1295,9 @@ for each memory in non_tombstoned_memories:
       })
 
   # 5. Category reclassification
-  # Skip entirely when the memory has an explicit frontmatter `category:` field (task 822,
-  # design §3.4) -- an explicit category is authoritative and never content-inferred; this
+  # Skip entirely when the memory has an explicit frontmatter `category:` field
+  # (email-to-memory-preferences.md design §3.4) -- an explicit category is authoritative and
+  # never content-inferred; this
   # only fires for the tags-derivation fallback path (pre-822 memories, and any future memory
   # without a `category:` field).
   if not memory.has_explicit_category_field:
@@ -2386,7 +2391,7 @@ Operations are logged to `.memory/distill-log.json` for tracking maintenance his
     {
       "id": "distill_{timestamp}",
       "timestamp": "ISO8601",
-      "type": "report|purge|merge|compress|refine|gc|dream",
+      "type": "report|purge|merge|compress|refine|gc|review",
       "session_id": "sess_...",
       "pre_metrics": {
         "total_memories": 0,
@@ -2415,7 +2420,7 @@ Operations are logged to `.memory/distill-log.json` for tracking maintenance his
     "total_compressed": 0,
     "total_refined": 0,
     "total_gc_deleted": 0,
-    "total_dreamed": 0,
+    "total_reviewed": 0,
     "last_operation": null
   }
 }
@@ -2423,15 +2428,20 @@ Operations are logged to `.memory/distill-log.json` for tracking maintenance his
 
 #### Operation Types
 
-| Type | Description | Task |
-|------|-------------|------|
-| `report` | Health report generated (read-only) | 449 |
-| `purge` | Memories removed via tombstone pattern | 450 |
-| `merge` | Duplicate memories combined | 451 |
-| `compress` | Oversized memories summarized | 452 |
-| `refine` | Memory quality improved | 452 |
-| `gc` | Hard-delete tombstoned memories past grace period | 450 |
-| `dream` | Event-store-informed memory review plus improvement proposals | -- |
+| Type | Description | Log File |
+|------|-------------|----------|
+| `report` | Health report generated (read-only) | `.memory/distill-log.json` |
+| `purge` | Memories removed via tombstone pattern | `.memory/distill-log.json` |
+| `merge` | Duplicate memories combined | `.memory/distill-log.json` |
+| `compress` | Oversized memories summarized | `.memory/distill-log.json` |
+| `refine` | Memory quality improved | `.memory/distill-log.json` |
+| `gc` | Hard-delete tombstoned memories past grace period | `.memory/distill-log.json` |
+
+`revise`, `meta`, `learn`, and `dream` log to their own dedicated files
+(`.memory/revise-log.json`, `.memory/meta-log.json`, `.memory/learn-harvest-log.json`,
+`.memory/dream-log.json` respectively -- see each sub-mode's own Log Schema subsection above) and
+are not part of this shared enum. `review` is optionally logged here for audit purposes only
+(see the `--review` sub-mode's own Log Entry subsection).
 
 For `report` operations, `pre_metrics` and `post_metrics` are identical (no changes made).
 

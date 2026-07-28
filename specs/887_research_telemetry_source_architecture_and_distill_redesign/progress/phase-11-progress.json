@@ -1,0 +1,55 @@
+{
+  "phase": 11,
+  "phase_name": "Command surface, extension docs, and cross-reference sweep",
+  "started_at": "2026-07-27T06:15:00Z",
+  "last_updated": "2026-07-27T07:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite commands/distill.md for 12-sub-mode dispatch", "status": "done",
+      "files_touched": ["agent-system/extensions/memory/commands/distill.md"]},
+    {"id": 2, "description": "Update EXTENSION.md /distill command table to 12 rows", "status": "done",
+      "files_touched": ["agent-system/extensions/memory/EXTENSION.md"]},
+    {"id": 3, "description": "Update README.md memory-lifecycle description", "status": "done",
+      "files_touched": ["agent-system/extensions/memory/README.md"]},
+    {"id": 4, "description": "Sweep all skill-memory cross-references in email extension", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/email/context/project/email/design/email-to-memory-preferences.md",
+        "agent-system/extensions/email/skills/skill-email-cleanup/SKILL.md"
+      ]},
+    {"id": 5, "description": "Fix task-number citations discovered in skill-learn/skill-distill inherited from original file", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/memory/skills/skill-learn/SKILL.md",
+        "agent-system/extensions/memory/skills/skill-distill/SKILL.md"
+      ]},
+    {"id": 6, "description": "Update distill-usage.md to document all 12 sub-modes", "status": "done",
+      "files_touched": ["agent-system/extensions/memory/context/project/memory/distill-usage.md"]},
+    {"id": 7, "description": "Re-audit index-entries.json line_count values", "status": "done",
+      "files_touched": ["agent-system/extensions/memory/index-entries.json"]},
+    {"id": 8, "description": "Run deploy-headless.sh + verify-deploy.sh to confirm CLAUDE.md regenerates", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "11.scope-count",
+      "description": "Scope Hypothesis estimated 5 email-extension skill-memory references",
+      "type": "altered",
+      "reason": "Actual count was 13 (8 + 5) across the two email-extension files; all fixed",
+      "annotation": "recorded inline in the Phase 11 task checklist"
+    },
+    {
+      "task_id": "11.beyond-scope",
+      "description": "Discovered and fixed genuinely broken cross-references (a stale 'Tombstone Application below' pointer, a duplicate dream dispatch row, a stale distill-log type enum, and 9+3 inherited task-number citations) not explicitly named in the Phase 11 task list",
+      "type": "altered",
+      "reason": "These were direct defects in files modified by this task, several of which would have failed Phase 12's grep-every-changed-file gate; fixing them is within the phase's own 'cross-reference sweep' charter",
+      "annotation": "recorded inline in the Phase 11 task checklist under 'Additional cross-reference fixes'"
+    },
+    {
+      "task_id": "11.out-of-scope",
+      "description": "Numerous other task-number citations remain in the email extension's own domain docs (task 821/822/823/824/827, .dotfiles task 72/80), unrelated to skill-memory",
+      "type": "deferred",
+      "reason": "This is a distinct, much larger pre-existing issue across the whole email extension, explicitly out of scope for this memory/telemetry redesign task",
+      "annotation": "recorded inline in the Phase 11 task checklist's Scope Hypothesis correction"
+    }
+  ],
+  "handoff_count": 0
+}

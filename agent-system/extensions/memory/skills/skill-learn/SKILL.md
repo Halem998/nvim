@@ -199,7 +199,7 @@ Where:
 
 ### Exact-Key Dedup for Reserved Namespaces
 
-The reserved topic namespace `email/preferences/*` (task 822 — see
+The reserved topic namespace `email/preferences/*` (see
 `.claude/extensions/email/context/project/email/design/email-to-memory-preferences.md`) is a
 **sanctioned, explicitly documented deviation** from the fuzzy Classification Thresholds below.
 For a segment/candidate whose `topic` matches `email/preferences/*`, an **exact `topic ==` match**
@@ -295,8 +295,9 @@ sender's current-inbox dominant action. The archive-scope sub-section carries it
 the inbox-scope tally above, but never merged into it.
 
 **Revocation/edit UX**: a user-invoked "forget this preference" action reuses the existing
-tombstone pattern documented under Tombstone Application below (`status: tombstoned`,
-`tombstoned_at`, `tombstone_reason`) — set `tombstone_reason: "user_revoked"` for this case. This
+tombstone pattern documented in the sibling `skill-distill/SKILL.md`'s Purge Sub-Mode
+"Tombstone Application" subsection (`status: tombstoned`, `tombstoned_at`, `tombstone_reason`) —
+set `tombstone_reason: "user_revoked"` for this case. This
 is distinct from `/distill --purge` (automatic, staleness-driven) and is never automatic;
 `skill-email-cleanup`'s Stage 7 wires the user-invoked trigger for it.
 
@@ -578,10 +579,11 @@ for mem in $memories; do
   token_count=$(echo "$word_count * 1.3" | bc | cut -d. -f1)
   # Derive id from filename: MEM-{slug}.md -> MEM-{slug}
   id=$(basename "$mem" .md)
-  # category: prefer an explicit frontmatter `category:` field when present (task 822, design
-  # §3.4 — first real use of this field, e.g. `category: preference` for email/preferences/*
-  # memories); fall back to the existing tags-derived heuristic when absent. Non-breaking for
-  # the pre-822 memory population, none of which has a `category:` field.
+  # category: prefer an explicit frontmatter `category:` field when present (design §3.4 in
+  # email-to-memory-preferences.md -- first real use of this field, e.g. `category: preference`
+  # for email/preferences/* memories); fall back to the existing tags-derived heuristic when
+  # absent. Non-breaking for any memory predating this field, none of which has a `category:`
+  # field.
   category=$(grep -m1 "^category:" "$mem" | sed 's/^category: *//' | tr -d '"')
   if [ -z "$category" ]; then
     category=$(grep -m1 "^tags:" "$mem" | sed 's/^tags: *\[//' | cut -d, -f1 | tr -d '] ')

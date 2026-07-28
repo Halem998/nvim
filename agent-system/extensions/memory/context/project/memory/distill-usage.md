@@ -12,7 +12,14 @@ Usage guide for the `/distill` command and memory vault maintenance.
 /distill --refine         # Improve metadata quality
 /distill --gc             # Hard-delete tombstoned memories
 /distill --auto           # Automated Tier 1 maintenance
-/distill --dream          # Event-store review, revision, and improvement proposals
+
+# Telemetry-sourced sub-modes (see skill-distill/SKILL.md's Shared Sub-Mode Skeleton and
+# context/project/memory/telemetry-guardrails.md for the shared design constraints):
+/distill --revise         # Event-and-OTel-correlated memory refactoring proposals
+/distill --meta           # Cross-repo agent-system improvement proposals
+/distill --review "<q>"   # Read-only ad hoc inquiry over the vault and all four source tiers
+/distill --learn          # Retroactive batch harvest across already-completed tasks
+/distill --dream          # Speculative direction-finding over history.jsonl's recurring themes
 
 # Modifier flags (combinable with any sub-mode):
 /distill --purge --dry-run    # Preview without changes
@@ -105,39 +112,85 @@ Non-interactive automated maintenance. Runs only Tier 1 refine fixes:
 - Summary generation
 - Topic normalization
 
-Explicitly excludes: compress (needs AI review), purge, merge, dream, Tier 2 refine. Suitable for routine maintenance without human oversight.
+Explicitly excludes: compress (needs AI review), purge, merge, Tier 2 refine, and all five
+telemetry-sourced sub-modes below. Suitable for routine maintenance without human oversight.
 
-### Dream (`/distill --dream`)
+### Revise (`/distill --revise`)
 
-Ingests the unified event store (`specs/events.jsonl`, read exclusively via `events-query.sh`),
-re-reviews the memory vault against captured event evidence, and surfaces a separate
-agent-system improvement-proposal deliverable. Interactive by default (never runs under
+Event-and-OTel-correlated memory refactoring proposals. Interactive by default (never runs under
 `--auto`). Workflow:
 
-1. Validate-on-read, then gate on vault emptiness (mirrors refine's early return)
-2. Cheap event-count gate: `events-query.sh --format summary-counts [--since {last_dream}]`
+1. Validate-on-read, then gate on vault emptiness
+2. Cheap event-count gate: `events-query.sh --format summary-counts [--since {last_revise}]`
    -- if `specs/events.jsonl` does not exist yet (`total_events: 0`), this is a normal,
-   first-class outcome, not an error: dream review continues using vault scoring alone
+   first-class outcome, not an error: revise continues using vault scoring alone
    (staleness/duplicate/size) and reports zero correlations
 3. Pull deviation/blocker events and reflection events via `events-query.sh
    --category deviation|blocker` / `--event-type reflection --format json-array`
-4. Correlate events to memories: task-number substring match first, keyword/topic overlap
+4. **New**: for events carrying a `cc_session_id`, join against OTel outcome records from that
+   same Claude Code session (`cc_session_id == session.id`); if `CLAUDE_CODE_ENABLE_TELEMETRY=1`
+   is unset, this is a first-class degraded path, announced explicitly, not silent
+5. Correlate events to memories: task-number substring match first, keyword/topic overlap
    fallback (same formula `/distill --merge` uses)
-5. Classify each correlated memory as corroborated / contradicted / gap; a pattern needs
+6. Classify each correlated memory as corroborated / contradicted / gap; a pattern needs
    3+ occurrences at the same checkpoint/event_type to count as contradicted or a gap
-6. Interactive selection via AskUserQuestion -- corroborated memories are noted only;
+7. Interactive selection via AskUserQuestion -- corroborated memories are noted only;
    contradicted memories offer UPDATE (with the proposed new body shown for review) /
-   TOMBSTONE (`tombstone_reason: "dream_superseded"`) / SKIP; gaps offer CREATE (if durable
-   knowledge) or escalate to an improvement proposal (if a system change)
-7. Memory revisions and improvement proposals are two distinct sections in the output --
-   never merged. Improvement proposals go through their own AskUserQuestion (Create as task /
-   Note in dream report only / Skip) with an explicit "Yes, create tasks" confirmation gate
-   before any task is created
-8. Index regenerated as a batch; operation logged to `.memory/dream-log.json`; state.json
-   updated (`last_dream`, `dream_count`)
+   TOMBSTONE (`tombstone_reason: "revise_superseded"`) / SKIP; gaps offer CREATE (if durable
+   knowledge) or escalate to `--meta` (if a system change)
+8. Index regenerated as a batch; operation logged to `.memory/revise-log.json`; state.json
+   updated (`last_revise`, `revise_count`)
 
-The narrative dream synthesis is terminal-only output, like the bare `/distill` health report --
-no dated report file is written to disk.
+### Meta (`/distill --meta`)
+
+Cross-repo agent-system improvement proposals. Interactive by default (never runs under
+`--auto`). Consumes the existing `$GLOBAL_ROOT` / `--local` mechanism verbatim -- does not invent
+a parallel resolver. Workflow:
+
+1. Resolve `target_root` ($GLOBAL_ROOT by default, or the invoking repo with `--local`)
+2. Surface recurring (three-strikes) deviation/blocker or reflection patterns pointing at a
+   named skill/hook/rule/checkpoint
+3. Present via AskUserQuestion (Create as task / Note in report only / Skip), with an explicit
+   "Yes, create tasks" confirmation gate
+4. Task creation delegates to `meta-builder-agent` -- `--meta` never reimplements the `/task`
+   primitive. Extension targeting inherits `meta-builder-agent`'s own known limitation (defaults
+   to `core`, extension-scoped proposals need human correction at the confirmation step)
+5. States the single-repo signal limitation explicitly: `events.jsonl` is per-repo, so `--meta`
+   sees only `target_root`'s own event store
+6. Operation logged to `.memory/meta-log.json`
+
+### Review (`/distill --review "<question>"`)
+
+Strictly read-only ad hoc inquiry spanning all four source tiers (OTel, `events.jsonl`,
+`history.jsonl`, transcripts), driven by the user's free-text question. No mutation, so no
+`AskUserQuestion` gate is needed -- this exemption is stated explicitly, not a silent omission.
+Any actionable finding funnels to `--meta`, `--revise`, or `/learn`; `--review` never acts
+directly.
+
+### Learn (`/distill --learn`)
+
+Retroactive, batch harvest across already-archived tasks whose `memory_candidates` were never
+harvested. Distinct from `/learn --task N` (single task, any time) and from `/todo`'s
+archive-time harvest (automatic, only at archival). Sources from the task's transcript within
+the 30-day replay window, falling back to `history.jsonl` plus the task's own archived `specs/`
+artifacts beyond it. Proposes via AskUserQuestion; never auto-creates memories. Operation logged
+to `.memory/learn-harvest-log.json`.
+
+### Dream (`/distill --dream`)
+
+Speculative direction-finding over the user's own prompt history (`history.jsonl`), redefined
+from its prior event-correlation role (now `--revise`) and improvement-proposal role (now
+`--meta`). No event-correlation machinery of its own. Workflow:
+
+1. Locate `history.jsonl` (global), slice to this repo via each line's `project` field
+2. Cluster prompts by keyword/topic overlap (same formula `/distill --merge` uses), applying the
+   same three-strikes recurrence threshold `--revise` uses
+3. For each recurring cluster, check whether an existing memory or open task already covers the
+   theme; only uncovered themes surface as candidates
+4. Terminal-only narrative output, like the bare `/distill` health report -- no dated report
+   file is written to disk. No `AskUserQuestion` mutation gate (nothing mutates) -- this
+   exemption is stated explicitly. Any resulting action funnels to `--meta` or `/learn`
+5. Operation logged to `.memory/dream-log.json`; state.json updated (`last_dream`, `dream_count`)
 
 ## Scoring Formula
 
@@ -174,7 +227,10 @@ Health score formula: `100 - (purge_count * 3) - (merge_count * 5) - (compress_c
 | Merge check | When duplicate score >0.6 appears | `/distill --merge` |
 | Compress check | When size penalty >0.5 appears | `/distill --compress` |
 | GC cleanup | After purge, when 7+ days elapsed | `/distill --gc` |
-| Dream review | Periodically, or after a burst of deviations/blockers/reflections | `/distill --dream` |
+| Revise review | Periodically, or after a burst of deviations/blockers/reflections | `/distill --revise` |
+| Meta proposals | Periodically, or after a burst of recurring friction | `/distill --meta` |
+| Learn harvest | Occasionally, to catch declined/predating candidates | `/distill --learn` |
+| Dream direction-finding | Periodically, for open-ended prompt-history review | `/distill --dream` |
 
 ## Memory Lifecycle
 
@@ -187,10 +243,38 @@ Create          Use               Capture           Maintain
                                         candidates         and maintains
 ```
 
-## Dream Log Entry Shape
+## Telemetry-Sourced Sub-Mode Log Files
 
-Dream runs log to `.memory/dream-log.json` (separate from `.memory/distill-log.json`), mirroring
-its `version`/`operations[]`/`summary` shape with dream-specific fields:
+Each telemetry-sourced sub-mode logs to its own file rather than sharing
+`.memory/distill-log.json`'s closed `type` enum -- see each sub-mode's own Log Schema subsection
+in `skill-distill/SKILL.md` for the full shape:
+
+| Sub-Mode | Log File |
+|----------|----------|
+| `--revise` | `.memory/revise-log.json` |
+| `--meta` | `.memory/meta-log.json` |
+| `--review` | `.memory/distill-log.json` (optional, audit only) |
+| `--learn` | `.memory/learn-harvest-log.json` |
+| `--dream` | `.memory/dream-log.json` |
+
+Example `--revise` log entry (mirrors the general Distill Log Schema's `version`/`operations[]`/
+`summary` shape, with revise-specific fields including the new OTel join):
+
+```json
+{
+  "id": "revise_{timestamp}",
+  "timestamp": "ISO8601",
+  "type": "revise",
+  "since": "ISO8601 or null (first run)",
+  "events_ingested": {"total_events": 0, "deviation": 0, "blocker": 0, "reflection": 0},
+  "otel_joins": {"sessions_with_cc_session_id": 0, "otel_enabled": true, "outcome_records_matched": 0},
+  "classification": {"corroborated": 0, "contradicted": 0, "gap": 0},
+  "affected_memories": [{"id": "MEM-...", "classification": "contradicted", "action": "updated"}]
+}
+```
+
+Example (redefined) `--dream` log entry -- narrower than before, since dream no longer
+classifies memories or creates tasks itself:
 
 ```json
 {
@@ -198,14 +282,16 @@ its `version`/`operations[]`/`summary` shape with dream-specific fields:
   "timestamp": "ISO8601",
   "type": "dream",
   "since": "ISO8601 or null (first run)",
-  "events_ingested": {"total_events": 0, "deviation": 0, "blocker": 0, "reflection": 0},
-  "classification": {"corroborated": 0, "contradicted": 0, "gap": 0},
-  "affected_memories": [{"id": "MEM-...", "classification": "contradicted", "action": "updated"}],
-  "proposals": {"surfaced": 0, "created_as_task": 0, "noted_only": 0, "skipped": 0}
+  "prompts_scanned": 0,
+  "themes_surfaced": 0,
+  "themes_with_existing_coverage_skipped": 0
 }
 ```
 
 ## --dry-run and --verbose
 
-- `--dry-run`: Available on all maintenance sub-modes (purge, merge, compress, refine, gc, dream). Shows what would happen without writing any files. Useful for previewing before committing to changes.
+- `--dry-run`: Available on all maintenance sub-modes (purge, merge, compress, refine, gc,
+  revise, meta, learn) and accepted (as a no-op) on the two read-only sub-modes (review, dream).
+  Shows what would happen without writing any files. Useful for previewing before committing to
+  changes.
 - `--verbose`: Shows detailed per-memory scoring breakdown including individual component values (staleness, zero_retrieval, size_penalty, duplicate) alongside the composite score.

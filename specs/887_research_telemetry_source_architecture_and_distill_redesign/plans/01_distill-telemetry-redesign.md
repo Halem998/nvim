@@ -900,7 +900,7 @@ landed in `--revise` and `--meta`.
 
 ---
 
-### Phase 11: Command surface, extension docs, and cross-reference sweep [NOT STARTED]
+### Phase 11: Command surface, extension docs, and cross-reference sweep [COMPLETED]
 
 **Goal**: Make all 12 sub-modes reachable and correctly documented, and repair every reference
 invalidated by the split and reorder.
@@ -911,24 +911,69 @@ redefined).
 
 **Tasks**:
 
-- [ ] Rewrite `commands/distill.md` argument parsing to dispatch all 12 sub-modes, first-match-wins,
-      preserving the existing `--dry-run` and `--verbose` additional flags.
-- [ ] Rewrite the sub-mode availability table. **Remove the task-number column entirely** — it
+- [x] Rewrite `commands/distill.md` argument parsing to dispatch all 12 sub-modes, first-match-wins,
+      preserving the existing `--dry-run` and `--verbose` additional flags. *(completed)*
+- [x] Rewrite the sub-mode availability table. **Remove the task-number column entirely** — it
       currently cites task numbers in a deliverable outside `specs/**`, violating
       `rules/no-task-references-in-deliverables.md`. Replace with a durable anchor: the sub-mode's
-      section name in `skill-distill/SKILL.md`.
-- [ ] Update the command's purpose line, which currently names only the five hygiene sub-modes.
-- [ ] Update `EXTENSION.md`: the skill-mapping table (now two skills) and the `/distill` command
-      table (now 12 rows), keeping the description text task-number-free.
-- [ ] Update `README.md`'s memory-lifecycle description to reflect the new sub-modes.
-- [ ] Sweep the email extension's five `skill-memory/SKILL.md` references and its
+      section name in `skill-distill/SKILL.md`. *(completed: "Section" column now names the exact
+      heading, e.g. `### Sub-Mode: revise`)*
+- [x] Update the command's purpose line, which currently names only the five hygiene sub-modes.
+      *(completed: purpose line now names all 12 sub-modes generically)*
+- [x] Update `EXTENSION.md`: the skill-mapping table (now two skills) and the `/distill` command
+      table (now 12 rows), keeping the description text task-number-free. *(completed; the
+      skill-mapping table was already updated in Phase 3)*
+- [x] Update `README.md`'s memory-lifecycle description to reflect the new sub-modes. *(completed:
+      added a note after "The Three Commands" table naming all 5 telemetry-sourced sub-modes)*
+- [x] Sweep the email extension's five `skill-memory/SKILL.md` references and its
       `email-to-memory-preferences.md` line-number citations, repointing them to
       `skill-learn/SKILL.md` with re-derived line numbers or, preferably, to section names instead
-      of line numbers so they stop being fragile.
-- [ ] Re-audit `index-entries.json`: correct `line_count` values, and add a `skill-distill` entry
+      of line numbers so they stop being fragile. *(completed with a corrected count — see the
+      Scope Hypothesis correction below. All references repointed to section names, never
+      re-derived line numbers, per the plan's own "preferably" guidance. Two of the design doc's
+      four line-number citations (`:995`, `:2042-2050`, `:518`, `:1363`) were discovered to
+      already be stale/wrong at authoring time — pointing at content that does not match the
+      citing prose — confirming exactly the fragility problem section-name citations solve.)*
+- [x] Re-audit `index-entries.json`: correct `line_count` values, and add a `skill-distill` entry
       for the guardrails file if Phase 2's registration needs adjusting after the split.
-- [ ] Verify the top-level `.claude/CLAUDE.md` merge target regenerates correctly from the updated
-      `EXTENSION.md` — by regeneration, never by hand-editing `.claude/CLAUDE.md`.
+      *(completed: corrected 3 stale line_count values discovered during the audit
+      (learn-usage.md 150->300, memory-setup.md 120->247, knowledge-capture-usage.md 180->314,
+      distill-usage.md updated to 297 after its own Phase 11 content update); the
+      telemetry-guardrails.md entry from Phase 2 needed no adjustment)*
+- [x] Verify the top-level `.claude/CLAUDE.md` merge target regenerates correctly from the updated
+      `EXTENSION.md` — by regeneration, never by hand-editing `.claude/CLAUDE.md`. *(completed: ran
+      `bash .claude/scripts/deploy-headless.sh` (272 artifacts deployed) and
+      `bash .claude/scripts/verify-deploy.sh` (PASS, 11 checks, 0 failures); confirmed the
+      regenerated `.claude/CLAUDE.md` reflects the two-skill mapping and 12-row `/distill` table)*
+
+**Additional cross-reference fixes discovered and corrected during the sweep (beyond the
+task list above, within this phase's own "cross-reference sweep" scope)**:
+- A genuinely broken cross-reference in `skill-learn/SKILL.md` (line 298, inherited from before
+  the Phase 3 split): "reuses the existing tombstone pattern documented under Tombstone
+  Application below" — but "Tombstone Application" is no longer below in the same file after the
+  split; it lives in `skill-distill/SKILL.md`. Repointed to name the sibling file and section
+  explicitly.
+- Nine pre-existing task-number citations (`task 449/450/451/452/822`) inherited from the
+  original `skill-memory/SKILL.md` into both `skill-learn/SKILL.md` and
+  `skill-distill/SKILL.md` (the Sub-Mode Dispatch table, the Distill Log Schema's Operation
+  Types table, and four inline code comments), plus 3 more in `README.md`'s Reserved Topic
+  Namespaces / Lifecycle Hooks sections — all replaced with durable anchors (section names,
+  `email-to-memory-preferences.md` design references) since these files were modified by this
+  task and Phase 12's grep gate checks every changed file.
+- A duplicate `dream` row and a stale `total_dreamed`/`type` enum entry in the general Distill
+  Log Schema (left over from the original file, now inconsistent with `dream`'s Phase 10
+  redefinition) were corrected.
+- `distill-usage.md` (a loaded, agent-facing usage guide) was substantially rewritten to
+  document all 12 sub-modes; it was left completely stale by Phases 6-10 otherwise, actively
+  misleading despite not being explicitly named in this phase's task list.
+
+**Scope Hypothesis correction**: the actual count was 13 `skill-memory` occurrences across 2
+email-extension files (8 in `email-to-memory-preferences.md`, 5 in
+`skill-email-cleanup/SKILL.md`), not the 5 the plan estimated — all 13 were fixed. Numerous
+OTHER task-number citations remain in both email-extension files (unrelated to `skill-memory`,
+e.g. `task 821/822/823/824/827`, `.dotfiles task 72/80`) — these are a distinct, much larger
+pre-existing issue across the whole email extension's own domain docs and are explicitly out of
+scope for this memory/telemetry redesign task.
 
 **Timing**: 2 hours
 

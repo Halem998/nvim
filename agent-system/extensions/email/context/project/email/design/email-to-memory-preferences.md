@@ -20,7 +20,7 @@ against real mail, and hands 822 an explicit scope recommendation.
   (Verify), on verified confirmed actions only.
 - **Aggregation unit**: the sender/domain identity (Phase 2 below), keyed off the `--all` mode
   Stage 2.5 bucket in bulk sweeps, or the approved manifest's `sender` field in default mode.
-- **Storage**: vault memories via `skill-memory` CREATE/UPDATE/EXTEND, under a reserved topic
+- **Storage**: vault memories via `skill-learn` CREATE/UPDATE/EXTEND, under a reserved topic
   namespace `email/preferences/{key}`.
 - **Gate**: reuse `skill-todo`'s harvest -> dedup -> tiered `AskUserQuestion` -> batch-regen
   *logic* (not its `state.json` substrate), one consolidated non-silent prompt.
@@ -209,7 +209,7 @@ single scalar, is required to break ties correctly — see body template below).
 
 This is the report's key mechanical synthesis: a contradicting confirm increments the *opposite*
 counter, which can shift the derived dominant action without any bespoke decay/EWMA math and
-without a new skill-memory API verb (Phase 4 §4.3).
+without a new skill-learn API verb (Phase 4 §4.3).
 
 ### 3.3 Redaction decision (G5)
 
@@ -279,9 +279,9 @@ Schema fields map 1:1 to what Phase 4's operations read/write (verified below).
 
 ### 4.1 Exact-key dedup short-circuit
 
-Before the existing fuzzy keyword-overlap path (`skill-memory/SKILL.md:200-206`: >60%
-overlap=HIGH/UPDATE, 30-60%=MEDIUM/EXTEND, <30%=LOW/CREATE), the harvest runs an **exact
-topic-key lookup**:
+Before the existing fuzzy keyword-overlap path (`skill-learn/SKILL.md`'s "Classification
+Thresholds" section: >60% overlap=HIGH/UPDATE, 30-60%=MEDIUM/EXTEND, <30%=LOW/CREATE), the
+harvest runs an **exact topic-key lookup**:
 
 ```bash
 jq --arg k "email/preferences/${ACCOUNT}/${KEY}" \
@@ -289,7 +289,7 @@ jq --arg k "email/preferences/${ACCOUNT}/${KEY}" \
 ```
 
 A hit short-circuits straight to UPDATE/EXTEND (§4.3) without ever computing keyword overlap.
-This is a **sanctioned, explicitly documented deviation** from skill-memory's fuzzy 60%/30%
+This is a **sanctioned, explicitly documented deviation** from skill-learn's fuzzy 60%/30%
 contract — the reserved `email/preferences/*` namespace opts out of fuzzy classification because
 the identity key (Phase 2) is already a deterministic, verified normalization; re-deriving it
 via keyword overlap would be strictly worse (fuzzier) than the key itself.
@@ -310,7 +310,7 @@ auto-applied. Absent an exact match, the default action is CREATE.
 | Exact-key match; this round's dominant action != stored dominant action | **UPDATE** | Increment the *opposite* counter (never overwrite/reset the matching one) — this can flip the *derived* dominant action per §3.2's tie-break rule; move the prior summary line to `## History` marked `(superseded)`. |
 
 Contradiction handling is **tally arithmetic**, matching Conflict 2's resolution: no bespoke
-decay/EWMA engine, no new skill-memory API verb — UPDATE/EXTEND/CREATE as they already exist,
+decay/EWMA engine, no new skill-learn API verb — UPDATE/EXTEND/CREATE as they already exist,
 applied to a body-level counter block instead of full-content replacement.
 
 ### 4.4 Batch index regeneration
@@ -327,9 +327,10 @@ update rather than writing the index file once per candidate.
 
 ### 5.1 G4 (part a) — `/distill` zero-retrieval exemption
 
-`skill-memory/SKILL.md:995` (verified) and the purge sub-mode's OR-condition
-(`skill-memory/SKILL.md:2042-2050`, verified) computes purge candidates as: `retrieval_count==0
-AND days_since_created > 30`. **Chosen mechanism**: add a topic-prefix exemption to that
+`skill-distill/SKILL.md`'s Scoring Engine "Component 2: Zero-Retrieval Penalty" (verified) and
+the Purge Sub-Mode's "Purge Candidate Identification" OR-condition (verified) compute purge
+candidates as: `retrieval_count==0 AND days_since_created > 30`. **Chosen mechanism**: add a
+topic-prefix exemption to that
 condition — `retrieval_count==0 AND days_since_created > 30 AND NOT topic starts_with
 "email/preferences/"`. Rejected alternative: making email-side reads increment
 `retrieval_count`. Rationale: `memory-retrieve.sh` is invoked only by `/research`/`/plan`/
@@ -412,8 +413,9 @@ closure — that one remains a real task-823 candidate) or the cross-client gene
   preserves the "one evolving memory per sender/domain" invariant while preventing a burst of
   old archive-triage confirms from silently dominating a sender's current-inbox dominant action).
 - **Revocation/edit UX**: an explicit, user-invoked "forget this preference" action reusing the
-  existing tombstone pattern (`skill-memory/SKILL.md:518`, `:1363`, verified) or a tally reset —
-  never automatic, distinct from `/distill --purge`.
+  existing tombstone pattern (`skill-distill/SKILL.md`'s Purge Sub-Mode "Tombstone Application"
+  subsection, shared by the Merge Sub-Mode's own "Tombstone Application" subsection -- verified)
+  or a tally reset — never automatic, distinct from `/distill --purge`.
 - **Minimal success signal**: log a per-round agreement rate (confirmed action == memory's
   pre-round derived dominant action, when a memory existed prior to the round) as a harvest log
   line — no new dashboard; enough visibility for a future audit to detect drift.

@@ -24,7 +24,11 @@ Knowledge capture and retrieval via the memory vault. Supports text, file, direc
 | `/distill` | `/distill --refine` | Improve memory metadata quality (keywords, tags, topics) |
 | `/distill` | `/distill --gc` | Hard-delete tombstoned memories past 7-day grace period |
 | `/distill` | `/distill --auto` | Automated Tier 1 maintenance (non-interactive) |
-| `/distill` | `/distill --dream` | Ingest the event store, review/revise memories, and surface agent-system improvement proposals (interactive; excluded from `--auto`) |
+| `/distill` | `/distill --revise` | Event-and-OTel-correlated memory refactoring proposals (interactive; excluded from `--auto`) |
+| `/distill` | `/distill --meta` | Cross-repo agent-system improvement proposals, delegated to `meta-builder-agent` (interactive; excluded from `--auto`) |
+| `/distill` | `/distill --review "<question>"` | Read-only ad hoc inquiry over the vault and all four telemetry source tiers |
+| `/distill` | `/distill --learn` | Retroactive, batch harvest of unharvested memory candidates across already-completed tasks (interactive; excluded from `--auto`) |
+| `/distill` | `/distill --dream` | Surface recurring themes from `history.jsonl` with no existing memory or task coverage (read-only surfacing; excluded from `--auto`) |
 
 ### Memory-Augmented Research
 

@@ -229,14 +229,14 @@ unconfirmed) and never an approved-but-not-yet-executed manifest.
    (Note: a real memory file's tally block, not `.tally` on the raw index entry, is the ground
    truth — read it from the memory file body if the index entry alone is insufficient; the
    `dedup` subcommand's index lookup is for the exact-key hit/miss decision, per
-   `skill-memory/SKILL.md`'s "Exact-Key Dedup for Reserved Namespaces".)
+   `skill-learn/SKILL.md`'s "Exact-Key Dedup for Reserved Namespaces".)
 4. **Evidentiary threshold gate**: only keys/operations meeting
    `.claude/scripts/email-preference-harvest.sh threshold "$NEW_TALLY" "$UNIFORM"` (uniform-batch
    this round, or rolling N>=3 at >=80% against the post-update tally) become Tier 1 candidates
    below; a single isolated confirm below both bars is still tallied (Step 3) but is not
    presented as a strong preference this round.
 5. **Archive-scope isolation**: if this pass's scope is `scope=archive`, record the tally delta
-   in the memory's `### Archive-scope tally` sub-section (per `skill-memory/SKILL.md`'s
+   in the memory's `### Archive-scope tally` sub-section (per `skill-learn/SKILL.md`'s
    Namespace-Scoped Tally-Arithmetic subsection) instead of the inbox-scope tally — never merge
    the two.
 6. **One consolidated, never-silent gate** (`AskUserQuestion`, root session), mirroring
@@ -246,15 +246,15 @@ unconfirmed) and never an approved-but-not-yet-executed manifest.
      4).
    - **Tier 2** (shown, not pre-selected): keys newly crossing the rolling-N threshold this
      round.
-   - **Fuzzy near-miss suggestions** (skill-memory's retained fuzzy path, §4.2): surfaced as a
+   - **Fuzzy near-miss suggestions** (skill-learn's retained fuzzy path, §4.2): surfaced as a
      labeled option, never auto-selected.
    - Skip the gate entirely (no prompt) if this pass produced zero candidates in any tier —
      harvest is opt-in per-round, not a mandatory stop when there is nothing to offer.
 7. **Write on confirm — Bash/jq file-write path** (this skill's `allowed-tools` is `Bash, Read,
    AskUserQuestion`; memory files are written via Bash heredoc/`jq`, never via a `Write`/`Edit`
-   tool call or a `skill-memory`/`/learn` dispatch): for each user-confirmed key, write or update
+   tool call or a `skill-learn`/`/learn` dispatch): for each user-confirmed key, write or update
    `.memory/10-Memories/MEM-email-pref-{key-slug}.md` using the body template from
-   `skill-memory/SKILL.md`'s Namespace-Scoped Tally-Arithmetic subsection (frontmatter incl.
+   `skill-learn/SKILL.md`'s Namespace-Scoped Tally-Arithmetic subsection (frontmatter incl.
    `topic: "email/preferences/${ACCOUNT}/${KEY}"`, `category: preference`; CREATE writes the
    full template, EXTEND appends a dated `## History` line, UPDATE additionally moves the prior
    summary line to `## History` marked `(superseded)`).
