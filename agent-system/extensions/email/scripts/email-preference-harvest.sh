@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # email-preference-harvest.sh - Deterministic normalization/tally/dedup helper for the
-# skill-email-cleanup Stage 7 harvest (task 822).
+# skill-email-cleanup Stage 7 harvest.
 #
 # Implements the deterministic, testable logic from the authoritative design at
 # .claude/extensions/email/context/project/email/design/email-to-memory-preferences.md:

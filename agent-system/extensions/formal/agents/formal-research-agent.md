@@ -211,7 +211,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
 
 Example return:
 ```
-Research completed for task 412:
+Research completed for task {N}:
 - Identified as cross-domain task (logic + math)
 - Found Kripke frame patterns using lattice theory foundations
 - Loaded context from both logic and math domains

@@ -19,7 +19,7 @@ Every `/consult` invocation automatically creates a task entry in state.json and
 - `/consult --legal /path/to/document.typ` - Review document from attorney perspective (auto-creates task)
 - `/consult --legal "product description text"` - Analyze inline text from attorney perspective (auto-creates task)
 - `/consult --legal How should I describe formal verification to attorneys?` - Design question dialogue (auto-creates task)
-- `/consult --legal 458` - Attach consultation to existing task 458 (artifacts stored in task directory)
+- `/consult --legal 458` - Attach consultation to existing task 458 (artifacts stored in task directory) <!-- task-ref-ok inline, command-usage example -->
 
 ## Domain Flags
 

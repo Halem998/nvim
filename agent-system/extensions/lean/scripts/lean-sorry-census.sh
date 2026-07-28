@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# lean-sorry-census.sh -- shared Lean sorry census script (task 783)
+# lean-sorry-census.sh -- shared Lean sorry census script
 #
 # Counts genuine code sorries in Lean 4 source files, correctly excluding
 # comment/docstring/string-literal text. A `grep -rn "\bsorry\b" | grep -v ...`

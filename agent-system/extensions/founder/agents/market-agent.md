@@ -316,7 +316,7 @@ Write final metadata to specified path:
 Return a brief summary (NOT JSON):
 
 ```
-Market sizing research complete for task 234:
+Market sizing research complete for task {N}:
 - Mode: SIZE, 8 forcing questions completed
 - Problem: {brief problem statement}
 - Entity count: {value} from {source}

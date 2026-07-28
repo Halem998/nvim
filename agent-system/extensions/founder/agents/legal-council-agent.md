@@ -328,7 +328,7 @@ Write final metadata to specified path:
 Return a brief summary (NOT JSON):
 
 ```
-Contract review research complete for task 256:
+Contract review research complete for task {N}:
 - Mode: REVIEW, 8 forcing questions completed
 - Contract: SaaS vendor agreement with Company X
 - Primary concerns: Data rights, liability cap, termination

@@ -579,18 +579,51 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
 
 ---
 
-### Phase 8: Purge remaining `agent-system/extensions/` extensions [NOT STARTED]
+### Phase 8: Purge remaining `agent-system/extensions/` extensions [COMPLETED]
 
 - **Goal:** Clear the ten remaining non-core, non-literature extensions.
 - **Character:** Mostly mechanical — many files carry a single provenance citation each — but the
   `email/` extension's citations sit in domain docs where the mechanism reference matters.
 
 - **Tasks:**
-  - [ ] Triage and convert per the Phase 4 bucket rules across `cslib`, `email`, `formal`,
-        `founder`, `lean`, `memory`, `nix`, `nvim`, `present`, `web`.
-  - [ ] `email/`'s known citation cluster (`tasks 823-824-827` in the index-freshness discussion)
+  - [x] Triage and convert per the Phase 4 bucket rules across `cslib`, `email`, `formal`,
+        `founder`, `lean`, `memory`, `nix`, `nvim`, `present`, `web`. *(completed across all ten
+        extensions. Small extensions (nix, formal, lean, nvim, web) were almost entirely
+        illustrative `"Research/implementation completed for task NNN:"` return-text examples,
+        converted uniformly to `task {N}:` placeholder form. cslib's `lint-fix-wave-assignment.md`
+        was a full case-study built around two real historical task numbers (210, 211); renamed
+        throughout to "the rename task"/"the keyword-change task" plus matching worktree
+        directory/patch-file names, following the same case-naming convention Phase 4 used for
+        the BimodalLogic task-273 baseline. memory's three usage-guide docs used `/learn --task
+        142`-style command-usage examples (Category 3): wrapped in `task-ref-ok:begin/end`
+        blocks rather than converted, since the flag genuinely takes a number. present's
+        grant-agent.md/skill-grant/SKILL.md had the same illustrative-return-text pattern;
+        grant-workflow.md's domain example output was placeholder-ized (`task #{N}`/`Grant
+        #{M}`). founder had the largest illustrative-return-text cluster (10 files) plus one
+        genuine provenance site (founder-implement-agent.md's "Plans created after Task #253"
+        historical cutover fact, converted to a named-convention anchor) and one stray concrete
+        example (`project.md`'s `/project 234`, converted to match the file's own established
+        `{N}` placeholder convention used everywhere else in the same file).)*
+  - [x] `email/`'s known citation cluster (`tasks 823-824-827` in the index-freshness discussion)
         is the exact case the rule's own **After** example demonstrates — convert to the
-        `wrapper-contracts.md` section reference, not a deletion.
+        `wrapper-contracts.md` section reference, not a deletion. *(completed: 38 occurrences
+        across 9 files, the largest and highest-judgment cluster in this phase. The
+        `tasks 823-824-827`/`task 827`/`task 824` citations throughout EXTENSION.md, README.md,
+        commands/email.md, staleness-detection.md, and skill-email-cleanup/SKILL.md were dropped
+        in favor of the mechanism's own section headings and cross-references
+        (`staleness-detection.md`, "this redesign", "this mechanism") -- exactly the durable-anchor
+        treatment the rule's own worked example prescribes. `.dotfiles task 80`/`.dotfiles task
+        72` (cross-repo wrapper-suite verification and the frozen `MAX_BATCH_SIZE` contract) were
+        converted to plain cross-repo-contract statements per the same principle Phase 4 applied
+        to the BimodalLogic case: no repo-relative task number belongs in a deliverable regardless
+        of which repo's tracker it names. email-to-memory-preferences.md's four "task 823"
+        citations were forward-looking (recommending a NOT-YET-FILED follow-up task), so were
+        converted to "a future follow-up task" rather than a backward-looking anchor.
+        email-preferences.md's "Task 72" (this repo's own real task, cited 4 times as the
+        anchor for the aerc-tagged/JSONL-manifest unsubscribe-review model) was given that
+        descriptive name and reused consistently, including in the doc's own title; its
+        "`~/Mail` tasks 014/022/023" cross-repo citation (a different, unrelated tracker) was
+        generalized to "an earlier `~/Mail`-repo approach".)*
 
 - **Timing:** 1.25 hours
 - **Depends on:** 2

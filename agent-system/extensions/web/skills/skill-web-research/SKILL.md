@@ -267,7 +267,7 @@ Brief text summary (NOT JSON).
 
 Example successful return:
 ```
-Research completed for task 412:
+Research completed for task {N}:
 - Found Astro component patterns and Tailwind v4 styling approaches
 - Identified accessibility requirements for interactive elements
 - Created report at specs/412_add_blog_section/reports/01_blog-section-research.md
@@ -277,7 +277,7 @@ Research completed for task 412:
 
 Example partial return:
 ```
-Research partially completed for task 412:
+Research partially completed for task {N}:
 - Found local project patterns
 - Web search failed due to network error
 - Partial report created at specs/412_add_blog_section/reports/01_blog-section-research.md

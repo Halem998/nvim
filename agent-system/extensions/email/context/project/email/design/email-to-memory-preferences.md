@@ -391,7 +391,7 @@ is met, `--clean` or not.
 ### 5.5 Scope decision — fold into 822 (not 823/824)
 
 **Recommendation**: fold revocation/edit UX, cross-account scoping, archive-scope isolation, and
-a minimal success-signal phase **into 822's scope**, rather than spawning separate tasks 823
+a minimal success-signal phase **into 822's scope**, rather than spawning a separate follow-up task
 (measurement/audit split) at this time. 822 is already queued and depends on 821
 (`specs/state.json`: `project_number: 822`, `task_type: meta`, `dependencies: [821]`,
 `status: not_started`) — the same batch this task belongs to. Rationale: each item below is
@@ -399,7 +399,7 @@ individually small (roughly one `AskUserQuestion` branch, one key-prefix decisio
 check, one log line) and tightly coupled to the write path 822 already builds; splitting into a
 separate task would add coordination overhead (a new dependency edge, a second review pass) with
 no corresponding benefit, unlike the *read-back* engine (§6, genuinely a second consumer/loop
-closure — that one remains a real task-823 candidate) or the cross-client generalization note
+closure — that one remains a real follow-up-task candidate) or the cross-client generalization note
 (§7, explicitly speculative, not spawn-worthy today).
 
 **Concrete additions recommended for 822's implementation plan**:
@@ -426,7 +426,7 @@ closure — that one remains a real task-823 candidate) or the cross-client gene
 
 The loop as scoped through 822 is **one-directional** (write-only): the vault becomes a
 preference *log*, not a preference *engine*, without a consumer. This section specs a named
-contract so 822's write schema stays lookup-ready, seeding a future task 823:
+contract so 822's write schema stays lookup-ready, seeding a future follow-up task:
 
 ```
 email_preference_lookup(account, normalized_key)
@@ -446,7 +446,7 @@ email_preference_lookup(account, normalized_key)
    archive x14, delete x2 -> lean archive") shown alongside the bucket, purely informational,
    requiring no wrapper change since it only touches the skill's own presentation layer.
 
-Filed as the seed for task 823. Not implemented in 822.
+Filed as the seed for a future follow-up task. Not implemented in 822.
 
 ---
 
@@ -491,7 +491,7 @@ never automatic, and out of scope for both 821 and 822.
 | G5 (redaction) | §3.3 | Domain plaintext, local-part hashed (`sha256[:12]`). |
 | G6 (feedback-loop guardrails) | §5.3 | Advisory-only surfacing, capped below the frozen classifier's own confidence; tally itself is the reversal mechanism. |
 | G7 (`category: preference` field) | §3.4 | Added now, schema-additive, first real use of the field. |
-| G8 (read-back contract) | §6 | Named `email_preference_lookup` contract, seeded for task 823, not implemented in 822. |
+| G8 (read-back contract) | §6 | Named `email_preference_lookup` contract, seeded for a future follow-up task, not implemented in 822. |
 
 ## Non-Goals Reaffirmed
 

@@ -26,15 +26,15 @@ Document file overlap as a matrix before planning waves:
 
 **Overlap %** = shared / min(A, B). Use the smaller task as the denominator to identify asymmetric overlap (where a small task is entirely subsumed by a larger one).
 
-## Example: Tasks 210 and 211
+## Case Study: Declaration Renames vs. Keyword-to-Typeclass Changes
 
-Tasks 210 (declaration renames) and 211 (keyword-to-typeclass changes) shared approximately 58% of their target files -- primarily declaration files in `Cslib/Logics/Modal/` and `Cslib/Pi/`.
+A declaration-rename task and a keyword-to-typeclass-change task shared approximately 58% of their target files -- primarily declaration files in `Cslib/Logics/Modal/` and `Cslib/Pi/`.
 
-**Why this caused conflicts**: Task 210 renamed declarations that Task 211 then tried to modify using the old names. When both ran in Wave 1 (parallel), Task 211's edits failed with "string not found" errors because Task 210 had already renamed the target strings.
+**Why this caused conflicts**: The rename task renamed declarations that the keyword-change task then tried to modify using the old names. When both ran in Wave 1 (parallel), the keyword-change task's edits failed with "string not found" errors because the rename task had already renamed the target strings.
 
 **Correct wave assignment**:
-- Wave 1: Task 210 (renames -- establishes new names)
-- Wave 2: Task 211 (keyword changes -- uses new names after renames land)
+- Wave 1: the rename task (renames -- establishes new names)
+- Wave 2: the keyword-change task (keyword changes -- uses new names after renames land)
 
 **Note**: The dependency direction matters. Renames must precede keyword changes, not vice versa, because keyword changes reference declaration names by string.
 
@@ -52,13 +52,13 @@ For high-conflict task pairs (>50% overlap) where sequential ordering is impract
 
 ```bash
 # Create worktree for each task
-git worktree add ../cslib-task-210 HEAD
-git worktree add ../cslib-task-211 HEAD
+git worktree add ../cslib-renames HEAD
+git worktree add ../cslib-keywordchanges HEAD
 
 # Run tasks in separate worktrees
 # After both complete, merge results manually
-git -C ../cslib-task-210 diff HEAD > task-210.patch
-git -C ../cslib-task-211 diff HEAD > task-211.patch
+git -C ../cslib-renames diff HEAD > renames.patch
+git -C ../cslib-keywordchanges diff HEAD > keywordchanges.patch
 ```
 
 **Worktree isolation is appropriate when**:

@@ -43,10 +43,12 @@ Scan a directory tree for learnable content:
 
 Review artifacts from a completed task:
 
+<!-- task-ref-ok:begin command-usage example -->
 ```bash
 /learn --task 142
 /learn --task 142 --category PATTERN
 ```
+<!-- task-ref-ok:end -->
 
 **Workflow**:
 1. Scan task directory for artifacts (reports/, plans/, summaries/)
@@ -239,6 +241,7 @@ Flow:
 
 ### Example 4: Task Artifact Review
 
+<!-- task-ref-ok:begin command-usage example -->
 ```bash
 /learn --task 142
 ```
@@ -248,6 +251,7 @@ Flow:
 2. Select research report and summary
 3. Classify as [INSIGHT] and [PATTERN]
 4. Create memories with tags
+<!-- task-ref-ok:end -->
 
 ---
 

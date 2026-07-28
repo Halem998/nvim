@@ -39,7 +39,7 @@ execute the approved archive/delete/unsubscribe-extract actions. The agent never
 | `context/project/email/domain/wrapper-contracts.md` | Ground-truth-verified wrapper contract (incl. classify pagination contract and folder tokens) |
 | `context/project/email/domain/archive-mode-risk.md` | Account archive blast radius, reversible-vs-hard boundary, asymmetric confidence policy |
 | `context/project/email/patterns/bulk-bucket-review.md` | Sender/domain bucket bulk-approval pattern (`--all` mode review gate) |
-| `context/project/email/design/email-to-memory-preferences.md` | Authoritative design (task 821) for routing wrapper-confirmed cleanup decisions into `email/preferences/{account}/{key}` memory-vault preference memories — resolves G1-G8, verified against real mail; implemented by task 822's Stage 7 harvest below |
+| `context/project/email/design/email-to-memory-preferences.md` | Authoritative design for routing wrapper-confirmed cleanup decisions into `email/preferences/{account}/{key}` memory-vault preference memories — resolves G1-G8, verified against real mail; implemented by the Stage 7 harvest below |
 | `scripts/email-preference-harvest.sh` | Deterministic normalization/redaction/tally/dedup helper for the Stage 7 harvest (pure subcommands: `normalize`, `freemail`, `identity`, `dedup`, `tally-op`, `dominant`, `threshold`) |
 
 A fourth new doc lives at the agent-system layer (domain-agnostic):
@@ -69,7 +69,7 @@ and no auto-indexer exists, `--all` runs an index-freshness gate before claiming
 coverage: `email-census` prints an `INBOX freshness  on-disk=<D>  indexed-files=<F>
 divergence=<Δ>  tol=<T>  reindex=<ISO|never>  [ok|STALE]` line — a file-vs-file comparison within
 a bounded tolerance (`[ok]` when `Δ ≤ T`), not strict equality — and a `[STALE]` divergence beyond
-tolerance is reconciled with `email-reindex` (tasks 823-824-827; see
+tolerance is reconciled with `email-reindex` (see
 `context/project/email/domain/staleness-detection.md`).
 
 ## Workflow: Propose -> Review -> Confirm -> Execute

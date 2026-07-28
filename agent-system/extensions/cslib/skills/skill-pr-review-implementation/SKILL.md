@@ -290,7 +290,7 @@ Example:
 - Applied 2 minor code changes (typo fix, import ordering)
 - Created pr-response.md with responses to 3 reviewers (5 comments addressed)
 - Created zulip-response.md for stream 'cslib' topic 'PR Review: GroupAlgebra'
-- Task 724 transitioned to [PR READY]
+- Task transitioned to [PR READY]
 - Next: Post pr-response.md as GitHub PR comment, send zulip-response.md to Zulip
 ```
 

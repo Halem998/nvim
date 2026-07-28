@@ -285,7 +285,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
 
 Example return:
 ```
-Research completed for task 412:
+Research completed for task {N}:
 - Found existing lattice patterns in source files
 - Used lean_leansearch to find 4 relevant Mathlib theorems on complete lattices
 - Loaded lattices.md and partial-orders.md context

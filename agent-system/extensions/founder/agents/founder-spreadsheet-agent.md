@@ -473,7 +473,7 @@ Write final metadata to specified path:
 Return a brief summary (NOT JSON):
 
 ```
-Cost breakdown research complete for task 234:
+Cost breakdown research complete for task {N}:
 - Mode: BUDGET, 8 forcing questions completed
 - Categories: Personnel, Infrastructure, Marketing, Operations
 - Line items: 12 total

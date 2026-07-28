@@ -14,7 +14,7 @@ arrives and nothing has re-run `notmuch new` since.
 
 ## Ground truth vs. index
 
-**File-vs-file model (task 827)**: the gate compares two FILE counts for the same maildir path —
+**File-vs-file model**: the gate compares two FILE counts for the same maildir path —
 never a file count against a deduped message count. `himalaya envelope list` reports one entry
 per on-disk file (maildir++ semantics: duplicate copies across folders are duplicate files, not
 deduped). `notmuch count folder:<Folder>` reports deduped **Message-IDs**, which collapses
@@ -22,12 +22,12 @@ duplicate copies — an apples-to-oranges comparison against the on-disk file co
 *structurally* unreachable whenever an account has any real Message-ID duplication (confirmed:
 Logos on-disk=341 vs `notmuch count folder:Logos`=318, permanently `[STALE]` under the old
 equality rule even on a clean, fully-synced, freshly-reindexed mailbox — the 23-message gap is
-real distinct messages, not duplicates, per task 826).
+real distinct messages, not duplicates).
 
 | Source | What it measures | Trustworthy for the freshness gate? |
 |--------|------------------|---------------------------|
 | `himalaya envelope list -f INBOX \| jq length` | on-disk maildir FILE count, correct maildir++ mapping | **Yes** — authoritative on-disk truth |
-| `notmuch --output=files` post-filtered by literal path prefix (`path:<acct>/cur` / `path:<acct>/new`) | indexed FILE count for the exact maildir path | **Yes** — the correct file-vs-file comparand (task 827) |
+| `notmuch --output=files` post-filtered by literal path prefix (`path:<acct>/cur` / `path:<acct>/new`) | indexed FILE count for the exact maildir path | **Yes** — the correct file-vs-file comparand |
 | `notmuch count folder:<Folder>` | deduped **Message-ID** count | **No** — wrong unit; do not compare against an on-disk file count |
 | `notmuch count --output=files folder:<Folder>` (unfiltered) | every known file for each matching message, across folders/accounts | **No** — inflated by cross-folder/cross-account duplicate copies (see quirk below) |
 | `find ~/Mail/<acct>/{new,cur} \| wc -l` | raw file count | **No** — stray dirs / `.Labels.*` / notmuch `folder:` semantics make it diverge in both directions |
@@ -54,7 +54,7 @@ prefix so only files physically under the target maildir directory are counted.
 
 ## Detection: the census freshness line
 
-`email-census` (`.dotfiles` `census.nix`, tasks 823, 827) implements three combined fixes:
+`email-census` (`.dotfiles` `census.nix`) implements three combined fixes:
 
 - **(a) File-vs-file, path-prefix post-filtered**: count on-disk files via `himalaya envelope
   list`, and count indexed files via `notmuch search --output=files 'path:<acct>/cur or
@@ -62,7 +62,7 @@ prefix so only files physically under the target maildir directory are counted.
   cross-account duplicates the quirk above injects.
 - **(b) Bounded tolerance, not strict equality**: divergence `Δ = |on-disk − indexed-files|`;
   tolerance `T = max(5, ceil(0.10 × on-disk))`. `[ok]` when `Δ ≤ T`, else `[STALE]`. 10% is
-  chosen deliberately: it makes Logos's real residual (22/341 ≈ 6.5%, task 827's 22-unindexed-
+  chosen deliberately: it makes Logos's real residual (22/341 ≈ 6.5%, this mechanism's 22-unindexed-
   files anomaly — see Finding 3 / the Phase-7 follow-up) reachable today as `[ok]` while staying
   modest enough to still catch a genuinely far-behind index. The floor of 5 keeps small accounts
   from getting a zero-width tolerance. The threshold should be tightened once the follow-up task
@@ -85,7 +85,7 @@ INBOX freshness  on-disk=<D>  indexed-files=<F>  divergence=<Δ>  tol=<T>  reind
 
 `[ok]` when `Δ ≤ T` (file-vs-file within tolerance), else `[STALE]`. `skill-email-cleanup`'s
 `--all` Stage 1 **staleness gate** parses this line and will not present a whole-mailbox bucket
-approval while it reads `[STALE]`. If the line is absent (an `email-census` predating task 827),
+approval while it reads `[STALE]`. If the line is absent (an `email-census` predating this redesign),
 coverage is treated as *unverified* and a visible notice is emitted — never assumed fresh.
 
 Live example (2026-07-13, current mailbox, new gate): Gmail `on-disk=128 indexed-files=128
@@ -106,7 +106,7 @@ The sanctioned reindex is the `email-reindex` operator helper (`.dotfiles` `mbsy
   forbidden (it triggers `mbsync -a`).
 - Does NOT pull from the server. If the maildir itself is behind the server, run `mbsync <group>`
   / `email-thaw` / `/email --sync` first, then `email-reindex`.
-- Also writes the (c) reindex-ran marker (task 827): after `notmuch new --no-hooks` completes, it
+- Also writes the (c) reindex-ran marker: after `notmuch new --no-hooks` completes, it
   writes an ISO-8601 timestamp to
   `${XDG_STATE_HOME:-$HOME/.local/state}/email-agent/last-reindex`, which `email-census` reads
   back as `reindex=<ISO|never>` on the freshness line.

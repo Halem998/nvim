@@ -389,7 +389,7 @@ Use the Write tool to create this file.
 
 Example return:
 ```
-Neovim implementation completed for task 412:
+Neovim implementation completed for task {N}:
 - Created telescope.nvim plugin specification with fzf-native
 - Added keymaps for find_files, live_grep, buffers
 - Configured lazy loading via cmd and keys

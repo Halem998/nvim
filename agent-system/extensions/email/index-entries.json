@@ -38,7 +38,7 @@
     },
     {
       "path": "project/email/domain/staleness-detection.md",
-      "description": "notmuch index staleness (task 827 redesign): census freshness line compares on-disk files vs a path-prefix post-filtered indexed-files count within a bounded tolerance (not strict equality), the notmuch --output=files cross-folder/cross-account duplicate quirk, the reindex-ran marker, no auto-indexer, and the sanctioned email-reindex remediation for --all coverage",
+      "description": "notmuch index staleness (redesigned): census freshness line compares on-disk files vs a path-prefix post-filtered indexed-files count within a bounded tolerance (not strict equality), the notmuch --output=files cross-folder/cross-account duplicate quirk, the reindex-ran marker, no auto-indexer, and the sanctioned email-reindex remediation for --all coverage",
       "load_when": {
         "agents": [
           "email-implementation-agent"

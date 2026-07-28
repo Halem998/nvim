@@ -77,7 +77,7 @@ Provides:
 **Hook Event**: `UserPromptSubmit`
 **Purpose**: Extract and display task number in tab title
 
-Parses user prompt for workflow patterns using 3-tier logic (task 590):
+Parses user prompt for workflow patterns using 3-tier logic:
 - `/research N` or `/research N, N-N, N` (multi-task)
 - `/plan N` or `/plan N, N-N`
 - `/implement N` or `/implement N, N-N, N`
@@ -89,7 +89,7 @@ Parses user prompt for workflow patterns using 3-tier logic (task 590):
 - `/task --review N`
 - `/errors --fix N`
 
-**Behavior** (task 590):
+**Behavior**:
 - **Workflow command with task number**: Sets `TASK_NUMBER` to compact spec (e.g., `7,22-24,59`)
 - **Slash command without task number**: Clears `TASK_NUMBER` user variable
 - **Free text / follow-up**: Preserves `TASK_NUMBER` (no change)
@@ -270,7 +270,7 @@ When Claude Code runs inside Neovim (via claude-code.nvim), the Neovim autocmds 
   - **Shell hook**: Handles set/clear logic on `UserPromptSubmit` (workflow vs non-workflow)
   - **Neovim monitor**: Only clears TASK_NUMBER when Claude terminal closes
 
-This separation (task 795) ensures:
+This separation ensures:
 1. Task numbers persist during Claude's responses (no buffer monitoring)
 2. Task numbers clear correctly on non-workflow commands (shell hook handles)
 3. Task numbers clear when terminal closes (Neovim autocmd handles)

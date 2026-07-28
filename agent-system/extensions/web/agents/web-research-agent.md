@@ -322,7 +322,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
 
 Example return:
 ```
-Research completed for task 412:
+Research completed for task {N}:
 - Analyzed existing Astro component patterns in src/components/
 - Documented Tailwind v4 styling approach for responsive layout
 - Identified accessibility requirements (WCAG 2.2 AA keyboard nav)

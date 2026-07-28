@@ -329,7 +329,7 @@ Brief text summary (NOT JSON).
 
 Expected successful return:
 ```
-Contract review research completed for task 256:
+Contract review research completed for task {N}:
 - Mode: REVIEW, 8 forcing questions completed
 - Contract: SaaS vendor agreement with Company X
 - Concerns: Data rights, liability cap, termination provisions

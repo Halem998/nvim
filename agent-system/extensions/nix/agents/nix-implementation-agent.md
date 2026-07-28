@@ -409,7 +409,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
 
 Example return:
 ```
-Nix implementation completed for task 412:
+Nix implementation completed for task {N}:
 - Created NixOS module for nginx reverse proxy
 - Added Home Manager configuration for user shell
 - Configured flake with new module import

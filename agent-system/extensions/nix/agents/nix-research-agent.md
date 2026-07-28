@@ -402,7 +402,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
 
 Example return:
 ```
-Research completed for task 412:
+Research completed for task {N}:
 - Analyzed existing Home Manager module patterns
 - Documented available options from home-manager manual
 - Identified module dependencies (programs.git requires pkgs.git)

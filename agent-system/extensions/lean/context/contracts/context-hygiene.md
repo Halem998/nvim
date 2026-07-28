@@ -56,7 +56,7 @@ Clauses 1-3 are MUST/SHOULD rules, not suggestions. They apply to every lean4/fo
 agent dispatch that queries proof state, reads Lean source, or reasons over hypotheses.
 
 This contract is preventive hygiene: it bounds what enters context in the first place. It
-is distinct from `@.claude/context/patterns/context-exhaustion-detection.md` (task 781),
+is distinct from `@.claude/context/patterns/context-exhaustion-detection.md`,
 which is reactive: it detects context pressure that has already accumulated and triggers a
 handoff. Apply this contract continuously; consult context-exhaustion-detection.md when its
 detection signals (tool call volume, re-read detection) fire despite this contract's

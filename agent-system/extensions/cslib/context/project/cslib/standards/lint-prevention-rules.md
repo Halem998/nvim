@@ -2,7 +2,7 @@
 
 Environment linters (`lake lint`) are **NOT** in the PR CI pipeline -- they only run in a
 weekly Monday cron (`weekly-lints.yml`). This means code can pass all PR CI checks while
-silently introducing lint errors that accumulate over time (tasks 208-213 fixed 850+ such
+silently introducing lint errors that accumulate over time (a past cleanup pass fixed 850+ such
 errors). Follow these 7 rules for every declaration you write.
 
 ## Rule 1: Mandatory Docstrings (prevents docBlame)

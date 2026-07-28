@@ -93,6 +93,7 @@ The `/learn` command adds knowledge to the memory vault with four input modes.
 
 ### Example 4: Review Task Artifacts
 
+<!-- task-ref-ok:begin command-usage example -->
 ```bash
 /learn --task 142
 ```
@@ -117,9 +118,11 @@ The `/learn` command adds knowledge to the memory vault with four input modes.
    - [ ] [SKIP] - Not valuable
    ```
 6. Memories created with classification tags and topic
+<!-- task-ref-ok:end -->
 
 ### Example 5: Extract Pattern from Research
 
+<!-- task-ref-ok:begin command-usage example -->
 ```bash
 /learn --task 146
 ```
@@ -141,6 +144,7 @@ The `/learn` command adds knowledge to the memory vault with four input modes.
 
    Key findings on isolated context windows and metadata passing...
    ```
+<!-- task-ref-ok:end -->
 
 ---
 
@@ -190,6 +194,7 @@ Complete workflow demonstrating all features working together:
 
 Finds 3 FIXME tags in source code, creates tasks.
 
+<!-- task-ref-ok:begin command-usage example -->
 ### Step 2: Research a Task
 
 ```bash
@@ -221,6 +226,7 @@ Creates comprehensive research report.
 ```
 
 Executes plan, creates implementation.
+<!-- task-ref-ok:end -->
 
 ### Step 5: Archive and Update
 

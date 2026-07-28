@@ -163,8 +163,10 @@ When invoked with `--task N`, /learn enters task mode for reviewing task artifac
 ### Example Usage
 
 ```bash
+# task-ref-ok:begin command-usage example
 /learn --task 142                    # Review all artifacts from task 142
 /learn --task 142 --category PATTERN # Focus on pattern extraction only
+# task-ref-ok:end
 ```
 
 ---

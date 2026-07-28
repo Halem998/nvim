@@ -379,7 +379,7 @@ Write final metadata to specified path:
 Return a brief summary (NOT JSON):
 
 ```
-GTM strategy research complete for task 234:
+GTM strategy research complete for task {N}:
 - Mode: LAUNCH, 10 forcing questions completed
 - Target: VP Engineering at Series A-C SaaS, 50-200 employees
 - Key benefit: Cut deploy time by 80%

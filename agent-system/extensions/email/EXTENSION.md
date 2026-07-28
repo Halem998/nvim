@@ -39,8 +39,8 @@ All mutation goes through five nix-built wrapper binaries; the extension itself 
   `--all` runs a staleness gate before claiming whole-mailbox coverage — comparing the
   `email-census` freshness line's on-disk file count against a path-prefix post-filtered
   indexed-files count (a file-vs-file comparison within a bounded tolerance, not strict equality)
-  and reconciling with `email-reindex` when the divergence exceeds tolerance (tasks 823-824-827;
-  see `domain/staleness-detection.md`, `wrapper-contracts.md` §13).
+  and reconciling with `email-reindex` when the divergence exceeds tolerance (see
+  `domain/staleness-detection.md`, `wrapper-contracts.md` §13).
 - **Two-layer enforcement**: the `mail-guard.sh` PreToolUse hook (social/technical layer 1,
   per-machine, may be gitignored) plus the nix-built wrapper source itself (layer 2, always
   present). Neither layer is sufficient alone.
@@ -89,7 +89,7 @@ All mutation goes through five nix-built wrapper binaries; the extension itself 
 - **`/email --logos` is additive, live, and never a silent fallback**: the account selector,
   folder-token queries, and pilot-gate scoping for `account=logos` are implemented, documented,
   and accepted by the wrapper binaries (`--account <gmail|logos>`, wrapper-contracts.md §2,
-  verified 9/9 by `.dotfiles` task 80); every `--logos` invocation is routed through a light
+  verified 9/9 against the `.dotfiles` wrapper suite); every `--logos` invocation is routed through a light
   step-1 liveness check before any wrapper call. A bare `/email` (Gmail, the default) is
   unaffected and remains byte-for-byte unchanged.
 - **`hooks/mail-guard.sh` needed no change** for multi-account support: it allowlists the five

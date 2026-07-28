@@ -68,7 +68,7 @@ Use AskUserQuestion:
 What materials should inform the deck content?
 
 Provide any combination of:
-- Task references (e.g., "task:234" to pull research from task 234)
+- Task references (e.g., "task:{N}" to pull research from task {N})
 - File paths to documents (e.g., "/path/to/business-plan.md")
 - "none" if you will provide details in a prompt
 

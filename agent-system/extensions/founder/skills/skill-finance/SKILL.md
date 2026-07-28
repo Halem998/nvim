@@ -332,7 +332,7 @@ Brief text summary (NOT JSON).
 
 Expected successful return:
 ```
-Financial analysis research completed for task 330:
+Financial analysis research completed for task {N}:
 - Mode: AUDIT, 7 forcing questions completed
 - Document: Q1 2026 P&L statement
 - Objective: Verify revenue projections for Series A deck

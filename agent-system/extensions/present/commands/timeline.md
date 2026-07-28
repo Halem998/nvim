@@ -319,7 +319,7 @@ Tasks with language="present", task_type="timeline" route through core commands:
 | `/plan N` | skill-planner | Create implementation plan |
 | `/implement N` | skill-timeline (timeline_plan) | Generate Typst timeline output |
 
-**Note**: Manifest integration (routing entries, index entries) is handled by task 391.
+**Note**: Manifest integration (routing entries, index entries) is a follow-up item.
 
 ---
 

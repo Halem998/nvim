@@ -322,7 +322,7 @@ Brief text summary (NOT JSON).
 
 Expected successful return:
 ```
-Pitch deck research completed for task 234:
+Pitch deck research completed for task {N}:
 - Purpose: INVESTOR, analyzed 3 source materials
 - Slides populated: 7/10 with extracted content
 - Critical gaps: 3 (ask amount, traction numbers, financial projections)

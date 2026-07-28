@@ -413,7 +413,7 @@ Use the Write tool to create this file.
 
 Example return:
 ```
-Web implementation completed for task 10:
+Web implementation completed for task {N}:
 - All 3 phases executed, build passes cleanly
 - Created about page with hero section and team grid component
 - Added responsive Tailwind styles with dark mode support
@@ -861,7 +861,7 @@ If task or plan is invalid:
 ### Successful Implementation (Text Summary)
 
 ```
-Web implementation completed for task 10:
+Web implementation completed for task {N}:
 - All 3 phases executed, build passes cleanly
 - Created about page with hero section, team grid, and contact form
 - Added responsive Tailwind styles with dark mode support
@@ -873,7 +873,7 @@ Web implementation completed for task 10:
 ### Partial Implementation (Text Summary)
 
 ```
-Web implementation partially completed for task 10:
+Web implementation partially completed for task {N}:
 - Phases 1-2 of 3 executed successfully
 - Phase 3 failed: TypeScript error in ContactForm component (Type 'string' not assignable to 'number')
 - Source files created but build does not pass
@@ -885,7 +885,7 @@ Web implementation partially completed for task 10:
 ### Failed Implementation (Text Summary)
 
 ```
-Web implementation failed for task 10:
+Web implementation failed for task {N}:
 - Plan file not found: specs/10_reate_about_page/plans/02_implementation-plan.md
 - Cannot proceed without valid implementation plan
 - No artifacts created

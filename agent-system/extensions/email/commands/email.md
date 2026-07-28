@@ -25,12 +25,12 @@ see the Accounts subsection below.
   sweep), then ONE consolidated sender/domain bucket approval, then a mechanical sub-50 execute
   drain with progress-only reporting. **Coverage is conditioned on a fresh notmuch index**:
   because classification reads notmuch (not the maildir directly) and there is no auto-indexer,
-  `--all` first runs a staleness gate (skill-email-cleanup Stage 1, tasks 823, 827) comparing the
+  `--all` first runs a staleness gate (skill-email-cleanup Stage 1) comparing the
   census freshness line's on-disk file count against a path-prefix post-filtered indexed-files
   count (a file-vs-file comparison, within a bounded tolerance — `[ok]` when the divergence is
   within tolerance, not exact equality). On divergence beyond tolerance it will not claim
   whole-mailbox coverage until the index is reconciled with the sanctioned `email-reindex` helper
-  (task 824) — see Error Handling and `context/project/email/domain/staleness-detection.md`.
+  — see Error Handling and `context/project/email/domain/staleness-detection.md`.
 - `--archive`: scope flag — operate on the account's archive folder instead of INBOX
   (`folder:Gmail/.All_Mail` for `account=gmail`; `folder:Logos/.Archive` for `account=logos`),
   with extra-caution gates (second blast-radius confirmation, stricter delete bar,
@@ -176,8 +176,8 @@ folders these calls target, never the safety gates around them.
   blocked at full scale until a bounded pilot pass has been acknowledged **for that account** (see
   skill-email-cleanup's per-account pilot gate — a Gmail pilot-ack never licenses a Logos
   archive-scope run, or vice versa).
-- The wrapper's `MAX_BATCH_SIZE=50` per-action cap is FROZEN (cross-repo contract, .dotfiles
-  task 72) and is the same for every account. No mode raises it — `--all` loops over ≤50 splits
+- The wrapper's `MAX_BATCH_SIZE=50` per-action cap is FROZEN (cross-repo contract with
+  `.dotfiles`) and is the same for every account. No mode raises it — `--all` loops over ≤50 splits
   instead.
 - Never auto-chain `/email --sync` after a cleanup — especially not after an `--archive` drain.
   The mutation wrappers already run their own group-scoped `mbsync <account-channel>` reconcile
@@ -232,7 +232,7 @@ always a single, explicit group.
       `[STALE]`: the on-disk file count and the path-prefix post-filtered indexed-files count
       diverge beyond the bounded tolerance) -> Do NOT claim whole-mailbox coverage. Report the
       divergence and route to the sanctioned reindex `email-reindex` (index-only `notmuch new
-      --no-hooks`; task 824). Interactive: offer to run it, then re-census and re-check.
+      --no-hooks`). Interactive: offer to run it, then re-census and re-check.
       Autonomous/orchestrator: use the `reindex=<ISO|never>` marker — `reindex=never` STOPs and
       reports the divergence plus the `email-reindex` command; `reindex=<ISO>` (already ran)
       reports the persistent residual as a follow-up instead of looping — never reindex

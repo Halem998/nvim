@@ -442,7 +442,7 @@ Example returns by workflow:
 
 **Funder Research**:
 ```
-Funder research completed for task 500:
+Funder research completed for task {N}:
 - Identified 5 potential funders for AI safety research
 - Top recommendation: Open Philanthropy (strongest alignment)
 - Deadline: March 15, 2026 for LOI
@@ -452,7 +452,7 @@ Funder research completed for task 500:
 
 **Proposal Draft**:
 ```
-Proposal draft created for task 501:
+Proposal draft created for task {N}:
 - Drafted 6 of 8 required sections
 - Executive summary and methodology sections ready for review
 - Budget section marked as placeholder (needs separate workflow)
@@ -462,7 +462,7 @@ Proposal draft created for task 501:
 
 **Assemble** (new grant):
 ```
-Grant materials assembled for task 502:
+Grant materials assembled for task {N}:
 - Created output directory: grants/502_nsf_career_ai_safety/
 - Files generated: narrative.md, budget.md, checklist.md, README.md
 - Narrative: 15 pages, all required sections complete
@@ -472,7 +472,7 @@ Grant materials assembled for task 502:
 
 **Assemble** (revision):
 ```
-Grant revision assembled for task 503:
+Grant revision assembled for task {N}:
 - Updated existing grant at: grants/502_nsf_career_ai_safety/
 - Modified sections: methodology, budget year 2-3
 - Unchanged sections preserved: problem statement, team, timeline
@@ -535,7 +535,7 @@ If required templates are missing:
 ### Successful Funder Research (Text Summary)
 
 ```
-Funder research completed for task 500:
+Funder research completed for task {N}:
 - Identified 5 potential funders for AI safety research
 - Top recommendation: Open Philanthropy (strongest alignment, $1M+ capacity)
 - Deadline: March 15, 2026 for LOI submission
@@ -546,7 +546,7 @@ Funder research completed for task 500:
 ### Successful Proposal Draft (Text Summary)
 
 ```
-Proposal draft created for task 501:
+Proposal draft created for task {N}:
 - Drafted 6 of 8 required sections
 - Executive summary and methodology sections ready for review
 - Budget section marked as placeholder (needs budget_develop workflow)
@@ -557,7 +557,7 @@ Proposal draft created for task 501:
 ### Partial Result (Text Summary)
 
 ```
-Grant research partially completed for task 502:
+Grant research partially completed for task {N}:
 - Completed funder identification (4 candidates)
 - WebFetch failed for 2 funder websites
 - Partial report saved at specs/502_foundation_grants/reports/01_funder-analysis.md
@@ -568,7 +568,7 @@ Grant research partially completed for task 502:
 ### Failed (Text Summary)
 
 ```
-Grant workflow failed for task 999:
+Grant workflow failed for task {N}:
 - Task not found in state.json
 - No artifacts created
 - Metadata written with failed status

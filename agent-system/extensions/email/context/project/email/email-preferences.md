@@ -1,4 +1,4 @@
-# Prior-Art Harvest → nvim #803 (Task 72, Phase 2)
+# Prior-Art Harvest → nvim #803 (the aerc-tagged JSONL-manifest unsubscribe-review model, Phase 2)
 
 **Date**: 2026-07-02
 **Source**: the dormant `~/Mail/.claude` email harness (separate repo), harvested data-only before
@@ -90,7 +90,7 @@ Confirmed absent from the prior art; #803 must build these fresh (they are the h
 primary tier that relegates §1.4 keywords to fallback):
 
 - **List-Unsubscribe header parsing** (RFC 2369 / RFC 8058 one-click) — the prior art had no
-  header extraction; Task 72 ships `email-unsubscribe-extract` (read-only) as the mechanism, but
+  header extraction; the aerc-tagged JSONL-manifest unsubscribe-review model ships `email-unsubscribe-extract` (read-only) as the mechanism, but
   the *classification use* of the header is #803's.
 - **`Precedence: bulk` / `Auto-Submitted`** signals — no handling in prior art.
 - **Reply-history / thread-participation** scoring (did the user ever reply to this sender?) —
@@ -104,8 +104,8 @@ Record these as a **gap, not an omission**: they were never built, so there is n
 
 ## 3. DISCARD verdicts (recorded, per v3 Phase 0)
 
-- **Checkbox-approval UX** (`~/Mail` tasks 014/022/023: mark `[x]` in a markdown plan, `/revise
-  "only delete the checked items"`) — **DISCARD.** Superseded by the Task 72 model: aerc tagged
+- **Checkbox-approval UX** (an earlier `~/Mail`-repo approach: mark `[x]` in a markdown plan, `/revise
+  "only delete the checked items"`) — **DISCARD.** Superseded by this project's aerc-tagged model: aerc tagged
   review views + a git-tracked, sha256-confirmed JSONL manifest keyed on Message-ID. The checkbox
   flow does not survive maildir id churn and has no cryptographic approval provenance.
 - **Retired `email.md` command's `model: opus` pin** — **DISCARD.** The tiered model policy
@@ -137,6 +137,6 @@ retirement step (recommend keeping it in `~/Mail` history via the removal commit
 decided at execution time).
 
 **Caution flagged at execution:** `~/Mail`'s working tree has **many pre-existing uncommitted
-changes unrelated to Task 72**. The retirement commit must stage ONLY the paths above
+changes unrelated to this work**. The retirement commit must stage ONLY the paths above
 (`git rm` the specific files), never `git add -A`, to avoid sweeping unrelated edits into the
-task-72 retirement commit.
+retirement commit.

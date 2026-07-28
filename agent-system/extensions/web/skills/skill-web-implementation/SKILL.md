@@ -349,7 +349,7 @@ This skill returns a **brief text summary** (NOT JSON). The JSON metadata is wri
 
 Example successful return:
 ```
-Web implementation completed for task 10:
+Web implementation completed for task {N}:
 - All 3 phases executed, build passes cleanly
 - Created about page with hero section and team grid
 - Created summary at specs/10_create_about_page/summaries/01_web-feature-summary.md
@@ -359,7 +359,7 @@ Web implementation completed for task 10:
 
 Example partial return:
 ```
-Web implementation partially completed for task 10:
+Web implementation partially completed for task {N}:
 - Phases 1-2 of 3 executed
 - Phase 3 blocked: TypeScript error in ContactForm component
 - Partial summary at specs/10_create_about_page/summaries/01_web-feature-summary.md

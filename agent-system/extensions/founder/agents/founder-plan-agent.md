@@ -798,7 +798,7 @@ Write final metadata to specified path:
 Return a brief summary (NOT JSON):
 
 ```
-Founder plan created for task 234:
+Founder plan created for task {N}:
 - Report type: market-sizing, mode: SIZE
 - Read research report: specs/234_market_sizing_fintech_payments/reports/01_market-sizing.md
 - Key context: Entity count 500K, price point $10K, geographic focus US/EU

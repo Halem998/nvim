@@ -11,7 +11,7 @@ census -> classify -> review -> confirmed-execute pass without dispatching to a 
 skill is wrapper-only: it may invoke ONLY the five named nix-built binaries below, by name, and
 must NEVER call raw `himalaya`, `notmuch`, `msmtp`, or `secret-tool`, and must NEVER run `rm`
 against a Maildir path. The one sanctioned exception is the index-only `email-reindex` operator
-helper (staleness remediation, task 824) — non-mutating, exempt exactly as the `mbsync` reconcile
+helper (staleness remediation) — non-mutating, exempt exactly as the `mbsync` reconcile
 is; see the Staleness Remediation section.
 
 An account selector, two decision-granularity modes, and an orthogonal folder scope (parsed by
@@ -47,7 +47,7 @@ a raw `himalaya`/`notmuch` call.
 ## Account Liveness Check (`account=logos` only — check before Stage 1)
 
 The five wrapper binaries accept `--account <gmail|logos>` as a live enum (wrapper-contracts.md
-§2, verified 9/9 by `.dotfiles` task 80); unknown values are rejected loudly. This is not a
+§2, verified 9/9 against the `.dotfiles` wrapper suite); unknown values are rejected loudly. This is not a
 permanent gate on `logos` — it is a light read-only liveness check that guards against a
 transient/environmental problem (e.g. a stale `$PATH` generation predating multi-account
 support). When `account=logos` is resolved (from `/email`'s `--account logos`/`--logos`), this
@@ -200,7 +200,7 @@ to confirm which IDs were actually mutated. Report this diff to the user.
 An opt-in step that routes wrapper-confirmed decisions from this pass into the memory vault as
 sender/domain-aggregated `email/preferences/{account}/{key}` preference memories. Grounded in
 the authoritative design at
-`context/project/email/design/email-to-memory-preferences.md` (task 821/822) — see that document
+`context/project/email/design/email-to-memory-preferences.md` — see that document
 for the full rationale; this section is the executable prose. Fires ONLY after Stage 6, reading
 ONLY the Stage 6 *executed* diff — never the Stage 2 candidate manifest (`proposed_action`,
 unconfirmed) and never an approved-but-not-yet-executed manifest.
@@ -319,12 +319,12 @@ Pilot Gate section).
 ### Stage 1 (`--all`): Census + Staleness Gate + Pre-Sweep Estimate
 
 1. Run `email-census --account <account>` for the folder/sender/date overview.
-2. **Staleness gate (tasks 823, 827 — MANDATORY before an `--all` coverage claim)**: `--all`
+2. **Staleness gate (MANDATORY before an `--all` coverage claim)**: `--all`
    promises whole-mailbox coverage, but `email-classify` only sees what notmuch has indexed. When
    the notmuch index lags the on-disk maildir (no auto-indexer exists — wrapper-contracts.md §13),
    the sweep silently covers only the indexed subset. Parse the census output's
    `INBOX freshness  on-disk=<D>  indexed-files=<F>  divergence=<Δ>  tol=<T>  reindex=<ISO|never>
-   [ok|STALE]` line (`email-census`, task 827 redesign; `on-disk` is himalaya's authoritative
+   [ok|STALE]` line (`email-census`; `on-disk` is himalaya's authoritative
    maildir FILE count, `indexed-files` is a path-prefix post-filtered `notmuch --output=files`
    FILE count for the exact maildir path — a file-vs-file comparison, never a deduped-message
    count; see staleness-detection.md for the full rationale):
@@ -345,7 +345,7 @@ Pilot Gate section).
        STOP-loop on a repeat reindex; instead report the persistent residual as a candidate
        follow-up (the gap survived a reindex, so re-running it again is unlikely to help) and
        proceed per the interactive-mode acknowledgment path or continue to flag for the user.
-   - If the census freshness line is absent (an older `email-census` predating task 827), emit a
+   - If the census freshness line is absent (an older `email-census` predating this redesign), emit a
      visible notice that staleness could not be verified and treat coverage as unverified — never
      assume fresh.
 3. **Count probe** (wrapper-only count oracle, wrapper-contracts.md §10, §12): run
@@ -624,7 +624,7 @@ own pilot independently.
 ## Constants (do not override)
 
 - `MAX_BATCH_SIZE = 50` — max IDs mutated per `--execute` run (wrapper-enforced, FROZEN;
-  cross-repo contract, .dotfiles task 72). Never raise it — split and loop instead.
+  cross-repo contract with `.dotfiles`). Never raise it — split and loop instead.
 - `PLAN_EXPIRY_DAYS = 7` — manifests (and their `touch -r`-dated splits) older than this are
   refused by `--execute`; the drain stops and reports, never re-timestamps.
 - Minimum confidence to auto-propose delete: `>= 0.90` (archive scope: additionally requires a
@@ -632,12 +632,12 @@ own pilot independently.
 - `CHUNK_SIZE = 1000` — skill-side sweep chunk size (`--all` Stage 2); provisional until the
   `--archive` pilot confirms or adjusts it.
 
-## Staleness Remediation (tasks 824, 827 — sanctioned reindex)
+## Staleness Remediation (sanctioned reindex)
 
 When the Stage 1 staleness gate reports `[STALE]` (`Δ > T`, the bounded-tolerance file-vs-file
 divergence — see Stage 1 above and staleness-detection.md), the fix is to reconcile the notmuch
 index to the on-disk maildir. The sanctioned path is the **`email-reindex`** operator helper,
-which runs `notmuch new --no-hooks` internally (`.dotfiles` `mbsync.nix`, tasks 824, 827). This
+which runs `notmuch new --no-hooks` internally (`.dotfiles` `mbsync.nix`). This
 mirrors how `mbsync` is treated by `skill-email-sync`: `email-reindex` is **not** one of the five
 wrapper binaries, but it is a sanctioned, index-only, non-mutating operation — it touches no
 maildir/IMAP mail, only the local search index. It is therefore exempt from the "never call raw
@@ -651,7 +651,7 @@ notmuch" prohibition below, exactly as the group-scoped `mbsync` reconcile is.
   classification (`folder:Gmail` / `folder:Logos`, which this skill uses) is made current;
   tag-based views may lag until a later full `notmuch new` runs. This is acceptable for the
   sweep, which is folder-scoped.
-- `email-reindex` also writes the reindex-ran marker (task 827) that `email-census` surfaces as
+- `email-reindex` also writes the reindex-ran marker that `email-census` surfaces as
   `reindex=<ISO|never>`, so a subsequent census run can tell "reindex just ran" from "reindex
   never attempted."
 
