@@ -1990,7 +1990,7 @@
     {
       "project_number": 940,
       "project_name": "summary_metadata_header_compliance",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Make implementation summaries emit the required metadata header",
@@ -2006,9 +2006,15 @@
         939
       ],
       "created": "2026-07-28T15:12:06Z",
-      "last_updated": "2026-07-28T15:12:06Z",
-      "session_id": null,
-      "artifacts": []
+      "last_updated": "2026-07-28T16:20:52Z",
+      "session_id": "sess_1785251682_61201e_940",
+      "artifacts": [
+        {
+          "path": "specs/940_summary_metadata_header_compliance/reports/01_summary-metadata-header-compliance.md",
+          "type": "report",
+          "summary": "Root-cause analysis of summary metadata header non-compliance and enforcement-posture options."
+        }
+      ]
     },
     {
       "project_number": 941,

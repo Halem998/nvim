@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "session_id": "sess_1785251682_61201e_940",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 940,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/940_summary_metadata_header_compliance/reports/01_summary-metadata-header-compliance.md",
+      "summary": "Empirically establishes the root cause of missing summary metadata headers: general-implementation-agent.md's own Stage 6 inline template has never matched summary-format.md, and this conflicting template wins over two already-standing, already-ignored advisory checks (Stage 4b format injection, and a real-time PostToolUse hook). Also finds a broken validate-artifact.sh --fix anchor bug (reproduced live) and a hard-mode postflight-validation asymmetry, then recommends a non-blocking-but-effective enforcement posture with justification."
+    }
+  ],
+  "findings_count": 6,
+  "memory_candidates": [
+    {
+      "content": "In this agent system, an implementation/research agent's own concrete inline writing-stage template (e.g. 'Stage 6: Create X' with a literal skeleton) silently wins over an earlier cross-referenced or even freshly-injected format spec in the same prompt, when the two conflict. Advisory format-compliance checks (postflight validators, PostToolUse hooks) can be already-standing and already-firing on 100% of runs and still fail to produce compliance, because nothing tells the agent to reconcile a concrete in-procedure template against separately-injected reference prose. When diagnosing a 'validator keeps failing' defect, check the writing agent's own inline template FIRST, before assuming the reference doc is unread or a validator is missing.",
+      "category": "PATTERN",
+      "source_artifact": "specs/940_summary_metadata_header_compliance/reports/01_summary-metadata-header-compliance.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["advisory-check-desensitization", "inline-template-conflict", "validate-artifact", "summary-format", "agent-contract-drift"]
+    },
+    {
+      "content": "scripts/validate-artifact.sh's --fix auto-repair anchors on the last line matching '^- \\*\\*' (a bulleted bold-text line) to insert missing metadata fields after. Real summary artifacts use bare '**Field**:' lines with no leading bullet, so this anchor search instead matches an unrelated bold bullet elsewhere in the document (e.g. in a 'What Changed' or 'Verification' section) and the subsequent multi-line sed -i insertion can crash under set -euo pipefail on ordinary prose (e.g. an em dash), aborting before the script's own [PASS]/[FAIL] summary prints. --fix should not be trusted as a safety net for summary artifacts until this anchor/escaping logic is corrected.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/940_summary_metadata_header_compliance/reports/01_summary-metadata-header-compliance.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["validate-artifact.sh", "--fix", "sed-escaping", "set -euo pipefail", "auto-repair-bug"]
+    }
+  ],
+  "next_steps": "Run /plan 940 to create implementation plan"
+}
