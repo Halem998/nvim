@@ -286,7 +286,7 @@ If metadata.phases_completed < plan [COMPLETED] count:
 ### Phase 1: Setup [COMPLETED]
 ```
 
-**Commit**: `task 100 phase 1: Setup`
+**Commit**: `task {N} phase 1: Setup`
 
 ### Step 3: Execute Phase 2
 
@@ -302,7 +302,7 @@ If metadata.phases_completed < plan [COMPLETED] count:
 ### Phase 2: Core Work [COMPLETED]
 ```
 
-**Commit**: `task 100 phase 2: Core Work`
+**Commit**: `task {N} phase 2: Core Work`
 
 ### Step 4: Complete Implementation
 
@@ -311,7 +311,7 @@ If metadata.phases_completed < plan [COMPLETED] count:
 - TODO.md: `[COMPLETED]`
 - New file: `summaries/implementation-summary-YYYYMMDD.md`
 
-**Final commit**: `task 100: finalize implementation and create summary`
+**Final commit**: `task {N}: finalize implementation and create summary`
 
 ## Troubleshooting Guide
 

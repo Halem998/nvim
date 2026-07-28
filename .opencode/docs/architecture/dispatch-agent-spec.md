@@ -1,6 +1,6 @@
 # dispatch_agent() Function Specification
 
-**Status**: Current architecture — designed by Task 592, implemented by Task 596.
+**Status**: Current architecture.
 
 **File location**: `.opencode/scripts/dispatch-agent.sh`
 **Sourced by**: `.opencode/skills/skill-orchestrate/SKILL.md`
@@ -92,7 +92,7 @@ invoke_named_agent() {
 
 ### Why `is_blocker_escalation` (not cache TTL)
 
-The task 591 seed research suggested a `context_is_warm()` function based on 5-minute cache TTL:
+Seed research suggested a `context_is_warm()` function based on 5-minute cache TTL:
 ```bash
 context_is_warm() {
   local last_dispatch_time="$1"

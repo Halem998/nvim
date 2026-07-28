@@ -946,13 +946,13 @@ Memory vault distillation: scoring, health reporting, and maintenance operations
 
 | Sub-Mode | Description | Status |
 |----------|-------------|--------|
-| `report` | Generate health report with scoring | Available (task 449) |
-| `purge` | Tombstone stale/zero-retrieval memories | Available (task 450) |
-| `merge` | Combine memories with duplicate score > 0.6 | Available (task 451) |
-| `compress` | Summarize memories with size penalty > 0.5 | Available (task 452) |
-| `refine` | Improve memory quality (keywords, tags) | Available (task 452) |
-| `gc` | Hard-delete tombstoned memories past grace period | Available (task 450) |
-| `auto` | Automated distillation (Tier 1 refine only) | Available (task 452) |
+| `report` | Generate health report with scoring | Available |
+| `purge` | Tombstone stale/zero-retrieval memories | Available |
+| `merge` | Combine memories with duplicate score > 0.6 | Available |
+| `compress` | Summarize memories with size penalty > 0.5 | Available |
+| `refine` | Improve memory quality (keywords, tags) | Available |
+| `gc` | Hard-delete tombstoned memories past grace period | Available |
+| `auto` | Automated distillation (Tier 1 refine only) | Available |
 
 All sub-modes are now available. No placeholder responses needed.
 
@@ -1360,7 +1360,7 @@ Do NOT delete the file.
 Do NOT remove from index (index regeneration will include tombstone status).
 ```
 
-The tombstone fields are identical to those used by the purge sub-mode (task 450):
+The tombstone fields are identical to those used by the purge sub-mode:
 - `status: tombstoned`
 - `tombstoned_at: {ISO8601 date}`
 - `tombstone_reason: "{reason}"` -- for merge, reason is `"merged_into:{primary_id}"`

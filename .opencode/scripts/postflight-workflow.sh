@@ -22,7 +22,7 @@
 # See: .opencode/context/patterns/jq-escaping-workarounds.md
 #
 # Downstream dependencies:
-#   Task 594 (skill-base.sh) may call this script.
+#   skill-base.sh may call this script.
 #   postflight-research.sh, postflight-plan.sh, postflight-implement.sh are now thin wrappers.
 
 set -e

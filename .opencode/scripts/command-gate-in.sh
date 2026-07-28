@@ -18,14 +18,14 @@
 #   TASK_STATUS   — Current task status from state.json
 #   PROJECT_NAME  — Project slug from state.json
 #   DESCRIPTION   — Task description from state.json
-#   PADDED_NUM    — Zero-padded task number (e.g., "007" for task 7)
+#   PADDED_NUM    — Zero-padded task number (e.g., "007" for task {N})
 #
 # Exit Codes:
 #   0   — Success; all exports set
 #   1   — Task not found or terminal status
 #
 # Downstream dependencies:
-#   Task 594 (skill-base.sh) will source this script.
+#   skill-base.sh will source this script.
 
 gate_in() {
   local task_number="$1"

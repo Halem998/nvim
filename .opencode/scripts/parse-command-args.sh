@@ -24,8 +24,8 @@
 # Note: Team mode requires OPENCODE_EXPERIMENTAL_AGENT_TEAMS=1 environment variable.
 #
 # Downstream dependencies:
-#   Task 594 (skill-base.sh) will source this script.
-#   Task 595 (multi-task dispatch extraction) relies on TASK_NUMBERS and REMAINING_ARGS.
+#   skill-base.sh will source this script.
+#   Multi-task dispatch extraction relies on TASK_NUMBERS and REMAINING_ARGS.
 
 parse_command_args() {
   local args="$1"

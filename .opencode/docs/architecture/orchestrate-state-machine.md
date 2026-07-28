@@ -1,6 +1,6 @@
 # /orchestrate State Machine Specification
 
-**Status**: Current architecture — designed by Task 592, implemented by Task 596.
+**Status**: Current architecture.
 
 **See Also**: `architecture-spec.md` (Component 3), `dispatch-agent-spec.md`, `handoff-schema.md`
 
@@ -179,7 +179,7 @@ Cycle 3: status=planned → dispatch implement (orchestrator_mode=true)
          handoff: {status: "implemented", summary: "All 4 phases complete..."}
          state.json: status → completed
 
-EXIT: Task 593 completed successfully.
+EXIT: Task {N} completed successfully.
 ```
 
 ### Partial Recovery Flow
@@ -202,7 +202,7 @@ Cycle 2: read continuation_context from handoff
          (orchestrator_mode=true preserved in continuation_context)
          handoff: {status: "implemented", ...}
 
-EXIT: Task 593 completed successfully.
+EXIT: Task {N} completed successfully.
 ```
 
 ### Blocker Escalation Flow
@@ -231,5 +231,5 @@ Cycle 2: BLOCKER ESCALATION
   Step 5: re-dispatch implement (orchestrator_mode=true)
           handoff: {status: "implemented", ...}
 
-EXIT: Task 593 completed successfully.
+EXIT: Task {N} completed successfully.
 ```

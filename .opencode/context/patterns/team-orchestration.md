@@ -263,7 +263,7 @@ For context budget limits and synthesis delegation guidance (forking a dedicated
 
 ## Future Work (Tier 3)
 
-The following improvements were identified during task 607 research but deferred due to higher implementation risk or need for measurement data:
+The following improvements were identified during research but deferred due to higher implementation risk or need for measurement data:
 
 - **Domain-specialized teammate roles**: Extension manifests define specialized roles (e.g., lean-tactic-hunter, lean-library-scout) instead of generic Primary/Alternatives
 - **Team profiles**: Named configurations in `.opencode/context/team-profiles/` (default.json, exploit.json, explore.json, lean-proof.json) auto-selected by task type

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Documentation Validation Script
-# Task 179 - Validates .opencode/ documentation integrity
+# Validates .opencode/ documentation integrity
 
 set -e
 

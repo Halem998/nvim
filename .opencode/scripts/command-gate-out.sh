@@ -20,7 +20,7 @@
 #   1 — Fatal error (state.json missing)
 #
 # Downstream dependencies:
-#   Task 594 (skill-base.sh) may call this script.
+#   skill-base.sh may call this script.
 
 set -e
 

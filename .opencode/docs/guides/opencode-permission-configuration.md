@@ -68,7 +68,7 @@ Defined in the project root `opencode.json` using JSON with per-tool permission 
 
 **Role**: Runtime tool gating. Controls whether operations trigger permission prompts at execution time. The `external_directory` permission is the key mechanism for workspace boundary enforcement.
 
-**Configuration**: The authoritative `opencode.json` was created and configured by task 543. Refer to that task's artifacts for structural details of the permission block.
+**Configuration**: The authoritative `opencode.json` was created and configured as part of the OpenCode permission-configuration work. Refer to that work's artifacts for structural details of the permission block.
 
 ### How They Interact
 
@@ -221,7 +221,7 @@ grep -r 'specs/tmp/' .opencode/hooks/*.sh .claude/hooks/*.sh
 ## References
 
 - [permission-configuration.md](permission-configuration.md) — Claude Code frontmatter permission system (agent-level file and command access)
-- Task 543's `opencode.json` — Authoritative source for the current OpenCode permission block configuration
+- `opencode.json` — Authoritative source for the current OpenCode permission block configuration
 - [OpenCode configuration schema](https://opencode.ai/config.json) — Official JSON schema for `opencode.json`
 - [OpenCode permissions documentation](https://opencode.ai/docs/permissions/) — Official documentation on permission system behavior
 - `<leader>ao` extension picker — Load extensions (including memory extension) for additional capability

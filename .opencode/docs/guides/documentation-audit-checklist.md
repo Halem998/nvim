@@ -1,7 +1,7 @@
 # Documentation Audit Checklist
 
 **Version**: 1.0  
-**Created**: Task 179 - Documentation Review  
+**Created**: Documentation Review  
 **Purpose**: Comprehensive checklist for auditing .opencode/ documentation quality
 
 ---
@@ -207,7 +207,7 @@
 
 **Examples**:
 - ✅ Directory: `specs/017_slug/`
-- ✅ Text: `task 17`
+- ✅ Text: `task 17` <!-- task-ref-ok illustrative rendering of the {N} placeholder convention -->
 - ❌ Directory: `specs/17_slug/`
 
 ---
@@ -226,7 +226,7 @@
 ### 14. Audit Checklist
 
 - [ ] File exists: `.opencode/docs/guides/documentation-audit-checklist.md` (this file)
-- [ ] Covers all 18 issues from Task 179 research
+- [ ] Covers all 18 issues from the documentation review research
 - [ ] Status tracking is current
 - [ ] Checklist is complete (all 18 items)
 
@@ -277,7 +277,7 @@
 
 ## References
 
-- **Task 179 Research**: `specs/179_review_opencode_agent_system_documentation/reports/research-001.md`
+- **Documentation Review Research**: `specs/179_review_opencode_agent_system_documentation/reports/research-001.md`
 - **Maintenance Guide**: `.opencode/docs/guides/documentation-maintenance.md`
 - **Validation Script**: `.opencode/scripts/validate-docs.sh`
 

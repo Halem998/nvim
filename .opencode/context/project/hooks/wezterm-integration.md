@@ -62,7 +62,7 @@ Parses `CLAUDE_USER_PROMPT` environment variable for workflow patterns:
 - `/implement N`
 - `/revise N`
 
-**Behavior** (task 795):
+**Behavior**:
 - **Workflow command**: Sets `TASK_NUMBER` user variable to N
 - **Non-workflow command**: Clears `TASK_NUMBER` user variable
 - **Claude output**: No change (preserves current state - no hook fires)
@@ -207,7 +207,7 @@ When OpenCode runs inside Neovim (via claude-code.nvim), the Neovim autocmds in 
   - **Shell hook**: Handles set/clear logic on `UserPromptSubmit` (workflow vs non-workflow)
   - **Neovim monitor**: Only clears TASK_NUMBER when Claude terminal closes
 
-This separation (task 795) ensures:
+This separation ensures:
 1. Task numbers persist during Claude's responses (no buffer monitoring)
 2. Task numbers clear correctly on non-workflow commands (shell hook handles)
 3. Task numbers clear when terminal closes (Neovim autocmd handles)

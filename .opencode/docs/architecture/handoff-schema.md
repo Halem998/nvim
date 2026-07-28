@@ -1,6 +1,6 @@
 # Orchestrator Handoff JSON Schema
 
-**Status**: Current architecture — designed by Task 592, implemented by Task 596.
+**Status**: Current architecture.
 
 **File location**: `specs/{NNN}_{SLUG}/.orchestrator-handoff.json` (runtime; not checked in)
 **Written by**: Skills when `orchestrator_mode: true` in delegation context

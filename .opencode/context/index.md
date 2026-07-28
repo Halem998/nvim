@@ -2,7 +2,7 @@
 
 **Version**: 5.0
 **Created**: 2025-12-23
-**Updated**: 2026-02-28 (Task 167 - Feature Parity with OpenCode)
+**Updated**: 2026-02-28 (Feature Parity with OpenCode)
 **Purpose**: Quick reference map for on-demand context loading following checkpoint-based execution
 
 ---
@@ -556,7 +556,7 @@ Load for: /meta command and meta-builder-agent workflows
 
 **When to Load**: Only when executing /meta command via meta-builder-agent
 
-**Note**: /meta now uses the skill-meta -> meta-builder-agent delegation pattern (Task 429, 2026-01-12)
+**Note**: /meta now uses the skill-meta -> meta-builder-agent delegation pattern (as of 2026-01-12)
 
 **Component Development Guides** (docs/guides/):
 - **component-selection.md** - Decision tree for what to create (command vs skill vs agent)
@@ -644,7 +644,7 @@ Quick reference:
 
 ---
 
-## Context Budget Targets (Task 246 Goals)
+## Context Budget Targets
 
 - **Routing**: <10% context window (Stages 1-3, no context loading)
 - **Execution**: 90% context window available (Stage 4+, selective loading)
@@ -652,7 +652,7 @@ Quick reference:
 
 ---
 
-## Consolidation Summary (Task 246 Phase 3)
+## Consolidation Summary
 
 **Completed**:
 - ✓ Delegation files merged: 1,003 → 510 lines (50% reduction)
@@ -670,7 +670,7 @@ Quick reference:
 
 ---
 
-## Migration Notes (Task 240 + Task 246)
+## Migration Notes
 
 **Phase 1 (Complete)**: Index pattern established, /research migrated to frontmatter
 **Phase 2 (Complete)**: All commands migrate to frontmatter, orchestrator simplified

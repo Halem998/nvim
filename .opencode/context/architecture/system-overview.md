@@ -44,7 +44,7 @@ The agent system implements a three-layer delegation pattern separating concerns
 
 ## Shared Command Infrastructure
 
-The unified workflow refactor (tasks 593-599) introduced shared scripts that eliminate duplicated gate logic across commands. Commands dropped from ~400-500 lines to ~200 lines each.
+The unified workflow refactor introduced shared scripts that eliminate duplicated gate logic across commands. Commands dropped from ~400-500 lines to ~200 lines each.
 
 ### Shared Gate Scripts
 
@@ -354,7 +354,7 @@ All hooks are:
 
 ## Context Budget System
 
-Context files use a 4-tier progressive disclosure system (task 598) to control agent context loading:
+Context files use a 4-tier progressive disclosure system to control agent context loading:
 
 | Tier | When Loaded | Typical Size |
 |------|-------------|-------------|
