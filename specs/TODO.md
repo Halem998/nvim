@@ -33,7 +33,7 @@ next_project_number: 957
 
 ### Orchestration Concurrency
 
-942 [RESEARCHED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+942 [PLANNED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 944 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
     └─ 945 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
       └─ 946 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
@@ -508,7 +508,7 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 ---
 
 ### 942. Serialize every specs/state.json writer through one mutex-guarded helper
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: None

@@ -2081,7 +2081,7 @@
     {
       "project_number": 942,
       "project_name": "serialize_state_json_writers",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "title": "Serialize every specs/state.json writer through one mutex-guarded helper",
@@ -2110,11 +2110,16 @@
           "path": "specs/942_serialize_state_json_writers/reports/01_serialize-state-json-writers.md",
           "type": "research",
           "summary": "Re-measured all nine state.json writers plus the two inline command-file writes against the source store; confirmed the fail-open mutex, shared-temp-path, task-lock.sh release-ownership, generate-todo torn-view, and workflow-active singleton defects. Found two additional defects beyond the baseline (archive-task.sh/review.md temp-path collision; two non-atomic Python3 in-place write sites in orchestrator-postflight.sh/skill-base.sh) and verified the release ownership check is safe to add against all 5 current callers. Recommends a standalone state-write.sh script, conversion order, and a concurrency test plan mirroring test-task-lock-reap.sh."
+        },
+        {
+          "path": "specs/942_serialize_state_json_writers/plans/01_serialize-state-json-writers.md",
+          "type": "plan",
+          "summary": "serialize state json writers (backfilled by --sync)"
         }
       ],
       "created": "2026-07-28T17:22:36Z",
-      "last_updated": "2026-07-28T22:03:45Z",
-      "session_id": "sess_1785275452_7b73c2_942",
+      "last_updated": "2026-07-28T22:20:57Z",
+      "session_id": "sess_1785276838_86f66c",
       "next_artifact_number": 2,
       "memory_candidates": [
         {
