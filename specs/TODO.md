@@ -11,17 +11,15 @@ next_project_number: 938
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 934 | -- | agent-system |
-| 2 | 935 | 934 | agent-system |
-| 3 | 937 | 935 | agent-system |
+| 1 | 935 | -- | agent-system |
+| 2 | 937 | 935 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-934 [IMPLEMENTING] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-  └─ 935 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-    └─ 937 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+935 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+  └─ 937 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ## Tasks
 
@@ -162,12 +160,13 @@ EXECUTION NOTE: this task's own file_scope names orchestrator-critical paths, so
 ---
 
 ### 934. Inter-wave redeploy checkpoint via the existing headless deploy path
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 932, Task 933, Task 936
 - **Research**: [934_inter_wave_redeploy_checkpoint/reports/01_inter-wave-redeploy-checkpoint-design.md]
 - **Plan**: [934_inter_wave_redeploy_checkpoint/plans/01_inter-cycle-redeploy-checkpoint.md]
+- **Summary**: [934_inter_wave_redeploy_checkpoint/summaries/01_inter-cycle-redeploy-checkpoint-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 

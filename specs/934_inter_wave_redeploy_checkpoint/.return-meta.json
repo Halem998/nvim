@@ -16,9 +16,15 @@
     "session_id": "sess_1785243932_153aa6",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
-    "phases_total": 7
+    "phases_total": 7,
+    "cycles_used": 3,
+    "final_state": "completed"
   },
   "completion_data": {
     "completion_summary": "Implemented the inter-cycle redeploy checkpoint across all seven phases: rewrote hazard 3 as partially retired with its replacement exposure named, added an additive automated-exception carve-out to regeneration-is-manual-only.md, hardened deploy-headless.sh with a confirmed-necessary self-overwrite fix and a fail-open specs/.deploy-lock/ mutex (both live-verified against this exact self-hosting repo), documented verify-deploy.sh's exit-2-is-failure contract, wired a new Stage MT-3 step 7 plus threaded deferred_deploy_checkpoint/deployed_critical_paths through skill-orchestrate/SKILL.md, cross-referenced the whole contract from commands/orchestrate.md, and ran a full cross-document consistency and doc-lint gate (which now passes after a deliberate redeploy)."
@@ -39,14 +45,27 @@
       "category": "PATTERN",
       "source_artifact": "specs/934_inter_wave_redeploy_checkpoint/summaries/01_inter-cycle-redeploy-checkpoint-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["skill-orchestrate", "mt_state_file", "deferral-set", "convergence", "eligible_tasks", "defer-not-fail"]
+      "suggested_keywords": [
+        "skill-orchestrate",
+        "mt_state_file",
+        "deferral-set",
+        "convergence",
+        "eligible_tasks",
+        "defer-not-fail"
+      ]
     },
     {
       "content": "Before hardening a bash script for automated self-invocation from inside the same repo it modifies, confirm the target sync/write mechanism's actual write mode (truncate-in-place vs. write-temp-then-rename) rather than assuming. Neovim's vim.fn.writefile() truncates in place ('An existing file is overwritten, if possible' per its own docs) with no atomic rename. A bash script executed as `bash path/to/script.sh` reads the file incrementally by byte offset; if that same script is the deploy target and TARGET defaults to the current repo, the deploy will overwrite the very file bash is mid-execution-reading, corrupting subsequent reads. The fix: wrap the entire executable body in a single function (e.g. main()) defined in full before any of it runs, invoked as the file's last physical line with nothing after it -- this forces bash to fully parse the function body before execution starts, so a later mid-execution overwrite of the on-disk file cannot corrupt already-parsed control flow. Verified live: the pre-fix script crashed with a bash parse error when self-invoked against its own repo; the post-fix script completed cleanly in the identical scenario.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/934_inter_wave_redeploy_checkpoint/summaries/01_inter-cycle-redeploy-checkpoint-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["self-overwrite-hazard", "bash-script-safety", "writefile", "main-function-wrapping", "self-hosting-deploy"]
+      "suggested_keywords": [
+        "self-overwrite-hazard",
+        "bash-script-safety",
+        "writefile",
+        "main-function-wrapping",
+        "self-hosting-deploy"
+      ]
     }
   ]
 }

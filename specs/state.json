@@ -1750,7 +1750,7 @@
     {
       "project_number": 934,
       "project_name": "inter_wave_redeploy_checkpoint",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Inter-wave redeploy checkpoint via the existing headless deploy path",
@@ -1769,7 +1769,7 @@
         936
       ],
       "created": "2026-07-27T20:34:52Z",
-      "last_updated": "2026-07-28T13:20:26Z",
+      "last_updated": "2026-07-28T13:37:46Z",
       "session_id": "sess_1785243932_153aa6",
       "artifacts": [
         {
@@ -1781,8 +1781,14 @@
           "path": "specs/934_inter_wave_redeploy_checkpoint/plans/01_inter-cycle-redeploy-checkpoint.md",
           "type": "plan",
           "summary": "Seven-phase plan adding an evidence-gated inter-cycle redeploy checkpoint"
+        },
+        {
+          "path": "specs/934_inter_wave_redeploy_checkpoint/summaries/01_inter-cycle-redeploy-checkpoint-summary.md",
+          "type": "summary",
+          "summary": "Inter-cycle redeploy checkpoint implementation summary"
         }
-      ]
+      ],
+      "completion_summary": "Implemented the inter-cycle redeploy checkpoint across all seven phases: rewrote hazard 3 as partially retired with its replacement exposure named, added an additive automated-exception carve-out to regeneration-is-manual-only.md, hardened deploy-headless.sh with a confirmed-necessary self-overwrite fix and a fail-open specs/.deploy-lock/ mutex (both live-verified against this exact self-hosting repo), documented verify-deploy.sh's exit-2-is-failure contract, wired a new Stage MT-3 step 7 plus threaded deferred_deploy_checkpoint/deployed_critical_paths through skill-orchestrate/SKILL.md, cross-referenced the whole contract from commands/orchestrate.md, and ran a full cross-document consistency and doc-lint gate (which now passes after a deliberate redeploy)."
     },
     {
       "project_number": 935,
