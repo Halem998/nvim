@@ -1,7 +1,7 @@
 # Implementation Plan: Task #934
 
 - **Task**: 934 - Inter-wave redeploy checkpoint via the existing headless deploy path
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: 932 (completed), 933 (completed), 936 (completed)
 - **Research Inputs**: specs/934_inter_wave_redeploy_checkpoint/reports/01_inter-wave-redeploy-checkpoint-design.md
@@ -547,36 +547,36 @@ hits by heading rather than line number.
 
 ---
 
-### Phase 7: Cross-document consistency and full gate [NOT STARTED]
+### Phase 7: Cross-document consistency and full gate [COMPLETED]
 
 **Goal**: Verify the six edited files agree with each other and with the two files deliberately
 left unedited, and run the repository's full gate set.
 
 **Tasks**:
 
-- [ ] **Verify the hard-mode inheritance claim rather than assuming it**: grep
+- [x] **Verify the hard-mode inheritance claim rather than assuming it**: grep *(completed: confirmed present, unchanged — `skill-orchestrate-hard/SKILL.md` Stage 0 line 90-91 reads "Same as base `skill-orchestrate`. Parse `multi_task_mode`. If true, use base multi-task stages..." — the checkpoint is inherited with no edit required; file was NOT touched)*
       `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md` Stage 0 for the
       multi-task delegation-by-reference sentence ("use base multi-task stages" or equivalent).
       If present, record that the checkpoint is inherited with no edit required. **If absent or
       changed, do not edit the file** — record it as a discovered divergence requiring a follow-up
       task, since that file is outside the declared file scope and is itself an orchestrator-critical
       path.
-- [ ] **Contract-consistency sweep**: confirm the trigger, failure contract, sequencing, and
+- [x] **Contract-consistency sweep**: confirm the trigger, failure contract, sequencing, and *(completed: verified — the full contract lives only in `batch-orchestration-guardrails.md`'s new subsection; all five other files cross-reference it by path/heading, no restatement found)*
       idempotence guard are stated **once** (in the guardrails subsection) and referenced — not
       restated — by `regeneration-is-manual-only.md`, `skill-orchestrate/SKILL.md`,
       `commands/orchestrate.md`, `deploy-headless.sh`, and `verify-deploy.sh`. Any second statement
       of the contract is drift waiting to happen and must be collapsed to a cross-reference.
-- [ ] **Terminology sweep**: confirm every file uses `deferred_deploy_checkpoint` and
+- [x] **Terminology sweep**: confirm every file uses `deferred_deploy_checkpoint` and *(completed: 15 verbatim hits for `deferred_deploy_checkpoint`, 4 for `deployed_critical_paths`, zero spelling variants, `deferred_self_modifying` never reused for checkpoint deferrals)*
       `deployed_critical_paths` verbatim, with no spelling variants, and that
       `deferred_self_modifying` is never reused for checkpoint deferrals.
-- [ ] **Source-store boundary check**: confirm `git status --short` shows no modifications under
+- [x] **Source-store boundary check**: confirm `git status --short` shows no modifications under *(completed: confirmed, zero `.claude/` modifications throughout)*
       `.claude/` — every edit landed under `agent-system/extensions/core/`.
-- [ ] **No-task-references check**: grep all six edited files for `task [0-9]`, `tasks [0-9]`, and
+- [x] **No-task-references check**: grep all six edited files for `task [0-9]`, `tasks [0-9]`, and *(completed: 2 PRE-EXISTING hits found — `skill-orchestrate/SKILL.md:144` "task 808" and `commands/orchestrate.md:217` "task 785 and task 787" — both predate this task's changes (confirmed via `git diff HEAD~4`), neither introduced by phases 1-6; recorded here as a discovered pre-existing rule violation, out of this task's declared scope to fix)*
       `(task ` and confirm zero hits.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` (doc-lint gate) and
+- [x] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` (doc-lint gate) and *(completed: the source-store copy self-refuses to run outside a deployed tree by design (`must run from a deployed scripts/ tree`); ran the deployed equivalent `bash .claude/scripts/check-extension-docs.sh` instead. Initially FAILed with exactly 2 issues — `deployed script content drift` on `deploy-headless.sh` and `verify-deploy.sh`, the expected bootstrapping-circularity artifact of editing the source store without redeploying (per this plan's own Rollback/Contingency). Resolved by a deliberate `bash .claude/scripts/deploy-headless.sh` redeploy (which also live-exercised the Phase 3 self-overwrite fix and mutex against this exact self-hosting repo) followed by `verify-deploy.sh`; doc-lint now exits 0 — "PASS: all extensions OK")*
       confirm it exits zero, or that any failure predates this task's changes.
-- [ ] Run `bash -n` over both edited shell scripts.
-- [ ] Run `bash .claude/scripts/validate-artifact.sh` against this plan if the helper is available,
+- [x] Run `bash -n` over both edited shell scripts. *(completed: both parse clean, source-store and post-redeploy deployed copies alike)*
+- [x] Run `bash .claude/scripts/validate-artifact.sh` against this plan if the helper is available, *(completed: available; ran `validate-artifact.sh <this plan> plan` — "[PASS] plan artifact is valid (0 warning(s))")*
       confirming per-phase Verification Tier fields are present.
 
 **Timing**: 0.75 hours
@@ -600,23 +600,23 @@ left unedited, and run the repository's full gate set.
 
 ## Testing & Validation
 
-- [ ] `bash -n` parses both `deploy-headless.sh` and `verify-deploy.sh` clean.
-- [ ] `deploy-headless.sh --dry-run` exits 0, writes nothing, reports mutex state, and leaves no
+- [x] `bash -n` parses both `deploy-headless.sh` and `verify-deploy.sh` clean.
+- [x] `deploy-headless.sh --dry-run` exits 0, writes nothing, reports mutex state, and leaves no
       `specs/.deploy-lock/` behind.
-- [ ] With `specs/.deploy-lock/` pre-created, `deploy-headless.sh --dry-run` emits the fail-open
+- [x] With `specs/.deploy-lock/` pre-created, `deploy-headless.sh --dry-run` emits the fail-open
       warning and does not block.
-- [ ] `verify-deploy.sh --quiet` exit code is unchanged from the pre-edit baseline for the same
-      tree state.
-- [ ] `check-extension-docs.sh` exits zero.
-- [ ] `deferred_deploy_checkpoint` appears at every control-flow site in
+- [x] `verify-deploy.sh --quiet` exit code is unchanged from the pre-edit baseline for the same
+      tree state. *(1, unchanged — confirmed identical output too)*
+- [x] `check-extension-docs.sh` exits zero. *(after a deliberate redeploy per Rollback/Contingency — see Phase 7 notes above)*
+- [x] `deferred_deploy_checkpoint` appears at every control-flow site in
       `skill-orchestrate/SKILL.md` where `deferred_self_modifying` appears in a control-flow role.
-- [ ] Stage MT-3 step 7 is positioned after step 6 and before the `### Stage MT-4` heading.
-- [ ] Hazard 3 in the guardrails doc reads as partially retired, names both residual forms, and
+- [x] Stage MT-3 step 7 is positioned after step 6 and before the `### Stage MT-4` heading.
+- [x] Hazard 3 in the guardrails doc reads as partially retired, names both residual forms, and
       names the replacement exposure as a mid-session manifestation of hazard 1.
-- [ ] `regeneration-is-manual-only.md`'s "never as a silent side effect of an unrelated operation"
+- [x] `regeneration-is-manual-only.md`'s "never as a silent side effect of an unrelated operation"
       sentence is unmodified in the diff.
-- [ ] No file under `.claude/` is modified.
-- [ ] No task-number citations in any edited file.
+- [x] No file under `.claude/` is modified. *(source-store commits only; the deliberate Phase 7 redeploy is a separate, gitignored `.claude/` tree regeneration, not a source-store edit)*
+- [x] No task-number citations in any edited file. *(2 pre-existing hits found, both predating this task — see Phase 7 notes)*
 
 ## Artifacts & Outputs
 
