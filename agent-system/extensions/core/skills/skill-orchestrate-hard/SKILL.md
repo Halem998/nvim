@@ -1208,6 +1208,73 @@ rm -f "$churn_file"
 Same as base `skill-orchestrate` multi-task stages (MT-1 through MT-5). Hard-mode applies
 to each individual task in the wave — they each use the per-phase dispatch H1 loop above.
 
+**Why this section transcribes rather than merely points**: the two-sentence pointer above
+already nominally covered the self-modification admission gate and the inter-cycle redeploy
+checkpoint, and a repo-wide grep for `batch-admit` against this file found ZERO references —
+direct evidence that a bare "same as base" pointer does not reliably carry a mechanism forward
+into a full structural variant. Strengthening the pointer's wording would repeat exactly the
+failure class this task found, so the two mechanisms below are transcribed explicitly instead,
+matching this file's own stated design philosophy of being a full structural variant of
+`skill-orchestrate`, not a thin wrapper around it.
+
+**Transcribed: self-modification / cross-batch admission gate** (mirrors
+`skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 — **CO-MAINTENANCE**: an edit to either copy
+REQUIRES the same edit to the other; the two MUST always agree). Before dispatching
+`eligible_tasks` on every cycle, call the admission script with the NARROWED co-dispatch count:
+
+```bash
+bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#eligible_tasks[@]}" "${eligible_tasks[@]}"
+```
+
+`jq`-filter stdout for `.decision == "defer"`, then branch on `defer_reason` FIRST (schema v3 —
+every defer verdict carries this REQUIRED discriminator):
+
+- **`self_modifying`**: consumer-side override check first — if `allow_self_modifying == true`
+  for this invocation, do NOT act on the defer verdict; dispatch the candidate this cycle anyway
+  and log a loud, distinct bypass notice naming the matched `critical_path` and `critical_label`,
+  whether or not the gate would otherwise have fired. `orchestrate-batch-admit.sh` is NEVER
+  passed the flag — the bypass is a consumer-side decision only. Otherwise, remove the candidate
+  from this cycle's dispatch batch and append it to the `deferred_self_modifying` OBSERVATION LOG
+  (no longer an eligibility-exclusion set — the defer clears on its own once the co-dispatched
+  sibling leaves `eligible_tasks`); log a distinct warning naming the matched critical path,
+  label, and the co-dispatched sibling situation.
+- **`file_scope_collision`** (`in_batch` / `cross_batch`): unchanged from the base skill's
+  handling — defer the named task to a later cycle, never added to `failed_tasks`, never added to
+  `deferred_self_modifying`.
+- **Degradation path**: exit 2 from `orchestrate-batch-admit.sh` means state is unavailable; log
+  a loud warning and proceed without the check.
+
+The verdict schema itself is not restated here — see `docs/architecture/batch-admit-schema.md`.
+The overlap predicate is not restated here — see `context/patterns/file-footprint-overlap.md`.
+
+**Transcribed: inter-cycle redeploy checkpoint** (mirrors `skill-orchestrate/SKILL.md` Stage MT-3
+step 7 — **CO-MAINTENANCE**: an edit to either copy REQUIRES the same edit to the other; the two
+MUST always agree). After every dispatch cycle, once `cycle_count` increments: expand
+`context/reference/orchestrator-critical-paths.json` using the same `scope_roots x
+critical_paths` expression `orchestrate-batch-admit.sh` performs, intersect against this cycle's
+accumulated `cycle_modified_files` using the directory-prefix overlap predicate in
+`context/patterns/file-footprint-overlap.md`, and subtract already-deployed critical paths
+(`deployed_critical_paths`, the idempotence guard). If the remainder is non-empty, run, in order:
+
+```bash
+bash .claude/scripts/deploy-headless.sh
+```
+
+and, only on its success:
+
+```bash
+bash .claude/scripts/verify-deploy.sh
+```
+
+On success, record the matched paths into `deployed_critical_paths` and continue. On failure
+(`deploy-headless.sh` exit 1/2, or `verify-deploy.sh` exit 1/2 — exit 2 from `verify-deploy.sh` is
+a failure here, never a pass), log a loud warning naming which gate failed and add every
+non-terminal, non-failed task in `task_numbers` to `deferred_deploy_checkpoint`; never add to
+`failed_tasks`, never status-mutate, never abort the invocation. Full contract (rejected
+alternatives, sequencing guarantee, concurrency) is recorded once, authoritatively, in
+`context/patterns/batch-orchestration-guardrails.md`'s `### The Inter-Cycle Redeploy Checkpoint`
+subsection — referenced here, not restated in full.
+
 ---
 
 ## Key Differences from skill-orchestrate
