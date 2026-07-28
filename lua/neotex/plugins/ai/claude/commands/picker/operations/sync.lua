@@ -982,27 +982,40 @@ function M.scan_all_artifacts(global_dir, project_dir, config)
 
     local results = scan.scan_directory_for_sync(global_dir, project_dir, subdir, ext, recursive, exclude, base_dir, nil, source_base)
 
-    -- Allow-list post-filter: only keep files that appear in the core provides
+    -- Allow-list post-filter: only keep files that appear in the core provides.
+    --
+    -- Anchor invariant: the directory-name match below is built from `subdir` (the
+    -- directory actually passed to this scan), never from `filter_category` (the
+    -- logical category name). The two are equal at every call site except OpenCode
+    -- agents, where `agents_subdir` resolves to "agent/subagents" while
+    -- `filter_category` stays "agents" -- anchoring on `filter_category` there would
+    -- build a pattern that can never match the real path, silently dropping every
+    -- OpenCode agent (a new instance of the very defect this filter fixes). This
+    -- single rule replaces the former `filter_category == "context"` special case:
+    -- context's directory-shaped entries and skills' directory-shaped entries (the
+    -- prior mismatch: `provides.skills` names directories like "skill-orchestrate"
+    -- while every scanned file's basename is the literal "SKILL.md") are both
+    -- handled by extracting the first path segment after `subdir`. Flat categories
+    -- (agents, commands, rules, hooks, scripts) still match correctly because their
+    -- first path segment IS the basename when the file sits directly under `subdir`.
     if allow_list and filter_category and allow_list[filter_category] then
       local allowed = allow_list[filter_category]
       local filtered = {}
       for _, file_info in ipairs(results) do
-        -- For context, use prefix matching (context entries are directory names)
-        if filter_category == "context" then
-          local rel_name = file_info.name
-          -- Extract the top-level context subdirectory from the relative path
-          local rel_path = file_info.global_path:match("/context/(.+)$")
-          if rel_path then
-            local top_dir = rel_path:match("^([^/]+)")
-            if top_dir and allowed[top_dir] then
-              table.insert(filtered, file_info)
-            end
-          end
-        else
-          -- For other categories, check the filename directly
-          if allowed[file_info.name] then
-            table.insert(filtered, file_info)
-          end
+        local admitted = false
+        local rel_path = file_info.global_path:match("/" .. vim.pesc(subdir) .. "/(.+)$")
+        local top_dir = rel_path and rel_path:match("^([^/]+)")
+        if top_dir and allowed[top_dir] then
+          admitted = true
+        elseif not top_dir and allowed[file_info.name] then
+          -- Basename fallback: `subdir` did not appear in the scanned path (or
+          -- matched with no trailing segment). Degrades to the pre-generalization
+          -- behavior instead of silently wiping the category, so a future call
+          -- site whose path shape doesn't match this pattern still gets a chance.
+          admitted = true
+        end
+        if admitted then
+          table.insert(filtered, file_info)
         end
       end
       return filtered

@@ -251,38 +251,47 @@ numbers. Divergence widens Phase 3's test matrix; it does not by itself block th
 
 ---
 
-### Phase 3: Generalize the allow-list post-filter [NOT STARTED]
+### Phase 3: Generalize the allow-list post-filter [COMPLETED]
 
 **Goal**: Replace the `filter_category == "context"` special case with a single generalized
 directory-name rule anchored on the scanned `subdir`, with a basename fallback, so `skills`
 matches correctly and every other category's behavior is preserved (scope item B).
 
 **Tasks**:
-- [ ] In `sync_scan`'s allow-list post-filter, remove the `filter_category == "context"` branch
+- [x] In `sync_scan`'s allow-list post-filter, remove the `filter_category == "context"` branch
       and its `else` basename branch, replacing both with one rule: extract the relative path via
       `file_info.global_path:match("/" .. vim.pesc(subdir) .. "/(.+)$")`, take its first path
       segment as `top_dir`, and admit the file when `allowed[top_dir]` is set.
-- [ ] Add the basename fallback: when the match yields no `rel_path` (or no `top_dir`), fall back
+- [x] Add the basename fallback: when the match yields no `rel_path` (or no `top_dir`), fall back
       to the current `allowed[file_info.name]` check so a call site whose `subdir` does not appear
       in the path degrades to today's behavior instead of dropping everything.
-- [ ] Escape the interpolated `subdir` with `vim.pesc()` (it may contain `/` and must never be
+- [x] Escape the interpolated `subdir` with `vim.pesc()` (it may contain `/` and must never be
       interpreted as a Lua pattern).
-- [ ] Add a comment at the branch stating the anchor invariant explicitly: the pattern is built
+- [x] Add a comment at the branch stating the anchor invariant explicitly: the pattern is built
       from `subdir`, not `filter_category`, because they diverge for OpenCode agents
       (`agents_subdir == "agent/subagents"`), and the basename fallback exists so a future
       divergence degrades rather than silently wipes the category.
-- [ ] Keep the surrounding `if allow_list and filter_category and allow_list[filter_category]`
+- [x] Keep the surrounding `if allow_list and filter_category and allow_list[filter_category]`
       guard and the `return filtered` shape unchanged — the allow-list must not become a
-      pass-through.
-- [ ] Re-run the Phase 1 harness against the same scratch shape and confirm skills now pass.
-- [ ] Extend the harness with a `context`-shaped case (a nested `context/<dir>/file.md` plus a
-      flat `context/README.md` declared in `provides.context`) and confirm selection is unchanged
-      from the pre-fix behavior.
-- [ ] Extend the harness with a simulated OpenCode case (`config.agents_subdir =
+      pass-through. *(verified: an undeclared skill dir and an undeclared command file were added
+      to the Phase 3 harness scratch tree and confirmed excluded)*
+- [x] Re-run the Phase 1 harness against the same scratch shape and confirm skills now pass.
+      *(2 declared skills now pass, was 0; commands=1, agents=1 unchanged)*
+- [x] Extend the harness with a `context`-shaped case (a nested `context/<dir>/file.md` plus a
+      flat top-level file declared in `provides.context`) and confirm selection is unchanged
+      from the pre-fix behavior. *(2 files pass: 1 nested under a declared directory, 1 flat
+      top-level; an undeclared nested directory is excluded)*
+- [x] Extend the harness with a simulated OpenCode case (`config.agents_subdir =
       "agent/subagents"`, files under `agent/subagents/*.md`, `filter_category "agents"`) and
-      confirm agents still pass.
-- [ ] Honor Lua standards: 2-space indent, ~100-char lines, snake_case, no task-number references
+      confirm agents still pass. *(1 declared OpenCode agent passes)*
+- [x] Honor Lua standards: 2-space indent, ~100-char lines, snake_case, no task-number references
       in any file outside `specs/**`.
+
+**Verification results**: all three scratch-tree harness cases (`skills_and_flat_claude`,
+`context_selection_unchanged`, `opencode_agents_subdir_divergence`) pass. Module loads headless.
+`git diff --stat` confirms exactly one file modified under `lua/`:
+`lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua` (no `M.`-prefixed signature
+changed — `sync_scan` remains a file-local closure). `scan_spec.lua` still passes 19/19.
 
 **Timing**: 1 hour
 
