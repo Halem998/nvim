@@ -587,7 +587,7 @@ correctly excluded throughout.
 
 ---
 
-### Phase 6: Specify the `--revise` sub-mode [NOT STARTED]
+### Phase 6: Specify the `--revise` sub-mode [COMPLETED]
 
 **Goal**: Define memory refactoring as a first-class sub-mode inheriting the existing correlation
 machinery from `dream`'s first half, now additionally evidenced by OTel outcomes.
@@ -608,15 +608,24 @@ machinery from `dream`'s first half, now additionally evidenced by OTel outcomes
 
 **Tasks**:
 
-- [ ] Author the `--revise` section as deltas against the shared skeleton, stating its
-      candidate-identification logic, dry-run format, and log-entry shape.
-- [ ] Specify the OTel evidence join precisely: query `events.jsonl` for the sub-mode's candidate
+- [x] Author the `--revise` section as deltas against the shared skeleton, stating its
+      candidate-identification logic, dry-run format, and log-entry shape. *(completed: inserted
+      as `### Sub-Mode: revise` at line 1535, right after `auto` and before `dream`, reusing
+      dream's existing Event Ingestion/Correlation/Classification/Gate/Batch-Index-Regeneration
+      content in substance unchanged per the design decision, plus the new OTel join)*
+- [x] Specify the OTel evidence join precisely: query `events.jsonl` for the sub-mode's candidate
       events, read `cc_session_id`, and correlate to OTel outcome records for that session.
-- [ ] Specify the `detail` payload shape for an OTel-evidenced correlation event.
-- [ ] Specify both degraded paths with their exact announcement text.
-- [ ] Cite the guardrails file for the miss-rate expectation and the never-auto-apply rule rather
-      than restating them.
-- [ ] State the cross-repo invocation discipline for any `events-query.sh` call this sub-mode makes.
+      *(completed: "Candidate Identification: OTel Outcome Join (Tier 1, New)" subsection)*
+- [x] Specify the `detail` payload shape for an OTel-evidenced correlation event. *(completed:
+      `{"events_jsonl_event_id": ..., "gen_ai.usage.input_tokens": ..., "error.type": ...}`)*
+- [x] Specify both degraded paths with their exact announcement text. *(completed: "OTel not
+      enabled for this session..." and "No events captured yet in specs/events.jsonl..." both
+      with exact wording)*
+- [x] Cite the guardrails file for the miss-rate expectation and the never-auto-apply rule rather
+      than restating them. *(completed: cited in the section intro and at the Interactive
+      Selection MANDATORY STOP)*
+- [x] State the cross-repo invocation discipline for any `events-query.sh` call this sub-mode
+      makes. *(completed: chained relative form shown verbatim before the Event Ingestion calls)*
 
 **Timing**: 2 hours
 

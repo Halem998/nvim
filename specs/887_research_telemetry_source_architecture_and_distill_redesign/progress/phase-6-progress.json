@@ -1,0 +1,22 @@
+{
+  "phase": 6,
+  "phase_name": "Specify the --revise sub-mode",
+  "started_at": "2026-07-27T03:30:00Z",
+  "last_updated": "2026-07-27T04:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Author --revise section, reusing dream's revision-half content plus OTel join", "status": "done",
+      "files_touched": ["agent-system/extensions/memory/skills/skill-distill/SKILL.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "6.log-file",
+      "description": "Plan did not specify a log filename for --revise",
+      "type": "altered",
+      "reason": "Introduced .memory/revise-log.json (mirroring distill-log.json/dream-log.json shape) as a reasoned design decision, since dream-log.json is being repurposed for the redefined --dream in Phase 10 and reusing it would conflate two different operations' history",
+      "annotation": "recorded inline in the --revise Revise Log Schema subsection"
+    }
+  ],
+  "handoff_count": 0
+}
