@@ -2167,7 +2167,7 @@
     {
       "project_number": 943,
       "project_name": "session_scope_orchestration_metadata",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "title": "Session-scope batch-level orchestration metadata and verify session_id on read",
@@ -2197,7 +2197,7 @@
         }
       ],
       "created": "2026-07-28T17:22:36Z",
-      "last_updated": "2026-07-28T23:27:14Z",
+      "last_updated": "2026-07-28T23:47:01Z",
       "session_id": "sess_1785280916_d6cc03",
       "next_artifact_number": 2,
       "memory_candidates": [
@@ -2228,7 +2228,8 @@
             "source-store"
           ]
         }
-      ]
+      ],
+      "completion_summary": "Session-scoped specs/.orchestrator-multi-state.json and specs/.return-meta-multi.json with a {session_id} suffix at every writer/reader, added hard-fail read-time session_id verification for the multi-state file and observational-only tracking for the loop guard/churn state (preserving multi-turn /orchestrate resume), deleted dead handoff documentation, widened tracking/gitignore machinery, added an mtime-based reap script wired into /refresh Step 4.5, and proved all of it with a 6-case isolated-temp-root test suite. All 7 phases completed and verified against the deployed .claude/ tree."
     },
     {
       "project_number": 944,

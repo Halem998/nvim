@@ -11,10 +11,9 @@ next_project_number: 958
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 943,947,950,951,955,956,957 | -- | agent-system, orchestration-concurrency |
-| 2 | 944,948,952 | 943,947,951 | agent-system, orchestration-concurrency |
-| 3 | 945,949,953,954 | 944,948,952 | agent-system, orchestration-concurrency |
-| 4 | 946 | 945 | orchestration-concurrency |
+| 1 | 944,947,950,951,955,956,957 | -- | agent-system, orchestration-concurrency |
+| 2 | 945,948,952 | 944,947,951 | agent-system, orchestration-concurrency |
+| 3 | 946,949,953,954 | 945,948,952 | agent-system, orchestration-concurrency |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -33,10 +32,9 @@ next_project_number: 958
 
 ### Orchestration Concurrency
 
-943 [PLANNED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-  └─ 944 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-    └─ 945 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-      └─ 946 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+944 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+  └─ 945 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+    └─ 946 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 957 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ## Tasks
@@ -490,11 +488,12 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 ---
 
 ### 943. Session-scope batch-level orchestration metadata and verify session_id on read
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: None
 - **Research**: [943_session_scope_orchestration_metadata/reports/01_session-scope-orchestration-metadata.md]
+- **Plan**: [943_session_scope_orchestration_metadata/plans/01_session-scope-orchestration-metadata.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
 
