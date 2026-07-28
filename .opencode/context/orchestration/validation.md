@@ -61,7 +61,7 @@ The orchestrator validates **structural correctness** and **safety constraints**
 **Cost**: ~10ms (JSON parsing + validation)  
 **Benefit**: Ensures consistent return handling  
 **Verdict**: ✅ Worth it  
-**Status**: ✅ IMPLEMENTED (Task 280) - Command files Stage 3 (ValidateReturn)
+**Status**: ✅ IMPLEMENTED - Command files Stage 3 (ValidateReturn)
 
 ## Low-Value Checks (DON'T Validate)
 
@@ -133,7 +133,7 @@ The orchestrator validates **structural correctness** and **safety constraints**
 **Agent validation fails** → Agent returns failed status with clear error message
 
 ### Error Messages
-**Good** (orchestrator): "Task 999 not found in TODO.md"  
+**Good** (orchestrator): "Task {N} not found in TODO.md"  
 **Good** (agent): "Plan already exists at path/to/plan.md. Use /revise to update."
 
 **Bad** (orchestrator): "Plan already exists" (business logic, not orchestrator concern)  
@@ -661,9 +661,9 @@ After all validations pass, log summary:
 
 ## Implementation Status
 
-**STATUS**: ✅ ENFORCED (as of Task 280)
+**STATUS**: ✅ ENFORCED
 
-These validation rules are now ACTIVELY ENFORCED by command files Stage 3 (ValidateReturn). Prior to Task 280, these rules were documented but not executed, leading to "phantom research" incidents where agents claimed completion without creating artifacts.
+These validation rules are now ACTIVELY ENFORCED by command files Stage 3 (ValidateReturn). Previously, these rules were documented but not executed, leading to "phantom research" incidents where agents claimed completion without creating artifacts.
 
 **Key Changes**:
 - Command files Stage 3 (ValidateReturn) added with executable validation logic

@@ -55,10 +55,10 @@ CHECKPOINT 3: COMMIT
 ### Example 1: Simple Research Delegation
 
 ```
-User: /research 197
+User: /research {N}
 
 GATE IN:
-- Task 197 exists: YES
+- Task {N} exists: YES
 - Task Type: general
 - Session: sess_1735460684_a1b2c3
 - Status update: [RESEARCHING]
@@ -74,7 +74,7 @@ GATE OUT:
 - Artifact link: added to TODO.md
 
 COMMIT:
-- Git commit: "task 197: complete research"
+- Git commit: "task {N}: complete research"
 ```
 
 ### Example 2: Implementation with Timeout
@@ -83,7 +83,7 @@ COMMIT:
 User: /implement 191
 
 GATE IN:
-- Task 191 exists: YES
+- Task {N} exists: YES
 - Language: markdown
 - Session: sess_1735460685_d4e5f6
 - Status update: [IMPLEMENTING]
@@ -117,10 +117,10 @@ User: /task --recover 343-345, 337
 Parsed ranges: [337, 343, 344, 345]
 
 Validation:
-- Task 337: exists in archive: YES
-- Task 343: exists in archive: YES
-- Task 344: exists in archive: YES
-- Task 345: exists in archive: YES
+- Task {N}: exists in archive: YES
+- Task {N}: exists in archive: YES
+- Task {N}: exists in archive: YES
+- Task {N}: exists in archive: YES
 
 Result: 4 tasks recovered
 Files updated: TODO.md, state.json, archive/state.json
@@ -275,7 +275,7 @@ For conflict resolution, git blame determines which file has more recent changes
 ### Routing Logs
 
 ```
-[INFO] Task 258 task_type: general
+[INFO] Task {N} task_type: general
 [INFO] Routing to general-research-agent (task_type=general)
 [PASS] Routing validation succeeded
 ```

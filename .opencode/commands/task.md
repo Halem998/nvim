@@ -202,7 +202,7 @@ When $ARGUMENTS contains a description (no flags).
    Task Type: {task_type}
    Artifacts path: specs/{NNN}_{SLUG}/  (created on first artifact)
    ```
-   Note: `{NNN}` is the 3-digit padded task number (e.g., `015` for task 15). Directories are created lazily when the first artifact is written.
+   Note: `{NNN}` is the 3-digit padded task number (e.g., `015` for task {N}). Directories are created lazily when the first artifact is written.
 
 ## Recover Mode (--recover)
 
@@ -562,8 +562,8 @@ After inserting, re-read the first few lines after `## Tasks`:
 **If tasks were created**:
 ```
 Created {N} follow-up task(s):
-  - Task #{X}: Complete phase 2 of task 597: implement_validation_rules
-  - Task #{Y}: Complete phase 3 of task 597: add_error_reporting
+  - Task #{X}: Complete phase 2 of task {N}: implement_validation_rules
+  - Task #{Y}: Complete phase 3 of task {N}: add_error_reporting
 ```
 
 **Git commit** (only if tasks were created):

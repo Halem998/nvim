@@ -106,17 +106,17 @@ Write to `specs/{NNN}_{SLUG}/reports/{NN}_spawn-analysis.md`:
 
 ## Proposed New Tasks
 
-### New Task 1: {title}
+### New Item 1: {title}
 - **Effort**: {estimate}
 - **Task Type**: {task_type}
 - **Rationale**: {why this task is needed to unblock the parent}
 - **Depends on**: None
 
-### New Task 2: {title}
+### New Item 2: {title}
 - **Effort**: {estimate}
 - **Task Type**: {task_type}
 - **Rationale**: {why this task is needed}
-- **Depends on**: New Task 1, because {specific reason - what implementation details from Task 1 affect how Task 2 should be done}
+- **Depends on**: New Item 1, because {specific reason - what implementation details from Item 1 affect how Item 2 should be done}
 
 {Continue for each task...}
 
@@ -153,7 +153,7 @@ Write to `specs/{NNN}_{SLUG}/.spawn-return.json`:
     {
       "index": 1,
       "title": "Second task title",
-      "description": "Full description referencing what it needs from task 0",
+      "description": "Full description referencing what it needs from the task at index 0",
       "effort": "2-3 hours",
       "task_type": "meta",
       "dependencies": [0]

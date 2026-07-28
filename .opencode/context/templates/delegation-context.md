@@ -50,8 +50,8 @@ Status: in_progress
 {Important context, preferences, compatibility}
 
 ## Progress
-- [ ] {task 1}
-- [ ] {task 2}
+- [ ] {step 1}
+- [ ] {step 2}
 
 ---
 **Instructions for Subagent:**

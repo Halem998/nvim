@@ -242,7 +242,7 @@ Domain knowledge (load as needed):
 Format: `task {N}: {action}` with session ID in body.
 
 ```
-task 1: complete research
+task {N}: complete research
 
 Session: sess_1736700000_abc123
 ```

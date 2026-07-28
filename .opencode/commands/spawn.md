@@ -22,7 +22,7 @@ Recover from blocked implementations by analyzing the blocker, decomposing it in
 ```
 
 **Examples**:
-- `/spawn 241` - Analyze task 241's blocker automatically
+- `/spawn {N}` - Analyze task {N}'s blocker automatically
 - `/spawn 241 missing state validation utilities` - Analyze with explicit blocker context
 
 ## Execution
@@ -226,7 +226,7 @@ Next Steps:
 ```
 /spawn 241
 ```
-Agent analyzes task 241's plan and context to identify the blocker.
+Agent analyzes task {N}'s plan and context to identify the blocker.
 
 ### Spawn with explicit blocker description
 ```
