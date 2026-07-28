@@ -1,5 +1,5 @@
 ---
-next_project_number: 942
+next_project_number: 947
 ---
 
 # TODO
@@ -11,49 +11,302 @@ next_project_number: 942
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 941 | -- | agent-system |
+| 1 | 941,942,943 | -- | agent-system, orchestration-concurrency |
+| 2 | 944 | 942,943 | orchestration-concurrency |
+| 3 | 945 | 944 | orchestration-concurrency |
+| 4 | 946 | 945 | orchestration-concurrency |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-941 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+941 [IMPLEMENTING] — SOURCE-STORE RULE (binding, and TWO DIFFERENT TREES -- do not con
+
+### Orchestration Concurrency
+
+942 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+  └─ 944 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+    └─ 945 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+      └─ 946 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+943 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+  └─ 944 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS (see above)
 
 ## Tasks
 
-### 941. Purge ephemeral task-number citations from deliverables
+### 946. Auto-sequence conflicting work instead of aborting or skipping
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: agent-system
-- **Dependencies**: None
+- **Topic**: orchestration-concurrency
+- **Dependencies**: Task 945
 
-**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+**Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
 
 LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.
 
-DEFECT. Two deliverable files outside specs/** carry ephemeral task-number citations, violating rules/no-task-references-in-deliverables.md. Both were found incidentally during unrelated work and deliberately left unfixed as out-of-scope at the time. Both are still present and were re-confirmed by grep.
+PURPOSE. This is the headline behavior change, and the user's stated priority order is explicit: automatically staging or sequencing the work to avoid a clash is BEST; warning the user is second best; silently creating a clash is unacceptable. Today the system implements only the middle option, and inverts the preference.
 
-VERIFIED OCCURRENCES (anchor on the quoted strings, not on line numbers -- both files are actively edited):
-  1. commands/orchestrate.md, in the cross-batch defense-in-depth passage of the runtime wave-split check: the parenthetical illustrating a cross-batch collision names two specific task numbers in the form "... where task N and task M were each created independently ...".
-  2. skills/skill-orchestrate/SKILL.md, in the Stage 2 loop-guard fresh-start branch: the comment "create guard atomically via init-marker (task N)".
+VERIFIED CURRENT BEHAVIOR (do not make research rediscover this).
+   - `scripts/command-gate-in.sh` calls `task-lock.sh acquire` and on refusal simply `return 1` -- a hard abort. The user-facing remedy in the two-line `ABORT:` message is manual: 'Wait for the lock to go stale, or override manually: rm -rf {lock_dir}'. There is no bounded wait and no retry.
+   - The multi-task paths in `commands/research.md`, `commands/plan.md`, and `commands/implement.md` move a refused task into `skipped_tasks` with reason 'locked by another session' and do not run it this invocation. Better than aborting the batch, but still a silent drop rather than a re-sequence.
+   - `scripts/orchestrate-batch-admit.sh` already emits `defer` verdicts with `defer_reason == "file_scope_collision"` and a `collision_scope` of `in_batch` or `cross_batch`. The DEFER MACHINERY ALREADY EXISTS -- this task is largely about consuming it as a sequencing signal rather than as a drop signal.
 
-WHY THIS MATTERS, per the rule's own stated rationale: task numbers are renumbered by vault operations when next_project_number exceeds 1000 (tasks above 1000 are renumbered by subtracting 1000), so these citations do not merely age -- they silently come to point at a DIFFERENT task. They are also meaningless to any future reader of a command or skill file who has no access to the task tracker.
+DELIVERABLE -- a four-tier response, applied in this order.
+   1. AUTO-SEQUENCE. If the conflicting work is within this invocation's control, re-order it: place the candidate in a later wave or a later cycle rather than dropping it. Note that waves are currently computed from `dependencies[]` ONLY -- `file_scope` overlap is not an input to wave assignment, and wave computation lives as pseudocode in `commands/orchestrate.md` executed by the agent rather than by a script. Making overlap a first-class wave-assignment input is the core of this tier.
+   2. BOUNDED WAIT-AND-RETRY. Where the conflict is a live lock likely to release shortly, wait a bounded interval and retry before giving up. The `.scope-lock`/`.commit-lock` mutexes already establish the bounded-retry idiom; `git-commit-scoped.sh` already does bounded index.lock retry with backoff and a visible NOTE. Follow those, do not invent a new retry posture.
+   3. WARN. Only when neither auto-sequencing nor bounded retry can resolve it, surface a visible warning naming the other session, the overlapping path, and the heartbeat age -- the existing two-line `ABORT:`/remedy shape already carries exactly these fields.
+   4. ASK. Prompt the user only as a genuine last resort.
 
-FIX DIRECTION, from the rule's "Reference Durable Anchors Instead" section: replace each citation with a durable anchor -- a sibling document filename, a section heading, a decision-record name, or a plain statement of the verified fact. Do not simply delete the parenthetical if it is carrying real explanatory weight; convert it.
-  - For occurrence 1, the illustration needs a cross-batch example. Prefer generic placeholders over real numbers, or restate the mechanism without an example if the surrounding prose already conveys it.
-  - For occurrence 2, the citation is pure provenance on a mechanism that is already fully described by the surrounding comment; the durable anchor is the mechanism name (init-marker's mkdir-gate plus tmp-mv payload), which the comment already states.
+CONVERGENCE PROTECTION (mandatory). Deferral that never converges is a new failure mode. Reuse the established precedent rather than inventing one: `deferred_self_modifying` is an APPEND-ONLY OBSERVATION LOG, not an exclusion set, and the defer clears on its own once the blocking sibling leaves `eligible_tasks`; a bounded `consecutive_no_dispatch_cycles` counter breaks a non-converging loop with `partial` status rather than spinning to `MAX_CYCLES_MT`. Any new deferral path MUST carry equivalent protection.
 
-SCOPE OF WORK.
+NON-NEGOTIABLES TO PRESERVE (settled, from `context/patterns/batch-orchestration-guardrails.md` -- do not re-litigate).
+   - DEFER, NEVER FAIL. A conflict postpones work; it does not error the invocation.
+   - NEVER AUTO-EXPAND A BATCH to pull in an out-of-batch predecessor. Exclude the dependent task instead. Recorded reason: an auto-expanded predecessor would itself have to pass the full admission check (self-modification, file_scope collision, lock contention, its own predecessors) before it were safe to dispatch alongside.
+   - BOUNDED SCAN ONLY -- never an unbounded sweep of every task directory.
+   - Human batch approval must never substitute for or gate machine admission decisions; which tasks may run concurrently is a deterministic, per-pair, machine-checked question.
+   - The batch-size cap is a human-cognitive-load bound, NOT a correctness control.
+   - SAME-SESSION RE-ENTRY MUST NEVER SELF-BLOCK. This is the single highest-impact regression risk in the whole topic: `command-gate-in.sh` is sourced by five commands, so a bug here blocks all task work system-wide. Adding wait/retry must not introduce a path where a session waits on its own lock.
 
-A. Fix both verified occurrences.
+VERIFICATION. Prove all four tiers: a conflict that auto-sequences without any user interaction; a conflict resolved by bounded retry; a conflict that legitimately reaches the warn tier; and a non-converging deferral that terminates as `partial` rather than spinning.
 
-B. Sweep for others rather than trusting this list of two. The advisory hook hooks/validate-no-task-references.sh is PostToolUse and non-blocking, so it only ever fired on files as they were edited -- it has never audited the tree, and any citation written before the hook existed is invisible to it. Run a deliberate repository-wide scan across all deliverable paths outside specs/**, including agent-system/extensions/**, lua/**, and documentation. Report the full count found; do not stop at the two named above.
+DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite task numbers; use durable anchors.
 
-C. Note and preserve the sanctioned exceptions. Task numbers ARE permitted in specs/** artifacts, in git commit messages (the "task {N}: {action}" convention), and in PR/branch metadata. Do not "fix" those.
+---
 
-D. If the sweep finds a large number of occurrences, report the count and propose a split rather than silently fixing hundreds of sites in one pass.
+### 945. Converge conflict detection onto one bounded predicate over locks, registry, and state
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestration-concurrency
+- **Dependencies**: Task 944
 
-Honor the no-task-references-in-deliverables rule: this task's own deliverables must not introduce new citations. Cite the durable anchors instead.
+**Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
+
+LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.
+
+PURPOSE. Today the question 'is this file territory busy?' has TWO different answers from TWO different mechanisms that never consult each other. Converge them onto one predicate that also consults the session registry.
+
+VERIFIED GAPS (do not make research rediscover these).
+
+A. TWO DISAGREEING SOURCES OF TRUTH.
+   - `scripts/orchestrate-batch-admit.sh` infers contention from TASK STATUS in `specs/state.json`: any non-terminal task (researching, researched, planning, planned, implementing, partial, pr_ready, blocked) with an overlapping `file_scope` counts as contending. This is over-conservative -- a task parked in `planned` with nobody working it defers a candidate indefinitely -- and simultaneously blind to whether a session is genuinely running.
+   - `scripts/task-lock.sh acquire` scans currently-HELD `.lock/holder.json` files repo-wide. This is precise about live work but blind to work that has not started.
+   `context/patterns/batch-orchestration-guardrails.md` NAMES this scan-scope gap explicitly and defers it: 'a task that is neither in this invocation's set nor currently holding a lock is invisible to all three simultaneously.'
+
+B. THE OVERLAP ALGORITHM IS TRANSCRIBED TWICE. `context/patterns/file-footprint-overlap.md` defines the directory-prefix predicate as prose; it is independently transcribed to jq in BOTH `scripts/task-lock.sh` (as `scopes_overlap()`) and `scripts/orchestrate-batch-admit.sh`. Two transcriptions of one algorithm is a drift hazard. Collapse to one implementation consumed by both.
+
+C. BATCH ADMISSION IS `/orchestrate`-ONLY. `scripts/orchestrate-batch-admit.sh` is never called by plain multi-task `/research N,M`, `/plan N,M`, or `/implement N,M`. Those paths get ONLY per-task lock acquire. Extend admission coverage to them.
+
+RECORDED CONSTRAINTS THAT BIND THIS TASK (from `context/patterns/batch-orchestration-guardrails.md` -- these are settled decisions, do not re-litigate).
+   - BOUNDED SCAN ONLY. Any widening of the overlap scan must compare against a bounded set such as non-terminal tasks -- NEVER an unbounded scan of every task directory. This is stated as an explicit accompanying note on the resolved design fork.
+   - EXCLUDE, NEVER AUTO-EXPAND THE BATCH. The resolved design fork records that an out-of-batch dependency causes the dependent task to be excluded; the batch is never auto-expanded to pull the predecessor in. Blast radius is the stated reason.
+   - BLOCKING vs ADVISORY IS A CONJUNCTION: a check is blocking iff it is computable from on-disk state alone AND the harm of skipping is silent and hard to detect later. The existing `file_scope` collision and self-modification checks both stay BLOCKING; do not relax either to advisory.
+   - PRESERVE THE IN-BATCH DEFERRAL DIRECTION BIT-FOR-BIT: for `collision_scope == "in_batch"`, the candidate defers only against a LOWER `project_number`; `cross_batch` defers unconditionally. Dependency-connected pairs (edges in either direction) are excluded from comparison entirely, since an explicit edge already serializes them.
+
+DELIVERABLE. ONE documented predicate answering 'is this candidate's `file_scope` contended, and by what', unifying three bounded inputs with each input's semantics stated explicitly: (1) currently-held task locks, (2) registered in-flight sessions from the session registry, (3) non-terminal tasks in state.json. One jq implementation, consumed by `task-lock.sh acquire`, `orchestrate-batch-admit.sh`, `orchestrate-predispatch-review.sh`, and `orchestrate-dry-run-report.sh`. Extend to the non-`/orchestrate` multi-task paths per C. Update `docs/architecture/batch-admit-schema.md` for any verdict-schema change and `context/patterns/file-footprint-overlap.md` to name the single implementation.
+
+CONTEXT ON PRECISION. `file_scope` is populated on 53/53 current tasks, so this machinery is live rather than dormant -- but the overlap predicate is directory-prefix based and therefore coarse. The recorded position is that the false-positive cost is a deferred task, not silent data loss, and the two are not comparable. Do not trade precision for correctness here.
+
+SCOPE BOUNDARY. This task changes DETECTION only. What happens on a detected conflict -- abort, skip, wait, re-sequence -- is unchanged here and is the next task in this topic.
+
+DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite task numbers; use durable anchors.
+
+---
+
+### 944. Add an in-flight orchestration session registry with liveness and reap
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestration-concurrency
+- **Dependencies**: Task 942, Task 943
+
+**Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
+
+LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.
+
+PURPOSE. Supply the primitive the whole topic is missing: nothing in the system currently knows that another session is running. This task adds that fact; the NEXT task consumes it.
+
+VERIFIED GAP (do not make research rediscover this). There is no enumeration of in-flight sessions anywhere. `scripts/orchestrate-batch-admit.sh` has no notion of another session dispatching right now -- it infers contention only from task STATUS in `specs/state.json`. `scripts/task-lock.sh` knows only about currently-HELD per-task locks. Neither can answer 'what else is actually running, and what files has it claimed'. No PID or process-liveness signal is recorded anywhere in the orchestration path except the `.scope-lock/` mutex owner file. There is also no batch identifier: the single-task and multi-task paths derive session ids differently (multi-task suffixes per task as `sess_..._{task_num}`), so a batch has no stable identity to register under.
+
+DELIVERABLE. A session registry at `specs/.sessions/{session_id}.json` recording at minimum: `session_id`, `pid`, `command` (the invoking command and its arguments), `task_numbers` (the batch's task set), the UNION of those tasks' declared `file_scope`, `started_at`, and `heartbeat_at`.
+
+REUSE, DO NOT REINVENT. `scripts/task-lock.sh` already implements every primitive this needs and has production exposure: POSIX-atomic exclusive create via `mkdir` (deliberately NOT the codebase's usual `jq -n > file` check-then-create pattern, which has a race window), a tmp-file-rename holder write, a staleness threshold with heartbeat refresh, an explicit `reap` subcommand, and the `init-marker` subcommand for atomic marker creation. Implement the registry as additional subcommands on `task-lock.sh` (or a sibling that shares its helpers) rather than a parallel implementation with drifting semantics. `context/patterns/task-lock.md` is the canonical single-source contract document and must be extended, never forked.
+
+WIRING.
+   - Register at session start: `scripts/command-gate-in.sh` for the single-task path, and the multi-task batch start in `commands/research.md`, `commands/plan.md`, `commands/implement.md`, `commands/orchestrate.md`.
+   - Heartbeat at the SAME existing natural checkpoints the task lock already uses -- the orchestrate cycle loop and the implementer phase transition -- rather than adding new checkpoints.
+   - Release at `scripts/command-gate-out.sh` and at batch completion.
+   - Reap stale entries via `skills/skill-refresh/SKILL.md`, matching the existing explicit-invocation-only reap scoping (NOT on the hourly systemd cadence -- `claude-refresh.timer` runs process cleanup only and does not sweep `specs/`).
+
+LIVENESS. The recorded `pid` makes staleness cheaply verifiable rather than purely time-based: a registered session whose pid is gone is definitively dead, not merely quiet. Use pid liveness to SHORTEN the stale wait, but keep the time threshold as the fallback -- a pid can be reused, and a session can legitimately be slow.
+
+SCOPE BOUNDARY. This task only PRODUCES the registry. It must not change any admission or refusal decision; no existing gate may start consulting it here. Consumption is the next task in this topic, deliberately separated so the registry can be landed and observed before anything depends on it.
+
+DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite task numbers; use durable anchors.
+
+---
+
+### 943. Session-scope batch-level orchestration metadata and verify session_id on read
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestration-concurrency
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
+
+LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.
+
+PURPOSE. Per-TASK orchestration metadata is ALREADY well isolated -- do not rebuild it. What is NOT isolated is the BATCH level, and a `session_id` that is written everywhere but read nowhere.
+
+WHAT ALREADY WORKS (LEAVE ALONE). Every per-task runtime file lives inside `specs/{NNN}_{SLUG}/`: `.orchestrator-handoff.json`, `.orchestrator-loop-guard`, `.orchestrator-churn-state.json`, `.drift-inspection.json`, and the per-task-suffixed `.return-meta-{task}.json`. `hooks/validate-handoff-location.sh` rejects handoff writes landing outside a task directory, `skills/skill-orchestrate/SKILL.md` Stage 5 runs a mechanism-agnostic stray-handoff sweep, and mtime freshness gates guard against reading a previous cycle's file. Two concurrent sessions working DIFFERENT tasks therefore already have isolated per-task metadata.
+
+VERIFIED GAPS (do not make research rediscover these).
+
+A. TWO FIXED REPO-LEVEL SINGLETONS. Both are written at a hardcoded path with no session component:
+   - `specs/.orchestrator-multi-state.json` -- written by `skills/skill-orchestrate/SKILL.md` (multi-task Stage MT init), read back by `commands/orchestrate.md` for the residue check and consolidated output.
+   - `specs/.return-meta-multi.json` -- written by `skills/skill-orchestrate/SKILL.md` as the multi-task return payload.
+   Two concurrent multi-task orchestrations overwrite each other's batch state and each other's return metadata. Both are gitignored ephemeral files, so this is purely a runtime-collision fix, not a tracking-policy change.
+
+B. `session_id` IS STORED BUT NEVER COMPARED. `.orchestrator-multi-state.json` carries a `session_id` field; the loop-guard, churn-state and drift-inspection files carry session identity too. NO READER anywhere compares it against the reading session's own id. The field is present, costless to check, and currently decorative. Add read-time verification wherever a session-owned runtime file is consumed, so a foreign or stale file is detected rather than silently trusted.
+
+C. A DOCUMENTED-BUT-UNIMPLEMENTED SESSION-SUFFIXED HANDOFF PATH. `docs/architecture/handoff-schema.md` describes a session-suffixed handoff filename that no code produces or consumes. Resolve this explicitly: either implement it, or DELETE the dead documentation. Do not leave the schema describing a mechanism that does not exist -- that is exactly the failure mode this task exists to prevent.
+
+DELIVERABLE.
+   1. Give both singletons a session-scoped path (a `{session_id}` suffix, or a `specs/.orchestrations/{session_id}/` directory -- pick one and apply it consistently). Update every writer and reader: `skills/skill-orchestrate/SKILL.md`, `skills/skill-orchestrate-hard/SKILL.md`, `commands/orchestrate.md`.
+   2. Add read-time `session_id` verification to the runtime-file readers that already have the field available.
+   3. Resolve the dead session-suffixed handoff documentation per C.
+   4. Update the tracking machinery so the new paths stay ignored and audited: `context/standards/orchestrator-runtime-files.md` (the two-class policy), `scripts/check-runtime-file-tracking.sh` (which currently name-matches `specs/.orchestrator-multi-state.json` literally and will silently stop matching), and the gitignore patterns in `root-files/`. Note the existing pattern `**/.return-meta-*.json` may already cover a suffixed return-meta name -- verify rather than assume.
+   5. Add a reap path for abandoned per-session files, wired into `skills/skill-refresh/SKILL.md` alongside the existing stale-task-lock reap. Session-scoping without reaping just trades one problem for unbounded litter.
+
+SCOPE BOUNDARY. This task does NOT introduce a session registry, does not change conflict detection, and does not change what happens when a conflict is found. Those are separate tasks in this topic.
+
+DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite task numbers; use durable anchors.
+
+---
+
+### 942. Serialize every specs/state.json writer through one mutex-guarded helper
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestration-concurrency
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`. Runtime invocations still reference the deployed `.claude/scripts/...` paths; that is the call path, not the edit target.
+
+LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers. Re-measure every count below at implementation time rather than trusting it as final.
+
+PURPOSE. This is the foundational half of concurrent-session safety: `specs/state.json` is the shared mutable file that two sessions actually clobber. Everything else in this topic (session-scoped metadata, a session registry, unified conflict detection, auto-sequencing) rests on state.json writes being serialized first. `context/patterns/multi-task-operations.md` ALREADY RECORDS this read-modify-write race as a known, unfixed defect -- this task closes it.
+
+VERIFIED BASELINE (do not make research rediscover this).
+
+A. NINE WRITERS, EACH ROLLING ITS OWN `jq > tmp && mv`. Only TWO acquire the `specs/.scope-lock/` mutex:
+   - `scripts/update-task-status.sh` -- takes .scope-lock
+   - `scripts/orchestrator-postflight.sh` -- takes .scope-lock
+   The remaining SEVEN have ZERO serialization:
+   - `scripts/skill-base.sh` (multiple distinct read-modify-write sites)
+   - `scripts/manage-topics.sh`
+   - `scripts/reconcile-task-status.sh`
+   - `scripts/reconcile-artifacts.sh`
+   - `scripts/archive-task.sh`
+   - `scripts/orchestrate-predispatch-review.sh`
+   Plus TWO inline command-file writes that also bypass the mutex entirely:
+   - `commands/implement.md`
+   - `commands/review.md`
+
+B. FAIL-OPEN ON TIMEOUT IS THE ACTUAL LOST-UPDATE WINDOW. Both mutex-taking writers, on failing to acquire `.scope-lock` within the bounded retry window, PROCEED ANYWAY. Under exactly the contention the lock exists to handle, the lock silently stops applying. This must become bounded-retry-then-FAIL-CLOSED. Note the deliberate contrast with `task-lock.sh`'s scope-mutex consumer, which already exits 2 (fail closed, never fail open) on mutex timeout -- adopt that precedent rather than inventing a third posture.
+
+C. SHARED FIXED TEMP PATHS, CLOBBERED CROSS-PROCESS. Five scripts write through the SAME fixed temp path rather than a per-process `mktemp`:
+   - `scripts/orchestrator-postflight.sh`, `scripts/reconcile-task-status.sh`, `scripts/skill-base.sh` -> `specs/tmp/state.json`
+   - `scripts/reconcile-artifacts.sh` -> `specs/tmp/state-reconcile.json`
+   - `scripts/manage-topics.sh`, `scripts/update-task-status.sh` -> `$TMP_DIR/state.json.tmp`
+   Several install unconditional `rm -f` EXIT traps against these shared paths, so one process's normal exit deletes another's in-flight temp. This is a SECOND, INDEPENDENT corruption channel: it survives any amount of state.json mutex work, because the damage happens to the staging file, not the destination. Convert every one of these to `mktemp` per-process temps and scope each EXIT trap to that process's own temp.
+
+D. `task-lock.sh release` DOES NOT VERIFY OWNERSHIP. It removes the lock directory without confirming the caller's `session_id` matches `holder.json`. Any session can release any other session's lock. Note the asymmetry to preserve: `acquire` branches on `session_id` FIRST and same-session re-entry must NEVER self-block -- that property is load-bearing (`command-gate-in.sh` is sourced by five commands) and must not be weakened while adding the release check.
+
+E. `scripts/generate-todo.sh` regenerates TODO.md wholesale from state.json. A regeneration interleaved with another session's state.json write publishes a torn view. Regeneration must happen inside the same mutex as the write that triggered it.
+
+F. `.claude/tmp/workflow-active` is a GLOBAL SINGLETON marker: one session's cleanup deletes it out from under every other concurrently-active session. Make it per-session (or otherwise reference-counted) as part of this task, since it is written from the same script family.
+
+DELIVERABLE. ONE shared write helper in the source store (e.g. `agent-system/extensions/core/scripts/state-write.sh`, or a sourceable function if that fits the existing script conventions better) implementing exactly one sequence: acquire `.scope-lock` (bounded retry, FAIL CLOSED) -> `mktemp` a private temp -> apply the caller's jq transform -> validate with `jq empty` -> `mv` into place -> regenerate TODO.md if required -> release. Convert ALL nine writers plus the two inline command-file writes to call it. No writer may retain its own hand-rolled tmp-and-mv sequence afterward -- a single serialization boundary is the deliverable, not nine improved ones.
+
+NON-NEGOTIABLES TO PRESERVE. Same-session re-entry never self-blocks (see D). Reentrancy via the existing `SCOPE_MUTEX_HELD` flag is the sanctioned way to nest -- the new helper must honor it rather than deadlocking against an outer holder that already took the mutex.
+
+VERIFICATION. A concurrency test proving two simultaneous writers to DIFFERENT task entries both survive (no lost update), and that a shared-temp EXIT trap in one process cannot delete another's staging file. `scripts/test-task-lock-reap.sh` is the established isolated-temp-root test precedent to follow.
+
+DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite task numbers; use durable anchors (script names, function names, mechanism names).
+
+---
+
+### 941. Purge ephemeral task-management references from deliverables and enforce the rule going forward
+- **Status**: [IMPLEMENTING]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+- **Research**: [941_purge_and_enforce_no_task_references/reports/01_purge-and-enforce-no-task-references.md]
+- **Plan**: [941_purge_and_enforce_no_task_references/plans/01_purge-and-enforce-task-references.md]
+
+**Description**: SOURCE-STORE RULE (binding, and TWO DIFFERENT TREES -- do not conflate them):
+  - `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits to agent-system content MUST target `agent-system/extensions/**` and NEVER `.claude/**`.
+  - `.opencode/**` is NOT the same case. VERIFIED: it is git-tracked (1,232 tracked files) and is a hand-maintained port of the Claude system ("Ported from CLAUDE.md ... to maintain parity" per its own AGENTS.md), NOT generated from `agent-system/`. It is its own source of truth, so `.opencode/**` fixes are edited DIRECTLY in place. Do not attempt to route them through `agent-system/`.
+
+LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.
+
+PURPOSE (revised). The original framing -- "fix two occurrences" -- was wrong on both scale and intent. This task now has TWO halves, and PREVENTION is the durable one: a one-time purge decays straight back without a gate that catches the next citation at write time. The purge alone is NOT the deliverable.
+
+MEASURED BASELINE (repo-wide grep using the hook's own TASK_PATTERN; re-measure at implementation, do not trust these as final):
+  - agent-system/extensions/**  567 occurrences
+  - .opencode/**                610 occurrences
+  - lua/**                       32 occurrences
+  - .memory/**                   18 occurrences
+  - TOTAL                     ~1,227 occurrences
+The original description's clause D ("if the sweep finds a large number, report the count and propose a split rather than silently fixing hundreds of sites in one pass") is therefore TRIGGERED, and the split is specified below rather than left to discovery.
+
+RELATED EPHEMERAL-REFERENCE CLASSES (the broadened "other such references" scope), also verified:
+  - `specs/{NNN}_{slug}/` artifact-path citations in deliverables: 474 occurrences. Nearly all are illustrative sample agent output (e.g. a research skill's "Report written to specs/NNN_slug/reports/01_....md"). The durable form is the placeholder convention already documented in CLAUDE.md: `specs/{NNN}_{SLUG}/reports/MM_{short-slug}.md`.
+  - `sess_*` session-id literals: 121 files. Session ids are per-run and even MORE ephemeral than task numbers. There is already recorded precedent for the harm: the doc placeholder `sess_1736700000_abc123` propagated thousands of times across transcripts purely because it was copied out of examples.
+
+SETTLED USER DECISIONS (do not re-litigate in research or planning):
+  1. Enforcement is STAGED: land the repo-wide lint and the purge FIRST; flip the write-time hook to blocking ONLY after the tree is clean and the exemption taxonomy has been validated against real content. A blocking gate must never be switched on against a known-dirty tree.
+  2. Purge scope is EVERYTHING outside specs/**: all four trees above.
+  3. `.memory/**` IS DELIVERABLES, not task-management metadata. It is in scope for the purge exactly like the other three trees, and it is NOT to be added to the rule's exemption list. `specs/**` remains the ONLY exempt tree.
+
+=== PART 1 -- PREVENTION ===
+
+P1. REPO-WIDE AUDIT SCRIPT (do this first). Author `check-task-references.sh` in `agent-system/extensions/core/scripts/`, following `check-extension-docs.sh` as the established precedent: exits non-zero on findings, supports `--quiet`, is declared in `agent-system/extensions/core/manifest.json` under provides.scripts, and is wired into `agent-system/extensions/core/scripts/verify-deploy.sh` as an additional numbered gate alongside its existing "Doc-lint (check-extension-docs.sh --quiet)" step. Add matching permission entries to `agent-system/extensions/core/root-files/settings.local.json`, where `check-extension-docs.sh` already has them.
+    WHY A TREE-WIDE SCAN IS REQUIRED AT ALL: `hooks/validate-no-task-references.sh` is PostToolUse and non-blocking, so it has only ever fired on files at the moment they were edited. It has NEVER audited the tree, and every citation written before the hook existed is structurally invisible to it. That is precisely how ~1,227 occurrences accumulated under a rule that was already in force.
+
+P2. EXEMPTION TAXONOMY (the hard part, and the gate on P3). Blocking is only safe once legitimate contexts are precisely separable from violations. VERIFIED categories that MUST NOT be flagged:
+    - `specs/**` (already exempt).
+    - Git commit-message convention examples: `task {N}: {action}` is the sanctioned convention in rules/git-workflow.md, and docs legitimately display it with concrete numbers (e.g. the sample commit line in context/patterns/multi-task-operations.md).
+    - Command-usage examples: `/learn --task 142`, `/research 7, 22-24, 59`. The flag takes a number; the example needs one to be useful.
+    - Prose already using placeholders (`{N}`, `N`, `NNN`, `MM`) -- a broadened pattern must not start catching these.
+    Decide AND DOCUMENT whether each category keeps concrete numbers or converts to placeholders. Whichever way it lands, the lint script and the hook MUST agree, and the taxonomy MUST live in `rules/no-task-references-in-deliverables.md` as the single source of truth rather than being duplicated as divergent pattern logic in two scripts.
+
+P3. FLIP THE HOOK TO BLOCKING -- LAST, and only once P1, P2, and PART 2 are green. Convert (or add alongside) `validate-no-task-references.sh` as a PreToolUse deny. Precedents already registered in settings.json: `guard-destructive-git.sh` (PreToolUse/Bash) and the inline PreToolUse Write guard on state.json. Extend `agent-system/extensions/core/hooks/tests/test-validate-no-task-references.sh` (already declared in the core manifest) to cover both the deny path and EVERY exemption category from P2.
+
+P4. CLOSE THE AGENT-CONTRACT GAP. `rules/no-task-references-in-deliverables.md` asserts a second enforcement layer: "implementation agents that author files outside specs/** include a MUST NOT rule against task-number citations (see agent files below)". VERIFIED FALSE for the core agents -- that bullet exists ONLY in `agent-system/extensions/cslib/agents/cslib-implementation-agent.md` and `cslib-implementation-hard-agent.md`. No core authoring agent carries it (`general-implementation-agent.md`, `general-implementation-hard-agent.md`, `meta-builder-agent.md`, `planner-agent.md`, `reviser-agent.md`). Either add the bullet to the core authoring agents using the cslib wording as the template, or correct the rule's claim. Do NOT leave the rule asserting an enforcement layer that does not exist.
+
+P5. UPDATE THE RULE'S OWN ENFORCEMENT SECTION to describe the final posture (repo-wide lint gate + write-time gate + agent contracts) rather than today's "advisory hook ... never blocks" text, and to carry the P2 exemption taxonomy. While there, make the tree boundary explicit and unambiguous: `specs/**` is the ONLY exempt tree; `.memory/**`, `.opencode/**`, `lua/**`, and `agent-system/extensions/**` are all deliverables subject to the rule.
+
+=== PART 2 -- PURGE (all four trees, triaged, phased) ===
+
+T1. TRIAGE BEFORE EDITING. Classify every occurrence into one of three buckets:
+    (a) PROVENANCE -- "this exists because of task N". Replace with a durable anchor per the rule's "Reference Durable Anchors Instead" section: a sibling document filename, a section heading, a mechanism name, a decision-record name, or a plain statement of the verified fact.
+    (b) ILLUSTRATIVE -- sample agent output, format examples, template payloads. Convert to the documented placeholder conventions (`task {N}`, `specs/{NNN}_{SLUG}/`, `sess_{timestamp}_{random}`).
+    (c) SANCTIONED -- the P2 categories. Leave as-is and record why.
+    Do not silently delete a parenthetical that carries real explanatory weight; CONVERT it.
+
+T2. THE TWO ORIGINALLY-NAMED OCCURRENCES remain in scope and are still present. Re-confirm before editing and anchor on the quoted strings -- both files are actively edited:
+    1. `commands/orchestrate.md`, in the cross-batch defense-in-depth passage of the runtime wave-split check: the parenthetical illustrating a cross-batch collision names two specific task numbers, in the form "... where task N and task M were each created independently ...". The illustration genuinely needs a cross-batch example -- prefer generic placeholders over real numbers, or restate the mechanism without an example if the surrounding prose already conveys it.
+    2. `skills/skill-orchestrate/SKILL.md`, in the Stage 2 loop-guard fresh-start branch: the comment "create guard atomically via init-marker (task N)". This is pure provenance on a mechanism the surrounding comment already fully describes; the durable anchor is the mechanism name (init-marker's mkdir-gate plus tmp-mv payload).
+
+T3. PHASE THE PURGE BY TREE, committing per tree -- ~1,227 sites is far beyond one agent run:
+    1. `agent-system/extensions/**` (largest source-store tree, and the one the rule was written for).
+    2. `lua/**` (smallest, and almost entirely plain provenance comments: "-- Per task 56: NO single-letter action mappings in email reader", "(Task #88)", "-- See: Task #41 - fix_leanls_lsp_client_exit_error").
+    3. `.opencode/**` (largest but mechanical, and edited directly in place per the source-store rule above).
+    4. `.memory/**` -- agent-authored memories ARE deliverables (settled; see decision 3 above). Purge them on the same terms as the other trees. Note the standing hazard this creates: memories are written by agents over time, so the vault re-accumulates citations unless PART 1's write-time gate covers `.memory/**` writes too -- confirm it does, and cover that path in the hook tests.
+
+T4. SANCTIONED EXCEPTIONS PRESERVED. Task numbers ARE permitted in `specs/**` artifacts, in git commit messages (the `task {N}: {action}` convention), and in PR/branch metadata. Do not "fix" those.
+
+WHY THIS MATTERS, per the rule's own stated rationale: task numbers are renumbered by vault operations when `next_project_number` exceeds 1000 (tasks above 1000 are renumbered by subtracting 1000), so these citations do not merely go stale -- they silently come to point at a DIFFERENT task. They are also meaningless to any future reader of a command, skill, context, or source file who has no access to (or interest in) the task tracker.
+
+DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not introduce new citations. Cite durable anchors instead.
 
 ---
 
