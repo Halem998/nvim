@@ -1,10 +1,10 @@
 # Implementation Summary: Task #941
 
 - **Task**: 941 - Purge ephemeral task-management references from deliverables and enforce the rule going forward
-- **Status**: [IN PROGRESS]
+- **Status**: [COMPLETED]
 - **Started**: 2026-07-28
-- **Completed**: (partial — Phases 1-6 of 15)
-- **Effort**: ~9.5 hours of the estimated 18
+- **Completed**: 2026-07-28 (all 15 of 15 phases)
+- **Effort**: ~18.5 hours of the estimated 18
 - **Dependencies**: None
 - **Artifacts**: plans/01_purge-and-enforce-task-references.md
 - **Standards**: summary-format.md, status-markers.md, artifact-management.md, tasks.md
@@ -18,9 +18,10 @@ small correction was applied to `check-task-references.sh`: it gained an optiona
 argument so per-subtree finding counts could be verified (required by Phase 4 onward's
 verification steps), with the no-argument/`--quiet`-only behavior kept byte-for-byte unchanged.
 One new exemption-taxonomy category (test fixtures for the reference-pattern detector itself)
-was discovered and documented during Phase 5. Nine purge phases (7-14) and the blocking hook flip
-(Phase 15) remain; all are unblocked. Live baseline dropped from 1,223 to 876 occurrences
-(agent-system/extensions 216, .opencode 610, lua 32, .memory 18) across this dispatch.
+was discovered and documented during Phase 5. **All 15 phases are now complete** (see the later
+sections below for Phases 7-15): `agent-system/extensions/**`, `.opencode/**`, `lua/**`, and
+`.memory/**` all scan clean at 0 unexempted task-number citations (down from the 1,228 baseline),
+and `validate-no-task-references.sh` is now a blocking PreToolUse hook with full test coverage.
 
 ## What Changed
 
@@ -240,18 +241,101 @@ was discovered and documented during Phase 5. Nine purge phases (7-14) and the b
 - Repo-wide total dropped from 876 to 610 occurrences (`agent-system/extensions` now 0,
   `.opencode` 610 unchanged, `lua` 0, `.memory` 0).
 
+## What Changed (final continuation: Phases 11-15)
+
+- **Phase 11**: purged all 199 occurrences under `.opencode/extensions/core/` (50 files),
+  editing the `.opencode/**` port directly in place (never routed through `agent-system/`).
+  Reused the exact same `{N}`/`{M}`/`{X}` placeholder conventions, `Task N.N` → `Step N.N`
+  collision renames, and `task-ref-ok` marker placements already established for the equivalent
+  `agent-system/extensions/core/` files, since the illustrative *shape* of most sites (worked
+  command-output examples, JSON return payloads, spawn/dependency examples) had not drifted even
+  where surrounding prose had.
+- **Phase 12**: purged all 76 occurrences across the eight non-core `.opencode` extensions
+  (formal, founder, lean, memory, nix, nvim, present, web) — overwhelmingly illustrative
+  return-text examples converted to `{N}` placeholders; two files with no `agent-system`
+  line-level precedent (`present/context/.../grant-workflow.md`,
+  `web/commands/tag.md`/`skill-tag/SKILL.md`, which don't exist under `agent-system/extensions/web/`)
+  triaged independently.
+- **Phase 13**: purged all 104 occurrences under `.opencode/context/{core,formats}/` — confirmed
+  via `diff` that these are genuinely separate, independently-drifted trees from both
+  `.opencode/extensions/core/context/` (Phase 11) and `agent-system`'s copy, not byte-copies of
+  either. Two new WBS "Task N.N" collisions specific to this tree's `formats/` (a handoff-artifact
+  worked example's "Task 3.3", a progress-file schema example's "Task 2") renamed to "Step N.N".
+- **Phase 14**: purged the remaining 231 occurrences across the rest of `.opencode/**` (a 2-
+  occurrence drift from the plan's 229 estimate, reconciled against the live scan). Root-cause
+  buckets: files structurally identical to already-purged siblings (reused fixes verbatim);
+  genuinely new files never seen before (`context/index.md`, `docs/architecture/*.md`, all seven
+  top-level `scripts/*.sh`, `skills/skill-memory/SKILL.md`, etc.) — independently triaged, almost
+  entirely PROVENANCE citations in "Created"/"Status"/"Downstream dependencies" header comments
+  and stale "Available (task NNN)" sub-mode annotations, converted to durable statements with the
+  task number dropped.
+- **Phase 15**: rewrote `validate-no-task-references.sh` as a blocking PreToolUse hook (exit code
+  2, fails open if its shared library is missing), sourcing `lib/task-reference-patterns.sh`
+  exclusively (no inline patterns remain). Extended the regression suite to 31 fixtures — every
+  existing case converted to exit-code assertions, plus one fixture per Exemption Taxonomy
+  category, the `git-workflow.md` self-hit regression anchor (marked → exit 0, unmarked → exit
+  2), and a shared-library-missing fail-open fixture. Empirically verified `.memory/**` write-path
+  coverage: `skill-todo`'s live Stage 14 harvest logic uses the `Write` tool (hook-visible), not
+  the heredoc pattern the plan assumed — that heredoc is confined to the separate,
+  presently-uncalled `memory-harvest.sh` script. Updated the rule's Enforcement section
+  accordingly and redeployed + verified end-to-end.
+
+## Plan Deviations (Phases 11-15)
+
+- **Phase 15 registration**: the plan's `root-files/settings.json`-only registration instruction
+  does not actually reach an already-deployed repo — that file is install-only. Added the
+  identical bare-form `PreToolUse` entry to `merge-sources/settings-hooks.json` as well (the
+  add-only, deduped merge target that re-applies on every redeploy); both copies verified
+  structurally identical.
+- **Phase 15 test fixture**: substituted `/learn --task 142` for the plan's suggested
+  `/research 7, 22-24, 59` command-usage fixture, since the latter contains no literal "task"
+  token and never exercises `TASK_PATTERN` at all.
+- **Phase 15 test-file structural bug**: discovered and fixed a nested-marker toggle collision
+  in the test file itself (see Notes below) mid-phase, before it was ever committed as broken.
+- **Phase 15 redeploy**: a plain `deploy-headless.sh` run did not deploy
+  `scripts/lib/task-reference-patterns.sh` or refresh the cached `.claude/extensions/core/manifest.json`
+  — both required a one-off direct invocation of the loader's `copy_scripts`/`copy_manifest`
+  primitives. Documented as a discovered deploy-mechanism gap, out of this task's scope to fix.
+- No triage-bucket deviations in Phases 11-14: every site converted per the PROVENANCE /
+  ILLUSTRATIVE / SANCTIONED buckets already established.
+
+## Verification (Phases 11-15)
+
+- Per-phase scoped `check-task-references.sh` runs confirmed each phase's expected delta to 0:
+  Phase 11 199→0, Phase 12 76→0, Phase 13 104→0, Phase 14 231→0.
+- Final unscoped `check-task-references.sh` (no `PATH_SCOPE`) reports **PASS, 0 occurrences**
+  across all four trees (`agent-system/extensions`, `.opencode`, `lua`, `.memory`) — Phase 15's
+  literal precondition gate, re-confirmed live at the start of Phase 15 and again after the final
+  redeploy.
+- `bash agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh` and its
+  redeployed `.claude/` copy both report **31 passed, 0 failed**.
+- Live smoke test against the deployed hook: an unmarked `task 788` citation in a non-`specs/**`
+  path exits 2 with a stderr message; the identical citation under `specs/**` exits 0.
+- `bash agent-system/extensions/core/scripts/verify-deploy.sh`: gates 1, 2, 4 PASS outright; gate
+  3 (doc-lint) shows the `core` extension itself as PASS, with the aggregate script exit non-zero
+  only due to pre-existing, unrelated `email`/`literature` extension drift this task never
+  touched. `jq` confirms exactly one `Write|Edit` `PreToolUse` entry in the deployed
+  `settings.json`.
+
 ## Notes
 
-- Phase 15 (the blocking PreToolUse flip) was NOT touched, per the binding constraint that it
-  must land strictly last, gated on `check-task-references.sh` exiting 0 across all four trees —
-  which it does not yet do (610 occurrences remain, entirely within `.opencode/**`, Phases
-  11-14's territory).
-- Phases 11-14 (`.opencode/**`, 610 occurrences total: `extensions/core/` 199,
-  `extensions/{formal,founder,lean,memory,nix,nvim,present,web}` 76, `context/{core,formats}`
-  104, and the remaining `.opencode/**` tree 231) are territory-disjoint and may run in any
-  order. `.opencode/**` is a git-tracked, hand-maintained port — edited directly in place, never
-  routed through `agent-system/`; many sites will mirror durable anchors already established in
-  Phases 4-8 above (e.g. "the cross-task file_scope overlap check", "the phantom-artifact
-  incident") but the port has drifted, so each site still needs its own re-triage rather than a
-  blind mirror. Phase 15 must run last. See the orchestrator handoff at
-  `.orchestrator-handoff.json` for the precise resume instructions and accumulated decisions.
+- **Discovered deploy-mechanism gaps** (out of this task's scope, recorded for future
+  maintainers): (1) an extension's `root-files/settings.json` is install-only — new hook
+  registrations added there alone never reach an already-deployed repo; use
+  `merge-sources/settings-hooks.json` instead. (2) the headless "Load Core" sync path does not
+  re-run `copy_scripts`/`copy_manifest` for already-loaded extensions, so a brand-new
+  `scripts/<subdir>/` file can silently never reach the deployed tree via a routine redeploy,
+  while `check-task-references.sh`'s source-store fallback path masks the gap during in-repo
+  verification. Both gaps are documented in `rules/no-task-references-in-deliverables.md`'s
+  Enforcement section.
+- **Discovered test-authoring pitfall**: `strip_exempt_regions`-style marker helpers (a plain
+  awk toggle on literal "begin"/"end" substrings) are not nesting-aware — nesting a marker
+  demonstration pair inside an outer wrapping marker pair prematurely closes the outer region.
+  Fixed by keeping every marker region in the test suite self-contained (never nested) and
+  exempting genuinely-unmarked fixture literals via a trailing inline comment on a separate
+  variable-assignment line.
+- Definition of done fully met: `check-task-references.sh` exits 0 across all four deliverable
+  trees, the exemption taxonomy (7 categories) is documented in exactly one file and consumed by
+  both the lint script and the hook through the single shared library, and the blocking hook
+  denies a violating write via exit code 2 with test coverage for the deny path and every
+  exemption category.
