@@ -1,0 +1,38 @@
+{
+  "phase": 8,
+  "phase_name": "Convert orchestrator-postflight.sh",
+  "started_at": "2026-07-28T03:05:00Z",
+  "last_updated": "2026-07-28T03:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Convert Stage 7a/7c/7d/8 to state-write.sh calls, keep the Stage 7-8a bracket but make it degrade gracefully to per-stage fail-closed on acquire timeout instead of fail-open",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrator-postflight.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.6",
+      "description": "The plan's Phase 8 task list only asked to decide keep-vs-drop the Stage 7-8a bracket, not explicitly to change its own acquire's fail-open posture",
+      "type": "altered",
+      "reason": "Converted the bracket's own acquire from fail-open (WARNING: proceeding unserialized) to a graceful degradation where a failed bracket acquire leaves SCOPE_MUTEX_HELD unexported and each write stage falls through to state-write.sh's own independent fail-closed acquire. This was necessary for Phase 11's zero-fail-open-wording audit to pass and matches the plan's system-wide fail-closed goal, while avoiding a full-postflight-abort blast radius.",
+      "annotation": "*(deviation: altered — bracket acquire changed from fail-open to graceful per-stage fail-closed degradation)*"
+    }
+  ],
+  "scope_hypothesis_confirmed": {
+    "asserted": "approximately six internal read-modify-write sites",
+    "measured": "confirmed exactly six (Stage 7a 1, Stage 7c 1, Stage 7d 1, Stage 8 2, Stage 7b 0 live -- pure delegation)"
+  },
+  "verification_evidence": {
+    "full_research_postflight_fixture_run": "passed, all six stages fired correctly, next_artifact_number/memory_candidates/artifacts all landed",
+    "degraded_bracket_path_fixture_run": "confirmed NOTE printed, each stage's own fail-closed acquire correctly ABORTed under contention, state.json left untouched for those writes, script completed non-fatally, outer mutex never touched",
+    "check_task_references": "PASS: 0 unexempted occurrences",
+    "regression_suites": "test-state-write-concurrency.sh 4/4, test-task-lock-reap.sh 6/6"
+  }
+}

@@ -483,34 +483,49 @@ a file no other phase edits, so it carries no ordering constraint against the co
 
 ---
 
-### Phase 8: Convert `orchestrator-postflight.sh` [NOT STARTED]
+### Phase 8: Convert `orchestrator-postflight.sh` [COMPLETED]
 
 - **Goal:** Convert every internal write site, including the two non-atomic `python3` in-place
   writes, and hand mutex ownership to the shared helper.
 - **Tasks:**
-  - [ ] Stage 7a (`next_artifact_number`): replace the `python3 json.load`/`json.dump` in-place
+  - [x] Stage 7a (`next_artifact_number`): replace the `python3 json.load`/`json.dump` in-place
         write with a `state-write.sh` call applying
         `.next_artifact_number = (.next_artifact_number // 1) + 1`.
-  - [ ] Stage 7c (`memory_candidates`): replace the `python3` in-place write and its
+  - [x] Stage 7c (`memory_candidates`): replace the `python3` in-place write and its
         triple-quoted-string JSON interpolation with a `state-write.sh` call applying
         `.memory_candidates += $new` with the payload passed via `--argjson` — the same
         interpolation-avoidance the adjacent reflection stage already uses deliberately.
-  - [ ] Stage 7d (`reflection`): convert the existing jq/mv site to a `state-write.sh` call.
-  - [ ] Stage 8 (artifact link): convert the two-step jq/mv site to `state-write.sh` calls.
-  - [ ] Stage 7b: confirm it delegates to `skill-base.sh`'s converted
+  - [x] Stage 7d (`reflection`): convert the existing jq/mv site to a `state-write.sh` call.
+  - [x] Stage 8 (artifact link): convert the two-step jq/mv site to `state-write.sh` calls.
+  - [x] Stage 7b: confirm it delegates to `skill-base.sh`'s converted
         `skill_propagate_completion_summary` and needs no separate write of its own; if any
-        inline duplicate remains, convert it.
-  - [ ] Remove every `specs/tmp/state.json` shared staging reference from the file.
-  - [ ] Decide and implement the mutex ownership shape: either keep the existing Stage 7-8a
+        inline duplicate remains, convert it. *(completed: confirmed pure delegation, no inline
+        duplicate; also threaded `$session_id` through the call for proper attribution)*
+  - [x] Remove every `specs/tmp/state.json` shared staging reference from the file.
+  - [x] Decide and implement the mutex ownership shape: either keep the existing Stage 7-8a
         `scope_token` bracket with `SCOPE_MUTEX_HELD=1` exported so each helper call runs as a
         guest (fewer acquire/release cycles, one critical section), or drop the bracket and let
         each helper call acquire independently. Prefer keeping the bracket — it preserves the
         existing all-stages-atomic property — and document the choice in the file's comment.
-  - [ ] If the bracket is kept, ensure its EXIT trap still releases on every path and that the
-        helper's guest-mode branch never releases the outer holder's mutex.
-  - [ ] Diff a sample `specs/state.json` before and after a full postflight run against a
+        *(completed: kept the bracket. Additionally converted its own acquire from fail-open
+        ("proceeding unserialized") to a graceful degradation: on a bracket-acquire timeout,
+        `SCOPE_MUTEX_HELD` is left unexported and each write stage falls through to
+        state-write.sh's own independent fail-closed acquire, so the combined bracket's atomicity
+        is lost only in that rare case, but no write is ever silently unserialized. This was
+        necessary for Phase 11's "zero fail-open wording" audit to pass and matches the plan's
+        system-wide fail-closed goal; verified against a fixture with a pre-claimed outer mutex —
+        the script prints the degradation NOTE, each stage's own acquire correctly times out and
+        ABORTs with state.json left untouched, and the script still completes non-fatally)*
+  - [x] If the bracket is kept, ensure its EXIT trap still releases on every path and that the
+        helper's guest-mode branch never releases the outer holder's mutex. *(completed: verified
+        against a fixture with a pre-claimed outer mutex — guest mode fires for every stage, outer
+        mutex untouched)*
+  - [x] Diff a sample `specs/state.json` before and after a full postflight run against a
         fixture; confirm the only differences are the intended key mutations and that no
         unintended reformatting of `next_artifact_number` or `memory_candidates` occurred.
+        *(completed: full research-operation postflight run against a fixture produced exactly
+        the intended mutations — status, last_updated, session_id, next_artifact_number,
+        memory_candidates, artifacts — with no unrelated reformatting)*
 - **Timing:** 2 hours
 - **Depends on:** 6, 7
 - **Verification Tier:** full
@@ -519,7 +534,8 @@ a file no other phase edits, so it carries no ordering constraint against the co
   implementation time by enumerating every `state.json`-targeted `mv`, every `python3` block
   touching `specs/state.json`, and every stage boundary in the file before editing. The count is
   a hypothesis carried from research, not a fact — record the measured count in the phase
-  outcome.
+  outcome. **Measured: confirmed exactly six sites (Stage 7a 1, Stage 7c 1, Stage 7d 1, Stage 8
+  2, Stage 7b 0 live sites since it purely delegates), matching the hypothesis.**
 - **Verification:**
   - `bash -n agent-system/extensions/core/scripts/orchestrator-postflight.sh` exits 0.
   - `grep -n 'python3' <file>` returns no block touching `specs/state.json`.

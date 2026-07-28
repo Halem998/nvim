@@ -34,12 +34,13 @@
 #   Stage 6b: Emit orchestrator_status event, plus a second independent reflection event when a
 #             reflection object is present (non-blocking)
 #   Stage 7:  Call update-task-status.sh postflight (research and plan only; implement does inline)
-#   Stage 7a: Increment next_artifact_number via python3 (research only)
+#   Stage 7a: Increment next_artifact_number via state-write.sh (research only)
 #   Stage 7b: Write completion_summary + roadmap_items to state.json (implement only)
-#   Stage 7c: Propagate memory_candidates via python3 (all operations)
-#   Stage 7d: Write reflection to state.json via jq --argjson, overwrite semantics (implement-only,
-#             gated on status == implemented; non-blocking)
-#   Stage 8:  Link artifacts in state.json via two-step jq with --arg atype (Issue #1132 safe)
+#   Stage 7c: Propagate memory_candidates via state-write.sh, --argjson payload (all operations)
+#   Stage 7d: Write reflection to state.json via state-write.sh, --argjson, overwrite semantics
+#             (implement-only, gated on status == implemented; non-blocking)
+#   Stage 8:  Link artifacts in state.json via two state-write.sh calls with --arg atype
+#             (Issue #1132 safe)
 #   Stage 8a: Regenerate TODO.md via generate-todo.sh (non-blocking)
 #   Stage 8b: Fire TTS lifecycle notification via lifecycle-notify.sh in background (non-blocking)
 #   Stage 9:  Git commit with operation-specific message (plan and implement only; non-blocking)
@@ -288,19 +289,34 @@ fi
 # task-lock.md's "Commit-Mutex CLI" section) — concurrent multi-task dispatch invalidated the
 # "no data-integrity risk worth serializing" reasoning this comment used to make about commits
 # specifically; see git-staging-scope.md's corrected "State-Write Serialization" section.
-# `POSTFLIGHT_SCOPE_STALE_SEC` is holder-declared (see task-lock.sh's acquire_scope_mutex), well
-# above the measured worst-case wall-clock time for this span. Fail-closed as a *lock* (never
-# silently double-held), but non-blocking as a *stage*: an acquire timeout logs a loud WARNING
-# and Stages 7-8a proceed unserialized, matching this script's pre-existing
-# non-blocking-on-failure character elsewhere.
+#
+# Mutex-ownership shape (decided, not incidental): every write below (Stages 7a, 7c, 7d, 8) now
+# routes through state-write.sh, the single mutex-guarded specs/state.json writer, so this
+# script no longer needs to hand-roll its own acquire at all -- state-write.sh's own internal
+# acquire would suffice on its own. The bracket below is kept anyway, on purpose, because it
+# preserves the pre-existing ALL-STAGES-ATOMIC property (Stages 7a through 8 execute as one
+# indivisible unit relative to a concurrent postflight run touching the same task, rather than
+# each stage separately racing for the mutex). `POSTFLIGHT_SCOPE_STALE_SEC` is holder-declared
+# (see task-lock.sh's acquire_scope_mutex), well above the measured worst-case wall-clock time
+# for this span.
+#
+# Acquire posture (changed from fail-open): a failed acquire here no longer proceeds
+# unserialized -- that fail-open branch is exactly the defect this codebase-wide conversion
+# removes. Instead, on a bracket-acquire timeout, SCOPE_MUTEX_HELD is left unexported and each
+# write stage below falls through to state-write.sh's OWN fail-closed acquire, made
+# independently per stage. This degrades gracefully rather than hard-aborting the whole
+# postflight run: the combined all-stages-atomic bracket is lost for this one run (a real but
+# narrow cost, confined to the rare case where even the FIRST acquire attempt in the whole
+# window times out), but no stage ever writes unserialized -- every write remains fail-closed,
+# exactly like every other converted writer in this codebase.
 # ─────────────────────────────────────────────────────────────────────────────
 POSTFLIGHT_SCOPE_STALE_SEC=30
 _scope_mutex_held_here="false"
 scope_token=""
 if scope_token=$(bash .claude/scripts/task-lock.sh scope-acquire "$session_id" "$POSTFLIGHT_SCOPE_STALE_SEC"); then
   _scope_mutex_held_here="true"
-  # Exported so Stage 7's update-task-status.sh child (and anything it shells out to) inherits
-  # the guard and skips its own nested acquire/release rather than self-deadlocking.
+  # Exported so Stage 7's update-task-status.sh child (and every state-write.sh call below)
+  # inherits the guard and skips its own nested acquire/release rather than self-deadlocking.
   export SCOPE_MUTEX_HELD=1
   # Installed immediately after a successful acquire: this script runs under `set -e` and can
   # exit early at several stages between here and the explicit release below. No pre-existing
@@ -308,7 +324,7 @@ if scope_token=$(bash .claude/scripts/task-lock.sh scope-acquire "$session_id" "
   # trap installed.
   trap 'bash .claude/scripts/task-lock.sh scope-release "$scope_token" >&2 || true' EXIT
 else
-  echo "[postflight] WARNING: failed to acquire specs/.scope-lock mutex for task ${task_number}'s Stage 7-8a state-write window; proceeding unserialized (non-blocking)." >&2
+  echo "[postflight] NOTE: could not acquire specs/.scope-lock as a single Stage 7-8a bracket for task ${task_number} (holder busy); each write below falls through to state-write.sh's own independent fail-closed acquire instead. Stages 7a-8 lose their combined-bracket atomicity for this run, but every individual write remains safely serialized -- never silently unserialized." >&2
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -323,21 +339,19 @@ fi
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 7a: Increment next_artifact_number (research only)
+# Routed through state-write.sh (replacing the former non-atomic python3 json.load/json.dump
+# in-place write, which had no temp file and no atomicity at all). The jq filter
+# `.next_artifact_number = (.next_artifact_number // 1) + 1` matches the research report's
+# exact recommended transform.
 # ─────────────────────────────────────────────────────────────────────────────
 if [ "$do_artifact_increment" = "true" ] && [ "$status" = "$success_status" ]; then
   echo "[postflight] Incrementing next_artifact_number..."
-  python3 -c "
-import json
-with open('specs/state.json', 'r') as f:
-    state = json.load(f)
-for p in state['active_projects']:
-    if p['project_number'] == ${task_number}:
-        p['next_artifact_number'] = p.get('next_artifact_number', 1) + 1
-        break
-with open('specs/state.json', 'w') as f:
-    json.dump(state, f, indent=2)
-    f.write('\n')
-" || echo "[postflight] WARNING: Failed to increment next_artifact_number (non-blocking)" >&2
+  bash .claude/scripts/state-write.sh \
+    '(.active_projects[] | select(.project_number == $num)).next_artifact_number =
+      ((.active_projects[] | select(.project_number == $num)).next_artifact_number // 1) + 1' \
+    --session-id "$session_id" \
+    --argjson num "$task_number" \
+    || echo "[postflight] WARNING: Failed to increment next_artifact_number (non-blocking)" >&2
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -351,70 +365,76 @@ fi
 # ─────────────────────────────────────────────────────────────────────────────
 if [ "$operation_type" = "implement" ] && [ "${SKIP_COMPLETION_DATA:-false}" != "true" ]; then
   if [ "$status" = "implemented" ]; then
-    skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type" \
+    skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type" "$session_id" \
       || echo "[postflight] WARNING: Failed to write completion_summary/roadmap_items (non-blocking)" >&2
   fi
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 7c: Propagate memory_candidates (all operations, append semantics)
+# Routed through state-write.sh (replacing the former non-atomic python3 json.load/json.dump
+# in-place write) with the payload passed via --argjson, matching the jq filter
+# `.memory_candidates += $new` recommended by the research report -- the same
+# interpolation-avoidance Stage 7d's reflection write below already uses deliberately, so
+# memory_candidates' free-text content (quotes, newlines) can never break the write the way the
+# old `'''${memory_candidates}'''` python string literal could.
 # ─────────────────────────────────────────────────────────────────────────────
 if [ "$memory_candidates" != "[]" ] && [ -n "$memory_candidates" ]; then
   echo "[postflight] Propagating memory_candidates to state.json..."
-  python3 -c "
-import json
-with open('specs/state.json', 'r') as f:
-    state = json.load(f)
-new_candidates = json.loads('''${memory_candidates}''')
-for p in state['active_projects']:
-    if p['project_number'] == ${task_number}:
-        existing = p.get('memory_candidates', [])
-        p['memory_candidates'] = existing + new_candidates
-        break
-with open('specs/state.json', 'w') as f:
-    json.dump(state, f, indent=2)
-    f.write('\n')
-" || echo "[postflight] WARNING: Failed to propagate memory_candidates (non-blocking)" >&2
+  bash .claude/scripts/state-write.sh \
+    '(.active_projects[] | select(.project_number == $num)).memory_candidates =
+      ((.active_projects[] | select(.project_number == $num)).memory_candidates // []) + $new' \
+    --session-id "$session_id" \
+    --argjson num "$task_number" \
+    --argjson new "$memory_candidates" \
+    || echo "[postflight] WARNING: Failed to propagate memory_candidates (non-blocking)" >&2
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 7d: Write reflection (implement only, overwrite semantics)
-# Uses jq --argjson rather than the python3 triple-quote bash-interpolation pattern used above:
-# reflection's four free-text fields may contain embedded quotes/newlines that would break a
-# '''${reflection}''' python string literal. jq --argjson passes the JSON value safely without
-# string interpolation. Guarded and non-blocking: a failure here must not affect the
-# completion_summary/roadmap_items/memory_candidates handling above.
+# Uses jq --argjson rather than a shell-interpolated string literal: reflection's four free-text
+# fields may contain embedded quotes/newlines that would break naive string interpolation.
+# --argjson passes the JSON value safely without string interpolation. Guarded and non-blocking:
+# a failure here must not affect the completion_summary/roadmap_items/memory_candidates handling
+# above. Routed through state-write.sh, replacing the former hand-rolled
+# specs/tmp/state.json-staged jq/mv sequence.
 # ─────────────────────────────────────────────────────────────────────────────
 if [ "$operation_type" = "implement" ] && [ "$status" = "implemented" ] && [ "$reflection" != "null" ] && [ -n "$reflection" ]; then
   echo "[postflight] Writing reflection to state.json..."
-  jq --argjson num "$task_number" --argjson refl "$reflection" \
+  bash .claude/scripts/state-write.sh \
     '(.active_projects[] | select(.project_number == $num)).reflection = $refl' \
-    specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json \
+    --session-id "$session_id" \
+    --argjson num "$task_number" \
+    --argjson refl "$reflection" \
     || echo "[postflight] WARNING: Failed to write reflection (non-blocking)" >&2
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Stage 8: Link artifacts in state.json (two-step jq, Issue #1132 safe)
+# Stage 8: Link artifacts in state.json (two-step jq, Issue #1132 safe), each step routed
+# through state-write.sh, replacing the former hand-rolled specs/tmp/state.json-staged jq/mv
+# sequences.
 # ─────────────────────────────────────────────────────────────────────────────
 if [ -n "$artifact_path" ]; then
   echo "[postflight] Linking artifact: ${artifact_path} (type: ${artifact_type_from_meta})"
 
   # Step 1: Filter out existing artifacts of the same type
   # Uses --arg atype pattern (Issue #1132 safe) + "| not" instead of !=
-  jq --arg atype "$artifact_type_from_meta" \
-    --argjson num "$task_number" \
+  bash .claude/scripts/state-write.sh \
     '(.active_projects[] | select(.project_number == $num)).artifacts =
       [(.active_projects[] | select(.project_number == $num)).artifacts // [] | .[] | select(.type == $atype | not)]' \
-    specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json \
+    --session-id "$session_id" \
+    --arg atype "$artifact_type_from_meta" \
+    --argjson num "$task_number" \
     || echo "[postflight] WARNING: Step 1 artifact filter failed (non-blocking)" >&2
 
   # Step 2: Add new artifact entry
-  jq --arg path "$artifact_path" \
-     --arg atype "$artifact_type_from_meta" \
-     --arg summary "$artifact_summary" \
-     --argjson num "$task_number" \
+  bash .claude/scripts/state-write.sh \
     '(.active_projects[] | select(.project_number == $num)).artifacts += [{"path": $path, "type": $atype, "summary": $summary}]' \
-    specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json \
+    --session-id "$session_id" \
+    --arg path "$artifact_path" \
+    --arg atype "$artifact_type_from_meta" \
+    --arg summary "$artifact_summary" \
+    --argjson num "$task_number" \
     || echo "[postflight] WARNING: Step 2 artifact add failed (non-blocking)" >&2
 fi
 
