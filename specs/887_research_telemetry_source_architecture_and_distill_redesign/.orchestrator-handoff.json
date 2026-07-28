@@ -1,45 +1,27 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "plan",
-  "status": "planned",
-  "summary": "Created a 12-phase design plan settling the OTel/events.jsonl seam and the /distill redesign into 12 sub-modes plus the skill-learn/skill-distill split. Plan grounding found a material correction to the research report: the cwd/repo-tag half of the seam is ALREADY fully implemented (schema property, events-append.sh --cwd, both hooks capturing from stdin, events-query.sh --repo derivation), so cc_session_id is the only genuinely new field. Design round only: 0 of 12 phases are implemented by design, so the completion gate must refuse - the user will /revise then /expand this plan. All planned edits target agent-system/extensions/**, never .claude/**.",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Implemented all 12 plan phases: added cc_session_id as the OTel/events.jsonl join key, split skill-memory into skill-learn/skill-distill, restructured skill-distill around a shared sub-mode skeleton, and landed 5 new/redefined telemetry-sourced sub-modes (revise, meta, review, learn, dream), growing /distill from 7 to 12 sub-modes. Phase 12 validation passed all checks, including an extension-redeploy that found and fixed a stale-deploy defect.",
   "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/887_research_telemetry_source_architecture_and_distill_redesign/plans/01_distill-telemetry-redesign.md"
-    }
+    {"type": "summary", "path": "specs/887_research_telemetry_source_architecture_and_distill_redesign/summaries/01_distill-telemetry-redesign-summary.md"}
   ],
   "blockers": [],
-  "next_action_hint": "revise",
+  "next_action_hint": "none",
   "files_modified": [
-    "specs/887_research_telemetry_source_architecture_and_distill_redesign/plans/01_distill-telemetry-redesign.md",
-    "specs/887_research_telemetry_source_architecture_and_distill_redesign/.return-meta.json",
-    "specs/887_research_telemetry_source_architecture_and_distill_redesign/.orchestrator-handoff.json"
+    "agent-system/extensions/core/context/schemas/events-schema.json",
+    "agent-system/extensions/core/scripts/events-append.sh",
+    "agent-system/extensions/memory/skills/skill-learn/SKILL.md",
+    "agent-system/extensions/memory/skills/skill-distill/SKILL.md",
+    "agent-system/extensions/memory/commands/distill.md"
   ],
   "decisions_made": [
-    "cc_session_id (flat snake_case, nullable, optional) is the only new events.jsonl field; it follows the identical code path cwd already travels at every call site.",
-    "cwd/repo-tag is a preserved asset, not new work - it is already implemented end to end, contradicting the research report's recommendation.",
-    "The OTel <-> events.jsonl join is exact via cc_session_id = OTel session.id; no time-window heuristic, and the sess_* join stays a recorded dead end.",
-    "gen_ai.* names are borrowed as a citation vocabulary inside the already-open detail object only, never as top-level field names; no span/trace or collector infrastructure.",
-    "skill-memory/SKILL.md splits mechanically at line 1063 (## Mode: distill) into skill-learn and skill-distill, with restructuring deliberately deferred to a later phase so a failed split is a clean revert.",
-    "The seven-step sub-mode skeleton is stated once in a shared section; each sub-mode is reduced to deltas, and behavior preservation beats fitting the template.",
-    "--revise and --meta take the current dream sub-mode's two existing halves; --dream is redefined to history.jsonl-sourced speculative direction-finding with no correlation machinery of its own.",
-    "--meta consumes the existing GLOBAL_ROOT/cd-chaining/--local mechanism verbatim and delegates task creation to meta-builder-agent; it invents neither.",
-    "The four memory/event scripts need NO code change for cross-repo access - only an invocation discipline (chained cd + relative path in one Bash call), with absolute-path invocation named as a prohibition.",
-    "Design constraints (evaluator outside the loop, never auto-apply, ~70% v1 miss rate, six failure modes, no-new-hygiene-below-100) are factored into one citable guardrails context file instead of restated per sub-mode.",
-    "The seven existing hygiene sub-modes are frozen; only their position in the file changes.",
-    "Cross-repo events.jsonl aggregation is an explicit out-of-scope residual limit, documented in the --meta flag description itself."
+    "cc_session_id is the only genuinely new seam field; cwd was already fully implemented.",
+    "--revise/--meta substantially reuse the prior dream sub-mode's content; --revise/--meta/--learn each get their own log file.",
+    "meta-builder-agent's documented extension-detection limitation was encoded honestly, not worked around."
   ],
-  "dead_ends": [
-    "Do not revive the sess_{ts}_{rand} join between the agent system and Claude Code - different id spaces, no structural link.",
-    "Do not add cwd to events-schema.json or a --cwd flag to events-append.sh - both already exist; re-adding them would be a no-op or a conflict.",
-    "Do not build a span/trace system, OTel collector, or new transcript parser."
-  ],
-  "phases_completed": 0,
+  "dead_ends": [],
+  "phases_completed": 12,
   "phases_total": 12,
-  "continuation_context": {
-    "handoff_path": "specs/887_research_telemetry_source_architecture_and_distill_redesign/.orchestrator-handoff.json",
-    "orchestrator_mode": true
-  },
   "plan_markers_verified": true
 }
