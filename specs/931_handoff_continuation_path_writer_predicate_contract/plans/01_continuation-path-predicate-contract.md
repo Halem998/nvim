@@ -268,7 +268,7 @@ the `reason` string or branches on its wording.
 
 ---
 
-### Phase 3: Base engine — mirror the predicate and normalize the dispatch context [NOT STARTED]
+### Phase 3: Base engine — mirror the predicate and normalize the dispatch context [COMPLETED]
 
 **Goal**: `skill-orchestrate/SKILL.md` reads both forms everywhere it reads a continuation pointer,
 **and** the "continuation available" branch hands the successor agent a usable nested
@@ -276,31 +276,33 @@ the `reason` string or branches on its wording.
 closes the secondary gap that the predicate relaxation alone does not.
 
 **Tasks**:
-- [ ] Stage 4 `#### State: partial` handler: change the read (anchor on
+- [x] Stage 4 `#### State: partial` handler: change the read (anchor on
       `continuation=$(echo "$handoff" | jq -c '.continuation_context // null')` inside the block
       immediately following the `**Cross-reference**` paragraph) to resolve **either** form. Emit a
       normalized object, e.g. `continuation` set to
       `{ handoff_path: (.continuation_context.handoff_path // .continuation_path), orchestrator_mode: true }`
-      when either source is non-null, else `null`.
-- [ ] Update the sub-state condition prose `**Sub-state: continuation available** (continuation !=
+      when either source is non-null, else `null`. *(completed)*
+- [x] Update the sub-state condition prose `**Sub-state: continuation available** (continuation !=
       null AND has handoff_path)` so it describes the normalized value, not the raw nested field.
-- [ ] Dispatch-context normalization (**the secondary gap**): the Agent-tool context row that
+      *(completed)*
+- [x] Dispatch-context normalization (**the secondary gap**): the Agent-tool context row that
       passes `continuation_context` must pass the **normalized** object built above, not the raw
       handoff field. The target shape is `{ handoff_path, orchestrator_mode: true }`, matching the
       shape `context/patterns/subagent-continuation-loop.md` already documents for the intra-skill
       successor case. Make it explicit in the table row that this is a normalized value, so a
-      future editor does not "simplify" it back to a raw field read.
-- [ ] Stage 5 handoff-result read: the second
+      future editor does not "simplify" it back to a raw field read. *(completed)*
+- [x] Stage 5 handoff-result read: the second
       `continuation=$(echo "$handoff" | jq -c '.continuation_context // null')` occurrence (inside
       the `else` arm that begins `handoff=$(cat "$handoff_file")`) must use the same dual-form
       resolution. Do **not** disturb the adjacent `dispatch_status` / `plan_markers_verified`
-      reads added by the recent sibling.
-- [ ] Stage MT-4 multi-task implement dispatch: the bullet reading
+      reads added by the recent sibling. *(completed: adjacent reads untouched)*
+- [x] Stage MT-4 multi-task implement dispatch: the bullet reading
       `Read \`continuation\` from \`task_dir/.orchestrator-handoff.json\` (or null)` is currently
       field-agnostic prose feeding a `continuation_context: continuation` dispatch field. Make it
-      name the dual-form resolution and the normalized output shape explicitly.
-- [ ] Update the `**Cross-reference**` paragraph so its claim that the hand-applied rule matches
-      `scripts/orchestrate-triage-classify.sh single` remains true after Phase 2.
+      name the dual-form resolution and the normalized output shape explicitly. *(completed)*
+- [x] Update the `**Cross-reference**` paragraph so its claim that the hand-applied rule matches
+      `scripts/orchestrate-triage-classify.sh single` remains true after Phase 2. *(completed: added
+      explicit mention of dual-form resolution; the underlying claim was already true)*
 
 **Timing**: 1 hour
 

@@ -368,19 +368,35 @@ After Agent tool returns: read handoff. Increment cycle_count.
 
 **Cross-reference**: the identical triage rule applied by hand below is also available as an
 executable check, `scripts/orchestrate-triage-classify.sh single`. That script is the executable
-form of this same rule, and both engines now agree on every row here except `blocked` (see the
-justification in the "State: `blocked`" handler below).
+form of this same rule, including its dual-form continuation-pointer resolution (nested
+`continuation_context.handoff_path` OR flat `continuation_path`), and both engines now agree on
+every row here except `blocked` (see the justification in the "State: `blocked`" handler below).
 
 Read `.orchestrator-handoff.json` to determine sub-state:
 
 ```bash
 handoff=$(cat "$handoff_file" 2>/dev/null || echo '{}')
 blockers=$(echo "$handoff" | jq -c '.blockers // []')
-continuation=$(echo "$handoff" | jq -c '.continuation_context // null')
+# Dual-form resolution + normalization: a continuation pointer may arrive as either the nested
+# continuation_context.handoff_path (written today only by the unreferenced
+# skill_write_orchestrator_handoff) OR the flat top-level continuation_path (what live H9
+# hard-mode wrap-up writers actually emit). Resolve either form and normalize into the single
+# shape the dispatch context below and context/patterns/subagent-continuation-loop.md both
+# expect: { handoff_path, orchestrator_mode: true }, or null if neither form is present. This
+# mirrors scripts/orchestrate-triage-classify.sh's continuation_ok predicate exactly — do not let
+# this hand-applied copy drift from that script again.
+continuation=$(echo "$handoff" | jq -c '
+  ((.continuation_context // null) | if . != null then (.handoff_path // null) else null end) as $nested |
+  (.continuation_path // null) as $flat |
+  ($nested // $flat) as $resolved |
+  if $resolved != null then {handoff_path: $resolved, orchestrator_mode: true} else null end
+')
 blocker_count=$(echo "$blockers" | jq 'length')
 ```
 
-**Sub-state: continuation available** (continuation != null AND has handoff_path):
+**Sub-state: continuation available** (`continuation` — the normalized object above — is non-null;
+its `handoff_path` key is guaranteed non-null whenever `continuation` itself is non-null, by
+construction of the `jq` resolution above):
 
 Read plan path:
 ```bash
@@ -407,7 +423,7 @@ Invoke the Agent tool:
 |-------|-------|
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
 | `prompt` | "Resume implementation for task $task_number from continuation handoff" (append ". User focus: $focus_prompt" if non-empty) |
-| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, continuation_context, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` |
+| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, continuation_context: continuation, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS }` (`continuation_context` here is the **normalized** `continuation` object built above — `{ handoff_path, orchestrator_mode: true }` — never a raw read of the handoff's `continuation_context` or `continuation_path` field. This is the secondary-gap fix: it is what lets the successor implement dispatch actually consume a continuation the standard flat-form writer emitted. Do not "simplify" this back to a raw field read.) |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
 `context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
@@ -717,7 +733,16 @@ else
   dispatch_status=$(echo "$handoff" | jq -r '.status // ""')
   dispatch_summary=$(echo "$handoff" | jq -r '.summary // ""')
   blockers=$(echo "$handoff" | jq -c '.blockers // []')
-  continuation=$(echo "$handoff" | jq -c '.continuation_context // null')
+  # Dual-form resolution + normalization (same rule as the Stage 4 `partial` handler above and
+  # scripts/orchestrate-triage-classify.sh's continuation_ok predicate): accept either the nested
+  # continuation_context.handoff_path or the flat top-level continuation_path, normalized to
+  # { handoff_path, orchestrator_mode: true } or null.
+  continuation=$(echo "$handoff" | jq -c '
+    ((.continuation_context // null) | if . != null then (.handoff_path // null) else null end) as $nested |
+    (.continuation_path // null) as $flat |
+    ($nested // $flat) as $resolved |
+    if $resolved != null then {handoff_path: $resolved, orchestrator_mode: true} else null end
+  ')
   next_hint=$(echo "$handoff" | jq -r '.next_action_hint // "none"')
   phases_completed=$(echo "$handoff" | jq -r '.phases_completed // 0')
   phases_total=$(echo "$handoff" | jq -r '.phases_total // 0')
@@ -1374,9 +1399,13 @@ For each task in `implement_tasks`:
 - Resolve this task's absolute anchor: `task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/specs/$(printf '%03d' "$task_num")_${project_name}"` and `handoff_path_abs="${task_dir_abs}/.orchestrator-handoff.json"`
 - Record the dispatch window: `jq --arg t "$task_num" --argjson ts "$(date -u +%s)" '.dispatch_start_ts[$t] = $ts' "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"`, and reset this task's `task_transport_error` to `false`
 - Read `plan_path` from `task_dir/plans/` (latest .md)
-- Read `continuation` from `task_dir/.orchestrator-handoff.json` (or null)
+- Read `continuation` from `task_dir/.orchestrator-handoff.json`, resolving **either** accepted
+  form — nested `continuation_context.handoff_path` or flat top-level `continuation_path` (same
+  dual-form rule as `scripts/orchestrate-triage-classify.sh`'s `continuation_ok` predicate and the
+  single-task Stage 4/Stage 5 handlers above) — and **normalizing** the result to
+  `{ handoff_path, orchestrator_mode: true }`, or `null` if neither form is present
 - `skill_preflight_update "$task_num" "implement" "${session_id}_${task_num}"`
-- Invoke Agent tool: `subagent_type = implement_agents[task_num]`, prompt = "Implement task $task_num following the plan", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, plan_path, continuation_context: continuation, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs }`
+- Invoke Agent tool: `subagent_type = implement_agents[task_num]`, prompt = "Implement task $task_num following the plan", context = `{ task_number: task_num, task_type, session_id: "${session_id}_${task_num}", orchestrator_mode: true, plan_path, continuation_context: continuation, lit_flag, task_dir: task_dir_abs, handoff_path: handoff_path_abs }` (`continuation_context` here is the **normalized** `continuation` value resolved above, never a raw field read)
 
 **After all Agent tool calls complete**, read handoffs and run per-task postflight for each dispatched task:
 
