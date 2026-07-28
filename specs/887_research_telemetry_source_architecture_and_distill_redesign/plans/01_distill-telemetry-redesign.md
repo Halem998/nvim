@@ -647,7 +647,7 @@ machinery from `dream`'s first half, now additionally evidenced by OTel outcomes
 
 ---
 
-### Phase 7: Specify the `--meta` sub-mode [NOT STARTED]
+### Phase 7: Specify the `--meta` sub-mode [COMPLETED]
 
 **Goal**: Define cross-repo agent-system improvement as a sub-mode that **consumes** the existing
 global-root mechanism and **delegates** task creation, inventing neither.
@@ -673,17 +673,35 @@ global-root mechanism and **delegates** task creation, inventing neither.
 
 **Tasks**:
 
-- [ ] Author the `--meta` section as deltas against the shared skeleton.
-- [ ] Specify the delegation contract to `meta-builder-agent`: what is passed (proposal set,
+- [x] Author the `--meta` section as deltas against the shared skeleton. *(completed: inserted as
+      `### Sub-Mode: meta` right after `--revise` and before `dream`, reusing dream's
+      "Improvement Proposals" content in substance unchanged)*
+- [x] Specify the delegation contract to `meta-builder-agent`: what is passed (proposal set,
       resolved `target_root`, extension targets), what comes back, and what `--meta` does with it.
-- [ ] Specify the `AskUserQuestion` confirmation: what "basic investigation" precedes it, and how
-      the user selects and modifies proposed tasks.
-- [ ] State the exact chained-Bash form for every script call, citing the guardrails file.
-- [ ] Document the single-repo signal limitation **in the flag's own description text**:
+      *(completed, with one correction from the plan's own design assumption -- see below)*
+- [x] Specify the `AskUserQuestion` confirmation: what "basic investigation" precedes it, and how
+      the user selects and modifies proposed tasks. *(completed: Edge Case Checks + Discovery is
+      the investigation; the two-stage AskUserQuestion + Multi-Task Creation Standard Component 7
+      confirmation gate is the selection/modification path)*
+- [x] State the exact chained-Bash form for every script call, citing the guardrails file.
+      *(completed)*
+- [x] Document the single-repo signal limitation **in the flag's own description text**:
       `events.jsonl` is a per-repo file, so `--meta` invoked from `$GLOBAL_ROOT` sees only
       `$GLOBAL_ROOT`'s own event store, not aggregated signal from the other repos this system runs
       in. Note that `events-query.sh`'s `--repo` filter operates within a single file and does not
       close this gap, and that cross-repo aggregation is an explicit out-of-scope follow-up.
+      *(completed, in the Target Resolution subsection)*
+
+**Correction discovered during implementation (per this phase's own Scope Hypothesis
+instruction to stop and surface rather than invent)**: `meta-builder-agent.md` does **not**
+actually provide reliable automatic component detection across all 19 extension directories. Its
+own documented "Known limitation" (that file's Component 4a discussion) states the affected-area
+heuristic "has no reliable signal to distinguish core scope from an extension's own source
+directory ... without parsing extension manifests, so extension-scoped tasks require human
+correction rather than a guess" and defaults to `agent-system/extensions/core/`. `--meta`'s
+Target Resolution / Discovery subsections were written to state this limitation accurately and
+rely on the existing human-correction step (the `AskUserQuestion` selection stage) rather than
+claiming full automatic extension targeting exists. No new detection logic was written.
 
 **Timing**: 2 hours
 
