@@ -133,3 +133,20 @@ Three layers. `specs/**` is the ONLY exempt tree — `agent-system/extensions/**
 `specs/**` and do not yet carry the MUST-NOT bullet. This is a real, named gap, not an oversight
 papered over — adding it to those three agents is out of scope for the plan that authored this
 section and is left as a follow-up.
+
+**Discovered deploy-mechanism gap (not part of this rule's own scope, recorded for maintainers)**:
+`agent-system/extensions/core/root-files/settings.json` is install-only — the deploy loader
+(`manager.load()` in `lua/neotex/shared/extensions/init.lua`) skips a `root-files/settings.json`
+copy entirely once an extension is already marked loaded, so a new hook registration added there
+alone never reaches an already-deployed repo's `.claude/settings.json`. The registration that
+actually takes effect on redeploy is the one in `merge-sources/settings-hooks.json` (an add-only,
+dedup-on-`deep_equal` merge target re-applied on every "Load Core"/"Sync all"). Separately, the
+headless "Load Core" sync path used by `deploy-headless.sh` does not re-run the per-extension
+`copy_scripts`/`copy_manifest` sequence for already-loaded extensions either, so a brand-new
+`scripts/<subdir>/*.sh` file (e.g. this rule's own `scripts/lib/task-reference-patterns.sh`,
+added when the taxonomy/library were first authored) can silently never reach
+`.claude/scripts/<subdir>/` on an existing deploy, even though `check-task-references.sh`'s
+source-store-fallback path masks the gap during in-repo verification. Both gaps were discovered
+empirically during this rule's own write-time-gate flip and worked around for this repo via a
+direct one-off invocation of the loader's copy primitives; neither gap is fixed by this task, and
+both remain open follow-ups in the extension-loader subsystem, not in this rule.
