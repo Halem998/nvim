@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 938,
+  "next_project_number": 939,
   "active_projects": [
     {
       "project_number": 913,
@@ -1876,7 +1876,7 @@
     {
       "project_number": 937,
       "project_name": "forward_progress_invariant_for_batch_admission",
-      "status": "not_started",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Forward-progress invariant for batch admission",
@@ -1891,8 +1891,38 @@
         935
       ],
       "created": "2026-07-28T12:59:00Z",
-      "last_updated": "2026-07-28T12:59:00Z",
-      "session_id": "sess_1785243457_1e573a",
+      "last_updated": "2026-07-28T14:44:26Z",
+      "session_id": "sess_1785249037_e81aad",
+      "artifacts": [
+        {
+          "path": "specs/937_forward_progress_invariant_for_batch_admission/reports/01_forward-progress-invariant-batch-admission.md",
+          "type": "report",
+          "summary": "Research on the forward-progress invariant and no-dispatch report design"
+        },
+        {
+          "path": "specs/937_forward_progress_invariant_for_batch_admission/plans/01_zero-dispatch-forward-progress-legibility.md",
+          "type": "plan",
+          "summary": "Six-phase plan making the zero-dispatch outcome a loud, actionable terminal result"
+        }
+      ]
+    },
+    {
+      "project_number": 938,
+      "project_name": "picker_sync_skills_allow_list_filter",
+      "status": "not_started",
+      "task_type": "neovim",
+      "topic": "nvim-plugin",
+      "title": "Fix picker sync allow-list filter silently dropping all skills",
+      "description": "LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.\n\nSCOPE NOTE: this task targets the Neovim picker/sync PLUGIN CODE under lua/neotex/plugins/ai/**. It is NOT an agent-system task and must NOT edit agent-system/extensions/** or .claude/**.\n\nDEFECT (read-verified this session; NOT execution-verified -- see VERIFICATION GAP below). The picker sync's allow-list post-filter silently drops EVERY skill from the sync set, so a redeploy never updates any .claude/skills/*/SKILL.md.\n\nROOT CAUSE, established by reading three files:\n  1. manifest.lua's build_allow_list() builds allow_list[category][filename] = true by iterating the core manifest's provides.<category> array. For the \"skills\" category, the entries in provides.skills are DIRECTORY names -- skill-orchestrate, skill-planner, skill-researcher, and so on (23 entries confirmed).\n  2. picker/utils/scan.lua's scan_directory_for_sync() sets each result's name field to vim.fn.fnamemodify(global_file, \":t\") -- the BASENAME. Every skill file is skills/<skill-name>/SKILL.md, so name is the literal string \"SKILL.md\" for all of them.\n  3. picker/operations/sync.lua's sync_scan() allow-list post-filter tests allowed[file_info.name] for every category except \"context\". For skills that evaluates allowed[\"SKILL.md\"], which is never a key in the allow-list, so the filter returns an empty set and every skill is excluded.\n\nThe mismatch is directory-name keys vs basename lookup. It is silent: the sync reports success and a nonzero artifact count from the other categories, so nothing surfaces the dropped skills.\n\nFIX PRECEDENT ALREADY IN THE SAME FUNCTION. sync_scan()'s post-filter already special-cases filter_category == \"context\", which has the same directory-vs-file shape: it extracts the top-level subdirectory from file_info.global_path via a \"/context/(.+)$\" match, takes the first path segment, and tests allowed[top_dir]. Skills need the structurally identical treatment against \"/skills/(.+)$\". Prefer generalizing the existing branch over adding a third parallel one if that can be done without changing context behavior.\n\nVERIFICATION GAP -- THIS IS THE SUBSTANTIVE RISK, NOT THE FIX. The diagnosis above is read-verified only. No redeploy was run to observe the failure, deliberately: at diagnosis time the deployed .claude/skills/ tree had been hand-corrected, so a redeploy was the very thing that would re-break it. Before changing behavior, REPRODUCE the defect against a scratch tree -- never the live .claude/ -- and confirm empirically that skills are dropped. If reproduction FAILS, stop and record that the read-verified diagnosis did not hold rather than forcing the fix.\n\nWHY IT MATTERS. Deployed SKILL.md files silently going stale is not cosmetic: the orchestrator state machine, the admission gate, and the lifecycle contracts all live in SKILL.md files that are read from the deploy tree. A stale deployed skill means the running system does not match its source of truth, with no error anywhere. Two orchestrator skills were found stale by hundreds of lines during unrelated work, which is how this was noticed at all; the same silence applies to all 23 skills.\n\nSCOPE OF WORK.\n\nA. Reproduce the defect against a scratch deploy tree, per VERIFICATION GAP above. Record the observed before-state.\n\nB. Fix the allow-list post-filter so skills match on skill-directory name rather than basename. Do not change context behavior; do not weaken the allow-list into a pass-through, which would defeat the filter's purpose of restricting the sync to manifest-declared artifacts.\n\nC. Check whether any OTHER category has the same directory-vs-basename shape and is silently dropping files. The two known-good shapes are commands and agents (flat .md files whose basenames match provides entries). Establish by inspection which categories are directory-shaped rather than assuming skills is unique.\n\nD. Make the failure non-silent. A category whose allow-list post-filter yields zero results while the pre-filter scan found files is a defect signature, not a legitimate empty set; surface it rather than returning an empty list quietly. This is what would have caught the bug years earlier.\n\nE. Verify the fix end to end against a scratch tree, then perform one deliberate redeploy and confirm every skill in provides.skills lands in .claude/skills/. Confirm the previously hand-copied orchestrator skills stay correct rather than reverting.\n\nCONSTRAINT: honor the repository's Lua standards (2-space indent, ~100 char lines, pcall for fallible operations, snake_case). Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.",
+      "file_scope": [
+        "lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua",
+        "lua/neotex/plugins/ai/shared/extensions/manifest.lua",
+        "lua/neotex/plugins/ai/claude/commands/picker/utils/scan.lua"
+      ],
+      "dependencies": [],
+      "created": "2026-07-28T14:48:54Z",
+      "last_updated": "2026-07-28T14:48:54Z",
+      "session_id": null,
       "artifacts": []
     }
   ],
