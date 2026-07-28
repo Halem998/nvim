@@ -40,7 +40,7 @@ The changelog summary briefly describes what changed (tasks completed, created, 
 
 Examples:
 ```markdown
-*Updated 2026-03-25. Task 62 completed. Task 63 created for Box backward proof.*
+*Updated 2026-03-25. Task {N} completed. Task {M} created for Box backward proof.*
 *Updated 2026-03-24. Created 5 tasks for /review Task Order management feature.*
 ```
 
@@ -100,7 +100,7 @@ Format: Code block with arrow notation using `→` (Unicode U+2192).
 63 → 58 → 59 → 60
 ```
 
-Meaning: Task 63 must complete before 58, which must complete before 59, etc.
+Meaning: the first task must complete before the second, which must complete before the third, etc.
 Regex (per arrow): `(\d+)\s*→\s*(\d+)`
 
 ### Branching Dependencies
@@ -208,7 +208,7 @@ Regex: `\[([A-Z ]+)\]`
 ```markdown
 ## Task Order
 
-*Updated 2026-03-25. Task 62 completed (documentation corrections). Task 63 created for BFMCS Box backward proof.*
+*Updated 2026-03-25. Task {N} completed (documentation corrections). Task {M} created for BFMCS Box backward proof.*
 
 **Goal**: Zero custom axioms, zero sorries on the completeness path.
 

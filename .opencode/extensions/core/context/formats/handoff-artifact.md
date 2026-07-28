@@ -48,7 +48,7 @@ The `{handoff-slug}` is generated automatically at handoff time:
 
 **Examples**:
 - Phase: "Implement validation framework", Objective: "Add date validator" → `implement-validation-framework-add-date-validator`
-- Phase: "Update Handoff Naming", Objective: "Task 1.2" → `update-handoff-naming-task-1-2`
+- Phase: "Update Handoff Naming", Objective: "Step 1.2" → `update-handoff-naming-step-1-2`
 - Phase: "Refactor", Objective: "" → `refactor`
 
 ## Directory Structure

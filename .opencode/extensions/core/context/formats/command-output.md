@@ -16,8 +16,8 @@ This standard defines the format for command output displayed to users by the or
 ### Task Number Format
 
 Use `Task #{N}` format consistently (no colon after the number):
-- Correct: `Task #258`
-- Incorrect: `Task #258:` or `Task: 258`
+- Correct: `Task #{N}`
+- Incorrect: `Task #{N}:` or `Task: {N}`
 
 ### Task-Based Commands
 
@@ -69,12 +69,12 @@ Next: /{command} {N}
 
 **Example:**
 ```
-Research completed for Task #258
+Research completed for Task #{N}
 
-Report: specs/258_modal_logic/reports/01_modal-logic-research.md
+Report: specs/{NNN}_modal_logic/reports/01_modal-logic-research.md
 
 Status: [RESEARCHED]
-Next: /plan 258
+Next: /plan {N}
 ```
 
 **Assigned Commands:** `/research`, `/plan`, `/task`
@@ -98,9 +98,9 @@ Next: /{command} {N}
 
 **Example:**
 ```
-Implementation complete for Task #258
+Implementation complete for Task #{N}
 
-Summary: specs/258_modal_logic/summaries/01_modal-logic-summary.md
+Summary: specs/{NNN}_modal_logic/summaries/01_modal-logic-summary.md
 
 Phases completed: 3/3
 
@@ -223,7 +223,7 @@ of LeanSearch API integration patterns.
 
 **Bad Example (too verbose):**
 ```
-I have completed the research phase for task 258 which involves modal logic proof
+I have completed the research phase for the task which involves modal logic proof
 automation. During this research, I analyzed the LeanSearch API documentation,
 reviewed existing proof search implementations, evaluated different integration
 patterns, and created a detailed report with recommendations for implementation.
@@ -233,13 +233,13 @@ patterns, and created a detailed report with recommendations for implementation.
 
 **IMPORTANT**: Do NOT add conclusions or closing statements after the output.
 
-The output already provides task/command context. Adding a conclusion like "Task 258 completed" or "Command /review finished" is redundant.
+The output already provides task/command context. Adding a conclusion like "Task {N} completed" or "Command /review finished" is redundant.
 
 **Correct:**
 ```
-Research completed for Task #258
+Research completed for Task #{N}
 
-Report: specs/258_modal_logic_automation/reports/01_modal-logic-research.md
+Report: specs/{NNN}_modal_logic_automation/reports/01_modal-logic-research.md
 
 Status: [RESEARCHED]
 Next: /plan 258
@@ -247,14 +247,14 @@ Next: /plan 258
 
 **Incorrect (redundant conclusion):**
 ```
-Research completed for Task #258
+Research completed for Task #{N}
 
 Report: specs/258_modal_logic_automation/reports/01_modal-logic-research.md
 
 Status: [RESEARCHED]
 Next: /plan 258
 
-Task 258 research completed successfully.  ← REDUNDANT, DO NOT ADD
+Task {N} research completed successfully.  ← REDUNDANT, DO NOT ADD
 ```
 
 ## Artifact Display
@@ -264,9 +264,9 @@ Task 258 research completed successfully.  ← REDUNDANT, DO NOT ADD
 Use labeled paths for console output:
 
 ```
-Report: specs/258_modal_logic/reports/01_modal-logic-research.md
-Plan: specs/258_modal_logic/plans/02_modal-logic-plan.md
-Summary: specs/258_modal_logic/summaries/01_modal-logic-summary.md
+Report: specs/{NNN}_modal_logic/reports/01_modal-logic-research.md
+Plan: specs/{NNN}_modal_logic/plans/02_modal-logic-plan.md
+Summary: specs/{NNN}_modal_logic/summaries/01_modal-logic-summary.md
 ```
 
 ### Markdown File Format
@@ -291,7 +291,7 @@ Recommendation: {how_to_fix}
 
 ### Example
 ```
-Research failed for Task #999
+Research failed for Task #{N}
 
 Error: Task not found in specs/TODO.md
 
@@ -304,7 +304,7 @@ Recommendation: Verify task number and retry
 
 **Research command:**
 ```
-Research completed for Task #258
+Research completed for Task #{N}
 
 Report: specs/258_modal_logic/reports/01_modal-logic-research.md
 
@@ -314,31 +314,31 @@ Next: /plan 258
 
 **Plan command:**
 ```
-Plan created for Task #258
+Plan created for Task #{N}
 
-Plan: specs/258_modal_logic/plans/02_modal-logic-plan.md
+Plan: specs/{NNN}_modal_logic/plans/02_modal-logic-plan.md
 
 Phases: 3
 Estimated effort: 4-6 hours
 
 Status: [PLANNED]
-Next: /implement 258
+Next: /implement {N}
 ```
 
 **Task creation:**
 ```
-Task #260 created: Fix parser edge case
+Task #{N} created: Fix parser edge case
 
 Status: [NOT STARTED]
 Task Type: general
-Artifacts path: specs/260_fix_parser_edge_case/ (created on first artifact)
+Artifacts path: specs/{NNN}_fix_parser_edge_case/ (created on first artifact)
 ```
 
 ### Template B: Standard
 
 **Implement command (complete):**
 ```
-Implementation complete for Task #258
+Implementation complete for Task #{N}
 
 Summary: specs/258_modal_logic/summaries/01_modal-logic-summary.md
 
@@ -349,13 +349,13 @@ Status: [COMPLETED]
 
 **Implement command (partial):**
 ```
-Implementation paused for Task #258
+Implementation paused for Task #{N}
 
 Completed: Phases 1-2
 Remaining: Phase 3
 
 Status: [IMPLEMENTING]
-Next: /implement 258 (will resume from Phase 3)
+Next: /implement {N} (will resume from Phase 3)
 ```
 
 **Errors command:**
@@ -369,10 +369,10 @@ Errors: 15 total
 - High unfixed: 5
 
 Tasks created: 2
-- Task #261: Fix delegation timeout
-- Task #262: Fix state sync failure
+- Task #{N}: Fix delegation timeout
+- Task #{N}: Fix state sync failure
 
-Next: /implement 261
+Next: /implement {N}
 ```
 
 ### Template C: Complex
@@ -411,12 +411,12 @@ Issues found:
 - Low: 12
 
 Tasks created: 2
-- Task #263: Fix critical LSP error (grouped, 4 issues)
-- Task #264: Code quality improvements (grouped, 6 issues)
+- Task #{N}: Fix critical LSP error (grouped, 4 issues)
+- Task #{N}: Code quality improvements (grouped, 6 issues)
 
 Next Steps:
 1. Review report for details
-2. Run /implement 263 to address critical issue
+2. Run /implement {N} to address critical issue
 ```
 
 **Meta command:**
@@ -426,18 +426,18 @@ Tasks Created
 Created 3 task(s) for agent system:
 
 High Priority:
-- Task #265: Create skill-export
-  Path: specs/265_create_skill_export/
+- Task #{N}: Create skill-export
+  Path: specs/{NNN}_create_skill_export/
 
 Medium Priority:
-- Task #266: Add export agent
-  Path: specs/266_add_export_agent/
-- Task #267: Update AGENTS.md references
-  Path: specs/267_update_claudemd_references/
+- Task #{N}: Add export agent
+  Path: specs/{NNN}_add_export_agent/
+- Task #{N}: Update AGENTS.md references
+  Path: specs/{NNN}_update_claudemd_references/
 
 Next Steps:
 1. Review tasks in TODO.md
-2. Run /research 265 to begin research on first task
+2. Run /research {N} to begin research on first task
 3. Progress through /research -> /plan -> /implement cycle
 ```
 
