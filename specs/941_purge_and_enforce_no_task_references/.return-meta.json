@@ -294,5 +294,9 @@
         "unrelated-wip"
       ]
     }
-  ]
+  ],
+  "metadata": {
+    "cycles_used": 5,
+    "final_state": "implementing"
+  }
 }
