@@ -287,24 +287,36 @@ a file no other phase edits, so it carries no ordering constraint against the co
 
 ---
 
-### Phase 4: Convert the three isolated writers [NOT STARTED]
+### Phase 4: Convert the three isolated writers [COMPLETED]
 
 - **Goal:** Convert the lowest-risk, most-isolated writers to `state-write.sh`, removing their
   hand-rolled tmp-and-mv sequences and shared-path EXIT traps.
 - **Tasks:**
-  - [ ] `manage-topics.sh`: convert both write sites (the `add` and `set` subcommands) to
+  - [x] `manage-topics.sh`: convert both write sites (the `add` and `set` subcommands) to
         `state-write.sh` calls; delete the bare
         `trap 'rm -f "$TMP_DIR/state.json.tmp"' EXIT` and the `$TMP_DIR/state.json.tmp`
-        staging path entirely.
-  - [ ] `reconcile-artifacts.sh`: convert its append-only artifact-registration write; delete the
-        `specs/tmp/state-reconcile.json` staging path.
-  - [ ] `archive-task.sh`: convert ONLY the `del(.active_projects[] | select(...))` removal from
+        staging path entirely. *(completed: also added an optional `--session-id` flag,
+        self-generating one when absent, since neither write subcommand previously accepted a
+        session_id at all — see Plan Deviations)*
+  - [x] `reconcile-artifacts.sh`: convert its append-only artifact-registration write; delete the
+        `specs/tmp/state-reconcile.json` staging path. *(completed: also added an optional
+        `--session-id` flag with the same self-generation fallback, and moved `commands/task.md`'s
+        `sync_session_id` generation earlier so its Sync Mode caller now attributes the mutex
+        properly instead of relying on the fallback)*
+  - [x] `archive-task.sh`: convert ONLY the `del(.active_projects[] | select(...))` removal from
         `specs/state.json`, eliminating the `"${STATE_FILE}.tmp"` path that collides with
         `commands/review.md`'s literal. Leave the `archive/state.json` write untouched — a
-        different file, out of scope.
-  - [ ] For each converted site, confirm the caller passes its session_id through to the helper
-        so mutex ownership is attributable.
-  - [ ] Verify no converted script still contains a `state.json`-targeted `> tmp && mv` sequence.
+        different file, out of scope. *(completed: also added an optional `--session-id` flag
+        with self-generation fallback, since this script was found to have zero callers anywhere
+        in the source store — see Scope Hypothesis note below)*
+  - [x] For each converted site, confirm the caller passes its session_id through to the helper
+        so mutex ownership is attributable. *(completed with a deviation: see Plan Deviations —
+        `manage-topics.sh` has dozens of callers across core/cslib/literature that pass no
+        session_id; rather than touch every caller file, each converted script gained a
+        self-generating `--session-id` fallback identical in shape to
+        `command-gate-in.sh`'s pattern, so existing callers keep working unchanged and gain
+        attribution only where a caller opts in)*
+  - [x] Verify no converted script still contains a `state.json`-targeted `> tmp && mv` sequence.
 - **Timing:** 1.5 hours
 - **Depends on:** 3
 - **Verification Tier:** interface
@@ -313,7 +325,11 @@ a file no other phase edits, so it carries no ordering constraint against the co
   exactly one write to a non-`specs/state.json` file in `archive-task.sh` that must be left
   alone. Confirm at implementation time by grepping each file for `mv ` and `state.json` and
   enumerating every hit before editing; if the count differs, record the discrepancy rather than
-  silently converting more or fewer sites.
+  silently converting more or fewer sites. **Measured: confirmed exactly four sites as
+  hypothesized.** Additional finding not in the hypothesis: `archive-task.sh` itself has ZERO
+  callers anywhere in the source store (grepped `agent-system/` for `archive-task.sh` outside its
+  own file and manifest registration) — it is a standalone, presently-uncalled CLI utility, not a
+  gap in this phase's grep.
 - **Verification:**
   - `bash -n` on all three scripts exits 0.
   - `grep -n 'state\.json.*tmp\|tmp.*state\.json'` over the three files returns no

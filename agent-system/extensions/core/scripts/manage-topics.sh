@@ -6,8 +6,8 @@
 #
 # Usage:
 #   manage-topics.sh list
-#   manage-topics.sh add TOPIC
-#   manage-topics.sh set TASK_NUM TOPIC
+#   manage-topics.sh add TOPIC [--session-id SID]
+#   manage-topics.sh set TASK_NUM TOPIC [--session-id SID]
 #   manage-topics.sh validate TOPIC
 #
 # Subcommands:
@@ -16,16 +16,23 @@
 #   set TASK_NUM TOPIC  Set topic on task TASK_NUM and ensure TOPIC is in active_topics
 #   validate TOPIC    Exit 0 if TOPIC is in active_topics, exit 1 if not (no stdout)
 #
+# --session-id SID   Optional, accepted by `add`/`set` (the two write subcommands). Attributes
+#                     the specs/.scope-lock mutex acquisition (via state-write.sh) to this
+#                     session. If omitted, a session_id is generated inline using the same
+#                     portable pattern command-gate-in.sh uses, so this script remains a
+#                     self-contained drop-in for its many existing callers that have no
+#                     session_id of their own to pass.
+#
 # Exit codes:
 #   0 - Success (list/add/set) or topic found (validate)
 #   1 - Topic not found (validate) or bad arguments
 #   2 - state.json not found or read error
-#   3 - jq write failure (tmp-file step)
+#   3 - jq write failure (state-write.sh)
 #   4 - Task not found (set subcommand)
 #
-# Note: Uses tmp-file atomic write (jq -> .tmp && mv .tmp -> file).
-# No flock is used; the codebase convention is tmp-file rename, which minimises
-# the write window for single-threaded Claude Code agent sessions.
+# Note: write subcommands (add/set) route through state-write.sh, the single mutex-guarded
+# specs/state.json writer -- see scripts/state-write.sh's own header for the full serialization
+# contract (fail-closed acquire, private mktemp staging, jq empty validation before mv).
 
 set -euo pipefail
 
@@ -34,19 +41,38 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
-TMP_DIR="$PROJECT_ROOT/specs/tmp"
 
-# --- Cleanup trap ---
-trap 'rm -f "$TMP_DIR/state.json.tmp" 2>/dev/null || true' EXIT
+# --- Extract an optional --session-id SID anywhere in the argument list, leaving the rest of
+# the positional arguments (subcommand + its own args) in order. ---
+SESSION_ID=""
+ARGS=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --session-id)
+      SESSION_ID="${2:-}"
+      shift 2
+      ;;
+    --session-id=*)
+      SESSION_ID="${1#--session-id=}"
+      shift
+      ;;
+    *)
+      ARGS+=("$1")
+      shift
+      ;;
+  esac
+done
+set -- "${ARGS[@]}"
+
+if [[ -z "$SESSION_ID" ]]; then
+  SESSION_ID="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+fi
 
 # --- Guard: state.json must exist ---
 if [[ ! -f "$STATE_FILE" ]]; then
   echo "Error: state.json not found at $STATE_FILE" >&2
   exit 2
 fi
-
-# --- Ensure tmp directory exists ---
-mkdir -p "$TMP_DIR"
 
 # --- Subcommand dispatch ---
 SUBCMD="${1:-}"
@@ -66,29 +92,19 @@ case "$SUBCMD" in
   add)
     TOPIC="${2:-}"
     if [[ -z "$TOPIC" ]]; then
-      echo "Usage: $0 add TOPIC" >&2
+      echo "Usage: $0 add TOPIC [--session-id SID]" >&2
       exit 1
     fi
 
     # Use index($t) == null pattern (safe under Claude Code Issue #1132 — no != operator)
-    jq --arg t "$TOPIC" \
+    "$SCRIPT_DIR/state-write.sh" \
       'if ((.active_topics // []) | index($t)) == null
        then .active_topics = ((.active_topics // []) + [$t])
        else .
        end' \
-      "$STATE_FILE" > "$TMP_DIR/state.json.tmp"
-
-    if [[ $? -ne 0 ]]; then
-      echo "Error: jq failed to update active_topics" >&2
-      exit 3
-    fi
-
-    if ! jq empty "$TMP_DIR/state.json.tmp" 2>/dev/null; then
-      echo "Error: jq produced invalid JSON" >&2
-      exit 3
-    fi
-
-    mv "$TMP_DIR/state.json.tmp" "$STATE_FILE"
+      --session-id "$SESSION_ID" \
+      --arg t "$TOPIC" \
+      || { echo "Error: state-write.sh failed to update active_topics" >&2; exit 3; }
     ;;
 
   # ------------------------------------------------------------------
@@ -98,7 +114,7 @@ case "$SUBCMD" in
     TASK_NUM="${2:-}"
     TOPIC="${3:-}"
     if [[ -z "$TASK_NUM" || -z "$TOPIC" ]]; then
-      echo "Usage: $0 set TASK_NUM TOPIC" >&2
+      echo "Usage: $0 set TASK_NUM TOPIC [--session-id SID]" >&2
       exit 1
     fi
 
@@ -117,26 +133,17 @@ case "$SUBCMD" in
       exit 4
     fi
 
-    # Step 1: set topic on the task entry + ensure active_topics contains the topic
-    jq --arg num "$TASK_NUM" --arg t "$TOPIC" \
+    # Set topic on the task entry + ensure active_topics contains the topic
+    "$SCRIPT_DIR/state-write.sh" \
       '(.active_projects[] | select(.project_number == ($num | tonumber))) |= . + {topic: $t}
        | if ((.active_topics // []) | index($t)) == null
          then .active_topics = ((.active_topics // []) + [$t])
          else .
          end' \
-      "$STATE_FILE" > "$TMP_DIR/state.json.tmp"
-
-    if [[ $? -ne 0 ]]; then
-      echo "Error: jq failed to update task topic" >&2
-      exit 3
-    fi
-
-    if ! jq empty "$TMP_DIR/state.json.tmp" 2>/dev/null; then
-      echo "Error: jq produced invalid JSON" >&2
-      exit 3
-    fi
-
-    mv "$TMP_DIR/state.json.tmp" "$STATE_FILE"
+      --session-id "$SESSION_ID" \
+      --arg num "$TASK_NUM" \
+      --arg t "$TOPIC" \
+      || { echo "Error: state-write.sh failed to update task topic" >&2; exit 3; }
     ;;
 
   # ------------------------------------------------------------------

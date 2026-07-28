@@ -7,11 +7,15 @@
 # (preserves team research with multiple report files).
 #
 # Usage:
-#   .claude/scripts/reconcile-artifacts.sh [--dry-run] [--task N]
+#   .claude/scripts/reconcile-artifacts.sh [--dry-run] [--task N] [--session-id SID]
 #
 # Options:
-#   --dry-run     Print what would be backfilled without modifying state.json
-#   --task N      Scope the backfill to a single task number (default: all active tasks)
+#   --dry-run       Print what would be backfilled without modifying state.json
+#   --task N        Scope the backfill to a single task number (default: all active tasks)
+#   --session-id ID Attribute the specs/.scope-lock mutex acquisition (via state-write.sh) to
+#                   this session. Optional -- if omitted, a session_id is generated inline using
+#                   the same portable pattern command-gate-in.sh uses, so this script remains a
+#                   self-contained drop-in for callers that have no session_id of their own.
 #
 # Exit codes:
 #   0 - Success (no-op or backfill applied)
@@ -28,6 +32,7 @@ STATE_FILE="$PROJECT_ROOT/specs/state.json"
 # --- Argument parsing ---
 DRY_RUN=false
 TASK_FILTER=""
+SESSION_ID=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --dry-run)
@@ -54,12 +59,28 @@ while [[ $# -gt 0 ]]; do
       fi
       shift
       ;;
+    --session-id)
+      if [[ $# -lt 2 || -z "$2" ]]; then
+        echo "Error: --session-id requires a value" >&2
+        exit 1
+      fi
+      SESSION_ID="$2"
+      shift 2
+      ;;
+    --session-id=*)
+      SESSION_ID="${1#--session-id=}"
+      shift
+      ;;
     *)
-      echo "Usage: $0 [--dry-run] [--task N]" >&2
+      echo "Usage: $0 [--dry-run] [--task N] [--session-id SID]" >&2
       exit 1
       ;;
   esac
 done
+
+if [[ -z "$SESSION_ID" ]]; then
+  SESSION_ID="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+fi
 
 # --- Validate state.json ---
 if [[ ! -f "$STATE_FILE" ]]; then
@@ -152,17 +173,17 @@ while IFS='|' read -r task_num task_slug; do
       if [[ "$DRY_RUN" == "true" ]]; then
         echo "[reconcile] Would backfill: task=$task_num type=$artifact_type path=$rel_path"
       else
-        # Append-only registration (no remove-by-type step)
-        mkdir -p "$PROJECT_ROOT/specs/tmp"
-        jq --argjson num "$task_num" \
-           --arg path "$rel_path" \
-           --arg type "$artifact_type" \
-           --arg summary "$summary" \
+        # Append-only registration (no remove-by-type step), via the shared mutex-guarded writer.
+        "$SCRIPT_DIR/state-write.sh" \
           '(.active_projects[] | select(.project_number == $num)).artifacts =
             ((.active_projects[] | select(.project_number == $num)).artifacts // []) +
             [{"path": $path, "type": $type, "summary": $summary}]' \
-          "$STATE_FILE" > "$PROJECT_ROOT/specs/tmp/state-reconcile.json" \
-          && mv "$PROJECT_ROOT/specs/tmp/state-reconcile.json" "$STATE_FILE"
+          --session-id "$SESSION_ID" \
+          --argjson num "$task_num" \
+          --arg path "$rel_path" \
+          --arg type "$artifact_type" \
+          --arg summary "$summary" \
+          || { echo "Error: state-write.sh failed to backfill task=$task_num path=$rel_path" >&2; exit 1; }
         echo "[reconcile] Backfilled: task=$task_num type=$artifact_type path=$rel_path"
       fi
 

@@ -1,15 +1,23 @@
 #!/usr/bin/env bash
 # archive-task.sh - Archive a single task from active state to archive
 #
-# Usage: archive-task.sh <task_number> <project_name> [--dry-run]
+# Usage: archive-task.sh <task_number> <project_name> [--dry-run] [--session-id SID]
 #
 # Operations:
 #   A. Move task entry from state.json active_projects to archive/state.json completed_projects
-#   B. Remove task entry from state.json active_projects
+#      (archive/state.json is a DIFFERENT file from specs/state.json -- out of scope for the
+#      shared state-write.sh conversion; this step's write is unchanged.)
+#   B. Remove task entry from state.json active_projects (the ONLY specs/state.json write in
+#      this script; routed through state-write.sh)
 #   C. Regenerate TODO.md from state.json (task no longer in active_projects, so not rendered)
 #   D. Move task directory from specs/ to specs/archive/
 #
 # Handles both padded (015_slug) and unpadded (15_slug) directory formats.
+#
+# --session-id SID   Optional. Attributes the specs/.scope-lock mutex acquisition (via
+#                     state-write.sh) to this session. If omitted, a session_id is generated
+#                     inline using the same portable pattern command-gate-in.sh uses, so this
+#                     script remains callable standalone.
 #
 # Exit codes:
 #   0 - Success
@@ -18,16 +26,41 @@
 set -euo pipefail
 
 # --- Arguments ---
-task_number="${1:-}"
-project_name="${2:-}"
+task_number=""
+project_name=""
 dry_run=false
-if [ "${3:-}" = "--dry-run" ]; then
-  dry_run=true
-fi
+session_id=""
+positional=()
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --dry-run)
+      dry_run=true
+      shift
+      ;;
+    --session-id)
+      session_id="${2:-}"
+      shift 2
+      ;;
+    --session-id=*)
+      session_id="${1#--session-id=}"
+      shift
+      ;;
+    *)
+      positional+=("$1")
+      shift
+      ;;
+  esac
+done
+task_number="${positional[0]:-}"
+project_name="${positional[1]:-}"
 
 if [ -z "$task_number" ] || [ -z "$project_name" ]; then
-  echo "Usage: archive-task.sh <task_number> <project_name> [--dry-run]" >&2
+  echo "Usage: archive-task.sh <task_number> <project_name> [--dry-run] [--session-id SID]" >&2
   exit 1
+fi
+
+if [ -z "$session_id" ]; then
+  session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 fi
 
 # --- Paths ---
@@ -100,11 +133,13 @@ jq --argjson entry "$task_entry" \
 echo "Archived state entry for task $task_number to $archive_array"
 
 # --- B. Remove task from state.json active_projects ---
-# Use del() pattern -- Issue #1132-safe (avoids != operator)
-jq --argjson num "$task_number" \
+# Use del() pattern -- Issue #1132-safe (avoids != operator). Routed through state-write.sh, the
+# single mutex-guarded specs/state.json writer.
+"$SCRIPT_DIR/state-write.sh" \
   'del(.active_projects[] | select(.project_number == $num))' \
-  "$STATE_FILE" > "${STATE_FILE}.tmp" \
-  && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+  --session-id "$session_id" \
+  --argjson num "$task_number" \
+  || { echo "error: state-write.sh failed to remove task $task_number from active_projects" >&2; exit 1; }
 
 echo "Removed task $task_number from active_projects"
 

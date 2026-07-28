@@ -1,0 +1,35 @@
+{
+  "phase": 4,
+  "phase_name": "Convert the three isolated writers",
+  "started_at": "2026-07-28T00:55:00Z",
+  "last_updated": "2026-07-28T01:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Convert manage-topics.sh (add, set), reconcile-artifacts.sh, and archive-task.sh's del() removal to state-write.sh calls",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/manage-topics.sh",
+        "agent-system/extensions/core/scripts/reconcile-artifacts.sh",
+        "agent-system/extensions/core/scripts/archive-task.sh",
+        "agent-system/extensions/core/commands/task.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.1",
+      "description": "manage-topics.sh, reconcile-artifacts.sh, and archive-task.sh previously had no session_id parameter/plumbing at all, and manage-topics.sh has dozens of pre-existing callers across core/cslib/literature extensions",
+      "type": "altered",
+      "reason": "Added an optional --session-id flag to each converted script, self-generating a session_id via the same portable pattern command-gate-in.sh uses when the flag is omitted, rather than requiring every existing caller (dozens for manage-topics.sh) to be updated in this phase. This keeps all existing call sites working unchanged while enabling proper attribution for any caller that opts in. commands/task.md's Sync Mode caller of reconcile-artifacts.sh was updated to pass its sync_session_id (moved earlier) for genuine attribution.",
+      "annotation": "*(deviation: altered — added self-generating --session-id fallback instead of touching every caller)*"
+    }
+  ],
+  "scope_hypothesis_confirmed": {
+    "asserted": "exactly four specs/state.json write sites across three scripts",
+    "measured": "confirmed exactly four; additionally discovered archive-task.sh has zero callers anywhere in the source store"
+  }
+}

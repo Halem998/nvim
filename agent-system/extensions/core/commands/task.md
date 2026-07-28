@@ -434,8 +434,13 @@ state.json is the authoritative source of truth. Sync validates integrity and re
    ```
 
 2.5. **Artifact reconciliation** — backfill missing artifact registrations:
+
+   Sync Mode does not source `command-gate-in.sh`, so it has no `session_id` of its own —
+   generate one inline using the standard portable pattern, shared by this step and step 2.6
+   below:
    ```bash
-   bash .claude/scripts/reconcile-artifacts.sh
+   sync_session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+   bash .claude/scripts/reconcile-artifacts.sh --session-id "$sync_session_id"
    ```
 
 2.6. **Status reconciliation** — repair tasks stuck in an in-flight status whose artifact for
@@ -443,13 +448,7 @@ state.json is the authoritative source of truth. Sync validates integrity and re
    never reached postflight). This is the primary, user-invoked trigger for
    `reconcile-task-status.sh`; it runs only on explicit `/task --sync` invocation, never on a
    hot path. Runs after step 2.5 so artifact registration is backfilled before status is
-   reconciled against it.
-
-   Sync Mode does not source `command-gate-in.sh`, so it has no `session_id` of its own —
-   generate one inline using the standard portable pattern:
-   ```bash
-   sync_session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
-   ```
+   reconciled against it. Reuses `$sync_session_id` generated in step 2.5 above.
 
    Sweep every task whose status is one of the four statuses `reconcile-task-status.sh` knows
    how to reconcile (all other statuses are already a no-op inside the script itself, so no
