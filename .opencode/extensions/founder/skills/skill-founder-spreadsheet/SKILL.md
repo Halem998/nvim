@@ -322,7 +322,7 @@ Brief text summary (NOT JSON).
 
 Expected successful return:
 ```
-Cost breakdown research completed for task 234:
+Cost breakdown research completed for task {N}:
 - Mode: BUDGET, 8 forcing questions completed
 - Categories: Personnel, Infrastructure, Marketing, Operations
 - Line items: 12

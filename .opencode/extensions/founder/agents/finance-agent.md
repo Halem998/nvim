@@ -496,7 +496,7 @@ Write final metadata to specified path:
 Return a brief summary (NOT JSON):
 
 ```
-Financial analysis research complete for task 330:
+Financial analysis research complete for task {N}:
 - Mode: AUDIT, 7 forcing questions completed
 - Document: Q1 2026 P&L statement
 - Objective: Verify revenue projections for Series A deck

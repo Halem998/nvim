@@ -160,7 +160,7 @@ If all phases `[COMPLETED]`: Task already done, return implemented status.
 
 ### Stage 3.5: Ensure Typst Phase Exists
 
-After detecting the resume point, verify the plan includes Phase 5 (PDF Compilation). Plans created after Task #253 always include this phase, but legacy plans may lack it.
+After detecting the resume point, verify the plan includes Phase 5 (PDF Compilation). Plans created since the Typst-phase convention was adopted always include this phase, but legacy plans may lack it.
 
 **Check for Phase 5 heading in plan file**:
 ```bash
@@ -1111,7 +1111,7 @@ Write final metadata:
 Return a brief summary (NOT JSON):
 
 ```
-Founder implementation complete for task 234:
+Founder implementation complete for task {N}:
 - Report type: market-sizing, all 5 phases executed
 - Used context from plan and research report
 - Typst source: founder/market-sizing-fintech-payments.typ (primary)

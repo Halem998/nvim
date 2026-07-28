@@ -301,7 +301,7 @@ Brief text summary (NOT JSON).
 
 Expected successful return:
 ```
-Project research completed for task 234:
+Project research completed for task {N}:
 - 6 forcing questions completed
 - Project: mobile_app_launch
 - Research report: specs/234_mobile_app_launch/reports/01_project-research.md

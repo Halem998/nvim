@@ -295,7 +295,7 @@ Write to `specs/OC_{NNN}_{SLUG}/.return-meta.json`:
 
 Example return:
 ```
-Research completed for task 412:
+Research completed for task {N}:
 - Found existing modal semantics patterns in source files
 - Used lean_leansearch to find 5 relevant Mathlib theorems
 - Loaded kripke-semantics-overview.md and modal-proof-strategies.md context

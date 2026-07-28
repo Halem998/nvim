@@ -274,7 +274,7 @@ This skill returns a **brief text summary** (NOT JSON). The JSON metadata is wri
 
 Example successful return:
 ```
-Nix implementation completed for task 412:
+Nix implementation completed for task {N}:
 - All 3 phases executed, flake check passes
 - Created NixOS module at modules/myservice.nix
 - Created summary at specs/412_configure_nginx/summaries/implementation-summary-20260203.md
@@ -284,7 +284,7 @@ Nix implementation completed for task 412:
 
 Example partial return:
 ```
-Nix implementation partially completed for task 412:
+Nix implementation partially completed for task {N}:
 - Phases 1-2 of 3 executed
 - Phase 3 blocked: attribute 'missingPkg' missing
 - Partial summary at specs/412_configure_nginx/summaries/implementation-summary-20260203.md

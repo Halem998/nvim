@@ -318,7 +318,7 @@ Write to `specs/OC_{NNN}_{SLUG}/.return-meta.json`:
 
 Example return:
 ```
-Research completed for task 412:
+Research completed for task {N}:
 - Analyzed existing telescope configuration patterns
 - Documented plugin dependencies (plenary.nvim, fzf-native)
 - Identified lazy loading strategy using cmd and keys

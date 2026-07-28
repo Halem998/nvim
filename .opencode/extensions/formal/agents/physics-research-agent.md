@@ -276,7 +276,7 @@ Write to `specs/OC_{NNN}_{SLUG}/.return-meta.json`:
 
 Example return:
 ```
-Research completed for task 412:
+Research completed for task {N}:
 - Found existing fixed point patterns in source files
 - Used lean_leansearch to find Banach fixed point theorem in Mathlib
 - Loaded dynamical-systems.md context

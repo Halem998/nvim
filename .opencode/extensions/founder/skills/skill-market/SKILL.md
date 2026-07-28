@@ -321,7 +321,7 @@ Brief text summary (NOT JSON).
 
 Expected successful return:
 ```
-Market sizing research completed for task 234:
+Market sizing research completed for task {N}:
 - Mode: SIZE, 8 forcing questions completed
 - Problem: Streamline deploy coordination for mid-market SaaS
 - Entity count: 500,000 mid-market SaaS companies globally (Gartner)

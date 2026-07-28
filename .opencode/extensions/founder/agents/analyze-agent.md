@@ -324,7 +324,7 @@ Write final metadata to specified path:
 Return a brief summary (NOT JSON):
 
 ```
-Competitive analysis research complete for task 234:
+Competitive analysis research complete for task {N}:
 - Mode: POSITION, 7 forcing questions completed
 - Direct competitors: Stripe, Square, Adyen
 - Indirect competitors: Spreadsheets, legacy bank integrations

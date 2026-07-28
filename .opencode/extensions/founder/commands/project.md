@@ -678,7 +678,7 @@ Alternative: Resume existing task:
 Alternative: Review existing timeline:
 ```
 /project REVIEW "description"  -> Asks review questions, creates task, stops at [NOT STARTED]
-/project 234                   -> Runs review on task 234's artifacts
+/project {N}                   -> Runs review on task {N}'s artifacts
 /project /path/to/timeline.typ -> Reviews external timeline file
 ```
 

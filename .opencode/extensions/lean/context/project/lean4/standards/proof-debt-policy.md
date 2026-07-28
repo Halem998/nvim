@@ -41,7 +41,7 @@ Both represent unverified mathematical claims that propagate transitively throug
 
 **Examples of FORBIDDEN patterns**:
 ```lean
--- FORBIDDEN: "We'll fix this sorry in task 999"
+-- FORBIDDEN: "We'll fix this sorry in task {N}"
 sorry  -- TODO: complete in follow-up task
 
 -- FORBIDDEN: "Temporary sorry, tracked elsewhere"

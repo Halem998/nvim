@@ -323,7 +323,7 @@ Brief text summary (NOT JSON).
 
 Expected successful return:
 ```
-Competitive analysis research completed for task 234:
+Competitive analysis research completed for task {N}:
 - Mode: POSITION, 7 forcing questions completed
 - Direct competitors: Stripe, Square, Adyen
 - Indirect competitors: Spreadsheets, legacy bank integrations

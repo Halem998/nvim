@@ -339,7 +339,7 @@ Write final metadata to specified path:
 Return a brief summary (NOT JSON):
 
 ```
-Pitch deck research complete for task 234:
+Pitch deck research complete for task {N}:
 - Purpose: INVESTOR, analyzed 3 source materials
 - Slides populated: 7/10 with extracted content
 - Critical gaps: 3 (traction, financials, ask amount)
