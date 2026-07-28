@@ -24,7 +24,7 @@ The state machine is implemented inside `skill-orchestrate` (Pattern C: Orchestr
 | `planning` | `status = "planning"` | Wait / re-check | — | exit with warning |
 | `planned` | `status = "planned"` | `dispatch(implement, task_n, orchestrator_mode=true)` | `implemented` | check blockers |
 | `implementing` | `status = "implementing"` | `dispatch(implement, task_n, orchestrator_mode=true)` — resume | `implemented` | check blockers |
-| `partial` (with handoff) | `.orchestrator-handoff.json` has `continuation_context.handoff_path` | `dispatch(implement, task_n, continuation_context, orchestrator_mode=true)` | `implemented` | check blockers |
+| `partial` (with handoff) | `.orchestrator-handoff.json` has a continuation pointer in either accepted form — nested `continuation_context.handoff_path` or flat top-level `continuation_path` (see `docs/architecture/handoff-schema.md`'s "Two Accepted Forms") | `dispatch(implement, task_n, continuation_context, orchestrator_mode=true)` (normalized to `{ handoff_path, orchestrator_mode: true }`) | `implemented` | check blockers |
 | `partial` (with blockers) | `.orchestrator-handoff.json` has non-empty `blockers` array | `dispatch_blocker_escalation()` → revise → implement | `implemented` | increment cycle |
 | `partial` (no handoff, cycle limit) | `cycle_count >= MAX_CYCLES` | Report state, exit | — | — |
 | `partial` (infra cap) | `infra_failures >= MAX_INFRA_FAILURES` | Report connectivity issue, exit | — | — |
@@ -200,7 +200,15 @@ handoff=$(cat "specs/${padded_num}_${project_name}/.orchestrator-handoff.json")
 status=$(echo "$handoff" | jq -r '.status')
 blockers=$(echo "$handoff" | jq -c '.blockers // []')
 next_hint=$(echo "$handoff" | jq -r '.next_action_hint // "none"')
-continuation=$(echo "$handoff" | jq -c '.continuation_context // null')
+# Dual-form resolution (see handoff-schema.md's "Two Accepted Forms"): accepts EITHER the nested
+# continuation_context.handoff_path OR the flat top-level continuation_path, normalized to
+# { handoff_path, orchestrator_mode: true } or null.
+continuation=$(echo "$handoff" | jq -c '
+  ((.continuation_context // null) | if . != null then (.handoff_path // null) else null end) as $nested |
+  (.continuation_path // null) as $flat |
+  ($nested // $flat) as $resolved |
+  if $resolved != null then {handoff_path: $resolved, orchestrator_mode: true} else null end
+')
 ```
 
 The `.orchestrator-handoff.json` file is **≤ 400 tokens**. The orchestrator context grows by
@@ -234,13 +242,12 @@ EXIT: Task 593 completed successfully.
 Cycle 1: status=planned → dispatch implement (orchestrator_mode=true)
          Agent context exhausted after phase 2
          Agent writes continuation handoff to handoffs/phase-2-handoff-T.md
-         handoff: {
+         handoff (flat form — what a live H9 hard-mode wrap-up writer actually emits; see
+         handoff-schema.md's "Two Accepted Forms"): {
            status: "partial",
            phases_completed: 2,
            phases_total: 4,
-           continuation_context: {
-             handoff_path: "specs/593_.../handoffs/phase-2-handoff-T.md"
-           }
+           continuation_path: "specs/593_.../handoffs/phase-2-handoff-T.md"
          }
 
 Cycle 2: read continuation_context from handoff

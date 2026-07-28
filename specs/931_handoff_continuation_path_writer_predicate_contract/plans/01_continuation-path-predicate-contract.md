@@ -1,7 +1,7 @@
 # Implementation Plan: Task #931
 
 - **Task**: 931 - handoff_continuation_path_writer_predicate_contract
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/931_handoff_continuation_path_writer_predicate_contract/reports/01_handoff-continuation-predicate-contract.md
@@ -466,35 +466,53 @@ every hit is either updated or consciously left alone — the count is a hypothe
 
 ---
 
-### Phase 6: Full-gate consistency sweep [NOT STARTED]
+### Phase 6: Full-gate consistency sweep [COMPLETED]
 
 **Goal**: One pass confirming the fix is coherent across script, both engines, docs, and validator,
 with no stray deploy-tree edits, no disturbed sibling work, and no leaked task references.
 
 **Tasks**:
-- [ ] Run the full regression suite green:
+- [x] Run the full regression suite green:
       `bash agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh`.
-- [ ] Run the two sibling suites in `scripts/tests/` to confirm no collateral damage.
-- [ ] `bash -n` every modified shell file.
-- [ ] `jq . agent-system/extensions/core/manifest.json`.
-- [ ] Residual-nested-only sweep:
+      *(completed: 9 passed, 0 failed, exit 0)*
+- [x] Run the two sibling suites in `scripts/tests/` to confirm no collateral damage. *(completed:
+      test-census-count.sh 8/8, test-validate-no-task-references.sh 21/21, both exit 0)*
+- [x] `bash -n` every modified shell file. *(completed: all 3 clean)*
+- [x] `jq . agent-system/extensions/core/manifest.json`. *(completed: parses)*
+- [x] Residual-nested-only sweep:
       `grep -rn "continuation_context" agent-system/extensions/core --include=*.sh --include=*.md`
       and confirm every remaining read site either resolves both forms or is a writer/doc reference
-      that intentionally names one form.
-- [ ] Cross-engine agreement check: for each of Phase 1's Fixtures A–D, confirm the classifier
-      verdict, base SKILL.md's hand-applied rule, and hard SKILL.md's rule all agree.
-- [ ] `validate-handoff.sh` against Fixtures A and B to confirm the validator's pre-existing dual
-      acceptance still holds and has not been contradicted by the doc rewrite.
-- [ ] **Source-store boundary check**: `git status --short -- .claude/` shows no modified tracked
-      file. Every edit in this plan must be rooted at `agent-system/extensions/**`.
-- [ ] **Sibling-work check**: `grep -c "OFF-SCHEMA DISPATCH STATUS"` in both SKILL.md files matches
+      that intentionally names one form. *(completed: full grep reviewed; found one additional
+      residual — `docs/architecture/orchestrate-state-machine.md`'s state table row, Context
+      Flatness Guarantee code snippet, and Partial Recovery Flow example were nested-only/stale,
+      a companion doc not in this plan's original file list but describing the same rule fixed
+      elsewhere; updated for consistency rather than left as a third silently-diverging copy.
+      All other hits are writers, the fixed reader sites, or doc references correctly naming one
+      or both forms) (deviation: altered — updated orchestrate-state-machine.md, a file outside
+      this plan's originally enumerated file lists, for dual-form consistency; see progress file
+      phase-6 deviations)*
+- [x] Cross-engine agreement check: for each of Phase 1's Fixtures A–D, confirm the classifier
+      verdict, base SKILL.md's hand-applied rule, and hard SKILL.md's rule all agree. *(completed:
+      all three jq expressions run directly against all 4 fixtures, identical verdicts)*
+- [x] `validate-handoff.sh` against Fixtures A and B to confirm the validator's pre-existing dual
+      acceptance still holds and has not been contradicted by the doc rewrite. *(completed: both
+      pass with 10 PASS / 1 WARN (optional sorry_inventory field) / 0 FAIL, exit 0)*
+- [x] **Source-store boundary check**: `git status --short -- .claude/` shows no modified tracked
+      file. Every edit in this plan must be rooted at `agent-system/extensions/**`. *(completed:
+      empty output)*
+- [x] **Sibling-work check**: `grep -c "OFF-SCHEMA DISPATCH STATUS"` in both SKILL.md files matches
       pre-task values; `grep -n "dispatch_status" ` shows the three-tier validation intact.
-- [ ] **No-task-references check**: `git diff` over all changed files contains no `task N` /
+      *(completed: base=2, hard=1, unchanged; diff shows zero touched dispatch_status/OFF-SCHEMA
+      lines)*
+- [x] **No-task-references check**: `git diff` over all changed files contains no `task N` /
       `tasks N-M` / `(task N)` citation patterns (all changed files are outside `specs/**`).
-- [ ] Re-read the definition of done and confirm each clause is demonstrably met: a
+      *(completed: grep over the full accumulated diff since before this task's plan commit
+      found zero matches)*
+- [x] Re-read the definition of done and confirm each clause is demonstrably met: a
       standard-writer-path handoff with a populated continuation classifies as a continuation;
       `handoff-schema.md` matches actual writer and classifier behavior; a regression test covers
-      the case and was proven RED pre-fix.
+      the case and was proven RED pre-fix. *(completed: all three clauses demonstrably met — see
+      Phase 1's recorded RED and Phase 2's recorded GREEN)*
 
 **Timing**: 30 minutes
 
@@ -512,17 +530,17 @@ with no stray deploy-tree edits, no disturbed sibling work, and no leaked task r
 
 ## Testing & Validation
 
-- [ ] `test-orchestrate-triage-classify.sh` observed **RED** on Fixture A against the pre-fix
+- [x] `test-orchestrate-triage-classify.sh` observed **RED** on Fixture A against the pre-fix
       predicate (mutation check, Phase 1) — a test passing both before and after does not count.
-- [ ] Same suite **GREEN** on all fixtures after Phase 2.
-- [ ] Fixture C (both forms null) still classifies `"empty"` — the relaxation did not over-relax.
-- [ ] Fixture D confirms continuation-over-blockers precedence is preserved.
-- [ ] Base and hard SKILL.md hand-applied rules agree with the script on all four fixtures.
-- [ ] `orchestrate-dry-run-report.sh` inherits the corrected verdicts with no edit.
-- [ ] `validate-handoff.sh` accepts both fixture forms (pre-existing behavior, unregressed).
-- [ ] `bash -n` clean on all modified shell files; `jq .` clean on `manifest.json`.
-- [ ] No modified tracked files under `.claude/`.
-- [ ] Sibling `dispatch_status` three-tier validation intact in both SKILL.md files.
+- [x] Same suite **GREEN** on all fixtures after Phase 2.
+- [x] Fixture C (both forms null) still classifies `"empty"` — the relaxation did not over-relax.
+- [x] Fixture D confirms continuation-over-blockers precedence is preserved.
+- [x] Base and hard SKILL.md hand-applied rules agree with the script on all four fixtures.
+- [x] `orchestrate-dry-run-report.sh` inherits the corrected verdicts with no edit.
+- [x] `validate-handoff.sh` accepts both fixture forms (pre-existing behavior, unregressed).
+- [x] `bash -n` clean on all modified shell files; `jq .` clean on `manifest.json`.
+- [x] No modified tracked files under `.claude/`.
+- [x] Sibling `dispatch_status` three-tier validation intact in both SKILL.md files.
 
 ## Artifacts & Outputs
 
@@ -534,6 +552,9 @@ with no stray deploy-tree edits, no disturbed sibling work, and no leaked task r
 - `agent-system/extensions/core/scripts/skill-base.sh` (comment-only dead-function disposition)
 - `agent-system/extensions/core/docs/architecture/handoff-schema.md` (rewritten continuation
   contract)
+- `agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md` (Phase 6
+  addition, not in the original plan: dual-form consistency fix for the same rule, found stale
+  during the residual-nested-only sweep — see Phase 6's deviation note)
 - `agent-system/extensions/core/manifest.json` (test registration)
 
 **Named follow-up for harvest (NOT implemented here)**: give
