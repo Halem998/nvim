@@ -1,9 +1,52 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/939_return_metadata_schema_compliance/summaries/01_return-metadata-schema-compliance-summary.md",
+      "summary": "Seven-phase implementation fixing both off-schema .return-meta.json writer defects (phase-field nesting ambiguity and bare-string artifacts array), recording the Item C no-fallback decision, and widening the recovered-success detection trigger in both orchestrator skills, all verified by construction against the real recovery script."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed both off-schema .return-meta.json writer defects: made phase-field nesting unambiguous across five writer/reader files (with a deliberate footprint widening to four additional silent artifacts-shape writers), added a general evidence_suspect/evidence_reason detection signal to orchestrate-recover-outcome.sh with an explicit Item C no-fallback decision, and widened the detection-escalation trigger in both skill-orchestrate and skill-orchestrate-hard so the recovered=true path can now corroborate and correct phase counts from an independent plan-file grep. All claims verified by running the real script and extracted, bash -n-checked orchestrator bash blocks against constructed scratch fixtures."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/core/agents/general-research-agent.md",
+    "agent-system/extensions/core/agents/general-research-hard-agent.md",
+    "agent-system/extensions/core/agents/planner-agent.md",
+    "agent-system/extensions/core/agents/planner-hard-agent.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh",
+    "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-team-implement/SKILL.md",
+    "specs/939_return_metadata_schema_compliance/summaries/01_return-metadata-schema-compliance-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When the same field names appear in two sibling JSON artifacts with different nesting rules (e.g. phases_completed/phases_total: nested under .metadata in .return-meta.json, but always top-level in .orchestrator-handoff.json), writer instructions drift toward whichever shape was shown most recently in the same document. The durable fix is not rewording one sentence but naming the collision explicitly at every writer call site plus adding a side-by-side callout in the shared format doc. Detection of the resulting defect is best implemented as ONE general check -- 'a present, parseable file yielded an empty or zero value its own contents contradict' -- covering multiple concrete signatures (a zero phase count on a claimed-complete status; a non-empty array yielding no extractable element) rather than one special case per field. Escalation on a detected contradiction should be evidence-based (corroborate against an independent artifact, e.g. grepping a plan file's own phase headings) rather than schema-permissive (silently accepting the off-schema shape as a fallback), so writer drift stays visible instead of being quietly blessed.",
+      "category": "PATTERN",
+      "source_artifact": "specs/939_return_metadata_schema_compliance/summaries/01_return-metadata-schema-compliance-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["schema-drift", "field-name-collision", "return-meta", "silent-degradation", "evidence-based-detection"]
+    },
+    {
+      "content": "A plan's own 'Scope Hypothesis' field, when written as an explicit contingency instruction ('if the grep finds X, add it to this phase rather than deferring it'), should be followed literally during implementation even when it widens a phase's declared file-edit list beyond what was originally enumerated -- the widening is pre-authorized by the plan itself, not an implementer's independent scope decision, and should still be recorded explicitly (in the phase's progress file deviations array and the final summary) so the widening is visible rather than silent.",
+      "category": "PATTERN",
+      "source_artifact": "specs/939_return_metadata_schema_compliance/summaries/01_return-metadata-schema-compliance-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["scope-hypothesis", "plan-format", "footprint-widening", "implementation-fidelity"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1785251682_61201e_939",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
   }
 }

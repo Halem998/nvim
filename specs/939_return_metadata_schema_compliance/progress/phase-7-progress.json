@@ -1,0 +1,61 @@
+{
+  "phase": 7,
+  "phase_name": "End-to-End Verification By Construction and Final Gates",
+  "started_at": "2026-07-28T09:56:00Z",
+  "last_updated": "2026-07-28T10:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-run all three Phase 1 fixtures against the final script and produce the before/after table",
+      "status": "done",
+      "files_touched": [],
+      "note": "control: 6/6 unchanged, evidence_suspect=false/NONE (new). defect1: 0/0 unchanged by design, evidence_suspect=true/PHASES_ZERO_ON_SUCCESS (new). defect2: artifact_path=\"\" unchanged, 3 jq stderr lines still present, evidence_suspect=true/ARTIFACTS_SHAPE_MISMATCH (new). All exit codes unchanged (0/0/0)."
+    },
+    {
+      "id": 2,
+      "description": "Re-run the Phase 6 corroboration harness (corroborating, non-corroborating, false-positive-guard fixtures)",
+      "status": "done",
+      "files_touched": [],
+      "note": "Identical results to Phase 6: corroborating (3/3 headings) flips plan_markers_verified absent->true with corrected 3/3 counts and a loud banner; non-corroborating (0/0 headings) and false-positive-guard (1/3 headings, genuine partial) both correctly stay absent/0/0."
+    },
+    {
+      "id": 3,
+      "description": "Writer-instruction anchor check across all five edited writer/reader files",
+      "status": "done",
+      "files_touched": [],
+      "note": "All five anchors confirmed present via targeted grep: general-implementation-agent.md ('go INSIDE the `metadata` object'), general-implementation-hard-agent.md ('do NOT reuse Stage 5's shape here'), skill-implementer-hard/SKILL.md ('.metadata.phases_completed'), skill-team-implement/SKILL.md ('opposite of `.orchestrator-handoff.json`'), general-research-agent.md ('required array of objects')."
+    },
+    {
+      "id": 4,
+      "description": "Source-store boundary gate and no-task-references gate across the entire task diff (all 6 phase commits)",
+      "status": "done",
+      "files_touched": [],
+      "note": "git status --porcelain: zero .claude/ paths. All 12 non-specs changed files begin with agent-system/extensions/core/. Task-number-citation grep across the full diff range (efb398458..HEAD) for agent-system/: zero NEW citations introduced (pre-existing task-808/task-774/task-447/task-412/task-1 hits, present in lines this diff never touched, confirmed via `git diff` +-line filtering)."
+    },
+    {
+      "id": 5,
+      "description": "bash -n on the modified script and scratch extractions of both skill files' modified bash blocks",
+      "status": "done",
+      "files_touched": [],
+      "note": "All four pass: orchestrate-recover-outcome.sh, skill-orchestrate Stage 5 block, skill-orchestrate Stage MT-4 block, skill-orchestrate-hard Stage 5 block."
+    },
+    {
+      "id": 6,
+      "description": "Run validate-artifact.sh against the plan file and the summary file",
+      "status": "done",
+      "files_touched": [],
+      "note": "Plan: [PASS] plan artifact is valid (0 warning(s)). Summary: [PASS] summary artifact is valid (0 warning(s))."
+    },
+    {
+      "id": 7,
+      "description": "Write the implementation summary with the before/after table and explicit item-B/item-C/footprint decisions; confirm all phase headings [COMPLETED]",
+      "status": "done",
+      "files_touched": ["specs/939_return_metadata_schema_compliance/summaries/01_return-metadata-schema-compliance-summary.md"],
+      "note": "Summary reconciles the plan's stale Phase 7 Scope Hypothesis prediction (9 files) against the actual diff (12 source-store files), per the Scope Hypothesis's own instruction to record the actual set rather than the prediction when they diverge -- the divergence is Phase 4's own declared, in-plan footprint widening (1 file -> 5), not an undeclared drift. All 7 phase headings confirmed [COMPLETED]."
+    }
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

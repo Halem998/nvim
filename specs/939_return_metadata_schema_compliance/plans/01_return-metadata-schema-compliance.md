@@ -586,36 +586,45 @@ such site found by the grep is added here, not deferred.
 
 ---
 
-### Phase 7: End-to-End Verification By Construction and Final Gates [NOT STARTED]
+### Phase 7: End-to-End Verification By Construction and Final Gates [COMPLETED]
 
 **Goal**: Confirm the observed after-state against Phase 1's recorded before-state, and run the full
 gate set for the whole task.
 
 **Tasks**:
 
-- [ ] Re-run all three Phase 1 fixtures against the final `orchestrate-recover-outcome.sh`. Record
-      stdout, stderr, and exit code for each.
-- [ ] Produce the explicit before/after table required by the task description: for each defect, the
+- [x] Re-run all three Phase 1 fixtures against the final `orchestrate-recover-outcome.sh`. Record
+      stdout, stderr, and exit code for each. *(completed — see summary's before/after table)*
+- [x] Produce the explicit before/after table required by the task description: for each defect, the
       Phase 1 observed values and the Phase 7 observed values side by side, including the new
-      `evidence_suspect`/`evidence_reason` fields.
-- [ ] Re-run the Phase 6 corroboration harness against both the corroborating and non-corroborating
-      fixtures; record both outcomes.
-- [ ] Writer-instruction check: for each of the five edited writer/reader files, grep the specific
+      `evidence_suspect`/`evidence_reason` fields. *(completed — see summary)*
+- [x] Re-run the Phase 6 corroboration harness against both the corroborating and non-corroborating
+      fixtures; record both outcomes. *(completed: identical results to Phase 6 — corroborating
+      fixture flips plan_markers_verified absent->true with 3/3 counts; non-corroborating fixture
+      stays absent/0/0)*
+- [x] Writer-instruction check: for each of the five edited writer/reader files, grep the specific
       anchor string and confirm the new wording is present and unambiguous. A human-readable
       confirmation that a fresh reader of each Stage 7 instruction cannot resolve the nesting the
-      wrong way.
-- [ ] Source-store boundary gate: confirm `git status --porcelain` contains no path beginning with
+      wrong way. *(completed: all five anchors confirmed present)*
+- [x] Source-store boundary gate: confirm `git status --porcelain` contains no path beginning with
       `.claude/`, and that every changed non-`specs/` path begins with `agent-system/extensions/core/`.
-- [ ] No-task-references gate: grep every changed file outside `specs/**` for task-number citation
-      patterns (`task [0-9]`, `tasks [0-9]`, `(task [0-9]`); confirm zero hits.
-- [ ] Run `bash -n` on the modified script and on scratch extractions of both skill files' modified
-      bash blocks.
-- [ ] Run `bash .claude/scripts/validate-artifact.sh` against this plan file if available, and
-      confirm no new errors.
-- [ ] Write the implementation summary to
+      *(completed: zero `.claude/` paths; all 12 non-specs changed files begin with
+      `agent-system/extensions/core/`)*
+- [x] No-task-references gate: grep every changed file outside `specs/**` for task-number citation
+      patterns (`task [0-9]`, `tasks [0-9]`, `(task [0-9]`); confirm zero hits. *(completed: zero
+      NEW citations introduced across the entire task diff — pre-existing task-808/task-774/
+      task-447/task-412/task-1 hits in unrelated, untouched-by-this-diff lines were confirmed via
+      `git diff` to predate this task)*
+- [x] Run `bash -n` on the modified script and on scratch extractions of both skill files' modified
+      bash blocks. *(completed: all four pass)*
+- [x] Run `bash .claude/scripts/validate-artifact.sh` against this plan file if available, and
+      confirm no new errors. *(completed: `[PASS] plan artifact is valid (0 warning(s))`)*
+- [x] Write the implementation summary to
       `specs/939_return_metadata_schema_compliance/summaries/01_return-metadata-schema-compliance-summary.md`,
       including the before/after table and the explicit item-B, item-C, and footprint decisions.
-- [ ] Confirm the plan's own phase headings are all marked `[COMPLETED]` before reporting completion.
+      *(completed)*
+- [x] Confirm the plan's own phase headings are all marked `[COMPLETED]` before reporting completion.
+      *(completed: Phases 1-6 all [COMPLETED]; this phase completes the set)*
 
 **Timing**: 1.0 hours
 
