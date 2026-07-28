@@ -1,0 +1,92 @@
+{
+  "phase": 15,
+  "phase_name": "Flip the write-time hook to blocking",
+  "started_at": "2026-07-28T00:00:00Z",
+  "last_updated": "2026-07-28T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Rewrite validate-no-task-references.sh to source the shared library, parse PreToolUse input, and block via exit 2 with fail-open behavior",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/hooks/validate-no-task-references.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Register the hook as PreToolUse (bare command form) and remove its PostToolUse entry",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/merge-sources/settings-hooks.json",
+        "agent-system/extensions/core/root-files/settings.json"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Extend the test suite with exit-code assertions and one fixture per exemption category",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Empirically verify .memory/** write-path coverage via skill-todo's live harvest logic",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Update the rule's Enforcement section write-time-gate bullet and record discovered deploy-mechanism gaps",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/rules/no-task-references-in-deliverables.md"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Redeploy and verify: deploy-headless.sh + verify-deploy.sh, confirming gate 4 passes and gate 2 shows the PreToolUse entry exactly once",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {
+      "approach": "Rely solely on root-files/settings.json for the PreToolUse registration, per the plan's literal instruction",
+      "result": "failed",
+      "reason": "root-files/settings.json is install-only (extension loader's manager.load() skips it once an extension is marked loaded); the new entry never reached this repo's already-deployed .claude/settings.json"
+    }
+  ],
+  "deviations": [
+    {
+      "task_id": "15.registration",
+      "description": "Add PreToolUse entry to root-files/settings.json only",
+      "type": "altered",
+      "reason": "root-files/settings.json is install-only and does not merge into an existing deploy; the same bare-form entry was additionally added to merge-sources/settings-hooks.json (the add-only, deep_equal-deduped merge target that does re-apply on redeploy)",
+      "annotation": "*(deviation: altered — added the PreToolUse entry to merge-sources/settings-hooks.json as well as root-files/settings.json, since only the former actually reaches an already-deployed repo)*"
+    },
+    {
+      "task_id": "15.test-suite",
+      "description": "Use /research 7, 22-24, 59 as the category-3 command-usage fixture",
+      "type": "altered",
+      "reason": "that string contains no literal 'task' token and never matches TASK_PATTERN, so it would not exercise the marked/unmarked distinction; substituted /learn --task 142",
+      "annotation": "*(deviation: altered — substituted /learn --task 142 for the plan's suggested fixture)*"
+    },
+    {
+      "task_id": "15.test-suite-marker-nesting",
+      "description": "Nested task-ref-ok:begin/end demonstration blocks inside the file's own outer category-6 wrapper",
+      "type": "altered",
+      "reason": "strip_exempt_regions is a simple line-based toggle, not nesting-aware; an inner end marker prematurely closed the outer region, unmasking four fixture lines to the repo-wide scanner",
+      "annotation": "*(deviation: altered — restructured all marker regions in the test file to be non-nested, exempting genuinely-unmarked test literals via a trailing inline comment on a separate variable-assignment line instead)*"
+    },
+    {
+      "task_id": "15.redeploy",
+      "description": "Deploy via a plain deploy-headless.sh run only",
+      "type": "altered",
+      "reason": "the headless 'Load Core' sync path skips copy_scripts/copy_manifest for already-loaded extensions, so scripts/lib/task-reference-patterns.sh (new in Phase 1/2) and the cached .claude/extensions/core/manifest.json were never actually deployed until a one-off direct invocation of the loader's copy primitives was run via headless Neovim",
+      "annotation": "*(deviation: altered — required a one-off direct invocation of loader_mod.copy_scripts/copy_manifest for the core extension to actually deploy the shared library and refresh the cached manifest; documented as a discovered deploy-mechanism gap in the rule file's Enforcement section)*"
+    }
+  ],
+  "handoff_count": 0
+}

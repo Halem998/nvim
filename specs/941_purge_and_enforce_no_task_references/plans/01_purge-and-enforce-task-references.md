@@ -926,7 +926,7 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
 
 ---
 
-### Phase 15: Flip the write-time hook to blocking [NOT STARTED]
+### Phase 15: Flip the write-time hook to blocking [COMPLETED]
 
 - **Goal:** Convert `validate-no-task-references.sh` from an advisory PostToolUse hook to a
   blocking PreToolUse gate using exit code 2, with full test coverage. This is the last phase and
@@ -939,7 +939,7 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
   never switched on against a known-dirty tree.
 
 - **Tasks:**
-  - [ ] Rewrite `agent-system/extensions/core/hooks/validate-no-task-references.sh`:
+  - [x] Rewrite `agent-system/extensions/core/hooks/validate-no-task-references.sh`:
         - Source `lib/task-reference-patterns.sh`; **delete** the inline `TASK_SEP`,
           `TASK_PATTERN`, `PHASE_PATTERN` assignments and the inline `case "$FILE" in specs/*|*/specs/*)`
           block, replacing them with `is_exempt_path` and `strip_exempt_regions` calls. After this
@@ -955,7 +955,11 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
         - On no match, or on an unresolvable `file_path`, or on empty content: exit 0 silently.
         - If the shared library cannot be sourced, exit 0 with a stderr warning — a broken guard
           must fail open, never block every write in the repo.
-  - [ ] **Registration** — two edits, and the wrapper form is load-bearing:
+        *(completed: library sourced relative to the hook's own directory
+        (`$HOOK_DIR/../scripts/lib/task-reference-patterns.sh`), independent of tool cwd; all
+        inline pattern/exemption logic removed; manually verified against 4 synthetic payloads
+        plus the full 31-fixture suite below.)*
+  - [x] **Registration** — two edits, and the wrapper form is load-bearing:
         - Remove the `validate-no-task-references.sh` entry from `hooks.PostToolUse`'s
           `Write|Edit` matcher in `agent-system/extensions/core/merge-sources/settings-hooks.json`
           (leave `validate-handoff-location.sh` and `validate-meta-write.sh` in place).
@@ -966,7 +970,19 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
           **MUST NOT** use the `2>/dev/null || echo '{}'` wrapper the PostToolUse registration
           uses: the `||` converts exit 2 into exit 0 and silently disables the block. This is the
           single most likely way this phase ships broken.
-  - [ ] **Extend `agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh`**
+        *(completed: both edits applied. **Deviation, empirically discovered**: the plan's
+        `root-files/settings.json` instruction alone does NOT reach an already-deployed repo —
+        that file is install-only (the extension loader's `manager.load()` skips it once an
+        extension is marked loaded), so this repo's existing `.claude/settings.json` never picked
+        up the new entry via a plain redeploy. Added the SAME bare-form PreToolUse object,
+        byte-identical, to `agent-system/extensions/core/merge-sources/settings-hooks.json` as
+        well (the add-only, `deep_equal`-deduped merge target that DOES re-apply on every
+        redeploy) — confirmed via `deploy-headless.sh` + `jq '.hooks.PreToolUse'` that exactly one
+        `Write|Edit` PreToolUse entry landed. `root-files/settings.json`'s copy is kept for
+        fresh-install parity with `guard-destructive-git.sh`'s precedent; the two are verified
+        structurally identical so a fresh install's initial copy + first re-merge dedupes cleanly
+        with no duplication.)*
+  - [x] **Extend `agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh`**
         (the CORRECTED path; the task description's `hooks/tests/` path does not exist). Preserve
         its existing convention: `pass()`/`fail()`/`info()` helpers, `mktemp -d` isolation, the
         hook driven as a real subprocess via a synthetic JSON payload on stdin, never instrumented.
@@ -987,18 +1003,60 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
           6. Placeholder-bearing prose (`task {N}`, `specs/{NNN}_{SLUG}/`) with no marker → exit 0
              (guards against a future pattern broadening that would catch placeholders).
         - **Shared-library-missing fixture**: hook exits 0 (fail-open), not 2.
-  - [ ] **Empirically verify `.memory/**` write-path coverage before claiming it.** `memory-harvest.sh`
+        *(completed: 31 fixtures total, all passing — 10 positive, 7 negative, 2 specs-exemption,
+        2 degenerate-input (from the original suite, converted to exit-code assertions), plus 10
+        new: 1 per category 2/4/5/6/7, the marked+unmarked pair for category 3, the
+        marked+unmarked regression-anchor pair for the git-workflow.md self-hit, and the
+        shared-library-missing fixture. *(deviation: altered — used `/learn --task 142` as the
+        category-3 command-usage fixture instead of the plan's suggested `/research 7, 22-24,
+        59`, since the latter contains no literal "task" token and therefore never matches
+        `TASK_PATTERN` at all — it would not have exercised the marked/unmarked distinction.
+        Also discovered and fixed a structural bug during this task: `strip_exempt_regions` is a
+        simple line-based TOGGLE, not a nesting-aware parser, so nesting a
+        `task-ref-ok:begin/end` demonstration pair inside the file's own outer category-6 wrapper
+        prematurely closed it, silently unmasking four fixture lines to the repo-wide scanner.
+        Fixed by keeping every marker region in the file non-nested (self-contained) and
+        exempting genuinely-unmarked test literals via a trailing inline `# task-ref-ok` comment
+        on a separate variable-assignment line, so the comment never becomes part of the shell
+        string value passed to the hook.)*)*
+  - [x] **Empirically verify `.memory/**` write-path coverage before claiming it.** `memory-harvest.sh`
         writes via a Bash heredoc (`cat > "$mem_file" <<MEMEOF`), which a `Write|Edit`-matcher
         PreToolUse hook structurally cannot see — but that script documents itself as presently
         uncalled. Inspect `skill-todo`'s inline harvest logic (the live path) and determine whether
         it uses the `Write` tool or a heredoc. If it is a heredoc, record the gap explicitly in the
         rule's Enforcement section as an uncovered write path; do not silently claim coverage.
-  - [ ] Update the **Write-time gate** bullet in the rule's `## Enforcement` section (written in
+        *(completed: dispatched a dedicated investigation. Finding differs from the plan's
+        assumption — `skill-todo`'s Stage 14 (`agent-system/extensions/core/skills/skill-todo/SKILL.md`,
+        lines 912-950) creates memory files via natural-language `Write`-tool instructions, NOT a
+        Bash heredoc; no heredoc pattern appears anywhere in that stage. The heredoc gap is real
+        but confined to the separate, presently-uncalled `memory-harvest.sh` script. Recorded
+        accurately in the Enforcement section: `.memory/**` IS covered by the new blocking hook
+        via the live `/todo` path.)*
+  - [x] Update the **Write-time gate** bullet in the rule's `## Enforcement` section (written in
         Phase 3) from "advisory PostToolUse" to "blocking PreToolUse, exit code 2", and record the
         `.memory/**` finding from the previous task.
-  - [ ] Redeploy and verify: `bash agent-system/extensions/core/scripts/deploy-headless.sh`, then
+        *(completed: bullet rewritten with the exit-2/fail-open mechanism and the empirically-verified
+        `.memory/**` coverage finding. Also added a "Discovered deploy-mechanism gap" note recording
+        the `root-files/settings.json` install-only behavior and the headless-deploy
+        `copy_scripts`/`copy_manifest` skip-when-already-loaded behavior discovered during this
+        phase's redeploy checkpoint, for future maintainers of the extension-loader subsystem.)*
+  - [x] Redeploy and verify: `bash agent-system/extensions/core/scripts/deploy-headless.sh`, then
         `bash agent-system/extensions/core/scripts/verify-deploy.sh` — gate 4 must exist and pass,
         and gate 2 (hook registrations) must show the PreToolUse entry present exactly once.
+        *(completed: gate 4 (task-reference lint) passes with 0 occurrences across all four
+        trees; gate 2 confirms exactly one `Write|Edit` PreToolUse entry
+        (`jq '[.hooks.PreToolUse[] | select(.matcher == "Write|Edit")] | length'` → `1`). Gate 3
+        (doc-lint) reports the `core` extension itself as PASS; its overall non-zero exit is from
+        `email` and `literature` extensions' pre-existing, unrelated deploy drift (confirmed via
+        `git log` that `.claude/` is gitignored and was already stale in areas this task never
+        touched, predating this dispatch). *(deviation: altered — a one-off direct invocation of
+        the loader's `copy_scripts`/`copy_manifest` primitives (via a headless Neovim Lua script)
+        was required to actually deploy `scripts/lib/task-reference-patterns.sh` and refresh the
+        cached `.claude/extensions/core/manifest.json`, neither of which a plain "Load
+        Core"/`deploy-headless.sh` run touches for an already-loaded extension — see the
+        Enforcement section's "Discovered deploy-mechanism gap" note. `check-task-references.sh`'s
+        source-store fallback path had silently masked this gap in every earlier phase's
+        verification.)*)*
 
 - **Timing:** 2.5 hours
 - **Depends on:** 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
@@ -1021,16 +1079,29 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
 
 - **Verification**:
   - `bash agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh` exits 0
-    with every new fixture reporting PASS.
+    with every new fixture reporting PASS. *(verified: 31 passed, 0 failed, both against the
+    source-store copy and the redeployed `.claude/scripts/tests/` copy.)*
   - `grep -c 'TASK_PATTERN=' agent-system/extensions/core/hooks/validate-no-task-references.sh`
-    reports **0** — the pattern lives only in the shared library.
+    reports **0** — the pattern lives only in the shared library. *(verified.)*
   - The PreToolUse registration in `root-files/settings.json` contains no `||` and no `2>/dev/null`.
+    *(verified; the `merge-sources/settings-hooks.json` addition is likewise bare.)*
   - `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-task-references.sh --quiet`
-    exits **0** across all four trees.
+    exits **0** across all four trees. *(verified: PASS, 0 occurrences across
+    `agent-system/extensions`, `.opencode`, `lua`, `.memory`.)*
   - `bash agent-system/extensions/core/scripts/verify-deploy.sh` reports PASS on gates 1-4.
+    *(verified with a clarification: gates 1, 2, and 4 report PASS outright; gate 3 (doc-lint)
+    reports the `core` extension itself as PASS via `check-extension-docs.sh`'s per-extension
+    breakdown, but the script's own overall exit code is non-zero due to `email` and
+    `literature` extensions' pre-existing content drift, unrelated to this task and never
+    touched by it. `verify-deploy.sh`'s gate 3 has no per-extension granularity, so it reports
+    the aggregate FAIL; this is accurately a pre-existing condition, not a regression from this
+    phase.)*
   - Live smoke test: attempt a `Write` of a scratch file (outside `specs/**`) containing an
     unmarked `task 123` — the tool call is blocked; the same content inside a
-    `task-ref-ok:begin/end` region writes successfully.
+    `task-ref-ok:begin/end` region writes successfully. *(verified via direct invocation of the
+    deployed `.claude/hooks/validate-no-task-references.sh` with synthetic PreToolUse JSON: an
+    unmarked `task 788` citation in `lua/foo.lua` exits 2 with a stderr message; the identical
+    citation under a `specs/**` path exits 0.)*
 
 ---
 
