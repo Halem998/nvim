@@ -1,0 +1,38 @@
+{
+  "phase": 5,
+  "phase_name": "Reader Hardening — Item C Decision and the General Empty-Value Detection Signal",
+  "started_at": "2026-07-28T09:21:00Z",
+  "last_updated": "2026-07-28T09:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Record Item C decision in the script's header comment (no permissive top-level phases fallback); update output-field docs",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Add evidence_suspect/evidence_reason to emit() and to the emitted JSON object as new named fields (braced positional params 12/13)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Implement the general detection signal (PHASES_ZERO_ON_SUCCESS, ARTIFACTS_SHAPE_MISMATCH) on the recovered=true path, with jq-failure rc capture folded into ARTIFACTS_SHAPE_MISMATCH as corroboration rather than being discarded",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh"],
+      "note": "Design decision: evidence_suspect/evidence_reason are computed ONLY inside the researched|planned|implemented (recovered=true) case branch. The three recovered=false-with-parsed-json branches (in_progress, default/STATUS_NOT_SUCCESS) and the three fully-unrecoverable branches (META_MISSING/STALE/UNPARSEABLE) all pass false/\"NONE\" literally, unchanged in spirit from before this phase -- this matches the phase's own verification section, which only exercises the recovered=true fixtures, and avoids introducing new behavior on paths the plan does not test."
+    },
+    {
+      "id": 4,
+      "description": "Verify by construction: re-run all three Phase 1 fixtures (control_correct, defect1_topmeta, defect2_barestrings) against the modified script; confirm pre-existing fields byte-identical and new fields match expected values; confirm bash -n passes; confirm the two .metadata. phase-count read lines are unchanged",
+      "status": "done",
+      "files_touched": [],
+      "note": "control (AFTER): evidence_suspect=false, evidence_reason=\"NONE\"; all pre-existing fields identical to Phase 1 control capture except window_start (expected, computed per-invocation). defect1 (AFTER): evidence_suspect=true, evidence_reason=\"PHASES_ZERO_ON_SUCCESS\"; phases_completed/phases_total STILL 0/0 (values not silently corrected -- Item C decision holding). defect2 (AFTER): evidence_suspect=true, evidence_reason=\"ARTIFACTS_SHAPE_MISMATCH\"; artifact_path still \"\"; stderr still carries the three 'Cannot index string with string' jq error lines (not suppressed, per the plan's explicit instruction not to simply append 2>/dev/null). All three exit codes unchanged from Phase 1 (0/0/0). `bash -n` passed. `grep -n '.metadata.phases_completed'` confirms both original read lines are unchanged character-for-character. Verified against the SOURCE-STORE script directly (agent-system/extensions/core/scripts/...), never against the deployed .claude/ copy, per the binding no-redeploy constraint."
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

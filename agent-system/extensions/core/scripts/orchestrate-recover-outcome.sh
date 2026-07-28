@@ -48,6 +48,15 @@
 # with a reason token below; callers MUST treat that identically to a missing/stale/unparseable
 # file — this script never invents a success where the file itself does not report one.
 #
+# Item C decision (recorded, not re-litigated): this script deliberately does NOT accept a
+# top-level `phases_completed`/`phases_total` shape as a fallback alongside the two documented
+# read locations below (`.metadata.*` and `.partial_progress.*`). Those two locations are
+# exhaustive by design. A permissive fallback would silently bless an off-schema write instead of
+# keeping writer drift visible — the `evidence_suspect`/`evidence_reason` fields below are the
+# evidence-based alternative: they surface the contradiction for a caller to act on, without
+# correcting the underlying value. A future reader tempted to add a fallback should read this
+# paragraph first.
+#
 # Output: a single-line compact JSON object on stdout, with these fields:
 #   recovered          bool    true only for a present, fresh, parseable file whose `.status` is
 #                                researched/planned/implemented.
@@ -65,6 +74,26 @@
 #   window_start        int     the window_start_ts actually used (post fail-closed default).
 #   completion_summary string  .completion_data.completion_summary // "", regardless of branch.
 #   roadmap_items      array   .completion_data.roadmap_items // [], regardless of branch.
+#   evidence_suspect    bool    true when the recovered=true branch's own resolved values
+#                                contradict the file's contents — see "General empty-value
+#                                detection signal" below. Always false on every recovered=false
+#                                branch (nothing there is evaluated for the signature).
+#   evidence_reason     string  NONE (evidence_suspect=false), or one of
+#                                PHASES_ZERO_ON_SUCCESS / ARTIFACTS_SHAPE_MISMATCH. If both
+#                                signatures fire, PHASES_ZERO_ON_SUCCESS takes precedence.
+#
+# General empty-value detection signal ("a present, parseable file yielded an empty or zero
+# value that its own contents contradict"), evaluated ONLY on the recovered=true path — two
+# instances of one signature, not two special cases:
+#   PHASES_ZERO_ON_SUCCESS   — status == "implemented" and both resolved phase counts are 0. An
+#                                implementation dispatch always has at least one phase, so 0/0 on
+#                                a claimed-complete implementation is inherently suspect.
+#   ARTIFACTS_SHAPE_MISMATCH — `.artifacts | length` is > 0 but the resolved `artifact_path` is
+#                                empty. A non-empty array yielding no path is proof of a shape
+#                                mismatch (e.g. a bare-string array), not proof of "no artifacts".
+#                                A jq failure while resolving `artifact_path`/`artifact_type`/
+#                                `artifact_summary` (non-zero exit) is treated as additional
+#                                corroboration of this same signature, never as a separate one.
 #
 # Exit codes:
 #   0 — recovered=true; the JSON object above is on stdout.
@@ -99,7 +128,9 @@ meta_file="${task_dir}/.return-meta.json"
 emit() {
   # $1=recovered $2=status $3=reason $4=artifact_path $5=artifact_type $6=artifact_summary
   # $7=phases_completed $8=phases_total $9=meta_mtime ${10}=completion_summary ${11}=roadmap_items
-  # Braces are mandatory on ${10}/${11} — bare $10 parses as $1 followed by a literal "0".
+  # ${12}=evidence_suspect ${13}=evidence_reason
+  # Braces are mandatory on ${10}/${11}/${12}/${13} — bare $10 parses as $1 followed by a
+  # literal "0".
   jq -n -c \
     --argjson recovered "$1" \
     --arg status "$2" \
@@ -113,27 +144,30 @@ emit() {
     --argjson window_start "$window_start" \
     --arg completion_summary "${10}" \
     --argjson roadmap_items "${11}" \
+    --argjson evidence_suspect "${12}" \
+    --arg evidence_reason "${13}" \
     '{recovered: $recovered, status: $status, reason: $reason,
       artifact_path: $artifact_path, artifact_type: $artifact_type,
       artifact_summary: $artifact_summary, phases_completed: $phases_completed,
       phases_total: $phases_total, meta_mtime: $meta_mtime, window_start: $window_start,
-      completion_summary: $completion_summary, roadmap_items: $roadmap_items}'
+      completion_summary: $completion_summary, roadmap_items: $roadmap_items,
+      evidence_suspect: $evidence_suspect, evidence_reason: $evidence_reason}'
 }
 
 if [ ! -f "$meta_file" ]; then
-  emit false "unknown" "META_MISSING" "" "" "" 0 0 0 "" "[]"
+  emit false "unknown" "META_MISSING" "" "" "" 0 0 0 "" "[]" false "NONE"
   exit 1
 fi
 
 meta_mtime=$(stat -c %Y "$meta_file" 2>/dev/null || stat -f %m "$meta_file" 2>/dev/null || echo 0)
 
 if [ "$meta_mtime" -lt "$window_start" ]; then
-  emit false "unknown" "META_STALE" "" "" "" 0 0 "$meta_mtime" "" "[]"
+  emit false "unknown" "META_STALE" "" "" "" 0 0 "$meta_mtime" "" "[]" false "NONE"
   exit 1
 fi
 
 if ! meta_json=$(jq -c '.' "$meta_file" 2>/dev/null); then
-  emit false "unknown" "META_UNPARSEABLE" "" "" "" 0 0 "$meta_mtime" "" "[]"
+  emit false "unknown" "META_UNPARSEABLE" "" "" "" 0 0 "$meta_mtime" "" "[]" false "NONE"
   exit 1
 fi
 
@@ -141,23 +175,46 @@ status=$(echo "$meta_json" | jq -r '.status // "unknown"')
 phases_completed=$(echo "$meta_json" | jq -r '.metadata.phases_completed // .partial_progress.phases_completed // 0')
 phases_total=$(echo "$meta_json" | jq -r '.metadata.phases_total // .partial_progress.phases_total // 0')
 artifact_path=$(echo "$meta_json" | jq -r '.artifacts[0].path // ""')
+artifact_path_rc=$?
 artifact_type=$(echo "$meta_json" | jq -r '.artifacts[0].type // ""')
+artifact_type_rc=$?
 artifact_summary=$(echo "$meta_json" | jq -r '.artifacts[0].summary // ""')
+artifact_summary_rc=$?
 completion_summary=$(echo "$meta_json" | jq -r '.completion_data.completion_summary // ""')
 roadmap_items=$(echo "$meta_json" | jq -c '.completion_data.roadmap_items // []')
 
 case "$status" in
   researched|planned|implemented)
+    # General empty-value detection signal (evaluated only on this recovered=true path — see
+    # the script header's "General empty-value detection signal" section for the full rationale
+    # and the Item C decision this is the alternative to).
+    artifacts_length=$(echo "$meta_json" | jq -r '(.artifacts // []) | length' 2>/dev/null) || artifacts_length=0
+    jq_artifact_failure=false
+    if [ "$artifact_path_rc" -ne 0 ] || [ "$artifact_type_rc" -ne 0 ] || [ "$artifact_summary_rc" -ne 0 ]; then
+      jq_artifact_failure=true
+    fi
+    evidence_suspect=false
+    evidence_reason="NONE"
+    if [ "$status" = "implemented" ] && [ "$phases_completed" -eq 0 ] && [ "$phases_total" -eq 0 ]; then
+      # PHASES_ZERO_ON_SUCCESS takes precedence when both signatures fire — recorded in the
+      # header's field-doc table, not just here.
+      evidence_suspect=true
+      evidence_reason="PHASES_ZERO_ON_SUCCESS"
+    elif { [ "$artifacts_length" -gt 0 ] && [ -z "$artifact_path" ]; } || [ "$jq_artifact_failure" = true ]; then
+      evidence_suspect=true
+      evidence_reason="ARTIFACTS_SHAPE_MISMATCH"
+    fi
     emit true "$status" "NONE" "$artifact_path" "$artifact_type" "$artifact_summary" \
-      "$phases_completed" "$phases_total" "$meta_mtime" "$completion_summary" "$roadmap_items"
+      "$phases_completed" "$phases_total" "$meta_mtime" "$completion_summary" "$roadmap_items" \
+      "$evidence_suspect" "$evidence_reason"
     exit 0
     ;;
   in_progress)
-    emit false "$status" "STATUS_IN_PROGRESS" "" "" "" 0 0 "$meta_mtime" "" "[]"
+    emit false "$status" "STATUS_IN_PROGRESS" "" "" "" 0 0 "$meta_mtime" "" "[]" false "NONE"
     exit 1
     ;;
   *)
-    emit false "$status" "STATUS_NOT_SUCCESS" "" "" "" 0 0 "$meta_mtime" "" "[]"
+    emit false "$status" "STATUS_NOT_SUCCESS" "" "" "" 0 0 "$meta_mtime" "" "[]" false "NONE"
     exit 1
     ;;
 esac

@@ -424,7 +424,7 @@ it to this phase rather than leaving a second instance of the same defect in pla
 
 ---
 
-### Phase 5: Reader Hardening — Item C Decision and the General Empty-Value Detection Signal [NOT STARTED]
+### Phase 5: Reader Hardening — Item C Decision and the General Empty-Value Detection Signal [COMPLETED]
 
 **Goal**: Record the explicit decision against a schema-permissive fallback, and add one general
 detection signal to `orchestrate-recover-outcome.sh` covering both defects with a single code
@@ -432,16 +432,19 @@ shape — without changing any existing read location or emitted field.
 
 **Tasks**:
 
-- [ ] **Item C decision, recorded in the file**: add a short block to the script's header comment
+- [x] **Item C decision, recorded in the file**: add a short block to the script's header comment
       stating that a top-level `phases_completed` fallback is deliberately NOT added, that the two
       documented read locations (`.metadata.*` and `.partial_progress.*`) are exhaustive by design,
       and that the reason is to keep writer drift visible rather than silently blessed. Note that
       the detection signal below is the evidence-based alternative. Confirm the existing two read
-      lines are left byte-identical.
-- [ ] Add an `evidence_suspect` boolean and an `evidence_reason` string token to the `emit` function
+      lines are left byte-identical. *(completed: the two `.metadata.phases_completed //
+      .partial_progress.phases_completed // 0` / `.metadata.phases_total // ...` read lines are
+      unchanged character-for-character)*
+- [x] Add an `evidence_suspect` boolean and an `evidence_reason` string token to the `emit` function
       and to the emitted JSON object. Add them as new named fields; do not reorder or rename any
       existing field. Remember the existing brace requirement on positional parameters past `$9`.
-- [ ] Implement the general check as one shape, not two special cases: `evidence_suspect` is true
+      *(completed: `${12}`/`${13}`)*
+- [x] Implement the general check as one shape, not two special cases: `evidence_suspect` is true
       when a present, parseable, fresh file yields a zero-or-empty value that its own contents
       contradict. Two instances of that one signature:
       - `PHASES_ZERO_ON_SUCCESS` — `status == "implemented"` and both resolved phase counts are 0
@@ -449,18 +452,25 @@ shape — without changing any existing read location or emitted field.
         implementation is inherently suspect).
       - `ARTIFACTS_SHAPE_MISMATCH` — `(.artifacts | length) > 0` but the resolved `artifact_path`
         is empty (a non-empty array that yields no path is proof of a shape mismatch, not proof of
-        "no artifacts").
-- [ ] Set `evidence_reason` to `NONE` when `evidence_suspect` is false, and to the matching token
+        "no artifacts"). *(completed)*
+- [x] Set `evidence_reason` to `NONE` when `evidence_suspect` is false, and to the matching token
       above otherwise. If both signatures fire, prefer `PHASES_ZERO_ON_SUCCESS` and note the
-      precedence in the header.
-- [ ] Capture the jq stderr signal rather than swallowing it: make the `artifact_path`/
+      precedence in the header. *(completed: if/elif ordering plus a header table row and an
+      inline comment both state the precedence)*
+- [x] Capture the jq stderr signal rather than swallowing it: make the `artifact_path`/
       `artifact_type`/`artifact_summary` extractions detect a jq failure (non-zero exit or a
       captured error) and treat it as corroboration for `ARTIFACTS_SHAPE_MISMATCH`, so the errors
       become a used signal instead of noise. Do NOT simply append `2>/dev/null` and discard them.
-- [ ] Preserve the script's read-only contract: it still reads only `<task_dir>/.return-meta.json`,
+      *(completed: `artifact_path_rc`/`artifact_type_rc`/`artifact_summary_rc` capture `$?` from
+      each unredirected jq call; stderr still surfaces exactly as before, and a nonzero rc
+      additionally feeds `jq_artifact_failure`, which ORs into the `ARTIFACTS_SHAPE_MISMATCH`
+      condition)*
+- [x] Preserve the script's read-only contract: it still reads only `<task_dir>/.return-meta.json`,
       performs no writes, and calls none of the forbidden helpers listed in its own header.
-- [ ] Update the header's output-field documentation block to list the two new fields with the same
-      `name  type  description` shape the existing entries use.
+      *(completed: no new file writes introduced; the only new reads are internal jq
+      transformations of the already-loaded `$meta_json` variable)*
+- [x] Update the header's output-field documentation block to list the two new fields with the same
+      `name  type  description` shape the existing entries use. *(completed)*
 
 **Timing**: 1.25 hours
 
