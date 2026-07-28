@@ -621,13 +621,20 @@ Read handoff to determine sub-state:
 ```bash
 handoff=$(cat "$handoff_file" 2>/dev/null || echo '{}')
 blockers=$(echo "$handoff" | jq -c '.blockers // []')
-continuation=$(echo "$handoff" | jq -r '.continuation_path // null')
+# Dual-form resolution: the flat top-level continuation_path is what live H9 hard-mode wrap-up
+# writers actually emit; the nested continuation_context.handoff_path is a mirror-image
+# possibility -- today no writer needs it, but a revived nested-form writer would otherwise be
+# invisible to this engine, which is the exact mirror of the defect being fixed here. Same rule
+# as scripts/orchestrate-triage-classify.sh's continuation_ok predicate and the base engine's
+# Stage 4/Stage 5 handlers.
+continuation=$(echo "$handoff" | jq -r '.continuation_context.handoff_path // .continuation_path // "null"')
 blocker_count=$(echo "$blockers" | jq 'length')
 phases_completed=$(echo "$handoff" | jq -r '.phases_completed // 0')
 phases_total=$(echo "$handoff" | jq -r '.phases_total // 0')
 ```
 
-**Sub-state: continuation available** (continuation != null):
+**Sub-state: continuation available** (`continuation` — resolved from either accepted form above
+— is not the literal string `"null"`):
 
 ```bash
 # Defense-in-depth: status is typically already "implementing" here, so this is
@@ -921,7 +928,16 @@ else
   dispatch_status=$(echo "$handoff" | jq -r '.status // ""')
   dispatch_summary=$(echo "$handoff" | jq -r '.summary // ""')
   blockers=$(echo "$handoff" | jq -c '.blockers // []')
-  continuation=$(echo "$handoff" | jq -c '.continuation_context // null')
+  # Dual-form resolution (same rule as Stage 4's partial handler above and
+  # scripts/orchestrate-triage-classify.sh's continuation_ok predicate): this occurrence was
+  # nested-only and inconsistent with Stage 4's flat-only read -- both are now unified on
+  # accepting either form, normalized to { handoff_path, orchestrator_mode: true } or null.
+  continuation=$(echo "$handoff" | jq -c '
+    ((.continuation_context // null) | if . != null then (.handoff_path // null) else null end) as $nested |
+    (.continuation_path // null) as $flat |
+    ($nested // $flat) as $resolved |
+    if $resolved != null then {handoff_path: $resolved, orchestrator_mode: true} else null end
+  ')
   next_hint=$(echo "$handoff" | jq -r '.next_action_hint // "none"')
   phases_completed=$(echo "$handoff" | jq -r '.phases_completed // 0')
   phases_total=$(echo "$handoff" | jq -r '.phases_total // 0')

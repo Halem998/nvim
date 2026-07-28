@@ -333,25 +333,28 @@ each hit is either edited or consciously excluded with a stated reason.
 
 ---
 
-### Phase 4: Hard-engine reader symmetry and dead-writer disposition [NOT STARTED]
+### Phase 4: Hard-engine reader symmetry and dead-writer disposition [COMPLETED]
 
 **Goal**: The hard engine reads both forms (defending against the mirror-image of today's bug), and
 the dead `skill_write_orchestrator_handoff` gets an explicit recorded disposition.
 
 **Tasks**:
-- [ ] `skill-orchestrate-hard/SKILL.md` Stage 4 `#### State: partial`: the read anchored on
+- [x] `skill-orchestrate-hard/SKILL.md` Stage 4 `#### State: partial`: the read anchored on
       `continuation=$(echo "$handoff" | jq -r '.continuation_path // null')` currently checks the
       flat form **only**. Give it the same OR-fallback to `.continuation_context.handoff_path`.
       Rationale to state inline: today no writer needs it, but a revived nested-form writer would
       otherwise be invisible to the hard engine — the exact mirror of the defect being fixed.
-- [ ] `skill-orchestrate-hard/SKILL.md` Stage 5 result read: the
+      *(completed)*
+- [x] `skill-orchestrate-hard/SKILL.md` Stage 5 result read: the
       `continuation=$(echo "$handoff" | jq -c '.continuation_context // null')` occurrence inside
       the `else` arm beginning `handoff=$(cat "$handoff_file")` is nested-only and inconsistent with
       its own Stage 4. Apply the same dual-form resolution. Leave the adjacent `skeleton`,
-      `sorry_inventory`, `dispatch_status`, and `plan_markers_verified` reads untouched.
-- [ ] Update `**Sub-state: continuation available** (continuation != null)` prose if the resolution
-      change alters what "non-null" means there.
-- [ ] **`skill_write_orchestrator_handoff` disposition — decided: document as dead, do not delete,
+      `sorry_inventory`, `dispatch_status`, and `plan_markers_verified` reads untouched. *(completed:
+      adjacent reads confirmed untouched by diff inspection)*
+- [x] Update `**Sub-state: continuation available** (continuation != null)` prose if the resolution
+      change alters what "non-null" means there. *(completed: reworded to describe the dual-form
+      resolution and the literal-string-"null" comparison)*
+- [x] **`skill_write_orchestrator_handoff` disposition — decided: document as dead, do not delete,
       do not rewire.** Add a header comment to the function in
       `agent-system/extensions/core/scripts/skill-base.sh` recording that (i) it currently has zero
       callers, (ii) the nested `continuation_context` object it would write is one of two accepted
@@ -359,15 +362,18 @@ the dead `skill_write_orchestrator_handoff` gets an explicit recorded dispositio
       (iii) a future caller may use it as-is because the readers now accept its output. Rationale:
       deleting it would remove the only nested-form writer at the same moment the readers are being
       taught to accept the nested form, and rewiring it to also emit the flat form is unjustified
-      work on a codepath nothing calls.
-- [ ] **Collision statement (required by delegation)**: this is the *only* `skill-base.sh` edit in
+      work on a codepath nothing calls. *(completed: zero callers re-confirmed by grep at
+      implementation time)*
+- [x] **Collision statement (required by delegation)**: this is the *only* `skill-base.sh` edit in
       this plan. It is **comment-only**, adds no executable line, and lives inside
       `skill_write_orchestrator_handoff`. The named sibling follow-up targets
       `skill_postflight_update`'s status accept-list (admitting `partial`/`blocked`, deciding
       `failed`) — a **different function** with no shared lines. The two changes cannot conflict
       textually and are semantically independent. If the sibling has already landed by
       implementation time, re-read the file and confirm the two functions are still disjoint before
-      editing.
+      editing. *(completed: re-confirmed disjoint at implementation time —
+      skill_postflight_update spans lines 396-430, skill_write_orchestrator_handoff spans
+      588-669+; no shared lines)*
 
 **Timing**: 45 minutes
 

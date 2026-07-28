@@ -585,6 +585,21 @@ skill_cleanup() {
 #
 # Schema reference: .claude/docs/architecture/handoff-schema.md
 # Token budget: full object must be ≤400 tokens; summary is truncated at ~100 tokens.
+#
+# DISPOSITION (decided, comment-only): this function currently has ZERO callers anywhere in the
+# deployed tree (confirmed by grep across agent-system/extensions/ — only comments and doc
+# cross-references name it, no invocation). It is documented here rather than deleted or
+# rewired, for three reasons: (i) it has zero callers today; (ii) the nested `continuation_context`
+# object it would write (built from ORCHESTRATOR_HANDOFF_CONTINUATION_JSON above) is one of TWO
+# forms every continuation-pointer reader now accepts — the other being the flat top-level
+# `continuation_path` string that live H9 hard-mode wrap-up writers actually emit (see
+# docs/architecture/handoff-schema.md's "Two Accepted Forms" subsection and
+# scripts/orchestrate-triage-classify.sh's continuation_ok predicate); (iii) a future caller may
+# use this function as-is, because the readers were taught to accept its nested output rather than
+# narrowed to reject it. Deleting it would remove the only nested-form writer at the same moment
+# the readers are being taught to accept the nested form; rewiring it to also emit the flat form is
+# unjustified work on a codepath nothing calls. Do not delete or rewire without re-deriving this
+# reasoning first.
 skill_write_orchestrator_handoff() {
   local orchestrator_mode="$1"
   local padded_num="$2"
