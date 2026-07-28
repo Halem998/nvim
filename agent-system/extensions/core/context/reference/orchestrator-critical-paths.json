@@ -41,6 +41,10 @@
     {
       "path": "scripts/orchestrate-dry-run-report.sh",
       "label": "admission report surface"
+    },
+    {
+      "path": "scripts/verify-deploy.sh",
+      "label": "deploy verification gate"
     }
   ]
 }
