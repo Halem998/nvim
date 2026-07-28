@@ -1,0 +1,22 @@
+{
+  "phase": 9,
+  "phase_name": "Specify the --learn sub-mode",
+  "started_at": "2026-07-27T05:15:00Z",
+  "last_updated": "2026-07-27T05:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Author --learn section: batch retroactive harvest, two distinctions, 30-day Tier4/Tier3 fallback", "status": "done",
+      "files_touched": ["agent-system/extensions/memory/skills/skill-distill/SKILL.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "9.log-file",
+      "description": "Plan did not specify a log destination for --learn",
+      "type": "altered",
+      "reason": "Gave --learn its own .memory/learn-harvest-log.json (consistent with --revise/--meta's own log files) rather than overloading the general Distill Log Schema's closed type enum, which would otherwise require an out-of-scope edit to that shared section",
+      "annotation": "recorded inline in the --learn section's Learn-Harvest Log Schema subsection"
+    }
+  ],
+  "handoff_count": 0
+}

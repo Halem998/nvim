@@ -782,7 +782,7 @@ sub-mode that legitimately spans every tier live.
 
 ---
 
-### Phase 9: Specify the `--learn` sub-mode [NOT STARTED]
+### Phase 9: Specify the `--learn` sub-mode [COMPLETED]
 
 **Goal**: Define retroactive, batch harvest across already-completed tasks, distinguished
 unambiguously from the two existing harvest paths.
@@ -808,12 +808,16 @@ unambiguously from the two existing harvest paths.
 
 **Tasks**:
 
-- [ ] Author the `--learn` section as deltas against the shared skeleton.
-- [ ] Specify candidate identification: how archived tasks with unharvested candidates are found.
-- [ ] Specify the 30-day boundary behavior and the Tier 3 fallback, including the announcement when
-      a task's transcript is no longer available.
-- [ ] State the two distinctions (from `/learn --task N` and from `/todo`'s harvest) prominently.
-- [ ] State the parser-reuse position.
+- [x] Author the `--learn` section as deltas against the shared skeleton. *(completed: inserted as
+      `### Sub-Mode: learn` right after `--review` and before `dream`)*
+- [x] Specify candidate identification: how archived tasks with unharvested candidates are found.
+      *(completed: Edge Case Checks + Candidate Identification subsections)*
+- [x] Specify the 30-day boundary behavior and the Tier 3 fallback, including the announcement when
+      a task's transcript is no longer available. *(completed, with exact announcement text)*
+- [x] State the two distinctions (from `/learn --task N` and from `/todo`'s harvest) prominently.
+      *(completed: stated as the section's opening two numbered points, before Edge Case Checks)*
+- [x] State the parser-reuse position. *(completed, citing telemetry-guardrails.md's OSS-tooling
+      position)*
 
 **Timing**: 1.5 hours
 
