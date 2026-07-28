@@ -73,9 +73,12 @@
 #                           candidates admitted)" line when empty.
 #   5. Notes             — non-excluding informational findings (held-stale locks, in-batch wave
 #                           deferrals, MAX_TASKS trim, out-of-batch dependency edges, circular
-#                           dependency errors).
+#                           dependency errors, and — only in the zero-admitted case — the
+#                           static-vs-cycling divergence note described below).
 #   6. Recommended split — the same wave numbers the live dispatch would use ("Wave N: <tasks>");
-#                           "batch of one — no split applicable" for a one-task batch.
+#                           "batch of one — no split applicable" for a one-task batch; when ZERO
+#                           tasks are admitted, this section instead prints the dependency-ordered
+#                           solo re-run sequence (see the zero-dispatch banner below).
 #   7. Pre-dispatch review — orchestrate-predispatch-review.sh's own report, printed verbatim
 #                           (Classes A-D: dependency edge classification, metadata defects,
 #                           self-modification/declaration coarseness, missing cross-batch
@@ -87,6 +90,18 @@
 #                           script's header) or when it is unavailable ("SKIPPED (degraded:
 #                           <reason>)" printed by THIS reporter, matching the format used
 #                           elsewhere in section 2).
+#
+# Zero-dispatch banner (forward-progress invariant — see
+# context/patterns/batch-orchestration-guardrails.md's "### The Forward-Progress Invariant"
+# subsection for the canonical vocabulary this reuses verbatim): when zero tasks are admitted
+# (and at least one candidate was validated, which is always true past the Step 1 exit-2 guard
+# above), an unnumbered banner and machine-readable marker are printed immediately after the
+# title line and before "-- Header --". This is deliberately an UNNUMBERED banner rather than a
+# new numbered section, so sections 1-7's existing order and numbering stay byte-for-byte — several
+# documents already name this reporter's section shape. The banner and marker strings are
+# byte-identical to the live path's (`commands/orchestrate.md` Step 5), modulo substituted counts;
+# this reporter never invents dry-run-specific wording. This does NOT claim verdict-set identity
+# with a live run — see the static-vs-cycling divergence note in section 5 above.
 #
 # Exit codes:
 #   0 - a report was printed (regardless of how many exclusions — verdicts are data, not errors,
@@ -465,11 +480,28 @@ for t in "${validated_tasks[@]}"; do
   admitted_tasks+=("$t")
 done
 
+# Zero-dispatch case: record the static-vs-cycling divergence as a Note (section 5). Recorded
+# here, before the Notes section is printed below, so it appears in that section's normal
+# iteration rather than as a special case in the print loop itself.
+if [ "${#admitted_tasks[@]}" -eq 0 ]; then
+  notes+=("Static-vs-cycling divergence: this report computes admission in a single pass with --invocation-count set to the whole validated set's size (${#validated_tasks[@]}), while a live run recomputes per cycle against a shrinking eligible set, so the live run may admit tasks this report excludes. The two surfaces are aligned on rendering and vocabulary, not on verdict sets.")
+fi
+
 # ===========================================================================
 # Report output
 # ===========================================================================
 echo "=== /orchestrate --dry-run admission report ==="
 echo ""
+
+# Zero-dispatch banner (forward-progress invariant) — see header comment above. Validated_tasks
+# is always non-empty here (Step 1 exits 2 otherwise), so the sole gating condition is zero
+# admitted.
+if [ "${#admitted_tasks[@]}" -eq 0 ]; then
+  echo "[ZERO DISPATCH - 0 of ${#validated_tasks[@]} validated candidates dispatched; forward-progress invariant violated]"
+  echo "<!-- forward-progress violated=true dispatched=0 validated=${#validated_tasks[@]} -->"
+  echo ""
+fi
+
 echo "-- Header --"
 echo "Invocation: ${input_order[*]}"
 echo "Engine: $engine ($( [ "$engine" = "single" ] && echo "single-task Stage 4 precedence" || echo "multi-task Stage MT-4 phase-grouping precedence" ))"
@@ -532,7 +564,19 @@ echo ""
 
 echo "-- Recommended split --"
 if [ "${#admitted_tasks[@]}" -eq 0 ]; then
-  echo "no admitted tasks — nothing to split"
+  echo "no admitted tasks — re-run sequence below (printed, not executed):"
+  echo ""
+  echo "Re-run sequence (dependency order; printed, not executed):"
+  for i in "${!waves[@]}"; do
+    wave_tasks_str="${waves[$i]}"
+    # Ascending by task number within a wave, for determinism — matches Phase 4's live-path
+    # ordering rule (context/patterns/batch-orchestration-guardrails.md's
+    # "### The Forward-Progress Invariant" subsection references this same convention).
+    sorted_wave=($(printf '%s\n' $wave_tasks_str | sort -n))
+    for t in "${sorted_wave[@]}"; do
+      echo "/orchestrate $t"
+    done
+  done
 elif [ "${#admitted_tasks[@]}" -eq 1 ]; then
   echo "batch of one — no split applicable"
 else

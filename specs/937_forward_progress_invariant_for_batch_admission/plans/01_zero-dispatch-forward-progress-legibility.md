@@ -456,7 +456,7 @@ this hypothesis.
 
 ---
 
-### Phase 5: Dry-run reporter parity [NOT STARTED]
+### Phase 5: Dry-run reporter parity [COMPLETED]
 
 **Goal**: Make the report a human uses to preview a batch and the report they get from a live run
 agree on how "nothing will dispatch" renders — same banner, same marker, same re-run sequence
@@ -464,30 +464,32 @@ format — while explicitly recording that verdict-set identity is NOT claimed.
 
 **Tasks**:
 
-- [ ] In `scripts/orchestrate-dry-run-report.sh`, emit the zero-dispatch banner and the
+- [x] In `scripts/orchestrate-dry-run-report.sh`, emit the zero-dispatch banner and the
       machine-readable marker immediately after the `=== /orchestrate --dry-run admission report ===`
       title line and before `-- Header --`, conditioned on `${#admitted_tasks[@]} -eq 0` with a
       non-empty `validated_tasks`. Emitting it as an unnumbered banner rather than a new section
       preserves sections 1-7's existing order and numbering byte-for-byte, which several documents
-      already name.
-- [ ] Use the identical banner and marker strings fixed in Phase 1 — differing only in the
-      substituted counts. Do not invent a dry-run-specific wording.
-- [ ] Replace the `-- Recommended split --` section's `no admitted tasks — nothing to split` line
+      already name. *(completed)*
+- [x] Use the identical banner and marker strings fixed in Phase 1 — differing only in the
+      substituted counts. Do not invent a dry-run-specific wording. *(completed)*
+- [x] Replace the `-- Recommended split --` section's `no admitted tasks — nothing to split` line
       with the dependency-ordered solo re-run sequence, in the same
       `Re-run sequence (dependency order; printed, not executed)` format Phase 4 uses, derived from
       the wave assignment this script already computes at its Step 3. Keep the existing
-      `batch of one — no split applicable` and per-wave branches unchanged.
-- [ ] Add one `-- Notes --` entry, emitted only in the zero-dispatch case, recording the
+      `batch of one — no split applicable` and per-wave branches unchanged. *(completed)*
+- [x] Add one `-- Notes --` entry, emitted only in the zero-dispatch case, recording the
       static-versus-cycling divergence: this report computes admission in a single pass with
       `--invocation-count` set to the whole validated set's size, while a live run recomputes per
       cycle against a shrinking eligible set, so the live run may admit tasks this report excludes.
       State that the two surfaces are aligned on rendering and vocabulary, not on verdict sets.
-- [ ] Update the script's header comment block to describe the banner, the marker, and the changed
+      *(completed)*
+- [x] Update the script's header comment block to describe the banner, the marker, and the changed
       `Recommended split` content — the header explicitly enumerates report sections and their
-      order, so leaving it stale would itself be a legibility defect.
-- [ ] Change nothing about the admission call: the `orchestrate-batch-admit.sh` invocation, its
+      order, so leaving it stale would itself be a legibility defect. *(completed)*
+- [x] Change nothing about the admission call: the `orchestrate-batch-admit.sh` invocation, its
       `--invocation-count` argument, the exclusion composition, and every exit code stay
-      byte-for-byte.
+      byte-for-byte. *(completed: verified by git diff — no hunk touches the
+      orchestrate-batch-admit.sh call site or arguments)*
 
 **Timing**: 1 hour
 

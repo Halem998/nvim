@@ -1,0 +1,34 @@
+{
+  "phase": 5,
+  "phase_name": "Dry-run reporter parity",
+  "started_at": "2026-07-28T15:50:00Z",
+  "last_updated": "2026-07-28T16:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Emit zero-dispatch banner and marker after title line, before -- Header --, conditioned on zero admitted",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Replace empty-admitted Recommended split branch with dependency-ordered re-run sequence; add divergence Note; update header comment",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Smoke test against scratch deploy-shaped tree: zero admitted (banner+marker+re-run sequence), all admitted (no banner, 0 excluded intact), partial admission (no banner, wave split intact)",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
