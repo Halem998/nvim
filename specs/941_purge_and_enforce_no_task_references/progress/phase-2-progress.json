@@ -1,0 +1,22 @@
+{
+  "phase": 2,
+  "phase_name": "check-task-references.sh and its four wiring points",
+  "started_at": "2026-07-28T00:00:00Z",
+  "last_updated": "2026-07-28T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Author check-task-references.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-task-references.sh"]},
+    {"id": 2, "description": "Source shared library, no local patterns", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-task-references.sh"]},
+    {"id": 3, "description": "Enumerate via git ls-files per tree root", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-task-references.sh"]},
+    {"id": 4, "description": "Strip exempt regions then grep, report path:line:matched-text", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-task-references.sh"]},
+    {"id": 5, "description": "Exit codes 0/1/2 documented and verified", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-task-references.sh"]},
+    {"id": 6, "description": "--quiet flag", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-task-references.sh"]},
+    {"id": 7, "description": "Declare in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 8, "description": "Wire into verify-deploy.sh as gate 4", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 9, "description": "Permission entries in settings.local.json", "status": "done", "files_touched": ["agent-system/extensions/core/root-files/settings.local.json"]},
+    {"id": 10, "description": "Run baseline against live tree", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 10,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

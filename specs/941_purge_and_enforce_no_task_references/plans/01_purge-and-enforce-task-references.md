@@ -242,38 +242,43 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
 
 ---
 
-### Phase 2: check-task-references.sh and its four wiring points [NOT STARTED]
+### Phase 2: check-task-references.sh and its four wiring points [COMPLETED]
 
 - **Goal:** A repo-wide audit script that consumes the Phase 1 library, plus every declaration and
   registration that makes it a real gate rather than a loose file.
 
 - **Tasks:**
-  - [ ] Author `agent-system/extensions/core/scripts/check-task-references.sh`, following
+  - [x] Author `agent-system/extensions/core/scripts/check-task-references.sh`, following
         `check-extension-docs.sh` as the structural precedent: `set -uo pipefail`, `info()`/`fail()`
         helpers, a `FAILURES` counter, `REPO_ROOT` resolution via `deploy-root-guard.sh` with the
         documented `REPO_ROOT=$(pwd)` source-store override.
-  - [ ] Source `lib/task-reference-patterns.sh`; define NO patterns and NO exemption logic locally.
+  - [x] Source `lib/task-reference-patterns.sh`; define NO patterns and NO exemption logic locally.
         If the library is missing, exit 2 with an actionable message — never fall back to an
         inline pattern.
-  - [ ] Enumerate candidate files via `git ls-files` per tree root, one root at a time:
+  - [x] Enumerate candidate files via `git ls-files` per tree root, one root at a time:
         `agent-system/extensions`, `.opencode`, `lua`, `.memory`. All four are git-tracked
         (verified: 1049 / 1232 / 411 / 38 tracked files respectively), so `git ls-files` is
         uniform and naturally excludes gitignored runtime artifacts. Skip any path for which
         `is_exempt_path` returns 0.
-  - [ ] For each file: pipe its content through `strip_exempt_regions`, then grep the remainder
+  - [x] For each file: pipe its content through `strip_exempt_regions`, then grep the remainder
         with `PHASE_PATTERN` and `TASK_PATTERN`. Report `path:line:matched-text` per finding.
-  - [ ] **Exit codes** (document in the script header, matching `check-extension-docs.sh`'s
+  - [x] **Exit codes** (document in the script header, matching `check-extension-docs.sh`'s
         header style):
         - `0` — no unexempted citations in any scanned tree.
         - `1` — one or more unexempted citations found.
         - `2` — environment/usage error (shared library missing, `git` unavailable, unknown flag).
           Distinct from `1` so a broken script is never mistaken for a clean tree.
-  - [ ] **`--quiet` flag**: `[[ "${1:-}" == "--quiet" ]]` gate, mirroring `check-extension-docs.sh`.
+  - [x] **`--quiet` flag**: `[[ "${1:-}" == "--quiet" ]]` gate, mirroring `check-extension-docs.sh`.
         Suppresses per-finding lines; emits only the one-line per-tree summary and sets the exit
         code. Any other argument exits 2.
-  - [ ] **Declare in `agent-system/extensions/core/manifest.json`**: add `check-task-references.sh`
+  - [x] **Declare in `agent-system/extensions/core/manifest.json`**: add `check-task-references.sh`
         to `provides.scripts` (alphabetical; it sorts immediately before `check-extension-docs.sh`).
-  - [ ] **Wire into `agent-system/extensions/core/scripts/verify-deploy.sh`** as gate `4`,
+        *(deviation: altered — the plan's parenthetical was itself inaccurate: true alphabetical
+        order places `check-task-references.sh` between `check-runtime-file-tracking.sh` and
+        `check-vault-threshold.sh` ('check-e' < 'check-r' < 'check-t' < 'check-v'), not
+        immediately before `check-extension-docs.sh`. Inserted at the correct alphabetical
+        position instead, consistent with the array's existing strict ordering.)*
+  - [x] **Wire into `agent-system/extensions/core/scripts/verify-deploy.sh`** as gate `4`,
         immediately after the existing `3. Doc-lint (check-extension-docs.sh --quiet)` block and
         before the summary. Copy that block's structure exactly, including its
         `[SKIP] $TARGET is a deploy consumer, not the source store` guard on
@@ -281,14 +286,17 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
         `[ ! -x ] && [ ! -f ]` not-deployed `fail`, and its
         `(cd "$TARGET" && bash "$CLAUDE_DIR/scripts/check-task-references.sh" --quiet ...)`
         invocation form. Gate text: `4. Task-reference lint (check-task-references.sh --quiet)`.
-  - [ ] **Permission entries in `agent-system/extensions/core/root-files/settings.local.json`**:
+  - [x] **Permission entries in `agent-system/extensions/core/root-files/settings.local.json`**:
         three parallel entries mirroring the `check-extension-docs.sh` trio exactly —
         `"Bash(bash .claude/scripts/check-task-references.sh)"`,
         `"Bash(bash .claude/scripts/check-task-references.sh --quiet)"`,
         `"Bash(bash /home/benjamin/.config/nvim/.claude/scripts/check-task-references.sh)"`.
-  - [ ] Run the script once against the live tree and record the first real baseline. If it
+  - [x] Run the script once against the live tree and record the first real baseline. If it
         reports a category the Phase 1 taxonomy miscategorized, amend the taxonomy table in the
         rule file — the rule file only. Never patch around it in the script.
+        *(completed: baseline is 1223 occurrences across 4 trees — agent-system/extensions 563,
+        .opencode 610, lua 32, .memory 18 — exactly 5 below the research's pre-Phase-1 1,228
+        total, matching Phase 1's 5 purged occurrences. No taxonomy miscategorization observed.)*
 
 - **Timing:** 2 hours
 - **Depends on:** 1

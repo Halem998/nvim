@@ -182,6 +182,25 @@ else
 fi
 
 say ""
+
+# ── 4. Task-reference lint gate ───────────────────────────────────────────────
+# Only meaningful in the source-store repo, mirroring the Doc-lint gate above -- a deploy
+# consumer has no agent-system/extensions directory and the gate correctly skips there.
+say "4. Task-reference lint (check-task-references.sh --quiet)"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- task-reference lint does not apply"
+elif [ ! -x "$CLAUDE_DIR/scripts/check-task-references.sh" ] && [ ! -f "$CLAUDE_DIR/scripts/check-task-references.sh" ]; then
+  fail "check-task-references.sh not deployed"
+else
+  if (cd "$TARGET" && bash "$CLAUDE_DIR/scripts/check-task-references.sh" --quiet >/dev/null 2>&1); then
+    pass "task-reference lint reports no findings"
+  else
+    fail "task-reference lint reported findings" \
+         "re-run without --quiet for detail: bash .claude/scripts/check-task-references.sh"
+  fi
+fi
+
+say ""
 if [ "$FAILURES" -eq 0 ]; then
   echo "[verify-deploy] PASS -- $CHECKS check(s), 0 failure(s)"
   say ""
