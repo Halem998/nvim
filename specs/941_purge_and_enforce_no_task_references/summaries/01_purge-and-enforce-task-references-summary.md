@@ -178,12 +178,80 @@ was discovered and documented during Phase 5. Nine purge phases (7-14) and the b
   `literature/` (94, Phase 7) and the other 10 extensions (122, Phase 8) — `.opencode` 610, `lua`
   32, `.memory` 18, unchanged since those trees are untouched by Phases 4-6).
 
+## What Changed (this continuation: Phases 7-10)
+
+- **Phase 7**: purged all 94 occurrences under `agent-system/extensions/literature/` (25 files) —
+  README.md's Deployment Status section rewritten around a "zotero/cite deployment-status audit"
+  durable anchor; two `context/patterns/` docs; `scripts/deprecated/` (README + both quarantined
+  scripts); 20 `scripts/*.sh|.py|.sql` files with trailing/embedded `(task #NNN[ Phase P])`
+  parentheticals dropped where the surrounding comment already named the mechanism; both
+  `skills/*/SKILL.md` files.
+- **Phase 8**: purged all 122 occurrences across the ten remaining extensions (cslib, email,
+  formal, founder, lean, memory, nix, nvim, present, web). Small extensions were almost entirely
+  illustrative `"Research/implementation completed for task NNN:"` return-text examples,
+  converted to `task {N}:` placeholder form. cslib's `lint-fix-wave-assignment.md` case study
+  (built around real task numbers 210/211) was renamed throughout to "the rename
+  task"/"the keyword-change task" plus matching worktree/patch names, following the same
+  case-naming convention Phase 4 used for the BimodalLogic task-273 baseline. memory's
+  usage-guide `/learn --task 142`-style command-usage examples were wrapped in
+  `task-ref-ok:begin/end` blocks (Category 3) rather than converted. email had the largest and
+  highest-judgment cluster (38 occurrences / 9 files) — the `tasks 823-824-827` index-freshness
+  citations were replaced with mechanism cross-references exactly as the rule's own worked
+  example prescribes; `.dotfiles task 80`/`.dotfiles task 72` cross-repo citations were
+  generalized per the same principle applied to the BimodalLogic case; email-preferences.md's
+  "Task 72" (a real citation of this repo's own task, reused 4 times as the anchor for the
+  aerc-tagged/JSONL-manifest unsubscribe-review model) was given that descriptive name.
+- **Phase 9**: purged all 32 occurrences under `lua/**` (13 files) — comment-only edits, all
+  modules verified to still load via `nvim --headless`. `merge.lua`'s two generic "Task 1.2"/
+  "Task 1.3" WBS labels renamed to "Step 1.2"/"Step 1.3". `cli.lua`'s single occurrence sat
+  inside a pre-existing uncommitted user diagnostic-instrumentation hunk (unrelated WIP); only
+  the flagged comment text was edited.
+- **Phase 10**: purged all 18 occurrences under `.memory/**` (17 files). Discovered that 17 of
+  18 occurrences were in frontmatter `topic`/`source` fields (machine-written by
+  `memory-harvest.sh`/`/learn`, not prose), directly conflicting with a naive purge. Resolved by
+  documenting a new Exemption Taxonomy **Category 7** ("Memory vault frontmatter provenance
+  fields") in `rules/no-task-references-in-deliverables.md` and marking those lines in place with
+  an inline `# task-ref-ok ... category 7` YAML comment — field values verified byte-for-byte
+  unchanged via `yaml.safe_load` round-trip. Two `source:` fields with a redundant `"Task 547: "`
+  prose prefix had the prefix dropped instead (the harvest template's real shape is a bare path).
+  The sole body-prose occurrence (`MEM-plan-delegation-required.md`) was converted normally.
+
+## Plan Deviations (Phases 7-10)
+
+- **Phase 10, new taxonomy category**: discovered mid-phase that the "convert body, never
+  frontmatter" instruction and the "scan must report 0" requirement directly conflict for
+  `.memory/**`'s `topic`/`source` fields. Resolved per the plan's own directive to document newly
+  discovered categories rather than handle them ad hoc — see Category 7 above.
+- No other triage-bucket deviations in Phases 7-9: every site converted per the PROVENANCE /
+  ILLUSTRATIVE / SANCTIONED buckets.
+
+## Verification (Phases 7-10)
+
+- `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-task-references.sh --quiet`
+  scoped to each tree confirmed the expected delta to 0 before moving to the next phase:
+  literature 94→0, the ten remaining extensions 122→0 (so `agent-system/extensions` as a whole
+  now reports 0), `lua` 32→0, `.memory` 18→0.
+- `bash -n` passed on every edited `.sh` file; `python3 -m py_compile` passed on every edited
+  `.py` file; `python3 -c "import json; json.load(...)"` passed on the edited `index-entries.json`.
+- All 13 edited Lua modules verified to still load via
+  `nvim --headless -c "lua require('<module>')" -c "q"`.
+- `yaml.safe_load` round-trip on 4 sample `.memory/**` files confirmed frontmatter `topic`/
+  `source` values are byte-for-byte unchanged by the inline `#`-comment marker.
+- Repo-wide total dropped from 876 to 610 occurrences (`agent-system/extensions` now 0,
+  `.opencode` 610 unchanged, `lua` 0, `.memory` 0).
+
 ## Notes
 
 - Phase 15 (the blocking PreToolUse flip) was NOT touched, per the binding constraint that it
   must land strictly last, gated on `check-task-references.sh` exiting 0 across all four trees —
-  which it does not yet do (876 occurrences remain, all in Phases 7-14's territory).
-- Next dispatch resumes at Phase 7 (`agent-system/extensions/literature/`, 94 occurrences,
-  confirmed live). Phases 7-14 are territory-disjoint and may run in any order; Phase 15 must run
-  last. See the orchestrator handoff at `.orchestrator-handoff.json` for the precise resume
-  instructions and accumulated decisions.
+  which it does not yet do (610 occurrences remain, entirely within `.opencode/**`, Phases
+  11-14's territory).
+- Phases 11-14 (`.opencode/**`, 610 occurrences total: `extensions/core/` 199,
+  `extensions/{formal,founder,lean,memory,nix,nvim,present,web}` 76, `context/{core,formats}`
+  104, and the remaining `.opencode/**` tree 231) are territory-disjoint and may run in any
+  order. `.opencode/**` is a git-tracked, hand-maintained port — edited directly in place, never
+  routed through `agent-system/`; many sites will mirror durable anchors already established in
+  Phases 4-8 above (e.g. "the cross-task file_scope overlap check", "the phantom-artifact
+  incident") but the port has drifted, so each site still needs its own re-triage rather than a
+  blind mirror. Phase 15 must run last. See the orchestrator handoff at
+  `.orchestrator-handoff.json` for the precise resume instructions and accumulated decisions.
