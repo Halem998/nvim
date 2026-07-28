@@ -1,0 +1,25 @@
+{
+  "phase": 1,
+  "phase_name": "Exemption taxonomy and shared pattern library",
+  "started_at": "2026-07-28T00:00:00Z",
+  "last_updated": "2026-07-28T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create shared pattern library task-reference-patterns.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/task-reference-patterns.sh", "agent-system/extensions/core/manifest.json"]},
+    {"id": 2, "description": "Define exemption marker convention", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/task-reference-patterns.sh"]},
+    {"id": 3, "description": "Add Exemption Taxonomy section to rule file", "status": "done", "files_touched": ["agent-system/extensions/core/rules/no-task-references-in-deliverables.md"]},
+    {"id": 4, "description": "Apply taxonomy to git-workflow.md", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]},
+    {"id": 5, "description": "Apply taxonomy to no-task-references-in-deliverables.md's own Before-block", "status": "done", "files_touched": ["agent-system/extensions/core/rules/no-task-references-in-deliverables.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.4",
+      "description": "git-workflow.md's 3 TASK_PATTERN occurrences",
+      "type": "altered",
+      "reason": "The plan's task text named 'todo: archive 3 completed tasks (336, 337, 338)' as one of the 3 occurrences, but that string does not match TASK_PATTERN (a '(' follows the whitespace separator, not a digit). The actual 3rd matching occurrence was 'task 334: complete research' in the Single-Task Operations example (a different section than the named Examples block). Converted the actual matching occurrence to placeholder form, and also genericized the named-but-non-matching archive line for consistency with the Standard Actions table.",
+      "annotation": "*(deviation: altered — reconciled against actual grep match sites, not narrative)*"
+    }
+  ]
+}

@@ -101,12 +101,12 @@ template, and the fail-safe under-stage-not-over-stage direction).
 ### Single-Task Operations
 Include only files related to that task:
 ```
-task 334: complete research
+task {N}: complete research
 
 Modified:
   specs/TODO.md
   specs/state.json
-  specs/334_task_slug/reports/01_research-findings.md
+  specs/{NNN}_task_slug/reports/01_research-findings.md
 ```
 
 ### Multi-Task Operations
@@ -219,19 +219,21 @@ session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 ### Examples
 
 ```
-task 334: create LaTeX documentation for Logos system
+task {N}: create LaTeX documentation for Logos system
 
 Session: sess_1736700000_a1b2c3
 ```
 
+<!-- task-ref-ok:begin canonical rendered commit-message example -->
 ```
 task 259 phase 2: implement modal semantics evaluator
 
 Session: sess_1736701234_d4e5f6
 ```
+<!-- task-ref-ok:end -->
 
 ```
-todo: archive 3 completed tasks (336, 337, 338)
+todo: archive {N} completed tasks
 
 Session: sess_1736702000_789abc
 ```
