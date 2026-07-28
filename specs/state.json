@@ -377,7 +377,7 @@
     {
       "project_number": 887,
       "project_name": "research_telemetry_source_architecture_and_distill_redesign",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Research: telemetry source architecture and /distill redesign",
@@ -397,8 +397,8 @@
         "agent-system/extensions/memory/skills/skill-memory/SKILL.md"
       ],
       "created": "2026-07-15",
-      "last_updated": "2026-07-27T23:25:19Z",
-      "session_id": "sess_1785194231_5f18f2",
+      "last_updated": "2026-07-28T01:58:57Z",
+      "session_id": "sess_1785200970_1df081_887",
       "artifacts": [
         {
           "path": "specs/887_research_telemetry_source_architecture_and_distill_redesign/reports/01_telemetry-source-architecture.md",
@@ -409,8 +409,14 @@
           "path": "specs/887_research_telemetry_source_architecture_and_distill_redesign/plans/01_distill-telemetry-redesign.md",
           "type": "plan",
           "summary": ""
+        },
+        {
+          "path": "specs/887_research_telemetry_source_architecture_and_distill_redesign/summaries/01_distill-telemetry-redesign-summary.md",
+          "type": "summary",
+          "summary": ""
         }
-      ]
+      ],
+      "completion_summary": "Settled the OTel <-> events.jsonl seam with a new cc_session_id join key, split skill-memory into skill-learn and skill-distill, restructured skill-distill around a shared sub-mode skeleton, and specified/landed five new or redefined telemetry-sourced /distill sub-modes (--revise, --meta, --review, --learn, --dream), growing /distill from 7 to 12 sub-modes. All 12 plan phases completed; final validation passed, including a live extension-redeploy check that found and fixed a stale-deploy defect."
     },
     {
       "project_number": 898,

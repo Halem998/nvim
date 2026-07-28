@@ -11,14 +11,13 @@ next_project_number: 937
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 887,934 | -- | agent-system |
+| 1 | 934 | -- | agent-system |
 | 2 | 935 | 934 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-887 [PLANNED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
 934 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
   └─ 935 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
@@ -1697,12 +1696,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 887. Research: telemetry source architecture and /distill redesign
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 873, Task 885, Task 926
 - **Research**: [887_research_telemetry_source_architecture_and_distill_redesign/reports/01_telemetry-source-architecture.md]
 - **Plan**: [887_research_telemetry_source_architecture_and_distill_redesign/plans/01_distill-telemetry-redesign.md]
+- **Summary**: [887_research_telemetry_source_architecture_and_distill_redesign/summaries/01_distill-telemetry-redesign-summary.md]
 
 **Description**: RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The user will /revise this and then /expand it into implementation tasks. Do NOT jump to implementation.
 
