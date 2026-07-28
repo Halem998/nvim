@@ -297,6 +297,22 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
         *(completed: baseline is 1223 occurrences across 4 trees — agent-system/extensions 563,
         .opencode 610, lua 32, .memory 18 — exactly 5 below the research's pre-Phase-1 1,228
         total, matching Phase 1's 5 purged occurrences. No taxonomy miscategorization observed.)*
+  - [x] *(deviation: altered — post-close amendment, applied at Phase 4 resume time)* A drift
+        inspection found that Phases 4/6 and ten later phases require per-subtree finding counts
+        (e.g. "scan reports 0 under `agent-system/extensions/core/context/`"), which the
+        no-argument/`--quiet`-only interface described above cannot emit — it always scans all
+        four `TREE_ROOTS` and reports per-tree totals only. Extended
+        `check-task-references.sh` to accept an optional trailing `PATH_SCOPE` positional
+        argument (after `--quiet` if present) that restricts enumeration and reporting to that
+        subtree, validated to fall under one of the four `TREE_ROOTS` (exit 2 otherwise). The
+        no-argument and `--quiet`-only forms are unchanged byte-for-byte: same four-tree scan,
+        same per-tree summary lines, same exit codes (confirmed 1223 total, same per-tree
+        breakdown, both before and after this amendment). No pattern or exemption logic was
+        touched — `lib/task-reference-patterns.sh` remains the sole source. The script's own
+        header usage text was updated to document the new form; no manifest change was needed
+        (the declared filename is unchanged). Live-verified: `--quiet
+        agent-system/extensions/core/context` reports exactly 147, matching Phase 4's Scope
+        Hypothesis and the raw-grep cross-check.
 
 - **Timing:** 2 hours
 - **Depends on:** 1
@@ -387,7 +403,7 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
 
 ---
 
-### Phase 4: Purge `agent-system/extensions/core/context/` [NOT STARTED]
+### Phase 4: Purge `agent-system/extensions/core/context/` [IN PROGRESS]
 
 - **Goal:** Clear the largest single subdirectory of the source store.
 - **Character:** High judgment. Docs/context prose; each site needs a real
