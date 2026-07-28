@@ -1,21 +1,49 @@
 #!/bin/bash
-# PostToolUse hook: advisory scan for task-number citations in authored deliverables
+# PreToolUse hook: BLOCKS task-number citations in authored deliverables via exit code 2.
 # Triggers on Write/Edit to any path outside specs/** (task-management artifacts are exempt --
-# task numbers are expected there). Non-blocking: always exits 0, never denies the tool call.
+# task numbers are expected there). Blocking: denies the write via exit 2 + stderr message when
+# a citation is found; exits 0 (silent) otherwise, and fails OPEN (exit 0) if its own shared
+# pattern library cannot be sourced -- a broken guard must never block every write in the repo.
+#
+# Modeled on guard-destructive-git.sh: blocks via exit code 2 + a stderr message (NOT
+# permissionDecision: deny, which is documented-buggy for allow-listed Write/Edit tool calls --
+# see settings.json's permissions.allow bare "Write"/"Edit" entries and GH issues #4669, #13214,
+# #18312). MUST be registered bare (no `2>/dev/null || echo '{}'` wrapper) -- that wrapper
+# converts exit 2 into exit 0 and silently disables the block; see root-files/settings.json's
+# PreToolUse registration.
 #
 # Rationale: .claude/rules/no-task-references-in-deliverables.md -- deliverable files (code,
 # docs, .claude/ context/standards/etc.) must not cite ephemeral task-management metadata like
 # "task N" or "tasks N-M", since task numbers are renumbered during vault operations and are
 # meaningless to a future reader with no access to (or interest in) the task tracker. Durable
-# anchors (filenames, section headings, decision-record names) should be used instead.
+# anchors (filenames, section headings, decision-record names) should be used instead. The
+# Exemption Taxonomy in that rule file documents every marker-exempted category (command-usage
+# examples, quoted historical anti-patterns, test fixtures, memory frontmatter provenance, etc.)
+# -- this hook consumes that taxonomy mechanically via strip_exempt_regions, never re-implementing
+# exemption logic of its own.
 
 set -uo pipefail
 
-# ─── Parse tool input from stdin (PostToolUse hook input), env-var fallback ──────────────────
-# Mirrors validate-plan-write.sh's stdin/env-fallback parsing pattern.
+# ─── Shared pattern/exemption library ────────────────────────────────────────────────────────
+# Sourced from the hook's own directory (siblings under .claude/: hooks/ and scripts/), so
+# resolution is independent of the tool's cwd. Neither TASK_SEP, TASK_PATTERN, PHASE_PATTERN,
+# nor exemption logic is defined here after this rewrite -- see
+# rules/no-task-references-in-deliverables.md's Exemption Taxonomy for the single source of
+# truth both this hook and check-task-references.sh consume.
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIB="$HOOK_DIR/../scripts/lib/task-reference-patterns.sh"
+if [ ! -f "$LIB" ]; then
+  echo "WARNING: validate-no-task-references.sh: shared library not found at $LIB -- failing open (not blocking)" >&2
+  exit 0
+fi
+# shellcheck disable=SC1090
+. "$LIB"
+
+# ─── Parse tool input from stdin (PreToolUse hook input), env-var fallback ───────────────────
+# Mirrors guard-destructive-git.sh's stdin parsing pattern; the CLAUDE_TOOL_INPUT env fallback
+# preserves the prior PostToolUse-era parsing shape for callers that still set it.
 
 if [ -t 0 ]; then
-  # Fallback: try env var
   FILE=$(echo "$CLAUDE_TOOL_INPUT" 2>/dev/null | jq -r '.file_path // empty' 2>/dev/null)
   CONTENT=$(echo "$CLAUDE_TOOL_INPUT" 2>/dev/null | jq -r '.content // .new_string // empty' 2>/dev/null)
 else
@@ -28,58 +56,47 @@ else
   fi
 fi
 
-# Non-file tools (no file_path resolved) -- exit silently.
+# Non-file tools (no file_path resolved) -- exit silently, never block.
 if [ -z "$FILE" ]; then
-  echo '{}'
   exit 0
 fi
 
-# Exempt specs/** (task-management artifacts): the rule's own scope exclusion. Mirrors
-# validate-plan-write.sh's specs/*/...|*/specs/*/... glob-pair style so both repo-relative and
-# absolute-prefixed paths are exempted.
-case "$FILE" in
-  specs/*|*/specs/*)
-    echo '{}'
-    exit 0
-    ;;
-esac
+# Exempt specs/** (task-management artifacts): the rule's own path-level scope exclusion
+# (Exemption Taxonomy category 1), via the shared library so both consumers agree byte-for-byte.
+if is_exempt_path "$FILE"; then
+  exit 0
+fi
 
-# No content captured (e.g. a Write/Edit variant this hook doesn't recognize) -- nothing to scan.
+# No content captured (e.g. a Write/Edit variant this hook doesn't recognize) -- nothing to scan,
+# never block.
 if [ -z "$CONTENT" ]; then
-  echo '{}'
   exit 0
 fi
 
-# Separator group between "task(s)"/"phase" and its number: whitespace (optionally followed by
-# "#"), or a single "-", "_", "#". An explicit alternation, NOT a bracket class containing "-"
-# (a "-" inside a bracket class can be silently read as a range operator depending on position;
-# alternation avoids that trap entirely). Covers "task N", "task-N", "task_N", "task#N", and
-# "Task #N" alike (using letter placeholders here rather than a concrete digit sequence, so this
-# comment itself does not incidentally match the pattern it describes).
-TASK_SEP='([[:space:]]+#?|[-_#])'
+# Strip marker-exempted regions (Exemption Taxonomy categories 2-4, 6-7) before matching, exactly
+# as check-task-references.sh does -- neither consumer implements exemption filtering itself.
+SCANNABLE="$(printf '%s' "$CONTENT" | strip_exempt_regions)"
 
-# Task-number citation pattern: "task N", "tasks N-M", "task-N", "task_N", "task#N", "Task #N",
-# case-insensitive on the "task(s)" token (grep -i handles case; [Tt] kept for readability).
-# Whole-word boundaries via \b to avoid matching inside larger identifiers (e.g. "taskbarN").
-TASK_PATTERN="\\b[Tt]asks?${TASK_SEP}[0-9]+(-[0-9]+)?\\b"
-
-# Task-qualified compound Phase pattern: "task N phase P" or "phase P of task N" only. A bare
-# "Phase N" with no adjacent task reference is deliberately NOT matched here -- it is
-# indistinguishable from a document's own internal structure (plan headings, skill pipeline
-# stages) and would generate constant false positives. The compound form is unambiguously a
-# citation of a specs/-scoped plan's internals. Anchored on the same TASK_SEP separator group so
-# a hyphenated compound like "task-N phase-P" is caught too.
-PHASE_PATTERN="\\b([Tt]asks?${TASK_SEP}[0-9]+[[:space:]]+[Pp]hase${TASK_SEP}[0-9]+|[Pp]hase${TASK_SEP}[0-9]+[[:space:]]+of[[:space:]]+[Tt]asks?${TASK_SEP}[0-9]+)\\b"
-
-if echo "$CONTENT" | grep -qiE "$PHASE_PATTERN"; then
-  echo "{\"additionalContext\": \"Reminder: ${FILE} appears to cite a task-qualified phase reference (e.g. 'task N phase P' or 'phase P of task N'). Per .claude/rules/no-task-references-in-deliverables.md, deliverable files outside specs/** must not cite ephemeral task-management metadata -- task numbers (and phase references scoped to them) are renumbered during vault operations and are meaningless to a future reader. Reference a durable anchor instead (a sibling document's filename, a section heading, a decision-record name, or a verified fact) rather than the task/phase number. This is advisory only and does not block the write.\"}"
-  exit 0
+if printf '%s' "$SCANNABLE" | grep -qiE "$PHASE_PATTERN"; then
+  echo "BLOCKED: $FILE appears to cite a task-qualified phase reference (e.g. 'task N phase P' or 'phase P of task N')." >&2
+  echo "Per .claude/rules/no-task-references-in-deliverables.md, deliverable files outside specs/** must not cite" >&2
+  echo "ephemeral task-management metadata -- task numbers (and phase references scoped to them) are renumbered" >&2
+  echo "during vault operations and are meaningless to a future reader. Reference a durable anchor instead (a" >&2
+  echo "sibling document's filename, a section heading, a decision-record name, or a verified fact) rather than" >&2
+  echo "the task/phase number. If this citation is intentional (command-usage example, quoted historical" >&2
+  echo "anti-pattern, test fixture, etc.), wrap it in a task-ref-ok marker per the Exemption Taxonomy." >&2
+  exit 2
 fi
 
-if echo "$CONTENT" | grep -qiE "$TASK_PATTERN"; then
-  echo "{\"additionalContext\": \"Reminder: ${FILE} appears to cite a task number (e.g. 'task N', 'tasks N-M', 'task-N', 'task_N', or 'Task #N'). Per .claude/rules/no-task-references-in-deliverables.md, deliverable files outside specs/** must not cite ephemeral task-management metadata -- task numbers are renumbered during vault operations and are meaningless to a future reader. Reference a durable anchor instead (a sibling document's filename, a section heading, a decision-record name, or a verified fact) rather than the task number. This is advisory only and does not block the write.\"}"
-  exit 0
+if printf '%s' "$SCANNABLE" | grep -qiE "$TASK_PATTERN"; then
+  echo "BLOCKED: $FILE appears to cite a task number (e.g. 'task N', 'tasks N-M', 'task-N', 'task_N', or 'Task #N')." >&2
+  echo "Per .claude/rules/no-task-references-in-deliverables.md, deliverable files outside specs/** must not cite" >&2
+  echo "ephemeral task-management metadata -- task numbers are renumbered during vault operations and are" >&2
+  echo "meaningless to a future reader. Reference a durable anchor instead (a sibling document's filename, a" >&2
+  echo "section heading, a decision-record name, or a verified fact) rather than the task number. If this" >&2
+  echo "citation is intentional (command-usage example, quoted historical anti-pattern, test fixture, etc.)," >&2
+  echo "wrap it in a task-ref-ok marker per the Exemption Taxonomy." >&2
+  exit 2
 fi
 
-echo '{}'
 exit 0

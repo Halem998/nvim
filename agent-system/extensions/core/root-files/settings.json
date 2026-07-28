@@ -52,6 +52,15 @@
             "command": "bash .claude/hooks/guard-destructive-git.sh"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/validate-no-task-references.sh"
+          }
+        ]
       }
     ],
     "PostToolUse": [

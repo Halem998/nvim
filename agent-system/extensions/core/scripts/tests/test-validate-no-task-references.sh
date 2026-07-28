@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 # test-validate-no-task-references.sh - Fixture-driven regression suite for
-# validate-no-task-references.sh's separator-aware task/phase citation regex.
+# validate-no-task-references.sh's separator-aware task/phase citation regex AND its blocking
+# PreToolUse behavior (exit code 2 on a match, exit 0 otherwise).
 #
 # Drives the hook as a real subprocess: copies it byte-for-byte into an isolated
-# mktemp -d workdir and pipes a synthetic PostToolUse JSON payload
-# ({"tool_input":{"file_path":...,"content":...}}) on stdin for every case, asserting on
-# whether the emitted JSON contains an "additionalContext" key. The hook itself is never
-# instrumented or modified for testability -- it never learns it is under test.
+# mktemp -d workdir (alongside a copy of the shared lib/task-reference-patterns.sh library at
+# the same relative path the hook expects: <workdir>/hooks/validate-no-task-references.sh sources
+# <workdir>/scripts/lib/task-reference-patterns.sh) and pipes a synthetic PreToolUse JSON payload
+# ({"tool_input":{"file_path":...,"content":...}}) on stdin for every case, asserting on the
+# hook's EXIT CODE (2 = blocked, 0 = allowed) rather than its stdout -- the hook no longer emits
+# JSON on stdout at all post-flip; it writes a stderr message and exits 2 on a match, or exits 0
+# silently. The hook itself is never instrumented or modified for testability -- it never learns
+# it is under test.
 #
 # Follows the core shell-test convention in
 # context/standards/shell-script-testing.md: pass()/fail()/info() helpers, PASSED/FAILED
@@ -19,6 +24,7 @@ set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOOK_SRC="$SCRIPT_DIR/../../hooks/validate-no-task-references.sh"
+LIB_SRC="$SCRIPT_DIR/../lib/task-reference-patterns.sh"
 
 PASSED=0
 FAILED=0
@@ -32,8 +38,13 @@ if [ ! -f "$HOOK_SRC" ]; then
   exit 1
 fi
 
+if [ ! -f "$LIB_SRC" ]; then
+  echo "ERROR: expected shared library task-reference-patterns.sh at $LIB_SRC" >&2
+  exit 1
+fi
+
 if ! command -v jq >/dev/null 2>&1; then
-  echo "ERROR: jq is required to build synthetic PostToolUse payloads and is not on PATH" >&2
+  echo "ERROR: jq is required to build synthetic PreToolUse payloads and is not on PATH" >&2
   exit 1
 fi
 
@@ -41,45 +52,63 @@ WORKDIR="$(mktemp -d)"
 cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
 trap cleanup EXIT
 
-HOOK="$WORKDIR/validate-no-task-references.sh"
+# Mirror the hook's expected sibling layout: hooks/validate-no-task-references.sh sources
+# ../scripts/lib/task-reference-patterns.sh relative to its OWN directory.
+mkdir -p "$WORKDIR/hooks" "$WORKDIR/scripts/lib"
+HOOK="$WORKDIR/hooks/validate-no-task-references.sh"
 cp "$HOOK_SRC" "$HOOK"
 chmod +x "$HOOK"
+cp "$LIB_SRC" "$WORKDIR/scripts/lib/task-reference-patterns.sh"
 
 # run_hook <file_path> <content>
-# Builds a synthetic PostToolUse payload via jq (safe against quotes/parens in content) and
-# pipes it to the copied hook. Echoes the hook's stdout.
+# Builds a synthetic PreToolUse payload via jq (safe against quotes/parens in content) and
+# pipes it to the copied hook. Echoes "EXITCODE|STDERR" so callers can assert on both.
 run_hook() {
+  local file_path="$1" content="$2" out exit_code
+  out="$(jq -n --arg fp "$file_path" --arg c "$content" \
+    '{tool_input: {file_path: $fp, content: $c}}' \
+    | bash "$HOOK" 2>&1 1>/dev/null)"
+  exit_code=$?
+  printf '%s|%s' "$exit_code" "$out"
+}
+
+hook_exit_code() {
   local file_path="$1" content="$2"
   jq -n --arg fp "$file_path" --arg c "$content" \
     '{tool_input: {file_path: $fp, content: $c}}' \
-    | bash "$HOOK"
+    | bash "$HOOK" >/dev/null 2>&1
+  echo $?
 }
 
 # assert_triggers <label> <file_path> <content>
+# Expects exit 2 (blocked) and non-empty stderr.
 assert_triggers() {
-  local label="$1" file_path="$2" content="$3" out
-  out="$(run_hook "$file_path" "$content")"
-  if echo "$out" | jq -e 'has("additionalContext")' >/dev/null 2>&1; then
-    pass "$label: triggers additionalContext"
+  local label="$1" file_path="$2" content="$3" result code stderr_out
+  result="$(run_hook "$file_path" "$content")"
+  code="${result%%|*}"
+  stderr_out="${result#*|}"
+  if [ "$code" -eq 2 ] && [ -n "$stderr_out" ]; then
+    pass "$label: exits 2 with stderr message"
   else
-    fail "$label: expected additionalContext, got: $out"
+    fail "$label: expected exit 2 + stderr, got exit=$code stderr='$stderr_out'"
   fi
 }
 
 # assert_silent <label> <file_path> <content>
+# Expects exit 0 (allowed).
 assert_silent() {
-  local label="$1" file_path="$2" content="$3" out
-  out="$(run_hook "$file_path" "$content")"
-  if echo "$out" | jq -e 'has("additionalContext")' >/dev/null 2>&1; then
-    fail "$label: expected {} (no additionalContext), got: $out"
+  local label="$1" file_path="$2" content="$3" code
+  code="$(hook_exit_code "$file_path" "$content")"
+  if [ "$code" -eq 0 ]; then
+    pass "$label: exits 0 (allowed)"
   else
-    pass "$label: stays silent ({})"
+    fail "$label: expected exit 0, got exit=$code"
   fi
 }
 
 # task-ref-ok:begin test fixture for the reference-pattern detector itself
 # =====================================================================
-# Positive fixtures (must trigger)
+# Positive fixtures (must exit 2 / blocked)
 # =====================================================================
 assert_triggers "positive: task 788"            "lua/foo.lua" "See task 788 for context"
 assert_triggers "positive: tasks 788-790"        "lua/foo.lua" "This spans tasks 788-790"
@@ -93,7 +122,7 @@ assert_triggers "positive: task 926 phase 3"     "lua/foo.lua" "See task 926 pha
 assert_triggers "positive: phase 3 of task 926"  "lua/foo.lua" "Introduced in phase 3 of task 926"
 
 # =====================================================================
-# Negative fixtures (must NOT trigger)
+# Negative fixtures (must exit 0 / allowed)
 # =====================================================================
 assert_silent "negative: bare Phase 3 heading"     "lua/foo.lua" "### Phase 3: Something"
 assert_silent "negative: ### Phase 12: name"       "lua/foo.lua" "### Phase 12: Registration"
@@ -104,29 +133,97 @@ assert_silent "negative: taskbar788 (no boundary)" "lua/foo.lua" "Uses the taskb
 assert_silent "negative: ordinary sentence"        "lua/foo.lua" "This function returns the sum of two numbers."
 
 # =====================================================================
-# Exemption fixtures: specs/** file_path always exits {} even with positive content
+# Exemption fixtures: specs/** file_path always exits 0 even with positive content
+# (Exemption Taxonomy category 1)
 # =====================================================================
 assert_silent "exemption: relative specs/ path"    "specs/926_foo/plans/01_plan.md" "See task 788 for context"
 assert_silent "exemption: absolute-prefixed specs/ path" "/abs/prefix/specs/926_foo/plans/01_plan.md" "See task 788 for context"
 
 # =====================================================================
-# Degenerate-input fixtures: empty file_path / empty content both exit {} and 0
+# Exemption fixtures: one per remaining Exemption Taxonomy category (rules/
+# no-task-references-in-deliverables.md's "## Exemption Taxonomy" section)
 # =====================================================================
-degenerate_out="$(run_hook "" "See task 788 for context")"
-degenerate_exit=$?
-if [ "$degenerate_exit" -eq 0 ] && ! echo "$degenerate_out" | jq -e 'has("additionalContext")' >/dev/null 2>&1; then
-  pass "degenerate: empty file_path exits {} and 0"
+
+# Category 2: commit-message convention example, marked -> allowed.
+assert_silent "category 2: marked commit-convention example" "lua/foo.lua" \
+"<!-- task-ref-ok:begin canonical rendered commit-message example -->
+task 259: create LaTeX documentation for Logos system
+<!-- task-ref-ok:end -->"
+
+# Category 2 / regression anchor: the git-workflow.md self-trip case. The exact line that
+# defines the sanctioned task+phase commit convention must NOT be indistinguishable from a
+# violation once marked, and MUST still be caught when the marker is absent.
+assert_silent "regression anchor: task+phase commit example, MARKED" "lua/foo.lua" \
+"<!-- task-ref-ok:begin canonical rendered commit-message example -->
+task 259 phase 2: implement modal semantics evaluator
+<!-- task-ref-ok:end -->"
+assert_triggers "regression anchor: task+phase commit example, UNMARKED" "lua/foo.lua" \
+"task 259 phase 2: implement modal semantics evaluator"
+
+# Category 3: command-usage example, marked -> allowed; unmarked -> blocked.
+assert_silent "category 3: marked command-usage example" "lua/foo.lua" \
+"<!-- task-ref-ok:begin command-usage example -->
+/learn --task 142
+<!-- task-ref-ok:end -->"
+assert_triggers "category 3: unmarked command-usage example" "lua/foo.lua" \
+"/learn --task 142"
+
+# Category 4: quoted historical anti-pattern, marked -> allowed.
+assert_silent "category 4: marked quoted historical anti-pattern" "lua/foo.lua" \
+"<!-- task-ref-ok:begin quoted historical anti-pattern -->
+## 13. Index Freshness (tasks 823-824)
+<!-- task-ref-ok:end -->"
+
+# Category 5: placeholder-bearing prose never matches TASK_PATTERN at all -- no marker needed,
+# never blocked.
+assert_silent "category 5: placeholder-bearing prose, no marker" "lua/foo.lua" \
+"See task {N} and specs/{NNN}_{SLUG}/ for the artifact path convention."
+
+# Category 6: test fixture for the reference-pattern detector itself, marked -> allowed. The
+# inline marker form exempts only the single line it appears on, so the marker and the fixture
+# literal must share one line.
+assert_silent "category 6: marked test-fixture literal" "lua/foo.lua" \
+"assert_triggers \"positive: task 788\" ... \"See task 788 for context\" <!-- task-ref-ok quoting the actual fixture strings, category 6 -->"
+
+# Category 7: memory vault frontmatter provenance field, marked inline -> allowed.
+assert_silent "category 7: marked memory frontmatter provenance" ".memory/10-Memories/MEM-example.md" \
+"topic: \"task-595\"  # task-ref-ok inline, category 7"
+
+# =====================================================================
+# Degenerate-input fixtures: empty file_path / empty content both exit 0
+# =====================================================================
+degenerate_code="$(hook_exit_code "" "See task 788 for context")"
+if [ "$degenerate_code" -eq 0 ]; then
+  pass "degenerate: empty file_path exits 0"
 else
-  fail "degenerate: empty file_path expected {} and exit 0, got exit=$degenerate_exit out=$degenerate_out"
+  fail "degenerate: empty file_path expected exit 0, got exit=$degenerate_code"
+fi
+
+degenerate_code="$(hook_exit_code "lua/foo.lua" "")"
+if [ "$degenerate_code" -eq 0 ]; then
+  pass "degenerate: empty content exits 0"
+else
+  fail "degenerate: empty content expected exit 0, got exit=$degenerate_code"
 fi
 # task-ref-ok:end
 
-degenerate_out="$(run_hook "lua/foo.lua" "")"
-degenerate_exit=$?
-if [ "$degenerate_exit" -eq 0 ] && ! echo "$degenerate_out" | jq -e 'has("additionalContext")' >/dev/null 2>&1; then
-  pass "degenerate: empty content exits {} and 0"
+# =====================================================================
+# Shared-library-missing fixture: hook must fail OPEN (exit 0), never block every write in
+# the repo just because its own dependency vanished.
+# =====================================================================
+NOLIBDIR="$(mktemp -d)"
+mkdir -p "$NOLIBDIR/hooks"
+cp "$HOOK_SRC" "$NOLIBDIR/hooks/validate-no-task-references.sh"
+chmod +x "$NOLIBDIR/hooks/validate-no-task-references.sh"
+nolib_out="$(jq -n --arg fp "lua/foo.lua" --arg c "See task 788 for context" \
+  '{tool_input: {file_path: $fp, content: $c}}' \
+  | bash "$NOLIBDIR/hooks/validate-no-task-references.sh" 2>&1 1>/dev/null)"
+nolib_code=$?
+rm -rf "$NOLIBDIR"
+if [ "$nolib_code" -eq 0 ] && [ -n "$nolib_out" ]; then
+  pass "shared-library-missing: fails open (exit 0) with a warning"
 else
-  fail "degenerate: empty content expected {} and exit 0, got exit=$degenerate_exit out=$degenerate_out"
+  fail "shared-library-missing: expected exit 0 + warning, got exit=$nolib_code out='$nolib_out'"
 fi
 
 # =====================================================================

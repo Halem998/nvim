@@ -109,10 +109,18 @@ Three layers. `specs/**` is the ONLY exempt tree — `agent-system/extensions/**
 - **Repo-wide lint gate**: `.claude/scripts/check-task-references.sh` scans every git-tracked
   file under the four deliverable tree roots above and exits non-zero on any unexempted finding.
   It is wired as gate 4 of `scripts/verify-deploy.sh`.
-- **Write-time gate**: `.claude/hooks/validate-no-task-references.sh` (currently advisory
-  PostToolUse — this bullet states the present truth and will be updated once the hook is
-  flipped to a blocking PreToolUse gate) scans new/edited content outside `specs/**` for
-  task-number citation patterns and surfaces a reminder. It does not yet block the write.
+- **Write-time gate**: `.claude/hooks/validate-no-task-references.sh` is a blocking PreToolUse
+  gate (matcher `Write|Edit`) that scans new/edited content outside `specs/**` for task-number
+  citation patterns and denies the write via exit code 2 (not `permissionDecision: "deny"`, which
+  is documented-buggy for tools bare-allow-listed in `settings.json`'s `permissions.allow` — see
+  `guard-destructive-git.sh` for the same pattern). It fails OPEN (exit 0, stderr warning) if its
+  own shared pattern library cannot be sourced, so a broken guard never blocks every write in the
+  repo. **`.memory/**` coverage, empirically verified**: `skill-todo`'s Stage 14 memory-harvest
+  logic (the live path — distinct from the separate, presently-uncalled `memory-harvest.sh`
+  script) creates new memory files via the `Write` tool with natural-language instructions, not a
+  Bash heredoc, so this hook DOES see and can block `.memory/**` memory-candidate harvest writes.
+  The heredoc gap exists only in `memory-harvest.sh` itself, which is not on the live `/todo`
+  path today.
 - **Agent contracts**: four agent files carry an explicit MUST-NOT bullet against citing task
   numbers in files outside `specs/**` —
   `agent-system/extensions/core/agents/general-implementation-agent.md`,
