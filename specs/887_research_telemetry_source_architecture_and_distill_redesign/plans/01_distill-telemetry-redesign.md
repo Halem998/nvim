@@ -837,7 +837,7 @@ unambiguously from the two existing harvest paths.
 
 ---
 
-### Phase 10: Redefine `--dream` and retire its migrated content [NOT STARTED]
+### Phase 10: Redefine `--dream` and retire its migrated content [COMPLETED]
 
 **Goal**: Reduce `--dream` to speculative direction-finding only, once its two current halves have
 landed in `--revise` and `--meta`.
@@ -857,15 +857,29 @@ landed in `--revise` and `--meta`.
 
 **Tasks**:
 
-- [ ] Verify the `--revise` and `--meta` sections fully contain the migrated content before
+- [x] Verify the `--revise` and `--meta` sections fully contain the migrated content before
       removing anything from `dream` — no content may be deleted until its destination exists.
-- [ ] Rewrite the `dream` section to the new charter and reduce it to deltas against the shared
-      skeleton.
-- [ ] Specify `history.jsonl` access: line shape (`display`, `pastedContents`, `timestamp` as unix
+      *(completed: verified against the pre-Phase-10 `dream` content before rewriting -- Event
+      Ingestion/Why-event-store/No-Events-Yet/Correlation/Classification/Dry-Run/Interactive
+      Selection(Corroborated/Contradicted/Gap)/Batch Index Regeneration all present in `--revise`;
+      Improvement Proposals discovery/presentation/confirmation/task-creation all present in
+      `--meta`)*
+- [x] Rewrite the `dream` section to the new charter and reduce it to deltas against the shared
+      skeleton. *(completed in place at its existing position)*
+- [x] Specify `history.jsonl` access: line shape (`display`, `pastedContents`, `timestamp` as unix
       ms, `project` as an absolute cwd, `sessionId`), per-repo slicing via `project`, and the
-      recurring-theme surfacing logic.
-- [ ] State the MANDATORY STOP exemption and the funnel rule.
-- [ ] Move the section into its ordered slot from Phase 5.
+      recurring-theme surfacing logic. *(completed: "Candidate Identification: history.jsonl
+      Access" subsection)*
+- [x] State the MANDATORY STOP exemption and the funnel rule. *(completed: dedicated "MANDATORY
+      STOP Exemption" subsection plus the funnel sentence in the Charter paragraph)*
+- [x] Move the section into its ordered slot from Phase 5. *(no physical move needed: because
+      Phases 6-9 each inserted their new section immediately before `dream`'s existing position,
+      `dream` was already sitting in its correct final slot -- purge, gc, merge, compress, refine,
+      auto, revise, meta, review, learn, dream -- by construction, before this phase began. Only
+      the content was rewritten in place. Also updated the "State Integration" section's dream
+      column, since the redefined non-mutating dream no longer increments `distill_count` the way
+      the pre-redefinition mutating dream did -- a necessary consistency fix flowing directly from
+      this phase's own redefinition, not separate scope.)*
 
 **Timing**: 1.5 hours
 
