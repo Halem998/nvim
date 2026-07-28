@@ -78,6 +78,19 @@
         "commands": ["/distill"],
         "agents": ["general-research-agent"]
       }
+    },
+    {
+      "path": "project/memory/telemetry-guardrails.md",
+      "domain": "project",
+      "subdomain": "memory",
+      "topics": ["memory", "distill", "telemetry", "otel", "guardrails"],
+      "keywords": ["telemetry", "otel", "guardrails", "four-tier", "cc_session_id", "gen_ai", "evaluator-outside-loop"],
+      "summary": "Binding design constraints for telemetry-consuming /distill sub-modes: four-tier source model, evaluator-outside-the-loop rule, six failure modes, gen_ai borrowing rule, and cross-repo invocation discipline",
+      "line_count": 172,
+      "load_when": {
+        "skills": ["skill-distill"],
+        "commands": ["/distill"]
+      }
     }
   ]
 }

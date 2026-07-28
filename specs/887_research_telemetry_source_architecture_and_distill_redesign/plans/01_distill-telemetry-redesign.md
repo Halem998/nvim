@@ -225,7 +225,7 @@ join key expands the file list.
 
 ---
 
-### Phase 2: Author the telemetry guardrails context file [NOT STARTED]
+### Phase 2: Author the telemetry guardrails context file [COMPLETED]
 
 **Goal**: Encode the binding design constraints once, in a citable context file, so the five new
 sub-mode specifications reference them by name instead of restating them five times — the same
@@ -280,12 +280,13 @@ factoring discipline Phase 5 applies to the sub-mode skeleton.
 
 **Tasks**:
 
-- [ ] Create the guardrails context file under the memory extension's context tree (it is consumed
-      by `skill-distill`, a memory-extension skill).
-- [ ] Register it in `agent-system/extensions/memory/index-entries.json` with `load_when.skills`
+- [x] Create the guardrails context file under the memory extension's context tree (it is consumed
+      by `skill-distill`, a memory-extension skill). *(completed:
+      context/project/memory/telemetry-guardrails.md, 172 lines)*
+- [x] Register it in `agent-system/extensions/memory/index-entries.json` with `load_when.skills`
       naming `skill-distill` and `load_when.commands` naming `/distill`, and an accurate
-      `line_count`.
-- [ ] Verify no task-number citations appear anywhere in the new file.
+      `line_count`. *(completed)*
+- [x] Verify no task-number citations appear anywhere in the new file. *(completed: grep clean)*
 
 **Timing**: 1.5 hours
 
