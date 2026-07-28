@@ -1,0 +1,67 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/933_predispatch_dependency_and_file_scope_review/summaries/01_predispatch-review-repair-summary.md",
+      "summary": "Implementation summary: shared pre-dispatch review script wired into both /orchestrate surfaces, docs updated, script registered."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Extracted orchestrate-predispatch-review.sh reporting four pre-dispatch defect classes (dropped dependency edges, null metadata, self-modification declaration coarseness, missing cross-batch serializing edges) from specs/state.json, wired identically into commands/orchestrate.md Step 1.5 and orchestrate-dry-run-report.sh section 7, added an opt-in direct-invocation-only --repair flag, updated guardrails/schema/skill documentation, and registered the script in manifest.json."
+  },
+  "memory_candidates": [
+    {
+      "content": "In jq, `EXPR | index(ARG)` evaluates ARG against EXPR's output (the piped value), not the original '.' before the pipe. Writing `select(($array_var | index(.field)) != null)` inside a larger pipeline is a common bug: '.field' silently tries to index $array_var itself, raising 'Cannot index array with string'. Fix: bind the scalar first with `as`, e.g. `select(.field as $v | ($array_var | index($v)) != null)`, which evaluates 'as' against the current '.' (preserving it) before piping only the bound value onward.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/933_predispatch_dependency_and_file_scope_review/summaries/01_predispatch-review-repair-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "jq",
+        "index",
+        "pipe-semantics",
+        "select",
+        "bash-jq-scripting"
+      ]
+    },
+    {
+      "content": "When a plan's Non-Goal explicitly bars a new component from becoming an admission/blocking gate, be careful not to overclaim in documentation that a related guardrail's 'exclude by default' clause is now fully satisfied just because the 'warn loudly' half was implemented -- verify by tracing whether the actual dispatch-eligibility code path (e.g. dependency_graph construction) would truly exclude the case, not just whether a new report surfaces it.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/933_predispatch_dependency_and_file_scope_review/summaries/01_predispatch-review-repair-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "documentation-accuracy",
+        "admission-gate",
+        "non-goal",
+        "guardrails",
+        "overclaiming"
+      ]
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh",
+    "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+    "agent-system/extensions/core/manifest.json",
+    "specs/933_predispatch_dependency_and_file_scope_review/plans/01_predispatch-review-repair.md",
+    "specs/933_predispatch_dependency_and_file_scope_review/summaries/01_predispatch-review-repair-summary.md"
+  ],
+  "next_steps": "Task complete. Run /merge if a PR is desired (user-invoked only).",
+  "metadata": {
+    "session_id": "sess_1785198674_94a787",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 3,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 6,
+    "phases_total": 6,
+    "cycles_used": 3,
+    "final_state": "completed"
+  }
+}

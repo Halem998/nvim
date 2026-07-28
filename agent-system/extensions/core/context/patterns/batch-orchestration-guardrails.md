@@ -267,7 +267,21 @@ These five hold at any batch size and are never relaxed for throughput:
    batch. Correctness of concurrent-write detection does not become cheaper as concurrency
    increases — it becomes more necessary.
 3. **Never silently drop a dependency edge because its target is out of batch.** At minimum, warn
-   loudly and exclude the dependent task by default.
+   loudly and exclude the dependent task by default. **Status: the warn-loudly and
+   distinguish-subcases clauses are now satisfied; the exclude-by-default clause remains as
+   documented in the Open Design Fork below.** `scripts/orchestrate-predispatch-review.sh` runs
+   before `commands/orchestrate.md` Step 2 discards out-of-batch edges to build its
+   intra-batch-only Kahn graph, and classifies every raw `dependencies[]` entry on every
+   candidate into one of four buckets — `intra_batch` (no finding), `out_of_batch_live`,
+   `out_of_batch_terminal`, and `nonexistent` — warning loudly by task number and target for all
+   three non-`intra_batch` subcases, including the terminal one (this Non-Negotiable draws no
+   exception for a terminal target). This is a REVIEW stage only: it never excludes on its own
+   account. It does not newly exclude an `out_of_batch_live` or `nonexistent` predecessor from
+   live dispatch either — `dependency_graph` (built by `commands/orchestrate.md` Steps 2-3) is
+   intra-batch-only, so an out-of-batch edge is simply absent from it, and
+   `skills/skill-orchestrate/SKILL.md` Stage MT-3's eligibility check sees no predecessor to
+   wait on. Closing that residual live-path exclusion gap is exactly the Open Design Fork
+   question below, left unresolved by this warn-only stage on purpose.
 4. **Never let human-facing batch approval substitute for or gate machine admission decisions.**
    Which tasks may run concurrently is a deterministic, per-pair, machine-checked question,
    independent of whether or how a human later reviews the batch's outcome.
@@ -286,13 +300,33 @@ fork sequence, and human review happens only after the fact, via the consolidate
 the commit trail. No synchronous batch-approval gate exists here at all, and this document must
 not be read as implying one does.
 
-## Open Design Fork
+## Open Design Fork — RESOLVED
 
 For an out-of-batch dependency (Non-Negotiable 3 above), whether the right response is to exclude
-the dependent task from the batch, or to auto-expand the batch to include the predecessor, is
-unresolved. Both options are defer-not-fail-compatible; they differ in blast radius, and an
-auto-expanded batch would itself need its own admission checks applied before the expansion is
-safe. This is flagged as open, not decided, here.
+the dependent task from the batch, or to auto-expand the batch to include the predecessor, was
+previously left unresolved here. **Resolution: exclude the dependent task by default; never
+auto-expand the batch.** Both options were defer-not-fail-compatible; they differ in blast radius,
+and this is why exclude wins:
+
+- **Precedent**: two structurally identical situations elsewhere in this codebase already chose
+  exclude-and-warn over auto-expansion — `orchestrate-dry-run-report.sh`'s Step 6 ("Out-of-batch
+  unmet predecessors") and `orchestrate-batch-admit.sh`'s `collision_scope == "cross_batch"`
+  handling. A third, newly-diverging answer for the same shape of problem would be an
+  unjustified inconsistency, not a considered design choice.
+- **Blast radius**: auto-expanding the batch to pull in an out-of-batch predecessor would require
+  that predecessor to pass the FULL admission check (self-modification, file_scope collision,
+  lock contention, its own predecessors) before the expansion is safe to dispatch alongside —
+  strictly more machinery layered onto a path that has had far less production exposure than the
+  existing exclude-and-warn precedent.
+
+This resolution is a recorded design decision, not (yet) a live-path behavior change: it applies
+directly to `orchestrate-dry-run-report.sh`'s existing Step 6 exclusion (unchanged by this
+decision) and gives future work a settled answer for closing the live-path gap described under
+Non-Negotiable 3 above — `scripts/orchestrate-predispatch-review.sh` deliberately stays a
+report-only REVIEW stage and does not itself implement this exclusion on the live dispatch path
+(see that script's own header for the "never a fifth admission gate" framing). The fork is marked
+resolved here so the reasoning survives for whichever future change implements the live-path
+exclusion; the fork's text is not deleted.
 
 **Accompanying bounded-scope note**: any future widening of the overlap scan (to close the
 scan-scope gap in Non-Negotiable 2) should follow the existing bounded-scan precedent — compare

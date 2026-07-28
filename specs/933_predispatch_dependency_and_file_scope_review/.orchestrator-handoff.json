@@ -1,0 +1,30 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Implemented all 6 phases: extracted orchestrate-predispatch-review.sh (Classes A-D pre-dispatch findings plus opt-in --repair), wired it identically into commands/orchestrate.md Step 1.5 and orchestrate-dry-run-report.sh section 7, updated guardrails/schema/skill docs, and registered the script in manifest.json. Verified end-to-end against live tasks and a seeded fixture; check-extension-docs.sh exits 0 after a headless redeploy.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/933_predispatch_dependency_and_file_scope_review/summaries/01_predispatch-review-repair-summary.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh",
+    "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+    "agent-system/extensions/core/manifest.json"
+  ],
+  "decisions_made": [
+    "Class B field set confirmed live (dependencies/file_scope/title/topic) via a full null-value survey of specs/state.json; zero live nulls found, confirming Defect 2 is dormant but real",
+    "Open Design Fork resolved as a recorded decision (exclude by default, never auto-expand) without overclaiming that live-path exclusion for out-of-batch dependency edges is newly implemented -- that residual gap stays explicitly open per the plan's fifth-admission-gate Non-Goal",
+    "--repair reuses update-task-status.sh's temp-then-mv atomicity convention but skips its specs/.scope-lock mutex, since --repair is direct-invocation-only",
+    "index-entries.json left unmodified with a recorded reasoned exclusion -- no new context/ file was introduced"
+  ],
+  "dead_ends": [],
+  "phases_completed": 6,
+  "phases_total": 6,
+  "plan_markers_verified": true
+}

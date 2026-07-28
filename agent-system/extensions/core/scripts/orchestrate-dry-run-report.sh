@@ -57,6 +57,11 @@
 #      phase that would be dispatched. `exit_partial` is a reserved verdict value not currently
 #      emitted by the classifier (see its header); this reporter still excludes it defensively if
 #      it is ever emitted, so an unexpected group value never falls through silently.
+#   8. orchestrate-predispatch-review.sh, called ONCE for the validated set in its default
+#      report-only mode — the SAME invocation shape commands/orchestrate.md Step 1.5 uses, so
+#      this reporter's section 7 output is byte-for-byte what the live path would also print.
+#      Purely additive to this composition: its findings never become an exclusion, a skip, or a
+#      note above — they are printed verbatim as their own report section (see section 7 below).
 #
 # Report sections, printed in this order, ALL of them UNCONDITIONALLY (never omitted, never
 # collapsed, even when a section's content is empty):
@@ -71,6 +76,17 @@
 #                           dependency errors).
 #   6. Recommended split — the same wave numbers the live dispatch would use ("Wave N: <tasks>");
 #                           "batch of one — no split applicable" for a one-task batch.
+#   7. Pre-dispatch review — orchestrate-predispatch-review.sh's own report, printed verbatim
+#                           (Classes A-D: dependency edge classification, metadata defects,
+#                           self-modification/declaration coarseness, missing cross-batch
+#                           serializing edges). Appended AFTER section 6, never inserted earlier —
+#                           sections 1-6 keep their pre-existing order and numbering byte-for-byte,
+#                           since several documents already name this reporter's original shape.
+#                           Present even when the underlying script finds nothing in every class
+#                           (it prints its own explicit "0 findings" lines per class — see that
+#                           script's header) or when it is unavailable ("SKIPPED (degraded:
+#                           <reason>)" printed by THIS reporter, matching the format used
+#                           elsewhere in section 2).
 #
 # Exit codes:
 #   0 - a report was printed (regardless of how many exclusions — verdicts are data, not errors,
@@ -419,6 +435,27 @@ if [ "$triage_checked" = true ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# Step 8: orchestrate-predispatch-review.sh (called once for the validated set, default
+# report-only mode) — the SAME invocation shape commands/orchestrate.md Step 1.5 uses. Purely
+# additive: its output is captured here and printed verbatim as section 7 below; it never
+# contributes to t_exclude_reason, t_skip_reason, notes, or the admitted-set composition above.
+# ---------------------------------------------------------------------------
+predispatch_checked=true
+predispatch_degraded_reason=""
+predispatch_output=""
+if [ "${#validated_tasks[@]}" -gt 0 ]; then
+  predispatch_stderr_file=$(mktemp)
+  predispatch_output=$(bash "$SCRIPT_DIR/orchestrate-predispatch-review.sh" "${validated_tasks[@]}" 2>"$predispatch_stderr_file")
+  predispatch_exit=$?
+  predispatch_stderr=$(cat "$predispatch_stderr_file" 2>/dev/null)
+  rm -f "$predispatch_stderr_file"
+  if [ "$predispatch_exit" -ne 0 ]; then
+    predispatch_checked=false
+    predispatch_degraded_reason="orchestrate-predispatch-review.sh exited $predispatch_exit: ${predispatch_stderr:-no stderr captured}"
+  fi
+fi
+
+# ---------------------------------------------------------------------------
 # Compose admitted set: validated tasks minus skip-marked minus excluded
 # ---------------------------------------------------------------------------
 declare -a admitted_tasks=()
@@ -452,6 +489,7 @@ fi
 echo "lock contention: $( [ "$lock_checked" = true ] && echo "ran" || echo "SKIPPED (degraded: task-lock.sh check exit 3 for: ${lock_degraded_tasks[*]})" )"
 echo "predecessor: ran"
 echo "handoff triage: $( [ "$triage_checked" = true ] && echo "ran" || echo "SKIPPED (degraded: $triage_degraded_reason)" )"
+echo "pre-dispatch review: $( [ "$predispatch_checked" = true ] && echo "ran" || echo "SKIPPED (degraded: $predispatch_degraded_reason)" )"
 echo ""
 
 echo "-- Admitted --"
@@ -511,6 +549,14 @@ else
     [ "${#admitted_in_wave[@]}" -eq 0 ] && continue
     echo "Wave $i: ${admitted_in_wave[*]}"
   done
+fi
+echo ""
+
+echo "-- Pre-dispatch review --"
+if [ "$predispatch_checked" = true ]; then
+  printf '%s\n' "$predispatch_output"
+else
+  echo "SKIPPED (degraded: $predispatch_degraded_reason)"
 fi
 
 exit 0

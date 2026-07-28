@@ -126,6 +126,7 @@
       "migrate-directory-padding.sh",
       "orchestrate-batch-admit.sh",
       "orchestrate-dry-run-report.sh",
+      "orchestrate-predispatch-review.sh",
       "orchestrate-recover-outcome.sh",
       "orchestrate-triage-classify.sh",
       "orchestrator-postflight.sh",

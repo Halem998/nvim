@@ -2756,6 +2756,86 @@
           "/meta"
         ]
       }
+    },
+    {
+      "path": "patterns/batch-orchestration-guardrails.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
+      "line_count": 360,
+      "keywords": [
+        "patterns",
+        "orchestrate",
+        "batch",
+        "waves",
+        "admission",
+        "guardrails"
+      ],
+      "topics": [
+        "orchestration"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [
+          "meta"
+        ],
+        "commands": [
+          "/orchestrate"
+        ]
+      }
+    },
+    {
+      "path": "patterns/file-footprint-overlap.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Directory-prefix overlap algorithm shared by file_scope collision admission and creation-time serializing edges",
+      "line_count": 130,
+      "keywords": [
+        "patterns",
+        "file-scope",
+        "overlap",
+        "collision",
+        "orchestrate"
+      ],
+      "topics": [
+        "orchestration"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [
+          "meta"
+        ],
+        "commands": [
+          "/orchestrate",
+          "/task"
+        ]
+      }
+    },
+    {
+      "path": "reference/orchestrator-critical-paths.json",
+      "domain": "core",
+      "subdomain": "reference",
+      "summary": "Declared orchestrator-critical paths and scope roots driving the self-modification defer verdict",
+      "line_count": 46,
+      "keywords": [
+        "reference",
+        "orchestrate",
+        "critical-paths",
+        "self-modifying",
+        "admission"
+      ],
+      "topics": [
+        "orchestration"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [
+          "meta"
+        ],
+        "commands": [
+          "/orchestrate"
+        ]
+      }
     }
   ]
 }

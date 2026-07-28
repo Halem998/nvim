@@ -110,9 +110,35 @@ done
 
 Report skipped tasks as warnings. If no validated tasks remain, ABORT with error.
 
+#### Step 1.5: Pre-Dispatch Review
+
+Call the shared review script against `validated_tasks` in its default report-only mode, and
+print its findings as loud, non-blocking warnings:
+
+```bash
+bash .claude/scripts/orchestrate-predispatch-review.sh "${validated_tasks[@]}"
+```
+
+This call is **advisory-loud, never blocking**: it is a REVIEW stage, not a fifth admission gate.
+`--dry-run` already exists as the abort-before-dispatch surface for a human who wants to see the
+full picture before anything runs; exclusion/deferral authority for the self-modification and
+cross-batch file_scope-collision findings this call surfaces (Classes C and D) stays exactly
+where it already was — the runtime wave-split check below, immediately before each wave's
+dispatch. See `context/patterns/batch-orchestration-guardrails.md`'s Blocking vs. Advisory
+criterion for the general rule this call follows: Step 1.5 never aborts the invocation on its
+own account, regardless of how many findings it prints.
+
+The findings run BEFORE Step 2 below on purpose — Step 2 is the last point at which
+`validated_tasks`' RAW, unfiltered `dependencies[]` is still visible, before it is narrowed to
+an intra-batch-only view for wave assignment.
+
 #### Step 2: Dependency Graph Construction
 
-For each task in `validated_tasks`, read its `dependencies` field from state.json. Restrict to **intra-batch dependencies only** (ignore dependencies on tasks not in `validated_tasks`):
+For each task in `validated_tasks`, read its `dependencies` field from state.json. Restrict to
+**intra-batch dependencies only** (ignore dependencies on tasks not in `validated_tasks`). This
+intra-batch restriction is a wave-assignment concern, not a silent discard: Step 1.5 above has
+already classified and reported every raw edge this step is about to narrow, including the
+out-of-batch and nonexistent cases Non-Negotiable 3 requires visibility into.
 
 ```bash
 # Build adjacency map: task -> list of validated predecessors it depends on

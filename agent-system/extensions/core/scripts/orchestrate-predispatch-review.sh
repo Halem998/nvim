@@ -1,0 +1,424 @@
+#!/usr/bin/env bash
+# orchestrate-predispatch-review.sh — Shared pre-dispatch dependency and file_scope REVIEW stage
+# for /orchestrate.
+#
+# Purpose: reads specs/state.json directly — the only place raw, unfiltered dependencies[] is
+# still visible before commands/orchestrate.md Step 2 discards out-of-batch edges to build its
+# intra-batch-only Kahn wave graph — and reports four classes of pre-dispatch defect, by task
+# number and path, BEFORE that discard happens:
+#
+#   Class A (dependency edge classification): every RAW dependencies[] entry on every candidate,
+#     classified into intra_batch (no finding), out_of_batch_live, out_of_batch_terminal, or
+#     nonexistent. Satisfies context/patterns/batch-orchestration-guardrails.md's Non-Negotiable
+#     3, which requires warning loudly on every dropped edge and distinguishing these subcases
+#     rather than discarding all three identically — including the terminal subcase, since
+#     Non-Negotiable 3 draws no exception for a terminal target.
+#   Class B (metadata defects): dependencies/file_scope/title/topic present as a literal `null`
+#     on a candidate, instead of the schema's documented default (`[]` for the two array
+#     fields — see context/reference/state-management-schema.md). Only a literal null is
+#     flagged, never a genuinely absent key — an absent key is handled transparently everywhere
+#     by the existing `// []` idiom and is not the anomaly this class exists to surface. As of
+#     this script's authoring, a live survey of every field on every active_projects[] entry
+#     found ZERO literal nulls anywhere in specs/state.json — Defect 2 is a real but currently
+#     DORMANT class (the originally-cited example tasks have all since gone terminal); this
+#     class re-derives its findings live at run time rather than hardcoding against that stale
+#     citation, so it will fire again the moment a null resurfaces.
+#   Class C (self-modification / declaration coarseness): re-presents
+#     orchestrate-batch-admit.sh's defer_reason == "self_modifying" verdicts, adding a diagnosis
+#     of whether the candidate's OWN file_scope covers the matched critical path only because it
+#     declares a directory prefix broader than that specific file, and suggests the narrower
+#     alternative when so. The verdict itself is not new information; the coarseness diagnosis
+#     is.
+#   Class D (missing cross-batch serializing edges): re-presents
+#     orchestrate-batch-admit.sh's defer_reason == "file_scope_collision" &&
+#     collision_scope == "cross_batch" verdicts, and suggests (never writes) the specific
+#     serializing dependencies[] edge that would close the gap.
+#
+# This is a REVIEW stage, not a fifth admission gate: it never excludes, never defers, and never
+# writes to state.json on its default (report-only) path. Exclusion/deferral authority for
+# Classes C/D stays exactly where it already is — the existing runtime wave-split check at
+# dispatch time (orchestrate-batch-admit.sh, called directly by commands/orchestrate.md and by
+# skills/skill-orchestrate/SKILL.md Stage MT-3); this script never substitutes for it. Classes
+# C/D are re-presentations of that existing verdict — this script is a CONSUMER of, never a fork
+# of, the admission predicate (explicit task non-goal: neither the admission predicate's verdict
+# schema nor its collision algorithm is changed here).
+#
+# Usage:
+#   orchestrate-predispatch-review.sh [--repair] <task_number> [<task_number> ...]
+#
+# Default invocation (no --repair) is read-only and report-only: it never writes to
+# specs/state.json under any circumstance, exit code included. It prints a human-readable report
+# with one section per defect class, each explicitly stating "0 findings" when a class has
+# nothing to report — never an omitted or silently-empty section.
+#
+# --repair (direct-invocation ONLY — see below) writes ONLY Class B array-field normalization: a
+# literal `null` on `dependencies` or `file_scope` becomes `[]`, and only when the current value
+# is a literal null (a present, non-null value is never overwritten). It never writes `title` or
+# `topic` — those get a WARN with the suggested value instead, because generate-todo.sh already
+# owns a derived-title convention and repair must not invent a second, competing derivation (and
+# no automated topic derivation exists at all — generate-task-order.sh already buckets untagged
+# tasks under "Uncategorized" at render time; that is a rendering fallback, not a value this
+# script should write back). --repair NEVER adds, removes, or rewrites any dependencies[] edge,
+# even when a candidate has a repairable null on that same field — normalizing null to [] is a
+# type-safety fix with exactly one correct outcome; choosing *which* edge to add is a judgment
+# call outside this script's scope. --repair prints a full before/after diff of every field it
+# changes and exits non-zero only on write failure, never merely because findings existed.
+#
+# --repair is reachable ONLY by direct human invocation of this script: it is deliberately NOT
+# plumbed through any /orchestrate flag (parse-command-args.sh is not modified by this task), so
+# no /orchestrate invocation — autonomous or interactive — can ever reach it. This is the
+# deliberate design choice satisfying the task's constraint against autonomous silent rewrites,
+# not an incidental limitation. The default report-only path prints the exact --repair command
+# an operator can copy-paste whenever a repairable Class B finding exists, so the repair route is
+# discoverable without being automatic.
+#
+# State-write atomicity: the --repair write reuses update-task-status.sh's own convention
+# (write to a temp file under specs/tmp/, validate with `jq empty`, then atomic `mv`) rather than
+# inventing a bespoke write path. It does NOT acquire the specs/.scope-lock mutex
+# update-task-status.sh uses for its own writes — --repair is direct-invocation-only, never
+# called from a live or automated path, so the concurrent-writer hazard that mutex exists for
+# does not apply here in practice; an operator running --repair should avoid doing so
+# concurrently with any other state.json-mutating command.
+#
+# Forbidden calls (this script is read-only on its default path; --repair is the one narrow,
+# direct-invocation-only exception described above, and even it never touches any of these):
+#   - task-lock.sh acquire / heartbeat / release
+#   - update-task-status.sh
+#   - generate-todo.sh
+#   - skill-base.sh write functions (skill_preflight_update, skill_postflight_update, etc.)
+#   - reconcile-task-status.sh (without --dry-run)
+#   - the Agent or Skill tool, or anything that dispatches one
+#   - any dependencies[] edge add/remove/rewrite, even under --repair
+# This script reads ONLY specs/state.json directly, plus — for Classes C/D only — one subprocess
+# call to orchestrate-batch-admit.sh for the SAME candidate set, never a second, independently
+# re-derived collision computation (Context Flatness Constraint; canonical-collision-algorithm
+# non-goal).
+#
+# Exit codes:
+#   0 - a report was printed (regardless of how many findings — findings are data, not errors,
+#       matching orchestrate-batch-admit.sh's and orchestrate-triage-classify.sh's convention).
+#       Also 0 after a successful --repair write, and 0 for a --repair run that found nothing to
+#       normalize.
+#   2 - usage error (zero <task_number> arguments, a non-integer task_number, or jq missing), or
+#       state.json unavailable/unparseable, or (--repair only) a write failure after the temp
+#       file was produced (state.json is left untouched in that case).
+
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+. "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
+STATE_FILE="$PROJECT_ROOT/specs/state.json"
+TMP_DIR="$PROJECT_ROOT/specs/tmp"
+
+# --- argument parsing: --repair ahead of positional task_number validation ---
+repair_mode=false
+task_args=()
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --repair)
+      repair_mode=true
+      shift
+      ;;
+    *)
+      task_args+=("$1")
+      shift
+      ;;
+  esac
+done
+
+if [ "${#task_args[@]}" -eq 0 ]; then
+  echo "ERROR: orchestrate-predispatch-review.sh requires at least one <task_number> argument." >&2
+  exit 2
+fi
+
+for arg in "${task_args[@]}"; do
+  case "$arg" in
+    ''|*[!0-9]*)
+      echo "ERROR: orchestrate-predispatch-review.sh: '$arg' is not a non-negative integer task_number." >&2
+      exit 2
+      ;;
+  esac
+done
+
+if ! command -v jq >/dev/null 2>&1; then
+  echo "ERROR: orchestrate-predispatch-review.sh: jq is not available; cannot evaluate review." >&2
+  exit 2
+fi
+
+if [ ! -f "$STATE_FILE" ]; then
+  echo "ERROR: orchestrate-predispatch-review.sh: state file not found at $STATE_FILE." >&2
+  exit 2
+fi
+
+candidates_json="[$(printf '%s\n' "${task_args[@]}" | paste -sd, -)]"
+
+# ---------------------------------------------------------------------------
+# Classes A and B: single read of STATE_FILE via --slurpfile, one jq program.
+# ---------------------------------------------------------------------------
+ab_findings=$(jq -n -c \
+  --argjson candidates "$candidates_json" \
+  --slurpfile state_arr "$STATE_FILE" \
+  '
+  def is_terminal: ascii_downcase as $s | ($s == "completed" or $s == "abandoned" or $s == "expanded");
+
+  ($state_arr[0].active_projects // []) as $all |
+  $candidates as $cands |
+
+  ( # Class A: raw dependency edge classification (never a filtered subset)
+    $cands[] as $c
+    | ([$all[] | select(.project_number == $c)] | first) as $entry
+    | select($entry != null)
+    | ($entry.dependencies // [])[] as $d
+    | select(($cands | index($d)) == null)
+    | ([$all[] | select(.project_number == $d)] | first) as $dep_entry
+    | (if $dep_entry == null then "nonexistent"
+       elif (($dep_entry.status // "") | is_terminal) then "out_of_batch_terminal"
+       else "out_of_batch_live" end) as $bucket
+    | {class: "A", task_number: $c, dependency: $d, bucket: $bucket,
+       dependency_status: ($dep_entry.status // null)}
+  ),
+  ( # Class B: literal-null metadata defects on the four fields the Phase 1 schema survey
+    # confirmed as array-typed-with-[]-default (dependencies, file_scope) or otherwise
+    # documented as always-a-string (title, topic). A genuinely absent key is NOT flagged —
+    # only a present-but-literal-null value is the anomaly this class exists to surface.
+    $cands[] as $c
+    | ([$all[] | select(.project_number == $c)] | first) as $entry
+    | select($entry != null)
+    | (["dependencies", "file_scope", "title", "topic"][]) as $field
+    | select(($entry | has($field)) and ($entry[$field] == null))
+    | {class: "B", task_number: $c, field: $field, project_name: ($entry.project_name // "")}
+  )
+  ' 2>&1)
+jq_exit=$?
+if [ "$jq_exit" -ne 0 ]; then
+  echo "ERROR: orchestrate-predispatch-review.sh: failed to evaluate Class A/B findings against $STATE_FILE (jq exit $jq_exit): $ab_findings" >&2
+  exit 2
+fi
+
+# ===========================================================================
+# --repair mode: Class B array-field normalization only. Never prints the
+# four-class report below — a focused, direct-invocation-only operation.
+# ===========================================================================
+if [ "$repair_mode" = true ]; then
+  any_write=false
+  if [ -n "$ab_findings" ]; then
+    while IFS= read -r finding; do
+      [ -z "$finding" ] && continue
+      cls=$(printf '%s' "$finding" | jq -r '.class')
+      [ "$cls" = "B" ] || continue
+      pn=$(printf '%s' "$finding" | jq -r '.task_number')
+      field=$(printf '%s' "$finding" | jq -r '.field')
+      proj_name=$(printf '%s' "$finding" | jq -r '.project_name')
+      case "$field" in
+        dependencies|file_scope)
+          any_write=true
+          ;;
+        title)
+          derived="${proj_name//_/ }"
+          if [ -n "$derived" ]; then
+            first_char="$(printf '%s' "${derived:0:1}" | tr '[:lower:]' '[:upper:]')"
+            derived="${first_char}${derived:1}"
+          else
+            derived="Task ${pn}"
+          fi
+          echo "WARN: #$pn has title: null — --repair does not write titles (single-value judgment call, not a normalization). Suggested value, matching generate-todo.sh's own derived-title fallback: \"$derived\"" >&2
+          ;;
+        topic)
+          echo "WARN: #$pn has topic: null — --repair does not write topics (no automated derivation exists; generate-task-order.sh already buckets untagged tasks under \"Uncategorized\" at render time). Assign a topic manually in specs/state.json." >&2
+          ;;
+      esac
+    done <<< "$ab_findings"
+  fi
+
+  if [ "$any_write" = false ]; then
+    echo "--repair: nothing to normalize (no candidate has a literal-null dependencies or file_scope field)."
+    exit 0
+  fi
+
+  # NOTE: `select(.project_number as $pn | ($cands | index($pn)) != null)` — NOT
+  # `select(($cands | index(.project_number)) != null)`. The latter re-pipes "." into $cands
+  # inside index()'s argument (`EXPR | index(ARG)` evaluates ARG against EXPR's output, not the
+  # original "."), so `.project_number` would try to index the $cands ARRAY with a string and
+  # jq would raise "Cannot index array with string \"project_number\"". Binding the scalar via
+  # `as` first (as Class A/B above already does with `$d`) keeps "." on the task object.
+  echo "--repair: before/after diff of every field this repair will change:"
+  jq -r --argjson candidates "$candidates_json" '
+    ($candidates) as $cands |
+    .active_projects[] | select(.project_number as $pn | ($cands | index($pn)) != null) |
+    select(.dependencies == null or .file_scope == null) |
+    "  #\(.project_number): dependencies " + (.dependencies | tojson) + " -> " + ((.dependencies // []) | tojson) +
+    "  ;  file_scope " + (.file_scope | tojson) + " -> " + ((.file_scope // []) | tojson)
+  ' "$STATE_FILE"
+
+  mkdir -p "$TMP_DIR"
+  tmp_file="$TMP_DIR/orchestrate-predispatch-review.state.tmp"
+  if ! jq --argjson candidates "$candidates_json" '
+    ($candidates) as $cands |
+    (.active_projects[] | select(.project_number as $pn | ($cands | index($pn)) != null)) |=
+      (.dependencies = (.dependencies // []) | .file_scope = (.file_scope // []))
+  ' "$STATE_FILE" > "$tmp_file"; then
+    echo "ERROR: orchestrate-predispatch-review.sh: --repair jq transform failed; specs/state.json left untouched." >&2
+    rm -f "$tmp_file"
+    exit 2
+  fi
+
+  if ! jq empty "$tmp_file" 2>/dev/null; then
+    echo "ERROR: orchestrate-predispatch-review.sh: --repair produced invalid JSON; specs/state.json left untouched." >&2
+    rm -f "$tmp_file"
+    exit 2
+  fi
+
+  mv "$tmp_file" "$STATE_FILE"
+  echo "--repair: specs/state.json updated (write-to-temp-then-mv, matching update-task-status.sh's own atomicity convention)."
+  exit 0
+fi
+
+# ===========================================================================
+# Report mode (default): Classes C and D consume orchestrate-batch-admit.sh's
+# existing verdicts as a subprocess — never a re-derivation of the overlap predicate.
+# ===========================================================================
+admit_checked=true
+admit_degraded_reason=""
+admit_stderr_file=$(mktemp)
+admit_output=$(bash "$SCRIPT_DIR/orchestrate-batch-admit.sh" --invocation-count "${#task_args[@]}" "${task_args[@]}" 2>"$admit_stderr_file")
+admit_exit=$?
+admit_stderr=$(cat "$admit_stderr_file" 2>/dev/null)
+rm -f "$admit_stderr_file"
+if [ "$admit_exit" -ne 0 ]; then
+  admit_checked=false
+  admit_degraded_reason="orchestrate-batch-admit.sh exited $admit_exit: ${admit_stderr:-no stderr captured}"
+fi
+
+cd_findings=""
+if [ "$admit_checked" = true ]; then
+  verdicts_json=$(printf '%s\n' "$admit_output" | jq -s -c '.' 2>/dev/null)
+  if [ -z "$verdicts_json" ]; then
+    verdicts_json='[]'
+  fi
+  cd_findings=$(jq -n -c \
+    --argjson verdicts "$verdicts_json" \
+    --slurpfile state_arr "$STATE_FILE" \
+    '
+    def norm: rtrimstr("/");
+    ($state_arr[0].active_projects // []) as $all |
+
+    ( # Class C: self-modification, with declaration-coarseness diagnosis
+      $verdicts[] as $v
+      | select($v.decision == "defer" and $v.defer_reason == "self_modifying")
+      | ($v.task_number) as $c
+      | ([$all[] | select(.project_number == $c)] | first) as $entry
+      | ($entry.file_scope // []) as $scope
+      | ($v.critical_path) as $cp
+      | ($cp | norm) as $ncp
+      | ([$scope[] | select(
+            (. | norm) as $ns
+            | ($ns == $ncp) or ($ncp | startswith($ns + "/")) or ($ns | startswith($ncp + "/"))
+          )] | first) as $matched_entry
+      | select($matched_entry != null)
+      | ($matched_entry | norm) as $nme
+      | (($ncp != $nme) and ($ncp | startswith($nme + "/"))) as $is_coarse
+      | {class: "C", task_number: $c, critical_path: $cp, critical_label: $v.critical_label,
+         matched_scope_entry: $matched_entry, coarse: $is_coarse}
+    ),
+    ( # Class D: missing cross-batch serializing edge, suggested (never written)
+      $verdicts[] as $v
+      | select($v.decision == "defer" and $v.defer_reason == "file_scope_collision" and $v.collision_scope == "cross_batch")
+      | ($v.task_number) as $c
+      | (if $c > $v.colliding_task_number then $c else $v.colliding_task_number end) as $dependent
+      | (if $c > $v.colliding_task_number then $v.colliding_task_number else $c end) as $predecessor
+      | {class: "D", task_number: $c, colliding_task_number: $v.colliding_task_number,
+         colliding_task_status: $v.colliding_task_status, overlapping_path: $v.overlapping_path,
+         suggested_dependent: $dependent, suggested_predecessor: $predecessor}
+    )
+    ' 2>&1)
+fi
+
+# ===========================================================================
+# Report output — all four sections printed unconditionally, every time.
+# ===========================================================================
+echo "=== Pre-dispatch review ==="
+echo ""
+echo "Invocation: ${task_args[*]}"
+echo ""
+
+echo "-- Class A: Dependency edge classification --"
+class_a_lines=""
+if [ -n "$ab_findings" ]; then
+  class_a_lines=$(printf '%s\n' "$ab_findings" | jq -r '
+    select(.class == "A")
+    | "#\(.task_number) depends on #\(.dependency): \(.bucket)" +
+      (if .dependency_status then " (status: \(.dependency_status))" else "" end)
+  ' 2>/dev/null)
+fi
+if [ -z "$class_a_lines" ]; then
+  echo "0 findings (every raw dependency edge is intra-batch, or this invocation carries no out-of-batch/nonexistent targets)."
+else
+  printf '%s\n' "$class_a_lines"
+fi
+echo ""
+
+echo "-- Class B: Metadata defects (literal null on dependencies/file_scope/title/topic) --"
+class_b_lines=""
+if [ -n "$ab_findings" ]; then
+  class_b_lines=$(printf '%s\n' "$ab_findings" | jq -r '
+    select(.class == "B")
+    | "#\(.task_number): field \"\(.field)\" is null"
+  ' 2>/dev/null)
+fi
+if [ -z "$class_b_lines" ]; then
+  echo "0 findings (no candidate has a literal-null dependencies/file_scope/title/topic field)."
+else
+  printf '%s\n' "$class_b_lines"
+  repairable=$(printf '%s\n' "$ab_findings" | jq -r 'select(.class == "B" and (.field == "dependencies" or .field == "file_scope")) | .task_number' 2>/dev/null | sort -un | tr '\n' ' ')
+  if [ -n "$repairable" ]; then
+    echo ""
+    echo "To normalize the dependencies/file_scope null field(s) above (never title/topic — those are WARN-only), run directly:"
+    echo "  bash .claude/scripts/orchestrate-predispatch-review.sh --repair ${repairable}"
+  fi
+fi
+echo ""
+
+echo "-- Class C: Self-modification / declaration coarseness --"
+if [ "$admit_checked" = false ]; then
+  echo "SKIPPED (degraded: $admit_degraded_reason)"
+else
+  class_c_lines=""
+  if [ -n "$cd_findings" ]; then
+    class_c_lines=$(printf '%s\n' "$cd_findings" | jq -r '
+      select(.class == "C")
+      | "#\(.task_number): file_scope names orchestrator-critical path \(.critical_path) (\(.critical_label))" +
+        (if .coarse then
+           " -- declared scope entry \"\(.matched_scope_entry)\" is a directory prefix broader than the critical file; consider narrowing file_scope to \"\(.critical_path)\""
+         else
+           " -- declared scope entry \"\(.matched_scope_entry)\" already names the file exactly (not a coarse declaration)"
+         end)
+    ' 2>/dev/null)
+  fi
+  if [ -z "$class_c_lines" ]; then
+    echo "0 findings (no candidate's file_scope names an orchestrator-critical path)."
+  else
+    printf '%s\n' "$class_c_lines"
+  fi
+fi
+echo ""
+
+echo "-- Class D: Missing cross-batch serializing edges --"
+if [ "$admit_checked" = false ]; then
+  echo "SKIPPED (degraded: $admit_degraded_reason)"
+else
+  class_d_lines=""
+  if [ -n "$cd_findings" ]; then
+    class_d_lines=$(printf '%s\n' "$cd_findings" | jq -r '
+      select(.class == "D")
+      | "#\(.task_number): file_scope collision with out-of-batch task #\(.colliding_task_number) (status: \(.colliding_task_status)) at \(.overlapping_path) -- suggest adding #\(.suggested_predecessor) as a dependencies[] entry on #\(.suggested_dependent) to serialize them"
+    ' 2>/dev/null)
+  fi
+  if [ -z "$class_d_lines" ]; then
+    echo "0 findings (no missing cross-batch serializing edges detected)."
+  else
+    printf '%s\n' "$class_d_lines"
+  fi
+fi
+
+exit 0

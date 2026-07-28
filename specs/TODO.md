@@ -11,18 +11,16 @@ next_project_number: 937
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 887,933 | -- | agent-system |
-| 2 | 934 | 933 | agent-system |
-| 3 | 935 | 934 | agent-system |
+| 1 | 887,934 | -- | agent-system |
+| 2 | 935 | 934 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
 887 [PLANNED] — RESEARCH-FIRST / HIGH PRIORITY. This is the design round. The use
-933 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-  └─ 934 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-    └─ 935 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+934 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+  └─ 935 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ## Tasks
 
@@ -156,10 +154,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 933. Pre-dispatch dependency and file_scope review/repair stage for /orchestrate
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 932, Task 936
+- **Research**: [933_predispatch_dependency_and_file_scope_review/reports/01_predispatch-review-repair-research.md]
+- **Plan**: [933_predispatch_dependency_and_file_scope_review/plans/01_predispatch-review-repair.md]
+- **Summary**: [933_predispatch_dependency_and_file_scope_review/summaries/01_predispatch-review-repair-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 

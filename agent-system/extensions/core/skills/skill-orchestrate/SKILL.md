@@ -1139,6 +1139,19 @@ Read from delegation context:
 - `waves` — pre-computed topological wave schedule
 - `session_id`, `lit_flag`
 
+**Upstream review cross-reference**: raw dependency review already happened upstream, at
+`commands/orchestrate.md` Step 1.5 (Pre-Dispatch Review), before `dependency_graph` above was
+even built — Step 1.5 runs `scripts/orchestrate-predispatch-review.sh` against the FULL raw
+`dependencies[]` on every candidate, warning loudly on every out-of-batch or nonexistent edge
+Step 2/3 is about to narrow away. The `dependency_graph` this stage receives has therefore
+already been reviewed within that review stage's own stated limits: it is advisory-loud, never
+blocking, and it does not itself exclude an out-of-batch predecessor from this stage's
+eligibility check below (Stage MT-3 step 3) — see
+`context/patterns/batch-orchestration-guardrails.md`'s Non-Negotiable 3 and Open Design Fork for
+the current status of that residual gap. No code change was needed here: this stage receives an
+already-built `dependency_graph` from the command's Step 2/3 output rather than rebuilding any
+part of it itself.
+
 Compute: `task_count = length(task_numbers)`, `MAX_CYCLES_MT = min(task_count * 5, 25)`,
 `MAX_INFRA_FAILURES = 3` (flat **per task**, not scaled by `task_count` — matching single-task
 mode; see `context/patterns/infra-failure-discrimination.md`).

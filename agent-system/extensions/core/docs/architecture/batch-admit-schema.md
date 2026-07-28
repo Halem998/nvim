@@ -7,9 +7,13 @@ at the bottom for what changed from v1 and why the bump was a version, not an ad
 directly; nothing is written to disk.
 **Written by**: `.claude/scripts/orchestrate-batch-admit.sh`
 **Read by**: `commands/orchestrate.md` Step 3 (pre-computed wave schedule),
-`skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 (per-cycle eligibility gate), and
+`skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 (per-cycle eligibility gate),
 `scripts/orchestrate-dry-run-report.sh` Step 4 (read-only report composer — same call, same
-schema, never a forked copy)
+schema, never a forked copy), and `scripts/orchestrate-predispatch-review.sh` (Classes C and D —
+a report composer in the same relationship to this schema as the dry-run reporter above: it
+re-presents `defer_reason == "self_modifying"` and `defer_reason == "file_scope_collision" &&
+collision_scope == "cross_batch"` verdicts, adding a declaration-coarseness diagnosis and a
+suggested serializing edge respectively, never re-deriving the collision algorithm itself)
 
 **See Also**: `context/patterns/file-footprint-overlap.md` (the canonical overlap predicate this
 script transcribes and never restates), `context/patterns/batch-orchestration-guardrails.md`

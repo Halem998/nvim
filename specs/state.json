@@ -1700,7 +1700,7 @@
     {
       "project_number": 933,
       "project_name": "predispatch_dependency_and_file_scope_review",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Pre-dispatch dependency and file_scope review/repair stage for /orchestrate",
@@ -1720,9 +1720,26 @@
         936
       ],
       "created": "2026-07-27T20:34:52Z",
-      "last_updated": "2026-07-27T20:34:52Z",
-      "session_id": "sess_1785183950_f1bacb",
-      "artifacts": []
+      "last_updated": "2026-07-28T01:06:34Z",
+      "session_id": "sess_1785198674_94a787",
+      "artifacts": [
+        {
+          "path": "specs/933_predispatch_dependency_and_file_scope_review/reports/01_predispatch-review-repair-research.md",
+          "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/933_predispatch_dependency_and_file_scope_review/plans/01_predispatch-review-repair.md",
+          "type": "plan",
+          "summary": ""
+        },
+        {
+          "path": "specs/933_predispatch_dependency_and_file_scope_review/summaries/01_predispatch-review-repair-summary.md",
+          "type": "summary",
+          "summary": ""
+        }
+      ],
+      "completion_summary": "Extracted orchestrate-predispatch-review.sh reporting four pre-dispatch defect classes (dropped dependency edges, null metadata, self-modification declaration coarseness, missing cross-batch serializing edges) from specs/state.json, wired identically into commands/orchestrate.md Step 1.5 and orchestrate-dry-run-report.sh section 7, added an opt-in direct-invocation-only --repair flag, updated guardrails/schema/skill documentation, and registered the script in manifest.json."
     },
     {
       "project_number": 934,
