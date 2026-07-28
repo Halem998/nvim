@@ -32,6 +32,7 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 |------|-------------|---------|
 | `--lit` | Literature mode: pass lit_flag=true to skill for paper/spec-based tasks | false |
 | `--dry-run` | Report-only: run the full admission analysis and print the verdict report; dispatch nothing and mutate nothing | false |
+| `--allow-self-modifying` | Opt-in bypass of the self-modification admission gate for this invocation only; requires deliberate human intent — never a general-purpose weakening | false |
 
 ## Anti-Bypass Constraint
 
@@ -45,9 +46,14 @@ command.
 
 ```bash
 source .claude/scripts/parse-command-args.sh "$ARGUMENTS"
-# Exports: TASK_NUMBERS (space-separated), FOCUS_PROMPT, REMAINING_ARGS, DRY_RUN_FLAG
+# Exports: TASK_NUMBERS (space-separated), FOCUS_PROMPT, REMAINING_ARGS, DRY_RUN_FLAG,
+#          ALLOW_SELF_MODIFYING_FLAG
 focus_prompt="${FOCUS_PROMPT:-}"
 ```
+
+`ALLOW_SELF_MODIFYING_FLAG` (default `"false"`) is read here from the sourced parser and passed
+into the Skill delegation context below as `allow_self_modifying`, alongside `lit_flag` — a
+consumer-side-only signal that is never forwarded to `orchestrate-batch-admit.sh` itself.
 
 **Dry-run short-circuit** (checked immediately after `parse-command-args.sh` is sourced, and
 **before** the `len(TASK_NUMBERS)` branch below): `SESSION_ID` may be unset at this point — the
@@ -218,16 +224,30 @@ residual gap is **cross-batch**: two tasks created in *separate* batches (e.g. `
 overlap comparison between them, so `dependencies[]` may not encode a real file conflict. The
 runtime wave-split check below closes that gap.
 
-**Runtime wave-split check (cross-batch defense-in-depth)**: Before dispatching EVERY wave (Step
-4) — including a wave that contains only a single task, since a cross-batch collision exists at
-batch size 1 — call the admission script, passing `--invocation-count` set to the WHOLE
-invocation's validated-candidate count (`${#validated_tasks[@]}`, never `${#wave_tasks[@]}`) so
-the self-modification defer trigger below is evaluated against the invocation as a whole, not
-just this one wave:
+**Runtime wave-split check (cross-batch defense-in-depth)**: this subsection is illustrative of
+the CONTRACT `skill-orchestrate` fulfills, not code this file itself runs. Step 4 below builds
+`waves_json` wholesale from the pre-computed wave schedule and hands the ENTIRE schedule to a
+SINGLE `skill-orchestrate` Skill call — this file never loops waves and never itself invokes
+`orchestrate-batch-admit.sh`. The sole EXECUTING admission gate is
+`skill-orchestrate/SKILL.md` Stage MT-3 step 4.5, which re-evaluates `eligible_tasks` every CYCLE
+(re-derived fresh each time from current task statuses and the dependency graph), not once per
+entry of the pre-computed `waves[]` array. Do not add a real per-wave dispatch loop to this file
+to make the illustration literal — Step 4's `for wave_tasks in "${waves[@]}"` loop only
+serializes JSON and must stay that way.
+
+The bash block below is retained as an illustration of that contract, with the argument corrected
+to match what the skill actually passes:
 
 ```bash
-bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#validated_tasks[@]}" "${wave_tasks[@]}"
+bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#wave_tasks[@]}" "${wave_tasks[@]}"
 ```
+
+`--invocation-count` carries the actual co-dispatch count for the cycle/wave being evaluated
+(`${#wave_tasks[@]}` here, `${#eligible_tasks[@]}` at the skill's own per-cycle call site) — never
+the whole invocation's full validated-candidate count. A `dependencies[]`-edge-connected pair can
+never share that count in the first place (the skill's own eligibility rule guarantees a successor
+is never eligible until its predecessor terminates), so a whole-invocation count would fire
+against pairs that never actually co-occur.
 
 This compares each wave task's `file_scope` against every non-terminal task in a single
 `specs/state.json` read — not just the tasks already collected into `validated_tasks` for this
@@ -237,22 +257,26 @@ overlap algorithm in `.claude/context/patterns/file-footprint-overlap.md` (refer
 the rule is not restated here); the verdict schema is published in
 `.claude/docs/architecture/batch-admit-schema.md` (also referenced by path, never restated).
 
-`jq`-filter stdout for `.decision == "defer"`, then branch on `defer_reason` FIRST (v2 schema —
+`jq`-filter stdout for `.decision == "defer"`, then branch on `defer_reason` FIRST (schema v3 —
 every defer verdict carries this REQUIRED discriminator; do not fall through to a
 `collision_scope`-only branch without checking it first, or a self-modifying defer is
 misread as an ordinary in-batch collision):
 
 - **`self_modifying`** (the candidate's own `file_scope` names an orchestrator-critical path —
   see `context/patterns/batch-orchestration-guardrails.md`'s "Self-Modification Hazard" section):
-  exclude the candidate from the WHOLE INVOCATION (not merely this wave — this is evaluated
-  against the invocation's validated-candidate count, never the wave's size) and log a
-  **distinct** warning naming the matched critical path and label, and instructing a solo
-  re-run. The excluded task is neither marked failed nor blocked — it simply is not dispatched
-  by this invocation:
+  defer the candidate out of the current wave/cycle — it becomes eligible again on a later one,
+  once its co-dispatched sibling leaves eligibility — and log a **distinct** warning naming the
+  matched critical path and label. `--allow-self-modifying` (see `## Options` above) is the
+  deliberate, human-intent escape hatch for the residual co-dispatch case: when active, the
+  actual consumer (`skill-orchestrate/SKILL.md` Stage MT-3 step 4.5) dispatches the candidate
+  anyway rather than acting on this defer verdict; the flag is never passed to
+  `orchestrate-batch-admit.sh` itself. The deferred task is neither marked failed nor blocked — it
+  simply is not dispatched this wave/cycle:
   ```
   [orchestrate] WARNING: Task #{task_number} has file_scope naming orchestrator-critical
-    path {critical_path} ({critical_label}). Orchestrator-critical work runs solo only —
-    excluding #{task_number} from this invocation. Re-run it alone: /orchestrate {task_number}
+    path {critical_path} ({critical_label}), co-dispatched this wave/cycle alongside another
+    candidate. Deferring #{task_number} to a later cycle — it becomes eligible again once its
+    co-dispatched sibling leaves eligibility. Pass --allow-self-modifying to override.
   ```
 
   **Post-dispatch counterpart**: this check reads a task's *declared* `file_scope`,
@@ -347,7 +371,7 @@ Invoke a single `skill-orchestrate` instance with all task context:
 Tool: Skill
 Parameters:
   skill: "skill-orchestrate"
-  args: "multi_task_mode=true task_numbers={task_numbers_json} waves={waves_json} dependency_graph={dep_graph_json} session_id={batch_session_id} focus_prompt={focus_prompt} lit_flag={LIT_FLAG}"
+  args: "multi_task_mode=true task_numbers={task_numbers_json} waves={waves_json} dependency_graph={dep_graph_json} session_id={batch_session_id} focus_prompt={focus_prompt} lit_flag={LIT_FLAG} allow_self_modifying={ALLOW_SELF_MODIFYING_FLAG}"
 ```
 
 The delegation context passed to the skill must include:
@@ -359,7 +383,8 @@ The delegation context passed to the skill must include:
   "waves": [[42], [43, 44]],
   "dependency_graph": {"42": [], "43": [42], "44": [42]},
   "focus_prompt": "{focus_prompt}",
-  "lit_flag": "{LIT_FLAG}"
+  "lit_flag": "{LIT_FLAG}",
+  "allow_self_modifying": "{ALLOW_SELF_MODIFYING_FLAG}"
 }
 ```
 
