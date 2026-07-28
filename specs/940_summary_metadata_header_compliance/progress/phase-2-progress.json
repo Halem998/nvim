@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Replace general-implementation-agent.md Stage 6's inline skeleton",
+  "started_at": "2026-07-28T00:10:00Z",
+  "last_updated": "2026-07-28T00:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Replace Stage 6 fenced skeleton with the full-conformance template (all eight metadata fields, all six required sections, plus Plan Deviations and Verification), and add the two directive sentences",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]
+    },
+    {
+      "id": 2,
+      "description": "Confirm general-implementation-hard-agent.md Stage 6 still reads 'Same as base agent' with no duplicated skeleton",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

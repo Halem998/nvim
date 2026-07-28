@@ -181,7 +181,7 @@ list is correct and must NOT change — only the example is brought into line wi
 
 ---
 
-### Phase 2: Replace general-implementation-agent.md Stage 6's inline skeleton [NOT STARTED]
+### Phase 2: Replace general-implementation-agent.md Stage 6's inline skeleton [COMPLETED]
 
 **Goal**: Make the one template that actually governs what gets written — for both base and
 hard modes — literally conformant with `summary-format.md`.
@@ -197,20 +197,20 @@ validator checks required-section *presence*, not exclusivity or ordering, so ex
 safe.
 
 **Tasks**:
-- [ ] Replace the fenced skeleton under `### Stage 6: Create Implementation Summary` with the
-      replacement text below, verbatim in shape.
-- [ ] Keep the existing `**Path Construction**` bullets and the trailing
-      "Populate `## Plan Deviations` from the `deviations` arrays..." sentence unchanged.
-- [ ] Add one directive sentence immediately above the fenced block stating that this block is the
+- [x] Replace the fenced skeleton under `### Stage 6: Create Implementation Summary` with the
+      replacement text below, verbatim in shape. *(completed)*
+- [x] Keep the existing `**Path Construction**` bullets and the trailing
+      "Populate `## Plan Deviations` from the `deviations` arrays..." sentence unchanged. *(completed)*
+- [x] Add one directive sentence immediately above the fenced block stating that this block is the
       authoritative shape, that it already conforms to the injected
       `<artifact-format-specification>`, and that the metadata header is mandatory and must not be
-      abbreviated or reordered away.
-- [ ] Add one sentence naming the `Status` values to use: `[COMPLETED]` when every plan phase is
+      abbreviated or reordered away. *(completed)*
+- [x] Add one sentence naming the `Status` values to use: `[COMPLETED]` when every plan phase is
       done, `[IN PROGRESS]` on a partial run, `[BLOCKED]` when blocked — matching
-      `summary-format.md`'s declared vocabulary.
-- [ ] Confirm (do not edit) that `general-implementation-hard-agent.md`'s
+      `summary-format.md`'s declared vocabulary. *(completed)*
+- [x] Confirm (do not edit) that `general-implementation-hard-agent.md`'s
       `### Stage 6: Create Implementation Summary` still reads "Same as base agent" and that no
-      skeleton has been added there.
+      skeleton has been added there. *(completed: confirmed, 0 duplicated skeleton occurrences)*
 
 **Replacement skeleton** (bullet form `- **Field**: value`, matching `summary-format.md` and
 making the `--fix` anchor of Phase 4 meaningful):

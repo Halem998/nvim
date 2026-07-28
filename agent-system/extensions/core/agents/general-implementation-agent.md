@@ -423,13 +423,26 @@ fi
 - Use `artifact_number` from delegation context for `{NN}` prefix
 - Summary path: `specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md`
 
-Write to `specs/{NNN}_{SLUG}/summaries/{NN}_{short-slug}-summary.md`:
+Write to `specs/{NNN}_{SLUG}/summaries/{NN}_{short-slug}-summary.md`.
+
+**This block is the authoritative shape of a summary artifact.** It already conforms to the
+`<artifact-format-specification>` injected into this dispatch (Stage 4b of the invoking skill).
+The metadata header below is mandatory and MUST NOT be abbreviated, reordered, or partially
+omitted — every bullet is a field the validator checks by name. Use `**Status**: [COMPLETED]`
+when every plan phase is done, `**Status**: [IN PROGRESS]` on a partial run, or
+`**Status**: [BLOCKED]` when blocked, matching `summary-format.md`'s declared vocabulary.
 
 ```markdown
 # Implementation Summary: Task #{N}
 
-**Completed**: {ISO_DATE}
-**Duration**: {time}
+- **Task**: {N} - {title}
+- **Status**: [COMPLETED]
+- **Started**: {ISO8601}
+- **Completed**: {ISO8601}
+- **Effort**: {time}
+- **Dependencies**: {list or None}
+- **Artifacts**: plans/{NN}_{short-slug}.md
+- **Standards**: summary-format.md, status-markers.md, artifact-management.md, tasks.md
 
 ## Overview
 
@@ -457,9 +470,17 @@ Write to `specs/{NNN}_{SLUG}/summaries/{NN}_{short-slug}-summary.md`:
 - Tests: Passed/Failed/N/A
 - Files verified: Yes
 
-## Notes
+## Impacts
 
-{Any additional notes, follow-up items, or caveats}
+- {Downstream effect of these changes}
+
+## Follow-ups
+
+- {Remaining item, caveat, or follow-up task; use `- None` when there are none}
+
+## References
+
+- {Paths to the plan, reports, and other artifacts informing this summary}
 ```
 
 Populate `## Plan Deviations` from the `deviations` arrays across all phase progress files. If all deviations arrays are empty, write `- None (implementation followed plan)`.
