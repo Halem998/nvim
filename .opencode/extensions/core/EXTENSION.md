@@ -254,7 +254,7 @@ TODO.md and state.json must stay synchronized. Update state.json first (machine 
 Format: `task {N}: {action}` with session ID in body.
 
 ```
-task 1: complete research
+task {N}: complete research
 
 Session: sess_1736700000_abc123
 ```

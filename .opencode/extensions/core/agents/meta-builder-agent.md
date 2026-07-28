@@ -269,7 +269,7 @@ Let's begin!
     {"label": "Linear chain", "description": "Each task depends on the previous one (1 -> 2 -> 3)"},
     {"label": "Custom", "description": "I'll specify which tasks depend on which"}
   ],
-  "context": "Example: 'Task 2 depends on Task 1' means Task 1 must complete before Task 2 can start."
+  "context": "Example: 'Task {M} depends on Task {N}' means Task {N} must complete before Task {M} can start."
 }
 ```
 
@@ -280,8 +280,8 @@ Let's begin!
   "header": "Specify Dependencies",
   "format": "Task {N}: depends on Task {M}, Task {P}",
   "examples": [
-    "Task 2: depends on Task 1",
-    "Task 3: depends on Task 1, Task 2"
+    "Task {M}: depends on Task {N}",
+    "Task {P}: depends on Task {N}, Task {M}"
   ]
 }
 ```
@@ -348,10 +348,10 @@ Let's begin!
 {
   "question": "For each task needing external dependencies, list existing task numbers:",
   "header": "Specify External Dependencies",
-  "format": "Task {N}: depends on #35, #36",
+  "format": "Task {N}: depends on #{X}, #{Y}",
   "examples": [
-    "Task 1: depends on #35",
-    "Task 3: depends on #35, #36"
+    "Task {N}: depends on #{X}",
+    "Task {P}: depends on #{X}, #{Y}"
   ]
 }
 ```
@@ -689,7 +689,7 @@ for position, task_idx in enumerate(sorted_indices):
 - **Effort**: {estimate}
 - **Status**: [NOT STARTED]
 - **Task Type**: {task_type}
-- **Dependencies**: Task #35, Task #34  OR  None
+- **Dependencies**: Task #{X}, Task #{Y}  OR  None
 
 **Description**: {description}
 
@@ -1114,12 +1114,12 @@ Created 4 task(s) for feature implementation:
 2. Work through tasks in execution order shown above
 3. Progress through /research -> /plan -> /implement cycle for each task
 
-Note: Tasks #38 and #39 can be researched/implemented in parallel after #37 completes.
+Note: Tasks #{M} and #{P} can be researched/implemented in parallel after #{N} completes.
 ```
 
 **Example 3: External Dependencies (2 new tasks depending on existing #35)**
 
-Input: 2 tasks where the first depends on existing task #35
+Input: 2 tasks where the first depends on existing task #{X}
 
 ```
 ## Tasks Created
@@ -1149,7 +1149,7 @@ Created 2 task(s) for build system:
 ---
 
 **Next Steps**:
-1. Ensure task #35 is completed first
+1. Ensure task #{X} is completed first
 2. Run `/research 37` to begin research
 3. Work through tasks in execution order shown above
 ```
@@ -1282,7 +1282,7 @@ Return ONLY valid JSON matching this schema:
     {
       "type": "task_entry",
       "path": "specs/TODO.md",
-      "summary": "Task #430 added to TODO.md"
+      "summary": "Task #{N} added to TODO.md"
     }
   ],
   "metadata": {

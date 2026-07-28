@@ -183,7 +183,7 @@ For high-confidence matches, update ROADMAP.md to mark items as complete.
 1. For each high-confidence match:
    ```
    old_string: "- [ ] Create proof architecture guide"
-   new_string: "- [x] Create proof architecture guide *(Completed: Task 628, 2026-01-15)*"
+   new_string: "- [x] Create proof architecture guide *(Completed: Task {N}, {ISO_DATE})*"
    ```
 
 2. Use Edit tool with exact string matching
@@ -284,7 +284,7 @@ For inline "(depends on 18)":
 {
   "exists": true,
   "timestamp": "2026-03-24",
-  "changelog": "Task 272 completed. Created 5 tasks for /review Task Order management feature.",
+  "changelog": "Task {N} completed. Created {M} tasks for /review Task Order management feature.",
   "goal": "Add Task Order section management to /review command.",
   "categories": [
     {
@@ -919,7 +919,7 @@ For each task entry in the category whose `task_number` is in `pruned_tasks`:
 
 If the category uses ordered lists (`1.`, `2.`, `3.`...), renumber remaining entries sequentially starting from 1 after removing pruned entries.
 
-Example before pruning (task 272 completed):
+Example before pruning (task {N} completed):
 ```
 1. **272** [COMPLETED] -- Define Task Order schema and format specification
 2. **273** [COMPLETED] -- Add Task Order parsing to /review command (depends: 272)

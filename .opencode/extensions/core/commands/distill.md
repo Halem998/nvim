@@ -22,12 +22,12 @@ description: Analyze memory vault health, score memories for maintenance, and ru
 
     **Sub-Mode Dispatch** (first match wins):
     1. No arguments (bare invocation) -> Report mode (health report)
-    2. `--purge` -> Purge mode (tombstone stale/zero-retrieval memories) [available - task 450]
-    3. `--merge` -> Merge mode (combine duplicate memories) [available - task 451]
-    4. `--compress` -> Compress mode (reduce oversized memories) [available - task 452]
-    5. `--refine` -> Refine mode (improve memory quality) [available - task 452]
-    6. `--gc` -> Garbage collection (hard-delete tombstoned memories past grace period) [available - task 450]
-    7. `--auto` -> Automated distillation (Tier 1 refine only) [available - task 452]
+    2. `--purge` -> Purge mode (tombstone stale/zero-retrieval memories)
+    3. `--merge` -> Merge mode (combine duplicate memories)
+    4. `--compress` -> Compress mode (reduce oversized memories)
+    5. `--refine` -> Refine mode (improve memory quality)
+    6. `--gc` -> Garbage collection (hard-delete tombstoned memories past grace period)
+    7. `--auto` -> Automated distillation (Tier 1 refine only)
 
     **Additional Flags**:
     - `--dry-run` -> Show what would happen without making changes

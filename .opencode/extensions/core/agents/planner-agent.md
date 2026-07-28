@@ -218,8 +218,8 @@ Phases within the same wave can execute in parallel.
 **Goal**: {What this phase accomplishes}
 
 **Tasks**:
-- [ ] {Task 1}
-- [ ] {Task 2}
+- [ ] {Step 1}
+- [ ] {Step 2}
 
 **Timing**: {X hours}
 
