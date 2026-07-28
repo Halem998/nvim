@@ -1,26 +1,30 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "plan",
-  "status": "planned",
-  "summary": "Five-phase plan targeting the research-established root cause: general-implementation-agent.md Stage 6's inline summary skeleton, which has never matched summary-format.md and wins over both standing advisory checks. Also aligns summary-format.md's own Example Skeleton with its required-field list, repairs validate-artifact.sh's --fix anchor/sed crash, and adds the missing Stage-6a postflight validation to skill-implementer-hard. Enforcement posture decided explicitly: non-blocking, no auto-repair for summaries, with a compliant run producing zero warnings.",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "All 5 phases complete. Fixed general-implementation-agent.md's Stage 6 summary skeleton to match summary-format.md, aligned the format doc's example, dropped --fix from both implementer call sites, added missing hard-mode Stage 6a, and repaired validate-artifact.sh's --fix crash plus a second latent pipefail abort found in verification. This task's own summary validates PASS/exit 0.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/940_summary_metadata_header_compliance/plans/01_summary-header-template-fix.md"
+      "type": "summary",
+      "path": "specs/940_summary_metadata_header_compliance/summaries/01_summary-header-template-fix-summary.md"
     }
   ],
   "blockers": [],
-  "next_action_hint": "implement",
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/context/formats/summary-format.md",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/skills/skill-implementer/SKILL.md",
+    "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
+    "agent-system/extensions/core/scripts/validate-artifact.sh"
+  ],
   "decisions_made": [
-    "Item C: keep summary validation non-blocking and drop --fix from both implementer summary call sites, since a TBD placeholder makes a non-compliant artifact look compliant while conveying nothing to the human reader; no downstream machine consumer parses the header fields, so the harm does not meet this repo's bar for a blocking gate",
-    "validate-artifact.sh --fix anchor bug is IN scope (declared widening beyond file_scope) because the item C signal is delivered through that validator and it can abort before printing its own diagnostic",
-    "Hard-mode postflight-validation asymmetry is IN scope: skill-implementer-hard gets a new Stage 6a mirroring the base skill",
-    "general-implementation-hard-agent.md expected UNCHANGED - its Stage 6 inherits by 'Same as base agent'; duplicating the skeleton is explicitly forbidden, with a Scope Hypothesis to confirm at implementation time",
-    "Research's context/patterns/advisory-signal-desensitization.md recommendation is explicitly OUT of scope, recorded as a visible non-goal rather than silently dropped",
-    "Item D honored: no backfill of historical summaries; the resulting residual (whole-directory sweeps can still warn) is stated as an accepted consequence, not hidden",
-    "No redeploy step: all edits target agent-system/extensions/**; Phase 5 verifies against the source-store validator and states that this is not a live end-to-end dispatch"
+    "Fixed the root-cause inline template in place rather than adding a third cross-reference",
+    "Kept validation non-blocking; dropped --fix at both call sites (TBD would hide non-compliance)",
+    "Widened scope by one line in validate-artifact.sh: fixed an independently-found set -e/pipefail abort on the --fix anchor's no-match path"
   ],
   "dead_ends": [],
-  "phases_completed": 0,
-  "phases_total": 5
+  "phases_completed": 5,
+  "phases_total": 5,
+  "plan_markers_verified": true
 }

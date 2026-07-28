@@ -11,13 +11,12 @@ next_project_number: 942
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 940,941 | -- | agent-system |
+| 1 | 941 | -- | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-940 [PLANNED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 941 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ## Tasks
@@ -59,12 +58,13 @@ Honor the no-task-references-in-deliverables rule: this task's own deliverables 
 ---
 
 ### 940. Make implementation summaries emit the required metadata header
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 939
 - **Research**: [940_summary_metadata_header_compliance/reports/01_summary-metadata-header-compliance.md]
 - **Plan**: [940_summary_metadata_header_compliance/plans/01_summary-header-template-fix.md]
+- **Summary**: [940_summary_metadata_header_compliance/summaries/01_summary-header-template-fix-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 

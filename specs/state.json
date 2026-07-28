@@ -1990,7 +1990,7 @@
     {
       "project_number": 940,
       "project_name": "summary_metadata_header_compliance",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Make implementation summaries emit the required metadata header",
@@ -2006,7 +2006,7 @@
         939
       ],
       "created": "2026-07-28T15:12:06Z",
-      "last_updated": "2026-07-28T16:27:14Z",
+      "last_updated": "2026-07-28T16:37:55Z",
       "session_id": "sess_1785251682_61201e_940",
       "artifacts": [
         {
@@ -2018,8 +2018,14 @@
           "path": "specs/940_summary_metadata_header_compliance/plans/01_summary-header-template-fix.md",
           "type": "plan",
           "summary": "Five-phase plan: reconcile Stage 6 inline template with summary-format.md, repair validate-artifact.sh --fix anchoring, add hard-mode Stage 6a postflight validation, non-blocking posture with silent passing runs."
+        },
+        {
+          "path": "specs/940_summary_metadata_header_compliance/summaries/01_summary-header-template-fix-summary.md",
+          "type": "summary",
+          "summary": "Summary header template reconciled with the format spec, --fix dropped from implementer call sites and repaired, hard-mode Stage 6a validation added."
         }
-      ]
+      ],
+      "completion_summary": "Reconciled general-implementation-agent.md Stage 6's inline summary skeleton to literally match summary-format.md (all 8 metadata fields, all 6 required sections), aligned the format doc's own Example Skeleton, closed the hard-mode Stage 6a postflight-validation gap, dropped --fix from both implementer call sites per the non-blocking enforcement-posture decision, and repaired validate-artifact.sh's --fix anchor/insertion plus a latent set -e/pipefail abort on the no-match path so a future regression produces a readable diagnostic instead of a crash."
     },
     {
       "project_number": 941,

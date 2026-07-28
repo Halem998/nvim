@@ -1,7 +1,7 @@
 # Implementation Plan: Task #940
 
 - **Task**: 940 - summary_metadata_header_compliance
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/940_summary_metadata_header_compliance/reports/01_summary-metadata-header-compliance.md
