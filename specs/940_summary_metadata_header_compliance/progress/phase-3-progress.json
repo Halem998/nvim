@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "Enforcement posture - non-blocking, no auto-repair, and close the hard-mode gap",
+  "started_at": "2026-07-28T00:25:00Z",
+  "last_updated": "2026-07-28T00:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Drop --fix from skill-implementer/SKILL.md Stage 6a invocation and replace the note with the posture rationale",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-implementer/SKILL.md"]
+    },
+    {
+      "id": 2,
+      "description": "Insert a new Stage 6a in skill-implementer-hard/SKILL.md between Stage 6 and Stage 7, mirroring the corrected base skill block",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md"]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

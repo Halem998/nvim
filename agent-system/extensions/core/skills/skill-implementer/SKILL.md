@@ -379,14 +379,18 @@ If subagent status indicates success ("implemented" or "partial") and `artifact_
 if [ "$status" = "implemented" ] || [ "$status" = "partial" ]; then
     if [ -n "$artifact_path" ] && [ -f "$artifact_path" ]; then
         echo "Validating summary artifact..."
-        if ! bash .claude/scripts/validate-artifact.sh "$artifact_path" summary --fix; then
+        if ! bash .claude/scripts/validate-artifact.sh "$artifact_path" summary; then
             echo "WARNING: Summary artifact has format issues (non-blocking). Review output above."
         fi
     fi
 fi
 ```
 
-**Note**: The `--fix` flag attempts auto-repair of missing metadata fields. Validation failures are logged but do not block status update or git commit.
+**Note**: Validation is non-blocking by design; failures are logged but do not block status
+update or git commit. `--fix` is deliberately not used at this call site: a `TBD`-placeholder
+auto-repair would make a non-compliant artifact *look* compliant to the validator while conveying
+nothing to the human reader the header exists to serve. A compliant summary written from the
+correct template must produce no warning here, so that a warning again carries signal.
 
 ---
 

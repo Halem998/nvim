@@ -296,7 +296,7 @@ reconciled too and the widening reported in the summary rather than absorbed sil
 
 ---
 
-### Phase 3: Enforcement posture — non-blocking, no auto-repair, and close the hard-mode gap [NOT STARTED]
+### Phase 3: Enforcement posture — non-blocking, no auto-repair, and close the hard-mode gap [COMPLETED]
 
 **Goal**: Implement the item C decision at both implementer call sites and give hard mode the
 postflight validation it currently lacks.
@@ -310,23 +310,24 @@ all — its postflight goes `### Stage 6: Parse Subagent Return` straight to
 gap.
 
 **Tasks**:
-- [ ] In `skill-implementer/SKILL.md` Stage 6a, drop the `--fix` flag from the
+- [x] In `skill-implementer/SKILL.md` Stage 6a, drop the `--fix` flag from the
       `validate-artifact.sh` invocation. Keep the surrounding `if ! ... ; then echo "WARNING: ..."`
       structure, the `[ "$status" = "implemented" ] || [ "$status" = "partial" ]` guard, and the
-      non-blocking behavior exactly as they are.
-- [ ] Replace Stage 6a's trailing `**Note**: The --fix flag attempts auto-repair...` note with a
+      non-blocking behavior exactly as they are. *(completed)*
+- [x] Replace Stage 6a's trailing `**Note**: The --fix flag attempts auto-repair...` note with a
       short note recording the posture: validation is non-blocking by design; auto-repair is
       deliberately not used for summaries because a `TBD` placeholder makes a non-compliant
       artifact look compliant to the validator while conveying nothing to the human reader the
       header exists to serve; a compliant summary must produce no warning, so that a warning
-      again carries signal.
-- [ ] In `skill-implementer-hard/SKILL.md`, insert a new `### Stage 6a: Validate Artifact Content`
+      again carries signal. *(completed)*
+- [x] In `skill-implementer-hard/SKILL.md`, insert a new `### Stage 6a: Validate Artifact Content`
       between `### Stage 6: Parse Subagent Return` and `### Stage 7: Update Task Status
       (Postflight)`, mirroring the base skill's corrected block (same guard, same no-`--fix`
       invocation, same non-blocking `WARNING:` line, same posture note, using that file's existing
-      `$status` / `$artifact_path` variables from its Stage 6).
-- [ ] Leave `hooks/validate-plan-write.sh`, `scripts/skill-base.sh`, and both Stage 4b format
+      `$status` / `$artifact_path` variables from its Stage 6). *(completed)*
+- [x] Leave `hooks/validate-plan-write.sh`, `scripts/skill-base.sh`, and both Stage 4b format
       injections mechanically unchanged — research found all of them structurally sound.
+      *(completed: confirmed via git diff — no changes to either file)*
 
 **Timing**: 0.75 hours
 
