@@ -155,7 +155,7 @@ mkdir -p "specs/${padded_num}_${task_slug}"
 
 3. Return a brief summary (NOT JSON) to the console:
 ```
-Research completed for task 259:
+Research completed for task {N}:
 - Found 5 relevant Mathlib theorems
 - Identified proof strategy using structural induction
 - Created report at specs/259_prove_completeness/reports/research-001.md

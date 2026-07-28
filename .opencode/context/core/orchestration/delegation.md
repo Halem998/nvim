@@ -25,10 +25,10 @@ This standard defines how commands and agents safely delegate work to subagents,
 - **Validation Framework**: Comprehensive validation for returns and delegation context
 
 **Problems Solved**:
-- Delegation hangs (Task 191 Root Causes #1, #3, #6)
-- Infinite delegation loops (Task 191 Root Cause #2)
-- Missing timeouts (Task 191 Root Cause #4)
-- Coordination gaps (Task 191 Root Cause #5)
+- Delegation hangs (depth limits, path tracking, timeout enforcement)
+- Infinite delegation loops (delegation depth limits)
+- Missing timeouts (timeout enforcement)
+- Coordination gaps (return validation)
 
 ---
 
@@ -562,7 +562,7 @@ Bulk operations (--recover, --sync, --abandon) delegate to status-sync-manager w
 
 **Git Blame Conflict Resolution**:
 - For each field that differs between specs/TODO.md and specs/state.json:
-  3. Log conflict resolution: "Task 343: status from specs/state.json (2026-01-07) > specs/TODO.md (2026-01-06)"
+  3. Log conflict resolution: "Task {N}: status from specs/state.json (2026-01-07) > specs/TODO.md (2026-01-06)"
     "files_updated": ["specs/TODO.md", "specs/state.json"]
     "files_updated": ["specs/TODO.md", "specs/state.json", "specs/archive/state.json"]
    - Delete all created subtasks from specs/TODO.md and specs/state.json
@@ -582,7 +582,7 @@ Bulk operations (--recover, --sync, --abandon) delegate to status-sync-manager w
 
 - Status Management: `.opencode/context/core/system/state-management.md`
 - Artifact Management: `.opencode/context/core/system/artifact-management.md`
-- Task 191 Research: `specs/191_fix_subagent_delegation_hang/reports/research-001.md`
+- Delegation Hang Root-Cause Research: `specs/191_fix_subagent_delegation_hang/reports/research-001.md`
 # Delegation Guide
 
 ## Session ID Tracking

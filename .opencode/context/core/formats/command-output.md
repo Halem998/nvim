@@ -79,7 +79,7 @@ of LeanSearch API integration patterns and proof search strategies.
 
 **Bad Example (too verbose):**
 ```
-I have completed the research phase for task 258 which involves modal logic proof 
+I have completed the research phase for the task which involves modal logic proof 
 automation. During this research, I analyzed the LeanSearch API documentation, 
 reviewed existing proof search implementations, evaluated different integration 
 patterns, and created a detailed report with recommendations for implementation.
@@ -89,7 +89,7 @@ patterns, and created a detailed report with recommendations for implementation.
 
 **IMPORTANT**: Do NOT add conclusions or closing statements after the summary.
 
-The header already provides task/command context. Adding a conclusion like "Task 258 completed" or "Command /review finished" is redundant.
+The header already provides task/command context. Adding a conclusion like "Task {N} completed" or "Command /review finished" is redundant.
 
 **Correct:**
 ```
@@ -110,7 +110,7 @@ Research completed for modal logic proof automation. Created comprehensive analy
 Artifacts created:
 - report: specs/258_modal_logic_automation/reports/research-001.md
 
-Task 258 research completed successfully.  ← REDUNDANT, DO NOT ADD
+Task {N} research completed successfully.  ← REDUNDANT, DO NOT ADD
 ```
 
 ## Artifact Display
@@ -149,7 +149,7 @@ Status: Failed
 Research failed due to missing task entry in specs/TODO.md
 
 Errors:
-- Task 999 not found in specs/TODO.md
+- Task {N} not found in specs/TODO.md
 
 Recommendation: Verify task number and retry
 ```
@@ -175,7 +175,7 @@ Status: Failed
 Task not found in specs/TODO.md
 
 Errors:
-- Task 999 not found in specs/TODO.md
+- Task {N} not found in specs/TODO.md
 
 Recommendation: Verify task number exists and retry
 ```

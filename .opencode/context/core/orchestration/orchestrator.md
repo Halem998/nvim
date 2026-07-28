@@ -310,7 +310,7 @@ See `core/system/validation-strategy.md` for detailed philosophy.
 ### Validation Errors
 **When**: Preflight validation fails  
 **Action**: Return error immediately, don't delegate  
-**Example**: "Task 999 not found in specs/TODO.md"
+**Example**: "Task {N} not found in specs/TODO.md"
 
 ### Agent Errors
 **When**: Agent returns failed status  
@@ -387,7 +387,7 @@ Agents own workflows, orchestrator just coordinates
 # Orchestrator Guide - Examples and Troubleshooting
 
 **Version**: 1.0  
-**Created**: 2025-12-29 (Task 245 Phase 5)  
+**Created**: 2025-12-29  
 **Purpose**: Examples, troubleshooting, and detailed guidance for orchestrator usage
 
 ---

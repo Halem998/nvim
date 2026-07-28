@@ -1,7 +1,7 @@
 # Routing Guide - Lightweight Command Routing Context
 
 **Version**: 1.0
-**Created**: 2025-12-29 (Task 244 Phase 1)
+**Created**: 2025-12-29
 **Purpose**: Lightweight routing context for orchestrator Stages 1-3 (command parsing and delegation preparation)
 
 ---
@@ -354,10 +354,10 @@ Commands update task status using text-based markers:
 ```json
 {
   "status": "failed",
-  "summary": "Routing failed: Task 244 not found in specs/TODO.md",
+  "summary": "Routing failed: Task {N} not found in specs/TODO.md",
   "errors": [{
     "type": "validation",
-    "message": "Task 244 not found in specs/TODO.md",
+    "message": "Task {N} not found in specs/TODO.md",
     "code": "TASK_NOT_FOUND",
     "recoverable": false,
     "recommendation": "Verify task number exists in specs/TODO.md"
@@ -664,7 +664,7 @@ All routing decisions are logged for debugging.
 ### Example Log
 
 ```
-[INFO] Task 258 language: lean
+[INFO] Task {N} language: lean
 [INFO] Routing to lean-research-agent (language=lean)
 [PASS] Agent file exists: .opencode/agent/subagents/lean-research-agent.md
 [PASS] Routing validation succeeded
