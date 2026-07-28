@@ -254,6 +254,13 @@ misread as an ordinary in-batch collision):
     path {critical_path} ({critical_label}). Orchestrator-critical work runs solo only —
     excluding #{task_number} from this invocation. Re-run it alone: /orchestrate {task_number}
   ```
+
+  **Post-dispatch counterpart**: this check reads a task's *declared* `file_scope`,
+  pre-dispatch. A task whose *actual* `modified_files` touch a critical path — as distinct from
+  what it declared — is invisible here and is instead caught after dispatch by the inter-cycle
+  redeploy checkpoint in `skill-orchestrate` Stage MT-3 step 7. See
+  `context/patterns/batch-orchestration-guardrails.md`'s `### The Inter-Cycle Redeploy Checkpoint`
+  subsection for that contract; it is not restated here.
 - **`file_scope_collision`** — retains the exact pre-existing `collision_scope` branching below,
   byte-for-byte:
   - **`in_batch`** (the colliding task is itself in this wave): defer the named task to the next
@@ -397,6 +404,12 @@ closes).
 This step now runs only a defensive, non-blocking residue check — it WARNS ONLY and never
 commits, because a blanket commit here would recreate exactly the entanglement being removed:
 
+**Ordering relative to the inter-cycle redeploy checkpoint**: per-task commits at Stage MT-4
+step 5.5 always precede the inter-cycle redeploy checkpoint (`skill-orchestrate` Stage MT-3 step
+7) — a wave's work is committed before the tree it produced is redeployed over. See
+`context/patterns/batch-orchestration-guardrails.md`'s `### The Inter-Cycle Redeploy Checkpoint`
+subsection ("Sequencing") for the full statement of this guarantee; it is not restated here.
+
 ```bash
 residue=$(git status --porcelain -- specs/ 2>/dev/null)
 if [ -n "$residue" ]; then
@@ -415,6 +428,7 @@ fi
 | `blocked` | Stage MT-4 step 5.5 still runs; same reasoning as `failed` |
 | Partial (gate-refused, or `MAX_CYCLES_MT` reached mid-loop) | Stage MT-4 step 5.5 runs at the partial-form message on every cycle that reaches it, including the cycle where `MAX_CYCLES_MT` is hit |
 | Deferred self-modifying (a task whose own dispatch is deferred rather than run this cycle) | Never dispatched and never status-mutated this cycle, so it correctly produces no commit this cycle — it becomes eligible, and committable, on a later cycle |
+| Deferred-by-redeploy-checkpoint (a task excluded for the remainder of the invocation because the inter-cycle redeploy checkpoint's deploy/verify gate failed) | Never dispatched and never status-mutated for the rest of this invocation; distinct operator remedy from deferred-self-modifying — see `### The Inter-Cycle Redeploy Checkpoint` in `context/patterns/batch-orchestration-guardrails.md` |
 
 **Consolidated Output**:
 
@@ -446,6 +460,17 @@ Cycles used: {cycles_used}/{max_cycles}
 |------|--------|
 | #44 | predecessor #43 failed |
 | #99 | terminal status [ABANDONED] |
+
+### Deferred (redeploy checkpoint)
+
+| Task | Reason |
+|------|--------|
+| #55 | inter-cycle redeploy checkpoint gate failed ({gate}, exit {code}); not dispatched for the remainder of this invocation |
+
+Operator remedy (distinct from a deferred-self-modifying task): resolve the deploy/verify
+failure, redeploy manually, then re-run `/orchestrate` on the remaining task numbers. See
+`context/patterns/batch-orchestration-guardrails.md`'s `### The Inter-Cycle Redeploy Checkpoint`
+subsection for the full contract; not restated here.
 
 ### Next Steps
 - Re-run failed tasks: /orchestrate {failed_task_numbers}

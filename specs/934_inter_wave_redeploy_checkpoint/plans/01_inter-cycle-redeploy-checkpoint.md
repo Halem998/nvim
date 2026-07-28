@@ -497,27 +497,27 @@ treat every additional site as in scope for the mirroring and record the diverge
 
 ---
 
-### Phase 6: Cross-reference the checkpoint from `commands/orchestrate.md` [NOT STARTED]
+### Phase 6: Cross-reference the checkpoint from `commands/orchestrate.md` [COMPLETED]
 
 **Goal**: Keep the command-level documentation consistent with the skill's new behavior, so a
 reader of `orchestrate.md` alone does not conclude that no redeploy ever happens mid-invocation.
 
 **Tasks**:
 
-- [ ] Under `### MULTI-TASK DISPATCH`, at the existing self-modification defer-trigger discussion,
+- [x] Under `### MULTI-TASK DISPATCH`, at the existing self-modification defer-trigger discussion, *(completed)*
       add a short note that a task whose *actual* `modified_files` touch a critical path — as
       distinct from its *declared* `file_scope`, which is what this gate reads — is caught after
       dispatch by the inter-cycle redeploy checkpoint in `skill-orchestrate` Stage MT-3 step 7.
       Reference the guardrails subsection for the contract.
-- [ ] Under `#### Step 5: Commit Reconciliation and Consolidated Output`, in the
+- [x] Under `#### Step 5: Commit Reconciliation and Consolidated Output`, in the *(completed)*
       **Commit Reconciliation (no batch commit)** discussion, add one clause stating the ordering
       explicitly: per-task commits at Stage MT-4 step 5.5 always precede the inter-cycle redeploy
       checkpoint, so a wave's work is committed before the tree it produced is redeployed over.
-- [ ] Add a row to the results-table area under `## Batch Orchestrate Results` (alongside the
+- [x] Add a row to the results-table area under `## Batch Orchestrate Results` (alongside the *(completed)*
       existing `Deferred self-modifying` row and the `### Skipped` section) covering
       **deferred-by-redeploy-checkpoint**, with its distinct operator remedy: resolve the
       deploy/verify failure, redeploy manually, re-run `/orchestrate` on the remaining task numbers.
-- [ ] Restate nothing about the trigger, failure contract, or idempotence guard — cross-reference
+- [x] Restate nothing about the trigger, failure contract, or idempotence guard — cross-reference *(completed)*
       the guardrails subsection instead.
 
 **Timing**: 0.5 hours
