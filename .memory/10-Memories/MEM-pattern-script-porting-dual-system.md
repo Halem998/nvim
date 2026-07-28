@@ -2,7 +2,7 @@
 title: "When porting scripts between dual-system architectures (.claude/ and .opencode/)"
 created: 2026-06-08
 tags: [PATTERN]
-topic: "task-633"
+topic: "task-633"  # task-ref-ok inline, category 7 (memory frontmatter provenance field)
 source: "specs/633_port_core_script_infrastructure/summaries/01_core_script_infra-summary.md"
 modified: 2026-06-08
 retrieval_count: 0

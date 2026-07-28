@@ -2,7 +2,7 @@
 title: "Synthesis fork pattern for team research: The lead should NOT read all teammate "
 created: 2026-05-25
 tags: [PATTERN]
-topic: "task-609"
+topic: "task-609"  # task-ref-ok inline, category 7 (memory frontmatter provenance field)
 source: "specs/609_refactor_team_research_context_protection/reports/01_context-protection-research.md"
 modified: 2026-05-25
 retrieval_count: 0

@@ -2,7 +2,7 @@
 title: "When porting the orchestrator system from .claude/ to .opencode/, the dependency"
 created: 2026-06-08
 tags: [PATTERN]
-topic: "task-634"
+topic: "task-634"  # task-ref-ok inline, category 7 (memory frontmatter provenance field)
 source: "specs/634_port_orchestrator_system/summaries/01_port_orchestrator_implementation-summary.md"
 modified: 2026-06-08
 retrieval_count: 0

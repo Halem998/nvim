@@ -2,7 +2,7 @@
 title: "When classifying context index entries as Tier 4 (on-demand), also clear their a"
 created: 2026-05-22
 tags: [INSIGHT]
-topic: "task-598"
+topic: "task-598"  # task-ref-ok inline, category 7 (memory frontmatter provenance field)
 source: ""
 modified: 2026-05-22
 retrieval_count: 0

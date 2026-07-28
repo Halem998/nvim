@@ -2,7 +2,7 @@
 title: "OpenCode agent frontmatter must NOT include the 'model:' field"
 created: 2026-06-08
 tags: [STANDARD]
-topic: "task-635"
+topic: "task-635"  # task-ref-ok inline, category 7 (memory frontmatter provenance field)
 source: "specs/635_port_synthesis_domain_agents/reports/01_synthesis_domain_agents_research.md"
 modified: 2026-06-08
 retrieval_count: 0

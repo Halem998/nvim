@@ -2,7 +2,7 @@
 title: "OpenCode agent frontmatter pattern: Only `name` and `description` fields are sup"
 created: 2026-06-08
 tags: [PATTERN]
-topic: "task-635"
+topic: "task-635"  # task-ref-ok inline, category 7 (memory frontmatter provenance field)
 source: "specs/635_port_synthesis_domain_agents/summaries/01_synthesis_domain_agents_implementation-summary.md"
 modified: 2026-06-08
 retrieval_count: 0

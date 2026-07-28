@@ -71,6 +71,7 @@ one of the categories below, carried on the begin marker (block form) or the inl
 | 4. Quoted historical anti-patterns | Keep verbatim — the point is to show a real past violation as a negative example | Yes | The **Before** block above |
 | 5. Placeholder-bearing prose | Not matched by `TASK_PATTERN` at all; recorded here as a constraint on future pattern changes, never broaden the digit-requirement | No (not applicable — never matches) | `task {N}`, `specs/{NNN}_{SLUG}/`, `MM_{short-slug}.md` |
 | 6. Test fixtures for the reference-pattern detector itself | Keep concrete digits verbatim — the fixture's whole purpose is asserting the shared library's regex triggers (or does not trigger) on a specific literal string; a placeholder would not match `[0-9]+` and would silently disable the assertion | Yes | `assert_triggers "positive: task 788" ... "See task 788 for context"` in `scripts/tests/test-validate-no-task-references.sh` and the five-named-forms fixture block in `scripts/tests/test-census-count.sh` <!-- task-ref-ok quoting the actual fixture strings, category 6 --> |
+| 7. Memory vault frontmatter provenance fields (`topic`, `source`) | Keep concrete numbers verbatim in the YAML frontmatter block only — `memory-harvest.sh` and `/learn` write `topic: "task-${task_number}"` / `source: "${source_artifact}"` as structured provenance data, not deliverable prose; a placeholder would misrepresent which task actually produced the memory | Yes, inline on the frontmatter line itself as a `#`-prefixed trailing comment (the only comment syntax YAML recognizes; `<!-- -->` is NOT valid here and can break strict parsers) | `topic: "task-595"  # task-ref-ok inline, category 7` |
 
 **Discovered during Phase 5 purge, not pre-declared in Phase 1**: this category was added when
 the repo-wide scan flagged `scripts/tests/test-validate-no-task-references.sh` and
@@ -80,6 +81,16 @@ These are distinct from category 4 (quoted historical anti-patterns, which quote
 violation) — the fixture digits here are synthetic and were never a citation of any actual task.
 Converting them to `{N}` would silently break the positive-match assertions (a placeholder never
 satisfies `[0-9]+`), so they are marked and kept verbatim rather than converted.
+
+**Discovered during Phase 10 purge, not pre-declared in Phase 1**: this category was added when
+the repo-wide scan flagged `.memory/10-Memories/*.md` frontmatter — `topic: "task-NNN"` and
+`source: "..."` are written directly by `memory-harvest.sh` (and by `/learn`) as structured
+provenance data recording which task produced the memory, not as prose a human author composed.
+This directly conflicts with a naive purge, which would falsify the record; the field is marked
+in place with an inline `task-ref-ok` comment on the same YAML line rather than rewritten,
+consistent with how category 6 marks rather than rewords a machine-authored literal. Only the
+memory's PROSE BODY (the `# {title}` section and everything below it) is purged of citations;
+the frontmatter block above the second `---` is never rewritten for this rule, only marked.
 
 **Resolved test case**: `.claude/rules/git-workflow.md`'s own `Examples` block self-tripped the
 write-time hook's `PHASE_PATTERN` at `task {N} phase {P}: {phase_name}` rendered concretely.

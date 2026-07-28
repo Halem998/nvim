@@ -1,0 +1,45 @@
+{
+  "phase": 10,
+  "phase_name": "Purge .memory/**",
+  "started_at": "2026-07-28T01:05:00Z",
+  "last_updated": "2026-07-28T01:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Convert all 18 task-reference occurrences under .memory/** to durable anchors or documented frontmatter exemptions",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/rules/no-task-references-in-deliverables.md",
+        ".memory/10-Memories/MEM-config-nextcord-discord-nixos.md",
+        ".memory/10-Memories/MEM-insight-command-skill-tool.md",
+        ".memory/10-Memories/MEM-insight-general-implementation-agent-budget.md",
+        ".memory/10-Memories/MEM-insight-index-json-tier.md",
+        ".memory/10-Memories/MEM-insight-opencode-headless-cli-api.md",
+        ".memory/10-Memories/MEM-pattern-gate-out-defensive-check.md",
+        ".memory/10-Memories/MEM-pattern-opencode-agent-frontmatter.md",
+        ".memory/10-Memories/MEM-pattern-orchestrator-porting.md",
+        ".memory/10-Memories/MEM-pattern-orchestrator-system-skill-orchestrate.md",
+        ".memory/10-Memories/MEM-pattern-script-porting-dual-system.md",
+        ".memory/10-Memories/MEM-pattern-synthesis-agent-opencode.md",
+        ".memory/10-Memories/MEM-pattern-synthesis-agent-team-research.md",
+        ".memory/10-Memories/MEM-pattern-synthesis-fork-team-research.md",
+        ".memory/10-Memories/MEM-plan-delegation-required.md",
+        ".memory/10-Memories/MEM-standard-opencode-agent-frontmatter.md",
+        ".memory/10-Memories/MEM-technique-validate-context-budgets-budget.md",
+        ".memory/10-Memories/MEM-workflow-opencode-smoke-test.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "10.2",
+      "description": "17 of 18 occurrences were in frontmatter topic/source fields, not the memory body prose the task list anticipated",
+      "type": "altered",
+      "reason": "A direct purge would falsify machine-written provenance data (memory-harvest.sh writes topic: \"task-${task_number}\" by design). Resolved by adding a new Exemption Taxonomy Category 7 to rules/no-task-references-in-deliverables.md and marking the 15 affected lines in place with an inline # task-ref-ok YAML comment, leaving field values byte-for-byte unchanged (verified via yaml.safe_load round-trip).",
+      "annotation": "*(deviation: altered — see plan Phase 10 task 2 note; new Category 7 documented per the plan's own directive to document newly discovered taxonomy categories rather than handle them ad hoc)*"
+    }
+  ]
+}

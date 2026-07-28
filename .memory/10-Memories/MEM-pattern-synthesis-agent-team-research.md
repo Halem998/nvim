@@ -2,7 +2,7 @@
 title: "When team skills (skill-team-research, skill-team-plan) need to synthesize outpu"
 created: 2026-05-25
 tags: [PATTERN]
-topic: "task-609"
+topic: "task-609"  # task-ref-ok inline, category 7 (memory frontmatter provenance field)
 source: "specs/609_refactor_team_research_context_protection/summaries/01_context-protection-summary.md"
 modified: 2026-05-25
 retrieval_count: 0

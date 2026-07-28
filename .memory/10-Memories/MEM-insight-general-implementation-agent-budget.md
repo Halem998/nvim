@@ -2,7 +2,7 @@
 title: "The minimum irreducible context for general-implementation-agent is 8,048 tokens"
 created: 2026-05-22
 tags: [INSIGHT]
-topic: "task-598"
+topic: "task-598"  # task-ref-ok inline, category 7 (memory frontmatter provenance field)
 source: ""
 modified: 2026-05-22
 retrieval_count: 0

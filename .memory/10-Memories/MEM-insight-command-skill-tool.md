@@ -2,7 +2,7 @@
 title: "Command files cannot delegate Skill tool invocations to bash scripts"
 created: 2026-05-22
 tags: [INSIGHT]
-topic: "task-595"
+topic: "task-595"  # task-ref-ok inline, category 7 (memory frontmatter provenance field)
 source: "specs/595_refactor_research_plan_implement_commands/reports/02_command-refactor-research.md"
 modified: 2026-05-22
 retrieval_count: 0

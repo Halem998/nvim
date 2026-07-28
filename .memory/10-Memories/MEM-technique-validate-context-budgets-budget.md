@@ -2,7 +2,7 @@
 title: "validate-context-budgets.sh provides automated enforcement of per-agent token bu"
 created: 2026-05-22
 tags: [TECHNIQUE]
-topic: "task-598"
+topic: "task-598"  # task-ref-ok inline, category 7 (memory frontmatter provenance field)
 source: ""
 modified: 2026-05-22
 retrieval_count: 0

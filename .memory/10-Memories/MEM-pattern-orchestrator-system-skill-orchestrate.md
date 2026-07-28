@@ -2,7 +2,7 @@
 title: "The .claude/ agent system has TWO distinct orchestrator concepts: (1) skill-orch"
 created: 2026-06-08
 tags: [PATTERN]
-topic: "task-634"
+topic: "task-634"  # task-ref-ok inline, category 7 (memory frontmatter provenance field)
 source: "specs/634_port_orchestrator_system/reports/01_port_orchestrator_research.md"
 modified: 2026-06-08
 retrieval_count: 0

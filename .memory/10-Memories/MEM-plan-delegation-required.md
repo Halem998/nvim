@@ -3,7 +3,7 @@ title: Artifact Creation Must Use Skill Delegation
 created: 2026-04-13
 tags: [enforcement, delegation, bypass-prevention, artifacts, plans]
 topic: agent-system
-source: task-414, task-416
+source: task-414, task-416  # task-ref-ok inline, category 7 (memory frontmatter provenance field)
 modified: 2026-04-13
 retrieval_count: 0
 last_retrieved: null
@@ -20,7 +20,7 @@ When executing /plan, /research, or /implement commands, **always invoke the app
 
 ## Incident Context
 
-On 2026-04-13 (task 414), the /plan command bypassed skill-planner delegation and wrote a plan file directly. The resulting artifact was missing required metadata fields (Status, Effort, Dependencies, Research Inputs, Artifacts, Standards, Type) and required sections (Goals & Non-Goals, Risks & Mitigations, Testing & Validation, Artifacts & Outputs, Rollback/Contingency). This violated the plan format standard and produced a non-conforming artifact.
+On 2026-04-13, the /plan command bypassed skill-planner delegation and wrote a plan file directly. The resulting artifact was missing required metadata fields (Status, Effort, Dependencies, Research Inputs, Artifacts, Standards, Type) and required sections (Goals & Non-Goals, Risks & Mitigations, Testing & Validation, Artifacts & Outputs, Rollback/Contingency). This violated the plan format standard and produced a non-conforming artifact.
 
 ## Enforcement Mechanisms
 

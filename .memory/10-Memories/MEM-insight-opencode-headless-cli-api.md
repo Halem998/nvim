@@ -3,7 +3,7 @@ title: "OpenCode headless/CLI API for programmatic agent control"
 created: 2026-05-12
 tags: [INSIGHT]
 topic: "insight"
-source: "Task 547: specs/547_research_mobile_agent_management/reports/01_mobile-agent-management-research.md"
+source: "specs/547_research_mobile_agent_management/reports/01_mobile-agent-management-research.md"
 modified: 2026-05-12
 retrieval_count: 0
 last_retrieved: null

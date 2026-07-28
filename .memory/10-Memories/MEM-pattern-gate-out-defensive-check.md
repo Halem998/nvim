@@ -2,7 +2,7 @@
 title: "The inline GATE OUT defensive check blocks in research.md and plan.md (~38 lines"
 created: 2026-05-22
 tags: [PATTERN]
-topic: "task-595"
+topic: "task-595"  # task-ref-ok inline, category 7 (memory frontmatter provenance field)
 source: "specs/595_refactor_research_plan_implement_commands/reports/02_command-refactor-research.md"
 modified: 2026-05-22
 retrieval_count: 0

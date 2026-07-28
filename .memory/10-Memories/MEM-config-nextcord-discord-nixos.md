@@ -3,7 +3,7 @@ title: "Nextcord is the optimal Discord bot library on NixOS"
 created: 2026-05-12
 tags: [CONFIG]
 topic: "configuration"
-source: "Task 547: specs/547_research_mobile_agent_management/reports/01_mobile-agent-management-research.md"
+source: "specs/547_research_mobile_agent_management/reports/01_mobile-agent-management-research.md"
 modified: 2026-05-12
 retrieval_count: 0
 last_retrieved: null
