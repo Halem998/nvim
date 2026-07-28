@@ -492,24 +492,25 @@ trade collisions for unbounded litter.
 
 ---
 
-### Phase 6: Test suite [NOT STARTED]
+### Phase 6: Test suite [COMPLETED]
 
 **Goal**: The path isolation, foreign-session detection, resume tolerance, and reap threshold
 behaviors are each proven by an automated test that never touches the real `specs/` tree.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/test-session-runtime-files.sh` in the existing
+- [x] Create `agent-system/extensions/core/scripts/test-session-runtime-files.sh` in the existing
       flat `scripts/` directory. Model it on `scripts/test-task-lock-reap.sh`: build a throwaway
       `$TMPROOT` with `.claude/scripts/` and `specs/` fixture trees, copy the real script under
       test byte-for-byte so production code never learns it is under test, and use controlled
       epoch arithmetic for fixture mtimes instead of real sleeping. Same `pass`/`fail` counters
-      and exit-0-on-all-pass contract.
-- [ ] **Case: path isolation.** Fixture two distinct `batch_session_id` values, write both
+      and exit-0-on-all-pass contract. *(completed)*
+- [x] **Case: path isolation.** Fixture two distinct `batch_session_id` values, write both
       `specs/.orchestrator-multi-state-{sidA}.json` and `specs/.orchestrator-multi-state-{sidB}.json`
       with distinct `cycle_count`/`current_statuses` content, assert both persist independently
       with their own content intact. This is a filesystem-path-isolation assertion, not a
       concurrency/locking one — the whole point of session-scoping is that no lock is needed here.
-- [ ] **Case: foreign-session detection.** Write
+      *(completed)*
+- [x] **Case: foreign-session detection.** Write
       `specs/.orchestrator-multi-state-{sidA}.json` whose *content* `session_id` is deliberately
       `{sidB}`, and assert the Step 5 read-time check rejects/flags it rather than silently
       consuming its counts. Since the check lives in a markdown instruction file rather than an
@@ -517,22 +518,24 @@ behaviors are each proven by an automated test that never touches the real `spec
       the transcribed logic, then add a companion grep assertion that the live
       `commands/orchestrate.md` still contains the comparison against `batch_session_id`. Record
       this two-part approach in the test header so its limitation is explicit, not implied.
-- [ ] **Case: resume tolerance (guard against the top risk).** Assert that the loop-guard and
+      *(completed)*
+- [x] **Case: resume tolerance (guard against the top risk).** Assert that the loop-guard and
       churn-state instructions contain NO hard-fail construct on `session_id` mismatch — a grep
       assertion over `skill-orchestrate/SKILL.md` and `skill-orchestrate-hard/SKILL.md`
       confirming the mismatch handling is a log line and not a gate. This case exists specifically
       to catch a future well-meaning "make it consistent" edit that would break multi-turn resume.
-- [ ] **Case: reap, stale.** Fixture a session-scoped multi-state file and a return-meta-multi
+      *(completed)*
+- [x] **Case: reap, stale.** Fixture a session-scoped multi-state file and a return-meta-multi
       file with mtimes past `ORCHESTRATOR_SESSION_REAP_MIN`; assert `--dry-run` reports them
-      without deleting, and the live run deletes them.
-- [ ] **Case: reap, fresh (must never delete).** Fixture files with recent mtimes well within the
+      without deleting, and the live run deletes them. *(completed)*
+- [x] **Case: reap, fresh (must never delete).** Fixture files with recent mtimes well within the
       threshold; assert BOTH `--dry-run` and the live run leave them untouched. This case is
       mandatory, not optional — it is the direct mitigation for the "reap deletes a live batch's
-      own state" risk.
-- [ ] **Case: reap, per-task files untouched.** Fixture an old-mtime
+      own state" risk. *(completed)*
+- [x] **Case: reap, per-task files untouched.** Fixture an old-mtime
       `specs/000_probe/.orchestrator-loop-guard`; assert the reap leaves it alone (per-task files
-      are out of scope for this sweep).
-- [ ] Make the test script executable and confirm it exits 0.
+      are out of scope for this sweep). *(completed)*
+- [x] Make the test script executable and confirm it exits 0. *(completed: 6/6 cases pass, exit 0)*
 
 **Timing**: 1.5 hours
 
