@@ -371,27 +371,35 @@ genuine finding to investigate, not detector noise to suppress.
 
 ---
 
-### Phase 5: Permanent regression spec [NOT STARTED]
+### Phase 5: Permanent regression spec [COMPLETED]
 
 **Goal**: Codify the scratch-tree reproduction as an in-repo spec so the defect and the detector
 are both covered by the test suite going forward.
 
 **Tasks**:
-- [ ] Create `lua/neotex/plugins/ai/claude/commands/picker/operations/sync_spec.lua` following the
+- [x] Create `lua/neotex/plugins/ai/claude/commands/picker/operations/sync_spec.lua` following the
       existing `scan_spec.lua` convention: `describe`/`it`/`before_each`/`after_each`,
       `vim.fn.tempname()` + `vim.fn.mkdir(..., "p")` + `vim.fn.writefile`, tearing the scratch
       tree down in `after_each`.
-- [ ] Add a case asserting directory-shaped `skills` entries are admitted (the regression guard
+- [x] Add a case asserting directory-shaped `skills` entries are admitted (the regression guard
       for this defect).
-- [ ] Add a case asserting flat categories (`commands`, `agents`) are unchanged.
-- [ ] Add a case asserting `context`'s directory-shaped selection still works.
-- [ ] Add a case covering the `subdir ~= filter_category` shape (`agents_subdir =
+- [x] Add a case asserting flat categories (`commands`, `agents`) are unchanged.
+- [x] Add a case asserting `context`'s directory-shaped selection still works.
+- [x] Add a case covering the `subdir ~= filter_category` shape (`agents_subdir =
       "agent/subagents"`).
-- [ ] Add a case asserting a file absent from `provides` is still excluded — the allow-list is not
+- [x] Add a case asserting a file absent from `provides` is still excluded — the allow-list is not
       a pass-through.
-- [ ] Wrap fallible scratch-tree setup/teardown operations in `pcall` per repository standards.
-- [ ] Ensure the spec never reads or writes the real `.claude/` or `agent-system/` trees, and
+- [x] Wrap fallible scratch-tree setup/teardown operations in `pcall` per repository standards.
+- [x] Ensure the spec never reads or writes the real `.claude/` or `agent-system/` trees, and
       contains no task-number references.
+
+**Verification results**: `:TestFile`-equivalent (`PlenaryBustedFile`) on the new spec passes all
+5 cases. Deliberately reverting `sync.lua` to its pre-Phase-3 content (`dc6d5e450`) and re-running
+made 2 of the 5 cases fail exactly as expected (the directory-shaped-skills case and the
+allow-list-is-not-a-pass-through case, both of which depend on the generalized match), while the
+flat-category, context, and OpenCode-divergence cases still passed unchanged — confirming the spec
+genuinely guards this defect rather than passing vacuously. The fix was restored immediately
+afterward and re-verified green (5/5). `scan_spec.lua` still passes (19/19). Module loads headless.
 
 **Timing**: 1 hour
 
