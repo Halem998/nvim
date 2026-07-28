@@ -399,7 +399,11 @@ sequence in dependency order.
       - A `| Task | defer_reason | Detail |` table with one row per `defer_ledger` entry, so every
         excluded candidate is named with its reason.
       - A `Re-run sequence (dependency order; printed, not executed)` block emitting one literal
-        `/orchestrate {N}` line per deferred candidate, predecessor-first. *(completed)*
+        `/orchestrate {N}` line per deferred candidate, predecessor-first. *(completed: deviation —
+        the `{validated_count}` placeholder used in the banner/marker had no corresponding bash
+        assignment; a `validated_count=${#validated_tasks[@]}` line was added during Phase 6's
+        hand-trace verification and required a second redeploy to propagate — see the Phase 6
+        progress file's `deviations` entry)*
 - [x] Derive the re-run sequence from the `waves` / `dependency_graph` this command already
       computed at Steps 2-3 and still has in scope at Step 5 — reuse that topological order, do
       not recompute or reimplement Kahn's algorithm. Order tasks ascending by number within a wave
@@ -524,7 +528,7 @@ or order differs from the header comment, reconcile to the actual code and note 
 
 ---
 
-### Phase 6: Consistency sweep, deliberate redeploy, final gates [NOT STARTED]
+### Phase 6: Consistency sweep, deliberate redeploy, final gates [COMPLETED]
 
 **Goal**: Confirm the four files are mutually consistent and admission-neutral, then perform the
 single deliberate redeploy — accounting explicitly for the known picker-sync defect — and run the
@@ -532,30 +536,48 @@ full gate set against the live system. This is the only phase permitted to write
 
 **Tasks**:
 
-- [ ] Consistency sweep across all four files: the invariant name, the outcome name,
+- [x] Consistency sweep across all four files: the invariant name, the outcome name,
       `forward_progress_violated`, `defer_ledger`, the banner string, and the marker string must
-      each be spelled identically at every occurrence.
-- [ ] **Admission-neutrality audit** (the binding constraint of this task): for each of the four
+      each be spelled identically at every occurrence. *(completed: grep -c counts confirmed
+      consistent per-file, with the expected detection/rendering split — SKILL.md computes the
+      fields but does not itself render the literal banner/marker strings; those render only in
+      commands/orchestrate.md and orchestrate-dry-run-report.sh, exactly per the Phase 1
+      three-loci statement)*
+- [x] **Admission-neutrality audit** (the binding constraint of this task): for each of the four
       files, read the full diff and confirm no hunk changes an admission verdict, a
       `defer_reason`, an `--invocation-count` argument, an eligibility condition, an all-terminal
       condition, a circuit-breaker condition, the convergence guard's trigger, or the
-      critical-paths data. Any such hunk is reverted, not justified.
-- [ ] **Defer-not-fail confirmation** (Scope C, confirm-and-record): grep the diffs for any new
+      critical-paths data. Any such hunk is reverted, not justified. *(completed: zero findings —
+      every diff hunk across all four files is additive prose/rendering/schema-field text; the
+      `forward_progress_violated == true -> "partial"` branch in Stage MT-5 changes the reported
+      skill-status string only, never an admission verdict, task status, or state.json write)*
+- [x] **Defer-not-fail confirmation** (Scope C, confirm-and-record): grep the diffs for any new
       write to `specs/state.json`, any new `failed_tasks` append, and any new status mutation on a
       deferred task. Expected result: zero. Record the confirmation in the implementation summary.
-- [ ] Verify the `defer_ledger` MUST NOT held: grep `skills/skill-orchestrate/SKILL.md` for every
+      *(completed: zero findings — grepped added lines across all four files for
+      state.json-write/failed_tasks-append patterns; every hit was prose confirming absence, not
+      an actual write)*
+- [x] Verify the `defer_ledger` MUST NOT held: grep `skills/skill-orchestrate/SKILL.md` for every
       `defer_ledger` occurrence and confirm each is a write, a schema definition, or a Stage MT-5
       read — never a term in an eligibility, all-terminal, circuit-breaker, or admission condition.
-- [ ] Confirm the source-store boundary held: `git diff --stat` over every commit for this task
-      shows zero `.claude/` paths BEFORE the redeploy step below.
-- [ ] Run the no-task-references sweep over every file touched outside `specs/`. Distinguish
+      *(completed: 11 occurrences, all schema definition / append instruction / Stage MT-5
+      read-or-report — none in an eligibility, all-terminal, circuit-breaker, or admission
+      condition)*
+- [x] Confirm the source-store boundary held: `git diff --stat` over every commit for this task
+      shows zero `.claude/` paths BEFORE the redeploy step below. *(completed: confirmed across
+      all five phase commits (50ed1c334, aa339e85b, a9e804905, 3accb82c8, 942a667a9) — zero
+      `.claude/` paths in any of them)*
+- [x] Run the no-task-references sweep over every file touched outside `specs/`. Distinguish
       pre-existing hits from newly introduced ones via `git diff`; fix only what this change
-      introduced, and record any pre-existing hits without fixing them.
-- [ ] `bash -n` on `scripts/orchestrate-dry-run-report.sh` (source-store copy).
-- [ ] Perform ONE deliberate redeploy: `bash .claude/scripts/deploy-headless.sh`, then
+      introduced, and record any pre-existing hits without fixing them. *(completed: zero
+      task-number citations introduced in any added line across all four files)*
+- [x] `bash -n` on `scripts/orchestrate-dry-run-report.sh` (source-store copy). *(completed: clean)*
+- [x] Perform ONE deliberate redeploy: `bash .claude/scripts/deploy-headless.sh`, then
       `bash .claude/scripts/verify-deploy.sh`. Log it explicitly as a conscious, one-time
-      invocation matching this plan's Rollback/Contingency — not a routine practice.
-- [ ] **Pre-declared sync-defect workaround**: `deploy-headless.sh`'s picker sync tool has a
+      invocation matching this plan's Rollback/Contingency — not a routine practice. *(completed:
+      deploy-headless.sh deployed 272 artifacts; verify-deploy.sh PASS — 11 checks, 0 failures,
+      1 pre-existing WARN about duplicate hook registrations unrelated to this task)*
+- [x] **Pre-declared sync-defect workaround**: `deploy-headless.sh`'s picker sync tool has a
       pre-existing defect excluding `skill-orchestrate/SKILL.md` from its skills scan, so the
       redeploy above leaves the deployed copy stale. Immediately after the redeploy, copy the
       corrected source directly to `.claude/skills/skill-orchestrate/SKILL.md` and verify the copy
@@ -563,12 +585,18 @@ full gate set against the live system. This is the only phase permitted to write
       source-store rule, matching the precedent set by the predecessor task. **Do not fix the sync
       tool here** — it is out of this task's declared file scope; recommend a follow-up task
       instead. `skill-orchestrate-hard/SKILL.md` is untouched by this task and needs no copy.
-- [ ] After redeploy: `bash .claude/scripts/check-extension-docs.sh` must exit 0 (it is EXPECTED to
-      FAIL on source/deploy drift for every prior phase; only here is a PASS required).
-- [ ] After redeploy: `bash -n` on the deployed copy of the dry-run reporter, and confirm the
+      *(completed: confirmed stale by diff before the copy, applied the direct copy, re-diffed
+      clean afterward — sync tool itself untouched, per instruction)*
+- [x] After redeploy: `bash .claude/scripts/check-extension-docs.sh` must exit 0 (it is EXPECTED to
+      FAIL on source/deploy drift for every prior phase; only here is a PASS required). *(completed:
+      exit 0, "PASS: all extensions OK")*
+- [x] After redeploy: `bash -n` on the deployed copy of the dry-run reporter, and confirm the
       deployed `commands/orchestrate.md` and `context/patterns/batch-orchestration-guardrails.md`
-      contain the new sections.
-- [ ] `bash .claude/scripts/validate-artifact.sh` against this plan file: PASS.
+      contain the new sections. *(completed: bash -n clean; deployed commands/orchestrate.md
+      contains 6 "ZERO DISPATCH" occurrences; deployed guardrails doc contains the
+      "The Forward-Progress Invariant" subsection)*
+- [x] `bash .claude/scripts/validate-artifact.sh` against this plan file: PASS. *(completed: PASS,
+      0 warnings)*
 
 **Timing**: 1 hour
 
@@ -605,31 +633,48 @@ and skip the copy rather than performing it blindly.
 
 ## Testing & Validation
 
-- [ ] Zero-dispatch trace (live path): validated candidates non-empty, `dispatch_start_ts` empty →
+- [x] Zero-dispatch trace (live path): validated candidates non-empty, `dispatch_start_ts` empty →
       banner, marker, one ledger row per deferred candidate, dependency-ordered re-run sequence,
-      `exit_status == "partial"`, `forward_progress_violated: true`.
-- [ ] Negative trace (live path): 2 of 3 dispatched, 1 deferred → no banner, no marker,
+      `exit_status == "partial"`, `forward_progress_violated: true`. *(hand-traced against the
+      edited text: Stage MT-5 step 2 sets true, step 3 forces "partial", step 4 requires the
+      banner/ledger enumeration, orchestrate.md Step 5 branch 1 reads it directly and renders the
+      ZERO DISPATCH section)*
+- [x] Negative trace (live path): 2 of 3 dispatched, 1 deferred → no banner, no marker,
       `forward_progress_violated: false`, unchanged `exit_status`, and the deferred task visible in
-      the appropriate `Deferred (...)` table.
-- [ ] Collision-only zero-dispatch trace: `deferred_self_modifying` and
+      the appropriate `Deferred (...)` table. *(hand-traced: dispatch_start_ts non-empty (2
+      dispatched) so the invariant is false; exit_status branches are unchanged from before this
+      task; ZERO DISPATCH section does not render)*
+- [x] Collision-only zero-dispatch trace: `deferred_self_modifying` and
       `deferred_deploy_checkpoint` both empty, every candidate deferred by `file_scope_collision` →
-      `"partial"`, not `"implemented"` (the status-legibility correction of Phase 3).
-- [ ] Not-evaluable trace: `mt_state_file` present without `dispatch_start_ts` → explicit notice
-      printed, ordinary output rendered, no banner.
-- [ ] Dry-run smoke test, three cases (zero admitted / all admitted / partial admission), run
-      against a scratch deploy-shaped tree, never the live deploy tree.
-- [ ] Banner and marker strings byte-identical between the live template and the dry-run reporter,
-      modulo substituted counts.
-- [ ] `jq -e .` passes on the amended `.return-meta-multi.json` construction.
-- [ ] `bash -n` clean on `orchestrate-dry-run-report.sh` in both source-store and post-redeploy
-      deployed form.
-- [ ] Admission neutrality: zero diff hunks affecting any admission verdict, condition, or
-      argument across all four files.
-- [ ] Defer-not-fail: zero new `state.json` writes, `failed_tasks` appends, or status mutations.
-- [ ] `defer_ledger` appears in no eligibility, all-terminal, circuit-breaker, or admission
-      condition.
-- [ ] No task-number citations introduced in any file outside `specs/`.
-- [ ] `validate-artifact.sh` PASSes against this plan.
+      `"partial"`, not `"implemented"` (the status-legibility correction of Phase 3). *(hand-traced:
+      this is exactly the bug the new precedence branch fixes — previously would have resolved
+      "implemented" with an empty completed_tasks array)*
+- [x] Not-evaluable trace: `mt_state_file` present without `dispatch_start_ts` → explicit notice
+      printed, ordinary output rendered, no banner. *(hand-traced against orchestrate.md branch 3)*
+- [x] Dry-run smoke test, three cases (zero admitted / all admitted / partial admission), run
+      against a scratch deploy-shaped tree, never the live deploy tree. *(completed in Phase 5 —
+      executed live against a scratch `.claude/scripts/`-shaped tree under the scratchpad
+      directory; all three cases passed and the scratch tree was removed afterward)*
+- [x] Banner and marker strings byte-identical between the live template and the dry-run reporter,
+      modulo substituted counts. *(confirmed: both use
+      "[ZERO DISPATCH - 0 of {N} validated candidates dispatched; forward-progress invariant
+      violated]" and "<!-- forward-progress violated=true dispatched=0 validated={N} -->",
+      differing only in the count-variable name substituted)*
+- [x] `jq -e .` passes on the amended `.return-meta-multi.json` construction. *(verified in Phase 3
+      against a synthetic input with all fields populated)*
+- [x] `bash -n` clean on `orchestrate-dry-run-report.sh` in both source-store and post-redeploy
+      deployed form. *(both verified clean in Phase 5 and Phase 6)*
+- [x] Admission neutrality: zero diff hunks affecting any admission verdict, condition, or
+      argument across all four files. *(verified in Phase 6's admission-neutrality audit — zero
+      findings)*
+- [x] Defer-not-fail: zero new `state.json` writes, `failed_tasks` appends, or status mutations.
+      *(verified in Phase 6 — zero findings)*
+- [x] `defer_ledger` appears in no eligibility, all-terminal, circuit-breaker, or admission
+      condition. *(verified in Phase 6 — all 11 occurrences are schema/append/read/report sites)*
+- [x] No task-number citations introduced in any file outside `specs/`. *(verified in Phase 6 —
+      zero hits in added lines)*
+- [x] `validate-artifact.sh` PASSes against this plan. *(PASS, 0 warnings, re-confirmed after the
+      post-redeploy `validated_count` fix)*
 
 ## Artifacts & Outputs
 

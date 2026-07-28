@@ -461,6 +461,9 @@ field, not because one exists today):
    fi
    ```
 
+`validated_count=${#validated_tasks[@]}` — computed once here for use in the ZERO DISPATCH
+section's banner/marker below (`{validated_count}` in the Consolidated Output template).
+
 **Commit Reconciliation (no batch commit)**:
 
 MT mode no longer produces one combined end-of-batch commit here. Per-task commits are issued
