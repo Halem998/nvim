@@ -1,0 +1,26 @@
+{
+  "phase": 1,
+  "phase_name": "Reproduce Both Defects By Construction (Baseline)",
+  "started_at": "2026-07-28T08:52:00Z",
+  "last_updated": "2026-07-28T08:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create scratch fixture directory (control_correct, defect1_topmeta, defect2_barestrings) under session scratchpad with control/defect1/defect2 .return-meta.json fixtures",
+      "status": "done",
+      "files_touched": [],
+      "note": "Fixtures already present in scratchpad from prior session work under 939-verify/{control_correct,defect1_topmeta,defect2_barestrings}/.return-meta.json; confirmed their shapes match the plan's Phase 1 spec (control: nested metadata.phases_completed=6/6 with object-array artifacts; defect1: identical but phases_completed/phases_total ONLY at top level; defect2: status=researched with artifacts as bare-string array)."
+    },
+    {
+      "id": 2,
+      "description": "Run orchestrate-recover-outcome.sh against all three fixtures with window_start_ts one hour in the past; capture stdout/stderr/exit code",
+      "status": "done",
+      "files_touched": [],
+      "note": "control: {\"recovered\":true,\"status\":\"implemented\",\"phases_completed\":6,\"phases_total\":6,...} exit=0. defect1: {\"recovered\":true,\"status\":\"implemented\",\"phases_completed\":0,\"phases_total\":0,...} exit=0 (input has phases_completed:6 top-level, script reads .metadata.phases_completed which is absent -> 0). defect2: {\"recovered\":true,\"status\":\"researched\",\"artifact_path\":\"\",...} exit=0 with stderr containing three lines 'jq: error (at <stdin>:1): Cannot index string with string \"path\"/\"type\"/\"summary\"'. All three observed results match the plan's stated expectations exactly -- no discrepancy, proceeding to Phase 2."
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

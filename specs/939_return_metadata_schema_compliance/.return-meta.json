@@ -1,29 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/939_return_metadata_schema_compliance/plans/01_return-metadata-schema-compliance.md",
-      "summary": "Seven-phase plan fixing both off-schema .return-meta.json writer defects, ratifying the item-C no-fallback decision, and widening the recovered-success detection trigger."
-    }
-  ],
-  "next_steps": "Run /implement 939 to execute the plan",
+  "status": "in_progress",
   "metadata": {
     "session_id": "sess_1785251682_61201e_939",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 5.5,
-    "dependency_waves": [[1], [2, 3, 4, 5], [6], [7]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When the same field names appear in two sibling JSON artifacts with different nesting rules (e.g. phases_completed/phases_total: nested under .metadata in .return-meta.json, but always top-level in .orchestrator-handoff.json), writer instructions drift toward whichever shape was shown most recently in the same document. The fix is not rewording one sentence but naming the collision explicitly at every writer call site plus adding a side-by-side callout in the format doc. Detection of the resulting defect should be a single general check -- 'a present, parseable file yielded an empty or zero value its own contents contradict' -- rather than one special case per field, and escalation must be evidence-based (corroborate against an independent artifact) rather than schema-permissive (silently accepting the off-schema shape), so writer drift stays visible.",
-      "category": "PATTERN",
-      "source_artifact": "specs/939_return_metadata_schema_compliance/plans/01_return-metadata-schema-compliance.md",
-      "confidence": 0.82,
-      "suggested_keywords": ["schema-drift", "field-name-collision", "return-meta", "silent-degradation", "evidence-based-detection"]
-    }
-  ]
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

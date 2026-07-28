@@ -1,7 +1,7 @@
 # Implementation Plan: Task #939
 
 - **Task**: 939 - Fix off-schema .return-meta.json writes breaking orchestrator recovery
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/939_return_metadata_schema_compliance/reports/01_return-metadata-schema-compliance-research.md
@@ -76,9 +76,37 @@ explicitly with its reason, and one candidate is explicitly scoped **out**:
 | `skills/skill-implementer-hard/SKILL.md` | No — but declared by task 940 | **Included** (Phase 2) | See "Ownership call" below. Its Stage 6 reads `.phases_completed` at the top level, correct only by coincidence with the ambiguous writer instruction Phase 2 fixes. |
 | `skills/skill-orchestrate/SKILL.md` | No | **Included** (Phase 6) | Item D requires the detection signal to escalate rather than degrade. The only branch that can act on Defect 1's scenario (`recovered=true`) lives here, in Stage 5 and its Stage MT-4 mirror. A detection field emitted by the script with no consumer would satisfy item D in letter only. |
 | `skills/skill-orchestrate-hard/SKILL.md` | No | **Included** (Phase 6) | Carries the mirrored Stage 5 recovery branch. Fixing only the base mirror leaves `/orchestrate --hard` with the identical blind spot — a partial fix that reads as complete. |
-| `skills/skill-implementer/SKILL.md` | No | **Scoped OUT** (verify only) | Its Stage 6 read is already correct (`jq -r '.metadata.phases_completed // 0'`) and its instruction delegates writing to `general-implementation-agent.md`. Phase 2 confirms it read-only via grep and makes no edit. Editing a correct file to "match" a sibling would be churn. |
+| `skills/skill-implementer/SKILL.md` | No — but declared by task 940 | **Scoped OUT** (verify only) | Its Stage 6 read is already correct (`jq -r '.metadata.phases_completed // 0'`) and its instruction delegates writing to `general-implementation-agent.md`. Phase 2 confirms it read-only via grep and makes no edit. There is no defect here to fix, so ownership never arises — the file stays entirely task 940's. |
 
 No other file is edited. `.claude/**` is never written (see Constraints).
+
+### Ownership call: `skills/skill-implementer-hard/SKILL.md`
+
+This file sits between two task boundaries: it is not in task 939's declared `file_scope`, but it
+IS in task 940's, and task 940 is serialized strictly after 939 by a `dependencies[]` edge. Two
+defensible options existed. **Task 939 takes the edit (option (a)).** Stating the call and its
+consequences plainly, since it widens this task's declared footprint into a file another task also
+declares:
+
+- **The coupling is a correctness invariant of Phase 2's own edit, not a separable improvement.**
+  Phase 2 changes the hard-mode agent's writer instruction to nest `phases_completed`/`phases_total`
+  under `metadata`. The moment that lands, this file's top-level read returns 0/0 for every
+  `/implement --hard` run. Deferring the reader fix means task 939 ships a change that leaves the
+  non-orchestrator hard-mode phase gate broken and depends on a *different* task to restore it.
+- **The regression window is real, not theoretical, and its length is not bounded by the dependency
+  edge.** Serialization guarantees ordering, not promptness. If task 940 slips, is re-scoped, or is
+  abandoned, the broken state persists indefinitely with no record of why. Option (b) would trade a
+  two-line edit for a durable "system is broken until some other task runs" condition.
+- **Cost of taking it here is near zero.** The change is two `jq` read expressions. It does not
+  overlap task 940's actual concern in this file (summary metadata headers), so it neither
+  pre-empts nor complicates 940's own edit.
+- **Consequence, stated for the downstream implementer**: task 940's implementer will find this
+  file already changed at its Stage 6 reads. That is expected, not a conflict — the `.metadata.`
+  prefix will already be present, and 940 should treat those two lines as done and proceed with its
+  own summary-header scope. There is no concurrency hazard in either direction, since the two tasks
+  never run simultaneously.
+- **What is NOT taken**: task 939 claims no other part of this file, and makes no edit at all to
+  `skill-implementer/SKILL.md`. The footprint widening is exactly two read expressions in one file.
 
 ## Goals & Non-Goals
 
@@ -153,7 +181,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Reproduce Both Defects By Construction (Baseline) [NOT STARTED]
+### Phase 1: Reproduce Both Defects By Construction (Baseline) [COMPLETED]
 
 **Goal**: Establish the observed before-state for both defects by running the real, unmodified
 `orchestrate-recover-outcome.sh` against constructed off-schema fixtures. Nothing in the repository
@@ -161,23 +189,26 @@ is edited. This baseline is the comparison target for Phase 7.
 
 **Tasks**:
 
-- [ ] Create a scratch fixture directory under the session scratchpad (never inside the repo).
-- [ ] Write fixture `control/.return-meta.json`: `status: "implemented"`, correctly nested
+- [x] Create a scratch fixture directory under the session scratchpad (never inside the repo).
+      *(completed: reused pre-existing `939-verify/{control_correct,defect1_topmeta,defect2_barestrings}/` under the session scratchpad)*
+- [x] Write fixture `control/.return-meta.json`: `status: "implemented"`, correctly nested
       `.metadata.phases_completed = 6` / `.metadata.phases_total = 6`, an `artifacts` array of one
-      well-formed object with `type`/`path`/`summary`, and a `completion_data` object.
-- [ ] Write fixture `defect1/.return-meta.json`: identical, except `phases_completed`/`phases_total`
-      appear ONLY at the top level and `.metadata` contains neither.
-- [ ] Write fixture `defect2/.return-meta.json`: `status: "researched"` with `artifacts` as an array
-      of bare strings.
-- [ ] Run `bash agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh <fixture_dir>
+      well-formed object with `type`/`path`/`summary`, and a `completion_data` object. *(completed)*
+- [x] Write fixture `defect1/.return-meta.json`: identical, except `phases_completed`/`phases_total`
+      appear ONLY at the top level and `.metadata` contains neither. *(completed)*
+- [x] Write fixture `defect2/.return-meta.json`: `status: "researched"` with `artifacts` as an array
+      of bare strings. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh <fixture_dir>
       <window_start_ts>` against each of the three, with `window_start_ts` set one hour in the past
-      so the freshness gate passes. Capture stdout, stderr, and exit code for each.
-- [ ] Record all three observed results verbatim in the phase's progress notes: expect control to
+      so the freshness gate passes. Capture stdout, stderr, and exit code for each. *(completed)*
+- [x] Record all three observed results verbatim in the phase's progress notes: expect control to
       report `phases_completed: 6`; expect defect1 to report `phases_completed: 0, phases_total: 0`
       with exit 0 and `recovered: true`; expect defect2 to report `artifact_path: ""` with three
-      `jq: error ... Cannot index string with string` lines on stderr and exit 0.
-- [ ] If any observed result contradicts the expectation above, STOP and report the discrepancy
-      before proceeding — the premise of the remaining phases would be wrong.
+      `jq: error ... Cannot index string with string` lines on stderr and exit 0. *(completed: all
+      three matched expectations exactly — see progress/phase-1-progress.json)*
+- [x] If any observed result contradicts the expectation above, STOP and report the discrepancy
+      before proceeding — the premise of the remaining phases would be wrong. *(completed: no
+      contradiction found, proceeded to Phase 2)*
 
 **Timing**: 0.5 hours
 
@@ -229,7 +260,8 @@ ambiguity. These three files land together because splitting them introduces a r
 - [ ] In `skills/skill-implementer-hard/SKILL.md`, locate the Stage 6 postflight reads
       `jq -r '.phases_completed // 0'` and `jq -r '.phases_total // 0'` and change both to read
       `.metadata.phases_completed // 0` and `.metadata.phases_total // 0`, matching the sibling
-      `skill-implementer/SKILL.md`.
+      `skill-implementer/SKILL.md`. Change nothing else in this file — it is another task's declared
+      territory and this task claims exactly these two read expressions (see "Ownership call").
 - [ ] Confirm read-only (no edit) that `skills/skill-implementer/SKILL.md` Stage 6 already reads
       `.metadata.phases_completed`; record the grep output as evidence for the scoped-out decision.
 - [ ] Confirm no task-number citation was introduced in any of the three edited files.
