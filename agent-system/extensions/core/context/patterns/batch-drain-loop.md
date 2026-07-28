@@ -4,7 +4,7 @@ Domain-agnostic pattern for executing MANY approved mutations through a tool tha
 its per-invocation batch size, with exactly ONE human decision and no per-batch re-prompting.
 Its sibling covers the read side: chunked-sweep pagination for a read-only/tag-only tool that
 exposes a `--limit` cap but no offset. Distilled from the email extension's `--all` cleanup
-mode (task 805); applies to any capped bulk-mutation tool (API rate windows, migration
+mode; applies to any capped bulk-mutation tool (API rate windows, migration
 runners, batch importers).
 
 ## Problem Shape

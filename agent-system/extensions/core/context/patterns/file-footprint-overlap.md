@@ -85,7 +85,7 @@ levels:
   phases)` — runs this algorithm pairwise across a single task's phase list (using each phase's
   declared or inferred file touch-set) to decide whether phases can execute in parallel or must
   be serialized.
-- **Lock-acquisition-level** (task 809): `.claude/scripts/task-lock.sh`'s `cmd_acquire`, via the
+- **Lock-acquisition-level**: `.claude/scripts/task-lock.sh`'s `cmd_acquire`, via the
   `scopes_overlap()` jq transcription of this file's pseudocode, checks the acquiring task's
   `file_scope` against every OTHER currently-held lock's `file_scope` repo-wide (see
   `task-lock.md`'s "Cross-Task `file_scope` Overlap Check"). Unlike the two callers above, this
@@ -122,7 +122,7 @@ rule inline.
 - No opinion on scan scope: this document defines the overlap PREDICATE only
   (`overlaps(pathA, pathB)` and its pairwise-set application), not how widely a caller applies
   it. The task-level and phase-level callers apply it within a small, already-collected batch (a
-  creation batch, or a task's phase list); the lock-acquisition-level caller (task 809) applies
+  creation batch, or a task's phase list); the lock-acquisition-level caller applies
   it repo-wide, scanning every currently-held lock in `specs/` at acquire time; the
   batch-admission-level caller applies it repo-wide via a single `specs/state.json` read,
   comparing against every non-terminal task regardless of lock or batch membership. All three

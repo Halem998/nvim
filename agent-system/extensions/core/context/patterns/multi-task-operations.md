@@ -16,7 +16,7 @@ Workflow commands (`/research`, `/plan`, `/implement`) traditionally accept a si
 - Failure of one task never blocks or rolls back other tasks
 - Flags apply uniformly to all tasks in the batch
 
-**Scope**: This pattern covers argument parsing, dispatch flow, batch commits, consolidated output, and error handling. It does NOT implement these changes -- tasks 351-353 apply this pattern to each command file.
+**Scope**: This pattern covers argument parsing, dispatch flow, batch commits, consolidated output, and error handling. It does NOT implement these changes -- each workflow command file is updated separately to apply this pattern.
 
 ---
 
@@ -118,7 +118,7 @@ len(task_numbers) == 1
 | `7,7,7` | Deduplicate to `[7]`, use single-task flow | `parse_ranges()` deduplicates |
 | `7, 22-24, 22` | Deduplicate to `[7, 22, 23, 24]` | `parse_ranges()` deduplicates and sorts |
 | `7 -9` | `task_numbers=[7]`, `remaining="-9"` | Hyphen not between digits is not a range |
-| `0` | Rejected by validation step (no task 0) | Task numbers start at 1 |
+| `0` | Rejected by validation step | Task numbers start at 1 |
 | (empty) | `[FAIL] No task number found` | Missing required argument |
 | `abc` | `[FAIL] No task number found` | No leading digits |
 | `7, 22-24 focus on APIs` | `task_numbers=[7,22,23,24]`, `remaining="focus on APIs"` | Focus prompt in multi-task applies to all tasks |
@@ -229,7 +229,7 @@ Invalid tasks are reported as warnings but do not block valid tasks from proceed
 Multi-task dispatch uses parallel Skill tool calls from the command's orchestrator loop. Each task maps to the appropriate skill for that task type, and all skills are invoked in a single message for parallel execution.
 
 ```
-Command -> [Skill(skill-researcher, task 7), Skill(skill-planner, task 22), ...]
+Command -> [Skill(skill-researcher, task {N}), Skill(skill-planner, task {N}), ...]
 ```
 
 This keeps dispatch logic co-located with each command's validation and routing rules, avoiding an extra indirection layer. Each skill runs the full single-task lifecycle (preflight, agent delegation, postflight) independently.
@@ -274,10 +274,10 @@ After all parallel skills complete, the orchestrator collects their text return 
 
 ```
 Skill results (text summaries):
-  task 7:  "Research completed: specs/007_.../reports/01_....md [RESEARCHED]"
-  task 22: "Research completed: specs/022_.../reports/01_....md [RESEARCHED]"
-  task 23: "Research failed: Agent timeout. Status: researching"
-  task 24: "Research completed: specs/024_.../reports/01_....md [RESEARCHED]"
+  task {N}: "Research completed: specs/{NNN}_.../reports/01_....md [RESEARCHED]"
+  task {N}: "Research completed: specs/{NNN}_.../reports/01_....md [RESEARCHED]"
+  task {N}: "Research failed: Agent timeout. Status: researching"
+  task {N}: "Research completed: specs/{NNN}_.../reports/01_....md [RESEARCHED]"
 ```
 
 ---
@@ -328,12 +328,14 @@ Session: {batch_session_id}
 
 **Example**:
 
+<!-- task-ref-ok:begin canonical rendered commit-message example -->
 ```
 research tasks 7, 22-24, 59: complete research
 
 Tasks: 7, 22, 23, 24, 59
 Session: sess_1743523200_abc123
 ```
+<!-- task-ref-ok:end -->
 
 ### Partial Success
 
@@ -347,6 +349,7 @@ Session: {batch_session_id}
 
 **Example**:
 
+<!-- task-ref-ok:begin canonical rendered commit-message example -->
 ```
 research tasks 7, 22-24: complete research (3/4 succeeded)
 
@@ -354,6 +357,7 @@ Tasks completed: 7, 22, 24
 Tasks failed: 23 (invalid status [IMPLEMENTING])
 Session: sess_1743523200_abc123
 ```
+<!-- task-ref-ok:end -->
 
 ### Commit Scope
 
@@ -433,10 +437,10 @@ Each spawned agent operates independently:
 - Creates artifacts only in its own task directory (`specs/{NNN}_{SLUG}/`)
 - Updates only its own task's status in TODO.md
 
-If agent for task 23 fails:
-- Task 23 status remains "researching" (in-progress variant)
-- Tasks 7, 22, 24 transition to "researched" normally
-- The batch commit includes only changes from tasks 7, 22, 24
+If the agent for one task in the batch fails:
+- That task's status remains "researching" (in-progress variant)
+- The other tasks transition to "researched" normally
+- The batch commit includes only changes from the tasks that succeeded
 
 ### Concurrent State Safety
 
@@ -464,7 +468,7 @@ No existing behavior changes. Multi-task mode activates only when multiple task 
 
 ## 12. Command File Modification Guide
 
-Tasks 351-353 apply this pattern to each workflow command. This section summarizes what each command file needs.
+Each workflow command is updated to apply this pattern. This section summarizes what each command file needs.
 
 ### Changes Common to All Three Commands
 

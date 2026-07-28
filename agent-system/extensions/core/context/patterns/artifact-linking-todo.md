@@ -1,12 +1,12 @@
 # TODO.md Artifact Linking Pattern
 
-> **REMOVED**: `.claude/scripts/link-artifact-todo.sh` was removed in task 652. The pipeline now updates `state.json` first, then calls `bash .claude/scripts/generate-todo.sh` to regenerate TODO.md. The four-case logic below is retained as historical reference documentation.
+> **REMOVED**: `.claude/scripts/link-artifact-todo.sh` was removed. The pipeline now updates `state.json` first, then calls `bash .claude/scripts/generate-todo.sh` to regenerate TODO.md. The four-case logic below is retained as historical reference documentation.
 
 Canonical four-case logic for linking artifacts in TODO.md task entries. Skills reference this pattern instead of carrying inline instructions.
 
-**New Approach (task 649+)**: Update `state.json` artifact array directly, then call `bash .claude/scripts/generate-todo.sh` to regenerate TODO.md from state.json. This replaces the four-case awk/sed surgery.
+**Current Approach**: Update `state.json` artifact array directly, then call `bash .claude/scripts/generate-todo.sh` to regenerate TODO.md from state.json. This replaces the four-case awk/sed surgery.
 
-**Legacy Automation**: This logic was previously implemented by `.claude/scripts/link-artifact-todo.sh` (removed in task 652). Core skills now use `generate-todo.sh` exclusively.
+**Legacy Automation**: This logic was previously implemented by `.claude/scripts/link-artifact-todo.sh` (since removed). Core skills now use `generate-todo.sh` exclusively.
 
 ## Parameterization Map
 

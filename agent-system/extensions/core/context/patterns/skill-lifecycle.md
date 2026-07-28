@@ -155,9 +155,9 @@ Workflow commands (`/research`, `/plan`, `/implement`) invoke multiple skills in
 
 ```
 /research 7, 22, 24
-  -> Skill(skill-researcher, task 7)   \
-  -> Skill(skill-researcher, task 22)   > all invoked in a single message
-  -> Skill(skill-researcher, task 24)  /
+  -> Skill(skill-researcher, task {N})   \
+  -> Skill(skill-researcher, task {N})   > all invoked in a single message
+  -> Skill(skill-researcher, task {N})  /
 ```
 
 Each skill instance runs **independently** with its own:

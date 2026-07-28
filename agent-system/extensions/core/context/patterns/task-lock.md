@@ -1,7 +1,7 @@
 # Task Lock Pattern
 
 Canonical, single-source definition of the per-task concurrency lock used to prevent two
-Claude Code sessions from silently clobbering the same shared working tree (task 788; the 427
+Claude Code sessions from silently clobbering the same shared working tree (the 427
 failure: an uncommitted in-progress task wiped by a second session working the same task
 number). Every consumer (gate scripts, `skill-orchestrate`, `implement.md`,
 `skill-implementer`) references this document and `.claude/scripts/task-lock.sh` by path and
@@ -15,7 +15,7 @@ overlap-detection document; `acquire`'s cross-task check reuses its algorithm �
 ## Scope
 
 This lock is primarily **task-number-keyed**: it prevents two sessions from both working task N
-at once. As of task 809, `acquire` ALSO detects and blocks two sessions working two DIFFERENT
+at once. `acquire` ALSO detects and blocks two sessions working two DIFFERENT
 tasks whose declared `file_scope` overlaps (directory-prefix containment, per
 `file-footprint-overlap.md`) — see "Cross-Task `file_scope` Overlap Check" below. The two checks
 compose: the task-number check and the cross-task `file_scope` check are independent gates
@@ -97,7 +97,7 @@ two-band staleness model, archive-depth sweep) is substantial enough to warrant 
    resolve the task directory read-only and have zero filesystem side effects, including when
    invoked against a task that has no directory yet on disk (see the read-only clause repeated in
    each of their own sections below).
-2. **(task 809)** Acquire the `specs/.scope-lock/` global mutex (see "Cross-Task `file_scope`
+2. **(cross-task overlap check)** Acquire the `specs/.scope-lock/` global mutex (see "Cross-Task `file_scope`
    Overlap Check" below). On mutex timeout, print an error and exit **2** (fail closed — never
    fail open). Inside the mutex: run the cross-task `file_scope` overlap scan; a fresh
    overlapping foreign lock refuses here (exit 1) before the own-task `mkdir` is ever attempted.
@@ -118,7 +118,7 @@ The mutex (step 2) wraps BOTH the cross-task scan and the entire own-task mkdir/
 (steps 2-4), closing the scan-then-mkdir TOCTOU race between two concurrent acquires with
 overlapping `file_scope`.
 
-#### Cross-Task `file_scope` Overlap Check (task 809)
+#### Cross-Task `file_scope` Overlap Check
 
 In addition to the task-number check above, `acquire` scans every OTHER currently-held
 `.lock/holder.json` under `specs/` for a `file_scope` overlap with the acquiring task's own
@@ -177,8 +177,8 @@ directory on disk yet.
 ### `init-marker <file_path>` (stdin = JSON content)
 
 A generic, atomic-on-creation primitive for marker/state files elsewhere in the codebase that
-use a TOCTOU-prone "check-then-create" `if [ -f X ]; then resume; else jq -n ... > X; fi` shape
-(task 808). It is **file-granularity and composes independently of the task-number `.lock/`
+use a TOCTOU-prone "check-then-create" `if [ -f X ]; then resume; else jq -n ... > X; fi` shape.
+It is **file-granularity and composes independently of the task-number `.lock/`
 directory documented above** — it is not a second locking mechanism, does not replace
 `acquire`/`release`, and never reads, calls, or modifies `cmd_acquire`, `write_holder`, or
 `.lock/`.
@@ -557,7 +557,7 @@ Naming the holding session, the heartbeat age, the threshold, and the manual `rm
 one place means a blocked caller always has an actionable next step without needing to inspect
 `holder.json` by hand.
 
-The cross-task `file_scope` overlap ABORT (task 809) follows the same two-line shape, naming the
+The cross-task `file_scope` overlap ABORT follows the same two-line shape, naming the
 OTHER task instead of a same-numbered holder, plus the overlapping path:
 
 ```
@@ -567,13 +567,12 @@ ABORT: Task {N}'s file_scope overlaps task {other_task}'s file_scope at "{overla
 
 ## Same-Session Re-Entry: The Critical Safety Property
 
-Per the task 788 plan's own risk register, this is the **highest-impact risk**: a bug in the
+This is the **highest-impact risk** in this lock's design: a bug in the
 session-identity check would block ALL task work system-wide, since `command-gate-in.sh` is
 sourced by five command files (`/research`, `/plan`, `/implement`, `/revise`, `/orchestrate`).
 The session-identity branch is checked FIRST, unconditionally, before any staleness computation
 — a session re-acquiring its own lock (e.g. `/research 42` immediately followed by `/plan 42` in
-the same conversation) always succeeds. This property has a dedicated functional test in Phase 5
-of the task 788 plan and should never be weakened by future edits.
+the same conversation) always succeeds. This property has a dedicated functional test and should never be weakened by future edits.
 
 ## Consumers (Four Distinct Wiring Paths)
 
@@ -590,7 +589,7 @@ of the task 788 plan and should never be weakened by future edits.
    (see the `acquire` contract above), both of these gate-bypassing consumers dispatch tasks whose
    directory does not exist yet without any change of their own — the fix is entirely internal to
    `cmd_acquire`/`resolve_task_dir`.
-3. **`init-marker` call sites** (task 808, file-granularity, independent of the two paths above):
+3. **`init-marker` call sites** (file-granularity, independent of the two paths above):
    `skill-orchestrate/SKILL.md` Stage 2 (`.orchestrator-loop-guard` creation) and
    `skill-orchestrate-hard/SKILL.md` Stage 2 (`.orchestrator-loop-guard` AND
    `.orchestrator-churn-state.json` creation).
@@ -609,14 +608,14 @@ so the two wiring paths cannot drift from each other's semantics.
 
 - ~~**`file_scope`-granular cross-task locking**: blocking `/implement 99` while `/implement 42`
   holds a lock when their `file_scope` arrays overlap (reusing `file-footprint-overlap.md`'s
-  algorithm)~~ — CLOSED by task 809's cross-task `file_scope` overlap check (see "Cross-Task
+  algorithm)~~ — CLOSED by the cross-task `file_scope` overlap check (see "Cross-Task
   `file_scope` Overlap Check" above), which scans every held `.lock` across all task directories
   at acquire time via `find_held_locks`/`get_file_scope`/`scopes_overlap`, guarded by the
   `specs/.scope-lock/` mutex. This document's task-number lock and
   `file-footprint-overlap.md`'s directory-prefix overlap algorithm remain two DISTINCT
   mechanisms — acquire now composes both rather than merging them into one.
 - ~~Atomic creation of `.orchestrator-loop-guard` was missing an exclusivity guard~~ — CLOSED by
-  task 808's `init-marker` subcommand (see the Contract section above), which both
+  the `init-marker` subcommand (see the Contract section above), which both
   `.orchestrator-loop-guard` creation sites (and `.orchestrator-churn-state.json`'s) now call.
 
 ## Related Documentation
@@ -646,5 +645,5 @@ so the two wiring paths cannot drift from each other's semantics.
   session holding the lock still checkpoints/commits exactly as before; the lock only adds
   cross-session exclusivity, it does not change checkpoint behavior)
 - `file-footprint-overlap.md` — the directory-prefix overlap algorithm `acquire`'s cross-task
-  `file_scope` check (task 809) reuses by reference; still a distinct document from this one —
+  `file_scope` check reuses by reference; still a distinct document from this one —
   this file owns the lock contract, that file owns the overlap rule

@@ -8,7 +8,7 @@ sitting on top of a RED, uncommitted working tree.
 general-research-agent, general-research-hard-agent (and any future agent that writes
 context-pressure handoffs)
 **Related**: `context-exhaustion-detection.md`, `../formats/handoff-artifact.md`,
-`../contracts/wrap-up.md`, `.claude/scripts/git-snapshot.sh` (task 780)
+`../contracts/wrap-up.md`, `.claude/scripts/git-snapshot.sh` (the sanctioned snapshot helper)
 
 ---
 
@@ -80,7 +80,7 @@ git status --porcelain
 - **Dirty tree, RED or green cannot be confirmed**: If the tree is known-broken (a build/test
   failed, an edit was left half-applied, or there simply was no way to verify green before the
   pressure signal fired), do **not** commit broken state to the branch. Instead, run the
-  sanctioned snapshot helper from task 780:
+  sanctioned snapshot helper:
   ```bash
   bash .claude/scripts/git-snapshot.sh --no-revert {task_number}
   ```
@@ -136,7 +136,7 @@ This procedure is purely additive: it only ever runs `git add`, `git commit`, or
 depend on the freshness marker that hook and `git-snapshot.sh` coordinate through. Agents
 following this pattern do not need to reason about the guard hook at all.
 
-`git-snapshot.sh` itself is task 780's script and is call-only from this pattern and from every
+`git-snapshot.sh` itself is call-only from this pattern and from every
 agent that references it — no agent may modify it.
 
 ---
@@ -173,4 +173,4 @@ and its explicit Option (A) scoping note.
 - [Handoff Artifact Schema](../formats/handoff-artifact.md) — handoff document template
 - [Wrap-Up Contract (H9)](../contracts/wrap-up.md) — the hard-mode implementation schema this
   pattern explicitly does NOT extend to research
-- `.claude/scripts/git-snapshot.sh` (task 780) — the sanctioned snapshot helper, call-only
+- `.claude/scripts/git-snapshot.sh` — the sanctioned snapshot helper, call-only
