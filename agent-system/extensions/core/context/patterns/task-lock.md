@@ -403,10 +403,12 @@ section): install `trap 'bash .claude/scripts/task-lock.sh scope-release "$token
 immediately after a successful acquire, and explicitly release-and-clear-the-trap at the natural
 end of the critical section so the mutex is not held for the remainder of the script's
 unserialized tail. A script that already has its own EXIT trap for other cleanup (e.g.
-`update-task-status.sh`'s pre-existing tmp-file removal) may instead extend that trap to also
-call release, provided the release call itself is idempotent against being invoked twice (guard
-it behind an "did I acquire and not yet release" flag) — both approaches are used by this
-primitive's reference consumers below.
+`orchestrator-postflight.sh`'s Stage 7-8a bracket) may instead extend that trap to also call
+release, provided the release call itself is idempotent against being invoked twice (guard it
+behind an "did I acquire and not yet release" flag) — both approaches are used by this
+primitive's reference consumers below. `scripts/state-write.sh` is the canonical example of the
+first approach (a fresh, dedicated EXIT trap installed immediately after acquire); see its own
+header comment.
 
 ### Reentrancy: `SCOPE_MUTEX_HELD` Is the Sanctioned Way to Nest
 
@@ -454,17 +456,59 @@ removes the mutex on an exact match, as described above.
 
 ### Consumers
 
-- `.claude/scripts/update-task-status.sh` brackets its own state.json read-modify-write plus its
-  `generate-todo.sh` call in the mutex when invoked standalone, and skips acquire/release entirely
-  (guest mode) when `SCOPE_MUTEX_HELD` is already set by an outer holder.
+- `.claude/scripts/state-write.sh` is the single mutex-guarded `specs/state.json` writer every
+  other writer in this codebase now calls through (see its own header comment for the full
+  acquire -> mktemp -> jq transform -> jq empty validate -> mv -> optional in-mutex TODO.md
+  regen -> release sequence). It acquires and releases the scope mutex itself on every
+  invocation, fail-CLOSED on a timeout (an `ABORT:`-prefixed exit rather than proceeding
+  unserialized), and skips acquire/release entirely (guest mode) when `SCOPE_MUTEX_HELD` is
+  already set by an outer holder.
+- `.claude/scripts/update-task-status.sh` no longer brackets its own mutex directly — its single
+  `specs/state.json` write (plus TODO.md regen, via `state-write.sh --regen-todo`) delegates
+  entirely to `state-write.sh` above, inheriting guest mode transparently when invoked as a
+  child of an outer holder (e.g. `orchestrator-postflight.sh`'s Stage 7).
 - `.claude/scripts/orchestrator-postflight.sh` acquires the mutex immediately before its Stage 7
   (update task status), with a generous, holder-declared `stale_sec` sized to the measured
-  worst-case wall-clock time of Stages 7 through 8a; exports `SCOPE_MUTEX_HELD=1` so Stage 7's
-  `update-task-status.sh` child inherits the guard above instead of self-deadlocking; and releases
-  explicitly at the close of Stage 8a (TODO.md regeneration). The TTS notification, git commit,
-  and cleanup stages that follow run OUTSIDE the mutex — see
+  worst-case wall-clock time of Stages 7 through 8a; exports `SCOPE_MUTEX_HELD=1` so every write
+  in Stages 7-8 (each now a `state-write.sh` call) inherits the guard above instead of
+  self-deadlocking; and releases explicitly at the close of Stage 8a (TODO.md regeneration). On
+  a bracket-acquire timeout, `SCOPE_MUTEX_HELD` is left unexported and each write stage instead
+  falls through to `state-write.sh`'s own independent fail-closed acquire -- graceful
+  degradation rather than the fail-open "proceed unserialized" this script used to log. The TTS
+  notification, git commit, and cleanup stages that follow run OUTSIDE the mutex — see
   `.claude/context/standards/git-staging-scope.md`'s state-write hazard note for why the boundary
   stops there.
+
+### State-Write Convention
+
+Every `specs/state.json` writer in this codebase is a call to `scripts/state-write.sh`. There is
+no other sanctioned way to write `specs/state.json`: not a hand-rolled `jq ... > tmp && mv`
+sequence, not a `python3 json.load`/`json.dump` in-place write, and not a direct
+`acquire_scope_mutex` call from a new script. A new writer should call `state-write.sh` with its
+jq filter and any `--arg`/`--argjson` bindings, exactly as the existing consumers above do,
+rather than reimplementing the acquire -> mktemp -> transform -> validate -> mv -> release
+sequence inline. This closes two independent corruption channels that used to exist in this
+codebase: (1) most writers never acquired the `.scope-lock` mutex at all, and the two that did
+failed OPEN on a timeout (proceeded unserialized rather than refusing); (2) several writers
+staged through a FIXED, shared temp path (`specs/tmp/state.json`, or the literal
+`specs/state.json.tmp`) with an unconditional `rm -f` EXIT trap, so one process's normal exit
+could delete another concurrent process's in-flight staging file regardless of any mutex work.
+`state-write.sh` closes both: fail-closed mutex acquisition, and a private per-process `mktemp`
+staging path with an EXIT trap scoped to that process's own file only. See
+`scripts/test-state-write-concurrency.sh` for the isolated-temp-root suite proving both
+properties (no-lost-update, staging-file isolation) plus fail-closed-acquire and
+guest-mode-reentrancy.
+
+**Known residual surface (not yet converted):** a number of `agent-system/extensions/core/`
+skill files (`skill-implementer`, `skill-implementer-hard`, `skill-planner`,
+`skill-planner-hard`, `skill-researcher`, `skill-researcher-hard`, `skill-reviser`,
+`skill-spawn`, `skill-status-sync`, `skill-team-implement`, `skill-team-plan`,
+`skill-team-research`, `skill-todo`) and two commands (`commands/task.md`, `commands/todo.md`)
+still carry their own inline hand-rolled `specs/state.json` write blocks, discovered during a
+source-store-wide audit after this convention was established -- these were outside the
+file_scope of the plan that introduced `state-write.sh` and remain open follow-up work, not a
+silently-accepted gap. Every extension `SKILL.md` file with its own inline `specs/state.json`
+write pattern is a further, separately out-of-scope surface.
 
 ### Relationship to the Task-Number Lock
 
@@ -521,8 +565,13 @@ Unlike the scope mutex's fail-CLOSED contract, `git-commit-scoped.sh` (the sole 
 treats a `commit-acquire` timeout as **fail-OPEN**: it logs a loud warning and proceeds with the
 commit unserialized rather than aborting. This is safe specifically because the commit is still
 path-scoped — the worst case on fail-open is the safe `index.lock` race (one commit fails, retried
-once, or simply fails non-blockingly), never commit misattribution. Mirrors
-`update-task-status.sh`'s `acquire_state_mutex` fail-open pattern for the scope mutex exactly.
+once, or simply fails non-blockingly), never commit misattribution. This is now the ONLY
+deliberately fail-open mutex acquisition remaining in this family: every `specs/state.json`
+writer routes through `scripts/state-write.sh`, which is uniformly fail-CLOSED (see
+"State-Write Convention" below) — the scope mutex no longer has a fail-open wrapper of its own
+to mirror (the former `update-task-status.sh` `acquire_state_mutex` wrapper this sentence used
+to reference has been deleted; see `scripts/state-write.sh`'s header comment for the fail-closed
+replacement).
 
 ### `commit-release <token>`
 

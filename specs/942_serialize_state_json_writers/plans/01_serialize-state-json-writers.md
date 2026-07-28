@@ -672,47 +672,100 @@ a file no other phase edits, so it carries no ordering constraint against the co
 
 ---
 
-### Phase 11: Deploy, audit, and document [NOT STARTED]
+### Phase 11: Deploy, audit, and document [PARTIAL]
 
 - **Goal:** Land the helper in this repo's live `.claude/scripts/`, prove zero hand-rolled
   sequences remain, and record the convention.
 - **Tasks:**
-  - [ ] Perform the one-off deploy workaround for `state-write.sh` and
+  - [x] Perform the one-off deploy workaround for `state-write.sh` and
         `test-state-write-concurrency.sh`: the headless "Load Core" sync skips `copy_scripts` for
         already-loaded extensions, so a manifest entry alone does not reach an existing deploy.
         Invoke the loader's copy primitives directly (or copy the files explicitly) into
         `.claude/scripts/`, matching the documented workaround used for the shared
-        task-reference pattern library.
-  - [ ] Verify `.claude/scripts/state-write.sh` exists, is executable, and is byte-identical to
+        task-reference pattern library. *(completed: explicit `cp`, matching the sanctioned
+        workaround pattern)*
+  - [x] Verify `.claude/scripts/state-write.sh` exists, is executable, and is byte-identical to
         the source-store file. This is a DEPLOY step, not an edit — the source store remains the
-        only edit target.
+        only edit target. *(completed: `diff` confirmed byte-identical, `-x` confirmed
+        executable, for both `state-write.sh` and `test-state-write-concurrency.sh`)*
   - [ ] Run the full audit sweep: grep the entire source store for any remaining
         `specs/state.json`-targeted `> tmp && mv` or `.tmp` staging sequence outside
         `state-write.sh`, across all nine scripts and both command files. Zero hits is the gate.
-  - [ ] Grep for any remaining `python3` block touching `specs/state.json`. Zero hits is the
-        gate.
-  - [ ] Grep for any remaining fail-open-on-mutex-timeout wording. Zero hits is the gate.
-  - [ ] Add a `state-write.sh` section to `context/patterns/multi-task-operations.md` describing
+        **NOT MET — see "Audit Finding" below.** The audit WAS run in full and its output IS
+        recorded; the gate itself fails because the true residual surface is far larger than the
+        nine-scripts-plus-two-command-files baseline this plan (and its research report) worked
+        from.
+  - [x] Grep for any remaining `python3` block touching `specs/state.json`. Zero hits is the
+        gate. *(completed: clean — only unrelated `python3` usage in `rename-session.sh` and
+        historical/explanatory comments describing the pre-conversion behavior)*
+  - [x] Grep for any remaining fail-open-on-mutex-timeout wording. Zero hits is the gate.
+        *(completed with a scoping clarification: clean for the `specs/state.json`-write mutex
+        this plan converts. Two OTHER, genuinely distinct, deliberately-preserved fail-open
+        mutexes remain by design and are explicitly out of scope — `specs/.commit-lock` in
+        `git-commit-scoped.sh` (serializes git commits, not state.json writes; Non-Goals exempts
+        `cmd_commit_acquire`/`cmd_commit_release`) and `specs/.deploy-lock` in
+        `deploy-headless.sh` (an unrelated extension-deploy subsystem). Fixed one stale
+        documentation reference in `task-lock.md` that used to cite the now-deleted
+        `acquire_state_mutex` as the analogy for `git-commit-scoped.sh`'s deliberate fail-open
+        design)*
+  - [x] Add a `state-write.sh` section to `context/patterns/multi-task-operations.md` describing
         the standing convention: every `specs/state.json` writer goes through the shared helper.
         Update or remove that file's existing note recording this read-modify-write race as a
         known unfixed defect — it is now fixed.
-  - [ ] Cross-reference the new convention from `context/patterns/task-lock.md`'s
-        scope-acquire/scope-release section.
-  - [ ] Record the out-of-scope follow-up explicitly in the implementation summary: fifteen
+  - [x] Cross-reference the new convention from `context/patterns/task-lock.md`'s
+        scope-acquire/scope-release section. *(completed: added a "State-Write Convention"
+        subsection and updated the "Consumers" list, which had gone stale after Phases 7-8)*
+  - [x] Record the out-of-scope follow-up explicitly in the implementation summary: fifteen
         extension `SKILL.md` files carry their own inline `specs/state.json` write patterns and
-        remain unconverted. Name them; do not silently omit them.
-  - [ ] Record the extension-loader deploy gap as still open — this plan worked around it, it did
-        not fix it.
-  - [ ] Run `bash .claude/scripts/check-task-references.sh` and confirm no deliverable edited by
-        this plan cites a task number.
+        remain unconverted. Name them; do not silently omit them. *(completed — see the
+        implementation summary's Follow-ups section for the full, corrected list, which is
+        substantially LARGER than fifteen once the core-skill and command-file discoveries below
+        are folded in)*
+  - [x] Record the extension-loader deploy gap as still open — this plan worked around it, it did
+        not fix it. *(completed: additionally discovered, via `git stash` A/B testing, that this
+        gap applies to EVERY script this plan edited, not just the two new files — see "Audit
+        Finding" below)*
+  - [x] Run `bash .claude/scripts/check-task-references.sh` and confirm no deliverable edited by
+        this plan cites a task number. *(completed: PASS, 0 unexempted occurrences, re-run after
+        every phase's edits)*
 - **Timing:** 1.5 hours
 - **Depends on:** 4, 5, 8, 9, 10
 - **Verification Tier:** full
+- **Audit Finding (the reason this phase is `[PARTIAL]`, not `[COMPLETED]`):** The full
+  source-store-wide audit sweep (task 3 above) was run exactly as specified and its output is
+  reproduced in the implementation summary. It did NOT return zero hits. Beyond the plan's
+  original nine scripts and two command-file writers (all fully converted across Phases 4-9), the
+  audit found a substantially larger residual surface that this plan's originating research
+  report never counted:
+  - **Two more sites in `commands/task.md`** and **four more sites in `commands/todo.md`**
+    (beyond the two command-file writers this plan DID convert in Phase 9).
+  - **Thirteen `agent-system/extensions/core/skills/*/SKILL.md` files** with their own inline
+    hand-rolled `specs/state.json` write blocks — these are CORE skills, not the extension
+    `SKILL.md` files the plan's Non-Goals section already named as out of scope:
+    `skill-implementer`, `skill-implementer-hard`, `skill-planner`, `skill-planner-hard`,
+    `skill-researcher`, `skill-researcher-hard`, `skill-reviser`, `skill-spawn`,
+    `skill-status-sync`, `skill-team-implement`, `skill-team-plan`, `skill-team-research`,
+    `skill-todo`.
+  - Several `context/**` and `docs/**` markdown files (`context/patterns/inline-status-update.md`,
+    `context/patterns/jq-escaping-workarounds.md`, `context/patterns/file-metadata-exchange.md`,
+    `context/troubleshooting/workflow-interruptions.md`,
+    `context/standards/postflight-tool-restrictions.md`, `docs/guides/creating-skills.md`) that
+    DOCUMENT the old hand-rolled pattern as the recommended idiom — these are not live write
+    sites, but they now actively teach the wrong convention and should be updated to reference
+    `state-write.sh` in a follow-up.
+  Converting the thirteen core skill files and six command-file sites to the same standard
+  (session_id threading, fixture verification, `--regen-todo` folding where applicable) is
+  substantial, uncosted, out-of-plan work — realistically several more phases at the size and
+  rigor of Phases 4-9. It is recorded here as the honest audit result, not silently converted
+  and not silently omitted. This is a genuine Scope Hypothesis miss in the ORIGINATING RESEARCH
+  REPORT, not a phase-4-through-10 defect — every phase this plan DID decompose was completed to
+  its own full verification tier.
 - **Scope Hypothesis:** This phase asserts that after conversion, ZERO hand-rolled
   `specs/state.json` tmp-and-mv sequences remain anywhere in `agent-system/extensions/core/**`
   outside `state-write.sh`. This is the plan's definition of done and must be confirmed by an
   actual grep whose output is recorded in the implementation summary, not asserted. Any surviving
-  hit is a phase failure, not an acceptable residual.
+  hit is a phase failure, not an acceptable residual. **Measured: FAILED.** See "Audit Finding"
+  above for the full, honest count of surviving hits.
 - **Verification:**
   - Audit greps above all return zero hits; record the exact commands and their output.
   - `bash agent-system/extensions/core/scripts/test-state-write-concurrency.sh` exits 0.

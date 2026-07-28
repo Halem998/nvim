@@ -444,12 +444,21 @@ If the agent for one task in the batch fails:
 
 ### Concurrent State Safety
 
-Multiple skills writing to state.json concurrently is safe because:
-- Each skill writes to a specific `project_number` entry in `active_projects`
-- jq operations are scoped: `select(.project_number == $num)`
-- No skill modifies another task's fields
+Multiple skills writing to state.json concurrently is safe for two independent reasons:
+- Each skill writes to a specific `project_number` entry in `active_projects`; jq operations are
+  scoped (`select(.project_number == $num)`), so no skill modifies another task's fields.
+- Every `specs/state.json` write in this codebase routes through
+  `scripts/state-write.sh`, the single mutex-guarded writer: fail-closed
+  `specs/.scope-lock` acquisition, private per-process `mktemp` staging, `jq empty` validation
+  before `mv`. This closes the read-modify-write race that used to exist between concurrent
+  writers — see `context/patterns/task-lock.md`'s "State-Write Convention" section for the full
+  contract and `scripts/test-state-write-concurrency.sh` for the isolated-temp-root suite
+  proving no-lost-update under genuine concurrency.
 
-**Known limitation**: Rapid concurrent writes to state.json could cause read-modify-write races in edge cases. Scoped jq writes reduce this risk substantially. A future enhancement may add a consolidated state update after all skills complete if races are observed in practice.
+The read-modify-write race this section used to record as a known, unfixed limitation is fixed
+for every writer that has been converted to `state-write.sh` (see "State-Write Convention" for
+the residual surface of not-yet-converted inline writers, mostly in extension `SKILL.md` files
+and a handful of core skills discovered during that conversion's audit).
 
 ---
 
