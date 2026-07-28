@@ -430,53 +430,8 @@ skill_postflight_update() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Stage 7a: Increment artifact number in state.json (research only)
-# Usage: skill_increment_artifact_number "$task_number"
-# Research is the only operation that advances the sequence counter.
-skill_increment_artifact_number() {
-  local task_number="$1"
-  python3 -c "
-import json
-with open('specs/state.json', 'r') as f:
-    state = json.load(f)
-for p in state['active_projects']:
-    if p['project_number'] == $task_number:
-        p['next_artifact_number'] = p.get('next_artifact_number', 1) + 1
-        break
-with open('specs/state.json', 'w') as f:
-    json.dump(state, f, indent=2)
-    f.write('\n')
-"
-}
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Stage 7b: Propagate memory candidates to state.json (append semantics)
-# Usage: skill_propagate_memory_candidates "$task_number" "$memory_candidates"
-# Appends to any existing candidates so research + implementation candidates coexist.
-skill_propagate_memory_candidates() {
-  local task_number="$1"
-  local memory_candidates="$2"
-  if [ "$memory_candidates" != "[]" ] && [ -n "$memory_candidates" ]; then
-    python3 -c "
-import json
-with open('specs/state.json', 'r') as f:
-    state = json.load(f)
-new_candidates = json.loads('''$memory_candidates''')
-for p in state['active_projects']:
-    if p['project_number'] == $task_number:
-        existing = p.get('memory_candidates', [])
-        p['memory_candidates'] = existing + new_candidates
-        break
-with open('specs/state.json', 'w') as f:
-    json.dump(state, f, indent=2)
-    f.write('\n')
-"
-  fi
-}
-
-# ─────────────────────────────────────────────────────────────────────────────
 # Stage 7b: Propagate completion_summary + roadmap_items to state.json
-# Usage: skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type"
+# Usage: skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type" ["$session_id"]
 #
 # Single shared implementation of the guarded completion-data write, replacing what were
 # previously three independently-maintained copies (skill-implementer, skill-implementer-hard,
@@ -489,38 +444,56 @@ with open('specs/state.json', 'w') as f:
 #   - roadmap_items is written only when task_type is not "meta" AND the value is neither
 #     empty nor the literal string "[]".
 #
-# Uses jq --arg/--argjson exclusively (never shell-interpolated Python string literals), so
-# arbitrary prose in a summary — quotes, newlines, triple-quotes, backslashes — cannot break the
-# write. Operates against "${SKILL_REPO_ROOT}/specs/state.json" via a "${SKILL_REPO_ROOT}/specs/tmp/state.json"
-# scratch file, mirroring skill_link_artifacts' idiom above, which is what makes this function
-# testable against a fixture repo via SKILL_REPO_ROOT override.
+# Routes both writes through state-write.sh, the single mutex-guarded specs/state.json writer
+# (${SKILL_REPO_ROOT}/.claude/scripts/state-write.sh -- the SKILL_REPO_ROOT-qualified path, not a
+# relative one, so this function keeps working when invoked from a fixture repo via
+# SKILL_REPO_ROOT override, exactly like the generate-todo.sh call in skill_link_artifacts
+# below). Still uses jq --arg/--argjson exclusively (never shell-interpolated Python string
+# literals), so arbitrary prose in a summary — quotes, newlines, triple-quotes, backslashes —
+# cannot break the write.
+#
+# session_id (5th arg, optional) attributes the specs/.scope-lock mutex acquisition. When
+# invoked from inside an outer SCOPE_MUTEX_HELD=1 critical section (e.g.
+# orchestrator-postflight.sh's Stage 7-8a bracket, this function's normal calling context),
+# state-write.sh runs as a guest and never attempts a nested acquire regardless of which
+# session_id is passed. If omitted, a session_id is generated inline using the same portable
+# pattern command-gate-in.sh uses, so every existing caller keeps working unchanged.
 skill_propagate_completion_summary() {
   local task_number="$1"
   local completion_summary="$2"
   local roadmap_items="$3"
   local task_type="$4"
-  if [ -n "$completion_summary" ] || { [ "$task_type" != "meta" ] && [ "$roadmap_items" != "[]" ] && [ -n "$roadmap_items" ]; }; then
-    mkdir -p "${SKILL_REPO_ROOT}/specs/tmp"
+  local session_id="${5:-}"
+  if [ -z "$session_id" ]; then
+    session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
   fi
   if [ -n "$completion_summary" ]; then
-    jq --arg summary "$completion_summary" \
-      '(.active_projects[] | select(.project_number == '"$task_number"')).completion_summary = $summary' \
-      "${SKILL_REPO_ROOT}/specs/state.json" > "${SKILL_REPO_ROOT}/specs/tmp/state.json" && mv "${SKILL_REPO_ROOT}/specs/tmp/state.json" "${SKILL_REPO_ROOT}/specs/state.json"
+    "${SKILL_REPO_ROOT}/.claude/scripts/state-write.sh" \
+      '(.active_projects[] | select(.project_number == $num)).completion_summary = $summary' \
+      --session-id "$session_id" \
+      --argjson num "$task_number" \
+      --arg summary "$completion_summary" \
+      || echo "WARNING: state-write.sh failed to write completion_summary (non-blocking)" >&2
   fi
   if [ "$task_type" != "meta" ] && [ "$roadmap_items" != "[]" ] && [ -n "$roadmap_items" ]; then
-    jq --argjson items "$roadmap_items" \
-      '(.active_projects[] | select(.project_number == '"$task_number"')).roadmap_items = $items' \
-      "${SKILL_REPO_ROOT}/specs/state.json" > "${SKILL_REPO_ROOT}/specs/tmp/state.json" && mv "${SKILL_REPO_ROOT}/specs/tmp/state.json" "${SKILL_REPO_ROOT}/specs/state.json"
+    "${SKILL_REPO_ROOT}/.claude/scripts/state-write.sh" \
+      '(.active_projects[] | select(.project_number == $num)).roadmap_items = $items' \
+      --session-id "$session_id" \
+      --argjson num "$task_number" \
+      --argjson items "$roadmap_items" \
+      || echo "WARNING: state-write.sh failed to write roadmap_items (non-blocking)" >&2
   fi
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 8: Link artifacts to state.json and TODO.md
-# Usage: skill_link_artifacts "$task_number" "$artifact_path" "$artifact_type" "$artifact_summary" "$field_name" "$next_field"
+# Usage: skill_link_artifacts "$task_number" "$artifact_path" "$artifact_type" "$artifact_summary" "$field_name" "$next_field" ["$session_id"]
 # artifact_type: "research" | "plan" | "summary"
 # field_name:   '**Research**' | '**Plan**' | '**Summary**'
 # next_field:   '**Plan**' (research) | '**Description**' (plan/summary)
-# Uses two-step jq pattern to avoid Issue #1132 (!=  escaping bug)
+# Uses two-step jq pattern to avoid Issue #1132 (!=  escaping bug), both steps routed through
+# state-write.sh -- see skill_propagate_completion_summary's header comment above for the full
+# SKILL_REPO_ROOT-qualified-path and session_id/self-generation rationale, identical here.
 skill_link_artifacts() {
   local task_number="$1"
   local artifact_path="$2"
@@ -528,19 +501,28 @@ skill_link_artifacts() {
   local artifact_summary="$4"
   local field_name="${5:-'**Summary**'}"
   local next_field="${6:-'**Description**'}"
+  local session_id="${7:-}"
+  if [ -z "$session_id" ]; then
+    session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+  fi
   if [ -n "$artifact_path" ]; then
-    mkdir -p "${SKILL_REPO_ROOT}/specs/tmp"
     # Step 1: Remove existing artifacts of same type (use "| not" pattern — Issue #1132 safe)
-    jq --arg atype "$artifact_type" \
-      '(.active_projects[] | select(.project_number == '"$task_number"')).artifacts =
-        [(.active_projects[] | select(.project_number == '"$task_number"')).artifacts // [] | .[] | select(.type == $atype | not)]' \
-      "${SKILL_REPO_ROOT}/specs/state.json" > "${SKILL_REPO_ROOT}/specs/tmp/state.json" && mv "${SKILL_REPO_ROOT}/specs/tmp/state.json" "${SKILL_REPO_ROOT}/specs/state.json"
+    "${SKILL_REPO_ROOT}/.claude/scripts/state-write.sh" \
+      '(.active_projects[] | select(.project_number == $num)).artifacts =
+        [(.active_projects[] | select(.project_number == $num)).artifacts // [] | .[] | select(.type == $atype | not)]' \
+      --session-id "$session_id" \
+      --argjson num "$task_number" \
+      --arg atype "$artifact_type" \
+      || echo "WARNING: state-write.sh failed removing same-type artifacts (non-blocking)" >&2
     # Step 2: Add new artifact entry
-    jq --arg path "$artifact_path" \
-       --arg type "$artifact_type" \
-       --arg summary "$artifact_summary" \
-      '(.active_projects[] | select(.project_number == '"$task_number"')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-      "${SKILL_REPO_ROOT}/specs/state.json" > "${SKILL_REPO_ROOT}/specs/tmp/state.json" && mv "${SKILL_REPO_ROOT}/specs/tmp/state.json" "${SKILL_REPO_ROOT}/specs/state.json"
+    "${SKILL_REPO_ROOT}/.claude/scripts/state-write.sh" \
+      '(.active_projects[] | select(.project_number == $num)).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
+      --session-id "$session_id" \
+      --argjson num "$task_number" \
+      --arg path "$artifact_path" \
+      --arg type "$artifact_type" \
+      --arg summary "$artifact_summary" \
+      || echo "WARNING: state-write.sh failed adding artifact entry (non-blocking)" >&2
     # Regenerate TODO.md from state.json (replaces link-artifact-todo.sh call)
     bash "${SKILL_REPO_ROOT}/.claude/scripts/generate-todo.sh" || echo "WARNING: generate-todo.sh failed (non-fatal)"
   fi

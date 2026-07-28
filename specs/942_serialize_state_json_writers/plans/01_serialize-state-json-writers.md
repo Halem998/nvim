@@ -384,25 +384,32 @@ a file no other phase edits, so it carries no ordering constraint against the co
 
 ---
 
-### Phase 6: Consolidate and convert `skill-base.sh` [NOT STARTED]
+### Phase 6: Consolidate and convert `skill-base.sh` [COMPLETED]
 
 - **Goal:** Delete the two orphaned dead-code write functions and convert the four live write
   sites to `state-write.sh`.
 - **Tasks:**
-  - [ ] Confirm `skill_increment_artifact_number` and `skill_propagate_memory_candidates` have
+  - [x] Confirm `skill_increment_artifact_number` and `skill_propagate_memory_candidates` have
         zero call sites anywhere in the source store (grep both names across
         `agent-system/extensions/`), then delete both functions outright. Do not convert dead
-        code.
-  - [ ] Convert `skill_propagate_completion_summary`'s two write sites to `state-write.sh` calls.
-  - [ ] Convert `skill_link_artifacts`'s two write sites to `state-write.sh` calls.
-  - [ ] Remove every `${SKILL_REPO_ROOT}/specs/tmp/state.json` shared staging reference from the
+        code. *(completed: confirmed zero callers, both deleted)*
+  - [x] Convert `skill_propagate_completion_summary`'s two write sites to `state-write.sh` calls.
+  - [x] Convert `skill_link_artifacts`'s two write sites to `state-write.sh` calls.
+  - [x] Remove every `${SKILL_REPO_ROOT}/specs/tmp/state.json` shared staging reference from the
         file.
-  - [ ] Thread each converted call's session_id through to the helper.
-  - [ ] Confirm the converted functions still work correctly when invoked from inside an outer
+  - [x] Thread each converted call's session_id through to the helper. *(completed with a
+        deviation: both functions gained an optional trailing `session_id` parameter with a
+        self-generating fallback — see Plan Deviations. The ~15 existing call sites across
+        core skills and three extension implementation skills were left unedited; a future
+        follow-up could thread real session_id values through the core skill call sites
+        specifically, since those already have `$session_id` in scope)*
+  - [x] Confirm the converted functions still work correctly when invoked from inside an outer
         `SCOPE_MUTEX_HELD=1` critical section (guest mode) — this is their normal calling context
-        under `orchestrator-postflight.sh`.
-  - [ ] Update `docs/architecture/architecture-spec.md`'s `skill-base.sh` function inventory to
-        drop the two deleted functions, if they are listed there.
+        under `orchestrator-postflight.sh`. *(completed: verified against a fixture with a
+        pre-claimed outer mutex; guest mode fires, outer mutex untouched)*
+  - [x] Update `docs/architecture/architecture-spec.md`'s `skill-base.sh` function inventory to
+        drop the two deleted functions, if they are listed there. *(completed; also updated
+        `docs/guides/creating-skills.md`'s equivalent table)*
 - **Timing:** 1.5 hours
 - **Depends on:** 3
 - **Verification Tier:** interface
@@ -412,7 +419,8 @@ a file no other phase edits, so it carries no ordering constraint against the co
   source store for each orphaned function name to prove zero callers before deleting, and
   enumerate every `state.json`-targeted `mv` in the file to confirm the live-site count. A
   non-zero caller count for either "orphan" invalidates the deletion and must be recorded, not
-  worked around.
+  worked around. **Measured: confirmed exactly four live sites and exactly two zero-caller
+  orphans, matching the hypothesis exactly.**
 - **Verification:**
   - `bash -n agent-system/extensions/core/scripts/skill-base.sh` exits 0.
   - `grep -rn 'skill_increment_artifact_number\|skill_propagate_memory_candidates' agent-system/`

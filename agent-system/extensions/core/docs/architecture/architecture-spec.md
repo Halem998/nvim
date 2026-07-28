@@ -189,15 +189,8 @@ The skill body after refactoring:
 # skill_postflight_update "$task_number" "$operation" "$session_id" "$status"
 # → calls update-task-status.sh postflight (only on success status)
 
-# skill_increment_artifact_number "$task_number"
-# → jq increment next_artifact_number in state.json
-# → research only (planner/implementer skip this)
-
-# skill_propagate_memory_candidates "$task_number" "$memory_candidates"
-# → append to state.json entry (append semantics)
-
 # skill_link_artifacts "$task_number" "$artifact_path"
-# → jq state.json update + generate-todo.sh
+# → state-write.sh update + generate-todo.sh
 
 # skill_cleanup "$padded_num" "$project_name"
 # → rm -f .postflight-pending .postflight-loop-guard .return-meta.json

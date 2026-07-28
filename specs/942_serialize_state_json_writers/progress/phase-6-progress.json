@@ -1,0 +1,34 @@
+{
+  "phase": 6,
+  "phase_name": "Consolidate and convert skill-base.sh",
+  "started_at": "2026-07-28T01:55:00Z",
+  "last_updated": "2026-07-28T02:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Delete skill_increment_artifact_number and skill_propagate_memory_candidates (zero callers), convert skill_propagate_completion_summary and skill_link_artifacts to state-write.sh calls",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/skill-base.sh",
+        "agent-system/extensions/core/docs/architecture/architecture-spec.md",
+        "agent-system/extensions/core/docs/guides/creating-skills.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.4",
+      "description": "skill_propagate_completion_summary and skill_link_artifacts previously had no session_id parameter; ~15 existing callers across core skills and three extension implementation skills pass none",
+      "type": "altered",
+      "reason": "Added session_id as an optional trailing parameter with a self-generating fallback (same pattern as Phases 4-5), rather than editing every caller. Existing callers keep working unchanged.",
+      "annotation": "*(deviation: altered — added self-generating session_id fallback instead of threading through ~15 callers)*"
+    }
+  ],
+  "scope_hypothesis_confirmed": {
+    "asserted": "four live write sites, two zero-caller orphaned functions",
+    "measured": "confirmed exactly four live sites and exactly two zero-caller orphans"
+  }
+}

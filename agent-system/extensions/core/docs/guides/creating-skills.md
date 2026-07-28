@@ -96,8 +96,6 @@ Extension skills (in `.claude/extensions/*/skills/`) should be **thin wrappers**
 | `skill_read_metadata()` | 6 | Read `.return-meta.json` from agent |
 | `skill_validate_artifact()` | 6a | Validate artifact format + run `verification` hook |
 | `skill_postflight_update()` | 7 | Update status to completed + run `postflight` hook |
-| `skill_increment_artifact_number()` | 7a | Increment artifact counter in state.json |
-| `skill_propagate_memory_candidates()` | 7b | Propagate memory candidates to state.json |
 | `skill_link_artifacts()` | 8 | Link artifact in state.json and TODO.md |
 | `skill_cleanup()` | 9/10 | Remove marker files |
 
