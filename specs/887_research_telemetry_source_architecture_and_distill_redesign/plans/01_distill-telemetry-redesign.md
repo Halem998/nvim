@@ -402,7 +402,7 @@ differ, update the task list before editing rather than after.
 
 ---
 
-### Phase 4: Document the OTel ↔ events.jsonl seam in `events-format.md` [NOT STARTED]
+### Phase 4: Document the OTel ↔ events.jsonl seam in `events-format.md` [COMPLETED]
 
 **Goal**: Settle field ownership in prose so a future reader can tell, for any signal, which side
 owns it and how to join across — including the degraded path when telemetry is off.
@@ -446,13 +446,15 @@ owns it and how to join across — including the degraded path when telemetry is
 
 **Tasks**:
 
-- [ ] Add a `## Claude Code OTel Correlation` section to `events-format.md` covering every bullet
-      above.
-- [ ] Add the `cc_session_id` row to the existing field table, adjacent to `session_id`, with
-      language that prevents confusing the two.
-- [ ] Update the three example JSONL lines at the end of the file to include `cc_session_id`, with
-      at least one showing the `null` case.
-- [ ] Cross-reference the guardrails file for the four-tier model rather than duplicating it.
+- [x] Add a `## Claude Code OTel Correlation` section to `events-format.md` covering every bullet
+      above. *(completed)*
+- [x] Add the `cc_session_id` row to the existing field table, adjacent to `session_id`, with
+      language that prevents confusing the two. *(completed)*
+- [x] Update the three example JSONL lines at the end of the file to include `cc_session_id`, with
+      at least one showing the `null` case. *(completed: third line shows both cwd and
+      cc_session_id as null; all three validated against the revised schema)*
+- [x] Cross-reference the guardrails file for the four-tier model rather than duplicating it.
+      *(completed: cross-referenced at the top of the new section and in Related Documentation)*
 
 **Timing**: 1.5 hours
 

@@ -64,6 +64,7 @@ risks JSON-escaping bugs. See `scripts/events-append.sh` for the reference imple
 | `detail` | no | object (open) | Open, `event_type`-specific structured payload -- e.g. a completion-time reflection's `what_worked`/`what_was_hard`/`what_was_missed`/`successes` fields nest here without requiring a schema revision. Defaults to `{}` when absent. |
 | `error_ref` | no (nullable) | string \| null | Optional cross-link to an `errors.json` entry's `id` (e.g. `"err_1736700000"`). **Always optional, never a hard foreign key** -- consumers must work correctly whether or not `specs/errors.json` exists or contains the referenced ID. |
 | `cwd` | no (nullable) | string \| null | The invoking working directory (absolute path), when the caller supplied `--cwd`. Null for older rows written before this field existed, or for call sites with no reliable `cwd` source. **`cwd` is the only field stored for cross-repo federation** -- `repo` is deliberately NOT a stored field (see below). |
+| `cc_session_id` | no (nullable) | string \| null | Claude Code's own native session UUID, captured verbatim from hook stdin's top-level `.session_id` field. The exact join key to OTel's `session.id` resource attribute (and to `history.jsonl`'s `sessionId`) -- see "Claude Code OTel Correlation" below. **Distinct from `session_id` above**: `session_id` is this schema's pre-existing `sess_{timestamp}_{random}` agent-system id; `cc_session_id` is Claude Code's own UUIDv4. The two ids live in different id spaces and neither replaces the other. Null when the event is emitted outside any hook context. |
 
 ## Cross-Repo Federation: `cwd` Stored, `repo` Derived (never stored)
 
@@ -145,16 +146,101 @@ When absent, treat `detail` as `{}`.
 - **Never a hard foreign key** -- readers and writers must not assume `specs/errors.json` exists,
   and must not fail if the referenced ID cannot be resolved. The cross-link is informational only.
 
+## Claude Code OTel Correlation
+
+`events.jsonl` and Claude Code's own OpenTelemetry (OTel) export are two independent signal
+tiers with an exact join key between them. This section settles field ownership so a future
+reader can tell, for any signal, which side owns it and how to join across.
+
+For the full four-tier source model (OTel, `events.jsonl`, `history.jsonl`, transcripts) and the
+binding design constraints for telemetry-consuming `/distill` sub-modes, see
+`context/project/memory/telemetry-guardrails.md` in the memory extension -- this section covers
+only the `events.jsonl` half of that model.
+
+### What OTel Owns
+
+Read via `CLAUDE_CODE_ENABLE_TELEMETRY=1`; never written by agent-system code:
+
+- Per-tool-call outcome: `tool_result.success`, `.error_type`, `.duration_ms`,
+  `.decision_source`.
+- Per-API-call outcome: `api_request` / `api_error` / `api_refusal`.
+- Token and cost accounting: `claude_code.token.usage`, `.cost.usage`.
+- Permission and decision provenance: `tool_decision.source`, `permission_mode_changed`.
+- Session aggregates: `claude_code.session.count`, `.active_time.total`.
+
+This is did-it-fail-and-why, and nothing task-, phase-, or plan-shaped -- OTel structurally has
+no concept of a task number, a phase, or a plan deviation.
+
+### What `events.jsonl` Owns
+
+The categories `deviation` / `blocker` / `milestone` / `success`, and the `task` /
+`checkpoint` fields (all unchanged by this correlation): task numbers, phase and checkpoint
+boundaries, plan deviations, completion-time reflections, and the repo tag via the
+already-implemented `cwd` field (see "Cross-Repo Federation" above).
+
+### The Exact Join
+
+`cc_session_id` on an `events.jsonl` line equals `session.id` on OTel events, spans, and
+metrics for the same Claude Code session. No time-window heuristic is needed or permitted.
+`cwd` is the secondary correlator, covering the rare mid-session `CwdChanged` case, and is also
+the repo-tag source that makes OTel's non-standard `OTEL_RESOURCE_ATTRIBUTES` opt-in
+unnecessary. Note explicitly: `cwd` is **not** a standard OTel resource attribute -- the
+standard set is `session.id`, `user.id`, `user.email`, `user.account_uuid`, `user.account_id`,
+`organization.id`, `app.version`, `app.entrypoint`, `terminal.type` -- which is exactly why the
+repo tag lives on the `events.jsonl` side instead.
+
+### Naming Rule
+
+Top-level `events.jsonl` fields keep flat `snake_case` (`cc_session_id` follows this
+convention -- it is **not** named `session.id`, since dotted OTel names never become top-level
+`events.jsonl` fields). `gen_ai.*` dotted names appear only as literal keys inside `detail`,
+and only when that payload cites OTel-derived evidence -- e.g. a `--revise` correlation event
+whose `detail` carries `{"gen_ai.usage.input_tokens": 1200, "error.type": "ENOENT"}` next to the
+existing evidence citation. See `telemetry-guardrails.md`'s `gen_ai.*` borrowing rule for the
+full vocabulary and its constraints; it is not restated here.
+
+### Schema-Revision Note
+
+`additionalProperties: false` on the schema's top-level object makes `cc_session_id` a
+deliberate, versioned revision, exactly like `cwd` before it. Both fields are nullable, so no
+backfill is required -- consumers must treat both as optionally-absent, and a legacy row written
+before either field existed remains valid.
+
+### The Degraded Path
+
+When `CLAUDE_CODE_ENABLE_TELEMETRY=1` is unset in the user's environment, the OTel tier
+contributes nothing. This is an explicitly-announced, first-class outcome -- modeled on the
+existing "No Events Yet" degraded-path pattern for an empty `events.jsonl` -- never a silent
+gap. A consumer joining on `cc_session_id` and finding no OTel data for that session must
+announce "OTel not enabled for this session" rather than silently reporting zero results as if
+outcome data had been checked and found empty.
+
+### The Hooks Extension Point
+
+Hooks are the sanctioned mechanism for capturing `cc_session_id` (and `cwd`) from Claude Code's
+own context: every hook receives `session_id`, `prompt_id`, `transcript_path`, `cwd`,
+`permission_mode`, and `hook_event_name` on stdin, across 30 hook event types. Stop and
+SubagentStop additionally carry `last_assistant_message` explicitly, because `transcript_path`
+is written asynchronously and may lag the in-memory conversation -- the same reason
+`events-log-lifecycle.sh` reads `last_assistant_message` directly rather than the transcript
+file for its Stop-path task-number fallback.
+
 ## Example Lines
 
 ```json
-{"event_id":"evt_1736700000123_a1b2c3","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-07-15T10:22:31.123Z","duration_seconds":4.2,"session_id":"sess_1736700000_abc123","task":259,"checkpoint":"preflight","message":"Preflight completed","detail":{},"error_ref":null,"cwd":"/home/user/.config/nvim"}
-{"event_id":"evt_1736700005456_d4e5f6","event_type":"deviation","category":"deviation","timestamp":"2026-07-15T10:22:36.456Z","duration_seconds":null,"session_id":"sess_1736700000_abc123","task":259,"checkpoint":"phase_2","message":"Skipped optional retry step","detail":{"reason":"Not needed for this input size"},"error_ref":null,"cwd":"/home/user/.config/nvim"}
-{"event_id":"evt_1736700010789_g7h8i9","event_type":"blocker","category":"blocker","timestamp":"2026-07-15T10:22:41.789Z","duration_seconds":null,"session_id":"sess_1736700000_abc123","task":259,"checkpoint":null,"message":"Missing external credential","detail":{},"error_ref":"err_1736700000","cwd":null}
+{"event_id":"evt_1736700000123_a1b2c3","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-07-15T10:22:31.123Z","duration_seconds":4.2,"session_id":"sess_1736700000_abc123","task":259,"checkpoint":"preflight","message":"Preflight completed","detail":{},"error_ref":null,"cwd":"/home/user/.config/nvim","cc_session_id":"3f9c2a10-8b4e-4c3d-9a1f-6e2d5c7b8a90"}
+{"event_id":"evt_1736700005456_d4e5f6","event_type":"deviation","category":"deviation","timestamp":"2026-07-15T10:22:36.456Z","duration_seconds":null,"session_id":"sess_1736700000_abc123","task":259,"checkpoint":"phase_2","message":"Skipped optional retry step","detail":{"reason":"Not needed for this input size"},"error_ref":null,"cwd":"/home/user/.config/nvim","cc_session_id":"3f9c2a10-8b4e-4c3d-9a1f-6e2d5c7b8a90"}
+{"event_id":"evt_1736700010789_g7h8i9","event_type":"blocker","category":"blocker","timestamp":"2026-07-15T10:22:41.789Z","duration_seconds":null,"session_id":"sess_1736700000_abc123","task":259,"checkpoint":null,"message":"Missing external credential","detail":{},"error_ref":"err_1736700000","cwd":null,"cc_session_id":null}
 ```
+
+The third line shows the `null` case for both `cwd` and `cc_session_id` -- a call site with no
+reliable source for either field.
 
 ## Related Documentation
 
 - [Events Schema](../schemas/events-schema.json) -- formal draft-07 JSON Schema for a single line
 - [Return Metadata Format](return-metadata-file.md) -- `session_id`/`duration_seconds` convention
 - [Error Handling Rule](../../rules/error-handling.md) -- `errors.json` schema and `error_ref` target
+- Telemetry Guardrails (`context/project/memory/telemetry-guardrails.md` in the memory
+  extension) -- the full four-tier source model and binding design constraints for
+  telemetry-consuming `/distill` sub-modes
