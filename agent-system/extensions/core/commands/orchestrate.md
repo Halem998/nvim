@@ -403,6 +403,13 @@ if [ -f "$mt_state_file" ]; then
   max_cycles=$(jq -r '.max_cycles // 25' "$mt_state_file")
   succeeded_count=$(jq '.completed_tasks | length' "$mt_state_file")
   failed_count=$(jq '.failed_tasks | length' "$mt_state_file")
+  # Forward-progress invariant fields (additive; see
+  # context/patterns/batch-orchestration-guardrails.md's "### The Forward-Progress Invariant").
+  fpv_field_present=$(jq 'has("forward_progress_violated")' "$mt_state_file")
+  dispatch_start_ts_present=$(jq 'has("dispatch_start_ts")' "$mt_state_file")
+  forward_progress_violated=$(jq -r '.forward_progress_violated // false' "$mt_state_file")
+  defer_ledger_json=$(jq -c '.defer_ledger // []' "$mt_state_file")
+  tasks_deferred_self_modifying_json=$(jq -c '.deferred_self_modifying // []' "$mt_state_file")
 else
   echo "[orchestrate] WARNING: Multi-state file missing — skill may have been interrupted"
   completed_tasks=""
@@ -410,9 +417,49 @@ else
   cycles_used=0
   succeeded_count=0
   failed_count=${#validated_tasks[@]}
+  # Missing-multi-state-file branch: this is NOT a zero-dispatch outcome (it is a distinct
+  # missing-state failure mode, already handled by the failed_count line above) — never fire the
+  # banner here.
+  fpv_field_present="false"
+  dispatch_start_ts_present="false"
+  forward_progress_violated="false"
+  defer_ledger_json="[]"
+  tasks_deferred_self_modifying_json="[]"
 fi
 skipped_count=${#skipped_tasks[@]}
 ```
+
+**Three-branch, all-non-silent invariant resolution** (works regardless of which skill ran —
+`skill-orchestrate` writes `forward_progress_violated` directly per Phase 3 above;
+`skill-orchestrate-hard`'s multi-task mode delegates to the SAME base MT stages per its own Stage
+0, so it already inherits the field too — see that file's Stage 0 statement. This three-branch
+shape exists as a forward-compatible safety net for any future MT variant that might omit the
+field, not because one exists today):
+
+1. **`forward_progress_violated` present in `mt_state_file`** (`fpv_field_present == "true"`) —
+   use it directly: `forward_progress_violated` from above.
+2. **Field absent but `dispatch_start_ts` present** (`fpv_field_present == "false"` AND
+   `dispatch_start_ts_present == "true"`) — compute the invariant here:
+   ```bash
+   if [ "$fpv_field_present" = "false" ] && [ "$dispatch_start_ts_present" = "true" ]; then
+     dispatch_start_ts_empty=$(jq '.dispatch_start_ts == {}' "$mt_state_file")
+     if [ "$dispatch_start_ts_empty" = "true" ] && [ "${#validated_tasks[@]}" -gt 0 ]; then
+       forward_progress_violated="true"
+     else
+       forward_progress_violated="false"
+     fi
+   fi
+   ```
+3. **Neither present** (`fpv_field_present == "false"` AND `dispatch_start_ts_present == "false"`,
+   and `$mt_state_file` itself is present — the missing-file branch above already set all three
+   to a fixed "false"/"[]" and is excluded from this branch) — print an explicit notice and
+   render the ordinary output, never silently skip:
+   ```bash
+   if [ -f "$mt_state_file" ] && [ "$fpv_field_present" = "false" ] && [ "$dispatch_start_ts_present" = "false" ]; then
+     echo "[orchestrate] forward-progress invariant not evaluable (no dispatch_start_ts in multi-state file)"
+     forward_progress_violated="false"
+   fi
+   ```
 
 **Commit Reconciliation (no batch commit)**:
 
@@ -455,6 +502,13 @@ fi
 | Deferred self-modifying (a task whose own dispatch is deferred rather than run this cycle) | Never dispatched and never status-mutated this cycle, so it correctly produces no commit this cycle — it becomes eligible, and committable, on a later cycle |
 | Deferred-by-redeploy-checkpoint (a task excluded for the remainder of the invocation because the inter-cycle redeploy checkpoint's deploy/verify gate failed) | Never dispatched and never status-mutated for the rest of this invocation; distinct operator remedy from deferred-self-modifying — see `### The Inter-Cycle Redeploy Checkpoint` in `context/patterns/batch-orchestration-guardrails.md` |
 
+**Re-run sequence derivation (for the ZERO DISPATCH section below)**: reuse the `waves` array
+already computed at Step 3 above — do not recompute or reimplement Kahn's algorithm. For each
+wave in order, list its deferred/excluded task numbers ascending by number, one `/orchestrate {N}`
+line per task, predecessor-first. This is printed for the operator to run, and is never executed
+automatically — see the Phase 1 `## Rejected Approaches` entry in
+`context/patterns/batch-orchestration-guardrails.md` ("Auto-degrading a zero-dispatch batch...").
+
 **Consolidated Output**:
 
 ```markdown
@@ -466,6 +520,29 @@ Succeeded: {succeeded_count}
 Failed: {failed_count}
 Skipped: {skipped_count}
 Cycles used: {cycles_used}/{max_cycles}
+
+### ZERO DISPATCH
+
+(Rendered only when `forward_progress_violated` resolved true above. Placed immediately after the
+counts block and BEFORE `### Succeeded` — never omitted, never demoted below the ordinary tables.)
+
+[ZERO DISPATCH - 0 of {validated_count} validated candidates dispatched; forward-progress invariant violated]
+<!-- forward-progress violated=true dispatched=0 validated={validated_count} -->
+
+This is not a failure: no task was marked failed or blocked and `specs/state.json` was not
+mutated (see `context/patterns/batch-orchestration-guardrails.md`'s
+`### The Forward-Progress Invariant` subsection).
+
+| Task | defer_reason | Detail |
+|------|--------------|--------|
+| #10 | self_modifying | matched critical path .claude/scripts/task-lock.sh (concurrency lock) |
+| #11 | file_scope_collision | colliding out-of-batch task #12 (status: implementing) |
+
+Re-run sequence (dependency order; printed, not executed):
+```
+/orchestrate 10
+/orchestrate 11
+```
 
 ### Succeeded
 
@@ -486,6 +563,27 @@ Cycles used: {cycles_used}/{max_cycles}
 | #44 | predecessor #43 failed |
 | #99 | terminal status [ABANDONED] |
 
+### Deferred (self-modifying)
+
+(Renders on every batch, not only zero-dispatch ones — populated from
+`tasks_deferred_self_modifying_json`, each task's FINAL status at loop exit, per Stage MT-5 step
+4's reporting instruction in `skill-orchestrate/SKILL.md`.)
+
+| Task | Final Status | Note |
+|------|--------------|------|
+| #21 | [COMPLETED] | deferred at least one cycle by the self-modification gate — an OBSERVATION; went on to complete before loop exit |
+| #22 | still pending | deferred, not yet redispatched this invocation — remains eligible for a future `/orchestrate` run (solo or batched) or `--allow-self-modifying` |
+
+### Deferred (other admission exclusions)
+
+(Populated from `defer_ledger` entries whose `defer_reason` is neither `self_modifying` nor
+`deploy_checkpoint` — i.e. `file_scope_collision` deferrals — so they are visible on ordinary
+partial batches too, not only inside the ZERO DISPATCH section above.)
+
+| Task | defer_reason | collision_scope | Detail |
+|------|--------------|------------------|--------|
+| #23 | file_scope_collision | cross_batch | colliding out-of-batch task #24 (status: implementing) |
+
 ### Deferred (redeploy checkpoint)
 
 | Task | Reason |
@@ -499,6 +597,8 @@ subsection for the full contract; not restated here.
 
 ### Next Steps
 - Re-run failed tasks: /orchestrate {failed_task_numbers}
+- **When ZERO DISPATCH fired**: there are no failed tasks to re-run — point at the re-run
+  sequence in the ZERO DISPATCH section above instead of this line.
 ```
 
 **After consolidated output, STOP. Do not continue to CHECKPOINT 1.**

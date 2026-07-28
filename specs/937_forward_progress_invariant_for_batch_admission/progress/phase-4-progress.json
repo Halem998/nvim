@@ -1,0 +1,36 @@
+{
+  "phase": 4,
+  "phase_name": "Command-side rendering - banner, tables, and re-run sequence",
+  "started_at": "2026-07-28T16:45:00Z",
+  "last_updated": "2026-07-28T17:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Read forward_progress_violated/defer_ledger/dispatch_start_ts at Step 5; implement three-branch all-non-silent resolution",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/commands/orchestrate.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Insert ZERO DISPATCH section (banner, marker, not-a-failure sentence, defer_ledger table, re-run sequence) before Succeeded",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/commands/orchestrate.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Add Deferred (self-modifying) and Deferred (other admission exclusions) sections; extend Next Steps",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/commands/orchestrate.md"
+      ]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

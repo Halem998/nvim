@@ -365,7 +365,7 @@ zero-dispatch outcome can never report success, and surface the result structura
 
 ---
 
-### Phase 4: Command-side rendering — banner, tables, and re-run sequence [NOT STARTED]
+### Phase 4: Command-side rendering — banner, tables, and re-run sequence [COMPLETED]
 
 **Goal**: Make the human-facing consolidated output impossible to mistake for an ordinary result,
 close the documented `Deferred (self-modifying)` template gap, and print the exact solo re-run
@@ -373,9 +373,9 @@ sequence in dependency order.
 
 **Tasks**:
 
-- [ ] In `commands/orchestrate.md` Step 5's `mt_state_file` read block, additionally read
-      `forward_progress_violated`, `defer_ledger`, and `dispatch_start_ts`.
-- [ ] Implement the three-branch, all-non-silent resolution of the invariant, so rendering works
+- [x] In `commands/orchestrate.md` Step 5's `mt_state_file` read block, additionally read
+      `forward_progress_violated`, `defer_ledger`, and `dispatch_start_ts`. *(completed)*
+- [x] Implement the three-branch, all-non-silent resolution of the invariant, so rendering works
       regardless of which skill ran:
       1. `forward_progress_violated` present in `mt_state_file` — use it directly.
       2. Field absent but `dispatch_start_ts` present — compute the invariant here from
@@ -385,8 +385,8 @@ sequence in dependency order.
          notice and render the ordinary output. Never silently skip.
       Also handle the existing missing-multi-state-file branch: it already sets
       `failed_count=${#validated_tasks[@]}`, which is not a zero-dispatch outcome — do not fire the
-      banner there.
-- [ ] Insert a new `### ZERO DISPATCH` section into the Consolidated Output template, placed
+      banner there. *(completed)*
+- [x] Insert a new `### ZERO DISPATCH` section into the Consolidated Output template, placed
       immediately after the counts block (`Session` / `Tasks requested` / ... / `Cycles used`) and
       **before** `### Succeeded`, rendered only when the invariant is violated. It contains, in
       order:
@@ -399,28 +399,29 @@ sequence in dependency order.
       - A `| Task | defer_reason | Detail |` table with one row per `defer_ledger` entry, so every
         excluded candidate is named with its reason.
       - A `Re-run sequence (dependency order; printed, not executed)` block emitting one literal
-        `/orchestrate {N}` line per deferred candidate, predecessor-first.
-- [ ] Derive the re-run sequence from the `waves` / `dependency_graph` this command already
+        `/orchestrate {N}` line per deferred candidate, predecessor-first. *(completed)*
+- [x] Derive the re-run sequence from the `waves` / `dependency_graph` this command already
       computed at Steps 2-3 and still has in scope at Step 5 — reuse that topological order, do
       not recompute or reimplement Kahn's algorithm. Order tasks ascending by number within a wave
       for determinism. State in the template that these commands are printed for the operator to
       run, and are never executed automatically (cross-reference the Phase 1 `## Rejected
-      Approaches` entry by name).
-- [ ] Add the missing `### Deferred (self-modifying)` table section to the Consolidated Output
+      Approaches` entry by name). *(completed)*
+- [x] Add the missing `### Deferred (self-modifying)` table section to the Consolidated Output
       template, alongside the existing `### Deferred (redeploy checkpoint)` section, closing the
       Stage MT-5-prose-versus-template mismatch. Populate from `tasks_deferred_self_modifying`,
       with each task's final status at loop exit, and the observation framing Stage MT-5 already
       mandates ("deferred at least one cycle by the self-modification gate — an OBSERVATION"). This
-      section renders on every batch, not only zero-dispatch ones.
-- [ ] Add a `### Deferred (other admission exclusions)` table for `defer_ledger` entries whose
+      section renders on every batch, not only zero-dispatch ones. *(completed)*
+- [x] Add a `### Deferred (other admission exclusions)` table for `defer_ledger` entries whose
       `defer_reason` is neither `self_modifying` nor `deploy_checkpoint`, so
       `file_scope_collision` deferrals are visible on ordinary partial batches too, not only in
-      the zero-dispatch banner.
-- [ ] Extend the existing `### Next Steps` line so it does not read as the only remedy when the
+      the zero-dispatch banner. *(completed)*
+- [x] Extend the existing `### Next Steps` line so it does not read as the only remedy when the
       banner fired: when the invariant is violated there are no failed tasks to re-run, so point
-      at the re-run sequence above instead.
-- [ ] Leave the Exit-path coverage table's existing rows unchanged; add no admission-affecting
-      text anywhere in this file.
+      at the re-run sequence above instead. *(completed)*
+- [x] Leave the Exit-path coverage table's existing rows unchanged; add no admission-affecting
+      text anywhere in this file. *(completed: Exit-path coverage table untouched, verified by
+      diff — no admission-affecting text added anywhere in this file)*
 
 **Timing**: 1.5 hours
 
