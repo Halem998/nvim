@@ -147,8 +147,8 @@ The `/task` command supports unified task lifecycle management through flags:
 
 **Usage**:
 ```bash
-/task --expand 326                     # Expand task 326
-/task --expand 326 "Focus on UI, backend, tests"  # With prompt
+/task --expand {N}                     # Expand task {N}
+/task --expand {N} "Focus on UI, backend, tests"  # With prompt
 ```
 
 **Standards**:
@@ -186,7 +186,7 @@ The `/task` command supports unified task lifecycle management through flags:
 - Compare timestamps for each differing field
 - Latest commit wins (most recent change)
 - Tie-breaker: state.json wins (source of truth)
-- Log format: "Task 343: status from state.json (2026-01-07) > TODO.md (2026-01-06)"
+- Log format: "Task {N}: status from state.json (2026-01-07) > TODO.md (2026-01-06)"
 
 ### Task Abandonment (--abandon)
 
@@ -216,7 +216,7 @@ The `/task` command supports unified task lifecycle management through flags:
 **Error Reporting**:
 - Validate all tasks before processing (all-or-nothing)
 - Report all validation errors together (not one at a time)
-- Clear error messages: "Task 343 not found in archive"
+- Clear error messages: "Task {N} not found in archive"
 - Suggest recovery steps: "Use /task --recover to unarchive tasks"
 
 **Atomic Guarantees**:

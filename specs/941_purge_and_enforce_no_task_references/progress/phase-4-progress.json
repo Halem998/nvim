@@ -1,0 +1,62 @@
+{
+  "phase": 4,
+  "phase_name": "Purge agent-system/extensions/core/context/",
+  "started_at": "2026-07-28T17:00:00Z",
+  "last_updated": "2026-07-28T17:50:45Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Enumerate sites with the Phase 2 script scoped to this tree",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Triage and convert all 147 occurrences across 31 files (README, contracts, formats, guides, meta, orchestration, patterns, reference, standards, templates, workflows)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/README.md",
+        "agent-system/extensions/core/context/contracts/anti-analysis.md",
+        "agent-system/extensions/core/context/formats/command-output.md",
+        "agent-system/extensions/core/context/formats/return-metadata-file.md",
+        "agent-system/extensions/core/context/formats/roadmap-format.md",
+        "agent-system/extensions/core/context/formats/subagent-return.md",
+        "agent-system/extensions/core/context/formats/task-order-format.md",
+        "agent-system/extensions/core/context/guides/hard-mode-routing.md",
+        "agent-system/extensions/core/context/meta/meta-guide.md",
+        "agent-system/extensions/core/context/orchestration/delegation.md",
+        "agent-system/extensions/core/context/orchestration/orchestration-reference.md",
+        "agent-system/extensions/core/context/orchestration/orchestrator.md",
+        "agent-system/extensions/core/context/orchestration/postflight-pattern.md",
+        "agent-system/extensions/core/context/orchestration/validation.md",
+        "agent-system/extensions/core/context/patterns/artifact-linking-todo.md",
+        "agent-system/extensions/core/context/patterns/batch-drain-loop.md",
+        "agent-system/extensions/core/context/patterns/checkpoint-before-overflow.md",
+        "agent-system/extensions/core/context/patterns/context-protective-lead.md",
+        "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
+        "agent-system/extensions/core/context/patterns/file-metadata-exchange.md",
+        "agent-system/extensions/core/context/patterns/multi-task-operations.md",
+        "agent-system/extensions/core/context/patterns/skill-lifecycle.md",
+        "agent-system/extensions/core/context/patterns/task-lock.md",
+        "agent-system/extensions/core/context/reference/state-management-schema.md",
+        "agent-system/extensions/core/context/standards/ci-workflow.md",
+        "agent-system/extensions/core/context/standards/git-integration.md",
+        "agent-system/extensions/core/context/standards/git-safety.md",
+        "agent-system/extensions/core/context/standards/task-management.md",
+        "agent-system/extensions/core/context/templates/delegation-context.md",
+        "agent-system/extensions/core/context/workflows/preflight-postflight.md",
+        "agent-system/extensions/core/context/workflows/task-breakdown.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Verify 0 findings under agent-system/extensions/core/context/",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

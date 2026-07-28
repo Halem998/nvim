@@ -77,23 +77,23 @@ Reference this when:
 `## Verification Tiers` section; this is the phase-level tier, distinct from each task's own
 item-level `**Verification:**` line below}
 
-- [ ] **Task 1.1:** {Description}
+- [ ] **Step 1.1:** {Description}
   - **Files:** {files to create/modify}
   - **Estimate:** {time estimate}
   - **Dependencies:** {none / task X}
   - **Verification:** {how to verify it's done}
 
-- [ ] **Task 1.2:** {Description}
+- [ ] **Step 1.2:** {Description}
   - **Files:** {files to create/modify}
   - **Estimate:** {time estimate}
-  - **Dependencies:** {task 1.1}
+  - **Dependencies:** {step 1.1}
   - **Verification:** {how to verify it's done}
 
 ### Phase 2: {Phase Name}
 **Goal:** {What this phase accomplishes}
 **Verification Tier:** {one of `prose`, `local`, `interface`, `full`}
 
-- [ ] **Task 2.1:** {Description}
+- [ ] **Step 2.1:** {Description}
   - **Files:** {files to create/modify}
   - **Estimate:** {time estimate}
   - **Dependencies:** {phase 1 complete}
@@ -131,22 +131,22 @@ Build authentication system with login, registration, and password reset.
 **Verification Tier:** interface (new user model and login endpoint are called from multiple
 route handlers, so verification spans the changed module plus its direct dependents)
 
-- [ ] **Task 1.1:** Create user model and database schema
+- [ ] **Step 1.1:** Create user model and database schema
   - **Files:** `models/user.js`, `migrations/001_users.sql`
   - **Estimate:** 1 hour
   - **Dependencies:** none
   - **Verification:** Can create user in database
 
-- [ ] **Task 1.2:** Implement password hashing
+- [ ] **Step 1.2:** Implement password hashing
   - **Files:** `utils/password.js`
   - **Estimate:** 30 min
-  - **Dependencies:** Task 1.1
+  - **Dependencies:** Step 1.1
   - **Verification:** Passwords are hashed, not plain text
 
-- [ ] **Task 1.3:** Create login endpoint
+- [ ] **Step 1.3:** Create login endpoint
   - **Files:** `routes/auth.js`, `controllers/auth.js`
   - **Estimate:** 1.5 hours
-  - **Dependencies:** Task 1.1, 1.2
+  - **Dependencies:** Step 1.1, 1.2
   - **Verification:** Can login with valid credentials
 
 ### Phase 2: Registration
@@ -154,16 +154,16 @@ route handlers, so verification spans the changed module plus its direct depende
 **Verification Tier:** local (registration endpoint and validation are confined to the auth
 module; no externally visible signature changes)
 
-- [ ] **Task 2.1:** Create registration endpoint
+- [ ] **Step 2.1:** Create registration endpoint
   - **Files:** `routes/auth.js`, `controllers/auth.js`
   - **Estimate:** 1 hour
   - **Dependencies:** Phase 1 complete
   - **Verification:** Can create new user account
 
-- [ ] **Task 2.2:** Add email validation
+- [ ] **Step 2.2:** Add email validation
   - **Files:** `utils/validation.js`
   - **Estimate:** 30 min
-  - **Dependencies:** Task 2.1
+  - **Dependencies:** Step 2.1
   - **Verification:** Invalid emails rejected
 
 ### Phase 3: Password Reset
@@ -171,22 +171,22 @@ module; no externally visible signature changes)
 **Verification Tier:** full (touches shared token generation, email delivery, and auth state
 that other flows depend on -- the complete gate set runs for this phase)
 
-- [ ] **Task 3.1:** Generate reset tokens
+- [ ] **Step 3.1:** Generate reset tokens
   - **Files:** `utils/tokens.js`
   - **Estimate:** 1 hour
   - **Dependencies:** Phase 1 complete
   - **Verification:** Tokens generated and validated
 
-- [ ] **Task 3.2:** Create reset endpoints
+- [ ] **Step 3.2:** Create reset endpoints
   - **Files:** `routes/auth.js`, `controllers/auth.js`
   - **Estimate:** 1.5 hours
-  - **Dependencies:** Task 3.1
+  - **Dependencies:** Step 3.1
   - **Verification:** Can request and complete password reset
 
-- [ ] **Task 3.3:** Send reset emails
+- [ ] **Step 3.3:** Send reset emails
   - **Files:** `services/email.js`
   - **Estimate:** 1 hour
-  - **Dependencies:** Task 3.2
+  - **Dependencies:** Step 3.2
   - **Verification:** Reset emails sent successfully
 
 ## Testing Strategy

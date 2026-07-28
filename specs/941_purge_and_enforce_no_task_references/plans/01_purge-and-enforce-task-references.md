@@ -403,19 +403,32 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
 
 ---
 
-### Phase 4: Purge `agent-system/extensions/core/context/` [IN PROGRESS]
+### Phase 4: Purge `agent-system/extensions/core/context/` [COMPLETED]
 
 - **Goal:** Clear the largest single subdirectory of the source store.
 - **Character:** High judgment. Docs/context prose; each site needs a real
   PROVENANCE / ILLUSTRATIVE / SANCTIONED call.
 
 - **Tasks:**
-  - [ ] Enumerate sites with the Phase 2 script scoped to this tree.
-  - [ ] Triage each: PROVENANCE → durable anchor (sibling filename, section heading, mechanism
+  - [x] Enumerate sites with the Phase 2 script scoped to this tree. *(completed: used the
+        Correction-1 path-scope extension --
+        `REPO_ROOT=$(pwd) bash .../check-task-references.sh agent-system/extensions/core/context`
+        -- reported exactly 147, matching the Scope Hypothesis.)*
+  - [x] Triage each: PROVENANCE → durable anchor (sibling filename, section heading, mechanism
         name, or a plain statement of the verified fact); ILLUSTRATIVE → documented placeholder
         (`task {N}`, `specs/{NNN}_{SLUG}/`, `sess_{timestamp}_{random}`); SANCTIONED → leave and
-        add the marker with its reason.
-  - [ ] Never delete a parenthetical that carries explanatory weight — convert it.
+        add the marker with its reason. *(completed across all 31 files; two SANCTIONED sites in
+        `patterns/multi-task-operations.md` marked `task-ref-ok:begin/end` with reason
+        "canonical rendered commit-message example"; all other sites converted to durable
+        anchors or placeholders.)*
+  - [x] Never delete a parenthetical that carries explanatory weight — convert it. *(completed:
+        e.g. `postflight-pattern.md`'s "Task 326" incident renamed to the durable
+        "phantom-artifact incident" anchor and reused across all 8 sites in that file;
+        `task-lock.md`'s "task 788"/"task 808"/"task 809" provenance dropped in favor of the
+        already-present "the 427 failure" anchor and mechanism names; `task-breakdown.md`'s
+        generic WBS "Task N.N" sub-item numbering renamed to "Step N.N" throughout to remove the
+        literal collision with real task numbers while preserving the worked example's
+        concreteness.)*
 
 - **Timing:** 1.5 hours
 - **Depends on:** 2
@@ -424,10 +437,13 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
   `orchestration/` 30/5, `formats/` 28/5, `workflows/` 18/2, `standards/` 12/4, remainder 10/6).
   Confirm with
   `grep -rcEi "$TASK_PATTERN" agent-system/extensions/core/context/ | awk -F: '{s+=$2} END {print s}'`
-  before starting.
+  before starting. *(confirmed: live scan reported 147 before any edit in this phase.)*
 - **Files to modify**: all files under `agent-system/extensions/core/context/` reported by the scan.
 - **Verification**: `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-task-references.sh`
   reports **0** findings under `agent-system/extensions/core/context/`. Expected delta: 147 → 0.
+  *(verified: `REPO_ROOT=$(pwd) bash .../check-task-references.sh --quiet
+  agent-system/extensions/core/context` reports "agent-system/extensions/core/context: 0
+  occurrence(s)" and exits 0.)*
 
 ---
 

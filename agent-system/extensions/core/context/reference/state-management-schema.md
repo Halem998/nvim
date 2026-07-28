@@ -225,8 +225,8 @@ semantics — the latest implementation's reflection replaces any prior one on t
 | state.json | TODO.md |
 |------------|---------|
 | `[]` | `None` |
-| `[35]` | `Task #35` |
-| `[35, 36]` | `Task #35, Task #36` |
+| `[{N}]` | `Task #{N}` |
+| `[{N}, {M}]` | `Task #{N}, Task #{M}` |
 
 ### File Scope Field
 

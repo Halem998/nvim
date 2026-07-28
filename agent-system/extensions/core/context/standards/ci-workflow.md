@@ -16,7 +16,7 @@ This approach conserves CI resources while ensuring critical changes are validat
 Add `[ci]` anywhere in the commit message to trigger CI:
 
 ```
-task 423: complete implementation [ci]
+task {N}: complete implementation [ci]
 ```
 
 ### Marker Placement
@@ -76,7 +76,7 @@ The marker can appear anywhere in the commit message:
 ### Commit Without CI (Default)
 
 ```
-task 423: complete research
+task {N}: complete research
 
 ```
 
@@ -85,7 +85,7 @@ CI result: Skipped on push
 ### Commit With CI
 
 ```
-task 334: complete implementation [ci]
+task {N}: complete implementation [ci]
 ```
 
 CI result: Runs build, test, and lint
