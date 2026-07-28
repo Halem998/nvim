@@ -1,15 +1,61 @@
 {
-  "status": "in_progress",
-  "started_at": "2026-07-28T15:37:01Z",
-  "artifacts": [],
-  "partial_progress": {
-    "stage": "initializing",
-    "details": "Agent started, parsing delegation context, read plan and task description"
+  "status": "implemented",
+  "summary": "Fixed the picker sync allow-list post-filter so it matches directory-shaped provides entries (skills) via a subdir-anchored path-segment match with a basename fallback, replacing the former context-only special case. Added a non-blocking zero-result wipeout detector and a permanent regression spec (sync_spec.lua). Verified end to end against scratch trees across all 6 plan phases, then performed one deliberate redeploy confirming all 23 provides.skills entries land in .claude/skills/ with both hand-corrected orchestrator SKILL.md files unchanged.",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua",
+      "summary": "Generalized allow-list post-filter (subdir-anchored, basename fallback) plus zero-result wipeout detector"
+    },
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/ai/claude/commands/picker/operations/sync_spec.lua",
+      "summary": "New regression spec: 5 cases covering skills, flat categories, context, OpenCode agent divergence, and pass-through exclusion"
+    },
+    {
+      "type": "summary",
+      "path": "specs/938_picker_sync_skills_allow_list_filter/summaries/01_skills-allow-list-filter-fix-summary.md",
+      "summary": "Implementation summary with before/after scratch-tree counts and redeploy verification"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed the picker sync allow-list post-filter that silently dropped all 23 core skills from Load Core syncs (directory-name vs. basename key mismatch), generalizing the fix to any directory-shaped category and adding a total-wipeout detector plus a permanent regression spec. Verified via scratch-tree harnesses across all 6 phases and one deliberate redeploy confirming all provides.skills entries land in .claude/skills/ with no regression to the hand-corrected orchestrator skills."
   },
+  "memory_candidates": [
+    {
+      "content": "When a sync/deploy allow-list filter silently drops a whole category, the DEPLOYED tree can still look fully populated even months later, because the filter only blocks future replace/copy -- it never deletes existing files. Diffing pre- vs post-redeploy directory listings alone will show zero missing entries and can look like a false alarm; the real signal is whether the pre-fix CODE PATH (traced/scratch-tested) returns a nonzero pre-filter scan count but a zero post-filter count for that category. Don't conclude 'nothing is broken' just because the live deployed directory already has everything -- verify against an isolated scratch tree instead of the live tree.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/938_picker_sync_skills_allow_list_filter/plans/01_skills-allow-list-filter-fix.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["allow-list", "silent-drop", "deploy-tree-staleness", "scratch-tree-verification", "sync-scan"]
+    },
+    {
+      "content": "Neovim's M.load_all_globally-style interactive sync entry points that call vim.fn.confirm(...) can be driven non-interactively from a headless nvim --headless -c \"luafile ...\" script by overriding vim.fn.confirm = function(...) return N end before calling the public function -- this works because vim.fn's metatable only implements __index, so assigning a field directly shadows the dynamic vimscript-function dispatch for subsequent lookups. Useful whenever the only public/exported entry point that performs a mutation is gated behind an interactive confirm dialog and there is no lower-level unexported function to call instead.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/938_picker_sync_skills_allow_list_filter/plans/01_skills-allow-list-filter-fix.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["vim.fn.confirm", "headless-nvim", "non-interactive-testing", "monkeypatch", "load_all_globally"]
+    }
+  ],
+  "reflection": {
+    "what_worked": "Re-deriving the Phase 2 category survey directly from the current manifest and source (rather than trusting the research report's numbers verbatim) caught a stale premise: scripts/tests and scripts/lint ARE now declared in provides.scripts (as path-prefixed strings), contradicting the research's 'absent/undeclared' framing, and a live read-only scan confirmed they still silently fail via a third, distinct mismatch mechanism.",
+    "what_was_hard": "Driving the picker's interactive 'Load Core' confirm dialog non-interactively for the Phase 6 deliberate redeploy required discovering that execute_sync is a private, unexported closure, so the only path to the real write was through load_all_globally with vim.fn.confirm stubbed.",
+    "what_was_missed": "None substantive -- all 6 phases completed with their full verification tiers satisfied.",
+    "successes": "All 6 plan phases completed and verified: scratch-tree reproduction confirmed the hard-gate hypothesis exactly, the generalized filter and wipeout detector both pass their scratch-tree harnesses, the new sync_spec.lua regression spec was proven to actually guard the defect via a deliberate revert-and-restore cycle, and the one sanctioned Load Core redeploy synced 295 artifacts with zero detector warnings and both hand-corrected orchestrator SKILL.md files verified byte-identical to source before and after."
+  },
+  "modified_files": [
+    "lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua",
+    "lua/neotex/plugins/ai/claude/commands/picker/operations/sync_spec.lua",
+    "specs/938_picker_sync_skills_allow_list_filter/plans/01_skills-allow-list-filter-fix.md"
+  ],
+  "next_steps": "No further action required. Follow-up candidate recorded (out of scope for this task): scripts/tests/*.sh and scripts/lint/*.sh are declared in provides.scripts but still excluded by a third mismatch mechanism (full relative-path provides keys vs. basename-only lookup).",
   "metadata": {
     "session_id": "sess_1785251682_61201e_938",
     "agent_type": "neovim-implementation-agent",
+    "duration_seconds": 4200,
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }

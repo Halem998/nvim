@@ -1,7 +1,7 @@
 # Implementation Plan: picker_sync_skills_allow_list_filter
 
 - **Task**: 938 - picker_sync_skills_allow_list_filter
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/938_picker_sync_skills_allow_list_filter/reports/01_skills-allow-list-post-filter-defect.md`
@@ -424,33 +424,62 @@ exists, extend it instead of creating a second.
 
 ---
 
-### Phase 6: End-to-end verification and one deliberate redeploy [NOT STARTED]
+### Phase 6: End-to-end verification and one deliberate redeploy [COMPLETED]
 
 **Goal**: Verify the fix end to end against a scratch tree, then perform exactly one deliberate
 redeploy and confirm every declared skill lands in `.claude/skills/` with the hand-corrected
 orchestrator skills intact (scope item E).
 
 **Tasks**:
-- [ ] Re-run the full scratch-tree harness one final time against the finished code; record the
-      after-state counts next to the Phase 1 before-state.
-- [ ] Record the pre-redeploy state of `.claude/skills/`: the list of skill directories present
+- [x] Re-run the full scratch-tree harness one final time against the finished code; record the
+      after-state counts next to the Phase 1 before-state. *(before: `skills=0 commands=1
+      agents=1`; after: `skills=2 commands=1 agents=1` — the skills flip confirmed, flat
+      categories unchanged)*
+- [x] Record the pre-redeploy state of `.claude/skills/`: the list of skill directories present
       and, for `skill-orchestrate/SKILL.md` and `skill-orchestrate-hard/SKILL.md`, a `diff`
       against `agent-system/extensions/core/skills/skill-orchestrate{,-hard}/SKILL.md`.
-- [ ] Perform ONE deliberate redeploy through the sanctioned deploy process (the picker's
+      *(pre-redeploy: 32 directories present, all 23 `provides.skills` entries already among
+      them — the buggy Load Core simply stopped refreshing them rather than deleting existing
+      ones; both orchestrator `SKILL.md` diffs already empty pre-redeploy, confirmed clean before
+      touching anything)*
+- [x] Perform ONE deliberate redeploy through the sanctioned deploy process (the picker's
       "Load Core" / `load_all_globally` path). This is the only sanctioned write to `.claude/` in
-      this task.
-- [ ] Confirm every entry in `provides.skills` now has a corresponding
+      this task. *(invoked `M.load_all_globally({ base_dir = ".claude" })` from a headless
+      scratchpad script that stubbed `vim.fn.confirm` to select "Sync all" — `execute_sync` is a
+      file-local, unexported closure, so `load_all_globally` is the only public entry point that
+      performs the actual write, exactly as the plan requires)*
+- [x] Confirm every entry in `provides.skills` now has a corresponding
       `.claude/skills/<entry>/SKILL.md` present; enumerate any missing entry explicitly rather
-      than reporting a bare count.
-- [ ] Re-diff `skill-orchestrate/SKILL.md` and `skill-orchestrate-hard/SKILL.md` against their
+      than reporting a bare count. *(all 23 present post-redeploy; `comm -23` between the 23
+      declared entries and the post-redeploy `.claude/skills/` directory listing returned empty —
+      zero missing)*
+- [x] Re-diff `skill-orchestrate/SKILL.md` and `skill-orchestrate-hard/SKILL.md` against their
       source-store originals; both diffs MUST be empty. A non-empty diff means the redeploy
       reverted hand-corrected content — stop and report rather than re-hand-correcting.
-- [ ] Confirm the Phase 4 detector produced no WARN during the redeploy; if it did, treat it as a
-      genuine finding and report the category rather than suppressing the warning.
-- [ ] Confirm no unintended writes: `git status --short` scoped to `lua/` and `agent-system/`
-      shows only the intended `sync.lua` and `sync_spec.lua` changes.
-- [ ] Record in the summary the out-of-scope follow-up candidate from Phase 2
-      (`scripts/tests/*.sh` and `scripts/lint/*.sh` absent from `provides.scripts`).
+      *(both diffs empty post-redeploy — no reversion)*
+- [x] Confirm the Phase 4 detector produced no WARN during the redeploy; if it did, treat it as a
+      genuine finding and report the category rather than suppressing the warning. *(zero WARNs
+      from the wipeout detector; the redeploy's single WARN was the pre-existing, unrelated
+      content-audit notification listing repo-specific reference matches, not the allow-list
+      detector)*
+- [x] Confirm no unintended writes: `git status --short` scoped to `lua/` and `agent-system/`
+      shows only the intended `sync.lua` and `sync_spec.lua` changes. *(confirmed: `lua/` shows
+      only the two pre-existing unrelated modifications from before this task started, plus the
+      intended `sync.lua`/`sync_spec.lua` files already committed in Phases 3-5; `agent-system/`
+      shows nothing; `.claude/` shows nothing under git status because it is gitignored — the
+      redeploy's 295 synced artifacts land there by design, outside git tracking)*
+- [x] Record in the summary the out-of-scope follow-up candidate from Phase 2
+      (`scripts/tests/*.sh` and `scripts/lint/*.sh` absent from `provides.scripts`). *(corrected
+      in Phase 2 and carried to the summary: these ARE now declared in `provides.scripts` as
+      path-prefixed strings, but still fail today via a third, distinct mismatch mechanism that
+      this task's fix does not address — see Phase 2's survey text)*
+
+**Verification results**: full gate set green — module loads headless
+(`nvim --headless -c "lua require(...)" -c "qa!"` exits 0), `scan_spec.lua` (19/19) and
+`sync_spec.lua` (5/5) both pass, `git status --short` scoped to `lua/` and `agent-system/` shows
+no unintended modification. The redeploy synced 295 total artifacts; all 23 `provides.skills`
+entries confirmed present with both hand-corrected orchestrator skills byte-identical to source
+before and after.
 
 **Timing**: 0.75 hours
 

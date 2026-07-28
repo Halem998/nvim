@@ -1,33 +1,26 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "plan",
-  "status": "planned",
-  "summary": "Created a 6-phase plan for the picker sync allow-list skills defect covering scope items A-E: scratch-tree reproduction (hard gate), category shape survey, generalized post-filter, wipeout detector, regression spec, and one deliberate redeploy. Corrected one research claim: the 'subdir == filter_category' invariant is false for OpenCode agents (agents_subdir == 'agent/subagents'), so the fix anchors on subdir with a basename fallback rather than on filter_category as research recommended. Effort 4.5 hours across 5 dependency waves.",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Fixed the picker sync allow-list post-filter (directory-name vs. basename key mismatch that silently dropped all 23 core skills), generalizing it to a subdir-anchored path-segment match with basename fallback. Added a zero-result wipeout detector and a permanent regression spec. Verified all 6 phases against scratch trees; performed one deliberate redeploy confirming all provides.skills entries deployed and both hand-corrected orchestrator SKILL.md files unchanged.",
   "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/938_picker_sync_skills_allow_list_filter/plans/01_skills-allow-list-filter-fix.md"
-    }
+    {"type": "summary", "path": "specs/938_picker_sync_skills_allow_list_filter/summaries/01_skills-allow-list-filter-fix-summary.md"}
   ],
   "blockers": [],
-  "next_action_hint": "implement",
+  "next_action_hint": "none",
   "files_modified": [
-    "specs/938_picker_sync_skills_allow_list_filter/plans/01_skills-allow-list-filter-fix.md",
-    "specs/938_picker_sync_skills_allow_list_filter/.return-meta.json"
+    "lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua",
+    "lua/neotex/plugins/ai/claude/commands/picker/operations/sync_spec.lua",
+    "specs/938_picker_sync_skills_allow_list_filter/plans/01_skills-allow-list-filter-fix.md"
   ],
   "decisions_made": [
-    "Anchor the generalized allow-list match on the sync_scan subdir argument, not filter_category, because they diverge for OpenCode agents (agents_subdir == 'agent/subagents') and anchoring on filter_category would silently drop every OpenCode agent",
-    "Require a basename fallback when the generalized match fails, so a future divergent call site degrades to today's behavior instead of wiping a category",
-    "Escape the interpolated subdir with vim.pesc() before building the Lua pattern",
-    "Phase 1 reproduction is a hard gate: if skills do not come back zero, stop and record that the diagnosis did not hold rather than forcing the fix",
-    "Zero-result detector triggers only on total wipeout (#results>0 and #filtered==0), non-blocking WARN via helpers.notify",
-    "Add a new sync_spec.lua regression spec following the existing scan_spec.lua scratch-tree convention",
-    "Keep scripts/tests and scripts/lint absence from provides.scripts out of scope; record as a follow-up candidate",
-    "Leave docs/templates/systemd unfiltered as they are today"
+    "Anchored the generalized allow-list match on the scanned subdir argument, not filter_category, since they diverge for OpenCode agents (agents_subdir == 'agent/subagents')",
+    "Added a basename fallback so a future divergent call site degrades to prior behavior instead of a silent wipeout",
+    "Wipeout detector triggers strictly on #results > 0 and #filtered == 0, report-only via helpers.notify WARN",
+    "Corrected Phase 2's research premise: scripts/tests and scripts/lint ARE declared in provides.scripts today, but still fail via a third, distinct mismatch mechanism out of this task's scope"
   ],
-  "dead_ends": [
-    "Research's recommended anchor on filter_category was rejected after verifying agents_subdir resolves to 'agent/subagents' for base_dir == '.opencode' in shared/extensions/config.lua"
-  ],
-  "phases_completed": 0,
-  "phases_total": 6
+  "dead_ends": [],
+  "phases_completed": 6,
+  "phases_total": 6,
+  "plan_markers_verified": true
 }
