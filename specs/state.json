@@ -1990,7 +1990,7 @@
     {
       "project_number": 940,
       "project_name": "summary_metadata_header_compliance",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Make implementation summaries emit the required metadata header",
@@ -2006,13 +2006,18 @@
         939
       ],
       "created": "2026-07-28T15:12:06Z",
-      "last_updated": "2026-07-28T16:20:52Z",
+      "last_updated": "2026-07-28T16:27:14Z",
       "session_id": "sess_1785251682_61201e_940",
       "artifacts": [
         {
           "path": "specs/940_summary_metadata_header_compliance/reports/01_summary-metadata-header-compliance.md",
           "type": "report",
           "summary": "Root-cause analysis of summary metadata header non-compliance and enforcement-posture options."
+        },
+        {
+          "path": "specs/940_summary_metadata_header_compliance/plans/01_summary-header-template-fix.md",
+          "type": "plan",
+          "summary": "Five-phase plan: reconcile Stage 6 inline template with summary-format.md, repair validate-artifact.sh --fix anchoring, add hard-mode Stage 6a postflight validation, non-blocking posture with silent passing runs."
         }
       ]
     },
