@@ -2081,7 +2081,7 @@
     {
       "project_number": 942,
       "project_name": "serialize_state_json_writers",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "title": "Serialize every specs/state.json writer through one mutex-guarded helper",
@@ -2105,15 +2105,63 @@
         "agent-system/extensions/core/manifest.json"
       ],
       "dependencies": [],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/942_serialize_state_json_writers/reports/01_serialize-state-json-writers.md",
+          "type": "research",
+          "summary": "Re-measured all nine state.json writers plus the two inline command-file writes against the source store; confirmed the fail-open mutex, shared-temp-path, task-lock.sh release-ownership, generate-todo torn-view, and workflow-active singleton defects. Found two additional defects beyond the baseline (archive-task.sh/review.md temp-path collision; two non-atomic Python3 in-place write sites in orchestrator-postflight.sh/skill-base.sh) and verified the release ownership check is safe to add against all 5 current callers. Recommends a standalone state-write.sh script, conversion order, and a concurrency test plan mirroring test-task-lock-reap.sh."
+        }
+      ],
       "created": "2026-07-28T17:22:36Z",
-      "last_updated": "2026-07-28T21:55:34Z",
-      "session_id": "sess_1785275452_7b73c2_942"
+      "last_updated": "2026-07-28T22:03:45Z",
+      "session_id": "sess_1785275452_7b73c2_942",
+      "next_artifact_number": 2,
+      "memory_candidates": [
+        {
+          "content": "In agent-system/extensions/core/scripts/task-lock.sh, cmd_scope_release and cmd_commit_release already implement owner-token-verified release (WARN-and-no-op on mismatch, always return 0) — this is the reusable precedent for adding an ownership check to cmd_release (the per-task lock release), which currently has none. Any future task-level lock hardening should mirror this exact pattern rather than inventing a new one.",
+          "category": "PATTERN",
+          "source_artifact": "specs/942_serialize_state_json_writers/reports/01_serialize-state-json-writers.md",
+          "confidence": 0.85,
+          "suggested_keywords": [
+            "task-lock.sh",
+            "scope-mutex",
+            "ownership-verification",
+            "fail-closed",
+            "release"
+          ]
+        },
+        {
+          "content": "orchestrator-postflight.sh (Stage 7a next_artifact_number, Stage 7c memory_candidates) and skill-base.sh's orphaned skill_increment_artifact_number/skill_propagate_memory_candidates functions write to specs/state.json via python3 json.load/json.dump directly in place, with no temp file and no atomic rename at all -- more fragile than the shared-fixed-temp-path hazard elsewhere in the same codebase. When auditing any script for state.json write safety, grep for 'python3 -c' blocks touching state.json specifically, not just jq-based '> tmp && mv' patterns.",
+          "category": "INSIGHT",
+          "source_artifact": "specs/942_serialize_state_json_writers/reports/01_serialize-state-json-writers.md",
+          "confidence": 0.85,
+          "suggested_keywords": [
+            "state.json",
+            "atomicity",
+            "python3",
+            "in-place-write",
+            "corruption"
+          ]
+        },
+        {
+          "content": "Extension-loader deploy gap: headless 'Load Core' sync skips copy_scripts/copy_manifest for already-loaded extensions, so a brand-new script added to an extension's manifest.json provides.scripts array does not automatically reach an already-deployed repo's .claude/scripts/ -- a manual one-off invocation of the loader's copy primitives (or direct file copy) is needed. This recurs for every new script file added to an established extension, not just one-off.",
+          "category": "PATTERN",
+          "source_artifact": "specs/942_serialize_state_json_writers/reports/01_serialize-state-json-writers.md",
+          "confidence": 0.75,
+          "suggested_keywords": [
+            "extension-loader",
+            "deploy-gap",
+            "copy_scripts",
+            "manifest.json",
+            "headless-sync"
+          ]
+        }
+      ]
     },
     {
       "project_number": 943,
       "project_name": "session_scope_orchestration_metadata",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "title": "Session-scope batch-level orchestration metadata and verify session_id on read",
@@ -2130,10 +2178,46 @@
         "agent-system/extensions/core/root-files/.gitignore"
       ],
       "dependencies": [],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/943_session_scope_orchestration_metadata/reports/01_session-scope-orchestration-metadata.md",
+          "type": "research",
+          "summary": "Confirms the two repo-level orchestration singletons are the only files needing session-scoping; recommends the {session_id}-suffix scheme over a directory scheme (verified via live git check-ignore probes); maps every writer/reader including the finding that .return-meta-multi.json is currently write-only with no reader; designs per-file (not uniform) read-time session_id verification, critically flagging that a hard-fail check on .orchestrator-loop-guard/.orchestrator-churn-state.json would break the designed multi-turn resume behavior; recommends deleting the dead session-suffixed handoff documentation; designs a mtime-based reap path modeled on task-lock.sh reap; confirms no ordering dependency against task 942."
+        }
+      ],
       "created": "2026-07-28T17:22:36Z",
-      "last_updated": "2026-07-28T21:55:38Z",
-      "session_id": "sess_1785275452_7b73c2_943"
+      "last_updated": "2026-07-28T22:06:23Z",
+      "session_id": "sess_1785275452_7b73c2_943",
+      "next_artifact_number": 2,
+      "memory_candidates": [
+        {
+          "content": "In this repo's agent-system, /orchestrate's SESSION_ID is freshly regenerated on every invocation (command-gate-in.sh), but per-task runtime files like .orchestrator-loop-guard and .orchestrator-churn-state.json are deliberately designed to be resumed across separate invocations of the same task (different session_id each time). Any future read-time session_id verification added to these files must be observational/warn-only, never hard-fail, or it will break the intended multi-turn /orchestrate resume path. The actual concurrency guard for same-task collisions is task-lock.sh's acquire/heartbeat/release mutex, not session_id equality.",
+          "category": "PATTERN",
+          "source_artifact": "specs/943_session_scope_orchestration_metadata/reports/01_session-scope-orchestration-metadata.md",
+          "confidence": 0.85,
+          "suggested_keywords": [
+            "orchestrate",
+            "session_id",
+            "loop-guard",
+            "resume",
+            "task-lock",
+            "verification"
+          ]
+        },
+        {
+          "content": "root-files/.gitignore in this agent-system source store deploys into the consumer's .claude/ directory, which is itself wholly gitignored at the repo root (/.claude/ pattern) -- so root-files/.gitignore has no effect on repo-root git tracking of specs/* runtime files. The actual mechanism for repo-root gitignore patterns is documented in context/standards/orchestrator-runtime-files.md's 'Consumer Repo Setup' section: a hand-maintained, one-time addition to the consumer repo's own root .gitignore. Any task whose file_scope names root-files/.gitignore for a specs/* ignore pattern change likely means the actual edit target is that documented code block plus a manual root .gitignore edit, not root-files/.gitignore itself.",
+          "category": "INSIGHT",
+          "source_artifact": "specs/943_session_scope_orchestration_metadata/reports/01_session-scope-orchestration-metadata.md",
+          "confidence": 0.8,
+          "suggested_keywords": [
+            "gitignore",
+            "root-files",
+            "deploy",
+            "orchestrator-runtime-files",
+            "source-store"
+          ]
+        }
+      ]
     },
     {
       "project_number": 944,

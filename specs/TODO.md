@@ -33,11 +33,11 @@ next_project_number: 957
 
 ### Orchestration Concurrency
 
-942 [RESEARCHING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+942 [RESEARCHED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 944 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
     └─ 945 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
       └─ 946 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-943 [RESEARCHING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+943 [RESEARCHED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 944 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS (see above)
 
 ## Tasks
@@ -469,10 +469,11 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 ---
 
 ### 943. Session-scope batch-level orchestration metadata and verify session_id on read
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: None
+- **Research**: [943_session_scope_orchestration_metadata/reports/01_session-scope-orchestration-metadata.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
 
@@ -507,10 +508,11 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 ---
 
 ### 942. Serialize every specs/state.json writer through one mutex-guarded helper
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: None
+- **Research**: [942_serialize_state_json_writers/reports/01_serialize-state-json-writers.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`. Runtime invocations still reference the deployed `.claude/scripts/...` paths; that is the call path, not the edit target.
 
