@@ -1750,7 +1750,7 @@
     {
       "project_number": 934,
       "project_name": "inter_wave_redeploy_checkpoint",
-      "status": "not_started",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Inter-wave redeploy checkpoint via the existing headless deploy path",
@@ -1769,9 +1769,20 @@
         936
       ],
       "created": "2026-07-27T20:34:52Z",
-      "last_updated": "2026-07-27T20:34:52Z",
-      "session_id": "sess_1785183950_f1bacb",
-      "artifacts": []
+      "last_updated": "2026-07-28T13:20:26Z",
+      "session_id": "sess_1785243932_153aa6",
+      "artifacts": [
+        {
+          "path": "specs/934_inter_wave_redeploy_checkpoint/reports/01_inter-wave-redeploy-checkpoint-design.md",
+          "type": "report",
+          "summary": "Design research for the inter-wave/inter-cycle redeploy checkpoint"
+        },
+        {
+          "path": "specs/934_inter_wave_redeploy_checkpoint/plans/01_inter-cycle-redeploy-checkpoint.md",
+          "type": "plan",
+          "summary": "Seven-phase plan adding an evidence-gated inter-cycle redeploy checkpoint"
+        }
+      ]
     },
     {
       "project_number": 935,

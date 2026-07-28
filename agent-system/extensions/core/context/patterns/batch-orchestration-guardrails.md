@@ -159,15 +159,43 @@ this gate:
    `--honest-index-rows` labels this in the commit message. This is a labeled, honest residual, not
    a defect, and it does not revive this hazard — reverting a self-modifying task's commit still
    isolates that task's own source-store diff from every sibling's.
-3. **Bootstrapping risk** (live) — admission for the task rewriting the admission predicate (or any
-   of the other eight files) is decided by the OLD, currently-deployed copy of that same machinery.
-   A defect the new candidate is trying to fix cannot fix its own admission decision; only a solo
-   run followed by a manual redeploy breaks that circularity.
+3. **Bootstrapping risk — PARTIALLY RETIRED, replaced by a narrower mid-invocation script-swap
+   exposure.** This hazard previously read: admission for the task rewriting the admission
+   predicate (or any of the other eight files) is decided by the OLD, currently-deployed copy of
+   that same machinery. A defect the new candidate is trying to fix cannot fix its own admission
+   decision; only a solo run followed by a manual redeploy breaks that circularity. That framing
+   is now split into three parts:
+   - (i) **Already structurally impossible before this change**: the in-batch, correctly-declared
+     form — a candidate whose declared `file_scope` names a critical path, admitted alongside
+     siblings in the same invocation — was already structurally impossible. The self-modification
+     admission gate excludes such a candidate from the **whole invocation** (recorded in
+     `deferred_self_modifying`), not merely from one cycle, so "W0 fixes it, W1 still runs stale"
+     could never happen for a correctly-declared candidate in the first place.
+   - (ii) **The two residual forms the inter-cycle redeploy checkpoint retires**: **declared/actual
+     divergence** — a task whose declared `file_scope` does not name a critical path but whose
+     actual `modified_files` do, invisible to a gate that only reads `file_scope` pre-dispatch —
+     and **cross-invocation staleness** — a correctly-excluded task is later re-run solo, commits
+     its fix, and nothing redeploys it before the next invocation picks up stale machinery.
+   - (iii) **The replacement exposure, named as such**: six of the nine critical paths
+     (`scripts/skill-base.sh`, `scripts/task-lock.sh`, `scripts/update-task-status.sh`,
+     `scripts/orchestrate-batch-admit.sh`, `scripts/orchestrate-triage-classify.sh`,
+     `scripts/orchestrate-dry-run-report.sh`) are shell scripts re-invoked via a fresh
+     `bash .claude/scripts/X.sh` subprocess at every use site, so they genuinely re-read on-disk
+     bytes; the remaining three (`skills/skill-orchestrate/SKILL.md`,
+     `skills/skill-orchestrate-hard/SKILL.md`, `commands/orchestrate.md`) are read once into the
+     orchestrator's context at dispatch time and are unaffected for the current turn. A mid-run
+     redeploy therefore genuinely swaps executing machinery mid-flight for the six script paths.
+     This is the **same underlying verification-gap tension as hazard 1, now manifesting
+     mid-session rather than only cross-session** — not an independent fourth hazard. See
+     `### The Inter-Cycle Redeploy Checkpoint` below for the mechanism that retires (ii) and
+     contains (iii).
 
 A later maintainer must not read the disproven live-corruption hypothesis as license to relax or
-remove this gate — hazards 1 and 3 above remain live and are, on their own, sufficient rationale
-to keep it. Hazard 2 is retained here in retired form, not deleted, so a later reader can see what
-changed and why.
+remove this gate — hazard 1 remains fully live and hazard 3 remains partially live (its
+replacement exposure, per (iii) above); together they are, on their own, sufficient rationale to
+keep it. Hazard 2 is retained here in retired form, not deleted, so a later reader can see what
+changed and why; hazard 3 is now retained in the same style, split into its retired and surviving
+parts rather than being deleted either.
 
 ### Scope Limitation and Residual Risk
 
@@ -182,6 +210,58 @@ stage an implementation agent's self-reported `modified_files` per task — is n
 per-task commit described under hazard 2's retirement above stages each task's own `modified_files`
 via the same contract single-task `/implement` uses (`context/standards/git-staging-scope.md`'s
 "Multi-Task Application" subsection).
+
+### The Inter-Cycle Redeploy Checkpoint
+
+This subsection is the single, authoritative statement of the inter-cycle redeploy checkpoint
+contract. Every other file that mentions the checkpoint (`regeneration-is-manual-only.md`,
+`skills/skill-orchestrate/SKILL.md`, `commands/orchestrate.md`, `scripts/deploy-headless.sh`,
+`scripts/verify-deploy.sh`) cross-references this subsection by path rather than restating it.
+
+**Trigger**: the union of every task dispatched this cycle's actual `modified_files`, compared
+against the `scope_roots x critical_paths` expansion of
+`context/reference/orchestrator-critical-paths.json` using the directory-prefix overlap predicate
+in `context/patterns/file-footprint-overlap.md` (both referenced by path, never restated here).
+Non-empty overlap fires the checkpoint.
+
+**Why `modified_files` and not `file_scope`**: the admission gate already performs the
+`file_scope` check pre-dispatch (see the Self-Modification Hazard section above); using
+post-dispatch `modified_files` is strictly more precise and closes the declared/actual divergence
+gap named under hazard 3 above. The cost is a single jq comparison, since the array is already in
+scope at Stage MT-4 step 5.5 of `skill-orchestrate/SKILL.md`.
+
+**Rejected alternatives, recorded so a later pass cannot rediscover them**:
+- **"Always redeploy between cycles"** — rejected. It imposes an unjustified deploy/verify cost
+  on every cycle of every batch regardless of relevance, and it maximizes the script-swap window
+  named in (iii) above rather than minimizing it.
+- **A bare user-supplied opt-in flag** — rejected. It defeats `/orchestrate`'s zero-synchronous-
+  confirmation-gates design (see Divergence from External Practice above): the operator cannot
+  know in advance which cycle will touch a critical path, so an opt-in flag either fires on every
+  invocation (equivalent to the first rejected alternative) or is never set when it matters.
+
+**Failure contract**: on failure of either gate (`deploy-headless.sh` or `verify-deploy.sh`),
+defer all remaining not-yet-dispatched tasks for the rest of the invocation. Never abort, never
+silently continue. This is governed by the `## Defer-Not-Fail: The Standing Default` section
+above. Abort is rejected because it discards `mt_state_file` bookkeeping for no benefit, since
+deferral already halts further exposure. Silent-continue is rejected outright because the
+operator would see nothing distinguishing "we didn't check" from "we checked, it's broken, and we
+proceeded anyway" — the same reasoning the Blocking vs. Advisory criterion above applies to any
+guardrail whose harm is silent and hard to detect after the fact.
+
+**Sequencing**: per-task commits at Stage MT-4 step 5.5 already precede any point the checkpoint
+can occupy, unconditionally and inside the same per-task loop iteration. Committed-then-redeployed,
+in that order, is guaranteed by existing step ordering and is stated here, not built.
+
+**Idempotence guard**: the checkpoint fires only when this cycle's overlap set contains at least
+one critical path not already recorded in `mt_state_file.deployed_critical_paths`. This mirrors
+`deferred_self_modifying`'s convergence rationale: without it, a task sitting in `implementing`
+across several cycles would re-report the same `modified_files` and re-fire the checkpoint every
+cycle, at unbounded redundant deploy/verify cost and with the mid-run script-swap window
+maximized rather than minimized.
+
+**Concurrency**: the whole-tree overwrite is serialized by a fail-open `specs/.deploy-lock/`
+mutex inside `scripts/deploy-headless.sh`, the same acquire/warn-and-proceed shape as the
+existing `specs/.commit-lock/` mutex in `scripts/git-commit-scoped.sh`.
 
 ### Note on Reachability Durability
 
@@ -358,3 +438,7 @@ This document states principles only. The mechanisms are defined, exactly once e
   rule, consumed by `scripts/orchestrate-batch-admit.sh`; and
   `docs/architecture/batch-admit-schema.md` — the `self_modifying` / `defer_reason` verdict fields
   this fourth dimension adds to the admission predicate's output.
+- **Deliberate-invocation constraint and its automated exception**:
+  `context/patterns/regeneration-is-manual-only.md` — the "must be invoked explicitly" constraint
+  this document's inter-cycle redeploy checkpoint is the one recorded, additive carve-out against
+  (see that file's `## Automated Exception` subsection).

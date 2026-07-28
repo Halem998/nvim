@@ -1,0 +1,29 @@
+{
+  "status": "in_progress",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/934_inter_wave_redeploy_checkpoint/plans/01_inter-cycle-redeploy-checkpoint.md",
+      "summary": "Seven-phase plan adding an evidence-gated inter-cycle redeploy checkpoint to skill-orchestrate Stage MT-3, with defer-remaining failure contract, fail-open deploy mutex, additive deliberate-invocation carve-out, and honest hazard-3 partial-retirement wording"
+    }
+  ],
+  "next_steps": "Run /implement 934 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1785243932_153aa6",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 5,
+    "dependency_waves": [[1], [2, 3, 4], [5], [6], [7]]
+  },
+  "memory_candidates": [
+    {
+      "content": "In skill-orchestrate's Stage MT-3 lifecycle-cycling loop, eligibility is recomputed from scratch every cycle, so any per-cycle exclusion decision re-fires forever unless it is also recorded in an INVOCATION-SCOPED deferral set on mt_state_file. deferred_self_modifying is the established template: the set is (1) checked in step 2's all-terminal test so a deferred task does not keep the loop alive, (2) subtracted in step 3's eligible_tasks build so the exclusion converges, (3) excluded from step 4's no-eligible circuit-breaker 'stuck tasks' framing, and (4) reported by Stage MT-5 as a category distinct from both completed_tasks and failed_tasks while forcing exit_status='partial'. Any NEW deferral cause must add its own named set rather than reusing deferred_self_modifying, because the operator remedy differs per cause; mirroring all four sites is the whole cost of adding one. Deferred tasks are never added to failed_tasks and never status-mutated -- deferral is 'incomplete by design', not 'broken'.",
+      "category": "PATTERN",
+      "source_artifact": "specs/934_inter_wave_redeploy_checkpoint/plans/01_inter-cycle-redeploy-checkpoint.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["skill-orchestrate", "mt_state_file", "deferral-set", "convergence", "eligible_tasks", "defer-not-fail"]
+    }
+  ]
+}

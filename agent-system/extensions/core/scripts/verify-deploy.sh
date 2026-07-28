@@ -6,6 +6,17 @@
 # events actually flowed?", which requires real command invocations over time. Do not report a
 # passing run here as end-to-end verification.
 #
+# Restated precisely for this script's one automated consumer: this script's PASS claims only
+# that the deploy tree matches its source store and that hooks are registered. It does NOT claim
+# the redeployed machinery has been exercised -- that would require the second gate (real command
+# invocations) described above, which this script cannot and does not perform.
+#
+# Callers: the inter-cycle redeploy checkpoint (`skill-orchestrate` Stage MT-3 step 7) is an
+# automated consumer of this script's exit code. See
+# context/patterns/batch-orchestration-guardrails.md's `### The Inter-Cycle Redeploy Checkpoint`
+# subsection for the full contract this script is one half of (the other half being
+# scripts/deploy-headless.sh).
+#
 # The checks are deliberately mechanical and independently reproducible; each prints the command
 # it stands for, so a reader can re-run any single line by hand rather than trusting this script.
 #
@@ -15,7 +26,9 @@
 # Exit codes:
 #   0  all checks passed
 #   1  one or more checks failed
-#   2  cannot run (target missing, or no deploy tree to inspect)
+#   2  cannot run (target missing, or no deploy tree to inspect) -- an automated gate MUST treat
+#      this the same as exit 1 (failure), never as a pass: a checkpoint that cannot establish the
+#      redeploy landed is in the same position as one that established it did not.
 
 set -uo pipefail
 
@@ -26,7 +39,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --quiet) QUIET=true; shift ;;
     -h|--help)
-      sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,33p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     -*)

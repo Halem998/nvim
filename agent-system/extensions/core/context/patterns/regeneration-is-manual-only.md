@@ -51,6 +51,44 @@ repo root, refuses to run outside a git repository, and reports the artifact cou
   is present to answer a dialog. It deliberately bypasses that safeguard, so it must be invoked
   explicitly and never as a silent side effect of an unrelated operation.
 
+## Automated Exception: The Inter-Cycle Self-Modification Checkpoint
+
+The sentence directly above -- `scripts/deploy-headless.sh` "must be invoked explicitly and never
+as a silent side effect of an unrelated operation" -- is left byte-for-byte intact by this
+subsection. It is not edited, weakened, or reworded here, matching this document's own
+established correction-as-addition pattern (see the `**CORRECTION.**` block above): a constraint
+that is no longer fully true is narrowed by a labeled, additive exception, never quietly rewritten
+in place.
+
+**The exact and only sanctioned automated call site**: `skill-orchestrate`'s Stage MT-3 step 7 --
+the inter-cycle redeploy checkpoint. No other automated caller is sanctioned by this subsection.
+
+**Why this is not a side effect of an unrelated operation**: the fix that triggers the checkpoint
+is precisely the fix the checkpoint exists to make live. A dispatched task's commit at Stage MT-4
+step 5.5 touching an orchestrator-critical path is the operation the redeploy is *for*, not an
+operation the redeploy is merely alongside. The operation is not unrelated -- it is the operation
+being corrected.
+
+**Why this is not silent**: the checkpoint logs on fire (naming the matched critical paths it
+detected), on success (naming the deployed artifact count and the `verify-deploy` pass), and on
+failure (naming the failing gate and its exit code). An operator reading the run's output can
+always distinguish "the checkpoint did not fire" from "it fired and passed" from "it fired and
+failed."
+
+**Why this is bounded**: the checkpoint is evidence-gated on actual `modified_files` overlapping a
+declared critical path -- never an unconditional "always between cycles" trigger. It fires at most
+once per critical path per invocation, via the idempotence guard. Any failure of either gate defers
+the remainder of the invocation rather than proceeding past an unverified deploy.
+
+**What this carve-out explicitly does NOT license**: no other automated caller may invoke
+`scripts/deploy-headless.sh` without its own equivalent exception recorded in this same section. A
+future reader must not read this subsection as general precedent for scripted deploys elsewhere in
+the system -- it licenses exactly the one call site named above, nothing broader.
+
+The full trigger, failure contract, sequencing, and idempotence-guard contract is recorded once,
+authoritatively, in `context/patterns/batch-orchestration-guardrails.md`'s
+`### The Inter-Cycle Redeploy Checkpoint` subsection. It is cross-referenced here, not restated.
+
 ## What This Means for Automation
 
 - **Source-store edits still do not deploy themselves.** Edits under
@@ -105,3 +143,7 @@ repo root, masking the invocation-context error this guard exists to surface.
   templates, deployment categories)
 - `scripts/check-extension-docs.sh` -- doc-lint gate; its core deploy-drift lane surfaces
   never-deployed core scripts/hooks
+- `context/patterns/batch-orchestration-guardrails.md` -- the authoritative inter-cycle redeploy
+  checkpoint contract (trigger, failure contract, sequencing, idempotence guard) that this
+  document's `## Automated Exception` subsection reconciles against the deliberate-invocation
+  constraint above

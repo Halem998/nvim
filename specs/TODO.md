@@ -19,7 +19,7 @@ next_project_number: 938
 
 ### Agent System
 
-934 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+934 [IMPLEMENTING] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
   └─ 935 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
     └─ 937 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
@@ -162,10 +162,12 @@ EXECUTION NOTE: this task's own file_scope names orchestrator-critical paths, so
 ---
 
 ### 934. Inter-wave redeploy checkpoint via the existing headless deploy path
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 932, Task 933, Task 936
+- **Research**: [934_inter_wave_redeploy_checkpoint/reports/01_inter-wave-redeploy-checkpoint-design.md]
+- **Plan**: [934_inter_wave_redeploy_checkpoint/plans/01_inter-cycle-redeploy-checkpoint.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
