@@ -7,5 +7,6 @@
     {"id": 1, "description": "Phase 1 - file changes", "status": "done", "files_touched": ["specs/938_picker_sync_skills_allow_list_filter/plans/01_skills-allow-list-filter-fix.md"]}
   ],
   "current_objective": 1,
-  "handoff_count": 0
+  "handoff_count": 0,
+  "note": "Phase 1 file, superseded by phase-2-progress.json for Phase 2 objectives"
 }

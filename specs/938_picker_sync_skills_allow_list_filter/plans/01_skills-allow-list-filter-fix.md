@@ -169,25 +169,64 @@ record whatever is observed. Any other result triggers the hard gate above.
 
 ---
 
-### Phase 2: Category shape survey [NOT STARTED]
+### Phase 2: Category shape survey [COMPLETED]
 
 **Goal**: Establish by inspection — not assumption — which categories passed into the post-filter
 are directory-shaped versus flat-file-shaped, so the fix's blast radius is known before it lands
 (scope item C).
 
 **Tasks**:
-- [ ] Enumerate every `sync_scan(...)` invocation in `M.scan_all_artifacts` and record, for each,
+- [x] Enumerate every `sync_scan(...)` invocation in `M.scan_all_artifacts` and record, for each,
       the `subdir` argument and the `filter_category` argument (including the ones that pass
       `nil`).
-- [ ] For each category that receives a non-nil `filter_category`, read the corresponding
+- [x] For each category that receives a non-nil `filter_category`, read the corresponding
       `provides.<category>` array in `agent-system/extensions/core/manifest.json` and classify the
       entries as directory names or file basenames.
-- [ ] Cross-check each classification against the on-disk layout under
+- [x] Cross-check each classification against the on-disk layout under
       `agent-system/extensions/core/<category>/` (does the entry name a directory or a file?).
-- [ ] Record explicitly which call sites have `subdir ~= filter_category` — this set determines
+- [x] Record explicitly which call sites have `subdir ~= filter_category` — this set determines
       why the fix anchors on `subdir`.
-- [ ] Record the `scripts/tests/` + `scripts/lint/` undeclared-file finding as an out-of-scope
+- [x] Record the `scripts/tests/` + `scripts/lint/` undeclared-file finding as an out-of-scope
       follow-up candidate; do not act on it.
+
+**Survey results** (re-derived from current source and manifest at implementation time; confirms
+the plan's hypothesis exactly — 7 categories, 2 directory-shaped, 1 `subdir ~= filter_category`
+call site):
+
+| `subdir` arg | `filter_category` | `provides.<cat>` entry shape | Classification |
+|---|---|---|---|
+| `"commands"` | `"commands"` | e.g. `"errors.md"` (matches on-disk file) | flat |
+| `agents_subdir` (`"agents"` for `.claude`; `"agent/subagents"` for `.opencode`) | `"agents"` | e.g. `"planner-agent.md"` (matches on-disk file) | flat |
+| `"skills"` (x2: `*.md`, `*.yaml`) | `"skills"` | e.g. `"skill-orchestrate"` (matches on-disk **directory**, file is `skill-orchestrate/SKILL.md`) | **directory** |
+| `"hooks"` | `"hooks"` | e.g. `"guard-destructive-git.sh"` (matches on-disk file) | flat |
+| `"scripts"` | `"scripts"` | e.g. `"archive-task.sh"` (matches on-disk file) | flat |
+| `"rules"` | `"rules"` | e.g. `"git-workflow.md"` (matches on-disk file) | flat |
+| `"context"` (x3: `*.md`, `*.json`, `*.yaml`) | `"context"` | e.g. `"formats"`, `"architecture"` (on-disk **directories**; plus a few flat files like `"README.md"`, `"routing.md"`) | **directory** (mixed with a handful of flat top-level files, already handled by the pre-existing `context` special case) |
+
+Categories scanned with `filter_category == nil` (unfiltered by design, out of this survey's
+scope): the one-off OpenCode `orchestrator.md` scan, `templates` (x2), `docs`, `systemd` (x2),
+`lib`, `tests`, `settings.json`. Confirms 7 filter_category-bearing categories total: `commands`,
+`agents`, `skills`, `hooks`, `scripts`, `rules`, `context`.
+
+**`subdir ~= filter_category` set**: exactly one call site — `artifacts.agents = sync_scan(agents_subdir, "*.md", true, nil, "agents")`, where `agents_subdir` resolves to the literal string `"agent/subagents"` for OpenCode (`config.agents_subdir` from `shared/extensions/config.lua`'s `M.opencode()` preset), diverging from the literal `filter_category` string `"agents"`. No other call site diverges.
+
+**Out-of-scope follow-up candidate** (re-verified at implementation time; corrects a stale
+premise in the research integration above): `scripts/tests/*.sh` (3 files) and
+`scripts/lint/*.sh` (2 files) exist on disk under `agent-system/extensions/core/scripts/` and
+ARE now declared in `provides.scripts` — as path-prefixed strings (`"tests/test-census-count.sh"`,
+`"lint/lint-contract-compliance.sh"`, etc.), not the bare `"undeclared"` state the research
+report assumed. A live, read-only `M.scan_all_artifacts` call against the real repo confirms
+these 5 files still do not sync today (`scripts` count = 62 = exactly the flat top-level scripts,
+zero nested files pass). This is because neither half of the Phase 3 fix matches a full
+relative-path provides key: the subdir-anchored directory match would need `allowed["tests"]`
+(only the full string `"tests/test-census-count.sh"` is a key, not the bare `"tests"` segment),
+and the basename fallback would need `allowed["test-census-count.sh"]` (only the prefixed form is
+a key). This is a third, distinct mismatch mechanism (full relative path vs. basename-only
+lookup) — different from both the directory-name mechanism (skills) and the flat-basename
+mechanism (agents/commands/etc.) this task fixes, and the fix in Phase 3 does not resolve it.
+Left out of scope per the plan's Non-Goals; recorded precisely here and in the Phase 6 summary as
+a follow-up candidate, corrected from the research's "absent" framing to "declared but still
+excluded by a third mismatch mechanism."
 
 **Timing**: 0.5 hours
 
