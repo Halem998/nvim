@@ -173,7 +173,7 @@ Ask users about dependencies between tasks when creating multiple tasks.
   "question": "For each dependent task, list dependencies:",
   "header": "Specify Dependencies",
   "format": "Task {N}: depends on Task {M}, Task {P}",
-  "examples": ["Task 2: depends on Task 1", "Task 3: depends on Task 1, Task 2"]
+  "examples": ["Task {N}: depends on Task {M}", "Task {P}: depends on Task {N}, Task {M}"]
 }
 ```
 
@@ -270,7 +270,7 @@ Always show task summary and require explicit confirmation before creating tasks
 | # | Title | Task Type | Effort | Dependencies |
 |---|-------|----------|--------|--------------|
 | 37 | Add sorting | meta | 2h | None |
-| 38 | Update insertion | meta | 1h | Task #37 |
+| 38 | Update insertion | meta | 1h | Task #{N} |
 
 **Total Estimated Effort**: 3 hours
 ```
@@ -313,7 +313,7 @@ Update state.json and TODO.md atomically with correct dependency information.
 - **Effort**: 2 hours
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Dependencies**: Task #35, Task #34
+- **Dependencies**: Task #{N}, Task #{M}
 
 **Description**: Task description here.
 

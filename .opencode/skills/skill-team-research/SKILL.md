@@ -599,7 +599,7 @@ Team research completed for task {N}:
 Brief text summary (NOT JSON):
 
 ```
-Team research completed for task 412:
+Team research completed for task {N}:
 - Spawned 3 teammates for parallel investigation
 - Teammate A: Implementation patterns (high confidence)
 - Teammate B: Prior art analysis (medium confidence)

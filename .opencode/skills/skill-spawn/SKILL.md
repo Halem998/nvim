@@ -258,8 +258,8 @@ The agent provides `dependency_order` which is already topologically sorted (fou
 ```bash
 # Example: dependency_order = [0, 1] means task at index 0 is foundational
 # If next_num = 242:
-#   - Index 0 -> Task 242 (foundational)
-#   - Index 1 -> Task 243 (depends on 242)
+#   - Index 0 -> Task {N} (foundational)
+#   - Index 1 -> Task {M} (depends on {N})
 
 # Build index->task_number mapping
 declare -A task_num_map
@@ -426,11 +426,11 @@ Edit the parent task entry to add/update the Dependencies line:
 # If no Dependencies line exists, add after Status line:
 old_string: - **Status**: [BLOCKED]
 new_string: - **Status**: [BLOCKED]
-- **Dependencies**: Task #242, Task #243
+- **Dependencies**: Task #{N}, Task #{M}
 
 # If Dependencies line exists, update it:
 old_string: - **Dependencies**: None
-new_string: - **Dependencies**: Task #242, Task #243
+new_string: - **Dependencies**: Task #{N}, Task #{M}
 ```
 
 Use Edit tool to update the parent task entry.
@@ -547,18 +547,18 @@ This skill returns a **brief text summary** (NOT JSON). The structured data is p
 
 Example successful return:
 ```
-Spawned 2 tasks to unblock task 241:
-- Task #242: Create state validation utilities (no dependencies)
-- Task #243: Implement recovery workflow (depends on #242)
-- Parent task #241 now depends on: #242, #243
+Spawned 2 tasks to unblock task {N}:
+- Task #{M}: Create state validation utilities (no dependencies)
+- Task #{P}: Implement recovery workflow (depends on #{M})
+- Parent task #{N} now depends on: #{M}, #{P}
 - Status: Parent [BLOCKED], spawned tasks [RESEARCHED]
 - Next: /plan 242
 ```
 
 Example partial return:
 ```
-Spawn partially completed for task 241:
+Spawn partially completed for task {N}:
 - Blocker analyzed, 2 tasks proposed
-- Task creation failed at Task #243
+- Task creation failed at Task #{P}
 - Partial state may exist, run /task --sync to reconcile
 ```
