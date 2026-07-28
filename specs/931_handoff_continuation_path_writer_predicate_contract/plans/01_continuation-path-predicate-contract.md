@@ -397,40 +397,46 @@ the dead `skill_write_orchestrator_handoff` gets an explicit recorded dispositio
 
 ---
 
-### Phase 5: Rewrite handoff-schema.md to document both accepted forms [NOT STARTED]
+### Phase 5: Rewrite handoff-schema.md to document both accepted forms [COMPLETED]
 
 **Goal**: `docs/architecture/handoff-schema.md` stops contradicting itself. It documents both
 continuation-pointer forms, states which writer emits which, and its examples show shapes a live
 writer would actually produce.
 
 **Tasks**:
-- [ ] Add a new **"Two Accepted Forms"** subsection under the continuation field documentation,
+- [x] Add a new **"Two Accepted Forms"** subsection under the continuation field documentation,
       stating: flat top-level `continuation_path` (string) is what live H9 wrap-up writers emit and
       is the hard-mode canonical form per `context/contracts/wrap-up.md`; nested
       `continuation_context` (object with `handoff_path` + `orchestrator_mode`) is the documented
       form, written today only by the unreferenced `skill_write_orchestrator_handoff`; **both are
       accepted by every reader and by `validate-handoff.sh`**. State that the two must not be
-      re-narrowed to one without changing every reader in lockstep.
-- [ ] Rewrite the `## Complete JSON Schema` block so `continuation_path` appears as a documented
+      re-narrowed to one without changing every reader in lockstep. *(completed)*
+- [x] Rewrite the `## Complete JSON Schema` block so `continuation_path` appears as a documented
       top-level optional field alongside `continuation_context`. Today `continuation_path` does not
-      appear anywhere in this document.
-- [ ] Add a `### continuation_path (optional, present when status = "partial")` field definition
-      mirroring the existing `### continuation_context` one; cross-reference the two.
-- [ ] Correct the `### Handoff Writers` table: it names `general-implementation-hard-agent.md` H9
+      appear anywhere in this document. *(completed)*
+- [x] Add a `### continuation_path (optional, present when status = "partial")` field definition
+      mirroring the existing `### continuation_context` one; cross-reference the two. *(completed)*
+- [x] Correct the `### Handoff Writers` table: it names `general-implementation-hard-agent.md` H9
       Stage 5 as the only active writer while the schema above documents a form that writer never
       emits. Add a column (or per-row note) recording **which form** each listed writer emits, and
       mark `skill_write_orchestrator_handoff` as defined-but-unreferenced consistently with the
-      Phase 4 comment.
-- [ ] Update `### When to Write \`continuation_context\`` to cover both forms (retitle as needed).
-- [ ] Update `### \`orchestrator_mode\` Flag in Continuation Context` to explain that a flat
+      Phase 4 comment. *(completed)*
+- [x] Update `### When to Write \`continuation_context\`` to cover both forms (retitle as needed).
+      *(completed: retitled "When to Write a Continuation Pointer")*
+- [x] Update `### \`orchestrator_mode\` Flag in Continuation Context` to explain that a flat
       `continuation_path` carries no `orchestrator_mode`, and that the reader supplies
       `orchestrator_mode: true` during normalization (matching Phase 3's dispatch-context work).
-- [ ] Rewrite the `### Partial with Continuation` example under `## Example Handoff Objects` to
+      *(completed)*
+- [x] Rewrite the `### Partial with Continuation` example under `## Example Handoff Objects` to
       show the **flat** form a live writer actually produces, and add a second example showing the
-      nested form, labelled with its writer.
-- [ ] Update the `## Reading Contract` section so its guidance reflects dual-form resolution.
-- [ ] Sanity-check `## Relationship to Continuation Handoffs` for any claim invalidated by the
-      above.
+      nested form, labelled with its writer. *(completed)*
+- [x] Update the `## Reading Contract` section so its guidance reflects dual-form resolution.
+      *(completed)*
+- [x] Sanity-check `## Relationship to Continuation Handoffs` for any claim invalidated by the
+      above. *(completed: the ASCII diagram named a writer inconsistent with the corrected Handoff
+      Writers table — general-implementation-hard-agent's H9 wrap-up, not base-mode
+      skill-implementer — and used the nested field only; rewritten to name the actual active
+      writer, the flat field, and the reader's normalization step)*
 
 **Timing**: 1.5 hours
 

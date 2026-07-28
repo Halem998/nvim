@@ -71,6 +71,35 @@ the successor agent reads markdown prose.
 
 ---
 
+## Two Accepted Forms
+
+The continuation pointer — "where is the markdown continuation handoff a `partial` dispatch left
+behind" — has **two accepted forms**, and every reader in the system accepts **both**:
+
+| Form | Shape | Who writes it today | Canonical source |
+|------|-------|----------------------|-------------------|
+| **Flat** `continuation_path` | top-level string, e.g. `"specs/NNN_slug/handoffs/phase-N-handoff-TS.md"` | The only ACTIVE writer: hard-mode implementation agents' H9 wrap-up (`general-implementation-hard-agent.md` Stage 5, and the cslib/lean counterparts) | `context/contracts/wrap-up.md`'s Orchestrator Handoff JSON Schema — this is hard mode's canonical, required shape |
+| **Nested** `continuation_context` | top-level object `{ "handoff_path": "...", "orchestrator_mode": true }` | `skill_write_orchestrator_handoff` in `scripts/skill-base.sh` — defined, but currently has **zero callers** anywhere in the deployed tree | This document (below) |
+
+**Both are accepted by every reader and by `validate-handoff.sh`.** `validate-handoff.sh`
+already treats `continuation_path` and `continuation_context` as two equally valid forms (its
+`required_fields` check accepts either being non-null) — that pre-existing validator behavior is
+the precedent the classifier and both orchestrator engines now conform to, not a new contract:
+`scripts/orchestrate-triage-classify.sh`'s `continuation_ok` predicate, `skill-orchestrate/SKILL.md`
+(Stage 4 partial handler, Stage 5 result read, Stage MT-4 dispatch bullet), and
+`skill-orchestrate-hard/SKILL.md` (Stage 4 partial handler, Stage 5 result read) all resolve
+**either** form, normalizing to `{ handoff_path, orchestrator_mode: true }` before the value is
+handed to a successor dispatch.
+
+**Do not re-narrow this to one form** without updating every one of those reader sites in
+lockstep — that is exactly the defect this document once contained: it documented only the
+nested form while simultaneously naming a writer (H9 wrap-up) that never emits it, and the
+classifier/engines silently only read the nested form, so a real hard-mode continuation was
+misclassified as absent. See the "Handoff Writers" table below for the corrected, form-aware
+account of what each writer actually emits.
+
+---
+
 ## Complete JSON Schema
 
 ```json
@@ -116,6 +145,8 @@ the successor agent reads markdown prose.
   "phases_completed": 2,
   "phases_total": 4,
 
+  "continuation_path": "specs/NNN_slug/handoffs/phase-N-handoff-TIMESTAMP.md",
+
   "continuation_context": {
     "handoff_path": "specs/NNN_slug/handoffs/phase-N-handoff-TIMESTAMP.md",
     "orchestrator_mode": true
@@ -124,6 +155,10 @@ the successor agent reads markdown prose.
   "plan_markers_verified": true
 }
 ```
+
+`continuation_path` and `continuation_context` are shown together above for schema
+documentation only — a real handoff carries **one or the other**, never both (see the "Two
+Accepted Forms" table above for which writer emits which).
 
 `phases_completed` and `phases_total` are TOP-LEVEL fields, always — never members of
 `continuation_context`. See the `continuation_context` field definition below and the
@@ -214,13 +249,32 @@ needed — the difference in handoff shape follows directly from the difference 
 members' defining property (see `context/contracts/anti-analysis.md`'s "Family relationship" note
 for that property).
 
-### `continuation_context` (optional, present when `status = "partial"`)
-Points to the continuation handoff file written by the agent. The orchestrator reads
-`handoff_path` and passes it in the next implement dispatch as `continuation_context`. It also
-carries `orchestrator_mode` (see below). It does NOT carry `phases_completed` or `phases_total`.
+### `continuation_path` (optional, present when `status = "partial"`)
+The **flat** form of the continuation pointer: a top-level string naming the continuation
+handoff markdown file the agent wrote. This is the form live H9 hard-mode wrap-up writers
+actually emit (`context/contracts/wrap-up.md`'s canonical schema; see "Two Accepted Forms"
+above). `null` when `status = "implemented"`.
 
-**Note**: `continuation_context` and `blockers` can both be present (partial completion with
-identified blockers). The orchestrator handles blockers first via escalation.
+The orchestrator resolves this field (or the nested `continuation_context.handoff_path` below,
+whichever is present) and normalizes the result to `{ handoff_path, orchestrator_mode: true }`
+before passing it to the next implement dispatch as `continuation_context` in the dispatch
+context — see "Reading Contract" below. `orchestrator_mode: true` is supplied by the reader
+during this normalization, since a flat `continuation_path` carries no `orchestrator_mode` field
+of its own (cross-reference: `### orchestrator_mode Flag` below).
+
+### `continuation_context` (optional, present when `status = "partial"`)
+The **nested** form of the continuation pointer: a top-level object `{ handoff_path,
+orchestrator_mode }`. Points to the continuation handoff file written by the agent, same as
+`continuation_path` above but pre-packaged with `orchestrator_mode`. Written today only by the
+unreferenced `skill_write_orchestrator_handoff` (see "Handoff Writers" below) — no active writer
+emits it currently, but every reader accepts it, and a future caller of that function produces a
+handoff every reader already understands. It does NOT carry `phases_completed` or
+`phases_total`.
+
+**Note**: either continuation-pointer form and `blockers` can both be present (partial completion
+with identified blockers). The orchestrator handles blockers first via escalation — see
+`scripts/orchestrate-triage-classify.sh`'s documented precedence (continuation outranks
+blockers whenever a continuation pointer, in either form, is present).
 
 ### `plan_markers_verified` (optional, boolean)
 Set to `true` when Stage 5a of the implementation agent completed successfully — i.e., all
@@ -260,12 +314,18 @@ ${log_prefix} COMPLETION-CLAIM GATE case 3/3 (phase accounting absent, plan_mark
 
 ### Handoff Writers
 
-| Writer | Status | Notes |
-|--------|--------|-------|
-| `agent-system/extensions/core/agents/general-implementation-hard-agent.md` (H9 Stage 5) | Active | The only active writer of `.orchestrator-handoff.json` today |
-| cslib and lean hard-mode implementation agent counterparts | Active | Mirror the core H9 wrap-up |
-| `skill_write_orchestrator_handoff` in `agent-system/extensions/core/scripts/skill-base.sh` | Defined, unreferenced | No caller currently invokes it |
-| Base-mode `skill-researcher`, `skill-planner`, `skill-implementer` | Never writes a handoff, by design | Research is explicitly prohibited from writing one (Stage 3.6 "Scoping Decision" in the research agents); base-mode plan/implement simply never gained a writer. This is an expected, `.return-meta.json`-recoverable case — see "Outcome Channels" below — not an unaddressed defect. |
+| Writer | Status | Continuation form emitted | Notes |
+|--------|--------|----------------------------|-------|
+| `agent-system/extensions/core/agents/general-implementation-hard-agent.md` (H9 Stage 5) | Active | **Flat** `continuation_path` | The only active writer of `.orchestrator-handoff.json` today; see `context/contracts/wrap-up.md`'s canonical schema |
+| cslib and lean hard-mode implementation agent counterparts | Active | **Flat** `continuation_path` | Mirror the core H9 wrap-up. Exception: `cslib-implementation-hard-agent.md` Stage 5 currently hardcodes `continuation_context: null` with no population instruction — a separate, narrower defect than the one this document's rewrite addresses; tracked as a named follow-up, not fixed here. |
+| `skill_write_orchestrator_handoff` in `agent-system/extensions/core/scripts/skill-base.sh` | **Defined, unreferenced** — zero callers anywhere in the deployed tree | **Nested** `continuation_context` | Documented as dead (not deleted, not rewired) as of the reader dual-form fix: since every reader now accepts its nested output, a future caller may use it as-is. |
+| Base-mode `skill-researcher`, `skill-planner`, `skill-implementer` | Never writes a handoff, by design | Neither (no handoff written at all) | Research is explicitly prohibited from writing one (Stage 3.6 "Scoping Decision" in the research agents); base-mode plan/implement simply never gained a writer. This is an expected, `.return-meta.json`-recoverable case — see "Outcome Channels" below — not an unaddressed defect. |
+
+**Reader/writer form agreement, corrected**: prior revisions of this table named
+`general-implementation-hard-agent.md`'s H9 Stage 5 as "the only active writer" while the schema
+above documented only the nested `continuation_context` form — a form that writer never emits.
+Every reader (the classifier and both SKILL.md engines) now accepts whichever form a writer
+actually produces; see "Two Accepted Forms" above.
 
 `agent-system/extensions/core/scripts/validate-handoff.sh` independently requires
 `phases_completed` and `phases_total` as top-level fields (its `required_fields` array reads them
@@ -346,7 +406,7 @@ Field-level budgets:
 | `decisions_made` (all entries) | ~50 |
 | `dead_ends` (all entries) | ~50 |
 | `files_modified` (all entries) | ~30 |
-| `continuation_context` | ~20 |
+| `continuation_path` OR `continuation_context` (whichever form is present; never both) | ~20 |
 | Schema overhead (field names, JSON structure) | ~50 |
 
 If content would exceed 400 tokens, truncate `decisions_made` and `dead_ends` first (these are
@@ -389,16 +449,34 @@ handoff_path="specs/${padded_num}_${project_name}/.orchestrator-handoff-${sessio
 The orchestrator reads its own session's file using the same session_id it wrote to the
 loop guard.
 
-### When to Write `continuation_context`
+### When to Write a Continuation Pointer
 
-Write `continuation_context` only when the skill returns `status = "partial"` AND a continuation
-handoff file was written by the agent. The continuation handoff path comes from the agent's
-`.return-meta.json` `partial_progress.handoff_path` field.
+Write a continuation pointer — in **either** accepted form (see "Two Accepted Forms" above) —
+only when the skill returns `status = "partial"` AND a continuation handoff file was written by
+the agent. The continuation handoff path comes from the agent's `.return-meta.json`
+`partial_progress.handoff_path` field.
+
+- Hard-mode wrap-up (the only active writer today) writes the **flat** top-level
+  `continuation_path` string, per `context/contracts/wrap-up.md`.
+- `skill_write_orchestrator_handoff` (unreferenced today) would write the **nested**
+  `continuation_context` object, per this document.
+
+Whichever form a future writer chooses, every reader accepts it — see "Two Accepted Forms".
 
 ### `orchestrator_mode` Flag in Continuation Context
 
-When skill-implementer runs in orchestrator_mode and returns partial, it MUST preserve the
-`orchestrator_mode` flag in the continuation_context embedded in the orchestrator handoff:
+A flat `continuation_path` string carries no `orchestrator_mode` field of its own — there is
+nowhere on a bare string to attach one. The **reader** supplies `orchestrator_mode: true` during
+normalization: every reader site (the classifier and both SKILL.md engines) resolves whichever
+form is present and builds `{ handoff_path: <resolved path>, orchestrator_mode: true }` before
+handing the result to the next dispatch as `continuation_context`. This is the same
+normalization Phase 3 of the continuation-pointer reader fix added to the base engine's
+dispatch-context construction, and it is unconditional — `orchestrator_mode: true` is set
+regardless of which form supplied `handoff_path`.
+
+When a writer instead emits the **nested** form directly (`skill_write_orchestrator_handoff`,
+today unreferenced), it MUST preserve the `orchestrator_mode` flag itself, since in that case the
+value already exists on the object being written rather than being synthesized by the reader:
 
 ```json
 {
@@ -412,8 +490,9 @@ When skill-implementer runs in orchestrator_mode and returns partial, it MUST pr
 }
 ```
 
-This ensures the next implement dispatch (via the orchestrator's re-dispatch) still operates
-in orchestrator mode and does not re-enable the inner continuation loop.
+Either way — reader-synthesized (flat writer) or writer-preserved (nested writer) — the next
+implement dispatch receives `orchestrator_mode: true` and continues operating in orchestrator
+mode rather than re-enabling the inner continuation loop.
 
 ---
 
@@ -435,12 +514,26 @@ handoff=$(cat "$handoff_file")
 status=$(echo "$handoff" | jq -r '.status')
 blockers=$(echo "$handoff" | jq -c '.blockers // []')
 next_hint=$(echo "$handoff" | jq -r '.next_action_hint // "none"')
-continuation=$(echo "$handoff" | jq -c '.continuation_context // null')
+# Dual-form resolution + normalization: accept EITHER the nested continuation_context.handoff_path
+# OR the flat top-level continuation_path (see "Two Accepted Forms" above), and normalize the
+# result to a single shape before it reaches a downstream dispatch context.
+continuation=$(echo "$handoff" | jq -c '
+  ((.continuation_context // null) | if . != null then (.handoff_path // null) else null end) as $nested |
+  (.continuation_path // null) as $flat |
+  ($nested // $flat) as $resolved |
+  if $resolved != null then {handoff_path: $resolved, orchestrator_mode: true} else null end
+')
 artifacts=$(echo "$handoff" | jq -c '.artifacts // []')
 phases_completed=$(echo "$handoff" | jq -r '.phases_completed // 0')
 phases_total=$(echo "$handoff" | jq -r '.phases_total // 0')
 plan_markers_verified=$(echo "$handoff" | jq -r '.plan_markers_verified // "absent"')
 ```
+
+This dual-form resolution is applied identically at every reader site:
+`scripts/orchestrate-triage-classify.sh`'s `continuation_ok` predicate,
+`skill-orchestrate/SKILL.md` (Stage 4 partial handler, Stage 5 result read, Stage MT-4 dispatch
+bullet), and `skill-orchestrate-hard/SKILL.md` (Stage 4 partial handler, Stage 5 result read).
+It is one rule, applied in several places — never independently re-derived.
 
 When `status = "implemented"`, the orchestrator additionally calls
 `skill_gate_completion_claim` (see the `plan_markers_verified` field definition above) to decide
@@ -520,7 +613,46 @@ grep)" contract in `skill-orchestrate/SKILL.md` and the Read allowlist in
 }
 ```
 
-### Partial with Continuation
+### Partial with Continuation (flat form — what a live writer actually produces)
+
+This is the shape hard-mode H9 wrap-up (`general-implementation-hard-agent.md` Stage 5, the only
+active writer today) actually emits — a flat top-level `continuation_path` string, per
+`context/contracts/wrap-up.md`:
+
+```json
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "partial",
+  "summary": "Completed phases 1-2 of 4 (parse-command-args.sh and command-gate-in.sh created). Context exhaustion during phase 3. Continuation handoff written at specified path.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/593_extract_shared_workflow_utilities/summaries/01_extraction-summary.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "implement",
+  "files_modified": [
+    ".claude/scripts/parse-command-args.sh",
+    ".claude/scripts/command-gate-in.sh"
+  ],
+  "decisions_made": [
+    "parse-command-args.sh exports FOCUS_PROMPT as remaining text after all flags stripped"
+  ],
+  "dead_ends": [],
+  "phases_completed": 2,
+  "phases_total": 4,
+  "continuation_path": "specs/593_extract_shared_workflow_utilities/handoffs/phase-3-handoff-20260522T120000Z.md"
+}
+```
+
+The orchestrator reader resolves `continuation_path` above and normalizes it to
+`{ handoff_path: "specs/593_extract_shared_workflow_utilities/handoffs/phase-3-handoff-20260522T120000Z.md", orchestrator_mode: true }`
+before passing it to the next implement dispatch — see "Reading Contract" below.
+
+### Partial with Continuation (nested form — the `skill_write_orchestrator_handoff` shape)
+
+This is the shape `skill_write_orchestrator_handoff` in `scripts/skill-base.sh` would write, were
+it ever called (it currently has zero callers — see "Handoff Writers" above). Every reader
+accepts this form identically to the flat form above:
 
 ```json
 {
@@ -583,15 +715,19 @@ The orchestrator handoff and continuation handoff are written by different compo
 different consumers:
 
 ```
-skill-implementer (in orchestrator_mode):
+general-implementation-hard-agent (H9 wrap-up, the only active writer today):
   ├── Writes: handoffs/phase-2-handoff-T.md   (for successor agent)
-  └── Writes: .orchestrator-handoff.json      (for skill-orchestrate)
-              └── continuation_context.handoff_path = "handoffs/phase-2-handoff-T.md"
+  └── Writes: .orchestrator-handoff.json      (for skill-orchestrate / skill-orchestrate-hard)
+              └── continuation_path = "handoffs/phase-2-handoff-T.md"   (flat form — see
+                  "Two Accepted Forms" above; a nested-writing caller of
+                  skill_write_orchestrator_handoff would instead set
+                  continuation_context.handoff_path to the same value)
 
-skill-orchestrate (next cycle):
+skill-orchestrate / skill-orchestrate-hard (next cycle):
   ├── Reads: .orchestrator-handoff.json       (400 tokens)
-  │          └── sees continuation_context.handoff_path
-  └── Passes: continuation_context to next implement dispatch
+  │          └── resolves EITHER continuation_path OR continuation_context.handoff_path
+  └── Passes: normalized continuation_context = { handoff_path, orchestrator_mode: true }
+              to next implement dispatch
               └── successor agent reads: handoffs/phase-2-handoff-T.md
 ```
 
