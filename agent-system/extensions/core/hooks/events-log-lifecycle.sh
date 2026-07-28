@@ -6,8 +6,13 @@
 # which correlation path to take -- the same agent_id-presence convention already used by
 # memory-nudge.sh and claude-stop-notify.sh to distinguish subagent stops from top-level ones.
 #
-# Claude Code hook stdin carries no workflow session_id or task number directly, so each
-# path reconstructs both via existing correlation mechanisms rather than inventing a new one:
+# Claude Code hook stdin carries no *agent-system workflow* session_id or task number
+# directly -- it does carry Claude Code's OWN native session UUID as top-level .session_id,
+# captured below as CC_SESSION_ID and threaded through unchanged as the events.jsonl
+# cc_session_id field (the exact join key to that session's OTel telemetry stream; see
+# context/formats/events-format.md's "Claude Code OTel Correlation" section). The workflow
+# session_id and task number below are a DIFFERENT id space and still have to be
+# reconstructed via existing correlation mechanisms rather than inventing a new one:
 #
 #   SubagentStop path: locates the `.postflight-pending` marker file the same way
 #     subagent-postflight.sh does (`find specs -maxdepth 3 -name ".postflight-pending"`).
@@ -103,6 +108,11 @@ AGENT_ID=$(echo "$STDIN_JSON" | jq -r '.agent_id // empty' 2>/dev/null || echo "
 # Claude Code hook stdin carries a top-level .cwd field alongside .agent_id -- capture it once
 # here and thread it to both the SubagentStop and Stop --cwd args below (scope 5: nullable cwd).
 CWD=$(echo "$STDIN_JSON" | jq -r '.cwd // empty' 2>/dev/null || echo "")
+# Claude Code's own native session UUID (top-level .session_id on every hook stdin) -- the
+# exact join key to OTel's session.id. Distinct from the agent-system sess_* id resolved
+# below; threaded to both the SubagentStop and Stop --cc-session-id args, same guard idiom
+# already used for CWD.
+CC_SESSION_ID=$(echo "$STDIN_JSON" | jq -r '.session_id // empty' 2>/dev/null || echo "")
 
 if [ -n "$AGENT_ID" ]; then
   # ─────────────────────────────────────────────────────────────────────────
@@ -129,6 +139,7 @@ if [ -n "$AGENT_ID" ]; then
     --message "Subagent stop for ${skill:-unknown} (${operation:-unknown})")
   [ -n "$task" ] && event_args+=(--task "$task")
   [ -n "$CWD" ] && event_args+=(--cwd "$CWD")
+  [ -n "$CC_SESSION_ID" ] && event_args+=(--cc-session-id "$CC_SESSION_ID")
 
   _events_append_observable "$EVENTS_APPEND" "${event_args[@]}"
   exit_success
@@ -169,6 +180,7 @@ session_id=$(jq -r --argjson num "$task" \
 event_args=(--event-type session_stop --category milestone --session "$session_id" \
   --task "$task" --message "Session stop observed for task ${task}")
 [ -n "$CWD" ] && event_args+=(--cwd "$CWD")
+[ -n "$CC_SESSION_ID" ] && event_args+=(--cc-session-id "$CC_SESSION_ID")
 
 _events_append_observable "$EVENTS_APPEND" "${event_args[@]}"
 exit_success

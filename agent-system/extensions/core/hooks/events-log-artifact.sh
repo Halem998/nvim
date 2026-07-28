@@ -58,8 +58,12 @@ _events_append_observable() {
 #     fallback pattern used by validate-plan-write.sh / validate-meta-write.sh ---
 # Also capture the top-level .cwd field from the same parsed stdin JSON when available (scope 5:
 # nullable cwd) -- the CLAUDE_TOOL_INPUT env fallback carries no .cwd, so CWD stays empty
-# (written as null by events-append.sh) in that edge case.
+# (written as null by events-append.sh) in that edge case. Same treatment for .session_id
+# (Claude Code's own native session UUID, captured as CC_SESSION_ID -- the exact join key to
+# OTel's session.id); the CLAUDE_TOOL_INPUT fallback carries no .session_id either, so
+# CC_SESSION_ID stays empty (written as null) in that same edge case.
 CWD=""
+CC_SESSION_ID=""
 if [ -t 0 ]; then
   FILE=$(echo "${CLAUDE_TOOL_INPUT:-}" | jq -r '.file_path // empty' 2>/dev/null)
 else
@@ -69,6 +73,7 @@ else
     FILE=$(echo "${CLAUDE_TOOL_INPUT:-}" | jq -r '.file_path // empty' 2>/dev/null)
   fi
   CWD=$(echo "$INPUT" | jq -r '.cwd // empty' 2>/dev/null)
+  CC_SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // empty' 2>/dev/null)
 fi
 
 # Early exit for empty path (~1ms) -- no jq/lock work paid for below this point unless matched
@@ -133,6 +138,7 @@ if [ "$match_type" = "return_meta" ]; then
       --message "Artifact metadata written with status '${status:-unknown}'")
     [ -n "$task" ] && event_args+=(--task "$task")
     [ -n "$CWD" ] && event_args+=(--cwd "$CWD")
+    [ -n "$CC_SESSION_ID" ] && event_args+=(--cc-session-id "$CC_SESSION_ID")
 
     _events_append_observable "$EVENTS_APPEND" "${event_args[@]}"
   fi
@@ -155,6 +161,7 @@ elif [ "$match_type" = "errors_json" ]; then
     [ -n "$task" ] && [ "$task" != "null" ] && event_args+=(--task "$task")
     [ -n "$error_id" ] && event_args+=(--error-ref "$error_id")
     [ -n "$CWD" ] && event_args+=(--cwd "$CWD")
+    [ -n "$CC_SESSION_ID" ] && event_args+=(--cc-session-id "$CC_SESSION_ID")
 
     _events_append_observable "$EVENTS_APPEND" "${event_args[@]}"
   fi

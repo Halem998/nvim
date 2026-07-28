@@ -1,32 +1,6 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "task_number": 887,
-  "session_id": "sess_1785194231_5f18f2",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/887_research_telemetry_source_architecture_and_distill_redesign/plans/01_distill-telemetry-redesign.md"
-    }
-  ],
-  "metadata": {
-    "session_id": "sess_1785194231_5f18f2",
-    "phase_count": 12,
-    "estimated_hours": 19,
-    "dependency_waves": [[1, 2, 3], [4, 5], [6, 7, 8, 9], [10], [11], [12]],
-    "complexity": "complex",
-    "research_integrated": true,
-    "plan_version": 1
-  },
-  "next_steps": "Run /revise 887 to refine the design plan, then /expand 887 into implementation tasks",
-  "memory_candidates": [
-    {
-      "content": "When planning against a research report, re-verify the report's 'add this missing field' recommendations against the live source store before sizing the phase. In the events.jsonl/OTel seam design, the research report recommended adding a `cwd` field plus a `--cwd` flag plus hook capture plus query-time repo derivation; all four already existed on disk (events-schema.json property, events-append.sh flag, both event-writing hooks capturing from stdin, events-query.sh --repo/by_repo derivation). Only `cc_session_id` was genuinely new. The already-implemented feature then served as an exact per-call-site template for the new one, converting a multi-file design phase into a mechanical mirror of an existing code path. Research reports go stale against a moving source store; a grep for the recommended field name across every file the report names is a cheap plan-time gate that both prevents duplicate work and often surfaces a ready-made implementation template.",
-    "category": "PATTERN",
-    "source_artifact": "specs/887_research_telemetry_source_architecture_and_distill_redesign/plans/01_distill-telemetry-redesign.md",
-    "confidence": 0.85,
-    "suggested_keywords": ["research-staleness", "plan-grounding", "preserved-assets", "schema-evolution", "verify-before-sizing"]
-  }
-  ]
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1785200970_1df081_887"
 }

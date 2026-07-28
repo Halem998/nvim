@@ -1,7 +1,7 @@
 # Implementation Plan: Task #887
 
 - **Task**: 887 - Research: telemetry source architecture and /distill redesign
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 19 hours
 - **Dependencies**: 873 (consumed, not redesigned)
 - **Research Inputs**: `specs/887_research_telemetry_source_architecture_and_distill_redesign/reports/01_telemetry-source-architecture.md`
@@ -136,7 +136,7 @@ files) and are safe to parallelize with explicit territory.
 
 ---
 
-### Phase 1: Add `cc_session_id` to the events seam [NOT STARTED]
+### Phase 1: Add `cc_session_id` to the events seam [COMPLETED]
 
 **Goal**: Give `events.jsonl` an exact join key to Claude Code's OTel stream by capturing Claude
 Code's native session UUID, which every hook already receives on stdin and both event-writing
@@ -157,30 +157,37 @@ hooks currently discard.
 
 **Tasks**:
 
-- [ ] Add the `cc_session_id` property to `events-schema.json` with a description that states: it
+- [x] Add the `cc_session_id` property to `events-schema.json` with a description that states: it
       is Claude Code's own native session UUID from hook stdin `.session_id`; it shares an id space
       with OTel's `session.id` resource attribute and `history.jsonl`'s `sessionId`; it is distinct
       from this schema's `session_id`; and it is `null` for events emitted outside any hook context.
-- [ ] Add a `--cc-session-id VALUE` flag to `events-append.sh`, following the existing `--cwd`
+      *(completed)*
+- [x] Add a `--cc-session-id VALUE` flag to `events-append.sh`, following the existing `--cwd`
       implementation exactly: a `cc_session_id=""` initializer, an argument-parser case, an
       `--arg cc_session_id` binding, and an
       `if $cc_session_id == "" then null else $cc_session_id end` emission in the jq object.
-- [ ] In `events-log-lifecycle.sh`, extract `.session_id` from the already-parsed `STDIN_JSON`
+      *(completed)*
+- [x] In `events-log-lifecycle.sh`, extract `.session_id` from the already-parsed `STDIN_JSON`
       into a `CC_SESSION_ID` variable alongside the existing `CWD` extraction, and append
       `--cc-session-id` to `event_args` for both the SubagentStop and Stop paths, guarded by the
-      same `[ -n "$X" ] &&` idiom already used for `CWD`.
-- [ ] In `events-log-artifact.sh`, extract `.session_id` from the parsed `INPUT` JSON alongside the
+      same `[ -n "$X" ] &&` idiom already used for `CWD`. *(completed)*
+- [x] In `events-log-artifact.sh`, extract `.session_id` from the parsed `INPUT` JSON alongside the
       existing `CWD` extraction, and thread it into both the `artifact_write` and `error_logged`
       `event_args` arrays with the same guard idiom. Note the `CLAUDE_TOOL_INPUT` env-var fallback
       path carries no `.session_id`, so the variable stays empty there and is written as `null` —
-      the same edge case already documented for `CWD`.
-- [ ] Correct the stale header comment in `events-log-lifecycle.sh` (currently: "Claude Code hook
+      the same edge case already documented for `CWD`. *(completed)*
+- [x] Correct the stale header comment in `events-log-lifecycle.sh` (currently: "Claude Code hook
       stdin carries no workflow session_id or task number directly"). The statement is true of the
       agent-system's id and false of Claude Code's own; rewrite it to distinguish the two rather
       than deleting it, since the marker-file reconstruction it justifies is still needed.
-- [ ] Enumerate and update every strict validator of `events-schema.json` found by grep. This is an
+      *(completed)*
+- [x] Enumerate and update every strict validator of `events-schema.json` found by grep. This is an
       explicit checklist item because the schema's top-level object is `"additionalProperties":
       false` and a strict validator that has not been updated will reject the new field.
+      *(completed: grepped all of agent-system/ for "events-schema.json" — only consumers are
+      events-append.sh/events-query.sh (jq construction, not schema-strict validation) and
+      verify-deploy.sh (file-presence check only, no additionalProperties enforcement); no
+      other strict validator exists to update)*
 
 **Timing**: 1.5 hours
 
