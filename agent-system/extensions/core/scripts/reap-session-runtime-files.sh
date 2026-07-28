@@ -1,0 +1,132 @@
+#!/usr/bin/env bash
+# reap-session-runtime-files.sh — mtime-based reap for abandoned session-scoped orchestration
+# runtime files.
+#
+# Purpose: session-scoping specs/.orchestrator-multi-state-{session_id}.json and
+# specs/.return-meta-multi-{session_id}.json (see
+# context/standards/orchestrator-runtime-files.md's Class Table) trades batch-collision risk for
+# unbounded litter — a batch orchestration that never reaches its own cleanup path (crash,
+# killed session, interrupted terminal) leaves its session-suffixed file behind forever. This
+# script sweeps both globs at the specs/ root and deletes ones whose mtime exceeds
+# ORCHESTRATOR_SESSION_REAP_MIN minutes.
+#
+# Modeled on task-lock.sh's `reap` subcommand: same --dry-run contract, same
+# report-then-delete-or-report shape, so `skill-refresh/SKILL.md` can echo this script's output
+# verbatim the same way it already does for task-lock.sh reap.
+#
+# Scope: ONLY the two repo-level singleton globs directly under specs/. Deliberately does NOT
+# recurse into specs/{NNN}_{SLUG}/ — per-task runtime files (.orchestrator-loop-guard,
+# .orchestrator-churn-state.json, .drift-inspection.json, .lock/) are already correctly isolated
+# by task directory and are out of scope for this sweep.
+#
+# Staleness criterion: file mtime, matching task-lock.sh cmd_reap's own fallback path. This does
+# NOT conflict with the "no freshness check on read" principle documented in
+# orchestrator-runtime-files.md: that principle governs whether an in-flight READ trusts an old
+# file's content unconditionally (it does, by design). Reap is a distinct, explicitly-invoked
+# DELETION sweep, never run implicitly from a read path, and mtime is already used elsewhere in
+# this codebase (task-lock.sh) for the identical reap purpose. The multi-state file's mtime
+# advances on every dispatch cycle (cycle_count, current_statuses, dispatch_start_ts all rewrite
+# it — see skill-orchestrate/SKILL.md's Stage MT loop), so mtime is a live signal that only stops
+# advancing once the writing invocation truly terminates.
+#
+# Threshold: ORCHESTRATOR_SESSION_REAP_MIN, default 240 minutes. Deliberately NOT
+# TASK_LOCK_REAP_MIN (task-lock.sh's own threshold) — a multi-task batch can run up to
+# MAX_CYCLES_MT = min(task_count * 5, 25) cycles, each potentially a full research + plan +
+# implement dispatch per task, so the safe threshold must be materially longer than a single
+# task's lock threshold, and there is no PID/heartbeat liveness signal for the batch orchestrator
+# the way task-lock.sh has for a single task's lock.
+#
+# Usage:
+#   reap-session-runtime-files.sh [--dry-run]
+#
+# Exit codes:
+#   0 - always (whether or not anything qualified for reaping; reap reports, it never fails
+#       the caller for "nothing to do")
+#   2 - usage error
+
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+ORCHESTRATOR_SESSION_REAP_MIN="${ORCHESTRATOR_SESSION_REAP_MIN:-240}"
+
+dry_run=false
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --dry-run)
+      dry_run=true
+      shift
+      ;;
+    *)
+      echo "Usage: $0 [--dry-run]" >&2
+      exit 2
+      ;;
+  esac
+done
+
+now_epoch() {
+  date -u +%s
+}
+
+# --- extract_session_id: best-effort session_id extraction from filename or file content ---
+# Filename shape: specs/.orchestrator-multi-state-{session_id}.json or
+# specs/.return-meta-multi-{session_id}.json. Falls back to the file's own "session_id" JSON
+# field (return-meta-multi always carries one; multi-state always carries one per
+# skill-orchestrate/SKILL.md Stage MT-1) if the filename shape does not parse cleanly.
+extract_session_id() {
+  local f="$1" base sid
+  base=$(basename "$f")
+  sid="${base#.orchestrator-multi-state-}"
+  sid="${sid#.return-meta-multi-}"
+  sid="${sid%.json}"
+  if [ "$sid" = "$base" ] || [ -z "$sid" ]; then
+    sid=$(jq -r '.session_id // "unknown"' "$f" 2>/dev/null)
+    [ -n "$sid" ] || sid="unknown"
+  fi
+  echo "$sid"
+}
+
+total_count=0
+reaped_count=0
+
+# nullglob so a no-match glob expands to zero words rather than the literal pattern string.
+# Restored via a trap-independent explicit unset at the end since this script always exits
+# through the same tail regardless of branch taken.
+shopt -s nullglob
+candidates=( "$PROJECT_ROOT"/specs/.orchestrator-multi-state-*.json "$PROJECT_ROOT"/specs/.return-meta-multi-*.json )
+shopt -u nullglob
+
+for f in "${candidates[@]}"; do
+  [ -f "$f" ] || continue
+  total_count=$(( total_count + 1 ))
+
+  session_id=$(extract_session_id "$f")
+  file_mtime=$(stat -c %Y "$f" 2>/dev/null || stat -f %m "$f" 2>/dev/null)
+  if [ -z "$file_mtime" ]; then
+    echo "SKIP: $f (could not stat mtime)" >&2
+    continue
+  fi
+  age_min=$(( ( $(now_epoch) - file_mtime ) / 60 ))
+  rel_path="specs/$(basename "$f")"
+
+  if [ "$age_min" -gt "$ORCHESTRATOR_SESSION_REAP_MIN" ]; then
+    reaped_count=$(( reaped_count + 1 ))
+    if [ "$dry_run" = true ]; then
+      echo "would reap: $rel_path session=$session_id age_min=$age_min"
+    else
+      rm -f "$f" 2>/dev/null
+      echo "reaped: $rel_path session=$session_id age_min=$age_min"
+    fi
+  fi
+done
+
+if [ "$reaped_count" -eq 0 ]; then
+  echo "no stale session-scoped orchestration files found (${total_count} file(s) scanned, threshold ${ORCHESTRATOR_SESSION_REAP_MIN}min)"
+elif [ "$dry_run" = true ]; then
+  echo "would reap ${reaped_count} of ${total_count} session-scoped orchestration file(s) (threshold ${ORCHESTRATOR_SESSION_REAP_MIN}min)"
+else
+  echo "reaped ${reaped_count} of ${total_count} session-scoped orchestration file(s) (threshold ${ORCHESTRATOR_SESSION_REAP_MIN}min)"
+fi
+
+exit 0

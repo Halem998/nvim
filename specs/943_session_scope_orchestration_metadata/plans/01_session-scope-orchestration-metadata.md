@@ -426,47 +426,49 @@ bash agent-system/extensions/core/scripts/check-runtime-file-tracking.sh
 
 ---
 
-### Phase 5: Reap path for abandoned session-scoped files [IN PROGRESS]
+### Phase 5: Reap path for abandoned session-scoped files [COMPLETED]
 
 **Goal**: `/refresh` sweeps stale session-scoped orchestration files, so session-scoping does not
 trade collisions for unbounded litter.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/reap-session-runtime-files.sh` in the existing
+- [x] Create `agent-system/extensions/core/scripts/reap-session-runtime-files.sh` in the existing
       flat `scripts/` directory (NOT a new subdirectory — this sidesteps the documented
       deploy-loader gap for brand-new subdirectories). Model its structure, output shape, and
       `--dry-run` contract on `task-lock.sh`'s `reap` subcommand so `/refresh` can echo its
-      output verbatim the same way it does for task locks.
-- [ ] The script sweeps two globs at the `specs/` root:
+      output verbatim the same way it does for task locks. *(completed)*
+- [x] The script sweeps two globs at the `specs/` root:
       `specs/.orchestrator-multi-state-*.json` and `specs/.return-meta-multi-*.json`. It must NOT
-      recurse into `specs/{NNN}_{SLUG}/` — per-task runtime files are out of scope.
-- [ ] Staleness criterion is file mtime, matching `task-lock.sh cmd_reap`'s own fallback path.
+      recurse into `specs/{NNN}_{SLUG}/` — per-task runtime files are out of scope. *(completed)*
+- [x] Staleness criterion is file mtime, matching `task-lock.sh cmd_reap`'s own fallback path.
       Record inline why this does not conflict with the "no freshness check on read" principle in
       `orchestrator-runtime-files.md`: that principle governs whether an in-flight *read* trusts
       an old file's content; reap is a distinct, explicitly-invoked *deletion* sweep that already
-      uses mtime elsewhere in this codebase for the identical purpose.
-- [ ] Introduce a dedicated env var `ORCHESTRATOR_SESSION_REAP_MIN`, default **240 minutes**.
+      uses mtime elsewhere in this codebase for the identical purpose. *(completed: recorded in
+      the script's header comment)*
+- [x] Introduce a dedicated env var `ORCHESTRATOR_SESSION_REAP_MIN`, default **240 minutes**.
       Do not reuse `TASK_LOCK_REAP_MIN`. Rationale to record inline: a multi-task batch runs up to
       `MAX_CYCLES_MT = min(task_count * 5, 25)` cycles, each potentially a full research + plan +
       implement dispatch per task, so the safe threshold must be materially longer than the task
       lock's own default. Note in the script header that the multi-state file's mtime advances on
       every dispatch cycle (cycle_count, current_statuses, dispatch_start_ts all rewrite it), so
       mtime is a live signal that only stops advancing once the writing invocation truly
-      terminates.
-- [ ] `--dry-run` reports what would be deleted without deleting; the live run deletes and reports
-      per-file detail (filename, embedded session id, age in minutes).
-- [ ] Add `### Step 4.5: Reap Stale Session-Scoped Orchestration Files` to
+      terminates. *(completed)*
+- [x] `--dry-run` reports what would be deleted without deleting; the live run deletes and reports
+      per-file detail (filename, embedded session id, age in minutes). *(completed)*
+- [x] Add `### Step 4.5: Reap Stale Session-Scoped Orchestration Files` to
       `agent-system/extensions/core/skills/skill-refresh/SKILL.md`, immediately after the existing
       `### Step 4: Reap Stale Task Locks`. Use the `X.5` numbering deliberately to avoid renumbering
       Steps 5-7 and churning their existing cross-references in both `SKILL.md` and `refresh.md`.
       Mirror Step 4's dry-run/live branch structure and its "echo the script's output verbatim
-      rather than summarizing it away" instruction.
-- [ ] Add a `### Stale Session-Scoped Orchestration Files` subsection to
+      rather than summarizing it away" instruction. *(completed)*
+- [x] Add a `### Stale Session-Scoped Orchestration Files` subsection to
       `agent-system/extensions/core/commands/refresh.md` under "What It Cleans", parallel to the
       existing `### Stale Task Locks` subsection and following the same reporting shape (what is
       swept, dry-run vs live, threshold source). Carry over that section's existing note that this
       cleanup runs only on explicit `/refresh` invocation, not on the hourly systemd cadence.
-- [ ] Make the new script executable (`chmod +x`) to match its `scripts/` siblings.
+      *(completed)*
+- [x] Make the new script executable (`chmod +x`) to match its `scripts/` siblings. *(completed)*
 
 **Timing**: 1 hour
 

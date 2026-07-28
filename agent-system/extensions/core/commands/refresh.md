@@ -60,6 +60,22 @@ lower-frequency, higher-consequence operation than process cleanup, and explicit
 a conservative threshold is the intended posture. Moving it onto the timer is a separable,
 out-of-scope change.
 
+### Stale Session-Scoped Orchestration Files
+
+`/refresh` also sweeps the `specs/` root for stale session-scoped
+`specs/.orchestrator-multi-state-{session_id}.json` and
+`specs/.return-meta-multi-{session_id}.json` files via `reap-session-runtime-files.sh`, reporting
+each one found (filename, embedded session id, age in minutes) on both the dry-run and live
+paths. See `.claude/context/standards/orchestrator-runtime-files.md`'s Class Table for what these
+files are and `reap-session-runtime-files.sh`'s own header for the `ORCHESTRATOR_SESSION_REAP_MIN`
+threshold derivation (default 240 minutes — deliberately longer than the task-lock threshold
+above, since a multi-task batch orchestration can legitimately run for many cycles). This sweep
+is scoped to the two repo-level singletons directly under `specs/`; it does not recurse into
+`specs/{NNN}_{SLUG}/`, whose per-task runtime files are already isolated by task directory.
+
+Like the task-lock reap above, this cleanup runs **only on explicit `/refresh` invocation**, not
+on the hourly systemd cadence.
+
 ## Interactive Mode
 
 When run without flags, `/refresh` operates in interactive mode:

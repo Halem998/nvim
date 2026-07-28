@@ -111,6 +111,34 @@ The per-lock detail (task number, session id, operation, age) is produced by `ta
 itself; echo its output verbatim rather than summarizing it away, matching the reap subcommand's
 own per-item reporting contract.
 
+### Step 4.5: Reap Stale Session-Scoped Orchestration Files
+
+Sweep `specs/` for stale session-scoped `specs/.orchestrator-multi-state-{session_id}.json` and
+`specs/.return-meta-multi-{session_id}.json` files (see
+`context/standards/orchestrator-runtime-files.md`'s Class Table) and report every one found. This
+is a distinct cleanup target from Step 4's task-lock reap — session-scoping the two repo-level
+batch-orchestration singletons trades collision risk for unbounded litter if an abandoned batch's
+file is never swept, so this step exists to bound that litter. Uses the `X.5` numbering
+deliberately so Steps 5-7 below keep their existing numbers and no cross-reference to them in
+`refresh.md` needs to change. Reuses the `dry_run` boolean already parsed in Step 1.
+
+```bash
+echo ""
+echo "=== Reaping Stale Session-Scoped Orchestration Files ==="
+echo ""
+
+if [ "$dry_run" = true ]; then
+    .claude/scripts/reap-session-runtime-files.sh --dry-run
+else
+    .claude/scripts/reap-session-runtime-files.sh
+fi
+```
+
+The per-file detail (filename, embedded session id, age in minutes) is produced by
+`reap-session-runtime-files.sh` itself; echo its output verbatim rather than summarizing it away,
+matching Step 4's own "echo verbatim" instruction. This cleanup runs only on explicit `/refresh`
+invocation, not on the hourly systemd cadence.
+
 ### Step 5: Clean Stale Backup Files
 
 Scan for and remove any `.backup` files left over from the deprecated backup mechanism in `.claude/`:
