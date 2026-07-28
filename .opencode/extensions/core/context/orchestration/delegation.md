@@ -23,11 +23,11 @@ This standard defines how commands and agents safely delegate work to subagents,
 - **Delegation Patterns**: Safe patterns to prevent hangs, cycles, and timeouts
 - **Validation Framework**: Comprehensive validation for returns and delegation context
 
-**Problems Solved**:
-- Delegation hangs (Task 191 Root Causes #1, #3, #6)
-- Infinite delegation loops (Task 191 Root Cause #2)
-- Missing timeouts (Task 191 Root Cause #4)
-- Coordination gaps (Task 191 Root Cause #5)
+**Problems Solved** (see "Core Principles" under Delegation Patterns below for the mechanisms):
+- Delegation hangs (depth limits, path tracking, timeout enforcement)
+- Infinite delegation loops (delegation depth limits)
+- Missing timeouts (timeout enforcement)
+- Coordination gaps (return validation)
 
 ---
 
@@ -563,7 +563,7 @@ Bulk operations (--recover, --sync, --abandon) delegate to status-sync-manager w
 - For each field that differs between TODO.md and state.json:
   1. Run `git blame` on both files to get commit timestamps
   2. Compare timestamps: latest commit wins
-  3. Log conflict resolution: "Task 343: status from state.json (2026-01-07) > TODO.md (2026-01-06)"
+  3. Log conflict resolution: "Task {N}: status from state.json (2026-01-07) > TODO.md (2026-01-06)"
   4. Apply resolved value to both files
 
 **Return Format**:
@@ -650,7 +650,7 @@ When dividing a task into subtasks, rollback is required if any subtask creation
 ```json
 {
   "status": "completed",
-  "summary": "Divided task 326 into 3 subtasks",
+  "summary": "Divided task {N} into 3 subtasks",
   "artifacts": [],
   "metadata": {
     "session_id": "sess_1735460684_a1b2c3",
@@ -666,7 +666,7 @@ When dividing a task into subtasks, rollback is required if any subtask creation
 ```json
 {
   "status": "failed",
-  "summary": "Failed to divide task 326, rolled back 2 created subtasks",
+  "summary": "Failed to divide task {N}, rolled back 2 created subtasks",
   "artifacts": [],
   "metadata": {
     "session_id": "sess_1735460684_a1b2c3",
