@@ -1,0 +1,36 @@
+{
+  "phase": 3,
+  "phase_name": "Skill-side detection, status contract, and metadata field",
+  "started_at": "2026-07-28T16:15:00Z",
+  "last_updated": "2026-07-28T16:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Read dispatch_start_ts and defer_ledger at Stage MT-5 step 1; add new step computing forward_progress_violated",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Amend exit_status determination: forward_progress_violated forces partial, taking precedence over implemented, with inline rationale",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Amend reporting instruction (additive) and restate confirmed exit/status contract; add fields to return-meta-multi.json jq construction; verify with jq -e .",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

@@ -1860,14 +1860,31 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
 After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or MAX_CYCLES_MT reached):
 
 1. Read from `mt_state_file`: `completed_tasks`, `failed_tasks`, `deferred_self_modifying`,
-   `deferred_deploy_checkpoint`, `current_statuses`, `cycles_used`, counts.
-   `current_statuses` (refreshed every cycle by Stage MT-3 step 1) is what step 2 below consults
-   to determine, per task in `deferred_self_modifying`, whether it reached a terminal state by
-   loop exit.
-2. Determine `exit_status` — this is the `.return-meta-multi.json` skill-status vocabulary
+   `deferred_deploy_checkpoint`, `dispatch_start_ts`, `defer_ledger`, `current_statuses`,
+   `cycles_used`, counts. `current_statuses` (refreshed every cycle by Stage MT-3 step 1) is what
+   step 3 below consults to determine, per task in `deferred_self_modifying`, whether it reached a
+   terminal state by loop exit.
+2. **Compute the forward-progress invariant** (full contract in
+   `context/patterns/batch-orchestration-guardrails.md`'s `### The Forward-Progress Invariant`
+   subsection — referenced here, not restated): set `forward_progress_violated = true` when
+   `task_numbers` is non-empty AND `dispatch_start_ts` is an empty object at loop exit; otherwise
+   `false`. Write it back to `mt_state_file` so `commands/orchestrate.md` Step 5 can read it. This
+   is cause-agnostic by construction — it is true regardless of which `defer_reason` produced the
+   zero-dispatch outcome (`self_modifying`, `file_scope_collision`, or `deploy_checkpoint`).
+3. Determine `exit_status` — this is the `.return-meta-multi.json` skill-status vocabulary
    (normatively defined in `context/formats/return-metadata-file.md`), distinct from the
    `tasks_completed` array below (which records state.json task status, where `"completed"` is
    correct):
+   - `forward_progress_violated == true` → `"partial"` (preserve `mt_state_file` for
+     diagnostics), taking precedence over the `"implemented"` branch below. **Why this precedence
+     is needed**: the existing conditions key on `failed_count`, non-terminal
+     `deferred_self_modifying` residue, and `deferred_deploy_checkpoint` emptiness, so a batch
+     that dispatched nothing because every candidate hit `file_scope_collision` would otherwise
+     satisfy the `"implemented"` branch with an empty `completed_tasks` array — a batch that did
+     nothing reporting success. **This is a status-legibility correction, not an admission or
+     behavior change**: no verdict, no task status, no `state.json` write, and no loop condition
+     is affected by this branch — only the skill-status string reported for an outcome that
+     already dispatched nothing.
    - `failed_count == 0` AND every task in `deferred_self_modifying` reached a terminal state
      (`completed`, `abandoned`, or `expanded`) by loop exit AND `deferred_deploy_checkpoint` is
      empty → `"implemented"` (remove `mt_state_file`). A task that appears in
@@ -1885,7 +1902,12 @@ After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or MAX_
      undispatched pending a manual deploy/verify fix. This is distinct from a failure: the task is
      not in `failed_tasks` and was never status-mutated, so `"partial"` here means "incomplete by
      design", not "broken".
-3. Report `deferred_self_modifying` tasks in the consolidated summary as **deferred at least one
+
+   **Confirmed invariant, restated not re-derived**: a zero-dispatch outcome mutates no
+   `specs/state.json` status and adds nothing to `failed_tasks` — see
+   `context/patterns/batch-orchestration-guardrails.md`'s `### The Forward-Progress Invariant`
+   subsection for the full reasoning; this stage only reuses it by name.
+4. Report `deferred_self_modifying` tasks in the consolidated summary as **deferred at least one
    cycle by the self-modification gate** — an OBSERVATION, not an outstanding-work category. For
    each task in the log, report its FINAL status at loop exit alongside the note: a task that
    reached a terminal state is reported as completed (with the observation as a footnote); a task
@@ -1900,7 +1922,13 @@ After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or MAX_
    deploy/verify failure, redeploy manually, then re-run `/orchestrate` on the remaining task
    numbers. Never add these tasks to `failed_tasks`, and never mutate their `specs/state.json`
    status.
-4. Write `specs/.return-meta-multi.json`:
+
+   **Additive requirement**: when `forward_progress_violated` is true, the consolidated summary
+   MUST additionally lead with the zero-dispatch banner and enumerate every `defer_ledger` entry
+   with its `defer_reason` (see `commands/orchestrate.md` Step 5 for the actual rendering — this
+   stage only supplies the data). This is additive to, and does not replace, the
+   `deferred_self_modifying` and `deferred_deploy_checkpoint` reporting instructions above.
+5. Write `specs/.return-meta-multi.json`:
 ```bash
 jq -n \
   --arg status "$exit_status" \
@@ -1908,6 +1936,8 @@ jq -n \
   --argjson tasks_failed "$failed_tasks" \
   --argjson tasks_deferred_self_modifying "$deferred_self_modifying" \
   --argjson tasks_deferred_deploy_checkpoint "$deferred_deploy_checkpoint" \
+  --argjson forward_progress_violated "$forward_progress_violated" \
+  --argjson defer_ledger "$defer_ledger" \
   --argjson cycles_used "$cycles_used" \
   '{
     "status": $status,
@@ -1916,11 +1946,16 @@ jq -n \
       "tasks_failed": $tasks_failed,
       "tasks_deferred_self_modifying": $tasks_deferred_self_modifying,
       "tasks_deferred_deploy_checkpoint": $tasks_deferred_deploy_checkpoint,
+      "forward_progress_violated": $forward_progress_violated,
+      "defer_ledger": $defer_ledger,
       "cycles_used": $cycles_used,
       "multi_task_mode": true
     }
   }' > "specs/.return-meta-multi.json"
 ```
+The top-level `status` field keeps its existing closed vocabulary (`"implemented"` / `"partial"`
+/ `"failed"`) and gains no new value; `forward_progress_violated` is carried only inside
+`metadata`, never as a `status` value itself.
 
 ---
 

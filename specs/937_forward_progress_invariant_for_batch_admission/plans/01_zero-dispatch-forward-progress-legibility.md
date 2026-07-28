@@ -300,7 +300,7 @@ silently leaving it uninstrumented.
 
 ---
 
-### Phase 3: Skill-side detection, status contract, and metadata field [NOT STARTED]
+### Phase 3: Skill-side detection, status contract, and metadata field [COMPLETED]
 
 **Goal**: Compute the invariant once at Stage MT-5, correct the exit-status computation so a
 zero-dispatch outcome can never report success, and surface the result structurally in
@@ -308,14 +308,14 @@ zero-dispatch outcome can never report success, and surface the result structura
 
 **Tasks**:
 
-- [ ] In Stage MT-5 step 1, add `dispatch_start_ts` and `defer_ledger` to the list of fields read
-      from `mt_state_file`.
-- [ ] Add a new step computing the invariant, before the `exit_status` determination: set
+- [x] In Stage MT-5 step 1, add `dispatch_start_ts` and `defer_ledger` to the list of fields read
+      from `mt_state_file`. *(completed)*
+- [x] Add a new step computing the invariant, before the `exit_status` determination: set
       `forward_progress_violated = true` when `task_numbers` is non-empty AND `dispatch_start_ts`
       is an empty object at loop exit; otherwise `false`. Write it back to `mt_state_file` so the
       command's Step 5 can read it. State that this is cause-agnostic by construction — it is true
-      regardless of which defer reason produced it.
-- [ ] Amend the `exit_status` determination so that `forward_progress_violated == true` forces
+      regardless of which defer reason produced it. *(completed: new step 2)*
+- [x] Amend the `exit_status` determination so that `forward_progress_violated == true` forces
       `"partial"` (and preserves `mt_state_file` for diagnostics), taking precedence over the
       existing `"implemented"` branch. Record, inline, WHY this is needed: the existing conditions
       key on `failed_count`, non-terminal `deferred_self_modifying` residue, and
@@ -324,19 +324,20 @@ zero-dispatch outcome can never report success, and surface the result structura
       an empty `completed_tasks` array. State explicitly that this is a **status-legibility
       correction, not an admission or behavior change**: no verdict, no task status, no
       `state.json` write, and no loop condition is affected — only the skill-status string
-      reported for an outcome that already dispatched nothing.
-- [ ] Amend Stage MT-5 step 3's reporting instruction to require, when
+      reported for an outcome that already dispatched nothing. *(completed)*
+- [x] Amend Stage MT-5 step 3's reporting instruction to require, when
       `forward_progress_violated` is true, that the consolidated summary lead with the zero-dispatch
       banner and enumerate every `defer_ledger` entry with its `defer_reason`. Keep the existing
       `deferred_self_modifying` observation-log and `deferred_deploy_checkpoint` reporting
-      instructions unchanged; the new requirement is additive.
-- [ ] Restate at this stage, as a confirmed invariant, that a zero-dispatch outcome mutates no
+      instructions unchanged; the new requirement is additive. *(completed)*
+- [x] Restate at this stage, as a confirmed invariant, that a zero-dispatch outcome mutates no
       `specs/state.json` status and adds nothing to `failed_tasks` — referencing the guardrails
-      subsection from Phase 1 by name rather than restating its reasoning.
-- [ ] Add `forward_progress_violated` and `defer_ledger` to the `.return-meta-multi.json`
+      subsection from Phase 1 by name rather than restating its reasoning. *(completed)*
+- [x] Add `forward_progress_violated` and `defer_ledger` to the `.return-meta-multi.json`
       `metadata` object in Stage MT-5 step 4's `jq -n` construction, alongside the existing
       `tasks_deferred_self_modifying` / `tasks_deferred_deploy_checkpoint` keys. The top-level
-      `status` field keeps its existing closed vocabulary and gains no new value.
+      `status` field keeps its existing closed vocabulary and gains no new value. *(completed:
+      jq -e . verified against a synthetic input with all fields populated)*
 
 **Timing**: 1.5 hours
 
