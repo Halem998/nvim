@@ -95,11 +95,15 @@ LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line num
 
 MOTIVATING INCIDENT (verified live). /orchestrate 885,926,887,931,920 dispatched ZERO tasks. Kahn wave assignment over intra-batch dependencies was computed correctly (W0: 885, 920; W1: 926; W2: 887, 931). scripts/orchestrate-batch-admit.sh --invocation-count 5 then returned decision defer with defer_reason self_modifying for 885, 920, 926, and 931. The one remaining admit, 887, declares dependencies on two of the four just excluded, so it was undispatchable without violating its own declared order. Five tasks requested, zero dispatched, no state mutated.
 
+SECOND VERIFIED INCIDENT (batch size 2). /orchestrate 934-935 also dispatched ZERO tasks. Kahn wave assignment was correct (W0: 934; W1: 935), and 935 declares an explicit dependencies[] edge on 934 -- the two were therefore ALREADY serialized into separate waves, with no concurrency between them. scripts/orchestrate-batch-admit.sh --invocation-count 2 nevertheless returned decision defer with defer_reason self_modifying for BOTH. Both return decision admit at --invocation-count 1. The trigger fires on invocation SIZE alone, never on actual concurrency.
+
 DO NOT NAIVELY DELETE OR WEAKEN THIS GATE. context/patterns/batch-orchestration-guardrails.md records that the obvious rationale -- an in-flight session corrupting itself -- was investigated and DISPROVEN, and warns in terms that a future maintainer must not read the disproven hypothesis as license to relax or remove the gate. The gate survives on three OTHER hazards. Hazards 2 (commit granularity) and 3 (bootstrapping/redeploy) are the subject of this task's two dependencies. Hazard 1 (VERIFICATION GAP -- a fix to orchestrator machinery is verified only against a scratch deploy-tree copy, never the live system it will become) is retired by NOTHING in this chain and is explicitly "unaffected by sequencing." Hazard 1 is therefore the standing reason a safe default must survive: this task narrows and gates the defer, it does not remove it.
 
 SCOPE OF WORK.
 
 A. Narrow the defer scope from whole-invocation to same-wave, where and only where the retirement of hazards 2 and 3 supports it. Today a self_modifying verdict excludes the candidate from the ENTIRE invocation whenever invocation-count exceeds 1, and skills/skill-orchestrate/SKILL.md records it in an invocation-scoped deferred_self_modifying set that persists across every cycle. Establish explicitly which hazard each remaining unit of strictness is paying for; strictness with no surviving hazard behind it is the thing being removed.
+
+A1. MECHANISM TO EXAMINE -- dependency-edge exemption asymmetry. The collision dimension excludes from its comparison set any task connected to the candidate by a dependencies[] edge in EITHER direction, on the script header's own stated rationale that "an explicit dependency edge already serializes that pair." The self-modification dimension applies no such exemption: precedence decision D4 runs the self-mod check FIRST and SHORT-CIRCUITS the collision scan, so the exemption is never reached. The same edge is therefore authoritative for one admission dimension and invisible to the other, for the same pair, in the same invocation. Decide whether the self-mod check should honor the same dependencies[]-edge exemption. If it should not, record which surviving hazard justifies the asymmetry -- note that hazard 1 (verification gap) does not obviously distinguish an edge-connected pair from an unconnected one, so "the gate must survive" is not by itself an answer here.
 
 B. Add an explicit opt-in override (--allow-self-modifying or equivalent) requiring deliberate human intent, keeping the safe default. IMPLEMENTATION NOTE: flags are parsed in scripts/parse-command-args.sh, which both scans for known flags and strips them from the focus-prompt text. A flag added without updating both the scan and the strip chain will leak its own literal text into the focus prompt passed to agents.
 
@@ -114,6 +118,8 @@ F. Record a decision on the documented scope limitation: plain multi-task /imple
 G. Update docs/architecture/batch-admit-schema.md for any verdict-schema change. The schema is pinned as orchestrate-batch-admit-v2 with a stable field order and a REQUIRED defer_reason discriminator; a semantic change to what self_modifying means is a version question, not an additive-field question. The schema doc's own Version History records why the v1-to-v2 bump was a version rather than an added field -- apply the same reasoning.
 
 Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+EXECUTION NOTE: this task's own file_scope names orchestrator-critical paths, so it is self-modifying under the very gate it modifies. It will be excluded from any multi-task /orchestrate invocation and must be run solo. That is expected behavior, not an obstacle to route around.
 
 ---
 
