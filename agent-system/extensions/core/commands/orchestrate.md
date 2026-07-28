@@ -219,8 +219,8 @@ tasks in the same wave whenever no `dependencies[]` edge connects them. Since ta
 (Multi-Task Creation Standard Component 4a) now auto-adds a serializing `dependencies[]` edge
 whenever two tasks' `file_scope` overlaps, tasks created together in the same batch are
 file-safe "for free" — no change to the Kahn's-algorithm ordering itself was required. The
-residual gap is **cross-batch**: two tasks created in *separate* batches (e.g. `/orchestrate
-785,787` where task 785 and task 787 were each created independently) have no creation-time
+residual gap is **cross-batch**: two tasks created in *separate* batches (each created
+independently, in unrelated `/task` or `/orchestrate` invocations) have no creation-time
 overlap comparison between them, so `dependencies[]` may not encode a real file conflict. The
 runtime wave-split check below closes that gap.
 
@@ -539,7 +539,7 @@ mutated (see `context/patterns/batch-orchestration-guardrails.md`'s
 | Task | defer_reason | Detail |
 |------|--------------|--------|
 | #10 | self_modifying | matched critical path .claude/scripts/task-lock.sh (concurrency lock) |
-| #11 | file_scope_collision | colliding out-of-batch task #12 (status: implementing) |
+| #11 | file_scope_collision | colliding out-of-batch task #{N} (status: implementing) |
 
 Re-run sequence (dependency order; printed, not executed):
 ```
@@ -585,7 +585,7 @@ partial batches too, not only inside the ZERO DISPATCH section above.)
 
 | Task | defer_reason | collision_scope | Detail |
 |------|--------------|------------------|--------|
-| #23 | file_scope_collision | cross_batch | colliding out-of-batch task #24 (status: implementing) |
+| #23 | file_scope_collision | cross_batch | colliding out-of-batch task #{N} (status: implementing) |
 
 ### Deferred (redeploy checkpoint)
 

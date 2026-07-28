@@ -485,43 +485,68 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
 
 ---
 
-### Phase 6: Purge `agent-system/extensions/core/{skills,commands,agents,rules,hooks,merge-sources}/` [NOT STARTED]
+### Phase 6: Purge `agent-system/extensions/core/{skills,commands,agents,rules,hooks,merge-sources}/` [COMPLETED]
 
 - **Goal:** Clear the remaining core subdirectories, including both originally-named occurrences.
 - **Character:** High judgment; contains the two sites the task description names explicitly.
 
 - **Tasks:**
-  - [ ] Handle the two named occurrences first, anchored on their quoted strings (both files are
+  - [x] Handle the two named occurrences first, anchored on their quoted strings (both files are
         actively edited — re-confirm before editing):
         1. `commands/orchestrate.md`, cross-batch defense-in-depth passage of the runtime
            wave-split check — the parenthetical of the form
            `` `/orchestrate 785,787` where task 785 and task 787 were each created independently) have no creation-time ``.
            Prefer generic placeholders over real numbers; if the surrounding prose already conveys
-           the cross-batch mechanism, restate without an example.
+           the cross-batch mechanism, restate without an example. *(completed: restated without
+           an example per the plan's own preferred option — the surrounding prose already
+           conveyed the mechanism.)*
         2. `skills/skill-orchestrate/SKILL.md`, Stage 2 loop-guard fresh-start branch — the comment
            `` # Fresh start: create guard atomically via init-marker (task 808). A plain ``.
            Pure provenance; the durable anchor is the mechanism name (init-marker's mkdir-gate plus
-           tmp-mv payload), which the surrounding comment already describes.
-  - [ ] Triage and convert the remainder per the Phase 4 bucket rules.
+           tmp-mv payload), which the surrounding comment already describes. *(completed: dropped
+           `(task 808)`, same fix applied identically to the same comment's sibling occurrence in
+           `skill-orchestrate-hard/SKILL.md` and to `task-lock.sh`'s own init-marker doc
+           comments.)*
+  - [x] Triage and convert the remainder per the Phase 4 bucket rules. *(completed. Notable:
+        a single recurring "task 796" (mandatory topic-assignment decision) citation appeared 14
+        times across `skills/`, `commands/`, and `agents/` — converted uniformly to drop the
+        number since the surrounding prose already names the mechanism each time. A second
+        recurring cluster, "task 809"/"task 810" (cross-task `file_scope` overlap check / a
+        gate-in refactor), appeared identically across `plan.md`, `research.md`, `revise.md` —
+        converted uniformly using the SAME durable-anchor wording as `task-lock.md`'s
+        already-established "the cross-task file_scope overlap check" anchor from Phase 4/5.
+        `rules/no-task-references-in-deliverables.md`'s own new Category 6 taxonomy row
+        (added in Phase 5) quotes the literal fixture strings and self-tripped the scan; marked
+        inline rather than reworded, since the row's whole point is to show the fixture text
+        verbatim.)*
 
 - **Timing:** 1.5 hours
 - **Depends on:** 2
 - **Verification Tier:** prose
-- **Scope Hypothesis:** 84 occurrences / 29 files, derived as the 205/53 core-non-context total
-  minus the four files already owned by earlier phases (`rules/git-workflow.md` 3 and
-  `rules/no-task-references-in-deliverables.md` 2 → Phase 1; the two
-  `general-implementation*agent.md` files → Phase 3, contributing 0 citations) and minus
-  `docs/`+`scripts/` (121/24 → Phase 5). Residual by subdirectory: `commands/` 28/7,
+- **Scope Hypothesis:** ~~84~~ **79** occurrences / 29 files (corrected from the plan's stated 84
+  — the 84 figure under-credited Phase 1's git-workflow.md purge by 2 occurrences; live count at
+  Phase 6 start was skills 25, commands 28, agents 20, rules 1, hooks 3, merge-sources 2 = 79),
+  derived as the 205/53 core-non-context total minus the four files already owned by earlier
+  phases (`rules/git-workflow.md` 3 and `rules/no-task-references-in-deliverables.md` 2 →
+  Phase 1; the two `general-implementation*agent.md` files → Phase 3, contributing 0 citations)
+  and minus `docs/`+`scripts/` (121/24 → Phase 5). Residual by subdirectory: `commands/` 28/7,
   `skills/` 25/11, `agents/` 20/4 (`meta-builder-agent.md` 13, `spawn-agent.md` 4,
   `planner-agent.md` 2, `planner-hard-agent.md` 1), `rules/artifact-formats.md` 1,
   `hooks/` 3/3, `merge-sources/` 2/1. Confirm the residual by running the Phase 2 script scoped
-  to core and subtracting the phases already green.
+  to core and subtracting the phases already green. *(confirmed: live per-subdirectory scan at
+  Phase 6 start matched the corrected 79 total and per-subdirectory breakdown exactly, with
+  `rules/` reporting 1 as stated (`artifact-formats.md`) — the `no-task-references-in-deliverables.md`
+  Category-6 self-hit did not exist yet at Phase 6 start; it was introduced by this phase's own
+  edit and fixed inline in the same phase.)*
 - **Files to modify**: files under `agent-system/extensions/core/{skills,commands,agents,rules,hooks,merge-sources}/`
   reported by the scan. **Excludes** `rules/git-workflow.md`, `rules/no-task-references-in-deliverables.md`,
   `agents/general-implementation-agent.md`, `agents/general-implementation-hard-agent.md`.
 - **Verification**: scan reports 0 under all six subdirectories (expected delta 84 → 0). Neither
   named occurrence's file still matches `TASK_PATTERN`. `bash -n` passes on
-  `hooks/*.sh` if any hook file was edited.
+  `hooks/*.sh` if any hook file was edited. *(verified: `check-task-references.sh --quiet`
+  reports 0 under all six subdirectories, expected delta 79 → 0; `bash -n` passed on all three
+  edited hook files; `check-extension-docs.sh` shows only expected pre-deploy source/deployed
+  drift FAILs, no new structural failures.)*
 
 ---
 

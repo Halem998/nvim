@@ -535,7 +535,7 @@ Note: Pass `--arg title "$title"` and `--arg desc "$description"` to the jq call
 
 Note: Pass `--arg title "$title"` and `--arg desc "$description"` to the jq call.
 
-Note: The `"topic"` field is always populated (task 796: topic assignment is mandatory — the
+Note: The `"topic"` field is always populated (topic assignment is mandatory — the
 Mode A universal fallback runs whenever the path heuristic cannot infer a topic).
 
 #### 9.2: (Removed — state.json is authoritative for task entries)

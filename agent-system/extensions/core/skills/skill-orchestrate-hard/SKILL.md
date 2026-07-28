@@ -251,7 +251,7 @@ if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
   infra_failures=$(jq -r '.infra_failures // 0' "$loop_guard_file")
   echo "[hard-orchestrate] Resuming — cycle $cycle_count of $MAX_CYCLES (burnout signals so far: $burnout_signals_this_session, infra failures: $infra_failures of $MAX_INFRA_FAILURES)"
 else
-  # Fresh start: create guard atomically via init-marker (task 808). A plain
+  # Fresh start: create guard atomically via init-marker. A plain
   # `>` redirect has no O_EXCL semantics, so two racing writers could both take
   # this branch and stomp each other's counters; init-marker's mkdir-gate +
   # tmp-mv payload guarantees exactly one winner. On a lost race (exit 1),
@@ -290,7 +290,7 @@ fi
 if [ -f "$churn_file" ] && jq empty "$churn_file" 2>/dev/null; then
   total_churn=$(jq -r '.total_churn // 0' "$churn_file")
 else
-  # Fresh start: create churn state atomically via init-marker (task 808); on a
+  # Fresh start: create churn state atomically via init-marker; on a
   # lost race (exit 1), resume-read total_churn (matching the `if`-branch above).
   if jq -n '{"total_churn": 0, "target_churn": {}, "adversarial_triggers": 0, "audit_dispatches": 0}' \
     | bash .claude/scripts/task-lock.sh init-marker "$churn_file"; then
@@ -511,7 +511,7 @@ fi
 # 772 Item 5A: heading-scan phase selection, replacing the naive
 # next_phase=$((phases_completed + 1)) integer increment (could not address N.1/N.2 sub-phase
 # headings, sparse numbering, or skeleton-exhaustion). Mirrors
-# skill-implementer-hard/SKILL.md Stage 3b's already-landed fix (task 774).
+# skill-implementer-hard/SKILL.md Stage 3b's already-landed fix.
 next_phase=""
 if [ -n "$plan_path" ] && [ -f "$plan_path" ]; then
   next_phase=$(grep -E '^### Phase [0-9]+(\.[0-9]+)?: .*\[(NOT STARTED|PARTIAL|IN PROGRESS)\]' "$plan_path" \

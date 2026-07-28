@@ -1,0 +1,68 @@
+{
+  "phase": 6,
+  "phase_name": "Purge agent-system/extensions/core/{skills,commands,agents,rules,hooks,merge-sources}/",
+  "started_at": "2026-07-28T18:45:00Z",
+  "last_updated": "2026-07-28T19:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Handle the two named occurrences (commands/orchestrate.md cross-batch passage; skills/skill-orchestrate/SKILL.md init-marker comment)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/commands/orchestrate.md",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Triage and convert remainder across skills/, commands/, agents/, rules/, hooks/, merge-sources/ (79 occurrences, corrected count)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-fix-it/SKILL.md",
+        "agent-system/extensions/core/skills/skill-planner/SKILL.md",
+        "agent-system/extensions/core/skills/skill-project-overview/SKILL.md",
+        "agent-system/extensions/core/skills/skill-researcher/SKILL.md",
+        "agent-system/extensions/core/skills/skill-spawn/SKILL.md",
+        "agent-system/extensions/core/skills/skill-team-implement/SKILL.md",
+        "agent-system/extensions/core/skills/skill-team-plan/SKILL.md",
+        "agent-system/extensions/core/skills/skill-team-research/SKILL.md",
+        "agent-system/extensions/core/skills/skill-todo/SKILL.md",
+        "agent-system/extensions/core/commands/plan.md",
+        "agent-system/extensions/core/commands/research.md",
+        "agent-system/extensions/core/commands/revise.md",
+        "agent-system/extensions/core/commands/review.md",
+        "agent-system/extensions/core/commands/spawn.md",
+        "agent-system/extensions/core/commands/task.md",
+        "agent-system/extensions/core/agents/meta-builder-agent.md",
+        "agent-system/extensions/core/agents/planner-agent.md",
+        "agent-system/extensions/core/agents/planner-hard-agent.md",
+        "agent-system/extensions/core/agents/spawn-agent.md",
+        "agent-system/extensions/core/rules/artifact-formats.md",
+        "agent-system/extensions/core/rules/no-task-references-in-deliverables.md",
+        "agent-system/extensions/core/hooks/claude-stop-notify.sh",
+        "agent-system/extensions/core/hooks/wezterm-clear-task-number.sh",
+        "agent-system/extensions/core/hooks/wezterm-utils.sh",
+        "agent-system/extensions/core/merge-sources/claudemd.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Verify 0 findings across all six subdirectories, bash -n on hooks, check-extension-docs.sh sanity",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "6.scope-hypothesis",
+      "description": "Plan's Scope Hypothesis stated 84 occurrences; live count was 79",
+      "type": "altered",
+      "reason": "Corrected per orchestrator dispatch instructions: Phase 1 cleared 5 occurrences from rules/git-workflow.md but Phase 6's arithmetic credited that file as only 3, a 2-occurrence discrepancy that propagated into the 84 figure.",
+      "annotation": "corrected inline in the plan's Scope Hypothesis field"
+    }
+  ],
+  "handoff_count": 0
+}

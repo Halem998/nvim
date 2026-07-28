@@ -203,7 +203,7 @@ When $ARGUMENTS contains a description (no flags).
 
 6. **Update state.json** (via jq):
    ```bash
-   # Topic assignment is mandatory (task 796): $topic from step 4.5 is always non-empty
+   # Topic assignment is mandatory: $topic from step 4.5 is always non-empty
    # by construction (Mode A has no Skip option). This jq guard remains defensive only.
    # Build topic from step 4.5 result
    # $improved_desc is the final description from step 3 text transformation
@@ -244,7 +244,7 @@ When $ARGUMENTS contains a description (no flags).
    Task Type: {task_type}
    Artifacts path: specs/{NNN}_{SLUG}/  (created on first artifact)
    ```
-   Note: `{NNN}` is the 3-digit padded task number (e.g., `015` for task 15). Directories are created lazily when the first artifact is written.
+   Note: `{NNN}` is the 3-digit padded task number (e.g., `015` for task {N}). Directories are created lazily when the first artifact is written.
 
 ## Recover Mode (--recover)
 
@@ -270,7 +270,7 @@ Parse task ranges after --recover (e.g., "343-345", "337, 343"):
    slug=$(echo "$task_data" | jq -r '.project_name')
    ```
 
-   **Topic check (task 796 — net-new)**: Recovered tasks may predate mandatory topic
+   **Topic check (net-new)**: Recovered tasks may predate mandatory topic
    assignment or have lost their topic in archival. Check before returning to
    `active_projects`:
    ```bash
@@ -385,7 +385,7 @@ Parse task number and optional prompt:
    # Each subtask jq entry MUST include a "description" field:
    # where $subtask_desc is the subtask's description derived from the parent task analysis.
    # Include "topic": parent_topic in each subtask jq entry. $parent_topic is non-empty by
-   # construction (task 796): either inherited from the parent or assigned via the Mode A
+   # construction: either inherited from the parent or assigned via the Mode A
    # universal fallback above.
    # After each subtask entry is written to state.json, call manage-topics.sh set:
    bash .claude/scripts/manage-topics.sh set "$subtask_num" "$parent_topic" \
@@ -508,7 +508,7 @@ state.json is the authoritative source of truth. Sync validates integrity and re
    (Mode A: Interactive — `/task --sync` backfill exception). Loop over detected tasks with
    header "Topic Backfill ({i} of {total})". This is the ONE path in the system permitted an
    explicit deferral option, because it remediates pre-existing topicless tasks rather than
-   gatekeeping new-task creation (task 796 Decision (a)):
+   gatekeeping new-task creation (the mandatory-topic-assignment Decision (a)):
    ```json
    {
      "question": "Assign a topic to task {task_num} ({i} of {total})?",
@@ -757,7 +757,7 @@ next_num=$(jq -r '.next_project_number' specs/state.json)
 # Create follow-up task
 description="Complete phase {P} of task {parent_N}: {phase_name}. Goal: {phase_goal}. (Follow-up from task #{parent_N})"
 
-# Update state.json. $parent_topic is non-empty by construction (task 796): either
+# Update state.json. $parent_topic is non-empty by construction: either
 # inherited from the parent task or assigned via the Mode A universal fallback (Step 7.6).
 # The null-guard below is defensive only.
 jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
@@ -796,8 +796,8 @@ bash .claude/scripts/generate-todo.sh \
 **If tasks were created**:
 ```
 Created {N} follow-up task(s):
-  - Task #{X}: Complete phase 2 of task 597: implement_validation_rules
-  - Task #{Y}: Complete phase 3 of task 597: add_error_reporting
+  - Task #{X}: Complete phase 2 of task {N}: implement_validation_rules
+  - Task #{Y}: Complete phase 3 of task {N}: add_error_reporting
 ```
 
 **Git commit** (only if tasks were created):

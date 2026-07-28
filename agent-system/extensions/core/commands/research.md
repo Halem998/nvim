@@ -238,7 +238,7 @@ Skipped: {count}
 - **Failed tasks**: Remain in "researching" status; user can re-run individually (`/research {N}`)
 - **Skipped tasks**: Never dispatched; user fixes the issue and re-runs — includes both
   pre-existing skip reasons (not found, terminal status) and the new `"locked by another
-  session"` reason from per-task lock-acquire refusal (task 810)
+  session"` reason from per-task lock-acquire refusal (a gate-in refactor)
 - **Git conflicts**: Non-blocking (logged, not fatal)
 
 ---
@@ -250,12 +250,13 @@ source .claude/scripts/command-gate-in.sh "$task_number" "research"
 # Exports: SESSION_ID, TASK_TYPE, TASK_STATUS, PROJECT_NAME, DESCRIPTION, PADDED_NUM
 # Displays: [RESEARCH] Task {N}: {project_name}
 # Aborts if task not found, in terminal status, or the task lock is refused (same-task
-# different-session, or a cross-task file_scope overlap per task 809)
+# different-session, or a cross-task file_scope overlap per the cross-task
+# file_scope overlap check)
 ```
 
 Note: the header now reads `[RESEARCH]` (gate-in's mechanical uppercasing of the operation
 string), replacing the prior `[Researching]` present-participle wording — an intentional
-cosmetic change from this refactor (task 810), not a defect.
+cosmetic change from a gate-in refactor, not a defect.
 
 **On GATE IN success**: Task validated. **IMMEDIATELY CONTINUE** to STAGE 1.5 below.
 
@@ -484,10 +485,10 @@ Next: /plan {N}
 - Locked by another session: `command-gate-in.sh` propagates `task-lock.sh acquire`'s refusal
   (a fresh lock held by a genuinely different session) — ABORT with the lock's held-by/reason
   message; re-run once the other session's operation completes or its lock goes stale
-- Cross-task `file_scope` overlap (task 809): if another currently-locked task's `file_scope`
+- Cross-task `file_scope` overlap (the cross-task file_scope overlap check): if another currently-locked task's `file_scope`
   overlaps this task's and that lock is fresh, `/research` ABORTs before DELEGATE, naming the
   conflicting task number — this is a new failure mode `/research` did not have before this
-  refactor (see task 810); re-run once the other task's lock releases or goes stale
+  gate-in refactor; re-run once the other task's lock releases or goes stale
 
 ### DELEGATE Failure
 - Skill fails: Keep [RESEARCHING], log error

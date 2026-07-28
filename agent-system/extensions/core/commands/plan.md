@@ -249,12 +249,13 @@ source .claude/scripts/command-gate-in.sh "$task_number" "plan"
 # Exports: SESSION_ID, TASK_TYPE, TASK_STATUS, PROJECT_NAME, DESCRIPTION, PADDED_NUM
 # Displays: [PLAN] Task {N}: {project_name}
 # Aborts if task not found, in terminal status, or the task lock is refused (same-task
-# different-session, or a cross-task file_scope overlap per task 809)
+# different-session, or a cross-task file_scope overlap per the cross-task
+# file_scope overlap check)
 ```
 
 Note: the header now reads `[PLAN]` (gate-in's mechanical uppercasing of the operation string),
 replacing the prior `[Planning]` present-participle wording — an intentional cosmetic change
-from this refactor (task 810), not a defect.
+from a gate-in refactor, not a defect.
 
 **Load Context** (plan-specific; no gate-script equivalent — must stay inline):
 - Task description: `$DESCRIPTION` (from gate-in)
@@ -430,7 +431,7 @@ The skill spawns agent(s) which analyze task requirements and research findings,
 ```bash
 bash .claude/scripts/command-gate-out.sh "$task_number" "plan" "$SESSION_ID"
 # Reads .return-meta.json; applies defensive status correction if needed
-# status_token mapping (Phase 1, task 810): operation "plan" -> target_status "plan"
+# status_token mapping (Phase 1 of the gate-in refactor): operation "plan" -> target_status "plan"
 # Runs validate-artifact.sh --fix (non-blocking)
 # Defensive correction (state.json + TODO.md) handled by this script
 ```
@@ -504,10 +505,10 @@ Next: /implement {N}
 - Locked by another session: `command-gate-in.sh` propagates `task-lock.sh acquire`'s refusal
   (a fresh lock held by a genuinely different session) — ABORT with the lock's held-by/reason
   message; re-run once the other session's operation completes or its lock goes stale
-- Cross-task `file_scope` overlap (task 809): if another currently-locked task's `file_scope`
+- Cross-task `file_scope` overlap (the cross-task file_scope overlap check): if another currently-locked task's `file_scope`
   overlaps this task's and that lock is fresh, `/plan` ABORTs before DELEGATE, naming the
   conflicting task number — this is a new failure mode `/plan` did not have before this
-  refactor (see task 810); re-run once the other task's lock releases or goes stale
+  gate-in refactor; re-run once the other task's lock releases or goes stale
 - Multi-task mode: the per-task lock-acquire refusal above moves that task from
   `validated_tasks` to `invalid_tasks` with reason `"locked by another session"` (skip, not a
   batch-abort)

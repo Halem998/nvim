@@ -173,7 +173,7 @@ See `.claude/rules/state-management.md` for complete vault schema documentation.
 
 Format: `task {N}: {action}` with session ID in body.
 ```
-task 1: complete research
+task {N}: complete research
 
 Session: sess_1736700000_abc123
 ```
@@ -243,7 +243,7 @@ Standard actions: `create`, `complete research`, `create implementation plan`, `
 
 ## Hard Mode (`--hard`)
 
-Hard mode encodes behavioral contracts distilled from high-complexity task orchestration (BimodalLogic task-273 baseline: 9 H-techniques, measured outcome: 0 lines -> 2,400+ lines across 13 dispatches).
+Hard mode encodes behavioral contracts distilled from high-complexity task orchestration (the BimodalLogic per-phase-dispatch baseline: 9 H-techniques, measured outcome: 0 lines -> 2,400+ lines across 13 dispatches).
 
 ### What Hard Mode Does
 

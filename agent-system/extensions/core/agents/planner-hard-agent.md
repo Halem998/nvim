@@ -54,7 +54,8 @@ task involves formal verification, or task has been in IMPLEMENTING for 3+ dispa
 **Bounded-unit test (independent of line count)**: Before accepting a phase, ask "is this one
 unit with a fixed, finite attempt surface, or could it silently expand into unbounded rework?"
 A phase such as "prove theorem X" can be small in lines yet fail this test if the proof is
-open-ended research-grade work with no fixed attempt budget (the task-305 failure mode: a single
+open-ended research-grade work with no fixed attempt budget (the unbounded-proof-attempt
+failure mode: a single
 research-grade proof, small in lines but unbounded in attempts, consumed an entire dispatch
 without completing). If a phase cannot state a concrete stopping condition independent of line
 count, it fails the bounded-unit test and must be split, converted to a strategic-sorry division

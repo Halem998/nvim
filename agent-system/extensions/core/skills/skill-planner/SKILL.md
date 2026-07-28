@@ -531,18 +531,18 @@ This skill returns a **brief text summary** (NOT JSON). The JSON metadata is wri
 
 Example successful return:
 ```
-Plan created for task 414:
+Plan created for task {N}:
 - 5 phases defined, 2.5 hours estimated
 - Covers: agent structure, execution flow, error handling, examples, verification
-- Created plan at specs/414_create_planner_agent/plans/MM_{short-slug}.md
+- Created plan at specs/{NNN}_create_planner_agent/plans/MM_{short-slug}.md
 - Status updated to [PLANNED]
 - Changes committed with session sess_1736700000_abc123
 ```
 
 Example partial return:
 ```
-Plan partially created for task 414:
+Plan partially created for task {N}:
 - 3 of 5 phases defined before timeout
-- Partial plan saved at specs/414_create_planner_agent/plans/MM_{short-slug}.md
-- Status remains [PLANNING] - run /plan 414 to complete
+- Partial plan saved at specs/{NNN}_create_planner_agent/plans/MM_{short-slug}.md
+- Status remains [PLANNING] - run /plan {N} to complete
 ```

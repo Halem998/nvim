@@ -589,7 +589,7 @@ Team planning completed for task {N}:
 Brief text summary (NOT JSON):
 
 ```
-Team planning completed for task 412:
+Team planning completed for task {N}:
 - Spawned 2 teammates for parallel plan generation
 - Teammate A: Incremental plan (4 phases, 8-12 hours)
 - Teammate B: Alternative plan (3 phases, 6-10 hours)

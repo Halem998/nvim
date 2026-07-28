@@ -281,8 +281,8 @@ The agent provides `dependency_order` which is already topologically sorted (fou
 ```bash
 # Example: dependency_order = [0, 1] means task at index 0 is foundational
 # If next_num = 242:
-#   - Index 0 -> Task 242 (foundational)
-#   - Index 1 -> Task 243 (depends on 242)
+#   - Index 0 -> Task {N} (foundational)
+#   - Index 1 -> Task {M} (depends on {N})
 
 # Build index->task_number mapping
 declare -A task_num_map
@@ -438,7 +438,7 @@ The state.json update in Stage 13 already writes the dependencies array. TODO.md
 
 ### Stage 14a: Assign Topics via manage-topics.sh (Non-Blocking)
 
-For each new task created in Stage 11, assign the inherited `parent_topic` via `manage-topics.sh set`. The `set` subcommand updates both the task's `topic` field and the `active_topics` array atomically (must be called AFTER the task entry exists in state.json from Stage 11). `parent_topic` is non-empty by construction (task 796: either inherited from the parent or assigned via the Mode A universal fallback above); the `-n` guard below is defensive only:
+For each new task created in Stage 11, assign the inherited `parent_topic` via `manage-topics.sh set`. The `set` subcommand updates both the task's `topic` field and the `active_topics` array atomically (must be called AFTER the task entry exists in state.json from Stage 11). `parent_topic` is non-empty by construction (either inherited from the parent or assigned via the Mode A universal fallback above); the `-n` guard below is defensive only:
 
 ```bash
 # Call set for each new task (parent_topic already written to each task entry in Stage 11)
@@ -588,18 +588,18 @@ This skill returns a **brief text summary** (NOT JSON). The structured data is p
 
 Example successful return:
 ```
-Spawned 2 tasks to unblock task 241:
-- Task #242: Create state validation utilities (no dependencies)
-- Task #243: Implement recovery workflow (depends on #242)
-- Parent task #241 now depends on: #242, #243
+Spawned 2 tasks to unblock task {N}:
+- Task #{M}: Create state validation utilities (no dependencies)
+- Task #{P}: Implement recovery workflow (depends on #{M})
+- Parent task #{N} now depends on: #{M}, #{P}
 - Status: Parent [BLOCKED], spawned tasks [RESEARCHED]
-- Next: /plan 242
+- Next: /plan {M}
 ```
 
 Example partial return:
 ```
-Spawn partially completed for task 241:
+Spawn partially completed for task {N}:
 - Blocker analyzed, 2 tasks proposed
-- Task creation failed at Task #243
+- Task creation failed at Task #{P}
 - Partial state may exist, run /task --sync to reconcile
 ```

@@ -310,7 +310,7 @@ keyword and the produced file_scope are deliberately different strings serving d
     {"label": "Linear chain", "description": "Each task depends on the previous one (1 -> 2 -> 3)"},
     {"label": "Custom", "description": "I'll specify which tasks depend on which"}
   ],
-  "context": "Example: 'Task 2 depends on Task 1' means Task 1 must complete before Task 2 can start."
+  "context": "Example: 'Task {M} depends on Task {N}' means Task {N} must complete before Task {M} can start."
 }
 ```
 
@@ -321,8 +321,8 @@ keyword and the produced file_scope are deliberately different strings serving d
   "header": "Specify Dependencies",
   "format": "Task {N}: depends on Task {M}, Task {P}",
   "examples": [
-    "Task 2: depends on Task 1",
-    "Task 3: depends on Task 1, Task 2"
+    "Task {M}: depends on Task {N}",
+    "Task {P}: depends on Task {N}, Task {M}"
   ]
 }
 ```
@@ -391,8 +391,8 @@ keyword and the produced file_scope are deliberately different strings serving d
   "header": "Specify External Dependencies",
   "format": "Task {N}: depends on #35, #36",
   "examples": [
-    "Task 1: depends on #35",
-    "Task 3: depends on #35, #36"
+    "Task {N}: depends on #{X}",
+    "Task {P}: depends on #{X}, #{Y}"
   ]
 }
 ```
@@ -625,7 +625,7 @@ Options per task:
 
 Follow @.claude/context/patterns/topic-assignment-pattern.md (Mode A: Interactive, batch variant).
 Note: question wording is plural — "Assign a topic to these tasks?". Topic assignment is
-mandatory (task 796): there is no Skip option, so this stage always produces a non-empty topic.
+mandatory: there is no Skip option, so this stage always produces a non-empty topic.
 
 **Capture**: `batch_topic` (non-empty string by construction — Mode A has no Skip option) —
 used in Stage 5 confirmation table and Stage 6 state.json entry.
@@ -769,7 +769,7 @@ Write("${TARGET_ROOT}/specs/${padded_num}_${slug}/", ...)   # e.g. "${TARGET_ROO
 where `padded_num` is `task_num` zero-padded to 3 digits (`printf '%03d' "$task_num"`).
 
 **Topic Assignment**: Write `batch_topic` (from Stage 4.5) to the `"topic"` field in each
-state.json entry. `batch_topic` is non-empty by construction (task 796: Mode A has no Skip
+state.json entry. `batch_topic` is non-empty by construction (Mode A has no Skip
 option), so this field is always populated.
 
 **state.json Entry** (with dependencies):
@@ -789,7 +789,7 @@ option), so this field is always populated.
 
 Note: Pass `--arg title "$task_title"` and `--arg desc "$task_description"` to the jq call, where `$task_title` and `$task_description` come from `task_list[].title` and `task_list[].description` populated during the interview (Stage 3A).
 
-Note: The `"topic"` field is always populated (task 796: topic assignment is mandatory, no
+Note: The `"topic"` field is always populated (topic assignment is mandatory, no
 Skip option exists in Stage 4.5's Mode A picker).
 
 After all tasks are written to state.json, call `bash "${TARGET_ROOT}/.claude/scripts/generate-todo.sh"` to regenerate TODO.md. This handles frontmatter, task entries (in descending project_number order), and Task Order — all in one step. (`generate-todo.sh` self-resolves its project root from `BASH_SOURCE[0]`, not CWD — the absolute qualification is what makes this correct at a non-CWD target root; see Stage 1's Path Qualification Convention.)
@@ -1169,12 +1169,12 @@ Created 4 task(s) for feature implementation:
 2. Work through tasks in execution order shown above
 3. Progress through /research -> /plan -> /implement cycle for each task
 
-Note: Tasks #38 and #39 can be researched/implemented in parallel after #37 completes.
+Note: Tasks #{M} and #{P} can be researched/implemented in parallel after #{N} completes.
 ```
 
 **Example 3: External Dependencies (2 new tasks depending on existing #35)**
 
-Input: 2 tasks where the first depends on existing task #35
+Input: 2 tasks where the first depends on existing task #{X}
 
 ```
 ## Tasks Created
@@ -1206,7 +1206,7 @@ Created 2 task(s) for build system:
 ---
 
 **Next Steps**:
-1. Ensure task #35 is completed first
+1. Ensure task #{X} is completed first
 2. Run `/research 37` to begin research
 3. Work through tasks in execution order shown above
 ```
@@ -1339,7 +1339,7 @@ Return ONLY valid JSON matching this schema:
     {
       "type": "task_entry",
       "path": "{target_root}/specs/TODO.md",
-      "summary": "Task #430 added to TODO.md"
+      "summary": "Task #{N} added to TODO.md"
     }
   ],
   "metadata": {
@@ -1428,7 +1428,7 @@ determine unambiguously where artifacts landed.
 4b. **Update active_topics** (after all tasks created, before generate-todo.sh call):
 
    Ensure each new topic is registered in active_topics, then assign to each task.
-   `batch_topic` is non-empty by construction (task 796: Mode A has no Skip option); the
+   `batch_topic` is non-empty by construction (Mode A has no Skip option); the
    empty-string guard below is defensive only:
    `manage-topics.sh` self-resolves its project root from `BASH_SOURCE[0]`, not CWD, and has **no**
    `--state`/`--todo` override flag at all — an unqualified relative invocation silently corrupts

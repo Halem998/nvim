@@ -24,7 +24,7 @@ Create a new version of an implementation plan, or update task description if no
 source .claude/scripts/command-gate-in.sh "$task_number" "revise"
 # Exports: SESSION_ID, TASK_TYPE, TASK_STATUS, PROJECT_NAME, DESCRIPTION, PADDED_NUM
 # Displays: [REVISE] Task {N}: {project_name}
-# The Phase-1 (task 810) operation-aware exemption means "revise" is never rejected on
+# The Phase-1 (gate-in refactor) operation-aware exemption means "revise" is never rejected on
 # terminal-status tasks, preserving skill-reviser's documented "works regardless of task
 # status" contract. No other ABORT conditions exist for /revise.
 ```
@@ -73,7 +73,7 @@ CHECKPOINT 3).
 ```bash
 bash .claude/scripts/command-gate-out.sh "$task_number" "revise" "$SESSION_ID"
 # Reads .return-meta.json; applies defensive status correction if needed
-# status_token mapping (Phase 1, task 810): operation "revise" -> target_status "plan"
+# status_token mapping (Phase 1 of the gate-in refactor): operation "revise" -> target_status "plan"
 # Runs validate-artifact.sh --fix (non-blocking)
 # Defensive correction (state.json + TODO.md) handled by this script
 ```
@@ -131,10 +131,10 @@ Status: [{current_status}]
 - Locked by another session: `command-gate-in.sh` propagates `task-lock.sh acquire`'s refusal
   (a fresh lock held by a genuinely different session) — ABORT with the lock's held-by/reason
   message; re-run once the other session's operation completes or its lock goes stale
-- Cross-task `file_scope` overlap (task 809): if another currently-locked task's `file_scope`
+- Cross-task `file_scope` overlap (the cross-task file_scope overlap check): if another currently-locked task's `file_scope`
   overlaps this task's and that lock is fresh, `/revise` ABORTs before DELEGATE, naming the
   conflicting task number — this is a new failure mode `/revise` did not have before this
-  refactor (see task 810); re-run once the other task's lock releases or goes stale
+  gate-in refactor; re-run once the other task's lock releases or goes stale
 - Note: unlike `/research`/`/plan`/`/implement`, `/revise` has no terminal-status ABORT — the
   Phase-1 gate-in exemption preserves the pre-existing "works regardless of task status"
   contract; only the two lock-refusal modes above can block `/revise` at GATE IN

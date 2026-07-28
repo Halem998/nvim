@@ -620,7 +620,7 @@ fallback instead of setting `topic=""`: follow
 @.claude/context/patterns/topic-assignment-pattern.md (Mode A: Interactive, batch variant)
 and capture the result in `topic`.
 
-**4. Add task to state.json** (`$topic` is non-empty by construction — task 796: mandatory
+**4. Add task to state.json** (`$topic` is non-empty by construction — mandatory
 topic assignment, no Skip option; the null-guard below is defensive only):
 ```bash
 jq --arg num "$next_num" --arg slug "$slug" --arg title "$title" \

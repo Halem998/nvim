@@ -141,7 +141,7 @@ if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
   infra_failures=$(jq -r '.infra_failures // 0' "$loop_guard_file")
   echo "[orchestrate] Resuming — cycle $cycle_count of $MAX_CYCLES (infra failures: $infra_failures of $MAX_INFRA_FAILURES)"
 else
-  # Fresh start: create guard atomically via init-marker (task 808). A plain
+  # Fresh start: create guard atomically via init-marker. A plain
   # `>` redirect has no O_EXCL semantics, so two racing writers could both take
   # this branch and stomp each other's counters; init-marker's mkdir-gate +
   # tmp-mv payload guarantees exactly one winner. On a lost race (exit 1),

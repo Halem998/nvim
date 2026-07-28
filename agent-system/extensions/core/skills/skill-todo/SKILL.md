@@ -831,7 +831,7 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          Add vault transition comment to TODO.md:
          ```bash
          current_date=$(date +"%Y-%m-%d")
-         transition_comment="<!-- Vault transition: ${current_date} - Tasks 1-$((next_num - renumber_count - 1)) archived to ${vault_path}/ -->"
+         transition_comment="<!-- Vault transition: ${current_date} - tasks numbered 1 through $((next_num - renumber_count - 1)) archived to ${vault_path}/ -->"
 
          # Insert after frontmatter or at top of file
          if grep -q "^---$" specs/TODO.md; then

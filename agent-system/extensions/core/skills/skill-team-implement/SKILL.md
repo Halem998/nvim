@@ -644,14 +644,14 @@ Team implementation completed for task {N}:
 Brief text summary (NOT JSON):
 
 ```
-Team implementation completed for task 412:
+Team implementation completed for task {N}:
 - Executed 3 waves with up to 2 parallel teammates
 - Wave 1: Phases 1, 2 completed in parallel
 - Wave 2: Phase 3, 4 completed in parallel
 - Wave 3: Phase 5, 6 completed in parallel
 - 1 debugger invocation for build error (resolved)
 - All 6 phases completed
-- Summary at specs/412_task_name/summaries/01_implementation-summary.md
+- Summary at specs/{NNN}_task_name/summaries/01_implementation-summary.md
 - Status updated to [COMPLETED]
 - Changes committed with session sess_...
 ```
@@ -659,7 +659,7 @@ Team implementation completed for task 412:
 ### Partial Return
 
 ```
-Team implementation partially completed for task 412:
+Team implementation partially completed for task {N}:
 - Executed 2 of 3 waves
 - Wave 1: Phases 1, 2 completed
 - Wave 2: Phase 3 [BLOCKED] (build error unresolved)

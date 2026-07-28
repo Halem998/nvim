@@ -360,7 +360,7 @@ Run `/plan {N}` to create an implementation plan, then `/implement {N}` to gener
 #### 5.2.5: Assign Topic (Mode A Interactive Picker)
 
 Before writing the task to state.json, offer an interactive topic picker. Topic assignment
-is mandatory (task 796) — there is no Skip option. This follows
+is mandatory — there is no Skip option. This follows
 @.claude/context/patterns/topic-assignment-pattern.md (Mode A: Interactive); the steps are
 inlined below to prevent drift since this picker does not delegate to the pattern doc via a
 runtime lookup:
@@ -391,7 +391,7 @@ Show picker via AskUserQuestion:
 
 #### 5.3: Update state.json
 
-Add new task to active_projects. `$topic` is non-empty by construction (task 796: mandatory
+Add new task to active_projects. `$topic` is non-empty by construction (mandatory
 topic assignment, no Skip option); the null-guard below is defensive only.
 ```bash
 jq --argjson num "$next_num" \
