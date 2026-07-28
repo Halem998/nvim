@@ -22,6 +22,8 @@
 #   EXPLOIT_FLAG   — "true" or "false" (--exploit mode hint for team research)
 #   EXPLORE_FLAG   — "true" or "false" (--explore mode hint for team research)
 #   LIT_FLAG       — "true" or "false" (--lit mode hint for literature-based tasks)
+#   ALLOW_SELF_MODIFYING_FLAG — "true" or "false" (default off; opt-in bypass of the
+#                    self-modification admission gate, per-invocation only)
 #   FOCUS_PROMPT   — remaining text after all recognized flags stripped
 #
 # Downstream dependencies:
@@ -77,6 +79,7 @@ parse_command_args() {
   EXPLOIT_FLAG="false"
   EXPLORE_FLAG="false"
   LIT_FLAG="false"
+  ALLOW_SELF_MODIFYING_FLAG="false"
 
   if [[ "$remaining" =~ --team ]]; then
     TEAM_MODE="true"
@@ -125,6 +128,9 @@ parse_command_args() {
   if [[ "$remaining" =~ --lit ]]; then
     LIT_FLAG="true"
   fi
+  if [[ "$remaining" =~ --allow-self-modifying ]]; then
+    ALLOW_SELF_MODIFYING_FLAG="true"
+  fi
 
   # Step 5: Strip all recognized flags to produce FOCUS_PROMPT
   FOCUS_PROMPT=$(echo "$remaining" \
@@ -143,6 +149,7 @@ parse_command_args() {
     | sed 's/--exploit//g' \
     | sed 's/--explore//g' \
     | sed 's/--lit//g' \
+    | sed 's/--allow-self-modifying//g' \
     | xargs)
 
   # Step 6: Validate — at least one task number is required
@@ -151,7 +158,7 @@ parse_command_args() {
     return 1
   fi
 
-  export TASK_NUMBERS REMAINING_ARGS TEAM_MODE TEAM_SIZE EFFORT_FLAG MODEL_FLAG CLEAN_FLAG FORCE_FLAG DRY_RUN_FLAG LOCAL_FLAG EXPLOIT_FLAG EXPLORE_FLAG LIT_FLAG FOCUS_PROMPT
+  export TASK_NUMBERS REMAINING_ARGS TEAM_MODE TEAM_SIZE EFFORT_FLAG MODEL_FLAG CLEAN_FLAG FORCE_FLAG DRY_RUN_FLAG LOCAL_FLAG EXPLOIT_FLAG EXPLORE_FLAG LIT_FLAG ALLOW_SELF_MODIFYING_FLAG FOCUS_PROMPT
 }
 
 parse_command_args "$1"

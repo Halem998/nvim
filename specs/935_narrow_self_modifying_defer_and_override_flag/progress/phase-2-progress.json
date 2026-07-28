@@ -1,0 +1,13 @@
+{
+  "phase": 2,
+  "phase_name": "Add --allow-self-modifying to the shared argument parser",
+  "started_at": "2026-07-28T00:30:00Z",
+  "last_updated": "2026-07-28T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add ALLOW_SELF_MODIFYING_FLAG through header, init, scan, strip chain, export", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/parse-command-args.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
