@@ -1,28 +1,29 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "plan",
-  "status": "planned",
-  "summary": "Created a six-phase implementation plan for the continuation-pointer field-shape schism, built on the research report's correction (flat continuation_path vs nested continuation_context.handoff_path, not a null-handoff_path defect). Implements Option B: dual-form acceptance in orchestrate-triage-classify.sh and base skill-orchestrate/SKILL.md, plus the dispatch-context normalization the research flagged as a separate gap, hard-engine reader symmetry, a handoff-schema.md rewrite, and a proven-RED-first regression suite at scripts/tests/test-orchestrate-triage-classify.sh.",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Fixed the continuation-pointer field-shape schism across all reader sites: orchestrate-triage-classify.sh, both skill-orchestrate/skill-orchestrate-hard SKILL.md engines, and handoff-schema.md now accept either the flat continuation_path (what the live H9 writer emits) or the nested continuation_context.handoff_path form, normalized before reaching successor dispatch. Regression suite proven RED (pre-fix, exit 1) then GREEN (post-fix, exit 0, 9/9). All 6 phases complete; full-gate sweep clean.",
   "artifacts": [
-    {"type": "plan", "path": "specs/931_handoff_continuation_path_writer_predicate_contract/plans/01_continuation-path-predicate-contract.md"}
+    {"type": "summary", "path": "specs/931_handoff_continuation_path_writer_predicate_contract/summaries/01_continuation-path-predicate-contract-summary.md"}
   ],
   "blockers": [],
-  "next_action_hint": "implement",
+  "next_action_hint": "none",
   "files_modified": [
-    "specs/931_handoff_continuation_path_writer_predicate_contract/plans/01_continuation-path-predicate-contract.md"
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"
   ],
   "decisions_made": [
-    "Option B adopted: relax the two nested-only readers rather than migrate writers onto the nested form. Option A rejected for blast radius (wrap-up.md canonical schema plus three agent Stage 5 templates plus an already-self-consistent hard-mode reader).",
-    "skill_write_orchestrator_handoff disposition decided: document as dead, do not delete, do not rewire. The edit is comment-only and lives in a different function from the sibling follow-up targeting skill_postflight_update's status accept-list, so the two cannot collide textually or semantically.",
-    "cslib-implementation-hard-agent.md Stage 5 (only continuation_context, hardcoded null, no population instruction) declared an explicit Non-Goal and recorded as a named follow-up for harvest.",
-    "Regression-suite sandboxing resolved during planning without needing a STATE_FILE override: a $WORKDIR/.claude/scripts/ workdir shape satisfies deploy-root-guard.sh's */.claude parent-dir requirement and makes PROJECT_ROOT resolve to $WORKDIR. Carried as a Phase 1 Scope Hypothesis requiring implementation-time confirmation, with the justified-override fallback stated.",
-    "Three nested-only continuation read sites found in skill-orchestrate/SKILL.md (Stage 4 partial handler, Stage 5 result read, Stage MT-4 implement dispatch bullet) and two in skill-orchestrate-hard/SKILL.md (Stage 4 flat-only, Stage 5 nested-only) -- more sites than the research enumerated; all are covered by Phases 3 and 4.",
-    "Mutation-check discipline encoded structurally: Phase 1 (test, proven RED) is a hard dependency of Phase 2 (fix), and Phase 1's success criterion is a NON-ZERO exit with the continuation_path-only fixture reporting handoff_state empty.",
-    "Anti-over-relaxation guard added as Fixture C (both forms null must still classify as empty) and precedence guard as Fixture D (continuation outranks blockers), so the relaxation cannot silently widen beyond its intent.",
-    "Co-edit safety encoded as a binding constraint in every phase: anchor edits on symbol names and quoted distinctive strings, never line numbers, with a Phase 6 grep confirming the sibling's dispatch_status three-tier validation and its OFF-SCHEMA DISPATCH STATUS banner are undisturbed."
+    "Phase 1 sandbox Scope Hypothesis confirmed empirically: $WORKDIR/.claude/scripts/ satisfies deploy-root-guard.sh with no STATE_FILE override needed.",
+    "Phase 6 extended one file beyond the plan's originally enumerated file lists: docs/architecture/orchestrate-state-machine.md was found stale during the residual-nested-only sweep (a companion doc describing the same rule) and updated for consistency rather than left as a third silently-diverging copy. Recorded as a deviation in progress/phase-6-progress.json."
   ],
   "dead_ends": [],
-  "phases_completed": 0,
+  "phases_completed": 6,
   "phases_total": 6,
   "plan_markers_verified": true,
   "continuation_path": null,

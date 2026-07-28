@@ -1,11 +1,55 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "agent_type": "general-implementation-agent",
   "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "task_number": 931,
   "task_type": "meta",
   "session_id": "sess_1785196200_e29d15",
   "plan_path": "specs/931_handoff_continuation_path_writer_predicate_contract/plans/01_continuation-path-predicate-contract.md",
-  "phases_completed": 0,
-  "phases_total": 6
+  "phases_completed": 6,
+  "phases_total": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/931_handoff_continuation_path_writer_predicate_contract/summaries/01_continuation-path-predicate-contract-summary.md",
+      "summary": "Fixed the continuation-pointer field-shape schism: readers now accept both the flat continuation_path (what the live H9 writer emits) and the nested continuation_context.handoff_path form, normalized before reaching successor dispatch. Regression suite proven RED-then-GREEN. handoff-schema.md and orchestrate-state-machine.md rewritten for consistency."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed the writer/predicate field-shape schism causing rich hard-mode continuations to misclassify as empty: orchestrate-triage-classify.sh and both SKILL.md engines now accept either the flat continuation_path (what the live H9 writer emits) or the nested continuation_context.handoff_path form, normalizing to a usable shape before successor dispatch. Regression suite proven RED (pre-fix) then GREEN (post-fix); handoff-schema.md rewritten to document both forms and correct its self-contradiction."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "specs/931_handoff_continuation_path_writer_predicate_contract/plans/01_continuation-path-predicate-contract.md",
+    "specs/931_handoff_continuation_path_writer_predicate_contract/summaries/01_continuation-path-predicate-contract-summary.md",
+    "specs/931_handoff_continuation_path_writer_predicate_contract/progress/phase-1-progress.json",
+    "specs/931_handoff_continuation_path_writer_predicate_contract/progress/phase-2-progress.json",
+    "specs/931_handoff_continuation_path_writer_predicate_contract/progress/phase-3-progress.json",
+    "specs/931_handoff_continuation_path_writer_predicate_contract/progress/phase-4-progress.json",
+    "specs/931_handoff_continuation_path_writer_predicate_contract/progress/phase-5-progress.json",
+    "specs/931_handoff_continuation_path_writer_predicate_contract/progress/phase-6-progress.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a system has one executable predicate plus hand-applied prose copies of the same rule duplicated across multiple SKILL.md-style engines, a field-shape divergence between writer and reader hides in the copies, not the shared script. Reliable audit move: grep the field name tree-wide and classify every hit as writer, reader, validator, or doc-reference. A validator that already accepts BOTH shapes (here validate-handoff.sh accepting continuation_path OR continuation_context) is strong precedent that relaxing the strict reader codifies existing convention rather than inventing a new contract. When fixing the primary rule, also grep for OTHER doc files describing the same rule outside the plan's named file list — companion architecture docs (e.g. a 'state machine spec' next to a 'schema doc') often carry a third silently-diverging copy that a narrowly-scoped plan won't catch unless the final sweep step explicitly searches for it.",
+      "category": "PATTERN",
+      "source_artifact": "specs/931_handoff_continuation_path_writer_predicate_contract/summaries/01_continuation-path-predicate-contract-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["predicate-divergence", "writer-reader-contract", "validator-precedent", "duplicated-rule-audit", "handoff-schema", "field-shape-schism", "companion-doc-staleness"]
+    },
+    {
+      "content": "Mutation-check discipline for a shell regression suite fixing a jq predicate: build fixtures BEFORE the fix lands, run the suite against the unfixed script, and record the literal RED output (exit code, pass/fail counts, which fixtures failed and why) before touching production code. A suite that only ever runs post-fix cannot prove it exercises the bug it claims to guard against.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/931_handoff_continuation_path_writer_predicate_contract/summaries/01_continuation-path-predicate-contract-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["mutation-check", "red-green-testing", "shell-script-testing", "regression-suite", "jq-predicate"]
+    }
+  ]
 }
