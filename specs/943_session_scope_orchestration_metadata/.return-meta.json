@@ -1,14 +1,55 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "agent_type": "general-implementation-agent",
   "session_id": "sess_1785280916_d6cc03",
   "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "task_number": 943,
-  "artifacts": [],
-  "metadata": {
-    "phases_completed": 0,
-    "phases_total": 7
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/943_session_scope_orchestration_metadata/summaries/01_session-scope-orchestration-metadata-summary.md",
+      "summary": "All 7 phases completed: session-scoped both orchestration singletons, per-file differentiated read-time session_id verification, deleted dead handoff docs, widened tracking/gitignore machinery, added mtime-based reap wired into /refresh, proved with a 6-case test suite, deployed and verified."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Session-scoped specs/.orchestrator-multi-state.json and specs/.return-meta-multi.json with a {session_id} suffix at every writer/reader, added hard-fail read-time session_id verification for the multi-state file and observational-only tracking for the loop guard/churn state (preserving multi-turn /orchestrate resume), deleted dead handoff documentation, widened tracking/gitignore machinery, added an mtime-based reap script wired into /refresh Step 4.5, and proved all of it with a 6-case isolated-temp-root test suite. All 7 phases completed and verified against the deployed .claude/ tree."
   },
-  "memory_candidates": [],
-  "modified_files": []
+  "modified_files": [
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/scripts/check-runtime-file-tracking.sh",
+    "agent-system/extensions/core/scripts/reap-session-runtime-files.sh",
+    "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
+    "agent-system/extensions/core/commands/refresh.md",
+    "agent-system/extensions/core/scripts/test-session-runtime-files.sh",
+    "agent-system/extensions/core/manifest.json",
+    ".gitignore",
+    "specs/943_session_scope_orchestration_metadata/plans/01_session-scope-orchestration-metadata.md",
+    "specs/943_session_scope_orchestration_metadata/progress/phase-2-progress.json",
+    "specs/943_session_scope_orchestration_metadata/summaries/01_session-scope-orchestration-metadata-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a plan requires an isolated-temp-root test suite for a shell script that reaps/sweeps files, model it on scripts/test-task-lock-reap.sh: copy the script under test byte-for-byte into a $TMPROOT/.claude/scripts/ fixture (so production code never learns it's under test), build a fixture specs/ tree with controlled epoch-arithmetic mtimes (touch -d \"@$epoch\", never real sleeping), and use the same pass/fail counter + exit-0-on-all-pass contract. This pattern generalizes cleanly to any new mtime-based reap script in this codebase.",
+      "category": "PATTERN",
+      "source_artifact": "specs/943_session_scope_orchestration_metadata/summaries/01_session-scope-orchestration-metadata-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["test-suite", "isolated-temp-root", "reap-script", "mtime", "task-lock-reap-pattern"]
+    },
+    {
+      "content": "deploy-headless.sh does not re-run copy_scripts/copy_manifest for an already-loaded extension, so a brand-new script file AND a manifest.json provides.scripts array update can both silently fail to propagate to .claude/ on redeploy -- even after running deploy-headless.sh. Verified empirically: two new scripts plus a manifest.json edit all needed a direct one-off file copy workaround. This is a third empirical instance of the gap already documented in .claude/rules/no-task-references-in-deliverables.md's \"Discovered deploy-mechanism gap\" section.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/943_session_scope_orchestration_metadata/summaries/01_session-scope-orchestration-metadata-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["deploy-headless", "loader-gap", "manifest.json", "provides.scripts", "new-file-propagation"]
+    }
+  ],
+  "metadata": {
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }

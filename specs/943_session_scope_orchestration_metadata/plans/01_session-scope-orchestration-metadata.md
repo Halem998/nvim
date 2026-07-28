@@ -1,7 +1,7 @@
 # Implementation Plan: Session-Scope Batch-Level Orchestration Metadata
 
 - **Task**: 943 - Session-scope batch-level orchestration metadata and verify session_id on read
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/943_session_scope_orchestration_metadata/reports/01_session-scope-orchestration-metadata.md
@@ -559,37 +559,54 @@ behaviors are each proven by an automated test that never touches the real `spec
 
 ---
 
-### Phase 7: Deploy propagation and final verification [NOT STARTED]
+### Phase 7: Deploy propagation and final verification [COMPLETED]
 
 **Goal**: The source-store edits reach the deployed `.claude/` tree, and the full gate set passes
 against the deployed copies.
 
 **Tasks**:
-- [ ] Redeploy via the standard "Load Core" / "Sync all" path so the edited files propagate from
-      `agent-system/extensions/core/**` into `.claude/**`.
-- [ ] Diff each modified file's source-store copy against its deployed counterpart to confirm
+- [x] Redeploy via the standard "Load Core" / "Sync all" path so the edited files propagate from
+      `agent-system/extensions/core/**` into `.claude/**`. *(completed: `deploy-headless.sh`)*
+- [x] Diff each modified file's source-store copy against its deployed counterpart to confirm
       propagation. Edits to already-existing files (the six SKILL.md/command/docs/standards/script
       files) are expected to propagate normally — the two documented loader gaps concern brand-new
-      files only.
-- [ ] Explicitly confirm the two NEW scripts landed:
+      files only. *(completed: all nine pre-existing modified files diffed identical)*
+- [x] Explicitly confirm the two NEW scripts landed:
       `.claude/scripts/reap-session-runtime-files.sh` and
       `.claude/scripts/test-session-runtime-files.sh`. If either did not propagate, apply the
       documented one-off workaround (a direct invocation of the loader's copy primitives), and
-      record which gap was hit.
-- [ ] Run `bash .claude/scripts/check-runtime-file-tracking.sh` against the deployed copy; it must
-      exit 0 with Checks A, B, and C all passing.
-- [ ] Run `bash .claude/scripts/test-session-runtime-files.sh` against the deployed copy; it must
-      exit 0.
-- [ ] Run `bash .claude/scripts/check-task-references.sh` to confirm no deliverable outside
+      record which gap was hit. *(completed: both hit the documented new-file loader gap after
+      `deploy-headless.sh`; worked around via a direct one-off copy of the two script files.
+      A THIRD, previously-undocumented instance of the same gap was also hit: adding the two new
+      script names to `agent-system/extensions/core/manifest.json`'s `provides.scripts` array did
+      not propagate to `.claude/extensions/core/manifest.json` on a second `deploy-headless.sh`
+      run either — worked around identically via a direct one-off copy of `manifest.json`. This
+      third instance is recorded here as a new empirical data point for the loader-gap follow-up,
+      not fixed by this task.)*
+- [x] Run `bash .claude/scripts/check-runtime-file-tracking.sh` against the deployed copy; it must
+      exit 0 with Checks A, B, and C all passing. *(completed: exit 0, all three checks PASS)*
+- [x] Run `bash .claude/scripts/test-session-runtime-files.sh` against the deployed copy; it must
+      exit 0. *(completed: exit 0, 6/6 cases PASS)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` to confirm no deliverable outside
       `specs/**` gained a task-number citation. Every rationale note added by this plan must use
-      durable anchors (stage names, script names, mechanism names) instead.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` if available, to exercise the full gate set
-      including the task-reference lint wired in as one of its gates.
-- [ ] Final consistency read: the writer path expression, the reader path expression, the
+      durable anchors (stage names, script names, mechanism names) instead. *(completed: PASS, 0
+      unexempted occurrences across all 4 scanned trees)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` if available, to exercise the full gate set
+      including the task-reference lint wired in as one of its gates. *(completed: ran; overall
+      verdict is FAIL, but the failure is entirely a PRE-EXISTING, out-of-scope condition in the
+      unrelated `literature` extension — two `scripts/__pycache__/*.pyc` files present on disk but
+      not listed in that extension's `provides.scripts` — not anything this plan touched. All
+      four gates this plan's own Verification section requires to pass
+      (`check-runtime-file-tracking.sh`, `test-session-runtime-files.sh`,
+      `test-task-lock-reap.sh`, `check-task-references.sh`) do pass; `verify-deploy.sh`'s overall
+      FAIL is not one of those four. Confirmed via `check-extension-docs.sh`'s per-extension
+      summary: `core PASS`, only `literature FAIL`.)*
+- [x] Final consistency read: the writer path expression, the reader path expression, the
       `check-runtime-file-tracking.sh` probes, the root `/.gitignore` pattern, the
       `orchestrator-runtime-files.md` Consumer Repo Setup block, and the reap script's globs all
       describe the same filename shape. A drift in any one of these six is the exact failure mode
-      this task exists to prevent.
+      this task exists to prevent. *(completed: live grep of all six confirms identical
+      `specs/.orchestrator-multi-state{-suffix}.json` shape)*
 
 **Timing**: 0.75 hours
 
