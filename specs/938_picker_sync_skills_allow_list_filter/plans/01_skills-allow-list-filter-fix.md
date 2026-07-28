@@ -320,26 +320,32 @@ must reach `manifest.lua` or `scan.lua`, stop and re-scope rather than widening 
 
 ---
 
-### Phase 4: Zero-result wipeout detector [NOT STARTED]
+### Phase 4: Zero-result wipeout detector [COMPLETED]
 
 **Goal**: Make a total allow-list wipeout non-silent — the signature that would have caught this
 defect years earlier (scope item D).
 
 **Tasks**:
-- [ ] Inside `sync_scan`, immediately after `filtered` is built and before `return filtered`, add
+- [x] Inside `sync_scan`, immediately after `filtered` is built and before `return filtered`, add
       the check: if `#results > 0 and #filtered == 0`, emit a non-blocking `helpers.notify(...,
       "WARN")`.
-- [ ] Word the message so it names the category, the dropped count, and the actionable cause:
+- [x] Word the message so it names the category, the dropped count, and the actionable cause:
       that a working allow-list still passes some declared files through, so a total wipeout means
       the lookup key (directory name vs. basename) likely does not match the `provides.<category>`
       entries. Do not reference task numbers (the file lives outside `specs/**`).
-- [ ] Confirm the detector never mutates state, never blocks the scan, and never changes the
+- [x] Confirm the detector never mutates state, never blocks the scan, and never changes the
       returned value — it reports only.
-- [ ] Use the already-required `helpers` module; add no new dependency.
-- [ ] Verify no false positive on partial exclusion: a scratch case where some files are declared
+- [x] Use the already-required `helpers` module; add no new dependency.
+- [x] Verify no false positive on partial exclusion: a scratch case where some files are declared
       and some are not must produce a non-empty `filtered` and no warning.
-- [ ] Verify the true-positive path by temporarily feeding the harness a manifest whose
+- [x] Verify the true-positive path by temporarily feeding the harness a manifest whose
       `provides.skills` entries match nothing on disk, confirming exactly one WARN fires.
+
+**Verification results**: three scratch-tree cases via a `helpers.notify` capture stub —
+`normal_all_declared_present` (0 warnings), `partial_exclusion_no_warning` (1 skill admitted, 0
+warnings), `total_wipeout_one_warning` (0 skills admitted, exactly 1 WARN naming `skills` and the
+dropped count `1`). Module still loads headless; no repository file outside `sync.lua` (plus this
+plan) was touched.
 
 **Timing**: 0.75 hours
 

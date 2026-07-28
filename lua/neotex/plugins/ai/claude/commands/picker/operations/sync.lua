@@ -1018,6 +1018,26 @@ function M.scan_all_artifacts(global_dir, project_dir, config)
           table.insert(filtered, file_info)
         end
       end
+
+      -- Zero-result wipeout detector: a working allow-list still passes some
+      -- declared files through, so a TOTAL wipeout (results existed, none survived
+      -- the filter) means the lookup key almost certainly does not match the
+      -- provides.<category> entries -- exactly the defect this filter fixes. This
+      -- check is report-only: it never mutates `filtered`, never blocks the scan,
+      -- and never changes the returned value.
+      if #results > 0 and #filtered == 0 then
+        helpers.notify(
+          string.format(
+            "Sync allow-list dropped ALL %d '%s' file(s) found under '%s' -- a working "
+              .. "allow-list still passes some declared files through, so a total wipeout "
+              .. "usually means the lookup key (directory name vs. basename) does not match "
+              .. "the provides.%s entries in the core manifest.",
+            #results, filter_category, subdir, filter_category
+          ),
+          "WARN"
+        )
+      end
+
       return filtered
     end
 
