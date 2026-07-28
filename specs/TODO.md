@@ -11,13 +11,9 @@ next_project_number: 939
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 937,938 | -- | agent-system, nvim-plugin |
+| 1 | 938 | -- | nvim-plugin |
 
 **Grouped by Topic** (indented = depends on parent):
-
-### Agent System
-
-937 [IMPLEMENTING] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ### Nvim Plugin
 
@@ -67,12 +63,13 @@ CONSTRAINT: honor the repository's Lua standards (2-space indent, ~100 char line
 ---
 
 ### 937. Forward-progress invariant for batch admission
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 935
 - **Research**: [937_forward_progress_invariant_for_batch_admission/reports/01_forward-progress-invariant-batch-admission.md]
 - **Plan**: [937_forward_progress_invariant_for_batch_admission/plans/01_zero-dispatch-forward-progress-legibility.md]
+- **Summary**: [937_forward_progress_invariant_for_batch_admission/summaries/01_zero-dispatch-forward-progress-legibility-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 

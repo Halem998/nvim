@@ -1876,7 +1876,7 @@
     {
       "project_number": 937,
       "project_name": "forward_progress_invariant_for_batch_admission",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Forward-progress invariant for batch admission",
@@ -1891,7 +1891,7 @@
         935
       ],
       "created": "2026-07-28T12:59:00Z",
-      "last_updated": "2026-07-28T14:44:26Z",
+      "last_updated": "2026-07-28T15:06:18Z",
       "session_id": "sess_1785249037_e81aad",
       "artifacts": [
         {
@@ -1903,8 +1903,14 @@
           "path": "specs/937_forward_progress_invariant_for_batch_admission/plans/01_zero-dispatch-forward-progress-legibility.md",
           "type": "plan",
           "summary": "Six-phase plan making the zero-dispatch outcome a loud, actionable terminal result"
+        },
+        {
+          "path": "specs/937_forward_progress_invariant_for_batch_admission/summaries/01_zero-dispatch-forward-progress-legibility-summary.md",
+          "type": "summary",
+          "summary": "Zero-dispatch forward-progress legibility implementation summary"
         }
-      ]
+      ],
+      "completion_summary": "Made the zero-dispatch /orchestrate outcome loud and named across the skill's Stage MT-5 postflight, the command's consolidated output, and the --dry-run reporter, and recorded the forward-progress invariant as a standing requirement in the guardrails document. No admission decision changed anywhere -- verified by an explicit admission-neutrality audit and defer-not-fail confirmation in the final phase."
     },
     {
       "project_number": 938,

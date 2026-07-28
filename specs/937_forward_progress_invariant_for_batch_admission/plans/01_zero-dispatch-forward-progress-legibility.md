@@ -1,7 +1,7 @@
 # Implementation Plan: Task #937
 
 - **Task**: 937 - forward_progress_invariant_for_batch_admission
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: 935 (narrow self-modifying defer and override flag) — COMPLETED and deployed
 - **Research Inputs**: specs/937_forward_progress_invariant_for_batch_admission/reports/01_forward-progress-invariant-batch-admission.md

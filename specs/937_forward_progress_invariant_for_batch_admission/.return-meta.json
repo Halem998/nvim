@@ -2,7 +2,11 @@
   "status": "implemented",
   "task_number": 937,
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1785249037_e81aad",
   "plan_path": "specs/937_forward_progress_invariant_for_batch_admission/plans/01_zero-dispatch-forward-progress-legibility.md",
   "phases_completed": 6,
@@ -29,21 +33,43 @@
       "category": "PATTERN",
       "source_artifact": "specs/937_forward_progress_invariant_for_batch_admission/summaries/01_zero-dispatch-forward-progress-legibility-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["detection-rendering-split", "three-branch-resolution", "non-silent-degradation", "orchestrate", "invariant"]
+      "suggested_keywords": [
+        "detection-rendering-split",
+        "three-branch-resolution",
+        "non-silent-degradation",
+        "orchestrate",
+        "invariant"
+      ]
     },
     {
       "content": "Technique for smoke-testing a deploy-root-guarded script (one sourcing deploy-root-guard.sh, which refuses to run outside a .claude/scripts/ or .opencode/scripts/ shaped tree) without touching the live deploy tree: build a scratch tree under the scratchpad directory with a .claude/scripts/ subdirectory, copy the target script plus every script it calls via SCRIPT_DIR-relative paths (grep for \"$SCRIPT_DIR/*.sh\" references to enumerate them), copy any required context/reference/*.json data files, and write a synthetic specs/state.json with fixture active_projects entries. This reproduces exactly the guard's structural check (two directories under a .claude or .opencode parent) while remaining fully isolated from the real repo state.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/937_forward_progress_invariant_for_batch_admission/summaries/01_zero-dispatch-forward-progress-legibility-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["deploy-root-guard", "scratch-tree", "smoke-test", "orchestrate-dry-run-report", "isolated-testing"]
+      "suggested_keywords": [
+        "deploy-root-guard",
+        "scratch-tree",
+        "smoke-test",
+        "orchestrate-dry-run-report",
+        "isolated-testing"
+      ]
     },
     {
       "content": "Confirmed recurring gotcha: deploy-headless.sh's picker sync tool excludes skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md from its skills scan, so any source-store edit to these two files requires a direct-copy workaround (cp agent-system/extensions/core/skills/skill-orchestrate/SKILL.md .claude/skills/skill-orchestrate/SKILL.md) immediately after every deploy-headless.sh invocation, verified by diffing the copy against the source. This has now recurred across at least two tasks; a dedicated follow-up task to fix the sync tool itself is recommended rather than continuing to route around it.",
       "category": "CONFIG",
       "source_artifact": "specs/937_forward_progress_invariant_for_batch_admission/summaries/01_zero-dispatch-forward-progress-legibility-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["deploy-headless", "picker-sync-defect", "skill-orchestrate", "direct-copy-workaround", "source-store-deploy-boundary"]
+      "suggested_keywords": [
+        "deploy-headless",
+        "picker-sync-defect",
+        "skill-orchestrate",
+        "direct-copy-workaround",
+        "source-store-deploy-boundary"
+      ]
     }
-  ]
+  ],
+  "metadata": {
+    "cycles_used": 3,
+    "final_state": "completed"
+  }
 }
