@@ -732,7 +732,7 @@ logic does not exist, this phase must stop and surface that rather than writing 
 
 ---
 
-### Phase 8: Specify the `--review` sub-mode [NOT STARTED]
+### Phase 8: Specify the `--review` sub-mode [COMPLETED]
 
 **Goal**: Define read-only ad-hoc inquiry over the vault and all four source tiers — the one
 sub-mode that legitimately spans every tier live.
@@ -751,15 +751,18 @@ sub-mode that legitimately spans every tier live.
 
 **Tasks**:
 
-- [ ] Author the `--review` section as deltas against the shared skeleton, explicitly naming the
-      MANDATORY STOP exemption and its justification.
-- [ ] Specify per-tier access: which script or read path serves each tier, and the announced
+- [x] Author the `--review` section as deltas against the shared skeleton, explicitly naming the
+      MANDATORY STOP exemption and its justification. *(completed: inserted as `### Sub-Mode:
+      review` right after `--meta` and before `dream`)*
+- [x] Specify per-tier access: which script or read path serves each tier, and the announced
       degraded behavior when a tier is unavailable (OTel disabled, transcript rolled past 30 days,
-      no events yet).
-- [ ] Specify the output shape: open-ended answer with evidence citations naming the tier and
-      record each claim came from.
-- [ ] State the funnel-to-other-sub-mode rule.
-- [ ] State the cross-repo invocation discipline for any script call.
+      no events yet). *(completed: four-row table in "Candidate Identification: Per-Tier Access")*
+- [x] Specify the output shape: open-ended answer with evidence citations naming the tier and
+      record each claim came from. *(completed: "Execution: Output Shape")*
+- [x] State the funnel-to-other-sub-mode rule. *(completed, stated explicitly as its own
+      subsection)*
+- [x] State the cross-repo invocation discipline for any script call. *(completed, cross-referenced
+      to telemetry-guardrails.md)*
 
 **Timing**: 1.5 hours
 

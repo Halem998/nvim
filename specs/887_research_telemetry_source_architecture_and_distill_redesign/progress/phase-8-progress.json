@@ -1,0 +1,14 @@
+{
+  "phase": 8,
+  "phase_name": "Specify the --review sub-mode",
+  "started_at": "2026-07-27T04:45:00Z",
+  "last_updated": "2026-07-27T05:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Author --review section: read-only, four-tier access, MANDATORY STOP exemption, funnel rule", "status": "done",
+      "files_touched": ["agent-system/extensions/memory/skills/skill-distill/SKILL.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
