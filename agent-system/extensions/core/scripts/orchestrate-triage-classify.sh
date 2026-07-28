@@ -40,7 +40,10 @@
 #
 # Precedence for `partial` status (transcribed from the single-task Stage 4 handler's explicit
 # reads, which both engines share):
-#   1. continuation_context is non-null AND carries a handoff_path -> route toward `implement`
+#   1. a continuation pointer is present, in EITHER accepted form -- nested
+#      continuation_context.handoff_path non-null, OR flat top-level continuation_path non-null
+#      (dual-form acceptance, matching validate-handoff.sh's already-shipped precedent; see the
+#      "Two Accepted Forms" subsection of docs/architecture/handoff-schema.md)              -> `implement`
 #   2. else blockers is non-empty                                  -> `needs_human`
 #   3. else (neither)                                               -> `implement` (both engines)
 #
@@ -93,9 +96,11 @@
 #                                 defensive exclusion arm, which still treats it as an exclusion if
 #                                 it is ever emitted).
 #   handoff_state       string  "absent" (partial status, no readable handoff file), "continuation"
-#                                 (valid continuation_context), "blockers" (blockers present, no
-#                                 continuation), "empty" (partial, handoff present, neither), or
-#                                 "not_applicable" (status is not partial — no handoff was read).
+#                                 (a continuation pointer present in either accepted form: nested
+#                                 continuation_context.handoff_path or flat continuation_path),
+#                                 "blockers" (blockers present, no continuation), "empty" (partial,
+#                                 handoff present, neither), or "not_applicable" (status is not
+#                                 partial — no handoff was read).
 #   blocker_count       int    Length of the handoff's blockers array (0 when not applicable).
 #   handoff_age_min     int|null  Handoff file mtime age in minutes; null when no handoff was read.
 #   reason              string  Machine-templated human-readable summary; never the sole carrier
@@ -200,7 +205,19 @@ while [ "$idx" -lt "$lookup_count" ]; do
   blocker_count=$(jq -r '(.blockers // []) | length' "$handoff_path" 2>/dev/null)
   case "$blocker_count" in ''|*[!0-9]*) blocker_count=0 ;; esac
 
-  continuation_ok=$(jq -r '(.continuation_context // null) as $c | if ($c != null and ($c.handoff_path // null) != null) then "true" else "false" end' "$handoff_path" 2>/dev/null)
+  # Dual-form acceptance (Option B): a continuation pointer is present when EITHER the nested
+  # `continuation_context.handoff_path` is non-null OR the flat top-level `continuation_path` is
+  # non-null. This codifies the precedent validate-handoff.sh already ships (it accepts
+  # continuation_path OR continuation_context as two equally valid forms) rather than inventing a
+  # new contract. The nested form is written today only by the unreferenced
+  # skill_write_orchestrator_handoff; the flat form is what live H9 hard-mode wrap-up writers
+  # actually emit. Do not re-narrow this to one form without updating every reader in lockstep
+  # (see docs/architecture/handoff-schema.md's "Two Accepted Forms" subsection).
+  continuation_ok=$(jq -r '
+    ((.continuation_context // null) | if . != null then (.handoff_path // null) else null end) as $nested |
+    (.continuation_path // null) as $flat |
+    if ($nested != null) or ($flat != null) then "true" else "false" end
+  ' "$handoff_path" 2>/dev/null)
   [ "$continuation_ok" = "true" ] || continuation_ok="false"
 
   mtime=$(stat -c %Y "$handoff_path" 2>/dev/null || stat -f %m "$handoff_path" 2>/dev/null || echo "")
@@ -258,7 +275,7 @@ verdicts=$(jq -n -c \
     if $cont then
       {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:"implement",
        handoff_state:"continuation", blocker_count:$bc, handoff_age_min:$age,
-       reason:("task #" + ($c|tostring) + " is partial with a valid continuation_context; routes to implement")}
+       reason:("task #" + ($c|tostring) + " is partial with a valid continuation pointer; routes to implement")}
     elif ($bc > 0) then
       {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:"needs_human",
        handoff_state:"blockers", blocker_count:$bc, handoff_age_min:$age,

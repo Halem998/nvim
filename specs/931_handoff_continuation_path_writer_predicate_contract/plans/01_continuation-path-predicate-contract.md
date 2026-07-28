@@ -215,30 +215,32 @@ the `partial` branch of the verdict `jq` after writing them and checking each re
 
 ---
 
-### Phase 2: Relax the classifier predicate to dual-form acceptance [NOT STARTED]
+### Phase 2: Relax the classifier predicate to dual-form acceptance [COMPLETED]
 
 **Goal**: `orchestrate-triage-classify.sh` accepts a non-null top-level `continuation_path` OR a
 non-null nested `continuation_context.handoff_path`, and the suite from Phase 1 flips to GREEN.
 
 **Tasks**:
-- [ ] In `orchestrate-triage-classify.sh`, replace the `continuation_ok` `jq` expression — anchored
+- [x] In `orchestrate-triage-classify.sh`, replace the `continuation_ok` `jq` expression — anchored
       on the string `continuation_ok=$(jq -r`, not a line number — so it evaluates true when
       **either** `(.continuation_context.handoff_path // null) != null` **or**
       `(.continuation_path // null) != null`. Preserve the existing defensive
       `[ "$continuation_ok" = "true" ] || continuation_ok="false"` normalization and the
-      `2>/dev/null` guard unchanged.
-- [ ] Update the script's header precedence block (the transcribed rule beginning
+      `2>/dev/null` guard unchanged. *(completed)*
+- [x] Update the script's header precedence block (the transcribed rule beginning
       `# Precedence for \`partial\` status`) so line 1 reads as a continuation pointer in **either**
-      accepted form rather than `continuation_context` alone.
-- [ ] Update the header's engine table row label `partial + continuation` commentary and the
+      accepted form rather than `continuation_context` alone. *(completed)*
+- [x] Update the header's engine table row label `partial + continuation` commentary and the
       `handoff_state` field definition in the verdict-schema comment block (currently
-      `"continuation" (valid continuation_context)`) to name both forms.
-- [ ] Update the `reason` string emitted on the continuation row — currently the literal
+      `"continuation" (valid continuation_context)`) to name both forms. *(completed)*
+- [x] Update the `reason` string emitted on the continuation row — currently the literal
       `" is partial with a valid continuation_context; routes to implement"` — so it no longer
       names only one form. Keep it a machine-templated summary that carries no fact absent from a
-      structured field, per the script's own stated convention.
-- [ ] Add a short header note citing `validate-handoff.sh`'s already-shipped dual acceptance as
-      the precedent this change conforms to, so a future editor does not re-narrow it.
+      structured field, per the script's own stated convention. *(completed: now "is partial with
+      a valid continuation pointer; routes to implement")*
+- [x] Add a short header note citing `validate-handoff.sh`'s already-shipped dual acceptance as
+      the precedent this change conforms to, so a future editor does not re-narrow it. *(completed:
+      added inline in the continuation_ok comment block)*
 
 **Timing**: 45 minutes
 
