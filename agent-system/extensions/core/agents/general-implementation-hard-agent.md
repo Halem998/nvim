@@ -440,3 +440,4 @@ Same as base agent. On any error: write handoff JSON first, then metadata file.
 4. Re-open settled design decisions without a concrete counterexample
 5. Use status value "completed" (triggers Claude stop behavior)
 6. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
+7. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead

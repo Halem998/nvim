@@ -82,8 +82,25 @@ elsewhere in its body.
 
 ## Enforcement
 
-- **Advisory hook**: `.claude/hooks/validate-no-task-references.sh` (PostToolUse, non-blocking)
-  scans new/edited content outside `specs/**` for task-number citation patterns and surfaces a
-  reminder — it never blocks the write.
-- **Agent reinforcement**: implementation agents that author files outside `specs/**` include a
-  MUST NOT rule against task-number citations (see agent files below).
+Three layers. `specs/**` is the ONLY exempt tree — `agent-system/extensions/**`, `.opencode/**`,
+`lua/**`, and `.memory/**` are all deliverables subject to this rule.
+
+- **Repo-wide lint gate**: `.claude/scripts/check-task-references.sh` scans every git-tracked
+  file under the four deliverable tree roots above and exits non-zero on any unexempted finding.
+  It is wired as gate 4 of `scripts/verify-deploy.sh`.
+- **Write-time gate**: `.claude/hooks/validate-no-task-references.sh` (currently advisory
+  PostToolUse — this bullet states the present truth and will be updated once the hook is
+  flipped to a blocking PreToolUse gate) scans new/edited content outside `specs/**` for
+  task-number citation patterns and surfaces a reminder. It does not yet block the write.
+- **Agent contracts**: four agent files carry an explicit MUST-NOT bullet against citing task
+  numbers in files outside `specs/**` —
+  `agent-system/extensions/core/agents/general-implementation-agent.md`,
+  `agent-system/extensions/core/agents/general-implementation-hard-agent.md`,
+  `agent-system/extensions/cslib/agents/cslib-implementation-agent.md`, and
+  `agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md`.
+
+**Known gap**: the extension implementation agents `neovim-implementation-agent`,
+`nix-implementation-agent`, and `email-implementation-agent` also author files outside
+`specs/**` and do not yet carry the MUST-NOT bullet. This is a real, named gap, not an oversight
+papered over — adding it to those three agents is out of scope for the plan that authored this
+section and is left as a follow-up.

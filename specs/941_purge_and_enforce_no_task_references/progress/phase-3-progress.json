@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Agent contracts and the rule's Enforcement section",
+  "started_at": "2026-07-28T00:00:00Z",
+  "last_updated": "2026-07-28T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "MUST NOT bullet in general-implementation-agent.md", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 2, "description": "MUST NOT bullet in general-implementation-hard-agent.md", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-hard-agent.md"]},
+    {"id": 3, "description": "Rewrite Enforcement section to three accurate layers", "status": "done", "files_touched": ["agent-system/extensions/core/rules/no-task-references-in-deliverables.md"]},
+    {"id": 4, "description": "State tree boundary unambiguously", "status": "done", "files_touched": ["agent-system/extensions/core/rules/no-task-references-in-deliverables.md"]},
+    {"id": 5, "description": "Record known gap as named follow-up", "status": "done", "files_touched": ["agent-system/extensions/core/rules/no-task-references-in-deliverables.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

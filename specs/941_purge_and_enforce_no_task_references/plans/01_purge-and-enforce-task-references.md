@@ -329,20 +329,20 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
 
 ---
 
-### Phase 3: Agent contracts and the rule's Enforcement section [NOT STARTED]
+### Phase 3: Agent contracts and the rule's Enforcement section [COMPLETED]
 
 - **Goal:** Make the rule's second-layer enforcement claim true by adding the MUST-NOT bullet to
   the two core agents that actually author files outside `specs/**`, and rewrite the Enforcement
   section to describe the posture that now exists.
 
 - **Tasks:**
-  - [ ] Append a MUST-NOT bullet to `agent-system/extensions/core/agents/general-implementation-agent.md`,
+  - [x] Append a MUST-NOT bullet to `agent-system/extensions/core/agents/general-implementation-agent.md`,
         as the next-numbered item after the existing `source-store-deploy-boundary.md` bullet in
         its `**MUST NOT**:` list. Reuse the cslib wording verbatim:
         `Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead`
-  - [ ] Same bullet, same insertion point, in
+  - [x] Same bullet, same insertion point, in
         `agent-system/extensions/core/agents/general-implementation-hard-agent.md`.
-  - [ ] Rewrite the `## Enforcement` section of
+  - [x] Rewrite the `## Enforcement` section of
         `agent-system/extensions/core/rules/no-task-references-in-deliverables.md` to three
         accurate layers:
         - **Repo-wide lint gate**: `check-task-references.sh`, exits non-zero on findings, wired
@@ -354,10 +354,10 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
           `cslib-implementation-agent.md`, `cslib-implementation-hard-agent.md` — replacing the
           current vague and false "implementation agents that author files outside specs/**
           include a MUST NOT rule ... (see agent files below)".
-  - [ ] In the same section, state the tree boundary unambiguously: `specs/**` is the ONLY exempt
+  - [x] In the same section, state the tree boundary unambiguously: `specs/**` is the ONLY exempt
         tree; `agent-system/extensions/**`, `.opencode/**`, `lua/**`, and `.memory/**` are all
         deliverables subject to the rule.
-  - [ ] Record the known gap as a named follow-up in the rule (no task number — cite the agent
+  - [x] Record the known gap as a named follow-up in the rule (no task number — cite the agent
         filenames): extension implementation agents (`neovim-implementation-agent`,
         `nix-implementation-agent`, `email-implementation-agent`) also author outside `specs/**`
         and do not yet carry the bullet.
