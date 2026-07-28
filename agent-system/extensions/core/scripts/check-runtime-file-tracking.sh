@@ -38,7 +38,8 @@ declare -a EPHEMERAL_PROBES=(
   "${PROBE_DIR}/.lock/holder.json"
   "${PROBE_DIR}/.continuation-loop-guard"
   "${PROBE_DIR}/.postflight-loop-guard"
-  "specs/.orchestrator-multi-state.json"
+  "specs/.orchestrator-multi-state-sess_0000000000_probe.json"
+  "specs/.return-meta-multi-sess_0000000000_probe.json"
   "${PROBE_DIR}/.return-meta-orchestrate.json"
   "specs/.events.lock"
 )
@@ -83,7 +84,7 @@ b_patterns=(
   '/\.lock/'
   '\.continuation-loop-guard$'
   '\.postflight-loop-guard$'
-  '\.orchestrator-multi-state\.json$'
+  '\.orchestrator-multi-state(-[^/]+)?\.json$'
   '\.return-meta-[^/]*\.json$'
   '\.events\.lock$'
 )

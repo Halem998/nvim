@@ -34,7 +34,7 @@
 **/.continuation-loop-guard
 **/.orchestrator-churn-state.json
 **/.postflight-loop-guard
-**/.orchestrator-multi-state.json
+**/.orchestrator-multi-state*.json
 **/.drift-inspection.json
 **/.return-meta-*.json
 **/.events.lock

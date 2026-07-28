@@ -31,11 +31,11 @@ Every runtime file falls into exactly one of two classes:
 | `.drift-inspection.json` | `skill-orchestrate` Stage 5a (drift-inspection fork) | The same Stage 5a call, immediately after the fork returns | `rm -f` only at Stage 8 postflight (full-loop termination) — same timing class as the loop guard, not per-cycle | **Ephemeral** (newly identified by this audit — see note below) |
 | `.orchestrator-handoff.json` | Skills when `orchestrator_mode: true` (currently: the hard-mode implementation agent's H9 wrap-up; see `docs/architecture/handoff-schema.md`) | `skill-orchestrate`/`skill-orchestrate-hard` Stage 5 (single-task) and Stage MT-4 (multi-task) | Overwritten in place each dispatch cycle (static filename, never deleted) | **Durable provenance** |
 | `.return-meta.json` | Every research/plan/implement dispatch's own Stage 7 postflight (base and hard mode alike) | `orchestrate-recover-outcome.sh` fallback recovery path | Overwritten each dispatch; also proactively `rm -f`'d by `skill_cleanup()`/`orchestrator-postflight.sh` Stage 10 **after** it has already been staged/committed in Stage 9 of the same run — this is disk hygiene, not a tracking decision | **Durable provenance** |
-| `specs/.orchestrator-multi-state.json` | `skill-orchestrate` multi-task batch dispatch (Stage MT, `specs/` root, not per-task) | The batch commit step in `commands/orchestrate.md` | Not explicitly cleaned up between batch runs; scratch state for one batch invocation | **Ephemeral** |
+| `specs/.orchestrator-multi-state-{session_id}.json` | `skill-orchestrate` multi-task batch dispatch (Stage MT, `specs/` root, not per-task) | The batch commit step in `commands/orchestrate.md`, which hard-fails on a `session_id` mismatch rather than silently trusting a foreign batch's file | Not explicitly cleaned up between batch runs; scratch state for one batch invocation; reaped by `scripts/reap-session-runtime-files.sh` after `ORCHESTRATOR_SESSION_REAP_MIN` | **Ephemeral**. The path carries a `{session_id}` suffix so two concurrent multi-task batches never collide on the same file. |
 | `specs/.events.lock` | `scripts/events-append.sh` (`flock` guard around the append-only event store) | Itself, for the duration of a single append | Released by `flock` at the end of the append | **Ephemeral** |
 | `.continuation-loop-guard` / `.continuation-loop-guard.tmp` | `skill-implementer`/`skill-implementer-hard` (their own internal continuation-retry counter, distinct from the orchestrator loop guard above) | Same skills, own resume branch | Removed at postflight (`orchestrator-postflight.sh` Stage 10 for `implement`; also inline at each skill's own postflight) | **Ephemeral** |
 | `.postflight-loop-guard` | `skill-planner`/`skill-researcher`/`skill-implementer`/`skill-reviser`/`skill-spawn` (their own postflight retry marker) | Same skills' own postflight | Removed at postflight (`skill_cleanup()`, `orchestrator-postflight.sh` Stage 10) | **Ephemeral** |
-| `.return-meta-*.json` (suffixed variants, e.g. `.return-meta-orchestrate.json`, `specs/.return-meta-multi.json`) | Distinct from the bare `.return-meta.json` above — see "The bare-vs-suffixed distinction" below | Varies by variant | Varies | **Ephemeral** |
+| `.return-meta-*.json` (suffixed variants, e.g. `.return-meta-orchestrate.json`, `specs/.return-meta-multi-{session_id}.json`) | Distinct from the bare `.return-meta.json` above — see "The bare-vs-suffixed distinction" below | Varies by variant. **`specs/.return-meta-multi-{session_id}.json` has no reader anywhere in the source store today** — it is written for collision/audit hygiene only; a future reader-adder must add the read-time `session_id` verification check together with the reader, not separately | Varies | **Ephemeral** |
 
 **Not classified here (reviewed and deliberately excluded)**: `.stray-handoff-{timestamp}.json`.
 Both orchestrate skills' stray-handoff sweep (`docs/architecture/handoff-schema.md`'s "Handoff
@@ -50,7 +50,7 @@ policy belongs to the stray-handoff sweep mechanism itself, not this file-tracki
 
 **This distinction must never be collapsed.** The bare `specs/{NNN}_{SLUG}/.return-meta.json` is
 the durable, per-dispatch outcome-recovery record described above and MUST stay tracked. Suffixed
-variants — `specs/{NNN}_{SLUG}/.return-meta-orchestrate.json`, `specs/.return-meta-multi.json`,
+variants — `specs/{NNN}_{SLUG}/.return-meta-orchestrate.json`, `specs/.return-meta-multi-{session_id}.json`,
 round-numbered variants like `.return-meta-02.json` observed in this repo's archive — are a
 different, ephemeral class: batch/scratch state or artifacts of a prior naming scheme, not the
 one documented outcome-recovery contract in `docs/architecture/handoff-schema.md` and
@@ -117,7 +117,7 @@ consumer repo's **own root** `/.gitignore` **by hand, once**:
 **/.continuation-loop-guard
 **/.orchestrator-churn-state.json
 **/.postflight-loop-guard
-**/.orchestrator-multi-state.json
+**/.orchestrator-multi-state*.json
 **/.drift-inspection.json
 **/.return-meta-*.json
 **/.events.lock
