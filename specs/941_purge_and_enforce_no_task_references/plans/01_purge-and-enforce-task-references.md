@@ -773,24 +773,49 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
 
 ---
 
-### Phase 12: Purge remaining `.opencode/extensions/` extensions [NOT STARTED]
+### Phase 12: Purge remaining `.opencode/extensions/` extensions [COMPLETED]
 
 - **Goal:** Clear the eight non-core `.opencode` extensions.
 - **Character:** **Mostly mechanical** — small per-file counts, largely mirroring Phase 8.
 
 - **Tasks:**
-  - [ ] Triage and convert across `formal`, `founder`, `lean`, `memory`, `nix`, `nvim`, `present`,
-        `web`.
+  - [x] Triage and convert across `formal`, `founder`, `lean`, `memory`, `nix`, `nvim`, `present`,
+        `web`. *(completed: confirmed 76 occurrences via
+        `check-task-references.sh --quiet .opencode/extensions` (275 total minus the now-clean
+        199 for `core`). Overwhelmingly ILLUSTRATIVE worked-example return payloads
+        ("X completed for task NNN:") converted to `{N}` placeholders one-for-one against each
+        extension's already-clean `agent-system/extensions/{ext}/` sibling file, since the
+        illustrative shape had not drifted. A handful of PROVENANCE sites converted to durable
+        anchors: `present/commands/timeline.md`'s "handled by task 391" -> "a follow-up item",
+        `present/context/.../README.md`'s two "(Task #NNN)" doc-link annotations dropped
+        entirely, `nvim/context/.../wezterm-integration.md`'s three "(task NNN)" parentheticals
+        dropped since the surrounding prose already states the mechanism. Command-usage examples
+        (category 3) in `memory/commands/learn.md` and two `memory/context/project/memory/*.md`
+        usage guides wrapped in `task-ref-ok:begin/end` regions with reason
+        "command-usage example", mirroring the already-marked `agent-system/extensions/memory`
+        siblings. `lean/context/.../proof-debt-policy.md`'s FORBIDDEN quoted anti-pattern
+        ("sorry in task 999") converted to the `{N}` placeholder already used in the corresponding
+        `agent-system` file (not a quoted-verbatim case here since the number itself is
+        arbitrary/illustrative, not a specific historical incident).
+        `present/context/.../grant-workflow.md` and `present/skills/skill-grant/SKILL.md` had no
+        `agent-system` line-level precedent for several sites (restructured differently there) so
+        were placeholder-ized independently following the same `{N}`/`{M}` convention.
+        `web/commands/tag.md` and `web/skills/skill-tag/SKILL.md` (files that do not exist under
+        `agent-system/extensions/web/`) had their rendered `abc1234 task 44: complete
+        implementation` / `def5678 task 43: complete research` commit-log example converted to
+        `{N}`/`{M}` placeholders independently.)*
 
 - **Timing:** 1 hour
 - **Depends on:** 2
 - **Verification Tier:** prose
 - **Scope Hypothesis:** 76 occurrences / 45 files (`founder` 20/19, `present` 18/6, `web` 13/6,
   `memory` 11/3, `nvim` 5/3, `formal` 4/4, `nix` 4/3, `lean` 1/1). Confirm as the
-  `.opencode/extensions/` total (275) minus `core` (199).
+  `.opencode/extensions/` total (275) minus `core` (199). *(confirmed: `check-task-references.sh
+  --quiet .opencode/extensions` reported exactly 76 before any edit in this phase.)*
 - **Files to modify**: files under those eight `.opencode/extensions/` directories reported by the scan.
 - **Verification**: scan reports 0 across `.opencode/extensions/` in its entirety once Phases 11-12
-  are green. Expected delta for this phase: 76 → 0.
+  are green. Expected delta for this phase: 76 → 0. *(verified: `check-task-references.sh --quiet
+  .opencode/extensions` reports "0 occurrence(s)" and exits 0 (PASS).)*
 
 ---
 
