@@ -1,7 +1,7 @@
 # Implementation Plan: Serialize every specs/state.json writer through one mutex-guarded helper
 
 - **Task**: 942 - Serialize every specs/state.json writer through one mutex-guarded helper
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 13 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/942_serialize_state_json_writers/reports/01_serialize-state-json-writers.md
@@ -140,44 +140,46 @@ a file no other phase edits, so it carries no ordering constraint against the co
 
 ---
 
-### Phase 1: Build the shared `state-write.sh` helper [NOT STARTED]
+### Phase 1: Build the shared `state-write.sh` helper [COMPLETED]
 
 - **Goal:** Create `agent-system/extensions/core/scripts/state-write.sh` implementing exactly one
   serialization sequence, and register it for deploy.
 - **Tasks:**
-  - [ ] Create `agent-system/extensions/core/scripts/state-write.sh` with `set -euo pipefail`,
+  - [x] Create `agent-system/extensions/core/scripts/state-write.sh` with `set -euo pipefail`,
         the `SCRIPT_DIR`/`PROJECT_ROOT` convention used by sibling scripts, and a
-        `. "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1` guard.
-  - [ ] Define the CLI contract in a top-of-file usage comment: a required jq filter argument, a
+        `. "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1` guard. *(completed: uses `set -uo
+        pipefail`, not `-e`, to keep explicit jq-failure branches in control of exit codes)*
+  - [x] Define the CLI contract in a top-of-file usage comment: a required jq filter argument, a
         required `--session-id`, passthrough of arbitrary `--arg`/`--argjson` bindings to jq, an
         opt-in `--regen-todo` flag, and an optional `--dry-run` that serializes nothing because
         it writes nothing (matching `update-task-status.sh`'s existing dry-run posture).
-  - [ ] Implement mutex acquire: skip entirely when `SCOPE_MUTEX_HELD` is non-empty (guest mode,
+  - [x] Implement mutex acquire: skip entirely when `SCOPE_MUTEX_HELD` is non-empty (guest mode,
         with the same explanatory stderr note `acquire_state_mutex` emits today); otherwise call
         `task-lock.sh scope-acquire "$session_id"` and, on non-zero, FAIL CLOSED — emit an
         `ABORT:`-prefixed stderr message naming the current holder and exit non-zero. Do not
         swallow the primitive's return code.
-  - [ ] On successful acquire, export `SCOPE_MUTEX_HELD=1` and record the returned token.
-  - [ ] Implement staging: `mktemp` a private temp under `specs/tmp/` (create the directory if
+  - [x] On successful acquire, export `SCOPE_MUTEX_HELD=1` and record the returned token.
+  - [x] Implement staging: `mktemp` a private temp under `specs/tmp/` (create the directory if
         absent), never a fixed shared path.
-  - [ ] Install ONE EXIT trap scoped to this process's own `mktemp` path plus mutex release;
+  - [x] Install ONE EXIT trap scoped to this process's own `mktemp` path plus mutex release;
         release must be idempotent (guarded by an owned-here flag) and must never fail the exit
         path.
-  - [ ] Apply the caller's jq filter with the forwarded bindings against `specs/state.json`,
+  - [x] Apply the caller's jq filter with the forwarded bindings against `specs/state.json`,
         writing to the private temp. On jq failure, leave `specs/state.json` untouched and exit
         non-zero with a distinct code.
-  - [ ] Validate with `jq empty` on the temp before any `mv`. On invalid JSON, leave
+  - [x] Validate with `jq empty` on the temp before any `mv`. On invalid JSON, leave
         `specs/state.json` untouched and exit non-zero with a distinct code.
-  - [ ] `mv` the temp into `specs/state.json`.
-  - [ ] When `--regen-todo` is passed, invoke `generate-todo.sh` BEFORE release, inside the
+  - [x] `mv` the temp into `specs/state.json`.
+  - [x] When `--regen-todo` is passed, invoke `generate-todo.sh` BEFORE release, inside the
         critical section. A regen failure is a loud warning, not a hard failure (the state write
         already succeeded) — matching `update-task-status.sh`'s existing posture.
-  - [ ] Release the mutex via `task-lock.sh scope-release "$token"` and unset
+  - [x] Release the mutex via `task-lock.sh scope-release "$token"` and unset
         `SCOPE_MUTEX_HELD`; skip both in guest mode.
-  - [ ] Document every exit code in the top-of-file comment block.
-  - [ ] Add `state-write.sh` to `manifest.json`'s `provides.scripts` array, inserted
+  - [x] Document every exit code in the top-of-file comment block.
+  - [x] Add `state-write.sh` to `manifest.json`'s `provides.scripts` array, inserted
         alphabetically between `skill-base.sh` and `task-lock.sh`.
-  - [ ] `bash -n` and `shellcheck` (if available) the new script.
+  - [x] `bash -n` and `shellcheck` (if available) the new script. *(completed: shellcheck not
+        available in this environment; `bash -n` passed)*
 - **Timing:** 2 hours
 - **Depends on:** none
 - **Verification Tier:** local

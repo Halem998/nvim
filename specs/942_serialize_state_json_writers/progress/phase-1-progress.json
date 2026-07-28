@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Build the shared state-write.sh helper",
+  "started_at": "2026-07-28T00:00:00Z",
+  "last_updated": "2026-07-28T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create state-write.sh implementing acquire-fail-closed -> mktemp -> jq transform -> jq empty validate -> mv -> optional regen-todo -> release, register in manifest.json",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/state-write.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

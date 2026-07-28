@@ -1,0 +1,28 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Created an 11-phase plan to route every specs/state.json writer through one new mutex-guarded helper, agent-system/extensions/core/scripts/state-write.sh. Phases 1-3 build the helper, add task-lock.sh cmd_release ownership verification, and build an isolated-temp-root concurrency suite; phases 4-9 convert all nine writers plus both inline command-file writes in lowest-risk-first order; phase 10 makes the workflow-active marker per-session as a declared atomic batch; phase 11 handles the known extension-loader deploy gap, the zero-remaining-hand-rolled-sequences audit, and the convention docs. All edits target the source store, never .claude/**.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/942_serialize_state_json_writers/plans/01_serialize-state-json-writers.md"
+    }
+  ],
+  "next_action_hint": "implement",
+  "files_modified": [
+    "specs/942_serialize_state_json_writers/plans/01_serialize-state-json-writers.md"
+  ],
+  "decisions_made": [
+    "state-write.sh is a standalone invocable script, not a sourced function, matching the dominant convention for single-purpose state mutation and callable from both shell scripts and markdown bash blocks.",
+    "The helper's interface is an arbitrary jq filter plus --arg/--argjson passthrough, because the three real caller transform shapes (single-task field update, top-level array mutation, $cands-scoped bulk |=) cannot be expressed by a narrow task_number+field API.",
+    "Mutex acquire is fail-closed on timeout, adopting task-lock.sh's cmd_scope_acquire return-2 precedent; the two existing callers' WARNING-and-proceed fallback is removed, not preserved as an option.",
+    "skill-base.sh's two orphaned uncalled write functions are deleted rather than converted; only orchestrator-postflight.sh's live inline duplicates of that logic are converted.",
+    "cmd_release's ownership check is WARN-and-no-op, always return 0, mirroring cmd_scope_release exactly rather than force-refusing.",
+    "The workflow-active writer and all three consumers are one atomic-batch phase; a partial conversion reintroduces the hazard.",
+    "The extension-loader deploy gap is worked around with an explicit manual copy phase and recorded as still open, not fixed by this plan."
+  ],
+  "phases_completed": 0,
+  "phases_total": 11,
+  "plan_markers_verified": true
+}
