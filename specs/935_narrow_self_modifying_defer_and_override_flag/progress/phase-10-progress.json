@@ -1,0 +1,24 @@
+{
+  "phase": 10,
+  "phase_name": "Cross-file consistency sweep, deliberate redeploy, final gates",
+  "started_at": "2026-07-28T03:25:00Z",
+  "last_updated": "2026-07-28T04:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Consistency and stale-language sweeps across all eight source-store files; confirmed zero .claude/ paths in pre-redeploy commits; no-task-reference sweep (pre-existing hits recorded, none introduced)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "bash -n on both edited scripts; re-ran Phase 1 scratch-tree smoke test end-to-end (solo admit, co-dispatch defer, edge-connected admit, verify-deploy.sh detection, degraded-file null path) — all pass", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Performed the single deliberate redeploy (deploy-headless.sh + verify-deploy.sh). Discovered and worked around a pre-existing sync-tool bug (out of this task's declared file scope) that silently excluded skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md from the picker sync's skills-category scan, leaving both deployed copies stale since at least the immediately-preceding dependency task. Directly copied the corrected source into .claude/skills/{skill-orchestrate,skill-orchestrate-hard}/SKILL.md as part of this phase's sanctioned .claude/ write exception. All other six source-store files (scripts and non-skill markdown/JSON) synced correctly via deploy-headless.sh with no workaround needed.", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Post-redeploy gates: check-extension-docs.sh PASS, verify-deploy.sh PASS (11/11), bash -n on both deployed scripts, validate-artifact.sh PASS on the plan, and re-traced all three behavioral scenarios against the corrected deployed SKILL.md", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "10.3",
+      "description": "Deploy-headless.sh's picker sync tool failed to replace .claude/skills/skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md despite both being present and current in the source-store and listed in the core manifest's provides.skills array.",
+      "type": "altered",
+      "reason": "A pre-existing bug in lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua's skills-category scan (out of this task's declared file scope) silently excluded these two skills from the sync artifact list, leaving the deployed copies stale by hundreds of lines (predating this task -- task 934's edits to the same file were also never deployed). Worked around by directly copying the corrected source files into .claude/skills/ as part of Phase 10's sanctioned .claude/-write exception, then re-verified all post-redeploy gates pass against the corrected deployed tree.",
+      "annotation": "*(deviation: altered — direct copy workaround for a pre-existing skills-sync bug in the picker tool; recommend a follow-up task to fix lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua's skills allow-list/scan logic)*"
+    }
+  ]
+}

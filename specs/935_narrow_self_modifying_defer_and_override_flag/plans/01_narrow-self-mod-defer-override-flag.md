@@ -1,7 +1,7 @@
 # Implementation Plan: Task #935
 
 - **Task**: 935 - Narrow the self-modifying admission defer from whole-invocation to same-wave scope, add an explicit opt-in override flag, and reconcile the surrounding documentation/schema/hard-mode gaps this narrowing exposes
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 11 hours
 - **Dependencies**: 932, 933, 934, 936 (all completed)
 - **Research Inputs**: specs/935_narrow_self_modifying_defer_and_override_flag/reports/01_narrow-self-mod-defer-override-flag.md
@@ -708,36 +708,36 @@ file.
 
 ---
 
-### Phase 10: Cross-file consistency sweep, deliberate redeploy, final gates [NOT STARTED]
+### Phase 10: Cross-file consistency sweep, deliberate redeploy, final gates [COMPLETED]
 
 **Goal**: Confirm the eight files are mutually consistent, then perform the single deliberate
 redeploy and run the full gate set against the live system. This is the only phase permitted to
 write under `.claude/`.
 
 **Tasks**:
-- [ ] Consistency sweep across all eight files: the `--invocation-count` argument expression, the
+- [x] Consistency sweep across all eight files: the `--invocation-count` argument expression, the
       `--allow-self-modifying` flag spelling, the `allow_self_modifying` delegation-context key,
       and the `orchestrate-batch-admit-v3` schema string must each be spelled identically
       everywhere they appear.
-- [ ] Sweep for stale whole-invocation / permanent-exclusion language across all eight files.
-- [ ] Confirm the source-store boundary held: `git diff --stat` over every commit for this task
+- [x] Sweep for stale whole-invocation / permanent-exclusion language across all eight files.
+- [x] Confirm the source-store boundary held: `git diff --stat` over every commit for this task
       shows zero `.claude/` paths BEFORE the redeploy step below.
-- [ ] Run the no-task-references sweep over every file touched outside `specs/`. Distinguish
+- [x] Run the no-task-references sweep over every file touched outside `specs/`. Distinguish
       pre-existing hits from newly introduced ones via `git diff`; fix only what this change
       introduced, and record any pre-existing hits without fixing them.
-- [ ] `bash -n` on both edited scripts (source-store copies).
-- [ ] Re-run the Phase 1 scratch-tree executable smoke test end to end with the final versions of
+- [x] `bash -n` on both edited scripts (source-store copies).
+- [x] Re-run the Phase 1 scratch-tree executable smoke test end to end with the final versions of
       the script and the critical-paths JSON, covering: solo self-modifying candidate admits;
       co-dispatched pair defers with `defer_reason: "self_modifying"`; edge-connected pair admits;
       `verify-deploy.sh` in a `file_scope` is detected; degraded critical-paths file yields
       `self_modifying: null` on every verdict and a loud stderr warning.
-- [ ] Perform ONE deliberate redeploy: `bash .claude/scripts/deploy-headless.sh`, then
+- [x] Perform ONE deliberate redeploy: `bash .claude/scripts/deploy-headless.sh`, then
       `bash .claude/scripts/verify-deploy.sh`. Log it explicitly as a conscious, one-time
       invocation matching this plan's Rollback/Contingency — not a routine practice.
-- [ ] After redeploy: `bash .claude/scripts/check-extension-docs.sh` must exit 0 (it is EXPECTED to
+- [x] After redeploy: `bash .claude/scripts/check-extension-docs.sh` must exit 0 (it is EXPECTED to
       FAIL on source/deploy drift for every prior phase; only here is a PASS required).
-- [ ] After redeploy: `bash -n` on both deployed script copies.
-- [ ] `bash .claude/scripts/validate-artifact.sh` against this plan file: PASS.
+- [x] After redeploy: `bash -n` on both deployed script copies.
+- [x] `bash .claude/scripts/validate-artifact.sh` against this plan file: PASS.
 
 **Timing**: 1 hour
 
