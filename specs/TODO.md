@@ -11,15 +11,13 @@ next_project_number: 942
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 939,941 | -- | agent-system |
-| 2 | 940 | 939 | agent-system |
+| 1 | 940,941 | -- | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-939 [PLANNED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-  └─ 940 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+940 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 941 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ## Tasks
@@ -97,12 +95,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 939. Fix off-schema .return-meta.json writes breaking orchestrator recovery
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [939_return_metadata_schema_compliance/reports/01_return-metadata-schema-compliance-research.md]
 - **Plan**: [939_return_metadata_schema_compliance/plans/01_return-metadata-schema-compliance.md]
+- **Summary**: [939_return_metadata_schema_compliance/summaries/01_return-metadata-schema-compliance-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 

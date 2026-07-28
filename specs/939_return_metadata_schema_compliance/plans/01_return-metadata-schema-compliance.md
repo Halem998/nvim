@@ -1,7 +1,7 @@
 # Implementation Plan: Task #939
 
 - **Task**: 939 - Fix off-schema .return-meta.json writes breaking orchestrator recovery
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/939_return_metadata_schema_compliance/reports/01_return-metadata-schema-compliance-research.md

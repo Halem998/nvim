@@ -1951,7 +1951,7 @@
     {
       "project_number": 939,
       "project_name": "return_metadata_schema_compliance",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Fix off-schema .return-meta.json writes breaking orchestrator recovery",
@@ -1966,7 +1966,7 @@
       ],
       "dependencies": [],
       "created": "2026-07-28T15:12:06Z",
-      "last_updated": "2026-07-28T15:30:44Z",
+      "last_updated": "2026-07-28T16:12:48Z",
       "session_id": "sess_1785251682_61201e_939",
       "artifacts": [
         {
@@ -1978,8 +1978,14 @@
           "path": "specs/939_return_metadata_schema_compliance/plans/01_return-metadata-schema-compliance.md",
           "type": "plan",
           "summary": "Seven-phase plan: reproduce by construction, fix phase-field nesting plus coupled hard-mode reader atomically, disambiguating prose, widened detection trigger, verification gates."
+        },
+        {
+          "path": "specs/939_return_metadata_schema_compliance/summaries/01_return-metadata-schema-compliance-summary.md",
+          "type": "summary",
+          "summary": "Return-metadata schema compliance: phase-field nesting fixed in writers plus coupled hard-mode reader, artifacts-shape instruction added to five silent writers, widened detection trigger."
         }
-      ]
+      ],
+      "completion_summary": "Fixed both off-schema .return-meta.json writer defects: made phase-field nesting unambiguous across five writer/reader files (with a deliberate footprint widening to four additional silent artifacts-shape writers), added a general evidence_suspect/evidence_reason detection signal to orchestrate-recover-outcome.sh with an explicit Item C no-fallback decision, and widened the detection-escalation trigger in both skill-orchestrate and skill-orchestrate-hard so the recovered=true path can now corroborate and correct phase counts from an independent plan-file grep. All claims verified by running the real script and extracted, bash -n-checked orchestrator bash blocks against constructed scratch fixtures."
     },
     {
       "project_number": 940,
