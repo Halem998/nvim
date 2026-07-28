@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "summary": "Created a seven-phase implementation plan for the off-schema .return-meta.json defects. Phase 1 reproduces both defects by construction against the real recovery script; Phase 2 fixes phase-field nesting in both implementation agents plus the coupled skill-implementer-hard reader as one atomic batch; Phases 3-4 add disambiguating prose, a cross-file collision callout, and a local artifacts-shape instruction; Phase 5 records the item-C decision against a permissive fallback and adds one general empty-value detection signal; Phase 6 widens the trigger in both orchestrator skills so it fires on the recovered=true path; Phase 7 verifies before/after by construction and runs the final gates. Caveat: the plan touches three files beyond the declared file_scope, each justified explicitly in a Declared Footprint section.",
+  "phases_completed": 0,
+  "phases_total": 7,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/939_return_metadata_schema_compliance/plans/01_return-metadata-schema-compliance.md",
+      "summary": "Seven-phase implementation plan with dependency waves, per-phase verification tiers, and an explicit footprint-widening record."
+    }
+  ],
+  "blockers": [],
+  "sorry_inventory": [],
+  "continuation_path": null
+}

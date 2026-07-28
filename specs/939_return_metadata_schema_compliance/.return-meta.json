@@ -1,34 +1,29 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/939_return_metadata_schema_compliance/reports/01_return-metadata-schema-compliance-research.md",
-      "summary": "Root-cause analysis of both off-schema .return-meta.json writes, empirical construction-based verification of both defects, and a scope gap found in skill-implementer-hard/SKILL.md not covered by the declared file_scope."
+      "type": "plan",
+      "path": "specs/939_return_metadata_schema_compliance/plans/01_return-metadata-schema-compliance.md",
+      "summary": "Seven-phase plan fixing both off-schema .return-meta.json writer defects, ratifying the item-C no-fallback decision, and widening the recovered-success detection trigger."
     }
   ],
-  "next_steps": "Run /plan 939 to create implementation plan",
+  "next_steps": "Run /implement 939 to execute the plan",
   "metadata": {
     "session_id": "sess_1785251682_61201e_939",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 7
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 5.5,
+    "dependency_waves": [[1], [2, 3, 4, 5], [6], [7]]
   },
   "memory_candidates": [
     {
-      "content": "In this agent system, .return-meta.json and .orchestrator-handoff.json share field names (phases_completed, phases_total) but use different nesting rules: .return-meta.json nests them under .metadata (or .partial_progress), while .orchestrator-handoff.json always keeps them top-level. A writer instruction that shows the correct top-level handoff example immediately before its return-meta instruction can prime authors into writing the wrong shape for the second file. When auditing or writing agent instructions for either file, always state the nesting location explicitly rather than relying on 'metadata fields: X, Y' style phrasing, which reads as a category label, not a location.",
+      "content": "When the same field names appear in two sibling JSON artifacts with different nesting rules (e.g. phases_completed/phases_total: nested under .metadata in .return-meta.json, but always top-level in .orchestrator-handoff.json), writer instructions drift toward whichever shape was shown most recently in the same document. The fix is not rewording one sentence but naming the collision explicitly at every writer call site plus adding a side-by-side callout in the format doc. Detection of the resulting defect should be a single general check -- 'a present, parseable file yielded an empty or zero value its own contents contradict' -- rather than one special case per field, and escalation must be evidence-based (corroborate against an independent artifact) rather than schema-permissive (silently accepting the off-schema shape), so writer drift stays visible.",
       "category": "PATTERN",
-      "source_artifact": "specs/939_return_metadata_schema_compliance/reports/01_return-metadata-schema-compliance-research.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["return-meta.json", "orchestrator-handoff.json", "phases_completed", "schema-nesting", "writer-instruction-ambiguity"]
-    },
-    {
-      "content": "orchestrate-recover-outcome.sh's phase-marker recovery grep (cross-checking a plan file's ### Phase N: [COMPLETED] headings) is scoped ONLY to the recovered=false branch in skill-orchestrate/SKILL.md Stage 5 -- it never runs when .return-meta.json recovery succeeds (recovered=true) even if the recovered phase counts are suspiciously 0/0 for a claimed 'implemented' status. Verified by constructing a scratch .return-meta.json with top-level (mis-nested) phases_completed/phases_total and running it through the real script: it returns recovered=true with phases_completed=0, phases_total=0, silently discarding real progress. Any future diagnostic for this class of defect must widen the trigger condition of the existing grep rather than assuming recovered=true implies the phase counts are trustworthy.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/939_return_metadata_schema_compliance/reports/01_return-metadata-schema-compliance-research.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["orchestrate-recover-outcome.sh", "phase-marker-grep", "recovered=true", "diagnostic-gap", "verification-by-construction"]
+      "source_artifact": "specs/939_return_metadata_schema_compliance/plans/01_return-metadata-schema-compliance.md",
+      "confidence": 0.82,
+      "suggested_keywords": ["schema-drift", "field-name-collision", "return-meta", "silent-degradation", "evidence-based-detection"]
     }
   ]
 }
