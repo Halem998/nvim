@@ -1,0 +1,38 @@
+{
+  "phase": 4,
+  "phase_name": "Repair validate-artifact.sh's --fix anchor and insertion",
+  "started_at": "2026-07-28T00:40:00Z",
+  "last_updated": "2026-07-28T01:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Restrict the --fix anchor search to known metadata_fields names (bullet or bare form) instead of any bold bullet",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Replace the sed -i insertion with an awk rewrite to a temp file + mv, passing missing-field text via stdin/getline rather than interpolating artifact content into sed",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Fix a latent set-e/pipefail abort in the anchor-search assignment on the no-match path (discovered during Phase 4 verification, not in original plan text; required by the plan's own no-anchor-case test)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.extra",
+      "description": "Plan's Phase 4 tasks list four bullets covering anchor restriction and the awk rewrite; it did not anticipate the no-match path having its own independent set -e/pipefail abort (a different latent bug in the same block, only surfaced by actually running the plan's own 'no-anchor case' verification).",
+      "type": "altered",
+      "reason": "Fixing only the four listed tasks left the plan's own required no-anchor-case verification failing (script aborted silently with no [WARN] or terminal line before this fix). Added a one-line `|| true` guard to the anchor assignment so the existing 'Cannot auto-fix' warn branch is reachable again, matching the plan's stated intent (preserve that branch) rather than widening scope.",
+      "annotation": "*(deviation: altered — added a `|| true` guard on the anchor-search assignment to fix a second, independently-discovered set -e/pipefail abort on the no-match path, required to satisfy the plan's own no-anchor-case verification)*"
+    }
+  ]
+}

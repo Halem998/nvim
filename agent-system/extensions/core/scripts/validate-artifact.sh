@@ -110,19 +110,34 @@ done
 
 # --- Auto-fix missing metadata (--fix mode) ---
 if [ "$fix_mode" = true ] && [ ${#missing_metadata[@]} -gt 0 ]; then
-  # Find the last existing metadata line (starts with "- **")
-  last_meta_line=$(grep -n '^- \*\*' "$artifact_path" | tail -1 | cut -d: -f1)
+  # Anchor search is restricted to lines naming a KNOWN metadata field for this artifact type
+  # (built from metadata_fields itself, so it can never drift from the arrays it serves) --
+  # never an arbitrary bold bullet elsewhere in the document, e.g. a "- **Files verified**: Yes
+  # -- ..." bullet in a Verification section. Accepts both the bullet form "- **Field**:" and
+  # the bare form "**Field**:" (the convention actually used by every real artifact).
+  field_alt=""
+  for field in "${metadata_fields[@]}"; do
+    field_esc=$(printf '%s' "$field" | sed -e 's/[][\.*^$/]/\\&/g')
+    field_alt="${field_alt:+${field_alt}|}${field_esc}"
+  done
+  # `|| true` guards against set -e/pipefail aborting this assignment when grep finds zero
+  # matches (grep's own exit 1 would otherwise propagate through the pipeline and silently kill
+  # the whole script here, before the "Cannot auto-fix" warning or the terminal [FAIL]/[PASS]
+  # line -- the same crash class this phase exists to remove, latent on the no-anchor path).
+  last_meta_line=$(grep -nE "^-?[[:space:]]*\*\*(${field_alt})\*\*:" "$artifact_path" | tail -1 | cut -d: -f1) || true
 
   if [ -n "$last_meta_line" ]; then
-    # Build insertion text for missing fields
-    insert_text=""
-    for field in "${missing_metadata[@]}"; do
-      insert_text="${insert_text}- **${field}**: TBD\n"
-    done
-
-    # Insert after last metadata line using sed
-    sed -i "${last_meta_line}a\\
-$(echo -e "$insert_text" | sed 's/$//' | head -c -1)" "$artifact_path"
+    # Rewrite via an awk pass to a temp file + mv. The missing-field placeholder lines (never
+    # artifact content) are passed on awk's stdin via getline, so no document content is ever
+    # interpolated into a shell or sed expression again.
+    tmp_file=$(mktemp)
+    printf -- '- **%s**: TBD\n' "${missing_metadata[@]}" | awk -v anchor="$last_meta_line" '
+      { print }
+      NR == anchor {
+        while ((getline line < "/dev/stdin") > 0) print line
+      }
+    ' "$artifact_path" > "$tmp_file"
+    mv "$tmp_file" "$artifact_path"
 
     for field in "${missing_metadata[@]}"; do
       log_fix "Inserted placeholder: - **${field}**: TBD"

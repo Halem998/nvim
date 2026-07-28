@@ -351,7 +351,7 @@ gap.
 
 ---
 
-### Phase 4: Repair validate-artifact.sh's --fix anchor and insertion [NOT STARTED]
+### Phase 4: Repair validate-artifact.sh's --fix anchor and insertion [COMPLETED]
 
 **Goal**: Make `--fix` incapable of anchoring on arbitrary prose or aborting the validator, so the
 validator can always deliver its readable diagnostic.
@@ -364,21 +364,26 @@ ordinary prose content (an em dash in the reproduction), aborting the whole scri
 `set -euo pipefail` before the `[FAIL]`/`[PASS]` summary line prints.
 
 **Tasks**:
-- [ ] In the `# --- Auto-fix missing metadata (--fix mode) ---` block of
+- [x] In the `# --- Auto-fix missing metadata (--fix mode) ---` block of
       `agent-system/extensions/core/scripts/validate-artifact.sh`, restrict the anchor search to
       lines that name a field from the active `metadata_fields` array, accepting both the bullet
       form `- **Field**:` and the bare form `**Field**:`. Build the anchor pattern from
-      `metadata_fields`, so the anchor logic cannot drift from the arrays it serves.
-- [ ] Replace the `sed -i "${last_meta_line}a\\ ..."` insertion with an `awk`-based rewrite to a
+      `metadata_fields`, so the anchor logic cannot drift from the arrays it serves. *(completed)*
+- [x] Replace the `sed -i "${last_meta_line}a\\ ..."` insertion with an `awk`-based rewrite to a
       temp file followed by `mv` — passing the insertion text via `-v` or an array read from a
       here-doc so no artifact content is ever interpolated into a shell or `sed` expression. No
-      document content may reach a `sed` script again.
-- [ ] Preserve the existing behavior when no metadata anchor is found: the existing
+      document content may reach a `sed` script again. *(completed: insertion text passed via
+      stdin/getline, not -v, per an equivalent no-interpolation approach)*
+- [x] Preserve the existing behavior when no metadata anchor is found: the existing
       `log_warn "Cannot auto-fix: no existing metadata lines found to anchor insertion"` branch
       stays. Do **not** widen `--fix` to anchor on the H1 title or to stuff placeholders more
-      aggressively — honest failure is the intended outcome per the posture decision.
-- [ ] Leave `REPORT_METADATA`, `PLAN_METADATA`, `SUMMARY_METADATA`, all `*_SECTIONS` arrays, the
+      aggressively — honest failure is the intended outcome per the posture decision. *(completed:
+      also fixed an independently-discovered set -e/pipefail abort on this exact no-match path —
+      see progress file deviation 4.extra — that was silently preventing this branch from ever
+      being reached)*
+- [x] Leave `REPORT_METADATA`, `PLAN_METADATA`, `SUMMARY_METADATA`, all `*_SECTIONS` arrays, the
       per-phase Verification Tier loop, and the exit-code contract (0/1/2/3/4) untouched.
+      *(completed: confirmed via git diff — untouched)*
 
 **Timing**: 0.75 hours
 
