@@ -18,13 +18,13 @@ next_project_number: 942
 
 ### Agent System
 
-939 [RESEARCHED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+939 [PLANNED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
   └─ 940 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 941 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ### Nvim Plugin
 
-938 [RESEARCHED] — LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, ne
+938 [PLANNED] — LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, ne
 
 ## Tasks
 
@@ -101,11 +101,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 939. Fix off-schema .return-meta.json writes breaking orchestrator recovery
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [939_return_metadata_schema_compliance/reports/01_return-metadata-schema-compliance-research.md]
+- **Plan**: [939_return_metadata_schema_compliance/plans/01_return-metadata-schema-compliance.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 
@@ -142,11 +143,12 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 938. Fix picker sync allow-list filter silently dropping all skills
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: neovim
 - **Topic**: nvim-plugin
 - **Dependencies**: None
 - **Research**: [938_picker_sync_skills_allow_list_filter/reports/01_skills-allow-list-post-filter-defect.md]
+- **Plan**: [938_picker_sync_skills_allow_list_filter/plans/01_skills-allow-list-filter-fix.md]
 
 **Description**: LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.
 

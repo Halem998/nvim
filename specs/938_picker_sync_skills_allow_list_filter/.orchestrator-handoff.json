@@ -1,24 +1,33 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "research",
-  "status": "researched",
-  "summary": "Confirmed and empirically reproduced (scratch tree, never touching real .claude/) the skills allow-list post-filter defect: provides.skills entries are directory names but the post-filter looks up the SKILL.md basename, so artifacts.skills is always empty. Surveyed all filtered categories: only skills and context are directory-shaped; context already has correct bespoke handling. Recommend generalizing that existing branch (verified behavior-preserving for all flat categories) plus a total-wipeout zero-result detector.",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Created a 6-phase plan for the picker sync allow-list skills defect covering scope items A-E: scratch-tree reproduction (hard gate), category shape survey, generalized post-filter, wipeout detector, regression spec, and one deliberate redeploy. Corrected one research claim: the 'subdir == filter_category' invariant is false for OpenCode agents (agents_subdir == 'agent/subagents'), so the fix anchors on subdir with a basename fallback rather than on filter_category as research recommended. Effort 4.5 hours across 5 dependency waves.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/938_picker_sync_skills_allow_list_filter/reports/01_skills-allow-list-post-filter-defect.md"
+      "type": "plan",
+      "path": "specs/938_picker_sync_skills_allow_list_filter/plans/01_skills-allow-list-filter-fix.md"
     }
   ],
   "blockers": [],
-  "next_action_hint": "plan",
-  "files_modified": [],
-  "decisions_made": [
-    "Generalize the existing context-branch directory-name matching (anchor string filter_category instead of hardcoded 'context') rather than adding a third parallel branch for skills",
-    "Leave docs/templates/systemd unfiltered by design -- pre-existing safe omission, out of scope",
-    "scripts/tests and scripts/lint omission from provides.scripts is a separate, narrower product-decision item -- flagged, not folded into this fix",
-    "Zero-result detector triggers only on total wipeout (#results>0 and #filtered==0), never on partial reduction, to avoid false positives on normal allow-list exclusions"
+  "next_action_hint": "implement",
+  "files_modified": [
+    "specs/938_picker_sync_skills_allow_list_filter/plans/01_skills-allow-list-filter-fix.md",
+    "specs/938_picker_sync_skills_allow_list_filter/.return-meta.json"
   ],
-  "dead_ends": [],
+  "decisions_made": [
+    "Anchor the generalized allow-list match on the sync_scan subdir argument, not filter_category, because they diverge for OpenCode agents (agents_subdir == 'agent/subagents') and anchoring on filter_category would silently drop every OpenCode agent",
+    "Require a basename fallback when the generalized match fails, so a future divergent call site degrades to today's behavior instead of wiping a category",
+    "Escape the interpolated subdir with vim.pesc() before building the Lua pattern",
+    "Phase 1 reproduction is a hard gate: if skills do not come back zero, stop and record that the diagnosis did not hold rather than forcing the fix",
+    "Zero-result detector triggers only on total wipeout (#results>0 and #filtered==0), non-blocking WARN via helpers.notify",
+    "Add a new sync_spec.lua regression spec following the existing scan_spec.lua scratch-tree convention",
+    "Keep scripts/tests and scripts/lint absence from provides.scripts out of scope; record as a follow-up candidate",
+    "Leave docs/templates/systemd unfiltered as they are today"
+  ],
+  "dead_ends": [
+    "Research's recommended anchor on filter_category was rejected after verifying agents_subdir resolves to 'agent/subagents' for base_dir == '.opencode' in shared/extensions/config.lua"
+  ],
   "phases_completed": 0,
-  "phases_total": 0
+  "phases_total": 6
 }

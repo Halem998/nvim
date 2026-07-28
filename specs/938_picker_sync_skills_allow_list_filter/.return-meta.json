@@ -1,18 +1,35 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/938_picker_sync_skills_allow_list_filter/reports/01_skills-allow-list-post-filter-defect.md",
-      "summary": "Confirms and empirically reproduces the skills allow-list post-filter defect (directory-name keys vs. SKILL.md basename lookup), surveys which sync categories are directory-shaped vs flat-file-shaped, recommends generalizing the existing context branch rather than adding a third branch, and specifies a zero-result (total-wipeout) detection design."
+      "type": "plan",
+      "path": "specs/938_picker_sync_skills_allow_list_filter/plans/01_skills-allow-list-filter-fix.md",
+      "summary": "6-phase plan covering scope items A-E: scratch-tree reproduction, category shape survey, generalized allow-list post-filter anchored on subdir, zero-result wipeout detector, regression spec, and one deliberate redeploy."
     }
   ],
-  "next_steps": "Run /plan 938 to create implementation plan",
+  "next_steps": "Run /implement 938 to execute the plan",
   "metadata": {
     "session_id": "sess_1785251682_61201e_938",
-    "agent_type": "neovim-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "neovim-research-agent"],
-    "findings_count": 5
-  }
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 4.5,
+    "dependency_waves": [[1, 2], [3], [4], [5], [6]]
+  },
+  "memory_candidates": [
+    {
+      "content": "When generalizing a category-specific special case in a scan/filter loop, anchor the generalized pattern on the argument that names the ACTUAL scanned path segment (the subdir), not on the argument that names the logical category (filter_category). In the nvim picker sync's sync_scan(), those two arguments are equal at 6 of 7 call sites but diverge at one: OpenCode passes agents_subdir='agent/subagents' with filter_category='agents'. Anchoring on the logical category would build a pattern that cannot match the real path, silently dropping every file in that category -- a new instance of the exact defect being fixed. Pair the generalized match with a fallback to the prior narrower rule when the match fails, so a future divergent call site degrades to old behavior instead of wiping the category, and add a total-wipeout detector (#results>0 and #filtered==0) so any such silent drop becomes visible.",
+      "category": "PATTERN",
+      "source_artifact": "specs/938_picker_sync_skills_allow_list_filter/plans/01_skills-allow-list-filter-fix.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["allow-list", "filter-generalization", "silent-drop", "subdir-anchor", "wipeout-detector", "sync-scan"]
+    }
+  ],
+  "modified_files": [
+    "specs/938_picker_sync_skills_allow_list_filter/plans/01_skills-allow-list-filter-fix.md",
+    "specs/938_picker_sync_skills_allow_list_filter/.return-meta.json",
+    "specs/938_picker_sync_skills_allow_list_filter/.orchestrator-handoff.json"
+  ],
+  "errors": []
 }

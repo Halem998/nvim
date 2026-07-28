@@ -1915,7 +1915,7 @@
     {
       "project_number": 938,
       "project_name": "picker_sync_skills_allow_list_filter",
-      "status": "researched",
+      "status": "planned",
       "task_type": "neovim",
       "topic": "nvim-plugin",
       "title": "Fix picker sync allow-list filter silently dropping all skills",
@@ -1927,20 +1927,25 @@
       ],
       "dependencies": [],
       "created": "2026-07-28T14:48:54Z",
-      "last_updated": "2026-07-28T15:23:35Z",
+      "last_updated": "2026-07-28T15:30:41Z",
       "session_id": "sess_1785251682_61201e_938",
       "artifacts": [
         {
           "path": "specs/938_picker_sync_skills_allow_list_filter/reports/01_skills-allow-list-post-filter-defect.md",
           "type": "report",
           "summary": "Confirms and empirically reproduces the skills allow-list post-filter defect; surveys directory-shaped vs flat categories; recommends generalizing the existing context branch plus a total-wipeout detector."
+        },
+        {
+          "path": "specs/938_picker_sync_skills_allow_list_filter/plans/01_skills-allow-list-filter-fix.md",
+          "type": "plan",
+          "summary": "Six-phase plan: scratch-tree reproduction, generalized post-filter, category survey, total-wipeout detector, regression spec, deliberate redeploy."
         }
       ]
     },
     {
       "project_number": 939,
       "project_name": "return_metadata_schema_compliance",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Fix off-schema .return-meta.json writes breaking orchestrator recovery",
@@ -1955,13 +1960,18 @@
       ],
       "dependencies": [],
       "created": "2026-07-28T15:12:06Z",
-      "last_updated": "2026-07-28T15:23:39Z",
+      "last_updated": "2026-07-28T15:30:44Z",
       "session_id": "sess_1785251682_61201e_939",
       "artifacts": [
         {
           "path": "specs/939_return_metadata_schema_compliance/reports/01_return-metadata-schema-compliance-research.md",
           "type": "report",
           "summary": "Root-cause analysis of both off-schema .return-meta.json writes, construction-based verification, and a scope gap in skill-implementer-hard/SKILL.md."
+        },
+        {
+          "path": "specs/939_return_metadata_schema_compliance/plans/01_return-metadata-schema-compliance.md",
+          "type": "plan",
+          "summary": "Seven-phase plan: reproduce by construction, fix phase-field nesting plus coupled hard-mode reader atomically, disambiguating prose, widened detection trigger, verification gates."
         }
       ]
     },
