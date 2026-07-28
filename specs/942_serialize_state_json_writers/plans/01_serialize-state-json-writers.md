@@ -235,38 +235,46 @@ a file no other phase edits, so it carries no ordering constraint against the co
 
 ---
 
-### Phase 3: Build the concurrency test suite [NOT STARTED]
+### Phase 3: Build the concurrency test suite [COMPLETED]
 
 - **Goal:** An isolated-temp-root suite proving the helper's two load-bearing safety properties
   before any call site depends on it.
 - **Tasks:**
-  - [ ] Create `agent-system/extensions/core/scripts/test-state-write-concurrency.sh` following
+  - [x] Create `agent-system/extensions/core/scripts/test-state-write-concurrency.sh` following
         `test-task-lock-reap.sh`'s isolated-temp-root precedent exactly: build a throwaway
         `$TMPROOT`, copy `state-write.sh`, `task-lock.sh`, `generate-todo.sh`, and
         `deploy-root-guard.sh` byte-for-byte into `$TMPROOT/.claude/scripts/`, and fixture a
         minimal `$TMPROOT/specs/state.json` with at least two task entries. Add no testability
         hooks to production code.
-  - [ ] Reuse the suite's `pass`/`fail`/`info` helper shape and its exit-0-on-all-pass /
+  - [x] Reuse the suite's `pass`/`fail`/`info` helper shape and its exit-0-on-all-pass /
         exit-1-on-any-fail contract.
-  - [ ] **Case: no lost update.** Launch two backgrounded `state-write.sh` invocations targeting
+  - [x] **Case: no lost update.** Launch two backgrounded `state-write.sh` invocations targeting
         DIFFERENT task entries, `wait` on both, and assert both mutations are present in the
         final file. Control interleaving through the fixture's own transform cost rather than
         wall-clock `sleep`, consistent with the precedent suite's no-sleeping convention.
-  - [ ] **Case: staging-file isolation.** Launch one process that claims its `mktemp` temp and
+        *(completed: first writer uses a heavy `[range(0;20000000)]` jq computation to hold the
+        mutex for a real window while the second writer waits)*
+  - [x] **Case: staging-file isolation.** Launch one process that claims its `mktemp` temp and
         then fails, firing its EXIT trap, concurrently with a second mid-write process; assert
         the second process's temp file is untouched and its write completes, proving each trap
-        is scoped to its own `mktemp` path.
-  - [ ] **Case: fail-closed acquire.** Pre-claim `specs/.scope-lock` in the fixture and assert a
+        is scoped to its own `mktemp` path. *(completed: both run in guest mode
+        (`SCOPE_MUTEX_HELD=1`) so they genuinely run concurrently rather than serializing through
+        the mutex; bounded polling — not a correctness-bearing sleep — observed up to 2
+        concurrent staging files)*
+  - [x] **Case: fail-closed acquire.** Pre-claim `specs/.scope-lock` in the fixture and assert a
         `state-write.sh` invocation exits non-zero with the `ABORT:`-prefixed message rather than
         proceeding unserialized.
-  - [ ] **Case: guest-mode reentrancy.** Invoke `state-write.sh` with `SCOPE_MUTEX_HELD=1`
+  - [x] **Case: guest-mode reentrancy.** Invoke `state-write.sh` with `SCOPE_MUTEX_HELD=1`
         exported and the mutex already held by the simulated outer holder; assert it completes
         the write without attempting a nested acquire and without releasing the outer holder's
         mutex.
-  - [ ] Add `test-state-write-concurrency.sh` to `manifest.json`'s `provides.scripts` array in
-        sorted position, matching how `test-task-lock-reap.sh` is registered.
-  - [ ] Assert the suite never touches the real `specs/` tree (grep the file for any
-        `$PROJECT_ROOT/specs` reference outside the fixture construction).
+  - [x] Add `test-state-write-concurrency.sh` to `manifest.json`'s `provides.scripts` array in
+        sorted position, matching how `test-task-lock-reap.sh` is registered. *(completed in
+        Phase 1's manifest edit, verified present here)*
+  - [x] Assert the suite never touches the real `specs/` tree (grep the file for any
+        `$PROJECT_ROOT/specs` reference outside the fixture construction). *(completed: zero
+        hits; the suite has no `PROJECT_ROOT` variable at all and resolves everything through
+        `$TMPROOT`)*
 - **Timing:** 2 hours
 - **Depends on:** 1
 - **Verification Tier:** local
