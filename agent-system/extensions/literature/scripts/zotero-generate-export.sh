@@ -556,8 +556,8 @@ elif [ -f "$ZOTERO_SQLITE" ] && command -v sqlite3 &>/dev/null; then
 else
   if [ "$ORCHESTRATOR_MODE" = "true" ]; then
     # No local Zotero data source found at all. This branch MUST fail loudly and MUST NOT
-    # write an empty (or any) zotero-library.json -- a silent empty-but-valid export was the
-    # task-798 bug: it looks like a legitimate zero-item library to every downstream
+    # write an empty (or any) zotero-library.json -- a silent empty-but-valid export
+    # looks like a legitimate zero-item library to every downstream
     # consumer, masking the real "no data source" condition. Orchestrator/non-interactive
     # callers get a visible logged error and a non-zero exit instead, exactly like the
     # interactive branch below, phrased for an unattended context.

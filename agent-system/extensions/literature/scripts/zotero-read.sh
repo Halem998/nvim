@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # zotero-read.sh - Read-only operations against Zotero via zot CLI
 #
-# Category A: CLI Wrapper (implemented in task 750)
+# Category A: CLI Wrapper
 #
 # Usage:
 #   zotero-read.sh <operation> [key] [options...]

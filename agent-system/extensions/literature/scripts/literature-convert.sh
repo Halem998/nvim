@@ -10,7 +10,7 @@
 #   {output_dir}/{doc_id}.md.rejected — written INSTEAD of the .md on quality-gate
 #                               failure (exit 3); never both.
 #
-# Engine tiers (task #831 BUG 1 fix — engine selection is explicit and logged,
+# Engine tiers (engine selection is explicit and logged,
 # never a silent fallthrough to a layout-destroying tool):
 #   1. PRIMARY:  pymupdf4llm.to_markdown() via a pinned, auto-provisioned uv venv
 #                (see literature-pyenv-provision.sh). Correct multi-column
@@ -23,10 +23,10 @@
 #                tier ran and why.
 #   pdftotext's layout-preserving flag and PyMuPDF's row-major whole-page-sort
 #   text-extraction option are NEVER used anywhere in this script — both were
-#   verified (task #831 research) to glue side-by-side multi-column text onto
+#   verified via research to glue side-by-side multi-column text onto
 #   single lines (a row-major whole-page sort is wrong for multi-column
 #   layout). `marker`/`marker_single`/docling/nougat were evaluated
-#   and rejected (task #831 research: heavy deps, OpenRAIL-licensed weights,
+#   and rejected (heavy deps, OpenRAIL-licensed weights,
 #   GPU-oriented, no CPU-viable install on this machine) — they are not offered
 #   as options here; do not silently reintroduce a "prefer marker" auto-path.
 #
@@ -640,7 +640,7 @@ def column_interleaving_flagged(text):
     # MAJORITY of a document, glued lines themselves dominate the overall
     # median, so "avg glued length > 1.5x overall median" can never fire —
     # empirically verified against the real corrupted Alur SyGuS corpus
-    # document (task #831), which the document-wide-median formulation
+    # document, which the document-wide-median formulation
     # failed to flag (79% of lines glued, yet ratio stayed ~1.0x). Falling
     # back to the whole-document median only when every line is glued (no
     # non-glued baseline exists at all).
@@ -653,8 +653,8 @@ def column_interleaving_flagged(text):
 
 
 def sentence_boundary_glue_count(text):
-    """Secondary word-fusion signal, added during task #831 Phase 6
-    test-harness verification. Deliberately period-ONLY (`[a-z]\\.[A-Z]`),
+    """Secondary word-fusion signal, added during test-harness verification.
+    Deliberately period-ONLY (`[a-z]\\.[A-Z]`),
     NOT comma/semicolon: an earlier comma/semicolon-inclusive version was
     empirically found to false-positive heavily on legitimate math tuple/
     list notation (`(x,Y)`, `a,B,c` are extremely common in this math-heavy

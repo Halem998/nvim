@@ -1,8 +1,8 @@
 # Zotero PDF Resolution Pattern
 
 How to resolve a `~/Projects/Literature/index.json` doc_id to its underlying Zotero PDF, safely
-and reproducibly. Established by task #836 (`.claude/scripts/zotero-resolve-pdf.sh`), building on
-task #835's `provenance_fidelity` enum and `zotero-resolve-sqlite-path.sh`'s dataDir derivation.
+and reproducibly. Established alongside `.claude/scripts/zotero-resolve-pdf.sh`, building on
+the `provenance_fidelity` enum and `zotero-resolve-sqlite-path.sh`'s dataDir derivation.
 
 ## 1. Prefer the live local HTTP API when Zotero is running
 
@@ -47,7 +47,7 @@ ZOTERO_STORAGE_ROOT="$ZOTERO_DATA_DIR/storage"
 ```
 
 `zotero-generate-export.sh`'s `fetch_path3()` hardcode is a known, latent bug (recorded here as a
-follow-up item, not fixed by task #836 -- it is latent because Path 3 only runs when the live API
+follow-up item, not yet fixed -- it is latent because Path 3 only runs when the live API
 is unreachable). Any new script must use the derivation above, not copy that hardcode.
 
 ## 4. `zotero-library.json` carries no attachment paths and goes stale
@@ -93,10 +93,10 @@ Two failure modes were found empirically while building `zotero-resolve-pdf.sh`:
 
 Even with both mitigations, a resolver's output is a *candidate*, not a verified match. A
 secondary gate (year/DOI/venue cross-check against the doc_id's own metadata) is still required
-before any non-key-anchored candidate may be written into the corpus -- see task #836's Phase 4
-for the reference implementation of that gate.
+before any non-key-anchored candidate may be written into the corpus -- see the Reference
+implementation section below for that gate.
 
-## Follow-up items (recorded, not fixed by task #836)
+## Follow-up items (recorded, not yet fixed)
 
 - **`zotero-generate-export.sh`'s `fetch_path3()` hardcoded storage root.** Currently latent
   (Path 3 only runs when the live API is unreachable), but will silently resolve to a nonexistent
@@ -104,7 +104,7 @@ for the reference implementation of that gate.
   the same derivation as `zotero-resolve-sqlite-path.sh` / `zotero-resolve-pdf.sh`.
 - **Suspected corpus-metadata duplicate**: `fine_2012_difficulty-possible-worlds-counterfactuals`
   vs. `fine_2012_counterfactuals-without-possible-worlds`. Near-identical titles; only the latter
-  has a confirmed independent Zotero hit. Not de-duplicated by task #836 (flagged as
+  has a confirmed independent Zotero hit. Not yet de-duplicated (flagged as
   out-of-scope); worth a dedicated look.
 
 ## Reference implementation

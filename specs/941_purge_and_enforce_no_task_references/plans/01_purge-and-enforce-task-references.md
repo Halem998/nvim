@@ -550,13 +550,24 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
 
 ---
 
-### Phase 7: Purge `agent-system/extensions/literature/` [NOT STARTED]
+### Phase 7: Purge `agent-system/extensions/literature/` [COMPLETED]
 
 - **Goal:** Clear the largest non-core extension.
 - **Character:** Medium judgment; mostly docs and skill prose.
 
 - **Tasks:**
-  - [ ] Triage and convert per the Phase 4 bucket rules.
+  - [x] Triage and convert per the Phase 4 bucket rules. *(completed across 25 files: README.md's
+        Deployment Status section rewritten around a "zotero/cite deployment-status audit"
+        durable anchor; two context/patterns/ docs converted (chunk-file-conventions.md,
+        zotero-pdf-resolution.md, mostly reusing the file's own "Reference implementation"
+        section as the anchor); scripts/deprecated/ (README + both quarantined scripts) dropped
+        provenance parentheticals since "Category C: Index Management" already conveys the
+        categorization; 20 scripts/*.sh|.py|.sql files had trailing/embedded
+        `(task #NNN[ Phase P])` parentheticals dropped where the surrounding comment already
+        named the mechanism (provenance_fidelity lookup, Ligature fold, Shape-aware parsing,
+        etc.); skill-cite/SKILL.md and skill-literature/SKILL.md's "task 796"/"task 801"/
+        "task #842"/"task #840" citations dropped per the same established pattern from Phase 6
+        (mandatory/non-empty-by-construction already stated in surrounding prose).)*
 
 - **Timing:** 1.25 hours
 - **Depends on:** 2

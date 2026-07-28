@@ -81,7 +81,7 @@
 # chain that zotero-search.sh (and this classifier, and the generator) honor. This classifier
 # deliberately uses the FULL resolve_library_path() chain so the offer and the generator
 # agree with zotero-search.sh; it does not attempt to fix literature-discover.sh's narrower
-# check, per the task-797 plan's explicit non-goal.
+# check, as an explicit non-goal here.
 #
 # AskUserQuestion is NEVER issued by this script -- that remains the caller's responsibility.
 

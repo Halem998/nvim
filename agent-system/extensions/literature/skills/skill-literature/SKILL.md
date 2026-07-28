@@ -369,7 +369,7 @@ For each indexed entry, check:
 3. Required schema fields present: `id`, `path`, `token_count`, `keywords`, `summary`, `doc_type`, `source_format`
 4. `authors` field shape: present and an array, all elements are strings, and no element looks
    like an unsplit comma-joined multi-author string (see authors-shape check below). This catches
-   regressions from any future writer that reintroduces the malformed schema fixed in task 801 —
+   regressions from any future writer that reintroduces the malformed schema this check guards against —
    see `.claude/context/project/literature/domain/literature-index.md` for the tooling ownership
    boundary and `.claude/scripts/literature-normalize-authors.sh` for the companion fix-up tool.
 
@@ -413,7 +413,7 @@ while IFS= read -r entry_path; do
       schema_warnings+=("$entry_path (missing fields: $missing_fields)")
     fi
 
-    # Check authors field shape (task 801: catch non-array or comma-joined authors so any
+    # Check authors field shape (catch non-array or comma-joined authors so any
     # future writer that reintroduces the malformed schema is caught by routine validation).
     # The "possibly-comma-joined" heuristic is conservative: it flags an array element only
     # when it contains 2+ ", " occurrences, or exactly one ", " followed by a second
@@ -479,7 +479,7 @@ done < <(find "$lit_dir" -maxdepth 1 -name "*.md" 2>/dev/null | sort)
 - {entry_path}: {missing_fields}
   Run: /literature --index {file_path} to update entry with missing fields
 
-### Authors Shape Warnings ({count}) — non-array or comma-joined authors (task 801)
+### Authors Shape Warnings ({count}) — non-array or comma-joined authors
 {for each authors_shape_warning entry:}
 - {entry_path}: {authors_shape}
   Run: bash .claude/scripts/literature-normalize-authors.sh {index_file} --apply to normalize,
@@ -954,7 +954,7 @@ else
 fi
 ```
 
-#### 3h: Chunk and Index (task #842)
+#### 3h: Chunk and Index
 
 Immediately after Convert Step 3g writes `output_md` and its `index.json` entry for this output
 file, chunk it so the document is searchable without a separate `--ingest`. Use the shared
@@ -1855,9 +1855,9 @@ function rebuild_job2_schema_conformance() {
 Reports, per `sources/<dir>/` directory (plus every legacy top-level `chunks_dir`-schema
 entry), whether the corpus's FTS5 search index (`chunks_data`) has any coverage at all. Queries
 `chunks_data` exclusively — **never** `document_metadata`, which is currently empty (0 rows) in
-this corpus and is not relied upon here (orphaned table, explicit non-goal — see task #842).
+this corpus and is not relied upon here (orphaned table, explicit non-goal).
 
-**Expected-empty vs unexpected-empty (task #842)**: as of task #842, `/literature --convert`
+**Expected-empty vs unexpected-empty**: `/literature --convert`
 chunks and indexes every `.md` it writes (Convert Step 3h/Step 4), so a `sources/<dir>/` with a
 valid `.md` and zero `chunks_data` rows is no longer explained by the old "`--convert` never
 chunks" root cause — it now signals either a **regression** in the Step 3h/Step 4 wiring or a
@@ -1980,7 +1980,7 @@ function rebuild_job4_coverage_audit() {
     echo "No quarantine artifacts (.md.bak-*/.md.rejected) found chunked (glob-strictness assumption holds)."
   fi
   echo ""
-  echo "As of task #842, /literature --convert chunks and indexes every .md it writes (Convert"
+  echo "/literature --convert chunks and indexes every .md it writes (Convert"
   echo "Step 3h/Step 4), so this job's UNEXPECTED bucket is the regression signal to watch —"
   echo "not a known root cause anymore. document_metadata remains an orphaned, always-empty"
   echo "table (explicit non-goal; not queried here)."
@@ -2229,7 +2229,7 @@ done < <(jq -r '.entries[] | [.doc_id, (.relevance // ""), .added, (.source // "
 
 ### Validate: Check All doc_ids Exist in Global Index
 
-**Migrated (task #840)**: this dangling-ref check is now wired up and reachable as
+**Migrated**: this dangling-ref check is now wired up and reachable as
 **Job 1 (`rebuild_job1_dangling_ref_lint`)** under "Mode: Rebuild" above, invoked via
 `/literature --rebuild`. It previously referenced a `--subindex` flag that was never parsed
 anywhere in `literature.md` (dead documentation). This section is kept only as a pointer so the

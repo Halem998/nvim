@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # zotero-index-add.sh - Add a Zotero item to the per-repo index
 #
-# Category C: Index Management (implemented in task 751)
+# Category C: Index Management
 #
 # Usage:
 #   zotero-index-add.sh <zotero_key> [--chunk]
@@ -26,7 +26,6 @@
 #   2 - zot not installed; specs/zotero-index.json not found (run /zotero --setup first)
 #
 # Dependencies: zotero-read.sh, jq
-# Implementation: task 751
 
 set -euo pipefail
 
@@ -346,7 +345,7 @@ if [[ "$CHUNK_FLAG" == "true" ]]; then
       bash "$chunk_script" "$KEY" || {
         exit_code=$?
         if [[ "$exit_code" -eq 2 ]]; then
-          echo "Note: zotero-chunk.sh not yet implemented (task 752); skipping chunk step." >&2
+          echo "Note: zotero-chunk.sh not yet implemented; skipping chunk step." >&2
         else
           echo "Warning: zotero-chunk.sh failed (exit $exit_code); index entry was still saved." >&2
         fi

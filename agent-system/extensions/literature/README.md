@@ -151,15 +151,15 @@ Scripts are in `.claude/extensions/literature/scripts/zotero-*.sh`.
 | `cite-extract.sh` | Extract citation patterns from markdown artifacts | Yes |
 | `literature-ingest-online.sh` | Online-discovery -> Zotero+PDF -> ingest bridge (classify/download-verify/create-or-attach/delegate/patch) | Declared in `manifest.json`; its classification/download/delegate/patch logic works standalone, but its create-item and attach-to-existing paths call `zotero-write.sh`, which is itself still blocked on the external `zot` CLI (see below) |
 
-### Deployment Status (task 844)
+### Deployment Status
 
-As of task 844, the zotero/cite surface is split into two dispositions. This section is the
-authoritative record of which artifacts are live vs. intentionally undeployed, and why.
+This section is the authoritative record of which zotero/cite artifacts are live vs.
+intentionally undeployed, and why (established by the zotero/cite deployment-status audit).
 
 **Active (deployed byte-for-byte from this directory to `.claude/scripts/`, `.claude/skills/`,
 `.claude/commands/`)**:
-- `cite-extract.sh`, `skill-cite/`, `cite.md` — the `/cite` trio, built end-to-end across tasks
-  716/717/718 but never deployed until task 844 closed the gap.
+- `cite-extract.sh`, `skill-cite/`, `cite.md` — the `/cite` trio, built end-to-end and deployed
+  by the same audit that closed this deployment gap.
 - `zotero-search.sh` — already load-bearing via a source-path fallback in
   `skill-literature/SKILL.md`; deployed for consistency with the other live scripts.
 
@@ -171,30 +171,31 @@ directory)**:
 | `zotero-read.sh` | Blocked on external `zot` CLI (`zotero-cli-cc`), which is not installed in this environment. No live caller. |
 | `zotero-write.sh` | Blocked on external `zot` CLI, not installed. Now has a live SOURCE-tree caller (`literature-ingest-online.sh`'s `item-add`/`attach-file` calls, added by the online-ingest-bridge work — see `context/project/literature/patterns/zotero-item-creation.md`), but the runtime blocker is unchanged: no `zot` binary or configured Zotero API key is available in this environment to exercise it live. |
 | `zotero-setup.sh` | Blocked on external `zot` CLI, not installed. No live caller. |
-| `zotero-chunk.sh` | Superseded by the read-only briefing+tools design adopted in task 758; write-back-to-Zotero chunking is orthogonal to the current pipeline. No live caller. |
-| `zotero-attach-chunks.sh` | Superseded by the same task-758 read-only design. No live caller. |
+| `zotero-chunk.sh` | Superseded by the read-only briefing+tools design; write-back-to-Zotero chunking is orthogonal to the current pipeline. No live caller. |
+| `zotero-attach-chunks.sh` | Superseded by the same read-only design. No live caller. |
 
-**Removed (task 847)**: the former zotero index-add and index-remove scripts — dead code;
+**Removed**: the former zotero index-add and index-remove scripts — dead code;
 their add/remove-from-index logic is reimplemented inline via `jq` in
 `skill-literature/SKILL.md`. Both were quarantined via `git mv` (never hard-deleted) into
 `.claude/extensions/literature/scripts/deprecated/` and dropped from `manifest.json`
 `provides.scripts`; see `scripts/deprecated/README.md` for the quarantine note.
 
 Five zotero scripts above remain declared in `manifest.json` `provides.scripts` but are
-absent from `.claude/scripts/` — this is intentional. The task-841 drift guard
+absent from `.claude/scripts/` — this is intentional. The drift guard
 (`check-extension-docs.sh` `check_deployed_script_drift()`) skips scripts whose deployed copy is
 absent (it only `FAIL`s on *content mismatch* when both source and deployed copies exist), so
 leaving these undeployed produces an expected `info "script not deployed, skipping drift check"`
 line, not a failure.
 
-**Correction to task-844 research (`reports/01_install-status-research.md`)**: that report
+**Correction to `reports/01_install-status-research.md`**: that report
 characterized `test-lit-pipeline.sh` as source-only/never-deployed alongside the seven zotero
-scripts above. Verification during task 844 implementation found this is no longer accurate:
+scripts above. Later verification found this is no longer accurate:
 `test-lit-pipeline.sh` **is** deployed at `.claude/scripts/test-lit-pipeline.sh`, byte-identical
-to this source copy, added by task 763 ("add --lit integration test script", commit `eb84ce9f8`,
-2026-06-23) as a standalone 33-check integration-test harness for the `--lit` pipeline — an
-unrelated concern to the zotero/cite surface this task addresses. Task 844 did not deploy it and
-leaves it as-is (deployed, task-763-owned); the drift guard compares it against source and finds
+to this source copy, added by the `--lit` integration test script addition ("add --lit
+integration test script", commit `eb84ce9f8`, 2026-06-23) as a standalone 33-check
+integration-test harness for the `--lit` pipeline — an unrelated concern to the zotero/cite
+surface this audit addresses. The audit did not deploy it and leaves it as-is (deployed,
+owned by that earlier addition); the drift guard compares it against source and finds
 no mismatch, so it does not appear in the "skipping drift check" list above. Its `provides.scripts`
 declaration and deployed copy are consistent, not drift.
 
@@ -202,10 +203,10 @@ declaration and deployed copy are consistent, not drift.
 
 The literature extension has no entry in the project-root extension manifest
 (`.claude-extensions.json`) despite this substantial partial deployment (the `/cite` trio and
-`zotero-search.sh` are now live). Task 844 intentionally does **not** fabricate a manifest entry
-here: the `merged_sections` metadata is loader-owned state, and hand-authoring it risks
-introducing the exact kind of drift this task is closing. Proper registration of the literature
-extension via the extension-loader flow is a named follow-up, not part of this task's scope.
+`zotero-search.sh` are now live). The deployment-status audit intentionally does **not**
+fabricate a manifest entry here: the `merged_sections` metadata is loader-owned state, and
+hand-authoring it risks introducing the exact kind of drift this audit is closing. Proper
+registration of the literature extension via the extension-loader flow is a named follow-up.
 
 ---
 

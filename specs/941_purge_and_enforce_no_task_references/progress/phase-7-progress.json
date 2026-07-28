@@ -1,0 +1,45 @@
+{
+  "phase": 7,
+  "phase_name": "Purge agent-system/extensions/literature/",
+  "started_at": "2026-07-28T00:00:00Z",
+  "last_updated": "2026-07-28T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Triage and convert all 94 task-reference occurrences under agent-system/extensions/literature/ per the Phase 4 bucket rules",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/README.md",
+        "agent-system/extensions/literature/context/project/literature/patterns/chunk-file-conventions.md",
+        "agent-system/extensions/literature/context/project/literature/patterns/zotero-pdf-resolution.md",
+        "agent-system/extensions/literature/scripts/deprecated/README.md",
+        "agent-system/extensions/literature/scripts/deprecated/zotero-index-add.sh",
+        "agent-system/extensions/literature/scripts/deprecated/zotero-index-remove.sh",
+        "agent-system/extensions/literature/scripts/literature-briefing.sh",
+        "agent-system/extensions/literature/scripts/literature-convert.sh",
+        "agent-system/extensions/literature/scripts/literature-decode-font-offset.py",
+        "agent-system/extensions/literature/scripts/literature-fidelity-audit.sh",
+        "agent-system/extensions/literature/scripts/literature-ingest.sh",
+        "agent-system/extensions/literature/scripts/literature-normalize-authors.sh",
+        "agent-system/extensions/literature/scripts/literature-pyenv-provision.sh",
+        "agent-system/extensions/literature/scripts/literature-schema.sql",
+        "agent-system/extensions/literature/scripts/literature-search.sh",
+        "agent-system/extensions/literature/scripts/tests/generate-test-fixtures.py",
+        "agent-system/extensions/literature/scripts/tests/test-literature-convert.sh",
+        "agent-system/extensions/literature/scripts/zotero-attach-chunks.sh",
+        "agent-system/extensions/literature/scripts/zotero-chunk.sh",
+        "agent-system/extensions/literature/scripts/zotero-export-status.sh",
+        "agent-system/extensions/literature/scripts/zotero-generate-export.sh",
+        "agent-system/extensions/literature/scripts/zotero-read.sh",
+        "agent-system/extensions/literature/scripts/zotero-setup.sh",
+        "agent-system/extensions/literature/scripts/zotero-write.sh",
+        "agent-system/extensions/literature/skills/skill-cite/SKILL.md",
+        "agent-system/extensions/literature/skills/skill-literature/SKILL.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

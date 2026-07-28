@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # zotero-setup.sh - Setup wizard, validation, and status reporting for the zotero extension
 #
-# Category A: CLI Wrapper (implemented in task 750)
+# Category A: CLI Wrapper
 #
 # Usage:
 #   zotero-setup.sh [--detect|--configure|--validate|--status]

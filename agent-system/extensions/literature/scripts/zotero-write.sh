@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # zotero-write.sh - Write operations via Zotero Web API through zot
 #
-# Category A: CLI Wrapper (implemented in task 750)
+# Category A: CLI Wrapper
 #
 # Usage:
 #   zotero-write.sh <operation> <key> [options...]

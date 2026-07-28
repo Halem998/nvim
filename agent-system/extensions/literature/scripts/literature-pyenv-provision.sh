@@ -9,7 +9,7 @@
 #   - EXECUTED (`./literature-pyenv-provision.sh [provision|python|status]`):
 #     runs the requested action directly, useful for manual setup/debugging.
 #
-# Design contract (task #831 Phase 2):
+# Design contract:
 #   - The venv is gitignored and auto-provisioned; never assume it is committed.
 #   - Provisioning is idempotent: repeated calls are cheap no-ops once the venv
 #     and shim are already known-good.

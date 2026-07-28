@@ -4,7 +4,7 @@
 Decodes markdown text extracted from a PDF where a fixed per-character byte
 offset was applied during extraction (a font-substitution artifact), plus a
 punctuation-normalization pass for a comma/period collision pattern first
-documented for the Kamp 1968 corpus entry (task #849, research report
+documented for the Kamp 1968 corpus entry (see
 specs/849_recover_kamp_1968_mojibake/reports/01_kamp-1968-font-offset-recovery.md).
 
 Cipher (Kamp 1968 validated defaults, used unless --band overrides are given):

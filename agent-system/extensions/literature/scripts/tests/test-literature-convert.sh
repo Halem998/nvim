@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # test-literature-convert.sh - Forced-fallback + two-column regression tests
-# for literature-convert.sh (task #831 Phase 6).
+# for literature-convert.sh.
 #
 # Proves the two things this task class exists to guarantee:
 #   1. The mandatory PyMuPDF column-clustering fallback tier is ACTUALLY
@@ -11,7 +11,7 @@
 #
 # All test conversions write to a scratch temp directory ONLY. This suite
 # NEVER reads from or writes to ~/Projects/Literature/ (the real corpus) —
-# see task #831's explicit "do not mutate the corpus" constraint. The
+# see this suite's explicit "do not mutate the corpus" constraint. The
 # optional real-Alur-PDF check (see below) only READS a user-supplied path.
 #
 # Usage:
@@ -114,7 +114,7 @@ esac
 # (pymupdf4llm, a third-party library) is exercised separately in Test 2b
 # below with the looser "correct OR loudly rejected" acceptance criteria,
 # since its internal reading-order correctness is outside this task's
-# control (task #831 research: not guaranteed on arbitrary layouts) — the
+# control (not guaranteed on arbitrary layouts) — the
 # quality gate, not this fixture, is pymupdf4llm's safety net.
 # ============================================================
 

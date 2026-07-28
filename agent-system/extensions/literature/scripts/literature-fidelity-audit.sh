@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # literature-fidelity-audit.sh - Re-runnable provenance/fidelity detector and stamper
-# for the ~/Projects/Literature corpus (task #835).
+# for the ~/Projects/Literature corpus.
 #
 # Usage:
 #   literature-fidelity-audit.sh [--dry-run]   # report-only (default): classify every

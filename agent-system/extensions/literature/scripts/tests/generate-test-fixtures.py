@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """generate-test-fixtures.py - Build hermetic synthetic PDF fixtures for
-test-literature-convert.sh (task #831 Phase 6).
+test-literature-convert.sh.
 
 No network access, no committed binary: fixtures are generated at test time
 via PyMuPDF, the same library the conversion pipeline itself already depends
@@ -63,7 +63,7 @@ def build_bold_heading_pdf(out_path):
     """A single-page, single-column document with one genuine bold heading
     and one sentence-fragment 'heading' (large font, ends in a period) — the
     exact real-corpus BUG 3 upstream defect shape. Enough body text to give
-    the font-size histogram a real majority (task #831 Phase 3's no-TOC
+    the font-size histogram a real majority (the no-TOC
     heading heuristic needs this to not be a coin-flip tie)."""
     doc = fitz.open()
     page = doc.new_page(width=612, height=792)

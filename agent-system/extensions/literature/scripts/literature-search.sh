@@ -20,7 +20,7 @@
 # Query sanitization: strips FTS5 operators (AND/OR/NOT at word boundaries,
 # unbalanced quotes/parens). Allows "quoted phrases". Escapes apostrophes.
 #
-# Provenance/fidelity flagging (task #835): every search/read/toc result carries a
+# Provenance/fidelity flagging: every search/read/toc result carries a
 # `provenance_fidelity` field looked up from $LITERATURE_DIR/index.json (fail-open —
 # a doc missing the field is treated as unverified, never as verified_conversion; see
 # .claude/scripts/literature-fidelity-audit.sh for how the field is computed and
@@ -43,11 +43,11 @@ LITERATURE_LIMIT="${LITERATURE_LIMIT:-20}"
 PROJECT_FILTER=""
 INCLUDE_UNVERIFIED="false"
 
-# --- provenance_fidelity values excluded from default search ranking (task #835) ---
+# --- provenance_fidelity values excluded from default search ranking ---
 # Docs whose fidelity is one of these are quarantined from default do_search output:
 # still fully retrievable (via --include-unverified, or directly via --read/--toc/
 # --doc), never deleted, never edited. See literature-fidelity-audit.sh for how the
-# field is computed and stamped. "unadjudicated" (task #839) covers low-ratio,
+# field is computed and stamped. "unadjudicated" covers low-ratio,
 # undisclosed docs where the proof-completeness signal could not fire at all --
 # fail closed, quarantine it like the other unverified values.
 QUARANTINED_FIDELITY_VALUES="unverified_summary unverified_no_baseline unadjudicated"
@@ -107,7 +107,7 @@ query = "$query"
 import os
 query = os.environ.get('_SEARCH_QUERY', query)
 
-# --- Ligature fold (task #833) ---
+# --- Ligature fold ---
 # Mirrors literature-convert.sh's LIGATURE_MAP (U+FB00-FB06) verbatim. Applied
 # FIRST, before any other transform, so a query containing a raw ligature
 # glyph matches the corpus's already-folded text (#831 folds ligatures at
@@ -144,7 +144,7 @@ quote_count = query.count('"')
 if quote_count % 2 != 0:
     query = query.replace('"', ' ')
 
-# --- Punctuation normalization (task #833) ---
+# --- Punctuation normalization ---
 # FTS5's query grammar treats mid-word hyphens (column-exclusion/NOT-prefix),
 # colons (column-filter), slashes, and parens (grouping -- even word-attached
 # and balanced) as syntax, not as word characters. This tool's only caller
@@ -225,7 +225,7 @@ allowed_doc_ids = [d.strip() for d in allowed_doc_ids_raw.strip().splitlines() i
 
 
 def load_fidelity_map(lit_dir):
-    """directory-name -> provenance_fidelity (task #835). Fail-open: callers must
+    """directory-name -> provenance_fidelity. Fail-open: callers must
     default a missing map entry to an unverified value, never to verified_conversion.
 
     KEYED BY DIRECTORY NAME, NOT index.json's id/parent_doc fields -- those are a
@@ -270,7 +270,7 @@ def get_fidelity(fmap, doc_id):
 
 fidelity_map = load_fidelity_map(literature_dir)
 
-# --- Fallback ladder tiers (task #833) ---
+# --- Fallback ladder tiers ---
 # Internal tier names match the envelope's "fallback_tier" vocabulary exactly
 # ("bm25" | "phrase_retry" | "trigram" | "none"); row-level "match_tier" uses
 # "trigram_fallback" instead of "trigram" -- ROW_TIER_LABEL maps between them.
@@ -279,7 +279,7 @@ ROW_TIER_LABEL = {'bm25': 'bm25', 'phrase_retry': 'phrase_retry', 'trigram': 'tr
 
 
 def ensure_trigram(conn):
-    """Idempotently ensure chunks_trigram exists and is populated (task #833). This is the
+    """Idempotently ensure chunks_trigram exists and is populated. This is the
     ONLY place chunks_trigram is populated -- literature-build-index.sh rebuilds chunks_fts
     only, so the trigram table starts (or goes back to) empty after any full reindex until a
     search next needs this rung. Returns True if the table is usable for a query, False if
@@ -314,7 +314,7 @@ def ensure_trigram(conn):
                     conn.execute("INSERT INTO chunks_trigram(chunks_trigram) VALUES('rebuild')")
                     # Without an explicit commit, this write lives only in the connection's
                     # implicit transaction and is silently rolled back the moment conn.close()
-                    # runs below (do_search()'s connections were read-only before task #833, so
+                    # runs below (do_search()'s connections were read-only historically, so
                     # this was never an issue until ensure_trigram() added the first write path)
                     # -- verified empirically: the rebuild was visible within the same
                     # connection but vanished from the on-disk shadow tables after close()
@@ -456,7 +456,7 @@ global_results = global_out['results']
 local_doc_ids = {r['doc_id'] for r in local_results}
 merged = local_results + [r for r in global_results if r['doc_id'] not in local_doc_ids]
 
-# Quarantine (task #835): exclude unverified/no-baseline docs from default ranking.
+# Quarantine: exclude unverified/no-baseline docs from default ranking.
 # Not a deletion -- always retrievable via --include-unverified, or directly via
 # --read/--toc/--doc regardless of this flag.
 if not include_unverified:
@@ -466,7 +466,7 @@ if not include_unverified:
 merged.sort(key=lambda r: r['rank'])
 merged = merged[:limit]
 
-# --- Envelope construction (task #833) ---
+# --- Envelope construction ---
 # fallback_tier/degraded reflect the rows actually surviving quarantine (a tier whose rows
 # were all quarantined does not count as having "answered"). "degraded" is true whenever the
 # primary bm25 tier is not what answered -- this is the honest, never-silent signal that
@@ -558,7 +558,7 @@ def get_fidelity(fmap, doc_id):
 fidelity_map = load_fidelity_map(literature_dir)
 
 # See the primary do_search heredoc above for the full docstring/rationale on the fallback
-# ladder (task #833); this unscoped-retry block mirrors it without the allowed_doc_ids branch.
+# ladder above; this unscoped-retry block mirrors it without the allowed_doc_ids branch.
 TIER_RANK = {'bm25': 0, 'phrase_retry': 1, 'trigram': 2, 'none': 3}
 ROW_TIER_LABEL = {'bm25': 'bm25', 'phrase_retry': 'phrase_retry', 'trigram': 'trigram_fallback'}
 
@@ -593,7 +593,7 @@ def ensure_trigram(conn):
                     conn.execute("INSERT INTO chunks_trigram(chunks_trigram) VALUES('rebuild')")
                     # Without an explicit commit, this write lives only in the connection's
                     # implicit transaction and is silently rolled back the moment conn.close()
-                    # runs below (do_search()'s connections were read-only before task #833, so
+                    # runs below (do_search()'s connections were read-only historically, so
                     # this was never an issue until ensure_trigram() added the first write path)
                     # -- verified empirically: the rebuild was visible within the same
                     # connection but vanished from the on-disk shadow tables after close()
@@ -762,7 +762,7 @@ literature_dir = "$LITERATURE_DIR"
 
 
 def load_fidelity_map(lit_dir):
-    # Directory-name -> provenance_fidelity (task #835), keyed to match
+    # Directory-name -> provenance_fidelity, keyed to match
     # chunks_data.doc_id exactly (NOT index.json's id/parent_doc fields -- a separate
     # namespace; see the primary do_search heredoc for the full rationale).
     # Fail-open: an absent map entry must be treated as unverified, never as
@@ -856,7 +856,7 @@ except Exception:
 doc_id = chunk_row.get('doc_id', '')
 provenance_fidelity = get_fidelity(fidelity_map, doc_id)
 
-# Loud content banner (task #835): never silently hand an agent unverified text as
+# Loud content banner: never silently hand an agent unverified text as
 # if it were an authoritative conversion. verified_conversion docs are unchanged.
 if provenance_fidelity != 'verified_conversion':
     banner = (
@@ -906,7 +906,7 @@ literature_dir = "$LITERATURE_DIR"
 
 
 def load_fidelity_map(lit_dir):
-    # Directory-name -> provenance_fidelity (task #835), keyed to match
+    # Directory-name -> provenance_fidelity, keyed to match
     # chunks_data.doc_id exactly; see do_search above for the full rationale.
     # Fail-open on absent entries.
     index_file = os.path.join(lit_dir, "index.json")
@@ -1120,7 +1120,7 @@ for ((i = 0; i < ${#args[@]}; i++)); do
     PROJECT_FILTER="${args[$((i+1))]}"
     i=$((i+1))
   elif [ "${args[$i]}" = "--include-unverified" ]; then
-    # task #835: opt back into unverified_summary/unverified_no_baseline results in
+    # Opt back into unverified_summary/unverified_no_baseline results in
     # do_search's default ranking (they remain always retrievable via --read/--toc
     # regardless of this flag; this only affects do_search's exclusion filter).
     INCLUDE_UNVERIFIED="true"

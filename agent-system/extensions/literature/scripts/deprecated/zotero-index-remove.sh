@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # zotero-index-remove.sh - Remove an item from the per-repo index
 #
-# Category C: Index Management (implemented in task 751)
+# Category C: Index Management
 #
 # Usage:
 #   zotero-index-remove.sh <zotero_key> [--delete-chunks]
@@ -22,7 +22,6 @@
 #   2 - specs/zotero-index.json not found
 #
 # Dependencies: jq
-# Implementation: task 751
 
 set -euo pipefail
 

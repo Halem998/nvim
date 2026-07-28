@@ -12,7 +12,7 @@ ratios, content hashes, etc.) MUST exclude `chunk_*.md` files from that computat
 canonical document's content gets summed twice (once via the canonical `.md`, once via its own
 `chunk_*.md` re-splits).
 
-**Concrete example**: task #839 found that `literature-fidelity-audit.sh`'s `word_ratio`
+**Concrete example**: `specs/839_fix_fidelity_audit_fail_open/` found that `literature-fidelity-audit.sh`'s `word_ratio`
 computation (`md_words / pdf_words`) included `chunk_NNNN.md` files in its `mds` glob, roughly
 doubling `md_words` for any directory with chunk files present. This produced spuriously high
 ratios (e.g. `bacon_2018_broadest-necessity`: reported 1.78, true ~1.0) without changing any
@@ -33,7 +33,7 @@ must filter these out first.
 ## Related
 
 - `.claude/scripts/literature-fidelity-audit.sh` — the `provenance_fidelity`/`word_ratio`
-  detector; excludes `chunk_*.md` from its `mds` glob (task #839).
+  detector; excludes `chunk_*.md` from its `mds` glob (see the double-count fix above).
 - `.claude/scripts/literature-build-index.sh` — the consumer that legitimately reads
   `chunk_*.md` files (for FTS5 indexing, where per-chunk granularity is the point, not a bug).
 - `specs/839_fix_fidelity_audit_fail_open/` — the task that discovered and fixed the

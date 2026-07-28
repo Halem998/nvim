@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # zotero-attach-chunks.sh - Upload local markdown chunks as Zotero child attachments
 #
-# Category B: Chunk Management Pipeline (implemented in task 752)
+# Category B: Chunk Management Pipeline
 #
 # Usage:
 #   zotero-attach-chunks.sh <zotero_key> [--dry-run]
@@ -24,7 +24,6 @@
 #   2 - ZOTERO_API_KEY not set; item not in index; has_chunks is false; chunk_dir missing
 #
 # Dependencies: zotero-write.sh, jq
-# Implementation: task 752
 
 set -euo pipefail
 

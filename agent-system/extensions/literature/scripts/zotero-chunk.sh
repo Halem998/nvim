@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # zotero-chunk.sh - Extract full text from a Zotero item PDF and chunk into sections
 #
-# Category B: Chunk Management Pipeline (implemented in task 752)
+# Category B: Chunk Management Pipeline
 #
 # Usage:
 #   zotero-chunk.sh <zotero_key> [--output-dir DIR] [--pages N-M]
@@ -26,7 +26,6 @@
 #   2 - Item not in specs/zotero-index.json; has_pdf is false; jq not available
 #
 # Dependencies: literature-convert.sh, literature-chunk.sh, literature-build-index.sh, jq
-# Implementation: task 752
 
 set -euo pipefail
 

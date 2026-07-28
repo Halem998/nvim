@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # literature-normalize-authors.sh - Normalize the `authors` field shape in a Literature index.json
 #
-# Task 801 (defense-in-depth): fixes the malformed `authors` schema left behind by
+# Defense-in-depth: fixes the malformed `authors` schema left behind by
 # ~/Projects/Literature/scripts/migrate-from-repo.sh (a separate, external-repo script; see
 # .claude/context/project/literature/domain/literature-index.md for the tooling ownership
 # boundary). Canonical representation is an array of individual author strings, e.g.
@@ -28,7 +28,7 @@
 #      multi-element arrays, null)                 -> left unchanged.
 #
 # The "looks comma-joined" heuristic mirrors the authors-shape check added to
-# .claude/skills/skill-literature/SKILL.md Validate Step 2 (task 801) so validate and normalize
+# .claude/skills/skill-literature/SKILL.md Validate Step 2 so validate and normalize
 # stay consistent: flag only when a string contains 2+ ", " occurrences, or exactly one ", "
 # followed by 2+ non-initial capitalized name-like tokens (2+ letters each) in the remainder.
 # This avoids mis-splitting legitimate single-author "Last, First" or "Last, First M." formatting

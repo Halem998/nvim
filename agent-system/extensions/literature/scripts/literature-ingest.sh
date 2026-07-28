@@ -27,7 +27,7 @@
 #   3 — all conversions failed (hard failures and/or quality-gate rejections —
 #       the printed summary and log lines distinguish which)
 #
-# Per-file conversion outcomes (task #831 Phase 5): literature-convert.sh's
+# Per-file conversion outcomes: literature-convert.sh's
 # exit code is checked explicitly per file, not swallowed by a `| tail -1`
 # pipe. Exit 3 from literature-convert.sh (quality-gate rejection — the
 # engine produced output but it failed the correctness gate) is tracked in a
@@ -202,7 +202,7 @@ print('yes' if existing else 'no')
   CONVERT_STDERR_FILE=$(mktemp)
   log "Converting: $BASENAME"
 
-  # Capture the exit code explicitly (task #831 Phase 5): literature-convert.sh
+  # Capture the exit code explicitly: literature-convert.sh
   # now distinguishes exit 3 (quality-gate rejection) from exit 0 (success) and
   # exit 1/2 (hard failure). The `if CONVERT_STDOUT=$(...); then` form keeps
   # this under `set -e` safely — a plain `VAR=$(pipeline)` assignment would

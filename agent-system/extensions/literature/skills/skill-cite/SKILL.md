@@ -508,7 +508,7 @@ fi
 ```
 
 If `inferred_topic` is non-empty, confirm via AskUserQuestion (Mode C Suggest-Wrap; Accept /
-Override only — no Skip option; topic assignment is mandatory per task 796):
+Override only — no Skip option; topic assignment is mandatory):
 
 ```json
 {
@@ -538,7 +538,7 @@ After all tasks have been written to state.json:
 
 #### Step 12.1: Assign Topics (Non-Blocking)
 
-`$topic` is non-empty by construction (task 796: Accept/Override confirm or Mode A universal
+`$topic` is non-empty by construction (Accept/Override confirm or Mode A universal
 fallback above); the `-n` guard below is defensive only.
 
 ```bash

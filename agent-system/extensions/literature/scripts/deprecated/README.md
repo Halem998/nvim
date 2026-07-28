@@ -15,9 +15,9 @@ QUARANTINE-NEVER-DELETE posture. Files are retained for:
 ## Contents
 
 - **zotero-index-add.sh** - Formerly added entries to the Zotero index; superseded by the
-  inline `jq` logic in `skills/skill-literature/SKILL.md`. Quarantined task #847.
+  inline `jq` logic in `skills/skill-literature/SKILL.md`. Quarantined during the same removal that dropped it from `manifest.json`.
 - **zotero-index-remove.sh** - Formerly removed entries from the Zotero index; superseded by
-  the inline `jq` logic in `skills/skill-literature/SKILL.md`. Quarantined task #847.
+  the inline `jq` logic in `skills/skill-literature/SKILL.md`. Quarantined during the same removal that dropped it from `manifest.json`.
 
 ## Migration Status
 

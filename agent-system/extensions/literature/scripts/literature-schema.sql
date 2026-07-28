@@ -11,7 +11,7 @@
 --                   rebuilds chunks_fts, so chunks_trigram starts (or goes back to) empty after
 --                   any full reindex until literature-search.sh's do_search() next needs the
 --                   trigram rung, at which point it ensures the table exists and repopulates it
---                   if empty (see task #833).
+--                   if empty.
 --
 -- BM25 column weights at query time (apply to chunks_fts columns):
 --   Pos 0: title    weight 10
@@ -30,7 +30,7 @@
 --   sqlite3 /path/to/.literature.db < literature-schema.sql
 --   After inserts: INSERT INTO chunks_fts(chunks_fts) VALUES('rebuild');
 --
--- WARNING (task #833): this file DROPs and recreates all tables below -- it is a clean-rebuild
+-- WARNING: this file DROPs and recreates all tables below -- it is a clean-rebuild
 -- script, NOT an idempotent migration. Never pipe this file into a database that already holds
 -- corpus data; doing so deletes every chunk row. Adding chunks_trigram to an already-populated
 -- DB is instead done via an idempotent `CREATE VIRTUAL TABLE IF NOT EXISTS` executed from
@@ -60,7 +60,7 @@ CREATE TABLE chunks_data (
   prev_chunk_id   TEXT,                  -- Previous chunk in document sequence (NULL if first)
   next_chunk_id   TEXT,                  -- Next chunk in document sequence (NULL if last)
   cross_refs      TEXT DEFAULT '[]',     -- JSON array: ["Definition 2.1", "Lemma 3.4"]
-  content         TEXT DEFAULT ''        -- Full/partial chunk text (task #833: repairs drift --
+  content         TEXT DEFAULT ''        -- Full/partial chunk text (repairs drift --
                                           -- chunks_fts already declared this column; a
                                           -- schema-fresh rebuild failed with "no such column:
                                           -- T.content" before this was added). Guarded by a
@@ -85,7 +85,7 @@ CREATE VIRTUAL TABLE chunks_fts USING fts5(
   tokenize='porter unicode61 remove_diacritics 2'
 );
 
--- Fallback-only substring index (task #833). Additive: does not replace, rewrite, or reweight
+-- Fallback-only substring index. Additive: does not replace, rewrite, or reweight
 -- chunks_fts. Used only when a syntactically valid chunks_fts MATCH returns zero rows -- the
 -- trigram tokenizer matches on any 3-character substring run, so punctuation-glued content
 -- still matches a plain-text query with no query-grammar sensitivity at all (it's a data
