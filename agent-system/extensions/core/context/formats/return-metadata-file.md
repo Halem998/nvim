@@ -148,6 +148,20 @@ Additional optional fields for specific agent types:
 - `phases_completed` - Implementation phases completed
 - `phases_total` - Total implementation phases
 
+### `phases_completed` / `phases_total` nesting collision (cross-file)
+
+These same two field names appear in `.orchestrator-handoff.json` too, with the OPPOSITE nesting
+rule. A writer instruction correct for one file is wrong for the other — this has caused real
+off-schema writes (agents pattern-matching one file's worked example onto the other).
+
+| File | Nesting |
+|------|---------|
+| `.return-meta.json` (this file) | Nested under `metadata` (or under `partial_progress` for a `partial`/interrupted return) — never top-level |
+| `.orchestrator-handoff.json` | Always top-level — never nested under any object |
+
+When writing either file, check which one you are writing before reusing a worked example from
+the other.
+
 ### started_at (optional)
 
 **Type**: string (ISO8601 timestamp)

@@ -309,29 +309,31 @@ identically to any such site.
 
 ---
 
-### Phase 3: Phase-Field Nesting — Team Skill Prose and Format-Doc Collision Callout [NOT STARTED]
+### Phase 3: Phase-Field Nesting — Team Skill Prose and Format-Doc Collision Callout [COMPLETED]
 
 **Goal**: Give `skill-team-implement/SKILL.md` the same disambiguating prose without altering its
 already-correct example, and add the missing cross-file collision callout to the format doc.
 
 **Tasks**:
 
-- [ ] Confirm first that `skills/skill-team-implement/SKILL.md`'s Stage 13 JSON example already
+- [x] Confirm first that `skills/skill-team-implement/SKILL.md`'s Stage 13 JSON example already
       nests `phases_completed`/`phases_total` under `"metadata"` (the task description states
       otherwise; the research found it correct). Record the observed shape. If it is in fact
-      top-level, correct it and note the correction; if nested, do NOT "fix" it.
-- [ ] Add a short explicit sentence next to that example stating that the two fields nest under
+      top-level, correct it and note the correction; if nested, do NOT "fix" it. *(completed:
+      confirmed nested under `"metadata"` at lines 547-552; not corrected, per research)*
+- [x] Add a short explicit sentence next to that example stating that the two fields nest under
       `metadata` in `.return-meta.json`, contrasting with `.orchestrator-handoff.json`'s always-
-      top-level rule.
-- [ ] In `context/formats/return-metadata-file.md`, add a collision callout to the field spec that
+      top-level rule. *(completed)*
+- [x] In `context/formats/return-metadata-file.md`, add a collision callout to the field spec that
       lists `phases_completed` / `phases_total` (the bullet list under the `metadata` section
       beginning `Additional optional fields for specific agent types:`). Mirror the style of the
       existing `### Three distinct vocabularies sharing the same words` table: a compact two-row
       table contrasting `.return-meta.json` (nested under `metadata`, or under `partial_progress`
       for interrupted work) against `.orchestrator-handoff.json` (top-level, always), with a
-      one-line note that a writer correct for one file is wrong for the other.
-- [ ] Confirm the callout is additive documentation only — no field is renamed, no read location is
-      redefined, no existing sentence's meaning changes.
+      one-line note that a writer correct for one file is wrong for the other. *(completed)*
+- [x] Confirm the callout is additive documentation only — no field is renamed, no read location is
+      redefined, no existing sentence's meaning changes. *(completed: `git diff` shows pure
+      additions, no deletions, in both files)*
 
 **Timing**: 0.75 hours
 

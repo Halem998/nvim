@@ -519,7 +519,11 @@ If the script exits non-zero, log a warning but continue (regeneration errors ar
 
 ### Stage 13: Write Metadata File
 
-Write team execution metadata:
+Write team execution metadata. Note that `phases_completed`/`phases_total` nest **inside the
+`metadata` object** below, as shown — this is the opposite of `.orchestrator-handoff.json`, where
+the same two field names are always written at the top level. A writer instruction correct for
+one file is wrong for the other; do not move these two fields to the top level of this JSON
+object.
 
 ```json
 {
