@@ -139,6 +139,15 @@ if [ -f "$loop_guard_file" ] && jq empty "$loop_guard_file" 2>/dev/null; then
   # this is precisely why a git-restorable guard would corrupt the cycle budget.
   cycle_count=$(jq -r '.cycle_count // 0' "$loop_guard_file")
   infra_failures=$(jq -r '.infra_failures // 0' "$loop_guard_file")
+  # Observational-only session_id tracking (NEVER a gate — see Ephemeral note above and
+  # context/standards/status-markers.md's rationale: SESSION_ID is regenerated per /orchestrate
+  # invocation, while this guard is explicitly designed to survive across conversational turns.
+  # The real same-task concurrency guard is task-lock.sh's acquire/heartbeat/release mutex, not
+  # session_id equality). A mismatch is logged, never branched on.
+  guard_session_id=$(jq -r '.session_id // ""' "$loop_guard_file")
+  if [ -n "$guard_session_id" ] && [ "$guard_session_id" != "$session_id" ]; then
+    echo "[orchestrate] INFO: loop guard was last written by a different session_id ('${guard_session_id}' vs current '${session_id}') — expected on conversational resume, not gated."
+  fi
   echo "[orchestrate] Resuming — cycle $cycle_count of $MAX_CYCLES (infra failures: $infra_failures of $MAX_INFRA_FAILURES)"
 else
   # Fresh start: create guard atomically via init-marker. A plain
@@ -228,7 +237,8 @@ echo "[orchestrate] Cycle $((cycle_count + 1))/$MAX_CYCLES — status: $current_
 jq --arg state "$current_status" \
    --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
    --argjson count "$cycle_count" \
-  '.current_state = $state | .last_updated = $updated | .cycle_count = $count' \
+   --arg sid "$session_id" \
+  '.current_state = $state | .last_updated = $updated | .cycle_count = $count | .last_session_id = $sid' \
   "$loop_guard_file" > "${loop_guard_file}.tmp" && mv "${loop_guard_file}.tmp" "$loop_guard_file"
 
 # Task-lock heartbeat: refresh at the same per-cycle boundary as the loop guard, so a

@@ -214,25 +214,28 @@ converted, not skipped.
 
 ---
 
-### Phase 2: Per-file read-time session_id verification [NOT STARTED]
+### Phase 2: Per-file read-time session_id verification [COMPLETED]
 
 **Goal**: A foreign or stale session-owned runtime file is detected rather than silently trusted,
 using per-file semantics that do not break the designed multi-turn resume path.
 
 **Tasks**:
-- [ ] **`specs/.orchestrator-multi-state-{session_id}.json` — HARD-FAIL.** In
+- [x] **`specs/.orchestrator-multi-state-{session_id}.json` — HARD-FAIL.** In
       `commands/orchestrate.md` Step 5, immediately inside the existing `if [ -f "$mt_state_file" ]`
       branch and before any field extraction, read `file_session_id=$(jq -r '.session_id // ""' "$mt_state_file")`
       and compare against `$batch_session_id`. On mismatch, emit a loud error naming both values
       and take the same path as the missing-file `else` branch (do not consume the foreign file's
       counts). Rationale to record inline: Stage MT-1 has no resume-on-exists branch — every
       multi-task invocation initializes fresh — so a mismatch here can only mean a real bug (stale
-      variable reuse or a wrongly resolved path), never an expected condition.
-- [ ] **`specs/.return-meta-multi-{session_id}.json` — NOT APPLICABLE TODAY.** Confirm by grep
+      variable reuse or a wrongly resolved path), never an expected condition. *(completed: added
+      `mt_state_file_valid` gate reusing the existing missing-file fallback variables in the else
+      branch)*
+- [x] **`specs/.return-meta-multi-{session_id}.json` — NOT APPLICABLE TODAY.** Confirm by grep
       that no reader exists anywhere in the source store. Add no check. Record the reason as a
       short note in `context/standards/orchestrator-runtime-files.md` in Phase 4 so a future
       reader-adder knows to add both the check and the reader together. Do not invent a reader.
-- [ ] **`.orchestrator-loop-guard` (per-task) — OBSERVATIONAL ONLY, NEVER HARD-FAIL.** In
+      *(completed: no reader found, no check added, note deferred to Phase 4)*
+- [x] **`.orchestrator-loop-guard` (per-task) — OBSERVATIONAL ONLY, NEVER HARD-FAIL.** In
       `skills/skill-orchestrate/SKILL.md` where the loop guard is read on resume, add an
       informational log line when the guard's stored `session_id` differs from the current
       invocation's, and update a `last_session_id` field on write. Do NOT gate, branch, or abort
@@ -240,20 +243,26 @@ using per-file semantics that do not break the designed multi-turn resume path.
       `/orchestrate` invocation in `command-gate-in.sh`, while this guard is explicitly designed
       to survive across conversational turns — a strict-equality gate would break legitimate
       resumption. The real same-task concurrency guard is `task-lock.sh`'s
-      acquire/heartbeat/release mutex, not `session_id` equality.
-- [ ] **`.orchestrator-churn-state.json` (hard mode, per-task) — OBSERVATIONAL ONLY, NEVER
+      acquire/heartbeat/release mutex, not `session_id` equality. *(completed: INFO log at
+      resume-read, `last_session_id` written at the per-cycle Stage 3b update)*
+- [x] **`.orchestrator-churn-state.json` (hard mode, per-task) — OBSERVATIONAL ONLY, NEVER
       HARD-FAIL.** Apply the identical treatment in `skills/skill-orchestrate-hard/SKILL.md`:
       informational log on change, `last_session_id` tracked on write, no gate. Same
-      resume-across-turns rationale.
+      resume-across-turns rationale. *(completed: added `session_id` field at init (file
+      previously had none), INFO log at resume-read, `last_session_id` written at both churn-update
+      sites)*
 - [ ] **`.drift-inspection.json` (per-task) — OPTIONAL, WARN-ONLY IF DONE.** This file currently
       has no `session_id` field at all. Adding one costs one line in the fork prompt's write
       instruction; the corresponding read-side check must be warn-only, never a gate. The
       write-then-read happens synchronously within one stage of one session, so realistic
       collision risk is near zero. Implement only if the rest of the phase lands cleanly;
-      otherwise leave untouched and note it as deferred.
-- [ ] **`.orchestrator-handoff.json` (per-task) — OUT OF SCOPE.** Its JSON schema has no
+      otherwise leave untouched and note it as deferred. *(deviation: deferred — explicitly
+      optional per plan; the mandatory items landed cleanly but this was left untouched to keep
+      the phase's blast radius to the four mandatory files)*
+- [x] **`.orchestrator-handoff.json` (per-task) — OUT OF SCOPE.** Its JSON schema has no
       `session_id` key and adding one is explicitly a non-goal. Make no change here; Phase 3
-      handles its dead documentation separately.
+      handles its dead documentation separately. *(completed: no change made, consistent with
+      Phase 3)*
 
 **Timing**: 1.5 hours
 
@@ -331,48 +340,55 @@ or consumes.
 
 ---
 
-### Phase 4: Update the tracking and gitignore machinery [NOT STARTED]
+### Phase 4: Update the tracking and gitignore machinery [COMPLETED]
 
 **Goal**: The session-suffixed names stay gitignored and stay audited, with no pattern silently
 ceasing to match.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/check-runtime-file-tracking.sh`, replace the
+- [x] In `agent-system/extensions/core/scripts/check-runtime-file-tracking.sh`, replace the
       `EPHEMERAL_PROBES` entry `"specs/.orchestrator-multi-state.json"` with a representative
       session-suffixed probe, e.g. `"specs/.orchestrator-multi-state-sess_0000000000_probe.json"`.
-- [ ] In the same array, ADD a representative return-meta-multi probe, e.g.
+      *(completed)*
+- [x] In the same array, ADD a representative return-meta-multi probe, e.g.
       `"specs/.return-meta-multi-sess_0000000000_probe.json"`. Research verified the existing
       `**/.return-meta-*.json` pattern already covers this shape, so this probe is regression
       coverage that locks the verified fact in place — it should pass on first run without any
-      gitignore change.
-- [ ] In the same file's `b_patterns` array, widen `'\.orchestrator-multi-state\.json$'` to
+      gitignore change. *(completed: live probe confirmed pass before and after the gitignore
+      edit, per the Verification block below)*
+- [x] In the same file's `b_patterns` array, widen `'\.orchestrator-multi-state\.json$'` to
       `'\.orchestrator-multi-state(-[^/]+)?\.json$'` so it matches both the legacy and the
       session-suffixed names. Leave `'\.return-meta-[^/]*\.json$'` unchanged — it already matches
-      any suffix.
-- [ ] In this repo's own hand-maintained root `/.gitignore`, widen the line
+      any suffix. *(completed)*
+- [x] In this repo's own hand-maintained root `/.gitignore`, widen the line
       `**/.orchestrator-multi-state.json` to `**/.orchestrator-multi-state*.json`. Leave
       `**/.return-meta-*.json` unchanged. Note: this is the one non-source-store edit in the plan
       and is sanctioned — the root `.gitignore` is neither the source store nor a deploy artifact.
-- [ ] In `agent-system/extensions/core/context/standards/orchestrator-runtime-files.md`, apply
+      *(completed)*
+- [x] In `agent-system/extensions/core/context/standards/orchestrator-runtime-files.md`, apply
       the same widening to the `**/.orchestrator-multi-state.json` line inside the
       "Consumer Repo Setup" fenced `gitignore` block. This block is the canonical documented
       source that consumer repos copy by hand; it and the root `/.gitignore` must not drift.
-- [ ] In the same standards file's Class Table, update the
+      *(completed: verified line-for-line identical to root /.gitignore)*
+- [x] In the same standards file's Class Table, update the
       `specs/.orchestrator-multi-state.json` row to the session-suffixed name and add a short
       note that the path carries a `{session_id}` suffix so concurrent batches do not collide.
       Update the `.return-meta-*.json` row's parenthetical example
-      `specs/.return-meta-multi.json` to the suffixed form.
-- [ ] In the same standards file, add the short note deferred from Phase 2: the
+      `specs/.return-meta-multi.json` to the suffixed form. *(completed)*
+- [x] In the same standards file, add the short note deferred from Phase 2: the
       `.return-meta-multi-{session_id}.json` file has no reader today, so a future reader-adder
-      must add the read-time `session_id` check together with the reader.
-- [ ] In `agent-system/extensions/core/context/formats/return-metadata-file.md`, update the two
+      must add the read-time `session_id` check together with the reader. *(completed: folded
+      into the `.return-meta-*.json` Class Table row's Reader column)*
+- [x] In `agent-system/extensions/core/context/formats/return-metadata-file.md`, update the two
       mentions of `specs/.return-meta-multi.json` to the session-suffixed form so the status
-      vocabulary documentation names the real path.
-- [ ] Address the task description's literal `root-files/` gitignore target explicitly: verify by
+      vocabulary documentation names the real path. *(completed)*
+- [x] Address the task description's literal `root-files/` gitignore target explicitly: verify by
       inspection that `agent-system/extensions/core/root-files/.gitignore` contains only unrelated
       hook-log/tmp patterns and deploys into `.claude/` (itself wholly gitignored at the repo
       root), so it has no bearing on repo-root tracking of `specs/*`. Make no edit there. Record
-      this determination in the phase notes so it is a decision, not an omission.
+      this determination in the phase notes so it is a decision, not an omission. *(completed:
+      inspected — contains only `hooks/*.log`, `logs/`, `output/`, `*.tmp`, and a commented-out
+      settings.local.json line; no edit made, decision recorded here)*
 
 **Timing**: 1 hour
 
@@ -410,7 +426,7 @@ bash agent-system/extensions/core/scripts/check-runtime-file-tracking.sh
 
 ---
 
-### Phase 5: Reap path for abandoned session-scoped files [NOT STARTED]
+### Phase 5: Reap path for abandoned session-scoped files [IN PROGRESS]
 
 **Goal**: `/refresh` sweeps stale session-scoped orchestration files, so session-scoping does not
 trade collisions for unbounded litter.

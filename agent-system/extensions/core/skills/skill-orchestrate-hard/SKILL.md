@@ -289,10 +289,19 @@ fi
 # Initialize or read churn state (per-target churn counters)
 if [ -f "$churn_file" ] && jq empty "$churn_file" 2>/dev/null; then
   total_churn=$(jq -r '.total_churn // 0' "$churn_file")
+  # Observational-only session_id tracking (NEVER a gate — identical rationale to the loop
+  # guard's Stage 2 treatment above: SESSION_ID is regenerated per /orchestrate invocation, while
+  # this file is explicitly designed to survive across conversational turns. The real same-task
+  # concurrency guard is task-lock.sh's acquire/heartbeat/release mutex, not session_id equality).
+  churn_session_id=$(jq -r '.session_id // ""' "$churn_file")
+  if [ -n "$churn_session_id" ] && [ "$churn_session_id" != "$session_id" ]; then
+    echo "[hard-orchestrate] INFO: churn state was last written by a different session_id ('${churn_session_id}' vs current '${session_id}') — expected on conversational resume, not gated."
+  fi
 else
   # Fresh start: create churn state atomically via init-marker; on a
   # lost race (exit 1), resume-read total_churn (matching the `if`-branch above).
-  if jq -n '{"total_churn": 0, "target_churn": {}, "adversarial_triggers": 0, "audit_dispatches": 0}' \
+  if jq -n --arg session_id "$session_id" \
+    '{"session_id": $session_id, "total_churn": 0, "target_churn": {}, "adversarial_triggers": 0, "audit_dispatches": 0}' \
     | bash .claude/scripts/task-lock.sh init-marker "$churn_file"; then
     total_churn=0
   else
@@ -701,7 +710,8 @@ if [ "$handoff_status" = "partial" ] && [ "$has_blockers" = "true" ] && [ "$phas
   jq --arg target "$blocker_target" \
      --argjson count "$new_target_churn" \
      --argjson total "$((total_churn + 1))" \
-    '.target_churn[$target] = $count | .total_churn = $total' \
+     --arg sid "$session_id" \
+    '.target_churn[$target] = $count | .total_churn = $total | .last_session_id = $sid' \
     "$churn_file" > "${churn_file}.tmp" && mv "${churn_file}.tmp" "$churn_file"
 
   echo "[hard-orchestrate] H6: Churn detected on '$blocker_target' (count: $new_target_churn)" >&2
@@ -721,8 +731,8 @@ if [ "$handoff_status" = "partial" ] && [ "$has_blockers" = "true" ] && [ "$phas
       delegation_context: {task_number, session_id, effort_flag: "hard", focus_prompt: "divergence audit $blocker_target", orchestrator_mode: false}
 
     # Reset churn counter for this target after audit
-    jq --arg target "$blocker_target" \
-      '.target_churn[$target] = 0 | .audit_dispatches += 1' \
+    jq --arg target "$blocker_target" --arg sid "$session_id" \
+      '.target_churn[$target] = 0 | .audit_dispatches += 1 | .last_session_id = $sid' \
       "$churn_file" > "${churn_file}.tmp" && mv "${churn_file}.tmp" "$churn_file"
 
     Increment cycle_count. Loop continues (next iteration will re-dispatch implement with audit findings).

@@ -396,7 +396,16 @@ After the single `skill-orchestrate` invocation completes, read results from `sp
 
 ```bash
 mt_state_file="specs/.orchestrator-multi-state-${batch_session_id}.json"
+mt_state_file_valid="false"
 if [ -f "$mt_state_file" ]; then
+  file_session_id=$(jq -r '.session_id // ""' "$mt_state_file")
+  if [ "$file_session_id" = "$batch_session_id" ]; then
+    mt_state_file_valid="true"
+  else
+    echo "[orchestrate] ERROR: Multi-state file session_id mismatch — ${mt_state_file} carries session_id '${file_session_id}', this invocation is '${batch_session_id}'. Refusing to consume a foreign session's batch state; treating the file as missing. Stage MT-1 always initializes fresh (no resume-on-exists branch), so a mismatch here can only mean a real bug (stale variable reuse or a wrongly resolved path), never an expected condition."
+  fi
+fi
+if [ "$mt_state_file_valid" = "true" ]; then
   completed_tasks=$(jq -r '.completed_tasks[]' "$mt_state_file" 2>/dev/null | tr '\n' ' ')
   failed_tasks_json=$(jq -c '.failed_tasks // []' "$mt_state_file")
   cycles_used=$(jq -r '.cycle_count // 0' "$mt_state_file")
@@ -411,7 +420,9 @@ if [ -f "$mt_state_file" ]; then
   defer_ledger_json=$(jq -c '.defer_ledger // []' "$mt_state_file")
   tasks_deferred_self_modifying_json=$(jq -c '.deferred_self_modifying // []' "$mt_state_file")
 else
-  echo "[orchestrate] WARNING: Multi-state file missing (looked for specs/.orchestrator-multi-state-${batch_session_id}.json) — skill may have been interrupted"
+  if [ ! -f "$mt_state_file" ]; then
+    echo "[orchestrate] WARNING: Multi-state file missing (looked for specs/.orchestrator-multi-state-${batch_session_id}.json) — skill may have been interrupted"
+  fi
   completed_tasks=""
   failed_tasks_json="[]"
   cycles_used=0
