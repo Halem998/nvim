@@ -9,7 +9,7 @@
       "summary": "Usage guide for /learn command and memory management",
       "line_count": 150,
       "load_when": {
-        "skills": ["skill-memory"],
+        "skills": ["skill-learn"],
         "commands": ["/learn"]
       }
     },
@@ -22,7 +22,7 @@
       "summary": "MCP server setup for Obsidian memory vault",
       "line_count": 120,
       "load_when": {
-        "skills": ["skill-memory"],
+        "skills": ["skill-learn"],
         "commands": ["/learn"]
       }
     },
@@ -35,7 +35,7 @@
       "summary": "Troubleshooting guide for memory system issues",
       "line_count": 250,
       "load_when": {
-        "skills": ["skill-memory"]
+        "skills": ["skill-learn", "skill-distill"]
       }
     },
     {
@@ -47,7 +47,7 @@
       "summary": "Memory vault reference: MCP integration, vault structure, classification, scoring engine, maintenance operations",
       "line_count": 57,
       "load_when": {
-        "skills": ["skill-memory"],
+        "skills": ["skill-learn", "skill-distill"],
         "commands": ["/learn", "/distill"],
         "agents": ["general-research-agent"]
       }
@@ -61,7 +61,7 @@
       "summary": "Example workflows for knowledge capture system",
       "line_count": 180,
       "load_when": {
-        "skills": ["skill-memory"],
+        "skills": ["skill-learn"],
         "commands": ["/learn"]
       }
     },
@@ -74,7 +74,7 @@
       "summary": "Usage guide for /distill command: sub-mode workflows, scoring formula, maintenance cadence, and event-store-informed dream review",
       "line_count": 211,
       "load_when": {
-        "skills": ["skill-memory"],
+        "skills": ["skill-distill"],
         "commands": ["/distill"],
         "agents": ["general-research-agent"]
       }

@@ -6,7 +6,7 @@ description: Add memories from text, files, directories, or task artifacts with 
 
 **Purpose**: Takes text, file paths, directory paths, or task references and creates memories through content mapping, MCP-based deduplication, and three memory operations (UPDATE, EXTEND, CREATE).
 **Layer**: 2 (Command File - Argument Parsing Agent)
-**Delegates To**: skill-memory (direct execution)
+**Delegates To**: skill-learn (direct execution)
 
 **Input**: $ARGUMENTS
 
@@ -62,19 +62,19 @@ description: Add memories from text, files, directories, or task artifacts with 
     <action>Delegate to Memory Skill</action>
     <input>
       Task mode:
-        - skill: "skill-memory"
+        - skill: "skill-learn"
         - args: "mode=task, task_number={task_number}"
 
       Directory mode:
-        - skill: "skill-memory"
+        - skill: "skill-learn"
         - args: "mode=directory, directory_path={directory_path}"
 
       File mode:
-        - skill: "skill-memory"
+        - skill: "skill-learn"
         - args: "mode=file, file_path={file_path}"
 
       Text mode:
-        - skill: "skill-memory"
+        - skill: "skill-learn"
         - args: "mode=text, text_content={text_content}"
     </input>
     <expected_return>

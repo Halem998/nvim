@@ -6,7 +6,7 @@ description: Analyze memory vault health, score memories for maintenance, and ru
 
 **Purpose**: Analyzes the memory vault, scores each memory on staleness/retrieval/size/duplication, generates a health report, and dispatches maintenance sub-modes (purge, merge, compress, refine, gc).
 **Layer**: 2 (Command File - Argument Parsing Agent)
-**Delegates To**: skill-memory mode=distill (direct execution)
+**Delegates To**: skill-distill mode=distill (direct execution)
 
 **Input**: $ARGUMENTS
 
@@ -85,7 +85,7 @@ description: Analyze memory vault health, score memories for maintenance, and ru
   <step_2>
     <action>Delegate to Memory Skill</action>
     <input>
-      - skill: "skill-memory"
+      - skill: "skill-distill"
       - args: "mode=distill, sub_mode={sub_mode}, dry_run={dry_run}, verbose={verbose}"
     </input>
     <expected_return>

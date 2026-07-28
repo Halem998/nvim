@@ -307,7 +307,7 @@ factoring discipline Phase 5 applies to the sub-mode skeleton.
 
 ---
 
-### Phase 3: Split `skill-memory` into `skill-learn` and `skill-distill` [NOT STARTED]
+### Phase 3: Split `skill-memory` into `skill-learn` and `skill-distill` [COMPLETED]
 
 **Goal**: Perform the mechanical split at the existing mode boundary, with zero content rewriting,
 so the phase's diff is pure relocation plus registration updates and can be reviewed as such.
@@ -319,35 +319,52 @@ Task/Directory/Text/File Mode Execution, Error Handling, Git Commit (Postflight)
 
 **Tasks**:
 
-- [ ] Create `skill-learn/SKILL.md` from the pre-boundary content, with frontmatter `name:
+- [x] Create `skill-learn/SKILL.md` from the pre-boundary content, with frontmatter `name:
       skill-learn` and a description scoped to memory creation only. Preserve the existing
-      MANDATORY INTERACTIVE REQUIREMENT block verbatim.
-- [ ] Create `skill-distill/SKILL.md` from the post-boundary content, with frontmatter `name:
+      MANDATORY INTERACTIVE REQUIREMENT block verbatim. *(completed: 1062 lines, byte-identical
+      apart from frontmatter/intro-paragraph header edit)*
+- [x] Create `skill-distill/SKILL.md` from the post-boundary content, with frontmatter `name:
       skill-distill`, `allowed-tools` matching what the distill sub-modes actually use, and a
       description scoped to vault analysis and maintenance. Add the header material the new file
       needs to stand alone (Context References, Overview) — this is the one permitted addition;
-      no existing content is reworded.
-- [ ] Determine which Context References belong to which half and split them accordingly rather
-      than duplicating the whole list into both files.
-- [ ] Delete `skill-memory/SKILL.md` and its `README.md`, or repoint the README, once both new
-      skills exist and are registered.
-- [ ] Update `agent-system/extensions/memory/manifest.json`: `provides.skills` becomes
+      no existing content is reworded. *(completed: 1899 lines = 1879 relocated body + 20-line
+      new header; also added one clarifying sentence in the new header, not the body, pointing
+      "Validate-on-Read"/"JSON Index Maintenance" cross-references in the relocated body — which
+      say "above" — at their new home in skill-learn/SKILL.md)*
+- [x] Determine which Context References belong to which half and split them accordingly rather
+      than duplicating the whole list into both files. *(completed: skill-learn keeps the
+      original 4 memory-template/index/learn-usage references; skill-distill gets
+      memory-index.json, distill-usage.md, telemetry-guardrails.md, and a pointer at
+      skill-learn/SKILL.md for the two shared procedures)*
+- [x] Delete `skill-memory/SKILL.md` and its `README.md`, or repoint the README, once both new
+      skills exist and are registered. *(completed: deleted; split into skill-learn/README.md and
+      skill-distill/README.md along the same content boundary)*
+- [x] Update `agent-system/extensions/memory/manifest.json`: `provides.skills` becomes
       `["skill-learn", "skill-distill"]`; the three `routing` entries currently naming
       `skill-memory` are repointed (research and implement route to `skill-learn`; the `plan` entry
-      stays `skill-planner`).
-- [ ] Update `commands/learn.md`: the `Delegates To` line and all four `skill: "skill-memory"`
-      dispatch references become `skill-learn`. Argument parsing is untouched.
-- [ ] Update `commands/distill.md`: the `Delegates To` line and the `skill: "skill-memory"`
+      stays `skill-planner`). *(completed: only 2 routing entries actually named skill-memory —
+      research and implement; the plan entry was already skill-planner and uncounted — both
+      repointed to skill-learn)*
+- [x] Update `commands/learn.md`: the `Delegates To` line and all four `skill: "skill-memory"`
+      dispatch references become `skill-learn`. Argument parsing is untouched. *(completed)*
+- [x] Update `commands/distill.md`: the `Delegates To` line and the `skill: "skill-memory"`
       reference become `skill-distill`. Argument parsing is untouched in this phase (Phase 11 owns
-      the 12-sub-mode dispatch rewrite).
-- [ ] Update the six `load_when.skills` arrays in `index-entries.json` that name `skill-memory`,
-      assigning each context entry to whichever skill actually consumes it.
-- [ ] Update `EXTENSION.md`'s skill-mapping table row and `README.md`'s two `skill-memory`
-      references.
-- [ ] Leave the email extension's five `skill-memory/SKILL.md` cross-references and the
+      the 12-sub-mode dispatch rewrite). *(completed)*
+- [x] Update the six `load_when.skills` arrays in `index-entries.json` that name `skill-memory`,
+      assigning each context entry to whichever skill actually consumes it. *(completed: 4 entries
+      to skill-learn only, 1 to skill-distill only, 2 assigned to both — memory-troubleshooting.md
+      and domain/memory-reference.md — since their content spans both skills)*
+- [x] Update `EXTENSION.md`'s skill-mapping table row and `README.md`'s two `skill-memory`
+      references. *(completed)*
+- [x] Leave the email extension's five `skill-memory/SKILL.md` cross-references and the
       email-to-memory design doc's line-number citations for Phase 11's cross-reference sweep —
       they point at `/learn`-half content whose line numbers shift, and fixing them mid-split
-      would mix two concerns.
+      would mix two concerns. *(confirmed deferred, untouched. Scope Hypothesis correction: actual
+      count is 13 "skill-memory" occurrences across 2 email-extension files (8 in
+      email-to-memory-preferences.md, 5 in skill-email-cleanup/SKILL.md), not the 5 the plan
+      estimated — recorded here for Phase 11 to pick up the corrected count. Similarly,
+      commands/*.md held 7 occurrences (2 in distill.md, 5 in learn.md), not the 5 the plan
+      estimated; all 7 were fixed in this phase since they are in-scope, not deferred)*
 
 **Timing**: 2 hours
 

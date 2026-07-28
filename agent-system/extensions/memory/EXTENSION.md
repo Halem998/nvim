@@ -6,7 +6,8 @@ Knowledge capture and retrieval via the memory vault. Supports text, file, direc
 
 | Skill | Agent | Purpose |
 |-------|-------|---------|
-| skill-memory | (direct execution) | Memory creation, distillation, and management |
+| skill-learn | (direct execution) | Memory creation |
+| skill-distill | (direct execution) | Memory vault distillation and management |
 
 ### Commands
 

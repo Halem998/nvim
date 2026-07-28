@@ -12,7 +12,8 @@
       "distill.md"
     ],
     "skills": [
-      "skill-memory"
+      "skill-learn",
+      "skill-distill"
     ],
     "context": [
       "project/memory"
@@ -30,13 +31,13 @@
   },
   "routing": {
     "research": {
-      "memory": "skill-memory"
+      "memory": "skill-learn"
     },
     "plan": {
       "memory": "skill-planner"
     },
     "implement": {
-      "memory": "skill-memory"
+      "memory": "skill-learn"
     }
   },
   "merge_targets": {

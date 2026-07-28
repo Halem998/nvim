@@ -1,0 +1,44 @@
+{
+  "phase": 3,
+  "phase_name": "Split skill-memory into skill-learn and skill-distill",
+  "started_at": "2026-07-27T01:00:00Z",
+  "last_updated": "2026-07-27T02:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create skill-learn/SKILL.md and skill-distill/SKILL.md via line-boundary split", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/memory/skills/skill-learn/SKILL.md",
+        "agent-system/extensions/memory/skills/skill-distill/SKILL.md"
+      ]},
+    {"id": 2, "description": "Split README.md into skill-learn/README.md and skill-distill/README.md; delete skill-memory dir", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/memory/skills/skill-learn/README.md",
+        "agent-system/extensions/memory/skills/skill-distill/README.md"
+      ]},
+    {"id": 3, "description": "Update manifest.json provides.skills and routing", "status": "done",
+      "files_touched": ["agent-system/extensions/memory/manifest.json"]},
+    {"id": 4, "description": "Update commands/learn.md and commands/distill.md delegation references", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/memory/commands/learn.md",
+        "agent-system/extensions/memory/commands/distill.md"
+      ]},
+    {"id": 5, "description": "Update six load_when.skills arrays in index-entries.json", "status": "done",
+      "files_touched": ["agent-system/extensions/memory/index-entries.json"]},
+    {"id": 6, "description": "Update EXTENSION.md skill-mapping table and README.md two references", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/memory/EXTENSION.md",
+        "agent-system/extensions/memory/README.md"
+      ]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "3.scope",
+      "description": "Scope Hypothesis predicted 5 commands/*.md occurrences and 5 email-extension occurrences of 'skill-memory'",
+      "type": "altered",
+      "reason": "Fresh grep found 7 in commands/*.md (2 distill.md + 5 learn.md, all fixed in-scope) and 13 in the email extension (8 + 5, correctly left deferred to Phase 11 per the plan's own deferral instruction)",
+      "annotation": "recorded inline in the Phase 3 task checklist"
+    }
+  ],
+  "handoff_count": 0
+}

@@ -1,38 +1,13 @@
-# skill-memory
+# skill-distill
 
-Memory vault management skill for the /learn and /distill commands.
+Memory vault analysis and maintenance skill for the `/distill` command.
 
 ## Purpose
 
-Handles memory creation, similarity search, classification, index maintenance, and vault distillation for the Obsidian-compatible memory vault.
-
-## Modes
-
-### Standard Mode
-
-Add text or file content as memory:
-- Parse input (text vs file)
-- Generate unique memory ID
-- Search for similar existing memories
-- Present preview with options
-- Create memory file with YAML frontmatter
-- Update index
-
-### Task Mode
-
-Review task artifacts and create classified memories:
-- Locate task directory
-- Scan artifact files
-- Present interactive selection
-- Classify each artifact (TECHNIQUE, PATTERN, CONFIG, WORKFLOW, INSIGHT, SKIP)
-- Create categorized memories
-- Update index with category grouping
-
-### Distill Mode
-
 Vault health analysis and maintenance via `/distill` command. Invoked with `mode=distill`.
+Memory *creation* is a separate concern owned by the sibling `skill-learn` skill.
 
-#### Sub-Modes
+## Sub-Modes
 
 | Sub-Mode | Flag | Description |
 |----------|------|-------------|
@@ -43,8 +18,17 @@ Vault health analysis and maintenance via `/distill` command. Invoked with `mode
 | refine | `--refine` | Improve metadata quality: Tier 1 (auto) + Tier 2 (interactive) |
 | gc | `--gc` | Hard-delete tombstoned memories past 7-day grace period |
 | auto | `--auto` | Automated Tier 1 refine only (non-interactive) |
+| meta | `--meta` | Cross-repo agent-system improvement proposals, delegated to `meta-builder-agent` |
+| review | `--review` | Read-only ad hoc inquiry over the vault and all four telemetry source tiers |
+| revise | `--revise` | Event-and-OTel-correlated memory refactoring proposals |
+| learn | `--learn` | Retroactive, batch harvest across already-completed tasks |
+| dream | `--dream` | Speculative direction-finding over `history.jsonl`'s recurring themes |
 
-#### Scoring Engine
+See `SKILL.md`'s Shared Sub-Mode Skeleton and per-sub-mode sections for the full specification
+of each, and `context/project/memory/telemetry-guardrails.md` for the binding design constraints
+shared by the five telemetry-sourced sub-modes.
+
+## Scoring Engine
 
 Each memory is scored on four components to compute a composite maintenance score (0.0-1.0):
 
@@ -57,7 +41,7 @@ Each memory is scored on four components to compute a composite maintenance scor
 
 **Composite**: `(staleness * 0.3) + (zero_retrieval * 0.25) + (size_penalty * 0.2) + (duplicate * 0.25)`, clamped to [0, 1].
 
-#### Maintenance Classification
+## Maintenance Classification
 
 | Composite Score | Classification | Recommended Action |
 |-----------------|----------------|-------------------|
@@ -66,7 +50,7 @@ Each memory is scored on four components to compute a composite maintenance scor
 | >= 0.3 | Review candidate | `--refine` |
 | < 0.3 | Healthy | No action needed |
 
-#### Tombstone Pattern
+## Tombstone Pattern
 
 Purge and merge operations use soft-delete via frontmatter mutation (not file deletion):
 - `status: tombstoned`
@@ -75,28 +59,24 @@ Purge and merge operations use soft-delete via frontmatter mutation (not file de
 
 The `--gc` sub-mode performs hard deletion of tombstoned memories past the 7-day grace period.
 
-#### Distill Log
+## Distill Log
 
 All operations are logged to `.memory/distill-log.json` with pre/post metrics, affected memories, and session ID. The log tracks `total_purged`, `total_merged`, `total_compressed`, `total_refined`, and `total_gc_deleted` counters.
 
-#### Additional Flags
+## Additional Flags
 
 | Flag | Description |
 |------|-------------|
 | `--dry-run` | Show what would happen without making changes |
 | `--verbose` | Show detailed scoring breakdown per memory |
 
-## Auto-Retrieval
-
-Memory retrieval is automatic: `/research`, `/plan`, and `/implement` preflight stages call `memory-retrieve.sh` to inject relevant memories into agent context. The `--clean` flag on these commands suppresses auto-retrieval. No explicit opt-in flag is needed.
-
 ## Validate-on-Read
 
-Before scoring or retrieval, `memory-index.json` is validated against the filesystem. Stale indexes (missing or orphaned entries) are automatically regenerated. There is no `--reindex` command; validate-on-read provides the equivalent functionality.
+Before scoring, `memory-index.json` is validated against the filesystem. This procedure (and the paired JSON Index Maintenance procedure) is defined once in the sibling `skill-learn/SKILL.md` and cited by name throughout this skill's `SKILL.md` -- it was not duplicated by the split.
 
 ## Files
 
-- `SKILL.md` - Skill definition and execution flow (learn modes + distill mode)
+- `SKILL.md` - Skill definition and execution flow (distill sub-modes)
 
 ## Navigation
 

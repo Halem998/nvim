@@ -183,7 +183,7 @@ task 821 design at
 sender/domain-aggregated preference memories written by `skill-email-cleanup`'s opt-in Stage 7
 harvest, evolving via CREATE/EXTEND/UPDATE tally arithmetic instead of full-content
 replacement. Memories in this namespace carry `category: preference` and get special treatment
-in `skill-memory`:
+across `skill-learn` and `skill-distill`:
 
 - **Exact-key dedup**: an exact `topic ==` match short-circuits classification straight to
   UPDATE/EXTEND, bypassing the fuzzy keyword-overlap thresholds used elsewhere.
@@ -366,8 +366,8 @@ without re-mining the corpus.
 
 ## Subdirectories
 
-- `commands/` - `/learn` command implementation
-- `skills/` - `skill-memory` skill definition
+- `commands/` - `/learn` and `/distill` command implementations
+- `skills/` - `skill-learn` and `skill-distill` skill definitions
 - `context/` - Extended usage guides
 - `scripts/` - One-shot bootstrap harvest pipeline (see "Bootstrap Harvest Scripts" above)
 
