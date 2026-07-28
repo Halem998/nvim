@@ -432,7 +432,7 @@ This skill returns a **brief text summary** (NOT JSON). The JSON metadata is wri
 
 Example successful return:
 ```
-Research completed for task 412:
+Research completed for task {N}:
 - Found 8 relevant patterns for implementation
 - Identified lazy context loading and skill-to-agent mapping patterns
 - Created report at specs/412_general_research/reports/MM_{short-slug}.md
@@ -441,7 +441,7 @@ Research completed for task 412:
 
 Example partial return:
 ```
-Research partially completed for task 412:
+Research partially completed for task {N}:
 - Found 4 codebase patterns
 - Web search failed due to network error
 - Partial report created at specs/412_general_research/reports/MM_{short-slug}.md

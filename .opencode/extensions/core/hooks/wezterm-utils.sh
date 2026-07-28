@@ -10,7 +10,7 @@
 #   get_pane_tty()    - Returns the TTY path for the current WezTerm pane
 #   set_user_var()    - Sets a WezTerm user variable via OSC 1337
 #
-# See: task 601 (simplify_notification_pipeline_merge_vocabulary)
+# See: simplify_notification_pipeline_merge_vocabulary
 
 # get_pane_tty: Returns the TTY path for the current WezTerm pane
 # Returns empty string and exits 1 if no WezTerm pane or TTY not writable

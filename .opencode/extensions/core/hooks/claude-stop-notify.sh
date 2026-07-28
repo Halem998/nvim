@@ -19,7 +19,7 @@
 # Integration: Called from Stop hook in .claude/settings.json
 # Requirements: bash, jq (for subagent detection), wezterm (optional)
 #
-# See: task 601 (simplify_notification_pipeline_merge_vocabulary)
+# See: simplify_notification_pipeline_merge_vocabulary
 
 set -uo pipefail
 

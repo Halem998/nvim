@@ -10,7 +10,7 @@ Placeholders in path templates and content follow these conventions:
 
 | Placeholder | Format | Usage | Examples |
 |-------------|--------|-------|----------|
-| `{N}` | Unpadded integer | Task numbers in text, commits | `389`, `task 389:` |
+| `{N}` | Unpadded integer | Task numbers in text, commits | `389`, `task 389:` <!-- task-ref-ok illustrative rendering of the {N} placeholder convention --> |
 | `{NNN}` | 3-digit padded | Directory numbers | `014`, `{NNN}_{SLUG}` |
 | `{P}` | Unpadded integer | Phase numbers | `1`, `phase 1:` |
 | `{DATE}` | YYYYMMDD | Date stamps in filenames | `20260111` |
