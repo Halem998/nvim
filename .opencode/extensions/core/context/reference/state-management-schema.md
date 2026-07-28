@@ -201,8 +201,8 @@ The `memory_candidates` array on task entries accumulates structured memory cand
 | state.json | TODO.md |
 |------------|---------|
 | `[]` | `None` |
-| `[35]` | `Task #35` |
-| `[35, 36]` | `Task #35, Task #36` |
+| `[{N}]` | `Task #{N}` |
+| `[{N}, {M}]` | `Task #{N}, Task #{M}` |
 
 ### Repository Health Fields
 

@@ -63,8 +63,8 @@ Examples:
 task: divide task {parent_number} into {subtask_count} subtasks ({subtask_range})
 
 Examples:
-- task: divide task 326 into 3 subtasks (327-329)
-- task: divide task 350 into 5 subtasks (351-355)
+- task: divide task {N} into 3 subtasks ({N}-{N})
+- task: divide task {N} into 5 subtasks ({N}-{N})
 ```
 
 **Task Synchronization**:
