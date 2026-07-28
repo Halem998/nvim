@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 937,
+  "next_project_number": 938,
   "active_projects": [
     {
       "project_number": 913,
@@ -1838,6 +1838,28 @@
         }
       ],
       "completion_summary": "Fixed Stage 8 postflight's truncating .return-meta.json write (both clean-exit and partial-exit paths) with a jq recursive-merge read-modify-write, added modified_count accounting plus the canonical fail-safe warning at CHECKPOINT 3 in orchestrate.md, documented the multiple-sequential-writers invariant in return-metadata-file.md with a cross-reference from git-staging-scope.md, and proved the fix end-to-end with a 19-assertion executable harness that produces real git commits asserted via git show --name-only, plus the zero-modified_files negative case."
+    },
+    {
+      "project_number": 937,
+      "project_name": "forward_progress_invariant_for_batch_admission",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Forward-progress invariant for batch admission",
+      "description": "SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.\n\nLINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.\n\nMOTIVATING PATTERN (two verified incidents). /orchestrate 885,926,887,931,920 dispatched ZERO tasks. /orchestrate 934-935 also dispatched ZERO tasks. In both cases wave assignment was computed correctly, every candidate passed validation, no state was mutated, and the invocation reported what looks like an ordinary result -- a summary table with Succeeded: 0 in it. The user's report both times was that orchestration \"silently did nothing.\" The admission decisions themselves were defensible; the FAILURE OF LEGIBILITY was not.\n\nWHAT THIS TASK IS AND IS NOT. This task does NOT change any admission decision -- narrowing the self-modification defer is a separate, already-scoped concern that this task depends on. This task makes the zero-dispatch OUTCOME a first-class, loud, actionable result. Improving legibility is the whole deliverable; do not drift into re-litigating the gate.\n\nSCOPE OF WORK.\n\nA. Define the forward-progress invariant explicitly: if the validated-candidate set is non-empty and the admitted set across all waves is empty, that is a DISTINCT terminal outcome, not an ordinary completion. Name it. Decide where it is detected -- the command's wave loop, the skill's per-cycle eligibility step, or both. CAUTION: the command-level admission call executes once per invocation, not once per wave, despite prose in commands/orchestrate.md claiming otherwise; a sibling task already owns fixing that prose/behavior mismatch. Build on whatever that lands; do not duplicate or pre-empt it.\n\nB. Design the no-dispatch report. It MUST name every excluded candidate with its defer_reason, and MUST print the exact solo re-run command sequence in dependency order (e.g. run the predecessor first, then the dependent). It MUST be visually distinct from a successful batch summary -- the current failure mode is that zero-dispatch renders as a normal-looking table.\n\nC. Decide and DOCUMENT the exit/status contract for a no-dispatch invocation: does it consume a cycle? The defer-not-fail invariant says it must not mutate specs/state.json and must not mark any task failed or blocked. Confirm that this holds and record it; do not change it.\n\nD. Weigh an opt-in auto-degradation: when every candidate is deferred for reasons a solo run would clear, should the invocation offer, or automatically execute, the solo sequence? The presumption is PRINT ONLY -- silently converting a batch request into N sequential solo runs would surprise the caller and multiply cost without consent. Justify whatever is decided rather than asserting it.\n\nE. Apply the same treatment to the --dry-run surface (scripts/orchestrate-dry-run-report.sh) so the report a human uses to preview a batch and the report they get from a live run agree on how they render \"nothing will dispatch.\"\n\nF. Record the invariant in context/patterns/batch-orchestration-guardrails.md so a future maintainer changing admission logic knows forward-progress legibility is a standing requirement, not an incidental feature of one report.\n\nHonor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.\n\nEXECUTION NOTE: this task's own file_scope names orchestrator-critical paths, so it is self-modifying under the batch-admission gate. It will be excluded from any multi-task /orchestrate invocation and must be run solo. That is expected behavior, not an obstacle to route around.\n\nDEPENDENCY NOTE: the dependencies[] edge on the self-modification-defer-narrowing task is deliberate and must not be dropped. This task's file_scope overlaps that task's on commands/orchestrate.md and skills/skill-orchestrate/SKILL.md, so an explicit serializing edge is required per the file-footprint overlap rule. Direction is predecessor-first: it changes what a defer verdict means, and this task reports on whatever exclusions remain after that change.",
+      "file_scope": [
+        "agent-system/extensions/core/commands/orchestrate.md",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh",
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"
+      ],
+      "dependencies": [
+        935
+      ],
+      "created": "2026-07-28T12:59:00Z",
+      "last_updated": "2026-07-28T12:59:00Z",
+      "session_id": "sess_1785243457_1e573a",
+      "artifacts": []
     }
   ],
   "completed_projects": [],

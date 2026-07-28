@@ -1,5 +1,5 @@
 ---
-next_project_number: 937
+next_project_number: 938
 ---
 
 # TODO
@@ -13,6 +13,7 @@ next_project_number: 937
 |------|-------|------------|--------|
 | 1 | 934 | -- | agent-system |
 | 2 | 935 | 934 | agent-system |
+| 3 | 937 | 935 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -20,8 +21,45 @@ next_project_number: 937
 
 934 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
   └─ 935 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+    └─ 937 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ## Tasks
+
+### 937. Forward-progress invariant for batch admission
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 935
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.
+
+MOTIVATING PATTERN (two verified incidents). /orchestrate 885,926,887,931,920 dispatched ZERO tasks. /orchestrate 934-935 also dispatched ZERO tasks. In both cases wave assignment was computed correctly, every candidate passed validation, no state was mutated, and the invocation reported what looks like an ordinary result -- a summary table with Succeeded: 0 in it. The user's report both times was that orchestration "silently did nothing." The admission decisions themselves were defensible; the FAILURE OF LEGIBILITY was not.
+
+WHAT THIS TASK IS AND IS NOT. This task does NOT change any admission decision -- narrowing the self-modification defer is a separate, already-scoped concern that this task depends on. This task makes the zero-dispatch OUTCOME a first-class, loud, actionable result. Improving legibility is the whole deliverable; do not drift into re-litigating the gate.
+
+SCOPE OF WORK.
+
+A. Define the forward-progress invariant explicitly: if the validated-candidate set is non-empty and the admitted set across all waves is empty, that is a DISTINCT terminal outcome, not an ordinary completion. Name it. Decide where it is detected -- the command's wave loop, the skill's per-cycle eligibility step, or both. CAUTION: the command-level admission call executes once per invocation, not once per wave, despite prose in commands/orchestrate.md claiming otherwise; a sibling task already owns fixing that prose/behavior mismatch. Build on whatever that lands; do not duplicate or pre-empt it.
+
+B. Design the no-dispatch report. It MUST name every excluded candidate with its defer_reason, and MUST print the exact solo re-run command sequence in dependency order (e.g. run the predecessor first, then the dependent). It MUST be visually distinct from a successful batch summary -- the current failure mode is that zero-dispatch renders as a normal-looking table.
+
+C. Decide and DOCUMENT the exit/status contract for a no-dispatch invocation: does it consume a cycle? The defer-not-fail invariant says it must not mutate specs/state.json and must not mark any task failed or blocked. Confirm that this holds and record it; do not change it.
+
+D. Weigh an opt-in auto-degradation: when every candidate is deferred for reasons a solo run would clear, should the invocation offer, or automatically execute, the solo sequence? The presumption is PRINT ONLY -- silently converting a batch request into N sequential solo runs would surprise the caller and multiply cost without consent. Justify whatever is decided rather than asserting it.
+
+E. Apply the same treatment to the --dry-run surface (scripts/orchestrate-dry-run-report.sh) so the report a human uses to preview a batch and the report they get from a live run agree on how they render "nothing will dispatch."
+
+F. Record the invariant in context/patterns/batch-orchestration-guardrails.md so a future maintainer changing admission logic knows forward-progress legibility is a standing requirement, not an incidental feature of one report.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+EXECUTION NOTE: this task's own file_scope names orchestrator-critical paths, so it is self-modifying under the batch-admission gate. It will be excluded from any multi-task /orchestrate invocation and must be run solo. That is expected behavior, not an obstacle to route around.
+
+DEPENDENCY NOTE: the dependencies[] edge on the self-modification-defer-narrowing task is deliberate and must not be dropped. This task's file_scope overlaps that task's on commands/orchestrate.md and skills/skill-orchestrate/SKILL.md, so an explicit serializing edge is required per the file-footprint overlap rule. Direction is predecessor-first: it changes what a defer verdict means, and this task reports on whatever exclusions remain after that change.
+
+---
 
 ### 936. Stop Stage 8 postflight from clobbering .return-meta.json modified_files
 - **Status**: [COMPLETED]
