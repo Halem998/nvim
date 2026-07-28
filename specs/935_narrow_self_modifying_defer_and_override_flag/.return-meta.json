@@ -1,10 +1,48 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "agent_type": "general-implementation-agent",
   "task_number": 935,
   "session_id": "sess_1785245903_1153f3",
   "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "plan_path": "specs/935_narrow_self_modifying_defer_and_override_flag/plans/01_narrow-self-mod-defer-override-flag.md",
-  "phases_completed": 0,
-  "phases_total": 10
+  "phases_completed": 10,
+  "phases_total": 10,
+  "completion_data": {
+    "completion_summary": "Narrowed the self-modification admission defer from whole-invocation to same-cycle scope in orchestrate-batch-admit.sh and its two callers, added an opt-in --allow-self-modifying override (default off), closed a verified zero-reference hard-mode gate gap by explicit transcription, added scripts/verify-deploy.sh as a tenth critical path, bumped the verdict schema to orchestrate-batch-admit-v3 across all consumers, and performed the single deliberate redeploy after re-verifying every gate."
+  },
+  "memory_candidates": [
+    {
+      "content": "When narrowing a gate's trigger scope (e.g. whole-invocation to same-cycle), audit EVERY place the old scope's rationale was cited as a comparison or convergence mechanism, not just the primary trigger/consequence pair. In this change, narrowing orchestrate-batch-admit.sh's self-modification defer from whole-invocation to same-cycle required fixing: the primary trigger (--invocation-count argument), the primary consequence (deferred_self_modifying from exclusion-set to observation-log), AND three secondary cross-references that assumed the old scope -- a hazard-3(i) 'structurally impossible because of whole-invocation exclusion' claim that needed re-grounding on a narrower still-true premise, a stale 'six of nine critical paths' count/list that needed updating to match a growing critical-path list, and an idempotence-guard comment that analogized to the old convergence mechanism. A grep for the changed identifier finds direct uses but not these indirect analogical references; a deliberate sweep for the OLD RATIONALE'S PHRASING (not just the field name) is needed to catch them.",
+      "category": "PATTERN",
+      "source_artifact": "specs/935_narrow_self_modifying_defer_and_override_flag/summaries/01_narrow-self-mod-defer-override-flag-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["narrowing-scope", "gate-rationale-sweep", "convergence-mechanism", "cross-reference-audit", "orchestrator"]
+    },
+    {
+      "content": "The Neovim config-picker's headless sync tool (deploy-headless.sh -> lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua's load_all_globally) can silently exclude specific skill markdown files from its skills-category scan even when they are present in the source store and listed in the core manifest's provides.skills array -- observed for skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md, both stale by hundreds of lines predating the task that discovered it (a prior task's edits to the same file were never deployed either). All other categories (scripts, commands, context patterns, context reference JSON, docs) synced correctly in the same run. Before trusting deploy-headless.sh's reported artifact count as proof a specific file was updated, diff the deployed copy against the source-store copy directly -- do not assume a nonzero 'Deployed N artifact(s)' count means every intended file actually changed. A follow-up task should investigate the allow-list/scan logic in sync.lua's skills handling.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/935_narrow_self_modifying_defer_and_override_flag/summaries/01_narrow-self-mod-defer-override-flag-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["deploy-headless", "sync-tool-bug", "skills-sync", "stale-deploy", "verification-gap"]
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+    "agent-system/extensions/core/scripts/parse-command-args.sh",
+    "agent-system/extensions/core/context/reference/orchestrator-critical-paths.json",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+    "specs/935_narrow_self_modifying_defer_and_override_flag/plans/01_narrow-self-mod-defer-override-flag.md",
+    "specs/935_narrow_self_modifying_defer_and_override_flag/summaries/01_narrow-self-mod-defer-override-flag-summary.md"
+  ],
+  "artifacts": [
+    {
+      "path": "specs/935_narrow_self_modifying_defer_and_override_flag/summaries/01_narrow-self-mod-defer-override-flag-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary for the ten-phase self-modification defer narrowing and override flag task"
+    }
+  ]
 }

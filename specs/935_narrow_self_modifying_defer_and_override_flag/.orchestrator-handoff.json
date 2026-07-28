@@ -1,0 +1,38 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Narrowed the self-modification admission defer from whole-invocation to same-cycle scope, added an opt-in --allow-self-modifying override (default off), closed the hard-mode gate gap by explicit transcription, added verify-deploy.sh as a tenth critical path, bumped the verdict schema to orchestrate-batch-admit-v3, and performed the single deliberate redeploy after re-verifying every gate. All 10 phases complete.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/935_narrow_self_modifying_defer_and_override_flag/summaries/01_narrow-self-mod-defer-override-flag-summary.md"
+    },
+    {
+      "type": "plan",
+      "path": "specs/935_narrow_self_modifying_defer_and_override_flag/plans/01_narrow-self-mod-defer-override-flag.md"
+    }
+  ],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+    "agent-system/extensions/core/scripts/parse-command-args.sh",
+    "agent-system/extensions/core/context/reference/orchestrator-critical-paths.json",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md"
+  ],
+  "decisions_made": [
+    "A1 dependency-edge exemption asymmetry is explained (unreachable-code argument), not remedied.",
+    "--allow-self-modifying defaults off: the narrowing trades a human-paced solo re-run for one automated invocation with zero-review auto-redeploy, which is exactly the automation hazard 1 (verification gap) warns against.",
+    "Hard mode gets the self-modification/redeploy gates by explicit transcription rather than a strengthened pointer, since a zero-hit grep proved the prior bare pointer was not reliably followed.",
+    "scripts/verify-deploy.sh added to the critical-path list (silent false-PASS risk); scripts/deploy-headless.sh stays excluded (loud primary failure mode).",
+    "Scope F (plain multi-task /implement, /research, /plan) restated as an accepted, explained limitation rather than extended, since those commands have no wave/cycle concept for the narrowed trigger to be counted against."
+  ],
+  "dead_ends": [],
+  "phases_completed": 10,
+  "phases_total": 10,
+  "plan_markers_verified": true
+}
