@@ -1,5 +1,5 @@
 ---
-next_project_number: 956
+next_project_number: 957
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 956
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 942,943,947,950,951,955 | -- | agent-system, orchestration-concurrency |
+| 1 | 942,943,947,950,951,955,956 | -- | agent-system, orchestration-concurrency |
 | 2 | 944,948,952 | 942,943,947,951 | agent-system, orchestration-concurrency |
 | 3 | 945,949,953,954 | 944,948,952 | agent-system, orchestration-concurrency |
 | 4 | 946 | 945 | orchestration-concurrency |
@@ -29,17 +29,34 @@ next_project_number: 956
     └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
     └─ 954 [NOT STARTED] — Give recorded system defects an interactive surface that produces
 955 [NOT STARTED] — specs/errors.json has drifted into three mutually inconsistent do
+956 [NOT STARTED] — Two parsers read the same plan file and disagree about how many p
 
 ### Orchestration Concurrency
 
-942 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+942 [RESEARCHING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 944 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
     └─ 945 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
       └─ 946 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-943 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+943 [RESEARCHING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 944 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS (see above)
 
 ## Tasks
+
+### 956. Unify phase-heading parsing across all sites and settle the [DESCOPED] outcome
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Two parsers read the same plan file and disagree about how many phases it has, silently. Observed on a real plan whose phases are named with LETTER-suffixed sub-phases (Phase 0, 1, 2, 3a, 3b, 3c, 4a, 4b, 5): (a) the phase-accounting backstop in scripts/update-task-status.sh matched only 4 of the 9 headings and reported '4/4 phases closed -- proceeding', because its regex accepts `Phase N` and `Phase N.M` but not `Phase Na`; (b) scripts/validate-artifact.sh DID see all 9 but collapses the letter, emitting 'Phase 3 missing **Verification Tier** field' three times and 'Phase 4' twice, so it cannot distinguish 3a/3b/3c from each other. Neither site errored; both passed. A survey found 19 phase-heading regex sites across 6 files and NOT ONE accepts a letter suffix. The failure mode is a silent undercount that can let a partially-complete plan satisfy a completion gate, or (in the orchestrator's Stage 5 recovery greps) misreport phase progress -- the same class of trap the closed-with-reasoned-exclusions work already closed for decimal sub-phases, whose own completion summary notes it fixed 'a pre-existing decimal-sub-phase extraction defect'. Letters were never in that scope.
+
+SECOND, SEPARABLE DEFECT: the marker [DESCOPED] is recognized NOWHERE -- zero hits across scripts/, skills/, and rules/. A plan using it gets its descoped phases counted as INCOMPLETE by any parser that does see them, which is exactly what made a genuinely-finished task's completion claim get refused (5/9 instead of 5/5) and forced a hand override. The closed-with-reasoned-exclusions work already introduced [COMPLETED WITH EXCLUSIONS] as the first-class outcome for precisely this situation, so the vocabulary exists and the plan simply did not use it.
+
+WORK: (1) Define ONE canonical phase-heading pattern accepting `Phase N`, `Phase N.M`, and `Phase Na` (and decide whether `Na.M` is legal), publish it as a single named anchor, and reconcile all 19 sites onto it rather than editing them independently -- the drift across six files is the actual root cause and a 19-site copy-paste fix recreates it. (2) Decide [DESCOPED]'s fate: either admit it to the recognized closed-outcome set alongside [COMPLETED] and [COMPLETED WITH EXCLUSIONS], or have plan-format enforcement REJECT it and require [COMPLETED WITH EXCLUSIONS] instead. Do not leave it silently unrecognized. (3) Whichever is chosen, make an unrecognized phase-status marker a LOUD inconclusive result rather than a silent zero -- the backstop already has an inconclusive-and-pass-through branch for 'no conforming headings'; an unparseable marker should reach it instead of being dropped.
+
+EVIDENCE ANCHORS: scripts/update-task-status.sh line ~307 (the `[0-9][0-9]*\(\.[0-9][0-9]*\)\{0,1\}` heading regex and its 'phases closed (COMPLETED or COMPLETED WITH EXCLUSIONS)' log line); scripts/validate-artifact.sh lines ~163/178/184; the four Stage 5 recovery grep pairs in skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md.
+
+---
 
 ### 955. Reconcile errors.json schema drift and give it a single validated writer
 - **Status**: [NOT STARTED]
@@ -452,7 +469,7 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 ---
 
 ### 943. Session-scope batch-level orchestration metadata and verify session_id on read
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: None
@@ -490,7 +507,7 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 ---
 
 ### 942. Serialize every specs/state.json writer through one mutex-guarded helper
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: None
