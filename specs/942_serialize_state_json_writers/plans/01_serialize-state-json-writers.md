@@ -193,26 +193,26 @@ a file no other phase edits, so it carries no ordering constraint against the co
 
 ---
 
-### Phase 2: Add ownership verification to `task-lock.sh` release [NOT STARTED]
+### Phase 2: Add ownership verification to `task-lock.sh` release [COMPLETED]
 
 - **Goal:** `cmd_release` verifies the caller's `session_id` against `holder.json` before
   removing the lock directory, without weakening same-session re-entry.
 - **Tasks:**
-  - [ ] Edit `agent-system/extensions/core/scripts/task-lock.sh`'s `cmd_release` to read its
+  - [x] Edit `agent-system/extensions/core/scripts/task-lock.sh`'s `cmd_release` to read its
         already-accepted second positional `session_id` argument.
-  - [ ] Compare it against `holder.json`'s `session_id` field via the existing
+  - [x] Compare it against `holder.json`'s `session_id` field via the existing
         `read_holder_field` helper.
-  - [ ] On mismatch: emit a loud WARN naming both the given and the current holder session,
+  - [x] On mismatch: emit a loud WARN naming both the given and the current holder session,
         do NOT remove the lock directory, and `return 0` — mirroring `cmd_scope_release`'s
         token-mismatch handling verbatim in shape and tone.
-  - [ ] On match, or when the lock directory is already absent, preserve today's behavior
+  - [x] On match, or when the lock directory is already absent, preserve today's behavior
         exactly (idempotent `rm -rf`, `return 0`).
-  - [ ] Leave `cmd_acquire` untouched. Confirm by reading it that same-session re-entry still
+  - [x] Leave `cmd_acquire` untouched. Confirm by reading it that same-session re-entry still
         branches on `holder_session = session_id` FIRST, before any staleness check, and returns
-        0 immediately.
-  - [ ] Make no change to `cmd_scope_acquire`, `cmd_scope_release`, `cmd_commit_acquire`, or
-        `cmd_commit_release`.
-  - [ ] Update `context/patterns/task-lock.md`'s release-contract section to state that
+        0 immediately. *(completed: confirmed via read, unchanged)*
+  - [x] Make no change to `cmd_scope_acquire`, `cmd_scope_release`, `cmd_commit_acquire`, or
+        `cmd_commit_release`. *(completed: unchanged)*
+  - [x] Update `context/patterns/task-lock.md`'s release-contract section to state that
         `release` is now owner-verified, describing the WARN-and-no-op outcome. Use durable
         anchors only.
 - **Timing:** 1 hour

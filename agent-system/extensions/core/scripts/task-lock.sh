@@ -525,8 +525,14 @@ cmd_heartbeat() {
 # =====================================================================
 # release <task_number> <session_id>
 # =====================================================================
+# Owner-verified: reads the caller's session_id (the already-accepted second positional
+# argument) and compares it against holder.json's session_id before removing the lock
+# directory. On mismatch: WARN loudly, do NOT remove the lock directory, and return 0 --
+# mirroring cmd_scope_release's token-mismatch handling (never a forced removal, release must
+# never fail a caller's cleanup path). On match, or when the lock directory or holder.json is
+# already absent, behavior is unchanged: idempotent rm -rf, return 0.
 cmd_release() {
-  local task_number="$1"
+  local task_number="$1" session_id="${2:-}"
   local task_dir lock_dir
 
   task_dir=$(resolve_task_dir "$task_number") || {
@@ -535,8 +541,23 @@ cmd_release() {
   }
   lock_dir="$task_dir/.lock"
 
-  # Unconditional and idempotent: success/partial/failed all release; an already-absent
-  # lock is not an error.
+  if [ ! -d "$lock_dir" ]; then
+    # Already absent: idempotent success, nothing to verify.
+    return 0
+  fi
+
+  if [ -f "$lock_dir/holder.json" ] && [ -n "$session_id" ]; then
+    local holder_session
+    holder_session=$(read_holder_field "$lock_dir" "session_id")
+    if [ -n "$holder_session" ] && [ "$holder_session" != "$session_id" ]; then
+      echo "WARN: release for task $task_number given session=$session_id does not match current holder session=$holder_session; NOT releasing. This means a different session than the one that acquired the lock attempted to release it -- investigate rather than force-remove." >&2
+      return 0
+    fi
+  fi
+
+  # Match, or no holder.json/session_id to verify against: preserve prior behavior exactly
+  # (unconditional and idempotent; success/partial/failed all release; an already-absent lock
+  # is not an error).
   rm -rf "$lock_dir" 2>/dev/null || true
   return 0
 }

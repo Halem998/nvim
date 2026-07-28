@@ -159,11 +159,23 @@ here is strictly read-only: `heartbeat` never creates a directory, even against 
 
 ### `release <task_number> <session_id>`
 
-Unconditionally removes `.lock/`. Idempotent: releasing an already-absent lock is success, not
-an error. Success, partial, and failed skill outcomes ALL release — release is not conditioned
-on the operation's own success, only on gate-out having run. Task-directory resolution here is
-strictly read-only: `release` never creates a directory, even against a task that `state.json`
-names but that has no directory on disk yet.
+Owner-verified before removal: compares the caller's `session_id` against `.lock/holder.json`'s
+recorded `session_id` and removes `.lock/` only on a match (or when `.lock/` or `holder.json` is
+already absent). On mismatch, `release` WARNs loudly on stderr naming both the given and current
+holder session, does NOT remove the lock directory, and still returns `0` — mirroring
+`scope-release`'s token-mismatch handling (see "Scope-Mutex CLI" below): release is best-effort
+and must never fail a caller's cleanup path, so a mismatch degrades to "not released, logged
+loudly" rather than a forced removal or a hard error. Idempotent: releasing an already-absent
+lock is success, not an error. Success, partial, and failed skill outcomes ALL release — release
+is not conditioned on the operation's own success, only on gate-out having run. Task-directory
+resolution here is strictly read-only: `release` never creates a directory, even against a task
+that `state.json` names but that has no directory on disk yet.
+
+All current callers (`command-gate-out.sh`, the multi-task batch loops in `commands/implement.md`,
+`commands/plan.md`, `commands/research.md`, and `skills/skill-orchestrate/SKILL.md`) pass the
+identical `session_id` expression used at their matching `acquire` call, so the ownership check
+introduces no behavior change for any existing caller -- it only guards against a future caller
+passing a mismatched identifier.
 
 ### `check <task_number>`
 

@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "Add ownership verification to task-lock.sh release",
+  "started_at": "2026-07-28T00:15:00Z",
+  "last_updated": "2026-07-28T00:25:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "cmd_release verifies caller session_id against holder.json before removing the lock directory, WARN-and-no-op on mismatch, unchanged behavior on match/absent",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/task-lock.sh",
+        "agent-system/extensions/core/context/patterns/task-lock.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "scope_hypothesis_confirmed": {
+    "asserted": "exactly five task-lock.sh release call sites, all passing the same session_id string used at their matching acquire",
+    "measured": "confirmed exactly five: command-gate-out.sh, commands/implement.md, commands/plan.md, commands/research.md, skills/skill-orchestrate/SKILL.md; all five verified to pass an identical session_id expression at acquire and release"
+  }
+}
