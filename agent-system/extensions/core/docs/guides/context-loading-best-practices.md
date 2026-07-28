@@ -1,7 +1,7 @@
 # Context Loading Best Practices Guide
 
 **Version**: 1.0  
-**Created**: 2026-01-06 (Task 327)  
+**Created**: 2026-01-06  
 **Purpose**: Best practices for context loading strategy in .opencode systems
 
 ---

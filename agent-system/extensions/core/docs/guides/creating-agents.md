@@ -503,7 +503,7 @@ Include complete examples:
 ```json
 {
   "status": "failed",
-  "summary": "Research failed: Task 999 not found in state.json.",
+  "summary": "Research failed: Task {N} not found in state.json.",
   "artifacts": [],
   "metadata": {
     "session_id": "sess_1736689200_xyz789",
@@ -515,7 +515,7 @@ Include complete examples:
   "errors": [
     {
       "type": "validation",
-      "message": "Task 999 not found in state.json",
+      "message": "Task {N} not found in state.json",
       "recoverable": false,
       "recommendation": "Verify task number with /task --sync"
     }

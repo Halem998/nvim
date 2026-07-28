@@ -279,7 +279,7 @@ Based on user selections, create tasks. **Note**: When NOTE: tags exist and both
 
 If user selected both "Fix-it task" and "Learn-it task" for NOTE: tags:
 
-**Learn-It Task (Task #650, created FIRST)**:
+**Learn-It Task (Task #{N}, created FIRST)**:
 ```json
 {
   "project_number": 650,
@@ -291,7 +291,7 @@ If user selected both "Fix-it task" and "Learn-it task" for NOTE: tags:
 }
 ```
 
-**Fix-It Task (Task #651, with dependency)**:
+**Fix-It Task (Task #{M}, with dependency)**:
 ```json
 {
   "project_number": 651,
@@ -313,7 +313,7 @@ The TODO.md entry for the fix-it task includes:
 
 When user selects "Accept suggested topic groups" in Step 5.6:
 
-**Grouped TODO Task #1 (Task #650)**:
+**Grouped TODO Item #1 (Task #{N})**:
 ```json
 {
   "project_number": 650,
@@ -326,7 +326,7 @@ When user selects "Accept suggested topic groups" in Step 5.6:
 }
 ```
 
-**Grouped TODO Task #2 (Task #651)**:
+**Grouped TODO Item #2 (Task #{M})**:
 ```json
 {
   "project_number": 651,
@@ -347,7 +347,7 @@ When user selects "Accept suggested topic groups" in Step 5.6:
 
 When user selects "Keep as separate tasks":
 
-**TODO Task (Task #650)**:
+**TODO Task (Task #{N})**:
 ```json
 {
   "project_number": 650,

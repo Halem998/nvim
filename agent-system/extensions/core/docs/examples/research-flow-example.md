@@ -6,7 +6,7 @@ This example traces a complete `/research` command through all three layers of t
 
 ## Scenario
 
-A user runs `/research 427` to research task 427 (documenting the command/skill/subagent framework). This is a "meta" language task.
+A user runs `/research {N}` to research task {N} (documenting the command/skill/subagent framework). This is a "meta" language task.
 
 ---
 
@@ -157,9 +157,9 @@ Step 3: Synthesize Findings
 Create research report following `report-format.md`:
 
 ```markdown
-# Research Report: Task #427
+# Research Report: Task #{N}
 
-**Task**: 427 - Document command, skill, and subagent framework
+**Task**: {N} - Document command, skill, and subagent framework
 **Date**: 2026-01-12
 **Focus**: Framework documentation
 
@@ -240,12 +240,12 @@ Targeted staging per `.claude/context/standards/git-staging-scope.md` — never 
 ```bash
 git add "specs/427_document.../reports/" "specs/427_document.../.return-meta.json" \
   "specs/TODO.md" "specs/state.json"
-git commit -m "task 427: complete research\n\nSession: sess_..."
+git commit -m "task {N}: complete research\n\nSession: sess_..."
 ```
 
 **User Sees:**
 ```
-Research completed for Task #427
+Research completed for Task #{N}
 
 Report: specs/427_document.../reports/01_research-findings.md
 
@@ -272,7 +272,7 @@ Decision tree:
   -> Use default: skill-researcher
 ```
 
-If task 427 had a task type provided by an extension (e.g., `task_type: "python"`), the flow would route to the extension's skill:
+If task {N} had a task type provided by an extension (e.g., `task_type: "python"`), the flow would route to the extension's skill:
 ```
 command -> command-route-skill.sh -> skill-python-research -> python-research-agent
 ```
@@ -307,8 +307,8 @@ After `/research 427` completes:
 
 ```
 specs/
-├── state.json                 # Updated: task 427 status = "researched"
-├── TODO.md                    # Updated: task 427 [RESEARCHED] with link
+├── state.json                 # Updated: task {N} status = "researched"
+├── TODO.md                    # Updated: task {N} [RESEARCHED] with link
 └── 427_document_command_skill_subagent_framework/
     └── reports/
         └── 01_research-findings.md    # Created: research report
@@ -320,15 +320,15 @@ specs/
 
 ### Scenario A: Task Not Found
 
-If user runs `/research 999` but task 999 does not exist:
+If user runs `/research {N}` but task {N} does not exist:
 
 ```
 command-gate-in.sh:
-  Lookup task 999 in state.json -> NOT FOUND
-  Aborts with: "Task 999 not found in state.json"
+  Lookup task {N} in state.json -> NOT FOUND
+  Aborts with: "Task {N} not found in state.json"
 
 User sees:
-  Error: Task 999 not found. Check task exists with /task --sync
+  Error: Task {N} not found. Check task exists with /task --sync
 ```
 
 ### Scenario B: Network Error During Research
@@ -358,11 +358,11 @@ Return:
 
 ### Scenario C: Extension Task Type Routing
 
-If user runs `/research 259` where task 259 has `task_type: "python"` (with the python extension loaded):
+If user runs `/research {N}` where task {N} has `task_type: "python"` (with the python extension loaded):
 
 ```
 Orchestrator Stage 2:
-  Lookup task 259 -> task_type = "python"
+  Lookup task {N} -> task_type = "python"
 
 Orchestrator Stage 3:
   Routing: python -> skill-python-research

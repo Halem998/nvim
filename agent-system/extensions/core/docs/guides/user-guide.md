@@ -49,7 +49,7 @@ The `.claude/` system provides structured task management for development workfl
    ```
    /task "Add documentation for the modal logic evaluator"
    ```
-   Claude creates task #123 with status `[NOT STARTED]`.
+   Claude creates task #{N} with status `[NOT STARTED]`.
 
 2. **Research the task** (optional but recommended):
    ```
@@ -313,9 +313,9 @@ Archive completed and abandoned tasks.
 **Example Output**:
 ```
 Archived 3 tasks:
-- Task 120: Prove soundness theorem [COMPLETED]
-- Task 121: Add frame validation [COMPLETED]
-- Task 122: Old prototype code [ABANDONED]
+- Task {N}: Prove soundness theorem [COMPLETED]
+- Task {N}: Add frame validation [COMPLETED]
+- Task {N}: Old prototype code [ABANDONED]
 ```
 
 ---
@@ -448,7 +448,7 @@ Analyze blockers and spawn new tasks to overcome them.
 /spawn 45 "Missing type definitions for the API module"
 ```
 
-Creates new tasks (e.g., Task 46: "Create API type definitions") and updates task 45's dependencies.
+Creates new tasks (e.g., Task {N}: "Create API type definitions") and updates the source task's dependencies.
 
 ---
 
@@ -499,9 +499,9 @@ Interactive system builder for `.claude/` changes.
 ```
 
 Creates tasks like:
-- Task 200: Create typst-implementation-agent
-- Task 201: Add /typst command
-- Task 202: Update language routing
+- Task {N}: Create typst-implementation-agent
+- Task {N}: Add /typst command
+- Task {N}: Update language routing
 
 ---
 

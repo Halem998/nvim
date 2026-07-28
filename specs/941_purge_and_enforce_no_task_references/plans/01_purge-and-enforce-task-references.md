@@ -447,29 +447,41 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
 
 ---
 
-### Phase 5: Purge `agent-system/extensions/core/{docs,scripts}/` [NOT STARTED]
+### Phase 5: Purge `agent-system/extensions/core/{docs,scripts}/` [COMPLETED]
 
 - **Goal:** Clear the two largest remaining core subdirectories.
 - **Character:** Mixed. `docs/` is prose triage; `scripts/` citations are inside shell comments
   and are largely mechanical, but the edit must stay inside the comment.
 
 - **Tasks:**
-  - [ ] Triage and convert per the Phase 4 bucket rules.
-  - [ ] For `scripts/`, confirm every changed hunk lies inside a `#` comment — do not touch
+  - [x] Triage and convert per the Phase 4 bucket rules. *(completed. New taxonomy category
+        discovered and recorded during this phase: category 6 "Test fixtures for the
+        reference-pattern detector itself" -- `scripts/tests/test-validate-no-task-references.sh`
+        and `scripts/tests/test-census-count.sh` deliberately author literal `task N` strings as
+        regex-assertion fixtures; these were wrapped in `task-ref-ok:begin/end` regions rather
+        than converted to placeholders, since a placeholder never matches `[0-9]+` and would
+        silently disable the positive-match assertions. Recorded in
+        `rules/no-task-references-in-deliverables.md`'s Exemption Taxonomy per Phase 2's own
+        "amend the taxonomy table" directive.)*
+  - [x] For `scripts/`, confirm every changed hunk lies inside a `#` comment — do not touch
         executable lines. Note that `scripts/census-count.sh` references the hook's own regex in
-        a comment; that reference must survive the edit intact.
+        a comment; that reference must survive the edit intact. *(completed: all `scripts/`
+        edits are comment-only; `bash -n` verified on every edited `.sh` file.)*
 
 - **Timing:** 1.5 hours
 - **Depends on:** 2
 - **Verification Tier:** local
 - **Scope Hypothesis:** 121 occurrences / 24 files (`docs/` 70/12, `scripts/` 51/12). Confirm with
   `grep -rcEi "$TASK_PATTERN" agent-system/extensions/core/docs/ agent-system/extensions/core/scripts/ | awk -F: '{s+=$2} END {print s}'`.
+  *(confirmed: live scan reported exactly 121 (70 + 51) before any edit in this phase.)*
 - **Files to modify**: files under `agent-system/extensions/core/docs/` and
   `agent-system/extensions/core/scripts/` reported by the scan. **Excludes**
   `scripts/check-task-references.sh` and `scripts/lib/task-reference-patterns.sh` (created in
   Phases 1-2, already clean).
 - **Verification**: scan reports 0 under both subdirectories (expected delta 121 → 0), and
-  `bash -n` passes on every modified `.sh` file.
+  `bash -n` passes on every modified `.sh` file. *(verified: `check-task-references.sh --quiet`
+  reports 0 under both `agent-system/extensions/core/docs` and
+  `agent-system/extensions/core/scripts`; `bash -n` passed on every edited `.sh` file.)*
 
 ---
 

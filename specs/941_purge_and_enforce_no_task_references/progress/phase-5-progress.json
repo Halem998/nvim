@@ -1,0 +1,72 @@
+{
+  "phase": 5,
+  "phase_name": "Purge agent-system/extensions/core/{docs,scripts}/",
+  "started_at": "2026-07-28T17:55:00Z",
+  "last_updated": "2026-07-28T18:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Triage and convert scripts/ (51 occurrences)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/check-extension-docs.sh",
+        "agent-system/extensions/core/scripts/command-gate-in.sh",
+        "agent-system/extensions/core/scripts/command-gate-out.sh",
+        "agent-system/extensions/core/scripts/generate-task-order.sh",
+        "agent-system/extensions/core/scripts/lifecycle-notify.sh",
+        "agent-system/extensions/core/scripts/literature-retrieve.sh",
+        "agent-system/extensions/core/scripts/memory-retrieve.sh",
+        "agent-system/extensions/core/scripts/parse-command-args.sh",
+        "agent-system/extensions/core/scripts/skill-base.sh",
+        "agent-system/extensions/core/scripts/task-lock.sh",
+        "agent-system/extensions/core/scripts/tests/test-census-count.sh",
+        "agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Triage and convert docs/ (70 occurrences)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/docs/architecture/architecture-spec.md",
+        "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+        "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+        "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+        "agent-system/extensions/core/docs/architecture/system-overview.md",
+        "agent-system/extensions/core/docs/examples/fix-it-flow-example.md",
+        "agent-system/extensions/core/docs/examples/research-flow-example.md",
+        "agent-system/extensions/core/docs/fork-patterns.md",
+        "agent-system/extensions/core/docs/guides/context-loading-best-practices.md",
+        "agent-system/extensions/core/docs/guides/creating-agents.md",
+        "agent-system/extensions/core/docs/guides/user-guide.md",
+        "agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Record new taxonomy category 6 (test fixtures) in the rule file",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/rules/no-task-references-in-deliverables.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Verify 0 findings under both subdirectories and bash -n on all edited scripts",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "5.1",
+      "description": "Test fixtures in scripts/tests/ deliberately contain literal task-number strings as regex-assertion inputs",
+      "type": "altered",
+      "reason": "Marking with task-ref-ok:begin/end (category 6, newly added to the taxonomy) rather than converting to {N} placeholders, which would silently disable the positive-match assertions since {N} never matches [0-9]+.",
+      "annotation": "n/a (documented inline in Phase 5's Tasks list and the rule file's Exemption Taxonomy)"
+    }
+  ],
+  "handoff_count": 0
+}

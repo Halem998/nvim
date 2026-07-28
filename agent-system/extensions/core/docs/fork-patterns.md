@@ -160,7 +160,7 @@ for `CLAUDE_CODE_FORK_SUBAGENT=1` cache sharing.
 cache, reducing per-teammate input token cost by ~90%. For a 3-teammate team, total input cost
 would be ~1.2x instead of ~3x.
 
-**Current status**: Not yet implemented. Task 501 tracks this optimization.
+**Current status**: Not yet implemented; tracked as a follow-up optimization.
 
 **What's needed**:
 - Verify teammate spawning dispatch order for maximum cache overlap
