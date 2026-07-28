@@ -3,21 +3,24 @@
 - **Task**: 941 - Purge ephemeral task-management references from deliverables and enforce the rule going forward
 - **Status**: [IN PROGRESS]
 - **Started**: 2026-07-28
-- **Completed**: (partial — Phases 1-3 of 15)
-- **Effort**: ~4.5 hours of the estimated 18
+- **Completed**: (partial — Phases 1-6 of 15)
+- **Effort**: ~9.5 hours of the estimated 18
 - **Dependencies**: None
 - **Artifacts**: plans/01_purge-and-enforce-task-references.md
 - **Standards**: summary-format.md, status-markers.md, artifact-management.md, tasks.md
 
 ## Overview
 
-Completed the three-phase prevention foundation the rest of this plan depends on: a single
-shared bash pattern/exemption library, a repo-wide lint script wired into every declared
-integration point, and a corrected agent-contract/Enforcement-section surface. `git-workflow.md`
-self-trip (its own commit-message examples matching the citation pattern it exists to explain)
-is resolved as the taxonomy's first real test case. Twelve purge phases (4-14) and the blocking
-hook flip (Phase 15) remain — all of them depend on this dispatch's output and are unblocked to
-run next.
+Completed the three-phase prevention foundation (Phases 1-3) plus three purge phases (4-6),
+clearing `agent-system/extensions/core/**` entirely (context/, docs/, scripts/, skills/,
+commands/, agents/, rules/, hooks/, merge-sources/ all report 0). Before starting the purge, a
+small correction was applied to `check-task-references.sh`: it gained an optional path-scope
+argument so per-subtree finding counts could be verified (required by Phase 4 onward's
+verification steps), with the no-argument/`--quiet`-only behavior kept byte-for-byte unchanged.
+One new exemption-taxonomy category (test fixtures for the reference-pattern detector itself)
+was discovered and documented during Phase 5. Nine purge phases (7-14) and the blocking hook flip
+(Phase 15) remain; all are unblocked. Live baseline dropped from 1,223 to 876 occurrences
+(agent-system/extensions 216, .opencode 610, lua 32, .memory 18) across this dispatch.
 
 ## What Changed
 
@@ -108,18 +111,79 @@ run next.
   residual matches on both edited rule files and both edited agent files.
 - Files verified: Yes — all new/modified files read back and content-checked after each edit.
 
+## What Changed (this continuation: Correction 1 + Phases 4-6)
+
+- `agent-system/extensions/core/scripts/check-task-references.sh` — amended to accept an
+  optional trailing `PATH_SCOPE` positional argument (after `--quiet` if present), validated to
+  fall under one of the four `TREE_ROOTS` (exit 2 otherwise). The no-argument and `--quiet`-only
+  forms are unchanged byte-for-byte (confirmed: same 4-tree scan, same totals, same exit codes
+  before/after). Header usage text updated; no manifest change needed.
+- **Phase 4**: purged all 147 occurrences under `agent-system/extensions/core/context/` (31
+  files) — README, contracts, formats, guides, meta, orchestration, patterns, reference,
+  standards, templates, workflows.
+- **Phase 5**: purged all 121 occurrences under `agent-system/extensions/core/{docs,scripts}/`
+  (docs 70, scripts 51). Discovered and documented a 6th exemption-taxonomy category ("Test
+  fixtures for the reference-pattern detector itself") for
+  `scripts/tests/test-validate-no-task-references.sh` and `scripts/tests/test-census-count.sh`,
+  which deliberately author literal `task N` strings as regex-assertion inputs — marked with
+  `task-ref-ok:begin/end` rather than converted to placeholders (a placeholder never matches
+  `[0-9]+` and would silently disable the positive-match assertions).
+- **Phase 6**: purged all 79 occurrences (corrected from the plan's stated 84 — see Plan
+  Deviations) under `agent-system/extensions/core/{skills,commands,agents,rules,hooks,merge-sources}/`,
+  including both task-description-named sites (`commands/orchestrate.md`'s cross-batch passage,
+  restated without a concrete example; `skills/skill-orchestrate/SKILL.md`'s init-marker
+  comment, reduced to the mechanism name). Two recurring citation clusters were resolved with a
+  single reused durable-anchor phrase each: 14 "task 796" (mandatory topic-assignment decision)
+  citations across skills/commands/agents, and the "task 809"/"task 810" (cross-task
+  `file_scope` overlap check / a gate-in refactor) cluster repeated identically across
+  `plan.md`/`research.md`/`revise.md`.
+- `agent-system/extensions/core/context/README.md` through `workflows/task-breakdown.md` (31
+  files), `docs/architecture/*.md` (5 files) plus `docs/examples/`, `docs/fork-patterns.md`,
+  `docs/guides/*.md`, `docs/reference/standards/multi-task-creation-standard.md` (7 files),
+  `scripts/*.sh` (10 files) plus `scripts/tests/*.sh` (2 files), `skills/*/SKILL.md` (9 files),
+  `commands/*.md` (6 files), `agents/*.md` (4 files), `rules/artifact-formats.md`,
+  `rules/no-task-references-in-deliverables.md` (Category 6 addition),
+  `hooks/{claude-stop-notify,wezterm-clear-task-number,wezterm-utils}.sh`,
+  `merge-sources/claudemd.md`.
+
+## Plan Deviations (this continuation)
+
+- **Pre-Phase-4 correction** (not a plan task, applied per orchestrator dispatch instruction):
+  extended `check-task-references.sh` with the `PATH_SCOPE` argument described above, committed
+  separately before Phase 4 began.
+- **Phase 6 Scope Hypothesis** corrected from 84 to 79 occurrences: the plan's arithmetic
+  under-credited Phase 1's `git-workflow.md` purge by 2 occurrences (Phase 1 actually cleared 5,
+  not 3). Live count at Phase 6 start matched 79 exactly by subdirectory (skills 25, commands 28,
+  agents 20, rules 1, hooks 3, merge-sources 2).
+- No triage-bucket deviations: every site in Phases 4-6 was converted per the PROVENANCE /
+  ILLUSTRATIVE / SANCTIONED buckets; no parenthetical carrying real explanatory weight was
+  silently deleted (each PROVENANCE conversion either named the durable mechanism/file already
+  present in the surrounding prose, or introduced one, e.g. "the 427 failure", "the
+  phantom-artifact incident", "the cross-task file_scope overlap check").
+
+## Verification (this continuation)
+
+- `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-task-references.sh --quiet
+  agent-system/extensions/core` reports 0 — the entire core extension tree is clean.
+- Per-phase scoped verification (via the new `PATH_SCOPE` argument) confirmed each phase's
+  expected delta to 0 before moving to the next: Phase 4 147→0, Phase 5 121→0 (70+51), Phase 6
+  79→0.
+- `bash -n` passed on every edited `.sh` file (task-lock.sh, check-extension-docs.sh, the six
+  command-gate/skill-base/parse-command-args/memory-retrieve/literature-retrieve/
+  lifecycle-notify/generate-task-order scripts, the two test files, the three hooks).
+  `check-extension-docs.sh` shows only expected pre-deploy source-vs-deployed drift FAILs on
+  files this dispatch edited (normal until a deploy runs) plus 2 that predate this session — no
+  new structural failures introduced.
+- Repo-wide total dropped from 1,223 to 876 occurrences (agent-system/extensions 216 — all now in
+  `literature/` (94, Phase 7) and the other 10 extensions (122, Phase 8) — `.opencode` 610, `lua`
+  32, `.memory` 18, unchanged since those trees are untouched by Phases 4-6).
+
 ## Notes
 
-- `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh` reports 5
-  FAILs, all expected: 3 are deployed-vs-source drift on files this dispatch edited
-  (`verify-deploy.sh`, `git-workflow.md`, `no-task-references-in-deliverables.md` — normal until a
-  deploy runs, per this plan's own "Redeploy checkpoints" section) and 2 predate this session
-  entirely (`orchestrate-recover-outcome.sh`, `validate-artifact.sh`, from a prior unrelated
-  task). None of these five block Phases 4-14, which verify against the source-store script with
-  `REPO_ROOT=$(pwd)` exactly as this dispatch did.
-- Phase 15 (the blocking PreToolUse flip) was NOT touched, per the binding constraint that it must
-  land strictly last, gated on `check-task-references.sh` exiting 0 across all four trees — which
-  it does not yet do (1,223 occurrences remain, all in Phases 4-14's territory).
-- Next dispatch resumes at Phase 4 (`agent-system/extensions/core/context/`), which is unblocked:
-  Wave 2 (Phase 2) is complete, so all twelve Wave-3 purge phases (4-14) can now proceed, in any
-  order, each within its own disjoint file territory as declared in the plan.
+- Phase 15 (the blocking PreToolUse flip) was NOT touched, per the binding constraint that it
+  must land strictly last, gated on `check-task-references.sh` exiting 0 across all four trees —
+  which it does not yet do (876 occurrences remain, all in Phases 7-14's territory).
+- Next dispatch resumes at Phase 7 (`agent-system/extensions/literature/`, 94 occurrences,
+  confirmed live). Phases 7-14 are territory-disjoint and may run in any order; Phase 15 must run
+  last. See the orchestrator handoff at `.orchestrator-handoff.json` for the precise resume
+  instructions and accumulated decisions.

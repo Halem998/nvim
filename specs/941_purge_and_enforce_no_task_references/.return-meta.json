@@ -5,29 +5,30 @@
   "session_id": "sess_1785258140_7a7876",
   "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "plan_path": "specs/941_purge_and_enforce_no_task_references/plans/01_purge-and-enforce-task-references.md",
-  "phases_completed": 3,
+  "phases_completed": 6,
   "phases_total": 15,
   "partial_progress": {
     "stage": "phase_boundary",
-    "details": "Phases 1-3 (the prevention foundation: shared pattern library + exemption taxonomy, check-task-references.sh with all four wiring points, and the agent-contract/Enforcement-section fix) completed, verified, and committed. Phases 4-14 (purge) and Phase 15 (blocking hook flip) remain -- all now unblocked. No handoff artifact was needed; the plan file's phase headings and per-task checkboxes are the resume point.",
-    "phases_completed": 3,
-    "phases_total": 15
+    "details": "Phases 1-6 completed, verified, and committed. This continuation dispatch: applied a pre-Phase-4 correction to check-task-references.sh (path-scope argument), then completed Phases 4, 5, and 6 -- agent-system/extensions/core/** is now entirely clean (context/, docs/, scripts/, skills/, commands/, agents/, rules/, hooks/, merge-sources/ all report 0 findings). Repo-wide total dropped from 1,223 to 876 occurrences. Phases 7-14 (purge, territory-disjoint) and Phase 15 (blocking hook flip, strictly last) remain.",
+    "phases_completed": 6,
+    "phases_total": 15,
+    "handoff_path": "specs/941_purge_and_enforce_no_task_references/.orchestrator-handoff.json"
   },
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/941_purge_and_enforce_no_task_references/summaries/01_purge-and-enforce-task-references-summary.md",
-      "summary": "Implementation summary for Phases 1-3 (prevention foundation)"
-    },
-    {
-      "type": "script",
-      "path": "agent-system/extensions/core/scripts/lib/task-reference-patterns.sh",
-      "summary": "Shared pattern/exemption library sourced by both the lint script and the write-time hook"
+      "summary": "Updated implementation summary covering Phases 1-6"
     },
     {
       "type": "script",
       "path": "agent-system/extensions/core/scripts/check-task-references.sh",
-      "summary": "Repo-wide task-reference lint gate, wired into verify-deploy.sh gate 4"
+      "summary": "Repo-wide task-reference lint gate, amended with an optional PATH_SCOPE argument for per-subtree verification"
+    },
+    {
+      "type": "handoff",
+      "path": "specs/941_purge_and_enforce_no_task_references/.orchestrator-handoff.json",
+      "summary": "Orchestrator handoff with resume instructions for Phase 7"
     }
   ],
   "modified_files": [
@@ -40,29 +41,130 @@
     "agent-system/extensions/core/rules/no-task-references-in-deliverables.md",
     "agent-system/extensions/core/agents/general-implementation-agent.md",
     "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/core/context/README.md",
+    "agent-system/extensions/core/context/contracts/anti-analysis.md",
+    "agent-system/extensions/core/context/formats/command-output.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/context/formats/roadmap-format.md",
+    "agent-system/extensions/core/context/formats/subagent-return.md",
+    "agent-system/extensions/core/context/formats/task-order-format.md",
+    "agent-system/extensions/core/context/guides/hard-mode-routing.md",
+    "agent-system/extensions/core/context/meta/meta-guide.md",
+    "agent-system/extensions/core/context/orchestration/delegation.md",
+    "agent-system/extensions/core/context/orchestration/orchestration-reference.md",
+    "agent-system/extensions/core/context/orchestration/orchestrator.md",
+    "agent-system/extensions/core/context/orchestration/postflight-pattern.md",
+    "agent-system/extensions/core/context/orchestration/validation.md",
+    "agent-system/extensions/core/context/patterns/artifact-linking-todo.md",
+    "agent-system/extensions/core/context/patterns/batch-drain-loop.md",
+    "agent-system/extensions/core/context/patterns/checkpoint-before-overflow.md",
+    "agent-system/extensions/core/context/patterns/context-protective-lead.md",
+    "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
+    "agent-system/extensions/core/context/patterns/file-metadata-exchange.md",
+    "agent-system/extensions/core/context/patterns/multi-task-operations.md",
+    "agent-system/extensions/core/context/patterns/skill-lifecycle.md",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/context/reference/state-management-schema.md",
+    "agent-system/extensions/core/context/standards/ci-workflow.md",
+    "agent-system/extensions/core/context/standards/git-integration.md",
+    "agent-system/extensions/core/context/standards/git-safety.md",
+    "agent-system/extensions/core/context/standards/task-management.md",
+    "agent-system/extensions/core/context/templates/delegation-context.md",
+    "agent-system/extensions/core/context/workflows/preflight-postflight.md",
+    "agent-system/extensions/core/context/workflows/task-breakdown.md",
+    "agent-system/extensions/core/docs/architecture/architecture-spec.md",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/docs/architecture/system-overview.md",
+    "agent-system/extensions/core/docs/examples/fix-it-flow-example.md",
+    "agent-system/extensions/core/docs/examples/research-flow-example.md",
+    "agent-system/extensions/core/docs/fork-patterns.md",
+    "agent-system/extensions/core/docs/guides/context-loading-best-practices.md",
+    "agent-system/extensions/core/docs/guides/creating-agents.md",
+    "agent-system/extensions/core/docs/guides/user-guide.md",
+    "agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    "agent-system/extensions/core/scripts/command-gate-in.sh",
+    "agent-system/extensions/core/scripts/command-gate-out.sh",
+    "agent-system/extensions/core/scripts/generate-task-order.sh",
+    "agent-system/extensions/core/scripts/lifecycle-notify.sh",
+    "agent-system/extensions/core/scripts/literature-retrieve.sh",
+    "agent-system/extensions/core/scripts/memory-retrieve.sh",
+    "agent-system/extensions/core/scripts/parse-command-args.sh",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/task-lock.sh",
+    "agent-system/extensions/core/scripts/tests/test-census-count.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh",
+    "agent-system/extensions/core/agents/meta-builder-agent.md",
+    "agent-system/extensions/core/agents/planner-agent.md",
+    "agent-system/extensions/core/agents/planner-hard-agent.md",
+    "agent-system/extensions/core/agents/spawn-agent.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/commands/plan.md",
+    "agent-system/extensions/core/commands/research.md",
+    "agent-system/extensions/core/commands/review.md",
+    "agent-system/extensions/core/commands/revise.md",
+    "agent-system/extensions/core/commands/spawn.md",
+    "agent-system/extensions/core/commands/task.md",
+    "agent-system/extensions/core/hooks/claude-stop-notify.sh",
+    "agent-system/extensions/core/hooks/wezterm-clear-task-number.sh",
+    "agent-system/extensions/core/hooks/wezterm-utils.sh",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/rules/artifact-formats.md",
+    "agent-system/extensions/core/skills/skill-fix-it/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-planner/SKILL.md",
+    "agent-system/extensions/core/skills/skill-project-overview/SKILL.md",
+    "agent-system/extensions/core/skills/skill-researcher/SKILL.md",
+    "agent-system/extensions/core/skills/skill-spawn/SKILL.md",
+    "agent-system/extensions/core/skills/skill-team-implement/SKILL.md",
+    "agent-system/extensions/core/skills/skill-team-plan/SKILL.md",
+    "agent-system/extensions/core/skills/skill-team-research/SKILL.md",
+    "agent-system/extensions/core/skills/skill-todo/SKILL.md",
     "specs/941_purge_and_enforce_no_task_references/plans/01_purge-and-enforce-task-references.md",
     "specs/941_purge_and_enforce_no_task_references/progress/phase-1-progress.json",
     "specs/941_purge_and_enforce_no_task_references/progress/phase-2-progress.json",
     "specs/941_purge_and_enforce_no_task_references/progress/phase-3-progress.json",
-    "specs/941_purge_and_enforce_no_task_references/summaries/01_purge-and-enforce-task-references-summary.md"
+    "specs/941_purge_and_enforce_no_task_references/progress/phase-4-progress.json",
+    "specs/941_purge_and_enforce_no_task_references/progress/phase-5-progress.json",
+    "specs/941_purge_and_enforce_no_task_references/progress/phase-6-progress.json",
+    "specs/941_purge_and_enforce_no_task_references/summaries/01_purge-and-enforce-task-references-summary.md",
+    "specs/941_purge_and_enforce_no_task_references/.return-meta.json",
+    "specs/941_purge_and_enforce_no_task_references/.orchestrator-handoff.json"
   ],
   "completion_data": {
-    "completion_summary": "Completed Phases 1-3 of the 15-phase purge-and-enforce plan: built the shared task-reference pattern/exemption library, authored check-task-references.sh with all four wiring points (manifest, verify-deploy gate 4, settings.local.json permissions, live baseline run), and corrected the two core agent contracts plus the rule's Enforcement section. Baseline confirmed at 1,223 remaining occurrences across four deliverable trees, ready for Phases 4-14's purge work."
+    "completion_summary": "Continued task 941's purge-and-enforce plan: amended check-task-references.sh with a path-scope argument, then completed Phases 4-6, clearing agent-system/extensions/core/** entirely (context/, docs/, scripts/, skills/, commands/, agents/, rules/, hooks/, merge-sources/ all report 0 findings). Repo-wide occurrence count dropped from 1,223 to 876. Nine purge phases and the blocking-hook-flip phase remain."
   },
   "memory_candidates": [
     {
-      "content": "When building an awk-based content-exemption filter driven by inline marker tokens (begin/end block form plus a bare inline form), a single small awk program handles all three cases cleanly: `/begin-token/ {in_block=1; next} /end-token/ {in_block=0; next} in_block {next} /inline-token/ {next} {print}`. The ordering matters -- checking in_block before the bare inline-token rule prevents the begin/end marker lines themselves from being double-matched by the inline rule. This is reusable any time a lint/hook pair needs a shared 'strip exempted regions' primitive rather than reimplementing exemption logic twice.",
-      "category": "TECHNIQUE",
+      "content": "When a repo-wide lint script needs per-subtree verification during a multi-phase purge, extend it with an optional trailing PATH_SCOPE positional argument that validates against the same TREE_ROOTS array already used for full scans, rather than adding a second script or duplicating scan logic. Keep the no-argument/--quiet-only behavior byte-for-byte unchanged by testing both forms immediately after the change.",
+      "category": "PATTERN",
       "source_artifact": "specs/941_purge_and_enforce_no_task_references/summaries/01_purge-and-enforce-task-references-summary.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["awk", "exemption-marker", "strip-exempt-regions", "lint-hook-parity", "content-filter"]
+      "confidence": 0.85,
+      "suggested_keywords": ["lint-script", "path-scope", "verification", "check-task-references", "phase-scoped-scan"]
     },
     {
-      "content": "When a plan's Scope Hypothesis asserts a count (e.g. '3 occurrences') and names specific example strings, verify BOTH independently before editing: the count can be correct while the named examples are wrong (the plan author misremembered which lines matched, e.g. citing a string that doesn't actually match the stated regex due to a punctuation difference). Confirming only the count and trusting the narrative risks converting the wrong site or missing the real one. Always re-derive the actual matching lines via the stated grep command and reconcile against the live file content, never against the plan's prose description of what those lines say.",
+      "content": "Regex-based content lint scripts (task-reference detectors, secret scanners, etc.) will false-positive on their own test suites' fixture data, since fixtures deliberately contain the exact patterns being tested. Rather than converting fixtures to placeholders (which can silently disable positive-match assertions if the placeholder no longer satisfies the regex), add a dedicated exemption-taxonomy category for 'test fixtures for the detector itself' and mark the fixture blocks with the same exemption-marker mechanism the detector already supports.",
       "category": "INSIGHT",
       "source_artifact": "specs/941_purge_and_enforce_no_task_references/summaries/01_purge-and-enforce-task-references-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["test-fixtures", "exemption-taxonomy", "lint-self-trip", "regression-anchor", "task-reference-patterns"]
+    },
+    {
+      "content": "When a design/architecture doc's entire structure is organized around 'designed by task N, implemented by task M' headers, the cleanest purge conversion is to name each component consistently (e.g. 'shared command infrastructure', 'skill base', '/orchestrate state machine') and use those names as the durable cross-reference anchor throughout the document -- including in dependency/wave tables -- rather than converting each citation individually, which risks losing the document's internal cross-referencing structure.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/941_purge_and_enforce_no_task_references/summaries/01_purge-and-enforce-task-references-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["scope-hypothesis", "plan-verification", "reconciliation", "grep-confirm-before-edit"]
+      "suggested_keywords": ["architecture-doc", "durable-anchor", "provenance-conversion", "component-naming"]
+    },
+    {
+      "content": "When an inline exemption marker (an HTML comment like <!-- task-ref-ok reason -->) needs to sit inside a markdown table row to exempt one cell's content, place it INSIDE the last cell before the closing pipe, not after the row's trailing pipe -- appending content after the final `|` on a GFM table row breaks the row rather than being ignored, since the row terminator is the last pipe.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/941_purge_and_enforce_no_task_references/summaries/01_purge-and-enforce-task-references-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["markdown-table", "inline-marker", "exemption-marker", "gfm-table-syntax"]
     }
   ]
 }
