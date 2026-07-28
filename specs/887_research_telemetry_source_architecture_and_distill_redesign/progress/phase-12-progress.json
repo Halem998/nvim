@@ -1,0 +1,28 @@
+{
+  "phase": 12,
+  "phase_name": "Validation and deploy-boundary gate",
+  "started_at": "2026-07-27T07:30:00Z",
+  "last_updated": "2026-07-28T02:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Validate cc_session_id present/null/absent against revised schema", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Exercise events-append.sh with/without --cc-session-id", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm events-query.sh tolerance", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Grep for .claude/ write targets across full diff", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Grep every changed file for task-number citations", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run validate-artifact.sh against the plan", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Confirm extension loader deploys both new skills; found and fixed a stale-deploy defect", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Walk six-failure-mode checklist against five new sub-modes", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "12.deploy-defect",
+      "description": "deploy-headless.sh (core-only reload) did not resync the already-loaded memory extension's skill directories, leaving a stale skill-memory/ dir and missing skill-learn/skill-distill in the deployed .claude/ tree",
+      "type": "altered",
+      "reason": "Diagnosed the extension manager's load/unload/reload API in lua/neotex/plugins/ai/shared/extensions/init.lua and invoked require('neotex.plugins.ai.claude.extensions').reload('memory') headlessly to correctly resync; this is a legitimate use of existing tooling, not a new mechanism",
+      "annotation": "recorded inline in the Phase 12 task checklist"
+    }
+  ],
+  "handoff_count": 0
+}

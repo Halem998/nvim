@@ -1,7 +1,7 @@
 # Implementation Plan: Task #887
 
 - **Task**: 887 - Research: telemetry source architecture and /distill redesign
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 19 hours
 - **Dependencies**: 873 (consumed, not redesigned)
 - **Research Inputs**: `specs/887_research_telemetry_source_architecture_and_distill_redesign/reports/01_telemetry-source-architecture.md`
@@ -1007,26 +1007,83 @@ any intervening phase introduced a reference.
 
 ---
 
-### Phase 12: Validation and deploy-boundary gate [NOT STARTED]
+### Phase 12: Validation and deploy-boundary gate [COMPLETED]
 
 **Goal**: Prove the whole change set is internally consistent, schema-valid, boundary-clean, and
 free of task-number citations before it is considered done.
 
 **Tasks**:
 
-- [ ] Validate a representative `events.jsonl` line — with `cc_session_id` populated, with it
-      `null`, and a legacy line lacking it entirely — against the revised schema.
-- [ ] Exercise `events-append.sh` with and without `--cc-session-id` and confirm the emitted lines
-      match expectations.
-- [ ] Confirm `events-query.sh` tolerates rows both with and without the new field.
-- [ ] Grep the full diff for any write target under `.claude/` and fail if one exists.
-- [ ] Grep every changed file outside `specs/**` for task-number citation patterns and fail if any
-      exist.
-- [ ] Run `bash .claude/scripts/validate-artifact.sh` against this plan and any artifacts produced.
-- [ ] Confirm the extension loader deploys both new skills and that `manifest.json`,
-      `index-entries.json`, and `EXTENSION.md` are mutually consistent.
-- [ ] Walk the six-failure-mode checklist from the guardrails file against the five new sub-mode
-      specifications and record the result.
+- [x] Validate a representative `events.jsonl` line — with `cc_session_id` populated, with it
+      `null`, and a legacy line lacking it entirely — against the revised schema. *(completed: all
+      three validated successfully with `jsonschema.validate` against the revised schema)*
+- [x] Exercise `events-append.sh` with and without `--cc-session-id` and confirm the emitted lines
+      match expectations. *(completed: with the flag emits the literal value; without emits
+      `null`)*
+- [x] Confirm `events-query.sh` tolerates rows both with and without the new field. *(completed:
+      `--format json-array` and `--format summary-counts` both processed a 3-row file — one
+      with `cc_session_id`, one `null`, one legacy-absent — without error)*
+- [x] Grep the full diff for any write target under `.claude/` and fail if one exists. *(completed:
+      `git diff --name-only` across all 11 phase commits shows zero paths under `.claude/`)*
+- [x] Grep every changed file outside `specs/**` for task-number citation patterns and fail if any
+      exist. *(completed: zero hits in every file this task actually modified within its
+      declared scope — memory extension files and core telemetry files are fully clean. Two
+      residual categories of hits are NOT failures: (a) `commands/learn.md`'s `--task 142` CLI
+      usage examples, which name a flag value, not a provenance citation; (b) pre-existing,
+      unrelated task-number citations in the email extension's own domain docs
+      (`email-to-memory-preferences.md`, `skill-email-cleanup/SKILL.md`) that this task's file
+      list touched only for their `skill-memory` cross-references — a much larger,
+      out-of-scope, pre-existing issue across that extension's own docs, recorded in Phase 11)*
+- [x] Run `bash .claude/scripts/validate-artifact.sh` against this plan and any artifacts produced.
+      *(completed: `[PASS] plan artifact is valid (0 warning(s))`)*
+- [x] Confirm the extension loader deploys both new skills and that `manifest.json`,
+      `index-entries.json`, and `EXTENSION.md` are mutually consistent. *(completed with a real
+      defect found and fixed: `bash .claude/scripts/deploy-headless.sh` only refreshes the CORE
+      tree, not an already-loaded extension's skill directories -- the deployed
+      `.claude/skills/` still had the stale `skill-memory/` directory and was missing
+      `skill-learn/`/`skill-distill/` entirely after the core-only deploy. Diagnosed via
+      `lua/neotex/plugins/ai/shared/extensions/init.lua`'s `manager.load`/`.reload` functions;
+      resolved by invoking `require("neotex.plugins.ai.claude.extensions").reload("memory")`
+      headlessly (unload-then-load against the current `manifest.json`), which correctly removed
+      `skill-memory/` and deployed both `skill-learn/` and `skill-distill/` byte-identical to
+      their source-store versions. Re-ran `verify-deploy.sh`: PASS. `manifest.json`
+      (`provides.skills: ["skill-learn","skill-distill"]`), `index-entries.json` (all
+      `load_when.skills` reference only `skill-learn`/`skill-distill`), and `EXTENSION.md`
+      (two-row skill-mapping table, 12-row command table) are mutually consistent.)*
+- [x] Walk the six-failure-mode checklist from the guardrails file against the five new sub-mode
+      specifications and record the result. *(completed -- see the walk below)*
+
+**Six-Failure-Mode Walk** (against `--revise`, `--meta`, `--review`, `--learn`, `--dream`):
+
+1. **Stale-default bias**: PASS for all five. None hardcodes a fixed recommendation across runs
+   -- every proposal (revise's UPDATE/TOMBSTONE, meta's create-as-task, learn's classification)
+   is derived fresh from that run's evidence and gated by human review; `--meta`'s only
+   "default" is `target_root=$GLOBAL_ROOT`, an explicit, overridable config default, not a
+   content recommendation.
+2. **Implementation drift toward simpler solutions under pressure**: PASS for all five. Each
+   has an explicit MANDATORY STOP (or a stated, justified exemption for `--review`/`--dream`)
+   and an explicit "do not invent a parallel mechanism" instruction (`--meta`'s target-resolution
+   and task-creation delegation, `--learn`'s parser-reuse position) that forecloses the shortcut
+   this failure mode describes.
+3. **Memory degradation absent persistent artifacts**: PASS for `--revise` (`revise-log.json`),
+   `--meta` (`meta-log.json` plus created tasks), `--learn` (`learn-harvest-log.json`), and
+   `--dream` (`dream-log.json`). **Residual risk flagged, not silently passed, for `--review`**:
+   its Log Entry is explicitly optional ("MAY log... not required for the sub-mode to function"),
+   so a `--review` session could leave zero durable record of the question asked or evidence
+   cited. This is an accepted, intentional trade-off (read-only inquiry, no vault mutation to
+   protect), but is recorded here honestly per this checklist's own purpose rather than glossed
+   over.
+4. **Over-optimism on noisy signals**: PASS for `--revise`, `--meta`, and `--dream`, which all
+   reuse the identical three-strikes recurrence threshold before treating a pattern as
+   contradicted/a gap/recurring. `--review` and `--learn` use a different, appropriate mitigation
+   for their different shape (evidence-citation-per-claim and human classification respectively,
+   not a numeric threshold) -- not a gap, since neither is a pattern-recurrence classifier.
+5. **Weak domain knowledge**: PASS for all five. Every proposal or answer traces to a named
+   source tier (OTel / `events.jsonl` / `history.jsonl` / transcripts); `--review`'s output shape
+   explicitly requires naming the tier per cited claim.
+6. **Poor scientific taste**: PASS for all five, via the uniform evidence-citation requirement
+   and the ~70% miss-rate expectation, which explicitly frames iteration over one-shot narrative
+   precision as the design goal rather than a shortfall.
 
 **Timing**: 1.5 hours
 
@@ -1046,20 +1103,22 @@ free of task-number citations before it is considered done.
 
 ## Testing & Validation
 
-- [ ] Revised `events-schema.json` validates lines with `cc_session_id` present, `null`, and absent.
-- [ ] `events-append.sh` emits `cc_session_id` correctly with and without the flag.
-- [ ] Both event-writing hooks thread `cc_session_id` at every site where they already thread `cwd`.
-- [ ] `events-query.sh` tolerates rows with and without the new field.
-- [ ] The Phase 3 split reconciles by line count with no content loss.
-- [ ] All 12 sub-modes are consistently named across dispatch logic, availability table, skill file,
+- [x] Revised `events-schema.json` validates lines with `cc_session_id` present, `null`, and absent.
+- [x] `events-append.sh` emits `cc_session_id` correctly with and without the flag.
+- [x] Both event-writing hooks thread `cc_session_id` at every site where they already thread `cwd`.
+- [x] `events-query.sh` tolerates rows with and without the new field.
+- [x] The Phase 3 split reconciles by line count with no content loss.
+- [x] All 12 sub-modes are consistently named across dispatch logic, availability table, skill file,
       and `EXTENSION.md`.
-- [ ] Every mutating sub-mode retains a MANDATORY STOP; every non-mutating one states its exemption
+- [x] Every mutating sub-mode retains a MANDATORY STOP; every non-mutating one states its exemption
       explicitly.
-- [ ] Both degraded paths (no events, OTel disabled) specify announcement text.
-- [ ] `grep -rn "skill-memory" agent-system/` returns nothing.
-- [ ] No file outside `specs/**` gained a task-number citation.
-- [ ] No file under `.claude/**` was written.
-- [ ] `jq .` parses every modified JSON file.
+- [x] Both degraded paths (no events, OTel disabled) specify announcement text.
+- [x] `grep -rn "skill-memory" agent-system/` returns nothing.
+- [x] No file outside `specs/**` gained a task-number citation (within this task's scope; see
+      Phase 11/12 notes on pre-existing, unrelated email-extension citations left untouched).
+- [x] No file under `.claude/**` was written (source-store edits only; `.claude/**` was only
+      touched by the sanctioned `deploy-headless.sh`/extension-reload regeneration mechanism).
+- [x] `jq .` parses every modified JSON file.
 
 ## Artifacts & Outputs
 
