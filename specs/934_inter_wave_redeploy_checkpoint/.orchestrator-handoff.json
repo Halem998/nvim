@@ -1,0 +1,29 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Implemented all 7 phases of the inter-cycle redeploy checkpoint: rewrote hazard 3 as partially retired in the guardrails doc, added an additive carve-out to regeneration-is-manual-only.md, hardened deploy-headless.sh (confirmed and fixed a real self-overwrite hazard plus a fail-open specs/.deploy-lock/ mutex, both live-verified), documented verify-deploy.sh's exit-2-is-failure contract, wired Stage MT-3 step 7 into skill-orchestrate/SKILL.md, and cross-referenced from commands/orchestrate.md. Full cross-document consistency and doc-lint gate passed after a deliberate redeploy.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/934_inter_wave_redeploy_checkpoint/summaries/01_inter-cycle-redeploy-checkpoint-summary.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+    "agent-system/extensions/core/scripts/deploy-headless.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/commands/orchestrate.md"
+  ],
+  "decisions_made": [
+    "Confirmed the Phase 3 Scope Hypothesis empirically (vim.fn.writefile truncates in place) rather than assuming it, and confirmed the pre-edit script was exposed",
+    "Restructured deploy-headless.sh into a single main() function invoked last, then live-verified the fix by self-invoking it against this exact repo (old script crashed mid-self-overwrite; fixed script completed cleanly)",
+    "Deliberately redeployed and re-verified during Phase 7 per the plan's own Rollback/Contingency instructions, resolving the expected source/deploy drift doc-lint flagged",
+    "Left two pre-existing no-task-references violations (skill-orchestrate/SKILL.md:144, commands/orchestrate.md:217) unfixed as out-of-scope, recording them instead"
+  ],
+  "dead_ends": [],
+  "phases_completed": 7,
+  "phases_total": 7,
+  "plan_markers_verified": true
+}
