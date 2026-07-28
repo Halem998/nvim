@@ -410,7 +410,7 @@ ordinary prose content (an em dash in the reproduction), aborting the whole scri
 
 ---
 
-### Phase 5: End-to-end acceptance verification (item E) [NOT STARTED]
+### Phase 5: End-to-end acceptance verification (item E) [COMPLETED]
 
 **Goal**: Demonstrate the acceptance criterion on a real artifact: a summary written from the
 corrected template validates clean and produces no warning.
@@ -424,23 +424,28 @@ never the deployed copy. This is the strongest claim available without deploying
 end-to-end live-dispatch run, and the summary must say so.
 
 **Tasks**:
-- [ ] Write this task's own implementation summary at
+- [x] Write this task's own implementation summary at
       `specs/940_summary_metadata_header_compliance/summaries/01_summary-header-template-fix-summary.md`
       by instantiating the Phase 2 replacement skeleton literally — all eight metadata bullets,
-      all six required sections plus `Plan Deviations` and `Verification`.
-- [ ] Run `bash agent-system/extensions/core/scripts/validate-artifact.sh <that summary> summary`
-      and confirm exit 0 with a `[PASS]` line and zero `[ERROR]` lines.
-- [ ] Run the same command with `--fix` and confirm it is a no-op (no `[FIXED]` line, exit 0) —
-      i.e. a compliant artifact never triggers auto-repair.
-- [ ] Negative control: copy that summary to a scratch path, delete its metadata block, re-run
+      all six required sections plus `Plan Deviations` and `Verification`. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/validate-artifact.sh <that summary> summary`
+      and confirm exit 0 with a `[PASS]` line and zero `[ERROR]` lines. *(completed: exit 0,
+      `[PASS] summary artifact is valid (0 warning(s))`)*
+- [x] Run the same command with `--fix` and confirm it is a no-op (no `[FIXED]` line, exit 0) —
+      i.e. a compliant artifact never triggers auto-repair. *(completed: confirmed no-op, file
+      byte-identical after --fix)*
+- [x] Negative control: copy that summary to a scratch path, delete its metadata block, re-run
       without `--fix`, and confirm a readable list of the missing fields plus a terminal `[FAIL]`
-      line and exit 1 — a signal, not a crash.
-- [ ] Confirm the gate-out path prints no summary warning for the compliant artifact by running
+      line and exit 1 — a signal, not a crash. *(completed: exit 1, `[FAIL] 4 error(s), 0
+      warning(s)`; see summary Verification section for the honest note on why 4 of 6 fields
+      showed, not 6)*
+- [x] Confirm the gate-out path prints no summary warning for the compliant artifact by running
       the exact command form used at the implementer Stage 6a call site (`if ! bash ... ; then
-      echo "WARNING: ..."`) against it and observing no `WARNING:` line.
-- [ ] Record in the summary: the residual noted in the Enforcement Posture section (a whole-directory
+      echo "WARNING: ..."`) against it and observing no `WARNING:` line. *(completed: no WARNING
+      line printed)*
+- [x] Record in the summary: the residual noted in the Enforcement Posture section (a whole-directory
       sweep can still warn on historical summaries, per item D), and the fact that no redeploy was
-      performed.
+      performed. *(completed: recorded in Follow-ups)*
 
 **Timing**: 0.5 hours
 
@@ -462,15 +467,15 @@ end-to-end live-dispatch run, and the summary must say so.
 
 ## Testing & Validation
 
-- [ ] Source-store validator reports `[PASS]` (exit 0) on a summary instantiated from the new
+- [x] Source-store validator reports `[PASS]` (exit 0) on a summary instantiated from the new
       Stage 6 template.
-- [ ] Same validator reports a readable `[FAIL]` with the missing-field list (exit 1, no `sed:`
+- [x] Same validator reports a readable `[FAIL]` with the missing-field list (exit 1, no `sed:`
       error) on the negative control.
-- [ ] `--fix` reaches a terminal line on the historical-artifact crash reproduction.
-- [ ] `bash -n` clean on `validate-artifact.sh` and on both extracted Stage 6a bash blocks.
-- [ ] Every `SUMMARY_METADATA` and `SUMMARY_SECTIONS` entry is present in the new Stage 6 template.
-- [ ] `general-implementation-hard-agent.md` carries no duplicated skeleton.
-- [ ] No `.claude/**` file modified; no task-number citation added outside `specs/**`.
+- [x] `--fix` reaches a terminal line on the historical-artifact crash reproduction.
+- [x] `bash -n` clean on `validate-artifact.sh` and on both extracted Stage 6a bash blocks.
+- [x] Every `SUMMARY_METADATA` and `SUMMARY_SECTIONS` entry is present in the new Stage 6 template.
+- [x] `general-implementation-hard-agent.md` carries no duplicated skeleton.
+- [x] No `.claude/**` file modified; no task-number citation added outside `specs/**`.
 
 ## Artifacts & Outputs
 

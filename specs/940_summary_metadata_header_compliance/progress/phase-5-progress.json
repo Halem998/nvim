@@ -1,0 +1,50 @@
+{
+  "phase": 5,
+  "phase_name": "End-to-end acceptance verification (item E)",
+  "started_at": "2026-07-28T01:05:00Z",
+  "last_updated": "2026-07-28T01:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Write this task's own implementation summary instantiating the corrected Phase 2 template literally",
+      "status": "done",
+      "files_touched": ["specs/940_summary_metadata_header_compliance/summaries/01_summary-header-template-fix-summary.md"]
+    },
+    {
+      "id": 2,
+      "description": "Run validate-artifact.sh against the summary and confirm exit 0 / [PASS] / zero errors",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Run the same command with --fix and confirm no-op",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Negative control: delete metadata block on a scratch copy, confirm readable failure not a crash",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Gate-out simulation using the exact implementer Stage 6a command form; confirm no WARNING line",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.note",
+      "description": "The negative-control test initially matched only 4 of 6 missing metadata fields because this summary's own prose (Overview/Verification sections) coincidentally contains the literal substrings '**Task**:' and '**Completed**:' when discussing the defective old template, satisfying the validator's whole-document grep -qF check even with the real metadata block deleted.",
+      "type": "altered",
+      "reason": "Corrected the Verification section to report the actual verbatim validator output and explain the self-referential edge case honestly, rather than leaving an inaccurate illustrative claim in place.",
+      "annotation": "n/a - documentation accuracy fix within Phase 5's own artifact, not a plan task"
+    }
+  ]
+}
