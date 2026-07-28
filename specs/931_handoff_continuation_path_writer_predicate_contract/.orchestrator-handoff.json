@@ -1,24 +1,30 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "research",
-  "status": "researched",
-  "summary": "Confirmed the writer/predicate mismatch but corrected its shape: the sole active .orchestrator-handoff.json writer (H9 hard-mode wrap-up) emits a flat top-level continuation_path string per context/contracts/wrap-up.md, while orchestrate-triage-classify.sh and skill-orchestrate/SKILL.md Stage 4 check only nested continuation_context.handoff_path -- a key that writer never emits. validate-handoff.sh already accepts both forms. Recommends Option B: extend the classifier and base SKILL.md's mirrored predicate to accept continuation_path OR continuation_context.handoff_path, rewrite handoff-schema.md to document both, and separately flag cslib's Stage 5 template which never populates any continuation pointer at all.",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Created a six-phase implementation plan for the continuation-pointer field-shape schism, built on the research report's correction (flat continuation_path vs nested continuation_context.handoff_path, not a null-handoff_path defect). Implements Option B: dual-form acceptance in orchestrate-triage-classify.sh and base skill-orchestrate/SKILL.md, plus the dispatch-context normalization the research flagged as a separate gap, hard-engine reader symmetry, a handoff-schema.md rewrite, and a proven-RED-first regression suite at scripts/tests/test-orchestrate-triage-classify.sh.",
   "artifacts": [
-    {"type": "report", "path": "specs/931_handoff_continuation_path_writer_predicate_contract/reports/01_handoff-continuation-predicate-contract.md"}
+    {"type": "plan", "path": "specs/931_handoff_continuation_path_writer_predicate_contract/plans/01_continuation-path-predicate-contract.md"}
   ],
   "blockers": [],
-  "next_action_hint": "plan",
-  "files_modified": [],
+  "next_action_hint": "implement",
+  "files_modified": [
+    "specs/931_handoff_continuation_path_writer_predicate_contract/plans/01_continuation-path-predicate-contract.md"
+  ],
   "decisions_made": [
-    "Recommend Option B (relax classifier predicate to accept continuation_path OR continuation_context.handoff_path), not Option A (force all writers onto nested form) -- validate-handoff.sh already precedents dual acceptance",
-    "handoff-schema.md needs a full rewrite of its continuation_context section, not a patch, since it documents only the form the sole active writer never emits",
-    "Dispatch-context normalization (skill-orchestrate/SKILL.md line 410 passing continuation_context to the next implement dispatch) is separate implementation work beyond the predicate fix and must be its own plan phase",
-    "cslib-implementation-hard-agent.md's Stage 5 template never populates any continuation pointer on partial/blocked (hardcoded null, no instruction) -- flag as a related but separable defect, do not silently fold into this task",
-    "The task's phrasing 'continuation_context.note' is not a literal field anywhere in the tree -- it describes the substance of the markdown handoff at continuation_path/handoff_path, not a JSON key"
+    "Option B adopted: relax the two nested-only readers rather than migrate writers onto the nested form. Option A rejected for blast radius (wrap-up.md canonical schema plus three agent Stage 5 templates plus an already-self-consistent hard-mode reader).",
+    "skill_write_orchestrator_handoff disposition decided: document as dead, do not delete, do not rewire. The edit is comment-only and lives in a different function from the sibling follow-up targeting skill_postflight_update's status accept-list, so the two cannot collide textually or semantically.",
+    "cslib-implementation-hard-agent.md Stage 5 (only continuation_context, hardcoded null, no population instruction) declared an explicit Non-Goal and recorded as a named follow-up for harvest.",
+    "Regression-suite sandboxing resolved during planning without needing a STATE_FILE override: a $WORKDIR/.claude/scripts/ workdir shape satisfies deploy-root-guard.sh's */.claude parent-dir requirement and makes PROJECT_ROOT resolve to $WORKDIR. Carried as a Phase 1 Scope Hypothesis requiring implementation-time confirmation, with the justified-override fallback stated.",
+    "Three nested-only continuation read sites found in skill-orchestrate/SKILL.md (Stage 4 partial handler, Stage 5 result read, Stage MT-4 implement dispatch bullet) and two in skill-orchestrate-hard/SKILL.md (Stage 4 flat-only, Stage 5 nested-only) -- more sites than the research enumerated; all are covered by Phases 3 and 4.",
+    "Mutation-check discipline encoded structurally: Phase 1 (test, proven RED) is a hard dependency of Phase 2 (fix), and Phase 1's success criterion is a NON-ZERO exit with the continuation_path-only fixture reporting handoff_state empty.",
+    "Anti-over-relaxation guard added as Fixture C (both forms null must still classify as empty) and precedence guard as Fixture D (continuation outranks blockers), so the relaxation cannot silently widen beyond its intent.",
+    "Co-edit safety encoded as a binding constraint in every phase: anchor edits on symbol names and quoted distinctive strings, never line numbers, with a Phase 6 grep confirming the sibling's dispatch_status three-tier validation and its OFF-SCHEMA DISPATCH STATUS banner are undisturbed."
   ],
   "dead_ends": [],
-  "phases_completed": 1,
-  "phases_total": 1,
-  "continuation_context": null,
-  "plan_markers_verified": true
+  "phases_completed": 0,
+  "phases_total": 6,
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "continuation_context": null
 }
