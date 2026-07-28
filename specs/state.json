@@ -1915,7 +1915,7 @@
     {
       "project_number": 938,
       "project_name": "picker_sync_skills_allow_list_filter",
-      "status": "planned",
+      "status": "completed",
       "task_type": "neovim",
       "topic": "nvim-plugin",
       "title": "Fix picker sync allow-list filter silently dropping all skills",
@@ -1927,7 +1927,7 @@
       ],
       "dependencies": [],
       "created": "2026-07-28T14:48:54Z",
-      "last_updated": "2026-07-28T15:30:41Z",
+      "last_updated": "2026-07-28T15:51:04Z",
       "session_id": "sess_1785251682_61201e_938",
       "artifacts": [
         {
@@ -1939,8 +1939,14 @@
           "path": "specs/938_picker_sync_skills_allow_list_filter/plans/01_skills-allow-list-filter-fix.md",
           "type": "plan",
           "summary": "Six-phase plan: scratch-tree reproduction, generalized post-filter, category survey, total-wipeout detector, regression spec, deliberate redeploy."
+        },
+        {
+          "path": "specs/938_picker_sync_skills_allow_list_filter/summaries/01_skills-allow-list-filter-fix-summary.md",
+          "type": "summary",
+          "summary": "Skills allow-list post-filter fix: generalized directory-shaped category matching, total-wipeout detector, regression spec, verified redeploy."
         }
-      ]
+      ],
+      "completion_summary": "Fixed the picker sync allow-list post-filter that silently dropped all 23 core skills from Load Core syncs (directory-name vs. basename key mismatch), generalizing the fix to any directory-shaped category and adding a total-wipeout detector plus a permanent regression spec. Verified via scratch-tree harnesses across all 6 phases and one deliberate redeploy confirming all provides.skills entries land in .claude/skills/ with no regression to the hand-corrected orchestrator skills."
     },
     {
       "project_number": 939,

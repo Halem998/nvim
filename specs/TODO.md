@@ -11,7 +11,7 @@ next_project_number: 942
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 938,939,941 | -- | agent-system, nvim-plugin |
+| 1 | 939,941 | -- | agent-system |
 | 2 | 940 | 939 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -21,10 +21,6 @@ next_project_number: 942
 939 [PLANNED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
   └─ 940 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 941 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-
-### Nvim Plugin
-
-938 [PLANNED] — LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, ne
 
 ## Tasks
 
@@ -143,12 +139,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 938. Fix picker sync allow-list filter silently dropping all skills
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: neovim
 - **Topic**: nvim-plugin
 - **Dependencies**: None
 - **Research**: [938_picker_sync_skills_allow_list_filter/reports/01_skills-allow-list-post-filter-defect.md]
 - **Plan**: [938_picker_sync_skills_allow_list_filter/plans/01_skills-allow-list-filter-fix.md]
+- **Summary**: [938_picker_sync_skills_allow_list_filter/summaries/01_skills-allow-list-filter-fix-summary.md]
 
 **Description**: LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.
 
