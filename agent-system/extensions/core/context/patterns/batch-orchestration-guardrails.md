@@ -416,6 +416,26 @@ whether two tasks may safely run concurrently, which is a deterministic, per-pai
 question independent of batch size. This is named here explicitly so a later, less-grounded pass
 cannot rediscover it and adopt it as a tunable.
 
+**Auto-degrading a zero-dispatch batch into N sequential solo invocations** (Scope D) is rejected
+in favor of PRINT-ONLY. Three-part justification:
+
+(a) Each solo run pays its own full research/plan/implement dispatch cost. Silently converting one
+zero-dispatch batch invocation into N solo invocations multiplies that cost without the caller's
+consent.
+
+(b) This system has zero synchronous confirmation gates by design (see Divergence from External
+Practice below) — there is no point mid-run to obtain that consent. The absence of a confirmation
+gate is a reason to take the SMALLER action (print the sequence) here, not licence to take the
+bigger one (auto-execute it).
+
+(c) Auto-degrading inverts defer-not-fail's own proportionality logic. Defer-not-fail exists to
+make the system's response to a transient scheduling conflict SMALLER than the conflict — a
+deferred task, not a failed one. Auto-executing N solo runs in response to a batch where nothing
+was admitted is a larger response than the conflict warrants, the opposite direction from what
+defer-not-fail is for.
+
+The report therefore prints the dependency-ordered solo re-run sequence; the human runs it.
+
 ## Defer-Not-Fail: The Standing Default
 
 Deferral is the standing default response to every admission-time conflict, not just the two
@@ -428,6 +448,66 @@ The rationale: admission conflicts are transient by construction — they clear 
 or blocking task terminates — whereas this system's failed/blocked states require human
 intervention to clear. Treating a transient scheduling conflict as a terminal failure is
 disproportionate to the conflict.
+
+### The Forward-Progress Invariant
+
+A zero-dispatch batch — every validated candidate deferred, nothing admitted on any wave or
+cycle of the invocation — is a consequence of defer-not-fail applied repeatedly across an entire
+run, which is why this subsection follows that section rather than standing alone. Defer-not-fail
+says any single conflict is deferred, never failed; it says nothing about what the invocation as a
+whole must do when *every* candidate hits some conflict. This subsection names that whole-run
+outcome and requires it to be legible, not merely correct.
+
+**Canonical vocabulary, used verbatim at every site that renders or detects this outcome**:
+
+- **Invariant name**: the **forward-progress invariant**.
+- **Violation outcome name**: the **zero-dispatch outcome**.
+- **Structured field name**: `forward_progress_violated` (boolean).
+- **Observation ledger field name**: `defer_ledger`.
+- **Human-facing banner**:
+  `[ZERO DISPATCH - 0 of N validated candidates dispatched; forward-progress invariant violated]`.
+- **Machine-readable marker**: `<!-- forward-progress violated=true dispatched=0 validated=N -->`.
+
+**Statement, precise and cause-agnostic**: the invariant is violated when the validated-candidate
+set is non-empty AND no task was dispatched on any cycle of the invocation. The operational test is
+`mt_state_file.dispatch_start_ts == {}` at loop exit — that map is already written only at actual
+dispatch (three call sites in the skill's Stage MT-4), so detecting the invariant requires no new
+dispatch-side bookkeeping. This is true regardless of which defer reason produced it —
+`self_modifying`, `file_scope_collision` (`in_batch` or `cross_batch`), or a redeploy-checkpoint
+deferral all count identically.
+
+**Detection/rendering split, three loci, named explicitly**:
+
+1. **Detection** — computed once, at the skill's Stage MT-5, as the single source of truth over
+   `mt_state_file`.
+2. **Rendering (live path)** — the command's Step 5, the human-facing consolidated-output surface.
+3. **Rendering (preview path)** — the `--dry-run` reporter, which renders the same vocabulary
+   against its own static, single-pass admission analysis.
+
+**Relationship to the existing convergence guard**: the `consecutive_no_dispatch_cycles` guard
+prevents ONE specific non-convergence mode — a mutually-colliding self-modifying set spinning to
+the cycle cap. The forward-progress invariant is the GENERAL outcome-legibility requirement
+covering every cause, including `file_scope_collision` (both scopes) and out-of-batch unmet
+predecessors, not only the self-modifying case the guard watches. This is a legibility requirement
+layered on top of the guard, not a widening of it: the guard's trigger condition is unchanged, and
+the invariant is detected independently, at loop exit, regardless of whether the guard ever fired.
+
+**Empirical finding**: the predecessor narrowing of the self-modification defer (recorded above
+under "The Same-Cycle Narrowing and Its Hazard Accounting") did not shrink this requirement. The
+remaining zero-dispatch cases are demonstrated true positives of a correctly-working gate, not
+artifacts of an over-broad prior rule — the mechanism class is several independent
+self-modifying candidates sharing one cycle with no dependency edge to serialize them, which the
+same-cycle narrowing neither creates nor removes.
+
+**Exit/status contract (Scope C), confirmed, not changed**: a zero-dispatch invocation does not
+mutate `specs/state.json`, does not add any task to `failed_tasks`, and does not mark any task
+failed or blocked. This is the standing defer-not-fail default applied to the whole-run outcome,
+unchanged by naming it. A no-dispatch cycle DOES still consume a cycle — `cycle_count` increments
+unconditionally at Stage MT-3 step 6, after dispatch — and that too is unchanged.
+
+**PRINT-ONLY, not auto-degrade (Scope D)** — see the new `## Rejected Approaches` entry below for
+the full justification; this subsection states only the vocabulary, that section states the
+reasoning.
 
 ## Non-Negotiables
 

@@ -1,0 +1,8 @@
+{
+  "status": "in_progress",
+  "task_number": 937,
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1785249037_e81aad",
+  "plan_path": "specs/937_forward_progress_invariant_for_batch_admission/plans/01_zero-dispatch-forward-progress-legibility.md"
+}

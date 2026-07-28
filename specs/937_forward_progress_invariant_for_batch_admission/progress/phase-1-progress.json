@@ -1,0 +1,28 @@
+{
+  "phase": 1,
+  "phase_name": "Name the invariant and record the standing requirement",
+  "started_at": "2026-07-28T15:00:00Z",
+  "last_updated": "2026-07-28T15:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add ### The Forward-Progress Invariant subsection with canonical vocabulary, statement, detection/rendering split, convergence-guard relationship, empirical finding, exit/status contract confirmation",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add PRINT-ONLY (Scope D) entry to Rejected Approaches section",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"
+      ]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
