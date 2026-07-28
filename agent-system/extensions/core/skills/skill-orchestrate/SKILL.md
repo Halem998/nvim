@@ -1137,7 +1137,9 @@ Read from delegation context:
 - `task_numbers` — array of task numbers to manage
 - `dependency_graph` — map of task_number -> [predecessor_task_numbers]
 - `waves` — pre-computed topological wave schedule
-- `session_id`, `lit_flag`
+- `session_id`, `lit_flag`, `allow_self_modifying` (default: "false") — consumer-side opt-in
+  bypass of the self-modification admission gate; never passed to `orchestrate-batch-admit.sh`
+  itself (see Stage MT-3 step 4.5's `self_modifying` branch below)
 
 **Upstream review cross-reference**: raw dependency review already happened upstream, at
 `commands/orchestrate.md` Step 1.5 (Pre-Dispatch Review), before `dependency_graph` above was
@@ -1161,14 +1163,21 @@ Initialize `mt_state_file = "specs/.orchestrator-multi-state.json"` with fields:
 `completed_tasks: []`, `current_statuses: {}`, `task_dirs: {}`, `research_agents: {}`,
 `implement_agents: {}`, `infra_failures: {}` (map task_num -> count, default 0),
 `dispatch_start_ts: {}` (map task_num -> unix seconds, written at dispatch time), and
-`deferred_self_modifying: []` — an INVOCATION-SCOPED set (persists across every cycle of this
-same `mt_state_file`, never reset mid-invocation) of task numbers the self-modification gate has
-excluded. This is the mechanism that makes the exclusion converge: without it, a self-modifying
-task deferred out of one cycle would simply re-qualify as eligible on the very next cycle (its
-predecessors are still terminal, its status is still non-terminal) and the gate would re-fire
-every cycle forever, never letting the invocation reach an all-terminal state. See Stage MT-3
-step 3 (eligibility exclusion) and step 4.5 (population) below, and Stage MT-5 (postflight
-reporting) for the three places this set is read or written.
+`deferred_self_modifying: []` — an APPEND-ONLY OBSERVATION LOG (persists across every cycle of
+this same `mt_state_file`, never reset mid-invocation) of task numbers the self-modification gate
+has deferred AT LEAST ONCE this invocation. As of the narrowed same-cycle scope, this is NO LONGER
+an eligibility-exclusion set — a task appearing in this log is not thereby excluded from a later
+cycle's `eligible_tasks`. The convergence mechanism is now the SAME one `file_scope_collision`
+already uses: the defer is re-evaluated fresh every cycle from `${#eligible_tasks[@]}` and the
+candidate's own `file_scope`, and it clears on its own once the co-dispatched sibling that caused
+it leaves `eligible_tasks` (enters `researching`/`planning`, terminates, or fails) — no persistent
+exclusion is needed for that to happen, and the loop's existing per-cycle re-evaluation already
+guarantees it. See Stage MT-3 step 3 (no longer an exclusion), step 4.5 (append-only population),
+and the new consecutive-no-dispatch guard below for the bounded case where the natural clearing
+condition does not hold, and Stage MT-5 (postflight reporting) for where this log is read.
+`deferred_deploy_checkpoint`'s semantics are UNCHANGED by this narrowing and remain a genuine,
+permanent-for-the-invocation eligibility exclusion — the two fields are not conflated by this
+change; see the field definition immediately below.
 
 Alongside it, two more INVOCATION-SCOPED fields with the same never-reset-mid-invocation
 semantics, backing the inter-cycle redeploy checkpoint (Stage MT-3 step 7 below; full contract in
@@ -1182,6 +1191,11 @@ subsection):
 - `deployed_critical_paths: []` — critical paths already redeployed this invocation; the
   idempotence guard's backing store, so the checkpoint does not re-fire on the same path every
   cycle.
+- `consecutive_no_dispatch_cycles: 0` — integer counter backing Stage MT-3 step 4.5's convergence
+  guard: increments on any cycle where `eligible_tasks` was non-empty but the self-modification
+  gate deferred every member of it (empty actual dispatch batch); resets to 0 on any cycle where
+  at least one task dispatches. Bounds the narrow non-convergence mode a removed permanent
+  exclusion set no longer prevents by construction.
 
 ### Stage MT-2: Build Per-Task Routing Table
 
@@ -1222,22 +1236,23 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
 1. **Status refresh**: For each task in `task_numbers`, read current status from `state.json` and update `mt_state_file.current_statuses`.
 
 2. **All-terminal check**: If every task is in `{completed, abandoned, expanded}`, in
-   `failed_tasks`, in `deferred_self_modifying`, OR in `deferred_deploy_checkpoint` — break loop
-   (exit success or partial). A task in `deferred_self_modifying` or `deferred_deploy_checkpoint`
-   is deliberately excluded, not stuck, so this check treats both the same as a terminal/failed
-   task for the purpose of deciding whether the loop has anything left to do — see step 3's
-   exclusion, step 4.5's population of `deferred_self_modifying`, and Stage MT-3 step 7's
-   population of `deferred_deploy_checkpoint` below.
+   `failed_tasks`, OR in `deferred_deploy_checkpoint` — break loop (exit success or partial). A
+   task in `deferred_deploy_checkpoint` is deliberately, permanently excluded for the remainder of
+   the invocation, so this check treats it the same as a terminal/failed task for the purpose of
+   deciding whether the loop has anything left to do — see Stage MT-3 step 7's population of
+   `deferred_deploy_checkpoint` below. `deferred_self_modifying` is DELIBERATELY ABSENT from this
+   check as of the narrowed same-cycle scope: a task recorded there still has real work pending
+   (it is only deferred for cycles where it is actually co-dispatched with a colliding sibling),
+   so it must not be treated as "nothing left to do" merely because the observation log carries
+   its number.
 
 3. **Build eligible_tasks**: For each task, include it if ALL of the following are true:
    - Status is NOT `{completed, abandoned, expanded}` and NOT in `failed_tasks`
-   - Task number is NOT in `deferred_self_modifying` (populated by step 4.5 below; this is the
-     mechanism that makes the exclusion converge — without it, a self-modifying task deferred out
-     of one cycle would simply re-qualify as eligible again on the very next cycle, since its own
-     status and predecessors have not changed, and the gate would re-fire every cycle forever)
    - Task number is NOT in `deferred_deploy_checkpoint` (populated by Stage MT-3 step 7 below;
-     the same convergence mechanism as `deferred_self_modifying` — this is what makes the
-     redeploy-checkpoint deferral converge rather than re-qualifying the task next cycle)
+     this remains a genuine, invocation-scoped eligibility EXCLUSION — unlike
+     `deferred_self_modifying`, which as of the narrowing is no longer an exclusion here at all
+     — and is what makes the redeploy-checkpoint deferral converge rather than re-qualifying the
+     task next cycle)
    - Status is NOT `{researching, planning}` (in-flight from prior cycle)
    - All predecessors from `dependency_graph[task_num]` are in terminal state or `failed_tasks`
    
@@ -1245,23 +1260,40 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
    If a predecessor is still in-progress: skip this task (wait for next cycle).
 
 4. **No-eligible circuit breaker**: If `eligible_tasks` is empty AND at least one task remains
-   that is NOT terminal, NOT in `failed_tasks`, NOT in `deferred_self_modifying`, and NOT in
-   `deferred_deploy_checkpoint` — log warning with list of stuck tasks and break loop (exit
-   partial). (If every remaining non-eligible task is accounted for by step 2's All-terminal
-   check instead — i.e. every task is terminal, failed, deferred-self-modifying, or
-   deferred-by-redeploy-checkpoint — step 2 has already broken the loop before this step runs, so
-   this circuit breaker's "stuck tasks" framing is reserved for genuinely stuck tasks, never for a
-   deliberately deferred self-modifying or redeploy-checkpoint-deferred one.)
+   that is NOT terminal, NOT in `failed_tasks`, and NOT in `deferred_deploy_checkpoint` — log
+   warning with list of stuck tasks and break loop (exit partial). (If every remaining
+   non-eligible task is accounted for by step 2's All-terminal check instead — i.e. every task is
+   terminal, failed, or deferred-by-redeploy-checkpoint — step 2 has already broken the loop
+   before this step runs, so this circuit breaker's "stuck tasks" framing is reserved for
+   genuinely stuck tasks, never for a redeploy-checkpoint-deferred one.) As of the narrowed
+   same-cycle scope, this PRE-admission check no longer reserves any special case for
+   self-modifying candidates: they are ordinary members of `eligible_tasks` at this point (step 3
+   above no longer excludes them), and are only removed from the dispatch batch by step 4.5's
+   POST-admission filtering below — the scenario where step 4.5 empties an otherwise non-empty
+   `eligible_tasks` is a distinct, later concern handled by the new convergence guard at the end
+   of step 4.5, not by this circuit breaker.
 
 4.5. **Runtime wave-split check (cross-batch defense-in-depth)**: Before dispatching
    `eligible_tasks` on EVERY cycle — including a cycle where `eligible_tasks` contains only a
    single task, since a cross-batch collision exists at batch size 1 — call the admission
-   script, passing `--invocation-count` set to this invocation's FULL `task_numbers` count (NOT
-   `${#eligible_tasks[@]}`), so the self-modification defer trigger below is evaluated against
-   the whole invocation, never just this cycle's eligible subset:
+   script, passing `--invocation-count` set to THIS CYCLE'S actual co-dispatch count,
+   `${#eligible_tasks[@]}`:
    ```bash
-   bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#task_numbers[@]}" "${eligible_tasks[@]}"
+   bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#eligible_tasks[@]}" "${eligible_tasks[@]}"
    ```
+   This is the corrected contract (narrowed from an earlier version of this step that passed this
+   invocation's full validated-candidate count): the self-modification defer trigger fires
+   against candidates actually co-dispatched THIS wave/cycle, not against the invocation's full
+   candidate set. Step 3's eligibility rule already guarantees a `dependencies[]`-edge-connected
+   pair can never share an `eligible_tasks` batch — a successor is never eligible until its
+   predecessor leaves the non-terminal set — so a whole-invocation count fired against pairs that
+   could never actually co-occur; that was a pure false positive, not a safety margin. The
+   remaining strictness is real, not vestigial: a self-modifying candidate genuinely sharing a
+   cycle with an un-edge-connected sibling still defers, and that residual strictness is grounded
+   in the standing verification-gap hazard (hazard 1 in
+   `context/patterns/batch-orchestration-guardrails.md` — a fix to orchestrator machinery is
+   verified only against a scratch deploy-tree copy, never the live system) — not in the two
+   hazards this dependency chain already retired.
    This compares each eligible task's `file_scope` against every non-terminal task in a single
    `specs/state.json` read — the comparison set is every non-terminal task in state, not merely
    this invocation's own `task_numbers` set. This is still not a repo-wide filesystem scan: no
@@ -1271,25 +1303,40 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
    restated here); the verdict schema is published in
    `.claude/docs/architecture/batch-admit-schema.md` (also referenced by path, never restated).
 
-   `jq`-filter stdout for `.decision == "defer"`, then branch on `defer_reason` FIRST (v2 schema
+   `jq`-filter stdout for `.decision == "defer"`, then branch on `defer_reason` FIRST (schema v3
    — every defer verdict carries this REQUIRED discriminator; checking `collision_scope` without
    checking `defer_reason` first would misread a self-modifying defer as an ordinary in-batch
    collision, since both verdicts carry a `reason` string):
 
    - **`self_modifying`** (the candidate's own `file_scope` names an orchestrator-critical path):
-     remove the candidate from this cycle's dispatch batch AND add it to the INVOCATION-SCOPED
-     `mt_state_file.deferred_self_modifying` set (persists for the remainder of this
-     invocation — this is the critical difference from the two `file_scope_collision` branches
-     below, which only affect the current cycle). **This is the mechanism that makes the
-     exclusion converge**: without recording it in `deferred_self_modifying`, the task would
-     simply re-qualify as eligible again on the very next cycle (see step 3's exclusion above)
-     and this check would re-fire every cycle forever, and the invocation would never reach an
-     all-terminal state. The task is never added to `failed_tasks` and never status-mutated. Log
-     a **distinct** warning naming the matched critical path and label:
+     **consumer-side override check first** — if `allow_self_modifying == true` for this
+     invocation, do NOT act on this defer verdict: dispatch the candidate this cycle anyway,
+     exactly as if it had admitted. The verdict itself is unaffected by the flag — it is still
+     emitted, still carries `self_modifying: true` and `defer_reason: "self_modifying"`, and
+     `orchestrate-batch-admit.sh` is NEVER passed the flag; the bypass is entirely a decision made
+     here, at the consumer, about whether to act on a verdict the script always computes
+     honestly. Log a loud, distinct bypass notice whether or not the gate would otherwise have
+     fired, so a transcript reader can always tell the override was active this invocation:
+     ```
+     [orchestrate] BYPASS: --allow-self-modifying is active. Task #{task_number} has file_scope
+       naming orchestrator-critical path {critical_path} ({critical_label}); dispatching this
+       cycle anyway per explicit human-intent override.
+     ```
+     Otherwise (no override): remove the candidate from this cycle's dispatch batch and append it
+     to the `mt_state_file.deferred_self_modifying` OBSERVATION LOG (task numbers the gate has
+     deferred at least once this invocation — see Stage MT-1's schema definition above; this log
+     is no longer an eligibility-exclusion set, so recording an append here does NOT by itself
+     keep the task out of a later cycle's `eligible_tasks` — see step 3's convergence rationale
+     for what actually clears the defer). The task is never added to `failed_tasks` and never
+     status-mutated. Log a **distinct** warning naming the matched critical path, label, and the
+     co-dispatched sibling situation that caused the defer:
      ```
      [orchestrate] WARNING: Task #{task_number} has file_scope naming orchestrator-critical
-       path {critical_path} ({critical_label}). Orchestrator-critical work runs solo only —
-       excluding #{task_number} from this invocation. Re-run it alone: /orchestrate {task_number}
+       path {critical_path} ({critical_label}), co-dispatched this cycle alongside another
+       eligible candidate. Deferring #{task_number} to a later cycle — it becomes eligible again
+       once its co-dispatched sibling leaves eligible_tasks (dependencies[]-edge-connected
+       candidates never share a cycle, so this never fires for an edge-connected pair). Pass
+       --allow-self-modifying for deliberate human-intent bypass.
      ```
    - **`file_scope_collision`** — retains the exact pre-existing `collision_scope` branching
      below, byte-for-byte. Both branches preserve the surrounding cycle semantics verbatim: a
@@ -1312,6 +1359,26 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
          invocation's task_numbers. Excluding #{task_number} from this cycle — batch
          composition needs human review.
        ```
+
+   **Convergence guard (post-admission empty-dispatch-batch check)**: removing the permanent
+   `deferred_self_modifying` exclusion set (this step now only appends to an observation log, per
+   Stage MT-1's schema definition) opens a narrow non-convergence mode the old permanent exclusion
+   incidentally prevented: `eligible_tasks` can be non-empty every cycle while every member of it
+   is deferred by this step's `self_modifying` branch, so the actual dispatch batch is empty and
+   nothing runs, cycle after cycle, until `MAX_CYCLES_MT`. The convergence ARGUMENT this guard
+   backs up (not replaces): a same-cycle self-mod defer clears on its own once its co-dispatched
+   sibling leaves `eligible_tasks` — entering `researching`/`planning`, terminating, or
+   failing — which the existing per-cycle loop already guarantees for any ordinary case, because
+   the sibling is itself being dispatched and processed each cycle. The guard exists only to BOUND
+   the case where that natural clearing does not happen (e.g. two self-modifying candidates that
+   keep mutually re-qualifying each other as the "colliding sibling" every cycle). Mechanism:
+   maintain `mt_state_file.consecutive_no_dispatch_cycles` (integer, starts at 0). After this
+   step's filtering, if the resulting dispatch batch is empty AND `eligible_tasks` (pre-filter) was
+   non-empty, increment the counter; on ANY cycle where at least one task actually dispatches,
+   reset it to 0. If the counter reaches a small bound (3), break the loop with `partial` status
+   and a named diagnostic — e.g. "self-modification gate produced N consecutive cycles with zero
+   dispatched tasks; likely a mutually-colliding self-modifying set; re-run affected tasks solo or
+   pass --allow-self-modifying" — rather than silently spinning to `MAX_CYCLES_MT`.
 
    **Interaction with the task-lock acquire step (Stage MT-4)**: admission runs **before** lock
    acquisition and is a distinct gate — admission compares declared scopes of ALL non-terminal
@@ -1353,8 +1420,10 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
    - **Idempotence guard**: subtract `mt_state_file.deployed_critical_paths` from the overlap set.
      If the remainder is empty, skip the checkpoint this cycle at zero further cost and continue
      to the next cycle. Without this guard, a task sitting in `implementing` across several cycles
-     would re-report the same `modified_files` and re-fire the checkpoint every cycle — the same
-     convergence rationale `deferred_self_modifying` relies on.
+     would re-report the same `modified_files` and re-fire the checkpoint every cycle. This
+     idempotence mechanism is unaffected by the self-modification narrowing elsewhere in this
+     document — `deployed_critical_paths` is its own accumulating set, distinct from both
+     `deferred_self_modifying` and `deferred_deploy_checkpoint`.
    - **Fire**: if the remainder is non-empty, log a loud notice naming every matched critical path
      and its label, then run, in order, from the repo root:
      ```bash
@@ -1369,10 +1438,14 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
    - **Failure path**: `deploy-headless.sh` exit 1 or 2, or `verify-deploy.sh` exit 1 or 2 (exit 2
      from `verify-deploy.sh` is a failure here, never a pass — see
      `scripts/verify-deploy.sh`'s header). Log a loud warning naming which gate failed and its
-     exit code, then add every task in `task_numbers` that is not terminal, not in `failed_tasks`,
-     and not already in `deferred_self_modifying` to `mt_state_file.deferred_deploy_checkpoint`.
-     Never add to `failed_tasks`. Never status-mutate. Never abort the invocation. Include the
-     operator remedy in the warning: fix the deploy/verify failure, redeploy manually, then re-run
+     exit code, then add every task in `task_numbers` that is not terminal and not in
+     `failed_tasks` to `mt_state_file.deferred_deploy_checkpoint`. As of the narrowing, membership
+     in the `deferred_self_modifying` OBSERVATION LOG is no longer a reason to skip a task here —
+     that log does not confer any exclusion of its own, so a task recorded in it that is otherwise
+     eligible and non-terminal is exactly the kind of task this permanent exclusion is meant to
+     catch. Never add to `failed_tasks`. Never status-mutate. Never abort the invocation. Include
+     the operator remedy in the warning: fix the deploy/verify failure, redeploy manually, then
+     re-run
      `/orchestrate` on the remaining task numbers.
    - Already-dispatched-and-committed tasks from prior cycles are unaffected by either path —
      their commits landed at step 5.5 before this step ran.
@@ -1748,33 +1821,46 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
 After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or MAX_CYCLES_MT reached):
 
 1. Read from `mt_state_file`: `completed_tasks`, `failed_tasks`, `deferred_self_modifying`,
-   `deferred_deploy_checkpoint`, `cycles_used`, counts.
+   `deferred_deploy_checkpoint`, `current_statuses`, `cycles_used`, counts.
+   `current_statuses` (refreshed every cycle by Stage MT-3 step 1) is what step 2 below consults
+   to determine, per task in `deferred_self_modifying`, whether it reached a terminal state by
+   loop exit.
 2. Determine `exit_status` — this is the `.return-meta-multi.json` skill-status vocabulary
    (normatively defined in `context/formats/return-metadata-file.md`), distinct from the
    `tasks_completed` array below (which records state.json task status, where `"completed"` is
    correct):
-   - `failed_count == 0` AND `deferred_self_modifying` is empty AND `deferred_deploy_checkpoint`
-     is empty → `"implemented"` (remove `mt_state_file`)
-   - `failed_count > 0` OR `deferred_self_modifying` is non-empty OR
-     `deferred_deploy_checkpoint` is non-empty → `"partial"` (preserve `mt_state_file` for
-     diagnostics). A non-empty `deferred_self_modifying` or `deferred_deploy_checkpoint` alone
-     (zero `failed_tasks`) still yields `"partial"`, never `"implemented"` — the invocation did
-     not actually finish everything it was asked to; at least one task remains undispatched
-     pending a solo re-run (or, for `deferred_deploy_checkpoint`, pending a manual deploy/verify
-     fix first). This is distinct from a failure: the task is not in `failed_tasks` and was never
-     status-mutated, so `"partial"` here means "incomplete by design", not "broken" — the same
-     framing for both sets.
-3. Report `deferred_self_modifying` tasks in the consolidated summary as **deferred-for-solo-run**
-   — a category distinct from both `completed_tasks` and `failed_tasks`. Never add a
-   deferred-self-modifying task to `failed_tasks`, and never mutate its `specs/state.json` status
-   — it simply was not dispatched by this invocation and remains eligible for a future solo
-   `/orchestrate {task_number}` run.
+   - `failed_count == 0` AND every task in `deferred_self_modifying` reached a terminal state
+     (`completed`, `abandoned`, or `expanded`) by loop exit AND `deferred_deploy_checkpoint` is
+     empty → `"implemented"` (remove `mt_state_file`). A task that appears in
+     `deferred_self_modifying` — meaning the gate deferred it at least once cycle during this
+     invocation — but went on to dispatch and complete before the loop exited is a SUCCESS, not a
+     partial: the observation log records history, not an outstanding obligation.
+   - `failed_count > 0` OR any task in `deferred_self_modifying` is STILL non-terminal at loop
+     exit OR `deferred_deploy_checkpoint` is non-empty → `"partial"` (preserve `mt_state_file` for
+     diagnostics). The gate here is deliberately narrower than "the log is merely non-empty" — it
+     is "the log names a task with unfinished work remaining" — because the log itself no longer
+     implies an outstanding exclusion the way it did before the narrowing. A non-empty
+     `deferred_deploy_checkpoint` alone (zero `failed_tasks`, and no non-terminal
+     `deferred_self_modifying` residue) still yields `"partial"`, never `"implemented"` — that set
+     retains its original, unchanged permanent-exclusion semantics: at least one task remains
+     undispatched pending a manual deploy/verify fix. This is distinct from a failure: the task is
+     not in `failed_tasks` and was never status-mutated, so `"partial"` here means "incomplete by
+     design", not "broken".
+3. Report `deferred_self_modifying` tasks in the consolidated summary as **deferred at least one
+   cycle by the self-modification gate** — an OBSERVATION, not an outstanding-work category. For
+   each task in the log, report its FINAL status at loop exit alongside the note: a task that
+   reached a terminal state is reported as completed (with the observation as a footnote); a task
+   still non-terminal at loop exit is reported as **still pending — deferred, not yet redispatched
+   this invocation** and remains eligible for a future `/orchestrate` run (solo or batched) or an
+   `--allow-self-modifying` override. Never add a self-modifying-deferred task to `failed_tasks`,
+   and never mutate its `specs/state.json` status because of the deferral itself.
 
    Report `deferred_deploy_checkpoint` tasks as a **distinct** category —
-   **deferred-by-redeploy-checkpoint** — separate from both deferred-for-solo-run and
-   `failed_tasks`, because the operator remedy differs: resolve the deploy/verify failure,
-   redeploy manually, then re-run `/orchestrate` on the remaining task numbers. Never add these
-   tasks to `failed_tasks`, and never mutate their `specs/state.json` status.
+   **deferred-by-redeploy-checkpoint** — separate from both the self-modification-gate
+   observation above and `failed_tasks`, because the operator remedy differs: resolve the
+   deploy/verify failure, redeploy manually, then re-run `/orchestrate` on the remaining task
+   numbers. Never add these tasks to `failed_tasks`, and never mutate their `specs/state.json`
+   status.
 4. Write `specs/.return-meta-multi.json`:
 ```bash
 jq -n \
