@@ -33,7 +33,10 @@
 - **Status**: [COMPLETED]
 - **Started**: 2025-12-22T10:00:00Z
 - **Completed**: 2025-12-22T10:20:00Z
+- **Effort**: {estimate}
+- **Dependencies**: {list or None}
 - **Artifacts**: plans/MM_{short-slug}.md
+- **Standards**: summary-format.md, status-markers.md, artifact-management.md, tasks.md
 
 ## Overview
 ...

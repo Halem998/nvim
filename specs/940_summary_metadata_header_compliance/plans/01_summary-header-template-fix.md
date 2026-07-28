@@ -1,7 +1,7 @@
 # Implementation Plan: Task #940
 
 - **Task**: 940 - summary_metadata_header_compliance
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/940_summary_metadata_header_compliance/reports/01_summary-metadata-header-compliance.md
@@ -145,7 +145,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Align summary-format.md's Example Skeleton with its own required-field list [NOT STARTED]
+### Phase 1: Align summary-format.md's Example Skeleton with its own required-field list [COMPLETED]
 
 **Goal**: Remove the internal inconsistency in the spec doc so the corrected agent template can be
 a faithful copy of it, and so a future copy of the example cannot reintroduce the divergence.
@@ -156,13 +156,13 @@ Status, Started, Completed, Effort, Dependencies, Artifacts, Standards), but its
 list is correct and must NOT change — only the example is brought into line with it.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/context/formats/summary-format.md`, edit the fenced block
+- [x] In `agent-system/extensions/core/context/formats/summary-format.md`, edit the fenced block
       under the `## Example Skeleton` heading so its metadata bullets list all eight fields from
-      `## Metadata (required)`, in the same order, in `- **Field**: value` bullet form.
-- [ ] Add `- **Effort**: {estimate}`, `- **Dependencies**: {list or None}`, and
+      `## Metadata (required)`, in the same order, in `- **Field**: value` bullet form. *(completed)*
+- [x] Add `- **Effort**: {estimate}`, `- **Dependencies**: {list or None}`, and
       `- **Standards**: summary-format.md, status-markers.md, artifact-management.md, tasks.md`
-      to the example.
-- [ ] Leave `## Metadata (required)`, `## Structure`, and `## Writing Guidance` unchanged.
+      to the example. *(completed)*
+- [x] Leave `## Metadata (required)`, `## Structure`, and `## Writing Guidance` unchanged. *(completed: confirmed via git diff — untouched)*
 
 **Timing**: 0.5 hours
 

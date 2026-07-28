@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Align summary-format.md's Example Skeleton with its own required-field list",
+  "started_at": "2026-07-28T00:00:00Z",
+  "last_updated": "2026-07-28T00:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Edit Example Skeleton fenced block to list all eight Metadata (required) fields in bullet form",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/formats/summary-format.md"]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
