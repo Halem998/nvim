@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 947,
+  "next_project_number": 951,
   "active_projects": [
     {
       "project_number": 913,
@@ -2219,6 +2219,87 @@
       "created": "2026-07-28T17:22:36Z",
       "last_updated": "2026-07-28T17:22:36Z",
       "session_id": "sess_1785258774_be5724"
+    },
+    {
+      "project_number": 947,
+      "project_name": "settle_research_agent_orchestrator_handoff_contract",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Settle whether research agents may write .orchestrator-handoff.json, and reconcile the core self-contradiction",
+      "description": "Settle the core-wide question of whether a research-phase agent is permitted to write .orchestrator-handoff.json, and reconcile the two core documents that currently contradict each other on this point.\n\nSOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**. The source store lives at /home/benjamin/.config/nvim/agent-system/, NOT in the cslib repo.\n\nTHE CONTRADICTION (verified empirically, carried forward verbatim from the analysis that produced this task):\n\ncore/agents/general-research-agent.md lines 182-190 contain an explicit 'Scoping Decision (Option A - chosen)' stating: 'Do NOT use wrap-up.md's H9 schema or .orchestrator-handoff.json for research - that schema and its consumer allowlist are implementation-agent-only.'\n\nYet core/skills/skill-orchestrate/SKILL.md line 2045 states: 'The two files read after each dispatch are .orchestrator-handoff.json (<=400 tokens) and, ... return-meta' - after EACH dispatch, not implementation-only. Lines 821 and 1817 of the same file treat the normative status table (context/formats/return-metadata-file.md lines 87-94) as binding for .orchestrator-handoff.json's status field, which only makes sense if research dispatches can legitimately produce that file.\n\nSo core contradicts itself about whether a research agent should write that file at all. Until this is settled, 'add a handoff contract to research agents' and 'add an explicit prohibition on research agents writing handoffs' are both defensible, and they are OPPOSITE edits.\n\nWHY THIS IS FOUNDATIONAL: a downstream task adds a Stage 7 final-metadata contract to cslib-research-agent.md and must encode whichever handoff rule this task establishes. Do NOT pre-commit that downstream task to 'add a handoff contract' - the finding above shows that direction may be exactly backwards.\n\nOBSERVED FAILURE THAT EXPOSED THIS (live, not hypothetical): an /orchestrate run dispatched cslib-research-agent for two tasks. Both agents produced correct, fully-verified research reports, but both wrote \"status\": \"research_complete\" into BOTH .orchestrator-handoff.json and .return-meta.json. research_complete is not in the normative vocabulary (in_progress|researched|planned|implemented|partial|failed|blocked). The orchestrator's off-schema branch refused both status transitions, charged both tasks to failed_tasks, and stranded them at [RESEARCHING] despite the research having fully succeeded.\n\nRELATED PRIOR WORK TO CHECK BEFORE DECIDING: task 913 ('Fix Stage 5 treating a missing handoff after a research dispatch as an error') is COMPLETED and is closely adjacent. Its completion summary asserts 'Base-mode research, plan, and implement dispatches never write a handoff by contract' and it added a shared orchestrate-recover-outcome.sh helper that recovers a dispatch outcome from .return-meta.json when the handoff is absent. Note the distinction: 913 addressed the MISSING-handoff case; the failure above is a MALFORMED-handoff case (the file was written, with an off-schema status). Determine whether 913's conclusion is the settled answer that simply was never propagated to the cslib agents, or whether it is itself part of the contradiction. Do not assume - verify against the actual current text of both files.\n\nALSO CONSULT: context/contracts/wrap-up.md (its consumer allowlist) and docs/architecture/handoff-schema.md (its Handoff Writers table), both cited by 913 as corroborating the implementation-agent-only reading.\n\nDELIVERABLE: a single unambiguous rule, encoded in whichever core files need amending so that no reader can derive the opposite rule from a sibling document. If the answer is 'research agents must not write handoffs', skill-orchestrate's per-dispatch language must be narrowed accordingly. If the answer is 'they may', the Scoping Decision must be amended and the Handoff Writers table extended.\n\nHonor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.",
+      "file_scope": [
+        "agent-system/extensions/core/agents/general-research-agent.md",
+        "agent-system/extensions/core/agents/general-research-hard-agent.md",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+        "agent-system/extensions/core/context/contracts/wrap-up.md"
+      ],
+      "dependencies": [],
+      "created": "2026-07-28T00:00:00Z",
+      "last_updated": "2026-07-28T00:00:00Z",
+      "session_id": "sess_1785259500_5bbf08",
+      "artifacts": []
+    },
+    {
+      "project_number": 948,
+      "project_name": "add_stage7_final_metadata_to_cslib_research_agent",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Add a Stage 7 final-metadata contract to cslib-research-agent.md",
+      "description": "Add a Stage 7 / final-metadata section to agent-system/extensions/cslib/agents/cslib-research-agent.md, which currently has no terminal-metadata contract at all. This is the agent that actually failed in production.\n\nSOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**. The source store lives at /home/benjamin/.config/nvim/agent-system/, NOT in the cslib repo. The user reloads the agent system via a <leader>al keybinding which redeploys from this nvim source store to cslib and other repos, so the fix must land there to propagate.\n\nOBSERVED FAILURE (live, verified, not hypothetical): an /orchestrate run dispatched cslib-research-agent for two tasks. Both produced correct, fully-verified research reports, but both wrote \"status\": \"research_complete\" into .orchestrator-handoff.json and .return-meta.json. research_complete is NOT in the normative status vocabulary at agent-system/extensions/core/context/formats/return-metadata-file.md lines 87-94 (in_progress|researched|planned|implemented|partial|failed|blocked). The orchestrator's off-schema branch refused both status transitions, charged both tasks to failed_tasks, and left them stranded at [RESEARCHING] despite the research having fully succeeded. Both handoffs ALSO wrote artifacts as an array of bare path strings instead of an array of {type, path, summary} objects, breaking the orchestrator's .artifacts[0].path artifact-linking read and requiring manual relinking.\n\nROOT CAUSE (verified by direct file inspection): cslib-research-agent.md defines a 'Stage 0: Initialize Early Metadata' (status in_progress) at line ~219, but has NO Stage 7 or final-metadata equivalent ANYWHERE in the file. It never names the terminal status value and never specifies the artifacts object shape. Its 'Critical Requirements' section (line ~279) says 'Always write final metadata to specs/{N}_{SLUG}/.return-meta.json' but never says WHAT STATUS VALUE TO WRITE. Its MUST NOT #6 forbids the value \"completed\" but supplies no correct alternative - so the agent had no in-file source for the value researched.\n\nREFERENCE CONTRACT TO MIRROR: agent-system/extensions/core/agents/general-research-agent.md Stage 7 (lines ~306-322). It explicitly states status researched AND documents that artifacts is a required array of objects with type/path/summary keys, 'never an array of bare path strings', with the precise rationale that a bare-string array parses as valid JSON but silently breaks the orchestrator's .artifacts[0].path read (which yields an empty string against a string element instead of an object). It includes a minimal JSON example and a pointer to return-metadata-file.md's 'artifacts (required)' section as the full field spec.\n\nREQUIRED SCOPE:\n1. Name the terminal status value researched explicitly.\n2. Specify the artifacts array-of-objects shape WITH its rationale (not just the shape - the rationale is what stops future drift).\n3. Encode whichever .orchestrator-handoff.json rule the prerequisite task establishes.\n\nCRITICAL - DO NOT PRE-COMMIT ITEM 3: it is tempting to 'add an orchestrator-handoff writing contract', but core currently contradicts itself on whether research agents may write that file at all (general-research-agent.md lines 182-190 forbid it; skill-orchestrate/SKILL.md line 2045 reads it after each dispatch). The prerequisite task settles this. Encode ITS answer - which may well be an explicit PROHIBITION on writing the handoff rather than a contract for writing one.\n\nHonor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.",
+      "file_scope": [
+        "agent-system/extensions/cslib/agents/cslib-research-agent.md"
+      ],
+      "dependencies": [
+        947
+      ],
+      "created": "2026-07-28T00:00:00Z",
+      "last_updated": "2026-07-28T00:00:00Z",
+      "session_id": "sess_1785259500_5bbf08",
+      "artifacts": []
+    },
+    {
+      "project_number": 949,
+      "project_name": "propagate_artifacts_shape_spec_to_cslib_sibling_agents",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Propagate the artifacts array-of-objects spec to the six sibling cslib agents",
+      "description": "Propagate the artifacts-shape specification to the six cslib agent definitions that lack it, using the canonical wording established by the prerequisite task in cslib-research-agent.md.\n\nSOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**. The source store lives at /home/benjamin/.config/nvim/agent-system/, NOT in the cslib repo.\n\nEMPIRICAL SURVEY (run against agent-system/extensions/cslib/agents/, grep for 'bare path' returned ZERO matches across the entire directory - so ALL SEVEN cslib agents lack this spec). The prerequisite task covers cslib-research-agent.md; this task covers the remaining six:\n\n- cslib-implementation-agent.md - has a terminal status (implemented, lines ~196/296); missing artifacts-shape spec; no orchestrator-handoff mention\n- cslib-vet-agent.md - has Stage 7 'Write Final Metadata' (line ~400) with status implemented; missing artifacts-shape spec\n- pr-review-research-agent.md - has Stage 6 'Write Final Metadata' (line ~346) with status researched; missing artifacts-shape spec\n- pr-review-implementation-agent.md - has Stage 7 'Write Final Metadata' (line ~300) with status implemented; missing artifacts-shape spec\n- cslib-research-hard-agent.md - HAS a Stage 7 (line ~295); missing artifacts-shape spec AND no orchestrator-handoff mention\n- cslib-implementation-hard-agent.md - HAS a Stage 7 (line ~306) AND four orchestrator-handoff references; missing artifacts-shape spec only\n\nThe original scope note for this work said the two hard agents 'already carry some of this; verify rather than assume'. That verification was performed and is recorded above: both hard agents do have Stage 7 sections, but NEITHER carries the artifacts-shape spec. So the artifacts fix is a uniform insertion across all six files here.\n\nTHE SPEC TO PROPAGATE: artifacts is a required array of OBJECTS, each with type, path, and summary keys - never an array of bare path strings. Rationale (include it, do not just state the shape): a bare-string array parses as valid JSON but silently breaks the orchestrator's artifact-linking read .artifacts[0].path, which yields an empty string against a string element instead of an object. This is not theoretical - it occurred in production, required manual artifact relinking, and is the reason this task exists.\n\nCanonical source wording: agent-system/extensions/core/agents/general-research-agent.md Stage 7, lines ~310-322.\n\nNOTE ON PER-AGENT ADAPTATION: the terminal status differs per agent (researched for the research/pr-review-research agents, implemented for the implementation/vet/pr-review-implementation agents). Preserve each agent's existing correct terminal status; only the artifacts-shape spec is being added uniformly. Where an agent's existing terminal status is absent or off-schema, fix it against the normative table at core/context/formats/return-metadata-file.md lines 87-94.\n\nHonor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.",
+      "file_scope": [
+        "agent-system/extensions/cslib/agents/cslib-implementation-agent.md",
+        "agent-system/extensions/cslib/agents/cslib-vet-agent.md",
+        "agent-system/extensions/cslib/agents/pr-review-research-agent.md",
+        "agent-system/extensions/cslib/agents/pr-review-implementation-agent.md",
+        "agent-system/extensions/cslib/agents/cslib-research-hard-agent.md",
+        "agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md"
+      ],
+      "dependencies": [
+        948
+      ],
+      "created": "2026-07-28T00:00:00Z",
+      "last_updated": "2026-07-28T00:00:00Z",
+      "session_id": "sess_1785259500_5bbf08",
+      "artifacts": []
+    },
+    {
+      "project_number": 950,
+      "project_name": "reconcile_stale_status_vocabulary_in_command_structure",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "agent-system",
+      "title": "Reconcile stale status vocabulary and stale state.json references in command-structure.md",
+      "description": "Fix stale, contradictory content in agent-system/extensions/core/context/formats/command-structure.md that is a plausible contamination source for off-schema status values emitted by agents.\n\nSOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**. The source store lives at /home/benjamin/.config/nvim/agent-system/, NOT in the cslib repo.\n\nTWO DEFECTS IN THE SAME BLOCK (both verified by direct inspection):\n\n1. STALE STATUS VOCABULARY. Line 80 reads 'Status must be \"research_complete\" or \"ready\"'. Line 160 reads 'Task not ready -> \"Task {task_number} status is {status}, expected research_complete or ready\"'. Neither research_complete nor ready is a valid value. Note this is TASK status (the state.json status field), a different namespace from .return-meta.json status - but research_complete is wrong in BOTH namespaces, and its presence here is a plausible source of the wrong value that cslib-research-agent emitted into .return-meta.json and .orchestrator-handoff.json in production. Reconcile against the actual current vocabularies: the normative return-metadata vocabulary at core/context/formats/return-metadata-file.md lines 87-94 (in_progress|researched|planned|implemented|partial|failed|blocked), and the task-status markers documented in CLAUDE.md / rules/state-management.md (not_started|researching|researched|planning|planned|implementing|completed|abandoned|expanded|blocked|partial). The correct value at both sites is almost certainly researched, but confirm against the state-management rule rather than assuming.\n\n2. STALE STATE FILE PATH AND JSON SHAPE, in the same block. Step 3 (lines ~72-76) reads:\n     task_status=$(jq -r \".tasks[] | select(.number == $task_number) | .status\" .claude/state.json)\n     task_title=$(jq -r \".tasks[] | select(.number == $task_number) | .title\" .claude/state.json)\nBoth the path and the query shape are wrong against current reality. The state file is specs/state.json, not .claude/state.json; the array is .active_projects[], not .tasks[]; and the identity field is .project_number, not .number. Correct all three. Also check whether .title is the right field name in the current schema (state.json entries do carry a title field, but verify).\n\nSCOPE DISCIPLINE: sweep the whole file for other instances of the same two staleness classes rather than fixing only the cited line numbers - the fact that two independent defects sit in one block suggests the document was not maintained alongside the schema it describes. If the sweep finds the file is broadly stale beyond these two classes, report that rather than silently expanding scope.\n\nThis task is independent of the cslib agent-contract fixes and can run in parallel with them.\n\nHonor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.",
+      "file_scope": [
+        "agent-system/extensions/core/context/formats/command-structure.md"
+      ],
+      "dependencies": [],
+      "created": "2026-07-28T00:00:00Z",
+      "last_updated": "2026-07-28T00:00:00Z",
+      "session_id": "sess_1785259500_5bbf08",
+      "artifacts": []
     }
   ],
   "completed_projects": [],

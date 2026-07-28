@@ -1,0 +1,33 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "plan",
+  "status": "planned",
+  "summary": "Created a 15-phase staged plan. Prevention lands first (Phase 1: exemption taxonomy in the rule file plus a shared bash pattern library; Phase 2: check-task-references.sh with exit codes 0/1/2, --quiet, manifest declaration, verify-deploy gate 4, and three settings.local.json permission entries). Eleven purge phases (4-14) clear ~1,228 occurrences across agent-system/extensions, .opencode, lua, and .memory. The blocking PreToolUse flip via exit code 2 is strictly last (Phase 15), gated on the lint script exiting 0. Two facts beyond the research were verified: the hook's registration lives in merge-sources/settings-hooks.json, and its current wrapper would swallow exit 2.",
+  "artifacts": [
+    {"type": "plan", "path": "specs/941_purge_and_enforce_no_task_references/plans/01_purge-and-enforce-task-references.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "implement",
+  "files_modified": [
+    "specs/941_purge_and_enforce_no_task_references/plans/01_purge-and-enforce-task-references.md",
+    "specs/941_purge_and_enforce_no_task_references/.orchestrator-handoff.json",
+    "specs/941_purge_and_enforce_no_task_references/.return-meta.json"
+  ],
+  "decisions_made": [
+    "Anti-divergence mechanism is ONE sourced library, agent-system/extensions/core/scripts/lib/task-reference-patterns.sh, exposing TASK_SEP/TASK_PATTERN/PHASE_PATTERN/is_exempt_path/strip_exempt_regions. Both the lint script and the hook source it and define nothing locally; Phase 15 deletes the hook's inline pattern assignments.",
+    "Exemption is an in-content marker convention (task-ref-ok inline, or task-ref-ok:begin/end block, with a required reason naming the taxonomy category), not a path allowlist. A path allowlist was rejected: it grants whole-file immunity to files that also contain real violations, and the hook only ever sees the content being written.",
+    "git-workflow.md self-hit resolved by converting its Examples block to the placeholder form its own Standard Actions table already uses, retaining one rendered example inside a marked region. The marked/unmarked pair for that example is an explicit named regression fixture in Phase 15.",
+    "15 phases rather than the research's 13: two oversize phases were split (core non-context 205 occ / 53 files into Phases 5 and 6; .opencode/context 210 occ / 50 files into Phases 13 and 14). Nothing was merged.",
+    "Enforcement-section rewrite moved into Phase 3 (after the lint script exists) so each phase's claim is true when it lands; Phase 15 updates only the write-time-gate bullet.",
+    "Phase 15 registration MUST use the bare command form in root-files/settings.json, mirroring guard-destructive-git.sh. The existing PostToolUse wrapper converts exit 2 to exit 0 and would silently disable the block.",
+    "Hook fails OPEN (exit 0 plus stderr warning) if the shared library cannot be sourced, so a broken guard never blocks every write in the repo.",
+    "Wave 3 declares twelve territory-disjoint phases; each enumerates its exclusive tree slice, with Phase 6 explicitly excluding the four files owned by Phases 1 and 3."
+  ],
+  "dead_ends": [
+    "permissionDecision deny is not usable for this gate: settings.json permissions.allow contains bare Write and Edit entries, the documented precondition under which deny is ignored. Do not revisit.",
+    "agent-system/extensions/core/hooks/tests/test-validate-no-task-references.sh does not exist; the real path is agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh, declared under provides.scripts.",
+    "root-files/settings.json has no PostToolUse Write|Edit entry for this hook to modify; that registration lives in merge-sources/settings-hooks.json under hooks.PostToolUse. root-files/settings.json has PreToolUse but no Write|Edit matcher for this hook yet."
+  ],
+  "phases_completed": 0,
+  "phases_total": 15
+}
