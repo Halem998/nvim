@@ -390,6 +390,11 @@ only). Include `modified_files` (from Stage 6-modified-files, per
 `@.claude/context/formats/return-metadata-file.md`) at the **top level**. Include
 `memory_candidates` array at the top level.
 
+**`artifacts` shape (required)**: `artifacts` is a **required array of objects** (`type`, `path`,
+`summary` keys each) — **never an array of bare path strings**, per
+`@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)` section. A bare-string
+array silently breaks the orchestrator's `.artifacts[0].path` read.
+
 **Phase-count nesting — do NOT reuse Stage 5's shape here.** `phases_completed` and
 `phases_total` go **inside the `metadata` object** in `.return-meta.json` (or inside
 `partial_progress` for a `partial` return), never at the top level. This is easy to get wrong in

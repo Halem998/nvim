@@ -334,6 +334,11 @@ grep -q "^\- \*\*Status\*\*:" plan_file || echo "ERROR: Missing Status field"
 
 Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `planned`. Include `memory_candidates` array (from Stage 5a) at the top level of the JSON output. Agent-specific metadata fields: `phase_count`, `estimated_hours`, `dependency_waves`. Set `next_steps` to `"Run /implement {N} to execute the plan"`.
 
+**`artifacts` shape (required)**: `artifacts` is a **required array of objects** (`type`, `path`,
+`summary` keys each) — **never an array of bare path strings**, per
+`@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)` section. A bare-string
+array silently breaks the orchestrator's `.artifacts[0].path` read.
+
 ### Stage 7: Return Brief Text Summary
 
 Return 3-6 bullet points summarizing: phase count, effort estimate, scope covered, plan path, metadata status.

@@ -1,0 +1,46 @@
+{
+  "phase": 4,
+  "phase_name": "Artifacts Array Shape — Local Instruction in the Research Agent",
+  "started_at": "2026-07-28T09:13:00Z",
+  "last_updated": "2026-07-28T09:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add local artifacts object-array shape instruction with inline example to general-research-agent.md Stage 7, keeping the existing @-reference to return-metadata-file.md",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/general-research-agent.md"],
+      "note": "Item B decision recorded: a local inline instruction was added rather than only making the @-reference more prominent, because Defect 2 already demonstrated that the reference-only approach was insufficient (the research agent wrote a bare-string artifacts array despite the reference existing). The existing @.claude/context/formats/return-metadata-file.md reference at Stage 0 ('always load') was left unchanged."
+    },
+    {
+      "id": 2,
+      "description": "Scope Hypothesis check: grep every agent file under agent-system/extensions/core/agents/ for 'artifacts' and identify any other .return-meta.json writer equally silent on the shape",
+      "status": "done",
+      "files_touched": [],
+      "note": "Grep found general-implementation-hard-agent.md, general-research-hard-agent.md, planner-agent.md, and planner-hard-agent.md all write .return-meta.json (confirmed via their own Stage 6/7 'Write to specs/.../.return-meta.json' instructions) with zero local 'artifacts' shape mention -- the identical silent-reference gap Defect 2 exploited in general-research-agent.md. code-reviewer-agent.md was checked and does not write .return-meta.json at all (no hits), so it is correctly out of scope."
+    },
+    {
+      "id": 3,
+      "description": "Per the Scope Hypothesis's explicit widening instruction, add the same minimal local artifacts-shape instruction to the four additional silent writers",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+        "agent-system/extensions/core/agents/general-research-hard-agent.md",
+        "agent-system/extensions/core/agents/planner-agent.md",
+        "agent-system/extensions/core/agents/planner-hard-agent.md"
+      ],
+      "note": "FOOTPRINT WIDENING, recorded explicitly per the binding delegation constraint: this phase's declared 'Files to modify' list named only general-research-agent.md. Widening to the four additional agent files is authorized by the phase's own Scope Hypothesis text ('if another agent definition is equally silent AND writes .return-meta.json, add it to this phase rather than leaving a second instance of the same defect in place'), not invented independently. general-implementation-hard-agent.md is a file task 940 will also edit (per delegation context); the added artifacts-shape paragraph does not overlap task 940's declared concern (summary metadata headers), so there is no conflict, by the same reasoning already applied to skill-implementer-hard/SKILL.md in Phase 2's Ownership call. Each addition is a short paragraph plus (for the base research agent only) a minimal inline JSON example; no existing sentence was altered, no field renamed, no read location changed. Verified via git diff --stat (39 insertions across 5 files, 0 deletions) and a task-number-citation grep (zero hits) and a .claude/ path check (zero hits)."
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.widening",
+      "description": "Phase 4's declared Files to modify list named only general-research-agent.md",
+      "type": "altered",
+      "reason": "The phase's own Scope Hypothesis text explicitly directs widening when the grep finds additional equally-silent .return-meta.json writers, which it did (4 more files). Followed the plan's own contingency instruction rather than deferring.",
+      "annotation": "*(deviation: altered — widened from 1 to 5 files per the phase's own Scope Hypothesis directive; see phase notes)*"
+    }
+  ]
+}

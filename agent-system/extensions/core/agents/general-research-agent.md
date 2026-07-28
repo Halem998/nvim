@@ -307,6 +307,25 @@ Create directory and write report:
 
 Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `researched`. Agent-specific metadata fields: `findings_count`. Include `memory_candidates` array (from Stage 5) at the top level of the JSON output. Set `next_steps` to `"Run /plan {N} to create implementation plan"`.
 
+**`artifacts` shape (required)**: `artifacts` is a **required array of objects**, each with
+`type`, `path`, and `summary` keys — **never an array of bare path strings**. A bare-string array
+parses as valid JSON but silently breaks the orchestrator's artifact-linking read
+(`.artifacts[0].path`), which yields an empty string against a string element instead of an
+object. Minimal example:
+
+```json
+"artifacts": [
+  {
+    "type": "report",
+    "path": "specs/{NNN}_{SLUG}/reports/{NN}_{slug}.md",
+    "summary": "One-line description of what the report covers."
+  }
+]
+```
+
+See `@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)` section for the
+full field spec — this is a call-site reminder, not a replacement for that reference.
+
 ### Stage 8: Return Brief Text Summary
 
 Return 3-6 bullet points summarizing: key findings, patterns discovered, report path, metadata status.

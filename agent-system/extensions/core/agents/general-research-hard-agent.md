@@ -270,6 +270,11 @@ metadata fields: `findings_count`, `adversarial_verification_triggered` (boolean
 Include `memory_candidates` array at the top level. Set `next_steps` to
 `"Run /plan {N} to create implementation plan"`.
 
+**`artifacts` shape (required)**: `artifacts` is a **required array of objects** (`type`, `path`,
+`summary` keys each) — **never an array of bare path strings**, per
+`@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)` section. A bare-string
+array silently breaks the orchestrator's `.artifacts[0].path` read.
+
 ### Stage 8: Return Brief Text Summary
 
 Return 3-6 bullet points: key findings, reference grounding tier applied, whether adversarial

@@ -365,28 +365,37 @@ expectation, decides which of the two treatments applies.
 
 ---
 
-### Phase 4: Artifacts Array Shape — Local Instruction in the Research Agent [NOT STARTED]
+### Phase 4: Artifacts Array Shape — Local Instruction in the Research Agent [COMPLETED]
 
 **Goal**: Remove the research agent's dependence on a reference that was demonstrably not followed,
 by adding a local, inline statement of the `artifacts` object-array shape at the point of use.
 
 **Tasks**:
 
-- [ ] Confirm by grep that `agents/general-research-agent.md` currently contains no instruction for
+- [x] Confirm by grep that `agents/general-research-agent.md` currently contains no instruction for
       the `artifacts` field shape (research found exactly one unrelated prose use of the word).
-      Record the grep output.
-- [ ] Locate the `### Stage 7: Write Metadata File` heading and the sentence beginning
-      `Write to \`specs/{NNN}_{SLUG}/.return-meta.json\` with status \`researched\`.`
-- [ ] Add an explicit statement that `artifacts` is a **required** array of **objects**, each with
+      Record the grep output. *(completed: single unrelated prose hit at "Reference existing
+      artifacts in the new report", confirmed)*
+- [x] Locate the `### Stage 7: Write Metadata File` heading and the sentence beginning
+      `Write to \`specs/{NNN}_{SLUG}/.return-meta.json\` with status \`researched\`.` *(completed)*
+- [x] Add an explicit statement that `artifacts` is a **required** array of **objects**, each with
       `type`, `path`, and `summary` — never an array of bare path strings — plus a minimal inline
       one-object example. Keep it to a few lines; this is a call-site reminder, not a schema
-      restatement.
-- [ ] Keep the existing `@`-reference to `context/formats/return-metadata-file.md` in place. The
-      local instruction supplements the reference; it does not replace it.
-- [ ] Decide and record explicitly (item B's open choice): the local-instruction option is taken
+      restatement. *(completed)*
+- [x] Keep the existing `@`-reference to `context/formats/return-metadata-file.md` in place. The
+      local instruction supplements the reference; it does not replace it. *(completed: verified
+      the Stage 0 "always load" reference at the top of the file is unchanged)*
+- [x] Decide and record explicitly (item B's open choice): the local-instruction option is taken
       rather than merely making the reference more prominent, because Defect 2 already falsified
       "the reference alone is sufficient." State this reasoning in the phase notes, not in the
-      edited file.
+      edited file. *(completed — see progress/phase-4-progress.json)*
+- [x] **Scope Hypothesis widening** (see below): the grep found `general-implementation-hard-agent.md`,
+      `general-research-hard-agent.md`, `planner-agent.md`, and `planner-hard-agent.md` equally
+      silent on the `artifacts` shape while each independently writing `.return-meta.json`. Per the
+      Scope Hypothesis's own instruction ("add it to this phase rather than deferring it"), each
+      received the same minimal local instruction. This widens Phase 4's edit set from the
+      single declared file to five files — recorded explicitly here and in the implementation
+      handoff/summary, per the binding constraint against silent footprint widening. *(completed)*
 
 **Timing**: 0.5 hours
 

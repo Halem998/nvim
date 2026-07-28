@@ -276,6 +276,11 @@ Create directory and write plan file following plan-format.md plus hard-mode add
 Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `planned`. Agent-specific fields:
 `phase_count`, `estimated_hours`, `postmortem_rules_count` (number of do-not rules added).
 
+**`artifacts` shape (required)**: `artifacts` is a **required array of objects** (`type`, `path`,
+`summary` keys each) — **never an array of bare path strings**, per
+`@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)` section. A bare-string
+array silently breaks the orchestrator's `.artifacts[0].path` read.
+
 ### Stage 7: Return Brief Text Summary
 
 Return 3-6 bullet points: phase count, H8 sizing compliance, postmortem constraints added,
