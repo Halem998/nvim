@@ -41,7 +41,7 @@ The changelog summary briefly describes the generation source and any notable co
 Examples:
 ```markdown
 *Updated 2026-05-15. Generated from state.json dependency graph.*
-*Updated 2026-05-15. Generated from state.json. Tasks 139-141 archived.*
+*Updated 2026-05-15. Generated from state.json. Tasks {N}-{N} archived.*
 ```
 
 ### Goal Statement

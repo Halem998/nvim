@@ -7,7 +7,8 @@ resolution to undeployed agents.
 
 **Scope**: This document covers the script/skill routing layer only.
 The CLAUDE.md "Routing Mechanism" and "Hard Mode" sections are maintained
-separately by task 770. Do NOT edit CLAUDE.md based on this document.
+directly in CLAUDE.md itself, independently of this document. Do NOT edit
+CLAUDE.md based on this document.
 
 ---
 
@@ -95,7 +96,7 @@ fi
 
 ---
 
-## Deployed Hard Skills (as of task 768)
+## Deployed Hard Skills (current inventory)
 
 The following hard skills have deployed SKILL.md files and are reachable via
 the `-hard` append fallback (Step 4e) or via manifest routing (Steps 4a-4d):

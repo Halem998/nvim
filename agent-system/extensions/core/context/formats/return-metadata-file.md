@@ -242,7 +242,7 @@ Each candidate object:
 **Notes**:
 - Agents emit 0-3 candidates per execution; absence is valid behavior
 - Skill postflight propagates candidates to state.json task entries with append semantics
-- `/todo` consumes candidates during archival (task 447 scope)
+- `/todo` consumes candidates during archival
 - The field uses `// []` fallback in all jq reads for backward compatibility
 
 ### reflection (optional)
@@ -388,7 +388,7 @@ mkdir -p "specs/${padded_num}_${task_slug}"
 
 3. Return a brief summary (NOT JSON) to the console:
 ```
-Research completed for task 1:
+Research completed for task {N}:
 - Found 5 relevant implementation patterns
 - Identified configuration strategy using modular approach
 - Created report at specs/001_setup_lsp_config/reports/01_lsp-config-research.md

@@ -1,9 +1,10 @@
 # Anti-Analysis Contract (H2)
 
 This contract implements H2: Anti-Analysis-Paralysis. It is a hard behavioral constraint
-for all hard-mode agents. The single highest-value technique distilled from the BimodalLogic
-task-273 orchestration session: per-phase dispatch moved implementation from 0 lines across
-3 dispatches to 2,400+ lines across 13 dispatches only after this contract was in force.
+for all hard-mode agents. The single highest-value technique distilled from a cross-repo
+high-complexity orchestration case study (the BimodalLogic per-phase-dispatch baseline):
+per-phase dispatch moved implementation from 0 lines across 3 dispatches to 2,400+ lines
+across 13 dispatches only after this contract was in force.
 
 ## Read Budget
 

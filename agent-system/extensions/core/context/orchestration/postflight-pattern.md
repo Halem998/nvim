@@ -4,7 +4,7 @@
 
 All workflow commands (`/research`, `/plan`, `/revise`, `/implement`) MUST execute postflight in Stage 3.5 after validating subagent returns in Stage 3.
 
-Postflight ensures status is updated and artifacts are linked AFTER work completes, preventing manual fixes like those needed for Task 326.
+Postflight ensures status is updated and artifacts are linked AFTER work completes, preventing the manual fixes needed by the historical phantom-artifact incident (status updated but artifacts not actually created).
 
 ## Standard Postflight Process
 
@@ -44,7 +44,7 @@ for artifact_path in $(echo "$artifacts_json" | jq -r '.[].path'); do
   if [ ! -f "$artifact_path" ]; then
     echo "ERROR: Artifact not found on disk: $artifact_path"
     echo "Subagent claimed to create artifact but file does not exist"
-    echo "This is the same issue that caused Task 326 manual fixes"
+    echo "This is the same issue that caused the phantom-artifact incident's manual fixes"
     exit 1
   fi
   
@@ -63,7 +63,7 @@ done
 echo "✓ All $artifact_count artifact(s) validated on disk"
 ```
 
-**This validation is CRITICAL** - it prevents the exact issue that caused Task 326 manual fixes where status was updated but artifacts weren't actually created.
+**This validation is CRITICAL** - it prevents the exact phantom-artifact issue where status was updated but artifacts weren't actually created (see Overview).
 
 ### Step 3: Delegate to status-sync-manager
 
@@ -166,7 +166,7 @@ if [ "$actual_status" != "$target_status" ]; then
   echo "WARNING: Postflight verification failed - status not updated"
   echo "Expected status: $target_status"
   echo "Actual status: $actual_status"
-  echo "This is the same issue that caused Task 326 manual fixes"
+  echo "This is the same phantom-artifact issue described in the Overview"
   echo "Manual fix: /task --sync $task_number"
 else
   echo "✓ Status verified as '$target_status'"
@@ -176,7 +176,7 @@ fi
 for artifact_path in $(echo "$artifacts_json" | jq -r '.[].path'); do
   if ! grep -q "$artifact_path" specs/TODO.md; then
     echo "WARNING: Artifact not linked in TODO.md: $artifact_path"
-    echo "This is the same issue that caused Task 326 manual fixes"
+    echo "This is the same phantom-artifact issue described in the Overview"
     echo "Manual fix: Add artifact to state.json and call generate-todo.sh"
   else
     echo "✓ Verified artifact link in TODO.md: $artifact_path"
@@ -259,7 +259,7 @@ Confirm postflight completed and proceed to result relay:
 echo "✓ Postflight completed: Task $task_number status updated to ${target_status^^}"
 echo "Artifacts linked: $artifact_count"
 echo "Git commit: ${commit_hash:-'failed (see warning above)'}"
-echo "No manual fixes needed (unlike Task 326)"
+echo "No manual fixes needed (no phantom-artifact issue)"
 echo "Proceeding to Stage 4 (RelayResult)"
 ```
 
@@ -273,7 +273,7 @@ Before proceeding to Stage 4 (RelayResult), verify:
 - [ ] state.json status field verified as expected value (or warning logged)
 - [ ] Artifact links verified in TODO.md (or warning logged)
 - [ ] Git commit created (or warning logged)
-- [ ] NO manual fixes needed (unlike Task 326)
+- [ ] NO manual fixes needed (no phantom-artifact issue)
 
 ## Error Handling
 
@@ -300,7 +300,7 @@ This standardized postflight provides:
 3. **Defense in Depth**: Verification step catches status-sync-manager failures
 4. **Graceful Degradation**: Non-critical failures don't block command completion
 5. **Manual Recovery**: Clear instructions for fixing any failures
-6. **No More Task 326**: Prevents the exact issue that required manual fixes
+6. **No More Phantom-Artifact Incidents**: Prevents the exact issue that required manual fixes
 
 ## Integration with Command Files
 
@@ -313,7 +313,7 @@ Command files MUST execute this postflight in Stage 3.5 after Stage 3 (ValidateR
   <action>Update status to [RESEARCHED], link artifacts, create git commit</action>
   <process>
     CRITICAL: This stage ensures artifacts are linked and status is updated.
-    This addresses the Task 326 issue where manual fixes were needed.
+    This addresses the phantom-artifact issue where manual fixes were needed (see Overview).
     
     1. Extract artifacts from subagent return
     2. Validate artifacts exist on disk (CRITICAL)
