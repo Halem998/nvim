@@ -433,31 +433,40 @@ a file no other phase edits, so it carries no ordering constraint against the co
 
 ---
 
-### Phase 7: Convert `update-task-status.sh` [NOT STARTED]
+### Phase 7: Convert `update-task-status.sh` [COMPLETED]
 
 - **Goal:** Replace this script's fail-open mutex wrapper and hand-rolled staging with
   `state-write.sh`, keeping its TODO.md regen inside the critical section.
 - **Tasks:**
-  - [ ] Delete `acquire_state_mutex` and `release_state_mutex`, including the fail-open
+  - [x] Delete `acquire_state_mutex` and `release_state_mutex`, including the fail-open
         `WARNING: ... proceeding unserialized (non-blocking)` branch — the helper now owns
         acquisition, and the posture is fail-closed.
-  - [ ] Convert the PHASE 1 `specs/state.json` write to a `state-write.sh` call with
+  - [x] Convert the PHASE 1 `specs/state.json` write to a `state-write.sh` call with
         `--regen-todo`, so PHASE 2's TODO.md regeneration happens inside the same mutex rather
-        than as a separate step after release.
-  - [ ] Remove the `$TMP_DIR/state.json.tmp` staging path and its `rm -f` from the `cleanup`
+        than as a separate step after release. *(completed: PHASE 1 and PHASE 2 are now literally
+        one combined call; a noop state.json write still runs a `.`-identity state-write.sh call
+        so TODO.md regen stays mutex-protected even on a no-op replay, preserving the prior
+        self-healing-on-retry property)*
+  - [x] Remove the `$TMP_DIR/state.json.tmp` staging path and its `rm -f` from the `cleanup`
         trap; keep the trap for whatever non-state.json cleanup remains, or delete it if nothing
-        remains.
-  - [ ] Preserve the existing idempotency check (`state_is_noop`) and the `--dry-run` path
-        unchanged; a dry run must still perform no write and no acquire.
-  - [ ] Preserve the documented exit-code contract, including code 3 (plan-file update failed
+        remains. *(completed: the whole `cleanup`/`trap ... EXIT` pair and `TMP_DIR` variable
+        were removed outright — nothing else used them)*
+  - [x] Preserve the existing idempotency check (`state_is_noop`) and the `--dry-run` path
+        unchanged; a dry run must still perform no write and no acquire. *(completed: verified
+        against a fixture — dry-run writes nothing and never touches `.claude/tmp/workflow-active`)*
+  - [x] Preserve the documented exit-code contract, including code 3 (plan-file update failed
         after `specs/state.json` was written) and its retryability note. Update the header
-        comment if the fail-closed change introduces a new failure code.
-  - [ ] Update the block comment describing the `.scope-lock` bracket to describe the new
+        comment if the fail-closed change introduces a new failure code. *(completed: exit codes
+        unchanged; no new failure code was introduced since state-write.sh's own exit 2/3/4
+        collapse into this script's existing exit 2 "failed to update state.json" path)*
+  - [x] Update the block comment describing the `.scope-lock` bracket to describe the new
         delegation to the shared helper, keeping the `SCOPE_MUTEX_HELD` guest-mode explanation.
         Use durable anchors.
-  - [ ] Keep the `workflow-active` marker write in place for now; it is converted in its own
-        phase.
-  - [ ] Verify the plan-file / phase-status updates that currently sit outside the mutex bracket
+  - [x] Keep the `workflow-active` marker write in place for now; it is converted in its own
+        phase. *(completed: also verified the marker write stays scoped to the real/non-noop
+        write path only, matching pre-conversion behavior byte-for-byte — a noop preflight
+        replay still does not refresh it)*
+  - [x] Verify the plan-file / phase-status updates that currently sit outside the mutex bracket
         remain outside it — they touch neither `specs/state.json` nor TODO.md.
 - **Timing:** 1.5 hours
 - **Depends on:** 3

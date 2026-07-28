@@ -44,66 +44,22 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
-TMP_DIR="$PROJECT_ROOT/specs/tmp"
 
-# --- specs/.scope-lock mutex around the state.json read-modify-write + TODO.md regen below ---
-# Brackets the same critical section orchestrator-postflight.sh's Stages 7-8a bracket protects
-# (see .claude/context/patterns/task-lock.md's scope-acquire/scope-release section and
-# .claude/context/standards/git-staging-scope.md's state-write hazard note) so this script's
-# standalone callers (reconcile-task-status.sh, manage-topics.sh, command-gate-out.sh,
-# skill-base.sh, and SKILL.md call sites) get the same serialization against concurrent
-# state.json writers that postflight's own inline path gets.
+# --- specs/state.json read-modify-write + TODO.md regen below ---
+# Routed through state-write.sh, the single mutex-guarded specs/state.json writer every other
+# writer in this codebase shares (see scripts/state-write.sh's own header for the full
+# acquire -> mktemp -> jq transform -> jq empty validate -> mv -> optional in-mutex TODO.md
+# regen -> release sequence). This supersedes this script's own former acquire_state_mutex /
+# release_state_mutex pair, which failed OPEN on a specs/.scope-lock acquire timeout (proceeding
+# with the write despite being unable to serialize it) -- state-write.sh is fail-CLOSED instead
+# (an ABORT on acquire timeout), the accepted trade-off for this codebase-wide conversion. The mutex is
+# still NOT reentrant: state-write.sh itself honors SCOPE_MUTEX_HELD=1 as guest mode exactly as
+# acquire_state_mutex did, so this script invoked as a Stage 7 child of
+# orchestrator-postflight.sh (which acquires the same mutex before calling this script) still
+# runs as a guest with no nested acquire.
 #
-# The specs/.scope-lock mutex is NOT reentrant. When SCOPE_MUTEX_HELD=1 is already exported by an
-# outer holder (e.g. this script invoked as a Stage 7 child of orchestrator-postflight.sh, which
-# acquires the same mutex before calling this script), acquire/release below are skipped
-# entirely and this script runs as a guest inside the outer holder's critical section — a nested
-# acquire here would otherwise self-deadlock the outer holder for 5s and then fail closed on
-# every single postflight run.
-STATE_MUTEX_TOKEN=""
-STATE_MUTEX_OWNED_HERE=false
-
-acquire_state_mutex() {
-  # Respect the existing --dry-run path: nothing is written, so nothing needs serializing.
-  if [[ "$DRY_RUN" == "true" ]]; then
-    return 0
-  fi
-  if [[ -n "${SCOPE_MUTEX_HELD:-}" ]]; then
-    echo "Note: an outer holder already owns the specs/.scope-lock mutex (SCOPE_MUTEX_HELD=1 inherited); running as guest, no nested acquire." >&2
-    return 0
-  fi
-  local token
-  if ! token=$("$SCRIPT_DIR/task-lock.sh" scope-acquire "$session_id"); then
-    # Mutex is fail-closed as a lock (never silently double-held), but this script's own
-    # non-blocking character is preserved: a timeout logs loudly and proceeds unserialized
-    # rather than aborting the status update.
-    echo "WARNING: failed to acquire specs/.scope-lock mutex for task ${task_number}'s status update; proceeding unserialized (non-blocking)." >&2
-    return 0
-  fi
-  STATE_MUTEX_TOKEN="$token"
-  STATE_MUTEX_OWNED_HERE=true
-  export SCOPE_MUTEX_HELD=1
-  return 0
-}
-
-release_state_mutex() {
-  if [[ "$STATE_MUTEX_OWNED_HERE" == "true" ]]; then
-    "$SCRIPT_DIR/task-lock.sh" scope-release "$STATE_MUTEX_TOKEN" >&2 || true
-    STATE_MUTEX_OWNED_HERE=false
-    unset SCOPE_MUTEX_HELD
-  fi
-}
-
-# --- Cleanup trap ---
-# Extended (not duplicated) to also release the state mutex on any exit path — including an
-# early `set -e` abort mid-critical-section — so a forced early failure never leaves the mutex
-# held. release_state_mutex is idempotent (guarded by STATE_MUTEX_OWNED_HERE), so it is safe to
-# call again after the explicit release below has already fired.
-cleanup() {
-  rm -f "$TMP_DIR/state.json.tmp" 2>/dev/null || true
-  release_state_mutex
-}
-trap cleanup EXIT
+# No staging-file cleanup trap is needed here any more: state-write.sh owns its own private
+# mktemp path and EXIT trap internally, scoped to its own process.
 
 # --- Parse arguments ---
 DRY_RUN=false
@@ -308,8 +264,9 @@ count_plan_phases() {
     "$PHASE_CHECK_PLAN_FILE" 2>/dev/null) || PHASE_CHECK_DONE=0
 }
 
-# The gate runs BEFORE acquire_state_mutex below, so a refusal costs no mutex acquisition and no
-# jq write. Because PHASE 1 (state.json flip) and PHASE 3 (update_plan_file's [COMPLETED] stamp)
+# The gate runs BEFORE update_state_json below (which now owns its own mutex acquisition via
+# state-write.sh), so a refusal costs no mutex acquisition and no jq write. Because PHASE 1
+# (state.json flip) and PHASE 3 (update_plan_file's [COMPLETED] stamp)
 # are both downstream of this point and both reachable only via this one
 # operation=postflight/target_status=implement code path, this single gate blocks both of the
 # defect's two effects at once.
@@ -347,11 +304,14 @@ if [[ -n "$PHASE_CHECK" && "$operation" == "postflight" && "$target_status" == "
   fi
 fi
 
-# --- Ensure tmp directory exists ---
-mkdir -p "$TMP_DIR"
-
 # ============================================================
-# PHASE 1: Update state.json (machine state first) -- skipped when state_is_noop
+# PHASE 1+2 (combined): Update state.json (machine state first) and regenerate TODO.md, both
+# via ONE state-write.sh call with --regen-todo so TODO.md regeneration happens INSIDE the same
+# critical section as the write that triggered it, rather than as a separate step after release.
+# PHASE 1 is skipped (a `.` identity filter is written instead) when state_is_noop -- but PHASE 2
+# (TODO.md regen) still runs unconditionally, protected by the SAME mutex a real write would use,
+# preserving the pre-existing "self-healing on retry" property (PHASE 3's plan/phase updates
+# below re-fire on retry even when state.json itself is already converged).
 # ============================================================
 update_state_json() {
   local ts
@@ -360,68 +320,48 @@ update_state_json() {
   if [[ "$DRY_RUN" == "true" ]]; then
     echo "[dry-run] state.json: task $task_number status '$current_state_status' -> '$STATE_STATUS'"
     echo "[dry-run] state.json: last_updated -> '$ts', session_id -> '$session_id'"
+    echo "[dry-run] TODO.md: regenerate from state.json via generate-todo.sh"
+    return 0
+  fi
+
+  if [[ "$state_is_noop" == "true" ]]; then
+    # Preserves the original guard exactly: the workflow-active marker write below is scoped to
+    # the REAL (non-noop) write path only, matching pre-conversion behavior byte-for-byte -- a
+    # noop preflight replay does not refresh the marker.
+    "$SCRIPT_DIR/state-write.sh" '.' --session-id "$session_id" --regen-todo || {
+      echo "Warning: state-write.sh failed during no-op TODO.md regen (non-fatal)" >&2
+    }
     return 0
   fi
 
   # Write workflow-active marker on preflight so Stop hook can suppress mid-workflow fires
+  # (a plain file write, unrelated to the specs/state.json mutex -- converted to per-session form
+  # in a later phase of this same task).
   if [[ "$operation" == "preflight" ]]; then
     mkdir -p "$SCRIPT_DIR/../tmp"
     echo "$task_number $(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$SCRIPT_DIR/../tmp/workflow-active"
   fi
 
-  # Use two-step jq pattern to avoid Issue #1132
-  # Step 1: Update status and timestamp
-  jq --arg num "$task_number" \
-     --arg status "$STATE_STATUS" \
-     --arg ts "$ts" \
-     --arg sid "$session_id" \
+  if ! "$SCRIPT_DIR/state-write.sh" \
     '(.active_projects[] | select(.project_number == ($num | tonumber))) |= . + {
       status: $status,
       last_updated: $ts,
       session_id: $sid
-    }' "$STATE_FILE" > "$TMP_DIR/state.json.tmp"
-
-  if [[ $? -ne 0 ]]; then
-    echo "Error: jq failed to update state.json" >&2
+    }' \
+    --session-id "$session_id" \
+    --arg num "$task_number" \
+    --arg status "$STATE_STATUS" \
+    --arg ts "$ts" \
+    --arg sid "$session_id" \
+    --regen-todo; then
     return 1
   fi
-
-  # Validate the output is valid JSON
-  if ! jq empty "$TMP_DIR/state.json.tmp" 2>/dev/null; then
-    echo "Error: jq produced invalid JSON for state.json" >&2
-    return 1
-  fi
-
-  # Atomic move
-  mv "$TMP_DIR/state.json.tmp" "$STATE_FILE"
 }
 
-# Acquire the specs/.scope-lock mutex before the state.json write below. The critical section
-# this brackets is: this write PLUS the TODO.md regen at "Execute TODO.md regeneration" further
-# down -- released explicitly right after that call, before PHASE 3's plan-file update (which is
-# not part of the state.json/TODO.md hazard this mutex protects).
-acquire_state_mutex
-
-if [[ "$state_is_noop" != "true" ]]; then
-  if ! update_state_json; then
-    echo "Error: failed to update state.json for task $task_number" >&2
-    exit 2
-  fi
+if ! update_state_json; then
+  echo "Error: failed to update state.json for task $task_number" >&2
+  exit 2
 fi
-
-# ============================================================
-# PHASE 2: Regenerate TODO.md from state.json
-# ============================================================
-regenerate_todo() {
-  if [[ "$DRY_RUN" == "true" ]]; then
-    echo "[dry-run] TODO.md: regenerate from state.json via generate-todo.sh"
-    return 0
-  fi
-
-  "$SCRIPT_DIR/generate-todo.sh" || {
-    echo "Warning: generate-todo.sh failed (state.json was updated successfully)" >&2
-  }
-}
 
 # ============================================================
 # PHASE 3: Plan file status (optional, implement only)
@@ -525,13 +465,10 @@ update_plan_file() {
   fi
 }
 
-# Execute TODO.md regeneration
-regenerate_todo
-
-# Release the specs/.scope-lock mutex here: the state.json write + TODO.md regen critical
-# section (acquired above, before PHASE 1) ends here. PHASE 3's plan-file update below is
-# explicitly outside the bracket -- it does not touch state.json or TODO.md.
-release_state_mutex
+# state.json write + TODO.md regen already happened together, inside state-write.sh's own
+# mutex-guarded critical section, via the single update_state_json call above. PHASE 3's
+# plan-file update below is explicitly outside that critical section -- it does not touch
+# state.json or TODO.md.
 
 # Execute plan file update
 update_plan_file

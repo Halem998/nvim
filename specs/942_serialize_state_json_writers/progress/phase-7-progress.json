@@ -1,0 +1,27 @@
+{
+  "phase": 7,
+  "phase_name": "Convert update-task-status.sh",
+  "started_at": "2026-07-28T02:25:00Z",
+  "last_updated": "2026-07-28T03:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Delete acquire_state_mutex/release_state_mutex, combine PHASE 1+2 into one state-write.sh call with --regen-todo, remove TMP_DIR staging",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/update-task-status.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_evidence": {
+    "dry_run_no_marker": true,
+    "real_preflight_marker_written": true,
+    "noop_replay_marker_not_refreshed_matches_original": true,
+    "guest_mode_no_nested_acquire_elapsed_0s": true,
+    "regression_suites": "test-state-write-concurrency.sh 4/4 pass, test-task-lock-reap.sh 6/6 pass"
+  }
+}
