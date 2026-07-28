@@ -1,5 +1,13 @@
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/validate-no-task-references.sh" }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "matcher": "*",
