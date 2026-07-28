@@ -11,7 +11,7 @@ next_project_number: 956
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 941,942,943,947,950,951,955 | -- | agent-system, orchestration-concurrency |
+| 1 | 942,943,947,950,951,955 | -- | agent-system, orchestration-concurrency |
 | 2 | 944,948,952 | 942,943,947,951 | agent-system, orchestration-concurrency |
 | 3 | 945,949,953,954 | 944,948,952 | agent-system, orchestration-concurrency |
 | 4 | 946 | 945 | orchestration-concurrency |
@@ -20,7 +20,6 @@ next_project_number: 956
 
 ### Agent System
 
-941 [IMPLEMENTING] — SOURCE-STORE RULE (binding, and TWO DIFFERENT TREES -- do not con
 947 [NOT STARTED] — Settle the core-wide question of whether a research-phase agent i
   └─ 948 [NOT STARTED] — Add a Stage 7 / final-metadata section to agent-system/extensions
     └─ 949 [NOT STARTED] — Propagate the artifacts-shape specification to the six cslib agen
@@ -543,12 +542,13 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 ---
 
 ### 941. Purge ephemeral task-management references from deliverables and enforce the rule going forward
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [941_purge_and_enforce_no_task_references/reports/01_purge-and-enforce-no-task-references.md]
 - **Plan**: [941_purge_and_enforce_no_task_references/plans/01_purge-and-enforce-task-references.md]
+- **Summary**: [941_purge_and_enforce_no_task_references/summaries/01_purge-and-enforce-task-references-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding, and TWO DIFFERENT TREES -- do not conflate them):
   - `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits to agent-system content MUST target `agent-system/extensions/**` and NEVER `.claude/**`.

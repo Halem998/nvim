@@ -1,7 +1,7 @@
 # Implementation Plan: Task #941
 
 - **Task**: 941 - Purge ephemeral task-management references from deliverables and enforce the rule going forward
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 18 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/941_purge_and_enforce_no_task_references/reports/01_purge-and-enforce-no-task-references.md`

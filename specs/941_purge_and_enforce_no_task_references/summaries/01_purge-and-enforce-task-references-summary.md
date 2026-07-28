@@ -339,3 +339,53 @@ and `validate-no-task-references.sh` is now a blocking PreToolUse hook with full
   both the lint script and the hook through the single shared library, and the blocking hook
   denies a violating write via exit code 2 with test coverage for the deny path and every
   exemption category.
+
+## Impacts
+
+- **All four deliverable trees are clean**: `agent-system/extensions/**`, `.opencode/**`,
+  `lua/**`, and `.memory/**` scan at 0 unexempted task-number citations, down from a measured
+  1,228 at baseline. `specs/**` remains the only exempt tree.
+- **Write-time enforcement is now blocking**: `validate-no-task-references.sh` runs as a
+  `PreToolUse` deny (exit code 2) rather than the previous advisory `PostToolUse` nudge, so a new
+  citation is refused at the moment it is written instead of merely reported afterward.
+- **Tree-wide auditing exists for the first time**: `check-task-references.sh` is declared in the
+  core manifest and wired into `verify-deploy.sh` as a numbered gate, closing the structural gap
+  that let citations accumulate invisibly under a rule already in force (a PostToolUse hook can
+  only ever see files at the moment they are edited).
+- **Single source of truth for the taxonomy**: the seven exemption categories live in
+  `rules/no-task-references-in-deliverables.md` and are consumed by both the lint script and the
+  hook through one shared pattern library, so the two enforcement points cannot drift.
+- **Agent contracts corrected**: the core authoring agents carry the MUST-NOT bullet the rule had
+  been asserting, so the rule no longer claims an enforcement layer that does not exist.
+- **Behavioral change for authors**: prose, comments, and examples outside `specs/**` must use the
+  documented placeholder conventions or an explicit exemption marker; concrete numbers remain
+  sanctioned in commit messages, PR/branch metadata, and command-usage examples.
+
+## Follow-ups
+
+- **Literature-extension deploy gap** (pre-existing, out of scope, non-blocking): several
+  `literature-*`/`zotero-*` scripts were never deployed to this repo, so `verify-deploy.sh` exits
+  1 for a reason unrelated to this work. It touches none of this task's modified files.
+- **Extension loader `copy_scripts` gap**: the headless sync path does not re-run
+  `copy_scripts`/`copy_manifest` for already-loaded extensions, so a brand-new `scripts/<subdir>/`
+  file can silently fail to reach the deployed tree via a routine redeploy. Worked around here by
+  invoking the loader's copy primitives directly.
+- **`root-files/settings.json` is install-only**: hook registrations added there alone never reach
+  an already-deployed repo. `merge-sources/settings-hooks.json` is the working path.
+- **Memory vault re-accumulation**: memories are agent-authored over time. Coverage of
+  `.memory/**` by the blocking hook was empirically confirmed (the harvest path uses the `Write`
+  tool), but the vault should be re-scanned periodically via the lint gate.
+- **Nesting-unaware marker helpers**: `strip_exempt_regions`-style awk toggles are not
+  nesting-aware. Test fixtures must keep marker regions self-contained.
+
+## References
+
+- `agent-system/extensions/core/rules/no-task-references-in-deliverables.md` — the rule, the
+  seven-category exemption taxonomy, and the final enforcement posture
+- `agent-system/extensions/core/scripts/check-task-references.sh` — repo-wide audit script
+- `agent-system/extensions/core/hooks/validate-no-task-references.sh` — blocking PreToolUse gate
+- `agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh` — 31 fixtures
+  covering the deny path and every exemption category
+- `agent-system/extensions/core/scripts/verify-deploy.sh` — the numbered lint gate wiring
+- `agent-system/extensions/core/merge-sources/settings-hooks.json` — hook registration path that
+  reaches an already-deployed repo

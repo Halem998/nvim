@@ -2030,7 +2030,7 @@
     {
       "project_number": 941,
       "project_name": "purge_and_enforce_no_task_references",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Purge ephemeral task-management references from deliverables and enforce the rule going forward",
@@ -2056,8 +2056,8 @@
       ],
       "dependencies": [],
       "created": "2026-07-28T15:12:06Z",
-      "last_updated": "2026-07-28T17:21:19Z",
-      "session_id": "sess_1785258140_7a7876",
+      "last_updated": "2026-07-28T21:52:09Z",
+      "session_id": "sess_1785271239_740f7c",
       "artifacts": [
         {
           "path": "specs/941_purge_and_enforce_no_task_references/reports/01_purge-and-enforce-no-task-references.md",
@@ -2068,8 +2068,15 @@
           "path": "specs/941_purge_and_enforce_no_task_references/plans/01_purge-and-enforce-task-references.md",
           "type": "plan",
           "summary": ""
+        },
+        {
+          "path": "specs/941_purge_and_enforce_no_task_references/summaries/01_purge-and-enforce-task-references-summary.md",
+          "type": "summary",
+          "summary": "Final implementation summary covering all 15 phases"
         }
-      ]
+      ],
+      "completion_summary": "Completed all 15 phases of the task-reference purge and enforcement task: agent-system/extensions/**, .opencode/**, lua/**, and .memory/** all scan clean at 0 unexempted task-number citations (down from 1,228 at baseline), and validate-no-task-references.sh is now a blocking PreToolUse hook (exit code 2) with 31 passing regression fixtures covering every Exemption Taxonomy category, verified end-to-end against the redeployed .claude/ tree.",
+      "roadmap_items": []
     },
     {
       "project_number": 942,

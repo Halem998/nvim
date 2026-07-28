@@ -9,8 +9,6 @@
     "general-implementation-agent"
   ],
   "plan_path": "specs/941_purge_and_enforce_no_task_references/plans/01_purge-and-enforce-task-references.md",
-  "phases_completed": 15,
-  "phases_total": 15,
   "artifacts": [
     {
       "type": "summary",
@@ -522,6 +520,9 @@
   ],
   "metadata": {
     "cycles_used": 5,
-    "final_state": "implementing"
+    "final_state": "implementing",
+    "phases_completed": 15,
+    "phases_total": 15,
+    "verification_notes": "Final verification/metadata-close-out dispatch independently re-ran the unscoped check-task-references.sh (0/0/0/0 across all four source trees) and the 31-fixture regression suite (31 passed, 0 failed). Discovered and fixed two deploy-tree defects found only in the disposable .claude/ deploy artifact (never the source of truth): a duplicated .claude/CLAUDE.md (regenerated cleanly via merge.lua's generate_claudemd()) and a stale .claude/scripts/email-preference-harvest.sh copy (re-synced from source, confirmed via check-extension-docs.sh email FAIL -> PASS). bash .claude/scripts/verify-deploy.sh's one remaining FAIL is a pre-existing, task-941-unrelated literature-extension deploy gap (scripts never deployed to this repo, predating this task, touching no file in modified_files) and is out of scope. Confirmed meta-builder-agent.md correctly carries no MUST-NOT task-reference bullet (it authors specs/**-only output, never implements directly), so the rule's existing 4-agents-have-it/3-agents-are-a-known-gap accounting is complete and accurate."
   }
 }
