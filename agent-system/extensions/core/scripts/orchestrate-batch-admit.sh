@@ -15,12 +15,13 @@
 # self-modification hazard check. Before the collision scan runs at all, this script tests
 # whether the candidate's OWN file_scope names a file on a fixed, declared list of
 # orchestrator-critical paths (context/reference/orchestrator-critical-paths.json). If it does,
-# and this invocation carries more than one candidate, the candidate is deferred out of the
-# WHOLE INVOCATION (never merely a wave/cycle) so orchestrator-machinery work runs solo. See
-# context/patterns/batch-orchestration-guardrails.md's "Self-Modification Hazard: The Fourth
-# Admission Dimension" section for the two-test rationale (reachability + decision-relevance)
-# behind the declared list, and docs/architecture/batch-admit-schema.md for the full verdict
-# schema this check adds.
+# and this invocation carries more than one CO-DISPATCHED candidate (see the `--invocation-count`
+# contract below), the candidate is deferred out of the CURRENT wave/cycle — converging the same
+# way a `file_scope_collision` defer already does — so orchestrator-machinery work never actually
+# runs concurrently with another candidate. See context/patterns/batch-orchestration-guardrails.md's
+# "Self-Modification Hazard: The Fourth Admission Dimension" section for the two-test rationale
+# (reachability + decision-relevance) behind the declared list, and
+# docs/architecture/batch-admit-schema.md for the full verdict schema this check adds.
 #
 # Canonical predicate: this script transcribes, and never restates or forks, the directory-prefix
 # overlap algorithm defined once in context/patterns/file-footprint-overlap.md. See that document
@@ -34,19 +35,30 @@
 # Usage:
 #   orchestrate-batch-admit.sh [--invocation-count <N>] <task_number> [<task_number> ...]
 #
-# `--invocation-count <N>` (D3): the total number of validated candidates in the WHOLE invocation
-# this call is part of — not merely the wave/cycle subset passed as positional arguments. Callers
-# that pass a subset (wave_tasks, eligible_tasks) MUST pass their invocation's full
-# validated-candidate count here, or the self-modification defer trigger under-fires for a
-# candidate split across waves/cycles from an unrelated sibling. Defaults to the number of
-# positional <task_number> arguments when omitted (backward-compatible: correct for any caller
-# that already passes its whole set in one call). A non-integer value is a usage error, same as a
-# non-integer task_number.
+# `--invocation-count <N>` (D3): the number of candidates being CO-DISPATCHED IN THE SAME
+# wave/cycle as the positional <task_number> arguments — not the whole invocation's total
+# candidate count. Callers that pass a wave/cycle subset (wave_tasks, eligible_tasks) MUST pass
+# that subset's own size here, not the invocation's full validated-candidate count, or the
+# self-modification defer trigger over-fires against candidates that never actually co-occur in a
+# dispatch batch (see the file-top paragraph above and the Precedence (D4) block below for why a
+# whole-invocation count is wrong). Defaults to the number of positional <task_number> arguments
+# when omitted (backward-compatible: correct for any caller that already passes its own
+# co-dispatch set in one call). A non-integer value is a usage error, same as a non-integer
+# task_number.
+#
+# Flag name retained (not renamed): `--invocation-count` keeps its original name even though its
+# documented semantics narrowed from "whole invocation" to "same-cycle co-dispatch count", because
+# two out-of-scope report composers — scripts/orchestrate-dry-run-report.sh and
+# scripts/orchestrate-predispatch-review.sh — pass this flag BY NAME. Renaming it would make an
+# unrecognized `--invocation-count` fall through those callers' argument scans into positional
+# validation, aborting with exit 2. A `--codispatch-count` alias was considered and rejected: it
+# would add a second flag name to orchestrator-critical machinery for a naming-clarity improvement
+# only, with no behavioral benefit over documenting the narrowed meaning under the existing name.
 #
 # Output: NDJSON on stdout, one compact JSON object per candidate, in input order. Verdict
-# schema (pinned as "orchestrate-batch-admit-v2"; field order is stable):
+# schema (pinned as "orchestrate-batch-admit-v3"; field order is stable):
 #
-#   $schema                 string   Literal "orchestrate-batch-admit-v2".
+#   $schema                 string   Literal "orchestrate-batch-admit-v3".
 #   task_number              int     The candidate task number, echoed back.
 #   decision                 string  "admit" or "defer". Never "fail" — a candidate this script
 #                                     cannot resolve (unknown task, terminal status, empty/null
@@ -62,11 +74,14 @@
 #                                     the hazard stays visible even when it is not deferred.
 #   defer_reason              string  Present only when decision == "defer". Exactly one of
 #                                     "self_modifying" or "file_scope_collision" — REQUIRED
-#                                     discriminator (schema v2). Existing consumers MUST branch
+#                                     discriminator (schema v3). Existing consumers MUST branch
 #                                     on this field before falling into any pre-v2 default
-#                                     handling, because the two defer reasons carry different
-#                                     scope of consequence (whole-invocation exclusion vs.
-#                                     one-wave/cycle deferral) — see the v2 schema doc.
+#                                     handling. As of v3 both defer reasons are wave/cycle-scoped
+#                                     (neither is a whole-invocation exclusion); the discriminator
+#                                     exists to name the HAZARD behind the defer and select the
+#                                     operator remedy (self_modifying's remedy is the
+#                                     `--allow-self-modifying` override; file_scope_collision has
+#                                     none — see the v3 schema doc).
 #   critical_path              string Present only when defer_reason == "self_modifying". The
 #                                     matched declared critical path (post scope-root expansion).
 #   critical_label              string Present only when defer_reason == "self_modifying". The
@@ -91,10 +106,29 @@
 #
 # Precedence (D4): the self-modification check runs FIRST, before the collision scan, and
 # SHORT-CIRCUITS it — a self-modifying candidate never also runs the collision scan, regardless
-# of whether it is deferred (invocation count > 1) or admitted solo (invocation count == 1).
-# Rationale: it is a pure single-candidate predicate whose consequence is strictly larger
-# (excluded from the whole invocation vs. deferred one wave), and first-match determinism matches
-# this script's existing "first hit wins, no exhaustive collection" convention.
+# of whether it is deferred (co-dispatch count > 1) or admitted solo (co-dispatch count == 1).
+# Rationale, corrected for v3: the "strictly larger consequence" reason from v2 no longer holds —
+# both defer flavors now share the same wave/cycle scope of consequence, so that is not why
+# self-mod goes first. The surviving reason is narrower: self-mod is a pure single-candidate
+# predicate (tests the candidate's own file_scope against a static list) that is cheaper to
+# evaluate than the collision scan's set comparison against every other non-terminal task, and
+# first-match determinism matches this script's existing "first hit wins, no exhaustive
+# collection" convention.
+#
+# A1 (dependency-edge exemption asymmetry) — explained, not remedied: the collision dimension
+# excludes from its comparison set any task connected to the candidate by a dependencies[] edge in
+# EITHER direction (see the "Comparison set for the collision scan" paragraph below). The
+# self-modification dimension applies no equivalent exemption, and this is deliberate, not an
+# oversight. Once `--invocation-count` is same-cycle-scoped (D3 above), an edge-connected pair can
+# NEVER share that count in the first place — Stage MT-3 step 3's eligibility rule in
+# skills/skill-orchestrate/SKILL.md makes it structurally impossible for a `dependencies[]`-edge
+# predecessor/successor pair to occupy the same `eligible_tasks` batch, because the successor is
+# never eligible until the predecessor leaves the non-terminal set. An explicit dependency-edge
+# exemption in the self-mod branch would therefore be unreachable dead code: the condition it
+# would guard against (an edge-connected pair sharing a co-dispatch count) cannot occur. The
+# asymmetry between the two dimensions is real but load-bearing only on the collision side, whose
+# comparison set spans every non-terminal task in state — including ones far outside the current
+# wave/cycle — where an edge-connected pair CAN and does otherwise collide.
 #
 # Degradation (D5): a missing, unreadable, or unparseable critical-path data file does NOT exit
 # non-zero and does NOT disable the rest of admission — it sets self_modifying: null on every
@@ -315,13 +349,13 @@ verdicts=$(jq -n -c \
   ([$all[] | select(.project_number == $c)] | first) as $entry |
 
   if ($entry == null) then
-    {"$schema": "orchestrate-batch-admit-v2", task_number: $c, decision: "admit",
+    {"$schema": "orchestrate-batch-admit-v3", task_number: $c, decision: "admit",
      self_modifying: (if $is_degraded then null else false end)}
   elif (($entry.status // "") | is_terminal) then
-    {"$schema": "orchestrate-batch-admit-v2", task_number: $c, decision: "admit",
+    {"$schema": "orchestrate-batch-admit-v3", task_number: $c, decision: "admit",
      self_modifying: (if $is_degraded then null else (self_mod_match($entry.file_scope; $crit) != null) end)}
   elif (($entry.file_scope // []) | length) == 0 then
-    {"$schema": "orchestrate-batch-admit-v2", task_number: $c, decision: "admit",
+    {"$schema": "orchestrate-batch-admit-v3", task_number: $c, decision: "admit",
      self_modifying: (if $is_degraded then null else false end)}
   else
     ($entry.dependencies // []) as $c_deps |
@@ -331,18 +365,18 @@ verdicts=$(jq -n -c \
     if ($sm_flag == true) then
       if ($inv_count > 1) then
         {
-          "$schema": "orchestrate-batch-admit-v2",
+          "$schema": "orchestrate-batch-admit-v3",
           task_number: $c,
           decision: "defer",
           self_modifying: true,
           defer_reason: "self_modifying",
           critical_path: $sm_hit.path,
           critical_label: $sm_hit.label,
-          reason: ("candidate #" + ($c|tostring) + " file_scope names orchestrator-critical path \"" + $sm_hit.path + "\" (" + $sm_hit.label + "); deferred out of this invocation because orchestrator-critical work runs solo only — re-run task #" + ($c|tostring) + " alone")
+          reason: ("candidate #" + ($c|tostring) + " file_scope names orchestrator-critical path \"" + $sm_hit.path + "\" (" + $sm_hit.label + "); deferred out of this wave/cycle because it is co-dispatched alongside another candidate this cycle — it becomes eligible again once that co-dispatch clears, or pass --allow-self-modifying to override")
         }
       else
         {
-          "$schema": "orchestrate-batch-admit-v2",
+          "$schema": "orchestrate-batch-admit-v3",
           task_number: $c,
           decision: "admit",
           self_modifying: true
@@ -377,10 +411,10 @@ verdicts=$(jq -n -c \
         ] | first
       ) as $hit |
       if $hit == null then
-        {"$schema": "orchestrate-batch-admit-v2", task_number: $c, decision: "admit", self_modifying: $sm_flag}
+        {"$schema": "orchestrate-batch-admit-v3", task_number: $c, decision: "admit", self_modifying: $sm_flag}
       else
         {
-          "$schema": "orchestrate-batch-admit-v2",
+          "$schema": "orchestrate-batch-admit-v3",
           task_number: $c,
           decision: "defer",
           self_modifying: $sm_flag,
