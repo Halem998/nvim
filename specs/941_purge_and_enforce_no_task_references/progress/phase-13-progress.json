@@ -1,0 +1,45 @@
+{
+  "phase": 13,
+  "phase_name": "Purge .opencode/context/{core,formats}/",
+  "started_at": "2026-07-28T00:00:00Z",
+  "last_updated": "2026-07-28T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Triage and convert all 104 task-reference occurrences under .opencode/context/{core,formats}/ per the Phase 4 bucket rules",
+      "status": "done",
+      "files_touched": [
+        ".opencode/context/core/formats/command-output.md",
+        ".opencode/context/core/formats/return-metadata-file.md",
+        ".opencode/context/core/formats/roadmap-format.md",
+        ".opencode/context/core/formats/subagent-return.md",
+        ".opencode/context/core/meta/meta-guide.md",
+        ".opencode/context/core/orchestration/delegation.md",
+        ".opencode/context/core/orchestration/orchestration-reference.md",
+        ".opencode/context/core/orchestration/orchestrator.md",
+        ".opencode/context/core/orchestration/routing.md",
+        ".opencode/context/core/orchestration/validation.md",
+        ".opencode/context/core/patterns/file-metadata-exchange.md",
+        ".opencode/context/core/reference/state-management-schema.md",
+        ".opencode/context/core/standards/ci-workflow.md",
+        ".opencode/context/core/standards/git-integration.md",
+        ".opencode/context/core/standards/git-safety.md",
+        ".opencode/context/core/standards/task-management.md",
+        ".opencode/context/core/templates/delegation-context.md",
+        ".opencode/context/core/workflows/preflight-postflight.md",
+        ".opencode/context/core/workflows/task-breakdown.md",
+        ".opencode/context/formats/command-output.md",
+        ".opencode/context/formats/handoff-artifact.md",
+        ".opencode/context/formats/progress-file.md",
+        ".opencode/context/formats/return-metadata-file.md",
+        ".opencode/context/formats/roadmap-format.md",
+        ".opencode/context/formats/subagent-return.md",
+        ".opencode/context/formats/task-order-format.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

@@ -819,22 +819,45 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
 
 ---
 
-### Phase 13: Purge `.opencode/context/{core,formats}/` [NOT STARTED]
+### Phase 13: Purge `.opencode/context/{core,formats}/` [COMPLETED]
 
 - **Goal:** Clear the two largest `.opencode/context` subdirectories.
 - **Character:** High judgment; context prose.
 
 - **Tasks:**
-  - [ ] Triage and convert per the Phase 4 bucket rules.
+  - [x] Triage and convert per the Phase 4 bucket rules. *(completed: confirmed 72/32 (104 total)
+        via `check-task-references.sh --quiet` scoped to each subtree, matching the Scope
+        Hypothesis exactly. `.opencode/context/core/` and `.opencode/context/formats/` are
+        genuinely separate hand-maintained trees from `.opencode/extensions/core/context/`
+        (purged in Phase 11) — same file names, closely related but independently-drifted
+        content, confirmed via `diff` before treating either as a byte-copy of the other. Applied
+        the identical fix catalogue as Phase 11 file-by-file: ILLUSTRATIVE worked-example task
+        numbers (197, 191, 258, 999, 244, 259, etc.) converted to `{N}`/`{M}` placeholders;
+        PROVENANCE sites (delegation.md's Task 191 Root Cause bullets and "Task 191 Research"
+        doc-link, orchestrator.md/routing.md's "(Task NNN Phase N)" creation-date parentheticals,
+        validation.md's "Task 280" enforcement notes, meta-guide.md's "task 487" cleanup note)
+        converted to durable anchors or dropped where the surrounding prose already carried the
+        fact. Two new WBS "Task N.N" collisions found only in this tree's `formats/`
+        (`handoff-artifact.md`'s "Tasks 3.1-3.2 checked off, Task 3.3 in progress" and
+        `progress-file.md`'s `task_id` example "for Phase 3, Task 2") renamed to "Step N.N" per
+        the established convention, plus `progress-file.md`'s deviation-example `task 261` and
+        `task-order-format.md`'s changelog "Tasks 139-141 archived" converted to `{N}`/`{M}`
+        placeholders. `git-integration.md`'s standalone-`git-safety.md`/`task-management.md`'s
+        commit-format bullet `Git commits: task 17: {action}` converted to the `{N}` placeholder
+        form. No file in this phase required a `task-ref-ok` marker — every site was ILLUSTRATIVE
+        or PROVENANCE, never a command-usage or quoted-anti-pattern site requiring one.)*
 
 - **Timing:** 1.25 hours
 - **Depends on:** 2
 - **Verification Tier:** prose
 - **Scope Hypothesis:** 104 occurrences / 26 files (`core/` 72/19, `formats/` 32/7). Confirm with
   `grep -rcEi "$TASK_PATTERN" .opencode/context/core/ .opencode/context/formats/ | awk -F: '{s+=$2} END {print s}'`.
+  *(confirmed: `check-task-references.sh --quiet` reported exactly 72 and 32 respectively before
+  any edit in this phase.)*
 - **Files to modify**: files under `.opencode/context/core/` and `.opencode/context/formats/`
   reported by the scan.
-- **Verification**: scan reports 0 under both subdirectories. Expected delta 104 → 0.
+- **Verification**: scan reports 0 under both subdirectories. Expected delta 104 → 0. *(verified:
+  both subtrees report "0 occurrence(s)" and exit 0 (PASS).)*
 
 ---
 
