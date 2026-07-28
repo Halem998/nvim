@@ -1197,6 +1197,35 @@ subsection):
   at least one task dispatches. Bounds the narrow non-convergence mode a removed permanent
   exclusion set no longer prevents by construction.
 
+Two more fields, backing the **forward-progress invariant** (full contract in
+`context/patterns/batch-orchestration-guardrails.md`'s `### The Forward-Progress Invariant`
+subsection):
+
+- `defer_ledger: []` — an APPEND-ONLY OBSERVATION LOG of every per-cycle defer/exclusion event,
+  entries of the form
+  `{"task": <int>, "defer_reason": <string>, "collision_scope": <string|null>, "cycle": <int>, "detail": <string>}`.
+  **MUST NOT**: the ledger is never read by any eligibility check, all-terminal check, circuit
+  breaker, convergence guard, or admission branch. It is written for reporting and read only at
+  Stage MT-5 and by `commands/orchestrate.md` Step 5. It is not a fifth admission gate and must
+  never become one. `defer_ledger` is ADDITIVE to `deferred_self_modifying` and
+  `deferred_deploy_checkpoint`, not a replacement: a self-modifying defer appends to BOTH the
+  existing observation log and the ledger, and the two existing fields keep their current
+  semantics, consumers, and Stage MT-5 role byte-for-byte.
+- `forward_progress_violated: false` — initialized false, computed and written once at Stage MT-5
+  from `dispatch_start_ts`. Never read by any loop condition.
+
+**Hard-mode finding, recorded, not acted on**: `skills/skill-orchestrate-hard/SKILL.md` has no
+MT-stage implementation of its own — its Stage 0 states explicitly that when `multi_task_mode` is
+true it "use[s] base multi-task stages", i.e. these SAME Stage MT-1 through MT-5 stages in
+`skill-orchestrate/SKILL.md`. Multi-task `/orchestrate --hard` therefore already writes
+`mt_state_file.dispatch_start_ts`, `defer_ledger`, and `forward_progress_violated` via this same
+file with no separate hard-mode edit needed. The `dispatch_start_ts` occurrences that DO appear as
+hard-mode-local shell variables elsewhere in `skill-orchestrate-hard/SKILL.md` belong to its
+single-task (non-MT) infra-failure-discrimination logic — a same-named but unrelated local
+variable, not the `mt_state_file` field. `commands/orchestrate.md` Step 5's three-branch
+resolution still degrades explicitly (an explicit "not evaluable" notice, never a silent skip) for
+any future MT path variant that might lack the field, but no such variant exists today.
+
 ### Stage MT-2: Build Per-Task Routing Table
 
 For each task in `task_numbers`, read `state.json` to get `task_type`, `project_name`. Compute `task_dir = "specs/${padded}_${project_name}"`. Resolve `research_agent` and `implement_agent` using the same routing table as Stage 1b:
@@ -1338,6 +1367,9 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
        candidates never share a cycle, so this never fires for an edge-connected pair). Pass
        --allow-self-modifying for deliberate human-intent bypass.
      ```
+     Additionally (no-override path only — a bypassed defer dispatches and must NOT be ledgered as
+     a defer), append to `mt_state_file.defer_ledger`:
+     `{"task": task_number, "defer_reason": "self_modifying", "collision_scope": null, "cycle": cycle_count, "detail": "matched critical path {critical_path} ({critical_label})"}`.
    - **`file_scope_collision`** — retains the exact pre-existing `collision_scope` branching
      below, byte-for-byte. Both branches preserve the surrounding cycle semantics verbatim: a
      deferred task is removed from **this cycle's** dispatch batch, is never added to
@@ -1350,6 +1382,8 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
          dependency_graph edge between them. Deferring #{Y} to a later cycle to avoid
          concurrent edits to the same files.
        ```
+       Additionally, append to `mt_state_file.defer_ledger`:
+       `{"task": Y, "defer_reason": "file_scope_collision", "collision_scope": "in_batch", "cycle": cycle_count, "detail": "colliding in-batch task #{X}"}`.
      - **`cross_batch`** (the colliding task is NOT part of `task_numbers` for this invocation):
        remove the candidate from this cycle's dispatch batch and log a **distinct** warning naming
        the out-of-batch task and its `colliding_task_status`:
@@ -1359,6 +1393,8 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
          invocation's task_numbers. Excluding #{task_number} from this cycle — batch
          composition needs human review.
        ```
+       Additionally, append to `mt_state_file.defer_ledger`:
+       `{"task": task_number, "defer_reason": "file_scope_collision", "collision_scope": "cross_batch", "cycle": cycle_count, "detail": "colliding out-of-batch task #{colliding_task_number} (status: {colliding_task_status})"}`.
 
    **Convergence guard (post-admission empty-dispatch-batch check)**: removing the permanent
    `deferred_self_modifying` exclusion set (this step now only appends to an observation log, per
@@ -1446,7 +1482,10 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
      catch. Never add to `failed_tasks`. Never status-mutate. Never abort the invocation. Include
      the operator remedy in the warning: fix the deploy/verify failure, redeploy manually, then
      re-run
-     `/orchestrate` on the remaining task numbers.
+     `/orchestrate` on the remaining task numbers. Additionally, for each task added to
+     `deferred_deploy_checkpoint` here, append to `mt_state_file.defer_ledger`:
+     `{"task": task_number, "defer_reason": "deploy_checkpoint", "collision_scope": null, "cycle": cycle_count, "detail": "{failed_gate} exit {exit_code}"}`
+     (where `failed_gate` is `deploy-headless.sh` or `verify-deploy.sh`, whichever failed).
    - Already-dispatched-and-committed tasks from prior cycles are unaffected by either path —
      their commits landed at step 5.5 before this step ran.
 

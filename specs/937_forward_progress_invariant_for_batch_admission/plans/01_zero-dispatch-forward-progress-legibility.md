@@ -218,7 +218,7 @@ justify-don't-assert obligation in prose before any behavior is touched.
 
 ---
 
-### Phase 2: Skill-side schema — defer ledger and invariant field [NOT STARTED]
+### Phase 2: Skill-side schema — defer ledger and invariant field [COMPLETED]
 
 **Goal**: Give `mt_state_file` the two fields the report needs, and instrument the existing defer
 branches to populate the ledger — additively, with the existing `deferred_self_modifying` and
@@ -226,23 +226,23 @@ branches to populate the ledger — additively, with the existing `deferred_self
 
 **Tasks**:
 
-- [ ] In `skills/skill-orchestrate/SKILL.md` Stage MT-1's `mt_state_file` initialization list, add
+- [x] In `skills/skill-orchestrate/SKILL.md` Stage MT-1's `mt_state_file` initialization list, add
       two fields alongside the existing ones:
       - `defer_ledger: []` — an APPEND-ONLY OBSERVATION LOG of every per-cycle defer/exclusion
         event, entries of the form
         `{"task": <int>, "defer_reason": <string>, "collision_scope": <string|null>, "cycle": <int>, "detail": <string>}`.
       - `forward_progress_violated: false` — initialized false, computed and written once at
-        Stage MT-5 (Phase 3). Never read by any loop condition.
-- [ ] State, in the `defer_ledger` field definition itself, the binding MUST NOT: **the ledger is
+        Stage MT-5 (Phase 3). Never read by any loop condition. *(completed)*
+- [x] State, in the `defer_ledger` field definition itself, the binding MUST NOT: **the ledger is
       never read by any eligibility check, all-terminal check, circuit breaker, convergence guard,
       or admission branch.** It is written for reporting and read only at Stage MT-5 and by
       `commands/orchestrate.md` Step 5. It is not a fifth admission gate and must never become
-      one.
-- [ ] State that `defer_ledger` is ADDITIVE to `deferred_self_modifying` and
+      one. *(completed)*
+- [x] State that `defer_ledger` is ADDITIVE to `deferred_self_modifying` and
       `deferred_deploy_checkpoint`, not a replacement: a self-modifying defer appends to BOTH the
       existing observation log and the ledger, and the two existing fields keep their current
-      semantics, consumers, and Stage MT-5 role byte-for-byte.
-- [ ] In Stage MT-3 step 4.5, add one ledger-append instruction to each existing defer branch,
+      semantics, consumers, and Stage MT-5 role byte-for-byte. *(completed)*
+- [x] In Stage MT-3 step 4.5, add one ledger-append instruction to each existing defer branch,
       immediately after (never before, never in place of) that branch's existing removal-and-log
       behavior, which stays byte-for-byte:
       - `self_modifying` branch (no-override path only — a bypassed defer dispatches and must NOT
@@ -252,16 +252,21 @@ branches to populate the ledger — additively, with the existing `deferred_self
         `collision_scope: "in_batch"`, `detail` naming the colliding in-batch task.
       - `file_scope_collision` / `cross_batch`: `defer_reason: "file_scope_collision"`,
         `collision_scope: "cross_batch"`, `detail` naming the out-of-batch task and its
-        `colliding_task_status`.
-- [ ] In Stage MT-3 step 7's failure path, add a ledger append for each task added to
+        `colliding_task_status`. *(completed)*
+- [x] In Stage MT-3 step 7's failure path, add a ledger append for each task added to
       `deferred_deploy_checkpoint` — `defer_reason: "deploy_checkpoint"`, `collision_scope: null`,
       `detail` naming the failed gate and its exit code — again immediately after, and without
-      altering, the existing behavior.
-- [ ] Confirm and record whether `skills/skill-orchestrate-hard/SKILL.md` has a multi-task mode
+      altering, the existing behavior. *(completed)*
+- [x] Confirm and record whether `skills/skill-orchestrate-hard/SKILL.md` has a multi-task mode
       that writes `mt_state_file.dispatch_start_ts`. Record the finding as a short note in the
       Stage MT-1 schema text stating that the hard variant is deliberately not modified by this
       change and how the command-side rendering degrades for it (see Phase 4's three-branch
-      resolution). Do not edit the hard skill.
+      resolution). Do not edit the hard skill. *(completed: confirmed by grep and reading Stage 0 —
+      skill-orchestrate-hard/SKILL.md has no MT-stage implementation of its own; its Stage 0
+      delegates multi-task mode to these same base Stage MT-1..MT-5 stages, so it already inherits
+      dispatch_start_ts/defer_ledger/forward_progress_violated with no hard-skill edit needed; the
+      dispatch_start_ts occurrences local to skill-orchestrate-hard/SKILL.md are unrelated
+      single-task shell variables. Finding recorded in Stage MT-1 text; hard skill file untouched)*
 
 **Timing**: 1.5 hours
 

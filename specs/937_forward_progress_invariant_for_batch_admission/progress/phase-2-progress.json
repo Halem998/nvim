@@ -1,0 +1,36 @@
+{
+  "phase": 2,
+  "phase_name": "Skill-side schema - defer ledger and invariant field",
+  "started_at": "2026-07-28T15:25:00Z",
+  "last_updated": "2026-07-28T15:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add defer_ledger and forward_progress_violated fields to Stage MT-1 mt_state_file init list, with MUST NOT and additive-semantics statements",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add ledger-append instructions to Stage MT-3 step 4.5's three defer branches (self_modifying, in_batch, cross_batch) and step 7's deploy-checkpoint failure path",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Confirm and record skill-orchestrate-hard/SKILL.md MT dispatch_start_ts finding",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
