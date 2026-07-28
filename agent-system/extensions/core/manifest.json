@@ -141,6 +141,7 @@
       "task-lock.sh",
       "test-task-lock-reap.sh",
       "tests/test-census-count.sh",
+      "tests/test-orchestrate-triage-classify.sh",
       "tests/test-validate-no-task-references.sh",
       "tier-selection.sh",
       "uninstall-extension.sh",

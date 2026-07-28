@@ -1,7 +1,7 @@
 # Implementation Plan: Task #931
 
 - **Task**: 931 - handoff_continuation_path_writer_predicate_contract
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/931_handoff_continuation_path_writer_predicate_contract/reports/01_handoff-continuation-predicate-contract.md
@@ -137,48 +137,53 @@ concurrently.
 
 ---
 
-### Phase 1: Regression suite, proven RED against the unfixed predicate [NOT STARTED]
+### Phase 1: Regression suite, proven RED against the unfixed predicate [COMPLETED]
 
 **Goal**: A fixture-driven suite exists at the conventional location, is registered, and is
 **demonstrated to fail** against the current nested-only predicate on the exact case the
 definition-of-done names. No production code is touched in this phase.
 
 **Tasks**:
-- [ ] Confirm the sandbox shape empirically before writing fixtures: create a scratch
+- [x] Confirm the sandbox shape empirically before writing fixtures: create a scratch
       `$WORKDIR/.claude/scripts/`, copy `orchestrate-triage-classify.sh` **and**
       `deploy-root-guard.sh` into it, create `$WORKDIR/specs/state.json`, and confirm the copied
       script runs (guard passes, `PROJECT_ROOT` resolves to `$WORKDIR`). If it does not, fall back
       to the research's alternative and add a minimal, separately-justified `STATE_FILE` override —
-      do **not** weaken the mutation check to route around the friction.
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh`
+      do **not** weaken the mutation check to route around the friction. *(completed: confirmed by
+      manual probe before writing the suite, and the suite's own sandbox-probe assertion at the top
+      of the run passed — no STATE_FILE override needed)*
+- [x] Create `agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh`
       following the harness convention established by the two sibling suites at that location:
       `pass()`/`fail()`/`info()` helpers, integer `PASSED`/`FAILED` counters,
       `SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"`, `mktemp -d` workdir with
       `trap cleanup EXIT`, inline heredoc fixtures (no committed fixture tree), exit 0 iff
-      `FAILED == 0`.
-- [ ] Fixture A (**the mutation-check fixture, load-bearing**): `specs/state.json` with an
+      `FAILED == 0`. *(completed)*
+- [x] Fixture A (**the mutation-check fixture, load-bearing**): `specs/state.json` with an
       `active_projects` entry at status `partial`, plus that task's
       `.orchestrator-handoff.json` containing `"continuation_context": null` and
       `"continuation_path": "specs/NNN_slug/handoffs/phase-2-handoff-TS.md"`. Assert
-      `handoff_state == "continuation"` and `group == "implement"`.
-- [ ] Fixture B (**no-regression on the nested form**): handoff with
+      `handoff_state == "continuation"` and `group == "implement"`. *(completed)*
+- [x] Fixture B (**no-regression on the nested form**): handoff with
       `"continuation_context": {"handoff_path": "...", "orchestrator_mode": true}` and no
-      `continuation_path`. Assert `handoff_state == "continuation"`.
-- [ ] Fixture C (**genuinely empty stays empty — the anti-over-relaxation guard**): handoff with
+      `continuation_path`. Assert `handoff_state == "continuation"`. *(completed)*
+- [x] Fixture C (**genuinely empty stays empty — the anti-over-relaxation guard**): handoff with
       both `continuation_context: null` and `continuation_path: null`, `blockers: []`. Assert
       `handoff_state == "empty"`, `group == "implement"`. A relaxation that turns this into
-      `"continuation"` is a defect.
-- [ ] Fixture D (**blockers precedence preserved**): `continuation_path` populated AND
+      `"continuation"` is a defect. *(completed)*
+- [x] Fixture D (**blockers precedence preserved**): `continuation_path` populated AND
       `blockers` non-empty. Assert `handoff_state == "continuation"` (continuation outranks
-      blockers, per the script's documented precedence), NOT `"blockers"`.
-- [ ] Assert both engines (`single` and `mt`) agree on Fixture A, since the `partial + continuation`
-      row is a converged row in the engine table.
-- [ ] **Run the suite against the current, unfixed script and record the observed RED.** Fixture A
+      blockers, per the script's documented precedence), NOT `"blockers"`. *(completed)*
+- [x] Assert both engines (`single` and `mt`) agree on Fixture A, since the `partial + continuation`
+      row is a converged row in the engine table. *(completed: also asserted for B, C, D)*
+- [x] **Run the suite against the current, unfixed script and record the observed RED.** Fixture A
       must report `"empty"`. Capture the literal failing output into the phase's commit message or
-      progress notes as the mutation-check evidence.
-- [ ] Register `"tests/test-orchestrate-triage-classify.sh"` in
+      progress notes as the mutation-check evidence. *(completed: RED observed, exit code 1, 5
+      passed / 4 failed — Fixture A reported handoff_state="empty" group="implement" on both
+      engines; Fixture D reported handoff_state="blockers" group="needs_human" on both engines;
+      Fixtures B and C passed pre-fix as expected)*
+- [x] Register `"tests/test-orchestrate-triage-classify.sh"` in
       `agent-system/extensions/core/manifest.json`'s `provides.scripts` array, alongside the two
-      existing `tests/` entries.
+      existing `tests/` entries. *(completed)*
 
 **Timing**: 1.5 hours
 

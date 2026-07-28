@@ -1,36 +1,11 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "task_number": 931,
   "task_type": "meta",
   "session_id": "sess_1785196200_e29d15",
-  "artifacts": [
-    "specs/931_handoff_continuation_path_writer_predicate_contract/plans/01_continuation-path-predicate-contract.md"
-  ],
-  "artifact_path": "specs/931_handoff_continuation_path_writer_predicate_contract/plans/01_continuation-path-predicate-contract.md",
-  "summary": "Six-phase plan implementing Option B (dual-form continuation-pointer acceptance) with a proven-RED-first regression suite, dispatch-context normalization, hard-engine reader symmetry, and a handoff-schema.md rewrite.",
-  "phase_count": 6,
-  "estimated_hours": 6,
-  "dependency_waves": [[1], [2], [3, 4], [5], [6]],
-  "modified_files": [
-    "specs/931_handoff_continuation_path_writer_predicate_contract/plans/01_continuation-path-predicate-contract.md"
-  ],
-  "validation": {
-    "validate_artifact_sh": "pass",
-    "warnings": 0,
-    "phase_markers": 6,
-    "verification_tiers": 6,
-    "depends_on_fields": 6
-  },
-  "next_steps": "Run /implement 931 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "When a system has one executable predicate plus hand-applied prose copies of the same rule across multiple SKILL.md engines, a field-shape divergence between writer and reader hides in the copies, not the script. The reliable audit move is to grep the field name tree-wide and classify every hit as writer, reader, validator, or doc: a validator that already accepts BOTH shapes (here validate-handoff.sh accepting continuation_path OR continuation_context) is strong evidence that relaxing the strict reader codifies existing precedent rather than inventing a new contract, and it identifies which direction of convergence has the smaller blast radius.",
-      "category": "PATTERN",
-      "source_artifact": "specs/931_handoff_continuation_path_writer_predicate_contract/plans/01_continuation-path-predicate-contract.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["predicate-divergence", "writer-reader-contract", "validator-precedent", "duplicated-rule-audit", "handoff-schema", "field-shape-schism"]
-    }
-  ]
+  "plan_path": "specs/931_handoff_continuation_path_writer_predicate_contract/plans/01_continuation-path-predicate-contract.md",
+  "phases_completed": 0,
+  "phases_total": 6
 }
