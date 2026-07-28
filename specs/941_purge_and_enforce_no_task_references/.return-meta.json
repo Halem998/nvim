@@ -1,10 +1,68 @@
 {
-  "status": "in_progress",
+  "status": "partial",
   "agent_type": "general-implementation-agent",
   "task_number": 941,
   "session_id": "sess_1785258140_7a7876",
   "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "plan_path": "specs/941_purge_and_enforce_no_task_references/plans/01_purge-and-enforce-task-references.md",
-  "phases_completed": 0,
-  "phases_total": 15
+  "phases_completed": 3,
+  "phases_total": 15,
+  "partial_progress": {
+    "stage": "phase_boundary",
+    "details": "Phases 1-3 (the prevention foundation: shared pattern library + exemption taxonomy, check-task-references.sh with all four wiring points, and the agent-contract/Enforcement-section fix) completed, verified, and committed. Phases 4-14 (purge) and Phase 15 (blocking hook flip) remain -- all now unblocked. No handoff artifact was needed; the plan file's phase headings and per-task checkboxes are the resume point.",
+    "phases_completed": 3,
+    "phases_total": 15
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/941_purge_and_enforce_no_task_references/summaries/01_purge-and-enforce-task-references-summary.md",
+      "summary": "Implementation summary for Phases 1-3 (prevention foundation)"
+    },
+    {
+      "type": "script",
+      "path": "agent-system/extensions/core/scripts/lib/task-reference-patterns.sh",
+      "summary": "Shared pattern/exemption library sourced by both the lint script and the write-time hook"
+    },
+    {
+      "type": "script",
+      "path": "agent-system/extensions/core/scripts/check-task-references.sh",
+      "summary": "Repo-wide task-reference lint gate, wired into verify-deploy.sh gate 4"
+    }
+  ],
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lib/task-reference-patterns.sh",
+    "agent-system/extensions/core/scripts/check-task-references.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/root-files/settings.local.json",
+    "agent-system/extensions/core/rules/git-workflow.md",
+    "agent-system/extensions/core/rules/no-task-references-in-deliverables.md",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "specs/941_purge_and_enforce_no_task_references/plans/01_purge-and-enforce-task-references.md",
+    "specs/941_purge_and_enforce_no_task_references/progress/phase-1-progress.json",
+    "specs/941_purge_and_enforce_no_task_references/progress/phase-2-progress.json",
+    "specs/941_purge_and_enforce_no_task_references/progress/phase-3-progress.json",
+    "specs/941_purge_and_enforce_no_task_references/summaries/01_purge-and-enforce-task-references-summary.md"
+  ],
+  "completion_data": {
+    "completion_summary": "Completed Phases 1-3 of the 15-phase purge-and-enforce plan: built the shared task-reference pattern/exemption library, authored check-task-references.sh with all four wiring points (manifest, verify-deploy gate 4, settings.local.json permissions, live baseline run), and corrected the two core agent contracts plus the rule's Enforcement section. Baseline confirmed at 1,223 remaining occurrences across four deliverable trees, ready for Phases 4-14's purge work."
+  },
+  "memory_candidates": [
+    {
+      "content": "When building an awk-based content-exemption filter driven by inline marker tokens (begin/end block form plus a bare inline form), a single small awk program handles all three cases cleanly: `/begin-token/ {in_block=1; next} /end-token/ {in_block=0; next} in_block {next} /inline-token/ {next} {print}`. The ordering matters -- checking in_block before the bare inline-token rule prevents the begin/end marker lines themselves from being double-matched by the inline rule. This is reusable any time a lint/hook pair needs a shared 'strip exempted regions' primitive rather than reimplementing exemption logic twice.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/941_purge_and_enforce_no_task_references/summaries/01_purge-and-enforce-task-references-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["awk", "exemption-marker", "strip-exempt-regions", "lint-hook-parity", "content-filter"]
+    },
+    {
+      "content": "When a plan's Scope Hypothesis asserts a count (e.g. '3 occurrences') and names specific example strings, verify BOTH independently before editing: the count can be correct while the named examples are wrong (the plan author misremembered which lines matched, e.g. citing a string that doesn't actually match the stated regex due to a punctuation difference). Confirming only the count and trusting the narrative risks converting the wrong site or missing the real one. Always re-derive the actual matching lines via the stated grep command and reconcile against the live file content, never against the plan's prose description of what those lines say.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/941_purge_and_enforce_no_task_references/summaries/01_purge-and-enforce-task-references-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["scope-hypothesis", "plan-verification", "reconciliation", "grep-confirm-before-edit"]
+    }
+  ]
 }

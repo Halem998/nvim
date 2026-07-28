@@ -1,33 +1,50 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "plan",
-  "status": "planned",
-  "summary": "Created a 15-phase staged plan. Prevention lands first (Phase 1: exemption taxonomy in the rule file plus a shared bash pattern library; Phase 2: check-task-references.sh with exit codes 0/1/2, --quiet, manifest declaration, verify-deploy gate 4, and three settings.local.json permission entries). Eleven purge phases (4-14) clear ~1,228 occurrences across agent-system/extensions, .opencode, lua, and .memory. The blocking PreToolUse flip via exit code 2 is strictly last (Phase 15), gated on the lint script exiting 0. Two facts beyond the research were verified: the hook's registration lives in merge-sources/settings-hooks.json, and its current wrapper would swallow exit 2.",
+  "phase": "implement",
+  "status": "partial",
+  "summary": "Completed Phases 1-3 of the 15-phase plan (the prevention foundation): the shared task-reference pattern/exemption library, check-task-references.sh with all four wiring points (manifest, verify-deploy gate 4, settings.local.json permissions, live baseline confirmed at 1,223 remaining occurrences), and the two core agent contracts plus the rule's Enforcement section rewrite. All three phases verified and committed individually. Phases 4-14 (purge, territory-disjoint, any order) and Phase 15 (blocking hook flip, strictly last) remain and are now unblocked.",
   "artifacts": [
-    {"type": "plan", "path": "specs/941_purge_and_enforce_no_task_references/plans/01_purge-and-enforce-task-references.md"}
+    {"type": "plan", "path": "specs/941_purge_and_enforce_no_task_references/plans/01_purge-and-enforce-task-references.md"},
+    {"type": "summary", "path": "specs/941_purge_and_enforce_no_task_references/summaries/01_purge-and-enforce-task-references-summary.md"},
+    {"type": "script", "path": "agent-system/extensions/core/scripts/lib/task-reference-patterns.sh"},
+    {"type": "script", "path": "agent-system/extensions/core/scripts/check-task-references.sh"}
   ],
   "blockers": [],
   "next_action_hint": "implement",
+  "continuation_path": "Resume at Phase 4 (agent-system/extensions/core/context/). Run REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-task-references.sh to see live findings scoped to the target tree. Phases 4-14 are territory-disjoint and may run in any order or in parallel; Phase 15 MUST run last, strictly gated on check-task-references.sh exiting 0 across all four trees.",
   "files_modified": [
+    "agent-system/extensions/core/scripts/lib/task-reference-patterns.sh",
+    "agent-system/extensions/core/scripts/check-task-references.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/root-files/settings.local.json",
+    "agent-system/extensions/core/rules/git-workflow.md",
+    "agent-system/extensions/core/rules/no-task-references-in-deliverables.md",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
     "specs/941_purge_and_enforce_no_task_references/plans/01_purge-and-enforce-task-references.md",
-    "specs/941_purge_and_enforce_no_task_references/.orchestrator-handoff.json",
-    "specs/941_purge_and_enforce_no_task_references/.return-meta.json"
+    "specs/941_purge_and_enforce_no_task_references/progress/phase-1-progress.json",
+    "specs/941_purge_and_enforce_no_task_references/progress/phase-2-progress.json",
+    "specs/941_purge_and_enforce_no_task_references/progress/phase-3-progress.json",
+    "specs/941_purge_and_enforce_no_task_references/summaries/01_purge-and-enforce-task-references-summary.md",
+    "specs/941_purge_and_enforce_no_task_references/.return-meta.json",
+    "specs/941_purge_and_enforce_no_task_references/.orchestrator-handoff.json"
   ],
   "decisions_made": [
     "Anti-divergence mechanism is ONE sourced library, agent-system/extensions/core/scripts/lib/task-reference-patterns.sh, exposing TASK_SEP/TASK_PATTERN/PHASE_PATTERN/is_exempt_path/strip_exempt_regions. Both the lint script and the hook source it and define nothing locally; Phase 15 deletes the hook's inline pattern assignments.",
-    "Exemption is an in-content marker convention (task-ref-ok inline, or task-ref-ok:begin/end block, with a required reason naming the taxonomy category), not a path allowlist. A path allowlist was rejected: it grants whole-file immunity to files that also contain real violations, and the hook only ever sees the content being written.",
-    "git-workflow.md self-hit resolved by converting its Examples block to the placeholder form its own Standard Actions table already uses, retaining one rendered example inside a marked region. The marked/unmarked pair for that example is an explicit named regression fixture in Phase 15.",
-    "15 phases rather than the research's 13: two oversize phases were split (core non-context 205 occ / 53 files into Phases 5 and 6; .opencode/context 210 occ / 50 files into Phases 13 and 14). Nothing was merged.",
-    "Enforcement-section rewrite moved into Phase 3 (after the lint script exists) so each phase's claim is true when it lands; Phase 15 updates only the write-time-gate bullet.",
-    "Phase 15 registration MUST use the bare command form in root-files/settings.json, mirroring guard-destructive-git.sh. The existing PostToolUse wrapper converts exit 2 to exit 0 and would silently disable the block.",
-    "Hook fails OPEN (exit 0 plus stderr warning) if the shared library cannot be sourced, so a broken guard never blocks every write in the repo.",
-    "Wave 3 declares twelve territory-disjoint phases; each enumerates its exclusive tree slice, with Phase 6 explicitly excluding the four files owned by Phases 1 and 3."
+    "Exemption is an in-content marker convention (task-ref-ok inline, or task-ref-ok:begin/end block, with a required reason naming the taxonomy category), not a path allowlist. Reason is carried on the begin/inline marker line; the end marker may be bare.",
+    "git-workflow.md self-hit resolved by converting its Examples block (and the separate Single-Task Operations example) to the placeholder form its own Standard Actions table already uses, retaining one rendered example (task 259 phase 2: implement modal semantics evaluator) inside a marked region with reason 'canonical rendered commit-message example'. This is Phase 15's named regression fixture.",
+    "check-task-references.sh looks for the shared library at the deployed .claude/scripts/lib/ path first, falling back to the source-store agent-system/extensions/core/scripts/lib/ path, so REPO_ROOT=$(pwd) source-store invocations work before any deploy has run.",
+    "manifest.json provides.scripts insertion points corrected against the array's TRUE alphabetical order rather than the plan's inaccurate parenthetical (check-task-references.sh sits between check-runtime-file-tracking.sh and check-vault-threshold.sh, not immediately before check-extension-docs.sh; lib/task-reference-patterns.sh sits between issue-grouping.sh and lifecycle-notify.sh).",
+    "Phase 1's 3rd git-workflow.md TASK_PATTERN match was 'task 334: complete research' in the Single-Task Operations example, not the plan-narrated 'todo: archive 3 completed tasks (336, 337, 338)' (which does not actually match the pattern). Reconciled against the live grep output, not the plan's prose -- the asserted count of 3 was correct, the narrative detail was not.",
+    "Phase 15 registration MUST use the bare command form in root-files/settings.json, mirroring guard-destructive-git.sh (unchanged from the plan; not yet implemented this dispatch).",
+    "5 pre-existing/expected check-extension-docs.sh drift FAILs remain: 3 are this dispatch's own source-store edits pending a deploy (verify-deploy.sh, git-workflow.md, no-task-references-in-deliverables.md), 2 predate this session (orchestrate-recover-outcome.sh, validate-artifact.sh, from an unrelated prior task). None block Phases 4-14."
   ],
   "dead_ends": [
     "permissionDecision deny is not usable for this gate: settings.json permissions.allow contains bare Write and Edit entries, the documented precondition under which deny is ignored. Do not revisit.",
     "agent-system/extensions/core/hooks/tests/test-validate-no-task-references.sh does not exist; the real path is agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh, declared under provides.scripts.",
     "root-files/settings.json has no PostToolUse Write|Edit entry for this hook to modify; that registration lives in merge-sources/settings-hooks.json under hooks.PostToolUse. root-files/settings.json has PreToolUse but no Write|Edit matcher for this hook yet."
   ],
-  "phases_completed": 0,
+  "phases_completed": 3,
   "phases_total": 15
 }
