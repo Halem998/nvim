@@ -11,15 +11,13 @@ next_project_number: 938
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 935 | -- | agent-system |
-| 2 | 937 | 935 | agent-system |
+| 1 | 937 | -- | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Agent System
 
-935 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
-  └─ 937 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+937 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ## Tasks
 
@@ -120,10 +118,13 @@ Honor the no-task-references-in-deliverables rule: no task-number citations in a
 ---
 
 ### 935. Narrow the self_modifying defer scope and add an explicit override flag
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 932, Task 933, Task 934, Task 936
+- **Research**: [935_narrow_self_modifying_defer_and_override_flag/reports/01_narrow-self-mod-defer-override-flag.md]
+- **Plan**: [935_narrow_self_modifying_defer_and_override_flag/plans/01_narrow-self-mod-defer-override-flag.md]
+- **Summary**: [935_narrow_self_modifying_defer_and_override_flag/summaries/01_narrow-self-mod-defer-override-flag-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
 

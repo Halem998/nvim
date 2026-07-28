@@ -3,7 +3,11 @@
   "agent_type": "general-implementation-agent",
   "task_number": 935,
   "session_id": "sess_1785245903_1153f3",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "plan_path": "specs/935_narrow_self_modifying_defer_and_override_flag/plans/01_narrow-self-mod-defer-override-flag.md",
   "phases_completed": 10,
   "phases_total": 10,
@@ -16,14 +20,26 @@
       "category": "PATTERN",
       "source_artifact": "specs/935_narrow_self_modifying_defer_and_override_flag/summaries/01_narrow-self-mod-defer-override-flag-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["narrowing-scope", "gate-rationale-sweep", "convergence-mechanism", "cross-reference-audit", "orchestrator"]
+      "suggested_keywords": [
+        "narrowing-scope",
+        "gate-rationale-sweep",
+        "convergence-mechanism",
+        "cross-reference-audit",
+        "orchestrator"
+      ]
     },
     {
       "content": "The Neovim config-picker's headless sync tool (deploy-headless.sh -> lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua's load_all_globally) can silently exclude specific skill markdown files from its skills-category scan even when they are present in the source store and listed in the core manifest's provides.skills array -- observed for skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md, both stale by hundreds of lines predating the task that discovered it (a prior task's edits to the same file were never deployed either). All other categories (scripts, commands, context patterns, context reference JSON, docs) synced correctly in the same run. Before trusting deploy-headless.sh's reported artifact count as proof a specific file was updated, diff the deployed copy against the source-store copy directly -- do not assume a nonzero 'Deployed N artifact(s)' count means every intended file actually changed. A follow-up task should investigate the allow-list/scan logic in sync.lua's skills handling.",
       "category": "INSIGHT",
       "source_artifact": "specs/935_narrow_self_modifying_defer_and_override_flag/summaries/01_narrow-self-mod-defer-override-flag-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["deploy-headless", "sync-tool-bug", "skills-sync", "stale-deploy", "verification-gap"]
+      "suggested_keywords": [
+        "deploy-headless",
+        "sync-tool-bug",
+        "skills-sync",
+        "stale-deploy",
+        "verification-gap"
+      ]
     }
   ],
   "modified_files": [
@@ -44,5 +60,9 @@
       "type": "summary",
       "summary": "Implementation summary for the ten-phase self-modification defer narrowing and override flag task"
     }
-  ]
+  ],
+  "metadata": {
+    "cycles_used": 3,
+    "final_state": "completed"
+  }
 }

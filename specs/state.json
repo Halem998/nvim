@@ -1793,7 +1793,7 @@
     {
       "project_number": 935,
       "project_name": "narrow_self_modifying_defer_and_override_flag",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Narrow the self_modifying defer scope and add an explicit override flag",
@@ -1815,9 +1815,26 @@
         936
       ],
       "created": "2026-07-27T20:34:52Z",
-      "last_updated": "2026-07-27T20:34:52Z",
-      "session_id": "sess_1785183950_f1bacb",
-      "artifacts": []
+      "last_updated": "2026-07-28T14:29:58Z",
+      "session_id": "sess_1785245903_1153f3",
+      "artifacts": [
+        {
+          "path": "specs/935_narrow_self_modifying_defer_and_override_flag/reports/01_narrow-self-mod-defer-override-flag.md",
+          "type": "report",
+          "summary": "Research on narrowing the self-modifying defer scope and adding an opt-in override flag"
+        },
+        {
+          "path": "specs/935_narrow_self_modifying_defer_and_override_flag/plans/01_narrow-self-mod-defer-override-flag.md",
+          "type": "plan",
+          "summary": "Ten-phase plan narrowing the self-modifying defer trigger and consequence, adding an opt-in override flag"
+        },
+        {
+          "path": "specs/935_narrow_self_modifying_defer_and_override_flag/summaries/01_narrow-self-mod-defer-override-flag-summary.md",
+          "type": "summary",
+          "summary": "Narrowed self-modifying defer trigger and consequence; added opt-in override flag"
+        }
+      ],
+      "completion_summary": "Narrowed the self-modification admission defer from whole-invocation to same-cycle scope in orchestrate-batch-admit.sh and its two callers, added an opt-in --allow-self-modifying override (default off), closed a verified zero-reference hard-mode gate gap by explicit transcription, added scripts/verify-deploy.sh as a tenth critical path, bumped the verdict schema to orchestrate-batch-admit-v3 across all consumers, and performed the single deliberate redeploy after re-verifying every gate."
     },
     {
       "project_number": 936,
