@@ -20,14 +20,18 @@
 #     (see skill_create_postflight_marker in scripts/skill-base.sh); the task number is
 #     recovered from the marker's parent task directory name.
 #
-#   Stop path: reads .claude/tmp/workflow-active (written by update-task-status.sh preflight
-#     as `"<task_number> <timestamp>"`) for a task number; if absent, falls back to a
-#     task-number regex over stdin's last_assistant_message (mirroring memory-nudge.sh's
-#     `task [0-9]+` / `Task #[0-9]+` extraction). The session_id itself is never present in
-#     either source, so once a task number is recovered it is used to look up that task's
-#     current session_id from specs/state.json's active_projects entry (populated by
-#     update-task-status.sh on every preflight). If no session_id can be resolved this way,
-#     the hook exits {} cleanly rather than emitting a sessionless event.
+#   Stop path: reads .claude/tmp/workflow-active-<CC_SESSION_ID> (the PER-SESSION marker form;
+#     see update-task-status.sh's header comment for why it is keyed by Claude Code's native
+#     session UUID rather than the agent-system session_id -- CC_SESSION_ID is already captured
+#     below for the cc_session_id event field, so reading THIS session's own marker requires no
+#     extra plumbing) for a task number, formatted as `"<task_number> <timestamp>"`; if that
+#     specific marker is absent, falls back to a task-number regex over stdin's
+#     last_assistant_message (mirroring memory-nudge.sh's `task [0-9]+` / `Task #[0-9]+`
+#     extraction) -- never to a different session's marker file. The agent-system session_id
+#     itself is never present in either source, so once a task number is recovered it is used to
+#     look up that task's current session_id from specs/state.json's active_projects entry
+#     (populated by update-task-status.sh on every preflight). If no session_id can be resolved
+#     this way, the hook exits {} cleanly rather than emitting a sessionless event.
 #
 # Accepted trade-off: a SubagentStop may fire more than once per loop-guard continuation
 # (see subagent-postflight.sh's MAX_CONTINUATIONS retry loop). This hook does not deduplicate
@@ -149,9 +153,11 @@ fi
 # Stop path: workflow-active marker, else last_assistant_message pattern fallback
 # ─────────────────────────────────────────────────────────────────────────
 task=""
-WORKFLOW_ACTIVE="$SCRIPT_DIR/../tmp/workflow-active"
-if [ -f "$WORKFLOW_ACTIVE" ]; then
-  task=$(awk '{print $1}' "$WORKFLOW_ACTIVE" 2>/dev/null)
+if [ -n "$CC_SESSION_ID" ]; then
+  WORKFLOW_ACTIVE="$SCRIPT_DIR/../tmp/workflow-active-${CC_SESSION_ID}"
+  if [ -f "$WORKFLOW_ACTIVE" ]; then
+    task=$(awk '{print $1}' "$WORKFLOW_ACTIVE" 2>/dev/null)
+  fi
 fi
 
 if [ -z "$task" ]; then

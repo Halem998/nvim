@@ -1,0 +1,40 @@
+{
+  "phase": 10,
+  "phase_name": "Make the workflow-active marker per-session",
+  "started_at": "2026-07-28T04:25:00Z",
+  "last_updated": "2026-07-28T05:10:00Z",
+  "commit_mode": "atomic-batch",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Convert the writer (update-task-status.sh) and all three consumers (claude-stop-notify.sh, wezterm-preflight-status.sh, events-log-lifecycle.sh) to the per-session workflow-active-<CC_SESSION_ID> marker form, as a single atomic batch",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/update-task-status.sh",
+        "agent-system/extensions/core/hooks/claude-stop-notify.sh",
+        "agent-system/extensions/core/hooks/wezterm-preflight-status.sh",
+        "agent-system/extensions/core/hooks/events-log-lifecycle.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "10.follow-up",
+      "description": "nvim/context/project/neovim/hooks/wezterm-integration.md documents the marker path in prose but was not updated",
+      "type": "deferred",
+      "reason": "It is a documentation file, not code that reads or writes the marker, so it is not part of the writer-plus-three-consumers atomic-batch scope. Left as a known follow-up rather than silently omitted.",
+      "annotation": "*(deviation: deferred — documentation drift, not a code consumer)*"
+    }
+  ],
+  "scope_hypothesis_confirmed": {
+    "asserted": "exactly one writer and exactly three consumers",
+    "measured": "confirmed exactly one writer and exactly three consumers; one prose-only mention in skill-orchestrate-hard/SKILL.md left unedited (not a code reference); one documentation file left unedited (recorded as follow-up)"
+  },
+  "verification_evidence": {
+    "two_session_fixture": "session A and B each wrote independent markers via CLAUDE_CODE_SESSION_ID; claude-stop-notify.sh suppressed correctly with both present; B's Tier-2 ESC-cancel cleanup removed only B's marker, A's survived; events-log-lifecycle.sh correctly resolved task+session via session-scoped marker read",
+    "bash_n_all_four_files": "all pass"
+  }
+}

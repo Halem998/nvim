@@ -334,12 +334,26 @@ update_state_json() {
     return 0
   fi
 
-  # Write workflow-active marker on preflight so Stop hook can suppress mid-workflow fires
-  # (a plain file write, unrelated to the specs/state.json mutex -- converted to per-session form
-  # in a later phase of this same task).
+  # Write workflow-active marker on preflight so the Stop hook can suppress mid-workflow fires
+  # (a plain file write, unrelated to the specs/state.json mutex).
+  #
+  # Per-session form: suffixed by Claude Code's OWN native session UUID
+  # ($CLAUDE_CODE_SESSION_ID, exported into every Bash tool invocation -- the SAME id space
+  # hook stdin's top-level `.session_id` field carries, captured as CC_SESSION_ID by every
+  # consumer hook; see events-log-lifecycle.sh's header comment for the two-id-spaces
+  # explanation). This is a DIFFERENT id space from this script's own `$session_id` positional
+  # argument (the agent-system `sess_...` id, finer-grained -- regenerated per command
+  # invocation within one Claude Code session), which is why the marker is keyed by the native
+  # UUID rather than by `$session_id`: one Claude Code session's Stop-hook lifecycle spans
+  # potentially several agent-system sessions, and the marker exists to answer "is THIS Claude
+  # Code session mid-workflow", not "is this one command invocation mid-workflow". Falls back to
+  # the agent-system `$session_id` when the native UUID is unavailable (e.g. a manual/test
+  # invocation outside Claude Code), so the marker is always still per-invocation-unique rather
+  # than silently reverting to the old shared fixed path.
   if [[ "$operation" == "preflight" ]]; then
+    local marker_session_key="${CLAUDE_CODE_SESSION_ID:-$session_id}"
     mkdir -p "$SCRIPT_DIR/../tmp"
-    echo "$task_number $(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$SCRIPT_DIR/../tmp/workflow-active"
+    echo "$task_number $(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$SCRIPT_DIR/../tmp/workflow-active-${marker_session_key}"
   fi
 
   if ! "$SCRIPT_DIR/state-write.sh" \

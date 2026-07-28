@@ -600,29 +600,49 @@ a file no other phase edits, so it carries no ordering constraint against the co
 
 ---
 
-### Phase 10: Make the `workflow-active` marker per-session [NOT STARTED]
+### Phase 10: Make the `workflow-active` marker per-session [COMPLETED]
 
 - **Goal:** Convert the global-singleton marker and all three of its consumers together, so no
   session's cleanup can delete another's marker.
 - **Tasks:**
-  - [ ] Choose the per-session form: either a `{session_id}`-suffixed filename under
+  - [x] Choose the per-session form: either a `{session_id}`-suffixed filename under
         `.claude/tmp/` or a small JSON registry keyed by session_id in the same directory.
-        Document the choice and its rationale in the writer's comment.
-  - [ ] `scripts/update-task-status.sh` preflight branch: write the marker in the chosen
+        Document the choice and its rationale in the writer's comment. *(completed: chose a
+        `{session_id}`-suffixed filename, `workflow-active-<CC_SESSION_ID>`, keyed by Claude
+        Code's OWN native session UUID (`$CLAUDE_CODE_SESSION_ID`, exported into every Bash tool
+        invocation) rather than by this codebase's `sess_...` agent-system session_id -- see
+        `update-task-status.sh`'s header comment for the full two-id-spaces rationale. Falls back
+        to the agent-system `session_id` when the native UUID is unavailable)*
+  - [x] `scripts/update-task-status.sh` preflight branch: write the marker in the chosen
         per-session form instead of the fixed `../tmp/workflow-active` path.
-  - [ ] `hooks/claude-stop-notify.sh`: read the marker in the per-session form; suppress the Stop
+  - [x] `hooks/claude-stop-notify.sh`: read the marker in the per-session form; suppress the Stop
         fire when ANY session's marker is present (the suppress semantics are global even though
         the storage is per-session), or scope to the current session if the hook has access to
-        one — document which and why.
-  - [ ] `hooks/wezterm-preflight-status.sh`: replace the unconditional
+        one — document which and why. *(completed: chose the ANY-session (global) suppression
+        semantics, via a glob existence check over `workflow-active-*`, matching the original
+        behavior exactly and documented as deliberate in the header comment)*
+  - [x] `hooks/wezterm-preflight-status.sh`: replace the unconditional
         `rm -f .../tmp/workflow-active` with a delete scoped to the current session's marker
-        only. This is the specific line that today deletes other sessions' markers.
-  - [ ] `hooks/events-log-lifecycle.sh`: update its fallback read of the marker to the
-        per-session form.
-  - [ ] Handle the migration case: a stale marker left at the old fixed path by a
+        only. This is the specific line that today deletes other sessions' markers. *(completed:
+        scoped via hook stdin's `.session_id`, Claude Code's native UUID -- the same id space the
+        writer keys by)*
+  - [x] `hooks/events-log-lifecycle.sh`: update its fallback read of the marker to the
+        per-session form. *(completed: reads `workflow-active-<CC_SESSION_ID>` using the
+        CC_SESSION_ID it already captures from stdin for the events.jsonl `cc_session_id` field)*
+  - [x] Handle the migration case: a stale marker left at the old fixed path by a
         pre-conversion run must not break any of the three consumers. Tolerate and clean it.
-  - [ ] Verify against a fixture that two simulated concurrent sessions each write their own
-        marker and that one session's cleanup leaves the other's intact.
+        *(completed: none of the three consumers match the old bare, unsuffixed path any more
+        (glob/suffixed-read only), so a stale leftover is silently inert; additionally,
+        `wezterm-preflight-status.sh`'s Tier-2 cleanup opportunistically `rm -f`s the old bare
+        path unconditionally on every non-lifecycle command, since no writer produces it any more
+        post-conversion)*
+  - [x] Verify against a fixture that two simulated concurrent sessions each write their own
+        marker and that one session's cleanup leaves the other's intact. *(completed: full
+        two-session fixture run -- session A and B each write their own marker via
+        `CLAUDE_CODE_SESSION_ID`; `claude-stop-notify.sh` correctly suppresses with both present;
+        B's Tier-2 cleanup removes only B's marker, A's survives; A's own later cleanup removes
+        A's marker too, leaving none; `events-log-lifecycle.sh` correctly resolves task number
+        and session_id via a session-scoped marker read)*
 - **Timing:** 1.5 hours
 - **Depends on:** 7
 - **Verification Tier:** interface
@@ -633,7 +653,14 @@ a file no other phase edits, so it carries no ordering constraint against the co
   `hooks/events-log-lifecycle.sh`). Confirm at implementation time by grepping the entire source
   store for `workflow-active` and classifying every hit as writer, consumer, or comment. A fourth
   consumer invalidates the atomic-batch file set and must be added to it, not deferred — a
-  partial conversion reintroduces the exact hazard this phase closes.
+  partial conversion reintroduces the exact hazard this phase closes. **Measured: confirmed
+  exactly one writer and exactly three consumers. One additional non-code mention found:
+  `skill-orchestrate-hard/SKILL.md` line 541 references "workflow-active marker write" in a
+  prose comment describing `skill_preflight_update`'s side effect -- not a direct reference to
+  the marker path itself, left unedited. A documentation file,
+  `nvim/context/project/neovim/hooks/wezterm-integration.md`, also describes the marker path in
+  prose and was NOT updated in this batch -- recorded as a known follow-up, not a fourth
+  consumer (it is documentation, not code that reads or writes the marker).**
 - **Verification:**
   - `grep -rn 'workflow-active' agent-system/extensions/core/` shows no remaining unconditional
     fixed-path delete.
