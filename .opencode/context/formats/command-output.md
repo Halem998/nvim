@@ -16,8 +16,8 @@ This standard defines the format for command output displayed to users by the or
 ### Task Number Format
 
 Use `Task #{N}` format consistently (no colon after the number):
-- Correct: `Task #258`
-- Incorrect: `Task #258:` or `Task: 258`
+- Correct: `Task #{N}`
+- Incorrect: `Task #{N}:` or `Task: {N}`
 
 ### Task-Based Commands
 
@@ -69,7 +69,7 @@ Next: /{command} {N}
 
 **Example:**
 ```
-Research completed for Task #258
+Research completed for Task #{N}
 
 Report: specs/258_modal_logic/reports/01_modal-logic-research.md
 
@@ -98,7 +98,7 @@ Next: /{command} {N}
 
 **Example:**
 ```
-Implementation complete for Task #258
+Implementation complete for Task #{N}
 
 Summary: specs/258_modal_logic/summaries/01_modal-logic-summary.md
 
@@ -223,7 +223,7 @@ of LeanSearch API integration patterns.
 
 **Bad Example (too verbose):**
 ```
-I have completed the research phase for task 258 which involves modal logic proof
+I have completed the research phase for the task which involves modal logic proof
 automation. During this research, I analyzed the LeanSearch API documentation,
 reviewed existing proof search implementations, evaluated different integration
 patterns, and created a detailed report with recommendations for implementation.
@@ -233,11 +233,11 @@ patterns, and created a detailed report with recommendations for implementation.
 
 **IMPORTANT**: Do NOT add conclusions or closing statements after the output.
 
-The output already provides task/command context. Adding a conclusion like "Task 258 completed" or "Command /review finished" is redundant.
+The output already provides task/command context. Adding a conclusion like "Task {N} completed" or "Command /review finished" is redundant.
 
 **Correct:**
 ```
-Research completed for Task #258
+Research completed for Task #{N}
 
 Report: specs/258_modal_logic_automation/reports/01_modal-logic-research.md
 
@@ -247,14 +247,14 @@ Next: /plan 258
 
 **Incorrect (redundant conclusion):**
 ```
-Research completed for Task #258
+Research completed for Task #{N}
 
 Report: specs/258_modal_logic_automation/reports/01_modal-logic-research.md
 
 Status: [RESEARCHED]
 Next: /plan 258
 
-Task 258 research completed successfully.  ← REDUNDANT, DO NOT ADD
+Task {N} research completed successfully.  ← REDUNDANT, DO NOT ADD
 ```
 
 ## Artifact Display
@@ -291,7 +291,7 @@ Recommendation: {how_to_fix}
 
 ### Example
 ```
-Research failed for Task #999
+Research failed for Task #{N}
 
 Error: Task not found in specs/TODO.md
 
@@ -304,7 +304,7 @@ Recommendation: Verify task number and retry
 
 **Research command:**
 ```
-Research completed for Task #258
+Research completed for Task #{N}
 
 Report: specs/258_modal_logic/reports/01_modal-logic-research.md
 
@@ -314,7 +314,7 @@ Next: /plan 258
 
 **Plan command:**
 ```
-Plan created for Task #258
+Plan created for Task #{N}
 
 Plan: specs/258_modal_logic/plans/02_modal-logic-plan.md
 
@@ -327,7 +327,7 @@ Next: /implement 258
 
 **Task creation:**
 ```
-Task #260 created: Fix parser edge case
+Task #{N} created: Fix parser edge case
 
 Status: [NOT STARTED]
 Task Type: general
@@ -338,7 +338,7 @@ Artifacts path: specs/260_fix_parser_edge_case/ (created on first artifact)
 
 **Implement command (complete):**
 ```
-Implementation complete for Task #258
+Implementation complete for Task #{N}
 
 Summary: specs/258_modal_logic/summaries/01_modal-logic-summary.md
 
@@ -349,7 +349,7 @@ Status: [COMPLETED]
 
 **Implement command (partial):**
 ```
-Implementation paused for Task #258
+Implementation paused for Task #{N}
 
 Completed: Phases 1-2
 Remaining: Phase 3
@@ -369,8 +369,8 @@ Errors: 15 total
 - High unfixed: 5
 
 Tasks created: 2
-- Task #261: Fix delegation timeout
-- Task #262: Fix state sync failure
+- Task #{N}: Fix delegation timeout
+- Task #{N}: Fix state sync failure
 
 Next: /implement 261
 ```
@@ -411,8 +411,8 @@ Issues found:
 - Low: 12
 
 Tasks created: 2
-- Task #263: Fix critical LSP error (grouped, 4 issues)
-- Task #264: Code quality improvements (grouped, 6 issues)
+- Task #{N}: Fix critical LSP error (grouped, 4 issues)
+- Task #{N}: Code quality improvements (grouped, 6 issues)
 
 Next Steps:
 1. Review report for details
@@ -426,13 +426,13 @@ Tasks Created
 Created 3 task(s) for agent system:
 
 High Priority:
-- Task #265: Create skill-export
+- Task #{N}: Create skill-export
   Path: specs/265_create_skill_export/
 
 Medium Priority:
-- Task #266: Add export agent
+- Task #{N}: Add export agent
   Path: specs/266_add_export_agent/
-- Task #267: Update CLAUDE.md references
+- Task #{N}: Update CLAUDE.md references
   Path: specs/267_update_claudemd_references/
 
 Next Steps:

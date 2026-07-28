@@ -34,7 +34,7 @@ Format: `- [x] {item} *(Completed: Task {N}, {DATE})*`
 
 Example:
 ```markdown
-- [x] Create proof architecture guide *(Completed: Task 628, 2026-01-15)*
+- [x] Create proof architecture guide *(Completed: Task {N}, {DATE})*
 ```
 
 ---

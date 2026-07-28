@@ -571,7 +571,7 @@ jq --arg num "$task_number" \
 **Benefits**:
 - ✅ Guaranteed preflight (status updates immediately)
 - ✅ Guaranteed postflight (artifacts always linked)
-- ✅ No more manual fixes (like Task 326)
+- ✅ No more manual fixes (no phantom-artifact issue)
 - ✅ Simpler subagents (focus on core work)
 - ✅ Centralized status update logic
 - ✅ Validation gates enforce workflow

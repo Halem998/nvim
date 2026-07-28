@@ -61,7 +61,8 @@ METADATA_EOF
 
 ### Pattern 2: jq Construction (With Variables)
 
-When you need to interpolate variables (uses Task 599 jq escaping workarounds):
+When you need to interpolate variables (uses the jq escaping workarounds documented in
+`jq-escaping-workarounds.md`):
 
 ```bash
 # Build metadata with jq
@@ -297,4 +298,4 @@ fi
 - `.opencode/context/core/formats/return-metadata-file.md` - Metadata file schema
 - `.opencode/context/core/patterns/postflight-control.md` - Postflight marker protocol
 - `.opencode/rules/state-management.md` - State update patterns
-- `.opencode/context/core/patterns/jq-escaping-workarounds.md` - jq escaping issues (Task 599)
+- `.opencode/context/core/patterns/jq-escaping-workarounds.md` - jq escaping issues

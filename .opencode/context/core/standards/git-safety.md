@@ -149,13 +149,13 @@ Create safety commits before:
 
 **Examples**:
 - `todo: archive 5 completed tasks`
-- `implement: task 195 - LeanSearch integration`
+- `implement: task {N} - LeanSearch integration`
 - `review: update registries and create 3 tasks`
-- `commands: add targeted git commit rules (task 156)`
+- `commands: add targeted git commit rules (task {N})`
 
 **Guidelines**:
 - Keep imperative, concise, and scoped to staged changes
-- Include task/plan IDs when known (e.g., `(task 156)`)
+- Include task/plan IDs when known (e.g., `(task {N})`)
 - No emojis in messages
 
 **Purpose**: Describe actual changes made
@@ -191,7 +191,7 @@ Create safety commits before:
 2. Stage target files only: `git add path/to/file1 path/to/file2`
 3. Re-check scope: `git status --short` to confirm only intended files are staged
 4. Run relevant checks (as needed): `lake build`, `lake exe test`, formatters/linters
-5. Commit with a focused message: `git commit -m "<area>: <summary> (task 156)"`
+5. Commit with a focused message: `git commit -m "<area>: <summary> (task {N})"`
 6. Leave unstaged any out-of-scope changes for follow-up commits
 
 ### Safety Checks Before Commit

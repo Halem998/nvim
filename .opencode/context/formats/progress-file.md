@@ -155,7 +155,7 @@ Each deviation:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `task_id` | string | Yes | Plan task ID (e.g., "3.2" for Phase 3, Task 2) |
+| `task_id` | string | Yes | Plan task ID (e.g., "3.2" for Phase 3, Step 2) |
 | `description` | string | Yes | Brief description matching the plan checklist text |
 | `type` | enum | Yes | `"skipped"`, `"altered"`, or `"deferred"` |
 | `reason` | string | Yes | One-sentence explanation |
@@ -273,8 +273,8 @@ The successor reads the progress file to understand exactly what was completed.
       "task_id": "3.4",
       "description": "Integrate validators with main handler",
       "type": "deferred",
-      "reason": "Handler refactor is blocked on a separate PR; deferring to task 261",
-      "annotation": "*(deviation: deferred to task 261)*"
+      "reason": "Handler refactor is blocked on a separate PR; deferring to task {N}",
+      "annotation": "*(deviation: deferred to task {N})*"
     }
   ]
 }

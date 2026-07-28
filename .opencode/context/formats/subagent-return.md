@@ -1,7 +1,7 @@
 # Subagent Return Format Standard
 
 **IMPORTANT - FILE-BASED METADATA EXCHANGE (v2)**:
-As of Task 600, agents write metadata to files instead of returning JSON to the console. This enables reliable structured data exchange without console pollution. The schema below is now written to `specs/{NNN}_{SLUG}/.return-meta.json`, NOT returned as console output.
+This file-based metadata exchange protocol has agents write metadata to files instead of returning JSON to the console. This enables reliable structured data exchange without console pollution. The schema below is now written to `specs/{NNN}_{SLUG}/.return-meta.json`, NOT returned as console output.
 
 See `.opencode/context/formats/return-metadata-file.md` for the file-based protocol.
 
@@ -158,7 +158,7 @@ If validation fails:
 ```json
 {
   "status": "planned",
-  "summary": "Created implementation plan for task 244 with 3 phases. Plan focuses on context reorganization, orchestrator streamlining, and command simplification. Estimated effort: 8 hours.",
+  "summary": "Created implementation plan for task {N} with 3 phases. Plan focuses on context reorganization, orchestrator streamlining, and command simplification. Estimated effort: 8 hours.",
   "artifacts": [
     {
       "type": "plan",
