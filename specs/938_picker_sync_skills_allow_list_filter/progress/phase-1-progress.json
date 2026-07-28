@@ -1,0 +1,11 @@
+{
+  "phase": 1,
+  "phase_name": "Reproduce the defect against a scratch tree",
+  "started_at": "2026-07-28T15:37:01Z",
+  "last_updated": "2026-07-28T15:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Phase 1 - file changes", "status": "done", "files_touched": ["specs/938_picker_sync_skills_allow_list_filter/plans/01_skills-allow-list-filter-fix.md"]}
+  ],
+  "current_objective": 1,
+  "handoff_count": 0
+}

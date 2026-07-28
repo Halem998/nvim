@@ -1,7 +1,7 @@
 # Implementation Plan: picker_sync_skills_allow_list_filter
 
 - **Task**: 938 - picker_sync_skills_allow_list_filter
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/938_picker_sync_skills_allow_list_filter/reports/01_skills-allow-list-post-filter-defect.md`
@@ -128,24 +128,26 @@ Phases within the same wave can execute in parallel. Phases 3 and 4 edit the sam
 
 ---
 
-### Phase 1: Reproduce the defect against a scratch tree [NOT STARTED]
+### Phase 1: Reproduce the defect against a scratch tree [COMPLETED]
 
 **Goal**: Empirically observe and record the before-state — skills dropped to zero while flat
 categories pass — without touching the live `.claude/` or `agent-system/` trees.
 
 **Tasks**:
-- [ ] Write a self-contained reproduction script under the session scratchpad directory that
+- [x] Write a self-contained reproduction script under the session scratchpad directory that
       builds an isolated tree rooted at `vim.fn.tempname()` containing
       `agent-system/extensions/core/manifest.json` (with `provides.skills` naming two skill
       directories, `provides.commands` one flat `.md`, `provides.agents` one flat `.md`) plus the
       matching `skills/<dir>/SKILL.md`, `commands/*.md`, and `agents/*.md` files.
-- [ ] Call the unmodified public `M.scan_all_artifacts(scratch_root, project_dir, { base_dir =
+- [x] Call the unmodified public `M.scan_all_artifacts(scratch_root, project_dir, { base_dir =
       ".claude" })` and print post-filter counts for `skills`, `commands`, and `agents`.
-- [ ] Run headless (`nvim --headless -c "luafile <script>" -c "qa!"`) and capture the output
+- [x] Run headless (`nvim --headless -c "luafile <script>" -c "qa!"`) and capture the output
       verbatim as the recorded before-state.
-- [ ] Have the script delete its own scratch tree on exit.
-- [ ] **HARD GATE**: if skills do NOT come back zero, STOP the task, record in the summary that
-      the read-verified diagnosis did not hold, and do not proceed to Phase 3.
+- [x] Have the script delete its own scratch tree on exit.
+- [x] **HARD GATE**: if skills do NOT come back zero, STOP the task, record in the summary that
+      the read-verified diagnosis did not hold, and do not proceed to Phase 3. *(gate passed:
+      captured output was `REPRO_RESULT skills=0 commands=1 agents=1`, matching the hypothesis
+      exactly)*
 
 **Timing**: 0.75 hours
 
