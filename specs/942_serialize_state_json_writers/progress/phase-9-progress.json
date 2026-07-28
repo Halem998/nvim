@@ -1,0 +1,40 @@
+{
+  "phase": 9,
+  "phase_name": "Convert the two inline command-file writes",
+  "started_at": "2026-07-28T04:00:00Z",
+  "last_updated": "2026-07-28T04:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Convert implement.md's completion_summary write and review.md's task-creation and active_goal writes to state-write.sh invocations",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/commands/implement.md",
+        "agent-system/extensions/core/commands/review.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "9.6",
+      "description": "commands/review.md had no session_id variable anywhere in the file before this phase, despite referencing {session_id} in its commit-message template",
+      "type": "altered",
+      "reason": "Added an inline session_id generation near the top of the command (Section 1.5, Load Review State) using the same portable pattern command-gate-in.sh uses, reused by both write sites and the commit template.",
+      "annotation": "*(deviation: altered — added session_id generation since none existed)*"
+    },
+    {
+      "task_id": "9.4",
+      "description": "review.md's task-creation write (Section 4) is followed by a second write (manage-topics.sh set, Section 4b) before the generate-todo.sh regen actually runs",
+      "type": "altered",
+      "reason": "Did not fold --regen-todo into the task-creation write, since doing so would regenerate TODO.md before the topic assignment landed. Left Section 5's generate-todo.sh call as a separate, unfolded step. Only the active_goal write (Section 6.7.3), which is immediately followed by nothing but the regen, was folded.",
+      "annotation": "*(deviation: altered — task-creation write not folded with --regen-todo due to an intervening second write)*"
+    }
+  ],
+  "scope_hypothesis_confirmed": {
+    "asserted": "exactly three in-scope write blocks, at least two out-of-scope specs/reviews/state.json blocks",
+    "measured": "confirmed exactly three in-scope blocks; specs/reviews/state.json reference count unchanged at 10 before and after"
+  }
+}

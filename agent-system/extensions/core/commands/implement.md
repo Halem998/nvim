@@ -170,13 +170,16 @@ bash .claude/scripts/command-gate-out.sh "$task_number" "implement" "$SESSION_ID
 
 The following steps are implement-specific (not handled by command-gate-out.sh):
 
-4. **Populate Completion Summary (if implemented)** — Only when `result.status == "implemented"`:
+4. **Populate Completion Summary (if implemented)** — Only when `result.status == "implemented"`,
+   routed through `state-write.sh`, the single mutex-guarded `specs/state.json` writer:
 
    ```bash
    completion_summary="$result_summary"
-   jq --arg summary "$completion_summary" \
-     '(.active_projects[] | select(.project_number == '"$task_number"')).completion_summary = $summary' \
-     specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+   bash .claude/scripts/state-write.sh \
+     '(.active_projects[] | select(.project_number == $num)).completion_summary = $summary' \
+     --session-id "$SESSION_ID" \
+     --argjson num "$task_number" \
+     --arg summary "$completion_summary"
    ```
 
 5. **Verify Plan File Status Updated (Defensive)** — Only when `result.status == "implemented"`: If plan file doesn't show `[COMPLETED]`, call `update-plan-status.sh "$task_number" "$PROJECT_NAME" "COMPLETED"`.

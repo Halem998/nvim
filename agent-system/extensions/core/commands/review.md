@@ -41,6 +41,11 @@ else
   mkdir -p specs/reviews
   echo '{"_schema_version":"1.0.0","_comment":"Review state tracking","_last_updated":"","reviews":[],"statistics":{"total_reviews":0,"last_review":"","total_issues_found":0,"total_tasks_created":0}}' > specs/reviews/state.json
 fi
+
+# /review does not go through command-gate-in.sh, so it has no session_id of its own -- generate
+# one inline (same portable pattern command-gate-in.sh uses) for the specs/state.json writes in
+# Sections 5.6.3 and 6.7.3 below, and for the commit message's Session: line.
+session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 ```
 
 ### 2. Gather Context
@@ -621,12 +626,11 @@ fallback instead of setting `topic=""`: follow
 and capture the result in `topic`.
 
 **4. Add task to state.json** (`$topic` is non-empty by construction — mandatory
-topic assignment, no Skip option; the null-guard below is defensive only):
+topic assignment, no Skip option; the null-guard below is defensive only), routed through
+`state-write.sh`, the single mutex-guarded `specs/state.json` writer:
 ```bash
-jq --arg num "$next_num" --arg slug "$slug" --arg title "$title" \
-   --arg desc "$description" --arg tt "$task_type" --arg prio "$priority" \
-   --arg topic "$topic" \
-   '.active_projects += [{
+bash .claude/scripts/state-write.sh \
+  '.active_projects += [{
      "project_number": ($num | tonumber),
      "project_name": $slug,
      "status": "not_started",
@@ -637,7 +641,10 @@ jq --arg num "$next_num" --arg slug "$slug" --arg title "$title" \
      "created": (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
    } | if .topic == null then del(.topic) else . end] |
    .next_project_number = (($num | tonumber) + 1)' \
-   specs/state.json > specs/state.json.tmp && mv specs/state.json.tmp specs/state.json
+  --session-id "$session_id" \
+  --arg num "$next_num" --arg slug "$slug" --arg title "$title" \
+  --arg desc "$description" --arg tt "$task_type" --arg prio "$priority" \
+  --arg topic "$topic"
 ```
 
 **4b. Update active_topics via manage-topics.sh** (after task entry exists in state.json):
@@ -805,15 +812,18 @@ This gives the user context before the goal statement prompt.
 }
 ```
 
-Apply selected goal by writing to state.json and regenerating TODO.md:
+Apply selected goal by writing to state.json and regenerating TODO.md, both via ONE
+`state-write.sh` call with `--regen-todo` so the TODO.md regen happens inside the same mutex as
+the write that triggered it (this write is immediately followed by nothing but the regen, so it
+is safe to fold in):
 ```bash
-# Write active_goal to state.json
-jq --arg goal "$selected_goal" '.active_goal = $goal' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-
-# Regenerate TODO.md to render the updated goal
-bash .claude/scripts/generate-todo.sh \
-  2>/dev/null || echo "Note: Failed to regenerate TODO.md (non-fatal)" >&2
+# Write active_goal to state.json, regenerating TODO.md inside the same mutex
+bash .claude/scripts/state-write.sh \
+  '.active_goal = $goal' \
+  --session-id "$session_id" \
+  --arg goal "$selected_goal" \
+  --regen-todo \
+  2>/dev/null || echo "Note: Failed to write active_goal / regenerate TODO.md (non-fatal)" >&2
 ```
 
 ### 7. Git Commit

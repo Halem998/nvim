@@ -550,28 +550,36 @@ a file no other phase edits, so it carries no ordering constraint against the co
 
 ---
 
-### Phase 9: Convert the two inline command-file writes [NOT STARTED]
+### Phase 9: Convert the two inline command-file writes [COMPLETED]
 
 - **Goal:** Convert the `specs/state.json` write blocks embedded in command markdown to
   `state-write.sh` invocations.
 - **Tasks:**
-  - [ ] `commands/implement.md` Step 4 (completion_summary): replace the inline
+  - [x] `commands/implement.md` Step 4 (completion_summary): replace the inline
         `jq ... specs/state.json > specs/tmp/state.json && mv ...` block with a
         `bash .claude/scripts/state-write.sh` invocation. The runtime path stays
         `.claude/scripts/...`; the EDIT target is
-        `agent-system/extensions/core/commands/implement.md`.
-  - [ ] `commands/review.md` task-creation write (Section 4): replace the
+        `agent-system/extensions/core/commands/implement.md`. *(completed: used `$SESSION_ID`,
+        already available at that point in the gate-out flow)*
+  - [x] `commands/review.md` task-creation write (Section 4): replace the
         `specs/state.json > specs/state.json.tmp && mv ...` block — the literal that collides
         with `archive-task.sh` — with a `state-write.sh` invocation.
-  - [ ] `commands/review.md` `active_goal` write (Section 6.7.3): replace the
+  - [x] `commands/review.md` `active_goal` write (Section 6.7.3): replace the
         `specs/state.json > specs/tmp/state.json && mv ...` block with a `state-write.sh`
         invocation.
-  - [ ] Where a converted site is immediately followed by a separate `generate-todo.sh` call,
+  - [x] Where a converted site is immediately followed by a separate `generate-todo.sh` call,
         fold that regen into the helper's `--regen-todo` flag so it runs inside the mutex.
-  - [ ] Leave every `specs/reviews/state.json` write in `review.md` untouched — different file,
-        out of scope. Confirm none was converted by accident.
-  - [ ] Confirm each converted block still passes the session_id available at that point in the
-        command flow.
+        *(completed for the `active_goal` write, which is immediately followed by nothing but the
+        regen. NOT folded for the task-creation write: it is followed by a SECOND write —
+        `manage-topics.sh set` for the topic assignment — before the regen actually runs, so
+        folding `--regen-todo` into the task-creation write would regenerate TODO.md before the
+        topic landed. Left as a separate `generate-todo.sh` call, unfolded — see Plan Deviations)*
+  - [x] Leave every `specs/reviews/state.json` write in `review.md` untouched — different file,
+        out of scope. Confirm none was converted by accident. *(completed: grep count of
+        `specs/reviews/state.json` in `review.md` is unchanged, 10 before and after)*
+  - [x] Confirm each converted block still passes the session_id available at that point in the
+        command flow. *(completed with a deviation: `review.md` had NO `session_id` variable
+        anywhere in the file before this phase — see Plan Deviations)*
 - **Timing:** 1 hour
 - **Depends on:** 3
 - **Verification Tier:** interface
@@ -579,7 +587,9 @@ a file no other phase edits, so it carries no ordering constraint against the co
   across two command files (`implement.md` 1, `review.md` 2), plus at least two
   `specs/reviews/state.json` blocks in `review.md` that must remain untouched. Confirm at
   implementation time by grepping both files for `state.json` and classifying every hit as
-  in-scope write, out-of-scope write, or read-only before editing.
+  in-scope write, out-of-scope write, or read-only before editing. **Measured: confirmed exactly
+  three in-scope write blocks and ten total `specs/reviews/state.json` references, all
+  out-of-scope and left untouched.**
 - **Verification:**
   - `grep -n 'specs/state\.json.*tmp\|specs/state\.json\.tmp'` over both command files returns
     nothing.
