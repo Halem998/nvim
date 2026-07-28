@@ -11,8 +11,8 @@ next_project_number: 958
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 942,943,947,950,951,955,956 | -- | agent-system, orchestration-concurrency |
-| 2 | 944,948,952,957 | 942,943,947,951 | agent-system, orchestration-concurrency |
+| 1 | 943,947,950,951,955,956,957 | -- | agent-system, orchestration-concurrency |
+| 2 | 944,948,952 | 943,947,951 | agent-system, orchestration-concurrency |
 | 3 | 945,949,953,954 | 944,948,952 | agent-system, orchestration-concurrency |
 | 4 | 946 | 945 | orchestration-concurrency |
 
@@ -33,13 +33,11 @@ next_project_number: 958
 
 ### Orchestration Concurrency
 
-942 [IMPLEMENTING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+943 [RESEARCHED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 944 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
     └─ 945 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
       └─ 946 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-  └─ 957 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-943 [RESEARCHED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-  └─ 944 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS (see above)
+957 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ## Tasks
 
@@ -531,7 +529,7 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 ---
 
 ### 942. Serialize every specs/state.json writer through one mutex-guarded helper
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: None

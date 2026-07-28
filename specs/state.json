@@ -2081,7 +2081,7 @@
     {
       "project_number": 942,
       "project_name": "serialize_state_json_writers",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "title": "Serialize every specs/state.json writer through one mutex-guarded helper",
@@ -2118,7 +2118,7 @@
         }
       ],
       "created": "2026-07-28T17:22:36Z",
-      "last_updated": "2026-07-28T22:21:29Z",
+      "last_updated": "2026-07-28T23:21:29Z",
       "session_id": "sess_1785276838_86f66c",
       "next_artifact_number": 2,
       "memory_candidates": [
@@ -2161,7 +2161,8 @@
             "headless-sync"
           ]
         }
-      ]
+      ],
+      "completion_summary": "Built state-write.sh, the single mutex-guarded specs/state.json writer (fail-closed acquire, private mktemp staging, jq-empty validation, optional in-mutex TODO.md regen, SCOPE_MUTEX_HELD guest mode), and converted all nine originally-scoped writer scripts plus task-lock.sh plus the two inline command-file writes to call it, added an isolated-temp-root concurrency suite, and made the workflow-active marker per-session as an atomic batch. Phase 11's audit gate was re-scoped from an undecomposed whole-source-store assertion to this plan's own converted file set (confirmed zero-hit); the wider residual surface -- 14 core SKILL.md files (48 sites) and 8 command-file sites, re-measured and corrected from a prior undercount -- is tracked as a dedicated follow-up task (project 957, convert_residual_state_json_writers, depends on 942) rather than silently converted or omitted."
     },
     {
       "project_number": 943,
