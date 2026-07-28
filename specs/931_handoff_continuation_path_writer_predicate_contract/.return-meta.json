@@ -1,7 +1,11 @@
 {
   "status": "implemented",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "task_number": 931,
   "task_type": "meta",
   "session_id": "sess_1785196200_e29d15",
@@ -42,14 +46,32 @@
       "category": "PATTERN",
       "source_artifact": "specs/931_handoff_continuation_path_writer_predicate_contract/summaries/01_continuation-path-predicate-contract-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["predicate-divergence", "writer-reader-contract", "validator-precedent", "duplicated-rule-audit", "handoff-schema", "field-shape-schism", "companion-doc-staleness"]
+      "suggested_keywords": [
+        "predicate-divergence",
+        "writer-reader-contract",
+        "validator-precedent",
+        "duplicated-rule-audit",
+        "handoff-schema",
+        "field-shape-schism",
+        "companion-doc-staleness"
+      ]
     },
     {
       "content": "Mutation-check discipline for a shell regression suite fixing a jq predicate: build fixtures BEFORE the fix lands, run the suite against the unfixed script, and record the literal RED output (exit code, pass/fail counts, which fixtures failed and why) before touching production code. A suite that only ever runs post-fix cannot prove it exercises the bug it claims to guard against.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/931_handoff_continuation_path_writer_predicate_contract/summaries/01_continuation-path-predicate-contract-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["mutation-check", "red-green-testing", "shell-script-testing", "regression-suite", "jq-predicate"]
+      "suggested_keywords": [
+        "mutation-check",
+        "red-green-testing",
+        "shell-script-testing",
+        "regression-suite",
+        "jq-predicate"
+      ]
     }
-  ]
+  ],
+  "metadata": {
+    "cycles_used": 3,
+    "final_state": "completed"
+  }
 }
