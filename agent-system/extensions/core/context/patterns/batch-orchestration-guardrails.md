@@ -97,7 +97,11 @@ A file belongs on the critical-path list if and only if **both** hold:
 Both tests must hold. A file that is reachable but not decision-relevant, or decision-relevant
 but not reachable from MT dispatch, is excluded.
 
-### Inclusion Table (the nine files, with per-file evidence)
+### Inclusion Table (ten files, with per-file evidence)
+
+Re-applied at the narrowing that added row 10 below: rows 1-9 were re-confirmed against both
+conjunctive tests and are UNCHANGED — no row's reachability or decision-relevance verdict
+differs from the prior evaluation.
 
 | # | Path (relative to the core extension root) | Reachability evidence | Decision-relevance evidence |
 |---|---|---|---|
@@ -110,6 +114,7 @@ but not reachable from MT dispatch, is excluded.
 | 7 | `scripts/orchestrate-batch-admit.sh` | THE admission predicate this gate itself extends; called once per wave/cycle | A defect here is maximally silent: it IS the mechanism deciding admission, so a bug in it defeats the very check meant to catch bugs like it |
 | 8 | `scripts/orchestrate-triage-classify.sh` | Called once per MT cycle (Stage MT-4) to route tasks to research/plan/implement | A defect silently misroutes a task to the wrong lifecycle phase |
 | 9 | `scripts/orchestrate-dry-run-report.sh` | Composes the `--dry-run` report human operators trust to preview a live run | A defect silently misrepresents what a live run would actually do, undermining the one human-facing verification surface for batch composition |
+| 10 | `scripts/verify-deploy.sh` | Executed directly from Stage MT-3 step 7 on the MT dispatch path (the inter-cycle redeploy checkpoint) | A defect causing a false PASS is silent and lets a broken deploy be treated as verified — matching row 7's own "a bug in it defeats the very check meant to catch bugs like it" language |
 
 ### Exclusion Table (explicitly excluded, with evidence)
 
@@ -129,6 +134,7 @@ MT path but a defect in them fails loudly or is merely cosmetic, not a silent wr
 | `scripts/generate-todo.sh` | Regenerates the human-facing `TODO.md` view from `state.json` — a defect produces a visibly wrong rendered file, not a silent wrong admission/wave/lock/completion decision |
 | `scripts/validate-artifact.sh` | Validates artifact format/presence — a defect fails loudly (a validation error) rather than silently corrupting a scheduling decision |
 | `scripts/lifecycle-notify.sh` | A notification/logging hook — a defect at worst drops or garbles a notification; it does not feed back into any admission, wave, lock, or completion decision |
+| `scripts/deploy-headless.sh` | Executed from Stage MT-3 step 7 immediately before `verify-deploy.sh`, so it is reachable on the MT dispatch path, but its primary failure mode is loud (`exit 1`/`2`, triggering the documented failure-path warning and `deferred_deploy_checkpoint` population) — matching the exclusion rationale already used for `validate-artifact.sh` above. Judged call, not an unconsidered omission: a hypothetical silent partial-sync defect (some files copied, some not, exit 0 anyway) would clear decision-relevance and belong in the Inclusion Table instead; the current implementation's failure mode is the loud one, so it stays here. |
 
 ### The Deploy-Manual Analysis and the Surviving Hazards
 
@@ -165,26 +171,32 @@ this gate:
    that same machinery. A defect the new candidate is trying to fix cannot fix its own admission
    decision; only a solo run followed by a manual redeploy breaks that circularity. That framing
    is now split into three parts:
-   - (i) **Already structurally impossible before this change**: the in-batch, correctly-declared
-     form — a candidate whose declared `file_scope` names a critical path, admitted alongside
-     siblings in the same invocation — was already structurally impossible. The self-modification
-     admission gate excludes such a candidate from the **whole invocation** (recorded in
-     `deferred_self_modifying`), not merely from one cycle, so "W0 fixes it, W1 still runs stale"
-     could never happen for a correctly-declared candidate in the first place.
+   - (i) **Structurally impossible, on a premise that has since changed**: the in-batch,
+     correctly-declared form — a candidate whose declared `file_scope` names a critical path,
+     admitted alongside a `dependencies[]`-edge-connected sibling in the same invocation — remains
+     structurally impossible, but the REASON changed. It previously read on the self-modification
+     admission gate excluding such a candidate from the **whole invocation** (the old, never-reset
+     `deferred_self_modifying` exclusion set); that premise no longer holds — see "### The
+     Same-Cycle Narrowing and Its Hazard Accounting" above. The claim survives on a narrower,
+     already-sufficient premise instead: Stage MT-3 step 3's eligibility rule guarantees an
+     edge-connected successor is never eligible in the same cycle as its predecessor, regardless of
+     the self-modification gate's own scope. "W0 fixes it, W1 still runs stale" still cannot happen
+     for a correctly-declared, edge-connected candidate — it just was never actually the
+     self-modification gate's whole-invocation scope doing that work.
    - (ii) **The two residual forms the inter-cycle redeploy checkpoint retires**: **declared/actual
      divergence** — a task whose declared `file_scope` does not name a critical path but whose
      actual `modified_files` do, invisible to a gate that only reads `file_scope` pre-dispatch —
      and **cross-invocation staleness** — a correctly-excluded task is later re-run solo, commits
      its fix, and nothing redeploys it before the next invocation picks up stale machinery.
-   - (iii) **The replacement exposure, named as such**: six of the nine critical paths
+   - (iii) **The replacement exposure, named as such**: seven of the ten critical paths
      (`scripts/skill-base.sh`, `scripts/task-lock.sh`, `scripts/update-task-status.sh`,
      `scripts/orchestrate-batch-admit.sh`, `scripts/orchestrate-triage-classify.sh`,
-     `scripts/orchestrate-dry-run-report.sh`) are shell scripts re-invoked via a fresh
-     `bash .claude/scripts/X.sh` subprocess at every use site, so they genuinely re-read on-disk
-     bytes; the remaining three (`skills/skill-orchestrate/SKILL.md`,
+     `scripts/orchestrate-dry-run-report.sh`, `scripts/verify-deploy.sh`) are shell scripts
+     re-invoked via a fresh `bash .claude/scripts/X.sh` subprocess at every use site, so they
+     genuinely re-read on-disk bytes; the remaining three (`skills/skill-orchestrate/SKILL.md`,
      `skills/skill-orchestrate-hard/SKILL.md`, `commands/orchestrate.md`) are read once into the
      orchestrator's context at dispatch time and are unaffected for the current turn. A mid-run
-     redeploy therefore genuinely swaps executing machinery mid-flight for the six script paths.
+     redeploy therefore genuinely swaps executing machinery mid-flight for the seven script paths.
      This is the **same underlying verification-gap tension as hazard 1, now manifesting
      mid-session rather than only cross-session** — not an independent fourth hazard. See
      `### The Inter-Cycle Redeploy Checkpoint` below for the mechanism that retires (ii) and
@@ -197,13 +209,95 @@ keep it. Hazard 2 is retained here in retired form, not deleted, so a later read
 changed and why; hazard 3 is now retained in the same style, split into its retired and surviving
 parts rather than being deleted either.
 
+### The Same-Cycle Narrowing and Its Hazard Accounting
+
+The self-modification defer originally excluded a candidate from the WHOLE invocation whenever
+`--invocation-count` exceeded 1 — never merely from the wave/cycle it was actually co-dispatched
+in. That whole-invocation scope has been narrowed to the candidate's actual same-cycle co-dispatch
+count (`${#eligible_tasks[@]}` at the skill's own call site), because a
+`dependencies[]`-edge-connected pair can never share that count in the first place — Stage MT-3
+step 3's eligibility rule guarantees a successor is never eligible until its predecessor leaves
+the non-terminal set — so the whole-invocation count fired against pairs that could never
+actually co-occur in a dispatch batch. That was a pure false positive, not a safety margin, and
+removing it removes no protection against any of the three hazards above.
+
+**Which hazard each unit of remaining strictness pays for, stated per hazard**:
+
+- **Hazard 2 (rollback/commit-granularity) — RETIRED, and whole-invocation scope was never this
+  hazard's mitigation anyway.** Once MT mode moved to one scoped commit per task per phase
+  transition (Stage MT-4 step 5.5), the commit-granularity concern the original whole-invocation
+  scope might have incidentally helped with was already resolved by a DIFFERENT mechanism. The
+  narrowing does not touch this hazard's retired status either way.
+- **Hazard 3's in-batch form — RETIRED, and whole-invocation scope WAS this form's mitigation, now
+  replaced.** The old whole-invocation exclusion is exactly what made "a self-modifying candidate
+  admitted alongside a sibling in the same invocation" structurally impossible. The narrowing
+  removes that specific protection — but does not reopen the hazard, because same-cycle
+  eligibility exclusion (Stage MT-3 step 3) already makes the in-batch, correctly-declared form
+  structurally impossible on its own: an edge-connected successor is never eligible in the same
+  cycle as its predecessor, narrowed scope or not. The over-protection here was scope wider than
+  the eligibility rule already required, not a hazard the wider scope alone was holding back.
+- **Hazard 1 (verification gap) — LIVE, and UNAFFECTED BY THE SCOPE CHOICE IN EITHER DIRECTION.**
+  A fix to orchestrator machinery is verified only against a scratch deploy-tree copy regardless
+  of whether the defer is scoped to the whole invocation or to one cycle — the gap is about
+  WHERE verification happens, not how widely a defer excludes a candidate. This is precisely why
+  hazard 1 is not itself an argument for whole-invocation scope: it does not distinguish the two
+  scope choices. It IS the reason some gate must survive at some scope, which is why this task
+  narrows the defer rather than removing it.
+
+**A1 resolution — the dependency-edge exemption asymmetry is explained, not remedied.** The
+collision dimension (`file_scope_collision`) excludes from its comparison set any task connected
+to the candidate by a `dependencies[]` edge in either direction. The self-modification dimension
+applies no equivalent exemption, and this is deliberate, not an oversight: the collision
+dimension's comparison set spans EVERY non-terminal task in `specs/state.json` — including tasks
+far outside the current wave/cycle — where an edge-connected pair genuinely can and does collide
+if left unexempted (an out-of-batch predecessor sitting in `implementing` for many cycles is a
+real, live comparison target). The self-modification dimension's comparison, by contrast, is now
+scoped to `${#eligible_tasks[@]}` — the current cycle's actual co-dispatch set — and Stage MT-3
+step 3's eligibility rule already guarantees an edge-connected pair can never occupy that set
+together. An explicit dependency-edge exemption in the self-mod branch would therefore be
+unreachable dead code: the condition it would guard against cannot occur once the count is
+same-cycle-scoped. The asymmetry between the two dimensions is real, but it is load-bearing only
+on the collision side, where the wider comparison set makes the edge case reachable; it is not a
+gap in the self-modification check.
+
+**The `--allow-self-modifying` override — recorded, default off.** Name:
+`--allow-self-modifying`. Default: off (`"false"`), threaded through
+`scripts/parse-command-args.sh`'s scan and strip chain exactly like every other boolean flag, and
+read at the consumer (`skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 and the
+`skill-orchestrate-hard` transcription) — never passed to `orchestrate-batch-admit.sh`, which
+always computes and emits the verdict honestly regardless of the flag. Justification for the
+default: the narrowing itself trades a HUMAN-PACED solo re-run (where a person decides when to
+redeploy after a self-modifying fix) for a self-modifying candidate now potentially running
+inside ONE automated invocation, where the inter-cycle redeploy checkpoint auto-redeploys and
+auto-verifies with ZERO human review in between. That is precisely the kind of automation hazard
+1 warns is uniquely risky for an unverified orchestrator-machinery fix — a fix verified only
+against a scratch deploy-tree copy, now also auto-deployed without a human looking at it first.
+The override flag is framed as a deliberate, per-invocation, human-intent escape hatch for the
+residual co-dispatch case (a genuinely co-dispatched self-modifying candidate that a human has
+decided, this one time, should run anyway) — never as a general-purpose weakening of the gate.
+
 ### Scope Limitation and Residual Risk
 
 This gate is `/orchestrate`-only. Plain multi-task `/implement N,M`, `/research N,M`, and `/plan
 N,M` never call `orchestrate-batch-admit.sh` at all, so a self-modifying task run through one of
 those commands is invisible to this gate. This is a known, accepted scope limitation, not a
-silently-absorbed gap — a follow-up task would be required to extend equivalent protection to
-those commands, should that ever be judged necessary.
+silently-absorbed gap.
+
+**Decision, restated after the same-cycle narrowing: restate the acceptance, do not extend
+protection.** The narrowing this document records above does NOT transfer to plain multi-task
+`/implement`, `/research`, or `/plan` by analogy, and the reason is specific to what those
+commands lack, not a general judgment that they are lower-risk. The narrowed self-modification
+trigger is counted against `${#eligible_tasks[@]}` — a per-CYCLE co-dispatch set produced by
+`/orchestrate`'s own Kahn-ordered wave/cycle machinery (Stage MT-3 steps 1-4). Plain multi-task
+`/implement N,M`, `/research N,M`, and `/plan N,M` have no wave or cycle computation at all: no
+Kahn ordering, no per-cycle eligibility re-evaluation, no concept of "this cycle's co-dispatch
+set" for a narrowed trigger to be counted against. There is therefore no unit the narrowing could
+even be expressed in for those commands — extending equivalent protection would require first
+introducing a wave/cycle concept those commands do not have, which is a materially larger change
+than narrowing an existing trigger. A future reader must not assume the narrowing implicitly
+covered plain multi-task commands merely because it narrowed the analogous check inside
+`/orchestrate`; a follow-up task would be required to extend equivalent protection to those
+commands, should that ever be judged necessary.
 
 The batch-commit staging gap previously noted here — that the retired end-of-batch commit did not
 stage an implementation agent's self-reported `modified_files` per task — is now closed: the
@@ -253,11 +347,12 @@ can occupy, unconditionally and inside the same per-task loop iteration. Committ
 in that order, is guaranteed by existing step ordering and is stated here, not built.
 
 **Idempotence guard**: the checkpoint fires only when this cycle's overlap set contains at least
-one critical path not already recorded in `mt_state_file.deployed_critical_paths`. This mirrors
-`deferred_self_modifying`'s convergence rationale: without it, a task sitting in `implementing`
-across several cycles would re-report the same `modified_files` and re-fire the checkpoint every
-cycle, at unbounded redundant deploy/verify cost and with the mid-run script-swap window
-maximized rather than minimized.
+one critical path not already recorded in `mt_state_file.deployed_critical_paths`. Without it, a
+task sitting in `implementing` across several cycles would re-report the same `modified_files`
+and re-fire the checkpoint every cycle, at unbounded redundant deploy/verify cost and with the
+mid-run script-swap window maximized rather than minimized. (`deployed_critical_paths` is its own
+accumulating set, distinct from — and unaffected by — the same-cycle narrowing of
+`deferred_self_modifying` described above; the two are not the same convergence mechanism.)
 
 **Concurrency**: the whole-tree overwrite is serialized by a fail-open `specs/.deploy-lock/`
 mutex inside `scripts/deploy-headless.sh`, the same acquire/warn-and-proceed shape as the
@@ -434,7 +529,7 @@ This document states principles only. The mechanisms are defined, exactly once e
 - **Creation-time overlap component**: `docs/reference/standards/multi-task-creation-standard.md`
   — the file-scope capture and overlap-detection component invoked at task-creation time.
 - **Self-modification hazard data and schema**: `context/reference/orchestrator-critical-paths.json`
-  — the single declaration of the nine-file critical-path list and its `scope_roots` expansion
+  — the single declaration of the ten-file critical-path list and its `scope_roots` expansion
   rule, consumed by `scripts/orchestrate-batch-admit.sh`; and
   `docs/architecture/batch-admit-schema.md` — the `self_modifying` / `defer_reason` verdict fields
   this fourth dimension adds to the admission predicate's output.

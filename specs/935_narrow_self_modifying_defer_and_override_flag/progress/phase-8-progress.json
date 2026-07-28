@@ -1,0 +1,13 @@
+{
+  "phase": 8,
+  "phase_name": "Guardrails doc — hazard accounting, A1, override rationale, Scope F",
+  "started_at": "2026-07-28T02:35:00Z",
+  "last_updated": "2026-07-28T03:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add narrowing/hazard-accounting subsection, A1 resolution, correct hazard 3(i)/(iii), record override flag, rewrite Scope F, sweep stale references", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
