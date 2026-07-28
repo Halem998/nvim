@@ -2234,7 +2234,7 @@
     {
       "project_number": 944,
       "project_name": "in_flight_session_registry",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "title": "Add an in-flight orchestration session registry with liveness and reap",
@@ -2257,10 +2257,16 @@
         942,
         943
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/944_in_flight_session_registry/reports/01_in-flight-session-registry.md",
+          "type": "report",
+          "summary": "in flight session registry (backfilled by --sync)"
+        }
+      ],
       "created": "2026-07-28T17:22:36Z",
-      "last_updated": "2026-07-28T17:22:36Z",
-      "session_id": "sess_1785258774_be5724"
+      "last_updated": "2026-07-28T23:53:37Z",
+      "session_id": "sess_1785282438_f1034e"
     },
     {
       "project_number": 945,
