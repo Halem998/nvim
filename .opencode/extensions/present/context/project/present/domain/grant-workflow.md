@@ -17,7 +17,7 @@ Creates a task with `language="grant"`. The description is recorded, not execute
 
 Output:
 ```
-Grant task #500 created: Research NIH R01 funding for AI safety project
+Grant task #{N} created: Research NIH R01 funding for AI safety project
 Status: [NOT STARTED]
 Language: grant
 
@@ -73,9 +73,9 @@ Creates a new task to revise an existing grant (where N is the original grant ta
 
 Output:
 ```
-Grant revision task #505 created for Grant #500
+Grant revision task #{N} created for Grant #{M}
 Status: [NOT STARTED]
-Parent Grant: Task #500
+Parent Grant: Task #{M}
 Revises: grants/500_nsf_career_ai/
 
 Recommended workflow:

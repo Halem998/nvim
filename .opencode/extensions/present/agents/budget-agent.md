@@ -605,7 +605,7 @@ Write final metadata to specified path:
 Return a brief summary (NOT JSON):
 
 ```
-Grant budget research complete for task 42:
+Grant budget research complete for task {N}:
 - Mode: DETAILED, 8 forcing questions completed
 - Funder: NIH, 5-year project
 - Personnel: 5 (PI + 2 Co-PIs + 2 postdocs)

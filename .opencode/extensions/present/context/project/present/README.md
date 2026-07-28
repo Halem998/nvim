@@ -122,5 +122,5 @@ Guides for grant research and resources:
 ## Navigation
 
 - [Extension](../../../EXTENSION.md)
-- [Agent Definition](../../../agents/grant-agent.md) (Task #205)
-- [Skill Definition](../../../skills/skill-grant/SKILL.md) (Task #206)
+- [Agent Definition](../../../agents/grant-agent.md)
+- [Skill Definition](../../../skills/skill-grant/SKILL.md)

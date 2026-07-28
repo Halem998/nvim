@@ -101,8 +101,8 @@ Branch:   main
 Commit:   abc1234
 
 Commits since v0.2.3 (5 total):
-abc1234 task 44: complete implementation
-def5678 task 43: complete research
+abc1234 task {N}: complete implementation
+def5678 task {M}: complete research
 ...
 
 This will trigger CI/CD deployment to production.

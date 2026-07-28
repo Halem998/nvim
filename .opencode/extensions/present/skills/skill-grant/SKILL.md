@@ -1040,7 +1040,7 @@ This skill returns a **brief text summary** (NOT JSON). The JSON metadata is wri
 
 Example successful return (proposal_draft with prompt):
 ```
-Proposal draft created for task 500:
+Proposal draft created for task {N}:
 - Drafted 5 of 7 required sections
 - Focus applied: "Emphasize innovation and methodology"
 - Created draft at specs/500_research_ai_safety_funders/drafts/01_narrative-draft.md
@@ -1050,7 +1050,7 @@ Proposal draft created for task 500:
 
 Example partial return:
 ```
-Grant proposal_draft partially completed for task 500:
+Grant proposal_draft partially completed for task {N}:
 - Completed problem statement, methodology, impact sections
 - WebFetch failed for funder template retrieval
 - Partial draft saved at specs/500_research_ai_safety_funders/drafts/01_narrative-draft.md
@@ -1059,7 +1059,7 @@ Grant proposal_draft partially completed for task 500:
 
 Example failed return:
 ```
-Grant skill error for task 999:
+Grant skill error for task {N}:
 - Task not found in state.json
 - No artifacts created
 - No status changes made
