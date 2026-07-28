@@ -861,18 +861,49 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
 
 ---
 
-### Phase 14: Purge the rest of `.opencode/**` [NOT STARTED]
+### Phase 14: Purge the rest of `.opencode/**` [COMPLETED]
 
 - **Goal:** Clear every remaining `.opencode` subdirectory.
 - **Character:** Mixed — `context/orchestration` and `context/patterns` need judgment; `scripts`,
   `hooks`, `rules` are comment-level and mechanical.
 
 - **Tasks:**
-  - [ ] Triage and convert across `.opencode/context/{orchestration,patterns,standards,workflows,architecture,meta,project,reference,templates}/`
-        and `.opencode/{docs,skills,agent,commands,scripts,hooks,rules}/`.
-  - [ ] `.opencode/hooks/` contains the port's own copy of the advisory hook — purge its comment
-        citations only. Do NOT port the blocking flip here (explicit Non-Goal).
-  - [ ] Confirm shell edits stay inside `#` comments.
+  - [x] Triage and convert across `.opencode/context/{orchestration,patterns,standards,workflows,architecture,meta,project,reference,templates}/`
+        and `.opencode/{docs,skills,agent,commands,scripts,hooks,rules}/`. *(completed: the live
+        scan reported 231, not the estimated 229 — a small drift from the Scope Hypothesis
+        (2 extra occurrences), reconciled by proceeding directly against the live scan rather than
+        the estimate, consistent with the Scope Hypothesis's own reconciliation instruction. Root
+        cause of every site fell into one of three buckets: (1) files structurally identical or
+        near-identical to already-purged siblings in `.opencode/extensions/core/`,
+        `.opencode/context/core/`, or `.opencode/context/formats/` (Phases 11/13) — reused the
+        exact same `{N}`/`{M}`/`{X}` placeholder conversions, `Task N.N` → `Step N.N` collision
+        renames, and `task-ref-ok` marker placements verbatim; (2) genuinely new files never seen
+        in earlier phases (`context/README.md`, `context/architecture/system-overview.md`,
+        `context/index.md`, `context/patterns/{context-protective-lead,fork-patterns,
+        skill-lifecycle,team-orchestration}.md`, `context/project/hooks/wezterm-integration.md`,
+        `docs/architecture/{dispatch-agent-spec,handoff-schema,orchestrate-state-machine}.md`,
+        `docs/guides/{documentation-audit-checklist,documentation-maintenance,
+        opencode-permission-configuration,phase-synchronization}.md`, all seven top-level
+        `scripts/*.sh` files, `skills/skill-memory/SKILL.md`) — independently triaged, almost
+        entirely PROVENANCE citations of past task numbers in "Created"/"Status"/"Downstream
+        dependencies" header lines and stale "Available (task NNN)" sub-mode annotations, all
+        converted to durable statements of the fact with the task number dropped; and (3) two
+        collision-style ILLUSTRATIVE ambiguities (`documentation-audit-checklist.md`'s "Text:
+        `task 17`" placeholder-convention rendering, `rules/artifact-formats.md`'s equivalent)
+        marked inline with `task-ref-ok` rather than altered, since they demonstrate the `{N}`
+        convention itself. `bash -n` verified clean on every edited `.sh` file
+        (`command-gate-in.sh`, `command-gate-out.sh`, `parse-command-args.sh`,
+        `postflight-workflow.sh`, `skill-base.sh`, `test-command.sh`, `validate-docs.sh`,
+        `claude-stop-notify.sh`, `wezterm-clear-task-number.sh`, `wezterm-utils.sh`).)*
+  - [x] `.opencode/hooks/` contains the port's own copy of the advisory hook — purge its comment
+        citations only. Do NOT port the blocking flip here (explicit Non-Goal). *(completed: only
+        `claude-stop-notify.sh` and `wezterm-utils.sh` had citations (both in `# See:` comments,
+        converted to durable mechanism-name anchors) and `wezterm-clear-task-number.sh` (one
+        `# Related:` comment). `.opencode/hooks/validate-no-task-references.sh` itself was not
+        touched — it remains the port's own advisory-only copy, per the explicit Non-Goal.)*
+  - [x] Confirm shell edits stay inside `#` comments. *(confirmed: every `.sh` edit in this phase
+        was a comment-line replacement; `bash -n` passed on all ten edited scripts before and
+        after.)*
 
 - **Timing:** 1.5 hours
 - **Depends on:** 2
@@ -881,10 +912,17 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
   (`orchestration` 30/5, `patterns` 29/6, `workflows` 18/2, `standards` 12/4, and 5 single-file
   subdirectories totalling 10/6, plus `architecture` 2/1) plus `.opencode/{docs,skills,agent,commands,scripts,hooks,rules}`
   123/39. Confirm as the `.opencode/` total (610) minus `extensions/` (275) minus
-  `context/{core,formats}` (104).
+  `context/{core,formats}` (104). *(confirmed close: the live pre-edit scan
+  (`check-task-references.sh --quiet .opencode` immediately after Phases 11-13 landed) reported
+  231, a 2-occurrence drift from the 229 estimate — reconciled against the live scan per the
+  Scope Hypothesis's own instruction, not treated as a taxonomy miscategorization.)*
 - **Files to modify**: all remaining `.opencode/` files reported by the scan.
 - **Verification**: scan reports 0 across `.opencode/` in its entirety (expected delta 229 → 0),
-  and `bash -n` passes on every modified `.sh` file.
+  and `bash -n` passes on every modified `.sh` file. *(verified: `check-task-references.sh --quiet
+  .opencode` reports "0 occurrence(s)" and exits 0 (PASS); the full unscoped
+  `check-task-references.sh` (no PATH_SCOPE) reports PASS with 0 occurrences across all four
+  trees — `agent-system/extensions`, `.opencode`, `lua`, `.memory` — satisfying Phase 15's literal
+  precondition gate.)*
 
 ---
 
