@@ -1,0 +1,37 @@
+{
+  "phase": 2,
+  "phase_name": "Phase-Field Nesting — Implementation Agents and the Coupled Hard-Mode Reader",
+  "started_at": "2026-07-28T08:56:00Z",
+  "last_updated": "2026-07-28T09:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "general-implementation-agent.md: replace ambiguous 'Agent-specific metadata fields' trailing sentence with an explicit metadata-nesting statement and add a worked implemented-case JSON example",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]
+    },
+    {
+      "id": 2,
+      "description": "general-implementation-hard-agent.md: split the Stage 7 clause so phases_completed/phases_total nest under metadata (distinct from modified_files, top-level) and name the Stage 5 .orchestrator-handoff.json collision explicitly",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/general-implementation-hard-agent.md"]
+    },
+    {
+      "id": 3,
+      "description": "skill-implementer-hard/SKILL.md: fix Stage 6 postflight reads to .metadata.phases_completed / .metadata.phases_total",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md"]
+    },
+    {
+      "id": 4,
+      "description": "Confirm skill-implementer/SKILL.md Stage 6 already reads .metadata.phases_completed (read-only, no edit); confirm no fourth writer/reader site via repo-wide grep; confirm no task-number citations introduced",
+      "status": "done",
+      "files_touched": [],
+      "note": "grep -n phases_completed skill-implementer/SKILL.md confirms lines 356-357 already read .metadata.phases_completed // 0 and .metadata.phases_total // 0. Full-tree grep for phases_completed across agent-system/extensions/core found no additional .return-meta.json writer/reader beyond the three files edited here plus skill-team-implement/SKILL.md (Phase 3's territory, already correctly nested) -- all other hits are .orchestrator-handoff.json / recovery-script output reads, which are correctly top-level by contract and out of this phase's scope. Task-number-citation grep across the three edited files: zero hits."
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -533,7 +533,37 @@ Store the candidates array in memory for inclusion in the metadata file at Stage
 
 ### Stage 7: Write Metadata File
 
-Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial|failed`. Include `completion_data` with `completion_summary` (all tasks) and `roadmap_items` (non-meta). Include `memory_candidates` array (from Stage 6b) at the top level of the JSON output. Include `modified_files` (from Stage 6-modified-files) at the top level of the JSON output — this is the agent's self-reported list of every source file touched, consumed by the commit pipeline for targeted staging (see `@.claude/context/standards/git-staging-scope.md`). Agent-specific metadata fields: `phases_completed`, `phases_total`.
+Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial|failed`. Include `completion_data` with `completion_summary` (all tasks) and `roadmap_items` (non-meta). Include `memory_candidates` array (from Stage 6b) at the top level of the JSON output. Include `modified_files` (from Stage 6-modified-files) at the top level of the JSON output — this is the agent's self-reported list of every source file touched, consumed by the commit pipeline for targeted staging (see `@.claude/context/standards/git-staging-scope.md`).
+
+**Phase-count nesting (read this before writing `phases_completed`/`phases_total`)**: unlike `memory_candidates` and `modified_files` above, `phases_completed` and `phases_total` are **agent-specific metadata fields that go INSIDE the `metadata` object** (or inside `partial_progress` for a `partial` return — see the worked example immediately below), never at the top level of `.return-meta.json`. This is the OPPOSITE of `.orchestrator-handoff.json`, where these same two field names are always written at the top level — the two files use the same field names with different nesting rules, and a shape correct for one is wrong for the other. Do not pattern-match one file's shape onto the other.
+
+**Worked example — `implemented` case** (status `implemented`, showing the correct nesting):
+
+```json
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md",
+      "summary": "One-line description of what the summary covers."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "One to three sentences describing what was accomplished."
+  },
+  "modified_files": ["path/to/file/one.ext", "path/to/file/two.ext"],
+  "memory_candidates": [],
+  "metadata": {
+    "session_id": "sess_...",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": N,
+    "phases_total": M
+  }
+}
+```
 
 **If returning `partial` and a handoff artifact was written** (Stage 4C), include `handoff_path` in `partial_progress`:
 

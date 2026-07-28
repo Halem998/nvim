@@ -234,7 +234,7 @@ is a stop condition, not something to reconcile in prose.
 
 ---
 
-### Phase 2: Phase-Field Nesting — Implementation Agents and the Coupled Hard-Mode Reader [NOT STARTED]
+### Phase 2: Phase-Field Nesting — Implementation Agents and the Coupled Hard-Mode Reader [COMPLETED]
 
 **Goal**: Make the `.return-meta.json` nesting of `phases_completed`/`phases_total` unambiguous in
 both implementation agent definitions, and fix the one reader whose correctness depended on the
@@ -242,29 +242,32 @@ ambiguity. These three files land together because splitting them introduces a r
 
 **Tasks**:
 
-- [ ] In `agents/general-implementation-agent.md`, locate the Stage 7 instruction by its literal
+- [x] In `agents/general-implementation-agent.md`, locate the Stage 7 instruction by its literal
       trailing sentence `Agent-specific metadata fields: \`phases_completed\`, \`phases_total\`.`
       Replace it with wording that states the location as explicitly as the two adjacent directives
       already do — that these two fields go **inside the `metadata` object**, not at the top level,
       and that this is the opposite of the same two field names in `.orchestrator-handoff.json`.
-- [ ] In the same file, add a worked `implemented`-case JSON example at Stage 7 showing the correct
+      *(completed)*
+- [x] In the same file, add a worked `implemented`-case JSON example at Stage 7 showing the correct
       nesting (the file currently has a worked example only for the `partial` case, leaving the
       success case with nothing to pattern-match). Anchor it adjacent to the existing example block
-      containing the literal `"phases_completed": N,`.
-- [ ] In `agents/general-implementation-hard-agent.md`, locate the `### Stage 7: Write Metadata
+      containing the literal `"phases_completed": N,`. *(completed)*
+- [x] In `agents/general-implementation-hard-agent.md`, locate the `### Stage 7: Write Metadata
       File` heading and its sentence beginning `Include \`phases_completed\`, \`phases_total\`,
       \`modified_files\``. Split the clause so `phases_completed`/`phases_total` are stated as
       nested under `metadata` and `modified_files` as top-level, and add an explicit note that the
       top-level shape shown earlier in Stage 5 belongs to `.orchestrator-handoff.json` and does NOT
-      apply to this file.
-- [ ] In `skills/skill-implementer-hard/SKILL.md`, locate the Stage 6 postflight reads
+      apply to this file. *(completed)*
+- [x] In `skills/skill-implementer-hard/SKILL.md`, locate the Stage 6 postflight reads
       `jq -r '.phases_completed // 0'` and `jq -r '.phases_total // 0'` and change both to read
       `.metadata.phases_completed // 0` and `.metadata.phases_total // 0`, matching the sibling
       `skill-implementer/SKILL.md`. Change nothing else in this file — it is another task's declared
       territory and this task claims exactly these two read expressions (see "Ownership call").
-- [ ] Confirm read-only (no edit) that `skills/skill-implementer/SKILL.md` Stage 6 already reads
+      *(completed)*
+- [x] Confirm read-only (no edit) that `skills/skill-implementer/SKILL.md` Stage 6 already reads
       `.metadata.phases_completed`; record the grep output as evidence for the scoped-out decision.
-- [ ] Confirm no task-number citation was introduced in any of the three edited files.
+- [x] Confirm no task-number citation was introduced in any of the three edited files. *(completed:
+      grep for `task [0-9]+|tasks [0-9]+|\(task [0-9]+` across all three edited files, zero hits)*
 
 **Timing**: 1.25 hours
 

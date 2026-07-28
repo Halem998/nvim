@@ -309,8 +309,8 @@ if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
     memory_candidates=$(jq -c '.memory_candidates // []' "$metadata_file")
     completion_summary=$(jq -r '.completion_data.completion_summary // ""' "$metadata_file")
     roadmap_items=$(jq -c '.completion_data.roadmap_items // []' "$metadata_file")
-    phases_completed=$(jq -r '.phases_completed // 0' "$metadata_file")
-    phases_total=$(jq -r '.phases_total // 0' "$metadata_file")
+    phases_completed=$(jq -r '.metadata.phases_completed // 0' "$metadata_file")
+    phases_total=$(jq -r '.metadata.phases_total // 0' "$metadata_file")
     # H9 strategic-sorry skeleton fields (see .claude/context/contracts/wrap-up.md):
     # optional, default false / [] when absent.
     skeleton=$(jq -r '.skeleton // false' "$metadata_file")

@@ -386,8 +386,17 @@ and de-duplicate. Write an empty array (never omit the field) if no files were t
 Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial|failed`.
 Include `completion_data` per `@.claude/context/formats/return-metadata-file.md`
 (`completion_summary` mandatory for `implemented`; `roadmap_items` optional, non-meta tasks
-only). Include `phases_completed`, `phases_total`, `modified_files` (from Stage 6-modified-files,
-per `@.claude/context/formats/return-metadata-file.md`). Include `memory_candidates` array.
+only). Include `modified_files` (from Stage 6-modified-files, per
+`@.claude/context/formats/return-metadata-file.md`) at the **top level**. Include
+`memory_candidates` array at the top level.
+
+**Phase-count nesting — do NOT reuse Stage 5's shape here.** `phases_completed` and
+`phases_total` go **inside the `metadata` object** in `.return-meta.json` (or inside
+`partial_progress` for a `partial` return), never at the top level. This is easy to get wrong in
+this specific file: Stage 5 above shows these same two field names written at the **top level**,
+but that worked example is for `.orchestrator-handoff.json`, a different file with the opposite
+nesting rule for the same field names. Writing `.return-meta.json` by pattern-matching Stage 5's
+JSON block produces exactly the off-schema shape this rule exists to prevent.
 
 ### Stage 8: Return Brief Text Summary
 
