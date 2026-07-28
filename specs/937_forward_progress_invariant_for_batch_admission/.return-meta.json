@@ -1,8 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "task_number": 937,
   "agent_type": "general-implementation-agent",
   "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "session_id": "sess_1785249037_e81aad",
-  "plan_path": "specs/937_forward_progress_invariant_for_batch_admission/plans/01_zero-dispatch-forward-progress-legibility.md"
+  "plan_path": "specs/937_forward_progress_invariant_for_batch_admission/plans/01_zero-dispatch-forward-progress-legibility.md",
+  "phases_completed": 6,
+  "phases_total": 6,
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh"
+  ],
+  "artifacts": [
+    {
+      "path": "specs/937_forward_progress_invariant_for_batch_admission/summaries/01_zero-dispatch-forward-progress-legibility-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary for the forward-progress invariant / zero-dispatch legibility work across the guardrails doc, skill-orchestrate, commands/orchestrate.md, and the dry-run reporter."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Made the zero-dispatch /orchestrate outcome loud and named across the skill's Stage MT-5 postflight, the command's consolidated output, and the --dry-run reporter, and recorded the forward-progress invariant as a standing requirement in the guardrails document. No admission decision changed anywhere -- verified by an explicit admission-neutrality audit and defer-not-fail confirmation in the final phase."
+  },
+  "memory_candidates": [
+    {
+      "content": "Pattern: compute a cross-cutting invariant ONCE at a single canonical stage (the skill's postflight), then render it independently at every consumer surface via a three-branch, all-non-silent resolution: (1) use the field directly if the producing stage already wrote it, (2) compute a fallback from a lower-level primitive if the structured field is absent but the primitive is present, (3) print an explicit 'not evaluable' notice and fall through to ordinary rendering if neither is present -- never silently skip. This keeps detection single-sourced while letting rendering degrade gracefully across skill variants (e.g. a hard-mode variant that delegates to the same base stages) without any branch falling through to silence.",
+      "category": "PATTERN",
+      "source_artifact": "specs/937_forward_progress_invariant_for_batch_admission/summaries/01_zero-dispatch-forward-progress-legibility-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["detection-rendering-split", "three-branch-resolution", "non-silent-degradation", "orchestrate", "invariant"]
+    },
+    {
+      "content": "Technique for smoke-testing a deploy-root-guarded script (one sourcing deploy-root-guard.sh, which refuses to run outside a .claude/scripts/ or .opencode/scripts/ shaped tree) without touching the live deploy tree: build a scratch tree under the scratchpad directory with a .claude/scripts/ subdirectory, copy the target script plus every script it calls via SCRIPT_DIR-relative paths (grep for \"$SCRIPT_DIR/*.sh\" references to enumerate them), copy any required context/reference/*.json data files, and write a synthetic specs/state.json with fixture active_projects entries. This reproduces exactly the guard's structural check (two directories under a .claude or .opencode parent) while remaining fully isolated from the real repo state.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/937_forward_progress_invariant_for_batch_admission/summaries/01_zero-dispatch-forward-progress-legibility-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["deploy-root-guard", "scratch-tree", "smoke-test", "orchestrate-dry-run-report", "isolated-testing"]
+    },
+    {
+      "content": "Confirmed recurring gotcha: deploy-headless.sh's picker sync tool excludes skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md from its skills scan, so any source-store edit to these two files requires a direct-copy workaround (cp agent-system/extensions/core/skills/skill-orchestrate/SKILL.md .claude/skills/skill-orchestrate/SKILL.md) immediately after every deploy-headless.sh invocation, verified by diffing the copy against the source. This has now recurred across at least two tasks; a dedicated follow-up task to fix the sync tool itself is recommended rather than continuing to route around it.",
+      "category": "CONFIG",
+      "source_artifact": "specs/937_forward_progress_invariant_for_batch_admission/summaries/01_zero-dispatch-forward-progress-legibility-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["deploy-headless", "picker-sync-defect", "skill-orchestrate", "direct-copy-workaround", "source-store-deploy-boundary"]
+    }
+  ]
 }
