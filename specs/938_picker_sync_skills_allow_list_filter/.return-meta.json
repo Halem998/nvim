@@ -1,0 +1,18 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/938_picker_sync_skills_allow_list_filter/reports/01_skills-allow-list-post-filter-defect.md",
+      "summary": "Confirms and empirically reproduces the skills allow-list post-filter defect (directory-name keys vs. SKILL.md basename lookup), surveys which sync categories are directory-shaped vs flat-file-shaped, recommends generalizing the existing context branch rather than adding a third branch, and specifies a zero-result (total-wipeout) detection design."
+    }
+  ],
+  "next_steps": "Run /plan 938 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1785251682_61201e_938",
+    "agent_type": "neovim-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "neovim-research-agent"],
+    "findings_count": 5
+  }
+}

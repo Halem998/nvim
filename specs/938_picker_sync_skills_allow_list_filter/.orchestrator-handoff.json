@@ -1,0 +1,24 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "research",
+  "status": "researched",
+  "summary": "Confirmed and empirically reproduced (scratch tree, never touching real .claude/) the skills allow-list post-filter defect: provides.skills entries are directory names but the post-filter looks up the SKILL.md basename, so artifacts.skills is always empty. Surveyed all filtered categories: only skills and context are directory-shaped; context already has correct bespoke handling. Recommend generalizing that existing branch (verified behavior-preserving for all flat categories) plus a total-wipeout zero-result detector.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/938_picker_sync_skills_allow_list_filter/reports/01_skills-allow-list-post-filter-defect.md"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "plan",
+  "files_modified": [],
+  "decisions_made": [
+    "Generalize the existing context-branch directory-name matching (anchor string filter_category instead of hardcoded 'context') rather than adding a third parallel branch for skills",
+    "Leave docs/templates/systemd unfiltered by design -- pre-existing safe omission, out of scope",
+    "scripts/tests and scripts/lint omission from provides.scripts is a separate, narrower product-decision item -- flagged, not folded into this fix",
+    "Zero-result detector triggers only on total wipeout (#results>0 and #filtered==0), never on partial reduction, to avoid false positives on normal allow-list exclusions"
+  ],
+  "dead_ends": [],
+  "phases_completed": 0,
+  "phases_total": 0
+}
