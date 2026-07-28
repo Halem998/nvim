@@ -283,7 +283,7 @@ phase headings in the plan file carry `[COMPLETED]` after the final verification
 **Semantics**:
 - `true`: Stage 5a ran and confirmed (or repaired) all phase headings to `[COMPLETED]`
 - `false` or absent: Stage 5a was skipped, ran but found unresolvable stale markers, or the
-  agent did not implement Stage 5a (pre-task-764 behavior)
+  agent did not implement Stage 5a (behavior predating Stage 5a's introduction)
 
 **Orchestrator behavior — the completion-claim verification gate**: `plan_markers_verified` is
 the Case 3 corroborating signal consumed by `skill_gate_completion_claim` (defined once, in

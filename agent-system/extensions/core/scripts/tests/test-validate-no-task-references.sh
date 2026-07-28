@@ -77,6 +77,7 @@ assert_silent() {
   fi
 }
 
+# task-ref-ok:begin test fixture for the reference-pattern detector itself
 # =====================================================================
 # Positive fixtures (must trigger)
 # =====================================================================
@@ -118,6 +119,7 @@ if [ "$degenerate_exit" -eq 0 ] && ! echo "$degenerate_out" | jq -e 'has("additi
 else
   fail "degenerate: empty file_path expected {} and exit 0, got exit=$degenerate_exit out=$degenerate_out"
 fi
+# task-ref-ok:end
 
 degenerate_out="$(run_hook "lua/foo.lua" "")"
 degenerate_exit=$?

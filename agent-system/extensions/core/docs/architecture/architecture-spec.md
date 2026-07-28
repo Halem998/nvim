@@ -1,11 +1,10 @@
 # Unified Workflow Architecture Specification
 
-**Status**: Current architecture — designed by Task 592, implemented by Tasks 593-599.
+**Status**: Current architecture — result of the unified workflow refactor.
 Complements `system-overview.md` which provides a higher-level overview.
 
 **Last Updated**: 2026-05-22
-**Designed by**: Task 592 (design_unified_workflow_architecture)
-**Implements**: Tasks 593-599
+**Designed and implemented by**: the unified workflow refactor (design_unified_workflow_architecture)
 
 > **See Also**: `system-overview.md` (current architecture), `orchestrate-state-machine.md`,
 > `dispatch-agent-spec.md`, `handoff-schema.md`, `extension-system.md`
@@ -14,11 +13,11 @@ Complements `system-overview.md` which provides a higher-level overview.
 
 ## Overview
 
-The unified workflow refactor addresses seven cross-cutting concerns identified by task 591 team
-research and designed in task 592. Each concern is implemented by a dedicated task (593-599) following
-an intentional dependency ordering that minimizes rework.
+The unified workflow refactor addresses seven cross-cutting concerns identified by team
+research and design. Each concern is implemented by a dedicated component (see the wave table
+below) following an intentional dependency ordering that minimizes rework.
 
-**Pre-refactor pain points** (resolved by tasks 593-599):
+**Pre-refactor pain points** (resolved by this refactor):
 - ~525 lines of duplicated arg parsing and gate logic across 3 commands
 - ~210 lines of duplicated lifecycle stages across 3 core skills
 - No autonomous orchestration loop (manual `/research` → `/plan` → `/implement` sequence)
@@ -37,14 +36,14 @@ an intentional dependency ordering that minimizes rework.
 
 ## Dependency Ordering
 
-| Wave | Tasks | Blocked by |
-|------|-------|------------|
-| 1 | 593 (shared utilities) | — |
-| 2 | 598 (context budgets) | 593 |
-| 3 | 594 (skill base) | 598 |
-| 4 | 595 (refactor commands), 596 (/orchestrate) | 594 |
-| 5 | 597 (task/revise/todo/review) | 595 |
-| 6 | 599 (extensions + docs) | all |
+| Wave | Component | Blocked by |
+|------|-----------|------------|
+| 1 | shared command utilities | — |
+| 2 | context budgets | shared command utilities |
+| 3 | skill base | context budgets |
+| 4 | refactor commands, /orchestrate | skill base |
+| 5 | task/revise/todo/review | refactor commands |
+| 6 | extensions + docs | all |
 
 See Appendix A for the full dependency graph.
 
@@ -52,7 +51,6 @@ See Appendix A for the full dependency graph.
 
 ## Component 1: Shared Command Infrastructure
 
-**Implemented by**: Task 593
 **File locations**:
 ```
 .claude/scripts/
@@ -142,7 +140,7 @@ After extraction, each command retains only:
 
 ## Component 2: Shared Skill Base Pattern
 
-**Implemented by**: Task 594 (depends on Task 598 for context budget constraints)
+**Depends on**: the context budget architecture (see below)
 **File locations**:
 ```
 .claude/scripts/
@@ -229,7 +227,6 @@ Everything else sources from `skill-base.sh`.
 
 ## Component 3: /orchestrate State Machine
 
-**Implemented by**: Task 596
 **File locations**:
 ```
 .claude/commands/orchestrate.md    # NEW: entry point, argument parsing
@@ -272,7 +269,6 @@ blocker escalation 5-step sequence.
 
 ## Component 4: dispatch_agent() Function
 
-**Implemented by**: Task 596
 **File location**: `.claude/scripts/dispatch-agent.sh`
 
 ### Full Function Signature
@@ -320,7 +316,7 @@ See `dispatch-agent-spec.md` for full specification and future-proofing notes.
 
 ## Component 5: Structured Handoff Object
 
-**Implemented by**: Task 596 (orchestrator handoff); existing continuation handoffs unchanged
+**Scope**: the orchestrator handoff; existing continuation handoffs unchanged
 **File**: `specs/{NNN}_{SLUG}/.orchestrator-handoff.json` (written by skills; read by orchestrator)
 
 ### Two Distinct Handoff Types
@@ -366,7 +362,6 @@ delegation context. In normal `/research`, `/plan`, `/implement` invocations thi
 
 ## Component 6: Extension Lifecycle Hooks
 
-**Implemented by**: Task 599
 **Schema location**: `manifest.json` `hooks` object (in each extension directory)
 
 ### manifest.json Schema Additions
@@ -426,7 +421,7 @@ Target extension skill size: **30-50 lines** (vs. 400-600 lines today). The skil
 
 ## Component 7: Nested Loop Resolution
 
-**Implemented by**: Task 596 (orchestrator) + Task 594 (skill-implementer flag)
+**Scope**: spans both the orchestrator and the skill-implementer flag
 
 ### Architecture Decision
 
@@ -483,7 +478,7 @@ re-checking the literature autonomy gate, and vice versa.
 
 ## Cross-Cutting Concern: Context Budget Architecture
 
-**Note**: Full design belongs to Task 598. This section states constraints for tasks 593-597.
+**Note**: Full design belongs to the context budget architecture component. This section states constraints for the components that consume it.
 
 ### Four-Tier Loading Model
 
@@ -494,14 +489,14 @@ re-checking the literature autonomy gate, and vice versa.
 | 3 (agent) | At agent spawn | ~3-5K lines | Full workflow patterns, domain context |
 | 4 (on-demand) | Via `@`-ref in agent | Unbounded | Detailed guides, templates, examples |
 
-### Critical Constraints for Tasks 593-597
+### Critical Constraints for the Consuming Components
 
 - Commands MUST NOT load Tier 3 context (agent-level context stays with agents)
 - Current research.md, plan.md, implement.md embed agent-level context inline → must move to Tier 3
-- Command files: ≤ 200 lines after Task 593 extraction
-- Skill files: ≤ 200 lines after Task 594 extraction
+- Command files: ≤ 200 lines after the shared command infrastructure extraction
+- Skill files: ≤ 200 lines after the shared skill base extraction
 
-### Budget Caps (Task 598 to enforce)
+### Budget Caps (enforced by the context budget architecture component)
 
 | Agent Type | Context Budget |
 |------------|---------------|
@@ -551,28 +546,28 @@ re-checking the literature autonomy gate, and vice versa.
 
 ## Appendix B: New File Location Summary
 
-Files to be created across Tasks 593-599:
+Files to be created across this refactor:
 
 ```
 .claude/scripts/
-├── parse-command-args.sh         (task 593)
-├── command-gate-in.sh            (task 593)
-├── command-gate-out.sh           (task 593)
-├── postflight-workflow.sh        (task 593)
-├── skill-base.sh                 (task 594)
-└── dispatch-agent.sh             (task 596)
+├── parse-command-args.sh         # shared command infrastructure
+├── command-gate-in.sh            # shared command infrastructure
+├── command-gate-out.sh           # shared command infrastructure
+├── postflight-workflow.sh        # shared command infrastructure
+├── skill-base.sh                 # shared skill base
+└── dispatch-agent.sh             # /orchestrate state machine
 
 .claude/commands/
-└── orchestrate.md                (task 596)
+└── orchestrate.md                # /orchestrate state machine
 
 .claude/skills/skill-orchestrate/
-└── SKILL.md                      (task 596)
+└── SKILL.md                      # /orchestrate state machine
 
 .claude/context/formats/
-└── orchestrator-handoff.md       (task 596)
+└── orchestrator-handoff.md       # /orchestrate state machine
 
 .claude/context/patterns/
-└── orchestrator-mode.md          (task 596)
+└── orchestrator-mode.md          # /orchestrate state machine
 ```
 
 ---

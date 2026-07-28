@@ -16,7 +16,7 @@
 #   skill_read_artifact_number -> ARTIFACT_NUMBER, ARTIFACT_PADDED
 #   skill_read_metadata   -> SUBAGENT_STATUS, ARTIFACT_PATH, ARTIFACT_TYPE, ARTIFACT_SUMMARY, MEMORY_CANDIDATES
 #
-# CONTEXT BUDGET DEFAULTS (overridable by task 598 tier enforcement):
+# CONTEXT BUDGET DEFAULTS (overridable by tier enforcement):
 #   SKILL_CONTEXT_BUDGET defaults to 8000 (sonnet workers) or 15000 (opus planners).
 #   Override before sourcing: SKILL_CONTEXT_BUDGET=15000 source skill-base.sh
 SKILL_CONTEXT_BUDGET="${SKILL_CONTEXT_BUDGET:-8000}"
@@ -156,7 +156,7 @@ _events_append_observable() {
   return 0
 }
 
-# ORCHESTRATOR MODE: Support for skill-orchestrate dispatch (task 596).
+# ORCHESTRATOR MODE: Support for skill-orchestrate dispatch.
 # When orchestrator_mode=true in delegation context, skills call skill_write_orchestrator_handoff()
 # in their postflight to produce .orchestrator-handoff.json for the state machine loop.
 # See: .claude/docs/architecture/handoff-schema.md

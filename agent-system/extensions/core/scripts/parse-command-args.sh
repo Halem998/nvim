@@ -27,8 +27,8 @@
 #   FOCUS_PROMPT   — remaining text after all recognized flags stripped
 #
 # Downstream dependencies:
-#   Task 594 (skill-base.sh) will source this script.
-#   Task 595 (multi-task dispatch extraction) relies on TASK_NUMBERS and REMAINING_ARGS.
+#   skill-base.sh will source this script.
+#   The multi-task dispatch extraction relies on TASK_NUMBERS and REMAINING_ARGS.
 
 parse_command_args() {
   local args="$1"

@@ -532,7 +532,7 @@ generate_grouped_section() {
     fi
   done
 
-  # Defense-in-depth (task 796): topic assignment is mandatory on every new-task-creation
+  # Defense-in-depth: topic assignment is mandatory on every new-task-creation
   # path, so any task landing here indicates a pre-existing gap (e.g. deferred via
   # /task --sync backfill) rather than a new bypass. Surface it loudly but non-fatally.
   if [[ ${#uncategorized_tasks[@]} -gt 0 ]]; then

@@ -145,6 +145,7 @@ else
   fail "bug class 2: membership case failed (see INFO lines above)"
 fi
 
+# task-ref-ok:begin test fixture for the reference-pattern detector itself
 # =====================================================================
 # Bug class 3: separator/suffix variants missed by a naive whitespace-only regex.
 # Own copy of the separator fixture set (not a cross-reference to the hook's own test suite).
@@ -178,6 +179,7 @@ if [ "$correct_count" = "5" ] && [ "$naive_count" = "2" ]; then
 else
   fail "bug class 3: expected correct_count=5 naive_count=2, got correct_count=$correct_count naive_count=$naive_count"
 fi
+# task-ref-ok:end
 
 # =====================================================================
 # Cross-check fixtures: agreeing pair (MATCH, exit 0) and disagreeing pair (MISMATCH, exit != 0).

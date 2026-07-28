@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# DEPRECATED: literature-retrieve.sh is superseded by literature-briefing.sh (task 758, phase 5).
+# DEPRECATED: literature-retrieve.sh is superseded by literature-briefing.sh.
 # Skill Stage 4a blocks now call literature-briefing.sh (no arguments) instead.
 # This file is retained for backward compatibility with any direct callers outside skill preflight.
 # Do not add new usages of this script. Use literature-briefing.sh instead.

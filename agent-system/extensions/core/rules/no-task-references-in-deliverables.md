@@ -70,6 +70,16 @@ one of the categories below, carried on the begin marker (block form) or the inl
 | 3. Command-usage examples | Keep concrete numbers — the flag takes a number and a placeholder makes the example unusable | Yes | `/research 7, 22-24, 59` |
 | 4. Quoted historical anti-patterns | Keep verbatim — the point is to show a real past violation as a negative example | Yes | The **Before** block above |
 | 5. Placeholder-bearing prose | Not matched by `TASK_PATTERN` at all; recorded here as a constraint on future pattern changes, never broaden the digit-requirement | No (not applicable — never matches) | `task {N}`, `specs/{NNN}_{SLUG}/`, `MM_{short-slug}.md` |
+| 6. Test fixtures for the reference-pattern detector itself | Keep concrete digits verbatim — the fixture's whole purpose is asserting the shared library's regex triggers (or does not trigger) on a specific literal string; a placeholder would not match `[0-9]+` and would silently disable the assertion | Yes | `assert_triggers "positive: task 788" ... "See task 788 for context"` in `scripts/tests/test-validate-no-task-references.sh` and the five-named-forms fixture block in `scripts/tests/test-census-count.sh` |
+
+**Discovered during Phase 5 purge, not pre-declared in Phase 1**: this category was added when
+the repo-wide scan flagged `scripts/tests/test-validate-no-task-references.sh` and
+`scripts/tests/test-census-count.sh` — both author literal `task N` / `Task #N` / `tasks N-M`
+strings on purpose, as input fixtures asserting the shared pattern library's regex behavior.
+These are distinct from category 4 (quoted historical anti-patterns, which quote a REAL past
+violation) — the fixture digits here are synthetic and were never a citation of any actual task.
+Converting them to `{N}` would silently break the positive-match assertions (a placeholder never
+satisfies `[0-9]+`), so they are marked and kept verbatim rather than converted.
 
 **Resolved test case**: `.claude/rules/git-workflow.md`'s own `Examples` block self-tripped the
 write-time hook's `PHASE_PATTERN` at `task {N} phase {P}: {phase_name}` rendered concretely.

@@ -74,7 +74,7 @@ alongside another candidate):
 **File-scope collision defer** (unchanged algorithm from v1, plus the two additive fields):
 
 ```json
-{"$schema":"orchestrate-batch-admit-v3","task_number":900,"decision":"defer","self_modifying":false,"defer_reason":"file_scope_collision","colliding_task_number":902,"colliding_task_status":"not_started","overlapping_path":"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh","collision_scope":"cross_batch","reason":"file_scope overlap with non-terminal task #902 (not in this batch) at agent-system/extensions/core/scripts/orchestrate-batch-admit.sh; no dependencies[] edge between them"}
+{"$schema":"orchestrate-batch-admit-v3","task_number":"{N}","decision":"defer","self_modifying":false,"defer_reason":"file_scope_collision","colliding_task_number":"{M}","colliding_task_status":"not_started","overlapping_path":"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh","collision_scope":"cross_batch","reason":"file_scope overlap with non-terminal task #{M} (not in this batch) at agent-system/extensions/core/scripts/orchestrate-batch-admit.sh; no dependencies[] edge between them"}
 ```
 
 **Admit** (carries only `$schema`, `task_number`, `decision`, `self_modifying` — nothing else,

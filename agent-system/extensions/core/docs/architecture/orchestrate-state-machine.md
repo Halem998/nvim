@@ -1,6 +1,6 @@
 # /orchestrate State Machine Specification
 
-**Status**: Current architecture — designed by Task 592, implemented by Task 596.
+**Status**: Current architecture — result of the unified workflow refactor's /orchestrate state machine component.
 
 **See Also**: `architecture-spec.md` (Component 3), `handoff-schema.md`
 
@@ -233,7 +233,7 @@ Cycle 3: status=planned → dispatch implement (orchestrator_mode=true)
          handoff: {status: "implemented", summary: "All 4 phases complete..."}
          state.json: status → completed
 
-EXIT: Task 593 completed successfully.
+EXIT: Task {N} completed successfully.
 ```
 
 ### Partial Recovery Flow
@@ -256,7 +256,7 @@ Cycle 2: read continuation_context from handoff
          handoff: {status: "implemented", phases_completed: 4, phases_total: 4, ...}
          skill_gate_completion_claim(593, 4, 4, ..., "[orchestrate]") → Case 2/3, ALLOW
 
-EXIT: Task 593 completed successfully.
+EXIT: Task {N} completed successfully.
 ```
 
 ### Completion-Claim Refusal Flow
@@ -302,7 +302,7 @@ Cycle 2: BLOCKER ESCALATION
   Step 5: re-dispatch implement (orchestrator_mode=true)
           handoff: {status: "implemented", ...}
 
-EXIT: Task 593 completed successfully.
+EXIT: Task {N} completed successfully.
 ```
 
 ---

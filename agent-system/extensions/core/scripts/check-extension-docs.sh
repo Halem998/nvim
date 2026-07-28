@@ -187,7 +187,7 @@ check_manifest_entries() {
   # category previously left unchecked: context. A declared provides.context entry must exist on
   # disk under <ext_path>/context/<entry>; otherwise the extension's context never propagates
   # through copy_context_dirs() / the "Load Core" allow-list, and downstream repos silently never
-  # receive it. Confirmed live in cslib's stale `lean` extension copy (task 837).
+  # receive it. Confirmed live in cslib's stale `lean` extension copy.
   local context_entries
   context_entries=$(jq -r '.provides.context[]? // empty' "$manifest" 2>/dev/null)
   local ce
@@ -548,19 +548,20 @@ check_undeclared_scripts() {
 
 # Rules B + C: Routing target consistency and deployment
 #
-# Policy rationale (restored per task #771, re-applied by task #843 after #792 sync regression):
+# Policy rationale (restored after a later sync reverted it from the stale extension-source
+# copy; this restores it in both copies):
 #   Both routing and routing_hard share the same deployment-dimension severity rule:
 #     - FAIL if the extension is installed but the target is not deployed
 #     - WARN (info) if the extension is not installed (expected undeployed state)
 #   routing_hard adds ONE stricter requirement beyond the deployment dimension:
 #     1. Source-grounding: the target must exist in some extension's SOURCE provides.skills
-#   task #771 deliberately downgraded the uninstalled-extension case for routing_hard from
+#   This rule deliberately downgraded the uninstalled-extension case for routing_hard from
 #   FAIL to WARN: command-route-skill.sh does not implement routing_hard dispatch at all (it
 #   takes 3 positional args and never reads .routing_hard), so the "unconditional dispatch"
 #   rationale that previously justified FAIL here is false -- an uninstalled extension with a
 #   source-grounded but undeployed routing_hard target is the expected state, not a live
-#   correctness bug. Task #792's sync reverted this from the stale extension-source copy;
-#   task #843 restores it in both copies.
+#   correctness bug. A later sync from the stale extension-source copy reverted this
+#   downgrade; the policy above restores it in both copies.
 #   Rule B (resolvability): any routing or routing_hard target that does not exist in any
 #   extension's provides.skills AND is not deployed is a FAIL (manifest typo/stale entry).
 check_routing_consistency() {
@@ -658,7 +659,7 @@ check_routing_consistency() {
         # Rule C (routing_hard, uninstalled): warn only. command-route-skill.sh does not
         # implement routing_hard dispatch at all, so an uninstalled extension with a
         # source-grounded but undeployed routing_hard target is expected, not a live bug
-        # (task #771; restored here after #792's stale-source-copy regression).
+        # (restored here after the same stale-source-copy regression noted above).
         info "WARN: routing_hard target declared but not deployed (extension not installed): $t"
       fi
     fi
@@ -722,8 +723,8 @@ check_readme_vs_manifest() {
 # extension's own provides.scripts (reverse direction of check_manifest_entries, which only
 # validates that declared entries exist on disk -- this catches the opposite bug: a script that
 # exists and is referenced but was never added to the manifest, so it never gets deployed to a
-# consuming repo). See task 793 (script packaging bug: literature-discover.sh and 6 siblings were
-# referenced but undeclared) for the motivating case.
+# consuming repo). See the literature-discover.sh script-packaging bug (literature-discover.sh
+# and 6 siblings were referenced but undeclared) for the motivating case.
 check_referenced_scripts_declared() {
   local ext_path="$1"
   local manifest="$ext_path/manifest.json"
@@ -790,7 +791,7 @@ check_referenced_scripts_declared() {
   done
 }
 
-# Rule G: Project-wide dangling .claude/context/contracts/*.md reference scan (task 837).
+# Rule G: Project-wide dangling .claude/context/contracts/*.md reference scan.
 #
 # NOT per-extension: deployed skills/agents/rules/commands across the WHOLE project may
 # reference a specific contracts/*.md file by path (e.g. skill-orchestrate-hard/SKILL.md citing
@@ -803,8 +804,8 @@ check_referenced_scripts_declared() {
 # so a project that references nothing missing passes even if it lacks some contracts files
 # entirely (e.g. a project not loading `lean`, correctly lacking lean-only contract overrides).
 #
-# Scoped strictly to `.claude/context/contracts/*.md`-shaped references per task 837's
-# Non-Goals -- a broader generic `@.claude/...` dangling-path linter is deliberately NOT
+# Scoped strictly to `.claude/context/contracts/*.md`-shaped references per this rule's own
+# Non-Goals below -- a broader generic `@.claude/...` dangling-path linter is deliberately NOT
 # implemented here (left as a documented, disabled extension point below) to avoid false
 # positives on legitimately extension-conditional references (e.g. lean-only context files
 # referenced only from lean-scoped skills, which are correctly absent in non-lean projects).
@@ -823,7 +824,7 @@ check_dangling_contract_references() {
     done
   done
 
-  # Extension point (NOT enabled -- stretch goal, see task 837 Non-Goals): a future generic
+  # Extension point (NOT enabled -- stretch goal; see the Non-Goals note above): a future generic
   # dangling-path scan could widen the pattern above to `@\.claude/[a-zA-Z0-9_/.-]+\.md`
   # broadly across the same file set. This is intentionally left unimplemented; wiring it in
   # without first auditing every extension-conditional `@.claude/...` reference in this repo

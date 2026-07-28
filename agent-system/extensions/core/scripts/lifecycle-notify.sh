@@ -22,7 +22,7 @@
 #     - standalone /research N completes: no orchestrate-active -> TTS fires
 #     - mid-orchestrate research completes: orchestrate-active exists -> TTS suppressed, tab color only
 #     - orchestrate final completion: orchestrate-active cleared by Stage 8 -> subsequent Stop hook
-#       fires TTS (via task 680 tts-notify.sh integration)
+#       fires TTS (via tts-notify.sh integration)
 #     - orchestrate paused/blocked: orchestrate-active cleared by Stage 8 partial -> Stop hook fires TTS
 
 set -uo pipefail

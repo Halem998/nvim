@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# task-lock.sh — Atomic per-task concurrency lock (task 788).
+# task-lock.sh — Atomic per-task concurrency lock.
 #
 # Purpose: prevent two concurrent Claude Code sessions from working the SAME task
 # directory at once (the 427 failure: an uncommitted in-progress task silently wiped
@@ -18,7 +18,7 @@
 #   task-lock.sh release <task_number> <session_id>
 #   task-lock.sh check <task_number>
 #   task-lock.sh reap [--dry-run]
-#   task-lock.sh init-marker <file_path>    (stdin = JSON content; task 808)
+#   task-lock.sh init-marker <file_path>    (stdin = JSON content)
 #   task-lock.sh scope-acquire <session_id> [stale_sec]
 #   task-lock.sh scope-release <token>
 #   task-lock.sh commit-acquire <session_id> [stale_sec]
@@ -81,7 +81,7 @@
 #     0 - always (whether or not anything qualified for reaping; reap reports, it never fails
 #         on "nothing to do")
 #     2 - usage error (unrecognized argument)
-#   init-marker (task 808 — generic atomic-on-creation marker-file primitive,
+#   init-marker (generic atomic-on-creation marker-file primitive,
 #   file-granularity, independent of and unrelated to the acquire/heartbeat/
 #   release/check task-number `.lock/` mechanism above):
 #     0 - created (fresh; caller treats this as a fresh start)
@@ -231,7 +231,7 @@ age_minutes() {
   echo $(( (now - then_epoch) / 60 ))
 }
 
-# --- get_file_scope: task_number -> compact JSON file_scope array (task 809) ---
+# --- get_file_scope: task_number -> compact JSON file_scope array ---
 # Graceful degradation mirrors resolve_task_dir: any lookup failure (missing state
 # file, no jq, unknown task, absent/null field) resolves to "[]", never a non-zero
 # exit or stderr noise that could break the acquire caller.
@@ -347,7 +347,7 @@ release_named_mutex() {
   rm -rf "$PROJECT_ROOT/specs/${mutex_dirname}" 2>/dev/null || true
 }
 
-# --- specs/.scope-lock/ global mutex (task 809) ---
+# --- specs/.scope-lock/ global mutex (cross-task file_scope overlap check) ---
 # Closes the scan-then-mkdir TOCTOU race around cmd_acquire's cross-task overlap
 # scan. Distinct staleness window from TASK_LOCK_STALE_MIN: a stuck mutex is a bug,
 # not ordinary contention, so this window is short and acquire_scope_mutex fails
@@ -403,7 +403,7 @@ cmd_acquire() {
   }
   lock_dir="$task_dir/.lock"
 
-  # --- task 809: cross-task file_scope overlap check, mutex-guarded ---
+  # --- cross-task file_scope overlap check, mutex-guarded ---
   # Wraps the scan-and-decide below AND the pre-existing own-task mkdir/holder logic in
   # the global specs/.scope-lock/ mutex, closing the scan-then-mkdir TOCTOU race. Fails
   # CLOSED (return 2) on mutex timeout — a stuck mutex is a bug, never silently bypassed.
@@ -444,7 +444,7 @@ cmd_acquire() {
       fi
     done < <(find_held_locks "$lock_dir")
   fi
-  # --- end task 809 cross-task check ---
+  # --- end cross-task file_scope overlap check ---
 
   if mkdir "$lock_dir" 2>/dev/null; then
     # Fresh acquire: directory did not exist a moment ago (POSIX-atomic).
@@ -703,7 +703,7 @@ cmd_scope_acquire() {
 # scope-release <token>
 # =====================================================================
 # Owner-token-verified release: because acquire and release are separate processes here (unlike
-# acquire_scope_mutex's task 809 in-function usage), an unconditional rm -rf would be unsafe if
+# acquire_scope_mutex's in-function usage), an unconditional rm -rf would be unsafe if
 # this holder was stale-reclaimed and a successor already re-acquired -- this release would then
 # delete the SUCCESSOR's mutex. A token mismatch is therefore a loud, non-silent WARNING (it means
 # the critical section overran its declared stale_sec and a concurrent writer may have
@@ -794,7 +794,7 @@ cmd_commit_release() {
 }
 
 # =====================================================================
-# init-marker <file_path>   (task 808)
+# init-marker <file_path>
 # =====================================================================
 # Generic atomic-on-creation primitive for marker/state files that were using a
 # TOCTOU-prone "check-then-create" `if [ -f X ]; then resume; else jq -n ... > X; fi`
