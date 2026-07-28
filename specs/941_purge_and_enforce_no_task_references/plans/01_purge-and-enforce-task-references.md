@@ -721,7 +721,7 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
 
 ---
 
-### Phase 11: Purge `.opencode/extensions/core/` [NOT STARTED]
+### Phase 11: Purge `.opencode/extensions/core/` [COMPLETED]
 
 - **Goal:** Clear the largest single `.opencode` subdirectory.
 - **Character:** High judgment. **Edited directly in place** — `.opencode/**` is a git-tracked,
@@ -731,15 +731,45 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
   parity, but re-triage each site — the port has drifted and is not a byte-copy.
 
 - **Tasks:**
-  - [ ] Triage and convert per the Phase 4 bucket rules.
+  - [x] Triage and convert per the Phase 4 bucket rules. *(completed: 199 occurrences across 50
+        files, triaged file-by-file. Most sites were ILLUSTRATIVE worked examples (command
+        output, JSON return payloads, worked dependency/spawn examples) converted to `{N}`/`{M}`/
+        `{X}`-style placeholders matching the already-purged `agent-system/extensions/core/`
+        sibling files' conventions where a sibling existed and had not drifted structurally; a
+        handful of PROVENANCE sites (postflight-pattern.md's "Task 326" incident, validation.md's
+        "Task 280" enforcement note, meta-guide.md's "task 487" cleanup note, hooks' "task 601"/
+        "Task 802" references) converted to durable anchors (the phantom-artifact incident name,
+        a plain statement of the fact, mechanism names) with task numbers dropped entirely; two
+        SANCTIONED commit-message examples (rules/git-workflow.md's self-trip case,
+        patterns/multi-task-operations.md's two rendered batch-commit examples) wrapped in
+        `task-ref-ok:begin/end` regions with reason "canonical rendered commit-message example",
+        mirroring the Phase 1 resolution of the same file in `agent-system/extensions/core/`.
+        Two generic WBS placeholder collisions (`agents/planner-agent.md`'s `{Task 1}`/`{Task 2}`
+        checklist items, `context/templates/delegation-context.md`'s `{task 1}`/`{task 2}`,
+        `context/workflows/task-breakdown.md`'s 15 `Task N.N` worked-example labels) renamed to
+        `Step N`/`{Step N}` per the Phase 4 precedent for the same collision.
+        `agents/spawn-agent.md`'s `New Task 1`/`New Task 2` headings renamed to `New Item 1`/
+        `New Item 2`, matching the already-purged `agent-system` sibling. Multiple files
+        (`context/orchestration/orchestration-reference.md`, `docs/examples/research-flow-example.md`,
+        `docs/guides/user-guide.md`, `context/formats/command-output.md`) had their worked
+        examples' concrete task numbers (197, 191, 258, 427, 999, 259, 120-122, 200-202, etc.)
+        converted to `{N}` placeholders one-for-one against the corresponding already-clean
+        `agent-system/extensions/core/` file, since the illustrative *shape* of these examples had
+        not drifted even where surrounding prose had. No file in this phase required deleting a
+        parenthetical that carried explanatory weight without first converting it to a durable
+        anchor.)*
 
 - **Timing:** 1.5 hours
 - **Depends on:** 2
 - **Verification Tier:** prose
 - **Scope Hypothesis:** 199 occurrences / 50 files. Confirm with
   `grep -rcEi "$TASK_PATTERN" .opencode/extensions/core/ | awk -F: '{s+=$2} END {print s}'`.
+  *(confirmed: `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-task-references.sh
+  --quiet .opencode/extensions/core` reported exactly 199 before any edit in this phase.)*
 - **Files to modify**: files under `.opencode/extensions/core/` reported by the scan.
 - **Verification**: scan reports 0 under `.opencode/extensions/core/`. Expected delta 199 → 0.
+  *(verified: `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-task-references.sh
+  --quiet .opencode/extensions/core` reports "0 occurrence(s)" and exits 0 (PASS).)*
 
 ---
 
