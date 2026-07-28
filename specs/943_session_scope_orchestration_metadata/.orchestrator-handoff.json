@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 943,
+  "session_id": "sess_1785280916_d6cc03",
+  "phase": "plan",
+  "artifacts": [
+    "specs/943_session_scope_orchestration_metadata/plans/01_session-scope-orchestration-metadata.md"
+  ],
+  "metadata": {
+    "phase_count": 7,
+    "estimated_hours": 7.5,
+    "dependency_waves": [[1, 3], [2, 4, 5], [6], [7]],
+    "complexity": "complex",
+    "research_integrated": true
+  },
+  "next_steps": "Run /implement 943 to execute the plan",
+  "blockers": []
+}

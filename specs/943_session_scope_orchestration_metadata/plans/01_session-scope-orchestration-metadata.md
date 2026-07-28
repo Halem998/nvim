@@ -1,7 +1,7 @@
 # Implementation Plan: Session-Scope Batch-Level Orchestration Metadata
 
 - **Task**: 943 - Session-scope batch-level orchestration metadata and verify session_id on read
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/943_session_scope_orchestration_metadata/reports/01_session-scope-orchestration-metadata.md
@@ -135,42 +135,46 @@ sequenced after Phase 1 rather than run alongside it.
 
 ---
 
-### Phase 1: Session-scope both singleton paths [NOT STARTED]
+### Phase 1: Session-scope both singleton paths [COMPLETED]
 
 **Goal**: Both repo-level singletons carry a `{session_id}` suffix at every writer and reader,
 with no unsuffixed literal remaining in any live code path.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`, Stage MT-1: change the
+- [x] In `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`, Stage MT-1: change the
       `mt_state_file` initialization from the literal `"specs/.orchestrator-multi-state.json"` to
       `"specs/.orchestrator-multi-state-${session_id}.json"`. The `session_id` variable is already
       in scope at this stage — it arrives via the skill's own delegation args (`session_id=...`),
-      populated from `batch_session_id`. Add no new plumbing.
-- [ ] In the same file, sweep Stages MT-2 through MT-5 for any further occurrence of the
+      populated from `batch_session_id`. Add no new plumbing. *(completed)*
+- [x] In the same file, sweep Stages MT-2 through MT-5 for any further occurrence of the
       unsuffixed literal (as opposed to the `$mt_state_file` variable) and convert each to the
-      variable. Anchor on the quoted string, not on line numbers.
-- [ ] In the same file, Stage MT-5 step 5: change the `jq -n ... > "specs/.return-meta-multi.json"`
-      redirect target to `"specs/.return-meta-multi-${session_id}.json"`.
-- [ ] In the same `jq -n` invocation, add a top-level `session_id` field to the emitted JSON
+      variable. Anchor on the quoted string, not on line numbers. *(completed: grep confirmed
+      every other reference already used the `$mt_state_file` variable)*
+- [x] In the same file, Stage MT-5 step 5: change the `jq -n ... > "specs/.return-meta-multi.json"`
+      redirect target to `"specs/.return-meta-multi-${session_id}.json"`. *(completed)*
+- [x] In the same `jq -n` invocation, add a top-level `session_id` field to the emitted JSON
       (`--arg session_id "$session_id"` plus `"session_id": $session_id`), placed alongside the
       existing `status` key and outside the `metadata` object. Rationale: the file currently has
       no `session_id` field at all, so a future reader could not verify it even if one were added;
-      this makes the payload self-describing without adding a reader.
-- [ ] In `agent-system/extensions/core/commands/orchestrate.md` Step 5: change
+      this makes the payload self-describing without adding a reader. *(completed)*
+- [x] In `agent-system/extensions/core/commands/orchestrate.md` Step 5: change
       `mt_state_file="specs/.orchestrator-multi-state.json"` to
       `mt_state_file="specs/.orchestrator-multi-state-${batch_session_id}.json"`.
       `batch_session_id` is generated earlier in Step 4 and is already in scope at this read
-      site — no new plumbing required.
-- [ ] In the same file, update the two prose sentences in Step 4/Step 5 that name
+      site — no new plumbing required. *(completed)*
+- [x] In the same file, update the two prose sentences in Step 4/Step 5 that name
       `specs/.orchestrator-multi-state.json` literally so the documented path matches the code.
-- [ ] Update the missing-file WARNING message in the `else` branch of Step 5 to name the
+      *(completed)*
+- [x] Update the missing-file WARNING message in the `else` branch of Step 5 to name the
       session-scoped path it actually looked for, so an operator can tell *which* file was
-      missing rather than only *that* one was.
-- [ ] In `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`: confirm via grep
+      missing rather than only *that* one was. *(completed)*
+- [x] In `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`: confirm via grep
       that it contains no independent multi-state or return-meta-multi path literal (its Stage 0
       delegates to the base MT-1..MT-5 stages). If the grep is clean, make no edit and record
-      that fact in the phase notes; if a literal is found, convert it the same way.
-- [ ] Run a source-store-wide grep for the two unsuffixed literals and confirm every remaining
+      that fact in the phase notes; if a literal is found, convert it the same way. *(completed:
+      `grep -n "orchestrator-multi-state\|return-meta-multi" skills/skill-orchestrate-hard/SKILL.md`
+      returned zero hits — confirmed no independent literal exists; no edit made)*
+- [x] Run a source-store-wide grep for the two unsuffixed literals and confirm every remaining
       hit is a documentation/standards mention scheduled for Phase 4, not a live code path.
 
 **Timing**: 1.5 hours
@@ -283,25 +287,29 @@ is found, it needs the observational treatment.
 
 ---
 
-### Phase 3: Delete the dead session-suffixed handoff documentation [NOT STARTED]
+### Phase 3: Delete the dead session-suffixed handoff documentation [COMPLETED]
 
 **Goal**: `handoff-schema.md` no longer describes a handoff path mechanism that no code produces
 or consumes.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/docs/architecture/handoff-schema.md`, locate the
+- [x] In `agent-system/extensions/core/docs/architecture/handoff-schema.md`, locate the
       `### File Path` subsection and delete the `**Exception**:` paragraph, its fenced
       `handoff_path="...-${session_id}.json"` code block, and the following sentence beginning
       "The orchestrator reads its own session's file...". Anchor on the quoted strings, not line
-      numbers.
-- [ ] Confirm the surviving text reads coherently: the subsection should end on the existing
+      numbers. *(completed)*
+- [x] Confirm the surviving text reads coherently: the subsection should end on the existing
       sentence "The filename is static (not timestamped). Each dispatch cycle overwrites the
-      previous handoff." — which the deleted paragraph directly contradicted.
-- [ ] Optionally add one short sentence recording *why* there is no session component: per-task
+      previous handoff." — which the deleted paragraph directly contradicted. *(completed: verified
+      by re-read, now followed immediately by the added rationale sentence, then the next
+      subsection heading)*
+- [x] Optionally add one short sentence recording *why* there is no session component: per-task
       directories already isolate concurrent different-task sessions, and `task-lock.sh` already
       serializes concurrent same-task sessions via its acquire/heartbeat/release contract. Phrase
-      it with those durable anchors — no task numbers.
-- [ ] Confirm by grep that no other file references the session-suffixed handoff filename shape.
+      it with those durable anchors — no task numbers. *(completed)*
+- [x] Confirm by grep that no other file references the session-suffixed handoff filename shape.
+      *(completed: `grep -rn 'orchestrator-handoff-\${session_id}\|orchestrator-handoff-.*session'`
+      returns zero hits)*
 
 **Timing**: 0.25 hours
 

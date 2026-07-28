@@ -440,14 +440,9 @@ handoff_path="specs/${padded_num}_${project_name}/.orchestrator-handoff.json"
 ```
 
 The filename is static (not timestamped). Each dispatch cycle overwrites the previous handoff.
-
-**Exception**: If concurrent `/orchestrate` invocations are possible, include session_id:
-```bash
-handoff_path="specs/${padded_num}_${project_name}/.orchestrator-handoff-${session_id}.json"
-```
-
-The orchestrator reads its own session's file using the same session_id it wrote to the
-loop guard.
+There is no session-scoped variant: per-task directories already isolate concurrent
+different-task sessions, and `task-lock.sh`'s acquire/heartbeat/release contract already
+serializes concurrent same-task sessions, so a session component here would add nothing.
 
 ### When to Write a Continuation Pointer
 

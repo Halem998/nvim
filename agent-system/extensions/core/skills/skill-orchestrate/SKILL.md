@@ -1200,7 +1200,7 @@ Compute: `task_count = length(task_numbers)`, `MAX_CYCLES_MT = min(task_count * 
 `MAX_INFRA_FAILURES = 3` (flat **per task**, not scaled by `task_count` — matching single-task
 mode; see `context/patterns/infra-failure-discrimination.md`).
 
-Initialize `mt_state_file = "specs/.orchestrator-multi-state.json"` with fields: `session_id`,
+Initialize `mt_state_file = "specs/.orchestrator-multi-state-${session_id}.json"` with fields: `session_id`,
 `task_numbers`, `waves`, `max_cycles`, `cycle_count: 0`, `failed_tasks: []`,
 `completed_tasks: []`, `current_statuses: {}`, `task_dirs: {}`, `research_agents: {}`,
 `implement_agents: {}`, `infra_failures: {}` (map task_num -> count, default 0),
@@ -2002,10 +2002,11 @@ After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or MAX_
    with its `defer_reason` (see `commands/orchestrate.md` Step 5 for the actual rendering — this
    stage only supplies the data). This is additive to, and does not replace, the
    `deferred_self_modifying` and `deferred_deploy_checkpoint` reporting instructions above.
-5. Write `specs/.return-meta-multi.json`:
+5. Write `specs/.return-meta-multi-${session_id}.json`:
 ```bash
 jq -n \
   --arg status "$exit_status" \
+  --arg session_id "$session_id" \
   --argjson tasks_completed "$completed_tasks" \
   --argjson tasks_failed "$failed_tasks" \
   --argjson tasks_deferred_self_modifying "$deferred_self_modifying" \
@@ -2015,6 +2016,7 @@ jq -n \
   --argjson cycles_used "$cycles_used" \
   '{
     "status": $status,
+    "session_id": $session_id,
     "metadata": {
       "tasks_completed": $tasks_completed,
       "tasks_failed": $tasks_failed,
@@ -2025,7 +2027,7 @@ jq -n \
       "cycles_used": $cycles_used,
       "multi_task_mode": true
     }
-  }' > "specs/.return-meta-multi.json"
+  }' > "specs/.return-meta-multi-${session_id}.json"
 ```
 The top-level `status` field keeps its existing closed vocabulary (`"implemented"` / `"partial"`
 / `"failed"`) and gains no new value; `forward_progress_violated` is carried only inside

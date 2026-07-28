@@ -388,14 +388,14 @@ The delegation context passed to the skill must include:
 }
 ```
 
-The skill manages wave-by-wave dispatch, per-task postflight (status sync + artifact linking), and writes results to `specs/.orchestrator-multi-state.json`.
+The skill manages wave-by-wave dispatch, per-task postflight (status sync + artifact linking), and writes results to `specs/.orchestrator-multi-state-${batch_session_id}.json`.
 
 #### Step 5: Commit Reconciliation and Consolidated Output
 
-After the single `skill-orchestrate` invocation completes, read results from `specs/.orchestrator-multi-state.json` and produce a residue check (non-blocking) and consolidated output.
+After the single `skill-orchestrate` invocation completes, read results from `specs/.orchestrator-multi-state-${batch_session_id}.json` and produce a residue check (non-blocking) and consolidated output.
 
 ```bash
-mt_state_file="specs/.orchestrator-multi-state.json"
+mt_state_file="specs/.orchestrator-multi-state-${batch_session_id}.json"
 if [ -f "$mt_state_file" ]; then
   completed_tasks=$(jq -r '.completed_tasks[]' "$mt_state_file" 2>/dev/null | tr '\n' ' ')
   failed_tasks_json=$(jq -c '.failed_tasks // []' "$mt_state_file")
@@ -411,7 +411,7 @@ if [ -f "$mt_state_file" ]; then
   defer_ledger_json=$(jq -c '.defer_ledger // []' "$mt_state_file")
   tasks_deferred_self_modifying_json=$(jq -c '.deferred_self_modifying // []' "$mt_state_file")
 else
-  echo "[orchestrate] WARNING: Multi-state file missing — skill may have been interrupted"
+  echo "[orchestrate] WARNING: Multi-state file missing (looked for specs/.orchestrator-multi-state-${batch_session_id}.json) — skill may have been interrupted"
   completed_tasks=""
   failed_tasks_json="[]"
   cycles_used=0
