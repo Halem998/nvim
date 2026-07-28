@@ -1,0 +1,33 @@
+{
+  "phase": 5,
+  "phase_name": "Convert the reconcile and predispatch-repair writers",
+  "started_at": "2026-07-28T01:25:00Z",
+  "last_updated": "2026-07-28T01:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Convert reconcile-task-status.sh's link_artifact two write sites and orchestrate-predispatch-review.sh's --repair write to state-write.sh calls",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/reconcile-task-status.sh",
+        "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.2",
+      "description": "orchestrate-predispatch-review.sh had no session_id parameter at all before this phase",
+      "type": "altered",
+      "reason": "Added an optional --session-id flag with the same self-generation fallback used in Phase 4's conversions, since --repair is direct-invocation-only with no existing caller passing a session_id.",
+      "annotation": "*(deviation: altered — added self-generating --session-id fallback)*"
+    }
+  ],
+  "scope_hypothesis_confirmed": {
+    "asserted": "three write sites (reconcile-task-status.sh 2, orchestrate-predispatch-review.sh 1 via --repair)",
+    "measured": "confirmed exactly three; default (non-repair) path verified byte-identical against a fixture"
+  }
+}

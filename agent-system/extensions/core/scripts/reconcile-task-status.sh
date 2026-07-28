@@ -145,22 +145,26 @@ link_artifact() {
   if [[ "$DRY_RUN" == "true" ]]; then
     echo "[reconcile] Would link artifact in state.json: type=$artifact_type path=$rel_path"
   else
-    mkdir -p "$PROJECT_ROOT/specs/tmp"
+    # Both steps routed through state-write.sh, the single mutex-guarded specs/state.json
+    # writer. Each call is its own critical section (state-write.sh has no multi-call batching
+    # interface); this is the same two-separate-writes shape the prior tmp-and-mv code used.
     # Step 1: Remove existing artifacts of same type (Issue #1132-safe pattern)
-    jq --arg atype "$artifact_type" \
-      --argjson num "$task_number" \
+    "$SCRIPT_DIR/state-write.sh" \
       '(.active_projects[] | select(.project_number == $num)).artifacts =
         [(.active_projects[] | select(.project_number == $num)).artifacts // [] | .[] | select(.type == $atype | not)]' \
-      "$STATE_FILE" > "$PROJECT_ROOT/specs/tmp/state.json" \
-      && mv "$PROJECT_ROOT/specs/tmp/state.json" "$STATE_FILE"
+      --session-id "$session_id" \
+      --arg atype "$artifact_type" \
+      --argjson num "$task_number" \
+      || { echo "[reconcile] ERROR: state-write.sh failed removing same-type artifacts for $rel_path" >&2; return 1; }
     # Step 2: Add new artifact entry
-    jq --arg path "$rel_path" \
-       --arg type "$artifact_type" \
-       --arg summary "$artifact_summary" \
-       --argjson num "$task_number" \
+    "$SCRIPT_DIR/state-write.sh" \
       '(.active_projects[] | select(.project_number == $num)).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-      "$STATE_FILE" > "$PROJECT_ROOT/specs/tmp/state.json" \
-      && mv "$PROJECT_ROOT/specs/tmp/state.json" "$STATE_FILE"
+      --session-id "$session_id" \
+      --arg path "$rel_path" \
+      --arg type "$artifact_type" \
+      --arg summary "$artifact_summary" \
+      --argjson num "$task_number" \
+      || { echo "[reconcile] ERROR: state-write.sh failed adding artifact entry for $rel_path" >&2; return 1; }
     echo "[reconcile] Linked $artifact_type artifact in state.json: $rel_path"
   fi
 

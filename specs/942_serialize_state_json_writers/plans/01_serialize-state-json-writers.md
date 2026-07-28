@@ -340,24 +340,27 @@ a file no other phase edits, so it carries no ordering constraint against the co
 
 ---
 
-### Phase 5: Convert the reconcile and predispatch-repair writers [NOT STARTED]
+### Phase 5: Convert the reconcile and predispatch-repair writers [COMPLETED]
 
 - **Goal:** Convert `reconcile-task-status.sh` and `orchestrate-predispatch-review.sh --repair`,
   including the latter's deliberate-mutex-skip rationale.
 - **Tasks:**
-  - [ ] `reconcile-task-status.sh`: convert both write sites inside `link_artifact`'s two-step jq
+  - [x] `reconcile-task-status.sh`: convert both write sites inside `link_artifact`'s two-step jq
         to `state-write.sh` calls; remove the `specs/tmp/state.json` shared staging path from
-        both.
-  - [ ] `orchestrate-predispatch-review.sh`: convert the `--repair` write (the default
+        both. *(completed: session_id was already a required positional argument, forwarded
+        directly to state-write.sh)*
+  - [x] `orchestrate-predispatch-review.sh`: convert the `--repair` write (the default
         report-only path never writes) to a `state-write.sh` call, preserving its
         `$cands`-scoped bulk `|=` transform shape through the helper's jq-filter interface.
-  - [ ] Remove `orchestrate-predispatch-review.sh`'s script-namespaced
+        *(completed: added an optional `--session-id` flag with self-generation fallback, since
+        this script had no session_id parameter at all before — see Plan Deviations)*
+  - [x] Remove `orchestrate-predispatch-review.sh`'s script-namespaced
         `specs/tmp/orchestrate-predispatch-review.state.tmp` staging path — the helper's
         `mktemp` replaces it.
-  - [ ] Rewrite that script's header comment claiming it deliberately skips the mutex because it
+  - [x] Rewrite that script's header comment claiming it deliberately skips the mutex because it
         is "direct-invocation-only": that reasoning is superseded. State instead that it now
         routes through the shared write helper like every other writer. Use durable anchors.
-  - [ ] Preserve both scripts' existing error messages that promise `specs/state.json` is "left
+  - [x] Preserve both scripts' existing error messages that promise `specs/state.json` is "left
         untouched" on transform or validation failure — the helper upholds the same guarantee, so
         the promise stays true.
 - **Timing:** 1.5 hours
@@ -367,7 +370,9 @@ a file no other phase edits, so it carries no ordering constraint against the co
   `orchestrate-predispatch-review.sh` 1, the last reachable only via `--repair`). Confirm at
   implementation time by grepping both files for `mv ` and `state.json` and by checking that the
   default `orchestrate-predispatch-review.sh` path genuinely performs no write; do not assume the
-  report-only path is write-free without reading it.
+  report-only path is write-free without reading it. **Measured: confirmed exactly three sites as
+  hypothesized; verified by fixture run that the default (non-`--repair`) path leaves
+  `specs/state.json` byte-identical.**
 - **Verification:**
   - `bash -n` on both scripts exits 0.
   - `grep -n 'specs/tmp/state\.json\|orchestrate-predispatch-review\.state\.tmp'` over both files

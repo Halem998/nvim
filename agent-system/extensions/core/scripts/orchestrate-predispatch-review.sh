@@ -44,7 +44,7 @@
 # schema nor its collision algorithm is changed here).
 #
 # Usage:
-#   orchestrate-predispatch-review.sh [--repair] <task_number> [<task_number> ...]
+#   orchestrate-predispatch-review.sh [--repair] [--session-id SID] <task_number> [<task_number> ...]
 #
 # Default invocation (no --repair) is read-only and report-only: it never writes to
 # specs/state.json under any circumstance, exit code included. It prints a human-readable report
@@ -72,13 +72,15 @@
 # an operator can copy-paste whenever a repairable Class B finding exists, so the repair route is
 # discoverable without being automatic.
 #
-# State-write atomicity: the --repair write reuses update-task-status.sh's own convention
-# (write to a temp file under specs/tmp/, validate with `jq empty`, then atomic `mv`) rather than
-# inventing a bespoke write path. It does NOT acquire the specs/.scope-lock mutex
-# update-task-status.sh uses for its own writes — --repair is direct-invocation-only, never
-# called from a live or automated path, so the concurrent-writer hazard that mutex exists for
-# does not apply here in practice; an operator running --repair should avoid doing so
-# concurrently with any other state.json-mutating command.
+# State-write atomicity: the --repair write now routes through state-write.sh, the single
+# mutex-guarded specs/state.json writer every other writer in this codebase shares (see
+# scripts/state-write.sh's own header for the full acquire -> mktemp -> jq transform -> jq empty
+# validate -> mv -> release sequence). This supersedes the script's original reasoning for
+# skipping the specs/.scope-lock mutex on the grounds that --repair is direct-invocation-only and
+# therefore unlikely to race a concurrent writer in practice: --repair now serializes like every
+# other writer, so that reasoning no longer needs to hold. An optional `--session-id SID` flag
+# attributes the mutex acquisition; if omitted, a session_id is generated inline using the same
+# portable pattern command-gate-in.sh uses.
 #
 # Forbidden calls (this script is read-only on its default path; --repair is the one narrow,
 # direct-invocation-only exception described above, and even it never touches any of these):
@@ -100,8 +102,9 @@
 #       Also 0 after a successful --repair write, and 0 for a --repair run that found nothing to
 #       normalize.
 #   2 - usage error (zero <task_number> arguments, a non-integer task_number, or jq missing), or
-#       state.json unavailable/unparseable, or (--repair only) a write failure after the temp
-#       file was produced (state.json is left untouched in that case).
+#       state.json unavailable/unparseable, or (--repair only) state-write.sh reported a failure
+#       (mutex ABORT, jq transform failure, or invalid-JSON validation failure -- state.json is
+#       left untouched on every one of those paths; see state-write.sh's own exit-code table).
 
 set -uo pipefail
 
@@ -109,15 +112,23 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
-TMP_DIR="$PROJECT_ROOT/specs/tmp"
 
 # --- argument parsing: --repair ahead of positional task_number validation ---
 repair_mode=false
+session_id=""
 task_args=()
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --repair)
       repair_mode=true
+      shift
+      ;;
+    --session-id)
+      session_id="${2:-}"
+      shift 2
+      ;;
+    --session-id=*)
+      session_id="${1#--session-id=}"
       shift
       ;;
     *)
@@ -126,6 +137,10 @@ while [ "$#" -gt 0 ]; do
       ;;
   esac
 done
+
+if [ -z "$session_id" ]; then
+  session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+fi
 
 if [ "${#task_args[@]}" -eq 0 ]; then
   echo "ERROR: orchestrate-predispatch-review.sh requires at least one <task_number> argument." >&2
@@ -251,26 +266,20 @@ if [ "$repair_mode" = true ]; then
     "  ;  file_scope " + (.file_scope | tojson) + " -> " + ((.file_scope // []) | tojson)
   ' "$STATE_FILE"
 
-  mkdir -p "$TMP_DIR"
-  tmp_file="$TMP_DIR/orchestrate-predispatch-review.state.tmp"
-  if ! jq --argjson candidates "$candidates_json" '
-    ($candidates) as $cands |
+  if ! "$SCRIPT_DIR/state-write.sh" \
+    '($candidates) as $cands |
     (.active_projects[] | select(.project_number as $pn | ($cands | index($pn)) != null)) |=
-      (.dependencies = (.dependencies // []) | .file_scope = (.file_scope // []))
-  ' "$STATE_FILE" > "$tmp_file"; then
-    echo "ERROR: orchestrate-predispatch-review.sh: --repair jq transform failed; specs/state.json left untouched." >&2
-    rm -f "$tmp_file"
+      (.dependencies = (.dependencies // []) | .file_scope = (.file_scope // []))' \
+    --session-id "$session_id" \
+    --argjson candidates "$candidates_json"; then
+    # state-write.sh itself already prints a distinguishing "transform failed" (exit 3) vs
+    # "invalid JSON" (exit 4) vs "mutex ABORT" (exit 2) message and leaves specs/state.json
+    # untouched on every one of those paths -- this is a pass-through, not a new error surface.
+    echo "ERROR: orchestrate-predispatch-review.sh: --repair write failed via state-write.sh; specs/state.json left untouched (see message above)." >&2
     exit 2
   fi
 
-  if ! jq empty "$tmp_file" 2>/dev/null; then
-    echo "ERROR: orchestrate-predispatch-review.sh: --repair produced invalid JSON; specs/state.json left untouched." >&2
-    rm -f "$tmp_file"
-    exit 2
-  fi
-
-  mv "$tmp_file" "$STATE_FILE"
-  echo "--repair: specs/state.json updated (write-to-temp-then-mv, matching update-task-status.sh's own atomicity convention)."
+  echo "--repair: specs/state.json updated via state-write.sh (mutex-guarded acquire -> mktemp -> jq transform -> jq empty validate -> mv -> release)."
   exit 0
 fi
 
