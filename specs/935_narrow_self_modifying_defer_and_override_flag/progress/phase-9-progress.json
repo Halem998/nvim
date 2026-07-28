@@ -1,0 +1,13 @@
+{
+  "phase": 9,
+  "phase_name": "Schema document — orchestrate-batch-admit-v3 (Scope G)",
+  "started_at": "2026-07-28T03:00:00Z",
+  "last_updated": "2026-07-28T03:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Bump schema doc to v3: status line, JSON examples, field table, invocation-count rationale, deferral-direction rule, override note, Read-by list, Version History v3 entry with consumer enumeration", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
