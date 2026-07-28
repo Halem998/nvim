@@ -1,0 +1,40 @@
+{
+  "phase": 9,
+  "phase_name": "Purge lua/**",
+  "started_at": "2026-07-28T00:35:00Z",
+  "last_updated": "2026-07-28T01:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Convert all 32 task-reference occurrences under lua/** to durable anchors",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/config/autocmds.lua",
+        "lua/neotex/lib/wezterm.lua",
+        "lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua",
+        "lua/neotex/plugins/ai/shared/extensions/merge.lua",
+        "lua/neotex/plugins/editor/which-key.lua",
+        "lua/neotex/plugins/text/lean.lua",
+        "lua/neotex/plugins/tools/himalaya/commands/ui.lua",
+        "lua/neotex/plugins/tools/himalaya/config/init.lua",
+        "lua/neotex/plugins/tools/himalaya/config/ui.lua",
+        "lua/neotex/plugins/tools/himalaya/ui/email_list.lua",
+        "lua/neotex/plugins/tools/himalaya/ui/email_reader.lua",
+        "lua/neotex/plugins/tools/himalaya/ui/folder_help.lua",
+        "lua/neotex/plugins/tools/himalaya/utils/cli.lua"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "9.1",
+      "description": "cli.lua's task-851 citation sat inside a pre-existing uncommitted user diagnostic-instrumentation hunk unrelated to this task",
+      "type": "altered",
+      "reason": "Editing the comment text was unavoidable to clear the scan, but the surrounding instrumentation code (not authored by this task) is staged as part of the same atomic git hunk since git cannot split a single insertion hunk at sub-line granularity without manual patch surgery disproportionate to a one-line comment fix.",
+      "annotation": "*(deviation: altered — see plan Phase 9 task 1 note)*"
+    }
+  ]
+}

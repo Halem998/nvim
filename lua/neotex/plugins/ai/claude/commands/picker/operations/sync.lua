@@ -840,11 +840,11 @@ local function audit_synced_content(project_dir, all_artifacts, audit_patterns, 
 end
 
 --- Run the deployed check-extension-docs.sh doc-lint / contract-drift validator after a full
---- sync and surface FAIL output prominently (task 837). Distinct from audit_synced_content()
+--- sync and surface FAIL output prominently. Distinct from audit_synced_content()
 --- above, which greps synced files for repo-specific reference patterns: this instead runs the
---- actual validator script, which as of task 837 includes a provides.context disk-existence
+--- actual validator script, which includes a provides.context disk-existence
 --- check (Phase 2) and a project-wide dangling `.claude/context/contracts/*.md` reference scan
---- (Phase 3). A missing core contract -- the exact drift defect this task fixes -- now produces
+--- (Phase 3). A missing core contract -- the exact drift defect this validator fixes -- now produces
 --- a LOUD, visible failure at "Load Core" time instead of silently degrading hard-mode contracts
 --- later at agent-dispatch time.
 ---
@@ -1419,7 +1419,7 @@ function M.load_all_globally(config)
     reinject_loaded_extensions(project_dir, extension_cfg)
   end
 
-  -- Post-sync contract/doc-lint validator (task 837): surfaces dangling `.claude/context/
+  -- Post-sync contract/doc-lint validator: surfaces dangling `.claude/context/
   -- contracts/*.md` references and manifest provides.context drift LOUDLY, not silently. Runs
   -- for both full and merge-only syncs (unlike the re-injection step above, which only applies
   -- to full syncs) since either path can introduce new deployed content that references

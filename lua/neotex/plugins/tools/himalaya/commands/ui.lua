@@ -602,7 +602,7 @@ function M.setup(registry)
   }
   
   -- ======================
-  -- Threading Operations (Task #81)
+  -- Threading Operations
   -- ======================
 
   commands.HimalayaThreadingToggle = {

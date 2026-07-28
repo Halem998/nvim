@@ -5,7 +5,7 @@
 -- TODO: Add email sorting options (date, subject, sender, size)
 -- TODO: Implement virtual scrolling for large email lists
 -- TODO: Add email archiving with visual feedback
--- Threading support implemented (Task #81)
+-- Threading support implemented
 
 local M = {}
 
@@ -169,7 +169,7 @@ function M.collapse_all_threads()
   logger.debug('Collapsed all threads')
 end
 
---- Toggle all threads expand/collapse (Task #88)
+--- Toggle all threads expand/collapse
 --- If any thread is expanded, collapse all; otherwise expand all
 function M.toggle_all_threads()
   local thread_order = state.get('email_list.thread_order', {})
@@ -424,7 +424,7 @@ function M.init(main_buffers)
   -- Initialize debounced navigation refresh for race condition prevention
   init_debounced_nav_refresh()
 
-  -- Initialize threading from config (Task #81)
+  -- Initialize threading from config
   local threading_config = config.get('threading', {})
   threading_enabled = threading_config.enabled ~= false  -- Default true
   logger.debug('Threading initialized', {

@@ -46,7 +46,7 @@ local function get_or_create_buffer()
 end
 
 -- Setup reader keymaps
--- Per task 56: NO single-letter action mappings in email reader
+-- NO single-letter action mappings in email reader
 -- Actions should be accessed via which-key <leader>m menu
 local function setup_reader_keymaps(buf)
   local opts = { buffer = buf, silent = true, nowait = true }
@@ -138,7 +138,7 @@ local function render_email(email, buf)
 end
 
 -- Open email in a full buffer (not a split)
--- Per task 56: Email opens in full buffer, not split
+-- Email opens in full buffer, not split
 function M.open_email_buffer(email_id, email_type)
   if not email_id then
     logger.warn('Cannot open email buffer: no email_id provided')

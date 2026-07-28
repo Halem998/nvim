@@ -708,7 +708,7 @@ function M.generate_opencode_json(project_dir, config)
   local target_path = project_dir .. "/opencode.json"
   local managed_marker = target_path .. ".managed"
 
-  -- Task 1.2: Managed/unmanaged gating
+  -- Step 1.2: Managed/unmanaged gating
   if vim.fn.filereadable(managed_marker) ~= 1 then
     return true, nil
   end
@@ -787,7 +787,7 @@ function M.generate_opencode_json(project_dir, config)
     end
   end
 
-  -- Task 1.3: Validate final computed table before writing
+  -- Step 1.3: Validate final computed table before writing
   local ok = pcall(vim.json.encode, base)
   if not ok then
     return false, "generate_opencode_json: failed to encode computed JSON"

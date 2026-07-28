@@ -189,6 +189,19 @@ function M.execute_himalaya(args, opts)
       local sync_state = require('neotex.plugins.tools.himalaya.core.state')
       local sync_in_flight = sync_state.is_syncing()
 
+      -- TEMP INSTRUMENTATION: record every himalaya CLI failure
+      -- with its full command + exit code + stderr so we can see exactly what fails
+      -- during <leader>ms. Remove after root cause is found.
+      pcall(function()
+        local f = io.open('/tmp/himalaya-fail-851.log', 'a')
+        if f then
+          f:write(string.format('[%s] syncing=%s exit=%s\n  cmd: %s\n  err: %s\n',
+            os.date('%H:%M:%S'), tostring(sync_in_flight), tostring(exit_code),
+            table.concat(cmd, ' '), (error_msg or ''):gsub('\n', ' | ')))
+          f:close()
+        end
+      end)
+
       if not _G.HIMALAYA_TEST_MODE then
         if sync_in_flight then
           logger.debug('Himalaya command failed during active sync (transient, ignored)', {

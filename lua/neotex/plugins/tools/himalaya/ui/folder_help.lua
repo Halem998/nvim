@@ -40,7 +40,7 @@ function M.get_folder_type()
 end
 
 -- Get help content for specific folder type
--- Updated keymaps per task 56
+-- Updated keymaps
 function M.get_help_content(folder_type)
   local base_navigation = {
     "Navigation:",
@@ -135,7 +135,7 @@ function M.get_help_content(folder_type)
       table.insert(lines, line)
     end
 
-    -- Add flags & labels (Task #91)
+    -- Add flags & labels
     for _, line in ipairs(base_flags) do
       table.insert(lines, line)
     end

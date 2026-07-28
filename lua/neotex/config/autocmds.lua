@@ -179,7 +179,7 @@ function M.setup()
       desc = "WezTerm: Restore tab title when leaving terminal buffer",
     })
 
-    -- Claude Code task number integration for WezTerm tab title (task 795)
+    -- Claude Code task number integration for WezTerm tab title
     --
     -- Simplified architecture:
     -- - Shell hook (wezterm-task-number.sh): Handles set/clear on UserPromptSubmit

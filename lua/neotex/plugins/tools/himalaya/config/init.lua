@@ -111,7 +111,7 @@ M.defaults = {
     min_interactions = 3,
   },
 
-  -- Threading settings (Task #81)
+  -- Threading settings
   threading = {
     enabled = true,           -- Enable thread grouping by default
     default_collapsed = true, -- Start with threads collapsed

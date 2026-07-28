@@ -4,8 +4,8 @@
 -- Provides functions to emit OSC 1337 SetUserVar sequences directly to WezTerm,
 -- bypassing inner PTY routing issues when running in embedded terminals.
 --
--- Related: Task 790 established OSC 7 pattern in neotex/config/autocmds.lua
--- Related: Task 789 wezterm-task-number.sh hook for shell-level integration
+-- Related: the OSC 7 pattern established in neotex/config/autocmds.lua
+-- Related: wezterm-task-number.sh hook for shell-level integration
 
 local M = {}
 

@@ -604,22 +604,33 @@ cannot truthfully describe the lint gate until Phase 2 has created it.
 
 ---
 
-### Phase 9: Purge `lua/**` [NOT STARTED]
+### Phase 9: Purge `lua/**` [COMPLETED]
 
 - **Goal:** Clear the Neovim configuration tree.
 - **Character:** **Mechanical/scriptable.** Almost entirely bare provenance comments; a scripted
   pass followed by agent review of the diff is appropriate here, unlike Phases 4-8.
 
 - **Tasks:**
-  - [ ] Convert each provenance comment to a durable anchor. Known shapes:
+  - [x] Convert each provenance comment to a durable anchor. Known shapes:
         `-- See: Task #41 - fix_leanls_lsp_client_exit_error`,
         `-- Per task 56: NO single-letter action mappings in email reader`,
         `--- Toggle all threads expand/collapse (Task #88)` (three further `Task #88` comments in
-        `lua/neotex/plugins/tools/himalaya/config/ui.lua`).
-  - [ ] Where the comment's only content is the task number, the durable form is the behavioral
+        `lua/neotex/plugins/tools/himalaya/config/ui.lua`). *(completed across 13 files, matching
+        the Scope Hypothesis: all `(Task #NN)` / `per task NN` parentheticals dropped, keeping
+        the behavioral statement each already carried; `merge.lua`'s two generic "Task 1.2"/
+        "Task 1.3" WBS sub-item labels renamed to "Step 1.2"/"Step 1.3" per the same convention
+        used for `task-breakdown.md` in Phase 4. `cli.lua`'s single occurrence sat inside a
+        pre-existing uncommitted user diagnostic-instrumentation hunk (unrelated WIP, not
+        authored by this task); only the flagged comment text was edited, the surrounding
+        instrumentation left functionally untouched.)*
+  - [x] Where the comment's only content is the task number, the durable form is the behavioral
         statement itself (`-- NO single-letter action mappings in email reader` stands alone);
-        where the number qualifies a real constraint, name the constraint.
-  - [ ] Confirm every changed hunk is inside a `--` comment. No executable Lua changes.
+        where the number qualifies a real constraint, name the constraint. *(completed: e.g.
+        `email_reader.lua`'s "NO single-letter action mappings" constraint preserved verbatim,
+        citation dropped.)*
+  - [x] Confirm every changed hunk is inside a `--` comment. No executable Lua changes.
+        *(confirmed: every edit was comment-text-only; all 13 modules verified to still load via
+        `nvim --headless -c "lua require(...)" -c "q"`.)*
 
 - **Timing:** 0.75 hours
 - **Depends on:** 2

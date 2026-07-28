@@ -137,7 +137,7 @@ function M.setup_buffer_keymaps(bufnr)
   local keymap = vim.keymap.set
   local opts = { buffer = bufnr, silent = true }
   
-  -- Disable tab cycling in all Himalaya buffers (Task #88: S-Tab now used for threading)
+  -- Disable tab cycling in all Himalaya buffers (S-Tab now used for threading)
   keymap('n', '<Tab>', '<Nop>', opts)
   keymap('i', '<Tab>', '<Tab>', opts)  -- Keep normal tab in insert mode
   keymap('i', '<S-Tab>', '<S-Tab>', opts)  -- Keep shift-tab in insert mode
@@ -159,7 +159,7 @@ function M.setup_buffer_keymaps(bufnr)
 end
 
 -- Setup email list keymaps
--- Reorganized keymap scheme per task 56:
+-- Reorganized keymap scheme:
 -- - Navigation: j/k (default), <C-d>/<C-u> for pagination
 -- - Selection: n=select, p=deselect, <Space>=toggle
 -- - Actions removed: d, m, c, r, R, f, / (use which-key <leader>m instead)
@@ -188,7 +188,7 @@ function M.setup_email_list_keymaps(bufnr)
     -- In OFF mode, ESC does nothing (or could close sidebar - TBD)
   end, vim.tbl_extend('force', opts, { desc = 'Hide preview / regress state' }))
 
-  -- Basic navigation - <CR> for 3-state model (task 55)
+  -- Basic navigation - <CR> for 3-state model
   keymap('n', '<CR>', function()
     local ok, email_list = pcall(require, 'neotex.plugins.tools.himalaya.ui.email_list')
     if ok and email_list.handle_enter then
@@ -358,7 +358,7 @@ function M.setup_email_list_keymaps(bufnr)
     end
   end, vim.tbl_extend('force', opts, { desc = 'Search emails' }))
 
-  -- Threading keymaps (Task #88 - simplified to Tab/S-Tab only)
+  -- Threading keymaps (simplified to Tab/S-Tab only)
   -- Tab toggles thread expansion (only on thread root lines)
   keymap('n', '<Tab>', function()
     local ok, email_list = pcall(require, 'neotex.plugins.tools.himalaya.ui.email_list')
@@ -375,7 +375,7 @@ function M.setup_email_list_keymaps(bufnr)
     end
   end, vim.tbl_extend('force', opts, { desc = 'Toggle all threads' }))
 
-  -- Sync & Accounts keybindings (Task #86)
+  -- Sync & Accounts keybindings
   -- s - sync inbox
   keymap('n', 's', function()
     local ok, main = pcall(require, 'neotex.plugins.tools.himalaya.ui.main')
@@ -405,7 +405,7 @@ function M.setup_email_list_keymaps(bufnr)
     vim.cmd('HimalayaSyncInfo')
   end, vim.tbl_extend('force', opts, { desc = 'Show sync info' }))
 
-  -- Flags & Labels keymaps (Task #91)
+  -- Flags & Labels keymaps
   -- u - toggle read/unread (selection-aware)
   keymap('n', 'u', function()
     local ok, labels = pcall(require, 'neotex.plugins.tools.himalaya.features.labels')
@@ -440,7 +440,7 @@ function M.setup_email_list_keymaps(bufnr)
 end
 
 -- Setup preview keymaps
--- Per task 56: NO single-letter action mappings in preview
+-- NO single-letter action mappings in preview
 -- Actions should be accessed via which-key <leader>m menu
 function M.setup_preview_keymaps(bufnr)
   local keymap = vim.keymap.set
@@ -581,7 +581,7 @@ end
 
 -- Get keybinding for an action
 function M.get_keybinding(filetype, action)
-  -- Updated keybinding configuration per task 56
+  -- Updated keybinding configuration
   -- Sidebar: No single-letter actions, use <leader>m for mail operations
   local keybindings = {
     ['himalaya-list'] = {
@@ -605,15 +605,15 @@ function M.get_keybinding(filetype, action)
       change_folder = 'c',
       compose = 'e',
       search = '/',
-      -- Threading keymaps (Task #88 - simplified)
+      -- Threading keymaps (simplified)
       toggle_thread = '<Tab>',
       toggle_all_threads = '<S-Tab>',
-      -- Sync & Accounts keymaps (Task #86)
+      -- Sync & Accounts keymaps
       sync_inbox = 's',
       sync_all = 'S',
       switch_account = 'A',
       sync_info = 'i',
-      -- Flags & Labels keymaps (Task #91)
+      -- Flags & Labels keymaps
       toggle_read = 'u',
       toggle_star = '*',
       apply_label = 'l',
@@ -627,7 +627,7 @@ function M.get_keybinding(filetype, action)
       -- Actions removed: use <leader>m menu
     },
     ['himalaya-compose'] = {
-      -- Leader mappings (2-letter maximum per task 67):
+      -- Leader mappings (2-letter maximum):
       -- <leader>me - send email (E for Email/Envelope)
       -- <leader>md - save draft (D for Draft)
       -- <leader>mq - quit/discard (Q for Quit)

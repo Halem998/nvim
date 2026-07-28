@@ -647,7 +647,7 @@ return {
     -- NOTE: Compose buffer and email preview keymaps are now registered
     -- buffer-locally in email_composer.lua and email_preview.lua respectively.
     -- This enables them to appear in which-key menu for their specific buffers.
-    -- (Task 73 - buffer-local which-key registration pattern)
+    -- (buffer-local which-key registration pattern)
 
     -- ============================================================================
     -- <leader>n - NIXOS GROUP

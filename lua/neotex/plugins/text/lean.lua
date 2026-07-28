@@ -132,7 +132,7 @@ return {
 
     -- Close infoview before buffer deletion to prevent "Invalid buffer id" error
     -- in lean.nvim's WinLeave autocmd (infoview.lua:964 __update_extmark_style)
-    -- See: Task #41 - fix_leanls_lsp_client_exit_error
+    -- See: fix_leanls_lsp_client_exit_error
     vim.api.nvim_create_autocmd("BufDelete", {
       group = lean_group,
       pattern = "*.lean",
