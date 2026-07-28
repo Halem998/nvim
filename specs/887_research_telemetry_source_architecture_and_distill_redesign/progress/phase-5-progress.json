@@ -1,0 +1,35 @@
+{
+  "phase": 5,
+  "phase_name": "Restructure skill-distill - shared skeleton and contiguous ordering",
+  "started_at": "2026-07-27T02:30:00Z",
+  "last_updated": "2026-07-27T03:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Author Shared Sub-Mode Skeleton section", "status": "done",
+      "files_touched": ["agent-system/extensions/memory/skills/skill-distill/SKILL.md"]},
+    {"id": 2, "description": "Reorder: move Purge+GC block up before Merge", "status": "done",
+      "files_touched": ["agent-system/extensions/memory/skills/skill-distill/SKILL.md"]},
+    {"id": 3, "description": "Reduce purge/gc/merge/compress/refine/auto to deltas against skeleton", "status": "done",
+      "files_touched": ["agent-system/extensions/memory/skills/skill-distill/SKILL.md"]},
+    {"id": 4, "description": "Leave dream unreduced (deferred to Phase 10)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Fix internal cross-references invalidated by reorder", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "5.scope",
+      "description": "Scope Hypothesis listed 'dream's revision half' among the six near-verbatim skeleton matches, and omitted gc",
+      "type": "altered",
+      "reason": "dream is explicitly excluded from reduction by this same phase's own task list (deferred to Phase 10); gc was found to genuinely match the skeleton shape on inspection and was included instead",
+      "annotation": "recorded inline in the Phase 5 Scope Hypothesis and task checklist"
+    },
+    {
+      "task_id": "5.reduction-depth",
+      "description": "Full behavior-preserving reduction of all execution-step content to shared placeholders was not attempted",
+      "type": "altered",
+      "reason": "Candidate-identification algorithms, JSON schemas, frontmatter examples, and log-entry payloads are genuinely sub-mode-specific and not reducible without information loss; reduction was scoped to the repeated MANDATORY-STOP boilerplate and a one-line skeleton-reference pointer per sub-mode, consistent with the phase's own allowance to leave genuinely-divergent steps stated in full",
+      "annotation": "recorded inline in the Phase 5 task checklist"
+    }
+  ],
+  "handoff_count": 0
+}

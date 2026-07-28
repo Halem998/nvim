@@ -475,7 +475,7 @@ owns it and how to join across — including the degraded path when telemetry is
 
 ---
 
-### Phase 5: Restructure `skill-distill` — shared skeleton and contiguous ordering [NOT STARTED]
+### Phase 5: Restructure `skill-distill` — shared skeleton and contiguous ordering [COMPLETED]
 
 **Goal**: Eliminate the six near-duplicate copies of the per-sub-mode skeleton and make sub-mode
 sections contiguous, so Phases 6-10 add five new sub-modes as deltas against one skeleton rather
@@ -500,15 +500,54 @@ than as five more copies.
 
 **Tasks**:
 
-- [ ] Author the `## Shared Sub-Mode Skeleton` section with named placeholders and an explicit
+- [x] Author the `## Shared Sub-Mode Skeleton` section with named placeholders and an explicit
       statement that the MANDATORY STOP is non-negotiable in every sub-mode that mutates.
-- [ ] Reorder sub-mode sections to the target order, moving `### Purge Sub-Mode` and
+      *(completed: 39-line section inserted at line 274, right after the report sub-mode's Health
+      Report material and before Purge)*
+- [x] Reorder sub-mode sections to the target order, moving `### Purge Sub-Mode` and
       `### GC Sub-Mode` up from the end of the file to adjacent positions in dispatch-table order.
-- [ ] Reduce each of the seven hygiene sub-modes to its deltas, verifying behavior preservation
-      step by step and leaving any genuinely-divergent step stated in full.
-- [ ] Leave the `dream` section in place and unreduced — Phase 10 splits it, and reducing it here
-      would create churn against content that is about to move.
-- [ ] Fix any internal line-number or section cross-references invalidated by the reorder.
+      *(completed: the contiguous 453-line block from `### Purge Sub-Mode` through the end of `###
+      GC Sub-Mode` — which already included the Link-Scan/Retrieval-Exclusion/tombstoned-health
+      infrastructure between them, so purge and gc were already mutually adjacent with no other
+      sub-mode between — was moved as one unit from the end of the file to right after the new
+      Shared Skeleton section, before Merge. Verified byte-identical via diff against the
+      pre-move extraction; new final order is
+      skeleton -> purge -> gc -> merge -> compress -> refine -> auto -> dream -> Distill Log
+      Schema -> State Integration, with line-count reconciliation 273 + 39 + 453 + 1173 = 1938
+      confirmed exactly)*
+- [x] Reduce each of the seven hygiene sub-modes to its deltas, verifying behavior preservation
+      step by step and leaving any genuinely-divergent step stated in full. *(completed with a
+      corrected, narrower scope than the Scope Hypothesis assumed — see the correction below.
+      `report` is not part of this reduction; it is a different shape (health-report generation,
+      not a candidate/select/execute flow) and was never claimed to match the skeleton. For the
+      six that do: each of purge/gc/merge/compress/refine/auto now opens with a one-line pointer
+      to the Shared Sub-Mode Skeleton naming its own deltas (e.g. auto's and refine's-Tier-1's
+      stated MANDATORY-STOP exemption). The four near-identical
+      "YOU MUST call AskUserQuestion here..." MANDATORY-STOP warnings (purge, gc, compress,
+      refine-Tier-2) were consolidated to a shared
+      "MANDATORY STOP (Shared Sub-Mode Skeleton, Interactive Selection step)" phrase, keeping each
+      one's sub-mode-specific "Do NOT {verb} without explicit user {selection|confirmation}"
+      clause verbatim. All candidate-identification algorithms, JSON schemas, frontmatter
+      examples, execution sequences, and log-entry payloads were left fully in place per-sub-mode
+      — this content is genuinely sub-mode-specific (tombstone/merge/compress/refine/delete
+      mechanics differ in every case) and is not usefully reducible to a shared placeholder
+      without losing information, consistent with this task's own "genuinely-divergent step
+      stated in full" allowance. One genuine, pre-existing behavior divergence was discovered and
+      recorded rather than silently changed: `merge`'s Interactive Selection step does not carry
+      the explicit MANDATORY-STOP bold-warning wording the other four mutating sub-modes have —
+      noted inline in merge's own intro sentence as a stated fact, not corrected, since Phase 5's
+      own non-goal is "the seven hygiene sub-modes' behavior does not change".)*
+- [x] Leave the `dream` section in place and unreduced — Phase 10 splits it, and reducing it here
+      would create churn against content that is about to move. *(confirmed: dream's content is
+      untouched, still positioned immediately after auto exactly as before the purge/gc move)*
+- [x] Fix any internal line-number or section cross-references invalidated by the reorder.
+      *(completed: swept every "above"/"below"/"earlier" occurrence post-reorder. All remaining
+      instances resolve correctly under the new order — including dream's references to
+      "Overlap Scoring" (unaffected, dream's own internal content), "State Integration below"
+      (still true, State Integration still follows dream), and "Tombstone Application above"
+      (ambiguous between merge's and purge's same-named subsections, but both are valid targets
+      now and neither is a dangling/stale reference). No reference pointed at a moved heading's
+      old position.)*
 
 **Timing**: 2 hours
 
@@ -522,6 +561,17 @@ revision half) and that reduction is behavior-preserving in all six. Confirm at 
 by extracting each sub-mode's step sequence and diffing against the skeleton before reducing; any
 sub-mode whose steps do not actually match is left stated in full and the count is corrected in the
 phase record. Line numbers shift after Phase 3's split and must be re-derived, never reused.
+
+**Scope Hypothesis correction recorded at implementation time**: the six places actually reduced
+were purge/gc/merge/compress/refine/auto (not "dream's revision half", which stays unreduced and
+deferred to Phase 10 per this phase's own explicit task above — the Scope Hypothesis's inclusion
+of dream in its count-of-six was itself inconsistent with the very next task in this same
+phase's list, which explicitly excludes dream). `gc` was not named in the Scope Hypothesis's list
+but does match the skeleton shape (Grace Period Scan ~ Candidate Identification + Edge Case,
+GC Interactive Selection ~ Interactive Selection, Dry-Run Behavior ~ Dry-Run, GC Deletion Sequence
+~ Execution with Batch Index Regeneration folded in as its own numbered step, GC Log Entry ~ Log
+Entry) and was reduced alongside the other five. `report` was never asserted to match and was
+correctly excluded throughout.
 
 **Files to modify**:
 

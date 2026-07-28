@@ -271,9 +271,501 @@ Where:
 
 These thresholds mirror `repository_health.status` vocabulary in state.json.
 
+## Shared Sub-Mode Skeleton
+
+Every mutating `/distill` sub-mode below (`purge`, `gc`, `merge`, `compress`, `refine`, `auto`,
+and the telemetry-sourced sub-modes added after them) follows the same seven-step shape. This
+section states that shape once, with named, generic placeholders; each sub-mode's own section
+below states only its deltas from this skeleton -- its specific candidate logic, prompts,
+execution steps, and log payload -- rather than restating the shape itself. This generalizes a
+convention this file already used once for the `dream` section's `### Overlap Scoring`
+cross-reference ("reference the section by name -- do not restate or fork the formula") into a
+file-wide rule.
+
+1. **Edge Case Checks** -- Validate preconditions before identifying candidates (e.g. run
+   validate-on-read, confirm a minimum count of eligible memories). If a precondition fails,
+   display a specific message and return early without further action.
+2. **Candidate Identification** -- Compute the sub-mode's specific candidate set from scored or
+   otherwise-derived memory data. If a shared dependency like validate-on-read or the Scoring
+   Engine is used, cite it by name rather than re-deriving it.
+3. **Dry-Run** -- When `--dry-run` is active, display what the sub-mode would do (the specific
+   candidate list, with sub-mode-relevant fields) and return early. No file is modified.
+4. **Interactive Selection (MANDATORY STOP)** -- Present candidates via `AskUserQuestion`
+   (`multiSelect: true` for any sub-mode selecting among multiple candidates). **This step is
+   non-negotiable in every sub-mode that mutates the vault: no mutation may proceed without an
+   explicit, user-confirmed selection at this step.** If no candidates exist, or the user selects
+   none, display a specific message and exit without changes.
+5. **Execution** -- Apply the confirmed operation. This step's actual content is the most
+   sub-mode-specific of the seven and is stated in full in each sub-mode's own section -- it is
+   never usefully reduced to a generic placeholder, since the tombstone/merge/compress/refine/
+   delete mechanics differ in every case.
+6. **Batch Index Regeneration** -- After the entire batch of confirmed operations completes (not
+   after each individual one), regenerate `memory-index.json` (via the "JSON Index Maintenance"
+   procedure in `skill-learn/SKILL.md`), `index.md`, and `.memory/10-Memories/README.md`.
+7. **Log Entry** -- Log the operation to `.memory/distill-log.json` per the Distill Log Schema
+   below, and update the relevant `summary` counter. Also update `memory_health` in
+   `specs/state.json` per the State Integration section below.
+
+**Non-mutating sub-modes** (`report`, and later `--review`) do not carry step 4's mandatory stop,
+since nothing is proposed for the user to confirm -- each such sub-mode states this exemption
+explicitly in its own section rather than leaving it as a silent omission.
+
+### Purge Sub-Mode
+
+The purge sub-mode identifies stale or zero-retrieval memories, presents candidates interactively, and applies a tombstone pattern (frontmatter mutation) rather than deleting files. Follows the Shared Sub-Mode Skeleton above; deltas below.
+
+#### Purge Candidate Identification
+
+After scoring all memories via the Scoring Engine, select purge candidates using an OR condition:
+
+```
+purge_candidates = []
+for each memory in scored_memories:
+  if memory.status == "tombstoned":
+    skip  # Already tombstoned
+  if memory.topic starts_with "email/preferences/":
+    skip  # reserved-namespace purge exemption (task 822, design §5.1) -- gates the WHOLE
+          # OR-condition below, not just the zero-retrieval leg (Component 2 above already
+          # zeroes zero_retrieval_penalty for this namespace; this second, independent gate is
+          # defense-in-depth so a high staleness_score alone can never purge one of these
+          # memories either)
+  if memory.zero_retrieval_penalty == 1.0 OR memory.staleness_score > 0.8:
+    purge_candidates.append(memory)
+```
+
+**Edge Case**: If `purge_candidates` is empty, display:
+```
+No purge candidates found. All memories are healthy or already tombstoned.
+```
+Then exit the purge sub-mode without further action.
+
+#### Category-Aware TTL Advisory Thresholds
+
+Category TTL thresholds affect **ranking only**, not automatic selection. Memories past their category TTL are sorted to the top of the candidate list.
+
+| Category | TTL (days) | Description |
+|----------|-----------|-------------|
+| CONFIG | 180 | Configuration knowledge becomes stale fastest |
+| WORKFLOW | 365 | Processes evolve but have longer relevance |
+| PATTERN | 540 | Design patterns remain relevant longest |
+| TECHNIQUE | 270 | Methods need periodic refresh |
+| INSIGHT | none | Insights have no TTL (never auto-prioritized) |
+
+#### TTL-Based Ranking
+
+Sort purge candidates for presentation:
+
+```
+for each candidate in purge_candidates:
+  category = candidate.category
+  ttl = TTL_THRESHOLDS[category]  # from table above
+  days_since_created = days_between(today, candidate.created)
+
+  if ttl is not None AND days_since_created > ttl:
+    candidate.past_ttl = true
+    candidate.ttl_excess_days = days_since_created - ttl
+  else:
+    candidate.past_ttl = false
+    candidate.ttl_excess_days = 0
+
+# Sort: past-TTL memories first (by excess days descending), then by composite score descending
+purge_candidates.sort(key=lambda c: (-int(c.past_ttl), -c.ttl_excess_days, -c.composite_score))
+```
+
+#### Interactive Selection -- MANDATORY STOP
+
+**MANDATORY STOP (Shared Sub-Mode Skeleton, Interactive Selection step). Do NOT tombstone any memories without explicit user selection.**
+
+Present candidates via AskUserQuestion multiSelect:
+
+```json
+{
+  "question": "Select memories to tombstone (purge). Tombstoned memories are excluded from retrieval but preserved on disk for 7 days before gc can hard-delete them.",
+  "header": "Purge Candidates ({count} found)",
+  "multiSelect": true,
+  "options": [
+    {
+      "label": "{memory.id}",
+      "description": "Score: {composite_score:.2f} | Created: {created} | Retrievals: {retrieval_count} | Tokens: {token_count} | Category: {category}{ttl_warning}"
+    }
+  ]
+}
+```
+
+Where `{ttl_warning}` is:
+- ` | PAST TTL by {ttl_excess_days}d` if `past_ttl == true`
+- empty string if `past_ttl == false`
+
+If the user selects no memories, display:
+```
+No memories selected for purge. Operation cancelled.
+```
+Then exit without changes.
+
+#### Dry-Run Behavior
+
+When `--dry-run` is active, show the candidate list and scores but skip tombstone application:
+
+```
+[DRY RUN] Would tombstone {count} memories:
+  - {memory.id} (score: {composite_score:.2f}, category: {category})
+  - ...
+
+No changes made.
+```
+
+Exit after displaying the dry-run summary.
+
+#### Tombstone Application
+
+For each selected memory, apply the tombstone by mutating its YAML frontmatter:
+
+```
+1. Read the memory file (.memory/10-Memories/MEM-{slug}.md)
+2. Parse YAML frontmatter (between --- delimiters)
+3. Add three fields after the `summary` field (before `token_count` if present):
+   status: tombstoned
+   tombstoned_at: {ISO8601 date, e.g., 2026-04-16}
+   tombstone_reason: "purge"
+4. Write the updated file back to disk
+5. Update memory-index.json: set the entry's `status` to "tombstoned"
+```
+
+**Frontmatter Example (before)**:
+```yaml
+---
+title: "HTTP request retry patterns"
+created: 2026-01-15
+tags: [PATTERN]
+topic: "python/libs/requests"
+source: "user input"
+modified: 2026-01-15
+summary: "HTTP retry with exponential backoff"
+retrieval_count: 0
+last_retrieved:
+---
+```
+
+**Frontmatter Example (after)**:
+```yaml
+---
+title: "HTTP request retry patterns"
+created: 2026-01-15
+tags: [PATTERN]
+topic: "python/libs/requests"
+source: "user input"
+modified: 2026-01-15
+summary: "HTTP retry with exponential backoff"
+status: tombstoned
+tombstoned_at: 2026-04-16
+tombstone_reason: "purge"
+retrieval_count: 0
+last_retrieved:
+---
+```
+
+#### Purge Log Entry
+
+After tombstoning, log the operation to `.memory/distill-log.json`:
+
+```json
+{
+  "id": "distill_{timestamp}",
+  "timestamp": "ISO8601",
+  "type": "purge",
+  "session_id": "sess_...",
+  "pre_metrics": {
+    "total_memories": 10,
+    "total_tokens": 5000,
+    "health_score": 65,
+    "purge_candidates": 4,
+    "merge_candidates": 2,
+    "compress_candidates": 1
+  },
+  "post_metrics": {
+    "total_memories": 10,
+    "total_tokens": 5000,
+    "health_score": 78,
+    "purge_candidates": 1,
+    "merge_candidates": 2,
+    "compress_candidates": 1
+  },
+  "affected_memories": ["MEM-slug-1", "MEM-slug-2", "MEM-slug-3"],
+  "notes": "Tombstoned 3 memories. Link-scan warnings: [list or 'none']"
+}
+```
+
+**Key semantics**: `total_memories` and `total_tokens` remain unchanged in post_metrics because tombstoning preserves files on disk. `purge_candidates` decreases because tombstoned memories are excluded from future scoring. `health_score` improves as maintenance candidates are addressed.
+
+Update the distill-log.json `summary.total_purged` counter by incrementing it by the number of tombstoned memories.
+
+### Link-Scan Procedure
+
+After tombstone application, scan for stale `[[MEM-{slug}]]` references in non-tombstoned memories.
+
+#### Link-Scan Execution
+
+```bash
+# For each tombstoned memory slug
+for slug in "${affected_slugs[@]}"; do
+  # Search non-tombstoned memories for references
+  grep -l "\[\[MEM-${slug}\]\]" .memory/10-Memories/MEM-*.md 2>/dev/null | while read ref_file; do
+    # Check if the referencing file is itself tombstoned
+    ref_status=$(grep -m1 "^status:" "$ref_file" | sed 's/^status: *//')
+    if [ "$ref_status" == "tombstoned" ]; then
+      continue  # Skip tombstoned files
+    fi
+    echo "WARNING: ${ref_file} references tombstoned [[MEM-${slug}]]"
+  done
+done
+```
+
+#### Warning Display
+
+Display link-scan warnings to the user (no automatic modification):
+
+```
+## Link-Scan Warnings
+
+The following active memories reference tombstoned memories:
+- .memory/10-Memories/MEM-http-patterns.md -> [[MEM-requests-retry-patterns]] (tombstoned)
+- .memory/10-Memories/MEM-library-setup.md -> [[MEM-requests-retry-patterns]] (tombstoned)
+
+These references will become stale. Consider manually updating the Connections section
+in the above files to remove or replace the references.
+```
+
+If no stale references are found:
+```
+Link-scan: No stale references found.
+```
+
+#### Link-Scan in Log
+
+Include link-scan warnings in the purge operation's `notes` field in distill-log.json:
+
+```
+"notes": "Tombstoned 3 memories. Link-scan warnings: MEM-http-patterns.md->MEM-slug-1, MEM-library-setup.md->MEM-slug-1"
+```
+
+Or if none:
+```
+"notes": "Tombstoned 3 memories. Link-scan warnings: none"
+```
+
+### Retrieval Exclusion
+
+Tombstoned memories must be excluded from all retrieval paths.
+
+#### MCP Search Path Exclusion
+
+After MCP search returns results, post-filter to exclude tombstoned entries:
+
+```
+For each segment in content_map.segments:
+  query = segment.key_terms.join(" ")
+  results = execute("search", {
+    "query": query,
+    "vault": ".memory",
+    "limit": 5
+  })
+
+  # Post-filter: exclude tombstoned memories
+  filtered_results = []
+  for result in results:
+    id = derive_id_from_result(result)
+    index_entry = memory_index.entries[id]
+    if index_entry.status == "tombstoned":
+      continue  # Skip tombstoned memory
+    filtered_results.append(result)
+  results = filtered_results
+```
+
+#### Grep Fallback Path Exclusion
+
+When using grep-based search, check frontmatter status before including in results:
+
+```bash
+# For each segment
+for keyword in $key_terms; do
+  grep -l -i "$keyword" .memory/10-Memories/*.md 2>/dev/null
+done | sort | uniq -c | sort -rn | head -10 | while read count file; do
+  # Check if memory is tombstoned
+  status=$(grep -m1 "^status:" "$file" | sed 's/^status: *//')
+  if [ "$status" == "tombstoned" ]; then
+    continue  # Skip tombstoned memory
+  fi
+  echo "$count $file"
+done | head -5
+```
+
+#### Scoring Engine Exclusion
+
+In the scoring engine, skip tombstoned memories before computing scores:
+
+```
+for each entry in memory_index.entries:
+  if entry.status == "tombstoned":
+    skip  # Do not score tombstoned memories
+  # Proceed with scoring...
+```
+
+This ensures tombstoned memories do not appear in:
+- Purge candidates (already addressed)
+- Merge candidates
+- Compress candidates
+- Health report statistics (except in a dedicated "Tombstoned Memories" section)
+
+### Health Report -- Tombstoned Memories Section
+
+Add a "Tombstoned Memories" section to the health report template, placed after the "Maintenance Candidates" section:
+
+```
+---
+
+### Tombstoned Memories
+
+| Memory | Tombstoned Date | Reason | Days Until GC |
+|--------|----------------|--------|---------------|
+| {memory.id} | {tombstoned_at} | {tombstone_reason} | {7 - days_since_tombstoned} |
+| ... | ... | ... | ... |
+
+**Total tombstoned**: {tombstoned_count}
+**Eligible for GC**: {gc_eligible_count} (past 7-day grace period)
+```
+
+If no tombstoned memories exist:
+```
+### Tombstoned Memories
+
+None.
+```
+
+### GC Sub-Mode
+
+The gc sub-mode performs hard deletion of tombstoned memories that have passed the 7-day grace period. Follows the Shared Sub-Mode Skeleton above; deltas below. Its logical pair is the Purge Sub-Mode above (with only its own tombstone-related Link-Scan/Retrieval-Exclusion/health-report infrastructure between them, no other sub-mode) -- gc hard-deletes what purge has already tombstoned once the grace period elapses.
+
+#### Grace Period Scan
+
+Identify tombstoned memories eligible for garbage collection:
+
+```
+gc_candidates = []
+for each entry in memory_index.entries:
+  if entry.status == "tombstoned":
+    tombstoned_at = parse_date(entry.tombstoned_at or read from frontmatter)
+    days_since_tombstoned = days_between(today, tombstoned_at)
+    if days_since_tombstoned >= 7:
+      gc_candidates.append(entry)
+```
+
+**Edge Case**: If no tombstoned memories are past the grace period, display:
+```
+No tombstoned memories past the 7-day grace period.
+{tombstoned_count} tombstoned memories are still within the grace period.
+```
+Then exit without further action.
+
+#### GC Interactive Selection -- MANDATORY STOP
+
+**MANDATORY STOP (Shared Sub-Mode Skeleton, Interactive Selection step). Do NOT delete any memories without explicit user confirmation.**
+
+Present eligible memories via AskUserQuestion multiSelect:
+
+```json
+{
+  "question": "Select tombstoned memories to permanently delete. This action cannot be undone.",
+  "header": "GC Candidates ({count} past 7-day grace period)",
+  "multiSelect": true,
+  "options": [
+    {
+      "label": "{memory.id}",
+      "description": "Tombstoned: {tombstoned_at} | Reason: {tombstone_reason} | Original score: {composite_score:.2f} | Tokens: {token_count}"
+    }
+  ]
+}
+```
+
+If the user selects no memories, display:
+```
+No memories selected for deletion. GC cancelled.
+```
+Then exit without changes.
+
+#### Dry-Run Behavior
+
+When `--dry-run` is active, show eligible memories without deleting:
+
+```
+[DRY RUN] Would permanently delete {count} memories:
+  - {memory.id} (tombstoned: {tombstoned_at}, reason: {tombstone_reason})
+  - ...
+
+No changes made.
+```
+
+#### GC Deletion Sequence
+
+For each selected memory, perform hard deletion in this order:
+
+```
+1. Delete the .md file:
+   rm .memory/10-Memories/MEM-{slug}.md
+
+2. Remove the entry from memory-index.json:
+   - Filter out the entry with matching id
+   - Decrement entry_count
+   - Subtract the entry's token_count from total_tokens
+   - Write updated memory-index.json
+
+3. Regenerate index.md:
+   - Use the Index Regeneration Pattern (existing procedure)
+   - Tombstoned+deleted entries will be absent from filesystem scan
+
+4. Regenerate .memory/10-Memories/README.md:
+   - Use the existing README regeneration procedure
+   - Deleted files will be absent from the ls scan
+
+5. Update memory_health in specs/state.json:
+   - Decrement total_memories by the number of deleted memories
+   - Recalculate health_score after removal
+```
+
+#### GC Log Entry
+
+Log the gc operation to `.memory/distill-log.json`:
+
+```json
+{
+  "id": "distill_{timestamp}",
+  "timestamp": "ISO8601",
+  "type": "gc",
+  "session_id": "sess_...",
+  "pre_metrics": {
+    "total_memories": 10,
+    "total_tokens": 5000,
+    "health_score": 78,
+    "purge_candidates": 1,
+    "merge_candidates": 2,
+    "compress_candidates": 1
+  },
+  "post_metrics": {
+    "total_memories": 7,
+    "total_tokens": 3500,
+    "health_score": 85,
+    "purge_candidates": 1,
+    "merge_candidates": 1,
+    "compress_candidates": 1
+  },
+  "affected_memories": ["MEM-slug-1", "MEM-slug-2", "MEM-slug-3"],
+  "notes": "Hard-deleted 3 tombstoned memories"
+}
+```
+
+**Key semantics**: `total_memories` and `total_tokens` are decremented in post_metrics because gc removes files from disk. `health_score` is recalculated after deletion.
 ### Sub-Mode: merge
 
-Combine duplicate memories with high keyword overlap. The merge operation identifies pairwise duplicate candidates within topic clusters, presents them for interactive selection, merges content with a keyword superset guarantee, tombstones the absorbed secondary, updates cross-references, and regenerates indexes.
+Combine duplicate memories with high keyword overlap. The merge operation identifies pairwise duplicate candidates within topic clusters, presents them for interactive selection, merges content with a keyword superset guarantee, tombstones the absorbed secondary, updates cross-references, and regenerates indexes. Follows the Shared Sub-Mode Skeleton above; deltas below. (Its Interactive Selection step below does not restate the MANDATORY STOP language verbatim -- see that step's own text for the exact wording used at this call site.)
 
 #### Edge Case Checks
 
@@ -527,7 +1019,7 @@ The `keywords_before` array contains `[primary_keyword_count, secondary_keyword_
 
 ### Sub-Mode: compress
 
-Reduce oversized memories to key points while preserving essential information. The compress operation identifies memories with high size penalty, presents them interactively, generates compressed versions, preserves originals in a History section, and ensures keyword preservation.
+Reduce oversized memories to key points while preserving essential information. The compress operation identifies memories with high size penalty, presents them interactively, generates compressed versions, preserves originals in a History section, and ensures keyword preservation. Follows the Shared Sub-Mode Skeleton above; deltas below.
 
 #### Edge Case Checks
 
@@ -581,7 +1073,7 @@ Return early after display. No files are modified.
 
 #### Interactive Selection -- MANDATORY STOP
 
-**YOU MUST call AskUserQuestion here. Do NOT compress any memories without explicit user selection.**
+**MANDATORY STOP (Shared Sub-Mode Skeleton, Interactive Selection step). Do NOT compress any memories without explicit user selection.**
 
 Present candidates via AskUserQuestion multiSelect:
 
@@ -724,7 +1216,7 @@ Update the distill-log.json `summary.total_compressed` counter by incrementing i
 
 ### Sub-Mode: refine
 
-Improve memory metadata quality through two tiers of fixes. Tier 1 fixes are safe automatic corrections that require no user interaction. Tier 2 fixes are interactive improvements that require user confirmation via AskUserQuestion.
+Improve memory metadata quality through two tiers of fixes. Tier 1 fixes are safe automatic corrections that require no user interaction. Tier 2 fixes are interactive improvements that require user confirmation via AskUserQuestion. Follows the Shared Sub-Mode Skeleton above; deltas below. (Tier 1 has no Interactive Selection step by design -- see Tier 1 below for the exemption.)
 
 #### Edge Case Checks
 
@@ -858,7 +1350,7 @@ Tier 1 fixes run without user interaction:
 
 #### Tier 2 Interactive Selection -- MANDATORY STOP
 
-**YOU MUST call AskUserQuestion here if Tier 2 fixes exist. Do NOT apply Tier 2 fixes without explicit user selection.**
+**MANDATORY STOP (Shared Sub-Mode Skeleton, Interactive Selection step), if Tier 2 fixes exist. Do NOT apply Tier 2 fixes without explicit user selection.**
 
 If `tier2_fixes` is not empty, present via AskUserQuestion multiSelect:
 
@@ -944,7 +1436,7 @@ Update the distill-log.json `summary.total_refined` counter by incrementing it b
 
 ### Sub-Mode: auto
 
-Automated non-interactive maintenance that runs only safe Tier 1 refine fixes. The auto mode is designed for routine maintenance without human oversight -- it explicitly excludes compress (requires AI-generated summaries that need review), purge, and merge.
+Automated non-interactive maintenance that runs only safe Tier 1 refine fixes. The auto mode is designed for routine maintenance without human oversight -- it explicitly excludes compress (requires AI-generated summaries that need review), purge, and merge. Its steps are a restricted delta against the Shared Sub-Mode Skeleton above: it has no Interactive Selection step by design (that is the whole point of "automated non-interactive"), so this is one of the sanctioned MANDATORY-STOP exemptions alongside `report` and (once specified) `--review`.
 
 #### Auto Execution Flow
 
@@ -1444,456 +1936,3 @@ The `memory_health` field is a top-level sibling of `repository_health` in state
 
 **Rationale**: The `report` sub-mode is read-only -- it generates a health report without modifying any memory files. Since `distill_count` tracks the number of maintenance operations that actually changed the vault, report-only invocations should not increment it. The `last_distilled` timestamp is still updated for all sub-modes because it tracks when the vault was last assessed, not when it was last modified. `last_dream`/`dream_count` mirror `last_distilled`/`distill_count` but scoped to dream runs only -- they are untouched by every other sub-mode, including report, since those never ingest the event store.
 
-### Purge Sub-Mode
-
-The purge sub-mode identifies stale or zero-retrieval memories, presents candidates interactively, and applies a tombstone pattern (frontmatter mutation) rather than deleting files.
-
-#### Purge Candidate Identification
-
-After scoring all memories via the Scoring Engine, select purge candidates using an OR condition:
-
-```
-purge_candidates = []
-for each memory in scored_memories:
-  if memory.status == "tombstoned":
-    skip  # Already tombstoned
-  if memory.topic starts_with "email/preferences/":
-    skip  # reserved-namespace purge exemption (task 822, design §5.1) -- gates the WHOLE
-          # OR-condition below, not just the zero-retrieval leg (Component 2 above already
-          # zeroes zero_retrieval_penalty for this namespace; this second, independent gate is
-          # defense-in-depth so a high staleness_score alone can never purge one of these
-          # memories either)
-  if memory.zero_retrieval_penalty == 1.0 OR memory.staleness_score > 0.8:
-    purge_candidates.append(memory)
-```
-
-**Edge Case**: If `purge_candidates` is empty, display:
-```
-No purge candidates found. All memories are healthy or already tombstoned.
-```
-Then exit the purge sub-mode without further action.
-
-#### Category-Aware TTL Advisory Thresholds
-
-Category TTL thresholds affect **ranking only**, not automatic selection. Memories past their category TTL are sorted to the top of the candidate list.
-
-| Category | TTL (days) | Description |
-|----------|-----------|-------------|
-| CONFIG | 180 | Configuration knowledge becomes stale fastest |
-| WORKFLOW | 365 | Processes evolve but have longer relevance |
-| PATTERN | 540 | Design patterns remain relevant longest |
-| TECHNIQUE | 270 | Methods need periodic refresh |
-| INSIGHT | none | Insights have no TTL (never auto-prioritized) |
-
-#### TTL-Based Ranking
-
-Sort purge candidates for presentation:
-
-```
-for each candidate in purge_candidates:
-  category = candidate.category
-  ttl = TTL_THRESHOLDS[category]  # from table above
-  days_since_created = days_between(today, candidate.created)
-
-  if ttl is not None AND days_since_created > ttl:
-    candidate.past_ttl = true
-    candidate.ttl_excess_days = days_since_created - ttl
-  else:
-    candidate.past_ttl = false
-    candidate.ttl_excess_days = 0
-
-# Sort: past-TTL memories first (by excess days descending), then by composite score descending
-purge_candidates.sort(key=lambda c: (-int(c.past_ttl), -c.ttl_excess_days, -c.composite_score))
-```
-
-#### Interactive Selection -- MANDATORY STOP
-
-**YOU MUST call AskUserQuestion here. Do NOT tombstone any memories without explicit user selection.**
-
-Present candidates via AskUserQuestion multiSelect:
-
-```json
-{
-  "question": "Select memories to tombstone (purge). Tombstoned memories are excluded from retrieval but preserved on disk for 7 days before gc can hard-delete them.",
-  "header": "Purge Candidates ({count} found)",
-  "multiSelect": true,
-  "options": [
-    {
-      "label": "{memory.id}",
-      "description": "Score: {composite_score:.2f} | Created: {created} | Retrievals: {retrieval_count} | Tokens: {token_count} | Category: {category}{ttl_warning}"
-    }
-  ]
-}
-```
-
-Where `{ttl_warning}` is:
-- ` | PAST TTL by {ttl_excess_days}d` if `past_ttl == true`
-- empty string if `past_ttl == false`
-
-If the user selects no memories, display:
-```
-No memories selected for purge. Operation cancelled.
-```
-Then exit without changes.
-
-#### Dry-Run Behavior
-
-When `--dry-run` is active, show the candidate list and scores but skip tombstone application:
-
-```
-[DRY RUN] Would tombstone {count} memories:
-  - {memory.id} (score: {composite_score:.2f}, category: {category})
-  - ...
-
-No changes made.
-```
-
-Exit after displaying the dry-run summary.
-
-#### Tombstone Application
-
-For each selected memory, apply the tombstone by mutating its YAML frontmatter:
-
-```
-1. Read the memory file (.memory/10-Memories/MEM-{slug}.md)
-2. Parse YAML frontmatter (between --- delimiters)
-3. Add three fields after the `summary` field (before `token_count` if present):
-   status: tombstoned
-   tombstoned_at: {ISO8601 date, e.g., 2026-04-16}
-   tombstone_reason: "purge"
-4. Write the updated file back to disk
-5. Update memory-index.json: set the entry's `status` to "tombstoned"
-```
-
-**Frontmatter Example (before)**:
-```yaml
----
-title: "HTTP request retry patterns"
-created: 2026-01-15
-tags: [PATTERN]
-topic: "python/libs/requests"
-source: "user input"
-modified: 2026-01-15
-summary: "HTTP retry with exponential backoff"
-retrieval_count: 0
-last_retrieved:
----
-```
-
-**Frontmatter Example (after)**:
-```yaml
----
-title: "HTTP request retry patterns"
-created: 2026-01-15
-tags: [PATTERN]
-topic: "python/libs/requests"
-source: "user input"
-modified: 2026-01-15
-summary: "HTTP retry with exponential backoff"
-status: tombstoned
-tombstoned_at: 2026-04-16
-tombstone_reason: "purge"
-retrieval_count: 0
-last_retrieved:
----
-```
-
-#### Purge Log Entry
-
-After tombstoning, log the operation to `.memory/distill-log.json`:
-
-```json
-{
-  "id": "distill_{timestamp}",
-  "timestamp": "ISO8601",
-  "type": "purge",
-  "session_id": "sess_...",
-  "pre_metrics": {
-    "total_memories": 10,
-    "total_tokens": 5000,
-    "health_score": 65,
-    "purge_candidates": 4,
-    "merge_candidates": 2,
-    "compress_candidates": 1
-  },
-  "post_metrics": {
-    "total_memories": 10,
-    "total_tokens": 5000,
-    "health_score": 78,
-    "purge_candidates": 1,
-    "merge_candidates": 2,
-    "compress_candidates": 1
-  },
-  "affected_memories": ["MEM-slug-1", "MEM-slug-2", "MEM-slug-3"],
-  "notes": "Tombstoned 3 memories. Link-scan warnings: [list or 'none']"
-}
-```
-
-**Key semantics**: `total_memories` and `total_tokens` remain unchanged in post_metrics because tombstoning preserves files on disk. `purge_candidates` decreases because tombstoned memories are excluded from future scoring. `health_score` improves as maintenance candidates are addressed.
-
-Update the distill-log.json `summary.total_purged` counter by incrementing it by the number of tombstoned memories.
-
-### Link-Scan Procedure
-
-After tombstone application, scan for stale `[[MEM-{slug}]]` references in non-tombstoned memories.
-
-#### Link-Scan Execution
-
-```bash
-# For each tombstoned memory slug
-for slug in "${affected_slugs[@]}"; do
-  # Search non-tombstoned memories for references
-  grep -l "\[\[MEM-${slug}\]\]" .memory/10-Memories/MEM-*.md 2>/dev/null | while read ref_file; do
-    # Check if the referencing file is itself tombstoned
-    ref_status=$(grep -m1 "^status:" "$ref_file" | sed 's/^status: *//')
-    if [ "$ref_status" == "tombstoned" ]; then
-      continue  # Skip tombstoned files
-    fi
-    echo "WARNING: ${ref_file} references tombstoned [[MEM-${slug}]]"
-  done
-done
-```
-
-#### Warning Display
-
-Display link-scan warnings to the user (no automatic modification):
-
-```
-## Link-Scan Warnings
-
-The following active memories reference tombstoned memories:
-- .memory/10-Memories/MEM-http-patterns.md -> [[MEM-requests-retry-patterns]] (tombstoned)
-- .memory/10-Memories/MEM-library-setup.md -> [[MEM-requests-retry-patterns]] (tombstoned)
-
-These references will become stale. Consider manually updating the Connections section
-in the above files to remove or replace the references.
-```
-
-If no stale references are found:
-```
-Link-scan: No stale references found.
-```
-
-#### Link-Scan in Log
-
-Include link-scan warnings in the purge operation's `notes` field in distill-log.json:
-
-```
-"notes": "Tombstoned 3 memories. Link-scan warnings: MEM-http-patterns.md->MEM-slug-1, MEM-library-setup.md->MEM-slug-1"
-```
-
-Or if none:
-```
-"notes": "Tombstoned 3 memories. Link-scan warnings: none"
-```
-
-### Retrieval Exclusion
-
-Tombstoned memories must be excluded from all retrieval paths.
-
-#### MCP Search Path Exclusion
-
-After MCP search returns results, post-filter to exclude tombstoned entries:
-
-```
-For each segment in content_map.segments:
-  query = segment.key_terms.join(" ")
-  results = execute("search", {
-    "query": query,
-    "vault": ".memory",
-    "limit": 5
-  })
-
-  # Post-filter: exclude tombstoned memories
-  filtered_results = []
-  for result in results:
-    id = derive_id_from_result(result)
-    index_entry = memory_index.entries[id]
-    if index_entry.status == "tombstoned":
-      continue  # Skip tombstoned memory
-    filtered_results.append(result)
-  results = filtered_results
-```
-
-#### Grep Fallback Path Exclusion
-
-When using grep-based search, check frontmatter status before including in results:
-
-```bash
-# For each segment
-for keyword in $key_terms; do
-  grep -l -i "$keyword" .memory/10-Memories/*.md 2>/dev/null
-done | sort | uniq -c | sort -rn | head -10 | while read count file; do
-  # Check if memory is tombstoned
-  status=$(grep -m1 "^status:" "$file" | sed 's/^status: *//')
-  if [ "$status" == "tombstoned" ]; then
-    continue  # Skip tombstoned memory
-  fi
-  echo "$count $file"
-done | head -5
-```
-
-#### Scoring Engine Exclusion
-
-In the scoring engine, skip tombstoned memories before computing scores:
-
-```
-for each entry in memory_index.entries:
-  if entry.status == "tombstoned":
-    skip  # Do not score tombstoned memories
-  # Proceed with scoring...
-```
-
-This ensures tombstoned memories do not appear in:
-- Purge candidates (already addressed)
-- Merge candidates
-- Compress candidates
-- Health report statistics (except in a dedicated "Tombstoned Memories" section)
-
-### Health Report -- Tombstoned Memories Section
-
-Add a "Tombstoned Memories" section to the health report template, placed after the "Maintenance Candidates" section:
-
-```
----
-
-### Tombstoned Memories
-
-| Memory | Tombstoned Date | Reason | Days Until GC |
-|--------|----------------|--------|---------------|
-| {memory.id} | {tombstoned_at} | {tombstone_reason} | {7 - days_since_tombstoned} |
-| ... | ... | ... | ... |
-
-**Total tombstoned**: {tombstoned_count}
-**Eligible for GC**: {gc_eligible_count} (past 7-day grace period)
-```
-
-If no tombstoned memories exist:
-```
-### Tombstoned Memories
-
-None.
-```
-
-### GC Sub-Mode
-
-The gc sub-mode performs hard deletion of tombstoned memories that have passed the 7-day grace period.
-
-#### Grace Period Scan
-
-Identify tombstoned memories eligible for garbage collection:
-
-```
-gc_candidates = []
-for each entry in memory_index.entries:
-  if entry.status == "tombstoned":
-    tombstoned_at = parse_date(entry.tombstoned_at or read from frontmatter)
-    days_since_tombstoned = days_between(today, tombstoned_at)
-    if days_since_tombstoned >= 7:
-      gc_candidates.append(entry)
-```
-
-**Edge Case**: If no tombstoned memories are past the grace period, display:
-```
-No tombstoned memories past the 7-day grace period.
-{tombstoned_count} tombstoned memories are still within the grace period.
-```
-Then exit without further action.
-
-#### GC Interactive Selection -- MANDATORY STOP
-
-**YOU MUST call AskUserQuestion here. Do NOT delete any memories without explicit user confirmation.**
-
-Present eligible memories via AskUserQuestion multiSelect:
-
-```json
-{
-  "question": "Select tombstoned memories to permanently delete. This action cannot be undone.",
-  "header": "GC Candidates ({count} past 7-day grace period)",
-  "multiSelect": true,
-  "options": [
-    {
-      "label": "{memory.id}",
-      "description": "Tombstoned: {tombstoned_at} | Reason: {tombstone_reason} | Original score: {composite_score:.2f} | Tokens: {token_count}"
-    }
-  ]
-}
-```
-
-If the user selects no memories, display:
-```
-No memories selected for deletion. GC cancelled.
-```
-Then exit without changes.
-
-#### Dry-Run Behavior
-
-When `--dry-run` is active, show eligible memories without deleting:
-
-```
-[DRY RUN] Would permanently delete {count} memories:
-  - {memory.id} (tombstoned: {tombstoned_at}, reason: {tombstone_reason})
-  - ...
-
-No changes made.
-```
-
-#### GC Deletion Sequence
-
-For each selected memory, perform hard deletion in this order:
-
-```
-1. Delete the .md file:
-   rm .memory/10-Memories/MEM-{slug}.md
-
-2. Remove the entry from memory-index.json:
-   - Filter out the entry with matching id
-   - Decrement entry_count
-   - Subtract the entry's token_count from total_tokens
-   - Write updated memory-index.json
-
-3. Regenerate index.md:
-   - Use the Index Regeneration Pattern (existing procedure)
-   - Tombstoned+deleted entries will be absent from filesystem scan
-
-4. Regenerate .memory/10-Memories/README.md:
-   - Use the existing README regeneration procedure
-   - Deleted files will be absent from the ls scan
-
-5. Update memory_health in specs/state.json:
-   - Decrement total_memories by the number of deleted memories
-   - Recalculate health_score after removal
-```
-
-#### GC Log Entry
-
-Log the gc operation to `.memory/distill-log.json`:
-
-```json
-{
-  "id": "distill_{timestamp}",
-  "timestamp": "ISO8601",
-  "type": "gc",
-  "session_id": "sess_...",
-  "pre_metrics": {
-    "total_memories": 10,
-    "total_tokens": 5000,
-    "health_score": 78,
-    "purge_candidates": 1,
-    "merge_candidates": 2,
-    "compress_candidates": 1
-  },
-  "post_metrics": {
-    "total_memories": 7,
-    "total_tokens": 3500,
-    "health_score": 85,
-    "purge_candidates": 1,
-    "merge_candidates": 1,
-    "compress_candidates": 1
-  },
-  "affected_memories": ["MEM-slug-1", "MEM-slug-2", "MEM-slug-3"],
-  "notes": "Hard-deleted 3 tombstoned memories"
-}
-```
-
-**Key semantics**: `total_memories` and `total_tokens` are decremented in post_metrics because gc removes files from disk. `health_score` is recalculated after deletion.
