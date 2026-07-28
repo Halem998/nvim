@@ -1,5 +1,5 @@
 ---
-next_project_number: 939
+next_project_number: 942
 ---
 
 # TODO
@@ -11,15 +11,134 @@ next_project_number: 939
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 938 | -- | nvim-plugin |
+| 1 | 938,939,941 | -- | agent-system, nvim-plugin |
+| 2 | 940 | 939 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
+
+### Agent System
+
+939 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+  └─ 940 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
+941 [NOT STARTED] — SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is 
 
 ### Nvim Plugin
 
 938 [NOT STARTED] — LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, ne
 
 ## Tasks
+
+### 941. Purge ephemeral task-number citations from deliverables
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.
+
+DEFECT. Two deliverable files outside specs/** carry ephemeral task-number citations, violating rules/no-task-references-in-deliverables.md. Both were found incidentally during unrelated work and deliberately left unfixed as out-of-scope at the time. Both are still present and were re-confirmed by grep.
+
+VERIFIED OCCURRENCES (anchor on the quoted strings, not on line numbers -- both files are actively edited):
+  1. commands/orchestrate.md, in the cross-batch defense-in-depth passage of the runtime wave-split check: the parenthetical illustrating a cross-batch collision names two specific task numbers in the form "... where task N and task M were each created independently ...".
+  2. skills/skill-orchestrate/SKILL.md, in the Stage 2 loop-guard fresh-start branch: the comment "create guard atomically via init-marker (task N)".
+
+WHY THIS MATTERS, per the rule's own stated rationale: task numbers are renumbered by vault operations when next_project_number exceeds 1000 (tasks above 1000 are renumbered by subtracting 1000), so these citations do not merely age -- they silently come to point at a DIFFERENT task. They are also meaningless to any future reader of a command or skill file who has no access to the task tracker.
+
+FIX DIRECTION, from the rule's "Reference Durable Anchors Instead" section: replace each citation with a durable anchor -- a sibling document filename, a section heading, a decision-record name, or a plain statement of the verified fact. Do not simply delete the parenthetical if it is carrying real explanatory weight; convert it.
+  - For occurrence 1, the illustration needs a cross-batch example. Prefer generic placeholders over real numbers, or restate the mechanism without an example if the surrounding prose already conveys it.
+  - For occurrence 2, the citation is pure provenance on a mechanism that is already fully described by the surrounding comment; the durable anchor is the mechanism name (init-marker's mkdir-gate plus tmp-mv payload), which the comment already states.
+
+SCOPE OF WORK.
+
+A. Fix both verified occurrences.
+
+B. Sweep for others rather than trusting this list of two. The advisory hook hooks/validate-no-task-references.sh is PostToolUse and non-blocking, so it only ever fired on files as they were edited -- it has never audited the tree, and any citation written before the hook existed is invisible to it. Run a deliberate repository-wide scan across all deliverable paths outside specs/**, including agent-system/extensions/**, lua/**, and documentation. Report the full count found; do not stop at the two named above.
+
+C. Note and preserve the sanctioned exceptions. Task numbers ARE permitted in specs/** artifacts, in git commit messages (the "task {N}: {action}" convention), and in PR/branch metadata. Do not "fix" those.
+
+D. If the sweep finds a large number of occurrences, report the count and propose a split rather than silently fixing hundreds of sites in one pass.
+
+Honor the no-task-references-in-deliverables rule: this task's own deliverables must not introduce new citations. Cite the durable anchors instead.
+
+---
+
+### 940. Make implementation summaries emit the required metadata header
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 939
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.
+
+DEFECT (observed on three consecutive implementation dispatches, 3 of 3). Every implementation summary written failed scripts/validate-artifact.sh with the same five errors: "Missing metadata field: **Task**:", "**Status**:", "**Started**:", "**Artifacts**:", "**Standards**:". The failure surfaces at command-gate-out.sh, which prints the errors and then continues, because summary-format validation is non-blocking by design.
+
+THIS IS NOT A SPEC GAP -- IT IS A COMPLIANCE GAP. Verified this session:
+  - context/formats/summary-format.md DOES specify the required header fields.
+  - scripts/validate-artifact.sh's SUMMARY_METADATA array declares Task, Status, Started, Completed, Artifacts, Standards -- consistent with the format doc.
+  - agents/general-implementation-agent.md and agents/general-implementation-hard-agent.md BOTH already list "@.claude/context/formats/summary-format.md - Summary structure (when creating summary)" in their context references.
+So the writers are pointed at a correct spec by a correct validator and still do not comply. Do NOT "fix" this by relaxing the validator or by editing the format doc to match what agents happen to emit; that inverts the defect.
+
+WHY IT PERSISTS, AND WHY THAT IS THE REAL PROBLEM. The validation is advisory and fires at GATE OUT -- after the summary is already written, after the task is already being marked complete, and with no consequence. An advisory warning that fires on 100% of runs is indistinguishable from noise; it has trained every reader, human and agent, to scroll past it. A check that never changes an outcome is not a check.
+
+SCOPE OF WORK.
+
+A. Establish empirically WHY the reference is not being followed before changing anything. Candidate explanations to distinguish, not assume: the context reference is listed but never loaded at summary-writing time; the format doc's header block is not prominent within the doc; the writing stage has its own inline template that omits the header and silently wins over the referenced doc; or the agent simply has no step that consults the doc at that moment. The remedy differs per cause, so identify the cause first. Read agents/general-implementation-agent.md's summary-writing stage and skills/skill-implementer/SKILL.md's corresponding stage to find what the agent actually follows at that point.
+
+B. Make the writers emit the required header. Prefer giving the writing stage the literal header block inline over adding another cross-reference to a doc that is already cross-referenced and already ignored.
+
+C. Decide the enforcement posture, explicitly and with justification. The current posture is advisory-always. Options include leaving it advisory but making it actionable, escalating to a blocking gate, or auto-repairing a missing header. NOTE THE TENSION: this repository's guardrails deliberately favor defer-not-fail and non-blocking checks, so escalating to blocking is a real departure that must be argued, not assumed. A defensible middle path is to keep it non-blocking while ensuring a passing run produces NO warning, so that any warning again carries signal.
+
+D. Backfill is OUT OF SCOPE. Do not rewrite historical summaries under specs/. The deliverable is that future summaries comply.
+
+E. Verify on a real artifact: write a summary through the fixed path and confirm scripts/validate-artifact.sh exits clean, then confirm command-gate-out.sh prints no summary warning. A silent, clean gate-out is the acceptance criterion.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
+
+### 939. Fix off-schema .return-meta.json writes breaking orchestrator recovery
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding): the agent-system SOURCE of truth is agent-system/extensions/core/. The .claude/ tree is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target agent-system/extensions/** and NEVER .claude/**.
+
+LINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.
+
+GOAL: make agent-written .return-meta.json actually conform to the schema its readers assume. Two verified, independently-observed off-schema writes are silently breaking orchestrator recovery. Both are WRITER-side defects; context/formats/return-metadata-file.md and scripts/orchestrate-recover-outcome.sh are believed correct and are in scope only for defensive hardening, not for redefinition.
+
+DEFECT 1 -- PHASE-FIELD NESTING (observed live; nearly stranded a completed task).
+An implementation dispatch wrote phases_completed and phases_total at the TOP LEVEL of .return-meta.json and wrote no .orchestrator-handoff.json. Recovery therefore ran, and scripts/orchestrate-recover-outcome.sh reads exactly two locations -- .metadata.phases_completed and .partial_progress.phases_completed (documented in its own header) -- so it returned 0/0 for work that was genuinely 6/6 complete.
+
+WHY THAT IS SEVERE, NOT COSMETIC: on the recovered path plan_markers_verified is always set to "absent", so the completion-claim gate takes its case-3 fallback. With absent phase accounting AND absent markers the gate conservatively REFUSES completion. The task stays at implementing and is re-dispatched every cycle until MAX_CYCLES is exhausted, leaving a fully-finished task permanently partial. The only reason this did not happen was a hand-run grep of the plan's phase headings that produced the true 6/6.
+
+ROOT CAUSE, established by reading the writer definitions rather than inferred: agents/general-implementation-agent.md's .return-meta.json instruction explicitly states that memory_candidates and modified_files go "at the top level of the JSON output", then says only "Agent-specific metadata fields: phases_completed, phases_total" -- never stating the nesting for those two. Adjacent to two explicit top-level directives, "metadata fields" reads as a category label, not a location. The normative schema in context/formats/return-metadata-file.md places them under the metadata object (and under partial_progress for interrupted work). The instruction is ambiguous; the agents resolved the ambiguity the wrong way.
+
+INCONSISTENCY CONFIRMING THE AMBIGUITY: across three implementation dispatches, one wrote .metadata.phases_completed correctly and two wrote it top-level. One of the two escaped consequence only because it also wrote a handoff, so recovery never ran. The defect is latent wherever a base-mode implement dispatch skips the handoff.
+
+DEFECT 2 -- ARTIFACTS ARRAY SHAPE (observed live; silent artifact-link loss).
+A research dispatch wrote .return-meta.json's artifacts as an array of BARE STRINGS. The normative schema declares an array of OBJECTS with required type, path, and summary keys. scripts/orchestrate-recover-outcome.sh reads artifacts[0].path, which on a bare-string array yields empty. The orchestrator then linked nothing, emitted no error, and reported success. The artifact was linked only because it was noticed and linked by hand.
+
+SCOPE OF WORK.
+
+A. Fix the writer instructions so the nesting is unambiguous. State the location for phases_completed/phases_total as explicitly as memory_candidates and modified_files are already stated. Apply to every writer that carries this instruction: agents/general-implementation-agent.md, agents/general-implementation-hard-agent.md, and skills/skill-team-implement/SKILL.md (all three were confirmed to show or describe a top-level shape). Check skills/skill-implementer/SKILL.md and skills/skill-implementer-hard/SKILL.md for the same wording.
+
+B. Fix the artifacts-shape instruction. Establish first WHERE a research agent is told the .return-meta.json artifacts shape -- a grep of agents/general-research-agent.md found no mention of it at all, meaning the shape is currently conveyed only by the format doc. If a writer has no local instruction, decide whether to add one or to make the format reference explicit; do not assume the reference alone is sufficient, given it demonstrably was not.
+
+C. Decide whether readers should defensively accept the off-schema shapes. There is a real argument each way and the task must make the call explicitly rather than defaulting: accepting top-level phases as a fallback in orchestrate-recover-outcome.sh makes recovery robust to any future writer drift, but it also silently blesses an off-schema write and removes the pressure to fix writers. If a fallback is added it MUST log that it fired, so drift stays visible. If it is not added, say why.
+
+D. Add a detection mechanism so this class of defect surfaces loudly instead of degrading silently. A recovered "implemented" claim reporting 0/0 phases while a plan file on disk shows N completed phase headings is a contradiction the orchestrator can already detect cheaply -- the phase-marker grep exists in the missing-handoff branch. Consider whether that diagnostic should escalate rather than merely log. Both defects share the signature "reader got an empty or zero value from a present, parseable file"; a general check for that signature is preferable to two special cases.
+
+E. Verify by construction, not assertion: write a scratch .return-meta.json in each off-schema shape, run orchestrate-recover-outcome.sh against it, and confirm the observed before/after. Do not rely on reading the code alone -- reading is what left this defect in place.
+
+Honor the no-task-references-in-deliverables rule: no task-number citations in any file outside specs/**.
+
+---
 
 ### 938. Fix picker sync allow-list filter silently dropping all skills
 - **Status**: [NOT STARTED]
