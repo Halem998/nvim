@@ -393,69 +393,69 @@ itself, so a future editor does not change its exit-code semantics without seein
 
 ---
 
-### Phase 5: Wire the checkpoint into `skill-orchestrate` Stage MT-3 [NOT STARTED]
+### Phase 5: Wire the checkpoint into `skill-orchestrate` Stage MT-3 [COMPLETED]
 
 **Goal**: Add the executable checkpoint as Stage MT-3 step 7, with the state it needs threaded
 through MT-3, MT-4 step 5.5, and MT-5.
 
 **Tasks**:
 
-- [ ] **`mt_state_file` schema** (the initialization site in Stage MT-2, anchored on the existing
+- [x] **`mt_state_file` schema** (the initialization site in Stage MT-2, anchored on the existing *(completed)*
       `deferred_self_modifying: []` declaration): add two invocation-scoped fields alongside it,
       with the same never-reset-mid-invocation semantics:
-  - [ ] `deferred_deploy_checkpoint: []` — task numbers excluded for the remainder of the
+  - [x] `deferred_deploy_checkpoint: []` — task numbers excluded for the remainder of the *(completed)*
         invocation because a checkpoint gate failed.
-  - [ ] `deployed_critical_paths: []` — critical paths already redeployed this invocation; the
+  - [x] `deployed_critical_paths: []` — critical paths already redeployed this invocation; the *(completed)*
         idempotence guard's backing store.
-- [ ] **Stage MT-4 step 5.5 accumulation**: at the point where the existing `while IFS= read -r f`
+- [x] **Stage MT-4 step 5.5 accumulation**: at the point where the existing `while IFS= read -r f` *(completed)*
       loop reads `.modified_files[]?` from that task's `.return-meta.json` into `stage_paths`, also
       append each path to a cycle-scoped `cycle_modified_files` array. State in a comment why the
       accumulation happens here rather than being re-read in step 7: the metadata file may be
       removed by postflight cleanup before step 7 runs. Make no other change to step 5.5 — its
       staging, fail-safe warning, commit-message selection, non-blocking behavior, and branch
       coverage are all unchanged.
-- [ ] **New Stage MT-3 step 7: Inter-cycle redeploy checkpoint**, placed after step 6 (cycle-count
+- [x] **New Stage MT-3 step 7: Inter-cycle redeploy checkpoint**, placed after step 6 (cycle-count *(completed)*
       increment) and before the loop returns to step 1. Content:
-  - [ ] State the sequencing guarantee up front: every task dispatched this cycle already had its
+  - [x] State the sequencing guarantee up front: every task dispatched this cycle already had its *(completed)*
         own scoped commit attempted at step 5.5, unconditionally, before this step runs.
         Committed-then-redeployed is guaranteed by step ordering, not by new synchronization.
-  - [ ] **Overlap computation**: expand `context/reference/orchestrator-critical-paths.json` using
+  - [x] **Overlap computation**: expand `context/reference/orchestrator-critical-paths.json` using *(completed)*
         the same `scope_roots x critical_paths` jq expression `orchestrate-batch-admit.sh` already
         performs (reuse it; do not re-derive), and intersect against `cycle_modified_files` using
         the directory-prefix overlap predicate in `context/patterns/file-footprint-overlap.md`
         (referenced by path, never restated).
-  - [ ] **Idempotence guard**: subtract `mt_state_file.deployed_critical_paths` from the overlap
+  - [x] **Idempotence guard**: subtract `mt_state_file.deployed_critical_paths` from the overlap *(completed)*
         set. If the remainder is empty, skip the checkpoint this cycle at zero further cost and
         continue to the next cycle. Include the convergence rationale inline.
-  - [ ] **Fire**: log a loud notice naming every matched critical path and its label, then run,
+  - [x] **Fire**: log a loud notice naming every matched critical path and its label, then run, *(completed)*
         in order: `bash .claude/scripts/deploy-headless.sh` (from the repo root), then — only on
         its success — `bash .claude/scripts/verify-deploy.sh`.
-  - [ ] **Success path**: record the matched paths into `mt_state_file.deployed_critical_paths`,
+  - [x] **Success path**: record the matched paths into `mt_state_file.deployed_critical_paths`, *(completed)*
         log the deployed artifact count and a `verify-deploy` pass, continue to the next cycle.
-  - [ ] **Failure path**: `deploy-headless.sh` exit 1 or 2, or `verify-deploy.sh` exit 1 or 2 (exit
+  - [x] **Failure path**: `deploy-headless.sh` exit 1 or 2, or `verify-deploy.sh` exit 1 or 2 (exit *(completed)*
         2 is a failure, per Phase 4). Log a loud warning naming which gate failed and its exit code,
         then add every task in `task_numbers` that is not terminal, not in `failed_tasks`, and not
         already in `deferred_self_modifying` to `mt_state_file.deferred_deploy_checkpoint`. Never
         add to `failed_tasks`. Never status-mutate. Never abort the invocation. Include the
         operator remedy in the warning: fix the deploy/verify failure, redeploy manually, then
         re-run `/orchestrate` on the remaining task numbers.
-  - [ ] Note explicitly that already-dispatched-and-committed tasks from prior cycles are
+  - [x] Note explicitly that already-dispatched-and-committed tasks from prior cycles are *(completed)*
         unaffected — their commits landed at step 5.5 before this step ran.
-- [ ] **Thread `deferred_deploy_checkpoint` through the loop**, mirroring `deferred_self_modifying`
+- [x] **Thread `deferred_deploy_checkpoint` through the loop**, mirroring `deferred_self_modifying` *(completed)*
       at each existing site rather than inventing new control flow:
-  - [ ] Step 2 (all-terminal check): treat membership the same as terminal/failed for deciding
+  - [x] Step 2 (all-terminal check): treat membership the same as terminal/failed for deciding *(completed)*
         whether the loop has anything left to do.
-  - [ ] Step 3 (build `eligible_tasks`): exclude members. This is what makes the deferral converge.
-  - [ ] Step 4 (no-eligible circuit breaker): exclude members from the "stuck tasks" framing, the
+  - [x] Step 3 (build `eligible_tasks`): exclude members. This is what makes the deferral converge. *(completed)*
+  - [x] Step 4 (no-eligible circuit breaker): exclude members from the "stuck tasks" framing, the *(completed)*
         same way `deferred_self_modifying` members are excluded.
-- [ ] **Stage MT-5**: add `deferred_deploy_checkpoint` to the `mt_state_file` read in step 1; make
+- [x] **Stage MT-5**: add `deferred_deploy_checkpoint` to the `mt_state_file` read in step 1; make *(completed)*
       a non-empty set force `exit_status = "partial"` in step 2 (same clause shape as
       `deferred_self_modifying`, with the same "incomplete by design, not broken" framing); report
       it in step 3 as a **distinct** category — **deferred-by-redeploy-checkpoint**, separate from
       both deferred-for-solo-run and `failed_tasks`, because the operator remedy differs; and add a
       corresponding `tasks_deferred_deploy_checkpoint` field to the `.return-meta-multi.json` jq
       construction.
-- [ ] Cross-reference `context/patterns/batch-orchestration-guardrails.md`'s
+- [x] Cross-reference `context/patterns/batch-orchestration-guardrails.md`'s *(completed)*
       `### The Inter-Cycle Redeploy Checkpoint` subsection from step 7 as the authoritative contract
       rather than restating the rationale in the skill text.
 

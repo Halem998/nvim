@@ -1170,6 +1170,19 @@ every cycle forever, never letting the invocation reach an all-terminal state. S
 step 3 (eligibility exclusion) and step 4.5 (population) below, and Stage MT-5 (postflight
 reporting) for the three places this set is read or written.
 
+Alongside it, two more INVOCATION-SCOPED fields with the same never-reset-mid-invocation
+semantics, backing the inter-cycle redeploy checkpoint (Stage MT-3 step 7 below; full contract in
+`context/patterns/batch-orchestration-guardrails.md`'s `### The Inter-Cycle Redeploy Checkpoint`
+subsection):
+
+- `deferred_deploy_checkpoint: []` — task numbers excluded for the remainder of the invocation
+  because a checkpoint gate (`deploy-headless.sh` or `verify-deploy.sh`) failed. A DISTINCT set
+  from `deferred_self_modifying`: the two causes have different operator remedies, so they are
+  never merged.
+- `deployed_critical_paths: []` — critical paths already redeployed this invocation; the
+  idempotence guard's backing store, so the checkpoint does not re-fire on the same path every
+  cycle.
+
 ### Stage MT-2: Build Per-Task Routing Table
 
 For each task in `task_numbers`, read `state.json` to get `task_type`, `project_name`. Compute `task_dir = "specs/${padded}_${project_name}"`. Resolve `research_agent` and `implement_agent` using the same routing table as Stage 1b:
@@ -1209,10 +1222,12 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
 1. **Status refresh**: For each task in `task_numbers`, read current status from `state.json` and update `mt_state_file.current_statuses`.
 
 2. **All-terminal check**: If every task is in `{completed, abandoned, expanded}`, in
-   `failed_tasks`, OR in `deferred_self_modifying` — break loop (exit success or partial). A task
-   in `deferred_self_modifying` is deliberately excluded, not stuck, so this check treats it the
-   same as a terminal/failed task for the purpose of deciding whether the loop has anything left
-   to do — see step 3's exclusion and step 4.5's population of this set below.
+   `failed_tasks`, in `deferred_self_modifying`, OR in `deferred_deploy_checkpoint` — break loop
+   (exit success or partial). A task in `deferred_self_modifying` or `deferred_deploy_checkpoint`
+   is deliberately excluded, not stuck, so this check treats both the same as a terminal/failed
+   task for the purpose of deciding whether the loop has anything left to do — see step 3's
+   exclusion, step 4.5's population of `deferred_self_modifying`, and Stage MT-3 step 7's
+   population of `deferred_deploy_checkpoint` below.
 
 3. **Build eligible_tasks**: For each task, include it if ALL of the following are true:
    - Status is NOT `{completed, abandoned, expanded}` and NOT in `failed_tasks`
@@ -1220,6 +1235,9 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
      mechanism that makes the exclusion converge — without it, a self-modifying task deferred out
      of one cycle would simply re-qualify as eligible again on the very next cycle, since its own
      status and predecessors have not changed, and the gate would re-fire every cycle forever)
+   - Task number is NOT in `deferred_deploy_checkpoint` (populated by Stage MT-3 step 7 below;
+     the same convergence mechanism as `deferred_self_modifying` — this is what makes the
+     redeploy-checkpoint deferral converge rather than re-qualifying the task next cycle)
    - Status is NOT `{researching, planning}` (in-flight from prior cycle)
    - All predecessors from `dependency_graph[task_num]` are in terminal state or `failed_tasks`
    
@@ -1227,12 +1245,13 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
    If a predecessor is still in-progress: skip this task (wait for next cycle).
 
 4. **No-eligible circuit breaker**: If `eligible_tasks` is empty AND at least one task remains
-   that is NOT terminal, NOT in `failed_tasks`, and NOT in `deferred_self_modifying` — log warning
-   with list of stuck tasks and break loop (exit partial). (If every remaining non-eligible task
-   is accounted for by step 2's All-terminal check instead — i.e. every task is terminal, failed,
-   or deferred-self-modifying — step 2 has already broken the loop before this step runs, so this
-   circuit breaker's "stuck tasks" framing is reserved for genuinely stuck tasks, never for a
-   deliberately deferred self-modifying one.)
+   that is NOT terminal, NOT in `failed_tasks`, NOT in `deferred_self_modifying`, and NOT in
+   `deferred_deploy_checkpoint` — log warning with list of stuck tasks and break loop (exit
+   partial). (If every remaining non-eligible task is accounted for by step 2's All-terminal
+   check instead — i.e. every task is terminal, failed, deferred-self-modifying, or
+   deferred-by-redeploy-checkpoint — step 2 has already broken the loop before this step runs, so
+   this circuit breaker's "stuck tasks" framing is reserved for genuinely stuck tasks, never for a
+   deliberately deferred self-modifying or redeploy-checkpoint-deferred one.)
 
 4.5. **Runtime wave-split check (cross-batch defense-in-depth)**: Before dispatching
    `eligible_tasks` on EVERY cycle — including a cycle where `eligible_tasks` contains only a
@@ -1314,6 +1333,49 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
 5. **Dispatch** (Stage MT-4) — see below.
 
 6. **Increment cycle_count**, update `mt_state_file.cycle_count`. If `cycle_count >= MAX_CYCLES_MT`: log partial status and break.
+
+7. **Inter-cycle redeploy checkpoint.** Full contract (trigger, `modified_files` rationale,
+   rejected alternatives, failure contract, sequencing, idempotence guard, concurrency) is
+   recorded once, authoritatively, in `context/patterns/batch-orchestration-guardrails.md`'s
+   `### The Inter-Cycle Redeploy Checkpoint` subsection — referenced here, not restated.
+
+   **Sequencing guarantee, stated up front**: every task dispatched this cycle already had its
+   own scoped commit attempted at Stage MT-4 step 5.5, unconditionally, before this step runs.
+   Committed-then-redeployed, in that order, is guaranteed by existing step ordering, not by new
+   synchronization.
+
+   - **Overlap computation**: expand `context/reference/orchestrator-critical-paths.json` using
+     the same `scope_roots x critical_paths` jq expression `orchestrate-batch-admit.sh` already
+     performs (reuse it; do not re-derive it here), and intersect against this cycle's
+     `cycle_modified_files` (accumulated at Stage MT-4 step 5.5 below) using the directory-prefix
+     overlap predicate in `context/patterns/file-footprint-overlap.md` (referenced by path, never
+     restated).
+   - **Idempotence guard**: subtract `mt_state_file.deployed_critical_paths` from the overlap set.
+     If the remainder is empty, skip the checkpoint this cycle at zero further cost and continue
+     to the next cycle. Without this guard, a task sitting in `implementing` across several cycles
+     would re-report the same `modified_files` and re-fire the checkpoint every cycle — the same
+     convergence rationale `deferred_self_modifying` relies on.
+   - **Fire**: if the remainder is non-empty, log a loud notice naming every matched critical path
+     and its label, then run, in order, from the repo root:
+     ```bash
+     bash .claude/scripts/deploy-headless.sh
+     ```
+     and, only on its success:
+     ```bash
+     bash .claude/scripts/verify-deploy.sh
+     ```
+   - **Success path**: record the matched paths into `mt_state_file.deployed_critical_paths`, log
+     the deployed artifact count and a `verify-deploy` pass, and continue to the next cycle.
+   - **Failure path**: `deploy-headless.sh` exit 1 or 2, or `verify-deploy.sh` exit 1 or 2 (exit 2
+     from `verify-deploy.sh` is a failure here, never a pass — see
+     `scripts/verify-deploy.sh`'s header). Log a loud warning naming which gate failed and its
+     exit code, then add every task in `task_numbers` that is not terminal, not in `failed_tasks`,
+     and not already in `deferred_self_modifying` to `mt_state_file.deferred_deploy_checkpoint`.
+     Never add to `failed_tasks`. Never status-mutate. Never abort the invocation. Include the
+     operator remedy in the warning: fix the deploy/verify failure, redeploy manually, then re-run
+     `/orchestrate` on the remaining task numbers.
+   - Already-dispatched-and-committed tasks from prior cycles are unaffected by either path —
+     their commits landed at step 5.5 before this step ran.
 
 ### Stage MT-4: Phase-Aware Dispatch and Per-Task Postflight
 
@@ -1606,6 +1668,10 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
      modified_count=0
      while IFS= read -r f; do
        [ -n "$f" ] && stage_paths+=("$f") && modified_count=$((modified_count + 1))
+       # Also accumulate into a cycle-scoped array feeding Stage MT-3 step 7's overlap
+       # computation. Accumulated HERE, not re-read at step 7, because postflight cleanup may
+       # remove this task's .return-meta.json before step 7 runs later in the same cycle.
+       [ -n "$f" ] && cycle_modified_files+=("$f")
      done < <(jq -r '.modified_files[]? // empty' "$metadata_file" 2>/dev/null)
      ```
 
@@ -1682,24 +1748,33 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
 After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or MAX_CYCLES_MT reached):
 
 1. Read from `mt_state_file`: `completed_tasks`, `failed_tasks`, `deferred_self_modifying`,
-   `cycles_used`, counts.
+   `deferred_deploy_checkpoint`, `cycles_used`, counts.
 2. Determine `exit_status` — this is the `.return-meta-multi.json` skill-status vocabulary
    (normatively defined in `context/formats/return-metadata-file.md`), distinct from the
    `tasks_completed` array below (which records state.json task status, where `"completed"` is
    correct):
-   - `failed_count == 0` AND `deferred_self_modifying` is empty → `"implemented"` (remove
-     `mt_state_file`)
-   - `failed_count > 0` OR `deferred_self_modifying` is non-empty → `"partial"` (preserve
-     `mt_state_file` for diagnostics). A non-empty `deferred_self_modifying` alone (zero
-     `failed_tasks`) still yields `"partial"`, never `"implemented"` — the invocation did not
-     actually finish everything it was asked to; one task remains undispatched pending a solo
-     re-run. This is distinct from a failure: the task is not in `failed_tasks` and was never
-     status-mutated, so `"partial"` here means "incomplete by design", not "broken".
+   - `failed_count == 0` AND `deferred_self_modifying` is empty AND `deferred_deploy_checkpoint`
+     is empty → `"implemented"` (remove `mt_state_file`)
+   - `failed_count > 0` OR `deferred_self_modifying` is non-empty OR
+     `deferred_deploy_checkpoint` is non-empty → `"partial"` (preserve `mt_state_file` for
+     diagnostics). A non-empty `deferred_self_modifying` or `deferred_deploy_checkpoint` alone
+     (zero `failed_tasks`) still yields `"partial"`, never `"implemented"` — the invocation did
+     not actually finish everything it was asked to; at least one task remains undispatched
+     pending a solo re-run (or, for `deferred_deploy_checkpoint`, pending a manual deploy/verify
+     fix first). This is distinct from a failure: the task is not in `failed_tasks` and was never
+     status-mutated, so `"partial"` here means "incomplete by design", not "broken" — the same
+     framing for both sets.
 3. Report `deferred_self_modifying` tasks in the consolidated summary as **deferred-for-solo-run**
    — a category distinct from both `completed_tasks` and `failed_tasks`. Never add a
    deferred-self-modifying task to `failed_tasks`, and never mutate its `specs/state.json` status
    — it simply was not dispatched by this invocation and remains eligible for a future solo
    `/orchestrate {task_number}` run.
+
+   Report `deferred_deploy_checkpoint` tasks as a **distinct** category —
+   **deferred-by-redeploy-checkpoint** — separate from both deferred-for-solo-run and
+   `failed_tasks`, because the operator remedy differs: resolve the deploy/verify failure,
+   redeploy manually, then re-run `/orchestrate` on the remaining task numbers. Never add these
+   tasks to `failed_tasks`, and never mutate their `specs/state.json` status.
 4. Write `specs/.return-meta-multi.json`:
 ```bash
 jq -n \
@@ -1707,6 +1782,7 @@ jq -n \
   --argjson tasks_completed "$completed_tasks" \
   --argjson tasks_failed "$failed_tasks" \
   --argjson tasks_deferred_self_modifying "$deferred_self_modifying" \
+  --argjson tasks_deferred_deploy_checkpoint "$deferred_deploy_checkpoint" \
   --argjson cycles_used "$cycles_used" \
   '{
     "status": $status,
@@ -1714,6 +1790,7 @@ jq -n \
       "tasks_completed": $tasks_completed,
       "tasks_failed": $tasks_failed,
       "tasks_deferred_self_modifying": $tasks_deferred_self_modifying,
+      "tasks_deferred_deploy_checkpoint": $tasks_deferred_deploy_checkpoint,
       "cycles_used": $cycles_used,
       "multi_task_mode": true
     }
