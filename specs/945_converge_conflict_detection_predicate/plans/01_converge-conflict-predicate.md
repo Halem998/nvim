@@ -572,27 +572,61 @@ existing held-lock pass's fresh-ABORT / stale-WARN shape.
 
 ---
 
-### Phase 6: Verify v4 inheritance in the downstream composers [NOT STARTED]
+### Phase 6: Verify v4 inheritance in the downstream composers [COMPLETED]
 
 **Goal**: Confirm — empirically, not by precedent — that the composers inherit the converged
 predicate, and surface the new evidence in their human-readable output.
 
 **Tasks**:
-- [ ] Re-verify that `orchestrate-predispatch-review.sh` and `orchestrate-dry-run-report.sh` pin
+- [x] Re-verify that `orchestrate-predispatch-review.sh` and `orchestrate-dry-run-report.sh` pin
       no `$schema` string literal and branch on `defer_reason` rather than assuming a fixed set.
       Do NOT inherit the v2→v3 "survived unedited" note as an assumption — run each against a live
       NDJSON stream containing a `session_active` verdict and confirm the verdict is neither
-      dropped nor mis-bucketed.
-- [ ] Check `orchestrate-triage-classify.sh`, which also references `orchestrate-batch-admit.sh` —
+      dropped nor mis-bucketed. *(completed — and this empirical run FOUND A REAL BUG, not a
+      clean pass: `orchestrate-predispatch-review.sh` pinned no `$schema` and was safe as-is
+      (Classes C/D `select()` on a specific `defer_reason` value, so an unrecognized third value
+      simply matches neither — inert, not mis-bucketed). `orchestrate-dry-run-report.sh` was
+      NOT safe: its defer_reason handling checked `self_modifying` explicitly, then FELL THROUGH
+      unconditionally into file_scope_collision field reads with no `session_active` branch. A
+      `session_active` verdict has `.collision_scope` absent (reads as `""`, never
+      `"cross_batch"`), so it fell into the `else` arm and was mis-bucketed as an in-batch
+      wave-deferral NOTE rather than the EXCLUSION it actually is — silently under-reporting a
+      real exclusion in the dry-run report, exactly the risk this task's own risk table named.
+      Fixed with an explicit `session_active` branch inserted before the fallthrough; verified
+      empirically both without `--session` (dimension degrades, candidate correctly stays
+      admitted) and with `--session` (verdict correctly appears as an Excluded entry, confirmed
+      by a live fixture run — see the fork's verification output above this plan edit).)*
+- [x] Check `orchestrate-triage-classify.sh`, which also references `orchestrate-batch-admit.sh` —
       determine whether it consumes verdicts (and therefore needs the same verification) or only
-      names the script in prose.
-- [ ] Add an optional `--session-id <id>` passthrough to both composers, forwarded verbatim to
+      names the script in prose. *(completed: confirmed a mere prose reference — it never
+      subprocess-calls `orchestrate-batch-admit.sh` and has its own independent, unrelated
+      `orchestrate-triage-v1` schema. Out of scope; no changes made.)*
+- [x] Add an optional `--session-id <id>` passthrough to both composers, forwarded verbatim to
       their `orchestrate-batch-admit.sh` subprocess call alongside the existing
       `--invocation-count`. When their own caller supplies none, the degradation line from D6
-      surfaces — which is the honest outcome, not a defect.
-- [ ] Extend each composer's per-verdict note templating to render the `session_active` flavor and
+      surfaces — which is the honest outcome, not a defect. *(completed with a deviation for
+      `orchestrate-predispatch-review.sh`: that script already had a PRE-EXISTING `--session-id`
+      flag for an unrelated purpose — `state-write.sh` mutex attribution under `--repair` — that
+      auto-generates a fallback id when omitted. Forwarding that fallback unconditionally would
+      have activated batch-admit's session pass with a session id that was never actually
+      registered (a pointless, misleading self-exclusion key), so a new `session_id_explicit`
+      flag tracks whether the CALLER actually supplied `--session-id`; only then is it forwarded.
+      `orchestrate-dry-run-report.sh`'s existing `--session` flag had no such fallback, so it
+      forwards directly whenever non-empty. Also forwarded to
+      `orchestrate-predispatch-review.sh`'s OWN subprocess call from within
+      `orchestrate-dry-run-report.sh`'s Step 8, so the chain (`dry-run-report` ->
+      `predispatch-review` -> `batch-admit`) carries the same session id end-to-end.)*
+- [x] Extend each composer's per-verdict note templating to render the `session_active` flavor and
       the `corroborated_by` array, following each file's existing note-composition style.
-- [ ] Where either composer's prose describes "two defer flavors", update to three.
+      *(completed: `orchestrate-predispatch-review.sh` gained a new Class E section mirroring
+      Class D's shape (report-only, "0 findings" when empty, `SKIPPED` when degraded OR when
+      `--session-id` was not supplied); `orchestrate-dry-run-report.sh`'s Excluded-section
+      `session_active` branch (added above) and its existing `file_scope_collision` branch both
+      render `corroborated_by`/`session_liveness_reason` inline in the reason string.)*
+- [x] Where either composer's prose describes "two defer flavors", update to three. *(N/A — grep
+      confirmed neither file's prose used that literal phrasing; the header doc blocks were
+      still updated to describe the new session_active/Class E dimension explicitly, achieving
+      the same documentation goal by a different literal path.)*
 
 **Timing**: 1.5 hours
 
@@ -603,7 +637,9 @@ predicate, and surface the new evidence in their human-readable output.
 **Scope Hypothesis**: this phase assumes exactly two composers consume batch-admit NDJSON.
 `grep -rn "orchestrate-batch-admit.sh" agent-system/extensions/core/scripts/` lists a third
 script (`orchestrate-triage-classify.sh`); classify it as consumer or mere reference before
-closing the phase, and expand the phase's file list if it consumes verdicts.
+closing the phase, and expand the phase's file list if it consumes verdicts. *(Confirmed: exactly
+two consumers. `orchestrate-triage-classify.sh` only mentions batch-admit's exit-code convention
+in a comment and never subprocess-calls it — mere reference, file list unchanged.)*
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh` - passthrough, note templating

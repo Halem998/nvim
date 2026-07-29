@@ -14,7 +14,11 @@
 #
 # `--session` is optional. When supplied, a lock held by that SAME session is never reported as
 # contention (self-collision guard) — mirroring how a live `acquire` never blocks its own
-# session's re-entry.
+# session's re-entry. As of v4 batch-admit, `--session` has a SECOND, additive use: it is
+# forwarded verbatim as `--session-id` to BOTH the orchestrate-batch-admit.sh subprocess call
+# (Step 4) and the orchestrate-predispatch-review.sh subprocess call (Step 8), activating each
+# script's own session-registry contention input. When omitted, both subprocesses degrade
+# visibly on their own (D6) — this reporter does not fabricate a session id to paper over that.
 #
 # Forbidden calls (never present as a call site in this script; only in this comment and header):
 #   - task-lock.sh acquire / heartbeat / release — ONLY `task-lock.sh check` is ever invoked
@@ -38,12 +42,18 @@
 #      set, rather than aborting the whole report.
 #   4. orchestrate-batch-admit.sh, called ONCE for the validated set with
 #      --invocation-count set to the validated set's own size — cross-batch file_scope
-#      collisions become exclusions; in-batch collisions become a wave-deferral note. A fourth,
-#      self-modification dimension is layered on this SAME call (not a second invocation): a
-#      candidate whose file_scope names an orchestrator-critical path becomes a distinct
-#      exclusion (`defer_reason == "self_modifying"`, plain-language "deferred out of this
-#      invocation — re-run it alone") rather than an ordinary collision exclusion; a solo
-#      self-modifying admit is instead surfaced as a Note. See
+#      collisions become exclusions (carrying `corroborated_by` when a live registered session
+#      also independently covers the colliding task, v4); in-batch collisions become a
+#      wave-deferral note. A fourth, self-modification dimension is layered on this SAME call
+#      (not a second invocation): a candidate whose file_scope names an orchestrator-critical
+#      path becomes a distinct exclusion (`defer_reason == "self_modifying"`, plain-language
+#      "deferred out of this invocation — re-run it alone") rather than an ordinary collision
+#      exclusion; a solo self-modifying admit is instead surfaced as a Note. A FIFTH,
+#      session-registry dimension (v4, `defer_reason == "session_active"`) is reached only when
+#      neither of the above fires: a live registered session's own unioned file_scope overlaps
+#      the candidate's — this becomes its own exclusion, naming the session id, the task number
+#      it covers, and its liveness reason. Requires `--session` to be supplied (forwarded as
+#      `--session-id`); otherwise this dimension degrades visibly via batch-admit's own D6. See
 #      docs/architecture/batch-admit-schema.md for the verdict fields this adds.
 #   5. task-lock.sh check, called per validated candidate — a fresh lock held by a DIFFERENT
 #      session is an exclusion; held by the SAME session (--session) is not; held-stale is an
@@ -291,8 +301,12 @@ admit_degraded_reason=""
 admit_output=""
 self_mod_degraded=false
 if [ "${#validated_tasks[@]}" -gt 0 ]; then
+  admit_session_id_args=()
+  if [ -n "$session_id" ]; then
+    admit_session_id_args=(--session-id "$session_id")
+  fi
   admit_stderr_file=$(mktemp)
-  admit_output=$(bash "$SCRIPT_DIR/orchestrate-batch-admit.sh" --invocation-count "${#validated_tasks[@]}" "${validated_tasks[@]}" 2>"$admit_stderr_file")
+  admit_output=$(bash "$SCRIPT_DIR/orchestrate-batch-admit.sh" --invocation-count "${#validated_tasks[@]}" "${admit_session_id_args[@]}" "${validated_tasks[@]}" 2>"$admit_stderr_file")
   admit_exit=$?
   admit_stderr=$(cat "$admit_stderr_file" 2>/dev/null)
   rm -f "$admit_stderr_file"
@@ -330,15 +344,30 @@ if [ "$admit_checked" = true ]; then
       t_exclude_reason[$t]="${t_exclude_reason[$t]:+${t_exclude_reason[$t]}; }$reason"
       continue
     fi
+    if [ "$defer_reason" = "session_active" ]; then
+      # NEW in v4. This branch MUST exist and run BEFORE the file_scope_collision fallthrough
+      # below: without it, a session_active verdict falls through into code that reads
+      # .collision_scope (absent -> empty string, never "cross_batch") and mis-buckets a real
+      # exclusion as an in-batch "deferred to a later wave, not excluded" Note — silently
+      # under-reporting an exclusion rather than merely omitting an extra Note.
+      sess_id=$(echo "$verdict" | jq -r '.session_id // empty')
+      coll_num=$(echo "$verdict" | jq -r '.colliding_task_number // empty')
+      ov_path=$(echo "$verdict" | jq -r '.overlapping_path // empty')
+      liveness=$(echo "$verdict" | jq -r '.session_liveness_reason // empty')
+      reason="live registered session $sess_id (liveness: $liveness) covers task #$coll_num, whose file_scope overlaps at \"$ov_path\""
+      t_exclude_reason[$t]="${t_exclude_reason[$t]:+${t_exclude_reason[$t]}; }$reason"
+      continue
+    fi
     scope=$(echo "$verdict" | jq -r '.collision_scope // ""')
     coll_num=$(echo "$verdict" | jq -r '.colliding_task_number // empty')
     coll_status=$(echo "$verdict" | jq -r '.colliding_task_status // empty')
     ov_path=$(echo "$verdict" | jq -r '.overlapping_path // empty')
+    corrob=$(echo "$verdict" | jq -r '(.corroborated_by // []) | index("session_registry") | if . then " [corroborated by a live registered session]" else "" end' 2>/dev/null)
     if [ "$scope" = "cross_batch" ]; then
-      reason="file_scope collision with out-of-batch task #$coll_num (status: $coll_status) at \"$ov_path\""
+      reason="file_scope collision with out-of-batch task #$coll_num (status: $coll_status) at \"$ov_path\"${corrob}"
       t_exclude_reason[$t]="${t_exclude_reason[$t]:+${t_exclude_reason[$t]}; }$reason"
     else
-      notes+=("Task #$t: in-batch file_scope collision with #$coll_num at \"$ov_path\" — deferred to a later wave, not excluded.")
+      notes+=("Task #$t: in-batch file_scope collision with #$coll_num at \"$ov_path\"${corrob} — deferred to a later wave, not excluded.")
     fi
   done
 fi
@@ -459,8 +488,12 @@ predispatch_checked=true
 predispatch_degraded_reason=""
 predispatch_output=""
 if [ "${#validated_tasks[@]}" -gt 0 ]; then
+  predispatch_session_id_args=()
+  if [ -n "$session_id" ]; then
+    predispatch_session_id_args=(--session-id "$session_id")
+  fi
   predispatch_stderr_file=$(mktemp)
-  predispatch_output=$(bash "$SCRIPT_DIR/orchestrate-predispatch-review.sh" "${validated_tasks[@]}" 2>"$predispatch_stderr_file")
+  predispatch_output=$(bash "$SCRIPT_DIR/orchestrate-predispatch-review.sh" "${predispatch_session_id_args[@]}" "${validated_tasks[@]}" 2>"$predispatch_stderr_file")
   predispatch_exit=$?
   predispatch_stderr=$(cat "$predispatch_stderr_file" 2>/dev/null)
   rm -f "$predispatch_stderr_file"

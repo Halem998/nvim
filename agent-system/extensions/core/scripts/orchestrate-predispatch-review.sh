@@ -4,7 +4,7 @@
 #
 # Purpose: reads specs/state.json directly — the only place raw, unfiltered dependencies[] is
 # still visible before commands/orchestrate.md Step 2 discards out-of-batch edges to build its
-# intra-batch-only Kahn wave graph — and reports four classes of pre-dispatch defect, by task
+# intra-batch-only Kahn wave graph — and reports FIVE classes of pre-dispatch defect, by task
 # number and path, BEFORE that discard happens:
 #
 #   Class A (dependency edge classification): every RAW dependencies[] entry on every candidate,
@@ -32,7 +32,15 @@
 #   Class D (missing cross-batch serializing edges): re-presents
 #     orchestrate-batch-admit.sh's defer_reason == "file_scope_collision" &&
 #     collision_scope == "cross_batch" verdicts, and suggests (never writes) the specific
-#     serializing dependencies[] edge that would close the gap.
+#     serializing dependencies[] edge that would close the gap. As of v4, also surfaces
+#     `corroborated_by` when it names "session_registry" (a live registered session
+#     independently corroborates the colliding task).
+#   Class E (session-registry contention, NEW in v4): re-presents orchestrate-batch-admit.sh's
+#     defer_reason == "session_active" verdicts verbatim — a live registered session's own
+#     unioned file_scope overlaps the candidate's, and the state.json collision scan (Class D's
+#     source) found no hit. Requires the caller to have passed --session-id (see below); without
+#     it, batch-admit's own D6 degradation means this class reports nothing to report, not a
+#     dropped finding.
 #
 # This is a REVIEW stage, not a fifth admission gate: it never excludes, never defers, and never
 # writes to state.json on its default (report-only) path. Exclusion/deferral authority for
@@ -82,6 +90,14 @@
 # attributes the mutex acquisition; if omitted, a session_id is generated inline using the same
 # portable pattern command-gate-in.sh uses.
 #
+# `--session-id SID` has a SECOND, independent purpose (as of v4 batch-admit): when the caller
+# explicitly supplies it, this script forwards it VERBATIM to orchestrate-batch-admit.sh's
+# subprocess call below, activating that script's session-registry contention input (Class E).
+# The auto-generated fallback above is NEVER forwarded — only an explicitly-supplied id is,
+# since a fabricated id that was never registered would be a pointless self-exclusion key. When
+# the caller supplies none, batch-admit's own D6 degradation fires visibly and Class E simply
+# reports what it can (which may be nothing, since the session pass never ran).
+#
 # Forbidden calls (this script is read-only on its default path; --repair is the one narrow,
 # direct-invocation-only exception described above, and even it never touches any of these):
 #   - task-lock.sh acquire / heartbeat / release
@@ -116,6 +132,7 @@ STATE_FILE="$PROJECT_ROOT/specs/state.json"
 # --- argument parsing: --repair ahead of positional task_number validation ---
 repair_mode=false
 session_id=""
+session_id_explicit=false
 task_args=()
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -125,10 +142,12 @@ while [ "$#" -gt 0 ]; do
       ;;
     --session-id)
       session_id="${2:-}"
+      session_id_explicit=true
       shift 2
       ;;
     --session-id=*)
       session_id="${1#--session-id=}"
+      session_id_explicit=true
       shift
       ;;
     *)
@@ -141,6 +160,14 @@ done
 if [ -z "$session_id" ]; then
   session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 fi
+# NOTE: this auto-generated fallback exists ONLY for --repair's state-write.sh mutex
+# attribution (unchanged, pre-existing purpose) -- it is NEVER forwarded to
+# orchestrate-batch-admit.sh's subprocess call below (see admit_session_id_args), because a
+# fabricated id that was never actually registered via `session-register` would be pointless as
+# a self-exclusion key and could mislead a reader of the NDJSON into thinking a real caller
+# session was involved. Only an EXPLICITLY-supplied --session-id (session_id_explicit=true) is
+# forwarded; when the caller supplies none, orchestrate-batch-admit.sh's own D6 degradation
+# fires visibly -- the honest outcome for a caller that never told us its real identity.
 
 if [ "${#task_args[@]}" -eq 0 ]; then
   echo "ERROR: orchestrate-predispatch-review.sh requires at least one <task_number> argument." >&2
@@ -289,8 +316,12 @@ fi
 # ===========================================================================
 admit_checked=true
 admit_degraded_reason=""
+admit_session_id_args=()
+if [ "$session_id_explicit" = true ]; then
+  admit_session_id_args=(--session-id "$session_id")
+fi
 admit_stderr_file=$(mktemp)
-admit_output=$(bash "$SCRIPT_DIR/orchestrate-batch-admit.sh" --invocation-count "${#task_args[@]}" "${task_args[@]}" 2>"$admit_stderr_file")
+admit_output=$(bash "$SCRIPT_DIR/orchestrate-batch-admit.sh" --invocation-count "${#task_args[@]}" "${admit_session_id_args[@]}" "${task_args[@]}" 2>"$admit_stderr_file")
 admit_exit=$?
 admit_stderr=$(cat "$admit_stderr_file" 2>/dev/null)
 rm -f "$admit_stderr_file"
@@ -338,7 +369,17 @@ if [ "$admit_checked" = true ]; then
       | (if $c > $v.colliding_task_number then $v.colliding_task_number else $c end) as $predecessor
       | {class: "D", task_number: $c, colliding_task_number: $v.colliding_task_number,
          colliding_task_status: $v.colliding_task_status, overlapping_path: $v.overlapping_path,
-         suggested_dependent: $dependent, suggested_predecessor: $predecessor}
+         suggested_dependent: $dependent, suggested_predecessor: $predecessor,
+         corroborated_by: ($v.corroborated_by // [])}
+    ),
+    ( # Class E (NEW in v4): session-registry contention -- re-presents
+      # orchestrate-batch-admit.sh defer_reason == "session_active" verdicts verbatim; no new
+      # diagnosis beyond what the verdict itself already carries.
+      $verdicts[] as $v
+      | select($v.decision == "defer" and $v.defer_reason == "session_active")
+      | {class: "E", task_number: $v.task_number, session_id: $v.session_id,
+         colliding_task_number: $v.colliding_task_number, overlapping_path: $v.overlapping_path,
+         session_liveness_reason: $v.session_liveness_reason}
     )
     ' 2>&1)
 fi
@@ -420,13 +461,35 @@ else
   if [ -n "$cd_findings" ]; then
     class_d_lines=$(printf '%s\n' "$cd_findings" | jq -r '
       select(.class == "D")
-      | "#\(.task_number): file_scope collision with out-of-batch task #\(.colliding_task_number) (status: \(.colliding_task_status)) at \(.overlapping_path) -- suggest adding #\(.suggested_predecessor) as a dependencies[] entry on #\(.suggested_dependent) to serialize them"
+      | "#\(.task_number): file_scope collision with out-of-batch task #\(.colliding_task_number) (status: \(.colliding_task_status)) at \(.overlapping_path) -- suggest adding #\(.suggested_predecessor) as a dependencies[] entry on #\(.suggested_dependent) to serialize them" +
+        (if ((.corroborated_by // []) | index("session_registry")) then " [corroborated by a live registered session]" else "" end)
     ' 2>/dev/null)
   fi
   if [ -z "$class_d_lines" ]; then
     echo "0 findings (no missing cross-batch serializing edges detected)."
   else
     printf '%s\n' "$class_d_lines"
+  fi
+fi
+echo ""
+
+echo "-- Class E: Session-registry contention (NEW in v4) --"
+if [ "$admit_checked" = false ]; then
+  echo "SKIPPED (degraded: $admit_degraded_reason)"
+elif [ "$session_id_explicit" = false ]; then
+  echo "SKIPPED (no --session-id supplied to this script; orchestrate-batch-admit.sh's session-registry input was itself skipped via its own D6 degradation)."
+else
+  class_e_lines=""
+  if [ -n "$cd_findings" ]; then
+    class_e_lines=$(printf '%s\n' "$cd_findings" | jq -r '
+      select(.class == "E")
+      | "#\(.task_number): live registered session \(.session_id) (liveness: \(.session_liveness_reason)) covers task #\(.colliding_task_number) whose file_scope overlaps this candidate at \(.overlapping_path)"
+    ' 2>/dev/null)
+  fi
+  if [ -z "$class_e_lines" ]; then
+    echo "0 findings (no candidate's file_scope overlaps a live registered session's covered scope)."
+  else
+    printf '%s\n' "$class_e_lines"
   fi
 fi
 
