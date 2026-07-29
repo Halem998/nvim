@@ -1,31 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/977_extension_manifest_quick_fixes/plans/01_manifest-quick-fixes.md",
-      "summary": "Eight-phase implementation plan covering the five extension-manifest quick-fix items, with a findings-baseline gate and per-phase verification tiers."
-    }
-  ],
-  "next_steps": "Run /implement 977 to execute the plan",
+  "status": "in_progress",
+  "artifacts": [],
   "metadata": {
     "session_id": "sess_1785355598_1f68c0_977",
-    "agent_type": "planner-agent",
-    "duration_seconds": 420,
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 3,
-    "dependency_waves": [[1], [2, 3, 4, 6], [5], [7], [8]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a batch of independent config-file fixes shares one file surface (e.g. several extension manifest.json files), phase them one-item-per-phase but serialize any phases touching the SAME file via explicit `Depends on` edges rather than putting them in the same parallel wave. In the extension-manifest batch, two separate defects both edited literature/manifest.json (keyword_overrides shape and the dependencies array) and a third phase swept every manifest for empty stubs; the wave map was built so no two phases in one wave share a file, preserving parallelism for the genuinely independent items while keeping each phase independently revertable. Pair this with a first phase that captures a machine-diffable baseline (verify-deploy.sh --findings) so later phases can prove 'no NEW findings' rather than merely re-asserting 'still passes' -- a subset check against a captured baseline is a strictly stronger gate than an exit-code check, and it is the only way a deploy-footprint-affecting change can be shown not to have perturbed an already-clean tree.",
-      "category": "PATTERN",
-      "source_artifact": "specs/977_extension_manifest_quick_fixes/plans/01_manifest-quick-fixes.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["dependency-waves", "file-conflict", "baseline-diff", "verify-deploy", "batch-fixes"]
-    }
-  ],
-  "modified_files": []
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 8
+  }
 }

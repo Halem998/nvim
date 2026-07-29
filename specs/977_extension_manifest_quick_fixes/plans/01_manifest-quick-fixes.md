@@ -1,7 +1,7 @@
 # Implementation Plan: Extension Manifest Quick-Fix Batch
 
 - **Task**: 977 - Extension manifest quick-fix batch (keyword_overrides shape, mcpServers casing, dead weight)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: 976 (sequencing only; not blocking)
 - **Research Inputs**: specs/977_extension_manifest_quick_fixes/reports/01_manifest-quick-fixes-verification.md
@@ -116,22 +116,26 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Capture Clean-Tree Baseline [NOT STARTED]
+### Phase 1: Capture Clean-Tree Baseline [COMPLETED]
 
 - **Goal:** Record the exact pre-change findings set of both gates so every later phase can prove
   it introduced no new finding, rather than merely asserting "still passes".
 - **Tasks:**
-  - [ ] Run `bash .claude/scripts/verify-deploy.sh --findings --quiet` from the repo root; capture
-        stdout and the exit code.
-  - [ ] Run `bash .claude/scripts/check-extension-docs.sh --quiet`; capture stdout and exit code.
-  - [ ] Record `du -sb agent-system/extensions/present` and
+  - [x] Run `bash .claude/scripts/verify-deploy.sh --findings --quiet` from the repo root; capture
+        stdout and the exit code. *(completed: exit 0, zero FINDING lines)*
+  - [x] Run `bash .claude/scripts/check-extension-docs.sh --quiet`; capture stdout and exit code.
+        *(completed: exit 0, all extensions PASS, 39 pre-existing advisories unrelated to
+        PASS/FAIL)*
+  - [x] Record `du -sb agent-system/extensions/present` and
         `du -sh agent-system/extensions/present` as the item-3 before-measurement.
-  - [ ] Write all three captures to
+        *(completed: 3723821 bytes / 4.0M)*
+  - [x] Write all three captures to
         `specs/977_extension_manifest_quick_fixes/baseline-verify-deploy.txt` (a task-directory
-        scratch artifact, not a deliverable).
-  - [ ] Confirm the baseline matches the stated repo state: `verify-deploy.sh` exits 0 with zero
+        scratch artifact, not a deliverable). *(completed)*
+  - [x] Confirm the baseline matches the stated repo state: `verify-deploy.sh` exits 0 with zero
         FINDING lines. If it does NOT, stop and report — the "no new findings" bar is meaningless
         against a dirty baseline, and proceeding would silently absorb a pre-existing failure.
+        *(completed: confirmed clean)*
 - **Timing:** 15 minutes
 - **Depends on:** none
 - **Verification Tier:** prose

@@ -1,0 +1,20 @@
+# Phase 1 baseline capture (scratch artifact, not a deliverable)
+
+## verify-deploy.sh --findings --quiet
+Exit code: 0
+Output:
+[verify-deploy] PASS -- 12 check(s), 0 failure(s)
+(zero FINDING lines produced)
+
+## check-extension-docs.sh --quiet
+Exit code: 0
+(39 advisory items present -- pre-existing, non-blocking, unrelated to PASS/FAIL verdict;
+ every extension listed PASS in the summary table)
+
+## present extension size (item 3 before-measurement)
+du -sb agent-system/extensions/present: 3723821
+du -sh agent-system/extensions/present: 4.0M
+
+## Baseline confirmation
+verify-deploy.sh exits 0 with zero FINDING lines -- matches the delegation's stated clean-tree
+baseline. Proceeding with the batch.
