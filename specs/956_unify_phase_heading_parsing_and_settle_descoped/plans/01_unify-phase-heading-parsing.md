@@ -1,7 +1,7 @@
 # Implementation Plan: Task #956
 
 - **Task**: 956 - Unify phase-heading parsing across all sites and settle the [DESCOPED] outcome
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 12 hours
 - **Dependencies**: None (builds on the shipped documented-reasoned-exclusions phase-outcome work)
 - **Research Inputs**: specs/956_unify_phase_heading_parsing_and_settle_descoped/reports/01_unify-phase-heading-parsing.md

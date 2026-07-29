@@ -11,11 +11,10 @@ next_project_number: 964
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 947,950,951,955,956,958,963 | -- | agent-system |
-| 2 | 948,952,957,959 | 947,951,956 | agent-system, orchestration-concurrency |
-| 3 | 949,953,954,960 | 948,952,957,959 | agent-system |
-| 4 | 961 | 960 | agent-system |
-| 5 | 962 | 961 | agent-system |
+| 1 | 947,950,951,955,957,958,959,963 | -- | agent-system, orchestration-concurrency |
+| 2 | 948,952,960 | 947,951,957,959 | agent-system |
+| 3 | 949,953,954,961 | 948,952,960 | agent-system |
+| 4 | 962 | 961 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -30,12 +29,11 @@ next_project_number: 964
     └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
     └─ 954 [NOT STARTED] — Give recorded system defects an interactive surface that produces
 955 [NOT STARTED] — specs/errors.json has drifted into three mutually inconsistent do
-956 [IMPLEMENTING] — Two parsers read the same plan file and disagree about how many p
-  └─ 959 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-    └─ 960 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-      └─ 961 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-        └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 958 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+959 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+  └─ 960 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+    └─ 961 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+      └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ### Orchestration Concurrency
@@ -215,7 +213,7 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 ---
 
 ### 956. Unify phase-heading parsing across all sites and settle the [DESCOPED] outcome
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
