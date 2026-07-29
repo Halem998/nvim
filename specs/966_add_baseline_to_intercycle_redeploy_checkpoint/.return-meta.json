@@ -1,55 +1,32 @@
 {
-  "status": "tasks_created",
-  "summary": "Created 2 meta tasks in /home/benjamin/.config/nvim/specs/: #965 (git ls-files enumeration for check_undeclared_scripts) and #966 (pre/post baseline for the inter-cycle redeploy checkpoint).",
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1785355598_1f68c0_966",
+  "task_number": 966,
+  "findings_count": 12,
   "artifacts": [
     {
-      "type": "task",
-      "path": "/home/benjamin/.config/nvim/specs/965_skip_untracked_artifacts_in_undeclared_scripts_check/",
-      "summary": "Task directory: make check_undeclared_scripts enumerate via git ls-files so untracked build artifacts stop producing permanent FAILs"
-    },
-    {
-      "type": "task",
-      "path": "/home/benjamin/.config/nvim/specs/966_add_baseline_to_intercycle_redeploy_checkpoint/",
-      "summary": "Task directory: baseline verify-deploy pre/post redeploy so only newly-introduced failures defer a batch"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
-      "summary": "Tasks 965 and 966 added; task 958 moved to wave 2 blocked by 966"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/state.json",
-      "summary": "Entries 965/966 appended, next_project_number=967, dependency edge 958->966 added"
+      "type": "report",
+      "path": "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/reports/01_verify-deploy-baseline-design.md",
+      "summary": "Diagnoses the finding-level granularity gap in verify-deploy.sh gates 3-4 and designs an additive --findings mode plus pre/post baseline diff for the inter-cycle redeploy checkpoint, including the exit-2 resolution and the skill-orchestrate-hard CO-MAINTENANCE file_scope gap."
     }
   ],
-  "next_steps": "Run /research 965 and /research 966. Task 966 must complete before task 958 (dependency edge encoded; both share verify-deploy.sh in file_scope).",
-  "metadata": {
-    "session_id": "sess_1785336979_220ee2",
-    "agent_type": "meta-builder-agent",
-    "delegation_depth": 1,
-    "delegation_path": [
-      "orchestrator",
-      "meta",
-      "skill-meta",
-      "meta-builder-agent"
-    ],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 2,
-    "task_numbers": [
-      965,
-      966
-    ],
-    "topic": "agent-system",
-    "created_at": "2026-07-29T15:00:32Z"
-  },
-  "modified_files": [
-    "/home/benjamin/.config/nvim/specs/state.json",
-    "/home/benjamin/.config/nvim/specs/TODO.md",
-    "/home/benjamin/.config/nvim/specs/965_skip_untracked_artifacts_in_undeclared_scripts_check/",
-    "/home/benjamin/.config/nvim/specs/966_add_baseline_to_intercycle_redeploy_checkpoint/"
+  "memory_candidates": [
+    {
+      "content": "verify-deploy.sh's gates 1-2 already itemize every failure unconditionally (their fail() ignores --quiet), but gates 3-4 (doc-lint, task-reference lint) discard the wrapped sub-script's output via '--quiet >/dev/null 2>&1', collapsing arbitrary findings into one aggregate line. check-extension-docs.sh's own fail()/advisory() already survive --quiet (only its info() is quiet-gated), so capturing its output with --quiet still passed already gives full per-extension detail. check-task-references.sh is the opposite: its per-finding lines ARE quiet-gated, so it must be invoked WITHOUT --quiet to get line-level detail. Any future finding-level machine-output mode on verify-deploy.sh should reuse this asymmetry rather than rediscovering it.",
+      "category": "PATTERN",
+      "source_artifact": "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/reports/01_verify-deploy-baseline-design.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verify-deploy.sh", "check-extension-docs.sh", "check-task-references.sh", "--quiet", "finding-level-diff"]
+    },
+    {
+      "content": "skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md carry explicit CO-MAINTENANCE-annotated duplicated logic blocks (e.g. the inter-cycle redeploy checkpoint, Stage MT-3 step 7) that must be edited in lockstep. A task's file_scope in specs/state.json can name only one of the pair, creating a real risk that an implementer updates the base engine and silently skips the hard-mode mirror. When planning any change to a Stage MT-3/MT-4 mechanism, check both SKILL.md files for a 'Transcribed:' / 'CO-MAINTENANCE' marker before assuming file_scope is complete.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/reports/01_verify-deploy-baseline-design.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["skill-orchestrate", "skill-orchestrate-hard", "CO-MAINTENANCE", "file_scope", "orchestrator-critical-paths"]
+    }
   ],
-  "errors": []
+  "next_steps": "Run /plan 966 to create implementation plan"
 }

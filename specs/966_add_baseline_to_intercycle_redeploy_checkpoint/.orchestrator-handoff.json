@@ -1,0 +1,26 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "research",
+  "status": "researched",
+  "summary": "Diagnosed the granularity gap: verify-deploy.sh gates 1-2 already itemize failures unconditionally, but gates 3-4 discard check-extension-docs.sh/check-task-references.sh output via --quiet >/dev/null, collapsing many findings into one aggregate line. Designed an additive --findings mode on verify-deploy.sh plus a pre/post set-difference comparison in Stage MT-3 step 7 to distinguish pre-existing from newly-introduced failures, with exit 2 folded in via a sentinel finding line. Flagged that skill-orchestrate-hard/SKILL.md's CO-MAINTENANCE-mirrored copy of this same checkpoint logic is not in task file_scope, a real risk for planning.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/reports/01_verify-deploy-baseline-design.md"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "plan",
+  "files_modified": [],
+  "decisions_made": [
+    "Capture the baseline via a new additive --findings mode on verify-deploy.sh, run once immediately before deploy-headless.sh (pre) and once after (post, replacing today's single post-only call), diffed as sorted line-sets via comm -13",
+    "No changes needed to check-extension-docs.sh: its fail()/advisory() already print unconditionally under --quiet, only verify-deploy.sh's own >/dev/null discard needs to stop discarding",
+    "check-task-references.sh must be invoked WITHOUT --quiet when captured for findings (opposite of gate 3), since its own --quiet suppresses per-finding lines",
+    "verify-deploy.sh exit 2 is folded into the ordinary findings vocabulary via one synthesized sentinel finding line rather than special-cased, making the pre/post diff symmetric and answering the task's exit-2 open question",
+    "Third state (pre-existing-only failure) updates deployed_critical_paths same as success, does NOT add to deferred_deploy_checkpoint, and logs to a new sibling ledger field verify_deploy_baseline_notices (not defer_ledger, which is explicitly scoped to defer/exclusion events only)",
+    "Recommend extending file_scope to include skill-orchestrate-hard/SKILL.md before planning, since its CO-MAINTENANCE-mirrored checkpoint block is not currently in scope but MUST stay in lockstep per its own explicit contract"
+  ],
+  "dead_ends": [],
+  "phases_completed": 0,
+  "phases_total": 0
+}

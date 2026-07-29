@@ -2873,7 +2873,7 @@
     {
       "project_number": 966,
       "project_name": "add_baseline_to_intercycle_redeploy_checkpoint",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Give the inter-cycle redeploy checkpoint a pre/post baseline",
@@ -2887,10 +2887,16 @@
       "dependencies": [
         967
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/reports/01_verify-deploy-baseline-design.md",
+          "type": "research",
+          "summary": "Diagnoses the finding-level granularity gap in verify-deploy.sh gates 3-4 and designs an additive --findings mode plus pre/post baseline diff for the inter-cycle redeploy checkpoint, including the exit-2 resolution and the skill-orchestrate-hard CO-MAINTENANCE file_scope gap."
+        }
+      ],
       "created": "2026-07-29T14:59:46Z",
-      "last_updated": "2026-07-29T19:40:45Z",
-      "session_id": "sess_1785336979_220ee2",
+      "last_updated": "2026-07-29T20:17:06Z",
+      "session_id": "sess_1785355598_1f68c0_966",
       "next_artifact_number": null
     },
     {
@@ -3067,7 +3073,7 @@
       "project_number": 976,
       "project_name": "fix_state_mutex_todo_regen_timing",
       "title": "Move TODO regeneration out of the state mutex critical section (or extend the window)",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "dependencies": [
@@ -3080,8 +3086,15 @@
       ],
       "description": "Fix the measured mutex-timing defect: state-write.sh --regen-todo runs generate-todo.sh INSIDE the specs/.scope-lock critical section, and the regen takes ~5.5s wall time against the current 550KB state.json — longer than the 5.0s waiter acquire budget (SCOPE_MUTEX_ACQUIRE_BUDGET_MS=5000, task-lock.sh ~line 543) and more than half the 10s staleness reclaim window (SCOPE_MUTEX_STALE_SEC=10).\n\nCONSEQUENCES (from the agent-system review, specs/reviews/review-2026-07-29-agent-system.md, state-machinery section): (1) every update-task-status.sh preflight/postflight holds the mutex >5.5s, so in parallel multi-task dispatch the second and later agents deterministically fail their acquire and ABORT (fail-closed, correctness-preserving, but presents as a spurious workflow abort). (2) As state.json grows, the holder will cross the 10s staleness window and a waiter will rm -rf the mutex dir and reclaim it FROM A LIVE HOLDER (task-lock.sh reclaim path ~line 513), producing two unserialized writers and a lost update. The token-mismatch WARN at task-lock.sh ~line 1058 already anticipates this. orchestrator-postflight.sh already knows to extend its window (POSTFLIGHT_SCOPE_STALE_SEC=30); state-write.sh passes no stale_sec and inherits the 10s default.\n\nWORK (research should choose among, possibly combining):\n  1. Move generate-todo.sh OUT of the critical section: write state under mutex, release, then regen TODO with a generation-counter or re-check so a concurrent writer's regen supersedes cleanly. (TODO.md is a generated view; last-writer-wins after a snapshotted consistent state read is acceptable.)\n  2. At minimum: pass an explicit stale_sec >= 30 and a matching acquire budget from state-write.sh, mirroring orchestrator-postflight.sh's existing posture.\n  3. Make generate-todo.sh faster: it currently spawns ~10 jq subprocesses PER TASK (generate_task_entry), each re-parsing the full state.json; a single-pass jq program would cut the 5.5s dramatically and shrink every critical section.\n  4. Add the regression guard the review proposed: a test asserting generate-todo.sh wall time stays under 40% of the staleness window (or that regen no longer runs inside the mutex at all).\n\nVERIFICATION BAR:\n  - test-state-write-concurrency.sh still passes; a new test demonstrates two concurrent update-task-status.sh calls both succeed (no spurious ABORT) with a consistent final state.\n  - Measured mutex hold time for a status flip is under 1s, or the staleness window and acquire budget are both provably larger than the worst-case hold with margin.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/core/scripts/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**; use durable anchors (script names, variable names).",
       "created": "2026-07-29T19:29:18Z",
-      "last_updated": "2026-07-29T19:40:45Z",
-      "session_id": "sess_1785353358_66268f"
+      "last_updated": "2026-07-29T20:17:13Z",
+      "session_id": "sess_1785355598_1f68c0_976",
+      "artifacts": [
+        {
+          "path": "specs/976_fix_state_mutex_todo_regen_timing/reports/01_mutex-timing-defect.md",
+          "type": "research",
+          "summary": "Reproduces the 6.9s generate-todo.sh regen cost live, isolates root cause to jq subprocess-spawn count, finds SCOPE_MUTEX_ACQUIRE_BUDGET_MS is hardcoded/non-overridable, and recommends moving regen out of state-write.sh's critical section plus a single-pass jq rewrite and a regression test."
+        }
+      ]
     },
     {
       "project_number": 977,
