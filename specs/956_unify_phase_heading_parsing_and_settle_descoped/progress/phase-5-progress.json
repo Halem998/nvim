@@ -1,0 +1,16 @@
+{
+  "phase": 5,
+  "phase_name": "Migrate validate-artifact.sh, fix the collapse, add marker-enum validation",
+  "started_at": "2026-07-29T03:00:00Z",
+  "last_updated": "2026-07-29T03:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add lazy library sourcing block (plan-branch only) with sibling-lib resolution and exit 5", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 2, "description": "Migrate phase-presence check to loose ERE; migrate phase-line enumeration and extraction to extract_phase_number", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 3, "description": "Add non-conforming/marker-enum check with advisory-default/strict-error split, delegating message text to warn_nonconforming", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 4, "description": "Verify against 3a/3b/3c scratch plan, DESCOPED scratch plan (both modes), and all 59 real plans under specs/", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

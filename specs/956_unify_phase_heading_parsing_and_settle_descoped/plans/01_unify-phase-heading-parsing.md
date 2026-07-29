@@ -451,27 +451,33 @@ to already-closed phases' files, not a reopening of their scope or verdicts.
 
 ---
 
-### Phase 5: Migrate `validate-artifact.sh`, fix the collapse, add marker-enum validation [NOT STARTED]
+### Phase 5: Migrate `validate-artifact.sh`, fix the collapse, add marker-enum validation [COMPLETED]
 
 **Goal**: Close the phase-number reporting collapse and add the marker-enum check that currently
 does not exist anywhere.
 
 **Tasks**:
-- [ ] Add the library sourcing block with the same candidate-list resolution and loud failure.
-- [ ] Replace the phase-presence check and phase-line enumeration greps with the library's
-      exported heading match.
-- [ ] Replace the two chained `grep -oE` phase-number extraction with `extract_phase_number`. This
+- [x] Add the library sourcing block with the same candidate-list resolution and loud failure.
+      *(completed: lazy inside the plan-specific branch, resolved via this script's own lib/
+      sibling in both deploy and source-store trees, exit 5 on absence)*
+- [x] Replace the phase-presence check and phase-line enumeration greps with the library's
+      exported heading match. *(completed: presence check uses the LOOSE form so an
+      all-non-conforming plan routes to the non-conforming check rather than "missing headings")*
+- [x] Replace the two chained `grep -oE` phase-number extraction with `extract_phase_number`. This
       alone fixes the reporting collapse where three distinct headings all reported as one number.
-- [ ] Add a new per-heading marker-enum check: any bracket content outside the six-value enum is
+      *(completed, verified: 3 DISTINCT reports on a 3a/3b/3c scratch plan)*
+- [x] Add a new per-heading marker-enum check: any bracket content outside the six-value enum is
       reported. Advisory (warning) in default mode, error under `--strict`, matching the
-      established advisory-first precedent for the Verification Tier field per D3.
-- [ ] When the offending marker is exactly `DESCOPED`, the message MUST name
+      established advisory-first precedent for the Verification Tier field per D3. *(completed,
+      verified both modes)*
+- [x] When the offending marker is exactly `DESCOPED`, the message MUST name
       `[COMPLETED WITH EXCLUSIONS]` as the replacement. Delegate the message text to the library's
-      `warn_nonconforming` rather than composing it locally.
-- [ ] Add a non-conforming-number-token check with the same advisory/strict split, so a `3a`
-      heading is reported by name rather than silently normalized.
-- [ ] Do NOT promote the existing Verification Tier advisory warning to an error — out of scope,
-      and its documented promotion criterion is unmet.
+      `warn_nonconforming` rather than composing it locally. *(completed, verified)*
+- [x] Add a non-conforming-number-token check with the same advisory/strict split, so a `3a`
+      heading is reported by name rather than silently normalized. *(completed: same
+      nonconforming_phase_headings sweep covers both number-token and marker-enum cases)*
+- [x] Do NOT promote the existing Verification Tier advisory warning to an error — out of scope,
+      and its documented promotion criterion is unmet. *(confirmed unchanged)*
 
 **Timing**: 1.5 hours
 
@@ -490,7 +496,10 @@ does not exist anywhere.
   `--strict` exits non-zero.
 - Against every non-terminal plan currently under `specs/`: default-mode validation still passes
   (no new default-mode errors introduced), confirming the advisory-first split holds.
-- Full repository gate set for this phase.
+  *(verified: all 59 plan files under specs/ still pass default-mode validation)*
+- Full repository gate set for this phase. `bash -n`, the Phase 3 fixture suite (unaffected), and
+  `check-task-references.sh` over `agent-system/extensions/core/scripts` all exit 0.
+  `check-extension-docs.sh` deploy-drift is deferred to Phase 10 (see Phase 4's note).
 
 ---
 

@@ -4,7 +4,11 @@
 # Usage: validate-artifact.sh <artifact_path> <type> [--fix] [--strict]
 #
 # Types: report, plan, summary
-# Exit codes: 0 = valid, 1 = errors found, 2 = auto-fixed, 3 = file not found, 4 = unknown type
+# Exit codes: 0 = valid, 1 = errors found, 2 = auto-fixed, 3 = file not found, 4 = unknown type,
+#             5 = environment error (plan-type only: scripts/lib/phase-heading-patterns.sh, the
+#             shared phase-heading pattern library, could not be found at its expected sibling
+#             path -- see context/formats/plan-format.md's "Canonical phase-heading shape"
+#             subsection)
 
 set -euo pipefail
 
@@ -159,8 +163,41 @@ done
 
 # --- Plan-specific checks ---
 if [ "$artifact_type" = "plan" ]; then
-  # Check for at least one Phase heading
-  if ! grep -qE '^### Phase [0-9]+(\.[0-9]+)?' "$artifact_path"; then
+  # --- Shared phase-heading pattern library (lazy: only the "plan" branch needs it) ---
+  # Resolved as this script's own lib/ sibling via ${BASH_SOURCE[0]} (never "$0", which breaks
+  # under indirect invocation) -- this single form is correct in BOTH the deployed tree
+  # (.claude/scripts/validate-artifact.sh -> .claude/scripts/lib/...) and the source store
+  # (agent-system/extensions/core/scripts/validate-artifact.sh -> .../scripts/lib/...) without
+  # needing a REPO_ROOT-guessing candidate list, because the library is always this script's own
+  # lib/ sibling in either tree. Never falls through to an inline pattern: a missing library is a
+  # loud environment error (exit 5), not a silent degradation. See
+  # context/formats/plan-format.md's "Canonical phase-heading shape" subsection.
+  _validate_script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  _phase_lib_candidates=(
+    "$_validate_script_dir/lib/phase-heading-patterns.sh"
+  )
+  _phase_lib=""
+  for _candidate in "${_phase_lib_candidates[@]}"; do
+    if [ -f "$_candidate" ]; then
+      _phase_lib="$_candidate"
+      break
+    fi
+  done
+  if [ -z "$_phase_lib" ]; then
+    echo "Error: shared library phase-heading-patterns.sh not found at any of:" >&2
+    for _candidate in "${_phase_lib_candidates[@]}"; do
+      echo "  $_candidate" >&2
+    done
+    exit 5
+  fi
+  # shellcheck disable=SC1090
+  . "$_phase_lib"
+
+  # Check for at least one Phase heading. Uses the LOOSE "claims to be a phase heading" form
+  # (PHASE_HEADING_LOOSE_ERE) rather than the canonical form, so a plan whose only headings are
+  # non-conforming (e.g. all `3a`/`3b`/`3c`) is correctly routed to the non-conforming check below
+  # rather than misreported here as having no phase headings at all.
+  if ! grep -qE "$PHASE_HEADING_LOOSE_ERE" "$artifact_path"; then
     log_error "Missing Phase headings (expected: ### Phase N: {name} [STATUS])"
   fi
 
@@ -169,19 +206,39 @@ if [ "$artifact_type" = "plan" ]; then
     log_warn "Missing Dependency Analysis table under Implementation Phases"
   fi
 
+  # --- Non-conforming phase-heading check (D3: advisory-first, --strict enforces) ---
+  # Fixes the phase-number reporting collapse where distinct non-conforming headings (e.g.
+  # `3a`/`3b`/`3c`) were previously chained through a single grep -oE extraction and could be
+  # mis-attributed to one number. extract_phase_number below never returns a truncated prefix.
+  # Message text is delegated to the library's warn_nonconforming rather than composed locally,
+  # so the `[DESCOPED]` -> `[COMPLETED WITH EXCLUSIONS]` replacement guidance lives in ONE place.
+  _nonconforming_findings="$(nonconforming_phase_headings "$artifact_path")"
+  if [ -n "$_nonconforming_findings" ]; then
+    _nonconforming_count=$(printf '%s\n' "$_nonconforming_findings" | wc -l | tr -d ' ')
+    warn_nonconforming "$artifact_path" "validate-artifact" || true
+    if [ "$strict_mode" = true ]; then
+      log_error "${_nonconforming_count} non-conforming phase heading(s) found (letter-suffixed number, extra decimal level, or unrecognized status marker -- see the NON-CONFORMING PHASE HEADING warnings above for per-heading detail)"
+    else
+      log_warn "${_nonconforming_count} non-conforming phase heading(s) found (letter-suffixed number, extra decimal level, or unrecognized status marker -- see the NON-CONFORMING PHASE HEADING warnings above for per-heading detail)"
+    fi
+  fi
+
   # --- Per-phase Verification Tier check (advisory-first, D3: warn not error) ---
   # Promotion criterion (per context/formats/plan-format.md's "Enforcement level" subsection):
   # promote this from log_warn to log_error once no non-terminal plan under specs/ lacks the
   # field. Until then, default mode stays advisory (exits 0 on tier warnings alone) so legacy
   # plans authored before this vocabulary existed keep passing; --strict enforces it today via
   # the existing total_issues=$((errors + warnings)) branch below.
-  mapfile -t phase_line_nums < <(grep -n '^### Phase [0-9]\+\(\.[0-9]\+\)\?' "$artifact_path" | cut -d: -f1)
+  #
+  # NOTE: do NOT promote this Verification Tier advisory to an error as part of this migration --
+  # out of scope, and its documented promotion criterion (above) is unmet.
+  mapfile -t phase_line_nums < <(grep -nE "$PHASE_HEADING_ERE" "$artifact_path" | cut -d: -f1)
   if [ "${#phase_line_nums[@]}" -gt 0 ]; then
     total_lines=$(wc -l < "$artifact_path")
     for i in "${!phase_line_nums[@]}"; do
       start_line="${phase_line_nums[$i]}"
       phase_heading=$(sed -n "${start_line}p" "$artifact_path")
-      phase_num=$(echo "$phase_heading" | grep -oE '^### Phase [0-9]+(\.[0-9]+)?' | grep -oE '[0-9]+(\.[0-9]+)?' || true)
+      phase_num=$(extract_phase_number "$phase_heading") || phase_num=""
       if [ $((i + 1)) -lt "${#phase_line_nums[@]}" ]; then
         end_line=$(( phase_line_nums[$((i + 1))] - 1 ))
       else
