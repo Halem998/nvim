@@ -80,6 +80,10 @@
     "opencode_json": {
       "source": "opencode-agents.json",
       "target": "opencode.json"
+    },
+    "settings": {
+      "source": "settings-fragment.json",
+      "target": ".claude/settings.local.json"
     }
   },
   "mcp_servers": {

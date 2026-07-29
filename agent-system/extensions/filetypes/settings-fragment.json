@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "superdoc": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@superdoc-dev/mcp"
+      ],
+      "env": {}
+    },
+    "openpyxl": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@jonemo/openpyxl-mcp"
+      ],
+      "env": {}
+    }
+  }
+}

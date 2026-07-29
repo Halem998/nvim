@@ -87,15 +87,5 @@
       "target": "opencode.json"
     }
   },
-  "mcp_servers": {
-    "superdoc": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@superdoc-dev/mcp"
-      ],
-      "env": {}
-    }
-  },
   "hooks": {}
 }

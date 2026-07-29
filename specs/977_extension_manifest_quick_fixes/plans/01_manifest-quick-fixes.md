@@ -308,35 +308,43 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 6: Resolve the four orphaned mcp_servers blocks [NOT STARTED]
+### Phase 6: Resolve the four orphaned mcp_servers blocks [COMPLETED]
 
 - **Goal:** Activate the three `mcp_servers` declarations whose tools the extension actually uses,
   and delete the one that nothing references.
 - **Tasks:**
-  - [ ] For each of `founder`, `filetypes`, `memory`: create
+  - [x] For each of `founder`, `filetypes`, `memory`: create
         `agent-system/extensions/<ext>/settings-fragment.json` with a top-level **camelCase**
         `mcpServers` object carrying that manifest's existing server definitions **verbatim**
         (including `founder`'s `FIRECRAWL_API_KEY` env passthrough and `memory`'s
         `OBSIDIAN_WS_PORT`). Mirror the structure of
-        `agent-system/extensions/lean/settings-fragment.json`.
-  - [ ] For each of the three, add a `merge_targets.settings` entry to its `manifest.json`:
+        `agent-system/extensions/lean/settings-fragment.json`. *(completed)*
+  - [x] For each of the three, add a `merge_targets.settings` entry to its `manifest.json`:
         `{"source": "settings-fragment.json", "target": ".claude/settings.local.json"}` — the same
         target every working settings merge uses. Do NOT add a `provides` entry; fragments are
-        routed through `merge_targets` only (verified against `lean` and `nix`).
-  - [ ] Add a `permissions.allow` array to a fragment only where concrete `mcp__*` tool names are
+        routed through `merge_targets` only (verified against `lean` and `nix`). *(completed, no
+        `provides` entry added)*
+  - [x] Add a `permissions.allow` array to a fragment only where concrete `mcp__*` tool names are
         actually referenced in that extension's own material. `founder` references
         `mcp__firecrawl__scrape|crawl|map|extract` and `mcp__sec-edgar__*`; `filetypes` and `memory`
         reference their servers by name only, so their fragments carry `mcpServers` alone.
-        `permissions` is optional in this schema — do not invent tool names to fill it.
-  - [ ] Remove the now-redundant top-level `mcp_servers` block from each of the three manifests, OR
+        `permissions` is optional in this schema — do not invent tool names to fill it. *(completed:
+        founder's fragment has permissions.allow with the 4 firecrawl tools + `mcp__sec-edgar__*`
+        wildcard, matching the precedent set by core's `mcp__lean-lsp__*` wildcard entry;
+        filetypes/memory fragments carry `mcpServers` only)*
+  - [x] Remove the now-redundant top-level `mcp_servers` block from each of the three manifests, OR
         leave it as the picker's display source — pick ONE convention, apply it to all three, and
         state which in the phase output. Recommended: keep it, since the picker previewer reads
         `manifest.mcp_servers` to show users which servers an extension installs, and the fragment
-        is the merge path rather than a replacement for that display.
-  - [ ] Delete the entire top-level `mcp_servers` block from
+        is the merge path rather than a replacement for that display. *(completed: KEPT the
+        top-level `mcp_servers` block in founder, filetypes, memory per the recommended
+        convention — display source, distinct from the fragment's merge path)*
+  - [x] Delete the entire top-level `mcp_servers` block from
         `agent-system/extensions/present/manifest.json`. Do NOT create a fragment for `present` —
         `superdoc` is referenced nowhere in `present`'s agents, skills, context, or README.
-  - [ ] Confirm all four manifests and all three new fragments are valid JSON (`jq empty`).
+        *(completed: block deleted, no fragment created)*
+  - [x] Confirm all four manifests and all three new fragments are valid JSON (`jq empty`).
+        *(completed: all 7 files valid)*
 - **Timing:** 45 minutes
 - **Depends on:** 1
 - **Verification Tier:** interface
