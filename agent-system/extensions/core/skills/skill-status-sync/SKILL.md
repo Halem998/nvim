@@ -94,11 +94,13 @@ fi
 
 2. **Update state.json**:
 ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg status "{target_status}" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == {task_number})) |= . + {
     status: $status,
     last_updated: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "{session_id}" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg status "{target_status}"
 ```
 
 3. **Update TODO.md status marker**:
@@ -125,29 +127,33 @@ jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg status "{target_status}" \
 
 1. **Update state.json status and timestamp**:
 ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg status "{target_status}" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == {task_number})) |= . + {
     status: $status,
     last_updated: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "{session_id}" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg status "{target_status}"
 ```
 
 2. **Add artifacts to state.json** (for each artifact):
 
-**IMPORTANT**: Use two-step jq pattern to avoid Issue #1132 escaping bug. See `jq-escaping-workarounds.md`.
+**IMPORTANT**: Use two-step pattern to avoid Issue #1132 escaping bug. See `jq-escaping-workarounds.md`.
 
 ```bash
 # Step 1: Update timestamp
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == {task_number})) |= . + {
     last_updated: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "{session_id}" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 # Step 2: Add artifact (append to array)
-jq --arg path "{artifact_path}" \
-   --arg type "{artifact_type}" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == {task_number})).artifacts += [{"path": $path, "type": $type}]' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  --session-id "{session_id}" \
+  --arg path "{artifact_path}" --arg type "{artifact_type}"
 ```
 
 3. **Update TODO.md status marker**:
@@ -184,20 +190,22 @@ fi
 
 2. **Add to state.json artifacts array**:
 
-**IMPORTANT**: Use two-step jq pattern to avoid Issue #1132 escaping bug. See `jq-escaping-workarounds.md`.
+**IMPORTANT**: Use two-step pattern to avoid Issue #1132 escaping bug. See `jq-escaping-workarounds.md`.
 
 ```bash
 # Step 1: Update timestamp
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == {task_number})) |= . + {
     last_updated: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "{session_id}" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 # Step 2: Add artifact (append to array)
-jq --arg path "{artifact_path}" \
-   --arg type "{artifact_type}" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == {task_number})).artifacts += [{"path": $path, "type": $type}]' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  --session-id "{session_id}" \
+  --arg path "{artifact_path}" --arg type "{artifact_type}"
 ```
 
 3. **Add link to TODO.md** using Edit tool:

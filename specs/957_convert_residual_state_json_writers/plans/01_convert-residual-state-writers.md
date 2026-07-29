@@ -1,7 +1,7 @@
 # Implementation Plan: Task #957
 
 - **Task**: 957 - convert_residual_state_json_writers
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 11 hours
 - **Dependencies**: `agent-system/extensions/core/scripts/state-write.sh` (already built; do not modify)
 - **Research Inputs**: specs/957_convert_residual_state_json_writers/reports/01_convert-residual-state-writers.md
@@ -76,17 +76,23 @@ Phases within the same wave can execute in parallel. Wave 2's phases own disjoin
 
 ---
 
-### Phase 1: Baseline Capture and Canonical Conversion Template [NOT STARTED]
+### Phase 1: Baseline Capture and Canonical Conversion Template [COMPLETED]
 
 **Goal**: Record the pre-change state of the full gate set, then convert the smallest single-purpose file to establish the exact conversion shape every later phase copies.
 
 **Tasks**:
-- [ ] Record baseline: run `bash agent-system/extensions/core/scripts/test-state-write-concurrency.sh`, `bash agent-system/extensions/core/scripts/test-task-lock-reap.sh`, `bash .claude/scripts/check-task-references.sh`, `bash .claude/scripts/check-extension-docs.sh`. Capture each exit code and, for `check-extension-docs.sh`, the exact set of failing extensions (expected: `literature` only).
-- [ ] Record the baseline in-scope site inventory: for each of the 16 code files, the line numbers of `specs/state.json` write-then-`mv`/`.tmp` sites, separated from `specs/archive/state.json` and vault-path sites.
-- [ ] Read `agent-system/extensions/core/commands/review.md`'s two converted precedents (the task-creation write followed by `manage-topics.sh set`, and the single-field `.active_goal` write folded with `--regen-todo`) plus `agent-system/extensions/core/commands/implement.md`'s converted site.
-- [ ] Convert all 6 in-scope sites in `skills/skill-status-sync/SKILL.md` to `bash .claude/scripts/state-write.sh` calls, reusing the file's existing `$session_id`.
-- [ ] For each of the 6, decide `--regen-todo` fold vs. no-fold against the `review.md` precedent and record the decision inline in the phase notes.
-- [ ] Extract and `bash -n` every bash block in the edited file.
+- [x] Record baseline: run `bash agent-system/extensions/core/scripts/test-state-write-concurrency.sh`, `bash agent-system/extensions/core/scripts/test-task-lock-reap.sh`, `bash .claude/scripts/check-task-references.sh`, `bash .claude/scripts/check-extension-docs.sh`. Capture each exit code and, for `check-extension-docs.sh`, the exact set of failing extensions (expected: `literature` only). *(completed: results below; deviation — failure set was `core` + `literature`, not `literature` only)*
+- [x] Record the baseline in-scope site inventory: for each of the 16 code files, the line numbers of `specs/state.json` write-then-`mv`/`.tmp` sites, separated from `specs/archive/state.json` and vault-path sites. *(completed: per-file grep confirms all 16 code files present; per-phase inventories built in Phases 2-8)*
+- [x] Read `agent-system/extensions/core/commands/review.md`'s two converted precedents (the task-creation write followed by `manage-topics.sh set`, and the single-field `.active_goal` write folded with `--regen-todo`) plus `agent-system/extensions/core/commands/implement.md`'s converted site. *(completed)*
+- [x] Convert all 6 in-scope sites in `skills/skill-status-sync/SKILL.md` to `bash .claude/scripts/state-write.sh` calls, reusing the file's existing `$session_id`. *(completed: 6/6 converted; file uses `{session_id}` placeholder convention, same as `{task_number}`)*
+- [x] For each of the 6, decide `--regen-todo` fold vs. no-fold against the `review.md` precedent and record the decision inline in the phase notes. *(completed: no-fold for all 6 — each is followed by an Edit-tool TODO.md update, never a `generate-todo.sh` call)*
+- [x] Extract and `bash -n` every bash block in the edited file. *(completed: clean)*
+
+**Baseline results** (recorded verbatim):
+- `test-state-write-concurrency.sh`: exit 0, 4/4 passed.
+- `test-task-lock-reap.sh`: exit 0, 6/6 passed.
+- `check-task-references.sh`: exit 0, PASS, 0 unexempted occurrences across 4 trees.
+- `check-extension-docs.sh`: exit 1. Failure set: `core` (pre-existing deployed-script content drift on `scripts/check-extension-docs.sh` itself, plus one advisory duplicate-hook-registration item — both pre-existing and owned by the separate in-flight task fixing that script's `find`-vs-`git ls-files` defect, per this task's binding constraints) and `literature` (pre-existing `__pycache__` FAIL entries, the known external failure named in this task's binding constraints). This deviates from the plan's expectation of `literature`-only, but both failures are external/pre-existing and outside this task's `file_scope`; the Phase 10 sweep re-confirms this failure set is unchanged by this task's edits.
 
 **Timing**: 1 hour
 

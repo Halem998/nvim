@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Baseline Capture and Canonical Conversion Template",
+  "started_at": "2026-07-29T00:00:00Z",
+  "last_updated": "2026-07-29T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record baseline gate-set results", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Convert 6 sites in skill-status-sync/SKILL.md", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-status-sync/SKILL.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Baseline: test-state-write-concurrency.sh PASS(4/4), test-task-lock-reap.sh PASS(6/6), check-task-references.sh PASS(0 hits), check-extension-docs.sh FAIL(core: pre-existing deployed-script drift on check-extension-docs.sh itself, owned by a separate in-flight task; literature: pre-existing __pycache__ FAIL). Both check-extension-docs.sh failures recorded as known baseline/external, unchanged by this task."
+}

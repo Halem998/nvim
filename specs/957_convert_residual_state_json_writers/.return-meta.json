@@ -1,27 +1,7 @@
 {
-  "status": "planned",
+  "status": "in_progress",
   "task_number": 957,
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "session_id": "sess_1785337600_a52f75_957",
-  "phase_count": 10,
-  "estimated_hours": 11,
-  "dependency_waves": [[1], [2, 3, 4, 5, 6, 7, 8], [9], [10]],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/957_convert_residual_state_json_writers/plans/01_convert-residual-state-writers.md",
-      "summary": "10-phase plan converting 68 in-scope inline specs/state.json write sites across 16 core skill/command files to state-write.sh calls, then updating 6 stale-idiom documentation files. Phase 1 captures the gate-set baseline and establishes the conversion template on the smallest file; phases 2-8 own disjoint file territories (parallelizable), isolating the three files that interleave out-of-scope specs/archive/state.json and vault writes (task.md, todo.md, skill-todo/SKILL.md) into their own interface-tier phases; phase 9 updates docs last so examples reflect the actual final call shape; phase 10 executes the verification bar unweakened."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "When a mechanical conversion task spans many sites across files where in-scope and out-of-scope targets are visually similar and interleaved in the same code blocks (e.g. specs/state.json vs specs/archive/state.json writes), isolate each such file into its own plan phase with a mandatory pre-edit two-column inventory (in-scope vs out-of-scope line numbers) and a post-phase invariant that the out-of-scope count is byte-identical before and after. This converts the highest-probability failure mode -- a blanket regex substitution crossing the scope boundary -- into a checkable phase gate rather than relying on implementer care.",
-      "category": "PATTERN",
-      "source_artifact": "specs/957_convert_residual_state_json_writers/plans/01_convert-residual-state-writers.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["mechanical conversion", "scope boundary", "phase isolation", "pre-edit inventory", "invariant count"]
-    }
-  ],
-  "next_steps": "Run /implement 957 to execute the plan"
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1785337600_a52f75_957"
 }

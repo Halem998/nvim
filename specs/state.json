@@ -2579,7 +2579,7 @@
     {
       "project_number": 957,
       "project_name": "convert_residual_state_json_writers",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "title": "Convert the residual specs/state.json inline write sites to state-write.sh",
@@ -2625,7 +2625,7 @@
         }
       ],
       "created": "2026-07-28T23:14:04Z",
-      "last_updated": "2026-07-29T15:18:01Z",
+      "last_updated": "2026-07-29T15:18:52Z",
       "session_id": "sess_1785337600_a52f75_957",
       "next_artifact_number": null
     },
