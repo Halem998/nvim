@@ -146,6 +146,7 @@
       "state-write.sh",
       "task-lock.sh",
       "test-conflict-predicate.sh",
+      "test-four-tier-conflict.sh",
       "test-session-registry.sh",
       "test-session-runtime-files.sh",
       "test-state-write-concurrency.sh",

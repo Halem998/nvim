@@ -182,33 +182,36 @@ edits inside `cmd_acquire`'s body. Confirm at implementation time with
 
 ---
 
-### Phase 2: Tier 2 and Tier 3 proofs — new isolated-temp-root suite [NOT STARTED]
+### Phase 2: Tier 2 and Tier 3 proofs — new isolated-temp-root suite [COMPLETED]
 
 **Goal**: Prove bounded retry resolves a releasing lock, prove exhaustion falls through to the warn
 tier with fields intact, and pin same-session re-entry as never entering the retry loop.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/test-four-tier-conflict.sh` following the
+- [x] Create `agent-system/extensions/core/scripts/test-four-tier-conflict.sh` following the
       isolated-temp-root precedent of `test-conflict-predicate.sh`: throwaway `$TMPROOT/.claude/scripts/`
       satisfying `deploy-root-guard.sh`'s two-levels-under-root check, real scripts copied
       byte-for-byte, fixture `state.json` / `.sessions/` / `.lock/` at controlled epoch timestamps,
       `pass`/`fail`/`info` helpers, cleanup trap. Add no testability hooks to production code.
-- [ ] Tier-2 resolving case: a foreign holder's lock released (holder dir removed) partway through
+      *(completed)*
+- [x] Tier-2 resolving case: a foreign holder's lock released (holder dir removed) partway through
       the retry window by a backgrounded helper; assert `acquire-retry` returns 0, that exactly one
-      `NOTE:` line was emitted, and that no ABORT text appears in output.
-- [ ] Tier-3 exhaustion case: foreign holder's heartbeat kept fresh for the whole window; assert
+      `NOTE:` line was emitted, and that no ABORT text appears in output. *(completed)*
+- [x] Tier-3 exhaustion case: foreign holder's heartbeat kept fresh for the whole window; assert
       `acquire-retry` returns 1 and that the emitted text is byte-identical to what plain `acquire`
       emits for the same fixture (own-task variant: holder session, heartbeat age, stale threshold).
-- [ ] Tier-3 field-preservation cases for the other two variants: cross-task `file_scope` overlap
+      *(completed)*
+- [x] Tier-3 field-preservation cases for the other two variants: cross-task `file_scope` overlap
       against a held lock (other task, overlapping path, other session, heartbeat age) and against a
       live registered session (session id, overlapping path, covered task number, liveness reason).
-- [ ] Same-session re-entry case: `acquire-retry` invoked with the holder's own `session_id`; assert
+      *(completed)*
+- [x] Same-session re-entry case: `acquire-retry` invoked with the holder's own `session_id`; assert
       return 0, zero `NOTE:` lines, and elapsed wall-clock below the poll interval — i.e. the retry
-      loop was never entered.
-- [ ] Budget-bound case: assert the exhaustion case's elapsed wall clock is within a small tolerance
+      loop was never entered. *(completed)*
+- [x] Budget-bound case: assert the exhaustion case's elapsed wall clock is within a small tolerance
       of `TASK_LOCK_RETRY_BUDGET_MS` and nowhere near a minutes-scale wait. Run it with a lowered
-      `TASK_LOCK_RETRY_BUDGET_MS` env override to keep the suite fast.
-- [ ] Add `"test-four-tier-conflict.sh"` to `manifest.json`'s `provides.scripts` array.
+      `TASK_LOCK_RETRY_BUDGET_MS` env override to keep the suite fast. *(completed)*
+- [x] Add `"test-four-tier-conflict.sh"` to `manifest.json`'s `provides.scripts` array. *(completed)*
 
 **Timing**: 1.5 hours
 
