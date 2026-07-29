@@ -23,14 +23,17 @@
 # (reachability + decision-relevance) behind the declared list, and
 # docs/architecture/batch-admit-schema.md for the full verdict schema this check adds.
 #
-# Canonical predicate: this script transcribes, and never restates or forks, the directory-prefix
-# overlap algorithm defined once in context/patterns/file-footprint-overlap.md. See that document
-# for the normalization rule (rtrimstr("/")) and the three-way overlap test (exact match, or
-# either path a directory-prefix ancestor of the other). This script is that document's fourth
-# named consumer, alongside the task-level, phase-level, and lock-acquisition-level callers
-# already listed there. The self-modification check above is a FURTHER APPLICATION of the same
-# predicate — the candidate's own file_scope compared against a static declared list rather than
-# against another task's file_scope — not a new matching rule.
+# Canonical predicate: this script SPLICES, and never restates or forks, the directory-prefix
+# overlap algorithm defined once in context/patterns/file-footprint-overlap.md and implemented
+# once in scripts/lib/file-scope-overlap.sh ($FILE_SCOPE_OVERLAP_JQ_DEFS -- norm,
+# scopes_overlap_first, self_mod_match). See that document for the normalization rule
+# (rtrimstr("/")) and the three-way overlap test (exact match, or either path a directory-prefix
+# ancestor of the other). This script is that document's fourth named consumer, alongside the
+# task-level, phase-level, and lock-acquisition-level callers already listed there. It mirrors
+# scripts/task-lock.sh's scopes_overlap() exactly because both splice the SAME shared defs, not
+# because the two are independently kept in sync. The self-modification check above is a FURTHER
+# APPLICATION of the same predicate — the candidate's own file_scope compared against a static
+# declared list rather than against another task's file_scope — not a new matching rule.
 #
 # Usage:
 #   orchestrate-batch-admit.sh [--invocation-count <N>] <task_number> [<task_number> ...]
@@ -205,6 +208,20 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
+# Fail CLOSED (never fall back to an inline copy or skip the check) if the shared overlap-
+# predicate lib is unsourceable. Deployed path: .claude/scripts/lib/file-scope-overlap.sh;
+# source-store path: agent-system/extensions/core/scripts/lib/file-scope-overlap.sh. A missing
+# copy at the deployed path is the known extension-loader gap where new files under an already-
+# loaded extension's scripts/ subdirectories are not copied by the headless "Load Core" sync for
+# already-loaded extensions -- remedy: re-run the loader's copy_scripts step for the core
+# extension (or redeploy from source) so the file reaches .claude/scripts/lib/.
+if ! . "${SCRIPT_DIR}/lib/file-scope-overlap.sh" 2>/dev/null; then
+  echo "ERROR: orchestrate-batch-admit.sh: could not source ${SCRIPT_DIR}/lib/file-scope-overlap.sh." >&2
+  echo "  Source-store copy: agent-system/extensions/core/scripts/lib/file-scope-overlap.sh" >&2
+  echo "  Remedy: re-run the loader's copy_scripts step for the core extension, or redeploy from source." >&2
+  echo "  Failing CLOSED: no fallback overlap check will run; batch admission is blocked." >&2
+  exit 2
+fi
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
 CRITICAL_PATHS_FILE="$SCRIPT_DIR/../context/reference/orchestrator-critical-paths.json"
 
@@ -303,39 +320,7 @@ verdicts=$(jq -n -c \
   --argjson critical_expanded "$critical_expanded_json" \
   --argjson degraded "$degraded" \
   --argjson invocation_count "$invocation_count_arg" \
-  '
-  # def scopes_overlap_first: jq transcription of file-footprint-overlap.md, mirroring
-  # task-lock.sh scopes_overlap() exactly — rtrimstr("/") normalization, exact match or
-  # either-side "+/" prefix containment. Returns the first overlapping path FROM the foreign
-  # (own_scope vs. other_scope) side, per that existing convention.
-  def scopes_overlap_first(own_scope; other_scope):
-    def norm: rtrimstr("/");
-    (own_scope // []) as $sa | (other_scope // []) as $sb |
-    [ $sa[] as $pa | $sb[] as $pb |
-      ($pa|norm) as $na | ($pb|norm) as $nb |
-      select($na == $nb or ($nb | startswith($na + "/")) or ($na | startswith($nb + "/"))) |
-      $pb
-    ] | first // empty;
-
-  # def self_mod_match: further application of the SAME overlap predicate (D of
-  # file-footprint-overlap.md) — candidate own file_scope vs. a static declared critical-path
-  # list, rather than vs. another task file_scope. Returns the first matching {path, label}
-  # entry, in the critical-path data file declared order.
-  def self_mod_match($cscope; $crit):
-    def norm: rtrimstr("/");
-    ($cscope // []) as $sa |
-    [ $sa[] as $pa | $crit[] as $ce |
-      ($pa|norm) as $na | ($ce.path|norm) as $nb |
-      select($na == $nb or ($na | startswith($nb + "/")) or ($nb | startswith($na + "/"))) |
-      $ce
-    ] | first;
-    # NOTE: deliberately `first` (never `first // empty`) — unlike scopes_overlap_first below,
-    # the result of this def is bound via `as $sm_hit |` OUTSIDE any array comprehension. An
-    # `empty` result there would make the ENTIRE per-candidate pipeline produce zero output
-    # (the `as` construct binds by iterating its generator; a generator that yields nothing
-    # means the downstream pipe never runs at all), silently dropping that candidate verdict
-    # from stdout. Returning `null` on no-match instead lets `$sm_hit != null` downstream
-    # evaluate to `false` exactly once, as intended.
+  "$FILE_SCOPE_OVERLAP_JQ_DEFS"'
 
   def is_terminal: ascii_downcase as $s | ($s == "completed" or $s == "abandoned" or $s == "expanded");
 

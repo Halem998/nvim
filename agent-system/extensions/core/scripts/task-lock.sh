@@ -154,6 +154,32 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
 
+# --- ensure_file_scope_overlap_lib: lazy loader for lib/file-scope-overlap.sh ---
+# Deferred until first actual use (inside cmd_acquire, the sole consumer of scopes_overlap() /
+# session_contention()) rather than sourced unconditionally for the whole task-lock.sh CLI --
+# reap/heartbeat/release/check/session-register/session-heartbeat/session-release/session-list
+# never touch the overlap predicate and must keep working even if this lib copy is stale or
+# missing on the deployed tree. Fails CLOSED (returns 2, never silently skips the check) only
+# for the one caller that actually needs it. Deployed path: .claude/scripts/lib/file-scope-
+# overlap.sh; source-store path: agent-system/extensions/core/scripts/lib/file-scope-overlap.sh.
+# A missing copy at the deployed path is the known extension-loader gap where new files under an
+# already-loaded extension's scripts/ subdirectories are not copied by the headless "Load Core"
+# sync for already-loaded extensions -- remedy: re-run the loader's copy_scripts step for the
+# core extension (or redeploy from source) so the file reaches .claude/scripts/lib/.
+FILE_SCOPE_OVERLAP_LIB_LOADED="false"
+ensure_file_scope_overlap_lib() {
+  [ "$FILE_SCOPE_OVERLAP_LIB_LOADED" = "true" ] && return 0
+  if ! . "${SCRIPT_DIR}/lib/file-scope-overlap.sh" 2>/dev/null; then
+    echo "ERROR: task-lock.sh: could not source ${SCRIPT_DIR}/lib/file-scope-overlap.sh." >&2
+    echo "  Source-store copy: agent-system/extensions/core/scripts/lib/file-scope-overlap.sh" >&2
+    echo "  Remedy: re-run the loader's copy_scripts step for the core extension, or redeploy from source." >&2
+    echo "  Failing CLOSED: no fallback overlap check will run; task locking is blocked." >&2
+    return 2
+  fi
+  FILE_SCOPE_OVERLAP_LIB_LOADED="true"
+  return 0
+}
+
 # Stale threshold in minutes, overridable via env var. Default 30 (plan range: 30-60).
 TASK_LOCK_STALE_MIN="${TASK_LOCK_STALE_MIN:-30}"
 
@@ -305,26 +331,13 @@ get_file_scope() {
   echo "[]"
 }
 
-# --- scopes_overlap: jq transcription of file-footprint-overlap.md (lines 43-59) ---
-# scope_a_json / scope_b_json are compact JSON arrays of path strings. Prints the
-# first overlapping path FROM scope_b (the "foreign" side, per cmd_acquire's call
-# convention scopes_overlap "$own_scope" "$other_scope") on stdout when an overlap
-# is found; prints nothing otherwise. Callers use `[ -n "$out" ]` as the boolean
-# test and reuse the printed path in ABORT/WARN messages. Mirrors the canonical
-# rtrimstr("/") normalization and exact-match-or-either-side-prefix rule exactly;
-# does not restate or fork the algorithm.
-scopes_overlap() {
-  local scope_a="$1" scope_b="$2"
-  jq -n -r --argjson a "$scope_a" --argjson b "$scope_b" '
-    def norm: rtrimstr("/");
-    ($a // []) as $sa | ($b // []) as $sb |
-    [ $sa[] as $pa | $sb[] as $pb |
-      ($pa|norm) as $na | ($pb|norm) as $nb |
-      select($na == $nb or ($nb | startswith($na + "/")) or ($na | startswith($nb + "/"))) |
-      $pb
-    ] | first // empty
-  ' 2>/dev/null
-}
+# --- scopes_overlap: now sourced from lib/file-scope-overlap.sh (single shared definition) ---
+# Same signature (`scopes_overlap "$scope_a" "$scope_b"`) and return convention (first
+# overlapping path from the foreign side, empty on no match) as before -- see
+# lib/file-scope-overlap.sh for the implementation. Lazily sourced by
+# ensure_file_scope_overlap_lib() (defined near the top of this file) on first use inside
+# cmd_acquire; failure to source returns 2 (fail closed) from cmd_acquire only, never aborting
+# unrelated subcommands (reap, session-*, heartbeat, release, check) that never call it.
 
 # --- find_held_locks: list foreign .lock dirs under specs/, excluding one dir ---
 # Skips any lock dir whose holder.json is missing or unreadable/invalid (never lets
@@ -572,6 +585,9 @@ cmd_acquire() {
   local own_scope
   own_scope=$(get_file_scope "$task_number")
   if [ -n "$own_scope" ] && [ "$own_scope" != "[]" ]; then
+    if ! ensure_file_scope_overlap_lib; then
+      return 2
+    fi
     local held_dir other_task other_session other_scope overlap_path other_heartbeat other_age
     while IFS= read -r held_dir; do
       [ -n "$held_dir" ] || continue

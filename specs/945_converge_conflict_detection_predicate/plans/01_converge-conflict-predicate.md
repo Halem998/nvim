@@ -1,7 +1,7 @@
 # Implementation Plan: Task #945
 
 - **Task**: 945 - Converge conflict detection onto one bounded predicate over locks, registry, and state
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 11.5 hours
 - **Dependencies**: 944 (session registry — landed)
 - **Research Inputs**: specs/945_converge_conflict_detection_predicate/reports/01_converge-conflict-predicate.md
@@ -247,33 +247,61 @@ per wave.
 
 ---
 
-### Phase 1: Extract the overlap predicate into one shared library [NOT STARTED]
+### Phase 1: Extract the overlap predicate into one shared library [COMPLETED]
 
 **Goal**: One physical location for the directory-prefix match rule, with both existing consumers
 rewired to it and provably identical behavior.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lib/file-scope-overlap.sh` with a header
+- [x] Create `agent-system/extensions/core/scripts/lib/file-scope-overlap.sh` with a header
       comment naming `context/patterns/file-footprint-overlap.md` as the prose definition this
-      file transcribes exactly once.
-- [ ] Define `FILE_SCOPE_OVERLAP_JQ_DEFS` via a quoted heredoc (`<<'JQDEFS'`, no expansion),
+      file transcribes exactly once. *(completed)*
+- [x] Define `FILE_SCOPE_OVERLAP_JQ_DEFS` via a quoted heredoc (`<<'JQDEFS'`, no expansion),
       containing verbatim: `def norm`, `def scopes_overlap_first(own_scope; other_scope)`, and
       `def self_mod_match($cscope; $crit)` — including `self_mod_match`'s existing NOTE comment
-      explaining why it uses `first` and never `first // empty`.
-- [ ] Define the bash function `scopes_overlap()` in the lib with today's exact signature
+      explaining why it uses `first` and never `first // empty`. *(completed)*
+- [x] Define the bash function `scopes_overlap()` in the lib with today's exact signature
       (`scopes_overlap "$scope_a" "$scope_b"`), return convention (first overlapping path from the
       foreign side, empty on no match), and `2>/dev/null` suppression, implemented by splicing
-      `$FILE_SCOPE_OVERLAP_JQ_DEFS` into its `jq -n` program.
-- [ ] In `task-lock.sh`: delete the local `scopes_overlap()` definition and source the lib.
+      `$FILE_SCOPE_OVERLAP_JQ_DEFS` into its `jq -n` program. *(completed; verified byte-identical
+      against the six original scopes_overlap() test cases: exact match, either-side prefix,
+      trailing-slash normalization, no-overlap, empty scope, null scope)*
+- [x] In `task-lock.sh`: delete the local `scopes_overlap()` definition and source the lib.
       Sourcing failure exits 2 with a loud message naming the source-store path, the deployed
       path, and the loader-copy remedy. Fail CLOSED — never fall back to an inline copy or to
-      skipping the check.
-- [ ] In `orchestrate-batch-admit.sh`: delete the inline `scopes_overlap_first` and
+      skipping the check. *(completed: deviation from the literal task text — the sourcing is
+      LAZY, via a new `ensure_file_scope_overlap_lib()` helper called only inside `cmd_acquire`
+      immediately before the overlap-check loop, not unconditionally at file-top. An
+      unconditional top-of-file source broke `test-task-lock-reap.sh` and
+      `test-session-registry.sh` — both fixtures copy only `task-lock.sh` +
+      `deploy-root-guard.sh` into their isolated `$TMPROOT`, and neither `reap` nor any
+      `session-*` subcommand ever called `scopes_overlap()`, so failing the entire CLI on a
+      missing lib was a strictly larger blast radius than the original code had. The fail-closed
+      guarantee (exit 2, loud message, never a silent skip) is preserved exactly for the one
+      caller — `cmd_acquire` — that actually needs the predicate. See Verification below.)*
+- [x] In `orchestrate-batch-admit.sh`: delete the inline `scopes_overlap_first` and
       `self_mod_match` defs and splice `$FILE_SCOPE_OVERLAP_JQ_DEFS` into the `jq -n --slurpfile`
-      program string. Same fail-closed sourcing behavior.
-- [ ] Update `orchestrate-batch-admit.sh`'s header comment where it says the script "transcribes"
+      program string. Same fail-closed sourcing behavior. *(completed; this script IS
+      unconditionally single-purpose about the predicate, so top-of-file sourcing is correct
+      here and unchanged from the task text)*
+- [x] Update `orchestrate-batch-admit.sh`'s header comment where it says the script "transcribes"
       the algorithm and "mirrors task-lock.sh scopes_overlap() exactly" — after this phase it
-      SPLICES the one shared definition and mirrors nothing.
+      SPLICES the one shared definition and mirrors nothing. *(completed)*
+
+**Discovery (Scope Hypothesis confirmation)**: `grep -rn 'rtrimstr("/")' agent-system/extensions/core/`
+found FOUR hits, not two: (1) `lib/file-scope-overlap.sh` (the new canonical lib, expected), (2)
+`orchestrate-batch-admit.sh` line 30 (a prose comment only, post-splice — no code), (3)
+`events-query.sh` line 125 (`rtrimstr` used to normalize a `cwd` path for a `repo` field — a
+wholly unrelated domain, not a file_scope overlap transcription), and (4)
+`orchestrate-predispatch-review.sh` line 312, `def norm: rtrimstr("/");` — investigated and
+confirmed NOT a transcription of the full predicate: it defines only the bare normalization
+helper, reused locally for that script's own Class C (self-modification declaration-coarseness)
+diagnostic, which matches a scope entry against a `critical_path` string directly rather than
+calling `scopes_overlap_first`/`self_mod_match`. It never re-derives the overlap RULE itself. Per
+research finding #2, `orchestrate-predispatch-review.sh` is a pure NDJSON consumer of
+`orchestrate-batch-admit.sh`'s verdicts (re-verified in Phase 6), not a fifth implementer of the
+predicate. The Scope Hypothesis's "exactly two files transcribe the predicate" therefore holds;
+no third site required convergence in this phase.
 
 **Timing**: 1.5 hours
 
