@@ -1,0 +1,19 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "research",
+  "status": "researched",
+  "summary": "Confirmed state-write.sh mechanism is complete and needs no changes. Re-measured file_scope's inline specs/state.json write sites at 68 (task's stated ~56 baseline is explicitly approximate). Found state-write.sh cannot target specs/archive/state.json or vault-root state.json (hardcoded STATE_FILE) -- those sites in skill-todo/task.md/todo.md are out of scope per the verification bar's own wording. Identified fold/don't-fold precedent in commands/review.md and session_id-availability differences per file (todo.md has none today).",
+  "artifacts": [
+    {"type": "report", "path": "specs/957_convert_residual_state_json_writers/reports/01_convert-residual-state-writers.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "plan",
+  "files_modified": [],
+  "decisions_made": [
+    "specs/archive/state.json and vault-root state.json writes are out of scope for this task -- state-write.sh's STATE_FILE is hardcoded to specs/state.json with no --file override, and extending it conflicts with the task's 'do not re-invent' mandate",
+    "Task's stated baseline (48+8=56 sites) is confirmed approximate as the task description itself warned; re-grep found 68 in-scope specs/state.json sites across the 16 file_scope code files",
+    "commands/review.md lines 628-655 (don't fold) and 795-826 (fold) are the canonical --regen-todo fold-vs-don't-fold precedent to imitate"
+  ],
+  "dead_ends": [],
+  "next_steps": "Run /plan 957 to create implementation plan"
+}
