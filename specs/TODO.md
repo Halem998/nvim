@@ -11,7 +11,7 @@ next_project_number: 967
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 947,950,951,955,957,959,963,964,965,966 | -- | agent-system, orchestration-concurrency |
+| 1 | 947,950,951,955,957,959,963,964,966 | -- | agent-system, orchestration-concurrency |
 | 2 | 948,952,958,960 | 947,951,957,959,966 | agent-system |
 | 3 | 949,953,954,961 | 948,952,960 | agent-system |
 | 4 | 962 | 961 | agent-system |
@@ -35,7 +35,6 @@ next_project_number: 967
       └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 964 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-965 [IMPLEMENTING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 966 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 958 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
@@ -89,12 +88,13 @@ DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task
 ---
 
 ### 965. Make check_undeclared_scripts skip untracked build artifacts
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [965_skip_untracked_artifacts_in_undeclared_scripts_check/reports/01_git-ls-files-enumeration.md]
 - **Plan**: [965_skip_untracked_artifacts_in_undeclared_scripts_check/plans/01_git-ls-files-enumeration.md]
+- **Summary**: [965_skip_untracked_artifacts_in_undeclared_scripts_check/summaries/01_git-ls-files-enumeration-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`. Runtime invocations may still reference deployed `.claude/scripts/*` paths -- that is the CALL PATH, not the EDIT TARGET.
 

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #965
 
 - **Task**: 965 - Make check_undeclared_scripts skip untracked build artifacts
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/965_skip_untracked_artifacts_in_undeclared_scripts_check/reports/01_git-ls-files-enumeration.md
