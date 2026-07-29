@@ -3176,7 +3176,7 @@
       "project_number": 978,
       "project_name": "fix_index_validators_and_line_counts",
       "title": "Fix the lying context-index validators; machine-compute line_count; add index-orphan gate",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [
@@ -3190,8 +3190,15 @@
       ],
       "description": "Make the context-index validation layer tell the truth. From the agent-system review (specs/reviews/review-2026-07-29-agent-system.md, docs/context section): 104 of 164 deployed index entries have wrong line_count (58 beyond the validator's own 10% tolerance; whole extension blocks are round-number placeholders that were never measured), 14 deployed context files including the single largest context file (patterns/task-lock.md, 1103 lines) have NO index entry and are unreachable by any agent, and the validator that should catch the line counts reports 'Warnings: 0 / Validation PASSED' while 58 real warnings scroll past.\n\nWHAT IS WRONG:\n  1. validate-context-index.sh (~lines 96-115) pipes jq into 'while read', so the loop runs in a subshell and every WARNINGS=$((WARNINGS+1)) increment is discarded. Fix with process substitution or a temp-file count so the summary reflects reality (and decide whether >tolerance mismatches should be errors, not warnings).\n  2. line_count is typed by hand in every index-entries.json and drifts freely; nothing recomputes it. Add a small generator (or a --fix mode on the validator) that rewrites line_count from wc -l across all extensions' index-entries.json, and wire it into the deploy path so counts can never rot again.\n  3. No script diffs DEPLOYED CONTEXT FILES against INDEX ENTRIES — check-extension-docs.sh's check_context_orphans diffs manifest provides.context against disk, never disk against index. Add an index-orphan gate beside it. Then resolve the current orphans: index or consciously exclude the 11 core files (patterns/task-lock.md, standards/git-staging-scope.md, patterns/lit-stage4a-flow.md, guides/hard-mode-routing.md, etc.) and the literature/email/memory/nvim strays.\n  4. While in the file: the index has no version/generated top-level stamp despite the schema offering them — emit one so staleness is detectable.\n\nVERIFICATION BAR:\n  - Running validate-context-index.sh against the current deployed index reports the true warning/error count (nonzero before the line_count regeneration, zero after).\n  - A deliberately-orphaned scratch context file makes the new gate fail; removing it passes.\n  - All line_count fields across agent-system/extensions/*/index-entries.json match wc -l exactly after the generator runs.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-07-29T19:29:18Z",
-      "last_updated": "2026-07-29T19:40:45Z",
-      "session_id": "sess_1785353358_66268f"
+      "last_updated": "2026-07-29T22:51:28Z",
+      "session_id": "sess_1785364948_8d0801",
+      "artifacts": [
+        {
+          "path": "specs/978_fix_index_validators_and_line_counts/reports/01_context-index-validation-truth.md",
+          "type": "report",
+          "summary": ""
+        }
+      ]
     },
     {
       "project_number": 979,

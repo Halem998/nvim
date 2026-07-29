@@ -1,0 +1,41 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/978_fix_index_validators_and_line_counts/reports/01_context-index-validation-truth.md",
+      "summary": "Empirical verification of all 4 claimed defects (subshell bug, hand-typed line_count, missing index-orphan gate, missing version/generated stamp), full source-level scope (444 entries/19 extensions), and recommended wiring point (check-extension-docs.sh, not validate-context-index.sh or a new verify-deploy.sh gate)."
+    }
+  ],
+  "next_steps": "Run /plan 978 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1785364948_8d0801",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate"],
+    "findings_count": 4
+  },
+  "memory_candidates": [
+    {
+      "content": "In bash, `jq -r '...' | while IFS=$'\\t' read -r ...; do COUNTER=$((COUNTER+1)); done` silently discards COUNTER increments because the while loop runs in a subshell (last pipeline stage). Fix with process substitution (`< <(jq ...)`) or a temp-file/wc -l count. This pattern recurs anywhere a validator accumulates counters inside a piped while-read loop -- check for it specifically when a validator's printed [WARN]/[ERROR] lines don't match its own summary totals.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/978_fix_index_validators_and_line_counts/reports/01_context-index-validation-truth.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash", "subshell", "pipeline", "while-read", "validator", "counter-bug"]
+    },
+    {
+      "content": "In this repo's extension system, context/index.json line_count values are hand-typed in each extension's source agent-system/extensions/<ext>/index-entries.json and copied verbatim (no recomputation) by merge.lua's M.append_index_entries during deploy. A regenerator/validator must operate on the SOURCE index-entries.json files (agent-system/extensions/*/), not just the deployed .claude/context/index.json copy, per the source-store/deploy-boundary rule -- fixing only the deployed copy is silently undone on next redeploy.",
+      "category": "PATTERN",
+      "source_artifact": "specs/978_fix_index_validators_and_line_counts/reports/01_context-index-validation-truth.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["index-entries.json", "line_count", "source-store", "deploy-boundary", "merge.lua", "regenerator"]
+    },
+    {
+      "content": "check-extension-docs.sh has an established, reusable framework for project-wide deployed-file-orphan checks: $EXT_DIR=\"$REPO_ROOT/agent-system/extensions\" iteration, an orphan_report() helper, and an ORPHAN_GATE_MODE advisory-then-hard two-phase promotion precedent (Rules J-Q). New cross-cutting validation checks (e.g. index-vs-disk diffing, line_count drift) should be added as new lettered rules in this file rather than as new verify-deploy.sh gates or standalone scripts, since check-extension-docs.sh is already wired as verify-deploy.sh's gate 3 and inherits its automated invocation for free.",
+      "category": "PATTERN",
+      "source_artifact": "specs/978_fix_index_validators_and_line_counts/reports/01_context-index-validation-truth.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["check-extension-docs.sh", "verify-deploy.sh", "orphan_report", "gate-wiring", "validation-framework"]
+    }
+  ]
+}
