@@ -1,34 +1,31 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/977_extension_manifest_quick_fixes/reports/01_manifest-quick-fixes-verification.md",
-      "summary": "Independent verification of all five extension-manifest quick-fix items, with the item-5 add-fragment-vs-delete-block judgment resolved per extension."
+      "type": "plan",
+      "path": "specs/977_extension_manifest_quick_fixes/plans/01_manifest-quick-fixes.md",
+      "summary": "Eight-phase implementation plan covering the five extension-manifest quick-fix items, with a findings-baseline gate and per-phase verification tiers."
     }
   ],
-  "next_steps": "Run /plan 977 to create implementation plan",
+  "next_steps": "Run /implement 977 to execute the plan",
   "metadata": {
     "session_id": "sess_1785355598_1f68c0_977",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
+    "duration_seconds": 420,
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 5
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 8,
+    "estimated_hours": 3,
+    "dependency_waves": [[1], [2, 3, 4, 6], [5], [7], [8]]
   },
   "memory_candidates": [
     {
-      "content": "extension-system.md's settings-fragment.json contract requires camelCase mcpServers at the top level; a manifest's own top-level mcp_servers field (any casing) is display-only and never consumed by the loader's merge_settings() -- it does a plain deep-merge with no key-name translation. When auditing extensions for MCP tool registration bugs, check both: (1) settings-fragment.json uses mcpServers not mcp_servers, and (2) every non-empty top-level manifest mcp_servers block has a matching merge_targets.settings entry -- four extensions (founder, filetypes, memory, present) were found with the latter gap and no automated check catches it.",
+      "content": "When a batch of independent config-file fixes shares one file surface (e.g. several extension manifest.json files), phase them one-item-per-phase but serialize any phases touching the SAME file via explicit `Depends on` edges rather than putting them in the same parallel wave. In the extension-manifest batch, two separate defects both edited literature/manifest.json (keyword_overrides shape and the dependencies array) and a third phase swept every manifest for empty stubs; the wave map was built so no two phases in one wave share a file, preserving parallelism for the genuinely independent items while keeping each phase independently revertable. Pair this with a first phase that captures a machine-diffable baseline (verify-deploy.sh --findings) so later phases can prove 'no NEW findings' rather than merely re-asserting 'still passes' -- a subset check against a captured baseline is a strictly stronger gate than an exit-code check, and it is the only way a deploy-footprint-affecting change can be shown not to have perturbed an already-clean tree.",
       "category": "PATTERN",
-      "source_artifact": "specs/977_extension_manifest_quick_fixes/reports/01_manifest-quick-fixes-verification.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["extension-manifest", "mcp_servers", "mcpServers", "settings-fragment", "merge_targets"]
-    },
-    {
-      "content": "task.md's keyword_overrides consumer (steps 4b/4e) requires {\"<task_type>\": {\"keywords\": [...], \"aliases\": [...]}} shape and pipes the jq call through 2>/dev/null, so a manifest using the wrong shape (flat string values) fails silently with no visible error -- the routing feature simply never matches for that extension. When reviewing new keyword_overrides entries, always test the jq pattern directly (not just visually inspect the JSON) since a shape error produces zero user-visible symptoms.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/977_extension_manifest_quick_fixes/reports/01_manifest-quick-fixes-verification.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["keyword_overrides", "silent-failure", "jq", "task-routing"]
+      "source_artifact": "specs/977_extension_manifest_quick_fixes/plans/01_manifest-quick-fixes.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["dependency-waves", "file-conflict", "baseline-diff", "verify-deploy", "batch-fixes"]
     }
-  ]
+  ],
+  "modified_files": []
 }
