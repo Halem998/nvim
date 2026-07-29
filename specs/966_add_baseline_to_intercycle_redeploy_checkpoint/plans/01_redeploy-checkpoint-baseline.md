@@ -515,39 +515,41 @@ consolidated-output renderer, without altering the batch exit-status resolution.
 
 ---
 
-### Phase 5: Render the third state in the consolidated output [NOT STARTED]
+### Phase 5: Render the third state in the consolidated output [COMPLETED]
 
 **Goal**: an operator reading `/orchestrate`'s batch output cannot miss a pre-existing
 verify-deploy failure, and the defer case's Reason text now names the newly-introduced findings.
 
 **Tasks**:
 
-- [ ] Add a new section to the Consolidated Output template in `commands/orchestrate.md`, sibling
+- [x] Add a new section to the Consolidated Output template in `commands/orchestrate.md`, sibling
       to and immediately following `### Deferred (redeploy checkpoint)`:
       `### Pre-Existing Deploy-Verify Failures (Not Deferred)`. Render it only when
       `verify_deploy_baseline_notices` is non-empty; state that it renders on SUCCEEDED batches
-      too, not only partial ones.
-- [ ] Inside it, render the banner
+      too, not only partial ones. *(completed)*
+- [x] Inside it, render the banner
       `[PRE-EXISTING VERIFY-DEPLOY FAILURE - N finding(s) predate this redeploy, 0 newly introduced; batch continuing]`
       and the machine marker
       `<!-- verify-deploy-baseline pre={pre_count} post={post_count} new=0 proceeded=true -->`,
       following the same banner + HTML-comment shape the `### ZERO DISPATCH` section already uses.
-- [ ] Add a table with columns `Cycle | Gate | Pre-existing findings | New findings | Outcome`,
+      *(completed)*
+- [x] Add a table with columns `Cycle | Gate | Pre-existing findings | New findings | Outcome`,
       one row per `verify_deploy_baseline_notices` entry, plus a one-line note that these findings
       are REAL problems that were not introduced by this batch's redeploy, with the operator remedy
-      (fix the standing failure; re-run `verify-deploy.sh` manually to confirm).
-- [ ] Add a sentence covering Decision 2's symmetric exit-2 case: when `post_exit` is 2, the row's
+      (fix the standing failure; re-run `verify-deploy.sh` manually to confirm). *(completed)*
+- [x] Add a sentence covering Decision 2's symmetric exit-2 case: when `post_exit` is 2, the row's
       Outcome reads "verify-deploy could not run, before or after this redeploy — pre-existing
-      condition".
-- [ ] Cross-reference `context/patterns/batch-orchestration-guardrails.md`'s
+      condition". *(completed)*
+- [x] Cross-reference `context/patterns/batch-orchestration-guardrails.md`'s
       `### The Inter-Cycle Redeploy Checkpoint` subsection for the full contract, mirroring how
       `### Deferred (redeploy checkpoint)` already does. Do NOT restate the contract inline
-      (constraint 3, cross-reference-by-path discipline).
-- [ ] Update the `### Deferred (redeploy checkpoint)` table's Reason cell template so it names the
+      (constraint 3, cross-reference-by-path discipline). *(completed)*
+- [x] Update the `### Deferred (redeploy checkpoint)` table's Reason cell template so it names the
       newly-introduced findings rather than only `{gate}, exit {code}` — e.g.
       `inter-cycle redeploy checkpoint gate failed ({gate}, exit {code}; {n} new finding(s) vs. pre-redeploy baseline); not dispatched for the remainder of this invocation`.
       Leave that section's operator-remedy paragraph and its authoritative cross-reference intact.
-- [ ] Use durable anchors only — no task numbers (deliverable rule).
+      *(completed)*
+- [x] Use durable anchors only — no task numbers (deliverable rule). *(completed)*
 
 **Timing**: 0.75 hours
 

@@ -624,12 +624,40 @@ partial batches too, not only inside the ZERO DISPATCH section above.)
 
 | Task | Reason |
 |------|--------|
-| #55 | inter-cycle redeploy checkpoint gate failed ({gate}, exit {code}); not dispatched for the remainder of this invocation |
+| #55 | inter-cycle redeploy checkpoint gate failed ({gate}, exit {code}; {n} new finding(s) vs. pre-redeploy baseline); not dispatched for the remainder of this invocation |
 
 Operator remedy (distinct from a deferred-self-modifying task): resolve the deploy/verify
 failure, redeploy manually, then re-run `/orchestrate` on the remaining task numbers. See
 `context/patterns/batch-orchestration-guardrails.md`'s `### The Inter-Cycle Redeploy Checkpoint`
 subsection for the full contract; not restated here.
+
+### Pre-Existing Deploy-Verify Failures (Not Deferred)
+
+(Rendered only when `verify_deploy_baseline_notices` is non-empty — populated from
+`mt_state_file.verify_deploy_baseline_notices`, one row per entry. Renders on a SUCCEEDED
+(`"implemented"`) batch just as readily as a `"partial"` one: the third operator-visible state is
+never omitted merely because the batch otherwise completed cleanly. Placed immediately after
+`### Deferred (redeploy checkpoint)`, before `### Next Steps`.)
+
+[PRE-EXISTING VERIFY-DEPLOY FAILURE - N finding(s) predate this redeploy, 0 newly introduced; batch continuing]
+<!-- verify-deploy-baseline pre={pre_count} post={post_count} new=0 proceeded=true -->
+
+These findings are REAL problems that were not introduced by this batch's redeploy — the
+pre-redeploy baseline already contained every one of them. Operator remedy: fix the standing
+failure at your convenience, then re-run `bash .claude/scripts/verify-deploy.sh` manually to
+confirm. Unlike `### Deferred (redeploy checkpoint)` above, no task was excluded because of this.
+
+| Cycle | Gate | Pre-existing findings | New findings | Outcome |
+|-------|------|------------------------|---------------|---------|
+| 2 | verify-deploy.sh | 4 | 0 | proceeded — pre-existing, batch continuing |
+
+When `post_exit` is `2`, the row's Outcome instead reads "verify-deploy could not run, before or
+after this redeploy — pre-existing condition" (the symmetric exit-2 case: `verify-deploy.sh`
+could not be run either before or after this redeploy, for the identical reason).
+
+See `context/patterns/batch-orchestration-guardrails.md`'s `### The Inter-Cycle Redeploy
+Checkpoint` subsection (Failure contract branch (c), Baseline mechanism, and Exit-2 resolution)
+for the full contract; not restated here.
 
 ### Next Steps
 - Re-run failed tasks: /orchestrate {failed_task_numbers}
