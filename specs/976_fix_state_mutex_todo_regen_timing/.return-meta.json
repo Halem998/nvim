@@ -1,19 +1,16 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
   "task_number": 976,
   "session_id": "sess_1785355598_1f68c0_976",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/976_fix_state_mutex_todo_regen_timing/plans/01_mutex-regen-outside-lock.md",
-      "summary": "5-phase plan: release the scope mutex before TODO regeneration in state-write.sh (primary fix, ~6.9s -> ~13ms critical section), optional staleness widening, a new isolated-temp-root regression test proving mutex release and concurrent status flips, a single-pass jq rewrite of generate-todo.sh with byte-identical golden-output gating, and a deploy-sync verification sweep."
-    }
-  ],
-  "phase_count": 5,
-  "estimated_hours": 3.5,
-  "dependency_waves": [[1], [2, 3, 4], [5]],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 976 to execute the plan"
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "artifacts": [],
+  "metadata": {
+    "session_id": "sess_1785355598_1f68c0_976",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 5
+  }
 }

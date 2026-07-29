@@ -23,11 +23,15 @@
 #   --session-id    Required. The caller's session_id, used to attribute mutex ownership.
 #   --arg NAME VAL      Optional, repeatable. Forwarded to jq as `--arg NAME VAL`.
 #   --argjson NAME VAL  Optional, repeatable. Forwarded to jq as `--argjson NAME VAL`.
-#   --regen-todo    Optional. When passed, `generate-todo.sh` runs INSIDE the critical section,
-#                   after the `mv` and before mutex release, so TODO.md regeneration is never a
-#                   separate step racing a concurrent writer. A regen failure is a loud warning,
-#                   not a hard failure -- the state.json write already succeeded, matching
-#                   update-task-status.sh's existing posture.
+#   --regen-todo    Optional. When passed, `generate-todo.sh` runs AFTER the mutex is released (in
+#                   owned-here mode) so regeneration's wall time is never charged against the
+#                   specs/.scope-lock critical section; in guest mode (SCOPE_MUTEX_HELD=1
+#                   inherited) it still runs inside the outer caller's own bracket, unchanged. This
+#                   means TODO.md itself is last-writer-wins under concurrent --regen-todo calls --
+#                   an accepted trade-off, since it is a generated view and its own write is already
+#                   atomic (tempfile + mv). A regen failure is a loud warning, not a hard failure --
+#                   the state.json write already succeeded, matching update-task-status.sh's
+#                   existing posture.
 #   --dry-run       Optional. Serializes nothing because it writes nothing: no mutex acquire, no
 #                   staging, no transform. Matches update-task-status.sh's existing dry-run
 #                   posture. The filter and bindings are still validated for syntax.
@@ -218,7 +222,18 @@ fi
 mv "$STAGE_FILE" "$STATE_FILE"
 STAGE_FILE=""
 
-# --- Optional in-mutex TODO.md regen ---
+# Release the mutex BEFORE regeneration, not after. generate-todo.sh's wall time can exceed both
+# SCOPE_MUTEX_ACQUIRE_BUDGET_MS (the waiter timeout) and half of SCOPE_MUTEX_STALE_SEC (the
+# staleness reclaim window) against a large state.json, which risks a live holder's mutex being
+# reclaimed as stale out from under it. The state.json write is already durable at this point
+# (the `mv` above already landed), so releasing early only changes when TODO.md regeneration is
+# allowed to run, not the correctness of the state.json write itself. release_mutex() is a no-op
+# in guest mode (MUTEX_OWNED_HERE stays false there), so this call has no effect when running
+# nested under an outer holder's bracket -- see acquire_mutex()'s guest-mode branch above.
+release_mutex
+
+# --- Optional TODO.md regen (outside the critical section in owned-here mode; still inside the
+# outer caller's bracket in guest mode, since release_mutex() above was a no-op there) ---
 if [ "$REGEN_TODO" = true ]; then
   "$SCRIPT_DIR/generate-todo.sh" || {
     echo "Warning: generate-todo.sh failed (state.json was updated successfully)" >&2

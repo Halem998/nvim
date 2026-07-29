@@ -1,7 +1,7 @@
 # Implementation Plan: Move TODO regeneration out of the state mutex critical section
 
 - **Task**: 976 - Move TODO regeneration out of the state mutex critical section (or extend the window)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: Task 965
 - **Research Inputs**: specs/976_fix_state_mutex_todo_regen_timing/reports/01_mutex-timing-defect.md
@@ -116,31 +116,32 @@ Phases within the same wave can execute in parallel. Wave 2's three phases own d
 
 ---
 
-### Phase 1: Release the mutex before TODO regeneration [NOT STARTED]
+### Phase 1: Release the mutex before TODO regeneration [COMPLETED]
 
 **Goal**: `state-write.sh --regen-todo` releases the `specs/.scope-lock` mutex immediately after
 the atomic `mv` and runs `generate-todo.sh` outside the critical section, with guest-mode
 behavior unchanged.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/state-write.sh`, insert an explicit
+- [x] In `agent-system/extensions/core/scripts/state-write.sh`, insert an explicit
       `release_mutex` call immediately after the `mv "$STAGE_FILE" "$STATE_FILE"` / `STAGE_FILE=""`
-      pair and BEFORE the `if [ "$REGEN_TODO" = true ]` block.
-- [ ] Confirm no other statement is moved: the regeneration block itself stays where it is, and
+      pair and BEFORE the `if [ "$REGEN_TODO" = true ]` block. *(completed)*
+- [x] Confirm no other statement is moved: the regeneration block itself stays where it is, and
       the `trap cleanup EXIT` remains registered (its later `release_mutex` becomes a no-op
-      because `MUTEX_OWNED_HERE` is already `false`).
-- [ ] Update the `--regen-todo` usage comment in the file header, which currently states that
+      because `MUTEX_OWNED_HERE` is already `false`). *(completed)*
+- [x] Update the `--regen-todo` usage comment in the file header, which currently states that
       regeneration "runs INSIDE the critical section, after the `mv` and before mutex release".
       Replace with an accurate description: regeneration runs AFTER mutex release in owned-here
       mode, and inside the outer caller's bracket in guest mode. State the last-writer-wins
-      trade-off for TODO.md in one sentence.
-- [ ] Add a short inline comment at the new `release_mutex` call explaining why it is there
+      trade-off for TODO.md in one sentence. *(completed)*
+- [x] Add a short inline comment at the new `release_mutex` call explaining why it is there
       (regeneration wall time exceeds the mutex acquire budget and staleness window). Reference
       the variable names `SCOPE_MUTEX_ACQUIRE_BUDGET_MS` and `SCOPE_MUTEX_STALE_SEC` as durable
-      anchors — do NOT cite any task number in the script.
-- [ ] Verify guest mode is untouched by reading `release_mutex()` and confirming its
+      anchors — do NOT cite any task number in the script. *(completed)*
+- [x] Verify guest mode is untouched by reading `release_mutex()` and confirming its
       `MUTEX_OWNED_HERE = true` guard makes the new call a no-op when `SCOPE_MUTEX_HELD=1` was
-      inherited.
+      inherited. *(completed: confirmed by code inspection — MUTEX_OWNED_HERE stays false on the
+      guest branch of acquire_mutex(), so release_mutex() is a no-op there)*
 
 **Timing**: 0.5 hours
 

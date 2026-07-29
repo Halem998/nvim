@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Release the mutex before TODO regeneration",
+  "started_at": "2026-07-29T00:00:00Z",
+  "last_updated": "2026-07-29T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Insert explicit release_mutex call after mv/STAGE_FILE reset, before REGEN_TODO block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/state-write.sh"]},
+    {"id": 2, "description": "Confirm no other statement moved; trap cleanup still registered", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Update --regen-todo usage comment in file header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/state-write.sh"]},
+    {"id": 4, "description": "Add inline comment at new release_mutex call", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/state-write.sh"]},
+    {"id": 5, "description": "Verify guest mode untouched by code inspection", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
