@@ -179,6 +179,9 @@ names for the plain multi-task command paths. Must run AFTER session-register (a
 every candidate against itself.
 
 ```bash
+deferred_second_pass=()
+second_pass_ledger=()
+
 admit_output=$(bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#validated_tasks[@]}" --session-id "$batch_session_id" "${validated_tasks[@]}" 2>/dev/null)
 while IFS= read -r verdict; do
   [ -z "$verdict" ] && continue
@@ -186,6 +189,7 @@ while IFS= read -r verdict; do
   [ "$decision" = "defer" ] || continue
   t=$(echo "$verdict" | jq -r '.task_number')
   defer_reason=$(echo "$verdict" | jq -r '.defer_reason // "unknown"')
+  collision_scope=$(echo "$verdict" | jq -r '.collision_scope // ""')
   reason_text=$(echo "$verdict" | jq -r '.reason // "deferred by batch admission"')
   # EXCLUDE, never auto-expand: remove $t from validated_tasks, never pull anything else in.
   new_validated=()
@@ -193,11 +197,24 @@ while IFS= read -r verdict; do
     [ "$existing" = "$t" ] || new_validated+=("$existing")
   done
   validated_tasks=("${new_validated[@]}")
-  skipped_tasks+=("$t: deferred by batch admission [$defer_reason]")
-  echo "[WARN] Task #$t deferred by batch admission ($defer_reason): $reason_text" >&2
+
+  if [ "$defer_reason" = "file_scope_collision" ] && [ "$collision_scope" = "in_batch" ]; then
+    # Tier 1 (auto-sequence): the colliding task is itself inside THIS SAME invocation and will
+    # finish this run, so a "wait for this invocation's own dispatch" event exists -- re-sequence
+    # into a bounded second pass instead of dropping it. Every OTHER defer flavor (cross_batch
+    # file_scope_collision, self_modifying, session_active) keeps the pre-existing exclude-to-
+    # skipped_tasks behavior verbatim below, since none of those collisions resolve within this
+    # invocation.
+    deferred_second_pass+=("$t")
+    second_pass_ledger+=("{\"task\":$t,\"defer_reason\":\"$defer_reason\",\"collision_scope\":\"$collision_scope\",\"pass\":1,\"detail\":$(jq -Rn --arg d "$reason_text" '$d')}")
+    echo "[WARN] Task #$t deferred to second pass ($defer_reason, in_batch): $reason_text" >&2
+  else
+    skipped_tasks+=("$t: deferred by batch admission [$defer_reason]")
+    echo "[WARN] Task #$t deferred by batch admission ($defer_reason): $reason_text" >&2
+  fi
 done <<< "$admit_output"
 
-if [ ${#validated_tasks[@]} -eq 0 ]; then
+if [ ${#validated_tasks[@]} -eq 0 ] && [ ${#deferred_second_pass[@]} -eq 0 ]; then
   echo "[FAIL] No valid tasks remain after batch admission — every candidate was deferred." >&2
   exit 1
 fi
@@ -226,6 +243,53 @@ For each validated task, invoke the appropriate research skill using parallel Sk
 single parallel batch and waits for every result — there is no per-cycle loop boundary to
 heartbeat at, unlike `skill-orchestrate`'s multi-cycle dispatch. This is an intentional omission,
 not a gap to "fix" later.
+
+#### Step 3.5: Second Pass (Bounded, In-Batch Deferrals Only)
+
+Re-sequences exactly the tasks Step 2.5 moved into `deferred_second_pass` — a bounded second
+pass, never a loop, never expanded beyond this exact set. If `deferred_second_pass` is empty,
+skip this step entirely.
+
+```bash
+if [ ${#deferred_second_pass[@]} -gt 0 ]; then
+  second_admit_output=$(bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#deferred_second_pass[@]}" --session-id "$batch_session_id" "${deferred_second_pass[@]}" 2>/dev/null)
+  pass2_admitted=()
+  while IFS= read -r verdict; do
+    [ -z "$verdict" ] && continue
+    t=$(echo "$verdict" | jq -r '.task_number')
+    decision=$(echo "$verdict" | jq -r '.decision // ""')
+    if [ "$decision" = "admit" ]; then
+      pass2_admitted+=("$t")
+      second_pass_ledger+=("{\"task\":$t,\"pass\":2,\"detail\":\"admitted on second pass\"}")
+    else
+      defer_reason=$(echo "$verdict" | jq -r '.defer_reason // "unknown"')
+      second_pass_ledger+=("{\"task\":$t,\"defer_reason\":\"$defer_reason\",\"pass\":2,\"detail\":\"still deferred after second pass\"}")
+      # Bound is exactly one extra pass -- never a third. Non-convergence terminates this
+      # invocation as partial, never a failure.
+      skipped_tasks+=("$t: deferred after second pass [$defer_reason]")
+      echo "[WARN] Task #$t still colliding after second pass ($defer_reason); no third pass attempted." >&2
+    fi
+  done <<< "$second_admit_output"
+fi
+```
+
+For each task in `pass2_admitted`, dispatch through the IDENTICAL per-task bracket as Step 3
+item 3/7 above (`acquire-retry` → invoke the research skill → unconditional `release`), run
+SEQUENTIALLY rather than in Step 3's parallel batch — by the time pass 2 runs, the pass-1
+collision this task lost to has typically already released, so a solo sequential re-attempt is
+sufficient and avoids re-introducing a fresh in-batch collision among the second-pass survivors
+themselves.
+
+**Convergence log, not an exclusion set**: `second_pass_ledger` is APPEND-ONLY — entries
+accumulate from both Step 2.5 (pass 1) and this step (pass 2) and are read only when composing
+the consolidated summary below. A task's presence in the ledger never excludes it from the
+pass-2 admission input; the ledger observes, it does not gate.
+
+**Non-convergence is `partial`, never a failure**: if this pass leaves any task in `skipped_tasks`
+with the `"deferred after second pass"` reason, the consolidated summary in Step 5 reports this
+invocation's overall status as `partial` (never a hard failure) and names the mutually-colliding
+task set, suggesting a solo re-run once the field is clear. A conflict must never error the
+invocation.
 
 **Team mode interaction**: If `--team` is in `remaining_args`, team mode is applied to ALL tasks (each task routes to `skill-team-research`). Total agents spawned = `N_tasks * team_size`. Use with care due to cost multiplication.
 
@@ -292,13 +356,21 @@ Skipped: {count}
 - /plan {succeeded_task_numbers}
 ```
 
+**Non-convergence (Step 3.5)**: if `second_pass_ledger` contains any `"pass":2` entry whose task
+was NOT admitted (i.e. it landed in `skipped_tasks` with `"deferred after second pass"`), report
+this invocation's overall status as `partial` rather than treating it as ordinary success, and
+add a named diagnostic line identifying the mutually-colliding task set and suggesting a solo
+re-run of that set once the field is clear.
+
 #### Error Handling (Multi-Task)
 
 - **Partial success is normal**: Failure of one task does not block or roll back others
 - **Failed tasks**: Remain in "researching" status; user can re-run individually (`/research {N}`)
 - **Skipped tasks**: Never dispatched; user fixes the issue and re-runs — includes both
-  pre-existing skip reasons (not found, terminal status) and the new `"locked by another
-  session"` reason from per-task lock-acquire refusal (a gate-in refactor)
+  pre-existing skip reasons (not found, terminal status), the `"locked by another session"`
+  reason from per-task lock-acquire refusal (a gate-in refactor), and the new `"deferred after
+  second pass"` reason (Step 3.5's bounded, one-extra-pass re-sequencing did not converge for
+  that task — a conflict, never an invocation error)
 - **Git conflicts**: Non-blocking (logged, not fatal)
 
 ---

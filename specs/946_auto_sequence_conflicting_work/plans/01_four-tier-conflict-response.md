@@ -294,41 +294,53 @@ every remaining plain-`acquire` hit as either deliberate or updated.
 
 ---
 
-### Phase 4: Tier 1 — bounded two-pass sequencing for plain multi-task commands [NOT STARTED]
+### Phase 4: Tier 1 — bounded two-pass sequencing for plain multi-task commands [COMPLETED]
 
 **Goal**: Re-sequence an `in_batch` `file_scope_collision` into a bounded second pass instead of
 dropping it, without a wave concept, batch expansion, or an unbounded loop.
 
 **Tasks**:
-- [ ] In `commands/research.md` Step 2.5, split the defer handling by `defer_reason` and
+- [x] In `commands/research.md` Step 2.5, split the defer handling by `defer_reason` and
       `collision_scope`. `file_scope_collision` with `collision_scope == "in_batch"` moves the task
       to a new `deferred_second_pass` array (removed from `validated_tasks` for pass 1, NOT added to
       `skipped_tasks`). Every other defer flavor — `cross_batch`, `self_modifying`, `session_active`
       — keeps the current exclude-to-`skipped_tasks` behavior verbatim. Document why in a comment:
       `in_batch` is the one flavor where the colliding task is inside this same invocation and will
-      finish this run, so a "wait for this invocation's own dispatch" event exists.
-- [ ] Change the "no valid tasks remain" abort to fire only when `validated_tasks` AND
+      finish this run, so a "wait for this invocation's own dispatch" event exists. *(completed)*
+- [x] Change the "no valid tasks remain" abort to fire only when `validated_tasks` AND
       `deferred_second_pass` are both empty, so a batch whose entire pass 1 deferred in-batch still
-      runs its second pass.
-- [ ] Add a new Step 3.5 (Second Pass) after Step 3's dispatch and unconditional lock releases:
+      runs its second pass. *(completed)*
+- [x] Add a new Step 3.5 (Second Pass) after Step 3's dispatch and unconditional lock releases:
       if `deferred_second_pass` is non-empty, re-run `orchestrate-batch-admit.sh` over exactly that
       set (`--invocation-count "${#deferred_second_pass[@]}" --session-id "$batch_session_id"`) —
       bounded scan, never expanded to pull in any out-of-batch predecessor. Admitted tasks dispatch
       sequentially through the same per-task `acquire-retry` / skill / `release` bracket as Step 3.
-- [ ] Bound the structure at exactly ONE extra pass. A task still deferred after pass 2 moves to
+      *(completed)*
+- [x] Bound the structure at exactly ONE extra pass. A task still deferred after pass 2 moves to
       `skipped_tasks` with the distinguishing reason
-      `"deferred after second pass [$defer_reason]"`, never a third pass.
-- [ ] Add the convergence-protection observation log: a `second_pass_ledger` array appended on every
+      `"deferred after second pass [$defer_reason]"`, never a third pass. *(completed)*
+- [x] Add the convergence-protection observation log: a `second_pass_ledger` array appended on every
       pass-1 in-batch defer and on every pass-2 outcome, shaped after `skill-orchestrate`'s
       `defer_ledger` (`{"task":N,"defer_reason":...,"collision_scope":...,"pass":1|2,"detail":...}`).
       Document it explicitly as an APPEND-ONLY OBSERVATION LOG read only for the consolidated
-      summary — never an eligibility-exclusion set.
-- [ ] Report a non-converging outcome as `partial`, not a failure: when pass 2 leaves at least one
+      summary — never an eligibility-exclusion set. *(completed)*
+- [x] Report a non-converging outcome as `partial`, not a failure: when pass 2 leaves at least one
       task deferred, the consolidated summary states `partial` with a named diagnostic identifying
       the mutually-colliding set and suggesting a solo re-run — mirroring the
       `consecutive_no_dispatch_cycles` break's shape. A conflict must never error the invocation.
-- [ ] Apply the identical Step 2.5 / Step 3.5 / summary changes to `commands/plan.md` and
-      `commands/implement.md`, keeping all three byte-identical in shape.
+      *(completed)*
+- [x] Apply the identical Step 2.5 / Step 3.5 / summary changes to `commands/plan.md` and
+      `commands/implement.md`, keeping all three byte-identical in shape. *(completed)*
+
+**Implementation note (convergence semantics, not a deviation)**: `orchestrate-batch-admit.sh`
+deliberately carries no held-lock scan (see its own "Held-lock scan rejection" comment) — its
+collision predicate is a `specs/state.json` STATUS check, not a lock check. Consequently pass 2
+genuinely converges only once the pass-1 winner's status has gone terminal
+(`completed`/`abandoned`/`expanded`) by the time pass 2 runs, which happens naturally for
+`/implement` (success sets `status: completed`) but not for `/research`/`/plan` (whose termini —
+`researched`/`planned` — are non-terminal). This is not a defect: it is exactly the
+non-convergence case the plan's own Risks & Mitigations table names and the `partial`-status
+terminus below handles by design. Phase 5's test suite proves both outcomes explicitly.
 
 **Timing**: 2 hours
 
