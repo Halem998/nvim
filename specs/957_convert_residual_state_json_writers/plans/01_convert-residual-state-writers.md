@@ -146,17 +146,17 @@ Phases within the same wave can execute in parallel. Wave 2's phases own disjoin
 
 ---
 
-### Phase 3: Implementation and Revision Skills [NOT STARTED]
+### Phase 3: Implementation and Revision Skills [COMPLETED]
 
 **Goal**: Convert the implementer and reviser skill families.
 
 **Tasks**:
-- [ ] Convert `skills/skill-implementer/SKILL.md` (5 sites).
-- [ ] Convert `skills/skill-implementer-hard/SKILL.md` (1 site).
-- [ ] Convert `skills/skill-reviser/SKILL.md` (5 sites).
-- [ ] Confirm `$session_id` scope per site; apply the fallback only where genuinely absent.
-- [ ] Apply the fold/no-fold decision per site.
-- [ ] `bash -n` every extracted bash block per edited file.
+- [x] Convert `skills/skill-implementer/SKILL.md` (5 sites). *(completed)*
+- [x] Convert `skills/skill-implementer-hard/SKILL.md` (1 site). *(completed)*
+- [x] Convert `skills/skill-reviser/SKILL.md` (5 sites). *(completed: deviation — only 4 sites actually present, not 5; the hypothesis count was an overcount, per the Scope Hypothesis's own "count is not the stopping condition" clause)*
+- [x] Confirm `$session_id` scope per site; apply the fallback only where genuinely absent. *(completed: `$session_id` in scope in all 3 files; no fallback needed)*
+- [x] Apply the fold/no-fold decision per site. *(completed: folded skill-reviser's description-update write and Stage 8 Step 2 artifact-add write — both directly followed only by a regen call; no-fold everywhere else)*
+- [x] `bash -n` every extracted bash block per edited file. *(completed: clean)*
 
 **Timing**: 1.25 hours
 
@@ -164,7 +164,7 @@ Phases within the same wave can execute in parallel. Wave 2's phases own disjoin
 
 **Verification Tier**: local
 
-**Scope Hypothesis**: 11 in-scope sites total (5 / 1 / 5), 0 out-of-scope sites. Confirm with the per-file grep before editing each file.
+**Scope Hypothesis**: 11 in-scope sites total (5 / 1 / 5), 0 out-of-scope sites. Confirm with the per-file grep before editing each file. **Actual**: 10 sites (5 / 1 / 4) — skill-reviser had 4, not 5.
 
 **Files to modify**:
 - `agent-system/extensions/core/skills/skill-implementer/SKILL.md`

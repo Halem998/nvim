@@ -335,19 +335,17 @@ If the script exits non-zero, log error but continue (status update is best-effo
 
 Update state.json description and TODO.md directly:
 
+Fold `--regen-todo` in — this write is immediately followed by nothing but the TODO.md regen:
 ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg desc "$new_description" \
-   --argjson num "$task_number" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == $num)) |= . + {
     description: $desc,
     last_updated: $ts
-  }' specs/state.json > specs/tmp/state.json && \
-  mv specs/tmp/state.json specs/state.json
-```
-
-Then call `generate-todo.sh` to regenerate TODO.md with the updated description:
-```bash
-bash .claude/scripts/generate-todo.sh
+  }' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg desc "$new_description" \
+  --argjson num "$task_number" \
+  --regen-todo
 ```
 
 **On partial/failed**: Keep status unchanged (do not call the script).
@@ -363,23 +361,20 @@ Add the new plan artifact to state.json.
 ```bash
 if [ -n "$artifact_path" ]; then
     # Step 1: Filter out existing plan artifacts (use "| not" pattern to avoid != escaping - Issue #1132)
-    jq --argjson num "$task_number" \
+    bash .claude/scripts/state-write.sh \
       '(.active_projects[] | select(.project_number == $num)).artifacts =
         [(.active_projects[] | select(.project_number == $num)).artifacts // [] | .[] | select(.type == "plan" | not)]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+      --session-id "$session_id" \
+      --argjson num "$task_number"
 
-    # Step 2: Add new plan artifact
-    jq --argjson num "$task_number" \
-       --arg path "$artifact_path" \
+    # Step 2: Add new plan artifact. Fold --regen-todo in — this write is immediately followed
+    # by nothing but the TODO.md regen.
+    bash .claude/scripts/state-write.sh \
       '(.active_projects[] | select(.project_number == $num)).artifacts += [{"path": $path, "type": "plan"}]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+      --session-id "$session_id" \
+      --argjson num "$task_number" --arg path "$artifact_path" \
+      --regen-todo || echo "WARNING: state-write.sh --regen-todo failed (non-fatal)" >&2
 fi
-```
-
-**Update TODO.md**: Regenerate from state.json (state.json artifact update was done in the previous step):
-
-```bash
-bash .claude/scripts/generate-todo.sh || echo "WARNING: generate-todo.sh failed (non-fatal)" >&2
 ```
 
 If the script exits non-zero, log a warning but continue (regeneration errors are non-blocking).
@@ -392,10 +387,11 @@ After linking the artifact, increment `next_artifact_number` so subsequent revis
 
 ```bash
 if [ -n "$artifact_path" ]; then
-  jq --argjson num "$task_number" \
+  bash .claude/scripts/state-write.sh \
     '(.active_projects[] | select(.project_number == $num)).next_artifact_number =
       (((.active_projects[] | select(.project_number == $num)).next_artifact_number // 1) + 1)' \
-    specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+    --session-id "$session_id" \
+    --argjson num "$task_number"
 fi
 ```
 

@@ -471,12 +471,13 @@ metadata and the task is not complete); Step 4's memory-candidate propagation ma
 ```bash
 if [ "$postflight_rc" -eq 4 ]; then
     echo "[implementer] Phase-accounting backstop refused completion for task $task_number: the plan file shows incomplete phases. Task stays [IMPLEMENTING]; re-run /implement to resume." >&2
-    jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-       --argjson phase "$phases_completed" \
+    bash .claude/scripts/state-write.sh \
       '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
         last_updated: $ts,
         resume_phase: ($phase + 1)
-      }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+      }' \
+      --session-id "$session_id" \
+      --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --argjson phase "$phases_completed"
 elif [ "$postflight_rc" -ne 0 ]; then
     echo "WARNING: update-task-status.sh exited $postflight_rc — manual correction may be needed" >&2
 fi
@@ -496,10 +497,11 @@ skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadma
 ```bash
 if [ "$memory_candidates" != "[]" ] && [ -n "$memory_candidates" ]; then
     # Append new candidates to existing array (append semantics, not overwrite)
-    jq --argjson new_candidates "$memory_candidates" \
+    bash .claude/scripts/state-write.sh \
       '(.active_projects[] | select(.project_number == '$task_number')).memory_candidates =
         ((.active_projects[] | select(.project_number == '$task_number')).memory_candidates // []) + $new_candidates' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+      --session-id "$session_id" \
+      --argjson new_candidates "$memory_candidates"
 fi
 ```
 
@@ -514,12 +516,13 @@ fi
 Keep status as "implementing" but update resume point. This path remains inline because the centralized `update-task-status.sh` maps `postflight:implement` to "completed" only -- it has no "partial" mapping.
 
 ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --argjson phase "$phases_completed" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
     last_updated: $ts,
     resume_phase: ($phase + 1)
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --argjson phase "$phases_completed"
 ```
 
 TODO.md stays as `[IMPLEMENTING]`.
@@ -592,16 +595,16 @@ Add artifact to state.json with summary.
 ```bash
 if [ -n "$artifact_path" ]; then
     # Step 1: Filter out existing summary artifacts (use "| not" pattern to avoid != escaping - Issue #1132)
-    jq '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
+    bash .claude/scripts/state-write.sh \
+      '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
         [(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "summary" | not)]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+      --session-id "$session_id"
 
     # Step 2: Add new summary artifact
-    jq --arg path "$artifact_path" \
-       --arg type "$artifact_type" \
-       --arg summary "$artifact_summary" \
+    bash .claude/scripts/state-write.sh \
       '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+      --session-id "$session_id" \
+      --arg path "$artifact_path" --arg type "$artifact_type" --arg summary "$artifact_summary"
 fi
 ```
 

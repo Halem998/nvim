@@ -404,10 +404,11 @@ skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadma
 
 # Step 4: memory_candidates (append semantics)
 if [ "$memory_candidates" != "[]" ] && [ -n "$memory_candidates" ]; then
-    jq --argjson new_candidates "$memory_candidates" \
+    bash .claude/scripts/state-write.sh \
       '(.active_projects[] | select(.project_number == '$task_number')).memory_candidates =
         ((.active_projects[] | select(.project_number == '$task_number')).memory_candidates // []) + $new_candidates' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+      --session-id "$session_id" \
+      --argjson new_candidates "$memory_candidates"
 fi
 ```
 
