@@ -502,28 +502,30 @@ accepting a non-conforming phase number silently from a caller.
 
 ---
 
-### Phase 7: Migrate the orchestration skills and fix the DONE-alternation drift [NOT STARTED]
+### Phase 7: Migrate the orchestration skills and fix the DONE-alternation drift [COMPLETED]
 
 **Goal**: Bring `skill-orchestrate` and `skill-orchestrate-hard` onto the library and close their
 independent `recovered_completed` drift, which under-counts exclusion-closed phases exactly as the
 accounting site did before it was fixed.
 
 **Tasks**:
-- [ ] In `skills/skill-orchestrate/SKILL.md`, replace each `recovered_total` / `recovered_completed`
+- [x] In `skills/skill-orchestrate/SKILL.md`, replace each `recovered_total` / `recovered_completed`
       grep pair's inline pattern with a `source .claude/scripts/lib/phase-heading-patterns.sh`
-      preamble and references to the exported constants.
-- [ ] Fix `recovered_completed` at every occurrence to use the library's DONE alternation, so
+      preamble and references to the exported constants. *(completed: 3 pairs migrated)*
+- [x] Fix `recovered_completed` at every occurrence to use the library's DONE alternation, so
       `[COMPLETED WITH EXCLUSIONS]` counts as closed. Today it matches literal `[COMPLETED]` only.
-- [ ] In `skills/skill-orchestrate-hard/SKILL.md`, do the same for its `recovered_total` /
+      *(completed)*
+- [x] In `skills/skill-orchestrate-hard/SKILL.md`, do the same for its `recovered_total` /
       `recovered_completed` pairs and for the Stage 4 `next_phase` grep+sed pair (which should use
-      the library's OPEN alternation and `extract_phase_number`).
-- [ ] Add the non-conforming guard to the recovery paths: when the plan being recovered contains
+      the library's OPEN alternation and `extract_phase_number`). *(completed: 2 recovery pairs +
+      1 next_phase site)*
+- [x] Add the non-conforming guard to the recovery paths: when the plan being recovered contains
       non-conforming headings, emit the loud warning and treat the recovered count as unknown
-      rather than reporting a number derived from a partial match.
-- [ ] Update each file's surrounding prose describing the heading contract to point at the library
-      as the anchor rather than restating a pattern.
-- [ ] Cite durable anchors only — the library filename, `plan-format.md`'s section name — never a
-      task number.
+      rather than reporting a number derived from a partial match. *(completed)*
+- [x] Update each file's surrounding prose describing the heading contract to point at the library
+      as the anchor rather than restating a pattern. *(completed)*
+- [x] Cite durable anchors only — the library filename, `plan-format.md`'s section name — never a
+      task number. *(completed: check-task-references.sh over skills/ clean)*
 
 **Timing**: 1 hour
 

@@ -657,9 +657,10 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
     # PHASES_ZERO_ON_SUCCESS. This is the ONE scenario the phase-marker grep further below
     # structurally cannot see, because that grep requires recovered=false — a claimed-complete
     # implementation with a corroborated 0/0 phase count (Defect 1's own scenario) always
-    # produces recovered=true and never reaches that branch. Reuses the identical two `grep -c`
-    # forms verbatim — do not re-derive the regex; see "MUST NOT (Context Flatness Constraint)"
-    # for why this reuse, not a new read mechanism, is what keeps this exception narrow.
+    # produces recovered=true and never reaches that branch. Sources the shared
+    # scripts/lib/phase-heading-patterns.sh anchor rather than re-deriving the regex — see
+    # "MUST NOT (Context Flatness Constraint)" for why this reuse, not a new read mechanism, is
+    # what keeps this exception narrow.
     evidence_suspect=$(echo "$recover_json" | jq -r '.evidence_suspect // false' 2>/dev/null) || evidence_suspect=false
     evidence_reason=$(echo "$recover_json" | jq -r '.evidence_reason // "NONE"' 2>/dev/null) || evidence_reason="NONE"
     if [ "$evidence_suspect" = "true" ] && [ "$evidence_reason" = "PHASES_ZERO_ON_SUCCESS" ] && [ "$dispatch_status" = "implemented" ]; then
@@ -668,9 +669,17 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
         corroboration_plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
       fi
       if [ -n "$corroboration_plan_path" ] && [ -f "$corroboration_plan_path" ]; then
-        recovered_total=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: ' "$corroboration_plan_path" 2>/dev/null) || recovered_total=0
-        recovered_completed=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: .*\[COMPLETED\]' "$corroboration_plan_path" 2>/dev/null) || recovered_completed=0
-        if [ "$recovered_total" -gt 0 ] && [ "$recovered_completed" -eq "$recovered_total" ]; then
+        # Sourced from the shared anchor rather than re-derived inline — see
+        # context/formats/plan-format.md's "Canonical phase-heading shape" subsection. The DONE
+        # alternation ($PHASE_HEADING_DONE_ERE) counts `[COMPLETED WITH EXCLUSIONS]` as closed,
+        # not just literal `[COMPLETED]` (the drift this migration fixes).
+        . .claude/scripts/lib/phase-heading-patterns.sh
+        recovered_total=$(grep -cE "$PHASE_HEADING_ERE" "$corroboration_plan_path" 2>/dev/null) || recovered_total=0
+        recovered_completed=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$corroboration_plan_path" 2>/dev/null) || recovered_completed=0
+        if nonconforming_phase_headings "$corroboration_plan_path" | grep -q .; then
+          warn_nonconforming "$corroboration_plan_path" "orchestrate-corroboration"
+          echo "[orchestrate] Evidence corroboration: non-conforming phase heading(s) in ${corroboration_plan_path} — recovered counts are unreliable; leaving plan_markers_verified=absent." >&2
+        elif [ "$recovered_total" -gt 0 ] && [ "$recovered_completed" -eq "$recovered_total" ]; then
           # Corroborated: allow the completion-claim gate to act on evidence rather than on
           # schema permissiveness. This does NOT relax the Item C decision in the recovery
           # script — the script's own emitted phases_completed/phases_total are still 0/0; only
@@ -679,7 +688,7 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
           phases_completed="$recovered_completed"
           phases_total="$recovered_total"
           plan_markers_verified="true"
-          echo "[UNVERIFIED PHASES CORROBORATED] task ${task_number}: recovery reported status=${dispatch_status} with phases 0/0 (evidence_reason=PHASES_ZERO_ON_SUCCESS), but plan headings in ${corroboration_plan_path} show ${recovered_completed}/${recovered_total} phases [COMPLETED]. Corroborated by an independent source — correcting phase counts and setting plan_markers_verified=true." >&2
+          echo "[UNVERIFIED PHASES CORROBORATED] task ${task_number}: recovery reported status=${dispatch_status} with phases 0/0 (evidence_reason=PHASES_ZERO_ON_SUCCESS), but plan headings in ${corroboration_plan_path} show ${recovered_completed}/${recovered_total} phases closed (COMPLETED or COMPLETED WITH EXCLUSIONS). Corroborated by an independent source — correcting phase counts and setting plan_markers_verified=true." >&2
         else
           # False-positive guard: no contradiction to resolve (a plan with zero phase headings,
           # or a genuine partial-completion plan). Leave plan_markers_verified=absent and the
@@ -753,11 +762,17 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
       recovery_plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
     fi
     if [ -n "$recovery_plan_path" ] && [ -f "$recovery_plan_path" ]; then
-      # `x=$(grep -c ...) || x=0` — grep exits 1 on zero matches. Never `$(grep -c ... || echo 0)`,
-      # which emits two lines in that case.
-      recovered_total=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: ' "$recovery_plan_path" 2>/dev/null) || recovered_total=0
-      recovered_completed=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: .*\[COMPLETED\]' "$recovery_plan_path" 2>/dev/null) || recovered_completed=0
-      echo "[orchestrate] RECOVERY: handoff unusable — plan headings show ${recovered_completed}/${recovered_total} phases [COMPLETED] in ${recovery_plan_path}." >&2
+      # Sourced from the shared anchor (scripts/lib/phase-heading-patterns.sh) rather than
+      # re-derived inline. `x=$(grep -c ...) || x=0` — grep exits 1 on zero matches. Never
+      # `$(grep -c ... || echo 0)`, which emits two lines in that case.
+      . .claude/scripts/lib/phase-heading-patterns.sh
+      recovered_total=$(grep -cE "$PHASE_HEADING_ERE" "$recovery_plan_path" 2>/dev/null) || recovered_total=0
+      recovered_completed=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$recovery_plan_path" 2>/dev/null) || recovered_completed=0
+      if nonconforming_phase_headings "$recovery_plan_path" | grep -q .; then
+        warn_nonconforming "$recovery_plan_path" "orchestrate-recovery"
+        echo "[orchestrate] RECOVERY: non-conforming phase heading(s) in ${recovery_plan_path} — recovered phase count is unreliable (treated as unknown, not refused)." >&2
+      fi
+      echo "[orchestrate] RECOVERY: handoff unusable — plan headings show ${recovered_completed}/${recovered_total} phases closed (COMPLETED or COMPLETED WITH EXCLUSIONS) in ${recovery_plan_path}." >&2
 
       # Stagnation signal: an identical recovered_completed across consecutive recovery events
       # means dispatches are burning cycles without advancing the plan. Logged, never enforced —
@@ -1747,7 +1762,7 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
 
    **Evidence corroboration (identical mirror of the single-task Stage 5 block above)**: same
    precondition (`evidence_suspect=true`, `evidence_reason="PHASES_ZERO_ON_SUCCESS"`,
-   `dispatch_status="implemented"`), same two `grep -c` forms verbatim, same escalation
+   `dispatch_status="implemented"`), same shared-library-sourced counts, same escalation
    (corroborated → correct `phases_completed`/`phases_total` and set
    `plan_markers_verified="true"`; non-corroborated → leave both untouched), scoped to this
    task's own `plan_path`/`task_dir` — never another task's in the same wave:
@@ -1761,13 +1776,19 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
        corroboration_plan_path=$(ls -1 "${task_dir}/plans/"*.md 2>/dev/null | sort -V | tail -1)
      fi
      if [ -n "$corroboration_plan_path" ] && [ -f "$corroboration_plan_path" ]; then
-       recovered_total=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: ' "$corroboration_plan_path" 2>/dev/null) || recovered_total=0
-       recovered_completed=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: .*\[COMPLETED\]' "$corroboration_plan_path" 2>/dev/null) || recovered_completed=0
-       if [ "$recovered_total" -gt 0 ] && [ "$recovered_completed" -eq "$recovered_total" ]; then
+       # Sourced from the shared anchor (scripts/lib/phase-heading-patterns.sh) rather than
+       # re-derived inline; the DONE alternation counts `[COMPLETED WITH EXCLUSIONS]` as closed.
+       . .claude/scripts/lib/phase-heading-patterns.sh
+       recovered_total=$(grep -cE "$PHASE_HEADING_ERE" "$corroboration_plan_path" 2>/dev/null) || recovered_total=0
+       recovered_completed=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$corroboration_plan_path" 2>/dev/null) || recovered_completed=0
+       if nonconforming_phase_headings "$corroboration_plan_path" | grep -q .; then
+         warn_nonconforming "$corroboration_plan_path" "orchestrate-corroboration-mt"
+         echo "[orchestrate] Task #${task_num}: non-conforming phase heading(s) in ${corroboration_plan_path} — leaving plan_markers_verified=absent." >&2
+       elif [ "$recovered_total" -gt 0 ] && [ "$recovered_completed" -eq "$recovered_total" ]; then
          phases_completed="$recovered_completed"
          phases_total="$recovered_total"
          plan_markers_verified="true"
-         echo "[UNVERIFIED PHASES CORROBORATED] Task #${task_num}: recovery reported status=${dispatch_status} with phases 0/0 (evidence_reason=PHASES_ZERO_ON_SUCCESS), but plan headings in ${corroboration_plan_path} show ${recovered_completed}/${recovered_total} phases [COMPLETED]. Corroborated — correcting phase counts and setting plan_markers_verified=true." >&2
+         echo "[UNVERIFIED PHASES CORROBORATED] Task #${task_num}: recovery reported status=${dispatch_status} with phases 0/0 (evidence_reason=PHASES_ZERO_ON_SUCCESS), but plan headings in ${corroboration_plan_path} show ${recovered_completed}/${recovered_total} phases closed (COMPLETED or COMPLETED WITH EXCLUSIONS). Corroborated — correcting phase counts and setting plan_markers_verified=true." >&2
        else
          echo "[orchestrate] Task #${task_num}: Evidence corroboration non-corroborating (${recovered_completed}/${recovered_total} in ${corroboration_plan_path}) — leaving plan_markers_verified=absent." >&2
        fi

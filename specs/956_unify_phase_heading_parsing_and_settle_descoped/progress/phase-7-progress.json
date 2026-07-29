@@ -1,0 +1,14 @@
+{
+  "phase": 7,
+  "phase_name": "Migrate the orchestration skills and fix the DONE-alternation drift",
+  "started_at": "2026-07-29T01:00:00Z",
+  "last_updated": "2026-07-29T01:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Migrate 3 recovered_total/recovered_completed pairs in skill-orchestrate/SKILL.md to library, add DONE alternation and non-conforming guard", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Migrate 2 recovered_total/recovered_completed pairs and next_phase resume-scan in skill-orchestrate-hard/SKILL.md", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

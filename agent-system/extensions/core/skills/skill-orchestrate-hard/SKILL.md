@@ -523,9 +523,18 @@ fi
 # skill-implementer-hard/SKILL.md Stage 3b's already-landed fix.
 next_phase=""
 if [ -n "$plan_path" ] && [ -f "$plan_path" ]; then
-  next_phase=$(grep -E '^### Phase [0-9]+(\.[0-9]+)?: .*\[(NOT STARTED|PARTIAL|IN PROGRESS)\]' "$plan_path" \
-    | head -1 \
-    | sed -E 's/^### Phase ([0-9]+(\.[0-9]+)?):.*/\1/')
+  # Sourced from the shared anchor (scripts/lib/phase-heading-patterns.sh) rather than re-derived
+  # inline. Uses the library's OPEN alternation (NOT STARTED|IN PROGRESS|PARTIAL|BLOCKED) and
+  # extract_phase_number so a non-conforming heading is never silently mis-selected or truncated.
+  . .claude/scripts/lib/phase-heading-patterns.sh
+  next_heading=$(grep -E "${PHASE_HEADING_ERE} .*${PHASE_STATUS_OPEN_ERE}" "$plan_path" | head -1)
+  if [ -n "$next_heading" ]; then
+    next_phase=$(extract_phase_number "$next_heading") || next_phase=""
+    if [ -z "$next_phase" ]; then
+      warn_nonconforming "$plan_path" "orchestrate-hard-next-phase"
+      echo "[hard-orchestrate] H1: next-phase heading-scan found a non-conforming heading — refusing to guess a phase number; see warning above." >&2
+    fi
+  fi
 fi
 
 if [ -n "$next_phase" ]; then
@@ -842,8 +851,8 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
     # PRECONDITION: reachable ONLY here, on the recovered=true path, when the recovery script's
     # general empty-value detection signal fired PHASES_ZERO_ON_SUCCESS. Same rationale as the
     # base-mode mirror: this is the one scenario the phase-marker grep further below structurally
-    # cannot see, since that grep requires recovered=false. Reuses the identical two `grep -c`
-    # forms verbatim.
+    # cannot see, since that grep requires recovered=false. Sources the shared
+    # scripts/lib/phase-heading-patterns.sh anchor rather than re-deriving the regex.
     evidence_suspect=$(echo "$recover_json" | jq -r '.evidence_suspect // false' 2>/dev/null) || evidence_suspect=false
     evidence_reason=$(echo "$recover_json" | jq -r '.evidence_reason // "NONE"' 2>/dev/null) || evidence_reason="NONE"
     if [ "$evidence_suspect" = "true" ] && [ "$evidence_reason" = "PHASES_ZERO_ON_SUCCESS" ] && [ "$dispatch_status" = "implemented" ]; then
@@ -852,13 +861,17 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
         corroboration_plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
       fi
       if [ -n "$corroboration_plan_path" ] && [ -f "$corroboration_plan_path" ]; then
-        recovered_total=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: ' "$corroboration_plan_path" 2>/dev/null) || recovered_total=0
-        recovered_completed=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: .*\[COMPLETED\]' "$corroboration_plan_path" 2>/dev/null) || recovered_completed=0
-        if [ "$recovered_total" -gt 0 ] && [ "$recovered_completed" -eq "$recovered_total" ]; then
+        . .claude/scripts/lib/phase-heading-patterns.sh
+        recovered_total=$(grep -cE "$PHASE_HEADING_ERE" "$corroboration_plan_path" 2>/dev/null) || recovered_total=0
+        recovered_completed=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$corroboration_plan_path" 2>/dev/null) || recovered_completed=0
+        if nonconforming_phase_headings "$corroboration_plan_path" | grep -q .; then
+          warn_nonconforming "$corroboration_plan_path" "hard-orchestrate-corroboration"
+          echo "[hard-orchestrate] Evidence corroboration: non-conforming phase heading(s) in ${corroboration_plan_path} — leaving plan_markers_verified=absent." >&2
+        elif [ "$recovered_total" -gt 0 ] && [ "$recovered_completed" -eq "$recovered_total" ]; then
           phases_completed="$recovered_completed"
           phases_total="$recovered_total"
           plan_markers_verified="true"
-          echo "[UNVERIFIED PHASES CORROBORATED][hard-orchestrate] task ${task_number}: recovery reported status=${dispatch_status} with phases 0/0 (evidence_reason=PHASES_ZERO_ON_SUCCESS), but plan headings in ${corroboration_plan_path} show ${recovered_completed}/${recovered_total} phases [COMPLETED]. Corroborated — correcting phase counts and setting plan_markers_verified=true." >&2
+          echo "[UNVERIFIED PHASES CORROBORATED][hard-orchestrate] task ${task_number}: recovery reported status=${dispatch_status} with phases 0/0 (evidence_reason=PHASES_ZERO_ON_SUCCESS), but plan headings in ${corroboration_plan_path} show ${recovered_completed}/${recovered_total} phases closed (COMPLETED or COMPLETED WITH EXCLUSIONS). Corroborated — correcting phase counts and setting plan_markers_verified=true." >&2
         else
           echo "[hard-orchestrate] Evidence corroboration: non-corroborating (plan headings show ${recovered_completed}/${recovered_total} in ${corroboration_plan_path}) — leaving plan_markers_verified=absent and phase counts at ${phases_completed}/${phases_total}." >&2
         fi
@@ -932,11 +945,17 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
       recovery_plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
     fi
     if [ -n "$recovery_plan_path" ] && [ -f "$recovery_plan_path" ]; then
-      # `x=$(grep -c ...) || x=0` — grep exits 1 on zero matches. Never `$(grep -c ... || echo 0)`,
-      # which emits two lines in that case.
-      recovered_total=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: ' "$recovery_plan_path" 2>/dev/null) || recovered_total=0
-      recovered_completed=$(grep -cE '^### Phase [0-9]+(\.[0-9]+)?: .*\[COMPLETED\]' "$recovery_plan_path" 2>/dev/null) || recovered_completed=0
-      echo "[hard-orchestrate] RECOVERY: handoff unusable — plan headings show ${recovered_completed}/${recovered_total} phases [COMPLETED] in ${recovery_plan_path}." >&2
+      # Sourced from the shared anchor (scripts/lib/phase-heading-patterns.sh) rather than
+      # re-derived inline. `x=$(grep -c ...) || x=0` — grep exits 1 on zero matches. Never
+      # `$(grep -c ... || echo 0)`, which emits two lines in that case.
+      . .claude/scripts/lib/phase-heading-patterns.sh
+      recovered_total=$(grep -cE "$PHASE_HEADING_ERE" "$recovery_plan_path" 2>/dev/null) || recovered_total=0
+      recovered_completed=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$recovery_plan_path" 2>/dev/null) || recovered_completed=0
+      if nonconforming_phase_headings "$recovery_plan_path" | grep -q .; then
+        warn_nonconforming "$recovery_plan_path" "hard-orchestrate-recovery"
+        echo "[hard-orchestrate] RECOVERY: non-conforming phase heading(s) in ${recovery_plan_path} — recovered phase count is unreliable (treated as unknown, not refused)." >&2
+      fi
+      echo "[hard-orchestrate] RECOVERY: handoff unusable — plan headings show ${recovered_completed}/${recovered_total} phases closed (COMPLETED or COMPLETED WITH EXCLUSIONS) in ${recovery_plan_path}." >&2
 
       # Stagnation signal: an identical recovered_completed across consecutive recovery events
       # means dispatches are burning cycles without advancing the plan. Logged, never enforced —
