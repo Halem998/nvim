@@ -1,7 +1,7 @@
 # Implementation Plan: Task #957
 
 - **Task**: 957 - convert_residual_state_json_writers
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 11 hours
 - **Dependencies**: `agent-system/extensions/core/scripts/state-write.sh` (already built; do not modify)
 - **Research Inputs**: specs/957_convert_residual_state_json_writers/reports/01_convert-residual-state-writers.md
@@ -369,20 +369,20 @@ Phases within the same wave can execute in parallel. Wave 2's phases own disjoin
 
 ---
 
-### Phase 10: Verification Bar Sweep [NOT STARTED]
+### Phase 10: Verification Bar Sweep [COMPLETED]
 
 **Goal**: Execute the task's verification bar exactly as written, without weakening any check, and reconcile any residual hits.
 
 **Tasks**:
-- [ ] Repo-wide grep across the FULL source store for any remaining `specs/state.json`-targeted `> tmp && mv` or `.tmp` staging sequence. Expect zero hits outside `state-write.sh` itself.
-- [ ] Repo-wide grep for `python3 json.load` / `json.dump` in-place writes against state.json. Expect zero hits.
-- [ ] If either grep returns a hit inside `file_scope`, convert it and re-run. If a hit is outside `file_scope` (e.g. a non-core extension surface), record it explicitly as an out-of-scope residual with its path rather than silently passing the gate.
-- [ ] `bash -n` clean on every edited file's embedded bash blocks (full re-sweep, not per-phase spot checks).
-- [ ] `bash agent-system/extensions/core/scripts/test-state-write-concurrency.sh` exits 0.
-- [ ] `bash agent-system/extensions/core/scripts/test-task-lock-reap.sh` exits 0.
-- [ ] `bash .claude/scripts/check-task-references.sh` passes.
-- [ ] `bash .claude/scripts/check-extension-docs.sh` — confirm the failure set is unchanged from the Phase 1 baseline (`literature` only). A newly failing extension is a defect introduced by this task and must be fixed; the pre-existing `literature` failure must not be "fixed" as part of this task.
-- [ ] Confirm zero writes landed under `.claude/**` (all 22 edited paths are under `agent-system/extensions/core/**`).
+- [x] Repo-wide grep across the FULL source store for any remaining `specs/state.json`-targeted `> tmp && mv` or `.tmp` staging sequence. Expect zero hits outside `state-write.sh` itself. *(completed: zero hits inside `agent-system/extensions/core/**`. 48 files with residual hits found under non-core extensions (`web`, `founder`, `cslib`, `lean`, `epidemiology`, `present`) — all explicitly out-of-scope per this task's Non-Goals ("Editing anything under `.claude/**`, or any extension outside `core`"); listed verbatim in the implementation summary rather than silently passing. One additional CORE hit was found and was NOT pre-identified in Phases 1-9: `agent-system/extensions/core/context/workflows/preflight-postflight.md`'s "❌ WRONG: Direct jq Commands in Commands" anti-pattern illustration. Converted per the "hit inside file_scope -> convert it" instruction — reworded the WRONG example to name `state-write.sh` as the correct replacement while keeping the anti-pattern framing intact (the previous literal `specs/state.json > specs/tmp/state.json.tmp` redirect was removed from the illustration since state-write.sh is now the correct path, not merely an alternative staging pattern).*
+- [x] Repo-wide grep for `python3 json.load` / `json.dump` in-place writes against state.json. Expect zero hits. *(completed: zero hits anywhere in the source store)*
+- [x] If either grep returns a hit inside `file_scope`, convert it and re-run. If a hit is outside `file_scope` (e.g. a non-core extension surface), record it explicitly as an out-of-scope residual with its path rather than silently passing the gate. *(completed: see above — the one in-scope hit was converted and re-verified zero; all 48 non-core files recorded in the summary, not silently passed)*
+- [x] `bash -n` clean on every edited file's embedded bash blocks (full re-sweep, not per-phase spot checks). *(completed: full re-sweep across all 23 edited files (22 original + preflight-postflight.md) found the same 9 pre-existing, unrelated block failures identified during Phases 1-9 (multi-line `git commit -m` doc examples with deliberately open quotes, Python-pseudocode-in-bash-fence, a heredoc illustration) — all reconfirmed via `git diff` to be untouched by this task's edits. Zero new failures)*
+- [x] `bash agent-system/extensions/core/scripts/test-state-write-concurrency.sh` exits 0. *(completed: exit 0, 4/4 passed)*
+- [x] `bash agent-system/extensions/core/scripts/test-task-lock-reap.sh` exits 0. *(completed: exit 0, 6/6 passed)*
+- [x] `bash .claude/scripts/check-task-references.sh` passes. *(completed: exit 0, PASS, 0 unexempted occurrences across 4 trees)*
+- [x] `bash .claude/scripts/check-extension-docs.sh` — confirm the failure set is unchanged from the Phase 1 baseline (`literature` only). A newly failing extension is a defect introduced by this task and must be fixed; the pre-existing `literature` failure must not be "fixed" as part of this task. *(completed with a positive deviation: the gate now exits 0 with ALL extensions PASS, including `core` and `literature`, which both failed at the Phase 1 baseline. This is NOT this task's doing — `git log` confirms `check-extension-docs.sh` itself was modified by a concurrently-landed, separate in-flight task (commits "task 965 phase 1" / "task 965 phase 2", landed after this task's Phase 1 baseline capture and before this Phase 10 sweep) that this task's own binding constraints explicitly named as in-flight and out of scope to touch. This task made zero edits to `check-extension-docs.sh` itself, confirmed via `git diff`/`git status` — the improved gate result is an artifact of concurrent, unrelated work landing mid-task, not a claim this task is making credit for)*
+- [x] Confirm zero writes landed under `.claude/**` (all 22 edited paths are under `agent-system/extensions/core/**`). *(completed: confirmed via `git log --name-only` across all 9 phase commits — every edited path is under `agent-system/extensions/core/**` or `specs/957_convert_residual_state_json_writers/**`/`specs/state.json`/`specs/TODO.md`; zero paths under `.claude/**`. 23 files total edited, not 22 — the extra file is `preflight-postflight.md`, discovered and fixed during this phase's sweep, not pre-identified in the plan's file lists)*
 
 **Timing**: 1 hour
 

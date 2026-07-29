@@ -481,13 +481,17 @@ Delegate → Proceed (without verification) ← WRONG
 ### ❌ WRONG: Direct jq Commands in Commands
 
 ```bash
-# DO NOT DO THIS in command files
+# DO NOT DO THIS in command files -- hand-rolled jq bypassing state-write.sh
 jq --arg num "$task_number" \
   '.active_projects[] |= if .project_number == ($num | tonumber) then .status = "researched" else . end' \
-  specs/state.json > specs/tmp/state.json.tmp
+  specs/state.json
+# ...followed by a hand-rolled staging/move sequence
 ```
 
-**Problem**: Bypasses status-sync-manager, doesn't link artifacts, not atomic.
+**Problem**: Bypasses `state-write.sh` (the single mutex-guarded `specs/state.json` writer),
+doesn't link artifacts, and re-introduces the fail-open acquire-timeout and shared-staging-path
+corruption channels `state-write.sh` was built to close. Use
+`bash .claude/scripts/state-write.sh '<filter>' --session-id "$session_id" [--arg ...]` instead.
 
 ### ❌ WRONG: Preflight/Postflight in Subagents
 

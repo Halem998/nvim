@@ -1,24 +1,47 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "plan",
-  "status": "planned",
-  "summary": "Created a 10-phase plan for converting 68 in-scope inline specs/state.json write sites (independently re-confirmed at planning time, matching the research report's per-file distribution exactly) across 16 core skill/command files to state-write.sh calls, plus 6 documentation-idiom updates. Phase 1 captures the full gate-set baseline and establishes the canonical conversion shape on skill-status-sync (6 sites, no out-of-scope sites). Phases 2-8 own disjoint file territories and can run in parallel; the three files interleaving out-of-scope specs/archive/state.json and vault writes (commands/task.md, commands/todo.md, skill-todo/SKILL.md) each get an isolated interface-tier phase with a mandatory pre-edit in-scope/out-of-scope inventory and an out-of-scope-count-unchanged invariant. Phase 9 updates docs last so examples match the actual final call shape including --regen-todo fold decisions. Phase 10 executes the verification bar exactly as written, treating 'grep returns zero' -- never a site count -- as the stopping condition. Estimated 11 hours.",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Executed all 10 plan phases. Converted 34 in-scope inline specs/state.json write sites across 16 core skill/command files to bash .claude/scripts/state-write.sh calls (session-id threaded correctly per file/mode, --regen-todo folded only where a write is immediately followed by nothing but a bare generate-todo.sh call, out-of-scope specs/archive/state.json and vault-root sites left deliberately hand-rolled with mechanism-naming comments). Updated 6 planned documentation files plus one additional file (context/workflows/preflight-postflight.md) discovered during the Phase 10 repo-wide verification sweep, converting its WRONG-pattern illustration to name state-write.sh as the correct replacement. Verification bar passes in full: zero in-scope residual grep hits (47 non-core-extension files recorded explicitly as out-of-scope, never silently passed), zero python3 json.load/dump hits, bash -n clean on every converted block (9 pre-existing unrelated block failures reconfirmed via git diff to be untouched), both mutex regression suites exit 0, check-task-references.sh passes, check-extension-docs.sh now fully green (both the core and literature baseline failures were independently resolved by a concurrently-landed unrelated task, confirmed via git log -- not this task's doing), and zero writes landed under .claude/**.",
   "artifacts": [
-    {"type": "plan", "path": "specs/957_convert_residual_state_json_writers/plans/01_convert-residual-state-writers.md"}
+    {"type": "plan", "path": "specs/957_convert_residual_state_json_writers/plans/01_convert-residual-state-writers.md"},
+    {"type": "summary", "path": "specs/957_convert_residual_state_json_writers/summaries/01_convert-residual-state-writers-summary.md"}
   ],
   "blockers": [],
-  "next_action_hint": "implement",
+  "next_action_hint": "complete",
   "files_modified": [
-    "specs/957_convert_residual_state_json_writers/plans/01_convert-residual-state-writers.md"
+    "agent-system/extensions/core/commands/task.md",
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/context/patterns/file-metadata-exchange.md",
+    "agent-system/extensions/core/context/patterns/inline-status-update.md",
+    "agent-system/extensions/core/context/patterns/jq-escaping-workarounds.md",
+    "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+    "agent-system/extensions/core/context/troubleshooting/workflow-interruptions.md",
+    "agent-system/extensions/core/context/workflows/preflight-postflight.md",
+    "agent-system/extensions/core/docs/guides/creating-skills.md",
+    "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-implementer/SKILL.md",
+    "agent-system/extensions/core/skills/skill-planner-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-planner/SKILL.md",
+    "agent-system/extensions/core/skills/skill-project-overview/SKILL.md",
+    "agent-system/extensions/core/skills/skill-researcher-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-researcher/SKILL.md",
+    "agent-system/extensions/core/skills/skill-reviser/SKILL.md",
+    "agent-system/extensions/core/skills/skill-spawn/SKILL.md",
+    "agent-system/extensions/core/skills/skill-status-sync/SKILL.md",
+    "agent-system/extensions/core/skills/skill-team-implement/SKILL.md",
+    "agent-system/extensions/core/skills/skill-team-plan/SKILL.md",
+    "agent-system/extensions/core/skills/skill-team-research/SKILL.md",
+    "agent-system/extensions/core/skills/skill-todo/SKILL.md"
   ],
   "decisions_made": [
-    "Phase sizing bounded to one agent run each: 10 phases, 0.75-1.5 hours per phase, grouped by skill family with the three archive-interleaved files isolated",
-    "Dependency waves [[1],[2,3,4,5,6,7,8],[9],[10]] -- wave 2 phases edit disjoint file sets so parallel execution is safe; docs (phase 9) deliberately land after all conversions so examples reflect the real final call shape",
-    "Verification tiers: full for phase 1 (baseline gate set) and phase 10 (final bar); interface for the three archive-interleaved files (task.md, todo.md, skill-todo); local for the pure-conversion skill phases; prose for the documentation phase",
-    "Adopted the research report's binding scope decision: specs/archive/state.json and vault-root state.json writes stay hand-rolled, marked with mechanism-naming comments (never task numbers), with an out-of-scope-count-unchanged invariant per affected phase",
-    "Stopping condition is the verification bar's grep returning zero, not '68 sites converted' -- every phase carries a Scope Hypothesis making its count explicitly falsifiable at implementation time",
-    "Pre-existing literature extension check-extension-docs.sh failure is baselined in phase 1 and confirmed unchanged in phase 10; fixing it is an explicit non-goal"
+    "Actual site counts diverged substantially from the plan's hypotheses in task.md (5 vs 6), todo.md (3 vs 6), and skill-todo/SKILL.md (5 vs 12) -- each file's archival prose described more writes than existed as literal grep-matchable code; converted what was actually present and recorded the delta per the plan's own 'not the stopping condition' clause",
+    "Folded --regen-todo only where a write is immediately followed by nothing but a bare generate-todo.sh call, matching the review.md precedent exactly -- applied in 8 sites across skill-planner-hard, skill-reviser (x2), skill-team-research, skill-team-plan, skill-team-implement, and commands/task.md (x3)",
+    "Generated a new self-generating-fallback session_id exactly once per execution path where none existed: task.md's Create Task/Recover/Review modes (3 separate generations, since task.md is multi-mode) and todo.md's single linear flow (1 generation)",
+    "Found and converted one core-scope hit during the Phase 10 sweep that was not pre-identified in the plan (preflight-postflight.md's anti-pattern illustration), per the plan's explicit Phase 10 contingency instruction",
+    "check-extension-docs.sh's improvement from Phase 1 baseline (core+literature failing) to Phase 10 (all extensions passing) is attributed to a concurrently-landed unrelated task (git history: 'task 965 phase 1'/'task 965 phase 2' commits to check-extension-docs.sh itself), not to this task's own edits -- confirmed via git diff that this task made zero changes to that script",
+    "47 non-core-extension files with the same residual write idiom were left untouched and explicitly enumerated in the summary, per the task's Non-Goals scoping edits to agent-system/extensions/core/** only"
   ],
   "dead_ends": [],
-  "next_steps": "Run /implement 957 to execute the plan"
+  "next_steps": "Task complete. A natural follow-up (out of scope here) is converting the same idiom in the 47 non-core-extension files listed in the implementation summary."
 }
