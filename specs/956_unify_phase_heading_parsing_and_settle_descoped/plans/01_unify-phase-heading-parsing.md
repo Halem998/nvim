@@ -503,22 +503,26 @@ does not exist anywhere.
 
 ---
 
-### Phase 6: Migrate `update-phase-status.sh` and validate its phase-number argument [NOT STARTED]
+### Phase 6: Migrate `update-phase-status.sh` and validate its phase-number argument [COMPLETED]
 
 **Goal**: Bring the one deliberately parameter-driven site onto the library and stop it from
 accepting a non-conforming phase number silently from a caller.
 
 **Tasks**:
-- [ ] Add the library sourcing block with the same resolution and loud failure.
-- [ ] Validate the caller-supplied `phase_number` argument against the library's canonical number
+- [x] Add the library sourcing block with the same resolution and loud failure. *(completed:
+      exit 5 on absence, verified)*
+- [x] Validate the caller-supplied `phase_number` argument against the library's canonical number
       token before constructing the lookup grep. A non-conforming argument must fail loudly with
-      a named reason, not produce a silent zero-match.
-- [ ] Build the phase-lookup grep from the library's exported form parameterized on the validated
-      number, rather than from a locally-composed string.
-- [ ] Verify the accepted-status case branch matches the library's marker enum exactly. If the
-      branch and the enum disagree, the enum wins and the branch is corrected.
-- [ ] Update the file header comment to describe the site as parameter-driven and to point at the
-      library and at `plan-format.md`'s canonical-shape section for the grammar.
+      a named reason, not produce a silent zero-match. *(completed, verified with `3a`)*
+- [x] Build the phase-lookup grep from the library's exported form parameterized on the validated
+      number, rather than from a locally-composed string. *(completed via new `PHASE_HEADING_PREFIX`
+      export -- see deviation note)*
+- [x] Verify the accepted-status case branch matches the library's marker enum exactly. If the
+      branch and the enum disagree, the enum wins and the branch is corrected. *(verified: the
+      six case-statement values already matched `PHASE_STATUS_ENUM` exactly; no correction
+      needed, comment added cross-referencing the enum as authoritative)*
+- [x] Update the file header comment to describe the site as parameter-driven and to point at the
+      library and at `plan-format.md`'s canonical-shape section for the grammar. *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -530,12 +534,23 @@ accepting a non-conforming phase number silently from a caller.
 - `agent-system/extensions/core/scripts/update-phase-status.sh` - source library; validate `phase_number`; align status case branch with the enum
 
 **Verification**:
-- `bash -n` parses clean.
+- `bash -n` parses clean. *(verified)*
 - Invoking with `phase_number=3` and `phase_number=3.1` against a scratch plan behaves exactly as
-  before.
+  before. *(verified: `3.1` transitioned `[NOT STARTED]` -> `[IN PROGRESS]`; `1` was an idempotent
+  no-op at `[COMPLETED]`)*
 - Invoking with `phase_number=3a` fails loudly with a named reason and a non-zero status, rather
-  than reporting "phase not found."
-- Invoking with an out-of-enum status value is rejected with the enum listed.
+  than reporting "phase not found." *(verified)*
+- Invoking with an out-of-enum status value is rejected with the enum listed. *(verified,
+  unaffected by this migration)*
+
+**Deviation (not pre-declared in Phase 2)**: this phase needed a bare number-token validator
+(`PHASE_NUMBER_TOKEN_ERE='^[0-9]+(\.[0-9]+)?$'`) and a reusable heading-prefix constant
+(`PHASE_HEADING_PREFIX='^### Phase '`) that the library did not yet export -- Phase 2's own Scope
+Hypothesis anticipated exactly this ("any site whose pattern has no export is a gap in this
+hypothesis and MUST be added to the library before that site's phase proceeds, not worked around
+inline"). Both were added to `scripts/lib/phase-heading-patterns.sh` with fixture coverage in
+`scripts/tests/test-phase-heading-patterns.sh` (35/35 passing) rather than composed locally in
+`update-phase-status.sh`, keeping the library the single anchor.
 
 ---
 

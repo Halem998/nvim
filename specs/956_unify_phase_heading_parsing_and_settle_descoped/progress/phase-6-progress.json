@@ -1,0 +1,23 @@
+{
+  "phase": 6,
+  "phase_name": "Migrate update-phase-status.sh and validate its phase-number argument",
+  "started_at": "2026-07-29T03:40:00Z",
+  "last_updated": "2026-07-29T04:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add PHASE_NUMBER_TOKEN_ERE and PHASE_HEADING_PREFIX exports to the library with fixture coverage", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/phase-heading-patterns.sh", "agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh"]},
+    {"id": 2, "description": "Add library sourcing block and phase_number argument validation to update-phase-status.sh; migrate lookup grep to PHASE_HEADING_PREFIX; verify case statement matches enum", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-phase-status.sh"]},
+    {"id": 3, "description": "Verify all four scenarios on a scratch plan: conforming numbers, non-conforming 3a, out-of-enum status, missing library", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.3",
+      "description": "Bare number-token validator and heading-prefix constant not yet exported by the library",
+      "type": "altered",
+      "reason": "Phase 2's Scope Hypothesis anticipated this: gaps discovered at consumer-migration time must be added to the library, not worked around inline",
+      "annotation": "*(deviation: altered -- added PHASE_NUMBER_TOKEN_ERE and PHASE_HEADING_PREFIX to the library with fixture coverage)*"
+    }
+  ]
+}

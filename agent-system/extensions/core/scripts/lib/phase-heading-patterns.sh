@@ -32,6 +32,18 @@ PHASE_HEADING_ERE='^### Phase [0-9]+(\.[0-9]+)?:'
 # exists to eliminate -- never do that.
 PHASE_NUMBER_EXTRACT_ERE="$PHASE_HEADING_ERE"
 
+# Anchor prefix, exported separately so a consumer building a SPECIFIC-number lookup (e.g.
+# `update-phase-status.sh`'s "find the heading for phase 3" rather than "find any phase heading")
+# can compose `"${PHASE_HEADING_PREFIX}${validated_number}:"` instead of hand-typing the literal
+# `### Phase ` string inline.
+PHASE_HEADING_PREFIX='^### Phase '
+
+# Bare number-TOKEN validator (no heading context) for validating a caller-supplied argument
+# (e.g. a `phase_number` CLI argument) against the canonical grammar before using it to build a
+# lookup pattern. Anchored on both ends: the whole argument must be exactly one conforming token,
+# not merely contain one.
+PHASE_NUMBER_TOKEN_ERE='^[0-9]+(\.[0-9]+)?$'
+
 # BRE (`grep`, no `-E`) compatibility alias. Required-equivalent to PHASE_HEADING_ERE on every
 # fixture in scripts/tests/test-phase-heading-patterns.sh -- a divergence between the two is
 # exactly the drift this library exists to prevent (see that test's "Equivalence fixtures").

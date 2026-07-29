@@ -3,9 +3,22 @@
 # Usage: .claude/scripts/update-phase-status.sh TASK_NUMBER PROJECT_NAME PHASE_NUMBER NEW_STATUS
 #
 # NEW_STATUS values: IN_PROGRESS, NOT_STARTED, COMPLETED, COMPLETED_WITH_EXCLUSIONS, PARTIAL, BLOCKED
+# (this case statement's six values are kept in exact correspondence with
+# scripts/lib/phase-heading-patterns.sh's PHASE_STATUS_ENUM array -- see the sourcing block below;
+# if the two ever disagree, the library's enum is authoritative and this case statement is wrong)
 # Outputs: Updated plan file path on success, empty on failure/no-op
 #
-# Phase heading format: ### Phase N: {name} [STATUS]
+# Phase heading format: ### Phase N: {name} [STATUS] -- see context/formats/plan-format.md's
+# "Canonical phase-heading shape" subsection for the full grammar. This script is the ONE
+# deliberately parameter-driven consumer of that grammar: unlike every other consumer (which
+# scans a whole plan file for headings), this script is handed a specific phase_number by its
+# caller and must therefore validate that argument itself before building a lookup, rather than
+# discovering non-conformance by scanning.
+#
+# Exit codes: 0 - success or idempotent no-op; 1 - validation error (bad arguments, phase not
+# found, non-conforming phase_number argument, replacement verification failure); 5 - environment
+# error (scripts/lib/phase-heading-patterns.sh could not be found).
+#
 # Logs transitions to: .agent-logs/phase-transitions.log
 
 set -euo pipefail
@@ -48,6 +61,43 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${script_dir}/../.." && pwd)"
 . "${script_dir}/deploy-root-guard.sh" || exit 1
 
+# --- Shared phase-heading pattern library ---
+# Deploy-tree-first / source-store-fallback candidate list, matching every other consumer's
+# resolution of this library. Never falls through to a locally-composed pattern: a missing
+# library is a loud environment error (exit 5), not a silent degradation.
+phase_lib_candidates=(
+    "${repo_root}/.claude/scripts/lib/phase-heading-patterns.sh"
+    "${repo_root}/agent-system/extensions/core/scripts/lib/phase-heading-patterns.sh"
+)
+phase_lib=""
+for _candidate in "${phase_lib_candidates[@]}"; do
+    if [[ -f "$_candidate" ]]; then
+        phase_lib="$_candidate"
+        break
+    fi
+done
+if [[ -z "$phase_lib" ]]; then
+    echo "Error: shared library phase-heading-patterns.sh not found at any of:" >&2
+    for _candidate in "${phase_lib_candidates[@]}"; do
+        echo "  $_candidate" >&2
+    done
+    exit 5
+fi
+# shellcheck disable=SC1090
+. "$phase_lib"
+
+# Validate the caller-supplied phase_number argument against the library's canonical bare-token
+# grammar BEFORE building any lookup pattern from it. A non-conforming argument (e.g. "3a") must
+# fail loudly with a named reason here, rather than silently falling through to a lookup grep
+# that matches nothing and is reported merely as "phase not found" -- which would be
+# indistinguishable from a genuinely absent phase number.
+if ! grep -qE "$PHASE_NUMBER_TOKEN_ERE" <<< "$phase_number"; then
+    echo "Error: phase_number argument '${phase_number}' is not a conforming phase-number token." >&2
+    echo "       Expected an integer with at most one optional decimal sub-level (e.g. '3', '3.1')." >&2
+    echo "       See context/formats/plan-format.md's 'Canonical phase-heading shape' subsection." >&2
+    exit 1
+fi
+
 # Find plan directory (padded task number with fallback to unpadded)
 padded_num=$(printf "%03d" "$task_number")
 plan_dir="${repo_root}/specs/${padded_num}_${project_name}/plans"
@@ -78,10 +128,11 @@ fi
 
 plan_basename=$(basename "$plan_file")
 
-# Find the exact line number of the phase heading
-# Pattern: ^### Phase {phase_number}: (anything) [STATUS]
+# Find the exact line number of the phase heading. Built from the library's exported
+# PHASE_HEADING_PREFIX ('^### Phase ') parameterized on the validated phase_number, rather than
+# from a locally-composed "^### Phase " string.
 # Use || true to prevent set -e from aborting when grep finds no match (exit code 1)
-line_number=$(grep -n "^### Phase ${phase_number}:" "$plan_file" 2>/dev/null | head -1 | cut -d: -f1 || true)
+line_number=$(grep -n "${PHASE_HEADING_PREFIX}${phase_number}:" "$plan_file" 2>/dev/null | head -1 | cut -d: -f1 || true)
 
 if [[ -z "$line_number" ]]; then
     echo "Phase ${phase_number} not found in $plan_file" >&2

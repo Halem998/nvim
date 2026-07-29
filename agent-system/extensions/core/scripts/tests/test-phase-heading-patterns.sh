@@ -96,6 +96,45 @@ else
 fi
 
 # =====================================================================
+# PHASE_NUMBER_TOKEN_ERE / PHASE_HEADING_PREFIX: bare-argument validation and specific-number
+# lookup composition, added for update-phase-status.sh's caller-supplied phase_number validation.
+# =====================================================================
+assert_token_ok() {
+  local label="$1" token="$2"
+  if grep -qE "$PHASE_NUMBER_TOKEN_ERE" <<< "$token"; then
+    pass "$label: '$token' accepted by PHASE_NUMBER_TOKEN_ERE"
+  else
+    fail "$label: '$token' unexpectedly rejected by PHASE_NUMBER_TOKEN_ERE"
+  fi
+}
+assert_token_rejected() {
+  local label="$1" token="$2"
+  if grep -qE "$PHASE_NUMBER_TOKEN_ERE" <<< "$token"; then
+    fail "$label: '$token' unexpectedly accepted by PHASE_NUMBER_TOKEN_ERE"
+  else
+    pass "$label: '$token' correctly rejected by PHASE_NUMBER_TOKEN_ERE"
+  fi
+}
+assert_token_ok "token positive: integer" "3"
+assert_token_ok "token positive: decimal sub-phase" "3.1"
+assert_token_rejected "token negative: letter suffix" "3a"
+assert_token_rejected "token negative: double decimal" "3.1.2"
+assert_token_rejected "token negative: roman numeral" "III"
+assert_token_rejected "token negative: empty" ""
+
+prefix_lookup_file="$WORKDIR/prefix-lookup.md"
+cat > "$prefix_lookup_file" <<'EOF'
+### Phase 1: First [COMPLETED]
+### Phase 3.1: Second [NOT STARTED]
+EOF
+prefix_match=$(grep -n "${PHASE_HEADING_PREFIX}3\.1:" "$prefix_lookup_file" | cut -d: -f1)
+if [[ "$prefix_match" == "2" ]]; then
+  pass "PHASE_HEADING_PREFIX: specific-number lookup composition finds the correct line"
+else
+  fail "PHASE_HEADING_PREFIX: expected line 2, got '$prefix_match'"
+fi
+
+# =====================================================================
 # Negative number-token fixtures: must be reported by nonconforming_phase_headings AND must make
 # extract_phase_number return empty with non-zero status -- never a truncated prefix.
 # =====================================================================
