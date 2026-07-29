@@ -3110,8 +3110,14 @@
           "path": "specs/976_fix_state_mutex_todo_regen_timing/plans/01_mutex-regen-outside-lock.md",
           "type": "plan",
           "summary": "5-phase implementation plan for moving TODO regeneration out of the specs/.scope-lock critical section."
+        },
+        {
+          "path": "specs/976_fix_state_mutex_todo_regen_timing/summaries/01_mutex-regen-outside-lock-summary.md",
+          "type": "summary",
+          "summary": ""
         }
-      ]
+      ],
+      "completion_summary": "Moved TODO regeneration out of state-write.sh's scope mutex critical section (measured hold dropped from ~6.9s to 77ms), added a regression suite that adversarially fails against the pre-fix code, and rewrote generate-todo.sh to a single-pass jq extraction with byte-identical output and a measured ~4.4x speedup on the in-scope per-task loop."
     },
     {
       "project_number": 977,

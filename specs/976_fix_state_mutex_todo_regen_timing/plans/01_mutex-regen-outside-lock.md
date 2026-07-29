@@ -1,7 +1,7 @@
 # Implementation Plan: Move TODO regeneration out of the state mutex critical section
 
 - **Task**: 976 - Move TODO regeneration out of the state mutex critical section (or extend the window)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: Task 965
 - **Research Inputs**: specs/976_fix_state_mutex_todo_regen_timing/reports/01_mutex-timing-defect.md

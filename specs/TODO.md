@@ -457,6 +457,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 - **Dependencies**: Task 965
 - **Research**: [976_fix_state_mutex_todo_regen_timing/reports/01_mutex-timing-defect.md]
 - **Plan**: [976_fix_state_mutex_todo_regen_timing/plans/01_mutex-regen-outside-lock.md]
+- **Summary**: [976_fix_state_mutex_todo_regen_timing/summaries/01_mutex-regen-outside-lock-summary.md]
 
 **Description**: Fix the measured mutex-timing defect: state-write.sh --regen-todo runs generate-todo.sh INSIDE the specs/.scope-lock critical section, and the regen takes ~5.5s wall time against the current 550KB state.json — longer than the 5.0s waiter acquire budget (SCOPE_MUTEX_ACQUIRE_BUDGET_MS=5000, task-lock.sh ~line 543) and more than half the 10s staleness reclaim window (SCOPE_MUTEX_STALE_SEC=10).
 
