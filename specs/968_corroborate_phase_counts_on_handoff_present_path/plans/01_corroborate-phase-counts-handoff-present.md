@@ -465,23 +465,23 @@ block (untouched here), the new site, or the gate call in step 3.
 
 ---
 
-### Phase 7: Migrate the existing recovery-path blocks to the shared function [NOT STARTED]
+### Phase 7: Migrate the existing recovery-path blocks to the shared function [COMPLETED]
 
 **Goal**: Eliminate the remaining hand-copied corroboration blocks so exactly one implementation
 exists, making "the three engines agree" mechanically checkable rather than eyeballed.
 
 **Tasks**:
-- [ ] Replace the inline corroboration block in `skill-orchestrate/SKILL.md` Stage 5's
+- [x] Replace the inline corroboration block in `skill-orchestrate/SKILL.md` Stage 5's
       `recovered = true` branch with a call to `skill_corroborate_phase_counts`, preserving the
       existing `evidence_suspect` / `evidence_reason` / `dispatch_status` precondition exactly as
       the recovery path's trigger (this phase changes the implementation, never the trigger).
-- [ ] Do the same for `skill-orchestrate-hard/SKILL.md` Stage 5's recovered branch.
-- [ ] Do the same for `skill-orchestrate/SKILL.md` Stage MT-4 step 1's recovered branch.
-- [ ] Pass an EMPTY handoff-path argument on all three recovery-path call sites — there is no
+- [x] Do the same for `skill-orchestrate-hard/SKILL.md` Stage 5's recovered branch.
+- [x] Do the same for `skill-orchestrate/SKILL.md` Stage MT-4 step 1's recovered branch.
+- [x] Pass an EMPTY handoff-path argument on all three recovery-path call sites — there is no
       handoff to validate on that path, and the diagnostic must not fire there.
-- [ ] Preserve every existing log-message wording that an operator may be grepping for, including
+- [x] Preserve every existing log-message wording that an operator may be grepping for, including
       the `[UNVERIFIED PHASES CORROBORATED]` banner and the per-engine log prefixes.
-- [ ] Update the `## MUST NOT` and Read-allowlist prose to describe the shared function as the
+- [x] Update the `## MUST NOT` and Read-allowlist prose to describe the shared function as the
       single anchor, in the same way `phase-heading-patterns.sh` is described as the single
       grammar anchor.
 

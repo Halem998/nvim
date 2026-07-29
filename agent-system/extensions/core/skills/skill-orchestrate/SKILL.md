@@ -657,10 +657,26 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
     # PHASES_ZERO_ON_SUCCESS. This is the ONE scenario the phase-marker grep further below
     # structurally cannot see, because that grep requires recovered=false — a claimed-complete
     # implementation with a corroborated 0/0 phase count (Defect 1's own scenario) always
-    # produces recovered=true and never reaches that branch. Sources the shared
-    # scripts/lib/phase-heading-patterns.sh anchor rather than re-deriving the regex — see
-    # "MUST NOT (Context Flatness Constraint)" for why this reuse, not a new read mechanism, is
-    # what keeps this exception narrow.
+    # produces recovered=true and never reaches that branch. This trigger precondition is
+    # UNCHANGED by the migration below — only the IMPLEMENTATION moved into the shared
+    # skill_corroborate_phase_counts (scripts/skill-base.sh), the single anchor all three engines
+    # now call for this logic, mirroring scripts/lib/phase-heading-patterns.sh's own role as the
+    # single grammar anchor.
+    #
+    # Message-consolidation note (deliberate, recorded in the same style the multi-task
+    # `blocked`-row divergence in the grouping table below is recorded): the shared function's
+    # banner and log lines are scenario-agnostic — task number, plan path, completed/total
+    # counts, the `[UNVERIFIED PHASES CORROBORATED]` token itself, and the "Corroborated by an
+    # independent source" tail are all preserved verbatim — but it no longer restates "recovery
+    # reported status=... with phases 0/0 (evidence_reason=PHASES_ZERO_ON_SUCCESS)" inline; that
+    # framing is specific to this call site and is already established by the "RECOVERY:" log
+    # line immediately above in the same cycle's output, so no diagnostic information is
+    # actually lost, only the restatement.
+    #
+    # skill_corroborate_phase_counts is defined in scripts/skill-base.sh; source it defensively
+    # here (idempotent) since this Stage 5 code fence has no earlier explicit source line of its
+    # own to depend on.
+    source .claude/scripts/skill-base.sh
     evidence_suspect=$(echo "$recover_json" | jq -r '.evidence_suspect // false' 2>/dev/null) || evidence_suspect=false
     evidence_reason=$(echo "$recover_json" | jq -r '.evidence_reason // "NONE"' 2>/dev/null) || evidence_reason="NONE"
     if [ "$evidence_suspect" = "true" ] && [ "$evidence_reason" = "PHASES_ZERO_ON_SUCCESS" ] && [ "$dispatch_status" = "implemented" ]; then
@@ -668,36 +684,15 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
       if [ -z "$corroboration_plan_path" ]; then
         corroboration_plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
       fi
-      if [ -n "$corroboration_plan_path" ] && [ -f "$corroboration_plan_path" ]; then
-        # Sourced from the shared anchor rather than re-derived inline — see
-        # context/formats/plan-format.md's "Canonical phase-heading shape" subsection. The DONE
-        # alternation ($PHASE_HEADING_DONE_ERE) counts `[COMPLETED WITH EXCLUSIONS]` as closed,
-        # not just literal `[COMPLETED]` (the drift this migration fixes).
-        . .claude/scripts/lib/phase-heading-patterns.sh
-        recovered_total=$(grep -cE "$PHASE_HEADING_ERE" "$corroboration_plan_path" 2>/dev/null) || recovered_total=0
-        recovered_completed=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$corroboration_plan_path" 2>/dev/null) || recovered_completed=0
-        if has_nonconforming_phase_headings "$corroboration_plan_path"; then
-          warn_nonconforming "$corroboration_plan_path" "orchestrate-corroboration" || true
-          echo "[orchestrate] Evidence corroboration: non-conforming phase heading(s) in ${corroboration_plan_path} — recovered counts are unreliable; leaving plan_markers_verified=absent." >&2
-        elif [ "$recovered_total" -gt 0 ] && [ "$recovered_completed" -eq "$recovered_total" ]; then
-          # Corroborated: allow the completion-claim gate to act on evidence rather than on
-          # schema permissiveness. This does NOT relax the Item C decision in the recovery
-          # script — the script's own emitted phases_completed/phases_total are still 0/0; only
-          # this orchestrator-side variable is corrected, from an independent artifact (the plan
-          # file), never from the off-schema value itself.
-          phases_completed="$recovered_completed"
-          phases_total="$recovered_total"
-          plan_markers_verified="true"
-          echo "[UNVERIFIED PHASES CORROBORATED] task ${task_number}: recovery reported status=${dispatch_status} with phases 0/0 (evidence_reason=PHASES_ZERO_ON_SUCCESS), but plan headings in ${corroboration_plan_path} show ${recovered_completed}/${recovered_total} phases closed (COMPLETED or COMPLETED WITH EXCLUSIONS). Corroborated by an independent source — correcting phase counts and setting plan_markers_verified=true." >&2
-        else
-          # False-positive guard: no contradiction to resolve (a plan with zero phase headings,
-          # or a genuine partial-completion plan). Leave plan_markers_verified=absent and the
-          # 0/0 counts untouched — do not treat this as a second trigger.
-          echo "[orchestrate] Evidence corroboration: non-corroborating (plan headings show ${recovered_completed}/${recovered_total} in ${corroboration_plan_path}) — leaving plan_markers_verified=absent and phase counts at ${phases_completed}/${phases_total}." >&2
-        fi
-      else
-        echo "[orchestrate] Evidence corroboration: evidence_suspect=true (PHASES_ZERO_ON_SUCCESS) but no plan file found to corroborate against — leaving plan_markers_verified=absent." >&2
-      fi
+      # Empty handoff-path argument (4th arg omitted): there is no handoff to validate on the
+      # recovery path — the whole reason this branch exists is that no handoff was written this
+      # dispatch — so the log-only validate-handoff.sh diagnostic inside the shared function
+      # must never fire here.
+      cpc_line=$(skill_corroborate_phase_counts "$task_number" "$corroboration_plan_path" "[orchestrate]")
+      IFS=' ' read -r cpc_a cpc_b cpc_c <<< "$cpc_line"
+      phases_completed="${cpc_a#phases_completed=}"
+      phases_total="${cpc_b#phases_total=}"
+      plan_markers_verified="${cpc_c#plan_markers_verified=}"
     fi
   else
     if [ "$handoff_stale" = "true" ]; then
@@ -1801,10 +1796,19 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
 
    **Evidence corroboration (identical mirror of the single-task Stage 5 block above)**: same
    precondition (`evidence_suspect=true`, `evidence_reason="PHASES_ZERO_ON_SUCCESS"`,
-   `dispatch_status="implemented"`), same shared-library-sourced counts, same escalation
-   (corroborated → correct `phases_completed`/`phases_total` and set
-   `plan_markers_verified="true"`; non-corroborated → leave both untouched), scoped to this
-   task's own `plan_path`/`task_dir` — never another task's in the same wave:
+   `dispatch_status="implemented"` — UNCHANGED by this migration), now calling the same shared
+   `skill_corroborate_phase_counts` (scripts/skill-base.sh) single-task Stage 5's recovered
+   branch above migrated to, scoped to this task's own `plan_path`/`task_dir`/handoff — never
+   another task's in the same wave. Empty handoff-path argument (4th arg omitted): there is no
+   handoff to validate on the recovery path.
+
+   Deliberate convergence (recorded, not silent): the pre-migration banner here read
+   `[UNVERIFIED PHASES CORROBORATED] Task #${task_num}: recovery reported status=...` — a
+   capitalized `Task #` form distinct from both single-task engines' lowercase `task
+   ${task_number}` form. The shared function emits ONE banner shape for every call site; this
+   migration adopts that shape here too, removing the third undocumented per-engine
+   banner-shape divergence. Grepping the bare `UNVERIFIED PHASES CORROBORATED` token still
+   matches identically; only the trailing task-number rendering converges.
 
    ```bash
    evidence_suspect=$(echo "$recover_json" | jq -r '.evidence_suspect // false' 2>/dev/null) || evidence_suspect=false
@@ -1814,26 +1818,11 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
      if [ -z "$corroboration_plan_path" ]; then
        corroboration_plan_path=$(ls -1 "${task_dir}/plans/"*.md 2>/dev/null | sort -V | tail -1)
      fi
-     if [ -n "$corroboration_plan_path" ] && [ -f "$corroboration_plan_path" ]; then
-       # Sourced from the shared anchor (scripts/lib/phase-heading-patterns.sh) rather than
-       # re-derived inline; the DONE alternation counts `[COMPLETED WITH EXCLUSIONS]` as closed.
-       . .claude/scripts/lib/phase-heading-patterns.sh
-       recovered_total=$(grep -cE "$PHASE_HEADING_ERE" "$corroboration_plan_path" 2>/dev/null) || recovered_total=0
-       recovered_completed=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$corroboration_plan_path" 2>/dev/null) || recovered_completed=0
-       if has_nonconforming_phase_headings "$corroboration_plan_path"; then
-         warn_nonconforming "$corroboration_plan_path" "orchestrate-corroboration-mt" || true
-         echo "[orchestrate] Task #${task_num}: non-conforming phase heading(s) in ${corroboration_plan_path} — leaving plan_markers_verified=absent." >&2
-       elif [ "$recovered_total" -gt 0 ] && [ "$recovered_completed" -eq "$recovered_total" ]; then
-         phases_completed="$recovered_completed"
-         phases_total="$recovered_total"
-         plan_markers_verified="true"
-         echo "[UNVERIFIED PHASES CORROBORATED] Task #${task_num}: recovery reported status=${dispatch_status} with phases 0/0 (evidence_reason=PHASES_ZERO_ON_SUCCESS), but plan headings in ${corroboration_plan_path} show ${recovered_completed}/${recovered_total} phases closed (COMPLETED or COMPLETED WITH EXCLUSIONS). Corroborated — correcting phase counts and setting plan_markers_verified=true." >&2
-       else
-         echo "[orchestrate] Task #${task_num}: Evidence corroboration non-corroborating (${recovered_completed}/${recovered_total} in ${corroboration_plan_path}) — leaving plan_markers_verified=absent." >&2
-       fi
-     else
-       echo "[orchestrate] Task #${task_num}: Evidence corroboration: no plan file found to corroborate against — leaving plan_markers_verified=absent." >&2
-     fi
+     cpc_line=$(skill_corroborate_phase_counts "$task_num" "$corroboration_plan_path" "[orchestrate]")
+     IFS=' ' read -r cpc_a cpc_b cpc_c <<< "$cpc_line"
+     phases_completed="${cpc_a#phases_completed=}"
+     phases_total="${cpc_b#phases_total=}"
+     plan_markers_verified="${cpc_c#plan_markers_verified=}"
    fi
    ```
 
@@ -2247,12 +2236,12 @@ against the plan file's `### Phase N: {name} [STATUS]` heading lines to recover
   two calls return one integer each, a hard ceiling of **≤10 tokens per recovery event**.
 - **Heading lines only**: the patterns anchor on `^### Phase N: `. Checklist items, prose,
   deviation annotations, and every other part of the plan file remain out of scope.
-- **Recovery-only precondition, THREE reachable branches**: this identical two-`grep -c` idiom
-  (branches 1-2) or its shared-function equivalent `skill_corroborate_phase_counts` (branch 3,
-  which performs the same two greps inside `scripts/skill-base.sh` rather than inline) fires
-  from exactly three places, never elsewhere. (1) The missing/stale-handoff branch of Stage 5,
-  after return-meta recovery above has already declined — the original branch documented here.
-  (2) The recovered=true branch above, but ONLY when return-meta recovery's own
+- **Recovery-only precondition, THREE reachable branches**: fires from exactly three places,
+  never elsewhere. (1) The missing/stale-handoff branch of Stage 5, after return-meta recovery
+  above has already declined — the original branch documented here, still the raw inline
+  two-`grep -c` idiom directly (diagnostic-only; it never sets `plan_markers_verified` and never
+  calls the shared function, since it has no recoverable `dispatch_status` to corroborate
+  against). (2) The recovered=true branch above, but ONLY when return-meta recovery's own
   `evidence_suspect`/`evidence_reason` fields report `PHASES_ZERO_ON_SUCCESS` for a claimed
   `implemented` status — the evidence-corroboration block that widens this exception's trigger
   to the one scenario branch (1) structurally cannot see, since branch (1) requires
@@ -2260,10 +2249,14 @@ against the plan file's `### Phase N: {name} [STATUS]` heading lines to recover
   mirror), but ONLY when the handoff itself reports `dispatch_status = "implemented"` AND
   `phases_total -eq 0` — the scenario branches (1) and (2) structurally cannot see, since both
   require the handoff to be missing, stale, or recovered from `.return-meta.json` rather than
-  read directly. None of the three branches is a routine per-cycle read, and none is a
-  substitute for reading a handoff that is present and fresh with populated accounting — the
-  normal path (fresh handoff, `phases_total > 0` or `plan_markers_verified` already set) never
-  reaches any of them.
+  read directly. Branches (2) and (3) both call the SAME shared `skill_corroborate_phase_counts`
+  (`scripts/skill-base.sh`), which performs the same two `grep -c` calls inside itself rather
+  than inline — the single anchor both branches (and their hard-mode and multi-task mirrors)
+  now share, in the same way `scripts/lib/phase-heading-patterns.sh` is the single grammar
+  anchor every phase-heading consumer sources rather than re-deriving. None of the three
+  branches is a routine per-cycle read, and none is a substitute for reading a handoff that is
+  present and fresh with populated accounting — the normal path (fresh handoff,
+  `phases_total > 0` or `plan_markers_verified` already set) never reaches any of them.
 - **Diagnostic in branch (1), evidence-based escalation in branches (2) and (3)**: in branch (1)
   the recovered counts are logged and recorded in the loop guard only — they never synthesize a
   `dispatch_status` and never drive a status transition, since there is no recoverable outcome
