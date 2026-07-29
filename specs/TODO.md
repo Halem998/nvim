@@ -11,9 +11,9 @@ next_project_number: 990
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 948,951,959,963,964,966,969,971,973,975,976,977,978,979,981,982,983,988 | -- | agent-system, extensions, orchestration-concurrency, ... |
-| 2 | 952,960,972,974,980,984,987 | 951,959,966,969,971,978 | agent-system, extensions, status-marker-lifecycle |
-| 3 | 953,961,985,986,989 | 952,960,972,974,980 | agent-system |
+| 1 | 948,951,959,963,964,966,969,971,973,976,981,982,983,988 | -- | agent-system, orchestration-concurrency, state-write-coverage |
+| 2 | 952,960,972,974,975,977,978,979,980,984 | 951,959,966,969,971,976 | agent-system, extensions, status-marker-lifecycle |
+| 3 | 953,961,985,986,987,989 | 952,960,972,974,978,980 | agent-system |
 | 4 | 962 | 961 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -37,12 +37,12 @@ next_project_number: 990
   └─ 974 [NOT STARTED] — Add a plan-checklist mark-completed contract to the two HARD impl
     └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a (see above)
 973 [NOT STARTED] — Give reconcile-task-status.sh a defined, safe recovery behavior w
-978 [NOT STARTED] — Make the context-index validation layer tell the truth. From the 
-  └─ 987 [NOT STARTED] — Bring context loading back within its own declared budgets and gi
-979 [NOT STARTED] — Make the error-tracking layer real. specs/errors.json DOES NOT EX
 981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
+978 [NOT STARTED] — Make the context-index validation layer tell the truth. From the 
+  └─ 987 [NOT STARTED] — Bring context loading back within its own declared budgets and gi
+979 [NOT STARTED] — Make the error-tracking layer real. specs/errors.json DOES NOT EX
 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
 
@@ -379,7 +379,7 @@ SOURCE-STORE RULE (binding): deploy machinery edits target lua/neotex/plugins/ai
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 976
 
 **Description**: Make the error-tracking layer real. specs/errors.json DOES NOT EXIST in this repo, yet it is the documented backbone of /errors, error-handling rules, and several skills' failure paths — every reader guards with [ -f ] and silently degrades to a no-op, so the self-healing loop the system's docs describe never runs. Three mutually inconsistent schemas are documented: rules/error-handling.md (context{session_id,command,task,phase,checkpoint} + trajectory + recovery), commands/errors.md (~line 21: context{command,task,agent,file} + recurrence_count, no trajectory/recovery; and a second update-shape at ~line 186 adding fixed_date/fix_task documented nowhere else), and the actual writer prose in skill-planner/SKILL.md (~line 487: recovery + fix_status, no trajectory/recurrence_count). Only 7 fields appear in all three.
 
@@ -408,7 +408,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 965, Task 976
 
 **Description**: Make the context-index validation layer tell the truth. From the agent-system review (specs/reviews/review-2026-07-29-agent-system.md, docs/context section): 104 of 164 deployed index entries have wrong line_count (58 beyond the validator's own 10% tolerance; whole extension blocks are round-number placeholders that were never measured), 14 deployed context files including the single largest context file (patterns/task-lock.md, 1103 lines) have NO index entry and are unreachable by any agent, and the validator that should catch the line counts reports 'Warnings: 0 / Validation PASSED' while 58 real warnings scroll past.
 
@@ -431,7 +431,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: None
+- **Dependencies**: Task 976
 
 **Description**: A batch of small, independently-verified extension manifest defects from the agent-system review (specs/reviews/review-2026-07-29-agent-system.md, extension-consistency section). Each item is a few lines; they are batched because they share the manifest/lint file surface.
 
@@ -456,7 +456,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
-- **Dependencies**: None
+- **Dependencies**: Task 965
 
 **Description**: Fix the measured mutex-timing defect: state-write.sh --regen-todo runs generate-todo.sh INSIDE the specs/.scope-lock critical section, and the regen takes ~5.5s wall time against the current 550KB state.json — longer than the 5.0s waiter acquire budget (SCOPE_MUTEX_ACQUIRE_BUDGET_MS=5000, task-lock.sh ~line 543) and more than half the 10s staleness reclaim window (SCOPE_MUTEX_STALE_SEC=10).
 
@@ -480,7 +480,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/core/scripts/**, never
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: None
+- **Dependencies**: Task 976
 
 **Description**: Fix the generated .claude/CLAUDE.md containing its entire body TWICE (~891 duplicated lines, ~13k wasted tokens in every session prompt), plus the doubled claude-stop-notify.sh Stop-hook registration in .claude/settings.json.
 
@@ -753,7 +753,7 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 - **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: git-commit-reliability
-- **Dependencies**: None
+- **Dependencies**: Task 976
 - **Research**: [967_fix_git_commit_scoped_lock_exclude_abort/reports/01_lock-exclude-abort.md]
 - **Plan**: [967_fix_git_commit_scoped_lock_exclude_abort/plans/01_lock-exclude-abort-fix.md]
 - **Summary**: [967_fix_git_commit_scoped_lock_exclude_abort/summaries/01_lock-exclude-abort-fix-summary.md]
@@ -792,7 +792,7 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 967
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`. Runtime invocations may still reference deployed `.claude/scripts/*` paths -- that is the CALL PATH, not the EDIT TARGET.
 

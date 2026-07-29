@@ -2884,10 +2884,12 @@
         "agent-system/extensions/core/scripts/verify-deploy.sh",
         "agent-system/extensions/core/commands/orchestrate.md"
       ],
-      "dependencies": [],
+      "dependencies": [
+        967
+      ],
       "artifacts": [],
       "created": "2026-07-29T14:59:46Z",
-      "last_updated": "2026-07-29T14:59:46Z",
+      "last_updated": "2026-07-29T19:40:45Z",
       "session_id": "sess_1785336979_220ee2",
       "next_artifact_number": null
     },
@@ -2903,7 +2905,9 @@
         "agent-system/extensions/core/scripts/git-commit-scoped.sh",
         "agent-system/extensions/core/context/standards/git-staging-scope.md"
       ],
-      "dependencies": [],
+      "dependencies": [
+        976
+      ],
       "artifacts": [
         {
           "path": "specs/967_fix_git_commit_scoped_lock_exclude_abort/reports/01_lock-exclude-abort.md",
@@ -2922,7 +2926,7 @@
         }
       ],
       "created": "2026-07-29T16:26:39Z",
-      "last_updated": "2026-07-29T17:37:33Z",
+      "last_updated": "2026-07-29T19:40:45Z",
       "session_id": "sess_1785345004_a2ccbc_967",
       "next_artifact_number": 1,
       "completion_summary": "Fixed git-commit-scoped.sh's unconditional ephemeral-exclude injection (which aborted git add whenever a named path was both gitignored and present on disk, e.g. a held task .lock/) by gating each candidate exclude on git check-ignore -q. Shipped a test-first regression suite (7 cases, proven RED on T1/T3 against the unmodified script), synced git-staging-scope.md, corrected a superseded memory candidate, deployed, and confirmed live: this task's own scoped commit landed successfully with its .lock/ present after previously failing twice with the pre-fix defect."
@@ -3047,14 +3051,16 @@
       "status": "not_started",
       "task_type": "meta",
       "topic": "extensions",
-      "dependencies": [],
+      "dependencies": [
+        976
+      ],
       "file_scope": [
         "lua/neotex/plugins/ai/shared/extensions/merge.lua",
         "lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua"
       ],
       "description": "Fix the generated .claude/CLAUDE.md containing its entire body TWICE (~891 duplicated lines, ~13k wasted tokens in every session prompt), plus the doubled claude-stop-notify.sh Stop-hook registration in .claude/settings.json.\n\nWHAT IS WRONG (verified live, from the agent-system review specs/reviews/review-2026-07-29-agent-system.md): two mechanisms both run on every Load/Reload and disagree about who owns the file. (1) generate_claudemd() in lua/neotex/plugins/ai/shared/extensions/merge.lua (~line 549) rewrites the whole file as header..fragments and emits NO section markers. (2) reinject_loaded_extensions() in lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua (~line 220) then calls merge_mod.inject_section() for every loaded extension 'as defense-in-depth'. inject_section decides idempotency by searching for '<!-- SECTION: core -->' (merge.lua ~line 124) — which step 1 never writes — so it falls through and APPENDS a second full copy. init.lua (~line 83) carries a comment claiming section injection is skipped here, so the two halves of the codebase disagree about ownership. The current deployed .claude/CLAUDE.md is 1801 lines with lines 7-897 and 899-1801 byte-identical modulo markers. Separately, .claude/settings.json registers claude-stop-notify.sh TWICE on Stop — the deep_merge append-without-replace hazard the core manifest's own _comment warns about, now actually occurred.\n\nWORK:\n  1. Pick ONE ownership regime and make both code paths agree: either generate_claudemd() emits '<!-- SECTION: id -->' markers for every fragment it writes (so inject_section becomes idempotent), or reinject_loaded_extensions() stops calling inject_section for the claudemd merge key. Note strip_extension_sections()/preserve_sections()/restore_sections() in sync.lua are all built around the marker regime — prefer restoring markers unless research shows otherwise.\n  2. De-duplicate the current deployed CLAUDE.md by regenerating after the fix.\n  3. Fix the duplicate Stop-hook registration and make the settings merge dedup catch it (deep_equal dedup exists but did not prevent this — determine why).\n\nVERIFICATION BAR:\n  - After a full unload-all/load-all cycle, .claude/CLAUDE.md contains exactly one copy of the core fragment and one copy per loaded extension fragment; grep -c for a sentinel core line returns 1.\n  - Running the load cycle twice in a row produces a byte-identical CLAUDE.md (idempotency).\n  - .claude/settings.json Stop hooks list claude-stop-notify.sh exactly once after redeploy.\n\nSOURCE-STORE RULE (binding): fix in lua/neotex/plugins/ai/** — the deploy machinery lives in the nvim Lua tree, not in .claude/**. DELIVERABLE RULE: deliverables outside specs/** must not cite task numbers; use durable anchors (function names, file paths).",
       "created": "2026-07-29T19:29:18Z",
-      "last_updated": "2026-07-29T19:29:18Z",
+      "last_updated": "2026-07-29T19:40:45Z",
       "session_id": "sess_1785353358_66268f"
     },
     {
@@ -3064,7 +3070,9 @@
       "status": "not_started",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
-      "dependencies": [],
+      "dependencies": [
+        965
+      ],
       "file_scope": [
         "agent-system/extensions/core/scripts/state-write.sh",
         "agent-system/extensions/core/scripts/generate-todo.sh",
@@ -3072,7 +3080,7 @@
       ],
       "description": "Fix the measured mutex-timing defect: state-write.sh --regen-todo runs generate-todo.sh INSIDE the specs/.scope-lock critical section, and the regen takes ~5.5s wall time against the current 550KB state.json — longer than the 5.0s waiter acquire budget (SCOPE_MUTEX_ACQUIRE_BUDGET_MS=5000, task-lock.sh ~line 543) and more than half the 10s staleness reclaim window (SCOPE_MUTEX_STALE_SEC=10).\n\nCONSEQUENCES (from the agent-system review, specs/reviews/review-2026-07-29-agent-system.md, state-machinery section): (1) every update-task-status.sh preflight/postflight holds the mutex >5.5s, so in parallel multi-task dispatch the second and later agents deterministically fail their acquire and ABORT (fail-closed, correctness-preserving, but presents as a spurious workflow abort). (2) As state.json grows, the holder will cross the 10s staleness window and a waiter will rm -rf the mutex dir and reclaim it FROM A LIVE HOLDER (task-lock.sh reclaim path ~line 513), producing two unserialized writers and a lost update. The token-mismatch WARN at task-lock.sh ~line 1058 already anticipates this. orchestrator-postflight.sh already knows to extend its window (POSTFLIGHT_SCOPE_STALE_SEC=30); state-write.sh passes no stale_sec and inherits the 10s default.\n\nWORK (research should choose among, possibly combining):\n  1. Move generate-todo.sh OUT of the critical section: write state under mutex, release, then regen TODO with a generation-counter or re-check so a concurrent writer's regen supersedes cleanly. (TODO.md is a generated view; last-writer-wins after a snapshotted consistent state read is acceptable.)\n  2. At minimum: pass an explicit stale_sec >= 30 and a matching acquire budget from state-write.sh, mirroring orchestrator-postflight.sh's existing posture.\n  3. Make generate-todo.sh faster: it currently spawns ~10 jq subprocesses PER TASK (generate_task_entry), each re-parsing the full state.json; a single-pass jq program would cut the 5.5s dramatically and shrink every critical section.\n  4. Add the regression guard the review proposed: a test asserting generate-todo.sh wall time stays under 40% of the staleness window (or that regen no longer runs inside the mutex at all).\n\nVERIFICATION BAR:\n  - test-state-write-concurrency.sh still passes; a new test demonstrates two concurrent update-task-status.sh calls both succeed (no spurious ABORT) with a consistent final state.\n  - Measured mutex hold time for a status flip is under 1s, or the staleness window and acquire budget are both provably larger than the worst-case hold with margin.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/core/scripts/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**; use durable anchors (script names, variable names).",
       "created": "2026-07-29T19:29:18Z",
-      "last_updated": "2026-07-29T19:29:18Z",
+      "last_updated": "2026-07-29T19:40:45Z",
       "session_id": "sess_1785353358_66268f"
     },
     {
@@ -3082,7 +3090,9 @@
       "status": "not_started",
       "task_type": "meta",
       "topic": "extensions",
-      "dependencies": [],
+      "dependencies": [
+        976
+      ],
       "file_scope": [
         "agent-system/extensions/literature/manifest.json",
         "agent-system/extensions/epidemiology/settings-fragment.json",
@@ -3093,7 +3103,7 @@
       ],
       "description": "A batch of small, independently-verified extension manifest defects from the agent-system review (specs/reviews/review-2026-07-29-agent-system.md, extension-consistency section). Each item is a few lines; they are batched because they share the manifest/lint file surface.\n\nWORK:\n  1. literature/manifest.json keyword_overrides is the WRONG JSON SHAPE — values are strings ('literature': 'meta') where the consumer (core/commands/task.md keyword-override block, which iterates .keyword_overrides | to_entries[] | select(.value.keywords[]? ...)) requires {\"<task_type>\": {\"keywords\": [...], \"aliases\": [...]}} as in cslib/manifest.json and email/manifest.json. The jq crashes with 'Cannot index string with string \"keywords\"' (reproduced, exit 5) and the error is swallowed by 2>/dev/null, so THE FEATURE HAS NEVER WORKED. Reshape to {\"meta\": {\"keywords\": [\"literature\",\"zotero\",\"bibliography\",\"citation\"]}}. Note this was already diagnosed as P0 (IN-02) in specs/archive/814_synthesize_improvement_roadmap/reports/01_improvement-roadmap.md and never applied.\n  2. epidemiology/settings-fragment.json uses snake_case 'mcp_servers'; Claude Code reads camelCase 'mcpServers' (as lean/ and nix/ fragments correctly use). The rmcp MCP server has therefore never installed. One-word fix.\n  3. Delete agent-system/extensions/present/context/project/present/talk/templates/pptx-project/UCSF_ZSFG_Template_16x9.pptx — a 3,046,296-byte PowerPoint that is 76% of the entire present extension, referenced by NOTHING (the sibling index.json's files array deliberately excludes it; pptx-assembly-agent.md lists only theme_mappings.json, generate_deck.py, README.md), and re-copied into .claude/context/ on every present load.\n  4. Drop the literature -> filetypes dependency in literature/manifest.json: grep -rn filetypes agent-system/extensions/literature/ returns exactly one hit (the manifest itself); literature ships its own conversion pipeline. This dependency force-loads a 380KB extension and cascades via cslib -> lean -> literature -> filetypes.\n  5. Resolve the four orphaned manifest mcp_servers blocks (filetypes, founder, memory, present declare servers with no merge_targets.settings route — documented as not-consumed in extension-system.md): either add a settings-fragment.json + merge target, or delete the block. Then delete the seven empty 'mcp_servers': {} and thirteen empty 'hooks': {} vestigial stubs across the other manifests.\n\nVERIFICATION BAR:\n  - A /task invocation whose description contains 'literature' or 'zotero' resolves task_type per the reshaped override with no jq stderr (run the consumer jq directly against the manifest and assert exit 0).\n  - The epidemiology fragment merges under mcpServers in a scratch settings merge.\n  - du -sh of the present extension drops by ~3MB; check-extension-docs.sh still passes for present.\n  - No manifest retains an empty mcp_servers/hooks object; check-extension-docs.sh passes for all touched extensions.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-07-29T19:29:18Z",
-      "last_updated": "2026-07-29T19:29:18Z",
+      "last_updated": "2026-07-29T19:40:45Z",
       "session_id": "sess_1785353358_66268f"
     },
     {
@@ -3103,7 +3113,10 @@
       "status": "not_started",
       "task_type": "meta",
       "topic": "agent-system",
-      "dependencies": [],
+      "dependencies": [
+        965,
+        976
+      ],
       "file_scope": [
         "agent-system/extensions/core/scripts/validate-context-index.sh",
         "agent-system/extensions/core/scripts/check-extension-docs.sh",
@@ -3111,7 +3124,7 @@
       ],
       "description": "Make the context-index validation layer tell the truth. From the agent-system review (specs/reviews/review-2026-07-29-agent-system.md, docs/context section): 104 of 164 deployed index entries have wrong line_count (58 beyond the validator's own 10% tolerance; whole extension blocks are round-number placeholders that were never measured), 14 deployed context files including the single largest context file (patterns/task-lock.md, 1103 lines) have NO index entry and are unreachable by any agent, and the validator that should catch the line counts reports 'Warnings: 0 / Validation PASSED' while 58 real warnings scroll past.\n\nWHAT IS WRONG:\n  1. validate-context-index.sh (~lines 96-115) pipes jq into 'while read', so the loop runs in a subshell and every WARNINGS=$((WARNINGS+1)) increment is discarded. Fix with process substitution or a temp-file count so the summary reflects reality (and decide whether >tolerance mismatches should be errors, not warnings).\n  2. line_count is typed by hand in every index-entries.json and drifts freely; nothing recomputes it. Add a small generator (or a --fix mode on the validator) that rewrites line_count from wc -l across all extensions' index-entries.json, and wire it into the deploy path so counts can never rot again.\n  3. No script diffs DEPLOYED CONTEXT FILES against INDEX ENTRIES — check-extension-docs.sh's check_context_orphans diffs manifest provides.context against disk, never disk against index. Add an index-orphan gate beside it. Then resolve the current orphans: index or consciously exclude the 11 core files (patterns/task-lock.md, standards/git-staging-scope.md, patterns/lit-stage4a-flow.md, guides/hard-mode-routing.md, etc.) and the literature/email/memory/nvim strays.\n  4. While in the file: the index has no version/generated top-level stamp despite the schema offering them — emit one so staleness is detectable.\n\nVERIFICATION BAR:\n  - Running validate-context-index.sh against the current deployed index reports the true warning/error count (nonzero before the line_count regeneration, zero after).\n  - A deliberately-orphaned scratch context file makes the new gate fail; removing it passes.\n  - All line_count fields across agent-system/extensions/*/index-entries.json match wc -l exactly after the generator runs.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-07-29T19:29:18Z",
-      "last_updated": "2026-07-29T19:29:18Z",
+      "last_updated": "2026-07-29T19:40:45Z",
       "session_id": "sess_1785353358_66268f"
     },
     {
@@ -3121,16 +3134,19 @@
       "status": "not_started",
       "task_type": "meta",
       "topic": "agent-system",
-      "dependencies": [],
+      "dependencies": [
+        976
+      ],
       "file_scope": [
-        "agent-system/extensions/core/context/schemas/",
-        "agent-system/extensions/core/scripts/",
+        "agent-system/extensions/core/scripts/errors-append.sh",
+        "agent-system/extensions/core/context/schemas/errors-schema.json",
         "agent-system/extensions/core/rules/error-handling.md",
-        "agent-system/extensions/core/commands/errors.md"
+        "agent-system/extensions/core/commands/errors.md",
+        "agent-system/extensions/core/skills/skill-planner/SKILL.md"
       ],
       "description": "Make the error-tracking layer real. specs/errors.json DOES NOT EXIST in this repo, yet it is the documented backbone of /errors, error-handling rules, and several skills' failure paths — every reader guards with [ -f ] and silently degrades to a no-op, so the self-healing loop the system's docs describe never runs. Three mutually inconsistent schemas are documented: rules/error-handling.md (context{session_id,command,task,phase,checkpoint} + trajectory + recovery), commands/errors.md (~line 21: context{command,task,agent,file} + recurrence_count, no trajectory/recovery; and a second update-shape at ~line 186 adding fixed_date/fix_task documented nowhere else), and the actual writer prose in skill-planner/SKILL.md (~line 487: recovery + fix_status, no trajectory/recurrence_count). Only 7 fields appear in all three.\n\nTHE PROVEN PATTERN TO MIRROR: the sibling events.jsonl substrate has exactly what errors.json lacks — a formal draft-07 schema (context/schemas/events-schema.json), a validated append script (scripts/events-append.sh: jq -c -n construction, flock serialization), and one format doc.\n\nWORK:\n  1. Decide ONE errors schema (start from the field union; make context sub-fields a superset; keep fix_status enum and add the empirically-observed 'resolved' value or normalize it away). Write context/schemas/errors-schema.json.\n  2. Write scripts/errors-append.sh mirroring events-append.sh (schema-validated, flock'd, single writer). Create specs/errors.json with a valid empty shape ({\"errors\": []} — pick object-with-array over bare array and document why).\n  3. Rewrite the three conflicting doc blocks (rules/error-handling.md, both blocks in commands/errors.md, the skill error-path prose) to point at the schema file instead of restating fields.\n  4. Convert the inline jq error-append blocks in skills to call errors-append.sh.\n\nSUBSUMES (fold in, then treat those tasks as superseded): the intent of task 954 (extend errors with a source-store defect lane — add the lane as a schema field/enum value here) and task 955 (reconcile errors.json schema drift — this task IS that reconciliation, done once with a schema instead of prose). Both were marked abandoned in favor of this task; their descriptions contain additional verified defect inventories worth reading before planning.\n\nUNBLOCKS: tasks 951, 952, 953 (defect discrimination/recording/surfacing) all presuppose a durable, schema-stable error store.\n\nVERIFICATION BAR:\n  - errors-append.sh appends a schema-valid record under concurrent invocation (flock test) and rejects an off-schema record loudly.\n  - specs/errors.json exists, validates against the schema, and /errors runs end-to-end against it without silent degradation.\n  - grep across agent-system/extensions/core for inline '.errors +=' jq writes returns zero hits outside errors-append.sh.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-07-29T19:29:18Z",
-      "last_updated": "2026-07-29T19:29:18Z",
+      "last_updated": "2026-07-29T19:40:45Z",
       "session_id": "sess_1785353358_66268f"
     },
     {
