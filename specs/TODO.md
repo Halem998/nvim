@@ -54,7 +54,7 @@ next_project_number: 990
 
 ### Orchestration Concurrency
 
-976 [PLANNING] — Fix the measured mutex-timing defect: state-write.sh --regen-todo
+976 [PLANNED] — Fix the measured mutex-timing defect: state-write.sh --regen-todo
 982 [NOT STARTED] — Unify the .orchestrator-handoff.json contract. FOUR disagreeing s
 
 ### Status Marker Lifecycle
@@ -453,11 +453,12 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 976. Move TODO regeneration out of the state mutex critical section (or extend the window)
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: Task 965
 - **Research**: [976_fix_state_mutex_todo_regen_timing/reports/01_mutex-timing-defect.md]
+- **Plan**: [976_fix_state_mutex_todo_regen_timing/plans/01_mutex-regen-outside-lock.md]
 
 **Description**: Fix the measured mutex-timing defect: state-write.sh --regen-todo runs generate-todo.sh INSIDE the specs/.scope-lock critical section, and the regen takes ~5.5s wall time against the current 550KB state.json — longer than the 5.0s waiter acquire budget (SCOPE_MUTEX_ACQUIRE_BUDGET_MS=5000, task-lock.sh ~line 543) and more than half the 10s staleness reclaim window (SCOPE_MUTEX_STALE_SEC=10).
 

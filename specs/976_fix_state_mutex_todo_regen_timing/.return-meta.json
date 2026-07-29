@@ -1,32 +1,19 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "status": "planned",
+  "agent_type": "planner-agent",
   "task_number": 976,
   "session_id": "sess_1785355598_1f68c0_976",
-  "findings_count": 6,
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/976_fix_state_mutex_todo_regen_timing/reports/01_mutex-timing-defect.md",
-      "summary": "Reproduces the 6.9s generate-todo.sh regen cost live, isolates root cause to jq subprocess-spawn count, finds SCOPE_MUTEX_ACQUIRE_BUDGET_MS is hardcoded/non-overridable, and recommends moving regen out of state-write.sh's critical section plus a single-pass jq rewrite and a regression test."
+      "type": "plan",
+      "path": "specs/976_fix_state_mutex_todo_regen_timing/plans/01_mutex-regen-outside-lock.md",
+      "summary": "5-phase plan: release the scope mutex before TODO regeneration in state-write.sh (primary fix, ~6.9s -> ~13ms critical section), optional staleness widening, a new isolated-temp-root regression test proving mutex release and concurrent status flips, a single-pass jq rewrite of generate-todo.sh with byte-identical golden-output gating, and a deploy-sync verification sweep."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "jq subprocess spawn overhead (~2.3ms/call) dominates over file-parse cost for small-to-medium JSON: 1000 spawns of a trivial jq call cost the same wall time as 1000 spawns of the same call on a real ~600KB-derived small string. When optimizing a bash+jq hot loop that calls jq many times per iteration, count subprocess spawns first, not file size.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/976_fix_state_mutex_todo_regen_timing/reports/01_mutex-timing-defect.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["jq", "subprocess-spawn", "performance", "bash", "shell-scripting"]
-    },
-    {
-      "content": "In task-lock.sh's acquire_named_mutex(), the holder-declared stale_sec (staleness window) is per-call overridable via a CLI argument, but the waiter's own wait_budget_ms (acquire timeout) is NOT — it's hardcoded per named-mutex family (e.g. SCOPE_MUTEX_ACQUIRE_BUDGET_MS=5000 for .scope-lock) with no env-var indirection or CLI override. A caller that only raises stale_sec (to avoid a live-holder being reclaimed) does not thereby raise how long a contending waiter will wait before giving up and ABORTing — these are two independent knobs and only one is exposed.",
-      "category": "PATTERN",
-      "source_artifact": "specs/976_fix_state_mutex_todo_regen_timing/reports/01_mutex-timing-defect.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["task-lock", "mutex", "scope-lock", "concurrency", "stale-sec", "acquire-budget"]
-    }
-  ],
-  "next_steps": "Run /plan 976 to create implementation plan"
+  "phase_count": 5,
+  "estimated_hours": 3.5,
+  "dependency_waves": [[1], [2, 3, 4], [5]],
+  "memory_candidates": [],
+  "next_steps": "Run /implement 976 to execute the plan"
 }

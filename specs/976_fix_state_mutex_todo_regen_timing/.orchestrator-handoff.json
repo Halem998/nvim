@@ -1,22 +1,46 @@
 {
-  "$schema": "orchestrator-handoff-v1",
-  "phase": "research",
-  "status": "researched",
-  "summary": "Reproduced the defect live: generate-todo.sh takes 6.9s against the real 636KB/101-task state.json, exceeding both the 5000ms scope-mutex acquire budget and the 10s staleness window. Root cause is jq subprocess-spawn count (~1000+ spawns), not file size. Also found the acquire budget is a hardcoded, non-overridable constant in task-lock.sh, so passing a larger stale_sec alone cannot fix the spurious-ABORT failure mode. Recommend combining WORK items 1 (move generate-todo.sh out of state-write.sh's owned-here critical section, preserving guest-mode behavior unchanged) + 3 (single-pass jq rewrite of generate-todo.sh) + 4 (regression test); item 2 is optional defense-in-depth only.",
+  "task_number": 976,
+  "phase": "plan",
+  "status": "planned",
+  "session_id": "sess_1785355598_1f68c0_976",
+  "agent_type": "planner-agent",
+  "orchestrator_mode": true,
+  "plan_path": "specs/976_fix_state_mutex_todo_regen_timing/plans/01_mutex-regen-outside-lock.md",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/976_fix_state_mutex_todo_regen_timing/reports/01_mutex-timing-defect.md"
+      "type": "plan",
+      "path": "specs/976_fix_state_mutex_todo_regen_timing/plans/01_mutex-regen-outside-lock.md",
+      "summary": "5-phase implementation plan for moving TODO regeneration out of the specs/.scope-lock critical section."
     }
   ],
-  "blockers": [],
-  "next_action_hint": "plan",
-  "files_modified": [],
-  "decisions_made": [
-    "Fix combines WORK items 1+3+4; item 2 (stale_sec>=30) is optional hardening, not required, since SCOPE_MUTEX_ACQUIRE_BUDGET_MS=5000 in task-lock.sh is hardcoded with no override path and item 1 alone drops the critical section to a measured 13ms",
-    "state-write.sh change must release the mutex early only in owned-here mode (call release_mutex before generate-todo.sh); guest mode (nested under orchestrator-postflight.sh's own 30s-staleness bracket) must be left unchanged since release_mutex is already a no-op there",
-    "No task-lock.sh changes are required to meet the verification bar; it stays in file_scope only for an optional item-2 hardening",
-    "generate-todo.sh's single-pass jq rewrite (item 3) should be its own reviewable phase separate from the state-write.sh mutex-release change (item 1), gated by a TODO.md content-identity check against the pre-rewrite fixture"
+  "plan_metadata": {
+    "phases": 5,
+    "total_effort_hours": 3.5,
+    "complexity": "medium",
+    "research_integrated": true,
+    "plan_version": 1,
+    "dependency_waves": [[1], [2, 3, 4], [5]],
+    "reports_integrated": [
+      {
+        "path": "reports/01_mutex-timing-defect.md",
+        "integrated_in_plan_version": 1,
+        "integrated_date": "2026-07-29"
+      }
+    ],
+    "skeleton": false,
+    "follow_up_tasks": []
+  },
+  "file_scope": [
+    "agent-system/extensions/core/scripts/state-write.sh",
+    "agent-system/extensions/core/scripts/generate-todo.sh",
+    "agent-system/extensions/core/scripts/test-state-write-regen-timing.sh"
   ],
-  "dead_ends": []
+  "scope_notes": [
+    "generate-task-order.sh costs 2.38s of generate-todo.sh's measured 6.88s and is NOT in the declared file_scope; it stays the dominant residual wall-clock cost after the jq rewrite and must not be modified in this task. It does not threaten the verification bar because Phase 1 removes regeneration from the critical section entirely.",
+    "task-lock.sh is in the declared file_scope but no phase edits it. Phase 1 alone meets the verification bar; making SCOPE_MUTEX_ACQUIRE_BUDGET_MS overridable is deliberately excluded.",
+    "The research report's prediction that the jq rewrite takes generate-todo.sh 'well under 1s' is not reachable in scope; the plan's stated target is ~2.5-3.0s total, with the per-task loop dropping from ~4.5s to well under 0.5s."
+  ],
+  "critical_path": true,
+  "blocks_tasks": [975, 977, 978, 979],
+  "next_steps": "Run /implement 976 to execute the plan"
 }
