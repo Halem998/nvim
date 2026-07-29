@@ -75,10 +75,14 @@
     }
   },
   "keyword_overrides": {
-    "literature": "meta",
-    "zotero": "meta",
-    "bibliography": "meta",
-    "citation": "meta"
+    "meta": {
+      "keywords": [
+        "literature",
+        "zotero",
+        "bibliography",
+        "citation"
+      ]
+    }
   },
   "hooks": {}
 }

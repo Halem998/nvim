@@ -149,21 +149,23 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Reshape literature keyword_overrides [NOT STARTED]
+### Phase 2: Reshape literature keyword_overrides [COMPLETED]
 
 - **Goal:** Give `literature/manifest.json` the object-valued `keyword_overrides` shape the
   consumer in `core/commands/task.md` requires, so the four keywords resolve to `meta` instead of
   crashing jq into a swallowed error.
 - **Tasks:**
-  - [ ] Read the current `keyword_overrides` block in
+  - [x] Read the current `keyword_overrides` block in
         `agent-system/extensions/literature/manifest.json` and confirm it still has string values.
-  - [ ] Replace it with
+        *(completed: confirmed exactly 4 string-valued keys)*
+  - [x] Replace it with
         `{"meta": {"keywords": ["literature", "zotero", "bibliography", "citation"]}}`. Do not add
         an `aliases` array — none of the four terms needs remapping from another resolved type.
-  - [ ] Confirm the file is still valid JSON (`jq empty`).
-  - [ ] Cross-check the resulting shape against the two known-correct siblings,
+        *(completed)*
+  - [x] Confirm the file is still valid JSON (`jq empty`). *(completed)*
+  - [x] Cross-check the resulting shape against the two known-correct siblings,
         `agent-system/extensions/cslib/manifest.json` and
-        `agent-system/extensions/email/manifest.json`.
+        `agent-system/extensions/email/manifest.json`. *(completed: shape matches)*
 - **Timing:** 20 minutes
 - **Depends on:** 1
 - **Verification Tier:** interface
