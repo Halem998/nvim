@@ -1,43 +1,40 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "plan",
-  "status": "planned",
+  "phase": "implement",
+  "status": "implemented",
   "task_number": 966,
   "session_id": "sess_1785355598_1f68c0_966",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "summary": "7-phase plan (5.5h) for giving the inter-cycle redeploy checkpoint a pre/post baseline. Phase 1 adds an additive --findings mode to verify-deploy.sh emitting a normalized, sorted, deduplicated one-per-line findings set across all four gates plus a gate0 'could not run' sentinel; default-mode output and exit codes stay byte-for-byte unchanged. Phase 2 rewrites the authoritative Failure contract paragraph of the '### The Inter-Cycle Redeploy Checkpoint' subsection into three branches and resolves exit 2 explicitly. Phase 3 rewrites Stage MT-3 step 7 to capture a baseline immediately before deploy-headless.sh, diff it against the post-redeploy capture, and defer only on the set difference; deploy-headless.sh failure defers unconditionally with no baseline consultation. Phase 4 carries the new verify_deploy_baseline_notices ledger field through Stage MT-5 and the batch handoff without altering the exit-status resolution. Phase 5 renders the third operator-visible state with a loud banner, machine marker, and its own consolidated-output section. Phase 6 handles the out-of-scope skill-orchestrate-hard co-maintenance obligation by recording rather than silently expanding scope. Phase 7 sweeps all six verification-bar criteria.",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "summary": "All 7 plan phases completed. Added an additive --findings mode to verify-deploy.sh (FINDING-prefixed, gate-labeled, sorted, deduplicated output; default-mode output/exit codes verified byte-identical to the pre-edit script). Rewrote the authoritative Failure contract in batch-orchestration-guardrails.md into three branches plus a Baseline mechanism, Exit-2 resolution, and one Rejected alternative. Rewrote skill-orchestrate/SKILL.md's Stage MT-3 step 7 to capture a pre-redeploy baseline, run deploy-headless.sh, capture the post-redeploy baseline, and branch three ways (deploy-headless failure / newly-introduced verify-deploy finding / pre-existing-only verify-deploy finding), and carried verify_deploy_baseline_notices through Stage MT-5's field-read list, exit-status-resolution note, reporting instruction, and jq emission. Took the CONDITIONAL PATH on Phase 6 (file_scope already extended by the operator to include skill-orchestrate-hard/SKILL.md) and mirrored the three-branch summary into that file's Transcribed block, preserving the CO-MAINTENANCE note verbatim. Rendered the third operator-visible state in commands/orchestrate.md's Consolidated Output template as a new Pre-Existing Deploy-Verify Failures section, and enriched the Deferred (redeploy checkpoint) Reason-cell text. Phase 7's verification-bar sweep demonstrated all six criteria with live evidence against this repo's actual standing verify-deploy.sh failure (criterion 1) and a scratch-copy induced failure (criterion 2), and caught and fixed a real correctness bug in the pre/post exit-code capture pattern along the way.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/plans/01_redeploy-checkpoint-baseline.md",
-      "summary": "7-phase implementation plan with dependency waves, 8 recorded decisions, 3 scope notes, and per-phase verification tiers"
+      "type": "summary",
+      "path": "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/summaries/01_redeploy-checkpoint-baseline-summary.md",
+      "summary": "Implementation summary covering all 7 phases and the six-criterion verification bar, with captured evidence for the pre-existing-failure and newly-introduced-failure scenarios."
     }
   ],
   "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/summaries/01_redeploy-checkpoint-baseline-summary.md"
+  ],
   "decisions_made": [
-    "Findings are emitted with a literal 'FINDING ' prefix and a gate0..gate4 label; the caller invokes 'verify-deploy.sh --findings --quiet' and filters with grep '^FINDING ' | sort -u. The prefix filter is load-bearing because the script's final PASS line is an unconditional stdout echo.",
-    "Exit 2 is folded into the ordinary findings vocabulary via one synthesized 'FINDING gate0 verify-deploy could not run: <reason>' sentinel rather than special-cased. Symmetric exit 2 (both runs) yields an empty difference and therefore the third state; asymmetric exit 2 (baseline established, post-redeploy unverifiable) yields a non-empty difference and defers.",
-    "Gate-3 findings include only 'FAIL:' lines, never 'ADVISORY:' -- narrows the research recommendation, because treating a new advisory as a newly-introduced finding would silently promote non-blocking advisories to blocking.",
-    "Finding text is normalized count-free before comparison (the STRICT_CORE_DEPLOY message's numeric count is dropped), so magnitude drift inside an already-failing check cannot manufacture a spurious 'new' finding. A genuinely redeploy-introduced instance still shows as absent->present.",
-    "The third state updates deployed_critical_paths exactly as the success path does -- the redeploy mechanically succeeded; without this the idempotence guard would re-fire the checkpoint every cycle purely because a pre-existing failure persists.",
-    "The third state gets its own mt_state_file field (verify_deploy_baseline_notices), never a defer_ledger entry, because defer_ledger's contract scopes it to defer/exclusion events and the third state excludes nothing.",
-    "The third state does NOT flip the batch exit status to 'partial'. Stage MT-5's three-branch resolution must not consult verify_deploy_baseline_notices.",
-    "The baseline is captured immediately before deploy-headless.sh, not earlier. When deploy-headless.sh then fails, the capture is discarded and the deferral is unconditional, consulting nothing.",
-    "Gate 3 captures its existing --quiet invocation (its FAIL detail survives --quiet); gate 4 re-invokes WITHOUT --quiet only in findings mode and only when that gate failed (its per-finding detail is suppressed by --quiet). This asymmetry is the one thing an implementer must get right.",
-    "skill-orchestrate-hard/SKILL.md is NOT silently added to file_scope. Phase 6 records the co-maintenance divergence with exact replacement text unless an operator has already extended file_scope, in which case it mirrors the edit."
+    "fail() in verify-deploy.sh gained an optional 3rd argument that overrides (or, if empty, suppresses) the default $1 finding text, rather than the plan's literal unconditional append -- needed for the count-free STRICT_CORE_DEPLOY finding (Decision 4) and to avoid the two gate-level aggregate fail() calls emitting a redundant generic finding alongside the per-underlying-finding lines extracted separately.",
+    "Phase 6 CONDITIONAL PATH taken: specs/state.json's file_scope for this task was confirmed to already contain agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md as its fifth entry (extended by the operator before dispatch, per the delegation message), so the mirror edit was performed rather than the default record-only path. file_scope itself was not edited by this implementer.",
+    "Fixed a real correctness bug discovered during Phase 7's own criterion-1 evidence run: the documented pre/post capture pattern X=$(cmd | grep ... | sort -u); EXIT=$? reads the pipeline's LAST command's exit status, not cmd's own, because a pipeline inside a command substitution runs in its own subshell whose PIPESTATUS does not propagate to the parent shell. Fixed in both skill-orchestrate/SKILL.md and its skill-orchestrate-hard/SKILL.md mirror by capturing the exit code first, as the sole command in its substitution, then filtering the already-captured text as a separate step. Verified empirically both that the bug existed and that the fix resolves it."
   ],
   "dead_ends": [],
   "scope_notes": [
-    "OUT OF DECLARED SCOPE: agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md carries a 'Transcribed: inter-cycle redeploy checkpoint' block under an explicit CO-MAINTENANCE contract ('an edit to either copy REQUIRES the same edit to the other'), and its failure sentence goes stale when Phase 3 lands. The file is not in this task's file_scope. Mitigating fact verified from skill-orchestrate/SKILL.md's own mt_state_file schema block: skill-orchestrate-hard has NO MT-stage implementation of its own and uses the base multi-task stages, so the divergence is documentary, not behavioral. Phase 6 records it (or mirrors it if file_scope was already extended) rather than expanding scope.",
-    "The dependencies: [967] edge has no file-scope overlap with this task and is never referenced in this task's description; likely a batch-ordering artifact. No phase depends on it.",
-    "Three other not-yet-started tasks declare skill-orchestrate/SKILL.md in file_scope (one also declares commands/orchestrate.md). The admission gate never co-dispatches overlapping scopes, so no dependency edge is needed; an implementer should expect to rebase onto whichever lands first."
+    "Phase 6's default path (recording a blocker for a future task, per the plan's Scope Note 1) did not apply -- the conditional mirror-edit path was taken because file_scope was already extended. No outstanding blocker recorded for the hard-mode file.",
+    "check-extension-docs.sh --quiet reports 4 pre-existing FAIL: lines (deployed script content drift / not-in-provides.scripts), one of which (scripts/verify-deploy.sh) is the expected, documented consequence of editing a source-store script without a subsequent redeploy per source-store-deploy-boundary.md -- a live instance of the exact pre-existing-failure scenario this task's mechanism is designed to handle, not a defect in this task's deliverables."
   ],
-  "files_modified": [
-    "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/plans/01_redeploy-checkpoint-baseline.md"
-  ],
-  "phases_completed": 0,
+  "phases_completed": 7,
   "phases_total": 7,
-  "next_action_hint": "implement",
-  "next_command": "/implement 966"
+  "next_command": "none -- task complete"
 }
