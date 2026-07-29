@@ -545,26 +545,34 @@ SKILL.md files) may end up cross-reference-only or excluded. Confirm the final s
 
 ---
 
-### Phase 8: Full-suite verification and deploy gates [NOT STARTED]
+### Phase 8: Full-suite verification and deploy gates [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Prove all four tiers together, prove non-regression across the existing suites, and confirm
 the change survives deploy.
 
 **Tasks**:
-- [ ] Run `scripts/test-four-tier-conflict.sh` and confirm all four tier proofs plus the
-      non-convergence-terminates-`partial` proof pass.
-- [ ] Run `scripts/test-conflict-predicate.sh`, `scripts/test-session-registry.sh`,
+- [x] Run `scripts/test-four-tier-conflict.sh` and confirm all four tier proofs plus the
+      non-convergence-terminates-`partial` proof pass. *(completed — 11/11 cases pass: Tier 2
+      resolving, Tier 3 exhaustion x3 variants, same-session re-entry, budget-bound, Tier 1 pass 1,
+      Tier 1 pass 2 convergent, non-convergence, observation log, bounded scan)*
+- [x] Run `scripts/test-conflict-predicate.sh`, `scripts/test-session-registry.sh`,
       `scripts/test-task-lock-reap.sh`, `scripts/test-state-write-concurrency.sh`, and
-      `scripts/test-session-runtime-files.sh` for non-regression.
-- [ ] Run `scripts/verify-deploy.sh` (including its task-reference lint gate) and
-      `scripts/check-extension-docs.sh`.
-- [ ] Confirm the deploy path picks up the new test script: verify the `manifest.json`
+      `scripts/test-session-runtime-files.sh` for non-regression. *(completed — all five exit 0:
+      23/23, 10/10, 6/6, 4/4, 6/6 respectively)*
+- [x] Run `scripts/verify-deploy.sh` (including its task-reference lint gate) and
+      `scripts/check-extension-docs.sh`. *(completed — task-reference lint gate PASSES; see
+      Reasoned Exclusions below for the non-zero overall exit codes)*
+- [x] Confirm the deploy path picks up the new test script: verify the `manifest.json`
       `provides.scripts` entry and that a deployed `.claude/scripts/test-four-tier-conflict.sh`
       appears after a sync. If the known already-loaded-extension copy gap prevents it, record that
-      as a named residual rather than papering over it.
-- [ ] Confirm `git status --short specs/` shows no stray fixture residue from any suite run.
-- [ ] Confirm no edit landed under `.claude/**` (source-store rule):
+      as a named residual rather than papering over it. *(completed — manifest.json entry verified
+      present; deployed copy does not yet exist, recorded below per this task's own instruction)*
+- [x] Confirm `git status --short specs/` shows no stray fixture residue from any suite run.
+      *(completed — clean; only this task's own artifacts and routine session bookkeeping (TODO.md,
+      state.json, events.jsonl) present)*
+- [x] Confirm no edit landed under `.claude/**` (source-store rule):
       `git status --short -- .claude/` is clean apart from any deploy sync the user performs.
+      *(completed — `git status --short -- .claude/` returns zero lines)*
 
 **Timing**: 1 hour
 
@@ -576,9 +584,21 @@ the change survives deploy.
 - None (verification only; fixes discovered here are applied to the owning phase's files).
 
 **Verification**:
-- All six suites exit 0.
-- `verify-deploy.sh` exits 0.
-- No modifications under `.claude/**` attributable to this task's implementation.
+- All six suites exit 0. **Met.**
+- `verify-deploy.sh` exits 0. **Not met as a bare exit code — see Reasoned Exclusions.** The
+  task-reference lint gate specifically (the sub-check this plan's Non-Goals and binding
+  constraints care about) passes cleanly.
+- No modifications under `.claude/**` attributable to this task's implementation. **Met** — this
+  is in fact the ROOT CAUSE of the two exclusions below, not a contradiction of them: this task's
+  edits deliberately never touch `.claude/**` (source-store rule), so `.claude/**` is legitimately
+  stale relative to the source store until a user-invoked deploy sync runs.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `verify-deploy.sh`'s doc-lint step reports `[FAIL]` for `scripts/command-gate-in.sh` and `scripts/task-lock.sh` "deployed script content drift" | Expected, not a defect: this task's Phases 1-7 edit ONLY the source store (`agent-system/extensions/core/**`) per the source-store/deploy-boundary rule, and never write `.claude/**`. Regenerating the deployed tree (`deploy-headless.sh` / `<leader>al` "Sync all") is documented as MANUAL-ONLY (`context/patterns/regeneration-is-manual-only.md`), with exactly one sanctioned automated caller (`skill-orchestrate`'s inter-cycle redeploy checkpoint) that this implementation dispatch is not. Forcing a sync from inside this agent would violate that contract. | `diff .claude/scripts/task-lock.sh agent-system/extensions/core/scripts/task-lock.sh` shows only this task's own additions (the `acquire-retry` subcommand, retry constants, contract comments); `diff .claude/scripts/command-gate-in.sh agent-system/extensions/core/scripts/command-gate-in.sh` shows only the `acquire` -> `acquire-retry` substitution and its adjacent comment. `git status --short -- .claude/` returns zero lines, confirming no `.claude/**` write occurred. |
+| `check-extension-docs.sh` reports `core script never deployed: scripts/test-four-tier-conflict.sh` (advisory) and the `[literature]` extension reports two `FAIL: script file on disk NOT in provides.scripts` hits for `__pycache__/*.pyc` files | The `test-four-tier-conflict.sh` advisory is the SAME deploy-sync-is-manual-only situation as the row above, explicitly anticipated by this phase's own task list ("If the known already-loaded-extension copy gap prevents it, record that as a named residual"); `manifest.json`'s `provides.scripts` registration (Phase 2) is confirmed present and correct, which is the part of this task actually owned by this plan — the deploy-time copy step is a separate, user-triggered operation. The two `[literature]` `.pyc` FAILs are pre-existing, unrelated to this task: they belong to a different extension this task never touched, are untracked Python bytecode cache artifacts, and predate this task's first commit. | `jq -e '.provides.scripts | index("test-four-tier-conflict.sh")' agent-system/extensions/core/manifest.json` returns `54` (present). `git status --short agent-system/extensions/literature/` shows no pending changes from this session in that extension at all — the `.pyc` files are pre-existing on-disk artifacts, not something this task's commits created or modified. |
 
 ---
 
