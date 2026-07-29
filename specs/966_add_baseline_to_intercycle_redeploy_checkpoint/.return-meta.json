@@ -1,32 +1,34 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1785355598_1f68c0_966",
-  "task_number": 966,
-  "findings_count": 12,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/reports/01_verify-deploy-baseline-design.md",
-      "summary": "Diagnoses the finding-level granularity gap in verify-deploy.sh gates 3-4 and designs an additive --findings mode plus pre/post baseline diff for the inter-cycle redeploy checkpoint, including the exit-2 resolution and the skill-orchestrate-hard CO-MAINTENANCE file_scope gap."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "verify-deploy.sh's gates 1-2 already itemize every failure unconditionally (their fail() ignores --quiet), but gates 3-4 (doc-lint, task-reference lint) discard the wrapped sub-script's output via '--quiet >/dev/null 2>&1', collapsing arbitrary findings into one aggregate line. check-extension-docs.sh's own fail()/advisory() already survive --quiet (only its info() is quiet-gated), so capturing its output with --quiet still passed already gives full per-extension detail. check-task-references.sh is the opposite: its per-finding lines ARE quiet-gated, so it must be invoked WITHOUT --quiet to get line-level detail. Any future finding-level machine-output mode on verify-deploy.sh should reuse this asymmetry rather than rediscovering it.",
-      "category": "PATTERN",
-      "source_artifact": "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/reports/01_verify-deploy-baseline-design.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["verify-deploy.sh", "check-extension-docs.sh", "check-task-references.sh", "--quiet", "finding-level-diff"]
+      "type": "plan",
+      "path": "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/plans/01_redeploy-checkpoint-baseline.md",
+      "summary": "7-phase implementation plan for the verify-deploy --findings mode and the pre/post baseline comparison at the inter-cycle redeploy checkpoint"
     },
     {
-      "content": "skill-orchestrate/SKILL.md and skill-orchestrate-hard/SKILL.md carry explicit CO-MAINTENANCE-annotated duplicated logic blocks (e.g. the inter-cycle redeploy checkpoint, Stage MT-3 step 7) that must be edited in lockstep. A task's file_scope in specs/state.json can name only one of the pair, creating a real risk that an implementer updates the base engine and silently skips the hard-mode mirror. When planning any change to a Stage MT-3/MT-4 mechanism, check both SKILL.md files for a 'Transcribed:' / 'CO-MAINTENANCE' marker before assuming file_scope is complete.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/reports/01_verify-deploy-baseline-design.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["skill-orchestrate", "skill-orchestrate-hard", "CO-MAINTENANCE", "file_scope", "orchestrator-critical-paths"]
+      "type": "handoff",
+      "path": "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/.orchestrator-handoff.json",
+      "summary": "Orchestrator handoff recording the plan, its decisions, and three scope notes"
     }
   ],
-  "next_steps": "Run /plan 966 to create implementation plan"
+  "next_steps": "Run /implement 966 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1785355598_1f68c0_966",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 5.5,
+    "dependency_waves": [[1, 2], [3], [4, 6], [5], [7]]
+  },
+  "memory_candidates": [
+    {
+      "content": "Giving an absolute-state health-check script a delta notion without changing its contract: add an additive machine-output flag (e.g. --findings) that emits normalized, prefix-tagged, one-per-line finding strings alongside (never instead of) the existing narrative output and exit codes, then have the caller capture the set before and after the mutation and act only on the set difference. Three details make it work: (1) normalize count-bearing messages to be count-free so magnitude drift inside an already-failing check cannot manufacture a spurious new finding; (2) fold 'the checker could not run' into the same findings vocabulary as one synthesized sentinel line rather than special-casing the exit code, keeping the comparison a single uniform set difference; (3) sort -u at the point of capture in both runs so incidental ordering never produces a false delta. The resulting third operator-visible state -- checked, broken, ALREADY broken, proceeded deliberately -- must be announced as loudly as an outright failure (banner + machine marker + durable ledger entry), or the baseline becomes a mechanism for quietly swallowing failures.",
+      "category": "PATTERN",
+      "source_artifact": "specs/966_add_baseline_to_intercycle_redeploy_checkpoint/plans/01_redeploy-checkpoint-baseline.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["baseline-comparison", "additive-output-mode", "lint-gate", "set-difference", "pre-existing-failure"]
+    }
+  ]
 }

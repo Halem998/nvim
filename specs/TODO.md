@@ -30,7 +30,7 @@ next_project_number: 990
       └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 964 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-966 [RESEARCHED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+966 [PLANNED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 971 [NOT STARTED] — Loosen the plan-checklist mark-completed instruction in the imple
   └─ 972 [NOT STARTED] — Add a plan-checklist mark-completed contract to agent-system/exte
     └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a
@@ -54,7 +54,7 @@ next_project_number: 990
 
 ### Orchestration Concurrency
 
-976 [RESEARCHED] — Fix the measured mutex-timing defect: state-write.sh --regen-todo
+976 [PLANNING] — Fix the measured mutex-timing defect: state-write.sh --regen-todo
 982 [NOT STARTED] — Unify the .orchestrator-handoff.json contract. FOUR disagreeing s
 
 ### Status Marker Lifecycle
@@ -453,7 +453,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 976. Move TODO regeneration out of the state mutex critical section (or extend the window)
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: Task 965
@@ -790,11 +790,12 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 ---
 
 ### 966. Give the inter-cycle redeploy checkpoint a pre/post baseline
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 967
 - **Research**: [966_add_baseline_to_intercycle_redeploy_checkpoint/reports/01_verify-deploy-baseline-design.md]
+- **Plan**: [966_add_baseline_to_intercycle_redeploy_checkpoint/plans/01_redeploy-checkpoint-baseline.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`. Runtime invocations may still reference deployed `.claude/scripts/*` paths -- that is the CALL PATH, not the EDIT TARGET.
 
