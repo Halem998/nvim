@@ -1,7 +1,7 @@
 # Implementation Plan: Task #945
 
 - **Task**: 945 - Converge conflict detection onto one bounded predicate over locks, registry, and state
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 11.5 hours
 - **Dependencies**: 944 (session registry — landed)
 - **Research Inputs**: specs/945_converge_conflict_detection_predicate/reports/01_converge-conflict-predicate.md

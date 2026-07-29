@@ -2279,7 +2279,7 @@
     {
       "project_number": 945,
       "project_name": "converge_conflict_detection_predicate",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "title": "Converge conflict detection onto one bounded predicate over locks, registry, and state",
@@ -2314,8 +2314,9 @@
         }
       ],
       "created": "2026-07-28T17:22:36Z",
-      "last_updated": "2026-07-29T00:35:06Z",
-      "session_id": "sess_1785284456_e91a9c"
+      "last_updated": "2026-07-29T03:34:47Z",
+      "session_id": "sess_1785284456_e91a9c",
+      "completion_summary": "Converged the twice-transcribed directory-prefix overlap predicate into one shared library (scripts/lib/file-scope-overlap.sh), extended it with the session registry as a third bounded contention input consumed by both task-lock.sh acquire and orchestrate-batch-admit.sh (verdict schema bumped to orchestrate-batch-admit-v4), wired batch admission into /research, /plan, /implement, and fixed /orchestrate's real dispatch path (standard and hard mode) to pass --session-id, and converged all four related documentation files onto the single implementation and three-input model."
     },
     {
       "project_number": 946,
