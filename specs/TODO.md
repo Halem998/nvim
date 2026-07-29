@@ -11,8 +11,8 @@ next_project_number: 990
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 948,951,959,963,964,969,971,973,978,979,980,981,982,983,988 | -- | agent-system, extensions, orchestration-concurrency, ... |
-| 2 | 952,960,972,974,984,985,986,987 | 951,959,969,971,978,980 | agent-system, status-marker-lifecycle |
+| 1 | 948,951,959,963,964,969,971,973,979,980,981,982,983,987,988 | -- | agent-system, extensions, orchestration-concurrency, ... |
+| 2 | 952,960,972,974,984,985,986 | 951,959,969,971,980 | agent-system, status-marker-lifecycle |
 | 3 | 953,961,989 | 952,960,972,974 | agent-system |
 | 4 | 962 | 961 | agent-system |
 
@@ -36,11 +36,10 @@ next_project_number: 990
   └─ 974 [NOT STARTED] — Add a plan-checklist mark-completed contract to the two HARD impl
     └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a (see above)
 973 [NOT STARTED] — Give reconcile-task-status.sh a defined, safe recovery behavior w
-978 [PLANNED] — Make the context-index validation layer tell the truth. From the 
-  └─ 987 [NOT STARTED] — Bring context loading back within its own declared budgets and gi
 979 [NOT STARTED] — Make the error-tracking layer real. specs/errors.json DOES NOT EX
 981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
+987 [NOT STARTED] — Bring context loading back within its own declared budgets and gi
 988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
@@ -401,7 +400,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 978. Fix the lying context-index validators; machine-compute line_count; add index-orphan gate
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 965, Task 976
