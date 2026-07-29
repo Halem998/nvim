@@ -390,28 +390,28 @@ editing; report any file whose structure diverges rather than forcing the patter
 
 ---
 
-### Phase 6: Orchestrate Batch Register/Release Wiring [NOT STARTED]
+### Phase 6: Orchestrate Batch Register/Release Wiring [COMPLETED]
 
 **Goal**: Register and release the multi-task `/orchestrate` batch at its existing batch-start and
 batch-completion stages.
 
 **Tasks**:
-- [ ] In `commands/orchestrate.md`, locate the `batch_session_id="sess_..."` generation in
+- [x] In `commands/orchestrate.md`, locate the `batch_session_id="sess_..."` generation in
       `#### Step 4: Wave Execution` and confirm it is passed unchanged into
       `skill-orchestrate/SKILL.md` Stage MT-1 as `session_id`.
-- [ ] In `skills/skill-orchestrate/SKILL.md` Stage MT-1, add the registration call adjacent to the
+- [x] In `skills/skill-orchestrate/SKILL.md` Stage MT-1, add the registration call adjacent to the
       existing `.orchestrator-multi-state-${session_id}.json` initialization, keyed on the bare
       `session_id`, with the full batch task set as the `task_numbers` CSV and the invoking command
       string as `command`.
-- [ ] In `skills/skill-orchestrate/SKILL.md` Stage MT-5 (Multi-Task Postflight), add the release
+- [x] In `skills/skill-orchestrate/SKILL.md` Stage MT-5 (Multi-Task Postflight), add the release
       call alongside the existing `mt_state_file` remove/preserve handling, so registration and the
       batch's other session-scoped runtime state are cleaned up at the same boundary.
-- [ ] Make both calls best-effort (`2>/dev/null || true`). Neither may alter `exit_status`,
+- [x] Make both calls best-effort (`2>/dev/null || true`). Neither may alter `exit_status`,
       `forward_progress_violated`, or any other Stage MT-5 computation.
-- [ ] Add a note at Stage MT-1 stating that single-task `/orchestrate` needs no separate wiring
+- [x] Add a note at Stage MT-1 stating that single-task `/orchestrate` needs no separate wiring
       because its CHECKPOINT 1/2 already routes through `command-gate-in.sh`/`command-gate-out.sh`
       (Phase 4).
-- [ ] Record in the phase notes that `skills/skill-orchestrate/SKILL.md` is a consciously widened
+- [x] Record in the phase notes that `skills/skill-orchestrate/SKILL.md` is a consciously widened
       file target beyond the declared file scope — the task description's own WIRING section names
       these anchors and they are unreachable otherwise.
 

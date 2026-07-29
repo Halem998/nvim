@@ -390,6 +390,12 @@ The delegation context passed to the skill must include:
 
 The skill manages wave-by-wave dispatch, per-task postflight (status sync + artifact linking), and writes results to `specs/.orchestrator-multi-state-${batch_session_id}.json`.
 
+**In-flight session registry annotation**: `batch_session_id` is passed unchanged into the skill
+as `session_id`, which `skill-orchestrate/SKILL.md` Stage MT-1 uses to register (and Stage MT-5
+to release) the batch's in-flight session registry entry — no register/release call is made
+here in the command file itself. See `.claude/context/patterns/task-lock.md`'s Session-Registry
+CLI section.
+
 #### Step 5: Commit Reconciliation and Consolidated Output
 
 After the single `skill-orchestrate` invocation completes, read results from `specs/.orchestrator-multi-state-${batch_session_id}.json` and produce a residue check (non-blocking) and consolidated output.

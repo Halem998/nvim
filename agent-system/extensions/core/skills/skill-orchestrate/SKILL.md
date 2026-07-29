@@ -1227,6 +1227,21 @@ exclusion is needed for that to happen, and the loop's existing per-cycle re-eva
 guarantees it. See Stage MT-3 step 3 (no longer an exclusion), step 4.5 (append-only population),
 and the new consecutive-no-dispatch guard below for the bounded case where the natural clearing
 condition does not hold, and Stage MT-5 (postflight reporting) for where this log is read.
+
+**In-flight session registry** (adjacent to, not part of, `mt_state_file`): register the batch
+under the bare `session_id` this stage received, with the full `task_numbers` set as the CSV.
+Best-effort and non-blocking — a registration failure must never affect any admission, dispatch,
+or eligibility decision:
+
+```bash
+bash .claude/scripts/task-lock.sh session-register "$session_id" "/orchestrate (multi-task)" "$(IFS=,; echo "${task_numbers[*]}")" 2>/dev/null || true
+```
+
+Single-task `/orchestrate` needs no separate registry wiring: its CHECKPOINT 1/2 already routes
+through `command-gate-in.sh`/`command-gate-out.sh`, which register/release the session registry
+entry for every single-task dispatch (see that pair's own wiring). This registration is
+multi-task-only, mirroring why `mt_state_file` itself is initialized only in this MT branch.
+
 `deferred_deploy_checkpoint`'s semantics are UNCHANGED by this narrowing and remain a genuine,
 permanent-for-the-invocation eligibility exclusion — the two fields are not conflated by this
 change; see the field definition immediately below.
@@ -2042,6 +2057,15 @@ jq -n \
 The top-level `status` field keeps its existing closed vocabulary (`"implemented"` / `"partial"`
 / `"failed"`) and gains no new value; `forward_progress_violated` is carried only inside
 `metadata`, never as a `status` value itself.
+
+6. **In-flight session registry release**: alongside the `mt_state_file` remove/preserve handling
+   above (step 3), release the batch's session registry entry — unconditionally, regardless of
+   which `exit_status` branch was taken, so the registry is cleaned up at the same postflight
+   boundary as the batch's other session-scoped runtime state. Best-effort and non-blocking; must
+   not alter `exit_status`, `forward_progress_violated`, or any other computation above:
+   ```bash
+   bash .claude/scripts/task-lock.sh session-release "$session_id" 2>/dev/null || true
+   ```
 
 ---
 
