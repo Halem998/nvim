@@ -515,9 +515,12 @@ check_undeclared_rules() {
 # Matches by FULL RELATIVE PATH under scripts/, not basename, because provides.scripts entries
 # legitimately carry a path prefix (e.g. literature's "tests/generate-test-fixtures.py"). Covers
 # ALL regular file types -- provides.scripts already holds .sh, .py, .sql, and dotfile entries
-# (see literature's ".zotero-title-sim.py") -- so this uses `find -type f`, not a `*.sh` glob.
-# `deprecated/` is exempt (superseded scripts intentionally left undeclared and undeployed);
-# `tests/` is NOT exempt (literature declares its tests/*.py and tests/*.sh entries deliberately).
+# (see literature's ".zotero-title-sim.py") -- so this uses `git ls-files`, not `find` and not a
+# `*.sh` glob. Enumerating from the git index (mirroring `_git_deployed_files()`'s own rationale
+# above) naturally excludes gitignored runtime artifacts -- `__pycache__/`, virtualenvs, build
+# caches -- without extra path filtering, since they were never tracked. `deprecated/` is exempt
+# (superseded scripts intentionally left undeclared and undeployed); `tests/` is NOT exempt
+# (literature declares its tests/*.py and tests/*.sh entries deliberately).
 check_undeclared_scripts() {
   local ext_path="$1"
   local manifest="$ext_path/manifest.json"

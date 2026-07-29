@@ -164,27 +164,27 @@ other function, stop and re-scope.
 
 ---
 
-### Phase 2: Update the Rule Q header comment [NOT STARTED]
+### Phase 2: Update the Rule Q header comment [COMPLETED]
 
 **Goal**: The Rule Q header comment block no longer asserts `find -type f` as the enumeration
 method, and records why the git-index enumeration is used — matching the justification already
 carried verbatim above `_git_deployed_files()`.
 
 **Tasks**:
-- [ ] In the header comment block above `check_undeclared_scripts()`, rewrite the sentence that
+- [x] In the header comment block above `check_undeclared_scripts()`, rewrite the sentence that
       currently reads "...so this uses `find -type f`, not a `*.sh` glob" so that it states the
       enumeration is `git ls-files` (not `find`), while preserving the surrounding claim that ALL
-      regular file types are in scope and no `*.sh` glob is used.
-- [ ] Add the rationale, mirroring the existing `_git_deployed_files()` comment: enumerating from
+      regular file types are in scope and no `*.sh` glob is used. *(completed)*
+- [x] Add the rationale, mirroring the existing `_git_deployed_files()` comment: enumerating from
       the git index naturally excludes gitignored runtime artifacts (`__pycache__/`, virtualenvs,
-      build caches) without extra path filtering, since they were never tracked.
-- [ ] Confirm the rest of the header block is unchanged: the Rule Q-vs-Rule E-vs-Rule M
+      build caches) without extra path filtering, since they were never tracked. *(completed)*
+- [x] Confirm the rest of the header block is unchanged: the Rule Q-vs-Rule E-vs-Rule M
       distinction, the full-relative-path matching rationale, the `deprecated/` exempt /
-      `tests/` NOT exempt statement.
-- [ ] Verify no task number appears anywhere in the added or edited comment text; reference only
+      `tests/` NOT exempt statement. *(completed: verified via git diff, unchanged)*
+- [x] Verify no task number appears anywhere in the added or edited comment text; reference only
       durable anchors (`check_undeclared_scripts`, `check_flat_category_orphans`,
-      `_git_deployed_files`, `provides.scripts`).
-- [ ] Run `bash -n agent-system/extensions/core/scripts/check-extension-docs.sh`.
+      `_git_deployed_files`, `provides.scripts`). *(completed: grep found no citation)*
+- [x] Run `bash -n agent-system/extensions/core/scripts/check-extension-docs.sh`. *(completed: exit 0)*
 
 **Timing**: 15 minutes
 
