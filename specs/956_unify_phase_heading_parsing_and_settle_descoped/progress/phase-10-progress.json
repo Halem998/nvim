@@ -1,0 +1,25 @@
+{
+  "phase": 10,
+  "phase_name": "Deploy propagation, live inventory, and full gates",
+  "started_at": "2026-07-29T04:10:00Z",
+  "last_updated": "2026-07-29T05:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Deploy the source store; discover and work around the documented brand-new-file propagation gap for the library and its test", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Verify migrated snippets resolve the library at the deployed path; run deployed fixture suite and bash -n on deployed scripts", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm plan-format.md's consumer-list replacement (already done in Phase 1) is idempotently correct", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run full repository gate set; fix a genuine check-extension-docs.sh basename-matching bug surfaced by this task's own doc references", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 5, "description": "Confirm no .claude/** git modification attributable to this work; run phase-check against all non-terminal plans under specs/", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "10.4",
+      "description": "check-extension-docs.sh cross-extension-reference basename-matching bug",
+      "type": "altered",
+      "reason": "Genuine pre-existing bug surfaced only now because phase-heading-patterns.sh is the first lib/-scoped script ever referenced by bare filename in SKILL.md/agent.md prose; fixing it is necessary to satisfy this phase's own 'every gate command exits 0' verification bullet",
+      "annotation": "*(deviation: altered -- added basename-normalized fallback exclusion sets to check-extension-docs.sh)*"
+    }
+  ]
+}

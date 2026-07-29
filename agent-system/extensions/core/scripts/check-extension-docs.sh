@@ -776,6 +776,21 @@ check_referenced_scripts_declared() {
   own_hooks=$(jq -r '.provides.hooks[]? // empty' "$manifest" 2>/dev/null)
 
   # 5. Verdict: fail on any remaining referenced name not covered by any exclusion set.
+  #
+  # Basename-normalized exclusion sets (added alongside the exact-match sets above): the doc-text
+  # extraction regex in step 1 can only ever capture a BARE filename (it stops at the last `/`),
+  # but a subdirectory-scoped provides.scripts entry is declared with its path prefix (e.g.
+  # `lib/phase-heading-patterns.sh`, `tests/test-foo.sh`). An exact-string comparison between the
+  # two therefore always misses for any lib/tests/-subdirectory script mentioned by bare name in
+  # prose -- a false positive on a correctly-declared script, discovered when
+  # scripts/lib/phase-heading-patterns.sh became the first lib/ script ever referenced by name in
+  # a SKILL.md/agent.md file. Comparing basenames closes this gap without weakening the check:
+  # a name is still only excluded if SOME declared entry's basename matches it exactly.
+  local core_declared_basenames all_declared_basenames own_hooks_basenames
+  core_declared_basenames=$(while IFS= read -r _entry; do [[ -n "$_entry" ]] && basename "$_entry"; done <<< "$core_declared")
+  all_declared_basenames=$(while IFS= read -r _entry; do [[ -n "$_entry" ]] && basename "$_entry"; done <<< "$all_declared_scripts")
+  own_hooks_basenames=$(while IFS= read -r _entry; do [[ -n "$_entry" ]] && basename "$_entry"; done <<< "$own_hooks")
+
   local name
   for name in $referenced; do
     if grep -qxF "$name" <<< "$core_declared"; then
@@ -785,6 +800,15 @@ check_referenced_scripts_declared() {
       continue
     fi
     if grep -qxF "$name" <<< "$own_hooks"; then
+      continue
+    fi
+    if grep -qxF "$name" <<< "$core_declared_basenames"; then
+      continue
+    fi
+    if grep -qxF "$name" <<< "$all_declared_basenames"; then
+      continue
+    fi
+    if grep -qxF "$name" <<< "$own_hooks_basenames"; then
       continue
     fi
     fail "script referenced in docs/skills/agents but NOT in provides.scripts: $name"
