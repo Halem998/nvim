@@ -574,7 +574,7 @@ verify-deploy failure, and the defer case's Reason text now names the newly-intr
 
 ---
 
-### Phase 6: Resolve the hard-mode co-maintenance obligation [NOT STARTED]
+### Phase 6: Resolve the hard-mode co-maintenance obligation [COMPLETED]
 
 **Goal**: the divergence between the authoritative contract and the transcribed block in
 `skill-orchestrate-hard/SKILL.md` is either closed (if scope permits) or recorded loudly with the
@@ -582,23 +582,30 @@ exact replacement text — never left silent, never resolved by silently expandi
 
 **Tasks**:
 
-- [ ] Read this task's `file_scope` array from `specs/state.json` and determine whether
+- [x] Read this task's `file_scope` array from `specs/state.json` and determine whether
       `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md` is present. Record the
-      answer explicitly in the phase's progress record. MUST NOT edit `file_scope`.
-- [ ] **If present**: perform the mirror edit on the **Transcribed: inter-cycle redeploy
+      answer explicitly in the phase's progress record. MUST NOT edit `file_scope`. *(completed:
+      confirmed via `jq` read of `specs/state.json` — `file_scope` for this task contains five
+      entries, the fifth being `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`,
+      already extended by the operator before this dispatch, per the operator's explicit
+      instruction. `file_scope` itself was not edited by this implementer.)*
+- [x] **If present**: perform the mirror edit on the **Transcribed: inter-cycle redeploy
       checkpoint** block — replace its single failure sentence with the same three-branch summary
       Phase 3 implemented, keeping the block a SUMMARY that cross-references the authoritative
       subsection by path rather than restating the full contract. Preserve the CO-MAINTENANCE note
-      verbatim.
+      verbatim. **CONDITIONAL PATH TAKEN** — `file_scope` already contained the file, so the mirror
+      edit was performed rather than the default record-only path. *(completed)*
 - [ ] **If absent (expected default)**: make NO edit outside `specs/**`. Instead write, in the
       implementation summary, a clearly-labelled section naming the file, the CO-MAINTENANCE
       contract it carries, the specific sentence that is now stale, and the exact replacement text
       a follow-up should apply. Add the same as a `blockers` entry in
       `.orchestrator-handoff.json`, with `description`, `evidence` (the stale sentence quoted), and
       `resolution` (extend `file_scope` or create a follow-up task scoped to that one file).
-- [ ] Either way, record in the summary the verified mitigating fact that
+      *(not applicable — the conditional branch above was taken instead, per file_scope already
+      containing the file)*
+- [x] Either way, record in the summary the verified mitigating fact that
       `skill-orchestrate-hard` has no MT-stage implementation of its own and uses the base
-      multi-task stages, so the divergence is documentary rather than behavioral.
+      multi-task stages, so the divergence is documentary rather than behavioral. *(completed)*
 
 **Timing**: 0.5 hours
 

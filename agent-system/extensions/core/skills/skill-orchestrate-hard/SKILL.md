@@ -1385,7 +1385,9 @@ MUST always agree). After every dispatch cycle, once `cycle_count` increments: e
 critical_paths` expression `orchestrate-batch-admit.sh` performs, intersect against this cycle's
 accumulated `cycle_modified_files` using the directory-prefix overlap predicate in
 `context/patterns/file-footprint-overlap.md`, and subtract already-deployed critical paths
-(`deployed_critical_paths`, the idempotence guard). If the remainder is non-empty, run, in order:
+(`deployed_critical_paths`, the idempotence guard). If the remainder is non-empty: immediately
+before redeploying, capture a pre-redeploy baseline (`verify-deploy.sh --findings --quiet`,
+filtered to `^FINDING ` lines and `sort -u`'d), then run, in order:
 
 ```bash
 bash .claude/scripts/deploy-headless.sh
@@ -1397,12 +1399,24 @@ and, only on its success:
 bash .claude/scripts/verify-deploy.sh
 ```
 
-On success, record the matched paths into `deployed_critical_paths` and continue. On failure
-(`deploy-headless.sh` exit 1/2, or `verify-deploy.sh` exit 1/2 — exit 2 from `verify-deploy.sh` is
-a failure here, never a pass), log a loud warning naming which gate failed and add every
-non-terminal, non-failed task in `task_numbers` to `deferred_deploy_checkpoint`; never add to
-`failed_tasks`, never status-mutate, never abort the invocation. Full contract (rejected
-alternatives, sequencing guarantee, concurrency) is recorded once, authoritatively, in
+capturing the identical post-redeploy baseline at this same call site. Branch three ways:
+
+- **`deploy-headless.sh` failure** (exit 1/2) → defer unconditionally, with NO baseline
+  consultation whatsoever: add every non-terminal, non-failed task in `task_numbers` to
+  `deferred_deploy_checkpoint`; never add to `failed_tasks`, never status-mutate, never abort.
+- **`verify-deploy.sh` failure with at least one newly-introduced finding** relative to the
+  pre-redeploy baseline (the set difference over the two captures) → defer, unchanged in shape
+  from the branch above: same `deferred_deploy_checkpoint` addition, same never-fail/never-mutate/
+  never-abort guarantees.
+- **`verify-deploy.sh` failure whose findings are ALL already present in the pre-redeploy
+  baseline** → the third operator-visible state: proceed, reported just as loudly as an outright
+  failure (banner + machine marker + a `verify_deploy_baseline_notices` ledger entry), and record
+  the matched critical paths into `deployed_critical_paths` exactly as the success path does. Never
+  add to `deferred_deploy_checkpoint` or `defer_ledger` for this branch.
+
+On outright success (`verify-deploy.sh` exit 0), record the matched paths into
+`deployed_critical_paths` and continue. Full contract (baseline mechanism, exit-2 resolution,
+rejected alternatives, sequencing guarantee, concurrency) is recorded once, authoritatively, in
 `context/patterns/batch-orchestration-guardrails.md`'s `### The Inter-Cycle Redeploy Checkpoint`
 subsection — referenced here, not restated in full.
 
