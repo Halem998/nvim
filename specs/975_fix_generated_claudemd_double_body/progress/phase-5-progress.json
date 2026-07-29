@@ -1,0 +1,25 @@
+{
+  "phase": 5,
+  "phase_name": "Round-trip correctness for unmerge under the new tracked shape",
+  "started_at": "2026-07-29T00:55:00Z",
+  "last_updated": "2026-07-29T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add hook_merged branch to remove_tracked() inside unmerge_settings()", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]},
+    {"id": 2, "description": "Empty-hooks-array/empty-event-array cleanup semantics matching appended behavior", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]},
+    {"id": 3, "description": "Confirm other branches and legacy fall-through untouched", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Round trip exercise for email's hook-shaped array (adapted: scratchpad copies rather than the live personal settings.local.json, to avoid mutating the developer's live extension state)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.4",
+      "description": "Exercise a real round trip headlessly with an extension that contributes a hook-shaped array (email); load it, capture .claude/settings.json, unload it, confirm clean residue",
+      "type": "altered",
+      "reason": "email's manifest.json declares its settings merge target as .claude/settings.local.json (a live, personal, uncommitted file with many hand-added permissions.allow entries, not .claude/settings.json as the plan's shorthand implied), and the email extension is already loaded in this live repo. Actually load/unload email via the real extension manager would mutate the developer's live personal config and its currently-loaded-extension state. Instead, merge_mod.merge_settings()/unmerge_settings() were exercised directly against isolated scratchpad JSON copies using the real agent-system/extensions/email/settings-fragment.json content, covering: (1) a fresh target with no PreToolUse key, (2) a pre-existing Bash-matcher block containing an unrelated hook merged alongside mail-guard.sh, (3) the exact pre-fix 3-block Stop duplicate merged with the core fragment (confirms normalization-persists-after-unload is expected, not residue), and (4) legacy (type-less) tracked entries routing through the old fall-through without error. This exercises the identical code path (deep_merge -> hook_merged tracking -> remove_tracked's hook_merged branch) without any live-file mutation risk.",
+      "annotation": "*(deviation: altered — round trip exercised via merge_mod calls against isolated scratchpad copies of the real email settings-fragment.json, not by loading/unloading the live email extension, to avoid mutating the developer's live personal settings.local.json)*"
+    }
+  ],
+  "notes": "Four scratchpad scenarios all passed: (1) fresh PreToolUse block created and fully removed (left as empty array, key retained) on unload; (2) mail-guard.sh merged into a pre-existing Bash-matcher block alongside an unrelated user hook, and unload removed only mail-guard.sh, leaving the unrelated hook and an exact pre-load-state match; (3) the real pre-fix 3-block Stop duplicate normalized+merged via the core fragment to 1 block with claude-stop-notify.sh appearing exactly once, and unload correctly preserved all pre-existing hooks (post-command.sh, memory-nudge.sh) -- normalization persisting after unload is expected per the plan, not residue; (4) legacy type-less tracked entries still route through the old fall-through without error."
+}

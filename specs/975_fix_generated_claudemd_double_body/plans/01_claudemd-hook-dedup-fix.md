@@ -313,30 +313,35 @@ duplicate and cannot create a new one, while every non-hook array behaves exactl
 
 ---
 
-### Phase 5: Round-trip correctness for unmerge under the new tracked shape [NOT STARTED]
+### Phase 5: Round-trip correctness for unmerge under the new tracked shape [COMPLETED]
 
 **Goal**: Unloading an extension still removes exactly what its merge added, now that a merged hook
 entry can live nested inside a pre-existing matcher block rather than as a top-level array item.
 
 **Tasks**:
-- [ ] Add a `hook_merged` branch to `remove_tracked()` inside `unmerge_settings()`: first remove each
+- [x] Add a `hook_merged` branch to `remove_tracked()` inside `unmerge_settings()`: first remove each
       entry in `items` from the array by `vim.deep_equal` (identical to the existing `appended`
       handling), then for each `hook_items` record locate the block whose `matcher` equals the
       recorded matcher and remove the `vim.deep_equal`-matching hook object from its `hooks` array.
-- [ ] If removing a hook entry leaves a block's `hooks` array empty, remove that block from the event
+      *(completed)*
+- [x] If removing a hook entry leaves a block's `hooks` array empty, remove that block from the event
       array. If removing blocks leaves the event array empty, leave an empty array rather than
-      deleting the key — matching the existing behavior for `appended`.
-- [ ] Confirm the existing `new_array`, `appended`, `merged`, `new_object`, and `new_value` branches
+      deleting the key — matching the existing behavior for `appended`. *(completed)*
+- [x] Confirm the existing `new_array`, `appended`, `merged`, `new_object`, and `new_value` branches
       are untouched, and that the legacy "old format or nested tracking" fall-through still runs for
       tracking data produced before this change (a repo may hold pre-existing tracked entries in its
-      extension state file).
-- [ ] Exercise a real round trip headlessly with an extension that contributes a hook-shaped array —
+      extension state file). *(completed)*
+- [x] Exercise a real round trip headlessly with an extension that contributes a hook-shaped array —
       `email` is the only non-core one (`settings-fragment.json`, one `PreToolUse` block). Load it,
       capture `.claude/settings.json`, unload it, and confirm the file returns to its pre-load state
       modulo normalization (i.e. no residual `email` hook command remains, and no unrelated hook
-      command was removed).
-- [ ] Record explicitly in the summary that block-grouping normalization is expected to persist after
-      unload and is not residue.
+      command was removed). *(deviation: altered — see progress/phase-5-progress.json deviations;
+      exercised via merge_mod.merge_settings()/unmerge_settings() against isolated scratchpad
+      copies of the real email/settings-fragment.json content rather than loading/unloading the
+      live email extension, because its actual target is .claude/settings.local.json, a live
+      personal file with hand-added permissions, not .claude/settings.json)*
+- [x] Record explicitly in the summary that block-grouping normalization is expected to persist after
+      unload and is not residue. *(completed)*
 
 **Timing**: 1 hour
 

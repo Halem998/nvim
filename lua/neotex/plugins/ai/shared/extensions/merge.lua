@@ -429,6 +429,50 @@ function M.unmerge_settings(target_path, tracked_entries)
           if t[key] then
             remove_tracked(t[key], info.children)
           end
+        elseif info.type == "hook_merged" then
+          -- Hook-event array (Stop, PreToolUse, etc.) merged by matcher via
+          -- merge_hook_event_array(). Reverse both halves of what it tracked:
+          if t[key] and vim.isarray(t[key]) then
+            -- 1. Whole matcher blocks appended because no matching target
+            --    block existed -- same removal as the "appended" branch.
+            if info.items then
+              for _, item in ipairs(info.items) do
+                for i = #t[key], 1, -1 do
+                  if vim.deep_equal(t[key][i], item) then
+                    table.remove(t[key], i)
+                    break
+                  end
+                end
+              end
+            end
+            -- 2. Individual hook entries injected into a pre-existing
+            --    matcher block -- located by matcher, removed by
+            --    vim.deep_equal on the hook object.
+            if info.hook_items then
+              for _, hook_item in ipairs(info.hook_items) do
+                for _, block in ipairs(t[key]) do
+                  if block.matcher == hook_item.matcher and type(block.hooks) == "table" then
+                    for i = #block.hooks, 1, -1 do
+                      if vim.deep_equal(block.hooks[i], hook_item.hook) then
+                        table.remove(block.hooks, i)
+                        break
+                      end
+                    end
+                  end
+                end
+              end
+            end
+            -- A matcher block left with no hooks after (2) is removed
+            -- entirely. If that empties the event array, an empty array is
+            -- left behind rather than deleting the key -- matching the
+            -- existing "appended" behavior above.
+            for i = #t[key], 1, -1 do
+              local block = t[key][i]
+              if type(block) == "table" and type(block.hooks) == "table" and #block.hooks == 0 then
+                table.remove(t[key], i)
+              end
+            end
+          end
         end
       elseif type(info) == "table" then
         -- Old format or nested tracking
