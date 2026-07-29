@@ -14,6 +14,7 @@
 #
 # Usage:
 #   task-lock.sh acquire <task_number> <operation> <session_id> [command]
+#   task-lock.sh acquire-retry <task_number> <operation> <session_id> [command]
 #   task-lock.sh heartbeat <task_number> <session_id>
 #   task-lock.sh release <task_number> <session_id>
 #   task-lock.sh check <task_number>
@@ -89,6 +90,20 @@
 #         release, and check remain strictly read-only and never create anything.
 #     1 - refused: a DIFFERENT session holds a fresh (non-stale) lock
 #     2 - usage/task-not-found error
+#   acquire-retry: identical exit-code meaning to acquire (0/1/2) -- it is a bounded
+#     wait-and-retry WRAPPER, never a modification of cmd_acquire's body or its exit
+#     contract. This is Tier 2 of the four-tier conflict-response ladder (see
+#     context/patterns/task-lock.md's "Four-Tier Conflict Response" section). Every
+#     attempt is a full, fresh cmd_acquire entry -- the process-global specs/.scope-lock
+#     mutex is acquired and released once PER ATTEMPT, never held across the wait window
+#     -- so all three same-session re-entry exclusions (cmd_acquire's own holder_session
+#     check, the held-lock scan's other_session skip, session_contention()'s self-id
+#     exclusion) re-run and re-apply on every attempt. Exit 2 (error, not contention) is
+#     never retried and surfaces on the first occurrence. Exit 1 is retried up to
+#     TASK_LOCK_RETRY_BUDGET_MS (default 15000ms, polling every TASK_LOCK_RETRY_POLL_MS
+#     default 500ms); on budget exhaustion the last attempt's ABORT text is emitted
+#     verbatim, unmodified, handing off to the Tier-3 warn tier exactly as plain acquire
+#     would for that same fixture.
 #   heartbeat:
 #     0 - heartbeat refreshed, OR no-op with a warning (lock missing / held by another
 #         session — heartbeat never blocks the caller)
@@ -562,6 +577,17 @@ release_commit_mutex() {
   release_named_mutex ".commit-lock"
 }
 
+# --- acquire-retry bounded wait-and-retry constants (Tier 2 of the four-tier conflict-response
+# ladder; see context/patterns/task-lock.md's "Four-Tier Conflict Response" section) ---
+# Sized on the .scope-lock/.commit-lock seconds-scale mutex-acquire budgets above
+# (SCOPE_MUTEX_ACQUIRE_BUDGET_MS=5000, COMMIT_MUTEX_ACQUIRE_BUDGET_MS=15000), NOT on
+# TASK_LOCK_STALE_MIN (30 minutes, default) -- that constant measures how long a lock holder's
+# heartbeat may go quiet before its lock is considered stale and overridable, a completely
+# different quantity from how long a fresh contending acquire should wait before falling through
+# to the warn tier. Deliberately unrelated; do not derive one from the other.
+TASK_LOCK_RETRY_BUDGET_MS="${TASK_LOCK_RETRY_BUDGET_MS:-15000}"
+TASK_LOCK_RETRY_POLL_MS="${TASK_LOCK_RETRY_POLL_MS:-500}"
+
 # =====================================================================
 # acquire <task_number> <operation> <session_id> [command]
 # =====================================================================
@@ -692,6 +718,86 @@ session_contention($cscope; $cnum; $own_sid; $all; $sessions)' 2>/dev/null)
   echo "WARN: Task $task_number's lock (session $holder_session, heartbeat ${age} min ago) is stale (> ${TASK_LOCK_STALE_MIN} min threshold); overriding and acquiring for $session_id." >&2
   write_holder "$lock_dir" "$session_id" "$task_number" "$operation" "$(iso_now)" "$(iso_now)" "$command" || return 2
   return 0
+}
+
+# =====================================================================
+# acquire-retry <task_number> <operation> <session_id> [command]
+#
+# Tier 2 of the four-tier conflict-response ladder (auto-sequence, bounded retry, warn, ask; see
+# context/patterns/task-lock.md). Bounded wait-and-retry wrapper AROUND cmd_acquire, never a
+# modification of it: each attempt is a full, fresh cmd_acquire invocation (own mkdir/holder
+# logic, own acquire_scope_mutex acquire-and-release, own cross-task overlap scan, own
+# session-registry contention pass). This is the ONLY safe way to add retry here --
+# cmd_acquire holds the process-global specs/.scope-lock mutex for its ENTIRE body via
+# `trap 'release_scope_mutex' RETURN`, including its ABORT branches, so a retry loop placed
+# INSIDE cmd_acquire would hold that mutex across the whole wait window, blocking every other
+# task's acquire system-wide, and would itself be reclaimed by a competing waiter after
+# SCOPE_MUTEX_STALE_SEC=10 seconds. Placing the loop out here means the mutex is acquired and
+# released once per attempt, exactly as a solo `acquire` call already does.
+#
+# Because every attempt is a full fresh cmd_acquire entry, all three same-session re-entry
+# exclusions re-run and re-apply on every attempt:
+#   1. cmd_acquire's own `[ "$holder_session" = "$session_id" ]` fast-path (line ~674 above).
+#   2. The held-lock overlap scan's `[ "$other_session" = "$session_id" ] && continue` skip.
+#   3. session_contention()'s internal self-session-id exclusion (shared jq lib).
+# A same-session re-entrant acquire therefore returns 0 on attempt 1 every time and the retry
+# loop body below is never entered for that case -- there is no path where a session waits on
+# its own lock.
+#
+# Exit codes are identical in meaning to plain `acquire`: 0 = acquired, 1 = refused (only after
+# the full retry budget is exhausted), 2 = error (never retried -- see below).
+#
+# Exit-2 handling: exit 2 from cmd_acquire signals an ERROR (specs/.scope-lock mutex timeout,
+# resolve_task_dir failure, or a write_holder failure), NOT ordinary lock contention. It is
+# returned immediately on the FIRST occurrence, never retried -- retrying an error condition
+# would just burn the wait budget on a problem bounded retry cannot fix.
+#
+# Exit-1 handling: exit 1 (ABORT -- any of the three fresh-contention variants: own-task holder,
+# cross-task file_scope overlap against a held lock, cross-task overlap against a registered
+# session) is treated as ordinary contention: the captured ABORT text is discarded for every
+# attempt except the LAST, the loop sleeps TASK_LOCK_RETRY_POLL_MS, and re-attempts until
+# TASK_LOCK_RETRY_BUDGET_MS is exhausted. On budget exhaustion the LAST attempt's captured
+# stderr is emitted verbatim -- this is the Tier-2 -> Tier-3 handoff, and it is load-bearing:
+# whichever of the three ABORT variants fired must reach the user with every field intact and
+# unmodified, byte-identical to what a plain `acquire` call would have emitted for the same
+# fixture, so the existing warn-tier consumers (command-gate-in.sh's failure path, the
+# orchestrator_mode-gated Tier-4 ask flow) see exactly the message they already know how to
+# render.
+cmd_acquire_retry() {
+  local waited_ms=0 first_retry=1
+  local captured_stderr rc
+
+  while true; do
+    captured_stderr=$(cmd_acquire "$@" 2>&1 1>/dev/null)
+    rc=$?
+
+    if [ "$rc" -eq 0 ]; then
+      [ -n "$captured_stderr" ] && echo "$captured_stderr" >&2
+      return 0
+    fi
+
+    if [ "$rc" -eq 2 ]; then
+      # Error, not contention: never retried, surfaced immediately.
+      [ -n "$captured_stderr" ] && echo "$captured_stderr" >&2
+      return 2
+    fi
+
+    # rc == 1 (ABORT / ordinary contention).
+    if [ "$waited_ms" -ge "$TASK_LOCK_RETRY_BUDGET_MS" ]; then
+      # Budget exhausted: emit the LAST attempt's captured ABORT text verbatim (Tier-3 handoff)
+      # and refuse, exactly like plain `acquire` would for this same final-attempt fixture.
+      [ -n "$captured_stderr" ] && echo "$captured_stderr" >&2
+      return 1
+    fi
+
+    if [ "$first_retry" -eq 1 ]; then
+      echo "NOTE: task ${1:-?}'s lock is held by another session; waiting up to ${TASK_LOCK_RETRY_BUDGET_MS}ms and retrying before warning." >&2
+      first_retry=0
+    fi
+
+    sleep "$(awk -v ms="$TASK_LOCK_RETRY_POLL_MS" 'BEGIN { printf "%.3f", ms / 1000 }')"
+    waited_ms=$(( waited_ms + TASK_LOCK_RETRY_POLL_MS ))
+  done
 }
 
 # =====================================================================
@@ -1419,6 +1525,14 @@ case "$SUBCMD" in
     cmd_acquire "$@"
     exit $?
     ;;
+  acquire-retry)
+    if [ "$#" -lt 3 ]; then
+      echo "Usage: $0 acquire-retry <task_number> <operation> <session_id> [command]" >&2
+      exit 2
+    fi
+    cmd_acquire_retry "$@"
+    exit $?
+    ;;
   heartbeat)
     if [ "$#" -lt 2 ]; then
       echo "Usage: $0 heartbeat <task_number> <session_id>" >&2
@@ -1520,7 +1634,7 @@ case "$SUBCMD" in
     exit $?
     ;;
   *)
-    echo "Usage: $0 {acquire|heartbeat|release|check|reap|init-marker|scope-acquire|scope-release|commit-acquire|commit-release|session-register|session-heartbeat|session-release|session-reap|session-list} ..." >&2
+    echo "Usage: $0 {acquire|acquire-retry|heartbeat|release|check|reap|init-marker|scope-acquire|scope-release|commit-acquire|commit-release|session-register|session-heartbeat|session-release|session-reap|session-list} ..." >&2
     exit 2
     ;;
 esac

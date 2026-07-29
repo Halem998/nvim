@@ -1,7 +1,7 @@
 # Implementation Plan: Four-Tier Conflict Response
 
 - **Task**: 946 - Auto-sequence conflicting work instead of aborting or skipping
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9 hours
 - **Dependencies**: 945 (converged conflict-detection predicate — landed)
 - **Research Inputs**: specs/946_auto_sequence_conflicting_work/reports/01_four-tier-conflict-response.md
@@ -129,33 +129,35 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Tier 2 mechanism — bounded `acquire-retry` in `task-lock.sh` [NOT STARTED]
+### Phase 1: Tier 2 mechanism — bounded `acquire-retry` in `task-lock.sh` [COMPLETED]
 
 **Goal**: Add a bounded wait-and-retry acquire path that reuses the established mutex idiom and
 leaves `cmd_acquire` byte-identical.
 
 **Tasks**:
-- [ ] Add constants near the existing `SCOPE_MUTEX_*` / `COMMIT_MUTEX_*` block:
+- [x] Add constants near the existing `SCOPE_MUTEX_*` / `COMMIT_MUTEX_*` block:
       `TASK_LOCK_RETRY_BUDGET_MS="${TASK_LOCK_RETRY_BUDGET_MS:-15000}"` and
       `TASK_LOCK_RETRY_POLL_MS="${TASK_LOCK_RETRY_POLL_MS:-500}"`. Document in a comment that these
       are sized on the `.scope-lock`/`.commit-lock` seconds-scale budgets and are deliberately
       unrelated to `TASK_LOCK_STALE_MIN` (30 minutes), which measures a different quantity.
-- [ ] Add `cmd_acquire_retry()` implementing a bounded poll: call `cmd_acquire "$@"` with stderr
+      *(completed)*
+- [x] Add `cmd_acquire_retry()` implementing a bounded poll: call `cmd_acquire "$@"` with stderr
       captured; on exit 0 emit any captured stderr and return 0; on exit 2 emit captured stderr and
       return 2 immediately (never retried — exit 2 is an error, including `.scope-lock` timeout and
       holder-write failure, not ordinary contention); on exit 1 discard the captured ABORT text,
       sleep `TASK_LOCK_RETRY_POLL_MS`, and re-attempt until `TASK_LOCK_RETRY_BUDGET_MS` is exhausted.
-- [ ] On the FIRST retry only, emit a single visible line modeled on `git-commit-scoped.sh`'s
+      *(completed)*
+- [x] On the FIRST retry only, emit a single visible line modeled on `git-commit-scoped.sh`'s
       contention `NOTE:`: `NOTE: task N's lock is held by another session; waiting up to {budget}ms
-      and retrying before warning.` Do not emit one line per attempt.
-- [ ] On budget exhaustion, emit the LAST attempt's captured stderr verbatim (this is the Tier-3
+      and retrying before warning.` Do not emit one line per attempt. *(completed)*
+- [x] On budget exhaustion, emit the LAST attempt's captured stderr verbatim (this is the Tier-3
       handoff — the three ABORT variants must reach the user with all fields intact and unmodified)
-      and return 1.
-- [ ] Register the `acquire-retry` case in the subcommand dispatcher alongside `acquire`. Leave the
-      `acquire` case and `cmd_acquire`'s body untouched.
-- [ ] Extend the top-of-file usage/contract comment: document `acquire-retry`'s exit codes (0/1/2,
+      and return 1. *(completed)*
+- [x] Register the `acquire-retry` case in the subcommand dispatcher alongside `acquire`. Leave the
+      `acquire` case and `cmd_acquire`'s body untouched. *(completed)*
+- [x] Extend the top-of-file usage/contract comment: document `acquire-retry`'s exit codes (0/1/2,
       identical to `acquire`), that every attempt is a full fresh `cmd_acquire` entry, and that this
-      is the mechanism preserving all three same-session exclusions under retry.
+      is the mechanism preserving all three same-session exclusions under retry. *(completed)*
 
 **Timing**: 1.5 hours
 
