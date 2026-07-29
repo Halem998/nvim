@@ -553,25 +553,26 @@ the sites actually edited; report any additional site found rather than leaving 
 
 ---
 
-### Phase 8: Migrate the implementer skills, including the least-capable lean site [NOT STARTED]
+### Phase 8: Migrate the implementer skills, including the least-capable lean site [COMPLETED]
 
 **Goal**: Bring `skill-implementer-hard` and `skill-lean-implementation-hard` onto the library,
 which for the lean site also grants the decimal sub-phase support it has never had.
 
 **Tasks**:
-- [ ] In `skills/skill-implementer-hard/SKILL.md`, replace the resume-scan `next_phase` grep+sed
+- [x] In `skills/skill-implementer-hard/SKILL.md`, replace the resume-scan `next_phase` grep+sed
       pair with a library-sourced form using the OPEN alternation and `extract_phase_number`.
-- [ ] In `lean/skills/skill-lean-implementation-hard/SKILL.md`, replace the digits-only `next_phase`
-      grep and the `grep -oP "Phase \K[0-9]+"` extraction with the library-sourced forms. This is
+      *(completed)*
+- [x] In `lean/skills/skill-lean-implementation-hard/SKILL.md`, replace the digits-only `next_phase`
+      grep and the PCRE lookbehind extraction with the library-sourced forms. This is
       the only site in the repository with no decimal support at all; after migration it matches
-      every other site.
-- [ ] Replace the `-P` (PCRE) extraction with the portable library function — `grep -P` is not
-      available on every platform and is a second, unnecessary divergence.
-- [ ] Add the non-conforming guard: when the resume scan encounters a non-conforming heading, emit
+      every other site. *(completed: verified `Phase 3.1` now resolves correctly on a scratch plan)*
+- [x] Replace the `-P` (PCRE) extraction with the portable library function — `grep -P` is not
+      available on every platform and is a second, unnecessary divergence. *(completed)*
+- [x] Add the non-conforming guard: when the resume scan encounters a non-conforming heading, emit
       the loud warning and stop rather than silently resuming at a wrong or absent phase. A silent
-      wrong resume point is more damaging here than a loud stop.
-- [ ] Update surrounding prose to point at the library.
-- [ ] Cite durable anchors only.
+      wrong resume point is more damaging here than a loud stop. *(completed)*
+- [x] Update surrounding prose to point at the library. *(completed)*
+- [x] Cite durable anchors only. *(completed)*
 
 **Timing**: 1 hour
 

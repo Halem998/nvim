@@ -105,13 +105,23 @@ if [ -z "$plan_file" ]; then
   return error "No plan file found for task $task_number"
 fi
 
-# Read plan to find next incomplete phase
-# Look for first [NOT STARTED] or [IN PROGRESS] or [PARTIAL] phase heading
-next_phase=$(grep -n "### Phase [0-9]*:.*\[NOT STARTED\]\|### Phase [0-9]*:.*\[IN PROGRESS\]\|### Phase [0-9]*:.*\[PARTIAL\]" \
-  "$plan_file" | head -1)
+# Read plan to find next incomplete phase. Sourced from the shared anchor
+# (scripts/lib/phase-heading-patterns.sh) rather than re-derived inline -- this also gains
+# decimal sub-phase support (e.g. "Phase 3.1"), which the prior digits-only pattern never had.
+. .claude/scripts/lib/phase-heading-patterns.sh
+next_phase_heading=$(grep -E "${PHASE_HEADING_ERE} .*${PHASE_STATUS_OPEN_ERE}" "$plan_file" | head -1)
 
-# Extract phase number
-phase_number=$(echo "$next_phase" | grep -oP "Phase \K[0-9]+")
+# Extract phase number via the library's extract_phase_number rather than the prior PCRE-based
+# lookbehind extraction -- the PCRE grep flag is not available on every platform and was a
+# second, unnecessary divergence from every other consumer of this grammar.
+phase_number=""
+if [ -n "$next_phase_heading" ]; then
+  phase_number=$(extract_phase_number "$next_phase_heading") || phase_number=""
+  if [ -z "$phase_number" ]; then
+    warn_nonconforming "$plan_file" "lean-implementation-hard-next-phase"
+    return error "Non-conforming phase heading found during resume-scan -- refusing to guess a resume point. See warning above."
+  fi
+fi
 
 # Read handoff for per-phase dispatch context (territory, continuation_context)
 handoff_file=$(ls "${handoff_path_abs}" 2>/dev/null | head -1)

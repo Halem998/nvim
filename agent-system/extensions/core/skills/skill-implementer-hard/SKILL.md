@@ -147,11 +147,21 @@ if [ "$orchestrator_mode" = "true" ]; then
   # integer plans (1, 2, 3, ...) resolve identically to the old increment behavior.
   next_phase=""
   if [ -n "$plan_path" ] && [ -f "$plan_path" ]; then
-    # Scan phase headings top-to-bottom; first NOT STARTED / PARTIAL / IN PROGRESS wins.
+    # Scan phase headings top-to-bottom; first OPEN-alternation heading wins. Sourced from the
+    # shared anchor (scripts/lib/phase-heading-patterns.sh) rather than re-derived inline; a
+    # non-conforming heading is reported by name rather than silently resuming at a wrong or
+    # absent phase -- a silent wrong resume point is more damaging here than a loud stop.
     # Heading form: "### Phase {N or N.1}: {name} [STATUS]"
-    next_phase=$(grep -E '^### Phase [0-9]+(\.[0-9]+)?: .*\[(NOT STARTED|PARTIAL|IN PROGRESS)\]' "$plan_path" \
-      | head -1 \
-      | sed -E 's/^### Phase ([0-9]+(\.[0-9]+)?):.*/\1/')
+    . .claude/scripts/lib/phase-heading-patterns.sh
+    next_heading=$(grep -E "${PHASE_HEADING_ERE} .*${PHASE_STATUS_OPEN_ERE}" "$plan_path" | head -1)
+    if [ -n "$next_heading" ]; then
+      next_phase=$(extract_phase_number "$next_heading") || next_phase=""
+      if [ -z "$next_phase" ]; then
+        warn_nonconforming "$plan_path" "implementer-hard-next-phase"
+        echo "[hard-mode] STOP: resume-scan found a non-conforming phase heading -- refusing to guess a resume point. See warning above." >&2
+        exit 1
+      fi
+    fi
   fi
 
   if [ -n "$next_phase" ]; then

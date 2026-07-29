@@ -1,0 +1,14 @@
+{
+  "phase": 8,
+  "phase_name": "Migrate the implementer skills, including the least-capable lean site",
+  "started_at": "2026-07-29T01:25:00Z",
+  "last_updated": "2026-07-29T01:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Migrate skill-implementer-hard resume-scan next_phase pair onto library", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md"]},
+    {"id": 2, "description": "Migrate skill-lean-implementation-hard next_phase grep and phase-number extraction onto library, gaining decimal support and dropping grep -P", "status": "done", "files_touched": ["agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
