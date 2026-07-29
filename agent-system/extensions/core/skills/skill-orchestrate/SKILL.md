@@ -1885,15 +1885,49 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
    (`jq -r '.plan_markers_verified // "absent"'`), mirroring the Stage 5 reads. **When step 1
    recovered the outcome from `.return-meta.json` instead of a handoff, these fields are already
    populated from that recovery — this step's own read applies only when a handoff was actually
-   present.** Never carry these values over from a previous task in the same wave; re-read (or,
+   present, and it is this step's own read that the new evidence-corroboration call below
+   consumes.** Never carry these values over from a previous task in the same wave; re-read (or,
    on the recovered path, re-recover) them for every task in the loop.
+
+   **Evidence corroboration (handoff-present, per-task)** — the intentional mirror of single-task
+   Stage 5's own "Evidence corroboration (handoff-present branch)" block, scoped to exactly this
+   task in the loop. PRECONDITION: reachable only when *this task's own* freshly-read
+   `dispatch_status = "implemented"` AND its `phases_total -eq 0`. When it fires, re-resolve the
+   plan path per task inside the loop — `plan_path` if already set for this task, else
+   `ls -1 "${task_dir}/plans/"*.md 2>/dev/null | sort -V | tail -1` (the same fallback the MT
+   recovery block above uses) — then call `skill_corroborate_phase_counts`, scoped to **this
+   task's own** `task_dir`, plan path, and handoff, never another task's in the same wave, and
+   re-assign `phases_completed` / `phases_total` / `plan_markers_verified` from its output:
+   ```bash
+   if [ "$dispatch_status" = "implemented" ] && [ "$phases_total" -eq 0 ]; then
+     mt_corroboration_plan_path="${plan_path:-}"
+     if [ -z "$mt_corroboration_plan_path" ]; then
+       mt_corroboration_plan_path=$(ls -1 "${task_dir}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+     fi
+     cpc_line=$(skill_corroborate_phase_counts "$task_num" "$mt_corroboration_plan_path" "[orchestrate]" "${task_dir}/.orchestrator-handoff.json")
+     IFS=' ' read -r cpc_a cpc_b cpc_c <<< "$cpc_line"
+     phases_completed="${cpc_a#phases_completed=}"
+     phases_total="${cpc_b#phases_total=}"
+     plan_markers_verified="${cpc_c#plan_markers_verified=}"
+   fi
+   ```
+   D3/D4 apply identically to this call site as to single-task Stage 5's own: the trigger is
+   `phases_total -eq 0` alone (not the recovered path's both-zero `PHASES_ZERO_ON_SUCCESS`
+   signature), and `skill_gate_completion_claim`'s Case 1 stays structurally unreachable from
+   this trigger, since Case 1 requires `phases_total > 0`. See `skill_corroborate_phase_counts`'s
+   own header comment in `scripts/skill-base.sh` for the full rationale.
 3. Call `skill_postflight_update`:
    - `dispatch_status = "researched"` → `skill_postflight_update task_num "research" "${session_id}_${task_num}" researched`
    - `dispatch_status = "planned"` → `skill_postflight_update task_num "plan" "${session_id}_${task_num}" planned`
    - `dispatch_status = "implemented"` → apply the same completion-claim verification gate as
      Stage 5: call
-     `skill_gate_completion_claim "$task_num" "$phases_completed" "$phases_total" "$plan_markers_verified" "[orchestrate]"`
-     and, only if it returns 0 (allow), call
+     `skill_gate_completion_claim "$task_num" "$phases_completed" "$phases_total" "$plan_markers_verified" "[orchestrate]"`.
+     `$phases_completed` / `$phases_total` / `$plan_markers_verified` here are NOT necessarily
+     the raw handoff fields step 2 first extracted — when step 2's own evidence-corroboration
+     block fired and corroborated (this task's `phases_total` was 0 and its plan headings show a
+     fully-closed plan), these three variables already carry the corrected, plan-sourced values
+     by the time this gate call runs; when it did not fire or did not corroborate, they are
+     unchanged from step 2's raw read. Only if the gate returns 0 (allow), call
      `skill_postflight_update task_num "implement" "${session_id}_${task_num}" implemented "warn"`
      (the trailing `"warn"` mirrors Stage 5's script-side second-opinion backstop; never `refuse`
      here, for the same reason). On a refuse, **skip the postflight call** — the gate has already

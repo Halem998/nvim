@@ -419,27 +419,27 @@ above"; each hit is either edited or explicitly confirmed still-accurate before 
 
 ---
 
-### Phase 6: Multi-task Stage MT-4 wiring [NOT STARTED]
+### Phase 6: Multi-task Stage MT-4 wiring [COMPLETED]
 
 **Goal**: Mirror the change into the multi-task engine so all three agree, matching the existing
 "identical mirror" precedent already used for the recovery-path corroboration.
 
 **Tasks**:
-- [ ] In `skills/skill-orchestrate/SKILL.md` Stage MT-4, in step 2 (the handoff-present field
+- [x] In `skills/skill-orchestrate/SKILL.md` Stage MT-4, in step 2 (the handoff-present field
       extraction), add the same trigger after `plan_markers_verified` is read: when this task's
       own `dispatch_status = "implemented"` AND its `phases_total -eq 0`, call
       `skill_corroborate_phase_counts` scoped to **this task's own** `plan_path` / `task_dir` and
       handoff, never another task's in the same wave.
-- [ ] Re-resolve the plan path per task inside the loop, using the same
+- [x] Re-resolve the plan path per task inside the loop, using the same
       `ls -1 "${task_dir}/plans/"*.md | sort -V | tail -1` fallback the MT recovery block uses.
       Never carry a value over between loop iterations.
-- [ ] Update step 2's existing sentence "this step's own read applies only when a handoff was
+- [x] Update step 2's existing sentence "this step's own read applies only when a handoff was
       actually present" so it also describes the new corroboration, and update step 3's
       `implemented` bullet, which currently describes the gate call as consuming raw handoff
       fields only.
-- [ ] Add a short note that this is the intentional mirror of single-task Stage 5, referencing
+- [x] Add a short note that this is the intentional mirror of single-task Stage 5, referencing
       that stage by heading name.
-- [ ] Durable anchors only; no task-number citations.
+- [x] Durable anchors only; no task-number citations.
 
 **Timing**: 1 hour
 
