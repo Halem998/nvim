@@ -329,29 +329,43 @@ here rather than deferring it, and record the discovery in the phase notes.
 
 ---
 
-### Phase 2: Factor `session_liveness()` out of reap and add `session-list` [NOT STARTED]
+### Phase 2: Factor `session_liveness()` out of reap and add `session-list` [COMPLETED]
 
 **Goal**: The session registry gets its first read surface, with the two-signal liveness rule
 computed in exactly one place.
 
 **Tasks**:
-- [ ] Extract the two-signal dead-pid / stale-heartbeat computation currently embedded inside
+- [x] Extract the two-signal dead-pid / stale-heartbeat computation currently embedded inside
       `cmd_session_reap` into a shared bash function `session_liveness()` that, given an entry
       file path, yields the computed age plus one of `pid-alive` | `dead-pid` |
       `stale-heartbeat` | `corrupt` | `undeterminable`. Preserve the existing evaluation ORDER
       (dead-pid tested first, stale-heartbeat as the eventual fallback) and both thresholds
-      (`SESSION_REGISTRY_DEAD_PID_MIN`, `SESSION_REGISTRY_REAP_MIN`).
-- [ ] Rewrite `cmd_session_reap` to call `session_liveness()` instead of computing inline. Its
+      (`SESSION_REGISTRY_DEAD_PID_MIN`, `SESSION_REGISTRY_REAP_MIN`). *(completed; `pid-alive` and
+      `undeterminable` are NEW terminal states this function introduces beyond what
+      `cmd_session_reap` alone ever needed, required so `cmd_session_list`/`session_contention`
+      have a liveness verdict for every entry, not just reap-worthy ones)*
+- [x] Rewrite `cmd_session_reap` to call `session_liveness()` instead of computing inline. Its
       observable output — the `would reap:` / `reaped:` / `SKIP:` lines, the
       `(missing/unparseable entry; age is the file's own mtime)` suffix, the summary lines, and the
-      exit code — must be unchanged.
-- [ ] Add `cmd_session_list`: read-only, no mutation, no `--dry-run` flag (nothing is deleted).
+      exit code — must be unchanged. *(completed: a corrupt entry's reap decision is re-derived
+      from `session_liveness()`'s `corrupt` reason via the same mtime-vs-`SESSION_REGISTRY_REAP_MIN`
+      threshold the original inline code used — dead-pid can never fire for a corrupt entry either
+      way since it has no pid — and reported with the same `reason=stale-heartbeat` text as
+      before, so the printed lines are byte-for-byte identical, not just decision-identical)*
+- [x] Add `cmd_session_list`: read-only, no mutation, no `--dry-run` flag (nothing is deleted).
       Globs `specs/.sessions/*.json` (bounded, dedicated-directory scan) and emits one compact
       NDJSON line per entry carrying the raw entry fields plus computed `live` (bool) and
       `liveness_reason` (string). A corrupt/unparseable entry is emitted with
-      `liveness_reason: "corrupt"` and `live: true` — never silently dropped.
-- [ ] Add the `session-list)` dispatch case and extend the usage string in the `*)` fallback.
-- [ ] Document the new verb in `task-lock.sh`'s own usage/help output.
+      `liveness_reason: "corrupt"` and `live: true` — never silently dropped. *(completed; `live`
+      is derived uniformly as `liveness_reason NOT IN {dead-pid, stale-heartbeat}`, matching D4's
+      "live == true, corrupt, and undeterminable-liveness entries DO contend" language exactly)*
+- [x] Add the `session-list)` dispatch case and extend the usage string in the `*)` fallback.
+      *(completed)*
+- [x] Document the new verb in `task-lock.sh`'s own usage/help output. *(completed; the header
+      comment's stale "consumed by nothing in the source store today" / "Non-Goal: no reader"
+      language was also updated in this same pass — it became false the moment `session-list`
+      landed, so leaving it standing until Phase 9's documentation pass would have left this
+      script's OWN header self-contradicted for 7 phases)*
 
 **Timing**: 1.5 hours
 

@@ -27,13 +27,16 @@
 #   task-lock.sh session-heartbeat <session_id>
 #   task-lock.sh session-release <session_id>
 #   task-lock.sh session-reap [--dry-run]
+#   task-lock.sh session-list
 #
-# Session-Registry subcommands (session-register/session-heartbeat/session-release/session-reap)
-# are a SEPARATE, ADDITIVE family from the task-number `.lock/` mechanism above: they record which
-# orchestration SESSIONS (not tasks) are actually in flight, at
-# specs/.sessions/{session_id}.json. This task-lock.sh-only registry is PRODUCED here and consumed
-# by nothing in the source store today -- see context/patterns/task-lock.md's Session-Registry CLI
-# section for the "Non-Goal: no reader" statement and the full contract. Registry entry layout:
+# Session-Registry subcommands (session-register/session-heartbeat/session-release/session-reap/
+# session-list) are a SEPARATE, ADDITIVE family from the task-number `.lock/` mechanism above:
+# they record which orchestration SESSIONS (not tasks) are actually in flight, at
+# specs/.sessions/{session_id}.json. session-list is this registry's reader: a read-only,
+# no-mutation NDJSON enumeration (see cmd_session_list below) consumed by
+# orchestrate-batch-admit.sh's session-contention pass and by this file's own cmd_acquire --
+# see context/patterns/task-lock.md's Session-Registry Reader Contract section for the full
+# consumer list and exclusion rules. Registry entry layout:
 #
 #   {
 #     "session_id": "sess_1736700000_a1b2c3",
@@ -1152,18 +1155,79 @@ cmd_session_release() {
 }
 
 # =====================================================================
+# session_liveness <entry_file_path>
+# =====================================================================
+# Two-signal liveness computation, factored out of cmd_session_reap so cmd_session_list and (in
+# a later phase) session_contention() consume the IDENTICAL verdict rather than a second
+# transcription. Preserves cmd_session_reap's original evaluation ORDER (dead-pid tested first,
+# stale-heartbeat as the eventual fallback) and both thresholds (SESSION_REGISTRY_DEAD_PID_MIN,
+# SESSION_REGISTRY_REAP_MIN) byte-for-byte.
+#
+# Prints "<age_minutes> <liveness_reason>" on stdout (space-separated, exactly two tokens).
+# liveness_reason is one of:
+#   corrupt          - entry file is missing/unparseable JSON. age falls back to the file's own
+#                       mtime. Checked FIRST and short-circuits the other four -- a corrupt
+#                       entry's pid/heartbeat fields cannot be trusted at all.
+#   dead-pid         - pid is a parseable integer, `kill -0 $pid` FAILS (pid confirmably gone),
+#                       AND age > SESSION_REGISTRY_DEAD_PID_MIN.
+#   stale-heartbeat  - not dead-pid, and age > SESSION_REGISTRY_REAP_MIN. "pid alive" is NEVER
+#                       treated as proof of liveness on its own; this band is always the
+#                       fallback regardless of pid state.
+#   pid-alive        - not dead-pid, not stale-heartbeat, and pid is a parseable integer for
+#                       which `kill -0` succeeded.
+#   undeterminable   - not dead-pid, not stale-heartbeat, and pid is empty/non-numeric (liveness
+#                       cannot be confirmed either way from the pid signal alone).
+session_liveness() {
+  local f="$1"
+  local pid age reason=""
+
+  if ! jq -e . "$f" >/dev/null 2>&1; then
+    local file_mtime
+    file_mtime=$(stat -c %Y "$f" 2>/dev/null || stat -f %m "$f" 2>/dev/null)
+    if [ -n "$file_mtime" ]; then
+      age=$(( ( $(now_epoch) - file_mtime ) / 60 ))
+    else
+      age=999999
+    fi
+    echo "$age corrupt"
+    return 0
+  fi
+
+  pid=$(jq -r '.pid // empty' "$f" 2>/dev/null)
+  age=$(age_minutes "$(jq -r '.heartbeat_at // empty' "$f" 2>/dev/null)")
+
+  if [ -n "$pid" ] && [[ "$pid" =~ ^[0-9]+$ ]]; then
+    if ! kill -0 "$pid" 2>/dev/null; then
+      if [ "$age" -gt "$SESSION_REGISTRY_DEAD_PID_MIN" ]; then
+        reason="dead-pid"
+      fi
+    fi
+  fi
+
+  if [ -z "$reason" ] && [ "$age" -gt "$SESSION_REGISTRY_REAP_MIN" ]; then
+    reason="stale-heartbeat"
+  fi
+
+  if [ -z "$reason" ]; then
+    if [ -n "$pid" ] && [[ "$pid" =~ ^[0-9]+$ ]]; then
+      reason="pid-alive"
+    else
+      reason="undeterminable"
+    fi
+  fi
+
+  echo "$age $reason"
+}
+
+# =====================================================================
 # session-reap [--dry-run]
 # =====================================================================
 # Mirrors cmd_reap's report-then-delete shape and its "skip corrupt/unreadable entry rather than
-# silently ignore" discipline. Two-signal staleness, in this order:
-#   1. dead-pid: kill -0 "$pid" FAILS (pid confirmably gone) AND heartbeat_at age exceeds
-#      SESSION_REGISTRY_DEAD_PID_MIN.
-#   2. stale-heartbeat: otherwise (pid alive, or liveness undeterminable), heartbeat_at age
-#      exceeds SESSION_REGISTRY_REAP_MIN.
-# "pid alive" is NEVER treated as proof of liveness on its own -- it only prevents the dead-pid
-# shortcut from firing; the stale-heartbeat band is always the fallback. An entry with a
-# missing/unparseable body falls back to the file's own mtime, exactly as cmd_reap falls back to
-# the .lock directory mtime. Always exits 0.
+# silently ignore" discipline. Reap fires on liveness_reason == dead-pid or stale-heartbeat, per
+# session_liveness() above. A corrupt entry has no usable pid (dead-pid can never fire for it) so
+# it reaps only via the SAME stale-heartbeat threshold applied to its file-mtime-derived age --
+# byte-for-byte the same reap/no-reap decision and message text this command produced before the
+# session_liveness() extraction. Always exits 0.
 cmd_session_reap() {
   local dry_run=false
   while [ "$#" -gt 0 ]; do
@@ -1188,39 +1252,39 @@ cmd_session_reap() {
       [ -e "$f" ] || continue
       total_count=$(( total_count + 1 ))
 
-      local session_id pid command task_numbers_csv age reason_suffix=""
-      if jq -e . "$f" >/dev/null 2>&1; then
-        session_id=$(jq -r '.session_id // empty' "$f" 2>/dev/null)
-        pid=$(jq -r '.pid // empty' "$f" 2>/dev/null)
-        command=$(jq -r '.command // empty' "$f" 2>/dev/null)
-        task_numbers_csv=$(jq -r '.task_numbers // [] | join(",")' "$f" 2>/dev/null)
-        age=$(age_minutes "$(jq -r '.heartbeat_at // empty' "$f" 2>/dev/null)")
-      else
+      local session_id command task_numbers_csv age liveness live_out reason_suffix=""
+      live_out=$(session_liveness "$f")
+      age="${live_out%% *}"
+      liveness="${live_out#* }"
+
+      if [ "$liveness" = "corrupt" ]; then
         session_id="unknown"
-        pid=""
         command="unknown"
         task_numbers_csv="unknown"
-        local file_mtime
-        file_mtime=$(stat -c %Y "$f" 2>/dev/null || stat -f %m "$f" 2>/dev/null)
-        if [ -n "$file_mtime" ]; then
-          age=$(( ( $(now_epoch) - file_mtime ) / 60 ))
-        else
-          age=999999
-        fi
         reason_suffix=" (missing/unparseable entry; age is the file's own mtime)"
+      else
+        session_id=$(jq -r '.session_id // empty' "$f" 2>/dev/null)
+        command=$(jq -r '.command // empty' "$f" 2>/dev/null)
+        task_numbers_csv=$(jq -r '.task_numbers // [] | join(",")' "$f" 2>/dev/null)
       fi
 
       local reason=""
-      if [ -n "$pid" ] && [[ "$pid" =~ ^[0-9]+$ ]]; then
-        if ! kill -0 "$pid" 2>/dev/null; then
-          if [ "$age" -gt "$SESSION_REGISTRY_DEAD_PID_MIN" ]; then
-            reason="dead-pid"
+      case "$liveness" in
+        dead-pid|stale-heartbeat)
+          reason="$liveness"
+          ;;
+        corrupt)
+          # No pid signal at all for a corrupt entry (dead-pid can never fire); reap only when
+          # old enough by the SAME threshold this fallback path always used (mtime age vs.
+          # SESSION_REGISTRY_REAP_MIN), reported as stale-heartbeat exactly as before.
+          if [ "$age" -gt "$SESSION_REGISTRY_REAP_MIN" ]; then
+            reason="stale-heartbeat"
           fi
-        fi
-      fi
-      if [ -z "$reason" ] && [ "$age" -gt "$SESSION_REGISTRY_REAP_MIN" ]; then
-        reason="stale-heartbeat"
-      fi
+          ;;
+        *)
+          reason=""
+          ;;
+      esac
 
       if [ -n "$reason" ]; then
         reaped_count=$(( reaped_count + 1 ))
@@ -1242,6 +1306,68 @@ cmd_session_reap() {
     echo "would reap ${reaped_count} of ${total_count} session registry entries"
   else
     echo "reaped ${reaped_count} of ${total_count} session registry entries"
+  fi
+
+  return 0
+}
+
+# =====================================================================
+# session-list
+# =====================================================================
+# Read-only enumeration of specs/.sessions/*.json -- a bounded, dedicated-directory glob, never a
+# repo-wide scan. This is the session registry's first (and, per
+# context/patterns/task-lock.md's Session-Registry Reader Contract, so far ONLY) reader. Emits
+# one compact NDJSON line per entry: every raw entry field verbatim, plus computed `live` (bool)
+# and `liveness_reason` (string) from session_liveness() above. No mutation, no --dry-run flag --
+# nothing here is ever deleted.
+#
+# `live` is derived uniformly from liveness_reason: false for dead-pid/stale-heartbeat (confirmed
+# or presumed gone), true for every other reason (pid-alive, undeterminable, AND corrupt) -- this
+# fails toward "still contending", never toward silently treating an unconfirmable session as
+# gone. A corrupt/unparseable entry is emitted with liveness_reason: "corrupt", live: true, and
+# an empty file_scope/task_numbers (nothing can be safely read from it) -- never silently
+# dropped from the stream.
+cmd_session_list() {
+  if [ "$#" -gt 0 ]; then
+    echo "Usage: $0 session-list" >&2
+    return 2
+  fi
+
+  local sessions_dir
+  sessions_dir=$(session_registry_dir "false")
+
+  local f
+  if [ -d "$sessions_dir" ]; then
+    for f in "$sessions_dir"/*.json; do
+      [ -e "$f" ] || continue
+
+      local live_out age liveness live_flag
+      live_out=$(session_liveness "$f")
+      age="${live_out%% *}"
+      liveness="${live_out#* }"
+      case "$liveness" in
+        dead-pid|stale-heartbeat) live_flag="false" ;;
+        *) live_flag="true" ;;
+      esac
+
+      if [ "$liveness" = "corrupt" ]; then
+        jq -n -c \
+          --arg entry_file "$(basename "$f")" \
+          --argjson live "$live_flag" \
+          --arg liveness_reason "$liveness" \
+          --argjson age_min "$age" \
+          '{entry_file: $entry_file, session_id: null, pid: null, pid_source: null,
+            command: null, task_numbers: [], file_scope: [], started_at: null,
+            heartbeat_at: null, age_min: $age_min, live: $live, liveness_reason: $liveness_reason}'
+      else
+        jq -c \
+          --argjson live "$live_flag" \
+          --arg liveness_reason "$liveness" \
+          --argjson age_min "$age" \
+          '. + {age_min: $age_min, live: $live, liveness_reason: $liveness_reason}' \
+          "$f" 2>/dev/null
+      fi
+    done
   fi
 
   return 0
@@ -1358,8 +1484,12 @@ case "$SUBCMD" in
     cmd_session_reap "$@"
     exit $?
     ;;
+  session-list)
+    cmd_session_list "$@"
+    exit $?
+    ;;
   *)
-    echo "Usage: $0 {acquire|heartbeat|release|check|reap|init-marker|scope-acquire|scope-release|commit-acquire|commit-release|session-register|session-heartbeat|session-release|session-reap} ..." >&2
+    echo "Usage: $0 {acquire|heartbeat|release|check|reap|init-marker|scope-acquire|scope-release|commit-acquire|commit-release|session-register|session-heartbeat|session-release|session-reap|session-list} ..." >&2
     exit 2
     ;;
 esac
