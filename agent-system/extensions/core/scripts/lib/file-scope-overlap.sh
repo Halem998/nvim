@@ -63,6 +63,81 @@ def self_mod_match($cscope; $crit):
   # nothing means the downstream pipe never runs at all), silently dropping that candidate's
   # verdict from stdout. Returning `null` on no-match instead lets `$sm_hit != null` downstream
   # evaluate to `false` exactly once, as intended.
+
+# --- Session-registry contention (D4) -- input 2 of the three bounded contention inputs. This
+# is the ONLY input carrying its own precomputed, unioned file_scope, independent of any single
+# task's state.json entry: held locks (input 1) carry no file_scope of their own (holder.json has
+# none -- the other side's scope is always re-fetched from state.json), and non-terminal
+# state.json tasks (input 3) carry ONE task's own declared scope, not a union across everything a
+# session is concurrently touching. See context/patterns/file-footprint-overlap.md for the full
+# three-input asymmetry statement. ---
+
+# --- edge_connected_nums: task numbers connected to $cnum by a dependencies[] edge in EITHER
+# direction, using the identical two-clause predicate the existing collision-scan comparison_set
+# construction uses (candidate depends on it, OR it depends on candidate) -- a factoring of that
+# existing rule, not a new one. Excludes $cnum itself.
+def edge_connected_nums($cnum; $all):
+  ( [$all[] | select(.project_number == $cnum) | (.dependencies // [])] | first // []) as $c_deps |
+  [
+    $all[] | . as $t |
+    select(
+      ($t.project_number != $cnum) and
+      (
+        ($c_deps | index($t.project_number)) != null
+        or
+        (($t.dependencies // []) | index($cnum)) != null
+      )
+    ) | $t.project_number
+  ];
+
+# --- session_contention: D4's three exclusions, in order, then scopes_overlap_first against the
+# surviving sessions' own file_scope. Sessions are visited in ASCENDING session_id string order;
+# first hit wins, no exhaustive collection -- matching this predicate's existing first-match-wins
+# convention. Returns {session_id, covered_task_number, overlapping_path, liveness_reason} on a
+# hit, or jq `null` (never `empty`) on no-hit -- same reason as self_mod_match above: this is
+# bound via `as` outside an array comprehension by every known caller.
+#   $cscope  - the candidate's own (normalized-on-comparison) file_scope array.
+#   $cnum    - the candidate's own task number.
+#   $own_sid - the CALLER's own session_id (batch-admit's --session-id, or cmd_acquire's
+#              acquiring session_id) -- D4 exclusion 1 excludes this session from contending
+#              against itself. Pass "" (or any value no session will ever carry) to disable
+#              self-exclusion; D6's degradation path instead passes an EMPTY $sessions array so
+#              this def is never reached at all when identity is unknown.
+#   $all     - active_projects array (for edge_connected_nums's dependency lookup).
+#   $sessions - session-list's NDJSON array (session_id, task_numbers, file_scope, live,
+#              liveness_reason per entry).
+def session_contention($cscope; $cnum; $own_sid; $all; $sessions):
+  edge_connected_nums($cnum; $all) as $edge_nums |
+  (
+    [
+      [$sessions[]] | sort_by(.session_id) | .[] as $sess |
+      # D4 exclusion 1: self-exclusion by session id.
+      select($sess.session_id != $own_sid) |
+      # D4 exclusion 2: liveness. `live` is already computed uniformly by session-list as
+      # NOT IN {dead-pid, stale-heartbeat} -- true for pid-alive, corrupt, AND undeterminable,
+      # matching "live == true, corrupt, and undeterminable-liveness entries DO contend" exactly.
+      select($sess.live == true) |
+      # D4 exclusion 3: dependency-edge, evaluated per covered task number. The session is
+      # excluded iff EVERY covered task number is either $cnum itself or edge-connected to it;
+      # it contends iff at least one covered task number is neither.
+      (($sess.task_numbers // [])
+        | map(. as $tn | select($tn != $cnum and (($edge_nums | index($tn)) == null)))
+      ) as $surviving_nums |
+      select(($surviving_nums | length) > 0) |
+      ($surviving_nums | min) as $covered_num |
+      scopes_overlap_first($cscope; ($sess.file_scope // [])) as $ov_path |
+      select($ov_path != null and $ov_path != "") |
+      {session_id: $sess.session_id, covered_task_number: $covered_num,
+       overlapping_path: $ov_path, liveness_reason: $sess.liveness_reason}
+    ] | first
+  );
+  # `[ ... ] | first` (list comprehension, then .[0]) -- the SAME idiom scopes_overlap_first and
+  # self_mod_match above both use, and for the same reason: `generator | first` (without the
+  # enclosing `[...]`) pipes EACH of the generator's outputs through `.[0]` individually (an
+  # error on a non-array output) and produces ZERO outputs -- never a `null` fallback -- when the
+  # generator itself produces zero outputs. `[...] | first` always yields exactly one value
+  # (the first match, or `null` for an empty array), matching this def's "return null, never
+  # empty, on no-hit" contract from a single evaluation.
 JQDEFS
 
 # ─── scopes_overlap: bash-callable wrapper, today's exact signature and return convention ──────

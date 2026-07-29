@@ -385,31 +385,43 @@ computed in exactly one place.
 
 ---
 
-### Phase 3: Add the session-contention rule to the shared library [NOT STARTED]
+### Phase 3: Add the session-contention rule to the shared library [COMPLETED]
 
 **Goal**: The session-contention rule (D4's three exclusions) exists once, as jq, so neither
 consumer re-derives it.
 
 **Tasks**:
-- [ ] Add `def edge_connected_nums($cnum; $all)` to `FILE_SCOPE_OVERLAP_JQ_DEFS`: returns the set
+- [x] Add `def edge_connected_nums($cnum; $all)` to `FILE_SCOPE_OVERLAP_JQ_DEFS`: returns the set
       of task numbers connected to `$cnum` by a `dependencies[]` edge in EITHER direction, using
       the identical two-clause predicate the existing `comparison_set` construction uses. This is
-      a factoring of the existing rule, not a new one.
-- [ ] Add `def session_contention($cscope; $cnum; $own_sid; $all; $sessions)`: applies D4's three
+      a factoring of the existing rule, not a new one. *(completed)*
+- [x] Add `def session_contention($cscope; $cnum; $own_sid; $all; $sessions)`: applies D4's three
       exclusions in order (self-session-id, liveness, per-covered-task-number dependency
       exclusion), then applies `scopes_overlap_first` between `$cscope` and each surviving
       session's `file_scope`. Returns the first hit — `{session_id, covered_task_number,
-      overlapping_path, liveness_reason}` — or `null` on no hit.
-- [ ] `covered_task_number` is the LOWEST covered task number that is not itself excluded, per D4.
-- [ ] Session ordering for determinism: sessions are visited in ascending `session_id` string
+      overlapping_path, liveness_reason}` — or `null` on no hit. *(completed)*
+- [x] `covered_task_number` is the LOWEST covered task number that is not itself excluded, per D4.
+      *(completed)*
+- [x] Session ordering for determinism: sessions are visited in ascending `session_id` string
       order; first hit wins, no exhaustive collection — matching the script's existing
-      first-match-wins convention.
-- [ ] Return `null` (never `empty`) on no-hit, for the same reason `self_mod_match` does — the
+      first-match-wins convention. *(completed; verified with two simultaneously-overlapping
+      fixture sessions "sessZ" and "sessAAA" — "sessAAA" wins as expected)*
+- [x] Return `null` (never `empty`) on no-hit, for the same reason `self_mod_match` does — the
       result is bound via `as` outside an array comprehension and an `empty` there silently drops
-      the whole candidate verdict.
-- [ ] Add a comment block in the lib stating input 2's semantics explicitly: the session registry
+      the whole candidate verdict. *(completed: deviation from the literal task text — the
+      no-hit-returns-null property required wrapping the whole filter chain in `[ ... ] | first`,
+      i.e. building an actual array then indexing `.[0]`, rather than a bare
+      `generator | first // null` pipe. A bare `generator | first` pipes EACH output of the
+      generator through `.[0]` individually — an error on a non-array object output, and,
+      critically, ZERO outputs (never a `null` fallback) when the generator itself produces zero
+      outputs, since there is nothing for `|` to feed into `first` at all. This was caught by the
+      Verification harness below, not assumed correct from inspection: it matches the exact
+      `[...] | first` idiom `scopes_overlap_first`/`self_mod_match` already use one section above
+      in this same file, so the fix converges the code onto the file's own established pattern
+      rather than introducing a new one)*
+- [x] Add a comment block in the lib stating input 2's semantics explicitly: the session registry
       is the ONLY input carrying its own precomputed, unioned `file_scope`, independent of any
-      single task's state.json entry.
+      single task's state.json entry. *(completed)*
 
 **Timing**: 1.5 hours
 
