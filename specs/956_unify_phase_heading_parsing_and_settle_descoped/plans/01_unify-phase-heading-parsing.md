@@ -1,7 +1,7 @@
 # Implementation Plan: Task #956
 
 - **Task**: 956 - Unify phase-heading parsing across all sites and settle the [DESCOPED] outcome
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 12 hours
 - **Dependencies**: None (builds on the shipped documented-reasoned-exclusions phase-outcome work)
 - **Research Inputs**: specs/956_unify_phase_heading_parsing_and_settle_descoped/reports/01_unify-phase-heading-parsing.md
@@ -201,35 +201,38 @@ so any wave may be dispatched in parallel without coordination.
 
 ---
 
-### Phase 1: Ratify D1 and D2 in the canonical standards documents [NOT STARTED]
+### Phase 1: Ratify D1 and D2 in the canonical standards documents [COMPLETED]
 
 **Goal**: Make the two recorded decisions the documented state of the system, editing existing
 prose in place so no reader encounters the superseded version beside the current one.
 
 **Tasks**:
-- [ ] `context/formats/plan-format.md`, "Canonical phase-heading shape" subsection: keep the
+- [x] `context/formats/plan-format.md`, "Canonical phase-heading shape" subsection: keep the
       existing letter-suffix prohibition and strengthen it with the D1 rationale in one or two
       sentences — that the prohibition was re-affirmed, that the general fix is loud non-conformance
       rather than a wider grammar, and that an author reaching for `3a` should write `3.1`.
-- [ ] Same subsection: add a short "Non-conforming headings" paragraph stating the D3 contract —
+      *(completed)*
+- [x] Same subsection: add a short "Non-conforming headings" paragraph stating the D3 contract —
       a heading matching `^### Phase ` whose number token or status marker falls outside the
       canonical vocabulary produces a loud, named, per-heading warning and renders the enclosing
-      count INCONCLUSIVE; it is never silently dropped, collapsed, or counted.
-- [ ] Same subsection: state that `[DESCOPED]` is not a recognized marker and that whole-phase
+      count INCONCLUSIVE; it is never silently dropped, collapsed, or counted. *(completed)*
+- [x] Same subsection: state that `[DESCOPED]` is not a recognized marker and that whole-phase
       descoping uses `[COMPLETED WITH EXCLUSIONS]` with a `#### Reasoned Exclusions` record
-      covering all remaining items (D2).
-- [ ] `context/standards/status-markers.md`, `[COMPLETED WITH EXCLUSIONS]` subsection: add one
+      covering all remaining items (D2). *(completed)*
+- [x] `context/standards/status-markers.md`, `[COMPLETED WITH EXCLUSIONS]` subsection: add one
       explicit sentence that "all remaining items" is a valid, intended case of the five-condition
       admission test, not a degenerate one — this is the guidance whose absence invites ad hoc
-      markers. Add a second sentence naming `[DESCOPED]` as rejected and pointing here.
-- [ ] `rules/plan-format-enforcement.md`: state that the valid-marker list is closed at the six
+      markers. Add a second sentence naming `[DESCOPED]` as rejected and pointing here. *(completed)*
+- [x] `rules/plan-format-enforcement.md`: state that the valid-marker list is closed at the six
       documented values, that any other bracket content is a validation error, and name
-      `[DESCOPED]` as the specific rejected marker with its replacement.
-- [ ] `rules/artifact-formats.md`, "Phase Status Markers (phase-heading scope)" section: add the
+      `[DESCOPED]` as the specific rejected marker with its replacement. *(completed)*
+- [x] `rules/artifact-formats.md`, "Phase Status Markers (phase-heading scope)" section: add the
       missing `[COMPLETED WITH EXCLUSIONS]` entry. This is pre-existing drift from when that
       marker shipped, absorbed here because this phase is already editing the same vocabulary.
-- [ ] Verify no edit in this phase cites a task number (durable anchors only: section headings,
-      file names, decision names).
+      *(completed)*
+- [x] Verify no edit in this phase cites a task number (durable anchors only: section headings,
+      file names, decision names). *(completed: check-task-references.sh clean on context and
+      rules subtrees)*
 
 **Timing**: 1.5 hours
 

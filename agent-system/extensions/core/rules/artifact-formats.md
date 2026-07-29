@@ -86,6 +86,8 @@ Use in plan files, on the `### Phase N: {name} [STATUS]` heading only:
 - `[NOT STARTED]` - Phase not begun
 - `[IN PROGRESS]` - Currently executing
 - `[COMPLETED]` - Phase finished
+- `[COMPLETED WITH EXCLUSIONS]` - Phase closed with enumerated, reasoned, evidenced exclusions;
+  see `context/standards/status-markers.md`'s `[COMPLETED WITH EXCLUSIONS]` subsection
 - `[PARTIAL]` - Partially complete (interrupted)
 - `[BLOCKED]` - Cannot proceed
 

@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Ratify D1 and D2 in the canonical standards documents",
+  "started_at": "2026-07-29T00:00:00Z",
+  "last_updated": "2026-07-29T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Strengthen plan-format.md letter-suffix prohibition with D1 rationale; add non-conforming-headings paragraph; add DESCOPED rejection", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 2, "description": "status-markers.md: whole-phase-exclusion sentence; DESCOPED rejection pointer", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/status-markers.md"]},
+    {"id": 3, "description": "plan-format-enforcement.md: closed marker enum; DESCOPED named", "status": "done", "files_touched": ["agent-system/extensions/core/rules/plan-format-enforcement.md"]},
+    {"id": 4, "description": "artifact-formats.md: add missing COMPLETED WITH EXCLUSIONS entry", "status": "done", "files_touched": ["agent-system/extensions/core/rules/artifact-formats.md"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

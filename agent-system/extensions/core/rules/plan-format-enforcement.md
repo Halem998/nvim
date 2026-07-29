@@ -10,7 +10,15 @@ Full specification: `.claude/context/formats/plan-format.md`
 
 **Required sections**: Overview, Goals & Non-Goals, Risks & Mitigations, Implementation Phases, Testing & Validation, Artifacts & Outputs, Rollback/Contingency.
 
-**Phase heading format**: `### Phase N: {name} [STATUS]` -- status lives ONLY in the heading. Valid markers: `[NOT STARTED]`, `[IN PROGRESS]`, `[COMPLETED]`, `[COMPLETED WITH EXCLUSIONS]`, `[PARTIAL]`, `[BLOCKED]`. No emojis.
+**Phase heading format**: `### Phase N: {name} [STATUS]` -- status lives ONLY in the heading. The
+valid-marker list is CLOSED at six documented values: `[NOT STARTED]`, `[IN PROGRESS]`,
+`[COMPLETED]`, `[COMPLETED WITH EXCLUSIONS]`, `[PARTIAL]`, `[BLOCKED]`. Any other bracket content
+is a validation error. In particular, `[DESCOPED]` is explicitly rejected -- it is not a member of
+this enum -- and its replacement is `[COMPLETED WITH EXCLUSIONS]` with a full
+`#### Reasoned Exclusions` record. No emojis. The enum, the canonical number-token grammar, and
+non-conforming-heading detection are all sourced from `scripts/lib/phase-heading-patterns.sh`; see
+`context/formats/plan-format.md`'s "Canonical phase-heading shape" subsection for the full
+grammar and the loud-non-conformance contract.
 
 These are the **phase-heading** markers, scoped to a single phase within a plan. They are a
 distinct, narrower vocabulary from the plan-level `- **Status**:` field documented in

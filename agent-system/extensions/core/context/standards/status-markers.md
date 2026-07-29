@@ -199,6 +199,18 @@ Failing any one of these five conditions means the phase is `[PARTIAL]`, not exc
 See `context/formats/plan-format.md`'s `#### Reasoned Exclusions` record format for the required
 per-item record, and `context/contracts/anti-analysis.md` for the strategic-sorry counterpart.
 
+**Whole-phase exclusion is a valid, intended case, not a degenerate one**: the excluded set may
+be a subset of a phase's remaining items or the *entire* remainder — the five-condition test above
+is satisfied identically either way, since none of its conditions distinguish "some" from "all."
+A plan author facing a whole-phase exclusion should reach for `[COMPLETED WITH EXCLUSIONS]` here,
+not invent a fourth marker.
+
+**`[DESCOPED]` is rejected as a phase-heading marker.** It is not a member of the closed
+status-marker enum and must not be used, including for the whole-phase case above — use
+`[COMPLETED WITH EXCLUSIONS]` with a full `#### Reasoned Exclusions` record instead. Admitting a
+semantically-overlapping fourth marker would require re-touching every site
+`[COMPLETED WITH EXCLUSIONS]` already wired for no expressive gain.
+
 ---
 
 #### `[EXPANDED]`

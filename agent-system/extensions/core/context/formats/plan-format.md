@@ -112,7 +112,25 @@ re-deriving a pattern at a new call site.
 **Letter-suffixed sub-phases (`3a`) are deliberately not supported by any consumer and must not
 be used.** This is a decision, not an unimplemented feature: no script or agent in this codebase
 recognizes a letter suffix on a phase number, and none is planned to. Decimal sub-phasing (`3.1`)
-is the only supported sub-phase form.
+is the only supported sub-phase form. **This prohibition was re-affirmed, not merely repeated**,
+after a triggering artifact used `3a`/`3b`/`3c`: the general fix for that observed gap is loud
+non-conformance detection (below) rather than a widened grammar, because widening admits exactly
+one new token shape and leaves the next unanticipated one (`3-alt`, `III`) just as silent as
+before. An author reaching for `3a` should write `3.1` instead.
+
+**Non-conforming headings**: a line matching `^### Phase ` whose number token or status marker
+falls outside the canonical vocabulary on this page produces a loud, named, per-heading warning
+at every accounting site, and renders the enclosing count INCONCLUSIVE. It is never silently
+dropped, collapsed into an adjacent number, or counted toward either TOTAL or DONE. This is a
+closed contract, not an aspiration: `scripts/lib/phase-heading-patterns.sh` is the one sourced
+anchor implementing it, and every consumer site listed below either sources that library or is
+documented as deliberately parameter-driven.
+
+**`[DESCOPED]` is not a recognized phase-heading status marker and must not be used.** Whole-phase
+descoping uses `[COMPLETED WITH EXCLUSIONS]` with a `#### Reasoned Exclusions` record (below)
+enumerating 100% of the phase's remaining items — see `context/standards/status-markers.md`'s
+`[COMPLETED WITH EXCLUSIONS]` subsection for why "all remaining items" is a valid, intended case
+of that outcome's five-condition admission test rather than a degenerate one.
 
 **Canonical regex forms** (copy verbatim; do not re-derive):
 
@@ -122,14 +140,24 @@ is the only supported sub-phase form.
 | ERE phase-number extraction | `grep -oE '^### Phase [0-9]+(\.[0-9]+)?' \| grep -oE '[0-9]+(\.[0-9]+)?'` |
 | BRE (`grep`, no `-E`) heading match | `^### Phase [0-9][0-9]*\(\.[0-9][0-9]*\)\{0,1\}:` |
 
-**Consumer sites of this shape** (blast radius for any future change to it): `update-task-status.sh`'s
-`count_plan_phases()` (TOTAL/DONE phase-accounting regexes), `scripts/validate-artifact.sh`
-(phase-presence check, phase-line enumeration, and phase-number extraction for per-phase
-Verification Tier warnings), both implementation agents' Stage 5a marker-repair block
-(`general-implementation-agent.md`, `general-implementation-hard-agent.md`), `skill-implementer-hard`'s
-resume-point scan, and `skill-orchestrate`'s (and `skill-orchestrate-hard`'s) recovery-count grep.
-Reference sites by script/skill and function/stage name, never by line number — line numbers
-drift on every edit and are not a stable anchor.
+These forms, the closed six-value status-marker enum, and the non-conforming-heading detector are
+all exported from `scripts/lib/phase-heading-patterns.sh` — the single sourced anchor for this
+grammar. Do not re-derive an inline pattern at a new call site; source the library instead.
+
+**Consumer sites of this shape** (blast radius for any future change to it): found live by
+`grep -rl 'phase-heading-patterns.sh' agent-system/extensions` — the same self-verifying
+"grep for sourcers" mechanism `task-reference-patterns.sh`'s consumers are found by, replacing a
+hand-maintained prose list here that was already demonstrably incomplete. As of the library's
+introduction this includes `update-task-status.sh`'s `count_plan_phases()` (TOTAL/DONE
+phase-accounting regexes), `scripts/validate-artifact.sh` (phase-presence check, phase-line
+enumeration, phase-number extraction, and marker-enum validation), `update-phase-status.sh`
+(the one deliberately parameter-driven site), both implementation agents' Stage 5a marker-repair
+block (`general-implementation-agent.md`, `general-implementation-hard-agent.md`),
+`commands/task.md`'s `/task --review` Step 3 phase enumeration, `skill-implementer-hard`'s and
+`skill-lean-implementation-hard`'s resume-point scans, and `skill-orchestrate`'s (and
+`skill-orchestrate-hard`'s) recovery-count and `next_phase` greps. Reference sites by
+script/skill and function/stage name, never by line number — line numbers drift on every edit and
+are not a stable anchor.
 
 ## Dependency Analysis (format)
 

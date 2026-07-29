@@ -1,27 +1,7 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
   "task_number": 956,
   "session_id": "sess_1785332281_ac04fb_956",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/956_unify_phase_heading_parsing_and_settle_descoped/plans/01_unify-phase-heading-parsing.md",
-      "summary": "10-phase plan unifying ~19 phase-heading regex sites onto a new sourced shared library scripts/lib/phase-heading-patterns.sh, with recorded decisions rejecting letter-suffixed sub-phases and the [DESCOPED] marker in favor of loud non-conforming-heading detection and [COMPLETED WITH EXCLUSIONS]."
-    }
-  ],
-  "phase_count": 10,
-  "estimated_hours": 12,
-  "dependency_waves": [[1, 2], [3, 7, 8, 9], [4, 5, 6], [10]],
-  "memory_candidates": [
-    {
-      "content": "When a task asks to widen a parser grammar to accept an observed-but-prohibited token shape, check first whether the real defect is that rejection is SILENT rather than that the grammar is too narrow. Widening the grammar fixes exactly one token shape and leaves the defect class intact; making non-conformance loud and named at every accounting site is the general fix and usually has a smaller blast radius. In this codebase the pattern that closes such duplication is a sourced shared pattern library under scripts/lib/ (precedent: task-reference-patterns.sh) using a deploy-tree-first / source-store-fallback candidate list with loud failure and never a silent fall-through to an inline pattern; its consumer inventory is then maintained live by grepping for sourcers of the library filename rather than by a hand-maintained prose list, which is demonstrably prone to going stale.",
-      "category": "PATTERN",
-      "source_artifact": "specs/956_unify_phase_heading_parsing_and_settle_descoped/plans/01_unify-phase-heading-parsing.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["shared-pattern-library", "silent-failure", "grammar-widening", "consumer-site-drift", "loud-inconclusive", "source-store-fallback"]
-    }
-  ],
-  "next_steps": "Run /implement 956 to execute the plan"
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
 }
