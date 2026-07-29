@@ -12,7 +12,7 @@
           "nix"
         ]
       },
-      "line_count": 100,
+      "line_count": 93,
       "domain": "project",
       "subdomain": "nix",
       "summary": "Nix context overview with directory structure and loading strategy"
@@ -29,7 +29,7 @@
           "nix"
         ]
       },
-      "line_count": 150,
+      "line_count": 215,
       "domain": "project",
       "subdomain": "nix",
       "summary": "Nix expression language syntax and builtins reference"
@@ -46,7 +46,7 @@
           "nix"
         ]
       },
-      "line_count": 180,
+      "line_count": 239,
       "domain": "project",
       "subdomain": "nix",
       "summary": "Nix flake structure, inputs, outputs, and lockfile management"
@@ -63,7 +63,7 @@
           "nix"
         ]
       },
-      "line_count": 170,
+      "line_count": 215,
       "domain": "project",
       "subdomain": "nix",
       "summary": "NixOS module system with options, config, and imports"
@@ -80,7 +80,7 @@
           "nix"
         ]
       },
-      "line_count": 160,
+      "line_count": 255,
       "domain": "project",
       "subdomain": "nix",
       "summary": "Home Manager user-level configuration and module patterns"
@@ -97,7 +97,7 @@
           "nix"
         ]
       },
-      "line_count": 140,
+      "line_count": 237,
       "domain": "project",
       "subdomain": "nix",
       "summary": "NixOS and Home Manager module definition patterns"
@@ -114,7 +114,7 @@
           "nix"
         ]
       },
-      "line_count": 130,
+      "line_count": 233,
       "domain": "project",
       "subdomain": "nix",
       "summary": "Nixpkgs overlay patterns for package customization"
@@ -131,7 +131,7 @@
           "nix"
         ]
       },
-      "line_count": 160,
+      "line_count": 256,
       "domain": "project",
       "subdomain": "nix",
       "summary": "Nix derivation and package building patterns"
@@ -148,7 +148,7 @@
           "nix"
         ]
       },
-      "line_count": 150,
+      "line_count": 291,
       "domain": "project",
       "subdomain": "nix",
       "summary": "Nix code formatting and naming conventions"
@@ -165,7 +165,7 @@
           "nix"
         ]
       },
-      "line_count": 120,
+      "line_count": 208,
       "domain": "project",
       "subdomain": "nix",
       "summary": "NixOS system rebuild commands and workflows"
@@ -182,7 +182,7 @@
           "nix"
         ]
       },
-      "line_count": 130,
+      "line_count": 245,
       "domain": "project",
       "subdomain": "nix",
       "summary": "Home Manager CLI commands and configuration workflows"

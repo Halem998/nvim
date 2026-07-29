@@ -1,0 +1,52 @@
+{
+  "phase": 3,
+  "phase_name": "Regenerate every source line_count",
+  "started_at": "2026-07-29T23:35:00Z",
+  "last_updated": "2026-07-29T23:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run generator --write across all extensions (atomic-batch); fix format-preservation bug discovered mid-phase",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/generate-context-line-counts.sh",
+        "agent-system/extensions/core/index-entries.json",
+        "agent-system/extensions/cslib/index-entries.json",
+        "agent-system/extensions/email/index-entries.json",
+        "agent-system/extensions/filetypes/index-entries.json",
+        "agent-system/extensions/formal/index-entries.json",
+        "agent-system/extensions/founder/index-entries.json",
+        "agent-system/extensions/latex/index-entries.json",
+        "agent-system/extensions/lean/index-entries.json",
+        "agent-system/extensions/literature/index-entries.json",
+        "agent-system/extensions/memory/index-entries.json",
+        "agent-system/extensions/nix/index-entries.json",
+        "agent-system/extensions/nvim/index-entries.json",
+        "agent-system/extensions/present/index-entries.json",
+        "agent-system/extensions/python/index-entries.json",
+        "agent-system/extensions/slidev/index-entries.json",
+        "agent-system/extensions/typst/index-entries.json",
+        "agent-system/extensions/web/index-entries.json",
+        "agent-system/extensions/z3/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "jq full-document round-trip (.entries[$i].line_count = $n) for --write",
+      "result": "failed",
+      "reason": "Re-serialized entire file through jq's pretty-printer, reformatting every compact single-line array into one-element-per-line (e.g. 535-line diff for nvim's 21 actual value changes). Violates the 'only line_count values changed' diff-review requirement."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.5-followup",
+      "description": "Rewrote generate-context-line-counts.sh --write mode to use surgical awk line substitution/insertion instead of jq round-trip; added insert-vs-replace distinction for the 94 entries where line_count key is entirely absent (6 extensions: cslib, latex, lean, python, typst, z3) vs present-but-wrong.",
+      "type": "altered",
+      "reason": "Required to satisfy the phase's own diff-review verification task; discovered during that same task.",
+      "annotation": "*(deviation: altered — surgical awk substitution replaces jq round-trip; insert-vs-replace distinction added for missing-key entries)*"
+    }
+  ]
+}

@@ -263,7 +263,7 @@
     {
       "path": "project/founder/templates/typst/strategy-template.typ",
       "summary": "Base Typst template with shared styles, callouts, tables, and visualizations for all founder reports",
-      "line_count": 400,
+      "line_count": 686,
       "load_when": {
         "agents": [
           "founder-implement-agent"
@@ -279,7 +279,7 @@
     {
       "path": "project/founder/templates/typst/market-sizing.typ",
       "summary": "Typst template for market sizing PDF reports with TAM/SAM/SOM visualization",
-      "line_count": 200,
+      "line_count": 278,
       "load_when": {
         "agents": [
           "founder-implement-agent"
@@ -295,7 +295,7 @@
     {
       "path": "project/founder/templates/typst/competitive-analysis.typ",
       "summary": "Typst template for competitive analysis PDF reports with positioning maps and battle cards",
-      "line_count": 220,
+      "line_count": 246,
       "load_when": {
         "agents": [
           "founder-implement-agent"
@@ -311,7 +311,7 @@
     {
       "path": "project/founder/templates/typst/gtm-strategy.typ",
       "summary": "Typst template for GTM strategy PDF reports with 90-day plan timeline and metrics dashboard",
-      "line_count": 250,
+      "line_count": 291,
       "load_when": {
         "agents": [
           "founder-implement-agent"
@@ -425,7 +425,7 @@
     {
       "path": "project/founder/patterns/project-planning.md",
       "summary": "Project management reference: WBS validation (100% rule), PERT formulas, critical path method, resource leveling",
-      "line_count": 120,
+      "line_count": 117,
       "load_when": {
         "agents": [
           "founder-plan-agent",
@@ -576,7 +576,7 @@
     {
       "path": "project/founder/patterns/pitch-deck-structure.md",
       "summary": "10-slide YC pitch deck structure with content requirements per slide",
-      "line_count": 150,
+      "line_count": 409,
       "load_when": {
         "agents": [
           "deck-research-agent",
@@ -601,7 +601,7 @@
     {
       "path": "project/founder/patterns/slidev-deck-template.md",
       "summary": "Slidev template patterns, syntax reference, and library integration for pitch deck generation. Deck content library lives at .context/deck/",
-      "line_count": 260,
+      "line_count": 464,
       "load_when": {
         "agents": [
           "deck-research-agent",
@@ -626,7 +626,7 @@
     {
       "path": "project/founder/patterns/yc-compliance-checklist.md",
       "summary": "YC pitch deck compliance checklist with required elements per slide",
-      "line_count": 100,
+      "line_count": 289,
       "load_when": {
         "agents": [
           "deck-research-agent",

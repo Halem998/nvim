@@ -7,7 +7,7 @@
       "topics": ["literature", "index", "schema", "per-repo", "global"],
       "keywords": ["literature", "index", "schema", "doc_id", "sub-index", "briefing"],
       "summary": "Unified index schema: global Literature/ repo structure, per-repo sub-index (specs/literature-index.json), and runtime resolution",
-      "line_count": 80,
+      "line_count": 97,
       "load_when": {
         "agents": ["literature-agent"],
         "skills": ["skill-literature"],
@@ -21,7 +21,7 @@
       "topics": ["literature", "briefing", "tools", "agent", "exploration"],
       "keywords": ["briefing", "literature-search", "read", "chunk", "agent-exploration"],
       "summary": "Briefing+tools pattern: how agents interact with literature using Read and literature-search.sh on demand",
-      "line_count": 60,
+      "line_count": 116,
       "load_when": {
         "agents": ["literature-agent", "general-research-agent", "general-implementation-agent", "planner-agent"],
         "skills": ["skill-literature", "skill-researcher", "skill-implementer", "skill-planner"],
@@ -35,7 +35,7 @@
       "topics": ["literature", "adhoc", "conversational", "navigation", "directive", "briefing", "primary-session"],
       "keywords": ["adhoc", "conversational", "navigation", "directive", "briefing", "primary-session", "orchestrator-mode"],
       "summary": "How the primary/root session reproduces skill Stage 4a's --lit navigation conversationally by reusing literature-lit-flag-resolve.sh and literature-briefing.sh with --orchestrator-mode false",
-      "line_count": 92,
+      "line_count": 107,
       "load_when": {
         "agents": ["literature-agent", "general-research-agent", "general-implementation-agent", "planner-agent"],
         "skills": ["skill-literature", "skill-researcher", "skill-implementer", "skill-planner"],

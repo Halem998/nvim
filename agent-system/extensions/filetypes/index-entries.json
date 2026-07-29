@@ -3,7 +3,7 @@
     {
       "path": "project/filetypes/tools/tool-detection.md",
       "description": "Shared tool detection patterns for all filetypes agents",
-      "line_count": 180,
+      "line_count": 214,
       "load_when": {
         "agents": [
           "filetypes-router-agent",
@@ -29,7 +29,7 @@
     {
       "path": "project/filetypes/tools/dependency-guide.md",
       "description": "Platform-specific installation instructions for conversion tools",
-      "line_count": 120,
+      "line_count": 325,
       "load_when": {
         "agents": [
           "filetypes-router-agent",
@@ -55,7 +55,7 @@
     {
       "path": "project/filetypes/tools/mcp-integration.md",
       "description": "MCP server integration patterns for format conversion",
-      "line_count": 80,
+      "line_count": 243,
       "load_when": {
         "agents": [
           "filetypes-router-agent",
@@ -73,7 +73,7 @@
     {
       "path": "project/filetypes/patterns/spreadsheet-tables.md",
       "description": "Spreadsheet to LaTeX/Typst table conversion patterns",
-      "line_count": 150,
+      "line_count": 264,
       "load_when": {
         "agents": [
           "filetypes-spreadsheet-agent"
@@ -90,7 +90,7 @@
     {
       "path": "project/filetypes/patterns/presentation-slides.md",
       "description": "Presentation extraction and slide generation patterns",
-      "line_count": 180,
+      "line_count": 367,
       "load_when": {
         "agents": [
           "presentation-agent"
@@ -153,7 +153,7 @@
     {
       "path": "project/filetypes/domain/conversion-tables.md",
       "description": "Format conversion support matrices, usage examples, prerequisites, dependency summary",
-      "line_count": 117,
+      "line_count": 145,
       "load_when": {
         "agents": [
           "filetypes-router-agent",
@@ -176,7 +176,7 @@
     {
       "path": "project/filetypes/README.md",
       "description": "Filetypes extension overview and navigation",
-      "line_count": 60,
+      "line_count": 94,
       "load_when": {
         "agents": [],
         "languages": [],
@@ -189,7 +189,7 @@
     {
       "path": "project/filetypes/tools/superdoc-integration.md",
       "description": "SuperDoc MCP server configuration and tool inventory for DOCX editing",
-      "line_count": 120,
+      "line_count": 118,
       "load_when": {
         "agents": [
           "docx-edit-agent"
@@ -206,7 +206,7 @@
     {
       "path": "project/filetypes/patterns/office-edit-patterns.md",
       "description": "Office document editing patterns: Word AppleScript integration, tracked changes, batch editing",
-      "line_count": 150,
+      "line_count": 201,
       "load_when": {
         "agents": [
           "docx-edit-agent"

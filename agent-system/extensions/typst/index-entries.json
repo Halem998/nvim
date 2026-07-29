@@ -2,6 +2,7 @@
   "entries": [
     {
       "path": "project/typst/patterns/theorem-environments.md",
+      "line_count": 74,
       "description": "Theorem, definition, and proof environments",
       "tags": [
         "typst",
@@ -22,6 +23,7 @@
     },
     {
       "path": "project/typst/patterns/cross-references.md",
+      "line_count": 206,
       "description": "Cross-reference patterns in Typst",
       "tags": [
         "typst",
@@ -43,6 +45,7 @@
     },
     {
       "path": "project/typst/patterns/fletcher-diagrams.md",
+      "line_count": 251,
       "description": "Fletcher package for flowcharts and diagrams",
       "tags": [
         "typst",
@@ -63,6 +66,7 @@
     },
     {
       "path": "project/typst/patterns/rule-environments.md",
+      "line_count": 135,
       "description": "Inference rule and typing rule environments",
       "tags": [
         "typst",
@@ -83,6 +87,7 @@
     },
     {
       "path": "project/typst/patterns/bibliography.md",
+      "line_count": 125,
       "description": "Bibliography and citation management",
       "tags": [
         "typst",
@@ -103,6 +108,7 @@
     },
     {
       "path": "project/typst/patterns/document-structure.md",
+      "line_count": 136,
       "description": "Document structure patterns and organization",
       "tags": [
         "typst",
@@ -123,6 +129,7 @@
     },
     {
       "path": "project/typst/patterns/math-typesetting.md",
+      "line_count": 165,
       "description": "Mathematical typesetting patterns",
       "tags": [
         "typst",
@@ -143,6 +150,7 @@
     },
     {
       "path": "project/typst/patterns/styling-patterns.md",
+      "line_count": 153,
       "description": "Styling and theming patterns",
       "tags": [
         "typst",
@@ -163,6 +171,7 @@
     },
     {
       "path": "project/typst/patterns/tables-and-figures.md",
+      "line_count": 170,
       "description": "Tables and figures layout patterns",
       "tags": [
         "typst",
@@ -183,6 +192,7 @@
     },
     {
       "path": "project/typst/standards/document-structure.md",
+      "line_count": 283,
       "description": "Document structure and organization standards",
       "tags": [
         "typst",
@@ -203,6 +213,7 @@
     },
     {
       "path": "project/typst/standards/notation-conventions.md",
+      "line_count": 156,
       "description": "Mathematical notation conventions in Typst",
       "tags": [
         "typst",
@@ -223,6 +234,7 @@
     },
     {
       "path": "project/typst/standards/textbook-standards.md",
+      "line_count": 221,
       "description": "Textbook authoring standards and conventions",
       "tags": [
         "typst",
@@ -244,6 +256,7 @@
     },
     {
       "path": "project/typst/standards/typst-style-guide.md",
+      "line_count": 359,
       "description": "Typst coding style and conventions",
       "tags": [
         "typst",
@@ -265,6 +278,7 @@
     },
     {
       "path": "project/typst/standards/type-theory-foundations.md",
+      "line_count": 198,
       "description": "Type theory foundations and DTT conventions",
       "tags": [
         "typst",
@@ -285,6 +299,7 @@
     },
     {
       "path": "project/typst/standards/compilation-standards.md",
+      "line_count": 142,
       "description": "Compilation and build standards",
       "tags": [
         "typst",
@@ -305,6 +320,7 @@
     },
     {
       "path": "project/typst/standards/package-usage.md",
+      "line_count": 141,
       "description": "Package usage and import standards",
       "tags": [
         "typst",
@@ -326,6 +342,7 @@
     },
     {
       "path": "project/typst/templates/chapter-template.md",
+      "line_count": 243,
       "description": "Chapter template for Typst documents",
       "tags": [
         "typst",
@@ -346,6 +363,7 @@
     },
     {
       "path": "project/typst/templates/article-template.md",
+      "line_count": 127,
       "description": "Article template for Typst documents",
       "tags": [
         "typst",
@@ -366,6 +384,7 @@
     },
     {
       "path": "project/typst/templates/presentation-template.md",
+      "line_count": 175,
       "description": "Presentation/slides template",
       "tags": [
         "typst",
@@ -386,6 +405,7 @@
     },
     {
       "path": "project/typst/templates/report-template.md",
+      "line_count": 159,
       "description": "Report template for Typst documents",
       "tags": [
         "typst",
@@ -406,6 +426,7 @@
     },
     {
       "path": "project/typst/templates/thesis-template.md",
+      "line_count": 222,
       "description": "Thesis/dissertation template",
       "tags": [
         "typst",
@@ -426,6 +447,7 @@
     },
     {
       "path": "project/typst/tools/compilation-guide.md",
+      "line_count": 63,
       "description": "Typst compilation and tooling",
       "tags": [
         "typst",
@@ -446,6 +468,7 @@
     },
     {
       "path": "project/typst/README.md",
+      "line_count": 35,
       "description": "Typst extension overview and navigation",
       "tags": [
         "typst",
@@ -467,6 +490,7 @@
     },
     {
       "path": "project/typst/typst-overview.md",
+      "line_count": 85,
       "description": "Typst language overview and introduction",
       "tags": [
         "typst",
@@ -487,6 +511,7 @@
     },
     {
       "path": "project/typst/typst-packages.md",
+      "line_count": 136,
       "description": "Available Typst packages and ecosystem",
       "tags": [
         "typst",
@@ -507,6 +532,7 @@
     },
     {
       "path": "project/typst/typst-vs-latex.md",
+      "line_count": 133,
       "description": "Comparison of Typst vs LaTeX",
       "tags": [
         "typst",

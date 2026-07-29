@@ -16,7 +16,7 @@
         "content-mapping"
       ],
       "summary": "Usage guide for /learn command and memory management",
-      "line_count": 300,
+      "line_count": 304,
       "load_when": {
         "skills": [
           "skill-learn"
@@ -126,7 +126,7 @@
         "harvest"
       ],
       "summary": "Example workflows for knowledge capture system",
-      "line_count": 314,
+      "line_count": 320,
       "load_when": {
         "skills": [
           "skill-learn"

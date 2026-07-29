@@ -2,6 +2,7 @@
   "entries": [
     {
       "path": "project/cslib/domain/contributing-standards.md",
+      "line_count": 121,
       "description": "CSLib CONTRIBUTING.md key standards: variable names, proof style, notation, CI",
       "tags": ["cslib", "contributing", "standards"],
       "load_when": {
@@ -14,6 +15,7 @@
     },
     {
       "path": "project/cslib/domain/notation-conventions.md",
+      "line_count": 93,
       "description": "CSLib-specific notation: alpha equivalence, LTS transitions, reduction arrows",
       "tags": ["cslib", "notation", "conventions"],
       "load_when": {
@@ -26,6 +28,7 @@
     },
     {
       "path": "project/cslib/domain/project-organization.md",
+      "line_count": 137,
       "description": "CSLib project structure: pillars, working groups, module layout",
       "tags": ["cslib", "project", "organization"],
       "load_when": {
@@ -38,6 +41,7 @@
     },
     {
       "path": "project/cslib/patterns/proof-structure.md",
+      "line_count": 104,
       "description": "CSLib proof structure patterns and module organization",
       "tags": ["cslib", "proofs", "patterns"],
       "load_when": {
@@ -50,6 +54,7 @@
     },
     {
       "path": "project/cslib/patterns/reuse-first.md",
+      "line_count": 103,
       "description": "CSLib reuse-first philosophy: prefer existing Mathlib/CSLib abstractions",
       "tags": ["cslib", "reuse", "mathlib"],
       "load_when": {
@@ -62,6 +67,7 @@
     },
     {
       "path": "project/cslib/standards/ci-pipeline.md",
+      "line_count": 135,
       "description": "CSLib CI pipeline: lake test, checkInitImports, lint-style, lake shake commands",
       "tags": ["cslib", "ci", "pipeline", "lake"],
       "load_when": {
@@ -74,6 +80,7 @@
     },
     {
       "path": "project/cslib/standards/pr-conventions.md",
+      "line_count": 87,
       "description": "CSLib PR title conventions, conventional commits, review process",
       "tags": ["cslib", "pr", "git", "commits"],
       "load_when": {
@@ -86,6 +93,7 @@
     },
     {
       "path": "project/cslib/standards/pr-description-format.md",
+      "line_count": 303,
       "description": "CSLib PR description canonical format: Summary, Context, file-by-file summary, AI Disclosure",
       "tags": ["cslib", "pr", "format", "description", "template"],
       "load_when": {
@@ -98,6 +106,7 @@
     },
     {
       "path": "project/cslib/standards/mathlib-style.md",
+      "line_count": 70,
       "description": "Mathlib-style Lean coding standards applied to CSLib",
       "tags": ["cslib", "mathlib", "style"],
       "load_when": {
@@ -110,6 +119,7 @@
     },
     {
       "path": "project/cslib/tools/lake-commands.md",
+      "line_count": 152,
       "description": "Lake commands for CSLib: build, test, exe targets, shake",
       "tags": ["cslib", "lake", "tools", "build"],
       "load_when": {
@@ -122,6 +132,7 @@
     },
     {
       "path": "project/cslib/tools/linters.md",
+      "line_count": 109,
       "description": "CSLib linting tools: checkInitImports, lint-style, lake shake",
       "tags": ["cslib", "linters", "checkInitImports", "lint-style"],
       "load_when": {
@@ -134,6 +145,7 @@
     },
     {
       "path": "project/cslib/standards/citation-conventions.md",
+      "line_count": 144,
       "description": "CSLib citation conventions: BibKey format, references.bib verification for hard-mode H3 grounding",
       "tags": ["cslib", "citations", "bibkey", "references", "hard-mode"],
       "load_when": {
@@ -146,6 +158,7 @@
     },
     {
       "path": "project/cslib/standards/ci-pipeline.md",
+      "line_count": 135,
       "description": "CSLib CI pipeline steps for hard-mode implementation: lake build, checkInitImports, lint, shake, test",
       "tags": ["cslib", "ci", "pipeline", "lake", "hard-mode"],
       "load_when": {
@@ -158,6 +171,7 @@
     },
     {
       "path": "project/cslib/tools/build-cache-strategy.md",
+      "line_count": 140,
       "description": "CSLib build cache strategy: Mathlib cloud cache, lake exe cache get, feature branch workflow",
       "tags": ["cslib", "cache", "lake", "build", "mathlib"],
       "load_when": {
@@ -170,6 +184,7 @@
     },
     {
       "path": "project/cslib/standards/lint-prevention-rules.md",
+      "line_count": 98,
       "description": "CSLib lint prevention rules: 7 rules for environment linters not caught by PR CI",
       "tags": ["cslib", "lint", "prevention", "environment-linters"],
       "load_when": {
@@ -182,6 +197,7 @@
     },
     {
       "path": "project/cslib/patterns/lint-fix-wave-assignment.md",
+      "line_count": 82,
       "description": "File-overlap wave assignment guidance for multi-task lint-fix orchestration: conflict matrix, 30% threshold, worktree isolation",
       "tags": ["cslib", "lint", "orchestration", "wave", "parallel", "conflicts"],
       "load_when": {

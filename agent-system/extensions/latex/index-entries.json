@@ -2,6 +2,7 @@
   "entries": [
     {
       "path": "project/latex/patterns/document-structure.md",
+      "line_count": 90,
       "description": "LaTeX document organization patterns",
       "tags": [
         "latex",
@@ -22,6 +23,7 @@
     },
     {
       "path": "project/latex/patterns/theorem-environments.md",
+      "line_count": 92,
       "description": "LaTeX theorem environment patterns",
       "tags": [
         "latex",
@@ -42,6 +44,7 @@
     },
     {
       "path": "project/latex/patterns/cross-references.md",
+      "line_count": 191,
       "description": "Cross-reference patterns for LaTeX documents",
       "tags": [
         "latex",
@@ -63,6 +66,7 @@
     },
     {
       "path": "project/latex/standards/document-structure.md",
+      "line_count": 189,
       "description": "Document structure standards for LaTeX projects",
       "tags": [
         "latex",
@@ -83,6 +87,7 @@
     },
     {
       "path": "project/latex/standards/latex-style-guide.md",
+      "line_count": 277,
       "description": "LaTeX style guide and formatting conventions",
       "tags": [
         "latex",
@@ -104,6 +109,7 @@
     },
     {
       "path": "project/latex/standards/notation-conventions.md",
+      "line_count": 160,
       "description": "Mathematical notation conventions for LaTeX",
       "tags": [
         "latex",
@@ -124,6 +130,7 @@
     },
     {
       "path": "project/latex/standards/custom-macros.md",
+      "line_count": 173,
       "description": "Custom macro patterns and conventions",
       "tags": [
         "latex",
@@ -144,6 +151,7 @@
     },
     {
       "path": "project/latex/templates/subfile-template.md",
+      "line_count": 197,
       "description": "Subfile template for modular LaTeX documents",
       "tags": [
         "latex",
@@ -164,6 +172,7 @@
     },
     {
       "path": "project/latex/tools/compilation-guide.md",
+      "line_count": 251,
       "description": "LaTeX compilation workflow and troubleshooting",
       "tags": [
         "latex",
@@ -185,6 +194,7 @@
     },
     {
       "path": "project/latex/README.md",
+      "line_count": 24,
       "description": "LaTeX extension overview and navigation",
       "tags": [
         "latex",

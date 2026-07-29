@@ -233,23 +233,40 @@ source. No divergence.
 
 ---
 
-### Phase 3: Regenerate every source line_count [NOT STARTED]
+### Phase 3: Regenerate every source line_count [COMPLETED]
 
 **Goal**: All `line_count` values across `agent-system/extensions/*/index-entries.json` match
 `wc -l` exactly.
 
 **Tasks**:
-- [ ] Run the Phase 2 generator in `--write` mode across all extensions.
-- [ ] Re-run it in `--check` mode and confirm a clean, exit-0 result.
-- [ ] Run `validate-extension-index.sh` over the rewritten sources and record any *other*
+- [x] Run the Phase 2 generator in `--write` mode across all extensions. *(completed)*
+- [x] Re-run it in `--check` mode and confirm a clean, exit-0 result. *(completed: 444/444 exact)*
+- [x] Run `validate-extension-index.sh` over the rewritten sources and record any *other*
       source-level problems it surfaces (structure, path prefixes, resolution) as findings; fix
       only those directly caused by this rewrite, and report the rest without absorbing them into
-      this phase.
-- [ ] Spot-check at least three entries by hand across three different extensions (including one
+      this phase. *(completed: Errors 0, Warnings 30 (pre-existing, unrelated to line_count --
+      resolution warnings for context files belonging to unloaded extensions not yet deployed to
+      .claude/context/); not caused by this rewrite, not fixed here)*
+- [x] Spot-check at least three entries by hand across three different extensions (including one
       previously-`null` extension) with `wc -l` to confirm the written value is exact, not
-      off-by-one.
-- [ ] Review the diff to confirm that **only** `line_count` values changed — no reordering, no
-      dropped fields, no whitespace-only churn on unrelated entries.
+      off-by-one. *(completed: core/architecture/component-checklist.md=363, nvim/project/neovim/README.md=96, z3/project/z3/README.md=49, all exact)*
+- [x] Review the diff to confirm that **only** `line_count` values changed — no reordering, no
+      dropped fields, no whitespace-only churn on unrelated entries. *(completed: git diff shows
+      320 insertions / 226 deletions, every changed line contains "line_count"; verified via
+      `git diff ... | grep '^[+-]' | grep -v '"line_count"'` returning empty)*
+- [x] *(deviation: altered — the Phase 2 generator's original `--write` implementation used a
+      full jq round-trip (`.entries[$i].line_count = $n`) that re-serialized the WHOLE document
+      through jq's pretty-printer, silently reformatting every compact single-line array in
+      files like nvim's and present's index-entries.json into one-element-per-line arrays (a
+      535-line diff for a 21-entry change). Discovered during this phase's diff-review task
+      above. Fixed by rewriting --write mode to use a surgical, line-oriented awk substitution
+      that only ever touches `line_count` lines/insertions, leaving every other byte of the file
+      untouched -- see the script's updated header comment. Also discovered during this fix: six
+      extensions (cslib, latex, lean, python, typst, z3, all currently unloaded) don't have a
+      `line_count` KEY at all on any entry (not merely `null`) -- accounts for the full 94 in the
+      "null" census bucket exactly (16+10+31+6+26+5=94). --write now distinguishes replace
+      (existing key) from insert (absent key, added immediately after the entry's "path" line)
+      internally so both cases are corrected without reformatting.)*
 
 **Timing**: 45 minutes
 
@@ -262,6 +279,10 @@ source. No divergence.
 **Scope Hypothesis**: This phase is expected to touch roughly 320 entries across up to 19
 `index-entries.json` files. The authoritative figure is whatever the Phase 2 `--check` census
 reported; confirm the post-write diff's changed-line count is consistent with it, and record both.
+
+**Scope Hypothesis result (re-derived live)**: exact match — 320 entries changed across 18 of the
+19 extensions (the 19th, `epidemiology`, needed no correction: all its entries were already
+exact), consistent with the Phase 2 `--check` census (226 mismatch + 94 null = 320).
 
 **Files to modify**:
 - `agent-system/extensions/*/index-entries.json` - mechanical `line_count` corrections only.

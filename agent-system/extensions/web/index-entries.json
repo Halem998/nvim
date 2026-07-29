@@ -29,7 +29,7 @@
           "web"
         ]
       },
-      "line_count": 287,
+      "line_count": 286,
       "domain": "project",
       "subdomain": "web",
       "summary": "Astro 5/6 framework reference with .astro file format and islands architecture"
@@ -46,7 +46,7 @@
           "web"
         ]
       },
-      "line_count": 225,
+      "line_count": 224,
       "domain": "project",
       "subdomain": "web",
       "summary": "Tailwind CSS v4 CSS-first configuration with @theme directive"
@@ -63,7 +63,7 @@
           "web"
         ]
       },
-      "line_count": 203,
+      "line_count": 202,
       "domain": "project",
       "subdomain": "web",
       "summary": "Cloudflare Pages deployment platform and edge CDN reference"
@@ -80,7 +80,7 @@
           "web"
         ]
       },
-      "line_count": 304,
+      "line_count": 303,
       "domain": "project",
       "subdomain": "web",
       "summary": "TypeScript configuration and patterns for type-safe Astro development"
@@ -97,7 +97,7 @@
           "web"
         ]
       },
-      "line_count": 315,
+      "line_count": 314,
       "domain": "project",
       "subdomain": "web",
       "summary": "Common patterns for building Astro components"
@@ -114,7 +114,7 @@
           "web"
         ]
       },
-      "line_count": 278,
+      "line_count": 277,
       "domain": "project",
       "subdomain": "web",
       "summary": "Patterns for building layout components that wrap pages"
@@ -131,7 +131,7 @@
           "web"
         ]
       },
-      "line_count": 317,
+      "line_count": 316,
       "domain": "project",
       "subdomain": "web",
       "summary": "Patterns for defining, querying, and rendering type-safe content collections"
@@ -148,7 +148,7 @@
           "web"
         ]
       },
-      "line_count": 200,
+      "line_count": 300,
       "domain": "project",
       "subdomain": "web",
       "summary": "UI component patterns with Tailwind CSS v4"
@@ -165,7 +165,7 @@
           "web"
         ]
       },
-      "line_count": 200,
+      "line_count": 319,
       "domain": "project",
       "subdomain": "web",
       "summary": "Semantic HTML, ARIA, and keyboard navigation patterns"
@@ -182,7 +182,7 @@
           "web"
         ]
       },
-      "line_count": 150,
+      "line_count": 278,
       "domain": "project",
       "subdomain": "web",
       "summary": "Naming conventions, structure, and coding standards"
@@ -199,7 +199,7 @@
           "web"
         ]
       },
-      "line_count": 150,
+      "line_count": 210,
       "domain": "project",
       "subdomain": "web",
       "summary": "Core Web Vitals targets and performance optimization rules"
@@ -216,7 +216,7 @@
           "web"
         ]
       },
-      "line_count": 150,
+      "line_count": 300,
       "domain": "project",
       "subdomain": "web",
       "summary": "WCAG 2.2 AA compliance requirements"
@@ -233,7 +233,7 @@
           "web"
         ]
       },
-      "line_count": 120,
+      "line_count": 255,
       "domain": "project",
       "subdomain": "web",
       "summary": "Astro CLI commands and development workflow"
@@ -250,7 +250,7 @@
           "web"
         ]
       },
-      "line_count": 100,
+      "line_count": 154,
       "domain": "project",
       "subdomain": "web",
       "summary": "pnpm package manager commands and best practices"
@@ -267,7 +267,7 @@
           "web"
         ]
       },
-      "line_count": 120,
+      "line_count": 274,
       "domain": "project",
       "subdomain": "web",
       "summary": "Wrangler deployment workflow for Cloudflare Pages"
@@ -284,7 +284,7 @@
           "web"
         ]
       },
-      "line_count": 150,
+      "line_count": 367,
       "domain": "project",
       "subdomain": "web",
       "summary": "CI/CD pipeline configuration and deployment debugging"
@@ -301,7 +301,7 @@
           "web"
         ]
       },
-      "line_count": 150,
+      "line_count": 323,
       "domain": "project",
       "subdomain": "web",
       "summary": "CLI debugging and optimization tools (optipng, httpie, dig, etc.)"
@@ -317,7 +317,7 @@
           "web"
         ]
       },
-      "line_count": 100,
+      "line_count": 211,
       "domain": "project",
       "subdomain": "web",
       "summary": "Page boilerplate variations"
@@ -333,7 +333,7 @@
           "web"
         ]
       },
-      "line_count": 100,
+      "line_count": 276,
       "domain": "project",
       "subdomain": "web",
       "summary": "Component boilerplate variations"
@@ -367,7 +367,7 @@
           "web"
         ]
       },
-      "line_count": 100,
+      "line_count": 114,
       "domain": "project",
       "subdomain": "web",
       "summary": "Astro framework quick reference"
@@ -384,7 +384,7 @@
           "web"
         ]
       },
-      "line_count": 100,
+      "line_count": 106,
       "domain": "project",
       "subdomain": "web",
       "summary": "Tailwind CSS v4 quick reference"

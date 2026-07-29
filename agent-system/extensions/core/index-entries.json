@@ -31,7 +31,7 @@
       "domain": "core",
       "subdomain": "architecture",
       "summary": "Context layer architecture overview",
-      "line_count": 54,
+      "line_count": 99,
       "keywords": [
         "context",
         "layers",
@@ -81,7 +81,7 @@
       "domain": "core",
       "subdomain": "architecture",
       "summary": "High-level agent system architecture overview",
-      "line_count": 492,
+      "line_count": 498,
       "keywords": [
         "architecture",
         "system",
@@ -105,7 +105,7 @@
       "domain": "core",
       "subdomain": "checkpoints",
       "summary": "Git commit checkpoint pattern for commands",
-      "line_count": 116,
+      "line_count": 124,
       "keywords": [
         "checkpoint",
         "commit",
@@ -127,7 +127,7 @@
       "domain": "core",
       "subdomain": "checkpoints",
       "summary": "Preflight gate-in checkpoint pattern",
-      "line_count": 84,
+      "line_count": 81,
       "keywords": [
         "checkpoint",
         "preflight",
@@ -149,7 +149,7 @@
       "domain": "core",
       "subdomain": "checkpoints",
       "summary": "Postflight gate-out checkpoint pattern",
-      "line_count": 101,
+      "line_count": 126,
       "keywords": [
         "checkpoint",
         "postflight",
@@ -243,7 +243,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Unified events/reflection JSONL store schema: specs/events.jsonl field contract, lazy creation, category enum, and cross-link conventions",
-      "line_count": 140,
+      "line_count": 246,
       "keywords": [
         "events",
         "jsonl",
@@ -315,7 +315,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation plan file format specification",
-      "line_count": 299,
+      "line_count": 406,
       "keywords": [
         "format",
         "plan",
@@ -339,7 +339,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Progress tracking file format",
-      "line_count": 250,
+      "line_count": 270,
       "keywords": [
         "format",
         "progress",
@@ -363,7 +363,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Research report file format specification",
-      "line_count": 131,
+      "line_count": 88,
       "keywords": [
         "format",
         "report",
@@ -387,7 +387,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Metadata file schema for subagent returns",
-      "line_count": 502,
+      "line_count": 596,
       "keywords": [
         "format",
         "metadata",
@@ -458,7 +458,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation summary file format",
-      "line_count": 59,
+      "line_count": 58,
       "keywords": [
         "format",
         "summary",
@@ -482,7 +482,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Task ordering and dependency format",
-      "line_count": 296,
+      "line_count": 415,
       "keywords": [
         "format",
         "task",
@@ -533,7 +533,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Guide for creating new extensions",
-      "line_count": 191,
+      "line_count": 266,
       "keywords": [
         "guide",
         "extension",
@@ -559,7 +559,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Loader function reference: all 12 public loader.lua functions with signatures, copy semantics, and source file descriptions",
-      "line_count": 150,
+      "line_count": 181,
       "keywords": [
         "guide",
         "loader",
@@ -639,7 +639,7 @@
       "domain": "core",
       "subdomain": "meta",
       "summary": "Comprehensive guide for meta tasks",
-      "line_count": 462,
+      "line_count": 259,
       "keywords": [
         "meta",
         "guide"
@@ -664,7 +664,7 @@
       "domain": "core",
       "subdomain": "orchestration",
       "summary": "Orchestration system architecture",
-      "line_count": 757,
+      "line_count": 756,
       "keywords": [
         "orchestration",
         "architecture"
@@ -687,7 +687,7 @@
       "domain": "core",
       "subdomain": "orchestration",
       "summary": "Agent delegation patterns and protocols",
-      "line_count": 859,
+      "line_count": 858,
       "keywords": [
         "orchestration",
         "delegation"
@@ -710,7 +710,7 @@
       "domain": "core",
       "subdomain": "orchestration",
       "summary": "Core orchestration concepts and patterns",
-      "line_count": 248,
+      "line_count": 246,
       "keywords": [
         "orchestration",
         "core"
@@ -779,7 +779,7 @@
       "domain": "core",
       "subdomain": "orchestration",
       "summary": "Orchestrator agent pattern definition",
-      "line_count": 876,
+      "line_count": 872,
       "keywords": [
         "orchestration",
         "orchestrator"
@@ -869,7 +869,7 @@
       "domain": "core",
       "subdomain": "orchestration",
       "summary": "State management patterns and protocols",
-      "line_count": 337,
+      "line_count": 328,
       "keywords": [
         "orchestration",
         "state"
@@ -915,7 +915,7 @@
       "domain": "core",
       "subdomain": "orchestration",
       "summary": "General validation patterns for orchestration",
-      "line_count": 699,
+      "line_count": 698,
       "keywords": [
         "orchestration",
         "validation"
@@ -961,7 +961,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Artifact linking patterns for TODO.md entries",
-      "line_count": 114,
+      "line_count": 130,
       "keywords": [
         "patterns",
         "artifact",
@@ -1011,7 +1011,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Context discovery query patterns",
-      "line_count": 209,
+      "line_count": 297,
       "keywords": [
         "patterns",
         "context",
@@ -1056,7 +1056,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "File-based metadata exchange between agents",
-      "line_count": 301,
+      "line_count": 305,
       "keywords": [
         "patterns",
         "metadata",
@@ -1078,7 +1078,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Inline status update pattern for plans",
-      "line_count": 278,
+      "line_count": 299,
       "keywords": [
         "patterns",
         "status",
@@ -1102,7 +1102,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Workarounds for jq escaping issues",
-      "line_count": 262,
+      "line_count": 281,
       "keywords": [
         "patterns",
         "jq",
@@ -1123,7 +1123,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Distinguishing Agent-tool transport failures from genuine orchestrate work cycles",
-      "line_count": 121,
+      "line_count": 134,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -1147,7 +1147,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Recovery patterns for MCP tool failures",
-      "line_count": 254,
+      "line_count": 257,
       "keywords": [
         "patterns",
         "mcp",
@@ -1193,7 +1193,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Multi-task command syntax and parallel processing patterns",
-      "line_count": 522,
+      "line_count": 674,
       "keywords": [
         "patterns",
         "multi-task",
@@ -1220,7 +1220,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Postflight control flow patterns",
-      "line_count": 265,
+      "line_count": 275,
       "keywords": [
         "patterns",
         "postflight",
@@ -1264,7 +1264,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Skill lifecycle management pattern",
-      "line_count": 165,
+      "line_count": 196,
       "keywords": [
         "patterns",
         "skill",
@@ -1310,7 +1310,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Thin wrapper skill pattern for delegation",
-      "line_count": 184,
+      "line_count": 258,
       "keywords": [
         "patterns",
         "skill",
@@ -1336,7 +1336,7 @@
       "domain": "core",
       "subdomain": "processes",
       "summary": "Implementation phase workflow details",
-      "line_count": 576,
+      "line_count": 574,
       "keywords": [
         "process",
         "implementation",
@@ -1360,7 +1360,7 @@
       "domain": "core",
       "subdomain": "processes",
       "summary": "Planning phase workflow details",
-      "line_count": 540,
+      "line_count": 539,
       "keywords": [
         "process",
         "planning",
@@ -1384,7 +1384,7 @@
       "domain": "core",
       "subdomain": "processes",
       "summary": "Research phase workflow details",
-      "line_count": 628,
+      "line_count": 564,
       "keywords": [
         "process",
         "research",
@@ -1450,7 +1450,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Reference documentation index",
-      "line_count": 29,
+      "line_count": 32,
       "keywords": [
         "reference",
         "readme",
@@ -1471,7 +1471,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Mapping of skills to agents",
-      "line_count": 156,
+      "line_count": 161,
       "keywords": [
         "reference",
         "skill",
@@ -1496,7 +1496,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Schema for state.json and TODO.md",
-      "line_count": 352,
+      "line_count": 428,
       "keywords": [
         "reference",
         "state",
@@ -1566,7 +1566,7 @@
       "domain": "core",
       "subdomain": "repo",
       "summary": "Project-specific repository overview",
-      "line_count": 144,
+      "line_count": 70,
       "keywords": [
         "repo",
         "project",
@@ -1587,7 +1587,7 @@
       "domain": "core",
       "subdomain": "repo",
       "summary": "Self-healing system implementation details",
-      "line_count": 599,
+      "line_count": 594,
       "keywords": [
         "repo",
         "self-healing",
@@ -1612,7 +1612,7 @@
       "domain": "core",
       "subdomain": "repo",
       "summary": "Guide for updating project overview",
-      "line_count": 142,
+      "line_count": 154,
       "keywords": [
         "repo",
         "update",
@@ -1636,7 +1636,7 @@
       "domain": "core",
       "subdomain": "root",
       "summary": "Quick routing reference",
-      "line_count": 43,
+      "line_count": 42,
       "keywords": [
         "routing",
         "reference"
@@ -1657,7 +1657,7 @@
       "domain": "core",
       "subdomain": "schemas",
       "summary": "Draft-07 JSON Schema for a single specs/events.jsonl line",
-      "line_count": 70,
+      "line_count": 78,
       "keywords": [
         "events",
         "schema",
@@ -1787,7 +1787,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "CI/CD workflow standards",
-      "line_count": 144,
+      "line_count": 140,
       "keywords": [
         "standards",
         "ci",
@@ -1833,7 +1833,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Documentation standards: formatting, naming, README requirements, prohibited content",
-      "line_count": 300,
+      "line_count": 360,
       "keywords": [
         "standards",
         "documentation",
@@ -1955,7 +1955,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Tool restrictions in postflight phase",
-      "line_count": 202,
+      "line_count": 205,
       "keywords": [
         "standards",
         "postflight",
@@ -2005,7 +2005,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Task status marker conventions",
-      "line_count": 373,
+      "line_count": 379,
       "keywords": [
         "standards",
         "status",
@@ -2032,7 +2032,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Task management standards",
-      "line_count": 375,
+      "line_count": 372,
       "keywords": [
         "standards",
         "task",
@@ -2080,7 +2080,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "XML structure standards for prompts",
-      "line_count": 709,
+      "line_count": 707,
       "keywords": [
         "standards",
         "xml",
@@ -2106,7 +2106,7 @@
       "domain": "core",
       "subdomain": "templates",
       "summary": "Template for creating new agents",
-      "line_count": 334,
+      "line_count": 114,
       "keywords": [
         "template",
         "agent"
@@ -2131,7 +2131,7 @@
       "domain": "core",
       "subdomain": "templates",
       "summary": "Template for creating new commands",
-      "line_count": 135,
+      "line_count": 134,
       "keywords": [
         "template",
         "command"
@@ -2231,7 +2231,7 @@
       "domain": "core",
       "subdomain": "templates",
       "summary": "Template for creating subagents",
-      "line_count": 223,
+      "line_count": 58,
       "keywords": [
         "template",
         "subagent"
@@ -2256,7 +2256,7 @@
       "domain": "core",
       "subdomain": "templates",
       "summary": "Template for thin wrapper skills",
-      "line_count": 273,
+      "line_count": 275,
       "keywords": [
         "template",
         "skill",
@@ -2282,7 +2282,7 @@
       "domain": "core",
       "subdomain": "troubleshooting",
       "summary": "Troubleshooting workflow interruptions",
-      "line_count": 337,
+      "line_count": 339,
       "keywords": [
         "troubleshooting",
         "workflow",
@@ -2328,7 +2328,7 @@
       "domain": "core",
       "subdomain": "workflows",
       "summary": "Complete command lifecycle documentation",
-      "line_count": 452,
+      "line_count": 440,
       "keywords": [
         "workflows",
         "command",
@@ -2352,7 +2352,7 @@
       "domain": "core",
       "subdomain": "workflows",
       "summary": "Preflight and postflight workflow details",
-      "line_count": 589,
+      "line_count": 593,
       "keywords": [
         "workflows",
         "preflight",
@@ -2483,7 +2483,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H2 anti-analysis contract: read budget enforcement, forbidden conclusions, defect bar, settled-design preamble protocol",
-      "line_count": 68,
+      "line_count": 111,
       "keywords": [
         "anti-analysis",
         "read-budget",
@@ -2562,7 +2562,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Fix-forward recovery contract: disambiguates 'reach green'/'restore green' as fix-forward-only, and defines the 3-rung Recovery Ladder (fix forward -> strategic-sorry skeleton -> snapshot-then-smallest-scope-rollback)",
-      "line_count": 82,
+      "line_count": 87,
       "keywords": [
         "fix-forward",
         "recovery-ladder",
@@ -2647,7 +2647,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Depth-first phase-closure contract: close one phase entirely before opening the next, order remaining phases cheapest-closure-first, stop at a closed phase boundary rather than opening a phase that cannot finish; applies in BOTH standard and hard mode",
-      "line_count": 104,
+      "line_count": 107,
       "keywords": [
         "depth-first",
         "phase-closure",
@@ -2676,7 +2676,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Per-item pre-edit verification gate: cheap, blast-radius-proportionate evidence (reference count, build probe, definition lookup) required before applying any item from a mechanically-generated list; failed probes route to Reasoned Exclusions; applies in BOTH standard and hard mode",
-      "line_count": 104,
+      "line_count": 107,
       "keywords": [
         "pre-edit",
         "verification-gate",
@@ -2705,7 +2705,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H9 wrap-up and handoff contract: orchestrator handoff JSON schema, continuation markdown, incremental commit discipline",
-      "line_count": 94,
+      "line_count": 147,
       "keywords": [
         "wrap-up",
         "handoff",
@@ -2733,7 +2733,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "States that <leader>al deployment/regeneration has no headless/CI equivalent -- vim.fn.confirm() is unconditional and execute_sync is unexported",
-      "line_count": 47,
+      "line_count": 149,
       "keywords": [
         "regeneration",
         "deploy",
@@ -2762,7 +2762,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
-      "line_count": 360,
+      "line_count": 733,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -2789,7 +2789,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Directory-prefix overlap algorithm shared by file_scope collision admission and creation-time serializing edges",
-      "line_count": 130,
+      "line_count": 194,
       "keywords": [
         "patterns",
         "file-scope",
@@ -2816,7 +2816,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Declared orchestrator-critical paths and scope roots driving the self-modification defer verdict",
-      "line_count": 46,
+      "line_count": 50,
       "keywords": [
         "reference",
         "orchestrate",

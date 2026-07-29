@@ -4,7 +4,7 @@
       "path": "project/logic/README.md",
       "summary": "Logic context index and terminology conventions",
       "category": "index",
-      "line_count": 40,
+      "line_count": 60,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -22,7 +22,7 @@
       "path": "project/logic/domain/kripke-semantics-overview.md",
       "summary": "Kripke frame semantics for modal logic",
       "category": "domain",
-      "line_count": 80,
+      "line_count": 76,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -46,7 +46,7 @@
       "path": "project/logic/domain/metalogic-concepts.md",
       "summary": "Soundness, completeness, and decidability for modal logic",
       "category": "domain",
-      "line_count": 150,
+      "line_count": 133,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -70,7 +70,7 @@
       "path": "project/logic/domain/proof-theory-concepts.md",
       "summary": "Proof-theoretic concepts: axioms, inference rules, sequent calculus",
       "category": "domain",
-      "line_count": 120,
+      "line_count": 109,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -94,7 +94,7 @@
       "path": "project/logic/domain/bilateral-propositions.md",
       "summary": "Bilateral propositions with exact verifiers and falsifiers",
       "category": "domain",
-      "line_count": 100,
+      "line_count": 113,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -118,7 +118,7 @@
       "path": "project/logic/domain/bilateral-semantics.md",
       "summary": "Bilateral semantics framework for verifiers and falsifiers",
       "category": "domain",
-      "line_count": 90,
+      "line_count": 97,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -142,7 +142,7 @@
       "path": "project/logic/domain/counterfactual-semantics.md",
       "summary": "Counterfactual conditional semantics with exact verification",
       "category": "domain",
-      "line_count": 100,
+      "line_count": 92,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -166,7 +166,7 @@
       "path": "project/logic/domain/lattice-theory-concepts.md",
       "summary": "Lattice structures in logical semantics",
       "category": "domain",
-      "line_count": 80,
+      "line_count": 101,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -190,7 +190,7 @@
       "path": "project/logic/domain/mereology-foundations.md",
       "summary": "Part-whole relations for state spaces and truthmaker semantics",
       "category": "domain",
-      "line_count": 90,
+      "line_count": 104,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -214,7 +214,7 @@
       "path": "project/logic/domain/spatial-domain.md",
       "summary": "Spatial logic with region connection calculus",
       "category": "domain",
-      "line_count": 80,
+      "line_count": 90,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -238,7 +238,7 @@
       "path": "project/logic/domain/task-semantics.md",
       "summary": "Task-based model-theoretic framework combining modal and temporal logic",
       "category": "domain",
-      "line_count": 100,
+      "line_count": 92,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -262,7 +262,7 @@
       "path": "project/logic/domain/topological-foundations-domain.md",
       "summary": "Topological semantics for modal and intuitionistic logic",
       "category": "domain",
-      "line_count": 100,
+      "line_count": 126,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -286,7 +286,7 @@
       "path": "project/logic/processes/modal-proof-strategies.md",
       "summary": "Strategies and patterns for modal logic proofs",
       "category": "processes",
-      "line_count": 100,
+      "line_count": 150,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -310,7 +310,7 @@
       "path": "project/logic/processes/temporal-proof-strategies.md",
       "summary": "Strategies for temporal logic proofs",
       "category": "processes",
-      "line_count": 100,
+      "line_count": 150,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -334,7 +334,7 @@
       "path": "project/logic/processes/proof-construction.md",
       "summary": "General workflow for constructing formal proofs",
       "category": "processes",
-      "line_count": 80,
+      "line_count": 145,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -357,7 +357,7 @@
       "path": "project/logic/processes/verification-workflow.md",
       "summary": "Workflow for verifying logical properties",
       "category": "processes",
-      "line_count": 80,
+      "line_count": 131,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -380,7 +380,7 @@
       "path": "project/logic/standards/proof-conventions.md",
       "summary": "Canonical proof style conventions for modal and temporal logic",
       "category": "standards",
-      "line_count": 80,
+      "line_count": 128,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -398,7 +398,7 @@
       "path": "project/logic/standards/notation-standards.md",
       "summary": "Notation standards for modal and temporal logic formulas",
       "category": "standards",
-      "line_count": 80,
+      "line_count": 103,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -416,7 +416,7 @@
       "path": "project/logic/standards/naming-conventions.md",
       "summary": "Naming standards for identifiers in logic formalization",
       "category": "standards",
-      "line_count": 60,
+      "line_count": 130,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -434,7 +434,7 @@
       "path": "project/math/README.md",
       "summary": "Math context index with subdirectory descriptions",
       "category": "index",
-      "line_count": 30,
+      "line_count": 57,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -452,7 +452,7 @@
       "path": "project/math/algebra/groups-and-monoids.md",
       "summary": "Group and monoid structures with Lean 4 definitions",
       "category": "domain",
-      "line_count": 100,
+      "line_count": 141,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -476,7 +476,7 @@
       "path": "project/math/algebra/rings-and-fields.md",
       "summary": "Ring and field structures with Lean 4 definitions",
       "category": "domain",
-      "line_count": 100,
+      "line_count": 145,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -500,7 +500,7 @@
       "path": "project/math/lattice-theory/lattices.md",
       "summary": "Lattice definitions, theorems, and Mathlib patterns",
       "category": "domain",
-      "line_count": 150,
+      "line_count": 148,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -525,7 +525,7 @@
       "path": "project/math/lattice-theory/bilattice-theory.md",
       "summary": "Bilattice structures for multi-valued logic",
       "category": "domain",
-      "line_count": 90,
+      "line_count": 141,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -548,7 +548,7 @@
       "path": "project/math/order-theory/partial-orders.md",
       "summary": "Partial orders, well-foundedness, and order-preserving maps",
       "category": "domain",
-      "line_count": 120,
+      "line_count": 159,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -572,7 +572,7 @@
       "path": "project/math/order-theory/monoidal-posets.md",
       "summary": "Monoidal posets for resource semantics",
       "category": "domain",
-      "line_count": 80,
+      "line_count": 121,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -596,7 +596,7 @@
       "path": "project/math/topology/topological-spaces.md",
       "summary": "Topological space definitions and properties",
       "category": "domain",
-      "line_count": 150,
+      "line_count": 163,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -620,7 +620,7 @@
       "path": "project/math/topology/scott-topology.md",
       "summary": "Scott topology for domain theory",
       "category": "domain",
-      "line_count": 100,
+      "line_count": 132,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -644,7 +644,7 @@
       "path": "project/math/category-theory/basics.md",
       "summary": "Category theory fundamentals: categories, functors, natural transformations",
       "category": "domain",
-      "line_count": 120,
+      "line_count": 154,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -668,7 +668,7 @@
       "path": "project/math/category-theory/monoidal-categories.md",
       "summary": "Monoidal categories and tensor products",
       "category": "domain",
-      "line_count": 100,
+      "line_count": 139,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -692,7 +692,7 @@
       "path": "project/math/category-theory/enriched-categories.md",
       "summary": "Categories enriched over monoidal categories",
       "category": "domain",
-      "line_count": 100,
+      "line_count": 127,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -715,7 +715,7 @@
       "path": "project/math/category-theory/lawvere-metric-spaces.md",
       "summary": "Metric spaces as enriched categories",
       "category": "domain",
-      "line_count": 90,
+      "line_count": 125,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -739,7 +739,7 @@
       "path": "project/math/category-theory/cauchy-completion.md",
       "summary": "Cauchy completion for enriched categories",
       "category": "domain",
-      "line_count": 80,
+      "line_count": 135,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -762,7 +762,7 @@
       "path": "project/math/category-theory/profunctors.md",
       "summary": "Profunctors as generalized relations between categories",
       "category": "domain",
-      "line_count": 100,
+      "line_count": 165,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -785,7 +785,7 @@
       "path": "project/math/foundations/dependent-type-theory.md",
       "summary": "Dependent type theory foundations for Lean 4",
       "category": "domain",
-      "line_count": 150,
+      "line_count": 193,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -810,7 +810,7 @@
       "path": "project/physics/README.md",
       "summary": "Physics context index for dynamical systems",
       "category": "index",
-      "line_count": 30,
+      "line_count": 39,
       "load_when": {
         "agents": [
           "physics-research-agent",
@@ -854,7 +854,7 @@
       "path": "project/logic/domain/modal-logic-extensions.md",
       "summary": "Extensions of modal logic: multi-modal, hybrid, and dynamic logics",
       "category": "domain",
-      "line_count": 100,
+      "line_count": 103,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -878,7 +878,7 @@
       "path": "project/logic/domain/proof-theory-basics.md",
       "summary": "Foundational proof theory concepts and techniques",
       "category": "domain",
-      "line_count": 100,
+      "line_count": 136,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -902,7 +902,7 @@
       "path": "project/logic/domain/temporal-logic-patterns.md",
       "summary": "Temporal logic patterns for specification and verification",
       "category": "domain",
-      "line_count": 100,
+      "line_count": 115,
       "load_when": {
         "agents": [
           "logic-research-agent",
@@ -927,7 +927,7 @@
       "path": "project/math/category-theory/adjunctions.md",
       "summary": "Adjoint functors and universal properties",
       "category": "domain",
-      "line_count": 120,
+      "line_count": 98,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -952,7 +952,7 @@
       "path": "project/math/category-theory/category-basics.md",
       "summary": "Basic category theory definitions and examples",
       "category": "domain",
-      "line_count": 100,
+      "line_count": 68,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -976,7 +976,7 @@
       "path": "project/math/category-theory/functors-natural-transformations.md",
       "summary": "Functors and natural transformations between categories",
       "category": "domain",
-      "line_count": 120,
+      "line_count": 83,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -1000,7 +1000,7 @@
       "path": "project/math/category-theory/limits-colimits.md",
       "summary": "Limits and colimits in category theory",
       "category": "domain",
-      "line_count": 120,
+      "line_count": 90,
       "load_when": {
         "agents": [
           "math-research-agent",
@@ -1025,7 +1025,7 @@
       "path": "project/math/foundations/set-theory-foundations.md",
       "summary": "Set-theoretic foundations and ZFC axioms",
       "category": "domain",
-      "line_count": 100,
+      "line_count": 98,
       "load_when": {
         "agents": [
           "math-research-agent",

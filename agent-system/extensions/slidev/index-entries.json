@@ -3,7 +3,7 @@
     {
       "path": "project/slidev/animation/fade-in.md",
       "summary": "CSS fade entrance via v-click opacity transition",
-      "line_count": 44,
+      "line_count": 43,
       "load_when": {
         "agents": ["deck-planner-agent", "deck-builder-agent", "slidev-assembly-agent", "slide-planner-agent", "slide-critic-agent"],
         "commands": ["/deck", "/slides"]
@@ -14,7 +14,7 @@
     {
       "path": "project/slidev/animation/slide-in-below.md",
       "summary": "v-motion y-axis entrance with optional spring physics",
-      "line_count": 50,
+      "line_count": 48,
       "load_when": {
         "agents": ["deck-planner-agent", "deck-builder-agent", "slidev-assembly-agent", "slide-planner-agent", "slide-critic-agent"],
         "commands": ["/deck", "/slides"]
@@ -25,7 +25,7 @@
     {
       "path": "project/slidev/animation/metric-cascade.md",
       "summary": "Staggered v-motion entrance for KPI slides with scale and opacity",
-      "line_count": 60,
+      "line_count": 57,
       "load_when": {
         "agents": ["deck-planner-agent", "deck-builder-agent", "slidev-assembly-agent", "slide-planner-agent", "slide-critic-agent"],
         "commands": ["/deck", "/slides"]
@@ -36,7 +36,7 @@
     {
       "path": "project/slidev/animation/rough-marks.md",
       "summary": "v-mark emphasis patterns for hand-drawn style text highlighting",
-      "line_count": 55,
+      "line_count": 48,
       "load_when": {
         "agents": ["deck-planner-agent", "deck-builder-agent", "slidev-assembly-agent", "slide-planner-agent", "slide-critic-agent"],
         "commands": ["/deck", "/slides"]
@@ -47,7 +47,7 @@
     {
       "path": "project/slidev/animation/staggered-list.md",
       "summary": "v-clicks with depth and every parameters for progressive list reveal",
-      "line_count": 40,
+      "line_count": 65,
       "load_when": {
         "agents": ["deck-planner-agent", "deck-builder-agent", "slidev-assembly-agent", "slide-planner-agent", "slide-critic-agent"],
         "commands": ["/deck", "/slides"]
@@ -58,7 +58,7 @@
     {
       "path": "project/slidev/animation/scale-in-pop.md",
       "summary": "v-motion spring scale entrance for CTAs and emphasis elements",
-      "line_count": 50,
+      "line_count": 54,
       "load_when": {
         "agents": ["deck-planner-agent", "deck-builder-agent", "slidev-assembly-agent", "slide-planner-agent", "slide-critic-agent"],
         "commands": ["/deck", "/slides"]
@@ -69,7 +69,7 @@
     {
       "path": "project/slidev/style/colors/light-blue-corp.css",
       "summary": "White background with blue/navy accents color variables",
-      "line_count": 30,
+      "line_count": 13,
       "load_when": {
         "agents": ["deck-planner-agent", "deck-builder-agent", "slidev-assembly-agent", "slide-planner-agent", "slide-critic-agent"],
         "commands": ["/deck", "/slides"]
@@ -80,7 +80,7 @@
     {
       "path": "project/slidev/style/colors/dark-blue-navy.css",
       "summary": "Navy background with blue accents color variables",
-      "line_count": 30,
+      "line_count": 13,
       "load_when": {
         "agents": ["deck-planner-agent", "deck-builder-agent", "slidev-assembly-agent", "slide-planner-agent", "slide-critic-agent"],
         "commands": ["/deck", "/slides"]
@@ -91,7 +91,7 @@
     {
       "path": "project/slidev/style/colors/dark-gold-premium.css",
       "summary": "Near-black background with gold accents color variables",
-      "line_count": 30,
+      "line_count": 13,
       "load_when": {
         "agents": ["deck-planner-agent", "deck-builder-agent", "slidev-assembly-agent", "slide-planner-agent", "slide-critic-agent"],
         "commands": ["/deck", "/slides"]
@@ -102,7 +102,7 @@
     {
       "path": "project/slidev/style/colors/light-green-growth.css",
       "summary": "Mint/white background with green accents color variables",
-      "line_count": 30,
+      "line_count": 13,
       "load_when": {
         "agents": ["deck-planner-agent", "deck-builder-agent", "slidev-assembly-agent", "slide-planner-agent", "slide-critic-agent"],
         "commands": ["/deck", "/slides"]
@@ -113,7 +113,7 @@
     {
       "path": "project/slidev/style/typography/montserrat-inter.css",
       "summary": "Montserrat headings with Inter body text",
-      "line_count": 25,
+      "line_count": 24,
       "load_when": {
         "agents": ["deck-planner-agent", "deck-builder-agent", "slidev-assembly-agent", "slide-planner-agent", "slide-critic-agent"],
         "commands": ["/deck", "/slides"]
@@ -124,7 +124,7 @@
     {
       "path": "project/slidev/style/typography/playfair-inter.css",
       "summary": "Playfair Display serif headings with Inter body text",
-      "line_count": 25,
+      "line_count": 24,
       "load_when": {
         "agents": ["deck-planner-agent", "deck-builder-agent", "slidev-assembly-agent", "slide-planner-agent", "slide-critic-agent"],
         "commands": ["/deck", "/slides"]
@@ -135,7 +135,7 @@
     {
       "path": "project/slidev/style/typography/inter-only.css",
       "summary": "All-sans clean look using Inter for everything",
-      "line_count": 20,
+      "line_count": 25,
       "load_when": {
         "agents": ["deck-planner-agent", "deck-builder-agent", "slidev-assembly-agent", "slide-planner-agent", "slide-critic-agent"],
         "commands": ["/deck", "/slides"]
@@ -146,7 +146,7 @@
     {
       "path": "project/slidev/style/textures/grid-overlay.css",
       "summary": "Subtle grid background for technical/structured feel",
-      "line_count": 25,
+      "line_count": 16,
       "load_when": {
         "agents": ["deck-planner-agent", "deck-builder-agent", "slidev-assembly-agent", "slide-planner-agent", "slide-critic-agent"],
         "commands": ["/deck", "/slides"]
@@ -157,7 +157,7 @@
     {
       "path": "project/slidev/style/textures/noise-grain.css",
       "summary": "Film grain SVG overlay for premium/editorial feel",
-      "line_count": 30,
+      "line_count": 20,
       "load_when": {
         "agents": ["deck-planner-agent", "deck-builder-agent", "slidev-assembly-agent", "slide-planner-agent", "slide-critic-agent"],
         "commands": ["/deck", "/slides"]

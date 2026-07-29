@@ -31,7 +31,7 @@
         ],
         "commands": []
       },
-      "line_count": 335,
+      "line_count": 385,
       "domain": "project",
       "subdomain": "email",
       "summary": "Frozen wrapper contract summary for the five email agent tools, ground-truth verified"
@@ -67,7 +67,7 @@
         ],
         "commands": []
       },
-      "line_count": 78,
+      "line_count": 98,
       "domain": "project",
       "subdomain": "email",
       "summary": "Risk rationale and extra-caution gates for archive-scope (All Mail) email operations"

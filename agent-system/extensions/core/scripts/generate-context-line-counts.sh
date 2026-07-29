@@ -21,8 +21,24 @@
 # `wc -l`. A missing source file is always reported as a problem, never silently skipped and
 # never written as null.
 #
-# Every field other than `line_count` is left untouched; jq's `.[$i].line_count = $n` in-place
-# update preserves key order and all other values exactly.
+# NOTE on the "null" class: for six extensions (cslib, latex, lean, python, typst, z3) the
+# `line_count` KEY is entirely absent from every entry, not merely set to a JSON `null` value --
+# `jq -r '.line_count'` reports the text "null" for both cases indistinguishably, and this
+# script's --check-mode census (and the research it is grounded in) reports both under the same
+# "null" count for that reason. --write mode distinguishes the two internally: a present-but-
+# wrong value is corrected by replacing that line; an absent key is corrected by INSERTING a new
+# `"line_count": N,` line immediately after the entry's `"path"` line (which is always present
+# and always the first field of every entry in every extension observed in this codebase).
+#
+# Every field other than `line_count` is left untouched. --write mode deliberately does NOT
+# round-trip the file through `jq`'s pretty-printer: extension index-entries.json files use
+# inconsistent array-formatting conventions (some compact single-line arrays, some one-element-
+# per-line), and re-serializing the whole document through jq would silently reformat every
+# array in the file, not just the changed line_count values -- a whitespace-only churn that
+# would defeat "only line_count values changed" diff review. Instead, --write performs a
+# surgical, line-oriented text substitution with awk, tracking the entry's `"path"` line (unique
+# per entry within a file) to know which entry a given line_count replacement or insertion
+# belongs to.
 
 set -uo pipefail
 
@@ -77,12 +93,17 @@ for index_file in "$EXT_DIR"/*/index-entries.json; do
   ext_exact=0
   ext_changed=0
 
-  # Working copy of the file's entries, updated in place across the loop when --write is active.
-  updated_json="$(cat "$index_file")"
+  # Two TSVs of path<TAB>corrected-value: one for entries that already have a line_count key
+  # (replace that line's value), one for entries where the key is entirely absent (insert a new
+  # line after the entry's "path" line). Consumed by the awk pass below in --write mode; unused
+  # in --check mode.
+  replace_tsv="$(mktemp)"
+  insert_tsv="$(mktemp)"
 
   for ((i = 0; i < entry_count; i++)); do
     TOTAL_ENTRIES=$((TOTAL_ENTRIES + 1))
     path=$(jq -r ".entries[$i].path" "$index_file")
+    has_key=$(jq -r ".entries[$i] | has(\"line_count\")" "$index_file")
     declared=$(jq -r ".entries[$i].line_count" "$index_file")
     full_path="$context_dir/$path"
 
@@ -99,7 +120,11 @@ for index_file in "$EXT_DIR"/*/index-entries.json; do
     if [[ "$declared" == "null" ]]; then
       ext_null=$((ext_null + 1))
       TOTAL_NULL=$((TOTAL_NULL + 1))
-      info "$ext_name: '$path' line_count is null, actual $actual"
+      if [[ "$has_key" == "true" ]]; then
+        info "$ext_name: '$path' line_count is null, actual $actual"
+      else
+        info "$ext_name: '$path' line_count key absent, actual $actual"
+      fi
     elif [[ "$declared" != "$actual" ]]; then
       ext_mismatch=$((ext_mismatch + 1))
       TOTAL_MISMATCH=$((TOTAL_MISMATCH + 1))
@@ -111,15 +136,57 @@ for index_file in "$EXT_DIR"/*/index-entries.json; do
     fi
 
     if [[ "$MODE" == "write" ]]; then
-      updated_json=$(jq --argjson i "$i" --argjson n "$actual" '.entries[$i].line_count = $n' <<< "$updated_json")
+      if [[ "$has_key" == "true" ]]; then
+        printf '%s\t%s\n' "$path" "$actual" >> "$replace_tsv"
+      else
+        printf '%s\t%s\n' "$path" "$actual" >> "$insert_tsv"
+      fi
       ext_changed=$((ext_changed + 1))
       TOTAL_CHANGED=$((TOTAL_CHANGED + 1))
     fi
   done
 
   if [[ "$MODE" == "write" && "$ext_changed" -gt 0 ]]; then
-    printf '%s\n' "$updated_json" > "$index_file"
+    tmp_out="$(mktemp)"
+    awk -v replace_file="$replace_tsv" -v insert_file="$insert_tsv" '
+      BEGIN {
+        while ((getline line < replace_file) > 0) {
+          split(line, a, "\t")
+          rep[a[1]] = a[2]
+        }
+        close(replace_file)
+        while ((getline line < insert_file) > 0) {
+          split(line, a, "\t")
+          ins[a[1]] = a[2]
+        }
+        close(insert_file)
+      }
+      {
+        line = $0
+        if (match(line, /"path": *"/)) {
+          tmp = line
+          sub(/^.*"path": *"/, "", tmp)
+          sub(/".*$/, "", tmp)
+          curpath = tmp
+          print line
+          if (curpath in ins) {
+            indent = line
+            sub(/[^ ].*$/, "", indent)
+            print indent "\"line_count\": " ins[curpath] ","
+          }
+          next
+        }
+        if ((curpath in rep) && match(line, /"line_count": *(null|[0-9]+)/)) {
+          prefix = substr(line, 1, RSTART - 1)
+          rest = substr(line, RSTART + RLENGTH)
+          line = prefix "\"line_count\": " rep[curpath] rest
+        }
+        print line
+      }
+    ' "$index_file" > "$tmp_out"
+    mv "$tmp_out" "$index_file"
   fi
+  rm -f "$replace_tsv" "$insert_tsv"
 
   echo "$ext_name: $entry_count entries, $ext_exact exact, $ext_mismatch mismatch, $ext_null null, $ext_missing missing source$( [[ "$MODE" == "write" ]] && echo ", $ext_changed changed" )"
 done

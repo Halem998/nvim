@@ -7,7 +7,7 @@
       "topics": ["grant", "proposal", "funding", "research"],
       "keywords": ["grant", "proposal", "funder", "budget"],
       "summary": "Grant writing domain overview and extension capabilities",
-      "line_count": 120,
+      "line_count": 126,
       "load_when": {
         "languages": ["present"],
         "agents": ["grant-agent"],
@@ -21,7 +21,7 @@
       "topics": ["funders", "ai-safety", "sbir", "nsf", "nih", "foundations"],
       "keywords": ["funder", "foundation", "federal", "open-philanthropy", "sff", "ltff"],
       "summary": "Funder categories including AI Safety, SBIR, Foundation, and Academic funders",
-      "line_count": 95,
+      "line_count": 93,
       "load_when": {
         "languages": ["present"],
         "agents": ["grant-agent"],
@@ -35,7 +35,7 @@
       "topics": ["proposal", "sections", "executive-summary", "budget", "evaluation"],
       "keywords": ["proposal", "narrative", "budget", "timeline", "evaluation"],
       "summary": "Standard grant proposal sections with purpose and content guidance",
-      "line_count": 140,
+      "line_count": 195,
       "load_when": {
         "languages": ["present"],
         "agents": ["grant-agent"],
@@ -49,7 +49,7 @@
       "topics": ["terminology", "definitions", "acronyms", "federal"],
       "keywords": ["terminology", "glossary", "definitions", "acronyms", "cfda", "sam"],
       "summary": "Key grant writing terms, definitions, and common acronyms",
-      "line_count": 110,
+      "line_count": 122,
       "load_when": {
         "languages": ["present"],
         "agents": ["grant-agent"],
@@ -63,7 +63,7 @@
       "topics": ["structure", "organization", "sections", "formatting"],
       "keywords": ["structure", "outline", "sections", "nsf", "nih", "foundation"],
       "summary": "Proposal structural patterns by funder type with section hierarchy",
-      "line_count": 165,
+      "line_count": 246,
       "load_when": {
         "languages": ["present"],
         "agents": ["grant-agent"],
@@ -77,7 +77,7 @@
       "topics": ["budget", "personnel", "travel", "equipment", "indirect"],
       "keywords": ["budget", "justification", "personnel", "fringe", "indirect", "mtdc"],
       "summary": "Budget formats and justification templates for NSF, NIH, SBIR, Foundation",
-      "line_count": 210,
+      "line_count": 279,
       "load_when": {
         "languages": ["present"],
         "agents": ["grant-agent"],
@@ -91,7 +91,7 @@
       "topics": ["evaluation", "logic-model", "outcomes", "indicators", "measurement"],
       "keywords": ["evaluation", "logic-model", "outcomes", "indicators", "process", "impact"],
       "summary": "Evaluation frameworks including logic models and measurement approaches",
-      "line_count": 175,
+      "line_count": 271,
       "load_when": {
         "languages": ["present"],
         "agents": ["grant-agent"],
@@ -105,7 +105,7 @@
       "topics": ["narrative", "writing", "impact", "problem-framing"],
       "keywords": ["narrative", "impact", "active-voice", "specificity", "evidence"],
       "summary": "Writing patterns for impact statements, problem framing, and persuasion",
-      "line_count": 145,
+      "line_count": 271,
       "load_when": {
         "languages": ["present"],
         "agents": ["grant-agent"],
@@ -119,7 +119,7 @@
       "topics": ["writing", "style", "voice", "formatting"],
       "keywords": ["writing", "style", "active-voice", "formatting", "consistency"],
       "summary": "Grant writing style guide covering voice, precision, and formatting",
-      "line_count": 135,
+      "line_count": 256,
       "load_when": {
         "languages": ["present"],
         "agents": ["grant-agent"],
@@ -133,7 +133,7 @@
       "topics": ["limits", "character-count", "page-limits", "formatting"],
       "keywords": ["character-limit", "page-limit", "nsf", "nih", "sbir", "word-count"],
       "summary": "Funder-specific character and page limits for proposal sections",
-      "line_count": 115,
+      "line_count": 202,
       "load_when": {
         "languages": ["present"],
         "agents": ["grant-agent"],
@@ -147,7 +147,7 @@
       "topics": ["executive-summary", "abstract", "template"],
       "keywords": ["executive-summary", "abstract", "overview", "template", "ai-safety"],
       "summary": "Executive summary templates for Foundation, Research, AI Safety, SBIR",
-      "line_count": 155,
+      "line_count": 226,
       "load_when": {
         "languages": ["present"],
         "agents": ["grant-agent"],
@@ -161,7 +161,7 @@
       "topics": ["budget", "justification", "personnel", "equipment", "travel"],
       "keywords": ["budget", "justification", "personnel", "fringe", "equipment", "travel"],
       "summary": "Budget justification templates for all standard cost categories",
-      "line_count": 200,
+      "line_count": 295,
       "load_when": {
         "languages": ["present"],
         "agents": ["grant-agent"],
@@ -175,7 +175,7 @@
       "topics": ["evaluation", "plan", "logic-model", "data-collection"],
       "keywords": ["evaluation", "plan", "logic-model", "indicators", "data-collection"],
       "summary": "Evaluation plan templates with logic model and data collection guidance",
-      "line_count": 180,
+      "line_count": 273,
       "load_when": {
         "languages": ["present"],
         "agents": ["grant-agent"],
@@ -189,7 +189,7 @@
       "topics": ["checklist", "submission", "compliance", "attachments"],
       "keywords": ["checklist", "submission", "nsf", "nih", "sbir", "foundation"],
       "summary": "Pre-submission verification checklists for federal and foundation grants",
-      "line_count": 175,
+      "line_count": 305,
       "load_when": {
         "languages": ["present"],
         "agents": ["grant-agent"],
@@ -203,7 +203,7 @@
       "topics": ["research", "funders", "990", "databases", "due-diligence"],
       "keywords": ["funder", "research", "990", "database", "candid", "grants-gov"],
       "summary": "Systematic funder research process with tracking templates",
-      "line_count": 165,
+      "line_count": 260,
       "load_when": {
         "languages": ["present"],
         "agents": ["grant-agent"],
@@ -231,7 +231,7 @@
       "topics": ["resources", "databases", "tools", "training"],
       "keywords": ["resources", "grants-gov", "candid", "nsf", "nih", "training"],
       "summary": "Curated list of grant research databases, writing tools, and training",
-      "line_count": 125,
+      "line_count": 223,
       "load_when": {
         "languages": ["present"],
         "agents": ["grant-agent"],
@@ -371,7 +371,7 @@
       "topics": ["slidev", "pitfalls", "footer", "mermaid", "pdf-export"],
       "keywords": ["slidev", "pitfalls", "footer"],
       "summary": "Slidev implementation gotchas (footer, Mermaid, PDF export, lz-string)",
-      "line_count": 254,
+      "line_count": 253,
       "load_when": {
         "task_types": ["present"],
         "agents": ["slides-research-agent", "slidev-assembly-agent", "slide-planner-agent"],
@@ -385,7 +385,7 @@
       "topics": ["pptx", "python-pptx", "powerpoint", "generation"],
       "keywords": ["pptx", "python-pptx", "powerpoint"],
       "summary": "python-pptx API patterns for PPTX slide creation, theme application, component helpers, speaker notes, and error handling",
-      "line_count": 829,
+      "line_count": 828,
       "load_when": {
         "task_types": ["present"],
         "agents": ["pptx-assembly-agent"],
@@ -399,7 +399,7 @@
       "topics": ["talk", "library", "index", "themes", "patterns"],
       "keywords": ["talk", "library", "index"],
       "summary": "Talk library index with theme, pattern, component, and template registrations",
-      "line_count": 70,
+      "line_count": 68,
       "load_when": {
         "task_types": ["present"],
         "agents": ["slides-research-agent", "pptx-assembly-agent", "slidev-assembly-agent", "slide-planner-agent", "slide-critic-agent"],
@@ -413,7 +413,7 @@
       "topics": ["playwright", "verification", "slides", "testing"],
       "keywords": ["playwright", "verify", "slides"],
       "summary": "Playwright slide verification script for Slidev decks",
-      "line_count": 128,
+      "line_count": 127,
       "load_when": {
         "task_types": ["present"],
         "agents": ["slidev-assembly-agent"],
@@ -441,7 +441,7 @@
       "topics": ["pptx", "generate", "python-pptx", "skeleton"],
       "keywords": ["pptx", "generate", "python-pptx"],
       "summary": "Skeleton PowerPoint generation script with theme-aware helpers",
-      "line_count": 291,
+      "line_count": 290,
       "load_when": {
         "task_types": ["present"],
         "agents": ["pptx-assembly-agent"],
@@ -455,7 +455,7 @@
       "topics": ["pptx", "project", "template", "usage"],
       "keywords": ["pptx", "project", "template"],
       "summary": "PowerPoint generation template usage instructions and component equivalents",
-      "line_count": 84,
+      "line_count": 83,
       "load_when": {
         "task_types": ["present"],
         "agents": ["pptx-assembly-agent"],
@@ -469,7 +469,7 @@
       "topics": ["slidev", "project", "template", "scaffold"],
       "keywords": ["slidev", "project", "template"],
       "summary": "Slidev project scaffold template with pnpm/vite/lz-string configuration",
-      "line_count": 37,
+      "line_count": 36,
       "load_when": {
         "task_types": ["present"],
         "agents": ["slidev-assembly-agent"],

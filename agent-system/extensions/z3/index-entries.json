@@ -2,6 +2,7 @@
   "entries": [
     {
       "path": "project/z3/domain/z3-api.md",
+      "line_count": 107,
       "description": "Z3 Python API reference and examples",
       "tags": [
         "z3",
@@ -23,6 +24,7 @@
     },
     {
       "path": "project/z3/domain/smt-patterns.md",
+      "line_count": 313,
       "description": "SMT-LIB patterns and Z3 tactics",
       "tags": [
         "z3",
@@ -44,6 +46,7 @@
     },
     {
       "path": "project/z3/patterns/constraint-generation.md",
+      "line_count": 118,
       "description": "Constraint building patterns for Z3",
       "tags": [
         "z3",
@@ -64,6 +67,7 @@
     },
     {
       "path": "project/z3/patterns/bitvector-operations.md",
+      "line_count": 303,
       "description": "BitVec state manipulation patterns",
       "tags": [
         "z3",
@@ -84,6 +88,7 @@
     },
     {
       "path": "project/z3/README.md",
+      "line_count": 49,
       "description": "Z3 extension overview and navigation",
       "tags": [
         "z3",

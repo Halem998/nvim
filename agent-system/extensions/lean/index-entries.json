@@ -2,6 +2,7 @@
   "entries": [
     {
       "path": "project/lean4/domain/mathlib-overview.md",
+      "line_count": 90,
       "description": "Mathlib library organization and key modules",
       "tags": [
         "lean4",
@@ -23,6 +24,7 @@
     },
     {
       "path": "project/lean4/domain/dependent-types.md",
+      "line_count": 197,
       "description": "Dependent type theory foundations in Lean 4",
       "tags": [
         "lean4",
@@ -44,6 +46,7 @@
     },
     {
       "path": "project/lean4/domain/key-mathematical-concepts.md",
+      "line_count": 43,
       "description": "Key mathematical concepts in Lean 4 type theory",
       "tags": [
         "lean4",
@@ -64,6 +67,7 @@
     },
     {
       "path": "project/lean4/domain/lean4-syntax.md",
+      "line_count": 126,
       "description": "Advanced Lean 4 syntax and metaprogramming",
       "tags": [
         "lean4",
@@ -85,6 +89,7 @@
     },
     {
       "path": "project/lean4/patterns/tactic-patterns.md",
+      "line_count": 150,
       "description": "Common proof patterns and tactics in Lean 4",
       "tags": [
         "lean4",
@@ -105,6 +110,7 @@
     },
     {
       "path": "project/lean4/standards/lean4-style-guide.md",
+      "line_count": 130,
       "description": "Lean 4 coding style and conventions",
       "tags": [
         "lean4",
@@ -125,6 +131,7 @@
     },
     {
       "path": "project/lean4/standards/proof-conventions-lean.md",
+      "line_count": 55,
       "description": "Lean-specific proof conventions and docstrings",
       "tags": [
         "lean4",
@@ -145,6 +152,7 @@
     },
     {
       "path": "project/lean4/standards/proof-debt-policy.md",
+      "line_count": 134,
       "description": "Sorry and axiom policy for Lean proofs",
       "tags": [
         "lean4",
@@ -165,6 +173,7 @@
     },
     {
       "path": "project/lean4/standards/proof-readability-criteria.md",
+      "line_count": 93,
       "description": "Guidelines for writing readable Lean proofs",
       "tags": [
         "lean4",
@@ -185,6 +194,7 @@
     },
     {
       "path": "project/lean4/standards/literature-fidelity-policy.md",
+      "line_count": 126,
       "description": "Policy for following literature sources vs. deriving from first principles",
       "tags": [
         "lean4",
@@ -207,6 +217,7 @@
     },
     {
       "path": "project/lean4/tools/mcp-tools-guide.md",
+      "line_count": 140,
       "description": "Lean LSP MCP server tools reference",
       "tags": [
         "lean4",
@@ -228,6 +239,7 @@
     },
     {
       "path": "project/lean4/tools/aesop-integration.md",
+      "line_count": 115,
       "description": "Aesop automated theorem prover integration",
       "tags": [
         "lean4",
@@ -248,6 +260,7 @@
     },
     {
       "path": "project/lean4/tools/leansearch-api.md",
+      "line_count": 102,
       "description": "LeanSearch semantic search API integration",
       "tags": [
         "lean4",
@@ -268,6 +281,7 @@
     },
     {
       "path": "project/lean4/tools/loogle-api.md",
+      "line_count": 127,
       "description": "Loogle type pattern search API",
       "tags": [
         "lean4",
@@ -288,6 +302,7 @@
     },
     {
       "path": "project/lean4/tools/lsp-integration.md",
+      "line_count": 155,
       "description": "Lean 4 LSP server integration guide",
       "tags": [
         "lean4",
@@ -308,6 +323,7 @@
     },
     {
       "path": "project/lean4/agents/lean-implementation-flow.md",
+      "line_count": 200,
       "description": "Lean implementation agent execution flow",
       "tags": [
         "lean4",
@@ -328,6 +344,7 @@
     },
     {
       "path": "project/lean4/agents/lean-research-flow.md",
+      "line_count": 186,
       "description": "Lean research agent execution flow",
       "tags": [
         "lean4",
@@ -348,6 +365,7 @@
     },
     {
       "path": "project/lean4/operations/multi-instance-optimization.md",
+      "line_count": 121,
       "description": "Optimizing multiple Lean-LSP instances",
       "tags": [
         "lean4",
@@ -368,6 +386,7 @@
     },
     {
       "path": "project/lean4/processes/end-to-end-proof-workflow.md",
+      "line_count": 65,
       "description": "Complete proof development workflow",
       "tags": [
         "lean4",
@@ -388,6 +407,7 @@
     },
     {
       "path": "project/lean4/processes/project-structure-best-practices.md",
+      "line_count": 87,
       "description": "Lean 4 project organization best practices",
       "tags": [
         "lean4",
@@ -408,6 +428,7 @@
     },
     {
       "path": "project/lean4/templates/definition-template.md",
+      "line_count": 66,
       "description": "Template for Lean 4 definitions",
       "tags": [
         "lean4",
@@ -428,6 +449,7 @@
     },
     {
       "path": "project/lean4/templates/new-file-template.md",
+      "line_count": 75,
       "description": "Template for new Lean 4 files",
       "tags": [
         "lean4",
@@ -448,6 +470,7 @@
     },
     {
       "path": "project/lean4/templates/proof-structure-templates.md",
+      "line_count": 109,
       "description": "Templates for common proof structures",
       "tags": [
         "lean4",
@@ -468,6 +491,7 @@
     },
     {
       "path": "project/lean4/README.md",
+      "line_count": 25,
       "description": "Lean 4 extension overview and navigation",
       "tags": [
         "lean4",
@@ -489,6 +513,7 @@
     },
     {
       "path": "project/lean4/standards/proof-conventions.md",
+      "line_count": 9,
       "description": "Lean proof conventions and best practices",
       "tags": [
         "lean4",
@@ -509,6 +534,7 @@
     },
     {
       "path": "project/lean4/tools/blocked-mcp-tools.md",
+      "line_count": 63,
       "description": "Reference for blocked Lean MCP tools with alternatives",
       "tags": [
         "lean4",
@@ -531,6 +557,7 @@
     },
     {
       "path": "project/lean4/patterns/mcp-fallback-table.md",
+      "line_count": 93,
       "description": "Lean-specific MCP tool fallback strategies",
       "tags": [
         "lean4",
@@ -553,6 +580,7 @@
     },
     {
       "path": "contracts/reference-grounding.md",
+      "line_count": 97,
       "description": "Lean4-specific H3 reference grounding override with 5-column lemma mapping table",
       "tags": [
         "lean4",
@@ -576,6 +604,7 @@
     },
     {
       "path": "contracts/anti-analysis.md",
+      "line_count": 111,
       "description": "Lean4-specific H2 anti-analysis override with formal proof line bar and lean-specific forbidden conclusions",
       "tags": [
         "lean4",
@@ -599,6 +628,7 @@
     },
     {
       "path": "contracts/adversarial-verification.md",
+      "line_count": 93,
       "description": "Lean4 parity copy of the H4 adversarial verification contract (Claim Verification Bar, Confidence Level Taxonomy, Contradiction Resolution Protocol)",
       "tags": [
         "lean4",
@@ -621,6 +651,7 @@
     },
     {
       "path": "contracts/context-hygiene.md",
+      "line_count": 75,
       "description": "Standalone Lean4/CSLib goal-state context hygiene contract: targeted goal queries, bounded file reads, hypothesis pruning",
       "tags": [
         "lean4",
