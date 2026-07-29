@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Tier 2 mechanism — bounded acquire-retry in task-lock.sh",
+  "started_at": "2026-07-28T00:00:00Z",
+  "last_updated": "2026-07-28T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add TASK_LOCK_RETRY_BUDGET_MS/POLL_MS constants", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 2, "description": "Add cmd_acquire_retry() bounded poll wrapper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 3, "description": "First-retry NOTE: line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 4, "description": "Budget exhaustion verbatim ABORT emission", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 5, "description": "Register acquire-retry dispatcher case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 6, "description": "Extend top-of-file usage/contract comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -1,0 +1,48 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "session_id": "sess_1785296102_18bc9a",
+  "task_number": 946,
+  "task_name": "auto_sequence_conflicting_work",
+  "plan_path": "specs/946_auto_sequence_conflicting_work/plans/01_four-tier-conflict-response.md",
+  "summary": "Installed all four tiers of the conflict-response ladder (auto-sequence, bounded retry, warn, ask) across task-lock.sh, command-gate-in.sh, the three plain multi-task commands, and durable docs. All 8 phases complete; an 11-case isolated-temp-root suite proves all four tiers plus non-convergence-as-partial. Phase 8 closed COMPLETED WITH EXCLUSIONS for expected deploy-tree drift (source-store-only edits; regeneration is manual-only) and two unrelated pre-existing literature-extension pycache findings.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/946_auto_sequence_conflicting_work/plans/01_four-tier-conflict-response.md"
+    },
+    {
+      "type": "summary",
+      "path": "specs/946_auto_sequence_conflicting_work/summaries/01_four-tier-conflict-response-summary.md"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/commands/implement.md",
+    "agent-system/extensions/core/commands/plan.md",
+    "agent-system/extensions/core/commands/research.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/context/patterns/multi-task-operations.md",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/command-gate-in.sh",
+    "agent-system/extensions/core/scripts/task-lock.sh",
+    "agent-system/extensions/core/scripts/test-four-tier-conflict.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "specs/946_auto_sequence_conflicting_work/plans/01_four-tier-conflict-response.md",
+    "specs/946_auto_sequence_conflicting_work/summaries/01_four-tier-conflict-response-summary.md"
+  ],
+  "decisions_made": [
+    "Retry loop wraps cmd_acquire from the outside, never edits its body: cmd_acquire holds the process-global specs/.scope-lock mutex for its entire body via a RETURN trap, so a retry inside it would hold that mutex across the wait window and be reclaimed by a competing waiter after SCOPE_MUTEX_STALE_SEC. acquire-retry calls the full, unmodified cmd_acquire fresh per attempt instead.",
+    "orchestrate-batch-admit.sh's collision predicate is a state.json STATUS check, not a lock check, so the plain multi-task Tier-1 second pass genuinely converges only once the pass-1 winner reaches a terminal status -- natural for /implement, not for /research or /plan. This is the expected non-convergence case the plan's Risks table anticipated, not a defect.",
+    "Tier 4 (ask) is gated on orchestrator_mode and deliberately not wired into /orchestrate, /revise, or /task -- a recorded decision, not an omission."
+  ],
+  "dead_ends": [],
+  "phases_completed": 8,
+  "phases_total": 8,
+  "plan_markers_verified": true
+}
