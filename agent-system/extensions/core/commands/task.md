@@ -605,11 +605,21 @@ fi
 
 **Extract phase statuses from plan file**:
 ```bash
+# Sourced from the shared anchor (scripts/lib/phase-heading-patterns.sh) rather than re-derived
+# inline -- see context/formats/plan-format.md's "Canonical phase-heading shape" subsection.
+. .claude/scripts/lib/phase-heading-patterns.sh
+
 # Parse phase headings with status markers
 # Format: ### Phase N: Name [STATUS]
-phases=$(grep -E "^### Phase [0-9]+(\.[0-9]+)?:" "$plan_file" 2>/dev/null)
+phases=$(grep -E "$PHASE_HEADING_ERE" "$plan_file" 2>/dev/null)
 
-# Build phase analysis:
+# Non-conforming guard: a non-conforming heading is named in output rather than silently
+# skipped from the categorization set below.
+if nonconforming_phase_headings "$plan_file" | grep -q .; then
+  warn_nonconforming "$plan_file" "task-review"
+fi
+
+# Build phase analysis (use extract_phase_number per heading, never a truncated prefix):
 # - phase_number
 # - phase_name
 # - status: [NOT STARTED], [IN PROGRESS], [COMPLETED], [COMPLETED WITH EXCLUSIONS], [PARTIAL], [BLOCKED]

@@ -1,0 +1,15 @@
+{
+  "phase": 9,
+  "phase_name": "Bring the three out-of-declared-scope files onto the library",
+  "started_at": "2026-07-29T01:45:00Z",
+  "last_updated": "2026-07-29T02:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Migrate general-implementation-agent.md Stage 5a block (four regex fragments) onto library", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 2, "description": "Apply identical migration to general-implementation-hard-agent.md Stage 5a block, verified textually parallel", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-hard-agent.md"]},
+    {"id": 3, "description": "Migrate commands/task.md /task --review Step 3 phase-enumeration grep onto library; verify categorization list matches enum", "status": "done", "files_touched": ["agent-system/extensions/core/commands/task.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

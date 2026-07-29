@@ -593,26 +593,27 @@ which for the lean site also grants the decimal sub-phase support it has never h
 
 ---
 
-### Phase 9: Bring the three out-of-declared-scope files onto the library [NOT STARTED]
+### Phase 9: Bring the three out-of-declared-scope files onto the library [COMPLETED]
 
 **Goal**: Close the file-scope gap the research identified. Missing these three would reproduce
 precisely the partial-coverage drift this task exists to eliminate.
 
 **Tasks**:
-- [ ] In `agents/general-implementation-agent.md`'s Stage 5a block, migrate all four regex
+- [x] In `agents/general-implementation-agent.md`'s Stage 5a block, migrate all four regex
       fragments — the `stale_total` count, the iteration grep, the chained phase-number extraction,
-      and the `awk` next-heading-boundary pattern — onto library-sourced forms.
-- [ ] Apply the identical migration to `agents/general-implementation-hard-agent.md`'s Stage 5a
+      and the `awk` next-heading-boundary pattern — onto library-sourced forms. *(completed)*
+- [x] Apply the identical migration to `agents/general-implementation-hard-agent.md`'s Stage 5a
       block. Keep the two blocks textually parallel; a divergence between them is a future drift
-      source.
-- [ ] Replace the chained phase-number extraction with `extract_phase_number` so the repair block
-      cannot silently mis-attribute a heading.
-- [ ] In `commands/task.md`'s `/task --review` Step 3, migrate the phase-enumeration grep onto the
+      source. *(completed: diffed, only the warn_nonconforming label differs)*
+- [x] Replace the chained phase-number extraction with `extract_phase_number` so the repair block
+      cannot silently mis-attribute a heading. *(completed)*
+- [x] In `commands/task.md`'s `/task --review` Step 3, migrate the phase-enumeration grep onto the
       library form, and confirm the phase-categorization list downstream matches the six-value
-      marker enum, correcting it to the enum if it does not.
-- [ ] Add the non-conforming guard to all three: a non-conforming heading is named in output
-      rather than skipped from the repair or categorization set.
-- [ ] Cite durable anchors only.
+      marker enum, correcting it to the enum if it does not. *(completed: categorization list
+      already matched the six-value enum exactly; no correction needed)*
+- [x] Add the non-conforming guard to all three: a non-conforming heading is named in output
+      rather than skipped from the repair or categorization set. *(completed)*
+- [x] Cite durable anchors only. *(completed)*
 
 **Timing**: 1 hour
 

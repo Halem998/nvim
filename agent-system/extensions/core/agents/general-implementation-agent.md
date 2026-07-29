@@ -395,8 +395,22 @@ in `scripts/skill-base.sh`) reads only that self-reported integer and never read
 under-counting an exclusion-closed phase here permanently refuses task completion.
 
 ```bash
-# Count stale phase headings (NOT STARTED, IN PROGRESS, PARTIAL)
-stale_total=$(grep -cE '^### Phase [0-9]+.*\[(NOT STARTED|IN PROGRESS|PARTIAL)\]' "$plan_file" 2>/dev/null || echo 0)
+# Sourced from the shared anchor (scripts/lib/phase-heading-patterns.sh) rather than re-derived
+# inline -- see context/formats/plan-format.md's "Canonical phase-heading shape" subsection.
+. .claude/scripts/lib/phase-heading-patterns.sh
+
+# Non-conforming guard: a non-conforming heading is named in output rather than silently
+# skipped from the repair set. This does not stop the repair loop below -- it only ensures a
+# non-conforming heading is surfaced instead of vanishing.
+if nonconforming_phase_headings "$plan_file" | grep -q .; then
+  warn_nonconforming "$plan_file" "implementer-stage-5a"
+fi
+
+# Count stale phase headings. Deliberately NARROWER than the library's OPEN alternation
+# ($PHASE_STATUS_OPEN_ERE, which also includes BLOCKED): a BLOCKED phase must never be silently
+# auto-repaired to COMPLETED by this backstop, so BLOCKED is excluded from the stale set here.
+STALE_STATUS_ALT='NOT STARTED|IN PROGRESS|PARTIAL'
+stale_total=$(grep -cE "${PHASE_HEADING_ERE}.*\[(${STALE_STATUS_ALT})\]" "$plan_file" 2>/dev/null || echo 0)
 
 # Repair each stale heading via update-phase-status.sh -- exclusion-aware: a stale heading whose
 # phase body carries a `#### Reasoned Exclusions` subsection repairs to the exclusion marker,
@@ -405,12 +419,13 @@ stale_total=$(grep -cE '^### Phase [0-9]+.*\[(NOT STARTED|IN PROGRESS|PARTIAL)\]
 # `## Reasoned Exclusions` record format).
 if [ "$stale_total" -gt 0 ]; then
   total_lines=$(wc -l < "$plan_file")
-  grep -nE '^### Phase [0-9]+.*\[(NOT STARTED|IN PROGRESS|PARTIAL)\]' "$plan_file" | while IFS=: read -r linenum content; do
-    # Decimal-admitting phase-number extraction: `Phase 3.1` extracts as `3.1`, not `3`.
-    phase_num=$(echo "$content" | grep -oE 'Phase [0-9]+(\.[0-9]+)?' | grep -oE '[0-9]+(\.[0-9]+)?')
+  grep -nE "${PHASE_HEADING_ERE}.*\[(${STALE_STATUS_ALT})\]" "$plan_file" | while IFS=: read -r linenum content; do
+    # extract_phase_number never returns a truncated prefix; a non-conforming heading was already
+    # named by the guard above and is skipped here rather than mis-repaired.
+    phase_num=$(extract_phase_number "$content") || { echo "Skipping non-conforming heading at line ${linenum}: ${content}" >&2; continue; }
     # Scope the body-search window to this phase only: from just after this heading to just
     # before the next `### Phase` heading (or end of file).
-    next_heading_line=$(awk -v start="$linenum" 'NR > start && /^### Phase [0-9]+/ {print NR; exit}' "$plan_file")
+    next_heading_line=$(awk -v start="$linenum" -v pat="$PHASE_HEADING_LOOSE_ERE" 'NR > start && $0 ~ pat {print NR; exit}' "$plan_file")
     if [ -z "$next_heading_line" ]; then
       body_end="$total_lines"
     else
