@@ -1,32 +1,9 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "task_number": 968,
-  "session_id": "sess_1785345004_a2ccbc_968",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/968_corroborate_phase_counts_on_handoff_present_path/plans/01_corroborate-phase-counts-handoff-present.md",
-      "summary": "8-phase plan adopting Option A + C (shared corroboration function in skill-base.sh, wired into the handoff-present branch of all three orchestration engines) plus a re-scoped Option B (base-mode agent handoff contract, validate-handoff.sh as a log-only diagnostic), with paired prose-invariant edits and a scratch-deploy-tree verification gate."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "phase_count": 8,
-    "estimated_hours": 8,
-    "dependency_waves": [[1, 2], [3], [4, 5], [6], [7], [8]],
-    "complexity": "complex",
-    "research_integrated": true,
-    "plan_version": 1
-  },
-  "memory_candidates": [
-    {
-      "content": "When a verification gate reads evidence from two independent sources (e.g. an orchestrator handoff and a plan file), an asymmetry can emerge where the WEAKER evidence path is handled and the STRONGER one is not: corroboration logic gated on a recovery-only signal becomes unreachable whenever the primary artifact exists but is merely incomplete. The structural fix is to make the corroboration trigger match the CONSUMER gate's own precondition exactly (here: phases_total == 0, the gate's Case-3 condition) rather than reusing the producer-side recovery signature (both counts zero), so trigger and consumer cannot drift. The safety argument then becomes structural rather than a promise: the always-refuse case is unreachable from the new trigger by construction, since it requires the opposite precondition. Related: extending such a trigger usually falsifies a stated prose invariant elsewhere in the same file (a 'MUST NOT' or read-allowlist scoping the read to one branch), so the prose edit must land in the SAME commit as the code, not as follow-up cleanup.",
-      "category": "PATTERN",
-      "source_artifact": "specs/968_corroborate_phase_counts_on_handoff_present_path/plans/01_corroborate-phase-counts-handoff-present.md",
-      "confidence": 0.82,
-      "suggested_keywords": ["verification-gate", "evidence-corroboration", "fail-closed", "trigger-precondition-drift", "prose-invariant-sync", "orchestrator-handoff"]
-    }
-  ],
-  "next_steps": "Run /implement 968 to execute the plan"
+    "session_id": "sess_1785345004_a2ccbc_968",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

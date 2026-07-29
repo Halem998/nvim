@@ -729,3 +729,130 @@ skill_gate_completion_claim() {
   echo "${log_prefix} COMPLETION-CLAIM GATE case 3/3 (phase accounting absent, plan_markers_verified=${plan_markers_verified}) task ${task_number}: refusing completion — handoff-writer defect suspected; task stays implementing." >&2
   return 1
 }
+
+# ───────────────────────────────────────────────────────────────────────────
+# Shared plan-heading corroboration
+# Usage: skill_corroborate_phase_counts "$task_number" "$plan_path" "$log_prefix" ["$handoff_path"]
+#
+#   $1 = task_number   : task number, named in every log line
+#   $2 = plan_path     : path to the plan file to corroborate against (may be empty)
+#   $3 = log_prefix    : "[orchestrate]" or "[hard-orchestrate]"
+#   $4 = handoff_path  : OPTIONAL. When non-empty and the file exists, validate-handoff.sh is
+#                        invoked against it as a log-only, non-gating producer-defect diagnostic
+#                        (D5/B1 below). Its exit status never influences this function's own
+#                        return value. Pass an EMPTY string on the recovery-path call sites
+#                        (Phase 7 of the plan that introduced this function) — there is no
+#                        handoff to validate on that path.
+#
+# Prints exactly one line on stdout, shell-assignable via `read` (callers MUST NOT `eval` it):
+#   phases_completed=<int> phases_total=<int> plan_markers_verified=<true|absent>
+#
+# Returns 0 when corroborated (plan_markers_verified=true), 1 otherwise — including the
+# non-conforming-heading case and the no-plan-file case. Both are "not corroborated", never a
+# crash.
+#
+# This is a faithful lift of the three-way branch that used to live inline, once per engine, in
+# the recovered=true branch of skill-orchestrate/SKILL.md Stage 5 (and its Stage MT-4 step 1 and
+# skill-orchestrate-hard/SKILL.md Stage 5 mirrors) — this function changes WHERE the logic lives,
+# never the branch outcomes. All three recovery-path call sites were migrated to call this
+# function rather than keep their own copy; see each SKILL.md's Stage 5 / Stage MT-4 for the
+# call sites, and the "Evidence corroboration" comment they each still carry.
+#
+# ── D3 (deliberate divergence): trigger precondition is `phases_total -eq 0` ALONE ──────────────
+# This differs on purpose from the recovery path's `PHASES_ZERO_ON_SUCCESS` signature, which
+# requires BOTH counts to be zero. This function's sole consumer is skill_gate_completion_claim's
+# Case 3 above, whose own precondition is `phases_total == 0` and which ignores
+# phases_completed entirely once that holds. Matching the consumer's precondition exactly means
+# the trigger and the gate cannot drift apart; matching the recovery path's both-zero signature
+# instead would leave a real gap — a handoff with phases_completed=7, phases_total=null would
+# take Case 3, be refused, and never get a chance at corroboration. This function does not
+# re-derive the `phases_total -eq 0` precondition internally: each caller gates on it BEFORE
+# invoking this function (see the handoff-present branch of Stage 5 / Stage MT-4 in both
+# SKILL.md files for the call-site precondition). This asymmetry is deliberate design, recorded
+# here in the same "this is a DESIGN, not an undocumented assertion" style the multi-task
+# `blocked`-row divergence in skill-orchestrate/SKILL.md uses.
+#
+# ── D4 (structural, not a promise): the completion gate is never weakened ────────────────────────
+# This function writes only phases_completed / phases_total / plan_markers_verified, and only
+# from an INDEPENDENT artifact (the plan file's own headings) — never from the handoff's own
+# values. skill_gate_completion_claim's Case 1 (phase accounting present and incomplete -> always
+# refuse) is UNREACHABLE from any caller of this function by construction: every caller only
+# invokes this function when phases_total is already 0 (see D3 above), and Case 1 requires
+# phases_total > 0. A corroborated correction therefore never overrides a refusal — it only
+# supplies independent evidence where the handoff supplied none.
+skill_corroborate_phase_counts() {
+  local task_number="$1"
+  local plan_path="$2"
+  local log_prefix="$3"
+  local handoff_path="${4:-}"
+
+  # Deploy-tree-first / source-store-fallback candidate resolution, matching
+  # scripts/tests/test-phase-heading-patterns.sh's own resolution so this function works both
+  # post-deploy (.claude/scripts/lib/...) and in a source-store-only checkout
+  # (agent-system/extensions/core/scripts/lib/...).
+  local _cpc_lib_candidates=(
+    ".claude/scripts/lib/phase-heading-patterns.sh"
+    "$(dirname "${BASH_SOURCE[0]}")/lib/phase-heading-patterns.sh"
+  )
+  local _cpc_lib=""
+  local _cpc_candidate
+  for _cpc_candidate in "${_cpc_lib_candidates[@]}"; do
+    if [ -f "$_cpc_candidate" ]; then
+      _cpc_lib="$_cpc_candidate"
+      break
+    fi
+  done
+  if [ -z "$_cpc_lib" ]; then
+    echo "${log_prefix} Evidence corroboration: phase-heading-patterns.sh not found at any candidate path for task ${task_number} — leaving plan_markers_verified=absent." >&2
+    echo "phases_completed=0 phases_total=0 plan_markers_verified=absent"
+    return 1
+  fi
+  # shellcheck disable=SC1090
+  . "$_cpc_lib"
+
+  # Never treat a missing/empty plan path as corroboration.
+  if [ -z "$plan_path" ] || [ ! -f "$plan_path" ]; then
+    echo "${log_prefix} Evidence corroboration: no plan file found to corroborate against for task ${task_number} — leaving plan_markers_verified=absent." >&2
+    echo "phases_completed=0 phases_total=0 plan_markers_verified=absent"
+    return 1
+  fi
+
+  # `x=$(grep -c ...) || x=0` idiom, never `$(grep -c ... || echo 0)` — the latter emits two
+  # lines on zero matches.
+  local _cpc_total _cpc_completed
+  _cpc_total=$(grep -cE "$PHASE_HEADING_ERE" "$plan_path" 2>/dev/null) || _cpc_total=0
+  _cpc_completed=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$plan_path" 2>/dev/null) || _cpc_completed=0
+
+  local _cpc_rc=1
+  local _cpc_out_completed=0
+  local _cpc_out_total=0
+  local _cpc_out_verified="absent"
+
+  if has_nonconforming_phase_headings "$plan_path"; then
+    warn_nonconforming "$plan_path" "corroborate-phase-counts" || true
+    echo "${log_prefix} Evidence corroboration: non-conforming phase heading(s) in ${plan_path} — counts unreliable; leaving plan_markers_verified=absent." >&2
+    _cpc_rc=1
+  elif [ "$_cpc_total" -gt 0 ] && [ "$_cpc_completed" -eq "$_cpc_total" ]; then
+    _cpc_out_completed="$_cpc_completed"
+    _cpc_out_total="$_cpc_total"
+    _cpc_out_verified="true"
+    echo "[UNVERIFIED PHASES CORROBORATED] task ${task_number}: plan headings in ${plan_path} show ${_cpc_completed}/${_cpc_total} phases closed (COMPLETED or COMPLETED WITH EXCLUSIONS). Corroborated by an independent source — correcting phase counts and setting plan_markers_verified=true." >&2
+    _cpc_rc=0
+  else
+    # False-positive guard: no contradiction to resolve (a plan with zero phase headings, or a
+    # genuine partial-completion plan). Leave plan_markers_verified=absent and the counts at 0/0
+    # — do not treat this as a second trigger.
+    echo "${log_prefix} Evidence corroboration: non-corroborating (plan headings show ${_cpc_completed}/${_cpc_total} in ${plan_path}) — leaving plan_markers_verified=absent." >&2
+    _cpc_rc=1
+  fi
+
+  if [ -n "$handoff_path" ] && [ -f "$handoff_path" ]; then
+    # Log-only, non-gating producer-defect diagnostic (D5/B1). Never allowed to influence this
+    # function's own return value — guarded with `|| true` because validate-handoff.sh runs under
+    # `set -euo pipefail` and exits non-zero on any failed check.
+    bash .claude/scripts/validate-handoff.sh "$handoff_path" >&2 || true
+  fi
+
+  echo "phases_completed=${_cpc_out_completed} phases_total=${_cpc_out_total} plan_markers_verified=${_cpc_out_verified}"
+  return "$_cpc_rc"
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Corroborate Phase Counts on the Handoff-Present Path
 
 - **Task**: 968 - corroborate_phase_counts_on_handoff_present_path
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/968_corroborate_phase_counts_on_handoff_present_path/reports/01_corroborate_phase_counts_handoff_present.md`
@@ -146,44 +146,44 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Shared corroboration function in skill-base.sh [NOT STARTED]
+### Phase 1: Shared corroboration function in skill-base.sh [COMPLETED]
 
 **Goal**: Create `skill_corroborate_phase_counts()` in `agent-system/extensions/core/scripts/skill-base.sh`
 as the single implementation of plan-heading corroboration, callable from every engine and
 directly testable.
 
 **Tasks**:
-- [ ] Add `skill_corroborate_phase_counts()` immediately after `skill_gate_completion_claim()` in
+- [x] Add `skill_corroborate_phase_counts()` immediately after `skill_gate_completion_claim()` in
       `scripts/skill-base.sh`, with a header comment in the same style as its neighbor.
-- [ ] Signature: `skill_corroborate_phase_counts <task_number> <plan_path> <log_prefix> [handoff_path]`.
+- [x] Signature: `skill_corroborate_phase_counts <task_number> <plan_path> <log_prefix> [handoff_path]`.
       It prints a single line of shell-assignable output on stdout of the form
       `phases_completed=<int> phases_total=<int> plan_markers_verified=<true|absent>` and returns
       0 when corroborated, 1 when not corroborated (including the non-conforming and no-plan
       cases). Callers `eval`-free-parse it with `read`, never `eval`.
-- [ ] Source `.claude/scripts/lib/phase-heading-patterns.sh` inside the function body using the
+- [x] Source `.claude/scripts/lib/phase-heading-patterns.sh` inside the function body using the
       deploy-tree-first / source-store-fallback candidate list already used by
       `scripts/tests/test-phase-heading-patterns.sh`, so the function works both post-deploy and
       in a source-store-only checkout.
-- [ ] Implement the three-way branch as a faithful lift of the existing block: (a)
+- [x] Implement the three-way branch as a faithful lift of the existing block: (a)
       `has_nonconforming_phase_headings` true -> call `warn_nonconforming`, emit the
       "counts unreliable" note, return `plan_markers_verified=absent` with counts untouched;
       (b) `total > 0 && completed -eq total` -> return corrected counts and
       `plan_markers_verified=true`, emitting the `[UNVERIFIED PHASES CORROBORATED]` banner;
       (c) otherwise -> emit the non-corroborating note, leave `plan_markers_verified=absent`.
-- [ ] Handle the empty/missing `plan_path` case: emit the "no plan file found to corroborate
+- [x] Handle the empty/missing `plan_path` case: emit the "no plan file found to corroborate
       against" note and return the absent verdict. Never treat a missing plan as corroboration.
-- [ ] Use the `x=$(grep -c ...) || x=0` idiom, never `$(grep -c ... || echo 0)` — the latter
+- [x] Use the `x=$(grep -c ...) || x=0` idiom, never `$(grep -c ... || echo 0)` — the latter
       emits two lines on zero matches.
-- [ ] When the optional `handoff_path` argument is non-empty and the file exists, run
+- [x] When the optional `handoff_path` argument is non-empty and the file exists, run
       `bash .claude/scripts/validate-handoff.sh "$handoff_path" >&2 || true` as a **log-only,
       non-gating** producer-defect diagnostic (D5/B1). Its exit status MUST NOT influence the
       function's own return value. Guard with `|| true` because that script runs under
       `set -euo pipefail` and exits 1 on any failed check.
-- [ ] Add a comment block recording D3 (total-only trigger vs. the recovery path's both-zero
+- [x] Add a comment block recording D3 (total-only trigger vs. the recovery path's both-zero
       signature) and D4 (Case 1 unreachable by construction) as deliberate design, in the same
       "this is a DESIGN, not an undocumented assertion" style the multi-task `blocked`-row
       divergence uses.
-- [ ] Use durable anchors only in all added comments — reference function names, section
+- [x] Use durable anchors only in all added comments — reference function names, section
       headings, and file paths; never cite a task number (deliverable rule).
 
 **Timing**: 1.5 hours
