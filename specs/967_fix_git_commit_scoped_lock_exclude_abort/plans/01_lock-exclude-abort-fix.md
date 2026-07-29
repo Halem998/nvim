@@ -445,26 +445,46 @@ closing the phase as a no-op.
 
 ---
 
-### Phase 5: Deploy and Verify the Fix Is Live [NOT STARTED]
+### Phase 5: Deploy and Verify the Fix Is Live [COMPLETED]
 
 **Goal**: The corrected script and the new suite reach the deployed `.claude/scripts/` tree, and
 the defect is confirmed closed against the deployed copy — not just the source store.
 
 **Tasks**:
-- [ ] Deploy the source store to `.claude/` using the sanctioned deploy path (do not hand-author
-      any file under `.claude/**` — it is a regenerated artifact).
-- [ ] Confirm `.claude/scripts/git-commit-scoped.sh` now contains the conditional injection loop
-      and `.claude/scripts/tests/test-git-commit-scoped.sh` exists.
-- [ ] If the known deploy-mechanism gap prevents either file from landing (already-loaded
+- [x] Deploy the source store to `.claude/` using the sanctioned deploy path (do not hand-author
+      any file under `.claude/**` — it is a regenerated artifact). *(completed:
+      `bash .claude/scripts/deploy-headless.sh` — 303 artifacts deployed)*
+- [x] Confirm `.claude/scripts/git-commit-scoped.sh` now contains the conditional injection loop
+      and `.claude/scripts/tests/test-git-commit-scoped.sh` exists. *(completed: script updated by
+      the headless deploy; test file required the documented workaround, see next task)*
+- [x] If the known deploy-mechanism gap prevents either file from landing (already-loaded
       extensions can skip `copy_scripts`), report it loudly and use the documented workaround
       rather than editing `.claude/**` by hand as a substitute. If neither works, mark this phase
-      `[BLOCKED]` with the specific failure — do not close it as done.
-- [ ] Run `bash .claude/scripts/tests/test-git-commit-scoped.sh` — the deployed copy of the suite
-      exercising the deployed copy of the script. All cases must pass.
-- [ ] End-to-end live confirmation: with a `.lock/` present under a real task directory, run the
+      `[BLOCKED]` with the specific failure — do not close it as done. *(completed: the gap DID
+      fire — `deploy-headless.sh` updated the existing script but did not copy the brand-new
+      `tests/test-git-commit-scoped.sh`, exactly the documented "already-loaded extensions skip
+      copy_scripts for new files" gap. Worked around with a direct one-off invocation of the
+      loader's copy primitives (`loader_mod.copy_scripts` + `loader_mod.copy_manifest` via
+      `nvim --headless -u NONE -c "luafile ..."`), the same class of remedy already documented in
+      `no-task-references-in-deliverables.md`'s "Discovered deploy-mechanism gap" section. No
+      `.claude/**` file was hand-authored — both copies came from the loader's own copy
+      functions reading the source store.)*
+- [x] Run `bash .claude/scripts/tests/test-git-commit-scoped.sh` — the deployed copy of the suite
+      exercising the deployed copy of the script. All cases must pass. *(completed: 7 passed, 0
+      failed against the deployed copy)*
+- [x] End-to-end live confirmation: with a `.lock/` present under a real task directory, run the
       deployed `git-commit-scoped.sh` for this task's own plan/implementation commit and confirm
       via `git log` that the commit actually landed (this task's research-phase commit already
       failed this way, so a successful commit here is direct evidence the defect is closed).
+      *(completed: this task's own `specs/967_.../.lock/holder.json` was present and held for the
+      entire implementation. An identical commit attempt against the PRE-fix deployed script
+      failed with the exact documented abort (rc=2, "paths are ignored:
+      specs/967_.../.lock"). After this phase's deploy, the SAME commit (accumulated Phases 1-4
+      plus this phase's own progress files) landed successfully — `git log --oneline -1` shows
+      commit `2e70e0114`, `git show --name-only HEAD` lists the task's tracked files with zero
+      ephemeral runtime paths (`.lock/`, `.orchestrator-loop-guard`,
+      `.orchestrator-churn-state.json`, `.drift-inspection.json`) present, and `.lock/holder.json`
+      remains on disk untouched. Direct evidence the live defect is closed.)*
 
 **Timing**: 30 minutes
 
@@ -492,20 +512,20 @@ success from the deploy command's exit code alone.
 
 ## Testing & Validation
 
-- [ ] `bash -n` clean on `git-commit-scoped.sh` and on the new test suite
-- [ ] The regression suite was observed RED (T1, T3) against the pre-fix script and GREEN after the
+- [x] `bash -n` clean on `git-commit-scoped.sh` and on the new test suite
+- [x] The regression suite was observed RED (T1, T3) against the pre-fix script and GREEN after the
       fix — the mutation check `shell-script-testing.md` requires for a pattern-shaped fix
-- [ ] A commit lands with `.lock/` present, verified via `git log`/`git show --name-only`, not exit
+- [x] A commit lands with `.lock/` present, verified via `git log`/`git show --name-only`, not exit
       code alone
-- [ ] `.lock` is absent from that commit's file list
-- [ ] All four ephemeral paths stay out of the commit in a fully-covered repo (T3)
-- [ ] All four ephemeral paths stay out of the commit in an under-configured repo, via injected
+- [x] `.lock` is absent from that commit's file list
+- [x] All four ephemeral paths stay out of the commit in a fully-covered repo (T3)
+- [x] All four ephemeral paths stay out of the commit in an under-configured repo, via injected
       exclude entries (T5) — the literal VERIFICATION BAR reading
-- [ ] V3 exclude-only refusal still exits 2 with no commit (T6)
-- [ ] V2 unmatched-pathspec drop still warns and still commits the valid path (T7)
-- [ ] `specs/.commit-lock/` mutex code path untouched (verified by diff inspection)
-- [ ] Script and standard agree on the candidate name set
-- [ ] Deployed copy verified live
+- [x] V3 exclude-only refusal still exits 2 with no commit (T6)
+- [x] V2 unmatched-pathspec drop still warns and still commits the valid path (T7)
+- [x] `specs/.commit-lock/` mutex code path untouched (verified by diff inspection)
+- [x] Script and standard agree on the candidate name set
+- [x] Deployed copy verified live (commit `2e70e0114`, this task's own `.lock/` present)
 
 ## Artifacts & Outputs
 

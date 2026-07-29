@@ -1,7 +1,44 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "task_number": 967,
-  "session_id": "sess_1785345004_a2ccbc_967",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/967_fix_git_commit_scoped_lock_exclude_abort/summaries/01_lock-exclude-abort-fix-summary.md",
+      "summary": "5-phase test-first fix: check-ignore-gated conditional exclude injection in git-commit-scoped.sh, regression suite proven RED pre-fix, git-staging-scope.md sync, superseded memory-candidate correction, deployed and confirmed live against this task's own held .lock/."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed git-commit-scoped.sh's unconditional ephemeral-exclude injection (which aborted git add whenever a named path was both gitignored and present on disk, e.g. a held task .lock/) by gating each candidate exclude on git check-ignore -q. Shipped a test-first regression suite (7 cases, proven RED on T1/T3 against the unmodified script), synced git-staging-scope.md, corrected a superseded memory candidate, deployed, and confirmed live: this task's own scoped commit landed successfully with its .lock/ present after previously failing twice with the pre-fix defect."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A git `:(exclude)<path>` pathspec entry that names a path already covered by .gitignore makes `git add` treat it as an explicitly-named ignored path and abort the ENTIRE add with rc=1 whenever that path currently exists on disk -- even though the identical path swept up IMPLICITLY by a bare directory pathspec (no exclude entry naming it) is silently skipped with rc=0. The trailing slash on the positive pathspec entry is irrelevant to the abort. The durable fix pattern: never unconditionally name a possibly-gitignored path in an exclude pathspec; gate injection on `git check-ignore -q -- <path>` (confirmed empirically: exit 0 for an ignored path whether or not it exists on disk, exit 1 for a non-ignored path, exit 1 for a tracked path), injecting the exclude entry only when check-ignore exits non-zero. This preserves defense-in-depth for a repo lacking the gitignore coverage while removing the abort hazard where the coverage already exists. Implemented in agent-system/extensions/core/scripts/git-commit-scoped.sh's exclude-injection loop.",
+      "category": "PATTERN",
+      "source_artifact": "specs/967_fix_git_commit_scoped_lock_exclude_abort/summaries/01_lock-exclude-abort-fix-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["git-pathspec", "exclude-pathspec", "gitignore", "check-ignore", "git-add-abort", "scoped-commit"]
+    },
+    {
+      "content": "When a headless deploy (deploy-headless.sh) updates an EXISTING script correctly but silently fails to copy a brand-new script file added under an already-loaded extension's scripts/ tree, this is the documented copy_scripts gap (already-loaded extensions skip the per-extension copy_scripts/copy_manifest re-run during headless 'Load Core' sync). The sanctioned one-off workaround -- never hand-authoring the .claude/** target -- is a direct nvim --headless -u NONE -c 'luafile ...' invocation calling loader_mod.copy_scripts(manifest, source_dir, target_dir, protected_paths) and loader_mod.copy_manifest(...) directly against the specific extension's source_dir (agent-system/extensions/<ext>) and target_dir (.claude), with the manifest table loaded via vim.json.decode of the source manifest.json. Verify success by checking the target file exists and re-running the deployed test suite, not by trusting the deploy command's exit code alone.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/967_fix_git_commit_scoped_lock_exclude_abort/summaries/01_lock-exclude-abort-fix-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-headless", "copy_scripts-gap", "loader-workaround", "extension-loader", "manifest-sync"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1785345004_a2ccbc_967",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }

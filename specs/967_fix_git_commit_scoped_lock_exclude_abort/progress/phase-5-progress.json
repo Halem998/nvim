@@ -1,0 +1,18 @@
+{
+  "phase": 5,
+  "phase_name": "Deploy and Verify the Fix Is Live",
+  "started_at": "2026-07-29T18:40:00Z",
+  "last_updated": "2026-07-29T18:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Deploy source store, work around the known copy_scripts gap for the new test file, verify deployed suite passes, and confirm live end-to-end via this task's own commit",
+      "status": "done",
+      "files_touched": [],
+      "note": "deploy-headless.sh deployed 303 artifacts and updated the existing git-commit-scoped.sh, but did NOT copy the brand-new tests/test-git-commit-scoped.sh (the documented already-loaded-extension copy_scripts gap). Worked around via a direct one-off nvim --headless luafile invocation of loader_mod.copy_scripts + loader_mod.copy_manifest against the core extension's source_dir/target_dir -- no .claude/** file hand-authored. Deployed suite: 7 passed, 0 failed. Live confirmation: an identical git-commit-scoped.sh invocation against the PRE-fix deployed script had already failed with rc=2 (paths are ignored: specs/967_.../.lock) earlier in this session; after deploy, the same commit (accumulating phases 1-4 plus this phase) landed as commit 2e70e0114 with .lock/holder.json present and held throughout, and zero ephemeral paths in the commit's file list."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
