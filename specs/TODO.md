@@ -11,7 +11,7 @@ next_project_number: 970
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 947,950,951,955,959,963,964,966,968,969 | -- | agent-system, orchestrator-completion-gate, state-write-coverage |
+| 1 | 947,950,951,955,959,963,964,966,969 | -- | agent-system, state-write-coverage |
 | 2 | 948,952,958,960 | 947,951,959,966 | agent-system |
 | 3 | 949,953,954,961 | 948,952,960 | agent-system |
 | 4 | 962 | 961 | agent-system |
@@ -37,10 +37,6 @@ next_project_number: 970
 964 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 966 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 958 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-
-### Orchestrator Completion Gate
-
-968 [PLANNED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ### State Write Coverage
 
@@ -86,11 +82,12 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 ---
 
 ### 968. Extend plan-heading evidence corroboration to the handoff-present completion path
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator-completion-gate
 - **Dependencies**: Task 967
 - **Research**: [968_corroborate_phase_counts_on_handoff_present_path/reports/01_corroborate_phase_counts_handoff_present.md]
+- **Plan**: [968_corroborate_phase_counts_on_handoff_present_path/plans/01_corroborate-phase-counts-handoff-present.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
 

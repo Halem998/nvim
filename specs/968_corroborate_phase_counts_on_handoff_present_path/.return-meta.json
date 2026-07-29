@@ -1,9 +1,55 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/968_corroborate_phase_counts_on_handoff_present_path/summaries/01_corroborate-phase-counts-handoff-present-summary.md",
+      "summary": "Implementation summary: shared plan-heading corroboration wired into the handoff-present path of all three orchestration engines."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Extracted plan-heading corroboration into skill_corroborate_phase_counts() in scripts/skill-base.sh, wired it into the handoff-present branch of the base single-task, base multi-task, and hard single-task orchestration engines, migrated the three pre-existing recovery-path corroboration blocks to call the same shared function, added an 8-fixture test suite, documented the base-mode implement agent's non-writer contract for .orchestrator-handoff.json, and verified the full change (including bash -n, three test suites, and verify-deploy.sh) in a freshly-deployed scratch git worktree without touching the live .claude/ tree."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/manifest.json",
+    "specs/968_corroborate_phase_counts_on_handoff_present_path/plans/01_corroborate-phase-counts-handoff-present.md",
+    "specs/968_corroborate_phase_counts_on_handoff_present_path/summaries/01_corroborate-phase-counts-handoff-present-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "For SKILL.md orchestration files whose bash fences span hundreds of lines, verify bash -n on the WHOLE fence plus, separately, on just the newly-added lines in isolation. Large pre-existing fences in this repo's skill-orchestrate*/SKILL.md files contain non-bash 'EXIT (partial)'/'EXIT (success...)' pseudocode-diagram lines that make bash -n fail on the whole fence regardless of any edit -- confirm pre-existing failures are byte-identical (same message, only shifted line numbers) against the pre-change HEAD before treating them as unrelated noise.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/968_corroborate_phase_counts_on_handoff_present_path/summaries/01_corroborate-phase-counts-handoff-present-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash -n", "SKILL.md", "orchestrator", "verification", "pre-existing defect"]
+    },
+    {
+      "content": "A git worktree of this repo is clean for scratch-deploy verification because .claude/ is gitignored and not checked out -- but .claude-extensions.json IS git-tracked and carries 'already loaded' extension state into the worktree, which suppresses the headless deploy's per-extension script re-copy for that extension. Separately (and more surprisingly), even a genuinely fresh deploy-headless.sh run against a worktree with .claude-extensions.json removed still does not populate scripts/lib/*.sh or scripts/tests/*.sh subdirectories, nor ~90 other manifest-declared provides.scripts entries (mostly literature-* scripts). Reproduced identically against an unmodified pre-task commit in an isolated control worktree. This is a real, pre-existing, out-of-scope deploy-mechanism gap broader than the previously-documented 'already-loaded extensions' one; work around it for scratch verification by manually copying the missing files from the source store into the scratch tree's .claude/scripts/ before running test suites.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/968_corroborate_phase_counts_on_handoff_present_path/summaries/01_corroborate-phase-counts-handoff-present-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["deploy-headless.sh", "scratch deploy", "worktree", "manifest.json", "provides.scripts"]
+    },
+    {
+      "content": "A new scripts/tests/*.sh (or scripts/lib/*.sh) file added to agent-system/extensions/core/ MUST also be registered in manifest.json's provides.scripts array, or it silently never reaches a deployed .claude/ tree even on a fresh install -- check-extension-docs.sh's 'script file on disk NOT in provides.scripts' check catches this, but only if actually run (e.g. as part of a Phase-8-style scratch-deploy audit) before the task is considered done.",
+      "category": "PATTERN",
+      "source_artifact": "specs/968_corroborate_phase_counts_on_handoff_present_path/summaries/01_corroborate-phase-counts-handoff-present-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["manifest.json", "provides.scripts", "new test file", "check-extension-docs.sh", "deploy"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1785345004_a2ccbc_968",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 8,
+    "phases_total": 8
   }
 }

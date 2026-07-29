@@ -2913,7 +2913,7 @@
     {
       "project_number": 968,
       "project_name": "corroborate_phase_counts_on_handoff_present_path",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator-completion-gate",
       "title": "Extend plan-heading evidence corroboration to the handoff-present completion path",
@@ -2937,12 +2937,18 @@
           "path": "specs/968_corroborate_phase_counts_on_handoff_present_path/plans/01_corroborate-phase-counts-handoff-present.md",
           "type": "plan",
           "summary": "corroborate phase counts handoff present (backfilled by --sync)"
+        },
+        {
+          "path": "specs/968_corroborate_phase_counts_on_handoff_present_path/summaries/01_corroborate-phase-counts-handoff-present-summary.md",
+          "type": "summary",
+          "summary": "corroborate phase counts handoff present summary (backfilled by --sync)"
         }
       ],
       "created": "2026-07-29T16:26:39Z",
-      "last_updated": "2026-07-29T17:53:39Z",
+      "last_updated": "2026-07-29T18:32:15Z",
       "session_id": "sess_1785345004_a2ccbc_968",
-      "next_artifact_number": 1
+      "next_artifact_number": 1,
+      "completion_summary": "Extracted plan-heading corroboration into skill_corroborate_phase_counts() in scripts/skill-base.sh, wired it into the handoff-present branch of the base single-task, base multi-task, and hard single-task orchestration engines, migrated the three pre-existing recovery-path corroboration blocks to call the same shared function, added an 8-fixture test suite, documented the base-mode implement agent's non-writer contract for .orchestrator-handoff.json, and verified the full change (including bash -n, three test suites, and verify-deploy.sh) in a freshly-deployed scratch git worktree without touching the live .claude/ tree."
     },
     {
       "project_number": 969,
