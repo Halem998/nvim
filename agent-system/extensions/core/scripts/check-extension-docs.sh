@@ -31,6 +31,12 @@
 #     an ADVISORY lane, not a FAIL lane, by design -- see check_core_deploy_advisory's comment
 #     for the rationale (a hard FAIL here would brick this gate for every caller until a user
 #     performs the manual <leader>al regeneration this check exists to make visible).
+#   - per-extension source `index-entries.json` `line_count` accuracy against `wc -l` of the
+#     entry's own source file, INCLUDING unloaded extensions (source-level, not deployed-index-
+#     level -- see generate-context-line-counts.sh, the companion regenerator; severity
+#     controlled by INDEX_TRUTH_GATE_MODE)
+#   - deployed `.claude/context/**/*.md` files with no entry in `.claude/context/index.json`
+#     (project-wide, not per-extension; severity controlled by INDEX_TRUTH_GATE_MODE)
 #
 # Rule letter index (checks named "Rule X" in function comments below, in first-introduced
 # order; unlettered checks are unnamed/structural and are not part of this index):
@@ -52,6 +58,8 @@
 #   P - check_settings_hook_registration_completeness : settings.json hook registration gap/dup
 #       (ADVISORY, not FAIL; sub-check of O, core extension only)
 #   Q - check_undeclared_scripts            : script file on disk not in provides.scripts
+#   R - check_line_count_accuracy          : source index-entries.json line_count wrong/null/missing
+#   S - check_deployed_index_orphans       : deployed context/*.md file with no index.json entry
 #
 # Exit codes:
 #   0 - all extensions pass (Core Deploy-Drift Advisories, if any, do NOT affect this)
@@ -557,6 +565,72 @@ check_undeclared_scripts() {
   done < <(git -C "$REPO_ROOT" ls-files "$ext_path_norm/scripts" | sort)
 }
 
+# INDEX_TRUTH_GATE_MODE controls severity for Rules R and S (the two checks this block
+# introduces) -- a sibling to ORPHAN_GATE_MODE above, not an overload of it. These are
+# materially different checks with their own remediation timeline: ORPHAN_GATE_MODE governs the
+# "every deployed file has a manifest.provides source" family (Rules J/K/L/M/N), while
+# INDEX_TRUTH_GATE_MODE governs the newer "the context index tells the truth" family (source
+# line_count accuracy and deployed-index-orphan coverage) added once generate-context-line-counts.sh
+# and the 14 previously-orphaned entries landed. Defaults to "hard" now that source-store
+# remediation has already landed and a clean run was confirmed -- override to "advisory" only
+# for temporary local debugging, never in committed config.
+INDEX_TRUTH_GATE_MODE="${INDEX_TRUTH_GATE_MODE:-hard}"
+
+index_truth_report() {
+  local msg="$1"
+  if [[ "$INDEX_TRUTH_GATE_MODE" == "hard" ]]; then
+    fail "$msg"
+  else
+    info "ADVISORY (not yet blocking): $msg"
+  fi
+}
+
+# Rule R: source index-entries.json line_count accuracy, per extension.
+#
+# Companion gate to generate-context-line-counts.sh: where that script is a manual/CI-invoked
+# regenerator, this check is the automated tripwire that fires on every verify-deploy.sh run.
+# Deliberately SOURCE-level, not deployed-index-level: it walks
+# $EXT_DIR/<ext>/index-entries.json directly against $EXT_DIR/<ext>/context/<path>, so it catches
+# drift in an extension that is not even currently loaded (the 94-null class documented in
+# generate-context-line-counts.sh's header) -- something validate-context-index.sh, which only
+# ever sees the deployed .claude/context/index.json of loaded extensions, structurally cannot
+# see. Fails on a numeric mismatch, a null/absent line_count key, and a missing source file
+# alike (matching the regenerator's own three-way classification).
+check_line_count_accuracy() {
+  local ext_path="$1"
+  local index_file="$ext_path/index-entries.json"
+  local context_dir="${ext_path%/}/context"
+
+  [[ -f "$index_file" ]] || return 0
+  jq -e '.entries' "$index_file" > /dev/null 2>&1 || return 0
+
+  local entry_count path declared has_key full_path actual i
+  entry_count=$(jq '.entries | length' "$index_file" 2>/dev/null) || return 0
+
+  for ((i = 0; i < entry_count; i++)); do
+    path=$(jq -r ".entries[$i].path" "$index_file")
+    has_key=$(jq -r ".entries[$i] | has(\"line_count\")" "$index_file")
+    declared=$(jq -r ".entries[$i].line_count" "$index_file")
+    full_path="$context_dir/$path"
+
+    if [[ ! -f "$full_path" ]]; then
+      index_truth_report "Rule R: index-entries.json entry '$path' has no source file at context/$path"
+      continue
+    fi
+
+    if [[ "$has_key" != "true" ]]; then
+      index_truth_report "Rule R: index-entries.json entry '$path' is missing the line_count key"
+      continue
+    fi
+
+    actual=$(wc -l < "$full_path")
+    actual=${actual// /}
+    if [[ "$declared" != "$actual" ]]; then
+      index_truth_report "Rule R: index-entries.json entry '$path' line_count mismatch: declared $declared, actual $actual"
+    fi
+  done
+}
+
 # Rules B + C: Routing target consistency and deployment
 #
 # Policy rationale (restored after a later sync reverted it from the stale extension-source
@@ -1006,6 +1080,46 @@ check_context_orphans() {
   done < <(_git_deployed_files "context")
 }
 
+# Rule S: deployed-index-orphan check, project-wide.
+#
+# Distinct direction from Rule L (check_context_orphans, which asks "does every deployed context
+# file trace to a provides.context source declaration"): this rule asks "does every deployed
+# context MARKDOWN file have an entry in .claude/context/index.json" -- a file can pass Rule L
+# (it has a declared source and deploys correctly) while still being invisible to the index's
+# dynamic load_when discovery mechanism. Scoped to *.md only, deliberately: schema files
+# (index.schema.json), templates, and other non-markdown context assets legitimately have no
+# index entry and must never be flagged here.
+#
+# Deliberately does NOT use _git_deployed_files (git ls-files): in this repository .claude/ is
+# entirely gitignored (blanket `/.claude/` in .gitignore, no tracked exceptions under
+# .claude/context/), so `git ls-files .claude/context` unconditionally returns zero results here
+# -- confirmed empirically while building this rule, by placing a scratch file and observing it
+# absent from `git ls-files` output despite `git status --ignored` correctly showing it. Reusing
+# _git_deployed_files would make this rule (and, latently, Rule L before it) silently vacuous in
+# this repo: it would iterate an always-empty set and never fail regardless of real orphans.
+# Enumerates the actual filesystem instead (`find ... -name "*.md"`), which sees every deployed
+# file regardless of git-tracking status and is safe from the runtime-cache-noise concern
+# _git_deployed_files's own comment cites (literature-pyenv/venv/__pycache__ contain no .md
+# files, so the *.md filter already excludes them without needing git's tracked-only view).
+check_deployed_index_orphans() {
+  local context_dir="$REPO_ROOT/.claude/context"
+  local index_file="$context_dir/index.json"
+  [[ -d "$context_dir" ]] || return 0
+  [[ -f "$index_file" ]] || return 0
+
+  local indexed_paths
+  indexed_paths=$(jq -r '.entries[].path' "$index_file" 2>/dev/null)
+
+  local full f
+  while IFS= read -r full; do
+    [[ -z "$full" ]] && continue
+    f="${full#"$context_dir"/}"
+    if ! grep -qxF "$f" <<< "$indexed_paths"; then
+      index_truth_report "Rule S: deployed context/$f has no entry in .claude/context/index.json"
+    fi
+  done < <(find "$context_dir" -type f -name "*.md" 2>/dev/null | sort)
+}
+
 # Rule N: broken deployed symlink health check (distinct from the has-a-source orphan checks
 # above). install-extension.sh is a separate, parallel deploy mechanism from provides.*
 # copy-deploy: it creates real symlinks under .claude/{agents,commands,skills}/ pointing back
@@ -1053,6 +1167,7 @@ for ext_path in "$EXT_DIR"/*/; do
       check_undeclared_skills "$ext_path"
       check_undeclared_rules "$ext_path"
       check_undeclared_scripts "$ext_path"
+      check_line_count_accuracy "$ext_path"
       check_deployed_rule_drift "$ext_path"
       check_routing_consistency "$ext_path"
       check_deployed_skill_agents "$ext_path"
@@ -1078,6 +1193,7 @@ check_dangling_contract_references
 check_flat_category_orphans "agents" "Rule J"
 check_flat_category_orphans "commands" "Rule K"
 check_context_orphans
+check_deployed_index_orphans
 check_flat_category_orphans "scripts" "Rule M"
 check_broken_deployed_symlinks
 if [[ "${EXTENSION_STATUS[project-wide]}" == "PASS" ]]; then

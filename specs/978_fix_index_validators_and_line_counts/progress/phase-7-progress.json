@@ -1,0 +1,34 @@
+{
+  "phase": 7,
+  "phase_name": "Add the two new gates to check-extension-docs.sh",
+  "started_at": "2026-07-30T01:05:00Z",
+  "last_updated": "2026-07-30T01:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add Rule R (per-extension line_count accuracy) and Rule S (project-wide deployed-index-orphan), sibling severity variable, header/rule-index docs; verify with negative tests",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/check-extension-docs.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "Rule S using the existing _git_deployed_files (git ls-files) helper, matching Rule L's precedent",
+      "result": "failed",
+      "reason": "This repository's .gitignore blanket-excludes /.claude/ with no tracked exceptions, so git ls-files .claude/context always returns zero results here -- the rule would be silently vacuous, never failing regardless of real orphans."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.2",
+      "description": "Rule S enumerates the filesystem directly (find -name '*.md') instead of reusing _git_deployed_files, because .claude/ is entirely gitignored in this repository",
+      "type": "altered",
+      "reason": "git ls-files against a fully gitignored .claude/ tree returns nothing, which would make the new gate (and, latently, the pre-existing Rule L) unable to ever detect an orphan. Discovered empirically by placing a scratch file and observing it absent from git ls-files output. Fixing Rule L itself is out of scope for this phase.",
+      "annotation": "documented in check_deployed_index_orphans's comment and in the plan's Phase 7 task checklist"
+    }
+  ]
+}

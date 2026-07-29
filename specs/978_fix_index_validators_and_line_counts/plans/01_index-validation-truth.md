@@ -508,30 +508,63 @@ Phase 1 validator reports zero errors and zero warnings against it.
 
 ---
 
-### Phase 7: Add the two new gates to check-extension-docs.sh [NOT STARTED]
+### Phase 7: Add the two new gates to check-extension-docs.sh [COMPLETED]
 
 **Goal**: Both classes of drift fail loudly on every `verify-deploy.sh` run, with the baseline
 left clean.
 
 **Tasks**:
-- [ ] Add a per-extension source `line_count` accuracy rule (next unused letter after Q) invoked
+- [x] Add a per-extension source `line_count` accuracy rule (next unused letter after Q) invoked
       from the per-extension loop alongside `check_undeclared_scripts`: for each entry in that
       extension's `index-entries.json`, compare `line_count` against `wc -l` of
       `$EXT_DIR/<ext>/context/<path>`, failing on mismatch, on `null`, and on a missing source
       file. This catches the 94-null class in unloaded extensions, which the deployed-index
-      validator can never see.
-- [ ] Add a project-wide deployed-index-orphan rule (the following letter) invoked from the
+      validator can never see. *(completed: Rule R, `check_line_count_accuracy`, invoked right
+      after `check_undeclared_scripts` in the per-extension loop; handles missing-key the same as
+      the Phase 2 generator does, distinctly from a present-but-wrong value)*
+- [x] Add a project-wide deployed-index-orphan rule (the following letter) invoked from the
       project-wide block after `check_context_orphans`: enumerate `.claude/context/**/*.md` via
       the existing `_git_deployed_files "context"` helper and fail on any file absent from
-      `.claude/context/index.json`'s `.entries[].path`.
-- [ ] Scope the orphan rule to markdown only, so schema and template files that legitimately have
+      `.claude/context/index.json`'s `.entries[].path`. *(completed with a deviation: the plan's
+      assumption that `_git_deployed_files` would work does not hold in this repository --
+      discovered empirically while building this rule. See the deviation note below the checklist.)*
+- [x] Scope the orphan rule to markdown only, so schema and template files that legitimately have
       no index entry are not flagged; document that scope decision in the rule's comment.
-- [ ] Give the new rules their own severity variable (sibling to `ORPHAN_GATE_MODE`, defaulting to
+      *(completed: `find ... -name "*.md"` filter)*
+- [x] Give the new rules their own severity variable (sibling to `ORPHAN_GATE_MODE`, defaulting to
       hard) rather than overloading the existing one — these are materially different checks with
       their own remediation timeline. Document the sibling relationship in the comment.
-- [ ] Update the script's header comment bullet list and the "Rule letter index" block with both
-      new letters, matching the existing entry style.
-- [ ] Make no change to `verify-deploy.sh` — gate 3 already invokes this script in full.
+      *(completed: `INDEX_TRUTH_GATE_MODE`, default `hard`, with its own `index_truth_report()`
+      helper mirroring `orphan_report()`; ONE shared variable for both Rule R and Rule S, since
+      both landed together with the same remediation timeline)*
+- [x] Update the script's header comment bullet list and the "Rule letter index" block with both
+      new letters, matching the existing entry style. *(completed)*
+- [x] Make no change to `verify-deploy.sh` — gate 3 already invokes this script in full.
+      *(completed: verify-deploy.sh untouched)*
+
+**Deviation (discovered during this phase, not pre-declared in Phase 1)**: the plan's Task 2 and
+its Scope Hypothesis (below) both assumed the existing `_git_deployed_files "context"` helper
+(`git -C "$REPO_ROOT" ls-files ".claude/$category"`) would correctly enumerate deployed context
+files for the new orphan rule, the same way it does for Rule L. This repository's `.gitignore`
+blanket-excludes the entire `/.claude/` tree with no tracked exceptions, so
+`git ls-files .claude/context` unconditionally returns **zero** results here — confirmed
+empirically by placing a scratch file under `.claude/context/patterns/` and observing it absent
+from `git ls-files` output (present only under `git status --ignored`). Reusing
+`_git_deployed_files` for Rule S would have made it silently vacuous in this repo: it would
+iterate an always-empty set and never fail regardless of real orphans, failing verification-bar
+criterion 2 outright. This is a **latent, pre-existing defect in Rule L** as well (`git ls-files`
+governs it too), discovered as a side effect of this phase rather than something Phase 1's
+research or this plan's earlier phases surfaced — Rule L has apparently never actually detected
+an orphan in this repository, regardless of whether any existed, though its baseline has stayed
+`PASS` because no real orphans happened to exist either. Fixing Rule L itself is explicitly out
+of scope for this phase (the plan authorizes two NEW rules, not modifying an existing one, and
+`verify-deploy.sh`'s gate list/semantics are a stated Non-Goal) and is left as a follow-up.
+Rule S instead enumerates the filesystem directly (`find "$context_dir" -type f -name "*.md"`),
+which sees every deployed file regardless of git-tracking status and is documented in the rule's
+own comment, including the empirical discovery method, so a future reader does not have to
+re-derive this. Verified NOT to reintroduce the runtime-cache-noise concern
+`_git_deployed_files`'s own comment cites (literature-pyenv/venv/__pycache__ contain zero `.md`
+files, confirmed by search before choosing this approach).
 
 **Timing**: 1.5 hours
 
@@ -544,20 +577,41 @@ the project-wide block is where the orphan rule belongs. Confirm at implementati
 the current "Rule letter index" header block and the project-wide invocation list before choosing
 letters; do not reuse an existing letter.
 
+**Scope Hypothesis result (re-derived live)**: confirmed — `Q - check_undeclared_scripts` was the
+highest lettered rule in the header index before this phase; the new rules take `R` and `S`. The
+project-wide invocation block (after `check_context_orphans`) is confirmed as the correct home
+for Rule S by reading the existing `check_flat_category_orphans`/`check_context_orphans` call
+sequence before editing.
+
 **Files to modify**:
 - `agent-system/extensions/core/scripts/check-extension-docs.sh` - two new rule functions, their
   invocations, the sibling severity variable, and the header/rule-index documentation.
 
 **Verification**:
-- `bash -n` passes.
+- `bash -n` passes. *(completed)*
 - `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh --quiet`
-  exits 0 with `PASS: all extensions OK` — the clean baseline is preserved.
+  — the clean baseline is preserved **for Rules R and S specifically**: `project-wide PASS` and no
+  extension reports an `R`/`S` failure. The run's overall exit code is 1 during this phase only
+  because of an EXPECTED, unrelated, transient condition also seen in Phase 2/3: the deployed
+  copy of `check-extension-docs.sh` itself has not yet caught up to this phase's own source edit
+  (`FAIL: deployed script content drift ... scripts/check-extension-docs.sh`), which Phase 9's
+  final redeploy resolves. This is not a Rule R/S failure and not evidence against the "baseline
+  left clean" goal for the two new rules.
 - **Negative test (verification-bar criterion 2)**: create a scratch context markdown file with no
   index entry, redeploy or place it so the gate sees it, confirm the run now FAILs naming that
   file, then remove it and confirm the run passes again. Leave no scratch file behind.
+  *(completed: created `.claude/context/patterns/zzz-scratch-orphan-test.md`; run FAILed with
+  `Rule S: deployed context/patterns/zzz-scratch-orphan-test.md has no entry in
+  .claude/context/index.json`; removed it; re-run showed `project-wide PASS` again; no scratch
+  file left in the tree)*
 - **Negative test for the line-count rule**: temporarily perturb one `line_count` value in one
   extension's `index-entries.json`, confirm a FAIL naming that entry, then restore it and confirm
   a pass. Restore via a targeted edit, never a destructive git operation on a dirty tree.
+  *(completed: perturbed `project/neovim/README.md`'s `line_count` from 96 to 999 in
+  `agent-system/extensions/nvim/index-entries.json` via a targeted Edit; run FAILed with
+  `Rule R: index-entries.json entry 'project/neovim/README.md' line_count mismatch: declared 999,
+  actual 96`; restored to 96 via a second targeted Edit (`git diff` confirmed byte-identical to
+  the pre-perturbation state); re-run showed `nvim PASS`)*
 
 ---
 
