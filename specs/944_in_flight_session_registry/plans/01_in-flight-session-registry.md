@@ -298,26 +298,26 @@ new probe.
 
 ---
 
-### Phase 4: Single-Task Gate Wiring [NOT STARTED]
+### Phase 4: Single-Task Gate Wiring [COMPLETED]
 
 **Goal**: Register at single-task session start and release at single-task session end, using the
 identifiers the gate scripts already construct.
 
 **Tasks**:
-- [ ] In `scripts/command-gate-in.sh`, insert the registration call immediately after the
+- [x] In `scripts/command-gate-in.sh`, insert the registration call immediately after the
       `task-lock.sh acquire` call succeeds and before the `# Display operation header` comment.
       Anchor on those quoted strings, not on line numbers.
-- [ ] Use `$SESSION_ID` (the value the script already generates) as the registry key, `"/$operation
+- [x] Use `$SESSION_ID` (the value the script already generates) as the registry key, `"/$operation
       $task_number"` as the `command` — the same expression already passed as the lock's `command`
       field — and the single task number as the `task_numbers` CSV.
-- [ ] Make the call best-effort and non-blocking: `... 2>/dev/null || true`. Registration failure
+- [x] Make the call best-effort and non-blocking: `... 2>/dev/null || true`. Registration failure
       must never turn a successful lock acquire into a refusal. This task changes no admission
       decision.
-- [ ] In `scripts/command-gate-out.sh`, insert the release call alongside the existing unconditional
+- [x] In `scripts/command-gate-out.sh`, insert the release call alongside the existing unconditional
       `task-lock.sh release` line, using the same `$session_id` positional argument, with the same
       `2>/dev/null || true` best-effort shape and the same "runs first, regardless of downstream
       branch" placement rationale.
-- [ ] Add a one-line comment at each site naming the registry and pointing at
+- [x] Add a one-line comment at each site naming the registry and pointing at
       `context/patterns/task-lock.md`'s new section, matching the density of the adjacent task-lock
       comments.
 
@@ -337,6 +337,8 @@ identifiers the gate scripts already construct.
   refusal path introduced.
 - Manual end-to-end: run a single-task gate-in/gate-out pair against a scratch task and confirm the
   entry appears in `specs/.sessions/` and is gone afterward.
+
+**Implementation note**: the deployed `.claude/scripts/` copy of `task-lock.sh` was stale at the time this phase landed (known `copy_scripts` loader gap — see Phase 10's tracking item), so the "manual end-to-end" verification bullet is deferred to Phase 10's post-deploy audit rather than exercised here against a stale deployed script. `bash -n` and the `git diff` read-through were both run and pass.
 
 ---
 

@@ -76,6 +76,12 @@ gate_in() {
     return 1
   fi
 
+  # In-flight session registry: register this single-task session. Best-effort and
+  # non-blocking — a registration failure must never turn a successful lock acquire into a
+  # refusal; this task changes no admission decision. See
+  # .claude/context/patterns/task-lock.md's Session-Registry CLI section.
+  bash .claude/scripts/task-lock.sh session-register "$SESSION_ID" "/$operation $task_number" "$task_number" 2>/dev/null || true
+
   # Display operation header
   local op_label
   op_label=$(echo "$operation" | tr '[:lower:]' '[:upper:]')

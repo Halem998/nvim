@@ -48,6 +48,11 @@ state_file="specs/state.json"
 # contract. Uses the SAME session_id the gate-in acquired with.
 bash .claude/scripts/task-lock.sh release "$task_number" "$session_id" 2>/dev/null || true
 
+# In-flight session registry: unconditional release, same "runs first, regardless of downstream
+# branch" placement as the task-lock release immediately above. Best-effort and non-blocking. See
+# .claude/context/patterns/task-lock.md's Session-Registry CLI section.
+bash .claude/scripts/task-lock.sh session-release "$session_id" 2>/dev/null || true
+
 if [ ! -f "$state_file" ]; then
   echo "ERROR: $state_file not found" >&2
   exit 1
