@@ -1,0 +1,18 @@
+{
+  "phase": 6,
+  "phase_name": "Redeploy and confirm the deployed index tells the truth",
+  "started_at": "2026-07-30T00:50:00Z",
+  "last_updated": "2026-07-30T01:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Redeploy via deploy-headless.sh and verify version/generated stamp, 14 orphans present, corrected line_counts propagated, validator zero/zero",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -461,25 +461,33 @@ same 11-core-plus-3-extension-strays split, with no `literature` orphan.
 
 ---
 
-### Phase 6: Redeploy and confirm the deployed index tells the truth [NOT STARTED]
+### Phase 6: Redeploy and confirm the deployed index tells the truth [COMPLETED]
 
 **Goal**: The corrected and newly added source entries reach `.claude/context/index.json`, and the
 Phase 1 validator reports zero errors and zero warnings against it.
 
 **Tasks**:
-- [ ] Confirm the working tree is committed up to this point so the redeploy's overwrite of
-      `.claude/` is recoverable.
-- [ ] Regenerate the deploy tree with `bash .claude/scripts/deploy-headless.sh` (the sanctioned
-      headless equivalent of the interactive full sync).
-- [ ] Confirm `.claude/context/index.json` now has top-level `version` and `generated` keys
-      (`jq keys`).
-- [ ] Confirm the 14 previously-orphaned paths now appear in `.entries[].path`.
-- [ ] Confirm previously-stale `line_count` values in the deployed index now match their source
+- [x] Confirm the working tree is committed up to this point so the redeploy's overwrite of
+      `.claude/` is recoverable. *(completed: all Phase 1-5 changes committed; only pre-existing,
+      task-978-unrelated files remained dirty)*
+- [x] Regenerate the deploy tree with `bash .claude/scripts/deploy-headless.sh` (the sanctioned
+      headless equivalent of the interactive full sync). *(completed: 305 artifacts deployed,
+      exit 0)*
+- [x] Confirm `.claude/context/index.json` now has top-level `version` and `generated` keys
+      (`jq keys`). *(completed: keys = ["entries", "generated", "version"];
+      version="1.0.0", generated="2026-07-29T23:21:27Z")*
+- [x] Confirm the 14 previously-orphaned paths now appear in `.entries[].path`. *(completed: all
+      14 confirmed present by individual jq lookup)*
+- [x] Confirm previously-stale `line_count` values in the deployed index now match their source
       entries — this is the concrete proof that the Phase 4 upsert change works and that the old
-      append-only behavior would have failed here.
-- [ ] Run the Phase 1 validator and record the summary.
-- [ ] If any warnings remain, trace each to its source entry and fix at the source, then redeploy
-      — never by editing `.claude/` directly.
+      append-only behavior would have failed here. *(completed: project/neovim/README.md now
+      shows 96 in the deployed index (was 80 stale), matching `wc -l` of the deployed file
+      exactly; architecture/component-checklist.md shows 363 matching)*
+- [x] Run the Phase 1 validator and record the summary. *(completed: Entries checked: 178,
+      Errors: 0, Warnings: 0, "Validation PASSED", exit 0; `--strict` also exits 0 with the same
+      zero/zero result)*
+- [x] If any warnings remain, trace each to its source entry and fix at the source, then redeploy
+      — never by editing `.claude/` directly. *(not applicable: zero warnings)*
 
 **Timing**: 1 hour
 
