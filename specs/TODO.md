@@ -28,7 +28,7 @@ next_project_number: 958
     └─ 953 [NOT STARTED] — Resolve the autonomy conflict: make system-defect detections visi
     └─ 954 [NOT STARTED] — Give recorded system defects an interactive surface that produces
 955 [NOT STARTED] — specs/errors.json has drifted into three mutually inconsistent do
-956 [RESEARCHED] — Two parsers read the same plan file and disagree about how many p
+956 [PLANNED] — Two parsers read the same plan file and disagree about how many p
 
 ### Orchestration Concurrency
 
@@ -59,7 +59,7 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 ---
 
 ### 956. Unify phase-heading parsing across all sites and settle the [DESCOPED] outcome
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None

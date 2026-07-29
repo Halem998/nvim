@@ -1,24 +1,26 @@
 {
-  "$schema": "orchestrator-handoff-v1",
-  "phase": "research",
-  "status": "researched",
-  "summary": "Found the letter-suffix ask directly conflicts with plan-format.md's explicit, recent 'must not be used' decision (from the reasoned-exclusions task) -- recommend keeping letters unsupported and making non-conforming headings loud instead. Recommend rejecting [DESCOPED] in favor of the already-wired [COMPLETED WITH EXCLUSIONS]. FILE SCOPE is missing 3 known consumer sites (both implementation agents' Stage 5a, commands/task.md).",
-  "artifacts": [
-    {
-      "type": "report",
-      "path": "specs/956_unify_phase_heading_parsing_and_settle_descoped/reports/01_unify-phase-heading-parsing.md"
-    }
+  "task_number": 956,
+  "session_id": "sess_1785332281_ac04fb_956",
+  "phase": "plan",
+  "status": "planned",
+  "plan_path": "specs/956_unify_phase_heading_parsing_and_settle_descoped/plans/01_unify-phase-heading-parsing.md",
+  "phases_total": 10,
+  "phases_completed": 0,
+  "estimated_hours": 12,
+  "dependency_waves": [[1, 2], [3, 7, 8, 9], [4, 5, 6], [10]],
+  "decisions": [
+    "D1: letter-suffixed sub-phases (Phase 3a) remain UNSUPPORTED; the silent-undercount hole is closed by loud non-conforming-heading detection instead of by widening the grammar. This declines the task's literal WORK item (1) and re-affirms plan-format.md's existing prohibition.",
+    "D2: [DESCOPED] is REJECTED as a phase-heading marker; whole-phase descoping uses [COMPLETED WITH EXCLUSIONS] with a #### Reasoned Exclusions record covering all remaining items.",
+    "D3: non-conformance is inconclusive-and-loud (pass-through with named per-heading warnings), never a hard refusal, except under validate-artifact.sh --strict where it is an error."
   ],
-  "blockers": [],
-  "next_action_hint": "plan",
-  "files_modified": [],
-  "decisions_made": [
-    "Recommend NOT widening the phase-number grammar to accept letter suffixes (Phase Na); plan-format.md already prohibits this as a deliberate, evidenced decision from the prior reasoned-exclusions task, not an oversight.",
-    "Recommend instead making a non-conforming phase-number token a loud, visible warning at every accounting site (generalizing the existing 'no conforming headings' inconclusive-and-pass-through branch), rather than silently under-counting or truncating it.",
-    "Recommend rejecting [DESCOPED] entirely; [COMPLETED WITH EXCLUSIONS]'s five-condition admission test already covers the whole-phase-descope case with zero new accounting sites needed.",
-    "Recommend expanding FILE SCOPE to include agents/general-implementation-agent.md, agents/general-implementation-hard-agent.md, and commands/task.md, per plan-format.md's own (already-incomplete) consumer-site list.",
-    "Recommend a new shared library scripts/lib/phase-heading-patterns.sh modeled directly on the existing scripts/lib/task-reference-patterns.sh precedent as the 'single named anchor'."
+  "scope_expansion": [
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/core/commands/task.md"
   ],
-  "dead_ends": [],
-  "plan_markers_verified": false
+  "new_files": [
+    "agent-system/extensions/core/scripts/lib/phase-heading-patterns.sh",
+    "agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh"
+  ],
+  "next_steps": "Run /implement 956 to execute the plan"
 }
