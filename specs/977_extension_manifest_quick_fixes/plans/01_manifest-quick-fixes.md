@@ -1,7 +1,7 @@
 # Implementation Plan: Extension Manifest Quick-Fix Batch
 
 - **Task**: 977 - Extension manifest quick-fix batch (keyword_overrides shape, mcpServers casing, dead weight)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: 976 (sequencing only; not blocking)
 - **Research Inputs**: specs/977_extension_manifest_quick_fixes/reports/01_manifest-quick-fixes-verification.md
@@ -431,29 +431,38 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 8: Final Gate and Baseline Comparison [NOT STARTED]
+### Phase 8: Final Gate and Baseline Comparison [COMPLETED]
 
 - **Goal:** Prove the whole batch leaves both gates no worse than the Phase 1 baseline and that
   every verification-bar assertion from the task description holds simultaneously.
 - **Tasks:**
-  - [ ] Run `bash .claude/scripts/check-extension-docs.sh` (not `--quiet`) across all extensions;
-        assert exit 0.
-  - [ ] Run `bash .claude/scripts/verify-deploy.sh --findings --quiet`; diff its FINDING lines
+  - [x] Run `bash .claude/scripts/check-extension-docs.sh` (not `--quiet`) across all extensions;
+        assert exit 0. *(completed: exit 0, all 20 extensions PASS)*
+  - [x] Run `bash .claude/scripts/verify-deploy.sh --findings --quiet`; diff its FINDING lines
         against the Phase 1 baseline capture. Assert the new set is a subset of the baseline set
-        (zero new findings). Any new finding blocks completion.
-  - [ ] Re-run all four task-description verification-bar assertions end to end: the consumer jq
+        (zero new findings). Any new finding blocks completion. *(completed: post-change output is
+        `[verify-deploy] PASS -- 12 check(s), 0 failure(s)`, zero FINDING lines — trivially a
+        subset of the zero-FINDING baseline)*
+  - [x] Re-run all four task-description verification-bar assertions end to end: the consumer jq
         against the reshaped `literature` manifest (exit 0, no stderr); the `epidemiology` scratch
         settings merge landing under `mcpServers`; the `present` `du -sh` drop of ~3 MB with
         `check-extension-docs.sh` still passing for `present`; and no manifest retaining an empty
-        `mcp_servers`/`hooks` object.
-  - [ ] Run the repo-wide task-reference lint
+        `mcp_servers`/`hooks` object. *(completed: all four pass — literature jq exits 0 printing
+        `meta`; epidemiology scratch merge yields `{"command":"uvx","args":["rmcp"]}` under
+        `.mcpServers.rmcp`; present dropped from 4.0M to 1.1M (3,046,296-byte delta) with
+        check-extension-docs PASS; zero manifests retain an empty stub)*
+  - [x] Run the repo-wide task-reference lint
         (`bash .claude/scripts/check-task-references.sh`) and confirm no new finding from this
-        batch's writes outside `specs/**` (specifically `literature/EXTENSION.md`).
-  - [ ] Confirm no file under `.claude/**` was modified by this batch: `git status --short` and the
+        batch's writes outside `specs/**` (specifically `literature/EXTENSION.md`). *(completed:
+        `PASS: 0 unexempted task-reference occurrences across 4 tree(s)`)*
+  - [x] Confirm no file under `.claude/**` was modified by this batch: `git status --short` and the
         accumulated `modified_files` list must contain only `agent-system/extensions/**` and
-        `specs/**` paths.
-  - [ ] Delete the Phase 1 scratch baseline file, or leave it in the task directory as provenance —
-        state which in the summary.
+        `specs/**` paths. *(completed: confirmed — the only non-`specs/**`/`agent-system/**` dirty
+        paths, `.claude-extensions.json` and `lua/neotex/plugins/editor/which-key.lua`, were
+        already modified in the working tree before this batch started and are untouched by it)*
+  - [x] Delete the Phase 1 scratch baseline file, or leave it in the task directory as provenance —
+        state which in the summary. *(decision: KEPT as provenance at
+        `specs/977_extension_manifest_quick_fixes/baseline-verify-deploy.txt`)*
 - **Timing:** 30 minutes
 - **Depends on:** 3, 4, 7
 - **Verification Tier:** full

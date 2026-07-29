@@ -1,0 +1,56 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "All 8 plan phases completed. Fixed literature's crashing keyword_overrides shape and dropped its unused filetypes dependency, corrected epidemiology's mcpServers casing, deleted a 3MB unreferenced pptx, activated three orphaned mcp_servers blocks (founder/filetypes/memory) via new settings-fragment.json + merge_targets.settings, deleted present's dead superdoc block, and swept 23 empty mcp_servers/hooks stubs across 17 manifests. check-extension-docs.sh and verify-deploy.sh --findings both exit 0 with zero new findings versus the Phase 1 baseline; all four task verification-bar assertions re-verified passing.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/977_extension_manifest_quick_fixes/plans/01_manifest-quick-fixes.md"
+    },
+    {
+      "type": "summary",
+      "path": "specs/977_extension_manifest_quick_fixes/summaries/01_manifest-quick-fixes-summary.md"
+    }
+  ],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/literature/manifest.json",
+    "agent-system/extensions/literature/EXTENSION.md",
+    "agent-system/extensions/epidemiology/settings-fragment.json",
+    "agent-system/extensions/present/context/project/present/talk/templates/pptx-project/UCSF_ZSFG_Template_16x9.pptx",
+    "agent-system/extensions/founder/manifest.json",
+    "agent-system/extensions/founder/settings-fragment.json",
+    "agent-system/extensions/filetypes/manifest.json",
+    "agent-system/extensions/filetypes/settings-fragment.json",
+    "agent-system/extensions/memory/manifest.json",
+    "agent-system/extensions/memory/settings-fragment.json",
+    "agent-system/extensions/present/manifest.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/cslib/manifest.json",
+    "agent-system/extensions/latex/manifest.json",
+    "agent-system/extensions/lean/manifest.json",
+    "agent-system/extensions/nvim/manifest.json",
+    "agent-system/extensions/python/manifest.json",
+    "agent-system/extensions/slidev/manifest.json",
+    "agent-system/extensions/typst/manifest.json",
+    "agent-system/extensions/web/manifest.json",
+    "agent-system/extensions/z3/manifest.json",
+    "agent-system/extensions/formal/manifest.json",
+    "specs/977_extension_manifest_quick_fixes/plans/01_manifest-quick-fixes.md",
+    "specs/977_extension_manifest_quick_fixes/baseline-verify-deploy.txt",
+    "specs/977_extension_manifest_quick_fixes/summaries/01_manifest-quick-fixes-summary.md"
+  ],
+  "decisions_made": [
+    "Kept the top-level mcp_servers block in founder, filetypes, memory manifests as the picker's display source, since the new settings-fragment.json is the merge path and the two are complementary, not redundant.",
+    "Deleted present's mcp_servers.superdoc block outright (no fragment) since superdoc is referenced nowhere in present's own agents/skills/context/README, per the research report's finding.",
+    "Cleaned all 16 empty hooks:{} stubs (including core, literature, epidemiology) rather than a literal 13, per the research's recommendation for full consistency.",
+    "Corrected a jq-based Phase 7 sweep attempt that introduced unrelated reformatting churn (compact arrays reformatted to multi-line) by reverting via git show HEAD:<path> and redoing with targeted Edit string replacements, leaving a diff containing only the intended stub-field deletions."
+  ],
+  "dead_ends": [
+    "Piping all 17 manifests through `jq --indent 2 <filter>` to delete mcp_servers/hooks stubs -- correct output but unacceptable reformatting side effects on unrelated compact-inline arrays; do not repeat for future manifest-wide sweeps, use targeted Edit/sed on the specific trailing stub instead."
+  ],
+  "phases_completed": 8,
+  "phases_total": 8,
+  "plan_markers_verified": true
+}
