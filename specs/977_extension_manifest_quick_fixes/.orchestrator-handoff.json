@@ -1,0 +1,23 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "research",
+  "status": "researched",
+  "summary": "All five manifest defects independently verified true (jq crash reproduced exit 5, mcp_servers/mcpServers casing confirmed, pptx dead-weight confirmed ~82% of present's footprint, filetypes dependency confirmed unused, four mcp_servers orphans confirmed by name). Item 5 judgment resolved: add settings-fragment.json for founder/filetypes/memory (actively used tools), delete the block for present (superdoc unreferenced there). One number correction: item 3's file is ~82% of the extension, not 76%.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/977_extension_manifest_quick_fixes/reports/01_manifest-quick-fixes-verification.md"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "plan",
+  "files_modified": [],
+  "decisions_made": [
+    "founder, filetypes, memory get a real settings-fragment.json + merge_targets.settings (their MCP tools are actively referenced throughout each extension)",
+    "present's orphaned mcp_servers.superdoc block is deleted, not wired up (zero references anywhere in present's own agents/skills/context/README)",
+    "Empty hooks: {} cleanup should cover all 16 manifests found repo-wide (including core, literature, epidemiology) rather than trying to hit a literal 13, since the count discrepancy is an artifact of item-grouping, not a real difference in severity"
+  ],
+  "dead_ends": [],
+  "phases_completed": 0,
+  "phases_total": 0
+}

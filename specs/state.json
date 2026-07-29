@@ -3123,7 +3123,7 @@
       "project_number": 977,
       "project_name": "extension_manifest_quick_fixes",
       "title": "Extension manifest quick-fix batch (keyword_overrides shape, mcpServers casing, dead weight)",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "extensions",
       "dependencies": [
@@ -3139,8 +3139,15 @@
       ],
       "description": "A batch of small, independently-verified extension manifest defects from the agent-system review (specs/reviews/review-2026-07-29-agent-system.md, extension-consistency section). Each item is a few lines; they are batched because they share the manifest/lint file surface.\n\nWORK:\n  1. literature/manifest.json keyword_overrides is the WRONG JSON SHAPE — values are strings ('literature': 'meta') where the consumer (core/commands/task.md keyword-override block, which iterates .keyword_overrides | to_entries[] | select(.value.keywords[]? ...)) requires {\"<task_type>\": {\"keywords\": [...], \"aliases\": [...]}} as in cslib/manifest.json and email/manifest.json. The jq crashes with 'Cannot index string with string \"keywords\"' (reproduced, exit 5) and the error is swallowed by 2>/dev/null, so THE FEATURE HAS NEVER WORKED. Reshape to {\"meta\": {\"keywords\": [\"literature\",\"zotero\",\"bibliography\",\"citation\"]}}. Note this was already diagnosed as P0 (IN-02) in specs/archive/814_synthesize_improvement_roadmap/reports/01_improvement-roadmap.md and never applied.\n  2. epidemiology/settings-fragment.json uses snake_case 'mcp_servers'; Claude Code reads camelCase 'mcpServers' (as lean/ and nix/ fragments correctly use). The rmcp MCP server has therefore never installed. One-word fix.\n  3. Delete agent-system/extensions/present/context/project/present/talk/templates/pptx-project/UCSF_ZSFG_Template_16x9.pptx — a 3,046,296-byte PowerPoint that is 76% of the entire present extension, referenced by NOTHING (the sibling index.json's files array deliberately excludes it; pptx-assembly-agent.md lists only theme_mappings.json, generate_deck.py, README.md), and re-copied into .claude/context/ on every present load.\n  4. Drop the literature -> filetypes dependency in literature/manifest.json: grep -rn filetypes agent-system/extensions/literature/ returns exactly one hit (the manifest itself); literature ships its own conversion pipeline. This dependency force-loads a 380KB extension and cascades via cslib -> lean -> literature -> filetypes.\n  5. Resolve the four orphaned manifest mcp_servers blocks (filetypes, founder, memory, present declare servers with no merge_targets.settings route — documented as not-consumed in extension-system.md): either add a settings-fragment.json + merge target, or delete the block. Then delete the seven empty 'mcp_servers': {} and thirteen empty 'hooks': {} vestigial stubs across the other manifests.\n\nVERIFICATION BAR:\n  - A /task invocation whose description contains 'literature' or 'zotero' resolves task_type per the reshaped override with no jq stderr (run the consumer jq directly against the manifest and assert exit 0).\n  - The epidemiology fragment merges under mcpServers in a scratch settings merge.\n  - du -sh of the present extension drops by ~3MB; check-extension-docs.sh still passes for present.\n  - No manifest retains an empty mcp_servers/hooks object; check-extension-docs.sh passes for all touched extensions.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-07-29T19:29:18Z",
-      "last_updated": "2026-07-29T19:40:45Z",
-      "session_id": "sess_1785353358_66268f"
+      "last_updated": "2026-07-29T21:16:17Z",
+      "session_id": "sess_1785355598_1f68c0_977",
+      "artifacts": [
+        {
+          "path": "specs/977_extension_manifest_quick_fixes/reports/01_manifest-quick-fixes-verification.md",
+          "type": "research",
+          "summary": "Independent verification of all five extension-manifest quick-fix items, with the item-5 add-fragment-vs-delete-block judgment resolved per extension."
+        }
+      ]
     },
     {
       "project_number": 978,

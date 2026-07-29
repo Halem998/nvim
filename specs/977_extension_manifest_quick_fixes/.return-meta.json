@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/977_extension_manifest_quick_fixes/reports/01_manifest-quick-fixes-verification.md",
+      "summary": "Independent verification of all five extension-manifest quick-fix items, with the item-5 add-fragment-vs-delete-block judgment resolved per extension."
+    }
+  ],
+  "next_steps": "Run /plan 977 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1785355598_1f68c0_977",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 5
+  },
+  "memory_candidates": [
+    {
+      "content": "extension-system.md's settings-fragment.json contract requires camelCase mcpServers at the top level; a manifest's own top-level mcp_servers field (any casing) is display-only and never consumed by the loader's merge_settings() -- it does a plain deep-merge with no key-name translation. When auditing extensions for MCP tool registration bugs, check both: (1) settings-fragment.json uses mcpServers not mcp_servers, and (2) every non-empty top-level manifest mcp_servers block has a matching merge_targets.settings entry -- four extensions (founder, filetypes, memory, present) were found with the latter gap and no automated check catches it.",
+      "category": "PATTERN",
+      "source_artifact": "specs/977_extension_manifest_quick_fixes/reports/01_manifest-quick-fixes-verification.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["extension-manifest", "mcp_servers", "mcpServers", "settings-fragment", "merge_targets"]
+    },
+    {
+      "content": "task.md's keyword_overrides consumer (steps 4b/4e) requires {\"<task_type>\": {\"keywords\": [...], \"aliases\": [...]}} shape and pipes the jq call through 2>/dev/null, so a manifest using the wrong shape (flat string values) fails silently with no visible error -- the routing feature simply never matches for that extension. When reviewing new keyword_overrides entries, always test the jq pattern directly (not just visually inspect the JSON) since a shape error produces zero user-visible symptoms.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/977_extension_manifest_quick_fixes/reports/01_manifest-quick-fixes-verification.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["keyword_overrides", "silent-failure", "jq", "task-routing"]
+    }
+  ]
+}

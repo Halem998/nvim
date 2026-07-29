@@ -48,7 +48,7 @@ next_project_number: 990
 ### Extensions
 
 975 [NOT STARTED] — Fix the generated .claude/CLAUDE.md containing its entire body TW
-977 [NOT STARTED] — A batch of small, independently-verified extension manifest defec
+977 [RESEARCHED] — A batch of small, independently-verified extension manifest defec
 980 [NOT STARTED] — Collapse the TWO independent deploy engines writing .claude/ into
 
 ### Orchestration Concurrency
@@ -426,10 +426,11 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 977. Extension manifest quick-fix batch (keyword_overrides shape, mcpServers casing, dead weight)
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 976
+- **Research**: [977_extension_manifest_quick_fixes/reports/01_manifest-quick-fixes-verification.md]
 
 **Description**: A batch of small, independently-verified extension manifest defects from the agent-system review (specs/reviews/review-2026-07-29-agent-system.md, extension-consistency section). Each item is a few lines; they are batched because they share the manifest/lint file surface.
 
