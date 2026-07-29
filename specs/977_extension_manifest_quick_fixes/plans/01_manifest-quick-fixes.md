@@ -263,26 +263,30 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 5: Drop the literature -> filetypes dependency [NOT STARTED]
+### Phase 5: Drop the literature -> filetypes dependency [COMPLETED]
 
 - **Goal:** Stop `literature` from force-loading a ~380 KB unrelated extension, and stop the
   `cslib` -> `lean` -> `literature` -> `filetypes` cascade.
 - **Tasks:**
-  - [ ] Re-run `grep -rn filetypes agent-system/extensions/literature/` and confirm the only hit is
+  - [x] Re-run `grep -rn filetypes agent-system/extensions/literature/` and confirm the only hit is
         the manifest's own `dependencies` array. If more hits appear, STOP and report — a real code
-        reference invalidates the premise.
-  - [ ] Also grep the `literature` tree for `superdoc`, `openpyxl`, `docx`, `xlsx` and confirm zero
-        hits (an indirect use of `filetypes` capabilities under a different name).
-  - [ ] Edit `agent-system/extensions/literature/manifest.json`, changing `dependencies` from
-        `["core", "filetypes"]` to `["core"]`.
-  - [ ] Add a short changelog/behavior note to `agent-system/extensions/literature/EXTENSION.md`
+        reference invalidates the premise. *(completed: exactly 1 hit)*
+  - [x] Also grep the `literature` tree for `superdoc`, `openpyxl`, `docx`, `xlsx` and confirm zero
+        hits (an indirect use of `filetypes` capabilities under a different name). *(completed:
+        zero hits)*
+  - [x] Edit `agent-system/extensions/literature/manifest.json`, changing `dependencies` from
+        `["core", "filetypes"]` to `["core"]`. *(completed)*
+  - [x] Add a short changelog/behavior note to `agent-system/extensions/literature/EXTENSION.md`
         (or the extension's README if EXTENSION.md has no changelog section) stating that
         `filetypes` is no longer a transitive dependency and that a repo relying on it must load
         `filetypes` explicitly. **Reference durable anchors only** — name the manifest field
         (`dependencies`) and the extension names. Do NOT cite a task number: this file lives
-        outside `specs/**` and a blocking PreToolUse hook will reject the write.
-  - [ ] Re-confirm the cascade is broken: `jq '.dependencies'` across `cslib`, `lean`,
-        `literature`, `filetypes` shows no path from `cslib` to `filetypes`.
+        outside `specs/**` and a blocking PreToolUse hook will reject the write. *(completed: added
+        a "Dependencies" section)*
+  - [x] Re-confirm the cascade is broken: `jq '.dependencies'` across `cslib`, `lean`,
+        `literature`, `filetypes` shows no path from `cslib` to `filetypes`. *(completed: cslib ->
+        [core, lean, literature], lean -> [core, literature], literature -> [core], filetypes ->
+        [core] — no path)*
 - **Timing:** 30 minutes
 - **Depends on:** 2
 - **Verification Tier:** full

@@ -3,8 +3,7 @@
   "version": "2.0.0",
   "description": "Unified literature management: scan, convert PDFs/DJVUs, maintain index.json, search/import from Zotero, and manage per-repo sub-index. Replaces separate zotero extension.",
   "dependencies": [
-    "core",
-    "filetypes"
+    "core"
   ],
   "routing_exempt": true,
   "provides": {

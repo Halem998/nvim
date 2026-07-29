@@ -4,6 +4,14 @@ Unified extension for managing the global Literature/ repository (`~/Projects/Li
 per-repo sub-indices (`specs/literature-index.json`). Handles source discovery, PDF/DJVU
 conversion, FTS5-backed search, and agent context briefing. Absorbs the former zotero extension.
 
+### Dependencies
+
+`manifest.json`'s `dependencies` array declares only `core`. `filetypes` is NOT a transitive
+dependency of this extension — the literature PDF/DJVU-to-markdown pipeline never calls into
+`filetypes`'s docx/xlsx/pptx-editing tooling. A repo whose workflow relies on `filetypes`
+capabilities being present alongside `literature` (e.g. via a shared cascade through `lean` or
+`cslib`) must load `filetypes` explicitly rather than expecting it bundled in.
+
 ### Global Repository and Per-Repo Sub-Index
 
 The global Literature/ repo is the single source of truth for all converted literature:
