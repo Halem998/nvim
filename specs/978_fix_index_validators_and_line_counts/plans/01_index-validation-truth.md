@@ -1,7 +1,7 @@
 # Implementation Plan: Task #978
 
 - **Task**: 978 - fix_index_validators_and_line_counts
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/978_fix_index_validators_and_line_counts/reports/01_context-index-validation-truth.md
@@ -125,25 +125,30 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Make validate-context-index.sh report true counts [NOT STARTED]
+### Phase 1: Make validate-context-index.sh report true counts [COMPLETED]
 
 **Goal**: Every check block's `ERRORS`/`WARNINGS` increment reaches the parent shell, and the
 summary text is honest about warnings.
 
 **Tasks**:
-- [ ] Convert all four `jq ... | while IFS=... read` pipelines to `while ... read ... < <(jq ...)`
+- [x] Convert all four `jq ... | while IFS=... read` pipelines to `while ... read ... < <(jq ...)`
       process substitution: the path-existence block, the line-count block, the domain-validity
-      block, and the deprecated-entries block.
-- [ ] Leave the already-correct C-style "Checking entry fields" loop untouched.
-- [ ] Change the summary so a run with `WARNINGS > 0` says so explicitly rather than printing a
+      block, and the deprecated-entries block. *(completed: confirmed exactly 4 via grep -c '| while' before editing, matching the plan)*
+- [x] Leave the already-correct C-style "Checking entry fields" loop untouched. *(completed)*
+- [x] Change the summary so a run with `WARNINGS > 0` says so explicitly rather than printing a
       bare `Validation PASSED`; keep the exit code driven by `ERRORS` only, so existing callers
-      see no behavior change in verdict.
-- [ ] Add an opt-in `--strict` flag that makes a nonzero warning count exit nonzero, documented in
-      the script header alongside the existing `--fix` note. Do not make it the default.
-- [ ] Update the script's header comment block to describe the corrected behavior and the new
-      flag.
-- [ ] Confirm the existing `--fix` stub is left as a documented no-op (real regeneration is
-      Phase 2's job, and it targets the source store, not this deployed-index script).
+      see no behavior change in verdict. *(completed)*
+- [x] Add an opt-in `--strict` flag that makes a nonzero warning count exit nonzero, documented in
+      the script header alongside the existing `--fix` note. Do not make it the default. *(completed)*
+- [x] Update the script's header comment block to describe the corrected behavior and the new
+      flag. *(completed)*
+- [x] Confirm the existing `--fix` stub is left as a documented no-op (real regeneration is
+      Phase 2's job, and it targets the source store, not this deployed-index script). *(completed: stub unchanged, comment clarified)*
+- [x] *(deviation: altered — added REPO_ROOT-bypass preamble matching check-extension-docs.sh's
+      pattern, not explicitly listed in the plan's task list but required for the phase's own
+      verification command (`REPO_ROOT=$(pwd) bash ... validate-context-index.sh`) to run at all
+      from the source-store copy against the deployed index; previously the script unconditionally
+      sourced deploy-root-guard.sh and would exit 1 for any source-store invocation)*
 
 **Timing**: 45 minutes
 

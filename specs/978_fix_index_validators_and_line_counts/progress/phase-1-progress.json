@@ -1,0 +1,26 @@
+{
+  "phase": 1,
+  "phase_name": "Make validate-context-index.sh report true counts",
+  "started_at": "2026-07-29T23:00:00Z",
+  "last_updated": "2026-07-29T23:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Convert four jq|while pipelines to process substitution; honest summary; --strict flag; header update; REPO_ROOT bypass preamble",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/validate-context-index.sh"]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.7",
+      "description": "Added REPO_ROOT-bypass preamble (matching check-extension-docs.sh) to validate-context-index.sh",
+      "type": "altered",
+      "reason": "Required for the phase's own verification command to run from the source-store copy against the deployed index; script previously always sourced deploy-root-guard.sh unconditionally.",
+      "annotation": "*(deviation: altered — added REPO_ROOT-bypass preamble matching check-extension-docs.sh's pattern)*"
+    }
+  ]
+}
