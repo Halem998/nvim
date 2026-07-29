@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Build the source-store line_count regenerator",
+  "started_at": "2026-07-29T23:15:00Z",
+  "last_updated": "2026-07-29T23:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create generate-context-line-counts.sh with --check/--write modes, declare in manifest.json",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/generate-context-line-counts.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

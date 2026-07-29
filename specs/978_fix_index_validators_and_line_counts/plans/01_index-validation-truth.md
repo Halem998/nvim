@@ -176,31 +176,31 @@ and note the discrepancy.
 
 ---
 
-### Phase 2: Build the source-store line_count regenerator [NOT STARTED]
+### Phase 2: Build the source-store line_count regenerator [COMPLETED]
 
 **Goal**: A new, declared, POSIX-shell-styled script computes correct `line_count` values for
 every entry in every extension's source `index-entries.json`, with a non-mutating check mode.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/generate-context-line-counts.sh` following the
+- [x] Create `agent-system/extensions/core/scripts/generate-context-line-counts.sh` following the
       surrounding style in that directory: `set -uo pipefail`, the
       `[[ -n "${REPO_ROOT:-}" ]] || . deploy-root-guard.sh` / `EXT_DIR="${EXT_DIR:-...}"` preamble
       used by `check-extension-docs.sh`, `info`/`fail`-style output helpers, and `jq` for all JSON
-      reads and writes.
-- [ ] Iterate `$EXT_DIR/*/index-entries.json`; for each entry resolve the source file as
-      `$EXT_DIR/<ext>/context/<entry.path>` and compute `wc -l`.
-- [ ] Treat `line_count: null` and a numeric mismatch identically — both recompute from `wc -l`.
-- [ ] Handle a missing source file as a reported problem, never a silent skip and never a written
-      `null`.
-- [ ] Implement two modes: default/`--check` (report only, exit nonzero when any entry is wrong,
+      reads and writes. *(completed)*
+- [x] Iterate `$EXT_DIR/*/index-entries.json`; for each entry resolve the source file as
+      `$EXT_DIR/<ext>/context/<entry.path>` and compute `wc -l`. *(completed)*
+- [x] Treat `line_count: null` and a numeric mismatch identically — both recompute from `wc -l`. *(completed)*
+- [x] Handle a missing source file as a reported problem, never a silent skip and never a written
+      `null`. *(completed: 0 missing found live)*
+- [x] Implement two modes: default/`--check` (report only, exit nonzero when any entry is wrong,
       write nothing) and `--write` (rewrite each `index-entries.json` in place with corrected
       values, preserving key order and formatting as closely as `jq` allows, and reporting a
-      per-extension changed-entry count).
-- [ ] Preserve every other field on each entry untouched; only `line_count` may change.
-- [ ] Add the script to `provides.scripts` in `agent-system/extensions/core/manifest.json` so the
-      existing Rule Q undeclared-scripts check stays clean.
-- [ ] Write the script header comment explaining why it targets the source store and not the
-      deployed `.claude/context/index.json`, citing the source-store/deploy boundary rule by name.
+      per-extension changed-entry count). *(completed)*
+- [x] Preserve every other field on each entry untouched; only `line_count` may change. *(completed: jq `.entries[$i].line_count = $n` in-place update)*
+- [x] Add the script to `provides.scripts` in `agent-system/extensions/core/manifest.json` so the
+      existing Rule Q undeclared-scripts check stays clean. *(completed)*
+- [x] Write the script header comment explaining why it targets the source store and not the
+      deployed `.claude/context/index.json`, citing the source-store/deploy boundary rule by name. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -213,6 +213,10 @@ mismatch numerically and 94 are `null` (124 exact). Confirm at implementation ti
 new script's `--check` mode and comparing its census to these figures; report the actual numbers
 in the phase record rather than restating the plan's. A material divergence means the tree moved
 and the numbers here are stale, not that the generator is wrong.
+
+**Scope Hypothesis result (re-derived live)**: exact match, matches the research report exactly —
+444 total entries across 19 extensions, 124 exact, 226 numeric mismatch, 94 null, 0 missing
+source. No divergence.
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/generate-context-line-counts.sh` - new file.

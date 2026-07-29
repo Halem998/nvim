@@ -109,6 +109,7 @@
       "events-append.sh",
       "events-query.sh",
       "export-to-markdown.sh",
+      "generate-context-line-counts.sh",
       "generate-task-order.sh",
       "generate-todo.sh",
       "git-commit-scoped.sh",
