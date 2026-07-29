@@ -274,26 +274,33 @@ re-scoped before proceeding.
 
 ---
 
-### Phase 4: Deploy propagation and final gate [NOT STARTED]
+### Phase 4: Deploy propagation and final gate [COMPLETED]
 
 **Goal**: The runtime doc-lint gate at `.claude/scripts/check-extension-docs.sh` carries the fix
 via the normal deploy path (never a hand-edit) and exits 0.
 
 **Tasks**:
-- [ ] Propagate the source-store change to the deploy tree using the existing deploy path
+- [x] Propagate the source-store change to the deploy tree using the existing deploy path
       (`bash .claude/scripts/deploy-headless.sh`, or the repo's standard "Load Core" sync). Do NOT
-      hand-author or hand-edit `.claude/scripts/check-extension-docs.sh`.
-- [ ] Confirm propagation landed: diff the deployed copy against the source-store copy and confirm
-      the `check_undeclared_scripts()` bodies are identical.
-- [ ] If propagation did NOT land (a known, documented gap exists in the headless sync path for
+      hand-author or hand-edit `.claude/scripts/check-extension-docs.sh`. *(completed: ran
+      `bash .claude/scripts/deploy-headless.sh`, 303 artifacts deployed)*
+- [x] Confirm propagation landed: diff the deployed copy against the source-store copy and confirm
+      the `check_undeclared_scripts()` bodies are identical. *(completed: `diff` exit 0, bodies
+      byte-for-byte identical — no propagation gap encountered this run)*
+- [x] If propagation did NOT land (a known, documented gap exists in the headless sync path for
       already-loaded extensions), report that explicitly in the implementation summary as an open
       deploy-mechanism issue and mark this phase `[PARTIAL]`. Do NOT work around it by editing
-      `.claude/**` directly.
-- [ ] Run the runtime gate: `bash .claude/scripts/check-extension-docs.sh`; confirm exit status 0.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` (or its source-store equivalent with an explicit
+      `.claude/**` directly. *(not applicable — propagation landed cleanly)*
+- [x] Run the runtime gate: `bash .claude/scripts/check-extension-docs.sh`; confirm exit status 0.
+      *(completed: exit 0, "PASS: all extensions OK")*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` (or its source-store equivalent with an explicit
       REPO_ROOT override) and confirm no new failures, including its task-reference lint gate.
-- [ ] Commit the source-store change with a scoped commit (source-store script + `specs/**`
-      artifacts only; never `git add -A`).
+      *(completed: exit 0, "PASS -- 12 check(s), 0 failure(s)"; the one WARN present is a
+      pre-existing, unrelated duplicate Stop-hook registration)*
+- [x] Commit the source-store change with a scoped commit (source-store script + `specs/**`
+      artifacts only; never `git add -A`). *(completed: the source-store script edit was already
+      committed incrementally in the Phase 1 and Phase 2 per-substep commits; this phase's own
+      plan/progress-file updates are committed as the Phase 4 closing commit)*
 
 **Timing**: 20 minutes
 
