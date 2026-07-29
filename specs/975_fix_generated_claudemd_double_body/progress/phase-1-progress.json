@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Retire section injection from the sync re-inject path",
+  "started_at": "2026-07-29T00:00:00Z",
+  "last_updated": "2026-07-29T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Remove per-extension inject_section() call for config-markdown merge key; add post-loop generate_claudemd() call", "status": "done", "files_touched": ["lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua"]},
+    {"id": 2, "description": "Remove dead merge_key local if unused after deletion", "status": "done", "files_touched": ["lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua"]},
+    {"id": 3, "description": "Correct module header comment block describing section preservation regime", "status": "done", "files_touched": ["lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua"]},
+    {"id": 4, "description": "Correct reinject_loaded_extensions() docstring naming inject_section", "status": "done", "files_touched": ["lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

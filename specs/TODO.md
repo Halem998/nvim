@@ -47,7 +47,7 @@ next_project_number: 990
 
 ### Extensions
 
-975 [PLANNED] — Fix the generated .claude/CLAUDE.md containing its entire body TW
+975 [IMPLEMENTING] — Fix the generated .claude/CLAUDE.md containing its entire body TW
 980 [NOT STARTED] — Collapse the TWO independent deploy engines writing .claude/ into
 
 ### Orchestration Concurrency
@@ -480,7 +480,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/core/scripts/**, never
 ---
 
 ### 975. Fix generated CLAUDE.md double-body and duplicate Stop-hook registration
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 976

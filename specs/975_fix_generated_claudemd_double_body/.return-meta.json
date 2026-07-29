@@ -1,37 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/975_fix_generated_claudemd_double_body/plans/01_claudemd-hook-dedup-fix.md",
-      "summary": "Six-phase plan fixing the CLAUDE.md double-body via computed-artifact regeneration in sync.lua and the duplicate Stop-hook via a matcher-aware, self-normalizing settings merge in merge.lua"
-    },
-    {
-      "type": "handoff",
-      "path": "specs/975_fix_generated_claudemd_double_body/.orchestrator-handoff.json",
-      "summary": "Orchestrator handoff recording planned status, 6 phases, and the 4-wave dependency structure"
-    }
-  ],
-  "next_steps": "Run /implement 975 to execute the plan",
+  "status": "in_progress",
+  "artifacts": [],
   "metadata": {
     "session_id": "sess_1785362998_047bfe",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 5,
-    "dependency_waves": [[1, 3], [2, 4], [5], [6]]
-  },
-  "memory_candidates": [
-    {
-      "content": "In the nvim extension-loader deploy system, merge targets fall into two structurally different regimes that must not be mixed. Computed artifacts (claudemd/opencode_md merge keys, opencode.json) are regenerated wholesale by generate_claudemd()/generate_opencode_json() and deliberately carry NO section markers; incremental-append targets (settings, index) are merged in place and never regenerated. When a defect shows duplicated content in a computed artifact, the cause is almost always a caller still driving the retired incremental primitive (inject_section) against a file the computed regime owns -- check every caller for regime agreement rather than restoring markers. A computed artifact self-heals on the next regeneration, which makes the defect intermittent and makes a clean live file worthless as evidence of absence; an incremental-append target does not self-heal and its duplicates are a one-way ratchet.",
-      "category": "PATTERN",
-      "source_artifact": "specs/975_fix_generated_claudemd_double_body/plans/01_claudemd-hook-dedup-fix.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["extension-loader", "computed-artifact", "merge-targets", "generate_claudemd", "inject_section", "deploy-idempotency"]
-    }
-  ],
-  "modified_files": [
-    "specs/975_fix_generated_claudemd_double_body/plans/01_claudemd-hook-dedup-fix.md"
-  ]
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 6
+  }
 }

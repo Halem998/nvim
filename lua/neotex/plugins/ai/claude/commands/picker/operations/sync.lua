@@ -3,10 +3,13 @@
 -- Extension artifacts are filtered via aggregate_extension_artifacts() to ensure
 -- only core artifacts are synced, regardless of what extensions are loaded globally
 --
--- Section Preservation: When syncing config markdown files (CLAUDE.md, OPENCODE.md),
--- any <!-- SECTION: {id} -->...<!-- END_SECTION: {id} --> blocks injected by loaded
--- extensions are preserved across the overwrite. After a full sync, merge targets
--- for all loaded extensions are also re-injected as defense-in-depth.
+-- Section Preservation: applies only to the .opencode OPENCODE.md path, where
+-- <!-- SECTION: {id} -->...<!-- END_SECTION: {id} --> blocks injected by loaded
+-- extensions are preserved across a raw file-copy overwrite. Config markdown for
+-- .claude (CLAUDE.md) is a computed artifact: it carries no section markers and
+-- is regenerated wholesale by generate_claudemd() after each full sync, rather
+-- than being section-injected. After a full sync, the other merge targets
+-- (settings, index) for all loaded extensions are re-injected as defense-in-depth.
 
 local M = {}
 
@@ -213,8 +216,11 @@ end
 --- This provides defense-in-depth: even if section preservation missed something
 --- (e.g., settings.json or index.json which don't have section markers),
 --- re-running merge targets restores all extension-injected content.
---- All merge operations (inject_section, merge_settings, append_index_entries) are
---- idempotent, so re-injection is safe even when section preservation already worked.
+--- Config markdown (CLAUDE.md/OPENCODE.md) is a computed artifact and is NOT
+--- re-injected per extension here: it is regenerated once, after the loop, via
+--- generate_claudemd(). All other merge operations (merge_settings,
+--- append_index_entries) are idempotent, so re-injection is safe even when
+--- section preservation already worked.
 --- @param project_dir string Project directory path
 --- @param config table Extension system configuration
 local function reinject_loaded_extensions(project_dir, config)
@@ -242,19 +248,6 @@ local function reinject_loaded_extensions(project_dir, config)
     if extension and extension.manifest and extension.manifest.merge_targets then
       local ext_manifest = extension.manifest
       local source_dir = extension.path
-      local merge_key = config.merge_target_key
-
-      -- Re-inject config markdown section (CLAUDE.md or OPENCODE.md)
-      if ext_manifest.merge_targets[merge_key] then
-        local mt_config = ext_manifest.merge_targets[merge_key]
-        local source_path = source_dir .. "/" .. mt_config.source
-        local target_path = project_dir .. "/" .. mt_config.target
-
-        local section_content = read_file_string(source_path)
-        if section_content then
-          merge_mod.inject_section(target_path, section_content, mt_config.section_id)
-        end
-      end
 
       -- Re-inject settings merge
       if ext_manifest.merge_targets.settings then
@@ -285,6 +278,13 @@ local function reinject_loaded_extensions(project_dir, config)
 
     end
   end
+
+  -- Regenerate config markdown (CLAUDE.md/OPENCODE.md) as a computed artifact
+  -- after all other re-injections. This rebuilds the file from base template +
+  -- all loaded extension fragments, matching the load/unload path in init.lua.
+  -- Unconditional and config-generic: covers both the .claude and .opencode
+  -- deploy targets via config.merge_target_key.
+  merge_mod.generate_claudemd(project_dir, config)
 
   -- Regenerate opencode.json as a computed artifact after all other re-injections.
   -- This rebuilds the file from base template + all loaded extension fragments.
