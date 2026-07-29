@@ -362,6 +362,16 @@ Commit failure is non-blocking (log and continue).
 
 ## Error Handling
 
-- **GATE IN Failure**: Task not found, no plan, or invalid status — return error with guidance
+- **GATE IN Failure**: Task not found, no plan, or invalid status — return error with guidance.
+  Locked by another session: `command-gate-in.sh` propagates `task-lock.sh acquire-retry`'s
+  refusal (still held by a genuinely different session after the bounded retry budget — Tier 2
+  of the four-tier conflict-response ladder already retried before this ABORT fired) — ABORT
+  with the lock's held-by/reason message (Tier 3), including the cross-task `file_scope` overlap
+  ABORT variant. **Tier 4 (ask)**: apply `.claude/context/patterns/task-lock.md`'s "Tier 4: The
+  Ask Flow" block here — when `orchestrator_mode != "true"`, ask the user (wait longer / skip
+  this task / print the manual override remedy) instead of ABORTing outright; when
+  `orchestrator_mode == "true"`, emit `[conflict:auto]` and treat this ABORT as the terminus,
+  exactly as today. Absent Tier 4 (or after "skip"), re-run once the other session's operation
+  completes or its lock goes stale.
 - **DELEGATE Failure**: Keep [IMPLEMENTING], log error; phase markers preserved for resume
 - **GATE OUT Failure**: Missing artifacts — log warning, continue with available

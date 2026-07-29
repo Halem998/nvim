@@ -412,32 +412,35 @@ with `git status --short`.
 
 ---
 
-### Phase 6: Tier 4 — `orchestrator_mode`-gated ask, reachable only where a human exists [NOT STARTED]
+### Phase 6: Tier 4 — `orchestrator_mode`-gated ask, reachable only where a human exists [COMPLETED]
 
 **Goal**: Add the last-resort ask tier where it can actually run, with a deterministic autonomous
 default everywhere else.
 
 **Tasks**:
-- [ ] Author the shared Tier-4 flow ONCE in `context/patterns/task-lock.md` as a directly-executable
+- [x] Author the shared Tier-4 flow ONCE in `context/patterns/task-lock.md` as a directly-executable
       block, modeled on `lit-stage4a-flow.md`'s `AUTONOMOUS_GLOBAL` precedent: resolve
       `orchestrator_mode` from the delegation context defaulting to `"false"`; when `true`, MUST NOT
       call `AskUserQuestion` — emit a distinctly-prefixed `[conflict:auto]` notice stating that the
       warn tier is the autonomous terminus and why, then defer/skip; when `false`, present the real
-      question.
-- [ ] Specify the interactive question's content: it surfaces the same fields the warn tier already
+      question. *(completed — "Tier 4: The Ask Flow" section)*
+- [x] Specify the interactive question's content: it surfaces the same fields the warn tier already
       carries (other session or registered session id, overlapping path, heartbeat age or liveness
       reason) plus three choices — wait longer (one additional bounded retry budget), skip this task
       this invocation, or override manually (print the exact `rm -rf "$lock_dir"` remedy; never
-      perform the removal on the user's behalf).
-- [ ] State explicitly in the block that Tier 4 CANNOT live in `command-gate-in.sh` — a bash script
+      perform the removal on the user's behalf). *(completed)*
+- [x] State explicitly in the block that Tier 4 CANNOT live in `command-gate-in.sh` — a bash script
       cannot call `AskUserQuestion` — so the gate script returns 1 as it does today and the ask tier
-      lives in the command markdown that sources it.
-- [ ] Wire the reference into `commands/research.md`, `commands/plan.md`, and `commands/implement.md`
+      lives in the command markdown that sources it. *(completed)*
+- [x] Wire the reference into `commands/research.md`, `commands/plan.md`, and `commands/implement.md`
       single-task paths, immediately after the `source .claude/scripts/command-gate-in.sh` failure
-      branch, each pointing at the single shared block rather than duplicating it.
-- [ ] Record that `/orchestrate`, `/revise`, and `/task` are deliberately NOT wired to Tier 4:
+      branch, each pointing at the single shared block rather than duplicating it. *(completed — same
+      edit also corrected the "Locked by another session" bullet's `acquire` -> `acquire-retry`
+      wording deferred from Phase 3)*
+- [x] Record that `/orchestrate`, `/revise`, and `/task` are deliberately NOT wired to Tier 4:
       `/orchestrate` has zero synchronous confirmation gates by design, and `/revise` and `/task`
       are not conflict-response entry points. Note that this is a decision, not an omission.
+      *(completed — "Deliberately Not Wired" subsection in task-lock.md)*
 
 **Timing**: 1.5 hours
 

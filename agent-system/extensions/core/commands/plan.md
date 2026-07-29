@@ -632,13 +632,20 @@ Next: /implement {N}
 ### GATE IN Failure
 - Task not found: Return error with guidance
 - Terminal status (completed/abandoned): Return error with current status
-- Locked by another session: `command-gate-in.sh` propagates `task-lock.sh acquire`'s refusal
-  (a fresh lock held by a genuinely different session) — ABORT with the lock's held-by/reason
-  message; re-run once the other session's operation completes or its lock goes stale
+- Locked by another session: `command-gate-in.sh` propagates `task-lock.sh acquire-retry`'s
+  refusal (still held by a genuinely different session after the bounded retry budget — Tier 2
+  of the four-tier conflict-response ladder already retried before this ABORT fired) — ABORT
+  with the lock's held-by/reason message (Tier 3). **Tier 4 (ask)**: apply
+  `.claude/context/patterns/task-lock.md`'s "Tier 4: The Ask Flow" block here — when
+  `orchestrator_mode != "true"`, ask the user (wait longer / skip this task / print the manual
+  override remedy) instead of ABORTing outright; when `orchestrator_mode == "true"`, emit
+  `[conflict:auto]` and treat this ABORT as the terminus, exactly as today. Absent Tier 4 (or
+  after "skip"), re-run once the other session's operation completes or its lock goes stale.
 - Cross-task `file_scope` overlap (the cross-task file_scope overlap check): if another currently-locked task's `file_scope`
   overlaps this task's and that lock is fresh, `/plan` ABORTs before DELEGATE, naming the
   conflicting task number — this is a new failure mode `/plan` did not have before this
-  gate-in refactor; re-run once the other task's lock releases or goes stale
+  gate-in refactor. The same Tier 4 reference above applies to this ABORT variant too. Re-run
+  once the other task's lock releases or goes stale.
 - Multi-task mode: the per-task lock-acquire refusal above moves that task from
   `validated_tasks` to `invalid_tasks` with reason `"locked by another session"` (skip, not a
   batch-abort)

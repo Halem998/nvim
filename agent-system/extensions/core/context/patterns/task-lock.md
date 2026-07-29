@@ -813,6 +813,98 @@ ABORT: Task {N}'s file_scope overlaps task {other_task}'s file_scope at "{overla
   Wait for task {other_task}'s lock to go stale, or coordinate with that session before retrying.
 ```
 
+## Tier 4: The Ask Flow (`orchestrator_mode`-Gated)
+
+The last-resort tier of the four-tier conflict-response ladder (auto-sequence, bounded retry,
+warn, ask — see this document's "Four-Tier Conflict Response" section below for the full ladder).
+Reachable ONLY where a human actually exists to answer: a direct single-task `/research`,
+`/plan`, or `/implement` invocation whose CHECKPOINT 1 GATE IN step (`command-gate-in.sh`) has
+just failed the acquire-retry call (Tier 2 exhausted, Tier 3's ABORT text already emitted). This
+is the SINGLE canonical Tier-4 block; `commands/research.md`, `commands/plan.md`, and
+`commands/implement.md` all reference it by pointer immediately after their `source
+.claude/scripts/command-gate-in.sh` failure branch rather than restating it — the same
+single-source-of-truth shape `context/patterns/lit-stage4a-flow.md` established for `--lit`'s
+Stage 4a, and this block's `orchestrator_mode` branch is modeled directly on that document's
+`AUTONOMOUS_GLOBAL` case.
+
+**Why Tier 4 cannot live in `command-gate-in.sh`**: `command-gate-in.sh` is a bash script, and
+`AskUserQuestion` is a tool call available only to the agent executing a command's markdown
+instructions — a bash script has no way to invoke it. `command-gate-in.sh` therefore keeps
+returning 1 exactly as it does today when `acquire-retry` refuses; the ask tier is layered on top
+of that failure by the SOURCING COMMAND's own markdown, never inside the sourced script.
+
+### Preconditions (variables the sourcing command already has in scope)
+
+- The captured stderr from the failed `command-gate-in.sh` call — this already carries every
+  field the Tier-3 ABORT message names (holding session or, for the cross-task variants, the
+  colliding task, overlapping path, and either heartbeat age or session liveness reason).
+- `orchestrator_mode` — value of the `orchestrator_mode` field from the delegation context this
+  command instance received (present when dispatched by `/orchestrate` or `/orchestrate --hard`;
+  absent/unset for a direct invocation). Default to `"false"` when unset, exactly as
+  `lit-stage4a-flow.md` does for its own `orchestrator_mode` precondition.
+
+### Branch on `orchestrator_mode`
+
+**`orchestrator_mode == "true"` (autonomous — `/orchestrate` dispatching a single-task
+sub-operation)**: **MUST NOT** call `AskUserQuestion` — no human is available to prompt. The warn
+tier (Tier 3) is the autonomous terminus. Emit a distinctly-prefixed notice and defer/skip the
+task for this invocation, exactly as `lit-stage4a-flow.md`'s `AUTONOMOUS_GLOBAL` branch emits
+`[lit:auto]` instead of prompting:
+
+```
+echo "[conflict:auto] Task acquire refused after the bounded retry budget; autonomous context (orchestrator_mode=true) — no human available to ask, so the warn tier (Tier 3) is the terminus for this invocation. Deferring/skipping this task rather than prompting." >&2
+```
+
+**`orchestrator_mode != "true"` (interactive — a direct `/research`, `/plan`, or `/implement`
+invocation)**: present the real question via `AskUserQuestion`.
+
+### The Interactive Question
+
+Surface the SAME fields the Tier-3 ABORT text already carries — never re-derive them, quote the
+captured stderr's holding-session-or-colliding-task identity, overlapping path (cross-task
+variants only), and heartbeat age or session liveness reason — plus exactly three choices:
+
+1. **Wait longer** — run ONE additional bounded retry budget (`task-lock.sh acquire-retry` again,
+   same budget/poll constants as Tier 2). This is a deliberate, user-authorized SECOND bounded
+   wait, distinct from Tier 2's own automatic first attempt; it is never automatic and never
+   repeats beyond this one extra round without the user choosing it again.
+2. **Skip this task this invocation** — the user declines to wait; the command reports this task
+   as skipped/refused and exits its single-task flow, exactly as an unanswered Tier-3 ABORT does
+   today.
+3. **Override manually** — print the EXACT remedy the Tier-3 ABORT text already names
+   (`rm -rf "{lock_dir}"` for the own-task variant; the equivalent coordinate-with-that-session
+   guidance for the cross-task variants, which have no lock of their own to remove). This tool
+   **NEVER** performs the removal on the user's behalf — it only prints the command for the user
+   to run themselves, identically to how the ABORT message has always presented it as manual
+   guidance, never an automated action.
+
+### Non-Silence Invariant
+
+Every branch above either asks the user a real question (interactive) or emits a visibly-logged
+`[conflict:auto]` notice explaining why it did not ask (autonomous). No branch silently retries
+forever, silently overrides the lock, and no branch silently skips without a logged reason —
+mirroring `lit-stage4a-flow.md`'s own Non-Silence Invariant for `--lit`.
+
+### Deliberately Not Wired
+
+`/orchestrate`, `/revise`, and `/task` do NOT reference this Tier-4 block. This is a recorded
+decision, not an omission:
+
+- **`/orchestrate`** has zero synchronous confirmation gates by design — its entire purpose is
+  autonomous, unattended lifecycle progression, so it always runs with `orchestrator_mode: true`
+  for every dispatch it makes, which structurally routes any conflict it hits to this same
+  block's autonomous branch anyway (see `context/patterns/lit-stage4a-flow.md`'s
+  `orchestrator_mode` Dual-Consumer Note, which documents the identical `orchestrator_mode: true`
+  propagation contract this Tier-4 gate reuses). Wiring the interactive branch into
+  `/orchestrate` would add dead code no execution path can ever reach.
+- **`/revise`** and **`/task`** are not conflict-response entry points: `/revise`'s documented
+  contract is "works regardless of task status" and it is exempt from the terminal-status guard
+  entirely (see `command-gate-in.sh`'s `operation != "revise"` branch); `/task`'s `expand` and
+  `abandon` operations source `command-gate-in.sh` for its session/task-lookup machinery but do
+  not represent conflict-prone, potentially-long-running work the way research/plan/implement
+  dispatches do. Neither command's failure mode benefits from a wait/skip/override menu the way a
+  blocked research, plan, or implementation dispatch does.
+
 ## Same-Session Re-Entry: The Critical Safety Property
 
 This is the **highest-impact risk** in this lock's design: a bug in the
