@@ -2279,7 +2279,7 @@
     {
       "project_number": 945,
       "project_name": "converge_conflict_detection_predicate",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "title": "Converge conflict detection onto one bounded predicate over locks, registry, and state",
@@ -2301,10 +2301,16 @@
       "dependencies": [
         944
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/945_converge_conflict_detection_predicate/reports/01_converge-conflict-predicate.md",
+          "type": "report",
+          "summary": "converge conflict predicate (backfilled by --sync)"
+        }
+      ],
       "created": "2026-07-28T17:22:36Z",
-      "last_updated": "2026-07-28T17:22:36Z",
-      "session_id": "sess_1785258774_be5724"
+      "last_updated": "2026-07-29T00:26:59Z",
+      "session_id": "sess_1785284456_e91a9c"
     },
     {
       "project_number": 946,
