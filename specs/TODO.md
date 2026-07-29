@@ -40,7 +40,7 @@ next_project_number: 970
 
 ### Orchestrator Completion Gate
 
-968 [RESEARCHED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+968 [PLANNED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ### State Write Coverage
 
@@ -86,10 +86,11 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 ---
 
 ### 968. Extend plan-heading evidence corroboration to the handoff-present completion path
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator-completion-gate
 - **Dependencies**: Task 967
+- **Research**: [968_corroborate_phase_counts_on_handoff_present_path/reports/01_corroborate_phase_counts_handoff_present.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
 
