@@ -477,20 +477,20 @@ anywhere.
 
 ---
 
-### Phase 8: Reap Wiring into /refresh [NOT STARTED]
+### Phase 8: Reap Wiring into /refresh [COMPLETED]
 
 **Goal**: Expose `session-reap` through explicit `/refresh` invocation only, following the numbering
 and echo discipline Step 4.5 already established.
 
 **Tasks**:
-- [ ] Read the current `skills/skill-refresh/SKILL.md` Step 4 ("Reap Stale Task Locks") and Step 4.5
+- [x] Read the current `skills/skill-refresh/SKILL.md` Step 4 ("Reap Stale Task Locks") and Step 4.5
       ("Reap Stale Session-Scoped Orchestration Files") to copy their exact shape.
-- [ ] Add a new **Step 4.6** ("Reap Stale Session Registry Entries") after Step 4.5. Append; do not
+- [x] Add a new **Step 4.6** ("Reap Stale Session Registry Entries") after Step 4.5. Append; do not
       renumber any later step, so `refresh.md`'s cross-references stay valid.
-- [ ] Mirror Step 4.5 exactly: the same `--dry-run` passthrough branch structure, the same
+- [x] Mirror Step 4.5 exactly: the same `--dry-run` passthrough branch structure, the same
       verbatim-echo instruction (echo the subcommand's output, never summarize it away), and the same
       framing that this is a distinct cleanup target from Steps 4 and 4.5.
-- [ ] State explicitly that this runs on explicit `/refresh` invocation only and never on the hourly
+- [x] State explicitly that this runs on explicit `/refresh` invocation only and never on the hourly
       `claude-refresh.timer`, which runs process cleanup and does not sweep `specs/`.
 
 **Timing**: 30 minutes

@@ -139,6 +139,36 @@ The per-file detail (filename, embedded session id, age in minutes) is produced 
 matching Step 4's own "echo verbatim" instruction. This cleanup runs only on explicit `/refresh`
 invocation, not on the hourly systemd cadence.
 
+### Step 4.6: Reap Stale Session Registry Entries
+
+Sweep `specs/.sessions/` for stale in-flight orchestration session registry entries (see
+`context/patterns/task-lock.md`'s Session-Registry CLI section) and report every one found. This
+is a distinct cleanup target from Step 4's task-lock reap and Step 4.5's session-scoped
+orchestration-file reap — the session registry (`specs/.sessions/{session_id}.json`) is a
+separate, additive mechanism produced by `task-lock.sh session-register`/`session-heartbeat`, not
+one of the two files Step 4.5 sweeps. Uses the `X.6` numbering deliberately so Steps 5-7 keep
+their existing numbers and no cross-reference to them in `refresh.md` needs to change. Reuses the
+`dry_run` boolean already parsed in Step 1 — the same `--dry-run` passthrough branch structure as
+Step 4.5.
+
+```bash
+echo ""
+echo "=== Reaping Stale Session Registry Entries ==="
+echo ""
+
+if [ "$dry_run" = true ]; then
+    .claude/scripts/task-lock.sh session-reap --dry-run
+else
+    .claude/scripts/task-lock.sh session-reap
+fi
+```
+
+The per-entry detail (session id, command, task numbers, age, reap reason) is produced by
+`task-lock.sh session-reap` itself; echo its output verbatim rather than summarizing it away,
+matching Step 4 and Step 4.5's own "echo verbatim" instruction. This cleanup runs only on
+explicit `/refresh` invocation, never on the hourly `claude-refresh.timer` cadence, which runs
+process cleanup only and does not sweep `specs/`.
+
 ### Step 5: Clean Stale Backup Files
 
 Scan for and remove any `.backup` files left over from the deprecated backup mechanism in `.claude/`:
