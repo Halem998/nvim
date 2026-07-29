@@ -37,19 +37,17 @@ The postflight phase **MUST NOT** perform any work that belongs in the agent, in
 
 | Command Pattern | Purpose |
 |-----------------|---------|
-| `jq` on state.json | Update task status, link artifacts |
+| `bash .claude/scripts/state-write.sh` | Update task status, link artifacts — the single mutex-guarded `specs/state.json` writer; owns its own private `mktemp` staging and acquire/stage/transform/validate/mv/release sequence internally, so callers never hand-roll `jq ... > tmp && mv` themselves |
 | `git add`, `git commit` | Commit changes |
 | `rm -f specs/{NNN}_*/.return-meta.json` | Cleanup metadata file |
 | `rm -f specs/{NNN}_*/.postflight-pending` | Cleanup marker file |
-| `mkdir -p specs/tmp` | Create temp directory for atomic writes |
-| `mv specs/tmp/state.json specs/state.json` | Atomic state update |
 
 ### Edit Operations
 
 | Target Pattern | Purpose |
 |----------------|---------|
 | `specs/TODO.md` | Update status markers |
-| `specs/state.json` | Update task state (via mv pattern) |
+| `specs/state.json` | Update task state (via `state-write.sh`, never a direct Edit/hand-rolled `mv`) |
 
 ---
 
@@ -102,7 +100,7 @@ The postflight phase **MUST NOT** perform any work that belongs in the agent, in
 - Call `update-task-status.sh postflight` (updates state.json and regenerates TODO.md)
 
 ### Stage 8: Link Artifacts
-- jq add artifact to state.json
+- `state-write.sh` add artifact to state.json
 - Call `generate-todo.sh` to reflect artifact links in TODO.md
 
 ### Stage 9: Git Commit
@@ -174,7 +172,7 @@ this skill MUST proceed immediately to postflight. The skill MUST NOT:
 
 The postflight phase is LIMITED TO:
 - Reading agent metadata file
-- Updating state.json via jq
+- Updating state.json via `state-write.sh`
 - Updating TODO.md status marker via Edit
 - Linking artifacts in state.json
 - Git commit

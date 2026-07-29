@@ -14,14 +14,16 @@ Update task to "researching" before starting research:
 
 ```bash
 # Update state.json
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "researching" \
-   --arg sid "$session_id" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
     status: $status,
     last_updated: $ts,
     session_id: $sid
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg status "researching" \
+  --arg sid "$session_id"
 ```
 
 Then update TODO.md status marker using Edit tool:
@@ -34,14 +36,16 @@ Update task to "planning" before creating plan:
 
 ```bash
 # Update state.json
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "planning" \
-   --arg sid "$session_id" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
     status: $status,
     last_updated: $ts,
     session_id: $sid
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg status "planning" \
+  --arg sid "$session_id"
 ```
 
 Then update TODO.md: `[RESEARCHED]` → `[PLANNING]`
@@ -52,15 +56,17 @@ Update task to "implementing" before starting implementation:
 
 ```bash
 # Update state.json
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "implementing" \
-   --arg sid "$session_id" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
     status: $status,
     last_updated: $ts,
     session_id: $sid,
     started: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg status "implementing" \
+  --arg sid "$session_id"
 ```
 
 Then update TODO.md: `[PLANNED]` → `[IMPLEMENTING]`
@@ -75,19 +81,22 @@ Update task to "researched" after successful research:
 
 ```bash
 # Step 1: Update status and timestamps
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "researched" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
     status: $status,
     last_updated: $ts,
     researched: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg status "researched"
 
 # Step 2: Add artifact (avoids jq escaping bug - see jq-escaping-workarounds.md)
-jq --arg path "$artifact_path" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
     ([(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "research" | not)] + [{"path": $path, "type": "research"}])' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  --session-id "$session_id" \
+  --arg path "$artifact_path"
 ```
 
 Then update TODO.md:
@@ -100,19 +109,22 @@ Update task to "planned" after successful planning:
 
 ```bash
 # Step 1: Update status and timestamps
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "planned" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
     status: $status,
     last_updated: $ts,
     planned: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg status "planned"
 
 # Step 2: Add artifact (avoids jq escaping bug - see jq-escaping-workarounds.md)
-jq --arg path "$artifact_path" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
     ([(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "plan" | not)] + [{"path": $path, "type": "plan"}])' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  --session-id "$session_id" \
+  --arg path "$artifact_path"
 ```
 
 Then update TODO.md:
@@ -125,19 +137,22 @@ Update task to "completed" after successful implementation:
 
 ```bash
 # Step 1: Update status and timestamps
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "completed" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
     status: $status,
     last_updated: $ts,
     completed: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg status "completed"
 
 # Step 2: Add artifact (avoids jq escaping bug - see jq-escaping-workarounds.md)
-jq --arg path "$artifact_path" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
     ([(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "summary" | not)] + [{"path": $path, "type": "summary"}])' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  --session-id "$session_id" \
+  --arg path "$artifact_path"
 ```
 
 Then update TODO.md:
@@ -150,12 +165,14 @@ Keep task as "implementing" when partially complete:
 
 ```bash
 # Update state.json with progress note
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg phase "$completed_phase" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
     last_updated: $ts,
     resume_phase: ($phase | tonumber + 1)
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg phase "$completed_phase"
 ```
 
 TODO.md stays as `[IMPLEMENTING]`.
@@ -250,10 +267,12 @@ new_string: - **Research**:
 
 ### Safe Update Pattern
 
-Always use temp file to avoid corruption:
+Always route through `state-write.sh`, the single mutex-guarded `specs/state.json` writer —
+it owns the private `mktemp` staging, acquire/stage/transform/validate/mv/release sequence,
+and fail-closed mutex serialization internally, so callers never hand-roll staging themselves:
 
 ```bash
-jq '...' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+bash .claude/scripts/state-write.sh '...' --session-id "$session_id"
 ```
 
 ### Verification After Update

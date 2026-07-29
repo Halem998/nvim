@@ -1,0 +1,20 @@
+{
+  "phase": 9,
+  "phase_name": "Documentation Idiom Updates",
+  "started_at": "2026-07-29T02:25:00Z",
+  "last_updated": "2026-07-29T02:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Update 6 documentation files to present state-write.sh as the approved pattern", "status": "done",
+     "files_touched": [
+       "agent-system/extensions/core/context/patterns/inline-status-update.md",
+       "agent-system/extensions/core/context/patterns/jq-escaping-workarounds.md",
+       "agent-system/extensions/core/context/patterns/file-metadata-exchange.md",
+       "agent-system/extensions/core/context/troubleshooting/workflow-interruptions.md",
+       "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+       "agent-system/extensions/core/docs/guides/creating-skills.md"
+     ]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

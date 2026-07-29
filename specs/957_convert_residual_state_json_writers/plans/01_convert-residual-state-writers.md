@@ -331,19 +331,19 @@ Phases within the same wave can execute in parallel. Wave 2's phases own disjoin
 
 ---
 
-### Phase 9: Documentation Idiom Updates [NOT STARTED]
+### Phase 9: Documentation Idiom Updates [COMPLETED]
 
 **Goal**: Update the six documentation files that still present the hand-rolled idiom as the recommended pattern, using the call shape the preceding phases actually produced.
 
 **Tasks**:
-- [ ] `context/patterns/inline-status-update.md` - replace all occurrences of the old idiom with `state-write.sh` invocations (~10 occurrences).
-- [ ] `context/patterns/jq-escaping-workarounds.md` - replace all occurrences (~10). Preserve the file's actual subject (the `!=` / pipe-injection workarounds); only the write-sequence framing changes.
-- [ ] `context/patterns/file-metadata-exchange.md` - replace both occurrences (~2).
-- [ ] `context/troubleshooting/workflow-interruptions.md` - update the worked recovery example (1 occurrence).
-- [ ] `context/standards/postflight-tool-restrictions.md` - update the tool-allowlist table rows so `state-write.sh` is the approved postflight write tool in place of the raw `jq` on state.json / `mkdir -p specs/tmp` / `mv specs/tmp/state.json specs/state.json` triad. This file contains no literal `> tmp && mv` string; identify the rows by content, not by grep match.
-- [ ] `docs/guides/creating-skills.md` - update the worked example (1 occurrence, near the skill-authoring state-write section).
-- [ ] Ensure every updated example matches a call shape actually used in Phases 1-8, including the `--regen-todo` fold decisions made there.
-- [ ] Confirm no task-number citations were introduced in any of these six files.
+- [x] `context/patterns/inline-status-update.md` - replace all occurrences of the old idiom with `state-write.sh` invocations (~10 occurrences). *(completed: 7 conversion blocks converted — preflight x3, postflight x3 (2-step each), partial x1 — plus the "Safe Update Pattern" reference block; deviation — actual occurrence count was 11 `jq...>tmp && mv` lines across 7 code blocks, close to the ~10 hypothesis)*
+- [x] `context/patterns/jq-escaping-workarounds.md` - replace all occurrences (~10). Preserve the file's actual subject (the `!=` / pipe-injection workarounds); only the write-sequence framing changes. *(completed: 8 in-scope blocks converted (Two-Step, del(), 3x Pattern Templates, Task Recovery step 2, Task Abandon step 3); 2 archive-only steps (Task Recovery step 3, Task Abandon step 2) deliberately left hand-rolled with mechanism-naming comments and an incidental staging-filename fix (`specs/tmp/archive.json` instead of the pre-existing misleading `specs/tmp/state.json` name); the Test Script section's `specs/tmp/test-state.json` fixture is a different target file entirely — correctly left untouched, no comment needed)*
+- [x] `context/patterns/file-metadata-exchange.md` - replace both occurrences (~2). *(completed)*
+- [x] `context/troubleshooting/workflow-interruptions.md` - update the worked recovery example (1 occurrence). *(completed)*
+- [x] `context/standards/postflight-tool-restrictions.md` - update the tool-allowlist table rows so `state-write.sh` is the approved postflight write tool in place of the raw `jq` on state.json / `mkdir -p specs/tmp` / `mv specs/tmp/state.json specs/state.json` triad. This file contains no literal `> tmp && mv` string; identify the rows by content, not by grep match. *(completed: Bash Operations and Edit Operations table rows updated; also updated 2 prose mentions elsewhere in the file ("jq add artifact to state.json", "Updating state.json via jq") that reference the same allowlist)*
+- [x] `docs/guides/creating-skills.md` - update the worked example (1 occurrence, near the skill-authoring state-write section). *(completed: the file's only literal old-idiom occurrence is inside a "Before" (fat-skill) illustrative example — converted anyway since the verification bar covers the whole source store with no carve-out for illustrative "before" text, and a residual hit there would otherwise fail Phase 10's sweep)*
+- [x] Ensure every updated example matches a call shape actually used in Phases 1-8, including the `--regen-todo` fold decisions made there. *(completed: no `--regen-todo` folds were introduced in Phase 9 — none of the six files' converted sites are immediately followed only by a bare regen call)*
+- [x] Confirm no task-number citations were introduced in any of these six files. *(completed: `check-task-references.sh` passes; one pre-existing concrete task number (259) in workflow-interruptions.md's worked example was left as-is — it predates this task and is a jq-filter literal, not a "task N" citation form)*
 
 **Timing**: 1.25 hours
 

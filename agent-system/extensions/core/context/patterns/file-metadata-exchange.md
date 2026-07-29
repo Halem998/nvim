@@ -253,22 +253,25 @@ if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
 
     if [ "$status" = "researched" ] || [ "$status" = "planned" ] || [ "$status" = "implemented" ]; then
         # Update state.json
-        jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-           --arg status "$status" \
+        bash .claude/scripts/state-write.sh \
           '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
             status: $status,
             last_updated: $ts
-          }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+          }' \
+          --session-id "$session_id" \
+          --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          --arg status "$status"
 
         # Add artifact to state.json (if present)
         if [ -n "$artifact_path" ]; then
-            jq --arg path "$artifact_path" \
-               --arg type "$(jq -r '.artifacts[0].type' "$metadata_file")" \
-               --arg summary "$artifact_summary" \
+            bash .claude/scripts/state-write.sh \
               '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
                 ([(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] ] +
                  [{"path": $path, "type": $type, "summary": $summary}])' \
-              specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+              --session-id "$session_id" \
+              --arg path "$artifact_path" \
+              --arg type "$(jq -r '.artifacts[0].type' "$metadata_file")" \
+              --arg summary "$artifact_summary"
         fi
 
         # Git commit — targeted staging per .claude/context/standards/git-staging-scope.md,

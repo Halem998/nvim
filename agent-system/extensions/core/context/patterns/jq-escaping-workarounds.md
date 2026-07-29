@@ -68,19 +68,22 @@ Split artifact updates into separate jq calls, using `| not` pattern:
 
 ```bash
 # Step 1: Update status and timestamps (no artifact manipulation)
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "researched" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
     status: $status,
     last_updated: $ts,
     researched: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg status "researched"
 
 # Step 2: Update artifacts - filter out old type using "| not" pattern, add new
-jq --arg path "$artifact_path" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
     ([(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "research" | not)] + [{"path": $path, "type": "research"}])' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  --session-id "$session_id" \
+  --arg path "$artifact_path"
 ```
 
 ### del() Approach (Alternative)
@@ -88,9 +91,7 @@ jq --arg path "$artifact_path" \
 Use `del()` instead of `map(select(!=))`:
 
 ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "researched" \
-   --arg path "$artifact_path" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')) |= (
     del(.artifacts[] | select(.type == "research")) |
     . + {
@@ -99,7 +100,11 @@ jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
       researched: $ts,
       artifacts: ((.artifacts // []) + [{"path": $path, "type": "research"}])
     }
-  )' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  )' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg status "researched" \
+  --arg path "$artifact_path"
 ```
 
 ## Pattern Templates
@@ -108,57 +113,66 @@ jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
 
 ```bash
 # Step 1: Update status
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "researched" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
     status: $status,
     last_updated: $ts,
     researched: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg status "researched"
 
 # Step 2: Add artifact
-jq --arg path "$artifact_path" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
     ([(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "research" | not)] + [{"path": $path, "type": "research"}])' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  --session-id "$session_id" \
+  --arg path "$artifact_path"
 ```
 
 ### Planning Postflight
 
 ```bash
 # Step 1: Update status
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "planned" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
     status: $status,
     last_updated: $ts,
     planned: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg status "planned"
 
 # Step 2: Add artifact
-jq --arg path "$artifact_path" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
     ([(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "plan" | not)] + [{"path": $path, "type": "plan"}])' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  --session-id "$session_id" \
+  --arg path "$artifact_path"
 ```
 
 ### Implementation Postflight
 
 ```bash
 # Step 1: Update status
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "completed" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
     status: $status,
     last_updated: $ts,
     completed: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  }' \
+  --session-id "$session_id" \
+  --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --arg status "completed"
 
 # Step 2: Add artifact
-jq --arg path "$artifact_path" \
+bash .claude/scripts/state-write.sh \
   '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
     ([(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "summary" | not)] + [{"path": $path, "type": "summary"}])' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  --session-id "$session_id" \
+  --arg path "$artifact_path"
 ```
 
 ### Task Recovery (from archive)
@@ -168,12 +182,15 @@ jq --arg path "$artifact_path" \
 task_json=$(jq '.archived_projects[] | select(.project_number == '$task_number')' specs/archive/state.json)
 
 # Step 2: Add to active projects
-jq --argjson task "$task_json" \
-  '.active_projects += [$task]' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+bash .claude/scripts/state-write.sh \
+  '.active_projects += [$task]' \
+  --session-id "$session_id" \
+  --argjson task "$task_json"
 
-# Step 3: Remove from archive
+# Step 3: Remove from archive. Deliberately left hand-rolled: state-write.sh targets
+# specs/state.json only, never specs/archive/state.json.
 jq 'del(.archived_projects[] | select(.project_number == '$task_number'))' \
-  specs/archive/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/archive/state.json
+  specs/archive/state.json > specs/tmp/archive.json && mv specs/tmp/archive.json specs/archive/state.json
 ```
 
 ### Task Abandon (to archive)
@@ -182,13 +199,15 @@ jq 'del(.archived_projects[] | select(.project_number == '$task_number'))' \
 # Step 1: Extract task to archive
 task_json=$(jq '.active_projects[] | select(.project_number == '$task_number')' specs/state.json)
 
-# Step 2: Add to archive
+# Step 2: Add to archive. Deliberately left hand-rolled: state-write.sh targets
+# specs/state.json only, never specs/archive/state.json.
 jq --argjson task "$task_json" \
-  '.archived_projects += [$task]' specs/archive/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/archive/state.json
+  '.archived_projects += [$task]' specs/archive/state.json > specs/tmp/archive.json && mv specs/tmp/archive.json specs/archive/state.json
 
 # Step 3: Remove from active
-jq 'del(.active_projects[] | select(.project_number == '$task_number'))' \
-  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+bash .claude/scripts/state-write.sh \
+  'del(.active_projects[] | select(.project_number == '$task_number'))' \
+  --session-id "$session_id"
 ```
 
 ## Testing Checklist

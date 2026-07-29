@@ -282,7 +282,9 @@ jq '.active_projects[] | select(.status == "researching" or .status == "planning
 5. **Manually fix stuck tasks** if needed:
 ```bash
 # Reset stuck task to previous valid state
-jq '(.active_projects[] | select(.project_number == 259)) |= . + {status: "not_started"}' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+bash .claude/scripts/state-write.sh \
+  '(.active_projects[] | select(.project_number == 259)) |= . + {status: "not_started"}' \
+  --session-id "$session_id"
 ```
 
 ### Partial Rollback
