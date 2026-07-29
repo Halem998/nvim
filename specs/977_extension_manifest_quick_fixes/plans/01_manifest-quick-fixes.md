@@ -191,18 +191,20 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Fix epidemiology settings-fragment key casing [NOT STARTED]
+### Phase 3: Fix epidemiology settings-fragment key casing [COMPLETED]
 
 - **Goal:** Rename the fragment's top-level `mcp_servers` key to `mcpServers` so the deep-merge
   lands the `rmcp` server where Claude Code actually reads it.
 - **Tasks:**
-  - [ ] Edit `agent-system/extensions/epidemiology/settings-fragment.json`, renaming the top-level
+  - [x] Edit `agent-system/extensions/epidemiology/settings-fragment.json`, renaming the top-level
         `mcp_servers` key to `mcpServers`. Leave the nested `rmcp` server object byte-identical.
-  - [ ] Confirm valid JSON (`jq empty`) and that no other key in the file changed.
-  - [ ] Confirm `epidemiology/manifest.json` already routes this fragment via
+        *(completed)*
+  - [x] Confirm valid JSON (`jq empty`) and that no other key in the file changed. *(completed)*
+  - [x] Confirm `epidemiology/manifest.json` already routes this fragment via
         `merge_targets.settings`; if it does not, add the route mirroring `lean`/`nix`
         (`{"source": "settings-fragment.json", "target": ".claude/settings.local.json"}`) — a
         correctly-cased fragment that is never merged fixes nothing.
+        *(completed: route already present, no manifest edit needed)*
 - **Timing:** 20 minutes
 - **Depends on:** 1
 - **Verification Tier:** interface
