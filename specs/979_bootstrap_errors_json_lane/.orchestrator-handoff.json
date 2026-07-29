@@ -1,0 +1,25 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "research",
+  "status": "researched",
+  "summary": "Confirmed errors.json is absent in nvim and drifted (bare array + undocumented fix_status='resolved') in cslib. Found exactly one real inline writer (skill-planner) and two readers, both assuming object-with-array. Recommended one reconciled schema (context superset, fix_status enum + deprecated 'resolved', recurrence_count dropped as computed-not-stored, fixed_date/fix_task kept), and flagged that errors-append.sh needs both append AND update subcommands since errors.json is mutable, unlike events.jsonl.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/979_bootstrap_errors_json_lane/reports/01_bootstrap-errors-schema-research.md"
+    }
+  ],
+  "blockers": [],
+  "next_action_hint": "plan",
+  "files_modified": [],
+  "decisions_made": [
+    "Object-with-array ({\"errors\": [...]}) over bare array — both live readers already assume this form, cslib's bare array is the anomaly to fix",
+    "fix_status enum expanded to unfixed|in_progress|fixed|resolved, with resolved documented as a deprecated synonym for fixed (backward-compat only, new writes always use fixed)",
+    "recurrence_count dropped from the persisted schema — no writer ever populated it; /errors already describes it as computed at analysis time",
+    "errors-append.sh must implement both an append subcommand (mirrors events-append.sh directly) and a novel update subcommand (read-modify-write under flock, no existing precedent) because errors.json records are mutated in place by the documented Fix Mode workflow, unlike append-only events.jsonl",
+    "Validation style follows events-append.sh's existing idiom: hand-written bash arg/enum/jq-shape checks kept in sync with the schema doc, not a runtime JSON-Schema-library call",
+    "The 'UNBLOCKS: tasks 951/952/953' claim in the task description is thematic, not a real dependency — those tasks explicitly build on events.jsonl instead and carry no dependency edge to/from 979 in state.json"
+  ],
+  "dead_ends": [],
+  "plan_markers_verified": false
+}

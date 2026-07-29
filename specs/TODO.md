@@ -36,7 +36,7 @@ next_project_number: 990
   └─ 974 [NOT STARTED] — Add a plan-checklist mark-completed contract to the two HARD impl
     └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a (see above)
 973 [NOT STARTED] — Give reconcile-task-status.sh a defined, safe recovery behavior w
-979 [NOT STARTED] — Make the error-tracking layer real. specs/errors.json DOES NOT EX
+979 [RESEARCHED] — Make the error-tracking layer real. specs/errors.json DOES NOT EX
 981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
 983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
 987 [NOT STARTED] — Bring context loading back within its own declared budgets and gi
@@ -371,10 +371,11 @@ SOURCE-STORE RULE (binding): deploy machinery edits target lua/neotex/plugins/ai
 ---
 
 ### 979. Bootstrap the errors.json lane for real: one schema, validated append script, reconciled docs
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 976
+- **Research**: [979_bootstrap_errors_json_lane/reports/01_bootstrap-errors-schema-research.md]
 
 **Description**: Make the error-tracking layer real. specs/errors.json DOES NOT EXIST in this repo, yet it is the documented backbone of /errors, error-handling rules, and several skills' failure paths — every reader guards with [ -f ] and silently degrades to a no-op, so the self-healing loop the system's docs describe never runs. Three mutually inconsistent schemas are documented: rules/error-handling.md (context{session_id,command,task,phase,checkpoint} + trajectory + recovery), commands/errors.md (~line 21: context{command,task,agent,file} + recurrence_count, no trajectory/recovery; and a second update-shape at ~line 186 adding fixed_date/fix_task documented nowhere else), and the actual writer prose in skill-planner/SKILL.md (~line 487: recovery + fix_status, no trajectory/recurrence_count). Only 7 fields appear in all three.
 

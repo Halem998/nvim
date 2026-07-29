@@ -3210,7 +3210,7 @@
       "project_number": 979,
       "project_name": "bootstrap_errors_json_lane",
       "title": "Bootstrap the errors.json lane for real: one schema, validated append script, reconciled docs",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "agent-system",
       "dependencies": [
@@ -3225,8 +3225,15 @@
       ],
       "description": "Make the error-tracking layer real. specs/errors.json DOES NOT EXIST in this repo, yet it is the documented backbone of /errors, error-handling rules, and several skills' failure paths — every reader guards with [ -f ] and silently degrades to a no-op, so the self-healing loop the system's docs describe never runs. Three mutually inconsistent schemas are documented: rules/error-handling.md (context{session_id,command,task,phase,checkpoint} + trajectory + recovery), commands/errors.md (~line 21: context{command,task,agent,file} + recurrence_count, no trajectory/recovery; and a second update-shape at ~line 186 adding fixed_date/fix_task documented nowhere else), and the actual writer prose in skill-planner/SKILL.md (~line 487: recovery + fix_status, no trajectory/recurrence_count). Only 7 fields appear in all three.\n\nTHE PROVEN PATTERN TO MIRROR: the sibling events.jsonl substrate has exactly what errors.json lacks — a formal draft-07 schema (context/schemas/events-schema.json), a validated append script (scripts/events-append.sh: jq -c -n construction, flock serialization), and one format doc.\n\nWORK:\n  1. Decide ONE errors schema (start from the field union; make context sub-fields a superset; keep fix_status enum and add the empirically-observed 'resolved' value or normalize it away). Write context/schemas/errors-schema.json.\n  2. Write scripts/errors-append.sh mirroring events-append.sh (schema-validated, flock'd, single writer). Create specs/errors.json with a valid empty shape ({\"errors\": []} — pick object-with-array over bare array and document why).\n  3. Rewrite the three conflicting doc blocks (rules/error-handling.md, both blocks in commands/errors.md, the skill error-path prose) to point at the schema file instead of restating fields.\n  4. Convert the inline jq error-append blocks in skills to call errors-append.sh.\n\nSUBSUMES (fold in, then treat those tasks as superseded): the intent of task 954 (extend errors with a source-store defect lane — add the lane as a schema field/enum value here) and task 955 (reconcile errors.json schema drift — this task IS that reconciliation, done once with a schema instead of prose). Both were marked abandoned in favor of this task; their descriptions contain additional verified defect inventories worth reading before planning.\n\nUNBLOCKS: tasks 951, 952, 953 (defect discrimination/recording/surfacing) all presuppose a durable, schema-stable error store.\n\nVERIFICATION BAR:\n  - errors-append.sh appends a schema-valid record under concurrent invocation (flock test) and rejects an off-schema record loudly.\n  - specs/errors.json exists, validates against the schema, and /errors runs end-to-end against it without silent degradation.\n  - grep across agent-system/extensions/core for inline '.errors +=' jq writes returns zero hits outside errors-append.sh.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-07-29T19:29:18Z",
-      "last_updated": "2026-07-29T19:40:45Z",
-      "session_id": "sess_1785353358_66268f"
+      "last_updated": "2026-07-29T23:48:02Z",
+      "session_id": "sess_1785368489_e9acfc",
+      "artifacts": [
+        {
+          "path": "specs/979_bootstrap_errors_json_lane/reports/01_bootstrap-errors-schema-research.md",
+          "type": "report",
+          "summary": ""
+        }
+      ]
     },
     {
       "project_number": 980,

@@ -1,0 +1,42 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/979_bootstrap_errors_json_lane/reports/01_bootstrap-errors-schema-research.md",
+      "summary": "Verifies the errors.json absence and three-way schema drift empirically, enumerates all readers/writers, studies events-append.sh/events-schema.json as the pattern to mirror, and recommends one reconciled schema plus append/update script design and deploy-path wiring."
+    }
+  ],
+  "next_steps": "Run /plan 979 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1785368489_e9acfc",
+    "agent_type": "general-research-agent",
+    "duration_seconds": 900,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-research-agent"],
+    "findings_count": 14
+  },
+  "memory_candidates": [
+    {
+      "content": "In this codebase's core scripts, 'schema-validated' means hand-written bash checks (required-arg presence, case-statement enums, jq type/shape checks) kept manually in sync with a documented JSON Schema file -- not a runtime call into a JSON-Schema validator library. events-append.sh (the reference pattern for validated append scripts) never invokes ajv or python jsonschema against events-schema.json even though python3's jsonschema package is installed on the dev machine. New validated-append scripts should follow this same hand-written-check idiom rather than introducing a new validation dependency.",
+      "category": "PATTERN",
+      "source_artifact": "specs/979_bootstrap_errors_json_lane/reports/01_bootstrap-errors-schema-research.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["schema-validation", "events-append.sh", "jq", "bash-validation", "jsonschema"]
+    },
+    {
+      "content": "When a task's own file_scope/manifest already exist (e.g. an abandoned superseding task whose directory was never created), the abandoned task's full description survives in specs/state.json even after its directory is gone -- `jq '.active_projects[] | select(.project_number==N)' specs/state.json` recovers the complete original description text (including verified defect inventories) for tasks that never got past creation, which is the authoritative source when a successor task says 'read the superseded task's directory' but that directory does not exist.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/979_bootstrap_errors_json_lane/reports/01_bootstrap-errors-schema-research.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["state.json", "abandoned-task", "task-directory", "recovery", "jq"]
+    },
+    {
+      "content": "core/manifest.json's provides.scripts array is a flat, alphabetically-sorted filename list needing an explicit new entry per script, but provides.context's 'schemas' entry copies the whole context/schemas/ directory as a unit -- a new *-schema.json file needs no manifest change, only a new *.sh script does. Also: the headless 'Load Core' sync path does not always re-run copy_scripts for already-loaded extensions, so a brand-new script can land in the source store but silently fail to reach an already-deployed repo's .claude/scripts/ without a manual full resync -- verify post-deploy presence, don't assume authoring in the source store is sufficient.",
+      "category": "CONFIG",
+      "source_artifact": "specs/979_bootstrap_errors_json_lane/reports/01_bootstrap-errors-schema-research.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["manifest.json", "deploy", "copy_scripts", "context-schemas", "source-store"]
+    }
+  ]
+}
