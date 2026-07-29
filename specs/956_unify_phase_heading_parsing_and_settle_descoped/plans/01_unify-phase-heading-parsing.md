@@ -256,39 +256,42 @@ prose in place so no reader encounters the superseded version beside the current
 
 ---
 
-### Phase 2: Create the shared phase-heading pattern library [NOT STARTED]
+### Phase 2: Create the shared phase-heading pattern library [COMPLETED]
 
 **Goal**: Establish `scripts/lib/phase-heading-patterns.sh` as the single named anchor every
 consumer sources, structurally modeled on `scripts/lib/task-reference-patterns.sh`.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lib/phase-heading-patterns.sh` with a header
+- [x] Create `agent-system/extensions/core/scripts/lib/phase-heading-patterns.sh` with a header
       comment naming it the ONLY place the phase-heading grammar and marker enum are defined, and
       pointing at `plan-format.md`'s "Canonical phase-heading shape" section as the policy it
-      implements (durable anchor, not a task number).
-- [ ] Export the canonical grammar constants, copied verbatim from `plan-format.md`'s canonical
+      implements (durable anchor, not a task number). *(completed)*
+- [x] Export the canonical grammar constants, copied verbatim from `plan-format.md`'s canonical
       regex table rather than re-derived: an ERE heading match, an ERE phase-number extraction
       form, and BRE compatibility aliases documented as required-equivalent to the ERE forms.
-- [ ] Export a loose "claims to be a phase heading" ERE (anchored on `^### Phase `, matching any
+      *(completed)*
+- [x] Export a loose "claims to be a phase heading" ERE (anchored on `^### Phase `, matching any
       token and any bracket content) — this is what makes non-conformance detectable rather than
-      invisible.
-- [ ] Export the closed status-marker enum as an array plus a DONE alternation
+      invisible. *(completed)*
+- [x] Export the closed status-marker enum as an array plus a DONE alternation
       (`COMPLETED`, `COMPLETED WITH EXCLUSIONS`) and an OPEN alternation
       (`NOT STARTED`, `IN PROGRESS`, `PARTIAL`, `BLOCKED`). The DONE alternation is the single
-      definition the orchestration skills currently diverge from.
-- [ ] Implement `extract_phase_number <heading>` returning the canonical number token, or empty
+      definition the orchestration skills currently diverge from. *(completed)*
+- [x] Implement `extract_phase_number <heading>` returning the canonical number token, or empty
       with non-zero status when the token is non-conforming. It MUST NOT return a truncated
       prefix — this is the `3a` -> `3` collapse defect, and returning empty is what makes the
-      caller's failure visible.
-- [ ] Implement `nonconforming_phase_headings <file>` emitting `linenum:heading` for every line
+      caller's failure visible. *(completed)*
+- [x] Implement `nonconforming_phase_headings <file>` emitting `linenum:heading` for every line
       matching the loose ERE but failing either the canonical number token or the marker enum.
-- [ ] Implement `warn_nonconforming <file> <label>` printing a loud, per-heading, actionable block
+      *(completed)*
+- [x] Implement `warn_nonconforming <file> <label>` printing a loud, per-heading, actionable block
       to stderr, naming each offending heading, its line number, and the specific reason (bad
       number token vs. unrecognized marker). When the unrecognized marker is exactly `DESCOPED`,
-      the message MUST say to use `[COMPLETED WITH EXCLUSIONS]` instead.
-- [ ] Register `lib/phase-heading-patterns.sh` in `agent-system/extensions/core/manifest.json`'s
-      `provides.scripts` array, alphabetically adjacent to the existing `lib/` entries.
-- [ ] Do not modify any consumer in this phase. The library lands standalone and unreferenced.
+      the message MUST say to use `[COMPLETED WITH EXCLUSIONS]` instead. *(completed)*
+- [x] Register `lib/phase-heading-patterns.sh` in `agent-system/extensions/core/manifest.json`'s
+      `provides.scripts` array, alphabetically adjacent to the existing `lib/` entries. *(completed)*
+- [x] Do not modify any consumer in this phase. The library lands standalone and unreferenced.
+      *(completed: git status --short showed exactly two paths)*
 
 **Timing**: 1.5 hours
 

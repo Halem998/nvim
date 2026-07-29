@@ -118,6 +118,7 @@
       "install-systemd-timer.sh",
       "issue-grouping.sh",
       "lib/file-scope-overlap.sh",
+      "lib/phase-heading-patterns.sh",
       "lib/task-reference-patterns.sh",
       "lifecycle-notify.sh",
       "lint/lint-contract-compliance.sh",
