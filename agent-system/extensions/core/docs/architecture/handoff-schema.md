@@ -334,6 +334,15 @@ via `jq ".phases_completed"` / `jq ".phases_total"`, not `.continuation_context.
 `continuation_context`, is the canonical schema documented above. No change to that script was
 needed or made.
 
+**`validate-handoff.sh` wiring status**: this script was previously correct but unwired — no
+call site invoked it. It is now invoked as a **log-only, non-gating** producer-defect diagnostic
+from `skill_corroborate_phase_counts()` in `agent-system/extensions/core/scripts/skill-base.sh`,
+firing only when that function receives a non-empty, existing `handoff_path` argument (the
+handoff-present corroboration call sites in `skill-orchestrate/SKILL.md` and
+`skill-orchestrate-hard/SKILL.md` Stage 5 pass the current handoff; the recovery-path call sites
+pass an empty string, since there is no handoff to validate there). Its exit status never
+influences `skill_corroborate_phase_counts()`'s own return value or the completion-claim gate.
+
 ---
 
 ## Outcome Channels

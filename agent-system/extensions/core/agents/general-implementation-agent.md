@@ -631,6 +631,26 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial
 }
 ```
 
+### `.orchestrator-handoff.json` (base-mode implement is a non-writer by design)
+
+This agent (base-mode `skill-implementer` -> `general-implementation-agent`) does **not** write
+`.orchestrator-handoff.json`, by design — matching the "Never writes a handoff, by design" row
+of `docs/architecture/handoff-schema.md`'s "Handoff Writers" table. A `handoff_path` field
+appearing in the delegation context is an anchor for the **orchestrator's own read** of a
+prior/expected handoff location — it is never an instruction for this agent to write one. When
+no handoff exists, the orchestrator recovers the dispatch outcome from `.return-meta.json` via
+its own recovery path (see that table's "Outcome Channels" section); Stage 7 above is this
+agent's complete and correct write contract.
+
+**Defensive case, if a handoff is written anyway**: should some future variant of this agent (or
+a hand-authored dispatch) write `.orchestrator-handoff.json`, `phases_completed` and
+`phases_total` MUST be the real integers already computed by Stage 5a's plan-heading
+marker-repair pass above — never fabricated, never left at their zero-valued defaults — and MUST
+NEVER be `null`. They are written at the handoff's **top level**, which contrasts with
+`.return-meta.json`'s nested placement documented in the "Phase-count nesting" callout above —
+the two files use the same field names with different nesting rules, and a shape correct for one
+is wrong for the other.
+
 ### Stage 8: Return Brief Text Summary
 
 Return 3-6 bullet points summarizing: phases executed, files created/modified, summary path, metadata status.

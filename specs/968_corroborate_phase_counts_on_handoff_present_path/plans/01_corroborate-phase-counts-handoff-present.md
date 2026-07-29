@@ -213,27 +213,27 @@ than relocating the function.
 
 ---
 
-### Phase 2: Producer-side contract and handoff-schema note [NOT STARTED]
+### Phase 2: Producer-side contract and handoff-schema note [COMPLETED]
 
 **Goal**: Close the base-mode producer gap identified as the plausible root cause of the observed
 null-field handoff, and record `validate-handoff.sh`'s wiring status so a future reader does not
 re-discover by grep that it was dead code.
 
 **Tasks**:
-- [ ] Add an explicit `.orchestrator-handoff.json` section to
+- [x] Add an explicit `.orchestrator-handoff.json` section to
       `agent-system/extensions/core/agents/general-implementation-agent.md`, stating that
       base-mode implement does not write this file by design (matching `handoff-schema.md`'s
       "Handoff Writers" table), and that a `handoff_path` field appearing in the delegation
       context is an anchor for the orchestrator's own read, not an instruction to write one.
-- [ ] In the same section, cover the defensive case: if a handoff is written anyway,
+- [x] In the same section, cover the defensive case: if a handoff is written anyway,
       `phases_completed` / `phases_total` MUST be the real integers already computed by the
       agent's Stage 5a plan-heading marker-repair pass, written at the **top level** (contrasting
       with `.return-meta.json`'s nested placement, which that agent file already documents), and
       MUST NEVER be `null`.
-- [ ] Update `agent-system/extensions/core/docs/architecture/handoff-schema.md`'s "Handoff
+- [x] Update `agent-system/extensions/core/docs/architecture/handoff-schema.md`'s "Handoff
       Writers" section with a short note that `validate-handoff.sh` is now invoked as a log-only
       diagnostic from the shared corroboration function, naming that function.
-- [ ] No task-number citations in any of these files (deliverable rule); reference the schema
+- [x] No task-number citations in any of these files (deliverable rule); reference the schema
       section and function name instead.
 
 **Timing**: 45 minutes
