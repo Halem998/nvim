@@ -35,13 +35,13 @@ next_project_number: 967
       └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 964 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-965 [PLANNED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+965 [IMPLEMENTING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 966 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 958 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ### Orchestration Concurrency
 
-957 [PLANNING] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+957 [PLANNED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ## Tasks
 
@@ -89,7 +89,7 @@ DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task
 ---
 
 ### 965. Make check_undeclared_scripts skip untracked build artifacts
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -331,11 +331,12 @@ DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task
 ---
 
 ### 957. Convert the residual specs/state.json inline write sites to state-write.sh
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: Task 942, Task 956
 - **Research**: [957_convert_residual_state_json_writers/reports/01_convert-residual-state-writers.md]
+- **Plan**: [957_convert_residual_state_json_writers/plans/01_convert-residual-state-writers.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`. Runtime invocations still reference the deployed `.claude/scripts/state-write.sh`; that is the call path, not the edit target.
 

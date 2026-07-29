@@ -2579,7 +2579,7 @@
     {
       "project_number": 957,
       "project_name": "convert_residual_state_json_writers",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "title": "Convert the residual specs/state.json inline write sites to state-write.sh",
@@ -2617,10 +2617,15 @@
           "path": "specs/957_convert_residual_state_json_writers/reports/01_convert-residual-state-writers.md",
           "type": "report",
           "summary": "Residual state.json writer conversion research"
+        },
+        {
+          "path": "specs/957_convert_residual_state_json_writers/plans/01_convert-residual-state-writers.md",
+          "type": "plan",
+          "summary": "10-phase plan converting 68 inline specs/state.json write sites to state-write.sh plus 6 doc-idiom updates"
         }
       ],
       "created": "2026-07-28T23:14:04Z",
-      "last_updated": "2026-07-29T15:13:30Z",
+      "last_updated": "2026-07-29T15:18:01Z",
       "session_id": "sess_1785337600_a52f75_957",
       "next_artifact_number": null
     },
@@ -2782,7 +2787,7 @@
     {
       "project_number": 965,
       "project_name": "skip_untracked_artifacts_in_undeclared_scripts_check",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Make check_undeclared_scripts skip untracked build artifacts",
@@ -2804,7 +2809,7 @@
         }
       ],
       "created": "2026-07-29T14:59:46Z",
-      "last_updated": "2026-07-29T15:16:05Z",
+      "last_updated": "2026-07-29T15:16:20Z",
       "session_id": "sess_1785337600_a52f75_965",
       "next_artifact_number": null
     },

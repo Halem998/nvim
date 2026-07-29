@@ -1,39 +1,27 @@
 {
-  "status": "researched",
+  "status": "planned",
   "task_number": 957,
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "agent_type": "planner-agent",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "session_id": "sess_1785337600_a52f75_957",
-  "findings_count": 8,
+  "phase_count": 10,
+  "estimated_hours": 11,
+  "dependency_waves": [[1], [2, 3, 4, 5, 6, 7, 8], [9], [10]],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/957_convert_residual_state_json_writers/reports/01_convert-residual-state-writers.md",
-      "summary": "Audit of 16 file_scope files' inline specs/state.json write sites (68 in-scope sites re-measured, vs. task's stated ~56 approximate baseline), confirms state-write.sh mechanism is complete and needs no changes, identifies fold/don't-fold precedent in commands/review.md, session_id availability per file, and the scope boundary that specs/archive/state.json and vault-path writes are excluded from this task's verification bar."
+      "type": "plan",
+      "path": "specs/957_convert_residual_state_json_writers/plans/01_convert-residual-state-writers.md",
+      "summary": "10-phase plan converting 68 in-scope inline specs/state.json write sites across 16 core skill/command files to state-write.sh calls, then updating 6 stale-idiom documentation files. Phase 1 captures the gate-set baseline and establishes the conversion template on the smallest file; phases 2-8 own disjoint file territories (parallelizable), isolating the three files that interleave out-of-scope specs/archive/state.json and vault writes (task.md, todo.md, skill-todo/SKILL.md) into their own interface-tier phases; phase 9 updates docs last so examples reflect the actual final call shape; phase 10 executes the verification bar unweakened."
     }
   ],
   "memory_candidates": [
     {
-      "content": "state-write.sh (agent-system/extensions/core/scripts/state-write.sh) hardcodes STATE_FILE to specs/state.json with no --file override. Any future task converting specs/archive/state.json or vault-root state.json writers (e.g. inside skill-todo's vault operation) needs to either extend state-write.sh with a --file argument or accept those writers stay hand-rolled indefinitely -- they are a structurally distinct, separately out-of-scope surface from the specs/state.json conversion work.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/957_convert_residual_state_json_writers/reports/01_convert-residual-state-writers.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["state-write.sh", "specs/state.json", "specs/archive/state.json", "vault operation", "scope boundary"]
-    },
-    {
-      "content": "The self-generating session_id fallback pattern (sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')) is established in five core scripts: manage-topics.sh, archive-task.sh, reconcile-artifacts.sh, orchestrate-predispatch-review.sh, skill-base.sh. Use this exact snippet (guarded by an emptiness check on the session_id variable) when converting a script or command that lacks an inherited session_id, rather than inventing a new format.",
+      "content": "When a mechanical conversion task spans many sites across files where in-scope and out-of-scope targets are visually similar and interleaved in the same code blocks (e.g. specs/state.json vs specs/archive/state.json writes), isolate each such file into its own plan phase with a mandatory pre-edit two-column inventory (in-scope vs out-of-scope line numbers) and a post-phase invariant that the out-of-scope count is byte-identical before and after. This converts the highest-probability failure mode -- a blanket regex substitution crossing the scope boundary -- into a checkable phase gate rather than relying on implementer care.",
       "category": "PATTERN",
-      "source_artifact": "specs/957_convert_residual_state_json_writers/reports/01_convert-residual-state-writers.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["session_id", "fallback pattern", "state-write.sh", "sess_ format"]
-    },
-    {
-      "content": "commands/review.md is the canonical precedent for the state-write.sh --regen-todo fold-vs-don't-fold judgment call: lines 628-655 show a write deliberately NOT folded (because manage-topics.sh set must run between the write and the regen), and lines 795-826 show a write folded (because nothing but the regen follows). Future state-write.sh conversions should imitate these two examples rather than defaulting to always-fold or always-separate.",
-      "category": "PATTERN",
-      "source_artifact": "specs/957_convert_residual_state_json_writers/reports/01_convert-residual-state-writers.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["state-write.sh", "--regen-todo", "fold decision", "review.md precedent"]
+      "source_artifact": "specs/957_convert_residual_state_json_writers/plans/01_convert-residual-state-writers.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["mechanical conversion", "scope boundary", "phase isolation", "pre-edit inventory", "invariant count"]
     }
   ],
-  "next_steps": "Run /plan 957 to create implementation plan"
+  "next_steps": "Run /implement 957 to execute the plan"
 }
