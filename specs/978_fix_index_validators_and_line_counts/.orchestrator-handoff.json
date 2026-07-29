@@ -1,35 +1,63 @@
 {
   "$schema": "orchestrator-handoff-v1",
-  "phase": "plan",
-  "status": "planned",
-  "summary": "Created a 9-phase implementation plan (9 hours, 6 dependency waves) covering all four confirmed defects plus one planning-time discovery. Phases: fix the four subshell-discarded counter blocks in validate-context-index.sh; build a source-store line_count regenerator; regenerate ~320 counts across all extensions; convert append_index_entries to upsert and add the version/generated stamp; index the 14 orphaned context files; redeploy and verify; add two new lettered gates to check-extension-docs.sh; documentation sync; final verify-deploy gate. Key caveat: the deployed index merge is currently append-only-with-dedupe, so without the merge.lua change the task's own verification bar would be unreachable.",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Completed all 9 phases of the index-validation-truth plan. Fixed the four subshell-discarded counter blocks in validate-context-index.sh (added --strict flag and a REPO_ROOT-bypass preamble). Built generate-context-line-counts.sh and regenerated 320 stale/missing line_count values across 18 of 19 extensions (458/458 now exact), using surgical awk substitution after discovering a jq round-trip would have reformatted unrelated array styling. Converted M.append_index_entries to upsert semantics with a version/generated stamp -- confirmed the corrected line_count values now actually reach the deployed index on redeploy, which append-only semantics would have silently blocked. Indexed the 14 previously orphaned context files (11 core, 3 extension strays). Added Rule R (per-extension line_count accuracy) and Rule S (deployed-index-orphan) to check-extension-docs.sh, discovering mid-phase that the existing _git_deployed_files git-ls-files helper is vacuous in this repo (entirely gitignored .claude/) and building Rule S on direct filesystem enumeration instead. Synced documentation. Final verify-deploy.sh run: 12 checks, 0 failures. All three verification-bar criteria empirically demonstrated.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/978_fix_index_validators_and_line_counts/plans/01_index-validation-truth.md"
+    },
+    {
+      "type": "summary",
+      "path": "specs/978_fix_index_validators_and_line_counts/summaries/01_index-validation-truth-summary.md"
     }
   ],
   "blockers": [],
-  "next_action_hint": "implement",
+  "next_action_hint": "complete",
   "files_modified": [
+    "agent-system/extensions/core/context/patterns/context-discovery.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    "agent-system/extensions/core/scripts/generate-context-line-counts.sh",
+    "agent-system/extensions/core/scripts/validate-context-index.sh",
+    "agent-system/extensions/cslib/index-entries.json",
+    "agent-system/extensions/email/index-entries.json",
+    "agent-system/extensions/filetypes/index-entries.json",
+    "agent-system/extensions/formal/index-entries.json",
+    "agent-system/extensions/founder/index-entries.json",
+    "agent-system/extensions/latex/index-entries.json",
+    "agent-system/extensions/lean/index-entries.json",
+    "agent-system/extensions/literature/index-entries.json",
+    "agent-system/extensions/memory/index-entries.json",
+    "agent-system/extensions/nix/index-entries.json",
+    "agent-system/extensions/nvim/index-entries.json",
+    "agent-system/extensions/present/index-entries.json",
+    "agent-system/extensions/python/index-entries.json",
+    "agent-system/extensions/slidev/index-entries.json",
+    "agent-system/extensions/typst/index-entries.json",
+    "agent-system/extensions/web/index-entries.json",
+    "agent-system/extensions/z3/index-entries.json",
+    "lua/neotex/plugins/ai/shared/extensions/merge.lua",
     "specs/978_fix_index_validators_and_line_counts/plans/01_index-validation-truth.md",
+    "specs/978_fix_index_validators_and_line_counts/summaries/01_index-validation-truth-summary.md",
     "specs/978_fix_index_validators_and_line_counts/.orchestrator-handoff.json",
     "specs/978_fix_index_validators_and_line_counts/.return-meta.json"
   ],
   "decisions_made": [
-    "Added a phase (4) not called for by the research: M.append_index_entries in lua/neotex/plugins/ai/shared/extensions/merge.lua is append-only with dedupe-by-path and never updates an existing entry, and sync.lua excludes index.json from context copy -- so corrected source line_count values would never reach the deployed index. Converted to upsert, which also gives the version/generated stamp a natural home.",
-    "Line-count mismatches stay WARNING severity in validate-context-index.sh (exit code still driven by errors only), with an opt-in --strict flag rather than an immediate hard-fail promotion -- avoids a severity regression while still satisfying the nonzero-before/zero-after verification bar.",
-    "Chose remediate-then-gate ordering over the advisory-to-hard two-phase rollout: index entries and line counts land in phases 3/5/6, the new gates land hard in phase 7 against an already-clean baseline. A sibling severity variable is still introduced as an escape hatch.",
-    "Both new gates go in check-extension-docs.sh per the research recommendation: a per-extension source line_count rule (catches the 94 nulls in unloaded extensions the deployed validator can never see) and a project-wide deployed-index-orphan rule. No change to verify-deploy.sh, which already invokes gate 3 in full.",
-    "The new regenerator script is declared in the core manifest provides.scripts in the same phase it is created, so the existing Rule Q undeclared-scripts check stays clean.",
-    "Every phase carries an explicit Scope Hypothesis instructing the implementer to re-derive the asserted counts (444/226/94 entries, 14 orphans, four defective pipelines) live rather than trusting the plan's figures."
+    "generate-context-line-counts.sh --write uses surgical line-oriented awk substitution/insertion rather than a jq round-trip, after a first attempt reformatted unrelated array styling across files using compact-array conventions (a 535-line diff for a 21-value change on nvim's index-entries.json alone).",
+    "The 94 'null' line_count entries are actually entirely-missing keys in six extensions (cslib, latex, lean, python, typst, z3), not literal JSON null values -- --write distinguishes insert (missing key) from replace (present-but-wrong) internally.",
+    "The core/lean same-path collision on three contracts/*.md files is an intentional lean4-specific override, not an accidental duplicate (different, purposeful content in each). Documented as a known dormant risk in append_index_entries's LuaDoc rather than deleted or rewritten; lean is not currently loaded so the collision is inert today.",
+    "Rule S (deployed-index-orphan) enumerates the filesystem directly (find -name '*.md') instead of the plan-assumed _git_deployed_files helper, after discovering that helper (git ls-files) always returns zero results against this repo's fully gitignored .claude/ tree -- a latent, pre-existing vacuity in Rule L as well, left unfixed as out of scope.",
+    "README.md/EXTENSION.md script-count summaries left untouched in Phase 8: neither enumerates scripts individually (both are already-stale abbreviated counts), so the new script is not left undocumented by omission -- its documentation surface is merge-sources/claudemd.md's Utility Scripts list, which was updated."
   ],
   "dead_ends": [
-    "Regenerating line_count only in the deployed .claude/context/index.json: it is a disposable deploy artifact regenerated from agent-system/extensions/**, so the correction is silently undone on the next redeploy. The generator must target the source store.",
-    "Adding the new gates to validate-context-index.sh: that script is invoked by nothing automated (manual tool, referenced only from a docs guide), so a gate there would never run.",
-    "Adding a new verify-deploy.sh gate: unnecessary, since gate 3 already invokes check-extension-docs.sh in full and picks up new rules automatically."
+    "jq full-document round-trip for --write mode: silently reformats every array in files with non-canonical (compact) formatting, producing far more diff churn than the intended line_count-only change.",
+    "Reusing _git_deployed_files (git ls-files) for the new Rule S: silently vacuous in this repository because .claude/ is entirely gitignored with no tracked exceptions."
   ],
-  "phases_completed": 0,
+  "phases_completed": 9,
   "phases_total": 9,
   "plan_markers_verified": true
 }
