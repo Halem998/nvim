@@ -655,33 +655,66 @@ in a comment and never subprocess-calls it — mere reference, file list unchang
 
 ---
 
-### Phase 7: Extend batch admission to the plain multi-task command paths (Gap C) [NOT STARTED]
+### Phase 7: Extend batch admission to the plain multi-task command paths (Gap C) [COMPLETED]
 
 **Goal**: `/research N,M`, `/plan N,M`, `/implement N,M` gain the batch-admission pre-check they
 lack today.
 
 **Tasks**:
-- [ ] In each of `commands/research.md`, `commands/plan.md`, `commands/implement.md`, locate the
+- [x] In each of `commands/research.md`, `commands/plan.md`, `commands/implement.md`, locate the
       anchor: immediately AFTER the `task-lock.sh session-register` call, BEFORE the per-task
       `task-lock.sh acquire` loop. Anchor on the quoted `session-register` and `acquire` command
-      strings, never on line numbers.
-- [ ] Insert one `orchestrate-batch-admit.sh` call per invocation for the whole validated set,
+      strings, never on line numbers. *(completed; the anchor shape was structurally identical in
+      all three files as the Scope Hypothesis predicted — inserted as a new "Step 2.5: Batch
+      Admission Pre-Check (Gap C)" subsection between the existing "Step 2" and "Step 3" headings
+      in each file)*
+- [x] Insert one `orchestrate-batch-admit.sh` call per invocation for the whole validated set,
       passing `--invocation-count "${#validated_tasks[@]}"`, `--session-id "$batch_session_id"`,
-      and the validated task numbers positionally.
-- [ ] Move every `decision == "defer"` task out of `validated_tasks` BEFORE the acquire loop runs,
+      and the validated task numbers positionally. *(completed; functionally verified against a
+      live fixture for both research.md's and plan.md's exact bash shape)*
+- [x] Move every `decision == "defer"` task out of `validated_tasks` BEFORE the acquire loop runs,
       using **each file's own existing bucket-naming convention verbatim** — `plan.md` names both
       `skipped_tasks` and `invalid_tasks` in its per-task-acquire-refusal text while
       `research.md` and `implement.md` name only `skipped_tasks`. Do not assume uniformity; read
-      each file's convention and follow it.
-- [ ] Mirror the existing `"locked by another session"` skip-reason phrasing style for the new
+      each file's convention and follow it. *(completed: plan.md's PROSE loosely says
+      "skipped_tasks/invalid_tasks" but its actual declared bash array (Step 1) is `invalid_tasks`
+      only — followed the real variable, not the loose prose. research.md and implement.md both
+      use `skipped_tasks`.)*
+- [x] Mirror the existing `"locked by another session"` skip-reason phrasing style for the new
       skip reasons, carrying the verdict's `defer_reason` so the operator can tell the three
-      flavors apart.
-- [ ] Leave the per-task acquire loop's own semantics completely unchanged — an admitted candidate
-      still goes through per-task locking exactly as today.
-- [ ] EXCLUDE, NEVER AUTO-EXPAND: a deferred task is dropped from this invocation. Never pull an
-      out-of-batch predecessor in.
-- [ ] Confirm `commands/orchestrate.md` already calls batch-admit (it is not part of Gap C); if it
-      does not yet pass `--session-id`, add it there too for consistency with D6.
+      flavors apart. *(completed: `"$t: deferred by batch admission [$defer_reason]"` for the
+      array entry, mirroring the existing `"$task_num: terminal status [$status]"` bracket
+      convention already used in each file's own Step 1, plus a fuller `[WARN]` stderr line
+      carrying the verdict's full `reason` text)*
+- [x] Leave the per-task acquire loop's own semantics completely unchanged — an admitted candidate
+      still goes through per-task locking exactly as today. *(completed; Step 3 in all three
+      files is untouched)*
+- [x] EXCLUDE, NEVER AUTO-EXPAND: a deferred task is dropped from this invocation. Never pull an
+      out-of-batch predecessor in. *(completed; the filtering loop only ever rebuilds
+      `validated_tasks` as a subset of itself)*
+- [x] Confirm `commands/orchestrate.md` already calls batch-admit (it is not part of Gap C); if it
+      does not yet pass `--session-id`, add it there too for consistency with D6. *(completed with
+      a significant discovery beyond the literal task text: `commands/orchestrate.md`'s own
+      bash block is explicitly documented, in its OWN surrounding prose, as "illustrative of the
+      CONTRACT skill-orchestrate fulfills, not code this file itself runs" — the REAL, EXECUTING
+      call lives in `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` Stage MT-3
+      step 4.5 (line ~1391), which also did NOT pass `--session-id`. Updated BOTH: the
+      illustrative block in `commands/orchestrate.md` (so the illustration stays accurate) and
+      the real call in `skill-orchestrate/SKILL.md` (so `/orchestrate`'s actual dispatch path
+      gets the D6 fix, not just its documentation). Additionally discovered that NEITHER file's
+      `defer_reason` branching prose covered `session_active` at all — both enumerated only
+      `self_modifying` and `file_scope_collision` with no third branch and no fallback, which for
+      `skill-orchestrate/SKILL.md` (the REAL dispatch decision logic, not a report composer) meant
+      a `session_active` verdict would match neither branch and the candidate would likely
+      dispatch anyway, silently defeating the new input entirely on the one path that actually
+      acts on verdicts rather than just reporting them. Added a third `session_active` bullet,
+      mirroring the existing two branches' shape (remove from dispatch batch, distinct warning,
+      `defer_ledger` entry), to both `commands/orchestrate.md`'s illustrative prose and
+      `skill-orchestrate/SKILL.md`'s real Stage MT-3 step 4.5 logic. This expands the phase's
+      actual file list by one beyond what was declared (see Files to modify below) — a scope
+      expansion analogous to Phase 6's dry-run-report.sh fallthrough-bug discovery, made for the
+      same reason: an unbranched defer_reason on the one path that ACTS on verdicts is a
+      correctness bug, not a documentation nicety.)*
 
 **Timing**: 1.5 hours
 
@@ -698,7 +731,13 @@ structure rather than forcing the common shape.
 - `agent-system/extensions/core/commands/research.md` - batch-admit call at the anchor
 - `agent-system/extensions/core/commands/plan.md` - same, with that file's own bucket naming
 - `agent-system/extensions/core/commands/implement.md` - same
-- `agent-system/extensions/core/commands/orchestrate.md` - `--session-id` consistency only
+- `agent-system/extensions/core/commands/orchestrate.md` - `--session-id` consistency and
+  `session_active` branch on its illustrative block (not part of Gap C proper)
+- (discovered during implementation, not pre-declared) `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`
+  - the REAL executing counterpart to `commands/orchestrate.md`'s illustrative block: Stage MT-3
+    step 4.5's `orchestrate-batch-admit.sh` call gains `--session-id "$session_id"` and a new
+    `session_active` defer_reason branch, without which `/orchestrate`'s actual dispatch path
+    would never have benefited from this convergence at all
 
 **Verification**:
 - Each of the three files contains exactly one new `orchestrate-batch-admit.sh` invocation,

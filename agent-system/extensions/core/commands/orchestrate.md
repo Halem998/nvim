@@ -239,8 +239,14 @@ The bash block below is retained as an illustration of that contract, with the a
 to match what the skill actually passes:
 
 ```bash
-bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#wave_tasks[@]}" "${wave_tasks[@]}"
+bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#wave_tasks[@]}" --session-id "$batch_session_id" "${wave_tasks[@]}"
 ```
+
+`--session-id "$batch_session_id"` (D6, added for the session-registry contention input) is
+threaded through unchanged from `skill-orchestrate/SKILL.md` Stage MT-1's own
+`session-register` call — the same `session_id` this file's own Step 4 below generates and hands
+to the skill. Without it, the just-registered batch session would be seen as foreign and every
+candidate would defer against itself.
 
 `--invocation-count` carries the actual co-dispatch count for the cycle/wave being evaluated
 (`${#wave_tasks[@]}` here, `${#eligible_tasks[@]}` at the skill's own per-cycle call site) — never
@@ -304,6 +310,16 @@ misread as an ordinary in-batch collision):
       this invocation's batch. Excluding #{task_number} from this run — batch composition
       needs human review.
     ```
+- **`session_active`** (NEW in v4, reached only when the state.json collision scan above found no
+  hit): a live registered session's own unioned `file_scope` overlaps the candidate's. Defer the
+  candidate to a later wave — same defer-not-fail semantics as the two dimensions above — and log
+  a distinct warning naming the contending session, the task it covers, and its liveness reason:
+  ```
+  [orchestrate] WARNING: Task #{task_number} has file_scope overlapping live registered
+    session {session_id}'s (liveness: {session_liveness_reason}) covered task
+    #{colliding_task_number} at {overlapping_path}. Deferring #{task_number} — it becomes
+    eligible again once that session releases or its registry entry goes stale.
+  ```
 
 **Defer-not-fail invariant**: this check never marks a task failed and never mutates
 `specs/state.json` — a `defer` verdict only changes which wave (or whether this invocation at

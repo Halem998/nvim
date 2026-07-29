@@ -89,6 +89,44 @@ failure must never affect any admission or dispatch decision):
 bash .claude/scripts/task-lock.sh session-register "$batch_session_id" "/implement (multi-task)" "$(IFS=,; echo "${validated_tasks[*]}")" 2>/dev/null || true
 ```
 
+#### Step 2.5: Batch Admission Pre-Check (Gap C)
+
+Before the per-task acquire loop in Step 3, check the whole validated set against
+`orchestrate-batch-admit.sh`'s bounded conflict-detection predicate (cross-batch `file_scope`
+collisions, the self-modification hazard, and live session-registry contention). This is
+DETECTION only — a deferred task is moved out of `validated_tasks` here exactly the same way
+Step 3 already moves a lock-refused task to `skipped_tasks`; this step only adds an earlier,
+cheaper check for the gap `.claude/context/patterns/batch-orchestration-guardrails.md` already
+names for the plain multi-task command paths. Must run AFTER session-register (above), passing
+`--session-id "$batch_session_id"` — see D6 in the originating plan for why: without it,
+`orchestrate-batch-admit.sh` would see the just-registered batch session as foreign and defer
+every candidate against itself.
+
+```bash
+admit_output=$(bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#validated_tasks[@]}" --session-id "$batch_session_id" "${validated_tasks[@]}" 2>/dev/null)
+while IFS= read -r verdict; do
+  [ -z "$verdict" ] && continue
+  decision=$(echo "$verdict" | jq -r '.decision // ""')
+  [ "$decision" = "defer" ] || continue
+  t=$(echo "$verdict" | jq -r '.task_number')
+  defer_reason=$(echo "$verdict" | jq -r '.defer_reason // "unknown"')
+  reason_text=$(echo "$verdict" | jq -r '.reason // "deferred by batch admission"')
+  # EXCLUDE, never auto-expand: remove $t from validated_tasks, never pull anything else in.
+  new_validated=()
+  for existing in "${validated_tasks[@]}"; do
+    [ "$existing" = "$t" ] || new_validated+=("$existing")
+  done
+  validated_tasks=("${new_validated[@]}")
+  skipped_tasks+=("$t: deferred by batch admission [$defer_reason]")
+  echo "[WARN] Task #$t deferred by batch admission ($defer_reason): $reason_text" >&2
+done <<< "$admit_output"
+
+if [ ${#validated_tasks[@]} -eq 0 ]; then
+  echo "[FAIL] No valid tasks remain after batch admission — every candidate was deferred." >&2
+  exit 1
+fi
+```
+
 #### Step 3: Dispatch Skills
 
 This multi-task loop bypasses `command-gate-in.sh`/`command-gate-out.sh` entirely (those are

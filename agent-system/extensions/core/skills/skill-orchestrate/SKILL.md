@@ -1386,9 +1386,12 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
    `eligible_tasks` on EVERY cycle — including a cycle where `eligible_tasks` contains only a
    single task, since a cross-batch collision exists at batch size 1 — call the admission
    script, passing `--invocation-count` set to THIS CYCLE'S actual co-dispatch count,
-   `${#eligible_tasks[@]}`:
+   `${#eligible_tasks[@]}`, and `--session-id "$session_id"` (D6, session-registry contention
+   input) — the SAME bare `session_id` Stage MT-1 registered via `session-register` above, so
+   this call's self-exclusion actually matches the batch's own registry entry rather than seeing
+   it as foreign and deferring every candidate against itself:
    ```bash
-   bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#eligible_tasks[@]}" "${eligible_tasks[@]}"
+   bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#eligible_tasks[@]}" --session-id "$session_id" "${eligible_tasks[@]}"
    ```
    This is the corrected contract (narrowed from an earlier version of this step that passed this
    invocation's full validated-candidate count): the self-modification defer trigger fires
@@ -1475,6 +1478,22 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
        ```
        Additionally, append to `mt_state_file.defer_ledger`:
        `{"task": task_number, "defer_reason": "file_scope_collision", "collision_scope": "cross_batch", "cycle": cycle_count, "detail": "colliding out-of-batch task #{colliding_task_number} (status: {colliding_task_status})"}`.
+   - **`session_active`** (NEW in v4, reached only when the state.json collision scan above found
+     no hit): a live registered session's own unioned `file_scope` overlaps the candidate's.
+     Same "defer, not fail" cycle semantics as the two branches above — remove the candidate from
+     this cycle's dispatch batch, never add it to `failed_tasks`, never add it to
+     `deferred_self_modifying` (that set is exclusive to the `self_modifying` branch), eligible
+     again on a later cycle once the contending session releases or goes stale. Log a distinct
+     warning naming the contending session, the task it covers, and its liveness reason:
+     ```
+     [orchestrate] WARNING: Task #{task_number} has file_scope overlapping live registered
+       session {session_id}'s (liveness: {session_liveness_reason}) covered task
+       #{colliding_task_number} at {overlapping_path}. Deferring #{task_number} to a later
+       cycle — it becomes eligible again once that session releases or its registry entry
+       goes stale.
+     ```
+     Additionally, append to `mt_state_file.defer_ledger`:
+     `{"task": task_number, "defer_reason": "session_active", "collision_scope": null, "cycle": cycle_count, "detail": "contending session {session_id} (liveness: {session_liveness_reason}) covers task #{colliding_task_number} at {overlapping_path}"}`.
 
    **Convergence guard (post-admission empty-dispatch-batch check)**: removing the permanent
    `deferred_self_modifying` exclusion set (this step now only appends to an observation log, per
