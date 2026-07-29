@@ -157,28 +157,33 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Confirm CLAUDE.md single-copy and byte-identical idempotency [NOT STARTED]
+### Phase 2: Confirm CLAUDE.md single-copy and byte-identical idempotency [COMPLETED]
 
 **Goal**: Empirically demonstrate the first two clauses of the verification bar against a real
 "Load Core"/"Sync all" cycle, which is the only path that previously introduced the duplicate.
 
 **Tasks**:
-- [ ] Copy the pre-deploy `.claude/CLAUDE.md` to the scratchpad as `claudemd-before.md` for
-      reference.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` from the repository root. Confirm exit code 0
-      and a reported artifact count.
-- [ ] Copy the resulting `.claude/CLAUDE.md` to the scratchpad as `claudemd-run1.md`.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` a second time, with no intervening extension
-      load or unload. Copy the result as `claudemd-run2.md`.
-- [ ] `diff claudemd-run1.md claudemd-run2.md` — must report no differences (idempotency).
-- [ ] Sentinel check: `grep -c "This file is generated automatically from loaded extensions"
-      .claude/CLAUDE.md` returns exactly `1`.
-- [ ] Per-extension check: for each loaded extension declaring a `claudemd` merge target, grep the
+- [x] Copy the pre-deploy `.claude/CLAUDE.md` to the scratchpad as `claudemd-before.md` for
+      reference. *(completed: 897 lines)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` from the repository root. Confirm exit code 0
+      and a reported artifact count. *(completed: exit 0, 304 artifacts deployed)*
+- [x] Copy the resulting `.claude/CLAUDE.md` to the scratchpad as `claudemd-run1.md`. *(completed:
+      897 lines)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` a second time, with no intervening extension
+      load or unload. Copy the result as `claudemd-run2.md`. *(completed: exit 0, 897 lines)*
+- [x] `diff claudemd-run1.md claudemd-run2.md` — must report no differences (idempotency).
+      *(completed: no diff, byte-identical)*
+- [x] Sentinel check: `grep -c "This file is generated automatically from loaded extensions"
+      .claude/CLAUDE.md` returns exactly `1`. *(completed: returned 1)*
+- [x] Per-extension check: for each loaded extension declaring a `claudemd` merge target, grep the
       first heading line of its `merge-sources/claudemd.md` fragment against `.claude/CLAUDE.md` and
       confirm a count of exactly 1 for every one. Record the extension count actually observed.
-- [ ] Marker check: `grep -c "<!-- SECTION:" .claude/CLAUDE.md` returns `0`.
-- [ ] If any check fails, stop and treat it as a Phase 1 defect — do not paper over it by editing
-      `.claude/CLAUDE.md` directly.
+      *(completed: 5 loaded extensions observed (core, email, memory, nix, nvim), from
+      `.claude-extensions.json` keys; each fragment's first heading line appears exactly once)*
+- [x] Marker check: `grep -c "<!-- SECTION:" .claude/CLAUDE.md` returns `0`. *(completed: returned
+      0)*
+- [x] If any check fails, stop and treat it as a Phase 1 defect — do not paper over it by editing
+      `.claude/CLAUDE.md` directly. *(completed: no failure encountered)*
 
 **Timing**: 45 minutes
 
