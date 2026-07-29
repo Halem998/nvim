@@ -203,22 +203,24 @@ not per manifest on disk.
 
 ---
 
-### Phase 3: Consolidate same-matcher blocks in the core settings-hooks fragment [NOT STARTED]
+### Phase 3: Consolidate same-matcher blocks in the core settings-hooks fragment [COMPLETED]
 
 **Goal**: Reduce the number of distinct same-matcher blocks the matcher-aware merge must reconcile,
 and remove the structural split that made the `Stop` duplicate possible in the first place.
 
 **Tasks**:
-- [ ] Enumerate which hook events in
+- [x] Enumerate which hook events in
       `agent-system/extensions/core/merge-sources/settings-hooks.json` contain more than one block
       sharing an identical `matcher` value:
       `jq -r '.hooks | to_entries[] | "\(.key) \([.value[].matcher] | group_by(.) | map(select(length > 1)) | length)"'`.
-- [ ] For each such event, merge the same-matcher blocks into a single
+      *(completed: confirmed exactly Stop and PostToolUse, matching the Scope Hypothesis)*
+- [x] For each such event, merge the same-matcher blocks into a single
       `{"matcher": <value>, "hooks": [...]}` entry, concatenating the `hooks` arrays in their current
-      first-appearance order. Do not reorder, rename, or drop any hook command.
-- [ ] Leave events whose blocks carry distinct matchers structurally unchanged.
-- [ ] Confirm the file still parses and that the total set of `(event, matcher, command)` triples is
-      unchanged before and after — only the block grouping changes.
+      first-appearance order. Do not reorder, rename, or drop any hook command. *(completed)*
+- [x] Leave events whose blocks carry distinct matchers structurally unchanged. *(completed)*
+- [x] Confirm the file still parses and that the total set of `(event, matcher, command)` triples is
+      unchanged before and after — only the block grouping changes. *(completed: jq empty exits 0;
+      sorted triple list byte-identical before/after)*
 
 **Timing**: 30 minutes
 

@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Consolidate same-matcher blocks in the core settings-hooks fragment",
+  "started_at": "2026-07-29T00:10:00Z",
+  "last_updated": "2026-07-29T00:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Enumerate events with same-matcher splits via jq group_by; confirmed Stop and PostToolUse", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Merge same-matcher blocks per event, concatenating hooks in first-appearance order", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/settings-hooks.json"]},
+    {"id": 3, "description": "Leave distinct-matcher events unchanged", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm file parses and (event, matcher, command) triple set is unchanged", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
