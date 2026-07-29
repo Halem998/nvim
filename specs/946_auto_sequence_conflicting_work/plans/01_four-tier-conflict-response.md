@@ -1,7 +1,7 @@
 # Implementation Plan: Four-Tier Conflict Response
 
 - **Task**: 946 - Auto-sequence conflicting work instead of aborting or skipping
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 9 hours
 - **Dependencies**: 945 (converged conflict-detection predicate — landed)
 - **Research Inputs**: specs/946_auto_sequence_conflicting_work/reports/01_four-tier-conflict-response.md
