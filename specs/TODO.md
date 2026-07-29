@@ -1,5 +1,5 @@
 ---
-next_project_number: 964
+next_project_number: 965
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 964
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 947,950,951,955,957,958,959,963 | -- | agent-system, orchestration-concurrency |
+| 1 | 947,950,951,955,957,958,959,963,964 | -- | agent-system, orchestration-concurrency |
 | 2 | 948,952,960 | 947,951,957,959 | agent-system |
 | 3 | 949,953,954,961 | 948,952,960 | agent-system |
 | 4 | 962 | 961 | agent-system |
@@ -35,12 +35,65 @@ next_project_number: 964
     └─ 961 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
       └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+964 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ### Orchestration Concurrency
 
 957 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ## Tasks
+
+### 964. Repair /refresh orphan detection so live system and session processes are never selected
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
+
+SEVERITY AND SEQUENCING: this is the highest-severity defect found in its discovery session and SHOULD BE TAKEN FIRST, ahead of the other agent-system tasks created alongside it. It carries no dependency edges (no file_scope collision with any in-flight work), so that ordering is advisory priority, not an enforced constraint -- nothing blocks it and it blocks nothing. It is the only defect in its batch whose failure mode is destructive rather than procedural.
+
+WHAT IS WRONG: `/refresh`'s orphaned-process matcher misidentifies live system and session processes as orphans. Running `/refresh --force` against a live machine would terminate a system daemon and live sessions' processes, including the session issuing the command. Run in read-only status mode against a live machine, the script reported "11 orphaned processes using 57.4 MB". Every one was a false positive.
+
+ROOT CAUSE 1 -- OVER-BROAD MATCH. `get_claude_processes()` (`scripts/claude-refresh.sh:107`) greps `[c]laude|[n]ode.*claude|[a]nthropic` against whole `ps aux` lines, i.e. the full argv, and `get_orphaned_processes()` (`:112`) then filters `$7 == "?"` (the TTY column). `TTY == "?"` is true of EVERY systemd-managed process by definition, so it is not a discriminator at all; combined with a substring match anywhere in argv, any process merely MENTIONING `claude` in an argument is captured. Candidate hardening: require ownership by the invoking UID (excludes the `earlyoom` service user), exclude anything whose cgroup is under `/system.slice/` (system services are never Claude Code orphans), and match on the EXECUTABLE rather than anywhere in argv.
+
+ROOT CAUSE 2 -- THE STATED SAFETY PROPERTY DOES NOT HOLD. The header claims at `scripts/claude-refresh.sh:13` that the script "Excludes current process and parent process tree". It does not. `is_in_current_tree()` (`:54-66`) walks `ppid` UPWARD only. The invoker's own sleep inhibitor is a SIBLING of the invoker's parent -- both are children of `systemd --user` -- not an ancestor, so an ancestor-walk can never reach it. This is a structural impossibility, not a tuning problem. Genuine orphan detection needs a LIVENESS TEST on the process each inhibitor is actually holding open: each carries `tail --pid=<claude_pid>` in its own argv, so the correct predicate is "is `<claude_pid>` still alive?", not "is this process in my ancestry?". Under that predicate every inhibitor observed was correctly live and none was an orphan.
+
+These two root causes MUST be co-fixed. Either landing alone leaves the tool unsafe.
+
+OBSERVED FALSE POSITIVES (all 11 were false; representative set):
+- PID 1002 -- `earlyoom.service`, a NixOS SYSTEM daemon, UID `earlyoom`, PPID 1, cgroup `/system.slice/earlyoom.service`. Matched ONLY because its own argv contains the literal string `claude` inside a regex: `--prefer ^(lean|lake|claude|node|npm|opencode)$`. Terminating it DISABLES THE MACHINE'S OUT-OF-MEMORY PROTECTION.
+- PID 1905663 -- the invoking session's OWN sleep inhibitor: `systemd-inhibit ... tail --pid=1905591`, where 1905591 is the `claude` process in the invoker's own ancestry, same WezTerm cgroup. Kills the inhibitor of the very session running `/refresh`.
+- PID 2205459 -- `claude-memory-tracker`, a live user service. Stops memory tracking.
+- PIDs 527856 and 2846183 -- sleep inhibitors of a DIFFERENT live session, whose `claude` PID 527780 was still running and 2 days old. That machine would sleep mid-session.
+- PIDs 3658641 and 3658642 -- the refresh script's OWN subshells. Self-termination.
+
+ESCALATION -- UNATTENDED HOURLY AMPLIFICATION. `systemd/claude-refresh.service` ships `ExecStart=%h/.config/nvim/.claude/scripts/claude-refresh.sh --force`, paired with `systemd/claude-refresh.timer` (`OnCalendar=hourly`, `Persistent=true`), and `scripts/install-systemd-timer.sh:104` writes the same `--force` line. So the defective matcher is wired to an hourly, unattended, no-confirmation killer for anyone who runs the shipped installer. Verified NOT installed on the discovery machine (`systemctl --user is-enabled claude-refresh.timer` returns `not-found`) -- latent, not live -- but it ships in that state.
+
+DECIDED POLICY (settled by the user; NOT an implementer judgment call): the timer default becomes NON-DESTRUCTIVE. The timer REPORTS or LOGS rather than terminating, and `--force` becomes a deliberate opt-in. Rationale to record in the change: a matcher bug must never again be amplifiable into unattended hourly kills, regardless of how correct the matcher looks at review time. Apply this to both `systemd/claude-refresh.service` and the `ExecStart` line that `scripts/install-systemd-timer.sh` generates, so a fresh install and an existing unit converge on the same posture.
+
+DEFECT 3 -- NO PREVIEW PATH FOR PROCESS CLEANUP (narrower than first reported; do not overstate it). `scripts/claude-refresh.sh`'s argument loop (`:28-47`) accepts only `--force` and `--help|-h` and exits 1 on anything else, INCLUDING `--dry-run`. However `/refresh --dry-run` does NOT currently crash: `skills/skill-refresh/SKILL.md:40` passes only `--force` or nothing, so the rejection is never actually triggered. The real defect is that the process-cleanup half has NO PREVIEW PATH AT ALL, while `commands/refresh.md` documents `--dry-run` as "Preview both process and directory cleanup". The doc claim is false; the flag is not crashing. Add a genuine preview path and reconcile the doc.
+
+DEFECT 4 -- WRONG RECLAIM FIGURE. `orphan_mem` (`scripts/claude-refresh.sh:155`) is computed from the UNFILTERED orphan list, before the current-tree exclusion at `:172-188` runs. The reported "memory that can be reclaimed" is therefore wrong independently of the matcher bugs. Compute it from the post-exclusion list.
+
+DOC SITES ASSERTING THE FALSE SAFETY PROPERTY (all three must be reconciled with the fixed behavior, not left claiming a property the code lacks): the header comment block at `scripts/claude-refresh.sh:11-14`; the "Process Safety" section of `skills/skill-refresh/SKILL.md` ("Excludes current process tree"); and the "Process Protection" section of `commands/refresh.md` (same claim, plus the `--dry-run` description above).
+
+INVESTIGATED AND DISMISSED -- DO NOT RE-OPEN. It was initially suspected that `commands/refresh.md`'s documented Directory Cleanup section (`projects/`, `debug/`, `file-history/`, `todos/`, `session-env/`, `telemetry/`, `shell-snapshots/`, `plugins/cache/`, `cache/`) described unimplemented behavior, or that a second script was missing from the deploy. THIS IS NOT A DEFECT. `scripts/claude-cleanup.sh` EXISTS at 13,811 bytes in BOTH the source store and the deploy, and `skills/skill-refresh/SKILL.md` Steps 6-7 invoke it. `claude-refresh.sh` is process-only BY DESIGN; directory cleanup is a separate, working script. This is also unrelated to the deploy-propagation task tracked separately. No work is required here; this paragraph exists solely so a future implementer does not re-derive and re-open it.
+
+RELATED BUT NON-BLOCKING: the new regression-test file is a NEW file under `scripts/tests/`, which is exactly the "new files may not reach an existing deploy" class covered by the separate deploy-propagation task. This does NOT gate this task -- the four existing tests in `scripts/tests/` run from the source store -- but do not be surprised if the new test is absent from `.claude/scripts/tests/` until that separate fix lands.
+
+VERIFICATION BAR / ACCEPTANCE CRITERIA:
+1. REGRESSION TESTS ARE A HARD ACCEPTANCE CRITERION, not optional. Add `scripts/tests/test-claude-refresh-matcher.sh` following the existing convention of the four tests already in `scripts/tests/`. It MUST assert, at minimum, all four of: (a) a process whose cgroup is under `/system.slice/` is NEVER selected; (b) a process that merely mentions `claude` somewhere in its argv, without being a Claude Code process, is NEVER selected; (c) an inhibitor whose held `tail --pid=<pid>` target is STILL ALIVE is NEVER selected; (d) the script's own subshells are NEVER self-selected. This is precisely the class of defect that silently reappears, which is why the assertions are named individually rather than left to the implementer's discretion.
+2. Re-running the matcher in status mode on a live machine reports ZERO orphans when all Claude sessions are live, rather than the observed 11.
+3. The reported reclaim figure matches the post-exclusion selection.
+4. A real preview path exists for process cleanup and `commands/refresh.md`'s `--dry-run` description is true of the shipped behavior.
+5. The timer/service and the installer-generated `ExecStart` are non-destructive by default, with `--force` as explicit opt-in.
+6. No doc site claims a safety property the code does not implement.
+7. `bash -n` clean on every edited script.
+
+DELIVERABLE RULE: this task's deliverables outside `specs/**` must not cite task numbers.
+
+---
 
 ### 963. Resolve the cslib implementation-summary format divergence from the core standard
 - **Status**: [NOT STARTED]
