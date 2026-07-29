@@ -21,6 +21,14 @@ Archive completed, abandoned, and expanded tasks to clean up active task list.
 dry_run = "--dry-run" in $ARGUMENTS
 ```
 
+`/todo` has no `command-gate-in.sh` call and no `session_id` of its own — generate one once
+near the top of this run, following the same self-generating fallback used elsewhere
+(`manage-topics.sh` / `archive-task.sh`), and thread that single value through every
+`state-write.sh` call below:
+```bash
+session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+```
+
 ### 2. Scan for Archivable Tasks
 
 Read specs/state.json and identify:
@@ -501,11 +509,14 @@ Use `index(...) == null` (never `!=`) to express the subtraction:
 # This pattern is Issue #1132-safe
 # deferred_json must default to [] when nothing was deferred.
 deferred_json=$(printf '%s\n' "${deferred_expanded_nums[@]:-}" | jq -R 'select(length > 0) | tonumber' | jq -s '.')
-jq --argjson deferred "$deferred_json" '
+bash .claude/scripts/state-write.sh \
+  '
   del(.active_projects[] | select(
     (.status == "completed" or .status == "abandoned" or .status == "expanded")
     and (. as $item | ($deferred | index($item.project_number)) == null)
-  ))' specs/state.json > specs/state.json.tmp && mv specs/state.json.tmp specs/state.json
+  ))' \
+  --session-id "$session_id" \
+  --argjson deferred "$deferred_json"
 ```
 (`. as $item | ...` is required here: without it, `index(.project_number)` evaluates `.` against
 `$deferred` itself after the pipe — not against the array element being tested — and jq errors
@@ -584,7 +595,8 @@ for orphan_dir in "${orphaned_dirs[@]}"; do
   [ -d "$archive_path/plans" ] && artifacts=$(echo "$artifacts" | jq '. + ["plans/"]')
   [ -d "$archive_path/summaries" ] && artifacts=$(echo "$artifacts" | jq '. + ["summaries/"]')
 
-  # Add entry to archive/state.json
+  # Add entry to archive/state.json. Deliberately left hand-rolled: state-write.sh targets
+  # specs/state.json only, never specs/archive/state.json.
   jq --arg num "$project_num" \
      --arg name "$project_name" \
      --arg date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
@@ -741,17 +753,19 @@ fi
 
 **Step 5.7.2: Update state.json repository_health**:
 ```bash
-jq --arg todo "$todo_count" \
-   --arg fixme "$fixme_count" \
-   --arg ts "$ts" \
-   --arg errors "$build_errors" \
+bash .claude/scripts/state-write.sh \
    '.repository_health = {
      "last_assessed": $ts,
      "todo_count": ($todo | tonumber),
      "fixme_count": ($fixme | tonumber),
      "build_errors": ($errors | tonumber),
      "status": (if ($build_errors | tonumber) == 0 then "healthy" else "needs_attention" end)
-   }' specs/state.json > specs/state.json.tmp && mv specs/state.json.tmp specs/state.json
+   }' \
+   --session-id "$session_id" \
+   --arg todo "$todo_count" \
+   --arg fixme "$fixme_count" \
+   --arg ts "$ts" \
+   --arg errors "$build_errors"
 ```
 
 **Step 5.7.3: Update TODO.md frontmatter**:
@@ -862,7 +876,8 @@ jq -n \
   }' > "${vault_path}/meta.json"
 ```
 
-**Step 5.8.6: Reinitialize archive**:
+**Step 5.8.6: Reinitialize archive**. Deliberately left hand-rolled: `state-write.sh` targets
+`specs/state.json` only, never `specs/archive/state.json`:
 ```bash
 mkdir -p "specs/archive"
 jq -n '{ "completed_projects": [] }' > "specs/archive/state.json"
@@ -884,18 +899,19 @@ max_active=$(jq -r '[.active_projects[].project_number] | max // 0' specs/state.
 new_next_num=$((max_active + 1))
 
 # Update state.json
-jq --argjson new_next "$new_next_num" \
-   --argjson vault_num "$new_vault_num" \
-   --arg vault_path "$vault_path/" \
-   --arg created "$current_timestamp" \
+bash .claude/scripts/state-write.sh \
    '.next_project_number = $new_next |
     .vault_count = (.vault_count // 0) + 1 |
     .vault_history = (.vault_history // []) + [{
       vault_number: $vault_num,
       vault_dir: $vault_path,
       created_at: $created
-    }]' specs/state.json > specs/state.json.tmp
-mv specs/state.json.tmp specs/state.json
+    }]' \
+   --session-id "$session_id" \
+   --argjson new_next "$new_next_num" \
+   --argjson vault_num "$new_vault_num" \
+   --arg vault_path "$vault_path/" \
+   --arg created "$current_timestamp"
 ```
 
 **Step 5.8.9: Add transition comment to TODO.md**:

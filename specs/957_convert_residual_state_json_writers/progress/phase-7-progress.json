@@ -1,0 +1,14 @@
+{
+  "phase": 7,
+  "phase_name": "commands/todo.md",
+  "started_at": "2026-07-29T01:40:00Z",
+  "last_updated": "2026-07-29T01:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Convert todo.md's 3 in-scope sites, introduce session_id, leave 2 archive sites untouched", "status": "done",
+     "files_touched": ["agent-system/extensions/core/commands/todo.md"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Actual site counts (3 in-scope, 2 out-of-scope) differ substantially from the plan's hypothesis (6/11). A single session_id generated once at top of file (linear flow, unlike task.md's multi-mode structure)."
+}

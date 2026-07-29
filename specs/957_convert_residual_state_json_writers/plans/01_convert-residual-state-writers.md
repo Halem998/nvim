@@ -268,17 +268,17 @@ Phases within the same wave can execute in parallel. Wave 2's phases own disjoin
 
 ---
 
-### Phase 7: commands/todo.md [NOT STARTED]
+### Phase 7: commands/todo.md [COMPLETED]
 
 **Goal**: Convert `todo.md`'s 6 in-scope sites, introducing a session_id where none exists today, while leaving its 11 archive/vault sites untouched.
 
 **Tasks**:
-- [ ] Build the in-scope vs. out-of-scope inventory by line number before any edit.
-- [ ] Identify the distinct execution paths (modes) that contain in-scope writes. For each, generate a session_id ONCE near the top of that path using `session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"`, following the `manage-topics.sh` / `archive-task.sh` local-fallback style, and thread that single value through every `state-write.sh` call in that path.
-- [ ] Convert only the in-scope sites, one at a time by exact line match, confirming the literal target path each time.
-- [ ] Add a one-line mechanism-naming comment at each out-of-scope archive/vault site.
-- [ ] Apply the fold/no-fold decision per site.
-- [ ] `bash -n` every extracted bash block in the file.
+- [x] Build the in-scope vs. out-of-scope inventory by line number before any edit. *(completed: actual inventory — in-scope: Archive Tasks step B (del active_projects), Sync Repository Metrics (.repository_health), Vault reset (Step 5.8.8) = 3 sites; out-of-scope archive: orphan-tracking add-entry, archive reinit (Step 5.8.6) = 2 sites; a third non-matching write to a `${snapshot_dir}/state.json` mktemp scratch file (line ~661) is neither `specs/state.json` nor `specs/archive/state.json` and was correctly left untouched with no comment needed. Deviation: hypothesis was 6/11, actual is 3/2 — a large overcount, recorded per the Scope Hypothesis's own "not the stopping condition" clause)*
+- [x] Identify the distinct execution paths (modes) that contain in-scope writes. For each, generate a session_id ONCE near the top of that path using `session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"`, following the `manage-topics.sh` / `archive-task.sh` local-fallback style, and thread that single value through every `state-write.sh` call in that path. *(completed: unlike task.md, `/todo` has a single linear execution flow, not multiple modes — one `session_id` was generated once at the top of `### 1. Parse Arguments` and threaded through all 3 in-scope call sites)*
+- [x] Convert only the in-scope sites, one at a time by exact line match, confirming the literal target path each time. *(completed: 3/3 converted)*
+- [x] Add a one-line mechanism-naming comment at each out-of-scope archive/vault site. *(completed: both archive sites annotated)*
+- [x] Apply the fold/no-fold decision per site. *(completed: no-fold on all 3 — each in-scope write is followed by an Edit-tool-based TODO.md update or further prose, never directly by a bare `generate-todo.sh` call)*
+- [x] `bash -n` every extracted bash block in the file. *(completed: clean; `bash -n` also flagged one pre-existing, unrelated block — a `jq-escaping-workarounds.md`-style heredoc illustration using a bare `EOF` delimiter far from any edited site — confirmed via `git diff` to be untouched by this phase)*
 
 **Timing**: 1.25 hours
 
@@ -286,7 +286,7 @@ Phases within the same wave can execute in parallel. Wave 2's phases own disjoin
 
 **Verification Tier**: interface
 
-**Scope Hypothesis**: 6 in-scope sites and 11 out-of-scope archive/vault sites; zero pre-existing `session_id` references in the file. Confirm all three with greps before editing; the out-of-scope count must be identical before and after.
+**Scope Hypothesis**: 6 in-scope sites and 11 out-of-scope archive/vault sites; zero pre-existing `session_id` references in the file. Confirm all three with greps before editing; the out-of-scope count must be identical before and after. **Actual**: 3 in-scope, 2 out-of-scope, 0 pre-existing session_id references (confirmed).
 
 **Files to modify**:
 - `agent-system/extensions/core/commands/todo.md`
