@@ -1,12 +1,42 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/975_fix_generated_claudemd_double_body/summaries/01_claudemd-hook-dedup-summary.md",
+      "summary": "Both defects fixed and empirically verified against a real deploy-headless.sh cycle: CLAUDE.md single-copy/idempotent, settings.json Stop hook deduped, permissions/mcpServers unaffected, verify-deploy.sh 12/12 PASS."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed two deploy-machinery defects: sync.lua's reinject_loaded_extensions() now regenerates CLAUDE.md as a single computed artifact instead of double-appending via retired section markers, and merge.lua's deep_merge gained a matcher-aware, self-normalizing hook-array merge (plus a matching unmerge reversal) that collapses the duplicate claude-stop-notify.sh Stop-hook registration and prevents it recurring. All three verification-bar clauses were demonstrated empirically against a real deploy-headless.sh cycle, with permissions/mcpServers confirmed unaffected and verify-deploy.sh passing 12/12 checks."
+  },
+  "modified_files": [
+    "lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua",
+    "lua/neotex/plugins/ai/shared/extensions/merge.lua",
+    "agent-system/extensions/core/merge-sources/settings-hooks.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In the nvim extension-loader deploy system (lua/neotex/plugins/ai/shared/extensions/merge.lua), Claude Code settings.json hook-event arrays (Stop, PreToolUse, etc.) have a distinct shape from other settings arrays: each item is a {matcher, hooks} table. deep_merge()'s default array-merge compares whole items via vim.deep_equal, which cannot recognize that two differently-shaped {matcher, hooks} blocks sharing the same matcher should be unioned -- this silently produces duplicate hook registrations (e.g. the same script registered twice on Stop) that never self-heal, because merge_settings() only ever adds, never regenerates. The fix pattern: gate a matcher-aware merge behind a strict shape predicate (is_hook_event_array: non-empty array, every item has both a string matcher key and an array-valued hooks key), normalize the target's existing blocks by matcher before merging (idempotent, safe to re-run), and merge incoming blocks by matcher instead of whole-item identity. Track hook-level tracked entries (not just whole-block appends) so unmerge can correctly reverse an entry that got merged into a pre-existing matcher block rather than appended as a new one. Block-grouping normalization should be documented as deliberately NOT reversed by unmerge, since it is semantically neutral and reversing it would reintroduce the exact duplication hazard being fixed.",
+      "category": "PATTERN",
+      "source_artifact": "specs/975_fix_generated_claudemd_double_body/summaries/01_claudemd-hook-dedup-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deep_merge", "hook-event-array", "matcher-aware-merge", "settings.json", "claude-stop-notify", "extension-loader", "idempotent-normalize"]
+    },
+    {
+      "content": "When verifying a deploy-time defect (e.g. duplicated content in a regenerated file) is actually fixed, capturing the CURRENT live artifact before the fix is not sufficient evidence if the artifact self-heals on regeneration (a full-overwrite computed artifact can look clean between runs even with the bug present). Instead, capture a baseline immediately before the verification deploy runs, run the fixed code path, and diff/inspect the result -- and separately confirm the pre-fix live state still reproduced the defect at the start of verification (e.g. by inspecting a settings.json left over from a prior redeploy that ran before the code fix landed) as independent evidence the test would have caught the bug had the fix not been applied.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/975_fix_generated_claudemd_double_body/summaries/01_claudemd-hook-dedup-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["verification", "self-healing-artifact", "regression-testing", "deploy-cycle", "baseline-capture"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1785362998_047bfe",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 6,
     "phases_total": 6
   }
 }

@@ -1,14 +1,15 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 975,
-  "operation": "plan",
+  "operation": "implement",
   "session_id": "sess_1785362998_047bfe",
-  "agent_type": "planner-agent",
+  "agent_type": "general-implementation-agent",
   "plan_path": "specs/975_fix_generated_claudemd_double_body/plans/01_claudemd-hook-dedup-fix.md",
-  "phases_completed": 0,
+  "summary_path": "specs/975_fix_generated_claudemd_double_body/summaries/01_claudemd-hook-dedup-summary.md",
+  "phases_completed": 6,
   "phases_total": 6,
-  "next_phase": 1,
+  "next_phase": null,
   "dependency_waves": [[1, 3], [2, 4], [5], [6]],
-  "next_steps": "Run /implement 975 to execute the plan",
-  "notes": "Two independent fixes: (a) sync.lua reinject_loaded_extensions() stops calling inject_section() for the config-markdown merge key and calls generate_claudemd() once post-loop; (b) merge.lua deep_merge gains a narrowly-gated matcher-aware, self-normalizing path for {matcher,hooks}-shaped arrays plus a hook_merged tracked type reversed by unmerge_settings. .claude/ is gitignored and untracked; the settings duplicate is healed by redeploy, never by hand-editing .claude/**."
+  "next_steps": "Task complete. All 6 phases COMPLETED and verified against a real deploy-headless.sh cycle.",
+  "notes": "Both fixes verified empirically against a real deploy-headless.sh cycle: (a) sync.lua's reinject_loaded_extensions() no longer calls inject_section() for the config-markdown merge key, calling generate_claudemd() once post-loop instead -- CLAUDE.md sentinel count=1, SECTION marker count=0, all 5 loaded extension fragments (core, email, memory, nix, nvim) present exactly once, two consecutive deploys byte-identical; (b) merge.lua's deep_merge gained a narrowly-gated matcher-aware, self-normalizing path for {matcher,hooks}-shaped arrays plus a hook_merged tracked type reversed by unmerge_settings -- claude-stop-notify.sh appears exactly once in Stop, Stop has exactly 1 '*' matcher block, no (event,matcher,command) triple duplicated anywhere in settings.json, permissions/mcpServers semantically unaffected. verify-deploy.sh passed 12/12 checks. .claude/ is gitignored and untracked; the settings duplicate was healed by redeploy, never by hand-editing .claude/**."
 }
