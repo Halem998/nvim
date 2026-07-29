@@ -2907,10 +2907,12 @@
         "agent-system/extensions/core/agents/general-implementation-agent.md",
         "agent-system/extensions/core/agents/general-implementation-hard-agent.md"
       ],
-      "dependencies": [],
+      "dependencies": [
+        967
+      ],
       "artifacts": [],
       "created": "2026-07-29T16:26:39Z",
-      "last_updated": "2026-07-29T16:26:39Z",
+      "last_updated": "2026-07-29T16:32:02Z",
       "session_id": "sess_1785342301_f54a57",
       "next_artifact_number": 1
     },
@@ -2930,10 +2932,12 @@
         "agent-system/extensions/core/skills/skill-todo/SKILL.md",
         "agent-system/extensions/core/context/patterns/task-lock.md"
       ],
-      "dependencies": [],
+      "dependencies": [
+        967
+      ],
       "artifacts": [],
       "created": "2026-07-29T16:26:39Z",
-      "last_updated": "2026-07-29T16:26:39Z",
+      "last_updated": "2026-07-29T16:32:02Z",
       "session_id": "sess_1785342301_f54a57",
       "next_artifact_number": 1
     }

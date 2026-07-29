@@ -11,8 +11,8 @@ next_project_number: 970
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 947,950,951,955,959,963,964,966,967,968,969 | -- | agent-system, git-commit-reliability, orchestrator-completion-gate, ... |
-| 2 | 948,952,958,960 | 947,951,959,966 | agent-system |
+| 1 | 947,950,951,955,959,963,964,966,967 | -- | agent-system, git-commit-reliability |
+| 2 | 948,952,958,960,968,969 | 947,951,959,966,967 | agent-system, orchestrator-completion-gate, state-write-coverage |
 | 3 | 949,953,954,961 | 948,952,960 | agent-system |
 | 4 | 962 | 961 | agent-system |
 
@@ -56,7 +56,7 @@ next_project_number: 970
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: state-write-coverage
-- **Dependencies**: None
+- **Dependencies**: Task 967
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`. Runtime invocations still reference the deployed `.claude/scripts/state-write.sh`; that is the call path, not the edit target.
 
@@ -93,7 +93,7 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator-completion-gate
-- **Dependencies**: None
+- **Dependencies**: Task 967
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
 
