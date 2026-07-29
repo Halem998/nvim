@@ -52,9 +52,15 @@ even to "verify" a phase before or after dispatch.
    report-file access covers exactly three bounded, grep-only uses, none of which is a
    full-file comprehension read: (a) the H4 adversarial-verification grep over reports in
    Stage 4; (b) Stage 4's `### Phase N: ... [STATUS]` next-phase selection grep over the plan;
-   and (c) Stage 5's count-only phase-marker recovery grep over the plan, which fires only
-   inside the missing/stale-handoff branch and is bounded to ≤10 tokens per recovery event
-   (two `grep -c` integers). Any other use of these files is outside the allowlist.
+   and (c) Stage 5's count-only phase-marker recovery grep over the plan (via
+   `skill_corroborate_phase_counts` in `scripts/skill-base.sh`, which performs the same two
+   `grep -c` calls the inline recovery block used to run directly), bounded to ≤10 tokens per
+   recovery event (two `grep -c` integers) and fired from exactly two bounded uses: the
+   missing/stale-handoff branch's own recovery grep, and the handoff-present branch's
+   corroboration call, which fires only when the handoff itself reports
+   `dispatch_status = "implemented"` AND `phases_total -eq 0` — never on the normal path of a
+   fresh handoff with populated phase accounting. Any other use of these files is outside the
+   allowlist.
 4. `.claude/context/contracts/*.md` and `.claude/docs/architecture/*.md` (this skill's own
    contracts and architecture docs, per Context References above).
 
@@ -1012,6 +1018,41 @@ else
   echo "[hard-orchestrate] Dispatch result: $dispatch_status — $dispatch_summary"
   [ "$phases_total" -gt 0 ] && echo "[hard-orchestrate] Phase progress: $phases_completed/$phases_total (skeleton=${skeleton})"
 
+  # ── Evidence corroboration (handoff-present branch) ──────────────────────────
+  # PRECONDITION: reachable ONLY here — a handoff IS present and fresh (this is the `else` of
+  # the missing/stale-handoff branch above), dispatch_status is "implemented", AND phases_total
+  # is exactly 0 (accounting absent or malformed). Mirrors base mode's identical Stage 5 block
+  # byte-for-byte apart from the `[hard-orchestrate]` log prefix and this file's own variable
+  # names — see "Tool Constraints (Pure Dispatcher)" — "Read allowlist" item 3(c) below for the
+  # widened bounded-use enumeration this call site is now a member of.
+  #
+  # D3 (deliberate divergence): the trigger is `phases_total -eq 0` ALONE, not the recovered
+  # path's `PHASES_ZERO_ON_SUCCESS` (both-counts-zero) signature above — matching
+  # skill_gate_completion_claim's own Case 3 precondition exactly, so trigger and gate cannot
+  # drift apart. See skill_corroborate_phase_counts's header comment in scripts/skill-base.sh
+  # for the full rationale.
+  # D4 (structural, not a promise): Case 1 of skill_gate_completion_claim (phase accounting
+  # present and incomplete -> always refuse) is UNREACHABLE from this trigger by construction,
+  # since phases_total is already 0 here and Case 1 requires phases_total > 0 — a corroborated
+  # correction never overrides a refusal, it only supplies independent evidence (the plan file's
+  # own headings, never the handoff's own values) where the handoff supplied none.
+  #
+  # skill_corroborate_phase_counts is defined in scripts/skill-base.sh; source it defensively
+  # here (idempotent) since this Stage 5 code fence has no earlier explicit source line of its
+  # own to depend on.
+  source .claude/scripts/skill-base.sh
+  if [ "$dispatch_status" = "implemented" ] && [ "$phases_total" -eq 0 ]; then
+    corroboration_plan_path="${plan_path:-}"
+    if [ -z "$corroboration_plan_path" ]; then
+      corroboration_plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+    fi
+    cpc_line=$(skill_corroborate_phase_counts "$task_number" "$corroboration_plan_path" "[hard-orchestrate]" "$handoff_file")
+    IFS=' ' read -r cpc_a cpc_b cpc_c <<< "$cpc_line"
+    phases_completed="${cpc_a#phases_completed=}"
+    phases_total="${cpc_b#phases_total=}"
+    plan_markers_verified="${cpc_c#plan_markers_verified=}"
+  fi
+
   # Drift detection: arithmetic gate (cheap check before expensive inspection fork) — same as base
   if [ "$phases_total" -gt 0 ] && [ "$dispatch_status" = "partial" ]; then
     completion_ratio=$(awk "BEGIN { printf \"%.4f\", $phases_completed / $phases_total }")
@@ -1059,9 +1100,12 @@ if [ "$have_outcome" = "true" ]; then
       # Hard mode's per-phase dispatch always populates accounting, so Case 3 should be
       # near-unreachable here; when it does fire it means the handoff writer is defective (or, on
       # the recovered path, that .return-meta.json's phase accounting was conservatively refused
-      # as absent — the correct fail-closed outcome for a base-mode "implemented" recovery —
-      # UNLESS the evidence-corroboration block above already flipped plan_markers_verified to
-      # "true" from an independent, corroborating plan-heading grep).
+      # as absent — the correct fail-closed outcome for a base-mode "implemented" recovery), or
+      # that a handoff WAS present but omitted phase counts on an "implemented" claim — UNLESS
+      # one of the two evidence-corroboration call sites already flipped plan_markers_verified to
+      # "true" from an independent, corroborating plan-heading read: the recovered-path
+      # corroboration block above, or this branch's own "Evidence corroboration (handoff-present
+      # branch)" block.
       if skill_gate_completion_claim "$task_number" "$phases_completed" "$phases_total" \
            "$plan_markers_verified" "[hard-orchestrate]"; then
         skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn"
