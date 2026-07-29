@@ -257,39 +257,39 @@ re-discover by grep that it was dead code.
 
 ---
 
-### Phase 3: Fixture-driven test suite for corroboration and the completion gate [NOT STARTED]
+### Phase 3: Fixture-driven test suite for corroboration and the completion gate [COMPLETED]
 
 **Goal**: Give the verification bar's three scenarios a real harness that exercises production
 code, not a hand-copied reimplementation of markdown-embedded bash.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh`,
+- [x] Create `agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh`,
       structurally modeled on `scripts/tests/test-phase-heading-patterns.sh`: `mktemp -d` workdir
       with an EXIT-trap cleanup, deploy-tree-first / source-store-fallback candidate resolution,
       sourced (not subprocessed) libraries, `pass()` / `fail()` / `info()` helpers with integer
       counters, exit 0 all-pass / 1 any-fail / 2 environment error.
-- [ ] Source both `scripts/skill-base.sh` and `scripts/lib/phase-heading-patterns.sh`.
-- [ ] Fixture A (verification bar item 1): plan with all phases `[COMPLETED]`, simulated handoff
+- [x] Source both `scripts/skill-base.sh` and `scripts/lib/phase-heading-patterns.sh`.
+- [x] Fixture A (verification bar item 1): plan with all phases `[COMPLETED]`, simulated handoff
       with null phase counts. Assert `skill_corroborate_phase_counts` corroborates, emits the
       `[UNVERIFIED PHASES CORROBORATED]` banner, and that feeding its output into
       `skill_gate_completion_claim` returns 0 (ALLOW).
-- [ ] Fixture B (verification bar item 2): plan with a partial close (some `[COMPLETED]`, some
+- [x] Fixture B (verification bar item 2): plan with a partial close (some `[COMPLETED]`, some
       `[NOT STARTED]`). Assert non-corroborated, `plan_markers_verified` stays `absent`, and the
       gate returns 1 (REFUSE).
-- [ ] Fixture C (verification bar item 3): plan with zero conforming phase headings. Assert
+- [x] Fixture C (verification bar item 3): plan with zero conforming phase headings. Assert
       non-corroborated, the non-conforming warning is emitted where applicable, and the gate
       returns 1 (REFUSE).
-- [ ] Fixture D: mixed `[COMPLETED]` and `[COMPLETED WITH EXCLUSIONS]`, all closed. Assert
+- [x] Fixture D: mixed `[COMPLETED]` and `[COMPLETED WITH EXCLUSIONS]`, all closed. Assert
       corroborated — `COMPLETED WITH EXCLUSIONS` counts as closed per the shared library's DONE
       alternation.
-- [ ] Fixture E: a non-conforming heading (e.g. a letter-suffixed phase number) mixed with
+- [x] Fixture E: a non-conforming heading (e.g. a letter-suffixed phase number) mixed with
       otherwise-closed phases. Assert the unreliable/absent branch, never a corroboration.
-- [ ] Fixture F (D4 guard): `phases_total > 0` and incomplete. Assert the gate refuses regardless
+- [x] Fixture F (D4 guard): `phases_total > 0` and incomplete. Assert the gate refuses regardless
       of any corroboration output — proving Case 1 is untouched.
-- [ ] Fixture G: empty/missing plan path. Assert the absent verdict, not a crash.
-- [ ] Fixture H: `validate-handoff.sh` invoked against a handoff with null counts. Assert the
+- [x] Fixture G: empty/missing plan path. Assert the absent verdict, not a crash.
+- [x] Fixture H: `validate-handoff.sh` invoked against a handoff with null counts. Assert the
       function still returns its own verdict and does not abort — the diagnostic is non-gating.
-- [ ] `chmod +x` the new test file.
+- [x] `chmod +x` the new test file.
 
 **Timing**: 1.5 hours
 
