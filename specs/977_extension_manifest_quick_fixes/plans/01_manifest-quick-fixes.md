@@ -227,23 +227,23 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Delete the unreferenced PowerPoint template [NOT STARTED]
+### Phase 4: Delete the unreferenced PowerPoint template [COMPLETED]
 
 - **Goal:** Remove ~3 MB of dead weight that the `present` extension's recursive context copy
   carries into every deploy.
 - **Tasks:**
-  - [ ] Re-confirm zero references immediately before deleting:
+  - [x] Re-confirm zero references immediately before deleting:
         `grep -rl "UCSF_ZSFG_Template_16x9" agent-system/` must return only the file itself (or
         nothing, if binary matching is skipped). If any other file matches, STOP and report rather
-        than deleting.
-  - [ ] Re-confirm the sibling `present/context/project/present/talk/index.json` `pptx-project`
-        entry's `files` array does not list the `.pptx`.
-  - [ ] Delete
+        than deleting. *(completed: zero hits, binary matching skipped)*
+  - [x] Re-confirm the sibling `present/context/project/present/talk/index.json` `pptx-project`
+        entry's `files` array does not list the `.pptx`. *(completed: confirmed excluded)*
+  - [x] Delete
         `agent-system/extensions/present/context/project/present/talk/templates/pptx-project/UCSF_ZSFG_Template_16x9.pptx`
         via `git rm` (the file is git-tracked; a bare `rm` leaves the deletion unstaged and easy to
-        lose).
-  - [ ] Do NOT edit any manifest or index for this item — the file was never declared as an
-        individually-tracked asset.
+        lose). *(completed)*
+  - [x] Do NOT edit any manifest or index for this item — the file was never declared as an
+        individually-tracked asset. *(completed: no manifest/index touched)*
 - **Timing:** 20 minutes
 - **Depends on:** 1
 - **Verification Tier:** interface
