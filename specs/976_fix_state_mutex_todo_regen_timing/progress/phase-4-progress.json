@@ -1,0 +1,32 @@
+{
+  "phase": 4,
+  "phase_name": "Single-pass jq rewrite of generate-todo.sh",
+  "started_at": "2026-07-29T01:00:00Z",
+  "last_updated": "2026-07-29T02:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture golden baseline before any edit", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Single upstream jq pass replaces per-task status re-parse for terminal/active counts", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/generate-todo.sh"]},
+    {"id": 3, "description": "Single jq call over active_projects producing all fields, sorted descending", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/generate-todo.sh"]},
+    {"id": 4, "description": "Pure-bash formatting side, zero jq spawns per task", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/generate-todo.sh"]},
+    {"id": 5, "description": "Fold sort -rn into jq pass via sort_by(-.project_number)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/generate-todo.sh"]},
+    {"id": 6, "description": "Preserve every formatting rule exactly", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/generate-todo.sh"]},
+    {"id": 7, "description": "Diff regenerated output against golden baseline until empty", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Per-field @base64 encoding (one base64 spawn per field, ~8 per task)", "result": "failed", "reason": "Only reduced wall time to ~4.8-5.0s (from 6.4s baseline) -- traded ~8-12 jq spawns per task for ~8 base64 spawns per task, same order of magnitude of subprocess-spawn cost. Superseded by whole-row base64 encoding (one spawn per task)."},
+    {"approach": "IFS=$'\\t' read for row/field splitting", "result": "failed", "reason": "bash's read collapses consecutive tab delimiters (tab is in bash's IFS-whitespace class), silently dropping empty middle fields (e.g. unset effort) and shifting every subsequent field left by one position. Superseded by IFS=$'\\x1f' (Unit Separator, not in the IFS-whitespace class)."},
+    {"approach": "IFS=$'\\x1f' read for splitting the whole-row base64-decoded blob", "result": "failed", "reason": "plain `read` is line-oriented regardless of IFS and stops at the first real embedded newline, truncating multi-line description fields and blanking every field after them. Superseded by `mapfile -d $'\\x1f'`, which uses Unit Separator as the record terminator instead of newline."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "NDJSON with base64-encoded fields (per-field @base64) as literally suggested by the plan",
+      "type": "altered",
+      "reason": "Per-field base64 only reduced subprocess spawn count from ~8-12 jq/task to ~8 base64/task -- same order of magnitude, wall time barely improved. Whole-row base64 (one spawn per task) is what actually removes the spawn-count cost; see the plan's Phase 4 'Measured results' and 'Deviation' notes for full detail.",
+      "annotation": "*(completed: each row is all 10 fields joined by the ASCII Unit Separator then base64-encoded ONCE per row -- see deviation note below on why per-field base64 was abandoned)*"
+    }
+  ],
+  "notes": "Golden baseline: 6.412s, 3674 lines. Post-rewrite output byte-identical (empty diff) in both --dry-run and real atomic-write mode. Paired interleaved A/B under identical concurrent system load: pre-rewrite ~9.6s avg, post-rewrite ~4.1s avg (~2.3x total, ~4.4x on the in-file_scope per-task-loop portion after subtracting the out-of-scope generate-task-order.sh ~2.5s component). jq spawn count reduced from ~8-12/task to exactly 2 for the whole run. bash -n clean; test-state-write-concurrency.sh and test-state-write-regen-timing.sh both still pass in full; no task-number citations introduced."
+}

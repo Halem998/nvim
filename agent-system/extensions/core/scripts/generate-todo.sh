@@ -155,43 +155,18 @@ format_artifact_type() {
 # Generate Task Entry
 # ============================================================================
 
-# generate_task_entry: outputs a complete TODO.md task entry for one project_number
-# All state.json fields are read inside via jq for the given project_number
+# generate_task_entry: outputs a complete TODO.md task entry for one project_number.
+# All fields arrive pre-extracted and already decoded by the caller (generate_todo()'s single
+# full-file jq pass plus its one-base64-spawn-per-row decode) -- no jq or base64 is spawned here.
 generate_task_entry() {
-  local task_num="$1"
+  local task_num="$1" project_name="$2" title="$3" status="$4" task_type="$5" topic="$6" \
+        effort="$7" description="$8" deps_csv="$9" artifacts_raw="${10}"
 
-  # Extract all fields for this task in one jq call (use @base64 to handle newlines in description)
-  local task_json
-  task_json=$(jq -r --argjson num "$task_num" '
-    .active_projects[] | select(.project_number == $num) |
-    {
-      project_number: .project_number,
-      project_name: (.project_name // ""),
-      title: (.title // ""),
-      status: (.status // "not_started"),
-      task_type: (.task_type // "general"),
-      topic: (.topic // ""),
-      effort: (.effort // ""),
-      dependencies: (.dependencies // []),
-      artifacts: (.artifacts // []),
-      description: (.description // "")
-    }
-  ' "$STATE_FILE")
-
-  # Parse individual fields
-  local title status task_type topic effort description
-  title=$(printf '%s' "$task_json" | jq -r '.title')
-  local project_name
-  project_name=$(printf '%s' "$task_json" | jq -r '.project_name')
-  status=$(printf '%s' "$task_json" | jq -r '.status')
-  task_type=$(printf '%s' "$task_json" | jq -r '.task_type')
-  topic=$(printf '%s' "$task_json" | jq -r '.topic')
-  effort=$(printf '%s' "$task_json" | jq -r '.effort')
-  description=$(printf '%s' "$task_json" | jq -r '.description')
-
-  # Title fallback: derive from project_name if title is empty
-  if [[ -z "$title" || "$title" == "null" ]]; then
-    if [[ -n "$project_name" && "$project_name" != "null" ]]; then
+  # Title fallback: derive from project_name if title is empty. (The upstream jq pass already
+  # applies `// ""` / `// "general"` defaults, so a bash-level "null" string check -- as the
+  # prior per-task jq round-trip carried defensively -- can never trigger and is dropped.)
+  if [[ -z "$title" ]]; then
+    if [[ -n "$project_name" ]]; then
       # Replace underscores with spaces and capitalize first letter
       title="${project_name//_/ }"
       title="${title^}"
@@ -207,8 +182,8 @@ generate_task_entry() {
   # Heading
   printf '### %s. %s\n' "$task_num" "$title"
 
-  # Effort (omit if empty/null)
-  if [[ -n "$effort" && "$effort" != "null" ]]; then
+  # Effort (omit if empty)
+  if [[ -n "$effort" ]]; then
     printf -- '- **Effort**: %s\n' "$effort"
   fi
 
@@ -216,39 +191,40 @@ generate_task_entry() {
   printf -- '- **Status**: [%s]\n' "$status_display"
 
   # Task Type
-  if [[ -n "$task_type" && "$task_type" != "null" ]]; then
+  if [[ -n "$task_type" ]]; then
     printf -- '- **Task Type**: %s\n' "$task_type"
   fi
 
-  # Topic (omit if empty/null)
-  if [[ -n "$topic" && "$topic" != "null" ]]; then
+  # Topic (omit if empty)
+  if [[ -n "$topic" ]]; then
     printf -- '- **Topic**: %s\n' "$topic"
   fi
 
-  # Dependencies
-  local deps_json
-  deps_json=$(printf '%s' "$task_json" | jq -r '.dependencies | length')
-  if [[ "$deps_json" -eq 0 ]]; then
+  # Dependencies (deps_csv is a comma-joined list of task numbers, or empty when none)
+  if [[ -z "$deps_csv" ]]; then
     printf -- '- **Dependencies**: None\n'
   else
-    local dep_list
-    dep_list=$(printf '%s' "$task_json" | jq -r '.dependencies | map("Task " + tostring) | join(", ")')
+    local dep_list="" d
+    IFS=',' read -ra dep_arr <<< "$deps_csv"
+    for d in "${dep_arr[@]}"; do
+      [[ -z "$d" ]] && continue
+      if [[ -z "$dep_list" ]]; then
+        dep_list="Task ${d}"
+      else
+        dep_list="${dep_list}, Task ${d}"
+      fi
+    done
     printf -- '- **Dependencies**: %s\n' "$dep_list"
   fi
 
   # Artifacts: group by logical type
   # Types: research/report -> Research, plan -> Plan, summary/implementation -> Summary, other -> Capitalized
-  local artifacts_len
-  artifacts_len=$(printf '%s' "$task_json" | jq -r '.artifacts | length')
-
-  if [[ "$artifacts_len" -gt 0 ]]; then
+  # artifacts_raw is already "type|path" lines (one per artifact, newline-joined), decoded by the
+  # caller -- an empty string means no artifacts.
+  if [[ -n "$artifacts_raw" ]]; then
     # Collect artifacts by logical type
     # We need to group artifacts by their display type and render each group
-    # Strategy: extract all artifacts with their display types, then group by type
-
-    # Get all artifacts as type|path pairs
-    local artifacts_raw
-    artifacts_raw=$(printf '%s' "$task_json" | jq -r '.artifacts[] | (.type // "unknown") + "|" + (.path // "")')
+    # Strategy: iterate all artifacts with their display types, then group by type
 
     # Track which display types we've already rendered headers for
     declare -A rendered_types=()
@@ -359,24 +335,92 @@ generate_todo() {
   printf '## Tasks\n'
   printf '\n'
 
-  # Get all project numbers sorted descending
-  local task_numbers
-  task_numbers=$(jq -r '.active_projects[].project_number' "$STATE_FILE" | sort -rn)
+  # Single full-file jq pass: one row per task, already sorted descending by project_number, all
+  # fields this loop and generate_task_entry() need. Each task's fields are joined by the ASCII
+  # Unit Separator (0x1f) and the WHOLE row is base64-encoded ONCE -- not per field -- so decode
+  # is a single subprocess call per task rather than one call per field. This matters: an earlier
+  # version of this rewrite base64-encoded each of the 8 text fields separately, which merely
+  # traded ~8-12 jq spawns per task for ~8 `base64` spawns per task and left wall time close to
+  # unchanged. One base64 spawn per task (101 total, vs. the ~800-1000+ spawns of either the
+  # original or that first-draft rewrite) is what actually removes the subprocess-spawn cost.
+  #
+  # Because decode happens once per row (not per field), the row's internal delimiter never has
+  # to survive un-encoded -- it lives entirely inside the base64 blob -- but Unit Separator is
+  # still the right choice: it is not in bash's IFS-whitespace class, so splitting the DECODED
+  # row with `read` never collapses an empty field (e.g. an unset effort/topic) the way tab or
+  # space would (bash's `read` treats those as "IFS whitespace" and silently merges consecutive
+  # occurrences, which would shift every field after an empty one left by one position).
+  local task_rows
+  task_rows=$(jq -r '
+    .active_projects
+    | sort_by(-.project_number)
+    | .[]
+    | [
+        (.project_number | tostring),
+        (.project_name // ""),
+        (.title // ""),
+        (.status // "not_started"),
+        (.task_type // "general"),
+        (.topic // ""),
+        (.effort // ""),
+        (.description // ""),
+        ((.dependencies // []) | map(tostring) | join(",")),
+        ((.artifacts // []) | map((.type // "unknown") + "|" + (.path // "")) | join("\n"))
+      ]
+      | join("\u001f")
+      | @base64
+  ' "$STATE_FILE")
 
   local total_count=0
   local active_count=0
   local terminal_count=0
   local first_entry=1
 
-  while IFS= read -r task_num; do
+  local b64row decoded
+  local -a f
+
+  # Strip ALL trailing newlines from a free-text field in place (nameref, no subprocess). Matches
+  # the trailing-newline-stripping behavior of `$(...)` command substitution, which every prior
+  # per-field jq extraction (both the original per-task code and this rewrite's own first-draft
+  # per-field base64 decode) got for free -- `mapfile -d` does NOT strip anything, so without this
+  # a description/effort/etc. field whose raw JSON value happens to end in "\n" would leave a
+  # stray blank line in the rendered output that the golden baseline never had.
+  _strip_trailing_nl() {
+    local -n __ref="$1"
+    while [[ "$__ref" == *$'\n' ]]; do
+      __ref="${__ref%$'\n'}"
+    done
+  }
+
+  while IFS= read -r b64row; do
+    [[ -z "$b64row" ]] && continue
+    # Herestring (`<<<`), not a `printf | base64` pipe -- a pipe forks BOTH sides, a herestring
+    # only forks the one external command (base64) still needs. base64 ignores the herestring's
+    # own appended trailing newline, so decoding is unaffected.
+    decoded=$(base64 -d <<< "$b64row")
+
+    # Split on Unit Separator via `mapfile -d`, NOT `read`. Plain `read` is fundamentally
+    # LINE-oriented -- it stops consuming input at the first real newline no matter what IFS is
+    # set to, which would silently truncate a multi-line description (and blank every field after
+    # it) at its first embedded newline. `mapfile -d $'\x1f'` uses Unit Separator as the record
+    # terminator instead of newline, so embedded real newlines inside a field are preserved as
+    # literal content rather than treated as a split point. A herestring here (unlike the base64
+    # decode above) forks nothing -- `mapfile` is a shell builtin -- at the cost of an extra
+    # trailing newline on the LAST field (artifacts_raw), which is harmless: it only ever produces
+    # one extra empty "line" in the artifact-grouping loop below, which that loop already skips
+    # via its `[[ -z "$apath" ]] && continue` guard.
+    mapfile -d $'\x1f' -t f <<< "$decoded"
+    local task_num="${f[0]:-}" pname="${f[1]:-}" title="${f[2]:-}" task_status="${f[3]:-}" \
+          ttype="${f[4]:-}" topic="${f[5]:-}" effort="${f[6]:-}" description="${f[7]:-}" \
+          deps_csv="${f[8]:-}" artifacts_raw="${f[9]:-}"
+    _strip_trailing_nl pname
+    _strip_trailing_nl title
+    _strip_trailing_nl ttype
+    _strip_trailing_nl topic
+    _strip_trailing_nl effort
+    _strip_trailing_nl description
     [[ -z "$task_num" ]] && continue
     total_count=$((total_count + 1))
-
-    # Check if terminal
-    local task_status
-    task_status=$(jq -r --argjson num "$task_num" \
-      '.active_projects[] | select(.project_number == $num) | .status' \
-      "$STATE_FILE")
 
     case "$task_status" in
       completed|abandoned|expanded) terminal_count=$((terminal_count + 1)) ;;
@@ -389,9 +433,10 @@ generate_todo() {
     fi
     first_entry=0
 
-    generate_task_entry "$task_num"
+    generate_task_entry "$task_num" "$pname" "$title" "$task_status" "$ttype" "$topic" "$effort" \
+      "$description" "$deps_csv" "$artifacts_raw"
 
-  done <<< "$task_numbers"
+  done <<< "$task_rows"
 
   log "INFO" "Tasks section written (total=${total_count} active=${active_count} terminal=${terminal_count})"
 

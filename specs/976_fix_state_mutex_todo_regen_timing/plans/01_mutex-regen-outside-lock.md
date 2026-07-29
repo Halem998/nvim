@@ -267,34 +267,40 @@ exit 1 and the assertion will be vacuous.
 
 ---
 
-### Phase 4: Single-pass jq rewrite of generate-todo.sh [NOT STARTED]
+### Phase 4: Single-pass jq rewrite of generate-todo.sh [COMPLETED]
 
 **Goal**: Replace the per-task jq subprocess storm with one full-file jq pass, producing
 byte-identical TODO.md output.
 
 **Tasks**:
-- [ ] BEFORE any edit, capture a golden baseline against the real repository state:
+- [x] BEFORE any edit, capture a golden baseline against the real repository state:
       `bash .claude/scripts/generate-todo.sh --dry-run --no-log > <scratch>/todo-golden.txt`
-      and record its wall time. This is the correctness oracle for the whole phase.
-- [ ] Replace the outer loop's per-task status-only full-file jq call in `generate_todo()` — the
+      and record its wall time. This is the correctness oracle for the whole phase. *(completed:
+      3674-line golden baseline captured at 6.412s wall time)*
+- [x] Replace the outer loop's per-task status-only full-file jq call in `generate_todo()` — the
       one feeding `terminal_count`/`active_count` — so status is read from the single upstream
-      pass instead of re-parsing `state.json` once per task.
-- [ ] Replace `generate_task_entry()`'s field extraction: emit ONE jq call over
+      pass instead of re-parsing `state.json` once per task. *(completed)*
+- [x] Replace `generate_task_entry()`'s field extraction: emit ONE jq call over
       `active_projects` producing, per task and already sorted descending by `project_number`,
       all fields the current code extracts (`project_number`, `project_name`, `title`, `status`,
       `task_type`, `topic`, `effort`, `description`, `dependencies`, `artifacts`) in a
       newline-safe encoding (NDJSON with base64-encoded fields, or a delimiter-per-record scheme
       that survives the multi-line `description` values present in the live state.json).
-- [ ] Convert the bash side to pure formatting: `printf`/string interpolation plus the existing
-      artifact type-grouping associative-array logic, with zero jq spawns per task.
-- [ ] Fold the existing `sort -rn` into the jq pass, removing the separate
-      `jq ... | sort -rn` pipeline.
-- [ ] Preserve every existing formatting rule exactly: title fallback from `project_name`,
+      *(completed: each row is all 10 fields joined by the ASCII Unit Separator then base64-encoded
+      ONCE per row -- see deviation note below on why per-field base64 was abandoned)*
+- [x] Convert the bash side to pure formatting: `printf`/string interpolation plus the existing
+      artifact type-grouping associative-array logic, with zero jq spawns per task. *(completed:
+      zero jq spawns in the per-task loop; one `base64 -d` subprocess spawn per task remains,
+      down from ~8-12 jq spawns per task in the original)*
+- [x] Fold the existing `sort -rn` into the jq pass, removing the separate
+      `jq ... | sort -rn` pipeline. *(completed: `sort_by(-.project_number)` in the single jq pass)*
+- [x] Preserve every existing formatting rule exactly: title fallback from `project_name`,
       omission of empty/`null` `effort`/`topic`/`description`, `Dependencies: None` vs
       `Task N, Task M`, single-artifact inline `- **Type**: [path]` vs multi-artifact indented
-      list, the `specs/` prefix strip, and the `\n---\n\n` separator placement.
-- [ ] Diff the regenerated dry-run output against the golden baseline. The phase does not close
-      until the diff is empty.
+      list, the `specs/` prefix strip, and the `\n---\n\n` separator placement. *(completed)*
+- [x] Diff the regenerated dry-run output against the golden baseline. The phase does not close
+      until the diff is empty. *(completed: empty diff, byte-identical, confirmed in both
+      `--dry-run` and real atomic-write mode)*
 
 **Timing**: 1.5 hours
 
@@ -326,6 +332,51 @@ Report measured numbers; do not restate the research's or this plan's estimates 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/generate-todo.sh` - single-pass jq extraction in
   `generate_task_entry()` and `generate_todo()`.
+
+**Measured results (real numbers, not restated estimates)**:
+- Golden baseline (pre-rewrite, `--dry-run --no-log`): 6.412s wall time, 3674 lines.
+- Post-rewrite `--dry-run` output: byte-identical to the golden baseline (empty `diff`), verified
+  in both `--dry-run` and real atomic-write mode.
+- `generate-task-order.sh --print` alone (out of `file_scope`, unmodified): ~2.3-3.0s across
+  repeated measurements -- the dominant, unavoidable residual cost, matching the plan's own
+  Scope Notes correction of the research's original estimate.
+- Paired, interleaved before/after timing (same concurrent-system-load conditions, 3 rounds each):
+  pre-rewrite averaged ~9.6s total wall time; post-rewrite averaged ~4.1s total wall time -- a
+  ~2.3x reduction. Subtracting the ~2.5s `generate-task-order.sh` component from each: the
+  in-`file_scope` per-task loop dropped from ~7.1s to ~1.6s, a ~4.4x reduction. This does NOT reach
+  the plan's own already-corrected "~2.5-3.0s total" estimate in absolute terms (actual ~4.1s)
+  because the measurement environment had multiple other agents running concurrently on the same
+  machine during this task's implementation, inflating both figures' absolute wall time
+  identically -- the RELATIVE improvement (~4.4x on the in-scope portion) is the load-independent,
+  reproducible result and is reported here rather than an unverifiable absolute target.
+- jq spawn count: reduced from ~8-12 jq spawns per task (the original design) to exactly 2 jq
+  spawns for the entire run (`next_project_number` frontmatter read, and the single full-file
+  `active_projects` extraction pass) -- confirmed by source inspection, no `jq` invocation remains
+  inside the per-task loop.
+
+**Deviation from the plan's literal `newline-safe encoding` wording (recorded, not silent)**: the
+plan's Task 3 suggested "NDJSON with base64-encoded fields" -- i.e. one `@base64` application per
+field. A first-draft implementation did exactly that and, on measurement, only reduced total wall
+time to ~4.8-5.0s: it had merely traded ~8-12 `jq` subprocess spawns per task for ~8 `base64`
+subprocess spawns per task (one per encoded field), leaving the subprocess-spawn count of the same
+order of magnitude. The row is instead base64-encoded ONCE as a whole (all 10 fields joined by the
+ASCII Unit Separator `\x1f`, then `@base64` applied to the joined string), cutting decode to
+exactly one `base64` subprocess spawn per task (101 total for the live data) instead of ~8 per
+task. Two further pure-bash correctness fixes were required and are recorded as they are load-
+bearing, not cosmetic: (1) splitting the decoded row with `IFS=$'\x1f' read` silently collapses
+consecutive Unit-Separator delimiters exactly as tab/space do when they appear anywhere in bash's
+IFS -- an empty middle field (e.g. an unset `effort`) shifted every field after it left by one
+position, corrupting output for the ~101 tasks with at least one empty optional field; splitting
+instead via `mapfile -d $'\x1f' -t f <<< "$decoded"` treats Unit Separator as a pure record
+terminator with no collapsing. (2) plain `read` (with any IFS) is line-oriented and stops
+consuming input at the first real embedded newline regardless of delimiter, which silently
+truncated every multi-line `description` field (91 such tasks exist in the live data) at its
+first line and blanked every field after it in that row; `mapfile -d` does not have this
+line-oriented truncation. A `_strip_trailing_nl` pure-bash helper (nameref, no subprocess) was
+also needed to replicate `$(...)` command substitution's automatic trailing-newline stripping,
+which `mapfile -d` does not provide on its own and whose absence produced a handful of spurious
+blank lines against the golden baseline for tasks whose raw `description`/`effort`/etc. value
+happened to end in a newline.
 
 ---
 
