@@ -458,29 +458,31 @@ regions or in Stage MT-5 (which Phase 4 owns). Record any third region found as 
 
 ---
 
-### Phase 4: Carry the new field through Stage MT-5 reporting and the batch handoff [NOT STARTED]
+### Phase 4: Carry the new field through Stage MT-5 reporting and the batch handoff [COMPLETED]
 
 **Goal**: `verify_deploy_baseline_notices` survives to the end of the batch and reaches the
 consolidated-output renderer, without altering the batch exit-status resolution.
 
 **Tasks**:
 
-- [ ] Add `verify_deploy_baseline_notices` to the list of `mt_state_file` fields read at Stage MT-5
+- [x] Add `verify_deploy_baseline_notices` to the list of `mt_state_file` fields read at Stage MT-5
       (the same list that already names `deferred_deploy_checkpoint`, `dispatch_start_ts`,
-      `defer_ledger`, `current_statuses`).
-- [ ] Add an explicit statement to the Stage MT-5 exit-status resolution that
+      `defer_ledger`, `current_statuses`). *(completed)*
+- [x] Add an explicit statement to the Stage MT-5 exit-status resolution that
       `verify_deploy_baseline_notices` is NEVER consulted by the `"implemented"` / `"partial"` /
       `"failed"` branch selection (Decision 7): a batch that ran to completion past a pre-existing
       failure is `"implemented"`. State this as a deliberate decision so a later pass does not
-      "fix" it into a partial.
-- [ ] Add a Stage MT-5 reporting instruction: whenever `verify_deploy_baseline_notices` is
+      "fix" it into a partial. *(completed)*
+- [x] Add a Stage MT-5 reporting instruction: whenever `verify_deploy_baseline_notices` is
       non-empty, it MUST be reported as a distinct category — never folded into
       `deferred_deploy_checkpoint` reporting and never omitted because the batch succeeded.
-- [ ] Add `--argjson verify_deploy_baseline_notices "$verify_deploy_baseline_notices"` and the
+      *(completed)*
+- [x] Add `--argjson verify_deploy_baseline_notices "$verify_deploy_baseline_notices"` and the
       corresponding `"verify_deploy_baseline_notices": $verify_deploy_baseline_notices` key inside
       the `metadata` object of the `specs/.return-meta-multi-${session_id}.json` jq emission. The
-      top-level `status` vocabulary is unchanged and gains no new value.
-- [ ] Use durable anchors only — no task numbers (deliverable rule).
+      top-level `status` vocabulary is unchanged and gains no new value. *(completed: verified the
+      jq block parses with `jq -n` against representative dummy inputs)*
+- [x] Use durable anchors only — no task numbers (deliverable rule). *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -495,11 +497,21 @@ consolidated-output renderer, without altering the batch exit-status resolution.
 
 **Verification**:
 
-- The jq block's `--argjson` count matches its key count inside `metadata`.
+- The jq block's `--argjson` count matches its key count inside `metadata`. *(verified: 8
+  `--argjson` bindings map one-to-one to 8 `metadata` keys, plus the literal `multi_task_mode`,
+  unchanged in shape from the pre-existing 6-argjson block)*
 - `grep -n 'verify_deploy_baseline_notices'` returns hits in exactly four places across the file:
   the schema definition (Phase 3), the third-state branch (Phase 3), the MT-5 read/report block,
-  and the jq emission.
-- The `"implemented"` / `"partial"` branch conditions are otherwise textually unchanged.
+  and the jq emission. *(deviation: altered — the live grep returns 8 hits, not 4: 1 schema
+  definition, 1 third-state branch (both Phase 3, unchanged here), and 5 hits inside the MT-5
+  read/report block (the field-read list, the two-sentence exit-status-resolution note, and the
+  reporting-instruction paragraph each name the field once or twice for prose clarity) plus 2 in
+  the jq emission. All 8 hits fall within the same four CONCEPTUAL locations the task names —
+  the "four places" count undercounted how many sentences a clear prose explanation would need at
+  a single conceptual location (MT-5 read/report); no hit falls outside those four locations.)*
+- The `"implemented"` / `"partial"` branch conditions are otherwise textually unchanged. *(verified
+  via diff read-through: the existing bullet conditions were not edited, only a new paragraph was
+  inserted after them)*
 
 ---
 

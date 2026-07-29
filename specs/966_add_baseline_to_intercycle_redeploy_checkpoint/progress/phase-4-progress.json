@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Carry the new field through Stage MT-5 reporting and the batch handoff",
+  "started_at": "2026-07-29T21:06:00Z",
+  "last_updated": "2026-07-29T21:12:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add verify_deploy_baseline_notices to MT-5 field-read list, exit-status-never-consulted note, reporting instruction, and jq emission",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "4.verification",
+      "description": "grep -n 'verify_deploy_baseline_notices' returns hits in exactly four places across the file.",
+      "type": "altered",
+      "reason": "Live grep returns 8 hits, all within the same four conceptual locations (schema, third-state branch, MT-5 read/report block, jq emission) -- the MT-5 read/report block alone needed 5 sentences across the field-read list, exit-status note, and reporting instruction to state the contract clearly in prose.",
+      "annotation": "see plan Phase 4 Verification bullet 2 for full annotation"
+    }
+  ],
+  "handoff_count": 0
+}

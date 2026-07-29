@@ -2125,10 +2125,10 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
 After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or MAX_CYCLES_MT reached):
 
 1. Read from `mt_state_file`: `completed_tasks`, `failed_tasks`, `deferred_self_modifying`,
-   `deferred_deploy_checkpoint`, `dispatch_start_ts`, `defer_ledger`, `current_statuses`,
-   `cycles_used`, counts. `current_statuses` (refreshed every cycle by Stage MT-3 step 1) is what
-   step 3 below consults to determine, per task in `deferred_self_modifying`, whether it reached a
-   terminal state by loop exit.
+   `deferred_deploy_checkpoint`, `dispatch_start_ts`, `defer_ledger`,
+   `verify_deploy_baseline_notices`, `current_statuses`, `cycles_used`, counts. `current_statuses`
+   (refreshed every cycle by Stage MT-3 step 1) is what step 3 below consults to determine, per
+   task in `deferred_self_modifying`, whether it reached a terminal state by loop exit.
 2. **Compute the forward-progress invariant** (full contract in
    `context/patterns/batch-orchestration-guardrails.md`'s `### The Forward-Progress Invariant`
    subsection — referenced here, not restated): set `forward_progress_violated = true` when
@@ -2172,6 +2172,13 @@ After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or MAX_
    `specs/state.json` status and adds nothing to `failed_tasks` — see
    `context/patterns/batch-orchestration-guardrails.md`'s `### The Forward-Progress Invariant`
    subsection for the full reasoning; this stage only reuses it by name.
+
+   **`verify_deploy_baseline_notices` is NEVER consulted by this branch selection.** A batch that
+   ran to completion past a pre-existing `verify-deploy.sh` failure (the third operator-visible
+   state) is `"implemented"`, exactly as if the checkpoint had never fired at all — this is a
+   deliberate decision, stated here so a later pass does not "fix" it into a `"partial"`. Only
+   `deferred_deploy_checkpoint` (a genuine, non-empty exclusion set) affects this resolution;
+   `verify_deploy_baseline_notices` is a pure observation log with no bearing on `exit_status`.
 4. Report `deferred_self_modifying` tasks in the consolidated summary as **deferred at least one
    cycle by the self-modification gate** — an OBSERVATION, not an outstanding-work category. For
    each task in the log, report its FINAL status at loop exit alongside the note: a task that
@@ -2187,6 +2194,14 @@ After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or MAX_
    deploy/verify failure, redeploy manually, then re-run `/orchestrate` on the remaining task
    numbers. Never add these tasks to `failed_tasks`, and never mutate their `specs/state.json`
    status.
+
+   Whenever `verify_deploy_baseline_notices` is non-empty, it MUST be reported as its own
+   **distinct** category — never folded into the `deferred_deploy_checkpoint` reporting above, and
+   never omitted merely because the batch otherwise succeeded (see
+   `commands/orchestrate.md`'s `### Pre-Existing Deploy-Verify Failures (Not Deferred)` section for
+   the actual rendering — this stage only supplies the data). This is the third
+   operator-visible state and must be announced just as loudly as an outright failure, on a
+   `"partial"` batch or an `"implemented"` one alike.
 
    **Additive requirement**: when `forward_progress_violated` is true, the consolidated summary
    MUST additionally lead with the zero-dispatch banner and enumerate every `defer_ledger` entry
@@ -2204,6 +2219,7 @@ jq -n \
   --argjson tasks_deferred_deploy_checkpoint "$deferred_deploy_checkpoint" \
   --argjson forward_progress_violated "$forward_progress_violated" \
   --argjson defer_ledger "$defer_ledger" \
+  --argjson verify_deploy_baseline_notices "$verify_deploy_baseline_notices" \
   --argjson cycles_used "$cycles_used" \
   '{
     "status": $status,
@@ -2215,6 +2231,7 @@ jq -n \
       "tasks_deferred_deploy_checkpoint": $tasks_deferred_deploy_checkpoint,
       "forward_progress_violated": $forward_progress_violated,
       "defer_ledger": $defer_ledger,
+      "verify_deploy_baseline_notices": $verify_deploy_baseline_notices,
       "cycles_used": $cycles_used,
       "multi_task_mode": true
     }
