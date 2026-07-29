@@ -1,0 +1,41 @@
+{
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Converged the twice-transcribed directory-prefix overlap predicate into one shared library (scripts/lib/file-scope-overlap.sh), extended it with the session registry as a third bounded contention input consumed by both task-lock.sh acquire and orchestrate-batch-admit.sh (verdict schema bumped to orchestrate-batch-admit-v4 with a new session_active defer flavor and corroborated_by evidence field), wired batch admission into /research, /plan, /implement's plain multi-task paths, fixed /orchestrate's real dispatch path (standard and hard mode) to pass --session-id, and converged the four related documentation files onto the single implementation and three-input model. All 9 plan phases complete. Isolated-temp-root test suite (23 cases) and all four pre-existing gate suites pass.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/945_converge_conflict_detection_predicate/summaries/01_converge-conflict-predicate-summary.md"},
+    {"type": "plan", "path": "specs/945_converge_conflict_detection_predicate/plans/01_converge-conflict-predicate.md"}
+  ],
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
+    "agent-system/extensions/core/scripts/lib/file-scope-overlap.sh",
+    "agent-system/extensions/core/scripts/task-lock.sh",
+    "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+    "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh",
+    "agent-system/extensions/core/scripts/orchestrate-dry-run-report.sh",
+    "agent-system/extensions/core/scripts/test-conflict-predicate.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/commands/research.md",
+    "agent-system/extensions/core/commands/plan.md",
+    "agent-system/extensions/core/commands/implement.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"
+  ],
+  "decisions_made": [
+    "Lazy-loaded the shared overlap-predicate lib inside task-lock.sh (only within cmd_acquire, on first use) rather than unconditionally at file-top, to keep reap/session-* subcommands working even when the lib is unavailable, and to keep the pre-existing isolated-temp-root test fixtures (which never copy the new lib dependency) passing unchanged.",
+    "Root-caused the known extension-loader gap for new scripts/ files to a missing manifest.json provides.scripts entry, and fixed it there rather than continuing to rely on a one-off manual copy workaround.",
+    "Tested the D4 'corrupt session DOES contend' property at the jq-harness level (calling session_contention() directly) rather than through the full integration path, since a real corrupt session-registry entry structurally can never carry file_scope data and so can never produce an observable overlap hit end-to-end.",
+    "Extended scope beyond the plan's literally-declared file list in three places after empirical verification surfaced real defects: orchestrate-dry-run-report.sh's defer_reason fallthrough mis-bucketing bug (Phase 6), skill-orchestrate/SKILL.md's real dispatch path never having passed --session-id at all (Phase 7), and skill-orchestrate-hard/SKILL.md's co-maintained transcription lagging that fix (Phase 9)."
+  ],
+  "dead_ends": [],
+  "phases_completed": 9,
+  "phases_total": 9,
+  "plan_markers_verified": true
+}
