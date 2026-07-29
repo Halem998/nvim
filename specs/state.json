@@ -1,7 +1,17 @@
 {
   "version": "1.1.0",
-  "next_project_number": 970,
+  "next_project_number": 971,
   "active_projects": [
+    {
+      "project_number": 970,
+      "project_name": "fix_headless_deploy_provides_scripts",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Fix headless deploy not populating provides.scripts entries.\n\nOBSERVED EMPIRICALLY (twice, independently, during a live two-task /orchestrate batch): A fresh headless deploy of the `core` extension does not populate `scripts/lib/*.sh`, `scripts/tests/*.sh`, or roughly 90 other already-declared `provides.scripts` entries in a single pass. Reproduced identically against a pre-task commit in a control worktree, so the defect predates the work that surfaced it and is not a regression from it.\n\nTWO DISTINCT SYMPTOMS, POSSIBLY THE SAME ROOT CAUSE -- verify whether they are one defect or two before fixing:\n  1. A brand-new `scripts/<subdir>/*.sh` file declared in `provides.scripts` never reaches `.claude/scripts/<subdir>/` on an existing deploy. The loader (`manager.load()` in `lua/neotex/shared/extensions/init.lua`) skips the per-extension `copy_scripts`/`copy_manifest` sequence for extensions already marked loaded, so the headless \"Load Core\" sync path used by `deploy-headless.sh` never re-runs it.\n  2. Even on a FRESH deploy (not an already-loaded extension), the same broad set of declared `provides.scripts` entries is not populated in one pass.\n\nWORKAROUND ALREADY IN CIRCULATION (do not enshrine it): two implementation agents independently worked around this by invoking the loader copy primitives directly (`loader_mod.copy_scripts` / `copy_manifest`) from a one-off call. That is a manual escape hatch, not a fix, and it requires an agent to notice the omission first -- which is the actual hazard, since a silently-missing script surfaces later as a confusing missing-file error in an unrelated command.\n\nRELATED KNOWN-GAP DOCUMENTATION: the Enforcement section of `rules/no-task-references-in-deliverables.md` already records a version of symptom 1 as a discovered deploy-mechanism gap, alongside the separate `root-files/settings.json` install-only gap. Reconcile that prose with whatever is actually fixed here rather than leaving two divergent accounts.\n\nWORK:\n  1. Determine the true root cause of each symptom and whether they are one defect. Do NOT assume the already-loaded-extension skip explains the fresh-deploy case -- that was observed on a fresh deploy.\n  2. Fix so that every declared `provides.scripts` entry reaches its deploy target in one pass, on both a fresh deploy and a re-sync of an already-loaded extension.\n  3. Decide explicitly whether `verify-deploy.sh` should gain a gate asserting declared-vs-deployed parity for `provides.scripts`, so a future omission fails loudly instead of surfacing as a missing-file error elsewhere.\n\nVERIFICATION BAR:\n  - A test that declares a new script under a subdirectory, runs the real headless deploy against a scratch tree, and asserts the file lands at its deploy target.\n  - The same assertion for a re-sync of an already-loaded extension, not only a fresh deploy.\n  - Declared-vs-deployed parity over the full `provides.scripts` array verified after a single deploy pass.\n  - No regression to existing deploy behavior for already-correct entries.\n\nDELIVERABLE RULE: deliverables outside `specs/**` must not cite task numbers; use durable anchors (script names, function names, manifest field names).",
+      "topic": "extensions",
+      "created": "2026-07-29T18:44:45Z",
+      "last_updated": "2026-07-29T18:44:45Z"
+    },
     {
       "project_number": 913,
       "project_name": "fix_stage5_missing_handoff_after_research_dispatch",

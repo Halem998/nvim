@@ -1,5 +1,5 @@
 ---
-next_project_number: 970
+next_project_number: 971
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 970
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 947,950,951,955,959,963,964,966,969 | -- | agent-system, state-write-coverage |
+| 1 | 947,950,951,955,959,963,964,966,969,970 | -- | agent-system, extensions, state-write-coverage |
 | 2 | 948,952,958,960 | 947,951,959,966 | agent-system |
 | 3 | 949,953,954,961 | 948,952,960 | agent-system |
 | 4 | 962 | 961 | agent-system |
@@ -38,11 +38,48 @@ next_project_number: 970
 966 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
   └─ 958 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
+### Extensions
+
+970 [NOT STARTED] — Fix headless deploy not populating provides.scripts entries.
+
 ### State Write Coverage
 
 969 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ## Tasks
+
+### 970. Fix headless deploy provides scripts
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: Fix headless deploy not populating provides.scripts entries.
+
+OBSERVED EMPIRICALLY (twice, independently, during a live two-task /orchestrate batch): A fresh headless deploy of the `core` extension does not populate `scripts/lib/*.sh`, `scripts/tests/*.sh`, or roughly 90 other already-declared `provides.scripts` entries in a single pass. Reproduced identically against a pre-task commit in a control worktree, so the defect predates the work that surfaced it and is not a regression from it.
+
+TWO DISTINCT SYMPTOMS, POSSIBLY THE SAME ROOT CAUSE -- verify whether they are one defect or two before fixing:
+  1. A brand-new `scripts/<subdir>/*.sh` file declared in `provides.scripts` never reaches `.claude/scripts/<subdir>/` on an existing deploy. The loader (`manager.load()` in `lua/neotex/shared/extensions/init.lua`) skips the per-extension `copy_scripts`/`copy_manifest` sequence for extensions already marked loaded, so the headless "Load Core" sync path used by `deploy-headless.sh` never re-runs it.
+  2. Even on a FRESH deploy (not an already-loaded extension), the same broad set of declared `provides.scripts` entries is not populated in one pass.
+
+WORKAROUND ALREADY IN CIRCULATION (do not enshrine it): two implementation agents independently worked around this by invoking the loader copy primitives directly (`loader_mod.copy_scripts` / `copy_manifest`) from a one-off call. That is a manual escape hatch, not a fix, and it requires an agent to notice the omission first -- which is the actual hazard, since a silently-missing script surfaces later as a confusing missing-file error in an unrelated command.
+
+RELATED KNOWN-GAP DOCUMENTATION: the Enforcement section of `rules/no-task-references-in-deliverables.md` already records a version of symptom 1 as a discovered deploy-mechanism gap, alongside the separate `root-files/settings.json` install-only gap. Reconcile that prose with whatever is actually fixed here rather than leaving two divergent accounts.
+
+WORK:
+  1. Determine the true root cause of each symptom and whether they are one defect. Do NOT assume the already-loaded-extension skip explains the fresh-deploy case -- that was observed on a fresh deploy.
+  2. Fix so that every declared `provides.scripts` entry reaches its deploy target in one pass, on both a fresh deploy and a re-sync of an already-loaded extension.
+  3. Decide explicitly whether `verify-deploy.sh` should gain a gate asserting declared-vs-deployed parity for `provides.scripts`, so a future omission fails loudly instead of surfacing as a missing-file error elsewhere.
+
+VERIFICATION BAR:
+  - A test that declares a new script under a subdirectory, runs the real headless deploy against a scratch tree, and asserts the file lands at its deploy target.
+  - The same assertion for a re-sync of an already-loaded extension, not only a fresh deploy.
+  - Declared-vs-deployed parity over the full `provides.scripts` array verified after a single deploy pass.
+  - No regression to existing deploy behavior for already-correct entries.
+
+DELIVERABLE RULE: deliverables outside `specs/**` must not cite task numbers; use durable anchors (script names, function names, manifest field names).
+
+---
 
 ### 969. Extend state-write.sh to cover archive and vault state files and convert residual hand-rolled sites
 - **Status**: [NOT STARTED]
@@ -88,6 +125,7 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 - **Dependencies**: Task 967
 - **Research**: [968_corroborate_phase_counts_on_handoff_present_path/reports/01_corroborate_phase_counts_handoff_present.md]
 - **Plan**: [968_corroborate_phase_counts_on_handoff_present_path/plans/01_corroborate-phase-counts-handoff-present.md]
+- **Summary**: [968_corroborate_phase_counts_on_handoff_present_path/summaries/01_corroborate-phase-counts-handoff-present-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.
 
