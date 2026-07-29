@@ -267,6 +267,14 @@ the actual per-phase-transition site for single-task `/implement`; `skill-implem
 is a thin wrapper that delegates the entire phase loop to this agent and has no phase-transition
 point of its own to hook.)
 
+**In-flight session registry heartbeat**: immediately adjacent to the task-lock heartbeat above,
+refresh the session registry entry `command-gate-in.sh` registered at gate-in. This is the
+implementer's real per-phase checkpoint; `skill-implementer/SKILL.md` has none and must not be
+edited. Best-effort and non-blocking, matching `session-heartbeat`'s own never-blocks contract:
+```bash
+bash .claude/scripts/task-lock.sh session-heartbeat "{session_id}" 2>/dev/null || true
+```
+
 #### 4D-ii. Post-Phase Self-Review
 
 After marking a phase `[COMPLETED]`, perform a self-review before proceeding to the next phase:

@@ -436,25 +436,25 @@ batch-completion stages.
 
 ---
 
-### Phase 7: Heartbeat Wiring at Existing Checkpoints [NOT STARTED]
+### Phase 7: Heartbeat Wiring at Existing Checkpoints [COMPLETED]
 
 **Goal**: Refresh `heartbeat_at` at the checkpoints that already exist. Add no new checkpoint
 anywhere.
 
 **Tasks**:
-- [ ] In `skills/skill-orchestrate/SKILL.md` Stage 3's cycle loop, add the registry heartbeat call
+- [x] In `skills/skill-orchestrate/SKILL.md` Stage 3's cycle loop, add the registry heartbeat call
       immediately adjacent to the existing
       `task-lock.sh heartbeat "$task_number" "$session_id"` line (anchor on that quoted string).
-- [ ] In `skills/skill-orchestrate/SKILL.md` Stage MT-3's loop top, step 1 ("Status refresh"), add a
+- [x] In `skills/skill-orchestrate/SKILL.md` Stage MT-3's loop top, step 1 ("Status refresh"), add a
       batch-level registry heartbeat keyed on the bare `session_id`. This is a new USE of an existing
       per-cycle checkpoint, not an invented one — state that in an inline comment, since Stage MT-4's
       per-task acquire/release brackets a single dispatch and has no equivalent per-cycle lock
       heartbeat to sit beside.
-- [ ] In `agents/general-implementation-agent.md` Stage 4D ("D. Mark Phase Complete"), add the
+- [x] In `agents/general-implementation-agent.md` Stage 4D ("D. Mark Phase Complete"), add the
       registry heartbeat immediately adjacent to the existing
       `task-lock.sh heartbeat "{task_number}" "{session_id}"` line. This is the implementer's real
       per-phase checkpoint; `skill-implementer/SKILL.md` has none and must not be edited.
-- [ ] Every heartbeat call is best-effort (`2>/dev/null || true`) and never blocks the loop, matching
+- [x] Every heartbeat call is best-effort (`2>/dev/null || true`) and never blocks the loop, matching
       `cmd_session_heartbeat`'s own never-blocks contract from Phase 1.
 
 **Timing**: 45 minutes

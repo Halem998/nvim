@@ -247,6 +247,11 @@ jq --arg state "$current_status" \
 # somehow missing or held by another session — heartbeat never blocks this loop. See
 # .claude/context/patterns/task-lock.md.
 bash .claude/scripts/task-lock.sh heartbeat "$task_number" "$session_id" 2>/dev/null || true
+
+# In-flight session registry heartbeat: same per-cycle boundary, refreshing the entry
+# command-gate-in.sh registered at CHECKPOINT 1. Best-effort and non-blocking. See
+# .claude/context/patterns/task-lock.md's Session-Registry CLI section.
+bash .claude/scripts/task-lock.sh session-heartbeat "$session_id" 2>/dev/null || true
 ```
 
 **3c. Dispatch by state** (see State Handlers in Stage 4)
@@ -1329,7 +1334,15 @@ done
 
 Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
 
-1. **Status refresh**: For each task in `task_numbers`, read current status from `state.json` and update `mt_state_file.current_statuses`.
+1. **Status refresh**: For each task in `task_numbers`, read current status from `state.json` and update `mt_state_file.current_statuses`. Alongside this refresh, heartbeat the batch's in-flight
+   session registry entry (keyed on the bare `session_id` Stage MT-1 registered) — a new USE of
+   this existing per-cycle checkpoint, not an invented one; Stage MT-4's per-task lock
+   acquire/release brackets a single dispatch and has no equivalent per-cycle lock heartbeat to
+   sit beside, so this loop-top status refresh is the correct per-cycle site for the batch-level
+   heartbeat instead. Best-effort and non-blocking:
+   ```bash
+   bash .claude/scripts/task-lock.sh session-heartbeat "$session_id" 2>/dev/null || true
+   ```
 
 2. **All-terminal check**: If every task is in `{completed, abandoned, expanded}`, in
    `failed_tasks`, OR in `deferred_deploy_checkpoint` — break loop (exit success or partial). A
