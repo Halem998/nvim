@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1785345004_a2ccbc_968",
+  "task_number": 968,
+  "findings_count": 9,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/968_corroborate_phase_counts_on_handoff_present_path/reports/01_corroborate_phase_counts_handoff_present.md",
+      "summary": "Research on extending phase-count corroboration to the handoff-present completion path: confirms the asymmetry, evaluates options A/B/C, flags an unnamed constraint-text edit requirement in both orchestrator SKILL.md files, and flags a scratch-deploy-tree verification hazard."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo's orchestration system, .claude/scripts/skill-base.sh's skill_write_orchestrator_handoff() has ZERO live callers despite being documented as the canonical handoff writer. Every live .orchestrator-handoff.json write is instead free-text JSON composed by an LLM agent (general-implementation-hard-agent.md's H9 Stage 5) following a worked example in its own prose contract, not a validated helper call. Before assuming a 'helper vs raw jq-n' dichotomy exists for handoff writers, verify actual callers via grep -- the dichotomy the docs imply does not exist today.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/968_corroborate_phase_counts_on_handoff_present_path/reports/01_corroborate_phase_counts_handoff_present.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrator-handoff", "skill_write_orchestrator_handoff", "dead-code", "handoff-schema", "skill-base.sh"]
+    },
+    {
+      "content": "scripts/validate-handoff.sh in this repo already implements a correct required-field-null-check for .orchestrator-handoff.json (phases_completed/phases_total/status/blockers) but is never invoked in any live orchestration path (only cited as prose precedent in handoff-schema.md and orchestrate-triage-classify.sh comments). It is a ready-made, unwired producer-side validator for future handoff-integrity work.",
+      "category": "PATTERN",
+      "source_artifact": "specs/968_corroborate_phase_counts_on_handoff_present_path/reports/01_corroborate_phase_counts_handoff_present.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["validate-handoff.sh", "orchestrator-handoff", "unwired-validator", "producer-side-check"]
+    },
+    {
+      "content": "skill-orchestrate/SKILL.md's '## MUST NOT (Context Flatness Constraint)' section and skill-orchestrate-hard/SKILL.md's 'Tool Constraints > Read allowlist' section both contain explicit prose asserting that plan-file corroboration reads are scoped ONLY to the missing/stale-handoff branch of Stage 5. Any future work that widens a plan-file read to a new branch (e.g. the handoff-present branch) must edit these prose passages in the same change, or the new code silently contradicts a stated architectural invariant that nothing else checks mechanically.",
+      "category": "PATTERN",
+      "source_artifact": "specs/968_corroborate_phase_counts_on_handoff_present_path/reports/01_corroborate_phase_counts_handoff_present.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["context-flatness-constraint", "skill-orchestrate", "MUST-NOT", "read-allowlist", "invariant-drift"]
+    }
+  ],
+  "next_steps": "Run /plan 968 to create implementation plan"
+}

@@ -40,7 +40,7 @@ next_project_number: 970
 
 ### Orchestrator Completion Gate
 
-968 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
+968 [RESEARCHED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 
 ### State Write Coverage
 
@@ -86,7 +86,7 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 ---
 
 ### 968. Extend plan-heading evidence corroboration to the handoff-present completion path
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator-completion-gate
 - **Dependencies**: Task 967
@@ -128,6 +128,7 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 - **Dependencies**: None
 - **Research**: [967_fix_git_commit_scoped_lock_exclude_abort/reports/01_lock-exclude-abort.md]
 - **Plan**: [967_fix_git_commit_scoped_lock_exclude_abort/plans/01_lock-exclude-abort-fix.md]
+- **Summary**: [967_fix_git_commit_scoped_lock_exclude_abort/summaries/01_lock-exclude-abort-fix-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`. Runtime invocations may still reference deployed `.claude/scripts/*` paths -- that is the CALL PATH, not the EDIT TARGET.
 

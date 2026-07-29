@@ -2913,7 +2913,7 @@
     {
       "project_number": 968,
       "project_name": "corroborate_phase_counts_on_handoff_present_path",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestrator-completion-gate",
       "title": "Extend plan-heading evidence corroboration to the handoff-present completion path",
@@ -2927,10 +2927,16 @@
       "dependencies": [
         967
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/968_corroborate_phase_counts_on_handoff_present_path/reports/01_corroborate_phase_counts_handoff_present.md",
+          "type": "report",
+          "summary": "corroborate phase counts handoff present (backfilled by --sync)"
+        }
+      ],
       "created": "2026-07-29T16:26:39Z",
-      "last_updated": "2026-07-29T16:32:02Z",
-      "session_id": "sess_1785342301_f54a57",
+      "last_updated": "2026-07-29T17:46:24Z",
+      "session_id": "sess_1785345004_a2ccbc_968",
       "next_artifact_number": 1
     },
     {
