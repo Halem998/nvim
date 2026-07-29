@@ -2877,7 +2877,7 @@
     {
       "project_number": 967,
       "project_name": "fix_git_commit_scoped_lock_exclude_abort",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "git-commit-reliability",
       "title": "Fix git-commit-scoped.sh .lock exclude pathspec aborting git add and silently dropping commits",
@@ -2897,12 +2897,18 @@
           "path": "specs/967_fix_git_commit_scoped_lock_exclude_abort/plans/01_lock-exclude-abort-fix.md",
           "type": "plan",
           "summary": "lock exclude abort fix (backfilled by --sync)"
+        },
+        {
+          "path": "specs/967_fix_git_commit_scoped_lock_exclude_abort/summaries/01_lock-exclude-abort-fix-summary.md",
+          "type": "summary",
+          "summary": "lock exclude abort fix summary (backfilled by --sync)"
         }
       ],
       "created": "2026-07-29T16:26:39Z",
-      "last_updated": "2026-07-29T17:23:23Z",
+      "last_updated": "2026-07-29T17:37:33Z",
       "session_id": "sess_1785345004_a2ccbc_967",
-      "next_artifact_number": 1
+      "next_artifact_number": 1,
+      "completion_summary": "Fixed git-commit-scoped.sh's unconditional ephemeral-exclude injection (which aborted git add whenever a named path was both gitignored and present on disk, e.g. a held task .lock/) by gating each candidate exclude on git check-ignore -q. Shipped a test-first regression suite (7 cases, proven RED on T1/T3 against the unmodified script), synced git-staging-scope.md, corrected a superseded memory candidate, deployed, and confirmed live: this task's own scoped commit landed successfully with its .lock/ present after previously failing twice with the pre-fix defect."
     },
     {
       "project_number": 968,

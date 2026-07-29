@@ -1,7 +1,7 @@
 # Implementation Plan: Task #967
 
 - **Task**: 967 - fix_git_commit_scoped_lock_exclude_abort
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/967_fix_git_commit_scoped_lock_exclude_abort/reports/01_lock-exclude-abort.md
