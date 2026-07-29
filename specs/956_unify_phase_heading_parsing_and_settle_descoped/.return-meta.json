@@ -1,7 +1,57 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "task_number": 956,
-  "session_id": "sess_1785332281_ac04fb_956",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/956_unify_phase_heading_parsing_and_settle_descoped/summaries/01_unify-phase-heading-parsing-summary.md",
+      "summary": "All 10 plan phases completed: created scripts/lib/phase-heading-patterns.sh as the single sourced anchor for phase-heading grammar/enum/non-conformance detection, migrated ~19 regex sites across 11 files onto it, and settled D1 (letter-suffixed sub-phases stay unsupported, non-conformance made loud) and D2 ([DESCOPED] rejected in favor of [COMPLETED WITH EXCLUSIONS]) as recorded decisions."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Unified phase-heading parsing across all ~19 regex sites in the repository onto a new scripts/lib/phase-heading-patterns.sh shared library, closing both the silent-undercount defect (letter-suffixed sub-phases) and the silent-inflation defect ([DESCOPED] markers). D1/D2/D3 recorded and ratified in plan-format.md, status-markers.md, and plan-format-enforcement.md."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+    "agent-system/extensions/core/commands/task.md",
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/context/standards/status-markers.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/rules/artifact-formats.md",
+    "agent-system/extensions/core/rules/plan-format-enforcement.md",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    "agent-system/extensions/core/scripts/lib/phase-heading-patterns.sh",
+    "agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh",
+    "agent-system/extensions/core/scripts/update-phase-status.sh",
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/scripts/validate-artifact.sh",
+    "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A shell function that scans a file line-by-line and prints findings (e.g. `nonconforming_phase_headings <file>`) must NOT be checked for \"any output\" via `func <file> | grep -q .` under `set -o pipefail`. `grep -q` exits after its first match and closes the read end of the pipe; if the producer is still writing (realistic whenever each loop iteration does non-trivial work like multiple greps per line), the producer receives SIGPIPE and, under pipefail, the pipeline's reported exit status becomes the producer's non-zero signal-exit code (141) rather than reliably reflecting whether output existed -- this silently and intermittently misclassifies 'findings exist' as 'no findings'. The fix is a dedicated boolean-check function that captures the full output via command substitution first (`findings=\"$(func <file>)\"; [[ -n \"$findings\" ]]`), which reads to EOF and never triggers the race. Add a fixture test that runs the OLD racy idiom under `set -o pipefail` as a live regression guard/documentation of why the safe helper exists.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/956_unify_phase_heading_parsing_and_settle_descoped/summaries/01_unify-phase-heading-parsing-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["pipefail", "sigpipe", "grep -q", "bash-pipeline-race", "boolean-check-idiom", "set -o pipefail"]
+    },
+    {
+      "content": "A doc-lint gate that extracts bare filenames from prose (e.g. via a regex like `[A-Za-z0-9_-]+\\.(sh|sql)\\b`) and compares them against a manifest's declared script list must compare BASENAMES, not full path-prefixed strings, whenever the manifest can declare subdirectory-scoped entries (e.g. `lib/foo.sh`, `tests/bar.sh`). An exact-string comparison silently false-positives on any subdirectory-scoped script that gets referenced by its bare filename in a SKILL.md/agent.md/command doc -- a latent bug that stays invisible until the first such reference is ever written. When adding a check-extension-docs.sh-style cross-reference validator, build a basename-normalized fallback exclusion set alongside the exact-match one from the start.",
+      "category": "PATTERN",
+      "source_artifact": "specs/956_unify_phase_heading_parsing_and_settle_descoped/summaries/01_unify-phase-heading-parsing-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["check-extension-docs", "basename-matching", "doc-lint", "cross-extension-reference", "manifest-validation"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1785332281_ac04fb_956",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 10,
+    "phases_total": 10
+  }
 }

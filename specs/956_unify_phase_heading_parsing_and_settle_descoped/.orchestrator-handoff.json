@@ -1,26 +1,42 @@
 {
-  "task_number": 956,
-  "session_id": "sess_1785332281_ac04fb_956",
-  "phase": "plan",
-  "status": "planned",
-  "plan_path": "specs/956_unify_phase_heading_parsing_and_settle_descoped/plans/01_unify-phase-heading-parsing.md",
-  "phases_total": 10,
-  "phases_completed": 0,
-  "estimated_hours": 12,
-  "dependency_waves": [[1, 2], [3, 7, 8, 9], [4, 5, 6], [10]],
-  "decisions": [
-    "D1: letter-suffixed sub-phases (Phase 3a) remain UNSUPPORTED; the silent-undercount hole is closed by loud non-conforming-heading detection instead of by widening the grammar. This declines the task's literal WORK item (1) and re-affirms plan-format.md's existing prohibition.",
-    "D2: [DESCOPED] is REJECTED as a phase-heading marker; whole-phase descoping uses [COMPLETED WITH EXCLUSIONS] with a #### Reasoned Exclusions record covering all remaining items.",
-    "D3: non-conformance is inconclusive-and-loud (pass-through with named per-heading warnings), never a hard refusal, except under validate-artifact.sh --strict where it is an error."
+  "$schema": "orchestrator-handoff-v1",
+  "phase": "implement",
+  "status": "implemented",
+  "summary": "Completed all 10 plan phases: created scripts/lib/phase-heading-patterns.sh as the single sourced anchor for the phase-heading grammar/enum/non-conformance detector, migrated ~19 regex sites across 11 files onto it, and settled D1/D2/D3 as recorded decisions. Full repository gate set passes (bash -n, 35/35 fixture suite, check-task-references.sh, check-extension-docs.sh modulo 2 pre-existing unrelated literature-extension findings).",
+  "artifacts": [
+    {"type": "summary", "path": "specs/956_unify_phase_heading_parsing_and_settle_descoped/summaries/01_unify-phase-heading-parsing-summary.md"}
   ],
-  "scope_expansion": [
+  "blockers": [],
+  "next_action_hint": "none",
+  "files_modified": [
     "agent-system/extensions/core/agents/general-implementation-agent.md",
     "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
-    "agent-system/extensions/core/commands/task.md"
-  ],
-  "new_files": [
+    "agent-system/extensions/core/commands/task.md",
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/context/standards/status-markers.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/rules/artifact-formats.md",
+    "agent-system/extensions/core/rules/plan-format-enforcement.md",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
     "agent-system/extensions/core/scripts/lib/phase-heading-patterns.sh",
-    "agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh"
+    "agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh",
+    "agent-system/extensions/core/scripts/update-phase-status.sh",
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/scripts/validate-artifact.sh",
+    "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md"
   ],
-  "next_steps": "Run /implement 956 to execute the plan"
+  "decisions_made": [
+    "D1: letter-suffixed sub-phases (Phase 3a) stay UNSUPPORTED; the silent-undercount hole is closed by loud, named non-conforming-heading detection at every site instead of widening the grammar.",
+    "D2: [DESCOPED] is REJECTED as a phase-heading marker; whole-phase descoping uses [COMPLETED WITH EXCLUSIONS] with a full #### Reasoned Exclusions record.",
+    "D3: non-conformance is inconclusive-and-loud (pass-through with named per-heading warnings), never a hard refusal, except under validate-artifact.sh --strict where it is an error.",
+    "Added has_nonconforming_phase_headings to the library (Phase 4 deviation): the originally-planned 'nonconforming_phase_headings | grep -q .' idiom is racy under set -o pipefail (SIGPIPE on early grep -q exit); retrofitted across all call sites.",
+    "Fixed a check-extension-docs.sh basename-matching bug (Phase 10 deviation): its cross-extension-reference check compared bare filenames against path-prefixed provides.scripts entries verbatim, never matching lib/-or tests/-scoped scripts referenced by bare name in prose."
+  ],
+  "dead_ends": [],
+  "phases_completed": 10,
+  "phases_total": 10,
+  "plan_markers_verified": true
 }
