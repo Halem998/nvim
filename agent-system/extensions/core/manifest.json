@@ -151,6 +151,7 @@
       "test-session-registry.sh",
       "test-session-runtime-files.sh",
       "test-state-write-concurrency.sh",
+      "test-state-write-regen-timing.sh",
       "test-task-lock-reap.sh",
       "tests/test-census-count.sh",
       "tests/test-corroborate-phase-counts.sh",
