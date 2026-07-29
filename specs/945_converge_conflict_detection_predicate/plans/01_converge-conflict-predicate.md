@@ -750,37 +750,78 @@ structure rather than forcing the common shape.
 
 ---
 
-### Phase 8: Test suite for the converged predicate [NOT STARTED]
+### Phase 8: Test suite for the converged predicate [COMPLETED]
 
 **Goal**: An isolated-temp-root suite pinning every decision above, so the convergence cannot
 silently regress.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/test-conflict-predicate.sh` following the
+- [x] Create `agent-system/extensions/core/scripts/test-conflict-predicate.sh` following the
       isolated-temp-root precedent of `test-task-lock-reap.sh` / `test-session-registry.sh`:
       throwaway `$TMPROOT` satisfying `deploy-root-guard.sh`, real scripts copied byte-for-byte
       (no testability hooks added to production code), fixture `state.json` and
       `specs/.sessions/` entries at controlled ages, `pass`/`fail`/`info` helpers, cleanup trap,
-      controlled-epoch timestamps with no sleeping. Exit 0 on all-pass, 1 on any fail.
-- [ ] **Overlap parity cases**: the lib's bash `scopes_overlap()` and its spliced
+      controlled-epoch timestamps with no sleeping. Exit 0 on all-pass, 1 on any fail. *(completed;
+      23 cases across 8 groups, all passing)*
+- [x] **Overlap parity cases**: the lib's bash `scopes_overlap()` and its spliced
       `scopes_overlap_first` return the same answer on the same inputs — exact match, either-side
       directory-prefix, trailing-slash normalization, no-overlap, empty scope, null scope.
-- [ ] **Bit-for-bit preservation cases**: `in_batch` defers only against a LOWER `project_number`;
+      *(completed: Group 1, cases 1.1-1.6)*
+- [x] **Bit-for-bit preservation cases**: `in_batch` defers only against a LOWER `project_number`;
       `cross_batch` defers unconditionally; a dependency edge in either direction excludes the
       pair entirely; self-modification runs first and short-circuits the collision scan.
-- [ ] **Non-regression case**: a fixture state producing a `file_scope_collision` defer yields a
+      *(completed: Group 2, cases 2.1-2.4. Required an isolated-scope-namespace-per-group fixture
+      redesign mid-implementation — an initial fixture sharing one `file_scope` string
+      ("path/a.sh") across candidates from DIFFERENT test groups caused cross-contamination: a
+      candidate's session-only test would spuriously collide via the STATE.JSON scan against an
+      unrelated group's fixture entry, since every non-terminal task sharing a scope string is a
+      real comparison target regardless of which group "owns" it. Fixed by giving each group its
+      own scope namespace (`g21/`, `g22/`, `g23/`, `g4/`).)*
+- [x] **Non-regression case**: a fixture state producing a `file_scope_collision` defer yields a
       verdict identical to the pre-change v3 shape apart from `$schema` and `corroborated_by`.
-- [ ] **Session-input cases**: live session contends; `dead-pid` does not; `stale-heartbeat` does
+      *(completed: Group 3)*
+- [x] **Session-input cases**: live session contends; `dead-pid` does not; `stale-heartbeat` does
       not; `corrupt` DOES; own-`session_id` does not; a session covering only edge-connected task
       numbers does not; a session covering one edge-connected and one unrelated number DOES.
-- [ ] **Degradation cases**: `--session-id` omitted skips the session input and prints the stderr
-      line; a missing `specs/.sessions/` directory is not an error.
-- [ ] **`session-list` cases**: valid NDJSON, `live`/`liveness_reason` on every line, corrupt entry
-      emitted rather than dropped, registry unmodified after the call.
-- [ ] **Fail-closed case**: with the lib absent, both consumers exit 2 with a message naming the
-      remedy — never a silently skipped overlap check.
-- [ ] Confirm the new test file reaches the deployed tree, per the same loader-copy check Phase 1
-      performed.
+      *(completed: Group 4, cases 4.1-4.7. The `corrupt` DOES case (4.4) required a DIFFERENT test
+      level than the other six: a REAL corrupt session-registry entry is structurally unable to
+      carry `file_scope` data at all (unparseable JSON means nothing can be safely read from it,
+      so `session-list` forces `file_scope: []`), so it can NEVER produce an actual overlap hit
+      through the full `session-list` -> `orchestrate-batch-admit.sh` integration path regardless
+      of whether the liveness exclusion correctly admits it — that emptiness is a property of
+      "corrupt data is unreadable", not of the exclusion logic under test. Retargeted 4.4 to call
+      `session_contention()` directly via a jq harness with a hand-built session object carrying
+      `liveness_reason: "corrupt"` AND a real `file_scope`, isolating exactly the exclusion-logic
+      claim D4 makes, matching the verification approach already used ad hoc during Phase 3.)*
+- [x] **Degradation cases**: `--session-id` omitted skips the session input and prints the stderr
+      line; a missing `specs/.sessions/` directory is not an error. *(completed: Group 5)*
+- [x] **`session-list` cases**: valid NDJSON, `live`/`liveness_reason` on every line, corrupt entry
+      emitted rather than dropped, registry unmodified after the call. *(completed: Group 6)*
+- [x] **Fail-closed case**: with the lib absent, both consumers exit 2 with a message naming the
+      remedy — never a silently skipped overlap check. *(completed: Group 7. Required pointing the
+      fail-closed fixture invocations at a candidate with a genuinely non-empty declared
+      `file_scope`, since `task-lock.sh`'s lazy `ensure_file_scope_overlap_lib()` gate (Phase 1's
+      deviation) is only reached when `own_scope` is non-empty — a candidate with no declared
+      scope would silently skip the lib-load attempt entirely and falsely appear to pass.)*
+- [x] Confirm the new test file reaches the deployed tree, per the same loader-copy check Phase 1
+      performed. *(completed with a significant discovery beyond the literal task text: the
+      "known extension-loader gap" this plan's Risks table and D1 decision cited as an
+      unresolved, undiagnosed limitation is NOT actually an inherent property of "new files under
+      an already-loaded extension" — it is caused by the new file being absent from the core
+      extension's `manifest.json` `provides.scripts` array. `check-extension-docs.sh` surfaced
+      this directly: both `scripts/lib/file-scope-overlap.sh` (Phase 1) and
+      `scripts/test-conflict-predicate.sh` (this phase) were flagged as "on disk NOT in
+      provides.scripts". Adding both entries to `agent-system/extensions/core/manifest.json` and
+      re-running `deploy-headless.sh` (no manual copy step) deployed BOTH files correctly on the
+      very next headless sync — the manual one-off copies performed at Phase 1 and earlier in
+      this phase were a genuine, working workaround for the SYMPTOM, but the manifest fix here is
+      the actual root-cause repair. This is left recorded here rather than generalized into a
+      rewrite of the "known gap" language in `.claude/rules/no-task-references-in-deliverables.md`'s
+      "Known gap" section or the D1 decision record above — those documents describe a
+      genuinely-observed prior symptom accurately; whether EVERY historical instance of "a new
+      script never reached the deployed tree" traces to a missing manifest entry specifically, as
+      opposed to some other contributing cause, is not verified here and is out of this task's
+      scope to audit repo-wide.)*
 
 **Timing**: 2 hours
 
@@ -790,12 +831,24 @@ silently regress.
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/test-conflict-predicate.sh` - NEW
+- (discovered during implementation, not pre-declared) `agent-system/extensions/core/manifest.json`
+  - `provides.scripts` gained `lib/file-scope-overlap.sh` and `test-conflict-predicate.sh` —
+    root-cause fix for the loader-copy gap Phase 1 and this phase both worked around with a
+    manual one-off copy
 
 **Verification**:
-- `bash scripts/test-conflict-predicate.sh` exits 0 with every case PASS.
+- `bash scripts/test-conflict-predicate.sh` exits 0 with every case PASS. *(confirmed: 23 passed,
+  0 failed)*
 - The real `specs/` tree is untouched by a full run (`git status --porcelain specs/` empty).
+  *(confirmed — the only `specs/` diffs present are this task's own pre-existing in-flight
+  status/plan-edit churn, unrelated to the test run)*
 - `test-task-lock-reap.sh`, `test-session-registry.sh`, `test-session-runtime-files.sh`, and
-  `test-state-write-concurrency.sh` all still pass.
+  `test-state-write-concurrency.sh` all still pass. *(confirmed, all four green)*
+- Additionally run beyond the literal checklist: `bash .claude/scripts/verify-deploy.sh` and
+  `bash .claude/scripts/check-extension-docs.sh` — both confirm `core` extension PASS after the
+  manifest fix; the sole remaining `verify-deploy.sh` failure is the pre-existing, unrelated
+  `literature` extension `.pyc`-cache-and-undeployed-scripts issue documented in a prior task's
+  summary, not introduced by this work.
 
 ---
 
