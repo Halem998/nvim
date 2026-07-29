@@ -203,39 +203,40 @@ verification bar; if skipped, record that decision rather than dropping the phas
 
 ---
 
-### Phase 3: Regression test for mutex hold time and concurrent status flips [NOT STARTED]
+### Phase 3: Regression test for mutex hold time and concurrent status flips [COMPLETED]
 
 **Goal**: A new isolated-temp-root test proves (a) two concurrent `state-write.sh --regen-todo`
 calls both succeed with a consistent final state, and (b) the mutex is released before
 regeneration runs.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/test-state-write-regen-timing.sh`, following
+- [x] Create `agent-system/extensions/core/scripts/test-state-write-regen-timing.sh`, following
       `test-state-write-concurrency.sh`'s conventions exactly: throwaway `$TMPROOT`, scripts
       copied byte-for-byte into `$TMPROOT/.claude/scripts/`, fixture `specs/state.json`, no
       testability hooks added to production code, `pass`/`fail`/`info` helpers, exit 0 on all
-      pass and 1 on any failure.
-- [ ] Case 1 (mutex released before regeneration): replace the COPIED `generate-todo.sh` inside
+      pass and 1 on any failure. *(completed)*
+- [x] Case 1 (mutex released before regeneration): replace the COPIED `generate-todo.sh` inside
       `$TMPROOT` with a controlled stub that blocks on an observable predicate (e.g. writes a
       marker file, then waits for a release file to appear, on a bounded budget). Start
       `state-write.sh --regen-todo` in the background; wait for the stub's marker; then, from the
       foreground, acquire `specs/.scope-lock` via `task-lock.sh scope-acquire` and assert the
       acquire SUCCEEDS while the stub is still blocked. Release the stub, reap the background
-      job, assert exit 0.
-- [ ] Case 2 (two concurrent status flips both succeed): launch two `state-write.sh --regen-todo`
+      job, assert exit 0. *(completed)*
+- [x] Case 2 (two concurrent status flips both succeed): launch two `state-write.sh --regen-todo`
       calls concurrently, each applying a distinct, commutative increment to the fixture state.
       Assert both exit 0 (no ABORT / exit 2) and that the final `state.json` reflects BOTH
-      writes — the no-lost-update property, checked by value, not by exit code alone.
-- [ ] Case 3 (guest mode still serializes regeneration): with `SCOPE_MUTEX_HELD=1` exported and
+      writes — the no-lost-update property, checked by value, not by exit code alone. *(completed)*
+- [x] Case 3 (guest mode still serializes regeneration): with `SCOPE_MUTEX_HELD=1` exported and
       an outer holder owning the mutex, assert the inner `state-write.sh --regen-todo` does NOT
       release the outer holder's mutex — i.e. the mutex is still held after the inner call
-      returns.
-- [ ] Document at the top of the new file why the regeneration stub is a controlled dependency
+      returns. *(completed)*
+- [x] Document at the top of the new file why the regeneration stub is a controlled dependency
       rather than a violation of the "scripts under test are copied unmodified" convention: the
       script under test is `state-write.sh`; `generate-todo.sh` is a dependency whose cost the
       fixture controls, exactly as the precedent suite controls transform cost through a heavy jq
-      `range` rather than a blind `sleep`.
-- [ ] Use real predicates and bounded polling throughout. No blind `sleep` to fake an ordering.
+      `range` rather than a blind `sleep`. *(completed)*
+- [x] Use real predicates and bounded polling throughout. No blind `sleep` to fake an ordering.
+      *(completed)*
 
 **Timing**: 1.25 hours
 

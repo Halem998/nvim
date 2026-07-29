@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Regression test for mutex hold time and concurrent status flips",
+  "started_at": "2026-07-29T00:25:00Z",
+  "last_updated": "2026-07-29T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-state-write-regen-timing.sh with fixture and stub conventions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-state-write-regen-timing.sh"]},
+    {"id": 2, "description": "Case 1: prove mutex released before regeneration via controlled stub + concurrent scope-acquire probe", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-state-write-regen-timing.sh"]},
+    {"id": 3, "description": "Case 2: two concurrent --regen-todo status flips both succeed, no lost update", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-state-write-regen-timing.sh"]},
+    {"id": 4, "description": "Case 3: guest mode still serializes regeneration, outer holder's mutex untouched", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-state-write-regen-timing.sh"]},
+    {"id": 5, "description": "Adversarial check: revert Phase 1 fix in scratch copy, confirm case 1 fails", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Adversarial check verified against a scratch copy: case 1 FAILS (exit 1, timeout acquiring specs/.scope-lock) when release_mutex is moved back after the regen block, while cases 2 and 3 still pass unaffected. Confirms the regression guard is load-bearing. git status --short confirmed exactly one new untracked file (test-state-write-regen-timing.sh) under agent-system/extensions/core/scripts/ after this phase; the concurrently-modified verify-deploy.sh belongs to another in-flight agent and was left unstaged."
+}
