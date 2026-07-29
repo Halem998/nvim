@@ -1,7 +1,7 @@
 # Implementation Plan: Give the inter-cycle redeploy checkpoint a pre/post baseline
 
 - **Task**: 966 - Give the inter-cycle redeploy checkpoint a pre/post baseline
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: 967 (batch-ordering edge; no file-scope overlap — see Scope Notes)
 - **Research Inputs**: specs/966_add_baseline_to_intercycle_redeploy_checkpoint/reports/01_verify-deploy-baseline-design.md

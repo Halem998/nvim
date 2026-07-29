@@ -11,9 +11,9 @@ next_project_number: 990
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 948,951,959,963,964,966,969,971,973,976,981,982,983,988 | -- | agent-system, orchestration-concurrency, state-write-coverage |
-| 2 | 952,960,972,974,975,977,978,979,980,984 | 951,959,966,969,971,976 | agent-system, extensions, status-marker-lifecycle |
-| 3 | 953,961,985,986,987,989 | 952,960,972,974,978,980 | agent-system |
+| 1 | 948,951,959,963,964,969,971,973,975,977,978,979,980,981,982,983,988 | -- | agent-system, extensions, orchestration-concurrency, ... |
+| 2 | 952,960,972,974,984,985,986,987 | 951,959,969,971,978,980 | agent-system, status-marker-lifecycle |
+| 3 | 953,961,989 | 952,960,972,974 | agent-system |
 | 4 | 962 | 961 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -30,19 +30,18 @@ next_project_number: 990
       └─ 962 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 963 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 964 [NOT STARTED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
-966 [PLANNED] — SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOS
 971 [NOT STARTED] — Loosen the plan-checklist mark-completed instruction in the imple
   └─ 972 [NOT STARTED] — Add a plan-checklist mark-completed contract to agent-system/exte
     └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a
   └─ 974 [NOT STARTED] — Add a plan-checklist mark-completed contract to the two HARD impl
     └─ 989 [NOT STARTED] — Normalize agent frontmatter and contract sections across all 77 a (see above)
 973 [NOT STARTED] — Give reconcile-task-status.sh a defined, safe recovery behavior w
-981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
-983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
-988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
 978 [NOT STARTED] — Make the context-index validation layer tell the truth. From the 
   └─ 987 [NOT STARTED] — Bring context loading back within its own declared budgets and gi
 979 [NOT STARTED] — Make the error-tracking layer real. specs/errors.json DOES NOT EX
+981 [NOT STARTED] — Collapse the FIVE independent routing implementations into one. F
+983 [NOT STARTED] — Apply the lit-stage4a-flow.md pattern (ONE shared, directly-execu
+988 [NOT STARTED] — Consolidate shell-script boilerplate, settle the strict-mode conv
 985 [NOT STARTED] — Quarantine (never silently delete) the dead machinery the review 
 986 [NOT STARTED] — Make the documentation layer stop describing machinery that does 
 
@@ -54,7 +53,6 @@ next_project_number: 990
 
 ### Orchestration Concurrency
 
-976 [PLANNED] — Fix the measured mutex-timing defect: state-write.sh --regen-todo
 982 [NOT STARTED] — Unify the .orchestrator-handoff.json contract. FOUR disagreeing s
 
 ### Status Marker Lifecycle
@@ -453,7 +451,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**. 
 ---
 
 ### 976. Move TODO regeneration out of the state mutex critical section (or extend the window)
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestration-concurrency
 - **Dependencies**: Task 965
@@ -791,12 +789,13 @@ DELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite 
 ---
 
 ### 966. Give the inter-cycle redeploy checkpoint a pre/post baseline
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 967
 - **Research**: [966_add_baseline_to_intercycle_redeploy_checkpoint/reports/01_verify-deploy-baseline-design.md]
 - **Plan**: [966_add_baseline_to_intercycle_redeploy_checkpoint/plans/01_redeploy-checkpoint-baseline.md]
+- **Summary**: [966_add_baseline_to_intercycle_redeploy_checkpoint/summaries/01_redeploy-checkpoint-baseline-summary.md]
 
 **Description**: SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`. Runtime invocations may still reference deployed `.claude/scripts/*` paths -- that is the CALL PATH, not the EDIT TARGET.
 
