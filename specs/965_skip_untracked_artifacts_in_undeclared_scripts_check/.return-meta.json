@@ -1,55 +1,25 @@
 {
-  "status": "tasks_created",
-  "summary": "Created 2 meta tasks in /home/benjamin/.config/nvim/specs/: #965 (git ls-files enumeration for check_undeclared_scripts) and #966 (pre/post baseline for the inter-cycle redeploy checkpoint).",
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1785337600_a52f75_965",
+  "task_number": 965,
+  "findings_count": 1,
   "artifacts": [
     {
-      "type": "task",
-      "path": "/home/benjamin/.config/nvim/specs/965_skip_untracked_artifacts_in_undeclared_scripts_check/",
-      "summary": "Task directory: make check_undeclared_scripts enumerate via git ls-files so untracked build artifacts stop producing permanent FAILs"
-    },
-    {
-      "type": "task",
-      "path": "/home/benjamin/.config/nvim/specs/966_add_baseline_to_intercycle_redeploy_checkpoint/",
-      "summary": "Task directory: baseline verify-deploy pre/post redeploy so only newly-introduced failures defer a batch"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
-      "summary": "Tasks 965 and 966 added; task 958 moved to wave 2 blocked by 966"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/state.json",
-      "summary": "Entries 965/966 appended, next_project_number=967, dependency edge 958->966 added"
+      "type": "report",
+      "path": "specs/965_skip_untracked_artifacts_in_undeclared_scripts_check/reports/01_git-ls-files-enumeration.md",
+      "summary": "Confirms the git-ls-files enumeration fix for check_undeclared_scripts() in agent-system/extensions/core/scripts/check-extension-docs.sh, empirically verified against the live repo across all extensions with zero regressions."
     }
   ],
-  "next_steps": "Run /research 965 and /research 966. Task 966 must complete before task 958 (dependency edge encoded; both share verify-deploy.sh in file_scope).",
-  "metadata": {
-    "session_id": "sess_1785336979_220ee2",
-    "agent_type": "meta-builder-agent",
-    "delegation_depth": 1,
-    "delegation_path": [
-      "orchestrator",
-      "meta",
-      "skill-meta",
-      "meta-builder-agent"
-    ],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 2,
-    "task_numbers": [
-      965,
-      966
-    ],
-    "topic": "agent-system",
-    "created_at": "2026-07-29T15:00:32Z"
-  },
-  "modified_files": [
-    "/home/benjamin/.config/nvim/specs/state.json",
-    "/home/benjamin/.config/nvim/specs/TODO.md",
-    "/home/benjamin/.config/nvim/specs/965_skip_untracked_artifacts_in_undeclared_scripts_check/",
-    "/home/benjamin/.config/nvim/specs/966_add_baseline_to_intercycle_redeploy_checkpoint/"
+  "memory_candidates": [
+    {
+      "content": "In check-extension-docs.sh, git -C \"$REPO_ROOT\" ls-files <pathspec> always returns REPO_ROOT-relative paths regardless of whether <pathspec> itself is absolute or relative to cwd. This differs from `find`, whose output mirrors whatever form its search-root argument took. When replacing a `find`-based enumeration with a `git ls-files`-based one in this script, any downstream prefix-strip logic (e.g. rel_path=\"${script_file#\\\"$ext_path_norm\\\"/scripts/}\") must be re-derived against the REPO_ROOT-relative form of the prefix, not copied unchanged -- a naive copy silently degrades to matching nothing.",
+      "category": "PATTERN",
+      "source_artifact": "specs/965_skip_untracked_artifacts_in_undeclared_scripts_check/reports/01_git-ls-files-enumeration.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git ls-files", "check-extension-docs.sh", "path enumeration", "prefix-strip", "REPO_ROOT-relative"]
+    }
   ],
-  "errors": []
+  "next_steps": "Run /plan 965 to create implementation plan"
 }
