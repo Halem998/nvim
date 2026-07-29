@@ -519,29 +519,37 @@ literal, so Phase 6 stays verification-only as hoped.)*
 
 ---
 
-### Phase 5: Wire the session input into `task-lock.sh acquire` [NOT STARTED]
+### Phase 5: Wire the session input into `task-lock.sh acquire` [COMPLETED]
 
 **Goal**: Lock acquisition consults all three inputs, with the session pass mirroring the
 existing held-lock pass's fresh-ABORT / stale-WARN shape.
 
 **Tasks**:
-- [ ] In `cmd_acquire`, after the existing held-lock overlap loop and still inside the
+- [x] In `cmd_acquire`, after the existing held-lock overlap loop and still inside the
       `acquire_scope_mutex` region, add a session-registry pass: call `cmd_session_list` directly
       (same file, no subprocess), read `specs/state.json` once for `$all`, and evaluate
-      `session_contention` with the acquiring task's own `session_id` as `$own_sid`.
-- [ ] On a hit from a `live == true` session: ABORT (return 1) with a message naming the
+      `session_contention` with the acquiring task's own `session_id` as `$own_sid`. *(completed)*
+- [x] On a hit from a `live == true` session: ABORT (return 1) with a message naming the
       overlapping path, the contending session id, the covered task number, and the liveness
       reason — mirroring the existing ABORT message shape and its "wait or coordinate" remedy
-      line.
-- [ ] On a hit from a `corrupt` / `undeterminable` session: ABORT as above, with the liveness
+      line. *(completed)*
+- [x] On a hit from a `corrupt` / `undeterminable` session: ABORT as above, with the liveness
       reason surfaced so the operator can see WHY it was treated as contending. (Per D4's
-      conservative direction — never silently drop an unconfirmable session.)
-- [ ] Confirmed `dead-pid` / `stale-heartbeat` sessions are excluded inside
+      conservative direction — never silently drop an unconfirmable session.) *(completed: no
+      separate branch was needed — `session_contention()` already applies D4's liveness exclusion
+      internally, so EVERY hit it returns is, by construction, from a `pid-alive`, `corrupt`, or
+      `undeterminable` session; the single ABORT branch handles all three uniformly, always
+      surfacing `liveness_reason` in the message)*
+- [x] Confirmed `dead-pid` / `stale-heartbeat` sessions are excluded inside
       `session_contention` and therefore produce no hit at all — no WARN line, no branch here.
-- [ ] Never mutate the session registry from `cmd_acquire`. Read-only, exactly as the held-lock
-      pass never mutates a foreign lock.
-- [ ] Preserve the existing skip conditions verbatim: self-match on task number, same-session
-      bypass, unreadable entry.
+      *(completed; verified with a fixture stale-heartbeat session — exit 0, no ABORT)*
+- [x] Never mutate the session registry from `cmd_acquire`. Read-only, exactly as the held-lock
+      pass never mutates a foreign lock. *(completed; verified with an md5sum before/after the
+      overlapping-fixture acquire attempt)*
+- [x] Preserve the existing skip conditions verbatim: self-match on task number, same-session
+      bypass, unreadable entry. *(completed; the held-lock loop's own skip conditions are
+      untouched — the new session pass is a separate, additional block after that loop, not a
+      modification to it)*
 
 **Timing**: 1.5 hours
 

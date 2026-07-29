@@ -618,6 +618,37 @@ cmd_acquire() {
         echo "WARN: task $other_task's file_scope overlaps this acquire at \"$overlap_path\", but task $other_task's lock (session $other_session, heartbeat ${other_age} min ago) is stale (> ${TASK_LOCK_STALE_MIN} min); proceeding without modifying it." >&2
       fi
     done < <(find_held_locks "$lock_dir")
+
+    # --- session-registry contention pass (input 2, session_contention from the shared lib) ---
+    # Still inside the same own_scope guard, lib-load gate, and acquire_scope_mutex critical
+    # section as the held-lock pass above. Mirrors that pass's fresh-ABORT shape, collapsed to a
+    # single branch: session_contention() already applies D4's three exclusions (self-session-id,
+    # liveness, per-covered-task-number dependency edge) internally, so EVERY hit it returns is
+    # already confirmed contending -- there is no separate "stale -> WARN and proceed" case here
+    # the way the held-lock pass has one, because a dead-pid/stale-heartbeat session never
+    # produces a hit at all (excluded before session_contention() ever reaches the overlap test).
+    # Read-only: cmd_session_list and STATE_FILE are only ever read here, the session registry is
+    # never mutated -- exactly like the held-lock pass never mutates a foreign lock.
+    local sessions_json all_json sess_hit
+    sessions_json=$(cmd_session_list | jq -s -c '.' 2>/dev/null)
+    [ -z "$sessions_json" ] && sessions_json='[]'
+    all_json=$(jq -c '.active_projects // []' "$STATE_FILE" 2>/dev/null)
+    [ -z "$all_json" ] && all_json='[]'
+    sess_hit=$(jq -n -c --argjson cscope "$own_scope" --argjson cnum "$task_number" \
+      --arg own_sid "$session_id" --argjson all "$all_json" --argjson sessions "$sessions_json" \
+      "$FILE_SCOPE_OVERLAP_JQ_DEFS"'
+session_contention($cscope; $cnum; $own_sid; $all; $sessions)' 2>/dev/null)
+    if [ -n "$sess_hit" ] && [ "$sess_hit" != "null" ]; then
+      local sess_session_id sess_covered_num sess_overlap_path sess_liveness
+      sess_session_id=$(jq -r '.session_id' <<<"$sess_hit" 2>/dev/null)
+      sess_covered_num=$(jq -r '.covered_task_number' <<<"$sess_hit" 2>/dev/null)
+      sess_overlap_path=$(jq -r '.overlapping_path' <<<"$sess_hit" 2>/dev/null)
+      sess_liveness=$(jq -r '.liveness_reason' <<<"$sess_hit" 2>/dev/null)
+      echo "ABORT: Task $task_number's file_scope overlaps registered session $sess_session_id's file_scope at \"$sess_overlap_path\" (session covers task #$sess_covered_num, liveness: $sess_liveness). The session registry is only ever read here, never mutated." >&2
+      echo "  Wait for that session to finish or release, or coordinate with it before retrying." >&2
+      return 1
+    fi
+    # --- end session-registry contention pass ---
   fi
   # --- end cross-task file_scope overlap check ---
 
