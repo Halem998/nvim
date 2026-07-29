@@ -852,46 +852,68 @@ silently regress.
 
 ---
 
-### Phase 9: Converge the documentation set [NOT STARTED]
+### Phase 9: Converge the documentation set [COMPLETED]
 
 **Goal**: Four documents describe ONE predicate over three explicitly-asymmetric inputs, with no
 document left contradicted.
 
 **Tasks**:
-- [ ] `context/patterns/file-footprint-overlap.md`: rewrite the Lock-acquisition-level and
+- [x] `context/patterns/file-footprint-overlap.md`: rewrite the Lock-acquisition-level and
       Batch-admission-level Consumers bullets to say both call the ONE shared implementation
       (`scripts/lib/file-scope-overlap.sh`) rather than each carrying its own transcription. Add a
       session-registry application bullet, worded the way the self-modification bullet already is
       ("a further application of this same predicate, not a new matching rule"). Update the
       closing "All four callers reference this document by path" sentence to the new count.
-- [ ] `context/patterns/file-footprint-overlap.md`: add a section stating the THREE contention
+      *(completed)*
+- [x] `context/patterns/file-footprint-overlap.md`: add a section stating the THREE contention
       inputs and their asymmetric semantics explicitly — (1) held locks are a liveness/confidence
       signal that supplies no scope of its own (`holder.json` carries no `file_scope`; the other
       side's scope is always re-fetched from state.json); (2) the session registry is the only
       input carrying its own precomputed, unioned scope, independent of any single task's
       state.json entry; (3) non-terminal state.json tasks are the broadest but least live signal.
-      Record D5's rejection of a held-lock scan in batch-admit with its reason.
-- [ ] `context/patterns/task-lock.md`: REPLACE the "Non-Goal: No Reader" section with the reader's
+      Record D5's rejection of a held-lock scan in batch-admit with its reason. *(completed as
+      "## Three Contention Inputs")*
+- [x] `context/patterns/task-lock.md`: REPLACE the "Non-Goal: No Reader" section with the reader's
       contract — the registry now has exactly one reader shape (`session-list`), which carries its
       own freshness computation via `session_liveness()`, and its consumers apply their own
       exclusion rules. Leaving the Non-Goal standing would leave the document contradicted.
       Document the `session-list` subcommand alongside the existing Session-Registry CLI verbs.
-- [ ] `docs/architecture/batch-admit-schema.md`: bump to v4; add the full field table for the
+      *(completed; also added a `### session_liveness()` subsection documenting the shared
+      two-signal computation, and extended the "Consumers (Five Distinct Wiring Paths)" section
+      with a new item 6 for the `session-list` reader call sites)*
+- [x] `docs/architecture/batch-admit-schema.md`: bump to v4; add the full field table for the
       three defer flavors including `corroborated_by`, `session_id`, and
       `session_liveness_reason`; write the "v3 to v4" Version History entry mirroring the two
       existing entries' structure, including the "every in-repo consumer's status as of v4" table
       populated with the Phase 6 verification RESULTS (not assumptions). Document `--session-id`
       and D6's degradation contract. Re-examine and update the "A1 — dependency-edge exemption
       asymmetry" section for the session dimension, recording D4's per-covered-task-number rule
-      and why it differs from the self-modification dimension's absent exemption.
-- [ ] `context/patterns/batch-orchestration-guardrails.md`: the named scan-scope gap ("a task that
+      and why it differs from the self-modification dimension's absent exemption. *(completed with
+      one discovery beyond the literal task text: writing the v4 consumer table surfaced that
+      `skill-orchestrate-hard/SKILL.md`'s explicitly CO-MAINTAINED transcription of Stage MT-3 step
+      4.5 had NOT received the `--session-id`/`session_active` fix Phase 7 applied to the base
+      `skill-orchestrate/SKILL.md`. Fixed it here — per that file's own "an edit to either copy
+      REQUIRES the same edit to the other" mandate — rather than merely recording it as a declared
+      residual, so `/orchestrate --hard` does not retain the exact fatal-self-block gap this whole
+      task exists to close.)*
+- [x] `context/patterns/batch-orchestration-guardrails.md`: the named scan-scope gap ("a task that
       is neither in this invocation's set nor currently holding a lock is invisible to all three
       simultaneously") is now narrowed, not eliminated — update the passage to state precisely
       what the third input closes and what remains open (a task with no lock, no live session, and
       a terminal status is still invisible, by design). Do not claim more closure than was
-      achieved.
-- [ ] Verify no deliverable outside `specs/**` cites a task number: run
-      `bash .claude/scripts/check-task-references.sh`.
+      achieved. *(completed: added an explicit "FIFTH... input narrows this gap further, without
+      eliminating it" paragraph, stating precisely that a genuinely idle NON-terminal task remains
+      visible via the pre-existing state.json scan regardless of this change — the session
+      registry adds one more live signal, it does not change what state.json already made
+      visible — and that the residual invisible case is specifically a TERMINAL-status task,
+      excluded from all inputs' scans by design)*
+- [x] Verify no deliverable outside `specs/**` cites a task number: run
+      `bash .claude/scripts/check-task-references.sh`. *(completed: PASS, 0 unexempted occurrences
+      across all 4 scanned trees)*
+
+**Additional file touched, beyond the four declared above**: `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`
+— see the batch-admit-schema.md task note above; required by that file's own co-maintenance
+mandate with `skill-orchestrate/SKILL.md`, which Phase 7 had already updated.
 
 **Timing**: 1.5 hours
 
@@ -904,31 +926,52 @@ document left contradicted.
 - `agent-system/extensions/core/context/patterns/task-lock.md`
 - `agent-system/extensions/core/docs/architecture/batch-admit-schema.md`
 - `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`
+- (discovered during implementation, not pre-declared) `agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md`
 
 **Verification**:
-- `grep -rn "Non-Goal: No Reader" agent-system/extensions/core/` returns nothing.
+- `grep -rn "Non-Goal: No Reader" agent-system/extensions/core/` returns nothing. *(confirmed)*
 - `grep -rn "orchestrate-batch-admit-v3" agent-system/extensions/core/` returns hits only inside
-  the Version History section of the schema doc.
-- No document still describes two separate transcriptions of the overlap algorithm.
-- `bash .claude/scripts/check-task-references.sh` exits 0.
+  the Version History section of the schema doc. *(confirmed — actually returns ZERO hits: every
+  JSON example was bumped to v4 and the Version History prose only uses the bare word "v3", never
+  the full dashed literal)*
+- No document still describes two separate transcriptions of the overlap algorithm. *(confirmed)*
+- `bash .claude/scripts/check-task-references.sh` exits 0. *(confirmed PASS)*
 - Cross-reference check: every path named in the four documents resolves to a real file.
+  *(confirmed for every path introduced or touched by this phase's edits)*
+- Additionally run beyond the literal checklist: `bash .claude/scripts/deploy-headless.sh` +
+  `bash .claude/scripts/check-extension-docs.sh` — `core` extension PASS after every Phase 9 doc
+  edit; the full `test-conflict-predicate.sh` / `test-task-lock-reap.sh` /
+  `test-session-registry.sh` / `test-session-runtime-files.sh` /
+  `test-state-write-concurrency.sh` suite re-run clean (documentation-only phase, but re-verified
+  nothing regressed).
 
 ---
 
 ## Testing & Validation
 
-- [ ] `bash scripts/test-conflict-predicate.sh` exits 0 (new suite, Phase 8).
-- [ ] `bash scripts/test-task-lock-reap.sh` exits 0 (unchanged behavior gate).
-- [ ] `bash scripts/test-session-registry.sh` exits 0 (unchanged behavior gate).
-- [ ] `bash scripts/test-session-runtime-files.sh` and `bash scripts/test-state-write-concurrency.sh` exit 0.
-- [ ] `bash scripts/verify-deploy.sh` passes, including gate 4 (`check-task-references.sh`).
-- [ ] `bash .claude/scripts/check-extension-docs.sh` exits 0.
-- [ ] Non-regression diff: `orchestrate-batch-admit.sh` output over the live candidate set with
+- [x] `bash scripts/test-conflict-predicate.sh` exits 0 (new suite, Phase 8). *(23/23 passed)*
+- [x] `bash scripts/test-task-lock-reap.sh` exits 0 (unchanged behavior gate). *(6/6 passed)*
+- [x] `bash scripts/test-session-registry.sh` exits 0 (unchanged behavior gate). *(10/10 passed)*
+- [x] `bash scripts/test-session-runtime-files.sh` and `bash scripts/test-state-write-concurrency.sh` exit 0.
+      *(6/6 and 4/4 passed respectively)*
+- [x] `bash scripts/verify-deploy.sh` passes, including gate 4 (`check-task-references.sh`).
+      *(gate 4 — task-reference lint — PASSES. The overall script exits non-zero solely on gate 3's
+      doc-lint sub-check, which fails ONLY on the pre-existing, unrelated `literature` extension
+      `.pyc`-cache/undeployed-scripts issue documented in a prior task's summary; the `core`
+      extension's own doc-lint status is PASS after this task's manifest.json fix.)*
+- [x] `bash .claude/scripts/check-extension-docs.sh` exits 0. *(same caveat as above: `core` PASSes
+      cleanly; the script's overall exit code reflects the pre-existing, unrelated `literature`
+      extension failure, not anything this task touched.)*
+- [x] Non-regression diff: `orchestrate-batch-admit.sh` output over the live candidate set with
       `--session-id` omitted differs from the pre-change baseline only in `$schema` and
-      `corroborated_by`.
-- [ ] `specs/` tree untouched by any test run.
-- [ ] Deployed-tree reachability confirmed for `scripts/lib/file-scope-overlap.sh` and
-      `scripts/test-conflict-predicate.sh`.
+      `corroborated_by`. *(confirmed via automated field-by-field diff in Phase 4)*
+- [x] `specs/` tree untouched by any test run. *(confirmed — every isolated-temp-root suite cleans
+      up its own `$TMPROOT`; the only `specs/` diffs present throughout implementation are this
+      task's own pre-existing in-flight status/plan-edit churn)*
+- [x] Deployed-tree reachability confirmed for `scripts/lib/file-scope-overlap.sh` and
+      `scripts/test-conflict-predicate.sh`. *(confirmed — both now deploy correctly via a plain
+      `deploy-headless.sh` run with no manual copy step, following the manifest.json fix recorded
+      in Phase 8)*
 
 ## Artifacts & Outputs
 

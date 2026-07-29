@@ -614,15 +614,49 @@ orchestration **sessions** (not tasks, not critical sections) are actually in fl
 `iso_now`/`now_epoch`/`age_minutes`, `get_file_scope`, and `cmd_reap`'s report-then-delete shape —
 no new script, no new mutex directory.
 
-### Non-Goal: No Reader
+### Session-Registry Reader Contract
 
-**Nothing in the source store consults this registry today.** It is produced only — no gate,
-admission script, or skill reads `specs/.sessions/` anywhere. This mirrors how
-`orchestrator-runtime-files.md` phrases the same obligation for
-`specs/.return-meta-multi-{session_id}.json`: a future reader-adder must add its own
-freshness/ownership checks together with the reader, not separately, and must not assume the
-registry's mere existence implies any particular staleness or ownership guarantee beyond what
-`session-reap`'s own two-signal contract (below) already provides.
+The registry now has exactly ONE reader SHAPE: `session-list` (below), a read-only, no-mutation
+NDJSON enumeration. This section previously stated a "no reader exists" non-goal; that statement
+is no longer true and would leave this document self-contradicted if left standing —
+`session-list` was added specifically to give the conflict-detection predicate (see
+`context/patterns/file-footprint-overlap.md`'s "Session-Registry application" bullet and "Three
+Contention Inputs" section) a live signal over which sessions are actually in flight.
+
+`session-list` itself carries NO exclusion logic of its own — it computes and reports
+`live`/`liveness_reason` per entry (via `session_liveness()`, the SAME two-signal computation
+`session-reap` uses, factored into a shared function so both consumers see an identical
+liveness verdict) and nothing more. Every CONSUMER of `session-list`'s NDJSON applies its OWN
+exclusion rules on top:
+
+- **`task-lock.sh`'s own `cmd_acquire`** calls `cmd_session_list` directly (same process, no
+  subprocess) and evaluates `session_contention()` (from `lib/file-scope-overlap.sh`) against it,
+  applying D4's three exclusions (self-session-id, liveness, per-covered-task-number
+  dependency-edge) from the acquiring task's perspective.
+- **`orchestrate-batch-admit.sh`** subprocess-calls `task-lock.sh session-list` once (only when
+  `--session-id` is supplied — see that script's D6 degradation contract) and evaluates the SAME
+  `session_contention()` from each candidate's perspective.
+
+Both consumers apply the identical shared exclusion logic (`session_contention()`,
+`edge_connected_nums()`) rather than each deriving its own — this is the same "single physical
+implementation, spliced by every consumer" shape the base overlap predicate already uses. Neither
+consumer mutates the registry; `session-list` and its callers are read-only end to end. A future
+THIRD reader must still add its own freshness/ownership judgment (whether `live == true` matters
+to it, how it treats `corrupt`/`undeterminable`) rather than assuming `session-list`'s bare output
+already encodes the right policy for every use case — `live`/`liveness_reason` are DATA, not a
+pre-baked admission decision.
+
+### `session-list`
+
+Read-only enumeration of `specs/.sessions/*.json` — a bounded, dedicated-directory glob, never a
+repo-wide scan. No `--dry-run` flag (nothing here is ever deleted). Emits one compact NDJSON line
+per entry: every raw entry field verbatim, plus computed `live` (bool) and `liveness_reason`
+(string) from `session_liveness()`. `live` is derived uniformly as `liveness_reason NOT IN
+{dead-pid, stale-heartbeat}` — true for `pid-alive`, `corrupt`, AND `undeterminable`, matching
+D4's "`live == true`, `corrupt`, and undeterminable-liveness entries DO contend" language exactly.
+A corrupt/unparseable entry is emitted with `liveness_reason: "corrupt"`, `live: true`, and empty
+`file_scope`/`task_numbers` (nothing can be safely read from it) — never silently dropped from the
+stream.
 
 ### Entry Schema
 
@@ -691,10 +725,35 @@ character.
 
 `rm -f` the entry; idempotent, always exit 0, mirroring `release`.
 
+### `session_liveness()`: the shared two-signal computation
+
+Both `session-reap` and `session-list` (and, transitively, `session_contention()`'s D4 liveness
+exclusion) consume ONE shared bash function, `session_liveness()`, rather than each computing the
+two-signal staleness rule independently. Given an entry file path, it prints `"<age_minutes>
+<liveness_reason>"`, where `liveness_reason` is one of:
+
+- **`corrupt`** — entry file is missing/unparseable JSON. `age` falls back to the file's own
+  mtime. Checked FIRST and short-circuits the other four — an unparseable entry's `pid`/
+  `heartbeat_at` fields cannot be trusted at all.
+- **`dead-pid`** — `pid` is a parseable integer, `kill -0 $pid` FAILS, AND `age` exceeds
+  `SESSION_REGISTRY_DEAD_PID_MIN`.
+- **`stale-heartbeat`** — not `dead-pid`, and `age` exceeds `SESSION_REGISTRY_REAP_MIN`.
+  "pid alive" is NEVER treated as proof of liveness on its own; this band is always the fallback
+  regardless of pid state.
+- **`pid-alive`** — not `dead-pid`, not `stale-heartbeat`, and `pid` is a parseable integer for
+  which `kill -0` succeeded.
+- **`undeterminable`** — not `dead-pid`, not `stale-heartbeat`, and `pid` is empty/non-numeric
+  (liveness cannot be confirmed either way from the pid signal alone).
+
+`pid-alive` and `undeterminable` are states `session-reap` alone never needed to distinguish (both
+simply mean "do not reap") — they exist because `session-list`/`session_contention()` need a
+liveness verdict for EVERY entry, not just reap-worthy ones.
+
 ### `session-reap [--dry-run]`
 
 Mirrors `reap`'s report-then-delete shape and its "skip corrupt/unreadable entry rather than
-silently ignore" discipline. **Two-signal staleness**, evaluated in this order:
+silently ignore" discipline, now expressed via `session_liveness()` above rather than computed
+inline. **Two-signal staleness**, evaluated in this order:
 
 1. **`dead-pid`**: `kill -0 "$pid" 2>/dev/null` FAILS (the pid is confirmably gone — the same
    idiom already used by `claude-refresh.sh`) AND `heartbeat_at` age exceeds
@@ -808,9 +867,17 @@ the same conversation) always succeeds. This property has a dedicated functional
      none and is not touched by this wiring).
    - `session-reap` is explicit-invocation-only, wired into `skill-refresh/SKILL.md` Step 4.6,
      mirroring `reap`'s own wiring shape (item 4 above).
-   - **Non-Goal, restated from the Session-Registry CLI section above**: no consumer reads the
-     registry — every call site listed here only writes (register/heartbeat) or deletes
-     (release/reap) an entry.
+6. **`session-list` reader call sites** (see the "Session-Registry Reader Contract" section
+   above — the registry's write-side call sites in item 5 are all writers; this item is the
+   read-side, added by the conflict-detection convergence):
+   - `task-lock.sh`'s own `cmd_acquire` calls `cmd_session_list` in-process (no subprocess) as
+     part of its cross-task `file_scope` overlap check (see that section above), immediately
+     after the existing held-lock pass, inside the same `acquire_scope_mutex` critical section.
+   - `orchestrate-batch-admit.sh` subprocess-calls `task-lock.sh session-list` once per
+     invocation, ONLY when its own caller supplies `--session-id` (see that script's D6
+     degradation contract for the omitted case) — wired into `commands/research.md`,
+     `commands/plan.md`, `commands/implement.md`'s new batch-admission pre-check step, and into
+     `skill-orchestrate/SKILL.md` Stage MT-3 step 4.5's per-cycle admission call.
 
 Every `.lock/`-based path calls the SAME `task-lock.sh` subcommands — never reimplemented inline —
 so the wiring paths cannot drift from each other's semantics.

@@ -1261,13 +1261,17 @@ matching this file's own stated design philosophy of being a full structural var
 **Transcribed: self-modification / cross-batch admission gate** (mirrors
 `skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 — **CO-MAINTENANCE**: an edit to either copy
 REQUIRES the same edit to the other; the two MUST always agree). Before dispatching
-`eligible_tasks` on every cycle, call the admission script with the NARROWED co-dispatch count:
+`eligible_tasks` on every cycle, call the admission script with the NARROWED co-dispatch count
+and `--session-id "$session_id"` (D6, session-registry contention input — the SAME bare
+`session_id` Stage MT-1 registered via `session-register`, so this call's self-exclusion matches
+the batch's own registry entry rather than seeing it as foreign and deferring every candidate
+against itself):
 
 ```bash
-bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#eligible_tasks[@]}" "${eligible_tasks[@]}"
+bash .claude/scripts/orchestrate-batch-admit.sh --invocation-count "${#eligible_tasks[@]}" --session-id "$session_id" "${eligible_tasks[@]}"
 ```
 
-`jq`-filter stdout for `.decision == "defer"`, then branch on `defer_reason` FIRST (schema v3 —
+`jq`-filter stdout for `.decision == "defer"`, then branch on `defer_reason` FIRST (schema v4 —
 every defer verdict carries this REQUIRED discriminator):
 
 - **`self_modifying`**: consumer-side override check first — if `allow_self_modifying == true`
@@ -1282,6 +1286,12 @@ every defer verdict carries this REQUIRED discriminator):
 - **`file_scope_collision`** (`in_batch` / `cross_batch`): unchanged from the base skill's
   handling — defer the named task to a later cycle, never added to `failed_tasks`, never added to
   `deferred_self_modifying`.
+- **`session_active`** (NEW in v4, reached only when the collision scan above found no hit): a
+  live registered session's own unioned `file_scope` overlaps the candidate's. Same defer-not-fail
+  cycle semantics as the two branches above — remove the candidate from this cycle's dispatch
+  batch, never add to `failed_tasks`, never add to `deferred_self_modifying`, eligible again once
+  the contending session releases or goes stale. Log a distinct warning naming the contending
+  session, the task it covers, and its liveness reason.
 - **Degradation path**: exit 2 from `orchestrate-batch-admit.sh` means state is unavailable; log
   a loud warning and proceed without the check.
 

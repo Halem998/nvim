@@ -1,8 +1,8 @@
 # Cross-Batch Admission Verdict Schema
 
-**Status**: Current architecture. Version 3 (`orchestrate-batch-admit-v3`) — see "Version History"
-at the bottom for what changed from v1 to v2 and from v2 to v3, and why each bump was a version,
-not an additive field.
+**Status**: Current architecture. Version 4 (`orchestrate-batch-admit-v4`) — see "Version History"
+at the bottom for what changed from v1 to v2, v2 to v3, and v3 to v4, and why each bump was a
+version, not an additive field.
 
 **File location**: n/a — this is a stdout stream contract, not a file. The script emits NDJSON
 directly; nothing is written to disk.
@@ -31,7 +31,7 @@ sibling orchestrator-facing schema document this page is modelled on),
 ## Invocation Contract
 
 ```
-orchestrate-batch-admit.sh [--invocation-count <N>] <task_number> [<task_number> ...]
+orchestrate-batch-admit.sh [--invocation-count <N>] [--session-id <id>] <task_number> [<task_number> ...]
 ```
 
 Positional arguments are the candidate task numbers — the caller's already-computed
@@ -45,6 +45,13 @@ Defaults to the number of positional `<task_number>` arguments when omitted (bac
 correct for any caller that already passes its own co-dispatch set in one call). A caller that
 passes a wave/cycle SUBSET (`wave_tasks`, `eligible_tasks`) MUST pass that subset's own size here
 — see "Why `--invocation-count` Exists" below for why a whole-invocation count is wrong as of v3.
+
+**`--session-id <id>` (NEW in v4)**: the CALLER's own session id, the same id registered via
+`task-lock.sh session-register`. Activates the session-registry contention input (the third
+bounded input, alongside held locks — consumed only by `task-lock.sh acquire` — and non-terminal
+`state.json` tasks) with self-exclusion against this id. Optional; when OMITTED, the session input
+is SKIPPED entirely and one loud line goes to stderr — see "Degradation (D6)" below for the full
+contract and why omitting it is never a silent no-op.
 
 **Exit codes**:
 - `0`: verdicts were emitted successfully, regardless of how many are `defer`. Verdicts are
@@ -68,13 +75,20 @@ never reordered per verdict. `self_modifying` is present on **every** verdict, i
 alongside another candidate):
 
 ```json
-{"$schema":"orchestrate-batch-admit-v3","task_number":460,"decision":"defer","self_modifying":true,"defer_reason":"self_modifying","critical_path":"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh","critical_label":"admission predicate","reason":"candidate #460 file_scope names orchestrator-critical path \"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh\" (admission predicate); deferred out of this wave/cycle because it is co-dispatched alongside another candidate this cycle — it becomes eligible again once that co-dispatch clears, or pass --allow-self-modifying to override"}
+{"$schema":"orchestrate-batch-admit-v4","task_number":460,"decision":"defer","self_modifying":true,"defer_reason":"self_modifying","critical_path":"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh","critical_label":"admission predicate","reason":"candidate #460 file_scope names orchestrator-critical path \"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh\" (admission predicate); deferred out of this wave/cycle because it is co-dispatched alongside another candidate this cycle — it becomes eligible again once that co-dispatch clears, or pass --allow-self-modifying to override"}
 ```
 
-**File-scope collision defer** (unchanged algorithm from v1, plus the two additive fields):
+**File-scope collision defer** (unchanged algorithm from v1, plus `corroborated_by`, NEW in v4):
 
 ```json
-{"$schema":"orchestrate-batch-admit-v3","task_number":"{N}","decision":"defer","self_modifying":false,"defer_reason":"file_scope_collision","colliding_task_number":"{M}","colliding_task_status":"not_started","overlapping_path":"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh","collision_scope":"cross_batch","reason":"file_scope overlap with non-terminal task #{M} (not in this batch) at agent-system/extensions/core/scripts/orchestrate-batch-admit.sh; no dependencies[] edge between them"}
+{"$schema":"orchestrate-batch-admit-v4","task_number":"{N}","decision":"defer","self_modifying":false,"defer_reason":"file_scope_collision","colliding_task_number":"{M}","colliding_task_status":"not_started","overlapping_path":"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh","collision_scope":"cross_batch","corroborated_by":["non_terminal_status"],"reason":"file_scope overlap with non-terminal task #{M} (not in this batch) at agent-system/extensions/core/scripts/orchestrate-batch-admit.sh; no dependencies[] edge between them"}
+```
+
+**Session-active defer** (NEW in v4 — reached only when the collision scan above found no hit; a
+live registered session's own unioned `file_scope` overlaps the candidate's):
+
+```json
+{"$schema":"orchestrate-batch-admit-v4","task_number":"{N}","decision":"defer","self_modifying":false,"defer_reason":"session_active","session_id":"sess_1736700000_a1b2c3","colliding_task_number":"{M}","overlapping_path":"agent-system/extensions/core/scripts/task-lock.sh","session_liveness_reason":"pid-alive","reason":"session sess_1736700000_a1b2c3 (liveness: pid-alive) covers non-terminal task #{M} whose registered file_scope overlaps this candidate at agent-system/extensions/core/scripts/task-lock.sh"}
 ```
 
 **Admit** (carries only `$schema`, `task_number`, `decision`, `self_modifying` — nothing else,
@@ -82,38 +96,47 @@ whether `self_modifying` is `true` (a self-modifying candidate admitted solo, co
 == 1), `false` (an ordinary candidate), or `null` (degraded — see below)):
 
 ```json
-{"$schema":"orchestrate-batch-admit-v3","task_number":905,"decision":"admit","self_modifying":false}
+{"$schema":"orchestrate-batch-admit-v4","task_number":905,"decision":"admit","self_modifying":false}
 ```
 
 ## Field Definitions
 
 | Field | Type | Presence | Meaning |
 |-------|------|----------|---------|
-| `$schema` | string | always | Literal `"orchestrate-batch-admit-v3"`. Pinned; never changes across an invocation. |
+| `$schema` | string | always | Literal `"orchestrate-batch-admit-v4"`. Pinned; never changes across an invocation. |
 | `task_number` | int | always | The candidate task number, echoed back from the corresponding CLI argument. |
 | `decision` | string | always | `"admit"` or `"defer"` — never `"fail"`. |
 | `self_modifying` | bool \| null | always | `true` when the candidate's own `file_scope` names a declared orchestrator-critical path; `false` when it does not; `null` when the critical-path data file is missing or unparseable (degraded — the check could not run, never silently reported as `false`). |
-| `defer_reason` | string | defer only | REQUIRED on every `defer` verdict (since v2). Exactly one of `"self_modifying"` or `"file_scope_collision"` — the discriminator that determines which of the two field groups below is present, and, as of v3, also determines what operator remedy applies (a `self_modifying` defer has a consumer-side `--allow-self-modifying` override; `file_scope_collision` has none). |
+| `defer_reason` | string | defer only | REQUIRED on every `defer` verdict (since v2). Exactly one of `"self_modifying"`, `"file_scope_collision"`, or (NEW in v4) `"session_active"` — the discriminator that determines which of the field groups below is present, and which operator remedy applies (a `self_modifying` defer has a consumer-side `--allow-self-modifying` override; `file_scope_collision` and `session_active` have none). |
 | `critical_path` | string | `defer_reason == "self_modifying"` only | The matched declared critical path, after `scope_roots` expansion (may be a source-store path or a deploy-tree path, whichever the candidate's `file_scope` actually named). |
 | `critical_label` | string | `defer_reason == "self_modifying"` only | The matched entry's short label, from `orchestrator-critical-paths.json`. |
-| `colliding_task_number` | int | `defer_reason == "file_scope_collision"` only | The other task's `project_number`. |
-| `colliding_task_status` | string | `defer_reason == "file_scope_collision"` only | The other task's `status` string, verbatim from `specs/state.json`. |
-| `overlapping_path` | string | `defer_reason == "file_scope_collision"` only | The first overlapping path, taken from the COLLIDING task's declared `file_scope` (the "foreign" side) — matches `task-lock.sh`'s `scopes_overlap()` convention of returning the first match, not an exhaustive list. |
-| `collision_scope` | string | `defer_reason == "file_scope_collision"` only | `"in_batch"` (the colliding task is itself one of this invocation's candidate arguments) or `"cross_batch"` (it is not). |
+| `colliding_task_number` | int | `defer_reason == "file_scope_collision"` (the other task's `project_number`) OR `defer_reason == "session_active"` (NEW in v4 — the lowest non-excluded task number the contending session covers, per D4) | See per-branch meaning in this cell. |
+| `colliding_task_status` | string | `defer_reason == "file_scope_collision"` only | The other task's `status` string, verbatim from `specs/state.json`. Not present on a `session_active` verdict — the session registry carries no `status` field of its own. |
+| `overlapping_path` | string | `defer_reason == "file_scope_collision"` (first overlapping path, from the COLLIDING task's declared `file_scope`) OR `defer_reason == "session_active"` (NEW in v4 — first overlapping path, from the contending session's own precomputed `file_scope`) | Matches `task-lock.sh`'s `scopes_overlap()` convention of returning the first match, not an exhaustive list, in both branches. |
+| `collision_scope` | string | `defer_reason == "file_scope_collision"` only | `"in_batch"` (the colliding task is itself one of this invocation's candidate arguments) or `"cross_batch"` (it is not). Not present on `session_active` — the session-registry input has no in-batch/cross-batch distinction of its own (a session's covered task numbers are compared against D4's edge/liveness/self exclusions, not against invocation membership). |
+| `corroborated_by` | array of strings | `defer_reason == "file_scope_collision"` only (NEW in v4) | Always contains `"non_terminal_status"` (the state.json signal that produced this verdict); additionally contains `"session_registry"` when a live, non-caller session independently covers the SAME colliding task number — evidentiary corroboration, not a second detection path. |
+| `session_id` | string | `defer_reason == "session_active"` only (NEW in v4) | The contending session's own `session_id`. |
+| `session_liveness_reason` | string | `defer_reason == "session_active"` only (NEW in v4) | One of `session_liveness()`'s five reasons (`task-lock.sh`) — always one of `pid-alive` / `corrupt` / `undeterminable` here, since `dead-pid`/`stale-heartbeat` sessions are excluded by D4 before this verdict can fire. |
 | `reason` | string | defer only | Machine-templated human-readable summary. Never the sole carrier of any fact already available as a structured field above. |
 
-## Precedence: Self-Modification Runs First and Short-Circuits
+## Precedence: Self-Modification, Then Collision, Then Session-Registry
 
-The self-modification check runs BEFORE the file-scope collision scan and, when it fires
-(`self_modifying == true`), SHORT-CIRCUITS the collision scan entirely — a self-modifying
-candidate never also carries collision fields, regardless of whether it is deferred (co-dispatch
-count > 1) or admitted solo (co-dispatch count == 1). Rationale, corrected for v3: the "strictly
-larger consequence" reason from v2 no longer holds — both defer flavors now share the same
-wave/cycle scope of consequence. The surviving reason is narrower: self-mod is a pure
-single-candidate predicate (tests the candidate's own `file_scope` against a static list) that is
-cheaper to evaluate than the collision scan's set comparison against every other non-terminal
-task, and first-match determinism matches this script's existing "first hit wins, no exhaustive
-collection" convention used elsewhere in the collision scan.
+The self-modification check runs FIRST and, when it fires (`self_modifying == true`),
+SHORT-CIRCUITS both the collision scan AND the session-registry pass entirely — a self-modifying
+candidate never also carries collision or session fields, regardless of whether it is deferred
+(co-dispatch count > 1) or admitted solo (co-dispatch count == 1). Rationale, unchanged since v3:
+self-mod is a pure single-candidate predicate (tests the candidate's own `file_scope` against a
+static list) that is cheaper to evaluate than the collision scan's set comparison against every
+other non-terminal task, and first-match determinism matches this script's existing "first hit
+wins, no exhaustive collection" convention used elsewhere.
+
+**NEW in v4**: when self-modification does not short-circuit, the file-scope collision scan runs
+SECOND and, only when IT finds no hit, the session-registry pass runs THIRD
+(`defer_reason == "session_active"`). This ordering is the load-bearing non-regression property
+the v4 convergence plan asserts: every input that produced a `defer` verdict before v4 produces
+the IDENTICAL defer verdict after v4, modulo the `$schema` string and the added `corroborated_by`
+field — the new `session_active` flavor fires strictly where the pre-v4 predicate emitted `admit`.
+The isolated-temp-root suite `scripts/test-conflict-predicate.sh` pins this invariant directly.
 
 **A1 — dependency-edge exemption asymmetry, explained not remedied**: the collision dimension
 exempts any `dependencies[]`-edge-connected task from its comparison set; the self-modification
@@ -123,6 +146,24 @@ calling skill's own eligibility rule guarantees a successor is never eligible in
 its predecessor), so an explicit exemption in the self-mod branch would be unreachable dead code.
 See `context/patterns/batch-orchestration-guardrails.md`'s "The Same-Cycle Narrowing and Its
 Hazard Accounting" subsection for the full argument.
+
+**The session-registry dimension's exemption rule is DIFFERENT from both of the above, not a
+third instance of the same asymmetry (re-examined for v4, per D4 in the originating plan)**: it
+DOES apply a dependency-edge exemption, but at a FINER grain than the collision dimension's
+whole-task exemption — PER COVERED TASK NUMBER, not per session. A session entry is excluded from
+contending against a candidate iff EVERY task number in its `task_numbers` array is either the
+candidate itself or edge-connected to it; if the session covers even one task number that is
+neither, the session contends (using the LOWEST such surviving number as `colliding_task_number`).
+This is deliberately more conservative than a whole-session exemption would be: a session covering
+`{edge-connected task, unrelated task}` is doing live work on the unrelated task that no
+`dependencies[]` edge serializes, and the session's `file_scope` is a precomputed UNION that
+cannot be attributed back to individual covered task numbers — so a whole-session exemption based
+on ANY covered edge-connection would silently hide genuine contention on the unrelated task. The
+self-modification dimension's "no exemption at all" and the collision dimension's "whole-task
+exemption" are each correct for what they compare (a static list; another task's own single
+declared scope, respectively) — the session dimension's finer per-number rule is correct for what
+IT compares (a union across potentially many covered tasks), not a departure from either existing
+precedent for its own sake.
 
 ## Deferral-Direction Rule and Caller Guidance
 
@@ -148,19 +189,34 @@ Hazard Accounting" subsection for the full argument.
   task, and explicitly **not** an instruction to fold the out-of-batch task into the run. The
   out-of-batch task is idle and in no batch, so it will not itself advance and resolve the
   collision on its own; a human resolves batch composition.
+- **`defer_reason == "session_active"`** (NEW in v4, reached only when the collision scan above
+  found no hit): a live registered session's own unioned `file_scope` overlaps the candidate's,
+  and the session is not excluded by D4's three exclusions (self-session-id, liveness,
+  per-covered-task-number dependency edge — see the A1 discussion above). The candidate is
+  deferred out of the CURRENT wave/cycle, converging the same way an `in_batch` collision defer
+  already does — not a permanent whole-invocation exclusion. Requires the caller to have supplied
+  `--session-id`; without it, this dimension is SKIPPED entirely via D6 degradation (below), never
+  silently treated as "no contention found".
 
-All three defer flavors share the defer-not-fail invariant: a `defer` verdict never marks the
-candidate task failed, and this script never writes to `specs/state.json` — it is a pure,
-read-only predicate that only prints.
+All four defer-verdict shapes above share the defer-not-fail invariant: a `defer` verdict never
+marks the candidate task failed, and this script never writes to `specs/state.json` — it is a
+pure, read-only predicate that only prints.
 
-**Consumer requirement (since v2, unchanged by v3)**: any consumer that branches on a `defer`
-verdict MUST check `defer_reason` before falling back to `collision_scope`-only logic. A pre-v2
-consumer that assumed every `defer` was a `file_scope_collision` and branched on `collision_scope`
-alone would misread a `self_modifying` defer as an ordinary `in_batch`/`cross_batch` collision
-(both carry a `reason` string, so the mistake would not immediately surface as an error). A
-v2-aware consumer that still treats a `self_modifying` defer as a permanent whole-invocation
-exclusion under v3 has a DIFFERENT, narrower mismatch — see "Version History" below for the v3
-entry's full account of why this required a schema version bump rather than an additive field.
+**Consumer requirement (since v2, unchanged by v3, extended by v4)**: any consumer that branches
+on a `defer` verdict MUST check `defer_reason` before falling back to `collision_scope`-only
+logic. A pre-v2 consumer that assumed every `defer` was a `file_scope_collision` and branched on
+`collision_scope` alone would misread a `self_modifying` defer as an ordinary
+`in_batch`/`cross_batch` collision (both carry a `reason` string, so the mistake would not
+immediately surface as an error). A v2-aware consumer that still treats a `self_modifying` defer
+as a permanent whole-invocation exclusion under v3 has a DIFFERENT, narrower mismatch — see
+"Version History" below for the v3 entry's full account of why this required a schema version
+bump rather than an additive field. **NEW in v4**: a consumer that branches on `defer_reason`
+with an exhaustive `if self_modifying / else (assume file_scope_collision)` shape — rather than a
+THIRD explicit branch or a safe default for an unrecognized value — will silently mis-bucket a
+`session_active` verdict as a `file_scope_collision` and read undefined/absent fields
+(`collision_scope`, `colliding_task_status`) from it. This was caught empirically during this
+convergence: see `scripts/orchestrate-dry-run-report.sh`'s fix, recorded in the v4 consumer table
+below.
 
 ## Why `--invocation-count` Exists
 
@@ -273,6 +329,26 @@ self-modification check silently and does NOT abort the invocation. Instead:
   (degraded: ...)` instead of `self-modification: ran`, so a human reading the report sees the
   degradation directly rather than inferring it from an absent exclusion.
 
+## Degradation (D6, NEW in v4): `--session-id` Omitted, Visible, Never Silent
+
+`--session-id` is OPTIONAL, not required — but omitting it is a deliberate, visibly-announced
+degradation of the session-registry input, never a silent no-op:
+
+- When omitted, `task-lock.sh session-list` is never invoked; the session array passed into the
+  jq program is empty, so `session_contention()` can never fire and no `session_active` verdict
+  is ever emitted for that invocation.
+- One loud `WARNING:` line goes to stderr naming the skip and its consequence.
+- The self-modification check and the collision scan both still run unaffected.
+- **This prevents a fatal self-block, not merely an incomplete check.** Every caller in this
+  repo wires this script's call IMMEDIATELY AFTER `task-lock.sh session-register`, so by the time
+  this script runs, a session covering the entire candidate set — with their unioned `file_scope`
+  — is ALREADY on disk. Without knowing its own session id, the script would see that
+  just-registered session as foreign and defer every candidate in the batch against itself,
+  deadlocking the whole invocation. Skipping the session input when identity is unknown is
+  therefore the ONLY correct default; treating one's own session as foreign is a guaranteed
+  deadlock, and silently including an unverified id would be worse than visibly skipping it.
+  Every call site this repository wires (see the v4 consumer table below) passes `--session-id`.
+
 ## Version History
 
 **v1** (original): `$schema`, `task_number`, `decision`, and the four `collision_scope`-defer
@@ -280,7 +356,7 @@ fields (`colliding_task_number`, `colliding_task_status`, `overlapping_path`, `c
 plus `reason`. Every `defer` verdict was, by construction, a file-scope collision — there was
 only one kind of defer, so no discriminator field existed.
 
-**v2** (current): adds `self_modifying` (present on every verdict) and the self-modification
+**v2**: adds `self_modifying` (present on every verdict) and the self-modification
 hazard dimension (`defer_reason`, `critical_path`, `critical_label` on a self-modifying defer;
 `defer_reason` also added to the pre-existing collision defer, now valued
 `"file_scope_collision"`). This was a VERSION BUMP, not an additive-field change, because a v1
@@ -295,7 +371,7 @@ Step 3, `skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5, and
 change that introduced it — there is no transitional period where v1 and v2 consumers coexist
 against a v2 script.
 
-**v3** (current): narrows the SEMANTIC of a `self_modifying` defer from a permanent
+**v3**: narrows the SEMANTIC of a `self_modifying` defer from a permanent
 whole-invocation exclusion to a converging same-cycle defer (the `$schema` string, field set, and
 key order are otherwise unchanged from v2 — no field was added or removed). This was a VERSION
 BUMP rather than an additive-field change, for the same class of reason the v1-to-v2 bump was: a
@@ -324,3 +400,41 @@ semantics their existing exclusion-scope PROSE (describing a `self_modifying` de
 whole-invocation) now over-states the live consequence. This is a recorded follow-up, not a
 silent gap — see `context/patterns/batch-orchestration-guardrails.md`'s "Scope Limitation and
 Residual Risk" section for the broader scope-boundary reasoning this residual sits alongside.
+
+**v3 to v4** (current): converges the twice-transcribed overlap predicate into ONE shared
+implementation (`scripts/lib/file-scope-overlap.sh`), and adds the session registry as a THIRD
+bounded contention input, alongside held locks (unchanged — `task-lock.sh acquire` only) and
+non-terminal `state.json` tasks (this script's pre-existing collision scan). Two additive changes
+to the verdict shape: a NEW `defer_reason: "session_active"` (fields `session_id`,
+`colliding_task_number`, `overlapping_path`, `session_liveness_reason`), reached only when the
+collision scan finds no hit; and a NEW `corroborated_by` array on the existing
+`file_scope_collision` verdict. This was a VERSION BUMP, not an additive-field change, for the
+SAME class of reason the v1-to-v2 bump was: a v3-aware consumer that assumes `defer_reason` is a
+CLOSED two-value set (`self_modifying` | `file_scope_collision`) and branches with an exhaustive
+`if/else` rather than a third explicit case will mis-bucket a `session_active` verdict as a
+`file_scope_collision` and read absent fields (`collision_scope`, `colliding_task_status`) from
+it — exactly the `scripts/orchestrate-dry-run-report.sh` defect this convergence found and fixed
+empirically (see the consumer table below), not merely a hypothetical risk. The non-regression
+invariant (see "Precedence" above) is the property that makes this bump SAFE for the existing two
+defer flavors specifically: every `defer` verdict a pre-v4 script produced is byte-for-byte
+identical post-v4, modulo `$schema` and the added `corroborated_by` — so a v3-aware consumer that
+DOES branch correctly on `defer_reason` (checking for an unrecognized value rather than assuming
+exhaustiveness) needs no changes at all for its existing two branches to keep working; only the
+NEW `session_active` branch is required to see the new input at all. `--session-id` was added as
+an optional flag (D6); omitting it is a visible, per-invocation degradation, never a schema
+change.
+
+Every in-repo consumer's status as of v4:
+
+| Consumer | Status |
+|---|---|
+| `commands/orchestrate.md` Step 3 | Updated — `--session-id "$batch_session_id"` added to the illustrative block (still not code this file itself runs; see that file's own framing) |
+| `skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 | Updated — the sole EXECUTING gate; gained `--session-id "$session_id"` AND a new explicit `session_active` defer_reason branch (append to `defer_ledger`, distinct warning) — without the latter, this consumer would have shared `orchestrate-dry-run-report.sh`'s mis-bucketing defect on the one path that actually ACTS on verdicts, not just reports them |
+| `skills/skill-orchestrate-hard/SKILL.md` `## Multi-Task Mode` | Updated — per this file's own explicit CO-MAINTENANCE requirement with the base skill's Stage MT-3 step 4.5, gained the same `--session-id "$session_id"` forwarding and `session_active` defer_reason branch |
+| `scripts/orchestrate-dry-run-report.sh` Step 4 | Fixed (this convergence found a REAL bug, not a clean pass): the pre-v4 code checked `self_modifying` explicitly, then fell through UNCONDITIONALLY into `file_scope_collision` field reads — a `session_active` verdict would have been mis-bucketed as an in-batch wave-deferral Note instead of the Excluded entry it actually is. Added an explicit `session_active` branch, `--session-id` passthrough (forwarded to both its own `orchestrate-batch-admit.sh` call and its `orchestrate-predispatch-review.sh` subprocess call), and `corroborated_by` rendering |
+| `scripts/orchestrate-predispatch-review.sh` Classes C and D | Extended, not merely re-verified: pinned no `$schema` literal and was already safe (its `select()`-based Class C/D filters simply do not match an unrecognized `defer_reason`, so a `session_active` verdict was inert rather than mis-bucketed). Gained a new Class E section re-presenting `session_active` verdicts, `corroborated_by` rendering on Class D, and an optional `--session-id` passthrough (forwarded only when the CALLER explicitly supplies it — this script's own pre-existing `--session-id` flag has an unrelated auto-generated-fallback purpose for `--repair`'s mutex attribution, and that fallback is deliberately never forwarded) |
+| `scripts/orchestrate-triage-classify.sh` | Confirmed OUT OF SCOPE: re-checked during this convergence and confirmed it never subprocess-calls `orchestrate-batch-admit.sh` — it only names the script in a comment and has its own independent `orchestrate-triage-v1` schema |
+
+No declared residual for v4: every listed consumer that consumes verdicts was either updated or
+confirmed already-safe in this convergence pass, including the hard-mode transcription (updated
+per its own co-maintenance requirement, not merely re-verified).

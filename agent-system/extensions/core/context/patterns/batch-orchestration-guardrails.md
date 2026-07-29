@@ -38,9 +38,29 @@ Layers 1-2 are a cheap, no-agent-invoked, optimistic pre-check: they decide whet
 attempt concurrent dispatch. Layer 3 is a pessimistic enforcement lock: it is the mutex that
 actually prevents two concurrent writers. The layers are independently sound, but their scan
 scopes do not overlap perfectly — a task that is neither in this invocation's set nor currently
-holding a lock is invisible to all three simultaneously. Closing that gap is a scan-scope
+holding a lock is invisible to layers 1-3 simultaneously. Closing that gap is a scan-scope
 question, addressed under Non-Negotiables and the Open Design Fork below, not a new-check
 question.
+
+**A FIFTH, bounded input — the session registry — narrows this gap further, without eliminating
+it.** Both layer 3 (`task-lock.sh`'s `cmd_acquire`) and the layer-2 cross-batch extension
+(`orchestrate-batch-admit.sh`) now additionally consult `specs/.sessions/*.json` — a live
+registered session's own precomputed, UNIONED `file_scope` across every task it covers (see
+`file-footprint-overlap.md`'s "Three Contention Inputs" section for the full asymmetry between
+this input and the other two). This closes a specific sub-case the state.json collision scan
+alone could not: a session ACTIVELY WORKING a task whose declared `file_scope` alone would not
+overlap the candidate, but whose session-wide UNIONED footprint (spanning several covered tasks
+at once) does. **What remains genuinely invisible, by design, is narrower than before, and
+precisely stated rather than left implicit: a task with no held lock, no live session currently
+covering it, AND — the residual case worth naming explicitly — a TERMINAL status.** A terminal
+task is excluded from ALL three inputs' scans on purpose (a completed/abandoned/expanded task
+will not write anything and must never block dispatch), so this is an intentional non-goal, not
+an accidental gap. A genuinely idle, NON-terminal task with no lock and no live session is NOT in
+this residual set — its declared `file_scope` remains visible to `orchestrate-batch-admit.sh`'s
+pre-existing `specs/state.json` collision scan regardless of lock or session state, exactly as it
+was before the session-registry input was added. Do not read the session-registry addition as
+having closed MORE than this: it adds one more live signal alongside held locks and
+`state.json`, it does not change what `state.json` itself already made visible.
 
 ## Blocking vs. Advisory: The Criterion
 
