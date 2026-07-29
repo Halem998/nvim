@@ -86,8 +86,11 @@ fi
 log_info "JSON syntax is valid"
 
 # Check required top-level fields
-# Note: version and generated are optional -- the loader (merge.lua) does not write them.
-# Only entries is required.
+# Note: version and generated are optional per the schema, but the loader (merge.lua's
+# M.append_index_entries) DOES write both on every merge as of the upsert-semantics change --
+# version is set once ("1.0.0") and left untouched thereafter; generated is refreshed on every
+# write. Only entries is schema-required, so this loop intentionally does not enforce the other
+# two.
 log_info "Checking required fields..."
 for field in entries; do
     if ! jq -e ".$field" "$INDEX_FILE" > /dev/null 2>&1; then

@@ -493,9 +493,36 @@ function M.unmerge_settings(target_path, tracked_entries)
   return true
 end
 
---- Append entries to index.json
+--- Append (upsert) entries to index.json
+---
+--- UPSERT, not append-only: if an entry's `path` already exists in the target index, its
+--- object is REPLACED in place (position preserved, for a stable/diffable ordering on repeat
+--- redeploys); a new path is appended as before. This is a deliberate behavior change from the
+--- prior skip-if-exists semantics -- under skip-if-exists, a corrected/updated source entry
+--- (e.g. a regenerated `line_count`) could never reach an already-populated deployed
+--- `.claude/context/index.json`, since every subsequent merge would see the path as "already
+--- present" and silently discard the update. `.claude/context/index.json` is itself a generated
+--- deploy artifact (see .claude/rules/source-store-deploy-boundary.md), so overwriting a
+--- deployed entry from its current source declaration is the intended direction; the source
+--- `agent-system/extensions/*/index-entries.json` files remain the sole authored truth.
+---
+--- Also stamps the index's top-level `generated` (current UTC ISO8601 timestamp, refreshed on
+--- every write) and `version` (semver; set to "1.0.0" the first time the index is created, left
+--- untouched thereafter -- neither field was ever written before this change; both are optional
+--- top-level properties already declared by index.schema.json).
+---
+--- Known dormant risk: a handful of paths are declared by more than one extension's
+--- index-entries.json today (three `contracts/*.md` paths shared between `core` and `lean`, as
+--- intentional lean4-specific overrides of core's generic contract content, not accidental
+--- duplicates). Under upsert, whichever extension's merge_targets.index is processed LAST for a
+--- given load/sync run wins for that path, replacing the prior extension's entry. This is an
+--- improvement over skip-if-exists (which could silently drop a legitimate override forever,
+--- depending on load order) but is still not an explicit override-priority mechanism. Currently
+--- dormant: `lean` is not a loaded extension in this repository, so no collision fires in
+--- practice. Resolving load-order-independent override priority is out of scope here.
+---
 --- @param target_path string Path to index.json
---- @param entries table Array of entries to append
+--- @param entries table Array of entries to append/upsert
 --- @return boolean success True if append succeeded
 --- @return table|nil tracked Tracking data for removal
 function M.append_index_entries(target_path, entries)
@@ -511,27 +538,37 @@ function M.append_index_entries(target_path, entries)
     end
   end
 
-  -- Track added paths
+  -- Track added/updated paths (both count toward the tracked set consumed by
+  -- remove_index_entries_tracked on unload)
   local added_paths = {}
 
-  -- Append entries (deduplicate by path)
+  -- Upsert entries: replace-in-place if the path already exists (preserving array position),
+  -- append if it does not.
   for _, entry in ipairs(entries) do
-    -- Normalize path before deduplication and insertion (defense-in-depth)
+    -- Normalize path before dedupe/insertion (defense-in-depth)
     local normalized_path = normalize_index_path(entry.path)
     entry.path = normalized_path
 
-    local exists = false
-    for _, existing in ipairs(index.entries) do
+    local replaced = false
+    for idx, existing in ipairs(index.entries) do
       if existing.path == normalized_path then
-        exists = true
+        index.entries[idx] = entry
+        replaced = true
         break
       end
     end
-    if not exists then
+    if not replaced then
       table.insert(index.entries, entry)
-      table.insert(added_paths, normalized_path)
     end
+    table.insert(added_paths, normalized_path)
   end
+
+  -- Stamp version/generated. version is set once and left untouched thereafter; generated is
+  -- refreshed on every write so staleness is always detectable.
+  if not index.version then
+    index.version = "1.0.0"
+  end
+  index.generated = os.date("!%Y-%m-%dT%H:%M:%SZ")
 
   local success = M.write_json(target_path, index)
   if not success then

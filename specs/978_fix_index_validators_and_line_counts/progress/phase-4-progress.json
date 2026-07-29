@@ -1,0 +1,29 @@
+{
+  "phase": 4,
+  "phase_name": "Upsert semantics and version/generated stamp in the index merge",
+  "started_at": "2026-07-30T00:05:00Z",
+  "last_updated": "2026-07-30T00:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Convert append_index_entries to upsert semantics, stamp version/generated, update stale validate-context-index.sh comment",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/shared/extensions/merge.lua",
+        "agent-system/extensions/core/scripts/validate-context-index.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.2",
+      "description": "Cross-extension path collision found (core/lean sharing 3 contracts/*.md paths as intentional lean4 overrides) and a within-file cslib duplicate; neither was fixed, both documented as findings",
+      "type": "altered",
+      "reason": "The 3 core/lean collisions are legitimate intentional overrides, not bugs -- deleting either side would destroy real content and violates the plan's non-goal against rewriting context files. Resolving load-order-independent override priority is a materially separate feature, out of scope for an upsert-semantics change. Documented as a known dormant risk in the function's LuaDoc instead. The cslib within-file duplicate is unrelated to cross-extension merge collisions and out of scope.",
+      "annotation": "documented in LuaDoc comment on M.append_index_entries and in the plan's Phase 4 task checklist"
+    }
+  ]
+}

@@ -294,34 +294,51 @@ exact), consistent with the Phase 2 `--check` census (226 mismatch + 94 null = 3
 
 ---
 
-### Phase 4: Upsert semantics and version/generated stamp in the index merge [NOT STARTED]
+### Phase 4: Upsert semantics and version/generated stamp in the index merge [COMPLETED]
 
 **Goal**: Regenerated and newly added source entries actually reach the deployed index on
 redeploy, and the deployed index carries the `version` and `generated` fields its schema already
 declares.
 
 **Tasks**:
-- [ ] Re-read `M.append_index_entries` in
+- [x] Re-read `M.append_index_entries` in
       `lua/neotex/plugins/ai/shared/extensions/merge.lua` and its two call sites
       (`shared/extensions/init.lua` load path, `claude/commands/picker/operations/sync.lua`
       re-injection path) in their current state — a loader change landed on master immediately
-      before this task, so verify rather than assume the researched shape.
-- [ ] Before changing behavior, detect whether any `path` is declared by more than one extension's
+      before this task, so verify rather than assume the researched shape. *(completed: current
+      state matches the research exactly; a third grep hit, `claude/extensions/merge.lua`, is a
+      pure re-export/backward-compat wrapper forwarding to the same shared function, not an
+      independent third call site)*
+- [x] Before changing behavior, detect whether any `path` is declared by more than one extension's
       `index-entries.json`; report any collisions found. Under current append-only semantics the
       first declarer wins; under upsert the last would. If collisions exist, resolve them at the
-      source and record the resolution.
-- [ ] Change the dedupe-by-path branch from skip-if-exists to replace-in-place, preserving the
-      entry's position in the array so redeploys produce a stable, diffable ordering.
-- [ ] Keep the `tracked.paths` return contract intact so `remove_index_entries_tracked` continues
-      to work on unload.
-- [ ] Stamp `generated` with an ISO8601 timestamp on every write, and set `version` per the
-      schema's semver pattern.
-- [ ] Confirm `index.schema.json` needs no change (it already declares both fields as optional
-      top-level properties) and that `additionalProperties: false` is not violated.
-- [ ] Update the note in `validate-context-index.sh`'s required-fields block that currently states
+      source and record the resolution. *(completed: found 4 collisions. 3 are `core`/`lean`
+      sharing the paths `contracts/adversarial-verification.md`, `contracts/anti-analysis.md`,
+      `contracts/reference-grounding.md` -- read both copies: lean's are INTENTIONAL lean4-specific
+      overrides (different content, e.g. "Lean4-specific H2 anti-analysis override"), not
+      accidental duplicates, so neither was deleted or rewritten. Resolution: documented in the
+      function's LuaDoc as a known dormant risk (currently inert since `lean` is not a loaded
+      extension); load-order-independent override priority is a materially separate feature and
+      is explicitly out of scope here. The 4th is a within-file duplicate in cslib's own
+      index-entries.json (same path appears twice in ONE file, unrelated to cross-extension
+      merge) -- noted, not fixed, out of scope for this phase.)*
+- [x] Change the dedupe-by-path branch from skip-if-exists to replace-in-place, preserving the
+      entry's position in the array so redeploys produce a stable, diffable ordering. *(completed)*
+- [x] Keep the `tracked.paths` return contract intact so `remove_index_entries_tracked` continues
+      to work on unload. *(completed: added_paths now includes both newly-appended and
+      replaced/upserted paths, same return shape `{ paths = added_paths }`)*
+- [x] Stamp `generated` with an ISO8601 timestamp on every write, and set `version` per the
+      schema's semver pattern. *(completed: `os.date("!%Y-%m-%dT%H:%M:%SZ")` for generated on
+      every write; version set to "1.0.0" only if absent, left untouched thereafter)*
+- [x] Confirm `index.schema.json` needs no change (it already declares both fields as optional
+      top-level properties) and that `additionalProperties: false` is not violated. *(completed:
+      confirmed by reading the schema -- both `version` (semver pattern) and `generated`
+      (date-time format) are already declared top-level properties)*
+- [x] Update the note in `validate-context-index.sh`'s required-fields block that currently states
       the loader does not write `version`/`generated`, since that will no longer be true.
-- [ ] Follow the Lua standards in the repo's CLAUDE.md and `neovim-lua.md` rule: 2-space
-      indentation, local functions, LuaDoc comments on the changed function.
+      *(completed)*
+- [x] Follow the Lua standards in the repo's CLAUDE.md and `neovim-lua.md` rule: 2-space
+      indentation, local functions, LuaDoc comments on the changed function. *(completed)*
 
 **Timing**: 1.25 hours
 
@@ -334,6 +351,14 @@ declares.
 (`remove_index_entries_tracked`). Confirm at implementation time with
 `grep -rn "append_index_entries\|remove_index_entries_tracked" lua/` before editing; enumerate and
 account for any additional site found.
+
+**Scope Hypothesis result (re-derived live)**: matches, with one additional grep hit accounted
+for. `append_index_entries` has exactly two real (entries-passing) call sites --
+`shared/extensions/init.lua:115` and `claude/commands/picker/operations/sync.lua:274` -- plus a
+third grep hit at `claude/extensions/merge.lua:50-51`, which is a pure re-export/backward-compat
+wrapper (`return shared_merge.append_index_entries(...)`) with no independent logic, not a
+distinct third call site. `remove_index_entries_tracked` has exactly one real consumer
+(`init.lua:157`) plus the same kind of wrapper re-export at `claude/extensions/merge.lua:58-59`.
 
 **Files to modify**:
 - `lua/neotex/plugins/ai/shared/extensions/merge.lua` - upsert semantics plus
