@@ -1317,6 +1317,16 @@ subsection):
   gate deferred every member of it (empty actual dispatch batch); resets to 0 on any cycle where
   at least one task dispatches. Bounds the narrow non-convergence mode a removed permanent
   exclusion set no longer prevents by construction.
+- `verify_deploy_baseline_notices: []` — an APPEND-ONLY OBSERVATION LOG of every checkpoint firing
+  that proceeded past a pre-existing `verify-deploy.sh` failure (the third operator-visible state;
+  see the **Failure contract** branch (c) in `context/patterns/batch-orchestration-guardrails.md`'s
+  `### The Inter-Cycle Redeploy Checkpoint` subsection), entries of the form
+  `{"cycle": <int>, "gate": "verify-deploy.sh", "pre_findings": <int>, "post_findings": <int>, "new_findings": 0, "post_exit": <int>}`.
+  It carries the same MUST NOT as `defer_ledger` immediately below: never read by any eligibility
+  check, all-terminal check, circuit breaker, convergence guard, or admission branch. It is
+  written for reporting only, read at Stage MT-5 and by `commands/orchestrate.md` Step 5. It is
+  NOT a defer/exclusion set — the third state excludes nothing — and is never merged into
+  `defer_ledger`, whose own contract scopes it to defer/exclusion events.
 
 Two more fields, backing the **forward-progress invariant** (full contract in
 `context/patterns/batch-orchestration-guardrails.md`'s `### The Forward-Progress Invariant`
@@ -1614,33 +1624,69 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
      document — `deployed_critical_paths` is its own accumulating set, distinct from both
      `deferred_self_modifying` and `deferred_deploy_checkpoint`.
    - **Fire**: if the remainder is non-empty, log a loud notice naming every matched critical path
-     and its label, then run, in order, from the repo root:
+     and its label. Immediately before running `deploy-headless.sh`, capture the pre-redeploy
+     baseline:
+     ```bash
+     PRE_FINDINGS=$(bash .claude/scripts/verify-deploy.sh --findings --quiet | grep '^FINDING ' | sort -u)
+     PRE_EXIT=$?
+     ```
+     Then run, in order, from the repo root:
      ```bash
      bash .claude/scripts/deploy-headless.sh
      ```
-     and, only on its success:
-     ```bash
-     bash .claude/scripts/verify-deploy.sh
-     ```
-   - **Success path**: record the matched paths into `mt_state_file.deployed_critical_paths`, log
-     the deployed artifact count and a `verify-deploy` pass, and continue to the next cycle.
-   - **Failure path**: `deploy-headless.sh` exit 1 or 2, or `verify-deploy.sh` exit 1 or 2 (exit 2
-     from `verify-deploy.sh` is a failure here, never a pass — see
-     `scripts/verify-deploy.sh`'s header). Log a loud warning naming which gate failed and its
-     exit code, then add every task in `task_numbers` that is not terminal and not in
+   - **`deploy-headless.sh` failure branch — stated BEFORE any baseline logic.** Non-zero exit
+     (1 or 2) → defer unconditionally, exactly as today, with NO baseline consultation
+     whatsoever — the pre-redeploy capture taken above is simply discarded, unread, in this
+     branch. Log a loud warning naming
+     the exit code, then add every task in `task_numbers` that is not terminal and not in
      `failed_tasks` to `mt_state_file.deferred_deploy_checkpoint`. As of the narrowing, membership
      in the `deferred_self_modifying` OBSERVATION LOG is no longer a reason to skip a task here —
      that log does not confer any exclusion of its own, so a task recorded in it that is otherwise
      eligible and non-terminal is exactly the kind of task this permanent exclusion is meant to
      catch. Never add to `failed_tasks`. Never status-mutate. Never abort the invocation. Include
-     the operator remedy in the warning: fix the deploy/verify failure, redeploy manually, then
-     re-run
-     `/orchestrate` on the remaining task numbers. Additionally, for each task added to
-     `deferred_deploy_checkpoint` here, append to `mt_state_file.defer_ledger`:
-     `{"task": task_number, "defer_reason": "deploy_checkpoint", "collision_scope": null, "cycle": cycle_count, "detail": "{failed_gate} exit {exit_code}"}`
-     (where `failed_gate` is `deploy-headless.sh` or `verify-deploy.sh`, whichever failed).
-   - Already-dispatched-and-committed tasks from prior cycles are unaffected by either path —
-     their commits landed at step 5.5 before this step ran.
+     the operator remedy in the warning: fix the deploy failure, redeploy manually, then re-run
+     `/orchestrate` on the remaining task numbers. Append to `mt_state_file.defer_ledger`:
+     `{"task": task_number, "defer_reason": "deploy_checkpoint", "collision_scope": null, "cycle": cycle_count, "detail": "deploy-headless.sh exit {exit_code}"}`.
+   - **On `deploy-headless.sh` success**, capture the post-redeploy baseline at the same call site
+     the plain `verify-deploy.sh` call occupied before this baseline mechanism existed:
+     ```bash
+     POST_FINDINGS=$(bash .claude/scripts/verify-deploy.sh --findings --quiet | grep '^FINDING ' | sort -u)
+     POST_EXIT=$?
+     ```
+   - **Success path (`POST_EXIT == 0`)**: unchanged — record the matched paths into
+     `mt_state_file.deployed_critical_paths`, log the deployed artifact count and a `verify-deploy`
+     pass, and continue to the next cycle. `PRE_FINDINGS` is unused in this branch.
+   - **`POST_EXIT` non-zero**: compute the set difference
+     `NEW_FINDINGS=$(comm -13 <(printf '%s\n' "$PRE_FINDINGS") <(printf '%s\n' "$POST_FINDINGS"))`,
+     then branch on whether it is empty:
+     - **`NEW_FINDINGS` empty → the third state.** Every finding `verify-deploy.sh` reports
+       post-redeploy already existed in the pre-redeploy baseline — a pre-existing failure, not one
+       this redeploy introduced. Log the banner
+       `[PRE-EXISTING VERIFY-DEPLOY FAILURE - N finding(s) predate this redeploy, 0 newly introduced; batch continuing]`
+       and the machine marker
+       `<!-- verify-deploy-baseline pre={pre_count} post={post_count} new=0 proceeded=true -->`
+       (symmetric exit-2 case: if `POST_EXIT == 2`, the banner instead reads "could not run,
+       before or after this redeploy — pre-existing condition"). Record the matched paths into
+       `mt_state_file.deployed_critical_paths`, exactly as the success path does — the redeploy
+       mechanically succeeded; only the standing lint state is unhealthy, and without this the
+       idempotence guard would re-fire the checkpoint every cycle on the same paths purely because
+       a pre-existing failure is still present. Do NOT add any task to
+       `deferred_deploy_checkpoint`. Do NOT append to `defer_ledger` — its contract scopes it to
+       defer/exclusion events, and the third state excludes nothing. Append one entry to
+       `mt_state_file.verify_deploy_baseline_notices`:
+       `{"cycle": cycle_count, "gate": "verify-deploy.sh", "pre_findings": pre_count, "post_findings": post_count, "new_findings": 0, "post_exit": POST_EXIT}`.
+       Continue to the next cycle.
+     - **`NEW_FINDINGS` non-empty → the existing failure path, unchanged in shape.** Log a loud
+       warning naming the gate and its exit code, then add every task in `task_numbers` that is not
+       terminal and not in `failed_tasks` to `mt_state_file.deferred_deploy_checkpoint`. Never add
+       to `failed_tasks`. Never status-mutate. Never abort the invocation. Include the operator
+       remedy in the warning: fix the deploy/verify failure, redeploy manually, then re-run
+       `/orchestrate` on the remaining task numbers. Append to `mt_state_file.defer_ledger`, its
+       `detail` field enriched to name the new findings — count first, then finding text as token
+       budget allows:
+       `{"task": task_number, "defer_reason": "deploy_checkpoint", "collision_scope": null, "cycle": cycle_count, "detail": "verify-deploy.sh exit {POST_EXIT} ({n} new finding(s) vs. pre-redeploy baseline: {finding}; {finding})"}`.
+   - Already-dispatched-and-committed tasks from prior cycles are unaffected by any path — their
+     commits landed at step 5.5 before this step ran.
 
 ### Stage MT-4: Phase-Aware Dispatch and Per-Task Postflight
 

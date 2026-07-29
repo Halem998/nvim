@@ -367,7 +367,7 @@ exit 2 — with no other property of the subsection altered.
 
 ---
 
-### Phase 3: Rewrite Stage MT-3 step 7 and extend the `mt_state_file` schema [NOT STARTED]
+### Phase 3: Rewrite Stage MT-3 step 7 and extend the `mt_state_file` schema [COMPLETED]
 
 **Goal**: the checkpoint implementation in `skill-orchestrate/SKILL.md` captures a baseline,
 diffs it, and branches three ways — with the trigger, idempotence guard, and sequencing guarantee
@@ -375,7 +375,7 @@ untouched.
 
 **Tasks**:
 
-- [ ] In the `mt_state_file` schema block, add a field definition alongside
+- [x] In the `mt_state_file` schema block, add a field definition alongside
       `deferred_deploy_checkpoint` / `deployed_critical_paths`:
       `verify_deploy_baseline_notices: []` — an APPEND-ONLY OBSERVATION LOG of every checkpoint
       firing that proceeded past a pre-existing `verify-deploy.sh` failure, entries of the form
@@ -384,22 +384,25 @@ untouched.
       check, all-terminal check, circuit breaker, convergence guard, or admission branch; written
       for reporting only, read at Stage MT-5 and by `commands/orchestrate.md` Step 5.
       State explicitly that it is NOT a defer/exclusion set and is never merged into
-      `defer_ledger`.
-- [ ] In Stage MT-3 step 7, leave the **Sequencing guarantee**, **Overlap computation**, and
-      **Idempotence guard** bullets byte-for-byte unchanged.
-- [ ] Rewrite the **Fire** bullet: immediately before `deploy-headless.sh`, capture
+      `defer_ledger`. *(completed)*
+- [x] In Stage MT-3 step 7, leave the **Sequencing guarantee**, **Overlap computation**, and
+      **Idempotence guard** bullets byte-for-byte unchanged. *(completed: diff read-through
+      confirms these three bullets are untouched)*
+- [x] Rewrite the **Fire** bullet: immediately before `deploy-headless.sh`, capture
       `PRE_FINDINGS=$(bash .claude/scripts/verify-deploy.sh --findings --quiet | grep '^FINDING ' | sort -u)`
-      and `PRE_EXIT`. Then run `deploy-headless.sh` exactly as today.
-- [ ] Add an explicit **`deploy-headless.sh` failure branch** stated BEFORE any baseline logic:
+      and `PRE_EXIT`. Then run `deploy-headless.sh` exactly as today. *(completed)*
+- [x] Add an explicit **`deploy-headless.sh` failure branch** stated BEFORE any baseline logic:
       non-zero exit → defer unconditionally exactly as today, with NO baseline consultation
       whatsoever; `PRE_FINDINGS`/`PRE_EXIT` are discarded in this branch. Keep the existing
-      `defer_ledger` append with `"detail": "deploy-headless.sh exit {exit_code}"`.
-- [ ] On `deploy-headless.sh` success, capture `POST_FINDINGS` / `POST_EXIT` with the identical
+      `defer_ledger` append with `"detail": "deploy-headless.sh exit {exit_code}"`. *(completed:
+      the branch's own paragraph names neither `PRE_FINDINGS` nor `PRE_EXIT`, confirmed by grep)*
+- [x] On `deploy-headless.sh` success, capture `POST_FINDINGS` / `POST_EXIT` with the identical
       invocation shape at the same call site the plain `verify-deploy.sh` call occupies today.
-- [ ] **Success path (`POST_EXIT == 0`)**: unchanged — record matched critical paths into
+      *(completed)*
+- [x] **Success path (`POST_EXIT == 0`)**: unchanged — record matched critical paths into
       `deployed_critical_paths`, log deployed artifact count and a `verify-deploy` pass, continue.
-      State that `PRE_FINDINGS` is unused in this branch.
-- [ ] **`POST_EXIT` non-zero**: compute `NEW_FINDINGS` as the set difference
+      State that `PRE_FINDINGS` is unused in this branch. *(completed)*
+- [x] **`POST_EXIT` non-zero**: compute `NEW_FINDINGS` as the set difference
       `POST_FINDINGS - PRE_FINDINGS` (e.g. `comm -13` over the two sorted, deduplicated sets), then
       branch:
       - **`NEW_FINDINGS` empty → the third state.** Log the banner
@@ -415,11 +418,13 @@ untouched.
         the warning. Enrich the `defer_ledger` `detail` field to name the new findings — count
         first, then the finding text itself as token budget allows, e.g.
         `"verify-deploy.sh exit 1 (2 new finding(s) vs. pre-redeploy baseline: <finding>; <finding>)"`.
-- [ ] Retain the closing bullet that already-dispatched-and-committed tasks from prior cycles are
-      unaffected by any path.
-- [ ] Update the step's opening cross-reference sentence to keep pointing at the authoritative
+      *(completed)*
+- [x] Retain the closing bullet that already-dispatched-and-committed tasks from prior cycles are
+      unaffected by any path. *(completed)*
+- [x] Update the step's opening cross-reference sentence to keep pointing at the authoritative
       subsection for the full contract — reference by path, do not restate the contract here.
-- [ ] Use durable anchors only — no task numbers (deliverable rule).
+      *(completed: unchanged, already conformant)*
+- [x] Use durable anchors only — no task numbers (deliverable rule). *(completed)*
 
 **Timing**: 1.25 hours
 
