@@ -2234,24 +2234,26 @@
     {
       "project_number": 944,
       "project_name": "in_flight_session_registry",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "orchestration-concurrency",
       "title": "Add an in-flight orchestration session registry with liveness and reap",
       "description": "SOURCE-STORE RULE (binding): `.claude/**` is a GITIGNORED, DISPOSABLE deploy artifact regenerated from the source store. ALL edits MUST target `agent-system/extensions/core/**` and NEVER `.claude/**`.\n\nLINE-NUMBER CAVEAT: anchor on symbol names and quoted strings, never on line numbers.\n\nPURPOSE. Supply the primitive the whole topic is missing: nothing in the system currently knows that another session is running. This task adds that fact; the NEXT task consumes it.\n\nVERIFIED GAP (do not make research rediscover this). There is no enumeration of in-flight sessions anywhere. `scripts/orchestrate-batch-admit.sh` has no notion of another session dispatching right now -- it infers contention only from task STATUS in `specs/state.json`. `scripts/task-lock.sh` knows only about currently-HELD per-task locks. Neither can answer 'what else is actually running, and what files has it claimed'. No PID or process-liveness signal is recorded anywhere in the orchestration path except the `.scope-lock/` mutex owner file. There is also no batch identifier: the single-task and multi-task paths derive session ids differently (multi-task suffixes per task as `sess_..._{task_num}`), so a batch has no stable identity to register under.\n\nDELIVERABLE. A session registry at `specs/.sessions/{session_id}.json` recording at minimum: `session_id`, `pid`, `command` (the invoking command and its arguments), `task_numbers` (the batch's task set), the UNION of those tasks' declared `file_scope`, `started_at`, and `heartbeat_at`.\n\nREUSE, DO NOT REINVENT. `scripts/task-lock.sh` already implements every primitive this needs and has production exposure: POSIX-atomic exclusive create via `mkdir` (deliberately NOT the codebase's usual `jq -n > file` check-then-create pattern, which has a race window), a tmp-file-rename holder write, a staleness threshold with heartbeat refresh, an explicit `reap` subcommand, and the `init-marker` subcommand for atomic marker creation. Implement the registry as additional subcommands on `task-lock.sh` (or a sibling that shares its helpers) rather than a parallel implementation with drifting semantics. `context/patterns/task-lock.md` is the canonical single-source contract document and must be extended, never forked.\n\nWIRING.\n   - Register at session start: `scripts/command-gate-in.sh` for the single-task path, and the multi-task batch start in `commands/research.md`, `commands/plan.md`, `commands/implement.md`, `commands/orchestrate.md`.\n   - Heartbeat at the SAME existing natural checkpoints the task lock already uses -- the orchestrate cycle loop and the implementer phase transition -- rather than adding new checkpoints.\n   - Release at `scripts/command-gate-out.sh` and at batch completion.\n   - Reap stale entries via `skills/skill-refresh/SKILL.md`, matching the existing explicit-invocation-only reap scoping (NOT on the hourly systemd cadence -- `claude-refresh.timer` runs process cleanup only and does not sweep `specs/`).\n\nLIVENESS. The recorded `pid` makes staleness cheaply verifiable rather than purely time-based: a registered session whose pid is gone is definitively dead, not merely quiet. Use pid liveness to SHORTEN the stale wait, but keep the time threshold as the fallback -- a pid can be reused, and a session can legitimately be slow.\n\nSCOPE BOUNDARY. This task only PRODUCES the registry. It must not change any admission or refusal decision; no existing gate may start consulting it here. Consumption is the next task in this topic, deliberately separated so the registry can be landed and observed before anything depends on it.\n\nDELIVERABLE RULE: this task's own deliverables outside `specs/**` must not cite task numbers; use durable anchors.",
       "file_scope": [
-        "agent-system/extensions/core/scripts/task-lock.sh",
-        "agent-system/extensions/core/scripts/command-gate-in.sh",
-        "agent-system/extensions/core/scripts/command-gate-out.sh",
-        "agent-system/extensions/core/scripts/test-task-lock-reap.sh",
-        "agent-system/extensions/core/context/patterns/task-lock.md",
-        "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
-        "agent-system/extensions/core/commands/research.md",
-        "agent-system/extensions/core/commands/plan.md",
+        ".gitignore",
+        "agent-system/extensions/core/agents/general-implementation-agent.md",
         "agent-system/extensions/core/commands/implement.md",
         "agent-system/extensions/core/commands/orchestrate.md",
+        "agent-system/extensions/core/commands/plan.md",
+        "agent-system/extensions/core/commands/research.md",
+        "agent-system/extensions/core/context/patterns/task-lock.md",
+        "agent-system/extensions/core/manifest.json",
         "agent-system/extensions/core/root-files/.gitignore",
-        "agent-system/extensions/core/manifest.json"
+        "agent-system/extensions/core/scripts/command-gate-in.sh",
+        "agent-system/extensions/core/scripts/command-gate-out.sh",
+        "agent-system/extensions/core/scripts/task-lock.sh",
+        "agent-system/extensions/core/scripts/test-task-lock-reap.sh",
+        "agent-system/extensions/core/skills/skill-refresh/SKILL.md"
       ],
       "dependencies": [
         942,
@@ -2262,10 +2264,15 @@
           "path": "specs/944_in_flight_session_registry/reports/01_in-flight-session-registry.md",
           "type": "report",
           "summary": "in flight session registry (backfilled by --sync)"
+        },
+        {
+          "path": "specs/944_in_flight_session_registry/plans/01_in-flight-session-registry.md",
+          "type": "plan",
+          "summary": "in flight session registry (backfilled by --sync)"
         }
       ],
       "created": "2026-07-28T17:22:36Z",
-      "last_updated": "2026-07-28T23:53:37Z",
+      "last_updated": "2026-07-29T00:00:40Z",
       "session_id": "sess_1785282438_f1034e"
     },
     {
