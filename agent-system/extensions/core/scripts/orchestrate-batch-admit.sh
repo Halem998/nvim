@@ -26,7 +26,8 @@
 # Canonical predicate: this script SPLICES, and never restates or forks, the directory-prefix
 # overlap algorithm defined once in context/patterns/file-footprint-overlap.md and implemented
 # once in scripts/lib/file-scope-overlap.sh ($FILE_SCOPE_OVERLAP_JQ_DEFS -- norm,
-# scopes_overlap_first, self_mod_match). See that document for the normalization rule
+# scopes_overlap_first, self_mod_match, edge_connected_nums, session_contention). See that
+# document for the normalization rule
 # (rtrimstr("/")) and the three-way overlap test (exact match, or either path a directory-prefix
 # ancestor of the other). This script is that document's fourth named consumer, alongside the
 # task-level, phase-level, and lock-acquisition-level callers already listed there. It mirrors
@@ -36,7 +37,19 @@
 # declared list rather than against another task's file_scope — not a new matching rule.
 #
 # Usage:
-#   orchestrate-batch-admit.sh [--invocation-count <N>] <task_number> [<task_number> ...]
+#   orchestrate-batch-admit.sh [--invocation-count <N>] [--session-id <id>] <task_number> [<task_number> ...]
+#
+# `--session-id <id>` (D6): the CALLER's own session id (the same id registered via
+# `task-lock.sh session-register`). When supplied, this script's session-registry contention
+# input (the third bounded input, alongside held locks (consumed only by task-lock.sh acquire)
+# and non-terminal state.json tasks) is active, with self-exclusion against this id. When
+# OMITTED, the session input is SKIPPED entirely and one loud line goes to stderr naming the
+# skip and its consequence -- this prevents a fatal self-block: Gap C wires this script's call
+# immediately AFTER `session-register`, so a session covering the entire candidate set is already
+# on disk by the time this script runs; without knowing its own session id it would see that
+# session as foreign and defer every candidate against itself. Every call site this repo wires
+# passes `--session-id`; see context/patterns/batch-orchestration-guardrails.md for the full
+# degradation contract.
 #
 # `--invocation-count <N>` (D3): the number of candidates being CO-DISPATCHED IN THE SAME
 # wave/cycle as the positional <task_number> arguments — not the whole invocation's total
@@ -59,9 +72,9 @@
 # only, with no behavioral benefit over documenting the narrowed meaning under the existing name.
 #
 # Output: NDJSON on stdout, one compact JSON object per candidate, in input order. Verdict
-# schema (pinned as "orchestrate-batch-admit-v3"; field order is stable):
+# schema (pinned as "orchestrate-batch-admit-v4"; field order is stable):
 #
-#   $schema                 string   Literal "orchestrate-batch-admit-v3".
+#   $schema                 string   Literal "orchestrate-batch-admit-v4".
 #   task_number              int     The candidate task number, echoed back.
 #   decision                 string  "admit" or "defer". Never "fail" — a candidate this script
 #                                     cannot resolve (unknown task, terminal status, empty/null
@@ -76,47 +89,78 @@
 #                                     a self-modifying candidate still carries `true` here, so
 #                                     the hazard stays visible even when it is not deferred.
 #   defer_reason              string  Present only when decision == "defer". Exactly one of
-#                                     "self_modifying" or "file_scope_collision" — REQUIRED
-#                                     discriminator (schema v3). Existing consumers MUST branch
-#                                     on this field before falling into any pre-v2 default
-#                                     handling. As of v3 both defer reasons are wave/cycle-scoped
-#                                     (neither is a whole-invocation exclusion); the discriminator
-#                                     exists to name the HAZARD behind the defer and select the
-#                                     operator remedy (self_modifying's remedy is the
-#                                     `--allow-self-modifying` override; file_scope_collision has
-#                                     none — see the v3 schema doc).
+#                                     "self_modifying", "file_scope_collision", or (NEW in v4)
+#                                     "session_active" — REQUIRED discriminator. Existing
+#                                     consumers MUST branch on this field before falling into any
+#                                     pre-v2 default handling. As of v4 all three defer reasons
+#                                     remain wave/cycle-scoped (none is a whole-invocation
+#                                     exclusion); the discriminator exists to name the HAZARD
+#                                     behind the defer and select the operator remedy
+#                                     (self_modifying's remedy is the `--allow-self-modifying`
+#                                     override; file_scope_collision and session_active have
+#                                     none — see docs/architecture/batch-admit-schema.md).
 #   critical_path              string Present only when defer_reason == "self_modifying". The
 #                                     matched declared critical path (post scope-root expansion).
 #   critical_label              string Present only when defer_reason == "self_modifying". The
 #                                     matched entry's short label, from the critical-paths data
 #                                     file.
-#   colliding_task_number     int    Present only when defer_reason == "file_scope_collision".
-#                                     The other task's project_number.
+#   colliding_task_number     int    Present when defer_reason == "file_scope_collision" (the
+#                                     other task's project_number, from state.json) OR
+#                                     defer_reason == "session_active" (the lowest non-excluded
+#                                     task number the contending session covers, per D4).
 #   colliding_task_status     string Present only when defer_reason == "file_scope_collision".
 #                                     The other task's status string, verbatim from state.json.
-#   overlapping_path          string Present only when defer_reason == "file_scope_collision".
-#                                     The first overlapping path, taken from the COLLIDING task's
-#                                     declared file_scope (the "foreign" side), matching
-#                                     scopes_overlap()'s convention in task-lock.sh — first match,
-#                                     not an exhaustive list.
+#   overlapping_path          string Present when defer_reason == "file_scope_collision" (the
+#                                     first overlapping path, taken from the COLLIDING task's
+#                                     declared file_scope) OR defer_reason == "session_active"
+#                                     (the first overlapping path from the contending session's
+#                                     own precomputed file_scope) — first match, not an
+#                                     exhaustive list, matching scopes_overlap()'s convention in
+#                                     task-lock.sh.
 #   collision_scope            string Present only when defer_reason == "file_scope_collision".
 #                                     "in_batch" (the colliding task is itself one of this
 #                                     invocation's candidate arguments) or "cross_batch" (it is
 #                                     not).
+#   corroborated_by      array[string]  Present only when defer_reason == "file_scope_collision"
+#                                     (NEW in v4). Always contains "non_terminal_status" (the
+#                                     state.json signal that produced this verdict); additionally
+#                                     contains "session_registry" when a live, non-caller session
+#                                     independently covers the SAME colliding task number —
+#                                     evidentiary corroboration, not a second detection path.
+#   session_id                string Present only when defer_reason == "session_active" (NEW in
+#                                     v4). The contending session's own session_id.
+#   session_liveness_reason   string Present only when defer_reason == "session_active" (NEW in
+#                                     v4). One of session_liveness()'s five reasons (task-lock.sh)
+#                                     — always one of pid-alive / corrupt / undeterminable here,
+#                                     since dead-pid/stale-heartbeat sessions are excluded by D4
+#                                     before this verdict can fire.
 #   reason                    string Present only when decision == "defer". Machine-templated
 #                                     human-readable summary; never the sole carrier of any fact
 #                                     already present as a structured field above.
 #
-# Precedence (D4): the self-modification check runs FIRST, before the collision scan, and
-# SHORT-CIRCUITS it — a self-modifying candidate never also runs the collision scan, regardless
-# of whether it is deferred (co-dispatch count > 1) or admitted solo (co-dispatch count == 1).
-# Rationale, corrected for v3: the "strictly larger consequence" reason from v2 no longer holds —
-# both defer flavors now share the same wave/cycle scope of consequence, so that is not why
-# self-mod goes first. The surviving reason is narrower: self-mod is a pure single-candidate
-# predicate (tests the candidate's own file_scope against a static list) that is cheaper to
-# evaluate than the collision scan's set comparison against every other non-terminal task, and
-# first-match determinism matches this script's existing "first hit wins, no exhaustive
-# collection" convention.
+# Precedence (D4): self-modification runs FIRST and SHORT-CIRCUITS the rest — a self-modifying
+# candidate never runs the collision scan or the session pass, regardless of whether it is
+# deferred (co-dispatch count > 1) or admitted solo (co-dispatch count == 1). Rationale,
+# unchanged since v3: self-mod is a pure single-candidate predicate (tests the candidate's own
+# file_scope against a static list) that is cheaper to evaluate than the collision scan's set
+# comparison against every other non-terminal task, and first-match determinism matches this
+# script's existing "first hit wins, no exhaustive collection" convention. NEW in v4: when
+# self-modification does not short-circuit, the state.json collision scan
+# (`file_scope_collision`) runs SECOND and, only when IT finds no hit, the session-registry pass
+# (`session_active`) runs THIRD. This ordering is the load-bearing non-regression invariant this
+# convergence's plan calls out explicitly: every input that produced a `defer` verdict before v4
+# produces the IDENTICAL defer verdict after v4, modulo the `$schema` string and the added
+# `corroborated_by` field — the new `session_active` flavor fires strictly where the pre-v4
+# predicate emitted `admit`.
+#
+# Held-lock scan rejection (recorded, not the file's pre-existing D5 above — this convergence's
+# OWN separate decision not to add a fourth contention input): `orchestrate-batch-admit.sh` does
+# NOT gain a held-lock scan. Held locks supply no `file_scope` of their own (`holder.json`
+# carries none — task-lock.sh's own overlap check always re-fetches the other side's scope from
+# state.json), so a held-lock scan here could produce no detection the state.json/session-registry
+# inputs do not already produce, at the cost of a repo-wide filesystem walk of every `.lock/`
+# directory — directly contradicting this script's own "no repo-wide filesystem walk of any
+# kind" invariant. Held locks stay a task-lock.sh-acquire-only input.
 #
 # A1 (dependency-edge exemption asymmetry) — explained, not remedied: the collision dimension
 # excludes from its comparison set any task connected to the candidate by a dependencies[] edge in
@@ -225,8 +269,10 @@ fi
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
 CRITICAL_PATHS_FILE="$SCRIPT_DIR/../context/reference/orchestrator-critical-paths.json"
 
-# --- argument parsing: --invocation-count <N> (D3) ahead of positional task_number validation ---
+# --- argument parsing: --invocation-count <N> (D3) and --session-id <id> (D6) ahead of
+# positional task_number validation ---
 invocation_count_arg=""
+session_id_arg=""
 task_args=()
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -236,6 +282,14 @@ while [ "$#" -gt 0 ]; do
       ;;
     --invocation-count=*)
       invocation_count_arg="${1#--invocation-count=}"
+      shift
+      ;;
+    --session-id)
+      session_id_arg="${2:-}"
+      shift 2 2>/dev/null || shift
+      ;;
+    --session-id=*)
+      session_id_arg="${1#--session-id=}"
       shift
       ;;
     *)
@@ -308,6 +362,18 @@ else
   fi
 fi
 
+# --- resolve the session-registry input (D6: --session-id is required for it; omitting it
+# degrades visibly, never silently) ---
+sessions_json='[]'
+if [ -n "$session_id_arg" ]; then
+  sessions_json=$("$SCRIPT_DIR/task-lock.sh" session-list 2>/dev/null | jq -s -c '.' 2>/dev/null)
+  if [ -z "$sessions_json" ]; then
+    sessions_json='[]'
+  fi
+else
+  echo "WARNING: orchestrate-batch-admit.sh: --session-id not supplied; the session-registry contention input is SKIPPED for this invocation (no defer_reason: \"session_active\" verdict can fire). Without a caller session id, a just-registered session covering this candidate set would be seen as foreign and every candidate would self-block. Pass --session-id \"\$batch_session_id\" to enable it." >&2
+fi
+
 # Build the candidates JSON array (preserves input order, including duplicates if given).
 candidates_json="[$(printf '%s\n' "${task_args[@]}" | paste -sd, -)]"
 
@@ -320,6 +386,8 @@ verdicts=$(jq -n -c \
   --argjson critical_expanded "$critical_expanded_json" \
   --argjson degraded "$degraded" \
   --argjson invocation_count "$invocation_count_arg" \
+  --arg own_session_id "$session_id_arg" \
+  --argjson sessions "$sessions_json" \
   "$FILE_SCOPE_OVERLAP_JQ_DEFS"'
 
   def is_terminal: ascii_downcase as $s | ($s == "completed" or $s == "abandoned" or $s == "expanded");
@@ -329,18 +397,20 @@ verdicts=$(jq -n -c \
   $critical_expanded as $crit |
   $degraded as $is_degraded |
   $invocation_count as $inv_count |
+  $own_session_id as $own_sid |
+  $sessions as $sess_list |
 
   $cands[] as $c |
   ([$all[] | select(.project_number == $c)] | first) as $entry |
 
   if ($entry == null) then
-    {"$schema": "orchestrate-batch-admit-v3", task_number: $c, decision: "admit",
+    {"$schema": "orchestrate-batch-admit-v4", task_number: $c, decision: "admit",
      self_modifying: (if $is_degraded then null else false end)}
   elif (($entry.status // "") | is_terminal) then
-    {"$schema": "orchestrate-batch-admit-v3", task_number: $c, decision: "admit",
+    {"$schema": "orchestrate-batch-admit-v4", task_number: $c, decision: "admit",
      self_modifying: (if $is_degraded then null else (self_mod_match($entry.file_scope; $crit) != null) end)}
   elif (($entry.file_scope // []) | length) == 0 then
-    {"$schema": "orchestrate-batch-admit-v3", task_number: $c, decision: "admit",
+    {"$schema": "orchestrate-batch-admit-v4", task_number: $c, decision: "admit",
      self_modifying: (if $is_degraded then null else false end)}
   else
     ($entry.dependencies // []) as $c_deps |
@@ -350,7 +420,7 @@ verdicts=$(jq -n -c \
     if ($sm_flag == true) then
       if ($inv_count > 1) then
         {
-          "$schema": "orchestrate-batch-admit-v3",
+          "$schema": "orchestrate-batch-admit-v4",
           task_number: $c,
           decision: "defer",
           self_modifying: true,
@@ -361,7 +431,7 @@ verdicts=$(jq -n -c \
         }
       else
         {
-          "$schema": "orchestrate-batch-admit-v3",
+          "$schema": "orchestrate-batch-admit-v4",
           task_number: $c,
           decision: "admit",
           self_modifying: true
@@ -396,10 +466,45 @@ verdicts=$(jq -n -c \
         ] | first
       ) as $hit |
       if $hit == null then
-        {"$schema": "orchestrate-batch-admit-v3", task_number: $c, decision: "admit", self_modifying: $sm_flag}
+        # No state.json collision found -- the session-registry input (D3 precedence: reached
+        # only here) gets its turn. Every input that defers via the branch above is UNCHANGED by
+        # this addition; this new flavor fires strictly where the predicate used to admit.
+        session_contention($c_scope; $c; $own_sid; $all; $sess_list) as $sess_hit |
+        if $sess_hit == null then
+          {"$schema": "orchestrate-batch-admit-v4", task_number: $c, decision: "admit", self_modifying: $sm_flag}
+        else
+          {
+            "$schema": "orchestrate-batch-admit-v4",
+            task_number: $c,
+            decision: "defer",
+            self_modifying: $sm_flag,
+            defer_reason: "session_active",
+            session_id: $sess_hit.session_id,
+            colliding_task_number: $sess_hit.covered_task_number,
+            overlapping_path: $sess_hit.overlapping_path,
+            session_liveness_reason: $sess_hit.liveness_reason,
+            reason: ("session " + $sess_hit.session_id + " (liveness: " + $sess_hit.liveness_reason +
+                     ") covers non-terminal task #" + ($sess_hit.covered_task_number | tostring) +
+                     " whose registered file_scope overlaps this candidate at " + $sess_hit.overlapping_path)
+          }
+        end
       else
+        # corroborated_by (D2/v4): always names the state.json signal that produced this verdict;
+        # additionally names the session registry when a live, non-self session independently
+        # covers the SAME colliding task number -- evidentiary corroboration, not a second
+        # detection path (D4 contention-exclusion rules do not gate this check; the question
+        # here is only "does independent live evidence exist", not "does this session contend").
+        (
+          [
+            $sess_list[] | select(.live == true and .session_id != $own_sid) |
+            select((.task_numbers // []) | index($hit.other_num) != null)
+          ] | length > 0
+        ) as $session_corroborates |
+        (
+          ["non_terminal_status"] + (if $session_corroborates then ["session_registry"] else [] end)
+        ) as $corroborated_by |
         {
-          "$schema": "orchestrate-batch-admit-v3",
+          "$schema": "orchestrate-batch-admit-v4",
           task_number: $c,
           decision: "defer",
           self_modifying: $sm_flag,
@@ -408,6 +513,7 @@ verdicts=$(jq -n -c \
           colliding_task_status: $hit.other_status,
           overlapping_path: $hit.ov_path,
           collision_scope: $hit.scope_kind,
+          corroborated_by: $corroborated_by,
           reason: ("file_scope overlap with non-terminal task #" + ($hit.other_num | tostring) +
                    " (" + (if $hit.scope_kind == "in_batch" then "in this batch" else "not in this batch" end) +
                    ") at " + $hit.ov_path + "; no dependencies[] edge between them")

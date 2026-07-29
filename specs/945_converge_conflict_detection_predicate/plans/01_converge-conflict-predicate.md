@@ -442,32 +442,52 @@ consumer re-derives it.
 
 ---
 
-### Phase 4: Wire the session input into `orchestrate-batch-admit.sh` and bump to v4 [NOT STARTED]
+### Phase 4: Wire the session input into `orchestrate-batch-admit.sh` and bump to v4 [COMPLETED]
 
 **Goal**: Batch admission consults inputs 2 and 3, emitting v4 verdicts, with every existing
 defer path unchanged.
 
 **Tasks**:
-- [ ] Add `--session-id <id>` / `--session-id=<id>` to the argument scan, alongside the existing
+- [x] Add `--session-id <id>` / `--session-id=<id>` to the argument scan, alongside the existing
       `--invocation-count` handling. Non-empty string; no format validation beyond non-empty.
-- [ ] When `--session-id` is supplied, invoke `task-lock.sh session-list` once and pass the result
+      *(completed)*
+- [x] When `--session-id` is supplied, invoke `task-lock.sh session-list` once and pass the result
       into the jq program via `--slurpfile`/`--argjson`. When omitted, pass an empty session array
       AND print one loud stderr line naming the skip and its consequence (D6 degradation).
-- [ ] Splice `edge_connected_nums` and `session_contention` from the lib into the program.
-- [ ] Insert the session pass AFTER the state.json collision scan, reached only when that scan
+      *(completed: deviation from the literal task text — used `jq -s -c` on the piped NDJSON plus
+      `--argjson` rather than `--slurpfile`, since `session-list`'s output is a subprocess stdout
+      stream, not a file path; `--slurpfile` requires a file argument and has no stdin form)*
+- [x] Splice `edge_connected_nums` and `session_contention` from the lib into the program.
+      *(completed; both were already part of `$FILE_SCOPE_OVERLAP_JQ_DEFS` as of Phase 3, so no
+      separate splice action was needed beyond the existing single splice point)*
+- [x] Insert the session pass AFTER the state.json collision scan, reached only when that scan
       found no hit. Emit `defer_reason: "session_active"` with fields `session_id`,
       `colliding_task_number`, `overlapping_path`, `session_liveness_reason`, and a templated
-      `reason` string that carries no fact not already present as a structured field.
-- [ ] Add `corroborated_by` (array of strings) to the existing `file_scope_collision` verdict:
+      `reason` string that carries no fact not already present as a structured field. *(completed;
+      `colliding_task_number` is `session_contention`'s `covered_task_number`, renamed at the
+      verdict-construction boundary to match `file_scope_collision`'s existing field name)*
+- [x] Add `corroborated_by` (array of strings) to the existing `file_scope_collision` verdict:
       always contains `"non_terminal_status"`; additionally contains `"session_registry"` when a
       live non-excluded session also covers the colliding task number. Every other field of that
-      verdict is unchanged.
-- [ ] Change every `"orchestrate-batch-admit-v3"` literal to `"orchestrate-batch-admit-v4"` —
-      including the degenerate-candidate and admit branches.
-- [ ] Update the script's header doc block: the v4 field table, the new defer flavor, the
+      verdict is unchanged. *(completed: deviation — "non-excluded" is read here as "not the
+      caller's own session" plus "live", WITHOUT re-applying D4's edge-connectedness exclusion.
+      Rationale: corroboration is evidentiary ("does independent live evidence exist that task
+      #N is being worked on"), not a second contention-detection decision, so D4's
+      contention-exclusion rules do not gate it — a session fully edge-connected to the CANDIDATE
+      can still validly corroborate that the COLLIDING task itself has live work in flight)*
+- [x] Change every `"orchestrate-batch-admit-v3"` literal to `"orchestrate-batch-admit-v4"` —
+      including the degenerate-candidate and admit branches. *(completed; 10 occurrences)*
+- [x] Update the script's header doc block: the v4 field table, the new defer flavor, the
       precedence statement (self_modifying > file_scope_collision > session_active) with D3's
       non-regression invariant stated explicitly, D5's recorded rejection of a held-lock scan with
-      the "no repo-wide filesystem walk" reason, and D6's degradation contract.
+      the "no repo-wide filesystem walk" reason, and D6's degradation contract. *(completed; the
+      script ALREADY carried its own unrelated pre-existing `(D3)`/`(D4)`/`(D5)` labels from an
+      earlier task's decision-lettering — `(D3)` = `--invocation-count` co-dispatch scoping,
+      `(D4)` = self-mod-runs-first precedence, `(D5)` = critical-path-file degradation. This
+      plan's OWN D3 (non-regression invariant) and D5 (held-lock-scan rejection) decisions are
+      therefore described in prose without a bare `(D3)`/`(D5)` tag to avoid a silent label
+      collision with the file's pre-existing, differently-scoped `(D3)`/`(D5)`; only `(D6)` for
+      `--session-id` was safe to tag directly since the file carried no pre-existing D6)*
 
 **Timing**: 2 hours
 
@@ -479,7 +499,9 @@ defer path unchanged.
 inside this script's jq program branches and its header. Confirm with
 `grep -rn "orchestrate-batch-admit-v3" agent-system/extensions/core/` before editing; any hit in
 another script is a consumer pinning the literal and changes Phase 6's scope from
-verification to repair.
+verification to repair. *(Confirmed post-edit: the only remaining hits are in
+`docs/architecture/batch-admit-schema.md`, Phase 9's own target — no other script pins the v3
+literal, so Phase 6 stays verification-only as hoped.)*
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/orchestrate-batch-admit.sh` - flag, session pass, v4, header
