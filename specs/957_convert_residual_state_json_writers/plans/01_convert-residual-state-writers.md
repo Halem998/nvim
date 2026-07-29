@@ -299,18 +299,18 @@ Phases within the same wave can execute in parallel. Wave 2's phases own disjoin
 
 ---
 
-### Phase 8: skill-todo/SKILL.md [NOT STARTED]
+### Phase 8: skill-todo/SKILL.md [COMPLETED]
 
 **Goal**: Convert the 12 in-scope sites in the largest and most structurally entangled file, leaving its 13 archive/vault sites intact.
 
 **Tasks**:
-- [ ] Build the in-scope vs. out-of-scope inventory by line number before any edit. Pay explicit attention to the vault (task-number-reset) operation, which interleaves `specs/state.json`, `specs/archive/state.json`, and `specs/vault/{NN-vault}/state.json` writes inside a single renumbering-then-move sequence.
-- [ ] Convert only the in-scope sites, one at a time by exact line match. Never use a file-wide substitution in this file.
-- [ ] Within the vault sequence specifically, verify after each conversion that the surrounding write ordering (renumber -> archive move -> vault-root creation) is unchanged.
-- [ ] Confirm `$session_id` scope per site; generate once per path where absent.
-- [ ] Add a one-line mechanism-naming comment at each out-of-scope archive/vault site.
-- [ ] Apply the fold/no-fold decision per site; the archive flow is the highest-risk fold decision in the task, since a regen must not land before the archive move completes.
-- [ ] `bash -n` every extracted bash block in the file.
+- [x] Build the in-scope vs. out-of-scope inventory by line number before any edit. Pay explicit attention to the vault (task-number-reset) operation, which interleaves `specs/state.json`, `specs/archive/state.json`, and `specs/vault/{NN-vault}/state.json` writes inside a single renumbering-then-move sequence. *(completed: actual inventory — in-scope: 5 sites, all inside the vault RenumberTasks (9.3, 2 sites) and ResetState (9.4, 3 sites) sub-steps; out-of-scope archive: 1 literal write (the CreateVault 9.2 archive-reinit). Deviation: Stage 10 "ArchiveTasks" steps 1-2, which prose-describes updating specs/archive/state.json and specs/state.json for ordinary (non-vault) archival, contain NO literal jq/bash code blocks at all — the archival logic there is pure prose/pseudocode with no grep-matchable write site, unlike commands/todo.md's equivalent step which IS literal code. This is the primary reason the hypothesis (12/13) overcounted the actual (5/1) — most of the file's described state.json touches are prose-only, not code)*
+- [x] Convert only the in-scope sites, one at a time by exact line match. Never use a file-wide substitution in this file. *(completed: 5/5 converted individually)*
+- [x] Within the vault sequence specifically, verify after each conversion that the surrounding write ordering (renumber -> archive move -> vault-root creation) is unchanged. *(completed: ordering verified unchanged — archive move (9.2) still precedes renumber (9.3) still precedes reset (9.4) exactly as before; only the write mechanism inside each step changed)*
+- [x] Confirm `$session_id` scope per site; generate once per path where absent. *(completed: `$todo_session_id` was already self-generated once near the top of the file (line 45) for `reconcile-task-status.sh` — reused verbatim for all 5 `state-write.sh` calls rather than generating a second, competing session_id)*
+- [x] Add a one-line mechanism-naming comment at each out-of-scope archive/vault site. *(completed: the one literal archive-reinit site annotated)*
+- [x] Apply the fold/no-fold decision per site; the archive flow is the highest-risk fold decision in the task, since a regen must not land before the archive move completes. *(completed: no-fold on all 5 — this file never calls `generate-todo.sh` at all (TODO.md is updated via direct `sed`/Edit-tool operations throughout), so there is no regen call to fold into anywhere in this file)*
+- [x] `bash -n` every extracted bash block in the file. *(completed: fully clean, zero failures)*
 
 **Timing**: 1.5 hours
 
@@ -318,7 +318,7 @@ Phases within the same wave can execute in parallel. Wave 2's phases own disjoin
 
 **Verification Tier**: interface
 
-**Scope Hypothesis**: 12 in-scope sites and 13 out-of-scope archive/vault sites. Confirm both counts before editing; the out-of-scope count must be identical before and after the phase.
+**Scope Hypothesis**: 12 in-scope sites and 13 out-of-scope archive/vault sites. Confirm both counts before editing; the out-of-scope count must be identical before and after the phase. **Actual**: 5 in-scope, 1 out-of-scope (see deviation note above).
 
 **Files to modify**:
 - `agent-system/extensions/core/skills/skill-todo/SKILL.md`

@@ -1,0 +1,14 @@
+{
+  "phase": 8,
+  "phase_name": "skill-todo/SKILL.md",
+  "started_at": "2026-07-29T02:00:00Z",
+  "last_updated": "2026-07-29T02:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Convert skill-todo's 5 in-scope vault sites, leave 1 archive site untouched", "status": "done",
+     "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Actual site counts (5 in-scope, 1 out-of-scope) differ substantially from plan hypothesis (12/13) -- most of Stage 10 ArchiveTasks is prose-only with no literal write code. Reused existing $todo_session_id rather than generating a new one."
+}

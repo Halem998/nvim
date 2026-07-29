@@ -671,7 +671,8 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
            }' > "${vault_path}/meta.json"
          ```
 
-         Reinitialize empty specs/archive/ with fresh state.json:
+         Reinitialize empty specs/archive/ with fresh state.json. Deliberately left hand-rolled:
+         `state-write.sh` targets `specs/state.json` only, never `specs/archive/state.json`:
          ```bash
          mkdir -p "specs/archive"
 
@@ -698,11 +699,9 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
            old_padded=$(printf "%04d" "$old_num")
            new_padded=$(printf "%03d" "$new_num")
 
-           # Use jq to update the task entry
-           jq --argjson old "$old_num" \
-              --argjson new "$new_num" \
-              --arg old_pad "$old_padded" \
-              --arg new_pad "$new_padded" '
+           # Use state-write.sh to update the task entry
+           bash .claude/scripts/state-write.sh \
+             '
              .active_projects |= map(
                if .project_number == $old then
                  .project_number = $new |
@@ -712,15 +711,20 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
                  ) else . end)
                else . end
              )
-           ' specs/state.json > specs/state.json.tmp
-           mv specs/state.json.tmp specs/state.json
+           ' \
+             --session-id "$todo_session_id" \
+             --argjson old "$old_num" \
+             --argjson new "$new_num" \
+             --arg old_pad "$old_padded" \
+             --arg new_pad "$new_padded"
          done
          ```
 
          Update dependencies arrays (task numbers > 1000):
          ```bash
          # Build mapping for all renumbered tasks
-         jq --argjson mappings "$renumber_mappings" '
+         bash .claude/scripts/state-write.sh \
+           '
            # Create lookup from mappings
            ($mappings | map({(.old | tostring): .new}) | add) as $lookup |
            .active_projects |= map(
@@ -731,8 +735,9 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
                else $dep end
              ) else . end)
            )
-         ' specs/state.json > specs/state.json.tmp
-         mv specs/state.json.tmp specs/state.json
+         ' \
+           --session-id "$todo_session_id" \
+           --argjson mappings "$renumber_mappings"
          ```
 
          Rename task directories:
@@ -793,15 +798,17 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
 
          Update state.json with new next_project_number:
          ```bash
-         jq --argjson new_next "$new_next_num" \
-            '.next_project_number = $new_next' specs/state.json > specs/state.json.tmp
-         mv specs/state.json.tmp specs/state.json
+         bash .claude/scripts/state-write.sh \
+            '.next_project_number = $new_next' \
+            --session-id "$todo_session_id" \
+            --argjson new_next "$new_next_num"
          ```
 
          Increment vault_count:
          ```bash
-         jq '.vault_count = (.vault_count // 0) + 1' specs/state.json > specs/state.json.tmp
-         mv specs/state.json.tmp specs/state.json
+         bash .claude/scripts/state-write.sh \
+           '.vault_count = (.vault_count // 0) + 1' \
+           --session-id "$todo_session_id"
          ```
 
          Add entry to vault_history:
@@ -810,12 +817,8 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          archived_count=$(jq -r '.completed_projects | length' "${vault_path}/state.json" 2>/dev/null || echo "0")
          task_range="1-$((next_num - renumber_count - 1))"
 
-         jq --arg vault_dir "$vault_path/" \
-            --argjson vault_num "$new_vault_num" \
-            --arg created "$current_timestamp" \
-            --arg range "$task_range" \
-            --argjson archived "$archived_count" \
-            --argjson final "$next_num" '
+         bash .claude/scripts/state-write.sh \
+           '
            .vault_history = (.vault_history // []) + [{
              vault_number: $vault_num,
              vault_dir: $vault_dir,
@@ -824,8 +827,14 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
              archived_count: $archived,
              final_task_number: $final
            }]
-         ' specs/state.json > specs/state.json.tmp
-         mv specs/state.json.tmp specs/state.json
+         ' \
+           --session-id "$todo_session_id" \
+           --arg vault_dir "$vault_path/" \
+           --argjson vault_num "$new_vault_num" \
+           --arg created "$current_timestamp" \
+           --arg range "$task_range" \
+           --argjson archived "$archived_count" \
+           --argjson final "$next_num"
          ```
 
          Add vault transition comment to TODO.md:
