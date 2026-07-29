@@ -1,19 +1,14 @@
 {
-  "$schema": "orchestrator-handoff-v1",
-  "phase": "research",
-  "status": "researched",
-  "summary": "Confirmed root cause of both defects. CLAUDE.md double-body: generate_claudemd() (merge.lua, called from init.lua load/unload -- the canonical, intentionally markerless computed-artifact regime per anchor commit bbed96afe) is correct; the stray duplicate is injected by sync.lua's reinject_loaded_extensions(), which still calls inject_section() for the claudemd merge key on every 'Load Core'/'Sync all' run. Fix: remove that per-extension inject_section() call and replace with one post-loop call to merge_mod.generate_claudemd(project_dir, config), mirroring the existing generate_opencode_json() precedent in the same function -- fixes OPENCODE.md's identical latent risk for free. Restoring section markers (the task's alternate option) is NOT recommended: three of four consuming call sites already assume no-markers. settings.json duplicate Stop hook: deep_merge's array dedup in merge.lua is whole-item vim.deep_equal, not matcher-aware, so merge-sources/settings-hooks.json's separately-declared claude-stop-notify.sh matcher block never matches the differently-shaped bundled block already in target settings.json (confirmed by the core manifest's own _comment, which predicts exactly this). Fix: one-time cleanup of deployed settings.json plus a matcher-aware merge for {matcher,hooks}-shaped arrays in deep_merge/merge_settings.",
-  "artifacts": [
-    {"type": "report", "path": "specs/975_fix_generated_claudemd_double_body/reports/01_claudemd-double-body-fix.md"}
-  ],
-  "blockers": [],
-  "next_action_hint": "plan",
-  "files_modified": [],
-  "decisions_made": [
-    "Do not restore <!-- SECTION: id --> markers to generate_claudemd() -- the no-markers computed-artifact model is a deliberate, already-adopted design (anchor commit bbed96afe), confirmed consistent across init.lua and verify.lua",
-    "Fix confined to sync.lua's reinject_loaded_extensions(): drop the per-extension inject_section() call for the config-markdown merge key, add one unconditional merge_mod.generate_claudemd(project_dir, config) call after the loop",
-    "settings.json dedup fix targets deep_merge/merge_settings in merge.lua with matcher-aware merging for {matcher,hooks}-shaped arrays, gated narrowly so non-hook arrays (permissions.allow, mcpServers) are unaffected",
-    "CLAUDE.md's current live state (897 lines, single copy) is a self-healing artifact of Engine A's full-overwrite regeneration, not evidence the bug is already fixed -- the next 'Load Core'/'Sync all' run would reintroduce it without the code fix"
-  ],
-  "dead_ends": []
+  "status": "planned",
+  "task_number": 975,
+  "operation": "plan",
+  "session_id": "sess_1785362998_047bfe",
+  "agent_type": "planner-agent",
+  "plan_path": "specs/975_fix_generated_claudemd_double_body/plans/01_claudemd-hook-dedup-fix.md",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "next_phase": 1,
+  "dependency_waves": [[1, 3], [2, 4], [5], [6]],
+  "next_steps": "Run /implement 975 to execute the plan",
+  "notes": "Two independent fixes: (a) sync.lua reinject_loaded_extensions() stops calling inject_section() for the config-markdown merge key and calls generate_claudemd() once post-loop; (b) merge.lua deep_merge gains a narrowly-gated matcher-aware, self-normalizing path for {matcher,hooks}-shaped arrays plus a hook_merged tracked type reversed by unmerge_settings. .claude/ is gitignored and untracked; the settings duplicate is healed by redeploy, never by hand-editing .claude/**."
 }

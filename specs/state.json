@@ -3066,7 +3066,7 @@
       "project_number": 975,
       "project_name": "fix_generated_claudemd_double_body",
       "title": "Fix generated CLAUDE.md double-body and duplicate Stop-hook registration",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "extensions",
       "dependencies": [
@@ -3078,12 +3078,17 @@
       ],
       "description": "Fix the generated .claude/CLAUDE.md containing its entire body TWICE (~891 duplicated lines, ~13k wasted tokens in every session prompt), plus the doubled claude-stop-notify.sh Stop-hook registration in .claude/settings.json.\n\nWHAT IS WRONG (verified live, from the agent-system review specs/reviews/review-2026-07-29-agent-system.md): two mechanisms both run on every Load/Reload and disagree about who owns the file. (1) generate_claudemd() in lua/neotex/plugins/ai/shared/extensions/merge.lua (~line 549) rewrites the whole file as header..fragments and emits NO section markers. (2) reinject_loaded_extensions() in lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua (~line 220) then calls merge_mod.inject_section() for every loaded extension 'as defense-in-depth'. inject_section decides idempotency by searching for '<!-- SECTION: core -->' (merge.lua ~line 124) — which step 1 never writes — so it falls through and APPENDS a second full copy. init.lua (~line 83) carries a comment claiming section injection is skipped here, so the two halves of the codebase disagree about ownership. The current deployed .claude/CLAUDE.md is 1801 lines with lines 7-897 and 899-1801 byte-identical modulo markers. Separately, .claude/settings.json registers claude-stop-notify.sh TWICE on Stop — the deep_merge append-without-replace hazard the core manifest's own _comment warns about, now actually occurred.\n\nWORK:\n  1. Pick ONE ownership regime and make both code paths agree: either generate_claudemd() emits '<!-- SECTION: id -->' markers for every fragment it writes (so inject_section becomes idempotent), or reinject_loaded_extensions() stops calling inject_section for the claudemd merge key. Note strip_extension_sections()/preserve_sections()/restore_sections() in sync.lua are all built around the marker regime — prefer restoring markers unless research shows otherwise.\n  2. De-duplicate the current deployed CLAUDE.md by regenerating after the fix.\n  3. Fix the duplicate Stop-hook registration and make the settings merge dedup catch it (deep_equal dedup exists but did not prevent this — determine why).\n\nVERIFICATION BAR:\n  - After a full unload-all/load-all cycle, .claude/CLAUDE.md contains exactly one copy of the core fragment and one copy per loaded extension fragment; grep -c for a sentinel core line returns 1.\n  - Running the load cycle twice in a row produces a byte-identical CLAUDE.md (idempotency).\n  - .claude/settings.json Stop hooks list claude-stop-notify.sh exactly once after redeploy.\n\nSOURCE-STORE RULE (binding): fix in lua/neotex/plugins/ai/** — the deploy machinery lives in the nvim Lua tree, not in .claude/**. DELIVERABLE RULE: deliverables outside specs/** must not cite task numbers; use durable anchors (function names, file paths).",
       "created": "2026-07-29T19:29:18Z",
-      "last_updated": "2026-07-29T22:18:34Z",
+      "last_updated": "2026-07-29T22:24:22Z",
       "session_id": "sess_1785362998_047bfe",
       "artifacts": [
         {
           "path": "specs/975_fix_generated_claudemd_double_body/reports/01_claudemd-double-body-fix.md",
           "type": "report",
+          "summary": ""
+        },
+        {
+          "path": "specs/975_fix_generated_claudemd_double_body/plans/01_claudemd-hook-dedup-fix.md",
+          "type": "plan",
           "summary": ""
         }
       ]
