@@ -1,7 +1,7 @@
 # Implementation Plan: Task #965
 
 - **Task**: 965 - Make check_undeclared_scripts skip untracked build artifacts
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/965_skip_untracked_artifacts_in_undeclared_scripts_check/reports/01_git-ls-files-enumeration.md
@@ -110,32 +110,34 @@ phases edit or verify the same single file region.
 
 ---
 
-### Phase 1: Replace enumeration and re-derive prefix-strip [NOT STARTED]
+### Phase 1: Replace enumeration and re-derive prefix-strip [COMPLETED]
 
 **Goal**: `check_undeclared_scripts()` enumerates via `git ls-files` with a correctly re-derived
 REPO_ROOT-relative prefix-strip and existence guard, and every non-enumeration behavior is
 byte-for-byte preserved.
 
 **Tasks**:
-- [ ] Open `agent-system/extensions/core/scripts/check-extension-docs.sh` and locate the
-      `check_undeclared_scripts()` function body (Rule Q).
-- [ ] Add a new local after the existing `ext_path_norm` line:
+- [x] Open `agent-system/extensions/core/scripts/check-extension-docs.sh` and locate the
+      `check_undeclared_scripts()` function body (Rule Q). *(completed)*
+- [x] Add a new local after the existing `ext_path_norm` line:
       `local ext_rel="${ext_path_norm#"$REPO_ROOT"/}"`, with a comment explaining that
       `git ls-files` (run via `-C "$REPO_ROOT"`) always returns REPO_ROOT-relative paths
       regardless of the pathspec's own form — a different shape than `find` returned — so the
       prefix-strip must be re-derived against `ext_path_norm`'s REPO_ROOT-relative form.
-- [ ] Change the existence guard from `[[ -f "$script_file" ]]` to
+      *(completed)*
+- [x] Change the existence guard from `[[ -f "$script_file" ]]` to
       `[[ -f "$REPO_ROOT/$script_file" ]]` (matches `check_flat_category_orphans`'s
-      `full="$REPO_ROOT/$rel"` idiom).
-- [ ] Change the prefix-strip from `rel_path="${script_file#"$ext_path_norm"/scripts/}"` to
-      `rel_path="${script_file#"$ext_rel"/scripts/}"`.
-- [ ] Change the process substitution from `< <(find "$ext_path_norm/scripts" -type f | sort)` to
-      `< <(git -C "$REPO_ROOT" ls-files "$ext_path_norm/scripts" | sort)`.
-- [ ] Confirm untouched: the `[[ -d "$ext_path/scripts" ]] || return 0` early return; the
+      `full="$REPO_ROOT/$rel"` idiom). *(completed)*
+- [x] Change the prefix-strip from `rel_path="${script_file#"$ext_path_norm"/scripts/}"` to
+      `rel_path="${script_file#"$ext_rel"/scripts/}"`. *(completed)*
+- [x] Change the process substitution from `< <(find "$ext_path_norm/scripts" -type f | sort)` to
+      `< <(git -C "$REPO_ROOT" ls-files "$ext_path_norm/scripts" | sort)`. *(completed)*
+- [x] Confirm untouched: the `[[ -d "$ext_path/scripts" ]] || return 0` early return; the
       `ext_path_norm="${ext_path%/}"` line and its trailing-slash comment; the `deprecated/*`
       case (and the absence of any `tests/` case); the `jq -e --arg s "$rel_path"` full-relative-path
       match; the `fail "script file on disk NOT in provides.scripts: scripts/$rel_path"` message.
-- [ ] Run `bash -n agent-system/extensions/core/scripts/check-extension-docs.sh`.
+      *(completed: verified via git diff, all listed elements unchanged)*
+- [x] Run `bash -n agent-system/extensions/core/scripts/check-extension-docs.sh`. *(completed: exit 0)*
 
 **Timing**: 25 minutes
 

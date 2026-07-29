@@ -526,14 +526,22 @@ check_undeclared_scripts() {
 
   # Trailing-slash normalization: the caller's per-extension loop is `for ext_path in
   # "$EXT_DIR"/*/`, so ext_path carries a trailing slash. Left unstripped, the prefix-strip
-  # below would build a double-slash prefix ("ext//scripts/") that never matches what `find`
-  # returns, degrading this check to reporting every script in every extension as undeclared.
+  # below would build a double-slash prefix ("ext//scripts/") that never matches what
+  # `git ls-files` returns, degrading this check to reporting every script in every extension
+  # as undeclared.
   local ext_path_norm="${ext_path%/}"
+
+  # `git ls-files` (run via `-C "$REPO_ROOT"`) always returns REPO_ROOT-relative paths,
+  # regardless of whether the pathspec passed to it is absolute or relative -- a different
+  # output shape than `find` returned (absolute, matching the pathspec's own form). The
+  # prefix-strip below must therefore be re-derived against ext_path_norm's REPO_ROOT-relative
+  # form, not reused unchanged from the absolute-path form.
+  local ext_rel="${ext_path_norm#"$REPO_ROOT"/}"
 
   local script_file rel_path
   while IFS= read -r script_file; do
-    [[ -f "$script_file" ]] || continue
-    rel_path="${script_file#"$ext_path_norm"/scripts/}"
+    [[ -f "$REPO_ROOT/$script_file" ]] || continue
+    rel_path="${script_file#"$ext_rel"/scripts/}"
 
     case "$rel_path" in
       deprecated/*) continue ;;
@@ -543,7 +551,7 @@ check_undeclared_scripts() {
         "$manifest" > /dev/null 2>&1; then
       fail "script file on disk NOT in provides.scripts: scripts/$rel_path"
     fi
-  done < <(find "$ext_path_norm/scripts" -type f | sort)
+  done < <(git -C "$REPO_ROOT" ls-files "$ext_path_norm/scripts" | sort)
 }
 
 # Rules B + C: Routing target consistency and deployment

@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Replace enumeration and re-derive prefix-strip",
+  "started_at": "2026-07-29T00:00:00Z",
+  "last_updated": "2026-07-29T00:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Replace find-based enumeration with git ls-files, re-derive ext_rel prefix, existence guard, and prefix-strip in check_undeclared_scripts()",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

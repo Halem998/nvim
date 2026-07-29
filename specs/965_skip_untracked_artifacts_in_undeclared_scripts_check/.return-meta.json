@@ -1,19 +1,9 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "task_number": 965,
-  "session_id": "sess_1785337600_a52f75_965",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/965_skip_untracked_artifacts_in_undeclared_scripts_check/plans/01_git-ls-files-enumeration.md",
-      "summary": "4-phase plan replacing find-based enumeration in check_undeclared_scripts() with git ls-files, re-deriving the REPO_ROOT-relative prefix-strip, updating the stale Rule Q header comment, proving positive detection via a tracked-but-undeclared fixture, and propagating via the deploy path."
-    }
-  ],
-  "phase_count": 4,
-  "estimated_hours": 1.5,
-  "dependency_waves": [[1], [2], [3], [4]],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 965 to execute the plan"
+  "status": "in_progress",
+  "metadata": {
+    "session_id": "sess_1785337600_a52f75_965",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "skill-implementer", "general-implementation-agent"]
+  }
 }
