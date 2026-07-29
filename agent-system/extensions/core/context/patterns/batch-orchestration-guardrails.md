@@ -298,10 +298,13 @@ decided, this one time, should run anyway) — never as a general-purpose weaken
 
 ### Scope Limitation and Residual Risk
 
-This gate is `/orchestrate`-only. Plain multi-task `/implement N,M`, `/research N,M`, and `/plan
-N,M` never call `orchestrate-batch-admit.sh` at all, so a self-modifying task run through one of
-those commands is invisible to this gate. This is a known, accepted scope limitation, not a
-silently-absorbed gap.
+**Corrected (this passage was stale)**: plain multi-task `/implement N,M`, `/research N,M`, and
+`/plan N,M` are NOT blind to `orchestrate-batch-admit.sh` — each already runs a Batch Admission
+Pre-Check (Step 2.5, "Gap C") that calls it over the whole validated candidate set with
+`--invocation-count "${#validated_tasks[@]}"`, so a self-modifying candidate co-dispatched
+alongside another candidate in the same plain multi-task batch IS deferred by this gate, exactly
+as an `/orchestrate` co-dispatch is. What remains genuinely `/orchestrate`-only is the
+**same-cycle narrowing** described above, not gate visibility itself — see the next paragraph.
 
 **Decision, restated after the same-cycle narrowing: restate the acceptance, do not extend
 protection.** The narrowing this document records above does NOT transfer to plain multi-task
@@ -317,7 +320,28 @@ introducing a wave/cycle concept those commands do not have, which is a material
 than narrowing an existing trigger. A future reader must not assume the narrowing implicitly
 covered plain multi-task commands merely because it narrowed the analogous check inside
 `/orchestrate`; a follow-up task would be required to extend equivalent protection to those
-commands, should that ever be judged necessary.
+commands, should that ever be judged necessary. **This conclusion is specific to the
+self-modification-hazard trigger and is unaffected by the file_scope-collision two-pass structure
+described immediately below** — the two are orthogonal admission dimensions (see "The Three
+Existing Admission Layers" above), and closing one's plain-multi-task gap has no bearing on the
+other's.
+
+**The `file_scope_collision` `in_batch` case, by contrast, NOW has a bounded plain-multi-task
+analogue.** `commands/research.md`'s, `commands/plan.md`'s, and `commands/implement.md`'s Step
+2.5 splits `defer_reason == "file_scope_collision"` by `collision_scope`: an `in_batch` hit is
+re-sequenced into a new Step 3.5 (Second Pass) that re-runs `orchestrate-batch-admit.sh` over
+exactly the deferred singleton/subset, rather than being dropped straight to `skipped_tasks` the
+way it always was before. This is bounded at EXACTLY ONE extra pass — never a wave/cycle loop,
+never more than the one bonus attempt `/orchestrate`'s multi-cycle machinery can make across many
+cycles — and a task still deferred after that one extra pass lands in `skipped_tasks` with the
+`"deferred after second pass"` reason, reporting the invocation's overall status as `partial`
+rather than a hard failure. See `context/patterns/task-lock.md`'s "Four-Tier Conflict Response"
+section (Tier 1) for the full mechanism and `context/patterns/multi-task-operations.md`'s
+two-pass specification for the exact structural bound. Every other `file_scope_collision`
+flavor (`cross_batch`) and every other defer flavor (`self_modifying`, `session_active`) keeps
+the pre-existing single-pass exclude-to-`skipped_tasks` behavior verbatim — only the `in_batch`
+file-scope case gained resequencing, and only within the current invocation's own candidate set,
+never expanded to pull in an out-of-batch predecessor.
 
 The batch-commit staging gap previously noted here — that the retired end-of-batch commit did not
 stage an implementation agent's self-reported `modified_files` per task — is now closed: the
@@ -455,6 +479,31 @@ was admitted is a larger response than the conflict warrants, the opposite direc
 defer-not-fail is for.
 
 The report therefore prints the dependency-ordered solo re-run sequence; the human runs it.
+
+**Converting `commands/orchestrate.md`'s Kahn's-algorithm pseudocode into an executable script**
+is rejected (recorded alongside the file_scope_collision two-pass work above, since both were
+weighed together while adding plain multi-task resequencing). Cost of converting: the pseudocode
+block's own comments explicitly warn against treating it as literal, executable logic, and
+`commands/orchestrate.md` sits on the orchestrator-critical inclusion list (see
+`context/reference/orchestrator-critical-paths.json`) — turning the illustration into a real
+script would itself trip the self-modification hazard gate documented above for zero behavioral
+gain, since `skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 already auto-sequences the
+`in_batch` case correctly without any such script. Cost of NOT converting: wave assignment stays
+agent-executed pseudocode with no script-level test surface of its own — a future correctness bug
+in wave assignment is caught only by the SKILL.md-level behavioral tests, not by a dedicated unit
+test.
+
+**Adding `file_scope` overlap as a pre-computed `in_degree`/wave-assignment input** (rather than
+a purely reactive, dispatch-time defer) is likewise rejected. Cost of adding: it duplicates, in a
+pre-computed graph, a decision the executing gate (`orchestrate-batch-admit.sh` /
+`task-lock.sh`'s cross-task scan) already re-derives fresh at admission/acquire time every
+cycle — creating two independent sources of truth for the same fact that can drift out of sync
+with each other (the pre-computed graph could go stale between when it was built and when a
+later cycle's live state has since changed). Cost of NOT adding: overlap remains a reactive,
+dispatch-time defer rather than a pre-dispatch ordering signal, so a colliding pair is only
+discovered at the moment dispatch is attempted, not earlier during wave planning. Both costs are
+accepted; the duplication risk of the "adding" cost was judged worse than the reactive-only
+discovery timing of the "not adding" cost.
 
 ## Defer-Not-Fail: The Standing Default
 

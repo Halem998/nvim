@@ -222,6 +222,56 @@ Invalid tasks are reported as warnings but do not block valid tasks from proceed
 
 ---
 
+## 5a. Batch Admission Pre-Check and Bounded Second Pass (Tier 1)
+
+After Batch Validation (section 5) and BEFORE the per-task acquire/dispatch loop (section 6),
+each of `commands/research.md`, `commands/plan.md`, and `commands/implement.md` runs a Batch
+Admission Pre-Check (Step 2.5) against `orchestrate-batch-admit.sh`'s bounded conflict-detection
+predicate — cross-batch `file_scope` collisions, the self-modification hazard, and live
+session-registry contention (see `context/patterns/batch-orchestration-guardrails.md`'s "The
+Three Existing Admission Layers"). This is DETECTION only: a deferred task is moved OUT of
+`validated_tasks`, never hard-failed.
+
+**The `in_batch` `file_scope_collision` case gets a bounded second pass — Tier 1 (auto-sequence)
+of the four-tier conflict-response ladder** (see `context/patterns/task-lock.md`'s "Four-Tier
+Conflict Response" section for the full ladder):
+
+1. **Pass 1 (parallel)**: Step 2.5 splits every `defer` verdict by `defer_reason` and, for
+   `file_scope_collision`, by `collision_scope`. `collision_scope == "in_batch"` (the colliding
+   task is itself one of THIS invocation's candidates and will finish this run) moves the task
+   into a new `deferred_second_pass` array — NOT `skipped_tasks`. Every other defer flavor
+   (`cross_batch` `file_scope_collision`, `self_modifying`, `session_active`) keeps the
+   pre-existing single-pass exclude-to-`skipped_tasks` behavior verbatim; only `in_batch` gets
+   the second chance. The remaining `validated_tasks` dispatch in PARALLEL exactly as section 6
+   describes, unaffected.
+2. **Pass 2 (sequential, bounded to exactly ONE extra pass)**: a new Step 3.5, run after Step 3's
+   parallel dispatch and unconditional lock releases complete, re-runs
+   `orchestrate-batch-admit.sh` over EXACTLY the `deferred_second_pass` set (never expanded to
+   pull in any out-of-batch predecessor — bounded scan, never a sweep of all task directories).
+   Admitted tasks dispatch SEQUENTIALLY (not parallel) through the identical per-task
+   `acquire-retry` → skill → `release` bracket Step 3 uses. A task still deferred after this one
+   extra pass moves to `skipped_tasks` with the distinguishing reason `"deferred after second
+   pass [$defer_reason]"` — there is never a third pass.
+3. **Convergence log, not an exclusion set**: `second_pass_ledger` accumulates one entry per
+   pass-1 in-batch defer and per pass-2 outcome
+   (`{"task":N,"defer_reason":...,"collision_scope":...,"pass":1|2,"detail":...}`). It is
+   APPEND-ONLY and read only when composing the consolidated summary (section 9) — a task's
+   presence in the ledger never excludes it from the pass-2 admission input.
+4. **Non-convergence is `partial`, never a failure**: if pass 2 leaves at least one task still
+   deferred, the consolidated summary (section 9) reports the invocation's overall status as
+   `partial` and names the mutually-colliding task set, suggesting a solo re-run once the field
+   clears — mirroring `skill-orchestrate`'s own `consecutive_no_dispatch_cycles`-break shape. A
+   conflict must never error the invocation (section 10's Defer-Not-Fail contract).
+
+This is intentionally narrower than `/orchestrate`'s own multi-cycle Tier-1 resequencing
+(`skill-orchestrate/SKILL.md` Stage MT-3 step 4.5, which can retry the identical verdict across
+MANY cycles as tasks progress toward completion): plain multi-task commands get exactly one bonus
+pass, not an open-ended cycling loop, because they have no wave/cycle concept to cycle within.
+See `context/patterns/batch-orchestration-guardrails.md`'s "Scope Limitation and Residual Risk"
+subsection for the full comparison against `/orchestrate`'s narrowing.
+
+---
+
 ## 6. Parallel Skill Dispatch
 
 ### Architecture: Orchestrator-Loop Skill Invocation

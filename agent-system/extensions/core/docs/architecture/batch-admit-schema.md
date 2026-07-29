@@ -182,6 +182,22 @@ precedent for its own sake.
   same-run deferral — the candidate is deferred to the next wave/cycle, same as the
   pre-existing invocation-scoped check already did. No special handling is required beyond what
   callers already implement for a same-batch collision.
+
+  **Second consumer (recorded, not a schema change)**: `collision_scope == "in_batch"` now has a
+  SECOND consumer beyond `skill-orchestrate/SKILL.md` Stage MT-3 step 4.5's multi-cycle
+  re-sequencing loop — `commands/research.md`'s, `commands/plan.md`'s, and
+  `commands/implement.md`'s Step 2.5/Step 3.5 plain-multi-task two-pass structure (see
+  `context/patterns/task-lock.md`'s "Four-Tier Conflict Response" section, Tier 1, and
+  `context/patterns/multi-task-operations.md`'s "5a. Batch Admission Pre-Check and Bounded Second
+  Pass" section). The two consumers' caller-side handling of the SAME `in_batch` value differs
+  materially: `skill-orchestrate`'s loop can retry the identical verdict across MANY cycles as
+  tasks progress toward completion, while the plain-multi-task consumer is bounded to EXACTLY ONE
+  extra pass before falling through to a `"deferred after second pass"` skip. The verdict schema
+  itself is unchanged by this — `collision_scope`'s two values (`in_batch`/`cross_batch`) and
+  their meaning are exactly as documented above — but a future change to this field's semantics
+  (e.g. adding a third `collision_scope` value, or changing what `in_batch` means) now has a
+  WIDER blast radius than before: it must be re-verified against both consumers, not just
+  `skill-orchestrate`'s.
 - **`defer_reason == "file_scope_collision"`, `collision_scope == "cross_batch"`**: the colliding
   task is NOT one of this invocation's candidate arguments. This means the requested candidate is
   excluded from this invocation's admitted set and the colliding task is surfaced for human

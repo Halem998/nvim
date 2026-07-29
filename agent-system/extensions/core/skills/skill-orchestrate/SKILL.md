@@ -1382,7 +1382,12 @@ Initialize `cycle_count = 0`. Loop while `cycle_count < MAX_CYCLES_MT`:
    `eligible_tasks` is a distinct, later concern handled by the new convergence guard at the end
    of step 4.5, not by this circuit breaker.
 
-4.5. **Runtime wave-split check (cross-batch defense-in-depth)**: Before dispatching
+4.5. **Runtime wave-split check (cross-batch defense-in-depth)**: this step IS Tier 1
+   (auto-sequence) of the four-tier conflict-response ladder for `/orchestrate` — see
+   `.claude/context/patterns/task-lock.md`'s "Four-Tier Conflict Response" section for the full
+   ladder and how this multi-cycle re-sequencing compares to plain multi-task `/research`'s,
+   `/plan`'s, and `/implement`'s bounded one-extra-pass equivalent. No behavioral change here; this
+   is a cross-reference only. Before dispatching
    `eligible_tasks` on EVERY cycle — including a cycle where `eligible_tasks` contains only a
    single task, since a cross-batch collision exists at batch size 1 — call the admission
    script, passing `--invocation-count` set to THIS CYCLE'S actual co-dispatch count,

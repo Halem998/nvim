@@ -462,28 +462,33 @@ default everywhere else.
 
 ---
 
-### Phase 7: Documentation — the four-tier ladder, recorded decisions, and factual corrections [NOT STARTED]
+### Phase 7: Documentation — the four-tier ladder, recorded decisions, and factual corrections [COMPLETED]
 
 **Goal**: Make the ladder, the deliberate non-changes and their costs, and the corrected sourcing
 count discoverable in the durable context files.
 
 **Tasks**:
-- [ ] In `context/patterns/task-lock.md`, add a "Four-Tier Conflict Response" section documenting the
+- [x] In `context/patterns/task-lock.md`, add a "Four-Tier Conflict Response" section documenting the
       strict order (auto-sequence, bounded retry, warn, ask), which mechanism serves each tier, and
       which tiers are structurally inapplicable where (Tier 1 has no meaning for a single task run in
-      isolation; Tier 4 has no meaning under `orchestrator_mode: true`).
-- [ ] Correct the sourcing count in the same file: "sourced by five command files" becomes six, named
+      isolation; Tier 4 has no meaning under `orchestrator_mode: true`). *(completed)*
+- [x] Correct the sourcing count in the same file: "sourced by five command files" becomes six, named
       — `/research`, `/plan`, `/implement`, `/revise`, `/orchestrate`, `/task`. Add a note that this
       count is verifiable by grep and must not be trusted as frozen. Update the "Consumers (Five
       Distinct Wiring Paths)" list's item 1 to include `/task`'s `expand` and `abandon` operations.
-- [ ] Document `acquire-retry` in the same file's acquire/heartbeat/release/check contract section:
+      *(completed — heading also renamed to "Consumers (Six Distinct Wiring Paths)")*
+- [x] Document `acquire-retry` in the same file's acquire/heartbeat/release/check contract section:
       its exit codes, its budget constants, that it never retries exit 2, and that every attempt is a
-      full fresh `cmd_acquire` entry preserving all three same-session exclusions.
-- [ ] In `context/patterns/batch-orchestration-guardrails.md`, update the residual-gap notes that
+      full fresh `cmd_acquire` entry preserving all three same-session exclusions. *(completed)*
+- [x] In `context/patterns/batch-orchestration-guardrails.md`, update the residual-gap notes that
       currently state the in-batch narrowing "does NOT transfer to plain multi-task
       `/implement`, `/research`, or `/plan`" — replace with the two-pass structure now in place and
-      its exact bound. Do not weaken any of the six non-negotiables.
-- [ ] Record two deliberate non-changes and their costs in the same file:
+      its exact bound. Do not weaken any of the six non-negotiables. *(completed — also corrected an
+      independently-stale claim in the same section that plain multi-task commands "never call
+      orchestrate-batch-admit.sh at all", which Gap C's pre-existing Step 2.5 already contradicted;
+      note: the document's own "## Non-Negotiables" heading lists FIVE items, not six — the plan's
+      "six" appears to be an approximate count; all five were re-verified unweakened)*
+- [x] Record two deliberate non-changes and their costs in the same file:
       (a) `commands/orchestrate.md`'s Kahn's-algorithm pseudocode stays illustrative and is NOT
       converted to an executable script — cost of converting: the file's own comments warn against
       making the illustration literal, and it sits on the orchestrator-critical inclusion list, so
@@ -493,20 +498,26 @@ count discoverable in the durable context files.
       (b) `file_scope` overlap is NOT added as an `in_degree`/wave-assignment input — cost of adding:
       it duplicates, in a pre-computed graph, a decision the executing gate already re-derives fresh
       every cycle, creating two sources of truth that can disagree; cost of not adding: overlap
-      remains a reactive dispatch-time defer rather than a pre-dispatch ordering.
-- [ ] In `context/patterns/multi-task-operations.md`, document the two-pass structure as part of the
+      remains a reactive dispatch-time defer rather than a pre-dispatch ordering. *(completed —
+      recorded in the "Rejected Approaches" section, verified `commands/orchestrate.md` is on
+      `context/reference/orchestrator-critical-paths.json`'s list before writing the claim)*
+- [x] In `context/patterns/multi-task-operations.md`, document the two-pass structure as part of the
       multi-task specification: pass 1 parallel, pass 2 sequential over in-batch-deferred tasks only,
-      bounded at one extra pass, `partial` on non-convergence.
-- [ ] In `docs/architecture/batch-admit-schema.md`, add a consumer note that `collision_scope ==
+      bounded at one extra pass, `partial` on non-convergence. *(completed — new "5a. Batch Admission
+      Pre-Check and Bounded Second Pass (Tier 1)" section)*
+- [x] In `docs/architecture/batch-admit-schema.md`, add a consumer note that `collision_scope ==
       "in_batch"` now has a second consumer beyond `skill-orchestrate`'s cycling loop — the plain
       multi-task two-pass structure — so a future change to that field's semantics has a wider blast
-      radius. Do not change the schema itself.
-- [ ] Confirm `skills/skill-orchestrate/SKILL.md` and `skills/skill-orchestrate-hard/SKILL.md` need
+      radius. Do not change the schema itself. *(completed — schema fields/values untouched)*
+- [x] Confirm `skills/skill-orchestrate/SKILL.md` and `skills/skill-orchestrate-hard/SKILL.md` need
       no behavioral change (Stage MT-3 step 4.5 already auto-sequences `in_batch` correctly); add
       only a cross-reference to the new four-tier ladder section. If no natural cross-reference site
-      exists, record that as a reasoned exclusion rather than forcing an edit.
-- [ ] Verify no deliverable outside `specs/**` cites a task number; use durable anchors (section
-      names, script and function names, quoted strings) throughout.
+      exists, record that as a reasoned exclusion rather than forcing an edit. *(completed — natural
+      cross-reference sites existed in both files' Stage MT-3 step 4.5 / transcribed equivalent; no
+      reasoned exclusion needed)*
+- [x] Verify no deliverable outside `specs/**` cites a task number; use durable anchors (section
+      names, script and function names, quoted strings) throughout. *(completed —
+      `bash .claude/scripts/check-task-references.sh` exits 0 across all four scanned trees)*
 
 **Timing**: 1.5 hours
 

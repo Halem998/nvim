@@ -148,6 +148,47 @@ Consumers section).
 only the internal `cmd_acquire` logic gained a scan step, so every existing and future caller
 inherits the behavior with zero call-site edits.
 
+### `acquire-retry <task_number> <operation> <session_id> [command]`
+
+Tier 2 (bounded retry) of the four-tier conflict-response ladder (see "Four-Tier Conflict
+Response" below). A bounded wait-and-retry WRAPPER around `acquire`, never a modification of it —
+`cmd_acquire`'s own body is byte-for-byte unchanged by this subcommand's existence.
+
+- **Exit codes**: identical in meaning to plain `acquire` (0 = acquired, 1 = refused after the
+  retry budget, 2 = error). Callers that already branch on `acquire`'s exit code need no changes
+  beyond the subcommand name.
+- **Budget constants**: `TASK_LOCK_RETRY_BUDGET_MS` (default 15000ms) and
+  `TASK_LOCK_RETRY_POLL_MS` (default 500ms), both overridable via environment variable. Sized on
+  the `.scope-lock`/`.commit-lock` mutex-acquire budgets (seconds-scale), deliberately unrelated
+  to `TASK_LOCK_STALE_MIN` (30 minutes by default) — the two constants measure different
+  quantities (how long a fresh contending acquire should wait, versus how long a lock holder's
+  heartbeat may go quiet before its lock is considered stale) and must never be derived from one
+  another.
+- **Never retries exit 2**: an error (`.scope-lock` mutex timeout, `resolve_task_dir` failure, a
+  `write_holder` failure) surfaces immediately on the first occurrence. Retrying an error
+  condition would just burn the wait budget on a problem bounded retry cannot fix.
+- **Every attempt is a full fresh `cmd_acquire` entry**: each retry iteration calls `cmd_acquire`
+  from scratch — its own `acquire_scope_mutex` acquire-and-release, its own cross-task overlap
+  scan, its own session-registry contention pass. The mutex is therefore acquired and released
+  ONCE PER ATTEMPT, never held across the whole wait window — this is what makes it safe to add
+  retry here at all (see the next bullet) and what preserves all three same-session re-entry
+  exclusions under retry (the same-session branch returns 0 on the FIRST attempt every time, so
+  the retry loop body is never entered for a same-session re-acquire).
+- **Why the retry loop is OUTSIDE `cmd_acquire`, never inside it**: `cmd_acquire` acquires the
+  process-global `specs/.scope-lock/` mutex at entry (`acquire_scope_mutex` +
+  `trap 'release_scope_mutex' RETURN`) and holds it for its ENTIRE body, including its ABORT
+  branches. A retry loop placed inside `cmd_acquire` would hold that mutex across the whole wait
+  window, blocking every other task's acquire system-wide, and would itself be reclaimed by a
+  competing waiter after `SCOPE_MUTEX_STALE_SEC` (10 seconds). `acquire-retry` is instead an
+  outer loop that calls the full, unmodified `cmd_acquire` afresh per attempt.
+- **On the first retry only**, emit a single visible `NOTE:` line (modeled on
+  `scripts/git-commit-scoped.sh`'s `index.lock` contention `NOTE:`) stating that the lock is held
+  by another session and that a bounded retry is in progress — never one line per attempt.
+- **On budget exhaustion**, emit the LAST attempt's captured ABORT text verbatim and refuse (exit
+  1) — this is the Tier-2 → Tier-3 handoff: whichever of the three ABORT variants fired reaches
+  the caller with every field intact and unmodified, byte-identical to what a plain `acquire`
+  call would have emitted for the same fixture.
+
 ### `heartbeat <task_number> <session_id>`
 
 Refresh `heartbeat_at` in place if the lock is held by the SAME session. If the lock is
@@ -790,6 +831,35 @@ exactly as `reap` falls back to the `.lock` directory mtime, and is reported via
 `session-register`, `session-heartbeat`, or `session-release`, mirroring `reap`'s own "never
 implicit" contract for the task-number lock family.
 
+## Four-Tier Conflict Response
+
+When two sessions' work collides — the same task number, or two different tasks whose
+`file_scope` overlaps — the system responds through exactly four tiers, in strict priority order.
+Each tier is tried only after the one before it has been exhausted or found structurally
+inapplicable; the ladder never skips a tier that IS reachable for the calling context.
+
+| Tier | Name | Mechanism | Where it lives |
+|------|------|-----------|-----------------|
+| 1 | Auto-sequence | Re-sequence the colliding work into a later pass/cycle with no user interaction at all | `skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 (cross-cycle, `/orchestrate` only); `commands/research.md`/`plan.md`/`implement.md` Step 2.5 → Step 3.5 (bounded two-pass, plain multi-task commands) |
+| 2 | Bounded retry | Wait up to a short, seconds-scale budget, polling for the lock to release, before falling through | `task-lock.sh acquire-retry` (see the Contract section above) |
+| 3 | Warn | ABORT with a two-line refusal message naming the holder/collision and the remedy; the caller must re-run manually | `cmd_acquire`'s three ABORT variants (see "The ABORT Refusal Message" below) — unchanged, wrapped by Tier 2 |
+| 4 | Ask | Present the user an interactive choice (wait longer / skip / print the manual override) | The shared block in "Tier 4: The Ask Flow" below, wired into the three single-task command paths |
+
+**Which tiers are structurally inapplicable where:**
+
+- **Tier 1 has no meaning for a single-task invocation run in isolation** — auto-sequencing
+  presupposes another task's work that the SAME invocation will itself finish (an in-batch
+  collision, or a later `/orchestrate` cycle). A solo `/research 42` has no batch or cycle to
+  re-sequence into, so Tier 1 is simply never reached for it — Tier 2 is the first tier a
+  single-task invocation's collision can hit.
+- **Tier 4 has no meaning under `orchestrator_mode: true`** — no human is available to answer an
+  `AskUserQuestion` prompt during autonomous `/orchestrate` dispatch, so the warn tier (Tier 3) is
+  the autonomous terminus; see "Tier 4: The Ask Flow"'s `orchestrator_mode` branch and its
+  "Deliberately Not Wired" subsection for the full reachability contract.
+- **Tiers 2 and 3 are universal** — every `acquire`/`acquire-retry` call site, single-task or
+  multi-task, autonomous or interactive, passes through the bounded retry and (on exhaustion) the
+  warn tier; only Tiers 1 and 4 are context-gated.
+
 ## The ABORT Refusal Message
 
 Modeled on the established two-line `ABORT:` + remedy shape already used by
@@ -816,7 +886,7 @@ ABORT: Task {N}'s file_scope overlaps task {other_task}'s file_scope at "{overla
 ## Tier 4: The Ask Flow (`orchestrator_mode`-Gated)
 
 The last-resort tier of the four-tier conflict-response ladder (auto-sequence, bounded retry,
-warn, ask — see this document's "Four-Tier Conflict Response" section below for the full ladder).
+warn, ask — see this document's "Four-Tier Conflict Response" section above for the full ladder).
 Reachable ONLY where a human actually exists to answer: a direct single-task `/research`,
 `/plan`, or `/implement` invocation whose CHECKPOINT 1 GATE IN step (`command-gate-in.sh`) has
 just failed the acquire-retry call (Tier 2 exhausted, Tier 3's ABORT text already emitted). This
@@ -909,16 +979,22 @@ decision, not an omission:
 
 This is the **highest-impact risk** in this lock's design: a bug in the
 session-identity check would block ALL task work system-wide, since `command-gate-in.sh` is
-sourced by five command files (`/research`, `/plan`, `/implement`, `/revise`, `/orchestrate`).
-The session-identity branch is checked FIRST, unconditionally, before any staleness computation
+sourced by SIX command files: `/research`, `/plan`, `/implement`, `/revise`, `/orchestrate`, and
+`/task` (twice — its `expand` and `abandon` operations). This count is verifiable by
+`grep -rn 'source .claude/scripts/command-gate-in.sh' agent-system/extensions/core/commands/` and
+must not be trusted as frozen — re-derive it rather than citing this prose if a future command
+gains a new `command-gate-in.sh` call site. The session-identity branch is checked FIRST,
+unconditionally, before any staleness computation
 — a session re-acquiring its own lock (e.g. `/research 42` immediately followed by `/plan 42` in
 the same conversation) always succeeds. This property has a dedicated functional test and should never be weakened by future edits.
 
-## Consumers (Five Distinct Wiring Paths)
+## Consumers (Six Distinct Wiring Paths)
 
 1. **Single-task gate scripts**: `command-gate-in.sh` (acquire after the terminal-status guard)
    and `command-gate-out.sh` (unconditional release) — covers `/research`, `/plan`,
-   `/implement`, `/revise`, and `/orchestrate`'s own single-task CHECKPOINT 1/2.
+   `/implement`, `/revise`, `/orchestrate`'s own single-task CHECKPOINT 1/2, and `/task`'s
+   `expand` and `abandon` operations (see the Same-Session Re-Entry section above for the full
+   six-site sourcing list and its grep-verifiable count).
 2. **Multi-task/wave dispatch**: `skill-orchestrate/SKILL.md` Stage MT (per-task
    acquire/release inside each wave dispatch) and `implement.md` Step 3 (per-task
    acquire/release in the multi-task loop) — these paths bypass the gate scripts entirely and

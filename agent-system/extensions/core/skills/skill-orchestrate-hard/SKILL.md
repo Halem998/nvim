@@ -1285,7 +1285,11 @@ every defer verdict carries this REQUIRED discriminator):
   label, and the co-dispatched sibling situation.
 - **`file_scope_collision`** (`in_batch` / `cross_batch`): unchanged from the base skill's
   handling — defer the named task to a later cycle, never added to `failed_tasks`, never added to
-  `deferred_self_modifying`.
+  `deferred_self_modifying`. This cycling defer IS Tier 1 (auto-sequence) of the four-tier
+  conflict-response ladder — see `.claude/context/patterns/task-lock.md`'s "Four-Tier Conflict
+  Response" section for the full ladder and how this multi-cycle re-sequencing compares to plain
+  multi-task `/research`'s, `/plan`'s, and `/implement`'s bounded one-extra-pass equivalent. No
+  behavioral change here; this is a cross-reference only.
 - **`session_active`** (NEW in v4, reached only when the collision scan above found no hit): a
   live registered session's own unioned `file_scope` overlaps the candidate's. Same defer-not-fail
   cycle semantics as the two branches above — remove the candidate from this cycle's dispatch
