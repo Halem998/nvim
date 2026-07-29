@@ -162,6 +162,16 @@ fi
 batch_session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 ```
 
+Register the in-flight session registry entry for this batch. **Use the bare `batch_session_id`
+here — never a `_${task_num}`-suffixed derivative.** Step 3 below suffixes the same variable
+per-task for its own task-lock acquire/release calls; the registry entry is batch-scoped, not
+per-task, so it stays keyed on the unsuffixed value. Best-effort and non-blocking (a registration
+failure must never affect any admission or dispatch decision):
+
+```bash
+bash .claude/scripts/task-lock.sh session-register "$batch_session_id" "/plan (multi-task)" "$(IFS=,; echo "${validated_tasks[*]}")" 2>/dev/null || true
+```
+
 #### Step 3: Dispatch Skills
 
 This multi-task loop bypasses `command-gate-in.sh`/`command-gate-out.sh` entirely (those are
@@ -181,7 +191,19 @@ For each validated task, invoke the appropriate planner skill using parallel Ski
 
 **Note**: Batch dispatch is handled directly by this command's orchestrator loop via parallel Skill tool calls, not by a separate batch skill.
 
+**No intra-batch session-registry heartbeat**: this step dispatches all validated tasks in a
+single parallel batch and waits for every result — there is no per-cycle loop boundary to
+heartbeat at, unlike `skill-orchestrate`'s multi-cycle dispatch. This is an intentional omission,
+not a gap to "fix" later.
+
 #### Step 4: Batch Git Commit
+
+Release the batch's in-flight session registry entry now, so it is cleaned up regardless of any
+individual task's outcome above. Best-effort and non-blocking:
+
+```bash
+bash .claude/scripts/task-lock.sh session-release "$batch_session_id" 2>/dev/null || true
+```
 
 After all skills return, produce a single git commit. Per-skill postflight may have already committed individual task changes; this batch commit captures any remaining unstaged changes and may be empty (which fails gracefully).
 

@@ -79,6 +79,16 @@ done
 batch_session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 ```
 
+Register the in-flight session registry entry for this batch. **Use the bare `batch_session_id`
+here — never a `_${task_num}`-suffixed derivative.** Step 3 below suffixes the same variable
+per-task for its own task-lock acquire/release calls; the registry entry is batch-scoped, not
+per-task, so it stays keyed on the unsuffixed value. Best-effort and non-blocking (a registration
+failure must never affect any admission or dispatch decision):
+
+```bash
+bash .claude/scripts/task-lock.sh session-register "$batch_session_id" "/implement (multi-task)" "$(IFS=,; echo "${validated_tasks[*]}")" 2>/dev/null || true
+```
+
 #### Step 3: Dispatch Skills
 
 This multi-task loop bypasses `command-gate-in.sh`/`command-gate-out.sh` entirely (those are
@@ -93,7 +103,19 @@ For each validated task, invoke the appropriate implementation skill using paral
 - Collect results; read `.return-meta.json` for structured data
 - **After** each task's skill invocation completes (success, partial, or failed): `bash .claude/scripts/task-lock.sh release "$task_num" "${batch_session_id}_${task_num}"` — unconditional, run regardless of outcome.
 
+**No intra-batch session-registry heartbeat**: this step dispatches all validated tasks in a
+single parallel batch and waits for every result — there is no per-cycle loop boundary to
+heartbeat at, unlike `skill-orchestrate`'s multi-cycle dispatch. This is an intentional omission,
+not a gap to "fix" later.
+
 #### Step 4: Batch Git Commit and Consolidated Output
+
+Release the batch's in-flight session registry entry now, so it is cleaned up regardless of any
+individual task's outcome above. Best-effort and non-blocking:
+
+```bash
+bash .claude/scripts/task-lock.sh session-release "$batch_session_id" 2>/dev/null || true
+```
 
 Git commit remaining changes (non-blocking). Display results table with session ID, counts (requested/succeeded/failed/skipped), and per-task status. Include partial-success note in commit message. Suggest re-running failed tasks individually.
 

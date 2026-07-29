@@ -342,24 +342,24 @@ identifiers the gate scripts already construct.
 
 ---
 
-### Phase 5: Multi-Task Command Batch Wiring [NOT STARTED]
+### Phase 5: Multi-Task Command Batch Wiring [COMPLETED]
 
 **Goal**: Register each `/research`, `/plan`, `/implement` batch under its **unsuffixed**
 `batch_session_id`, and release at batch completion.
 
 **Tasks**:
-- [ ] In each of `commands/research.md`, `commands/plan.md`, `commands/implement.md`, locate
+- [x] In each of `commands/research.md`, `commands/plan.md`, `commands/implement.md`, locate
       `#### Step 2: Generate Batch Session ID` and add the registration call immediately after the
       `batch_session_id="sess_..."` assignment, before Step 3's dispatch.
-- [ ] Register under the bare `batch_session_id` — never a `_${task_num}`-suffixed derivative. Add
+- [x] Register under the bare `batch_session_id` — never a `_${task_num}`-suffixed derivative. Add
       an inline comment stating this explicitly, since the very next step suffixes the same variable
       for per-task lock calls and the distinction is easy to lose.
-- [ ] Pass the full validated task set as the `task_numbers` CSV; the `file_scope` UNION is computed
+- [x] Pass the full validated task set as the `task_numbers` CSV; the `file_scope` UNION is computed
       inside `session-register` and must not be constructed at the call site.
-- [ ] Add the release call at batch completion: `#### Step 4: Batch Git Commit` / `#### Step 5:
+- [x] Add the release call at batch completion: `#### Step 4: Batch Git Commit` / `#### Step 5:
       Consolidated Output` in `research.md` and `plan.md`, and `#### Step 4: Batch Git Commit and
       Consolidated Output` in `implement.md`. Place it so it runs regardless of per-task outcomes.
-- [ ] Add no intra-batch heartbeat to these three commands: Step 3 dispatches once and waits for all
+- [x] Add no intra-batch heartbeat to these three commands: Step 3 dispatches once and waits for all
       parallel results, so there is no cycle boundary. Record that as an explicit note at each site
       so a future reader does not "fix" the apparent omission.
 
@@ -373,6 +373,8 @@ identifiers the gate scripts already construct.
 file (Step 2 register, Step 4/5 release). Confirm at implementation time with
 `grep -n 'batch_session_id="sess_' commands/*.md` and by locating each named Step heading before
 editing; report any file whose structure diverges rather than forcing the pattern.
+
+**Empirical confirmation**: `grep -n 'batch_session_id="sess_'` confirmed exactly one generation site per file, at the named Step 2 heading in all three; release calls landed at the top of Step 4 (`research.md`/`plan.md` also have a distinct Step 5, but the release sits at Step 4 since it must run before the batch commit, not after). All three structures matched the plan's assumption — no file diverged.
 
 **Files to modify**:
 - `agent-system/extensions/core/commands/research.md` - Step 2 register, Step 4/5 release
