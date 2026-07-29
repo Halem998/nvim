@@ -531,7 +531,7 @@ if [ -n "$plan_path" ] && [ -f "$plan_path" ]; then
   if [ -n "$next_heading" ]; then
     next_phase=$(extract_phase_number "$next_heading") || next_phase=""
     if [ -z "$next_phase" ]; then
-      warn_nonconforming "$plan_path" "orchestrate-hard-next-phase"
+      warn_nonconforming "$plan_path" "orchestrate-hard-next-phase" || true
       echo "[hard-orchestrate] H1: next-phase heading-scan found a non-conforming heading — refusing to guess a phase number; see warning above." >&2
     fi
   fi
@@ -864,8 +864,8 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
         . .claude/scripts/lib/phase-heading-patterns.sh
         recovered_total=$(grep -cE "$PHASE_HEADING_ERE" "$corroboration_plan_path" 2>/dev/null) || recovered_total=0
         recovered_completed=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$corroboration_plan_path" 2>/dev/null) || recovered_completed=0
-        if nonconforming_phase_headings "$corroboration_plan_path" | grep -q .; then
-          warn_nonconforming "$corroboration_plan_path" "hard-orchestrate-corroboration"
+        if has_nonconforming_phase_headings "$corroboration_plan_path"; then
+          warn_nonconforming "$corroboration_plan_path" "hard-orchestrate-corroboration" || true
           echo "[hard-orchestrate] Evidence corroboration: non-conforming phase heading(s) in ${corroboration_plan_path} — leaving plan_markers_verified=absent." >&2
         elif [ "$recovered_total" -gt 0 ] && [ "$recovered_completed" -eq "$recovered_total" ]; then
           phases_completed="$recovered_completed"
@@ -951,8 +951,8 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
       . .claude/scripts/lib/phase-heading-patterns.sh
       recovered_total=$(grep -cE "$PHASE_HEADING_ERE" "$recovery_plan_path" 2>/dev/null) || recovered_total=0
       recovered_completed=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$recovery_plan_path" 2>/dev/null) || recovered_completed=0
-      if nonconforming_phase_headings "$recovery_plan_path" | grep -q .; then
-        warn_nonconforming "$recovery_plan_path" "hard-orchestrate-recovery"
+      if has_nonconforming_phase_headings "$recovery_plan_path"; then
+        warn_nonconforming "$recovery_plan_path" "hard-orchestrate-recovery" || true
         echo "[hard-orchestrate] RECOVERY: non-conforming phase heading(s) in ${recovery_plan_path} — recovered phase count is unreliable (treated as unknown, not refused)." >&2
       fi
       echo "[hard-orchestrate] RECOVERY: handoff unusable — plan headings show ${recovered_completed}/${recovered_total} phases closed (COMPLETED or COMPLETED WITH EXCLUSIONS) in ${recovery_plan_path}." >&2

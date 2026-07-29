@@ -1,0 +1,37 @@
+{
+  "phase": 4,
+  "phase_name": "Migrate update-task-status.sh and add the loud inconclusive branch",
+  "started_at": "2026-07-29T02:10:00Z",
+  "last_updated": "2026-07-29T02:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add library sourcing block with deploy-tree-first/source-store-fallback and exit 5 on missing library", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 2, "description": "Migrate count_plan_phases TOTAL/DONE greps from BRE to library-sourced ERE forms", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 3, "description": "Migrate first_phase auto-advance grep+sed to extract_phase_number", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 4, "description": "Add non-conforming detection with distinguishable INCONCLUSIVE message; verify DESCOPED and 3a/3b/3c cases on scratch plans", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 5, "description": "Deviation fix: add has_nonconforming_phase_headings to close a pipefail/SIGPIPE race discovered during this phase's own testing; retrofit all call sites across already-committed Phase 7-9 files and add test coverage", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/lib/phase-heading-patterns.sh",
+      "agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh",
+      "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+      "agent-system/extensions/core/skills/skill-orchestrate-hard/SKILL.md",
+      "agent-system/extensions/core/skills/skill-implementer-hard/SKILL.md",
+      "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md",
+      "agent-system/extensions/core/agents/general-implementation-agent.md",
+      "agent-system/extensions/core/agents/general-implementation-hard-agent.md",
+      "agent-system/extensions/core/commands/task.md"
+    ]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "nonconforming_phase_headings <file> | grep -q . for boolean check", "result": "failed", "reason": "racy under set -o pipefail: grep -q closes the pipe early, producer can receive SIGPIPE, pipeline exit code becomes the producer's signal-exit code instead of reflecting output presence"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.5",
+      "description": "Boolean non-conforming-heading check call form",
+      "type": "altered",
+      "reason": "Racy pipefail/SIGPIPE interaction with the originally-planned grep -q pipe idiom, discovered via this phase's own scratch-plan test",
+      "annotation": "*(deviation: altered -- added has_nonconforming_phase_headings helper and retrofit all call sites)*"
+    }
+  ]
+}

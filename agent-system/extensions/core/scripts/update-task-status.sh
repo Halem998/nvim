@@ -28,6 +28,9 @@
 #   4 - Phase-accounting backstop refused the transition (the task's plan file shows incomplete
 #       phases); no state.json write and no plan-file status stamp occurred. Only reachable when
 #       --phase-check=refuse is explicitly passed on a postflight implement call.
+#   5 - Environment error: the shared library scripts/lib/phase-heading-patterns.sh could not be
+#       found at any candidate path. Distinct from every other exit code so a missing dependency
+#       is never mistaken for a phase-accounting refusal or a validation error.
 #
 # Optional flag: --phase-check=warn|refuse
 #   Absent by default. When absent, this script behaves exactly as it did before the flag
@@ -36,6 +39,11 @@
 #   headings (never a caller-supplied count) and acts on conclusive on-disk evidence of
 #   incompleteness: `warn` logs loudly and proceeds, `refuse` exits 4 without writing anything.
 #   Passing the flag with any other operation/target_status pair is silently ignored.
+#
+# Phase-heading grammar: sourced from scripts/lib/phase-heading-patterns.sh, the single anchor
+# for the canonical `### Phase N: {name} [STATUS]` shape, the closed status-marker enum, and
+# non-conforming-heading detection -- see context/formats/plan-format.md's "Canonical
+# phase-heading shape" subsection. This script never re-derives the grammar inline.
 
 set -euo pipefail
 
@@ -44,6 +52,31 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
+
+# --- Shared phase-heading pattern library ---
+# Deploy-tree-first / source-store-fallback candidate list, matching check-task-references.sh's
+# resolution of task-reference-patterns.sh. Never falls through to an inline pattern: a missing
+# library is a loud environment error (exit 5), not a silent degradation.
+PHASE_LIB_CANDIDATES=(
+  "$PROJECT_ROOT/.claude/scripts/lib/phase-heading-patterns.sh"
+  "$PROJECT_ROOT/agent-system/extensions/core/scripts/lib/phase-heading-patterns.sh"
+)
+PHASE_LIB=""
+for _candidate in "${PHASE_LIB_CANDIDATES[@]}"; do
+  if [[ -f "$_candidate" ]]; then
+    PHASE_LIB="$_candidate"
+    break
+  fi
+done
+if [[ -z "$PHASE_LIB" ]]; then
+  echo "Error: shared library phase-heading-patterns.sh not found at any of:" >&2
+  for _candidate in "${PHASE_LIB_CANDIDATES[@]}"; do
+    echo "  $_candidate" >&2
+  done
+  exit 5
+fi
+# shellcheck disable=SC1090
+. "$PHASE_LIB"
 
 # --- specs/state.json read-modify-write + TODO.md regen below ---
 # Routed through state-write.sh, the single mutex-guarded specs/state.json writer every other
@@ -241,26 +274,24 @@ resolve_plan_file_for_phase_check() {
 }
 
 count_plan_phases() {
-  # A heading is counted only when it matches the exact conforming shape
-  # `### Phase <N>: ... [<UPPERCASE STATUS>]` (trailing whitespace tolerated). Malformed headings
-  # -- missing brackets, lowercase status, non-numeric N -- are excluded from BOTH totals rather
-  # than raising an error, matching the graceful-degradation style used throughout these scripts.
+  # Sourced from scripts/lib/phase-heading-patterns.sh's PHASE_HEADING_TOTAL_ERE /
+  # PHASE_HEADING_DONE_ERE forms rather than re-derived inline -- see that library's header and
+  # context/formats/plan-format.md's "Canonical phase-heading shape" subsection. Deliberately
+  # migrated from BRE to ERE (`grep -E`) here so one regex family is authoritative repo-wide; the
+  # library's BRE aliases remain available as documented compatibility forms only.
   #
-  # Character-class constraint: any accepted done-state marker (COMPLETED, COMPLETED WITH
-  # EXCLUSIONS, or any future addition) must be uppercase letters and spaces only, matching the
-  # TOTAL bracket class `[A-Z][A-Z ]*` below -- a marker containing a dash, digit, or parenthesis
-  # silently falls out of the TOTAL denominator, independent of whether DONE recognizes it.
+  # A heading is counted toward TOTAL only when it matches the exact conforming shape
+  # `### Phase <N>: ... [<UPPERCASE STATUS>]` (trailing whitespace tolerated). This is necessary
+  # but NOT sufficient for true conformance -- see the non-conforming-heading guard at this
+  # function's call site below, which additionally rejects an out-of-enum marker (e.g.
+  # `[DESCOPED]`) that still satisfies this bracket shape.
   #
   # The `VAR=$(grep -c ...) || VAR=0` form is required, not cosmetic: `grep -c` exits 1 when it
   # matches nothing (which `set -e` would otherwise treat as fatal), and the tempting
   # `$(grep -c ... || echo 0)` form emits TWO lines ("0" from grep plus "0" from echo).
-  #
-  # Decimal sub-phase form: `\(\.[0-9][0-9]*\)\{0,1\}` (BRE) admits an optional single decimal
-  # sub-level (`3`, `3.1`) in the phase number on BOTH regexes below, so the numerator and
-  # denominator cannot diverge on phase numbering.
-  PHASE_CHECK_TOTAL=$(grep -c '^### Phase [0-9][0-9]*\(\.[0-9][0-9]*\)\{0,1\}:.*\[[A-Z][A-Z ]*\][[:space:]]*$' \
+  PHASE_CHECK_TOTAL=$(grep -cE "$PHASE_HEADING_TOTAL_ERE" \
     "$PHASE_CHECK_PLAN_FILE" 2>/dev/null) || PHASE_CHECK_TOTAL=0
-  PHASE_CHECK_DONE=$(grep -c '^### Phase [0-9][0-9]*\(\.[0-9][0-9]*\)\{0,1\}:.*\[\(COMPLETED\|COMPLETED WITH EXCLUSIONS\)\][[:space:]]*$' \
+  PHASE_CHECK_DONE=$(grep -cE "$PHASE_HEADING_DONE_ERE" \
     "$PHASE_CHECK_PLAN_FILE" 2>/dev/null) || PHASE_CHECK_DONE=0
 }
 
@@ -276,12 +307,26 @@ count_plan_phases() {
 if [[ -n "$PHASE_CHECK" && "$operation" == "postflight" && "$target_status" == "implement" \
       && "$state_is_noop" != "true" ]]; then
   resolve_plan_file_for_phase_check
+  PHASE_CHECK_NONCONFORMING=0
   if [[ -n "$PHASE_CHECK_PLAN_FILE" ]]; then
     count_plan_phases
+    # D3: a heading that looks like a phase heading but whose number token or status marker
+    # falls outside the canonical vocabulary (e.g. `[DESCOPED]`, `3a`) makes the WHOLE count
+    # INCONCLUSIVE, never a verdict derived from a partial match -- this is the fix for the
+    # `[DESCOPED]` TOTAL-inflation defect: such a heading previously satisfied the TOTAL bracket
+    # shape but never DONE, producing a permanent under-100% refusal.
+    if has_nonconforming_phase_headings "$PHASE_CHECK_PLAN_FILE"; then
+      PHASE_CHECK_NONCONFORMING=1
+    fi
   fi
 
   if [[ -z "$PHASE_CHECK_PLAN_FILE" ]]; then
     echo "[phase-check] Task $task_number: no plan file resolved -- inconclusive, passing through." >&2
+  elif [[ "$PHASE_CHECK_NONCONFORMING" -eq 1 ]]; then
+    # Distinguishable from the "zero conforming headings" branch below: this plan HAS phase
+    # headings, but at least one is non-conforming, so the count is refused rather than trusted.
+    warn_nonconforming "$PHASE_CHECK_PLAN_FILE" "update-task-status" || true
+    echo "[phase-check] Task $task_number: non-conforming phase heading(s) found in $(basename "$PHASE_CHECK_PLAN_FILE") -- INCONCLUSIVE (this plan HAS phase headings, but at least one falls outside the canonical vocabulary; see the warning above), passing through." >&2
   elif [[ "$PHASE_CHECK_TOTAL" -eq 0 ]]; then
     echo "[phase-check] Task $task_number: no conforming '### Phase N: ... [STATUS]' headings in $(basename "$PHASE_CHECK_PLAN_FILE") -- inconclusive, passing through." >&2
   elif [[ "$PHASE_CHECK_DONE" -ge "$PHASE_CHECK_TOTAL" ]]; then
@@ -462,9 +507,17 @@ update_plan_file() {
           plan_file=$(ls "$plan_dir"/*.md 2>/dev/null | sort | tail -1 || echo "")
         fi
         if [[ -n "$plan_file" ]]; then
-          local first_phase
-          first_phase=$(grep -m1 "^### Phase [0-9]*\(\.[0-9]*\)\{0,1\}:.*\[NOT STARTED\]" "$plan_file" \
-            | sed 's/^### Phase \([0-9]*\(\.[0-9]*\)\{0,1\}\):.*/\1/' || echo "")
+          local first_phase first_phase_heading
+          # Sourced from scripts/lib/phase-heading-patterns.sh's heading-match form and
+          # extract_phase_number rather than a re-derived inline pattern + sed chain -- the sed
+          # chain could not distinguish a non-conforming heading from "no match", where
+          # extract_phase_number returns empty with a non-zero status instead of a truncated
+          # prefix.
+          first_phase_heading=$(grep -m1 -E "${PHASE_HEADING_ERE}.*\[NOT STARTED\]" "$plan_file" || echo "")
+          first_phase=""
+          if [[ -n "$first_phase_heading" ]]; then
+            first_phase=$(extract_phase_number "$first_phase_heading") || first_phase=""
+          fi
           if [[ -n "$first_phase" ]]; then
             # Superseded by the base agent owning every per-phase transition directly; this
             # call is a redundant convenience, recoverable via the agent's own explicit calls.

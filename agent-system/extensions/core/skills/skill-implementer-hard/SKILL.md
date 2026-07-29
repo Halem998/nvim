@@ -157,7 +157,7 @@ if [ "$orchestrator_mode" = "true" ]; then
     if [ -n "$next_heading" ]; then
       next_phase=$(extract_phase_number "$next_heading") || next_phase=""
       if [ -z "$next_phase" ]; then
-        warn_nonconforming "$plan_path" "implementer-hard-next-phase"
+        warn_nonconforming "$plan_path" "implementer-hard-next-phase" || true
         echo "[hard-mode] STOP: resume-scan found a non-conforming phase heading -- refusing to guess a resume point. See warning above." >&2
         exit 1
       fi

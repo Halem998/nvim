@@ -256,8 +256,8 @@ under-counting an exclusion-closed phase here permanently refuses task completio
 # Non-conforming guard: a non-conforming heading is named in output rather than silently
 # skipped from the repair set. This does not stop the repair loop below -- it only ensures a
 # non-conforming heading is surfaced instead of vanishing.
-if nonconforming_phase_headings "$plan_file" | grep -q .; then
-  warn_nonconforming "$plan_file" "implementer-hard-stage-5a"
+if has_nonconforming_phase_headings "$plan_file"; then
+  warn_nonconforming "$plan_file" "implementer-hard-stage-5a" || true
 fi
 
 # Count stale phase headings. Deliberately NARROWER than the library's OPEN alternation

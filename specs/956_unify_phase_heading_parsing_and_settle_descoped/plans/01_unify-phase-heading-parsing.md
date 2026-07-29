@@ -374,31 +374,35 @@ dispatches.
 
 ---
 
-### Phase 4: Migrate `update-task-status.sh` and add the loud inconclusive branch [NOT STARTED]
+### Phase 4: Migrate `update-task-status.sh` and add the loud inconclusive branch [COMPLETED]
 
 **Goal**: Eliminate the silent-undercount defect at the highest-consequence accounting site, and
 make it source the shared library rather than carry its own patterns.
 
 **Tasks**:
-- [ ] Add the library sourcing block near the top of `count_plan_phases()`'s enclosing scope,
+- [x] Add the library sourcing block near the top of `count_plan_phases()`'s enclosing scope,
       using the deploy-tree-first / source-store-fallback candidate list with loud failure and a
       distinct exit status when the library is absent. Never fall through to an inline pattern.
-- [ ] Replace the inline BRE TOTAL and DONE greps with `grep -E` against the library's exported
+      *(completed: exit 5, verified with library deliberately renamed)*
+- [x] Replace the inline BRE TOTAL and DONE greps with `grep -E` against the library's exported
       forms. Migrating this site from BRE to ERE is deliberate so one family is authoritative.
-- [ ] Replace the `first_phase` auto-advance grep+sed pair with the library's heading match and
-      `extract_phase_number`.
-- [ ] Add the non-conforming detection: call `nonconforming_phase_headings` on the plan file
+      *(completed)*
+- [x] Replace the `first_phase` auto-advance grep+sed pair with the library's heading match and
+      `extract_phase_number`. *(completed)*
+- [x] Add the non-conforming detection: call `nonconforming_phase_headings` on the plan file
       before computing the verdict. When it reports any heading, call `warn_nonconforming` and
       take the INCONCLUSIVE branch — the same pass-through the existing "no conforming headings"
       case takes — instead of reporting a DONE/TOTAL verdict derived from a partial match.
-- [ ] Ensure the INCONCLUSIVE message is distinguishable in output from the existing
+      *(completed via the new `has_nonconforming_phase_headings` helper — see deviation note)*
+- [x] Ensure the INCONCLUSIVE message is distinguishable in output from the existing
       zero-conforming-headings message, so a reader can tell "this plan has no phase headings"
-      from "this plan has phase headings I refuse to count."
-- [ ] Update the file's own header comments describing the phase-heading contract to point at the
-      library as the source of truth rather than restating a pattern inline.
-- [ ] Confirm the `[DESCOPED]` case now routes through non-conforming detection rather than
+      from "this plan has phase headings I refuse to count." *(completed, verified)*
+- [x] Update the file's own header comments describing the phase-heading contract to point at the
+      library as the source of truth rather than restating a pattern inline. *(completed)*
+- [x] Confirm the `[DESCOPED]` case now routes through non-conforming detection rather than
       silently inflating TOTAL — this is the `5/9` defect and it is closed by the marker-enum
-      arm of the detector, not by adding `DESCOPED` to any alternation.
+      arm of the detector, not by adding `DESCOPED` to any alternation. *(completed, verified on
+      a scratch plan)*
 
 **Timing**: 1.5 hours
 
@@ -419,7 +423,31 @@ make it source the shared library rather than carry its own patterns.
   recommends `[COMPLETED WITH EXCLUSIONS]`; the verdict is INCONCLUSIVE, not a refusal.
 - With the library deliberately renamed: the script fails loudly with its environment-error status
   and no phase verdict is emitted. Restore afterwards.
-- Full repository gate set for this phase per the non-negotiable invariant.
+- Full repository gate set for this phase per the non-negotiable invariant. `bash -n`, the
+  Phase 3 fixture suite, and `check-task-references.sh` over `agent-system/extensions` all exit
+  0. `check-extension-docs.sh`'s core-deploy-drift and cross-extension-reference checks are
+  deferred to Phase 10 by design (that phase is the one that runs deploy propagation and the
+  full gate set against the deployed tree); running it now against source-only, not-yet-deployed
+  changes reports the SAME drift it already reported before this phase started (baseline:
+  `FAIL: 6 issue(s)`, core/lean/literature already failing), not a regression introduced here.
+
+**Deviation (not pre-declared in Phase 2)**: the originally-planned call form
+`nonconforming_phase_headings <file> | grep -q .` is racy under `set -o pipefail` — `grep -q`
+exits after its first match and closes the pipe; if the producer is still writing (realistic
+here, since each loop iteration runs several greps), the producer receives SIGPIPE and the
+pipeline's reported exit status becomes the producer's non-zero signal-exit code (141) rather
+than reliably reflecting whether any output existed. Discovered when this phase's own `3a/3b/3c`
+scratch-plan test intermittently reported "no conforming headings" instead of the loud
+non-conforming block. Fixed by adding `has_nonconforming_phase_headings <file>` to
+`scripts/lib/phase-heading-patterns.sh` (command-substitution capture, no pipe) and retrofitting
+every call site across Phases 7-9's already-committed files (`skill-orchestrate/SKILL.md`,
+`skill-orchestrate-hard/SKILL.md`, `skill-implementer-hard/SKILL.md`,
+`skill-lean-implementation-hard/SKILL.md`, both implementation agents, `commands/task.md`) to use
+it instead of the racy pipe form, and appending `|| true` to every bare `warn_nonconforming` call
+so its own non-zero "findings exist" return value cannot abort a `set -e` caller. Test coverage
+for the new function and a live reproduction of the historical race were added to
+`scripts/tests/test-phase-heading-patterns.sh` (28/28 passing). This is a mechanical correction
+to already-closed phases' files, not a reopening of their scope or verdicts.
 
 ---
 

@@ -615,8 +615,8 @@ phases=$(grep -E "$PHASE_HEADING_ERE" "$plan_file" 2>/dev/null)
 
 # Non-conforming guard: a non-conforming heading is named in output rather than silently
 # skipped from the categorization set below.
-if nonconforming_phase_headings "$plan_file" | grep -q .; then
-  warn_nonconforming "$plan_file" "task-review"
+if has_nonconforming_phase_headings "$plan_file"; then
+  warn_nonconforming "$plan_file" "task-review" || true
 fi
 
 # Build phase analysis (use extract_phase_number per heading, never a truncated prefix):

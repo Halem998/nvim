@@ -676,8 +676,8 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
         . .claude/scripts/lib/phase-heading-patterns.sh
         recovered_total=$(grep -cE "$PHASE_HEADING_ERE" "$corroboration_plan_path" 2>/dev/null) || recovered_total=0
         recovered_completed=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$corroboration_plan_path" 2>/dev/null) || recovered_completed=0
-        if nonconforming_phase_headings "$corroboration_plan_path" | grep -q .; then
-          warn_nonconforming "$corroboration_plan_path" "orchestrate-corroboration"
+        if has_nonconforming_phase_headings "$corroboration_plan_path"; then
+          warn_nonconforming "$corroboration_plan_path" "orchestrate-corroboration" || true
           echo "[orchestrate] Evidence corroboration: non-conforming phase heading(s) in ${corroboration_plan_path} — recovered counts are unreliable; leaving plan_markers_verified=absent." >&2
         elif [ "$recovered_total" -gt 0 ] && [ "$recovered_completed" -eq "$recovered_total" ]; then
           # Corroborated: allow the completion-claim gate to act on evidence rather than on
@@ -768,8 +768,8 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
       . .claude/scripts/lib/phase-heading-patterns.sh
       recovered_total=$(grep -cE "$PHASE_HEADING_ERE" "$recovery_plan_path" 2>/dev/null) || recovered_total=0
       recovered_completed=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$recovery_plan_path" 2>/dev/null) || recovered_completed=0
-      if nonconforming_phase_headings "$recovery_plan_path" | grep -q .; then
-        warn_nonconforming "$recovery_plan_path" "orchestrate-recovery"
+      if has_nonconforming_phase_headings "$recovery_plan_path"; then
+        warn_nonconforming "$recovery_plan_path" "orchestrate-recovery" || true
         echo "[orchestrate] RECOVERY: non-conforming phase heading(s) in ${recovery_plan_path} — recovered phase count is unreliable (treated as unknown, not refused)." >&2
       fi
       echo "[orchestrate] RECOVERY: handoff unusable — plan headings show ${recovered_completed}/${recovered_total} phases closed (COMPLETED or COMPLETED WITH EXCLUSIONS) in ${recovery_plan_path}." >&2
@@ -1781,8 +1781,8 @@ For each task in `research_tasks + plan_tasks + implement_tasks`:
        . .claude/scripts/lib/phase-heading-patterns.sh
        recovered_total=$(grep -cE "$PHASE_HEADING_ERE" "$corroboration_plan_path" 2>/dev/null) || recovered_total=0
        recovered_completed=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$corroboration_plan_path" 2>/dev/null) || recovered_completed=0
-       if nonconforming_phase_headings "$corroboration_plan_path" | grep -q .; then
-         warn_nonconforming "$corroboration_plan_path" "orchestrate-corroboration-mt"
+       if has_nonconforming_phase_headings "$corroboration_plan_path"; then
+         warn_nonconforming "$corroboration_plan_path" "orchestrate-corroboration-mt" || true
          echo "[orchestrate] Task #${task_num}: non-conforming phase heading(s) in ${corroboration_plan_path} — leaving plan_markers_verified=absent." >&2
        elif [ "$recovered_total" -gt 0 ] && [ "$recovered_completed" -eq "$recovered_total" ]; then
          phases_completed="$recovered_completed"

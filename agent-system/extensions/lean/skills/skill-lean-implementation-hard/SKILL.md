@@ -118,7 +118,7 @@ phase_number=""
 if [ -n "$next_phase_heading" ]; then
   phase_number=$(extract_phase_number "$next_phase_heading") || phase_number=""
   if [ -z "$phase_number" ]; then
-    warn_nonconforming "$plan_file" "lean-implementation-hard-next-phase"
+    warn_nonconforming "$plan_file" "lean-implementation-hard-next-phase" || true
     return error "Non-conforming phase heading found during resume-scan -- refusing to guess a resume point. See warning above."
   fi
 fi

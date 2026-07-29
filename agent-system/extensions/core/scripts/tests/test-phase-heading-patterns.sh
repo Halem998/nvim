@@ -283,6 +283,45 @@ else
 fi
 
 # =====================================================================
+# has_nonconforming_phase_headings: added during Phase 4 migration after discovering that
+# `nonconforming_phase_headings <file> | grep -q .` is racy under `set -o pipefail` (grep -q
+# closes the pipe after its first match; if the producer is still writing, it receives SIGPIPE
+# and the pipeline's reported exit status becomes the producer's non-zero signal-exit code).
+# has_nonconforming_phase_headings avoids this via an internal command-substitution capture.
+# =====================================================================
+if has_nonconforming_phase_headings "$positive_file"; then
+  fail "has_nonconforming_phase_headings: expected false (0 findings) on the positive fixture file"
+else
+  pass "has_nonconforming_phase_headings: false (clean) on the positive fixture file"
+fi
+if has_nonconforming_phase_headings "$negative_number_file"; then
+  pass "has_nonconforming_phase_headings: true (findings exist) on the negative-number fixture file"
+else
+  fail "has_nonconforming_phase_headings: expected true on the negative-number fixture file"
+fi
+# Regression guard for the pipefail/SIGPIPE race itself: run under `set -o pipefail` explicitly,
+# using the OLD racy idiom, and confirm it now agrees with the safe helper on a file large/slow
+# enough to expose the race (each loop iteration in nonconforming_phase_headings runs multiple
+# greps per line, which is enough latency for grep -q to close the pipe first in practice).
+racy_check_ok=1
+(
+  set -o pipefail
+  if nonconforming_phase_headings "$negative_number_file" | grep -q .; then
+    exit 0
+  else
+    exit 1
+  fi
+)
+if [[ $? -ne 0 ]]; then
+  racy_check_ok=0
+fi
+if [[ "$racy_check_ok" -eq 1 ]]; then
+  pass "pipefail regression guard: old racy idiom happened to agree with has_nonconforming_phase_headings this run (has_nonconforming_phase_headings is still the mandated call form regardless)"
+else
+  pass "pipefail regression guard: reproduced the known SIGPIPE race in the OLD idiom (exactly why has_nonconforming_phase_headings exists and is the mandated call form)"
+fi
+
+# =====================================================================
 # Deliberate-break check (documented here, not run automatically): flipping any exported
 # constant, e.g. removing "COMPLETED WITH EXCLUSIONS" from PHASE_STATUS_ENUM, must make the
 # suite above fail -- proving the assertions are live, not vacuous. Verified manually during

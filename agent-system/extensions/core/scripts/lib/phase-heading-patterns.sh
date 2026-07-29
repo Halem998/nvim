@@ -152,6 +152,23 @@ nonconforming_phase_headings() {
   done < <(grep -nE "$PHASE_HEADING_LOOSE_ERE" "$file" 2>/dev/null)
 }
 
+# ─── has_nonconforming_phase_headings <file> ───────────────────────────────────────────────────
+# Returns 0 (true) if <file> contains at least one non-conforming phase heading, 1 (false)
+# otherwise. Callers MUST use this rather than `nonconforming_phase_headings <file> | grep -q .`:
+# that pipe form is racy under `set -o pipefail`. `grep -q` exits after its first match and closes
+# the pipe; if the producer side is still writing (realistic here, since each loop iteration runs
+# several greps and is not instantaneous), the producer receives SIGPIPE and, under pipefail, the
+# pipeline's reported exit status becomes the producer's non-zero signal-exit code (141) rather
+# than reliably reflecting whether any output existed. This function avoids the race by capturing
+# the full output via command substitution (which reads to EOF, never closing early) before
+# testing it for emptiness.
+has_nonconforming_phase_headings() {
+  local file="$1"
+  local findings
+  findings="$(nonconforming_phase_headings "$file")"
+  [[ -n "$findings" ]]
+}
+
 # ─── warn_nonconforming <file> <label> ─────────────────────────────────────────────────────────
 # Prints a loud, per-heading, actionable block to stderr for every non-conforming heading in
 # <file>, naming the offending heading, its line number, and the specific reason (bad number
