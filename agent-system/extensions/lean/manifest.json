@@ -88,6 +88,5 @@
       "command": "uvx",
       "args": ["lean-lsp-mcp"]
     }
-  },
-  "hooks": {}
+  }
 }

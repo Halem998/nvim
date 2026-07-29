@@ -50,7 +50,5 @@
       "source": "opencode-agents.json",
       "target": "opencode.json"
     }
-  },
-  "mcp_servers": {},
-  "hooks": {}
+  }
 }

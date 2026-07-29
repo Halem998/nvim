@@ -242,7 +242,6 @@
       ".gitignore"
     ]
   },
-  "hooks": {},
   "routing_hard": {
     "research": {
       "general": "skill-researcher-hard",

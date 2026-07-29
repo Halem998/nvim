@@ -377,27 +377,39 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 7: Sweep vestigial empty manifest stubs [NOT STARTED]
+### Phase 7: Sweep vestigial empty manifest stubs [COMPLETED]
 
 - **Goal:** Remove every empty `mcp_servers: {}` and `hooks: {}` object across the extension
   manifests, leaving no manifest carrying a meaningless stub.
 - **Tasks:**
-  - [ ] Enumerate live, do not trust the plan's counts:
+  - [x] Enumerate live, do not trust the plan's counts:
         ```bash
         for f in agent-system/extensions/*/manifest.json; do
           [ "$(jq -c '.mcp_servers // "ABSENT"' "$f")" = "{}" ] && echo "mcp_servers: $f"
           [ "$(jq -c '.hooks // "ABSENT"' "$f")" = "{}" ] && echo "hooks: $f"
         done
         ```
-  - [ ] Delete each empty object outright (`del(.mcp_servers)` / `del(.hooks)`) rather than
+        *(completed: live enumeration matched the scope hypothesis exactly — 7 `mcp_servers: {}`,
+        16 `hooks: {}`)*
+  - [x] Delete each empty object outright (`del(.mcp_servers)` / `del(.hooks)`) rather than
         replacing it with `null`. Both fields are optional — the manifest schema requires only
-        `name`, `version`, `description`.
-  - [ ] Include `core`, `literature`, and `epidemiology` in the sweep. The review's "thirteen"
+        `name`, `version`, `description`. *(completed)*
+  - [x] Include `core`, `literature`, and `epidemiology` in the sweep. The review's "thirteen"
         figure excluded them; the research recommends cleaning all of them for consistency, and
-        doing so costs nothing since items 1/2/4 already touch two of the three.
-  - [ ] Preserve each manifest's existing key ordering and formatting style as far as the editing
+        doing so costs nothing since items 1/2/4 already touch two of the three. *(completed: all
+        three included)*
+  - [x] Preserve each manifest's existing key ordering and formatting style as far as the editing
         method allows; if using `jq`, confirm the diff shows only the intended deletion.
-  - [ ] Confirm every touched manifest is valid JSON (`jq empty`).
+        *(completed with a deviation: a first attempt piped each file through `jq --indent 2`,
+        which reformatted unrelated compact-inline arrays across several files — e.g. cslib's
+        `keyword_overrides` arrays and lean's `args: ["lean-lsp-mcp"]` — into multi-line form.
+        Caught by re-running `git diff` before committing per this task's own instruction; all 17
+        files were reverted to the last-committed state via `git show HEAD:<path> > <path>` and
+        redone with targeted `Edit` string replacements touching only the two stub fields. Final
+        `git diff` contains exactly four line patterns: removal of `"hooks": {}`, removal of
+        `"mcp_servers": {}`, removal of the preceding `},`, and its replacement with a bare `}` —
+        no other line in any of the 17 files changed.)*
+  - [x] Confirm every touched manifest is valid JSON (`jq empty`). *(completed: all 17 valid)*
 - **Timing:** 30 minutes
 - **Depends on:** 2, 5, 6
 - **Verification Tier:** interface

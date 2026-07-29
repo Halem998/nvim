@@ -22,6 +22,5 @@
       "source": "index-entries.json",
       "target": ".claude/context/index.json"
     }
-  },
-  "hooks": {}
+  }
 }

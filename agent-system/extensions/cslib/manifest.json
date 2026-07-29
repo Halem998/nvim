@@ -87,7 +87,5 @@
       "source": "index-entries.json",
       "target": ".claude/context/index.json"
     }
-  },
-  "mcp_servers": {},
-  "hooks": {}
+  }
 }
