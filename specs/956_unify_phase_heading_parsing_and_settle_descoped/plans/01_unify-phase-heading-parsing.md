@@ -319,33 +319,36 @@ before that site's phase proceeds, not worked around inline.
 
 ---
 
-### Phase 3: Fixture test suite for the shared library [NOT STARTED]
+### Phase 3: Fixture test suite for the shared library [COMPLETED]
 
 **Goal**: Pin the library's behavior with tests before any executable consumer is migrated, using
 `scripts/tests/test-validate-no-task-references.sh` as the structural model.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh` resolving
+- [x] Create `agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh` resolving
       the library under test through the same deploy-tree-first / source-store-fallback candidate
-      list the consumers use.
-- [ ] Positive fixtures: `### Phase 3: Name [NOT STARTED]`, `### Phase 3.1: Name [COMPLETED]`,
+      list the consumers use. *(completed)*
+- [x] Positive fixtures: `### Phase 3: Name [NOT STARTED]`, `### Phase 3.1: Name [COMPLETED]`,
       `### Phase 12: Name [COMPLETED WITH EXCLUSIONS]`, plus one fixture per remaining enum value.
-- [ ] Negative number-token fixtures: `### Phase 3a:`, `### Phase 3.1.2:`, `### Phase III:`,
+      *(completed)*
+- [x] Negative number-token fixtures: `### Phase 3a:`, `### Phase 3.1.2:`, `### Phase III:`,
       `### Phase :` — each must be reported by `nonconforming_phase_headings` and must make
       `extract_phase_number` return empty with non-zero status, never a truncated prefix.
-- [ ] Negative marker fixtures: `### Phase 3: Name [DESCOPED]` must be reported as non-conforming
+      *(completed)*
+- [x] Negative marker fixtures: `### Phase 3: Name [DESCOPED]` must be reported as non-conforming
       AND its warning text must contain the `[COMPLETED WITH EXCLUSIONS]` replacement guidance.
       Add one arbitrary-unknown-marker fixture to prove the check is enum-driven and not a
-      `DESCOPED` special case with no general rule behind it.
-- [ ] Equivalence fixtures: assert the BRE compatibility aliases and the ERE forms classify every
+      `DESCOPED` special case with no general rule behind it. *(completed)*
+- [x] Equivalence fixtures: assert the BRE compatibility aliases and the ERE forms classify every
       fixture in the suite identically. A divergence here is exactly the drift the library exists
-      to prevent.
-- [ ] Assert `extract_phase_number` on the three-heading `3a`/`3b`/`3c` case yields three distinct
-      non-conforming reports, not three identical "Phase 3" reports.
-- [ ] Register `tests/test-phase-heading-patterns.sh` in `manifest.json`'s `provides.scripts`.
-- [ ] The test file authors literal fixture strings by necessity; if any fixture would trip the
+      to prevent. *(completed)*
+- [x] Assert `extract_phase_number` on the three-heading `3a`/`3b`/`3c` case yields three distinct
+      non-conforming reports, not three identical "Phase 3" reports. *(completed)*
+- [x] Register `tests/test-phase-heading-patterns.sh` in `manifest.json`'s `provides.scripts`.
+      *(completed)*
+- [x] The test file authors literal fixture strings by necessity; if any fixture would trip the
       task-reference lint, mark it per the Exemption Taxonomy's test-fixture category rather than
-      rewording it.
+      rewording it. *(completed: check-task-references.sh over scripts/ clean, no marking needed)*
 
 **Timing**: 1 hour
 

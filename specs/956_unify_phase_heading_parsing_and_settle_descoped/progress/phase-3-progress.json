@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Fixture test suite for the shared library",
+  "started_at": "2026-07-29T00:35:00Z",
+  "last_updated": "2026-07-29T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-phase-heading-patterns.sh with positive, negative-number, negative-marker, equivalence, and 3a/3b/3c fixtures", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh"]},
+    {"id": 2, "description": "Register in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 3, "description": "Verify deliberate breakage of a library constant fails the suite, then revert", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
