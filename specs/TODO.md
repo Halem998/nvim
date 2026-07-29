@@ -11,7 +11,7 @@ next_project_number: 990
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 948,951,959,963,964,969,971,973,975,978,979,980,981,982,983,988 | -- | agent-system, extensions, orchestration-concurrency, ... |
+| 1 | 948,951,959,963,964,969,971,973,978,979,980,981,982,983,988 | -- | agent-system, extensions, orchestration-concurrency, ... |
 | 2 | 952,960,972,974,984,985,986,987 | 951,959,969,971,978,980 | agent-system, status-marker-lifecycle |
 | 3 | 953,961,989 | 952,960,972,974 | agent-system |
 | 4 | 962 | 961 | agent-system |
@@ -47,7 +47,6 @@ next_project_number: 990
 
 ### Extensions
 
-975 [IMPLEMENTING] — Fix the generated .claude/CLAUDE.md containing its entire body TW
 980 [NOT STARTED] — Collapse the TWO independent deploy engines writing .claude/ into
 
 ### Orchestration Concurrency
@@ -480,7 +479,7 @@ SOURCE-STORE RULE (binding): edit agent-system/extensions/core/scripts/**, never
 ---
 
 ### 975. Fix generated CLAUDE.md double-body and duplicate Stop-hook registration
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 976
